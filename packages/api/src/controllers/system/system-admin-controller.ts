@@ -1,6 +1,6 @@
 import { AuditOutcome } from '@fromcode119/core';
 import { Request, Response } from 'express';
-import { ApiVersionUtils, ApplicationDomainSettingsUtils, PluginState, RouteConstants, SystemConstants } from '@fromcode119/core';
+import { ApiVersionUtils, ApplicationDomainSettingsUtils, PluginState, RouteConstants, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { ScimTokenService } from '@api/services/scim-token-service';
 
@@ -26,6 +26,10 @@ export class SystemAdminController {
   SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE,
   SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE,
   SystemConstants.META_KEY.LOCALE_URL_STRATEGY,
+  // Localization → Measurement System. The control existed and reported success while the PUT never
+  // carried the key; with the admin now sending it, omitting it here turns that silent loss into a 400.
+  // Read live by plugins/ecommerce for package dimensions via `globalSettings.measurement_system`.
+  SystemConstants.META_KEY.MEASUREMENT_SYSTEM,
   SystemConstants.META_KEY.PERMALINK_STRUCTURE,
   SystemConstants.META_KEY.ROUTING_HOME_TARGET,
   SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED,
@@ -36,9 +40,36 @@ export class SystemAdminController {
   // Security group (admin Settings → Security) — all consumed: rate limit by the rate-limit middleware,
   // session duration by the auth policy, and the 2FA toggle gates new enrolment in SystemTwoFactorService.
   SystemConstants.META_KEY.RATE_LIMIT_MAX,
+  SystemConstants.META_KEY.RATE_LIMIT_MAX_AUTHENTICATED,
+  SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL,
+  SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS,
   SystemConstants.META_KEY.RATE_LIMIT_WINDOW,
   SystemConstants.META_KEY.AUTH_SESSION_DURATION,
   SystemConstants.META_KEY.TWO_FACTOR_ENABLED,
+  // Password policy — read on every registration / password change / reset by
+  // `AuthControllerPolicy.getPasswordPolicySettings()` + `validatePasswordAgainstPolicy()`. These were
+  // seeded with operator-facing descriptions and ENFORCED live, but rejected here with a 400 and
+  // rendered nowhere: the platform imposed a password policy nobody could see or change, and only
+  // direct SQL could move it. Controls now live on admin Settings → Security → Password Policy.
+  SystemConstants.META_KEY.AUTH_PASSWORD_MIN_LENGTH,
+  SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_UPPERCASE,
+  SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_LOWERCASE,
+  SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_NUMBER,
+  SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_SYMBOL,
+  SystemConstants.META_KEY.AUTH_PASSWORD_HISTORY,
+  SystemConstants.META_KEY.AUTH_PASSWORD_BREACH_CHECK,
+  // Login throttle / lockout — read by `AuthControllerPolicy.getLoginThrottleSettings()` and applied
+  // on every failed login (`recordLoginFailure`, `isLoginLocked`, `requiresCaptcha`).
+  SystemConstants.META_KEY.AUTH_LOCKOUT_THRESHOLD,
+  SystemConstants.META_KEY.AUTH_LOCKOUT_WINDOW_MINUTES,
+  SystemConstants.META_KEY.AUTH_LOCKOUT_DURATION_MINUTES,
+  SystemConstants.META_KEY.AUTH_CAPTCHA_ENABLED,
+  SystemConstants.META_KEY.AUTH_CAPTCHA_THRESHOLD,
+  // Token lifetimes — read by `AuthControllerTokenSupport` when a reset / email-change link is issued.
+  SystemConstants.META_KEY.AUTH_PASSWORD_RESET_TOKEN_MINUTES,
+  SystemConstants.META_KEY.AUTH_EMAIL_CHANGE_TOKEN_MINUTES,
+  // Security notification emails — read by `AuthControllerEmailInfrastructure` and `System2faService`.
+  SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS,
 ]);
 
   constructor(private readonly runtime: SystemControllerRuntime) {}
@@ -175,13 +206,10 @@ export class SystemAdminController {
       }
 
       const settings = await this.runtime.db.find(SystemConstants.TABLE.META);
-      const settingsMap: Record<string, any> = {};
-      settings.forEach((setting: any) => {
-        if (!setting.key.startsWith('integration_')) {
-          settingsMap[setting.key] = setting.value;
-        }
-      });
-      metadata.settings = settingsMap;
+      // This route is `auth.guard()` — ANY authenticated user, including a storefront customer.
+      // Only declared, operator-visible settings may leave here; the raw table also holds every
+      // user's TOTP secret/recovery codes and the SCIM + API machine tokens.
+      metadata.settings = SystemSettingsExposureUtils.toExposableSettingsMap(settings);
       metadata.secondaryPanel = metadata.secondaryPanel || this.runtime.buildDefaultSecondaryPanel();
       res.json(metadata);
     } catch (error: any) {
@@ -189,22 +217,18 @@ export class SystemAdminController {
     }
   }
 
-  async getSettings(req: Request, res: Response) {
+  /**
+   * The declared, operator-visible system settings. `_system_meta` is a key/value scratch space, not a
+   * settings table — returning it raw disclosed the whole `integration_email_profiles` credential blob
+   * (SMTP host/user + the password field, ciphertext only for values written since SecretService landed;
+   * `SecretService.decrypt` still passes legacy unencrypted values through) plus every user's TOTP secret
+   * and recovery codes and the SCIM/API machine tokens. The exposable set is
+   * framework-owned (see {@link SystemSettingsExposureUtils}), so nothing new leaks by being written.
+   */
+  async getSettings(_req: Request, res: Response) {
     try {
       const settings = await this.runtime.db.find(SystemConstants.TABLE.META);
-      const settingsMap: Record<string, any> = {};
-      settings.forEach((setting: any) => {
-        try {
-          if (typeof setting.value === 'string' && (setting.value.startsWith('{') || setting.value.startsWith('['))) {
-            settingsMap[setting.key] = JSON.parse(setting.value);
-            return;
-          }
-          settingsMap[setting.key] = setting.value;
-        } catch {
-          settingsMap[setting.key] = setting.value;
-        }
-      });
-      res.json(settingsMap);
+      res.json(SystemSettingsExposureUtils.toExposableSettingsMap(settings, { parseJson: true }));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

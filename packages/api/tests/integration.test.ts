@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { APIServer } from '../src/index';
+import { APIServer } from '@api/index';
 import { PluginManager, ThemeManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 

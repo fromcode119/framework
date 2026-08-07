@@ -1,6 +1,5 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { BackupCatalogGroupKey } from '@fromcode119/core';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
@@ -128,7 +127,10 @@ export class BackupListCard extends AdminComponent {
                           <div className="mt-1 text-xs text-slate-500">{item.filename}</div>
                         </td>
                         <td className="px-5 py-4 align-top">
-                          <Badge variant={item.group === BackupCatalogGroupKey.SYSTEM ? 'blue' : item.group === BackupCatalogGroupKey.DATABASE ? 'amber' : 'gray'}>
+                          {/* `item.group` is a plain string on the wire, so comparing it to an Enum
+                              member was always false and every badge rendered GRAY. Hydrate, and pass
+                              a BadgeVariant member rather than a bare string. */}
+                          <Badge variant={SystemBackupPageUtils.getGroupBadgeVariant(item)}>
                             {SystemBackupPageUtils.getScopeLabel(item)}
                           </Badge>
                         </td>

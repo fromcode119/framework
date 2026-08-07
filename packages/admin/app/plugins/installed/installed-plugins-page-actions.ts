@@ -122,7 +122,12 @@ export class InstalledPluginsPageActions {
       this.host.triggerRefresh();
     } catch (error: any) {
       if (error.status === 409 && error.data?.issues) {
-        this.host.patch({ dependencyIssues: error.data.issues, targetPlugin: slug, showDependencyConfirm: true });
+        // Hydrate `type` at the fetch boundary: `IDependencyIssue.type` is DECLARED as the enum but the
+        // 409 body carries a plain string, so `issue.type.value` in DependencyDialog was `undefined`
+        // and `.toUpperCase()` on it threw — the dialog crashed for every non-"missing" issue.
+        const issues = (Array.isArray(error.data.issues) ? error.data.issues : [])
+          .map((issue: any) => ({ ...issue, type: DependencyIssueType.resolve(issue?.type) }));
+        this.host.patch({ dependencyIssues: issues, targetPlugin: slug, showDependencyConfirm: true });
       } else {
         notify(NotificationType.ERROR, 'Update Failed', error.message);
       }

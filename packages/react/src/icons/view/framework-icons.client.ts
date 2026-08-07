@@ -53,6 +53,8 @@ export class FrameworkIcons {
   static readonly ShieldCheck = IconUtils.createProxyIcon('ShieldCheck');
   static readonly ShieldAlert = IconUtils.createProxyIcon('ShieldAlert');
   static readonly Database = IconUtils.createProxyIcon('Database');
+  static readonly Server = IconUtils.createProxyIcon('Server');
+  static readonly Network = IconUtils.createProxyIcon('Network');
   static readonly Globe = IconUtils.createProxyIcon('Globe');
   static readonly Orbit = IconUtils.createProxyIcon('Orbit');
   static readonly Palette = IconUtils.createProxyIcon('Palette');

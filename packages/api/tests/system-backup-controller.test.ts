@@ -1,9 +1,10 @@
-import { SystemBackupController } from '../src/controllers/system/system-backup-controller';
+import { BackupSectionKey } from '@fromcode119/core';
+import { SystemBackupController } from '@api/controllers/system/system-backup-controller';
 
 describe('SystemBackupController', () => {
   it('returns list payloads from the service', async () => {
     const service = {
-      listBackups: jest.fn().mockResolvedValue({ groups: [], capabilities: { canManage: false, canRestore: false } }),
+      listBackups: vi.fn().mockResolvedValue({ groups: [], capabilities: { canManage: false, canRestore: false } }),
     } as any;
     const controller = new SystemBackupController(service);
     const res = createResponse();
@@ -16,7 +17,7 @@ describe('SystemBackupController', () => {
 
   it('maps restore confirmation failures to a conflict response', async () => {
     const service = {
-      executeRestore: jest.fn().mockRejectedValue(new Error('Restore confirmation text did not match the required confirmation challenge.')),
+      executeRestore: vi.fn().mockRejectedValue(new Error('Restore confirmation text did not match the required confirmation challenge.')),
     } as any;
     const controller = new SystemBackupController(service);
     const res = createResponse();
@@ -34,7 +35,7 @@ describe('SystemBackupController', () => {
   it('maps missing restore targets to a conflict response when the service exposes a status code', async () => {
     const error = Object.assign(new Error('Plugin "missing" does not exist.'), { statusCode: 409 });
     const service = {
-      previewRestore: jest.fn().mockRejectedValue(error),
+      previewRestore: vi.fn().mockRejectedValue(error),
     } as any;
     const controller = new SystemBackupController(service);
     const res = createResponse();
@@ -51,23 +52,27 @@ describe('SystemBackupController', () => {
 
   it('passes selected backup sections into create requests', async () => {
     const service = {
-      createSystemBackup: jest.fn().mockResolvedValue({ success: true, backup: { id: '1' }, selection: { requestedSections: ['core'], includedSections: ['core'], warnings: [] } }),
+      createSystemBackup: vi.fn().mockResolvedValue({ success: true, backup: { id: '1' }, selection: { requestedSections: ['core'], includedSections: ['core'], warnings: [] } }),
     } as any;
     const controller = new SystemBackupController(service);
     const res = createResponse();
 
     await controller.createSystemBackup({ body: { sections: ['core', 'themes'] }, user: { roles: ['admin'], permissions: ['*'] } } as any, res as any);
 
-    expect(service.createSystemBackup).toHaveBeenCalledWith(
-      expect.any(Object),
-      { sections: ['core', 'themes'] },
-    );
+    // The controller is the API boundary: it HYDRATES the wire strings into `BackupSectionKey` enum
+    // MEMBERS before handing them to the service. Asserting raw strings here was the stale part — and
+    // it was invisible, because `Enum.toJSON()` renders a member as its own value, so the failure diff
+    // showed `"core"` on both sides while the identity comparison underneath disagreed.
+    const [actor, request] = service.createSystemBackup.mock.calls[0];
+    expect(actor).toEqual({ userId: null, email: null, roles: ['admin'] });
+    expect(request.sections).toEqual([BackupSectionKey.CORE, BackupSectionKey.THEMES]);
+    expect(request.sections.every((section: unknown) => section instanceof BackupSectionKey)).toBe(true);
     expect(res.status).toHaveBeenCalledWith(201);
   });
 
   it('passes uploaded backup files into import requests', async () => {
     const service = {
-      importBackup: jest.fn().mockResolvedValue({ success: true, backup: { id: '1' }, selection: { requestedSections: [], includedSections: [], warnings: [] } }),
+      importBackup: vi.fn().mockResolvedValue({ success: true, backup: { id: '1' }, selection: { requestedSections: [], includedSections: [], warnings: [] } }),
     } as any;
     const controller = new SystemBackupController(service);
     const res = createResponse();
@@ -87,7 +92,7 @@ describe('SystemBackupController', () => {
 
   it('starts chunked import sessions with validated payloads', async () => {
     const service = {
-      startBackupImportSession: jest.fn().mockResolvedValue({ success: true, uploadId: 'session-1', chunkSizeBytes: 4194304, totalChunks: 5, originalFilename: 'backup.tar.gz' }),
+      startBackupImportSession: vi.fn().mockResolvedValue({ success: true, uploadId: 'session-1', chunkSizeBytes: 4194304, totalChunks: 5, originalFilename: 'backup.tar.gz' }),
     } as any;
     const controller = new SystemBackupController(service);
     const res = createResponse();
@@ -103,7 +108,7 @@ describe('SystemBackupController', () => {
 
   it('passes uploaded chunk files into chunk import requests', async () => {
     const service = {
-      uploadBackupImportChunk: jest.fn().mockResolvedValue({ success: true, uploadId: 'session-1', receivedChunks: 1, totalChunks: 5, complete: false }),
+      uploadBackupImportChunk: vi.fn().mockResolvedValue({ success: true, uploadId: 'session-1', receivedChunks: 1, totalChunks: 5, complete: false }),
     } as any;
     const controller = new SystemBackupController(service);
     const res = createResponse();
@@ -120,7 +125,7 @@ describe('SystemBackupController', () => {
 
   it('completes chunked imports using the upload id', async () => {
     const service = {
-      completeBackupImport: jest.fn().mockResolvedValue({ success: true, backup: { id: '1' }, selection: { requestedSections: [], includedSections: [], warnings: [] } }),
+      completeBackupImport: vi.fn().mockResolvedValue({ success: true, backup: { id: '1' }, selection: { requestedSections: [], includedSections: [], warnings: [] } }),
     } as any;
     const controller = new SystemBackupController(service);
     const res = createResponse();
@@ -136,7 +141,7 @@ describe('SystemBackupController', () => {
 
   it('rejects import requests without an uploaded backup file', async () => {
     const service = {
-      importBackup: jest.fn(),
+      importBackup: vi.fn(),
     } as any;
     const controller = new SystemBackupController(service);
     const res = createResponse();
@@ -150,10 +155,10 @@ describe('SystemBackupController', () => {
 });
 
 function createResponse() {
-  const response: Record<string, jest.Mock> = {
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn().mockReturnThis(),
-    download: jest.fn().mockReturnThis(),
+  const response: Record<string, vi.Mock> = {
+    status: vi.fn().mockReturnThis(),
+    json: vi.fn().mockReturnThis(),
+    download: vi.fn().mockReturnThis(),
   };
   return response;
 }

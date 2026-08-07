@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CoreServices } from '@core/services/core-services';
+import { ServerCoreServices } from '@core/services/server-core-services';
 import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
 import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
 import { PluginDefaultPageContractKind } from '@core/default-page-contract/enums/plugin-default-page-contract-kind.enum';
@@ -15,6 +16,9 @@ const DETAIL_CANONICAL_KEY = 'org.synthetic:catalog-module:catalog-detail';
 
 describe('PluginDefaultPageMaterializationRuntimeService', () => {
   beforeEach(() => {
+    // `defaultPageContracts` is a SERVER-only core service: `CoreServices` only looks it up in the
+    // registry, so without this the very first getter throws and the assertions below never run.
+    ServerCoreServices.register();
     CoreServices.reset();
   });
 

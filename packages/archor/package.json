@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/archor",
-  "version": "0.1.80",
+  "version": "0.1.81",
   "description": "Architecture boundary enforcement — who may import what, which layer may call which, and the shape a plugin/theme/appearance must keep. Standalone like reactor/nextor/typor; Node-only build tooling, never imported by application code.",
   "license": "MIT",
   "type": "module",

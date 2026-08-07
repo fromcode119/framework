@@ -23,8 +23,12 @@ export class ChatResponder {
   agentMode: ContextLevel,
 ): Promise<IChatReply> {
       const aiClient = context.options.aiClient;
-      if (!aiClient || typeof aiClient.chat !== 'function') {
-        return ChatResponder.buildFallbackReply();
+      if (!aiClient?.chat) {
+        // The classifier can already answer some turns on its own (arithmetic, a clarification it
+        // scripted) and hands that over as `intent.quickAnswer`. WITH a model we only hint with it —
+        // see `appendClassifierHint` below — but with no model it is the answer, and saying "the AI
+        // model is unavailable" while holding it is just dropping it on the floor.
+        return ChatResponder.buildQuickReply(intent);
       }
 
       const { profile, copy } = await ChatHelpers.resolvePromptInput(context);
@@ -211,6 +215,22 @@ export class ChatResponder {
       message: 'I need one more concrete detail or a successful tool pass before I can answer that reliably.',
       model: 'system',
       source: 'clarify',
+    };
+  }
+
+  /**
+   * The no-model reply: the classifier's own answer when it has one, the fallback when it does not.
+   *
+   * `ResponderRoute.QUICK` and `ChatHelpers.fallbackFactual` were both already here — the enum member
+   * was referenced only as `resolve()`'s default and the helper had NO callers at all, so the route
+   * existed on paper while every model-less turn fell through to "the AI model is unavailable".
+   */
+  private static buildQuickReply(intent: IRuntimeIntent): IChatReply {
+    if (!String(intent.quickAnswer || '').trim()) return ChatResponder.buildFallbackReply();
+    return {
+      message: ChatHelpers.fallbackFactual(intent),
+      model: 'classifier-quick',
+      source: ResponderRoute.QUICK,
     };
   }
 

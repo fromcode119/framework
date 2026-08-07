@@ -1,17 +1,18 @@
-import { SystemController } from '../src/controllers/system/system-controller';
+import { PluginState } from '@fromcode119/core';
+import { SystemController } from '@api/controllers/system/system-controller';
 
 describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
   const createController = (metadata: any) => {
     const manager: any = {
-      hooks: { on: jest.fn() },
-      getAdminMetadata: jest.fn().mockResolvedValue(metadata),
-      getRuntimeModules: jest.fn().mockReturnValue({}),
+      hooks: { on: vi.fn() },
+      getAdminMetadata: vi.fn().mockResolvedValue(metadata),
+      getRuntimeModules: vi.fn().mockReturnValue({}),
       db: {
-        find: jest.fn().mockResolvedValue([]),
+        find: vi.fn().mockResolvedValue([]),
       },
     };
     const themeManager: any = {
-      getFrontendMetadata: jest.fn().mockResolvedValue({}),
+      getFrontendMetadata: vi.fn().mockResolvedValue({}),
     };
     const restController: any = {};
     const auth: any = {};
@@ -33,7 +34,7 @@ describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
     };
     const { controller } = createController(payload);
     const req: any = {};
-    const res: any = { json: jest.fn(), set: jest.fn().mockReturnThis(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), set: vi.fn().mockReturnThis(), status: vi.fn().mockReturnThis() };
 
     await controller.getAdminMetadata(req, res);
 
@@ -45,7 +46,7 @@ describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
   it('injects default secondaryPanel shape when field is absent', async () => {
     const { controller } = createController({ plugins: [], menu: [] });
     const req: any = {};
-    const res: any = { json: jest.fn(), set: jest.fn().mockReturnThis(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), set: vi.fn().mockReturnThis(), status: vi.fn().mockReturnThis() };
 
     await controller.getAdminMetadata(req, res);
 
@@ -67,17 +68,36 @@ describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
   });
 });
 
+/**
+ * `getFrontendMetadata` is served UNAUTHENTICATED, so everything it returns is public by definition.
+ * This suite is the guard on that boundary.
+ *
+ * It was dark: the fake manager had no `getPublicFrontendPluginSettings`, a method production started
+ * calling, so the test died with `TypeError: … is not a function` before reaching a single whitelist
+ * assertion. The endpoint has TWO settings channels — `publicSettings` (framework meta keys, filtered by
+ * `PublicFrontendSettingsService.PUBLIC_KEYS`, a deny-by-default allowlist) and `settings` (per-plugin
+ * fields flagged `public: true`). Both are asserted here so neither can start leaking unnoticed.
+ */
 describe('SystemController.getFrontendMetadata public settings', () => {
   it('returns only whitelisted public settings', async () => {
+    const pluginPublicSettings = { 'org.fromcode/demo': { publicFlag: 'on' } };
     const manager: any = {
-      hooks: { on: jest.fn() },
-      getAdminMetadata: jest.fn().mockResolvedValue({ menu: [] }),
-      getRuntimeModules: jest.fn().mockReturnValue({}),
-      getPlugins: jest.fn().mockReturnValue([]),
-      getSortedPlugins: jest.fn().mockImplementation((plugins: any[]) => plugins),
-      getHeadInjections: jest.fn().mockReturnValue([]),
+      hooks: { on: vi.fn() },
+      getAdminMetadata: vi.fn().mockResolvedValue({ menu: [] }),
+      getRuntimeModules: vi.fn().mockReturnValue({}),
+      // Real `PluginState` MEMBERS, because production filters with `plugin.state === PluginState.ACTIVE`
+      // — an identity check against a reactor `Enum` singleton that a raw `'active'` string can never
+      // satisfy. The inactive plugin proves the filter is real: a disabled plugin must not be advertised
+      // on an unauthenticated endpoint.
+      getPlugins: vi.fn().mockReturnValue([
+        { state: PluginState.ACTIVE, manifest: { namespace: 'org.fromcode', slug: 'demo', version: '1.0.0', name: 'Demo' } },
+        { state: PluginState.INACTIVE, manifest: { namespace: 'org.fromcode', slug: 'disabled', version: '1.0.0', name: 'Disabled' } },
+      ]),
+      getSortedPlugins: vi.fn().mockImplementation((plugins: any[]) => plugins),
+      getHeadInjections: vi.fn().mockReturnValue([]),
+      getPublicFrontendPluginSettings: vi.fn().mockResolvedValue(pluginPublicSettings),
       db: {
-        find: jest.fn().mockResolvedValue([
+        find: vi.fn().mockResolvedValue([
           { key: 'routing_home_target', value: 'auto' },
           { key: 'locale_url_strategy', value: 'query' },
           { key: 'default_locale', value: 'bg' },
@@ -90,13 +110,13 @@ describe('SystemController.getFrontendMetadata public settings', () => {
       },
     };
     const themeManager: any = {
-      getFrontendMetadata: jest.fn().mockResolvedValue({ activeTheme: null }),
+      getFrontendMetadata: vi.fn().mockResolvedValue({ activeTheme: null }),
     };
     const restController: any = {};
     const auth: any = {};
     const controller = new SystemController(manager, themeManager, restController, auth);
     const req: any = {};
-    const res: any = { json: jest.fn(), set: jest.fn().mockReturnThis(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), set: vi.fn().mockReturnThis(), status: vi.fn().mockReturnThis() };
 
     await controller.getFrontendMetadata(req, res);
 
@@ -113,5 +133,13 @@ describe('SystemController.getFrontendMetadata public settings', () => {
     const response = res.json.mock.calls[0][0];
     expect(response.publicSettings.auth_password_history).toBeUndefined();
     expect(response.publicSettings.totp_secret_pending).toBeUndefined();
+
+    // The per-plugin public-settings channel is forwarded verbatim — the fake must be exercised, not
+    // merely present, or restoring the method would silently paper over the surface it guards.
+    expect(manager.getPublicFrontendPluginSettings).toHaveBeenCalled();
+    expect(response.settings).toEqual(pluginPublicSettings);
+
+    // Only ACTIVE plugins are advertised on the unauthenticated endpoint.
+    expect(response.plugins.map((plugin: any) => plugin.slug)).toEqual(['demo']);
   });
 });

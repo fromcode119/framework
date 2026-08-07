@@ -136,6 +136,7 @@ export type { ICapabilityMetadata } from '@fromcode119/core/client';
 // IntegrationRegistry is server-only — see the note in `@fromcode119/core`'s client surface.
 export { PluginFrontendLayoutRegistrar, ThemeFrontendLayoutRegistrar } from '@fromcode119/core/client';
 export type { IRegisteredWidgetDefinition, IWidgetDefinitionInput, IWidgetSettingsRenderInput, IWidgetStyle } from '@fromcode119/core/client';
+export { WidgetViewport } from '@fromcode119/core/client';
 export type { IIntegrationTypeDefinition } from '@fromcode119/core/client';
 export type { IPluginApiResolver } from '@fromcode119/core/client';
 export type { IPluginDefaultPageContractIdentity, IPluginDefaultPageContract, IPluginDefaultPageContractRegistration, IRegisteredPluginDefaultPageContract, IThemeDefaultPageContractOverride, ILayoutDiagnosticEntry, ILayoutOwnerIdentity, IPluginLayoutDefinition, IPluginLayoutRegistration, IRegisteredPluginLayoutDefinition, IRegisteredThemeLayoutDisableDefinition, IRegisteredThemeLayoutReplacementDefinition, IResolvedLayout, IThemeLayoutDisableDefinition, IThemeLayoutOverrideRegistration, IThemeLayoutReplacementDefinition, IPluginFrontendLayoutRegistrarOptions, IThemeFrontendLayoutRegistrarOptions } from '@fromcode119/core/client';

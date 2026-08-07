@@ -1,10 +1,18 @@
 import { McpBridgeFactory } from '@fromcode119/mcp';
-import { IntentClassifier } from '../src/admin-assistant-runtime/runtime/intent-classifier';
-import { OrchestratorRunner } from '../src/admin-assistant-runtime/runtime/orchestrator';
-import type { IAdminAssistantRuntimeOptions } from '../src/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
-import type { IAssistantChatInput } from '../src/admin-assistant-runtime/interfaces/assistant-chat-input.interface';
-import type { IAssistantSkillDefinition } from '../src/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
-import { ProviderCapabilitiesUtils } from '../src/gateways/integration-provider';
+import { IntentClassifier } from '@ai/admin-assistant-runtime/runtime/intent-classifier';
+import { OrchestratorRunner } from '@ai/admin-assistant-runtime/runtime/orchestrator';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
+import type { IAssistantChatInput } from '@ai/admin-assistant-runtime/interfaces/assistant-chat-input.interface';
+import type { IAssistantSkillDefinition } from '@ai/admin-assistant-runtime/interfaces/assistant-skill-definition.interface';
+import { ProviderCapabilitiesUtils } from '@ai/gateways/integration-provider';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+import { AssistantRunMode } from '@ai/admin-assistant-runtime/enums/assistant-run-mode.enum';
+import { AssistantSkillRiskPolicy } from '@ai/admin-assistant-runtime/enums/assistant-skill-risk-policy.enum';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
+import { RuntimeStage } from '@ai/admin-assistant-runtime/runtime/enums/runtime-stage.enum';
+import { ContextLevel } from '@ai/api/forge/enums/context-level.enum';
+import { RuntimeIntentKind } from '@ai/admin-assistant-runtime/runtime/enums/runtime-intent-kind.enum';
+import { WorkflowState } from '@ai/enums/workflow-state.enum';
 
 function createOptions(overrides?: Partial<IAdminAssistantRuntimeOptions>): IAdminAssistantRuntimeOptions {
   return {
@@ -23,8 +31,8 @@ function createDeps(options?: Partial<IAdminAssistantRuntimeOptions>) {
   const generalSkill: IAssistantSkillDefinition = {
     id: 'general',
     label: 'General',
-    defaultMode: 'chat',
-    riskPolicy: 'approval_required',
+    defaultMode: AssistantRunMode.CHAT,
+    riskPolicy: AssistantSkillRiskPolicy.APPROVAL_REQUIRED,
   };
 
   return {
@@ -33,7 +41,7 @@ function createDeps(options?: Partial<IAdminAssistantRuntimeOptions>) {
     createBridge: async () => McpBridgeFactory.create({ tools: [] }),
     listTools: async () => [],
     sanitizeMessage: (message: string) => message,
-    toRunMode: () => 'chat' as const,
+    toRunMode: () => AssistantRunMode.CHAT,
     buildPlanArtifact: (input: any) => ({
       id: input.planId,
       status: 'completed',
@@ -52,7 +60,7 @@ function createDeps(options?: Partial<IAdminAssistantRuntimeOptions>) {
       suggestedMode: 'chat',
       showTechnicalDetailsDefault: false,
     }),
-    resolveAgentMode: () => 'basic' as const,
+    resolveAgentMode: () => ContextLevel.BASIC,
     resolveSkillForInput: () => generalSkill,
     resolveProviderCapabilities: ProviderCapabilitiesUtils.resolveProviderCapabilities,
   };
@@ -65,7 +73,7 @@ describe('runtime classifier and fallback behavior', () => {
       history: [],
     });
 
-    expect(intent.kind).toBe('smalltalk');
+    expect(intent.kind).toBe(RuntimeIntentKind.SMALLTALK);
   });
 
   it('classifies simple arithmetic as factual_qa with quick answer', () => {
@@ -74,7 +82,7 @@ describe('runtime classifier and fallback behavior', () => {
       history: [],
     });
 
-    expect(intent.kind).toBe('factual_qa');
+    expect(intent.kind).toBe(RuntimeIntentKind.FACTUAL_QA);
     expect(intent.quickAnswer).toBe('10');
   });
 
@@ -84,7 +92,7 @@ describe('runtime classifier and fallback behavior', () => {
       history: [],
     });
 
-    expect(intent.kind).toBe('replace_text');
+    expect(intent.kind).toBe(RuntimeIntentKind.REPLACE_TEXT);
     expect(intent.replace?.from).toBe('07000 000001');
     expect(intent.replace?.to).toBe('07000 000002');
   });
@@ -93,13 +101,13 @@ describe('runtime classifier and fallback behavior', () => {
     const intent = IntentClassifier.classifyIntent({
       message: "it's a phone",
       history: [
-        { role: 'user', content: 'change "07000 000001" to "07000 000002"' },
-        { role: 'assistant', content: 'Need one detail to finish staging.' },
+        { role: AssistantRole.USER, content: 'change "07000 000001" to "07000 000002"' },
+        { role: AssistantRole.ASSISTANT, content: 'Need one detail to finish staging.' },
       ],
-      checkpoint: { reason: 'clarification_needed', stage: 'clarify' },
+      checkpoint: { reason: CheckpointReason.CLARIFICATION_NEEDED, stage: RuntimeStage.CLARIFY },
     });
 
-    expect(intent.kind).toBe('replace_text');
+    expect(intent.kind).toBe(RuntimeIntentKind.REPLACE_TEXT);
     expect(intent.replace?.from).toBe('07000 000001');
     expect(intent.replace?.to).toBe('07000 000002');
   });
@@ -108,12 +116,12 @@ describe('runtime classifier and fallback behavior', () => {
     const intent = IntentClassifier.classifyIntent({
       message: 'what are the matches',
       history: [
-        { role: 'user', content: 'want to change "£50k+" to "£60k+"' },
-        { role: 'assistant', content: 'Found 12 matches and staged 4 changes.' },
+        { role: AssistantRole.USER, content: 'want to change "£50k+" to "£60k+"' },
+        { role: AssistantRole.ASSISTANT, content: 'Found 12 matches and staged 4 changes.' },
       ],
     });
 
-    expect(intent.kind).toBe('replace_text');
+    expect(intent.kind).toBe(RuntimeIntentKind.REPLACE_TEXT);
     expect(intent.replace?.from).toBe('£50k+');
     expect(intent.replace?.to).toBe('£60k+');
   });
@@ -122,12 +130,12 @@ describe('runtime classifier and fallback behavior', () => {
     const intent = IntentClassifier.classifyIntent({
       message: 'where are they?',
       history: [
-        { role: 'user', content: 'want to change "£50k+" to "£60k+"' },
-        { role: 'assistant', content: 'I found 4 file matches.' },
+        { role: AssistantRole.USER, content: 'want to change "£50k+" to "£60k+"' },
+        { role: AssistantRole.ASSISTANT, content: 'I found 4 file matches.' },
       ],
     });
 
-    expect(intent.kind).toBe('replace_text');
+    expect(intent.kind).toBe(RuntimeIntentKind.REPLACE_TEXT);
     expect(intent.replace?.from).toBe('£50k+');
     expect(intent.replace?.to).toBe('£60k+');
   });
@@ -136,17 +144,17 @@ describe('runtime classifier and fallback behavior', () => {
     const intent = IntentClassifier.classifyIntent({
       message: 'what do you mean by cms content ?',
       history: [
-        { role: 'user', content: 'want to change "£50k+" to "£60k+"' },
+        { role: AssistantRole.USER, content: 'want to change "£50k+" to "£60k+"' },
         {
-          role: 'assistant',
+          role: AssistantRole.ASSISTANT,
           content:
             'I found 4 file matches for "£50k+" -> "£60k+". Do you want to update CMS/content values instead, or should I apply these file changes?',
         },
       ],
-      checkpoint: { reason: 'clarification_needed', stage: 'clarify' },
+      checkpoint: { reason: CheckpointReason.CLARIFICATION_NEEDED, stage: RuntimeStage.CLARIFY },
     });
 
-    expect(intent.kind).toBe('factual_qa');
+    expect(intent.kind).toBe(RuntimeIntentKind.FACTUAL_QA);
     expect(String(intent.quickAnswer || '').toLowerCase()).toContain('content records');
     expect(String(intent.quickAnswer || '').toLowerCase()).toContain('reply with "cms" or "files"');
   });
@@ -161,7 +169,7 @@ describe('runtime classifier and fallback behavior', () => {
 
     expect(result).toBeTruthy();
     expect(String(result?.message || '').trim()).toBe('10');
-    expect(result?.ui?.workflowState).toBe('reply');
+    expect(result?.ui?.workflowState).toBe(WorkflowState.REPLY);
   });
 
   it('returns contextual clarification answer instead of generic factual fallback', async () => {
@@ -169,14 +177,14 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'what do you mean by cms content ?',
         history: [
-          { role: 'user', content: 'want to change "£50k+" to "£60k+"' },
+          { role: AssistantRole.USER, content: 'want to change "£50k+" to "£60k+"' },
           {
-            role: 'assistant',
+            role: AssistantRole.ASSISTANT,
             content:
               'I found 4 file matches for "£50k+" -> "£60k+". Do you want to update CMS/content values instead, or should I apply these file changes?',
           },
         ],
-        checkpoint: { reason: 'clarification_needed', stage: 'clarify', resumePrompt: 'Choose target scope.' },
+        checkpoint: { reason: CheckpointReason.CLARIFICATION_NEEDED, stage: RuntimeStage.CLARIFY, resumePrompt: 'Choose target scope.' },
         agentMode: 'basic',
       },
       createDeps(),
@@ -243,10 +251,10 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'what users we have',
         history: [
-          { role: 'user', content: 'List installed plugins, active theme, and editable collections.' },
-          { role: 'assistant', content: 'Here is your current workspace inventory.' },
+          { role: AssistantRole.USER, content: 'List installed plugins, active theme, and editable collections.' },
+          { role: AssistantRole.ASSISTANT, content: 'Here is your current workspace inventory.' },
         ],
-        checkpoint: { reason: 'user_continue', stage: 'finalize', resumePrompt: 'Continue from workspace inventory context.' },
+        checkpoint: { reason: CheckpointReason.USER_CONTINUE, stage: RuntimeStage.FINALIZE, resumePrompt: 'Continue from workspace inventory context.' },
         agentMode: 'basic',
       },
       deps,
@@ -280,10 +288,10 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'what users we have',
         history: [
-          { role: 'user', content: 'List installed plugins, active theme, and editable collections.' },
-          { role: 'assistant', content: 'Here is your current workspace inventory.' },
+          { role: AssistantRole.USER, content: 'List installed plugins, active theme, and editable collections.' },
+          { role: AssistantRole.ASSISTANT, content: 'Here is your current workspace inventory.' },
         ],
-        checkpoint: { reason: 'user_continue', stage: 'finalize', resumePrompt: 'Continue from workspace inventory context.' },
+        checkpoint: { reason: CheckpointReason.USER_CONTINUE, stage: RuntimeStage.FINALIZE, resumePrompt: 'Continue from workspace inventory context.' },
         agentMode: 'basic',
       },
       deps,
@@ -314,9 +322,9 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'what is his name ?',
         history: [
-          { role: 'assistant', content: 'Found 1 record in users.\n\nSample:\n\nemail: estows@gmail.com' },
+          { role: AssistantRole.ASSISTANT, content: 'Found 1 record in users.\n\nSample:\n\nemail: estows@gmail.com' },
         ],
-        checkpoint: { reason: 'user_continue', stage: 'finalize', resumePrompt: 'Continue from users listing context.' },
+        checkpoint: { reason: CheckpointReason.USER_CONTINUE, stage: RuntimeStage.FINALIZE, resumePrompt: 'Continue from users listing context.' },
         agentMode: 'basic',
       },
       deps,
@@ -350,9 +358,9 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'so do you know the name of estows@gmail.com ?',
         history: [
-          { role: 'assistant', content: 'Found 2 records in users.\n\nSample:\n\nemail: other@gmail.com' },
+          { role: AssistantRole.ASSISTANT, content: 'Found 2 records in users.\n\nSample:\n\nemail: other@gmail.com' },
         ],
-        checkpoint: { reason: 'user_continue', stage: 'finalize', resumePrompt: 'Continue from users listing context.' },
+        checkpoint: { reason: CheckpointReason.USER_CONTINUE, stage: RuntimeStage.FINALIZE, resumePrompt: 'Continue from users listing context.' },
         agentMode: 'basic',
       },
       deps,
@@ -384,7 +392,7 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'so do you know the name of estows@gmail.com ?',
         history: [
-          { role: 'assistant', content: 'Found 1 record in users.\n\nSample:\n\nemail: estows@gmail.com' },
+          { role: AssistantRole.ASSISTANT, content: 'Found 1 record in users.\n\nSample:\n\nemail: estows@gmail.com' },
         ],
         agentMode: 'basic',
       },
@@ -416,7 +424,7 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'cual es el nombre de estows@gmail.com?',
         history: [
-          { role: 'assistant', content: 'Found 1 record in users.\n\nSample:\n\nemail: estows@gmail.com' },
+          { role: AssistantRole.ASSISTANT, content: 'Found 1 record in users.\n\nSample:\n\nemail: estows@gmail.com' },
         ],
         agentMode: 'basic',
       },
@@ -448,9 +456,9 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'what is his name ?',
         history: [
-          { role: 'assistant', content: 'Found 1 record in users.\n\nSample:\n\nemail: estows@gmail.com' },
+          { role: AssistantRole.ASSISTANT, content: 'Found 1 record in users.\n\nSample:\n\nemail: estows@gmail.com' },
         ],
-        checkpoint: { reason: 'user_continue', stage: 'finalize', resumePrompt: 'Continue from users listing context.' },
+        checkpoint: { reason: CheckpointReason.USER_CONTINUE, stage: RuntimeStage.FINALIZE, resumePrompt: 'Continue from users listing context.' },
         agentMode: 'basic',
       },
       deps,
@@ -480,9 +488,9 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'what is site title?',
         history: [
-          { role: 'assistant', content: 'Found 1 record in settings.' },
+          { role: AssistantRole.ASSISTANT, content: 'Found 1 record in settings.' },
         ],
-        checkpoint: { reason: 'user_continue', stage: 'finalize', resumePrompt: 'Continue from settings listing context.' },
+        checkpoint: { reason: CheckpointReason.USER_CONTINUE, stage: RuntimeStage.FINALIZE, resumePrompt: 'Continue from settings listing context.' },
         agentMode: 'basic',
       },
       deps,
@@ -515,11 +523,11 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'what is second one email?',
         history: [
-          { role: 'assistant', content: 'Found 2 records in users.' },
+          { role: AssistantRole.ASSISTANT, content: 'Found 2 records in users.' },
         ],
         checkpoint: {
-          reason: 'user_continue',
-          stage: 'finalize',
+          reason: CheckpointReason.USER_CONTINUE,
+          stage: RuntimeStage.FINALIZE,
           resumePrompt: 'Continue from users listing context.',
           memory: {
             listing: {
@@ -562,11 +570,11 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'what about that one?',
         history: [
-          { role: 'assistant', content: 'For users, record 2 email: second@example.com' },
+          { role: AssistantRole.ASSISTANT, content: 'For users, record 2 email: second@example.com' },
         ],
         checkpoint: {
-          reason: 'user_continue',
-          stage: 'finalize',
+          reason: CheckpointReason.USER_CONTINUE,
+          stage: RuntimeStage.FINALIZE,
           resumePrompt: 'Continue from users listing context.',
           memory: {
             listing: {
@@ -667,8 +675,8 @@ describe('runtime classifier and fallback behavior', () => {
         message: 'what is the total?',
         agentMode: 'basic',
         checkpoint: {
-          reason: 'user_continue',
-          stage: 'finalize',
+          reason: CheckpointReason.USER_CONTINUE,
+          stage: RuntimeStage.FINALIZE,
           resumePrompt: 'Continue the conversation naturally.',
           memory: {
             factual: {
@@ -730,10 +738,10 @@ describe('runtime classifier and fallback behavior', () => {
       {
         message: 'http://localhost:3000/examples/roofing',
         history: [
-          { role: 'user', content: 'change "07000 000001" to "07000 000002"' },
-          { role: 'assistant', content: 'Need one detail to continue.' },
+          { role: AssistantRole.USER, content: 'change "07000 000001" to "07000 000002"' },
+          { role: AssistantRole.ASSISTANT, content: 'Need one detail to continue.' },
         ],
-        checkpoint: { reason: 'clarification_needed', stage: 'clarify', resumePrompt: 'continue' },
+        checkpoint: { reason: CheckpointReason.CLARIFICATION_NEEDED, stage: RuntimeStage.CLARIFY, resumePrompt: 'continue' },
       },
       depsWithTools,
     );

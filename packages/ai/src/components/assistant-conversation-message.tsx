@@ -27,7 +27,7 @@ export class AssistantConversationMessage extends PureReactor {
   }
 
   private get isSystem(): boolean {
-    return this.entry.role === 'system';
+    return this.entry.role === AssistantRole.SYSTEM;
   }
 
   private get showMetaRow(): boolean {

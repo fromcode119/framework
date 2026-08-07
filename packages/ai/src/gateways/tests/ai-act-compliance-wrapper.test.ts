@@ -1,6 +1,5 @@
 import { CapabilityTier } from '@ai/api/forge/enums/capability-tier.enum';
 import { AssistantRole } from '@ai/enums/assistant-role.enum';
-import { describe, expect, it } from 'vitest';
 import { AiActComplianceWrapper } from '@ai/gateways/ai-act-compliance-wrapper';
 import type { IAssistantClient } from '@ai/interfaces/assistant-client.interface';
 function innerReturning(content: string): IAssistantClient {
@@ -13,7 +12,7 @@ describe('AiActComplianceWrapper', () => {
     const res = await wrapped.chat({ messages: [{ role: AssistantRole.USER, content: 'hi' }] });
     expect(res.content).toBe('the answer');
     expect(res.model).toBe('test-model');
-    expect(res.aiAct?.riskTier).toBe('limited');
+    expect(res.aiAct?.riskTier).toBe(CapabilityTier.LIMITED);
     expect(res.aiAct?.disclosure).toContain('Art. 50');
     expect(typeof res.aiAct?.loggedAt).toBe('string');
   });
@@ -21,7 +20,7 @@ describe('AiActComplianceWrapper', () => {
   it('marks a high-risk (income-adjacent) call with a human-oversight disclosure', async () => {
     const wrapped = AiActComplianceWrapper.wrap(innerReturning('x'), 'anthropic');
     const res = await wrapped.chat({ messages: [], purpose: 'mlm.copilot', riskTier: CapabilityTier.HIGH });
-    expect(res.aiAct?.riskTier).toBe('high');
+    expect(res.aiAct?.riskTier).toBe(CapabilityTier.HIGH);
     expect(res.aiAct?.disclosure).toContain('Art. 14');
   });
 
@@ -41,7 +40,7 @@ describe('AiActComplianceWrapper', () => {
       const e = entries[0];
       expect(e.provider).toBe('anthropic');
       expect(e.purpose).toBe('mlm.copilot');
-      expect(e.riskTier).toBe('high');
+      expect(e.riskTier).toBe(CapabilityTier.HIGH);
       expect(e.ok).toBe(true);
       expect(e.promptChars).toBe(5);
       expect(e.responseChars).toBe(9);

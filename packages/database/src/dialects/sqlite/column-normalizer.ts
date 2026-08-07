@@ -3,7 +3,7 @@ import { DialectColumnNormalizer } from '@database/dialects/dialect-column-norma
 import { SqliteDateUtils } from '@database/dialects/sqlite/date-utils';
 
 /**
- * SqliteColumnNormalizer - SQLite-specific JSON-column lookup and value coercion.
+ * SqliteColumnNormalizer - SQLite-specific column metadata lookup and value coercion.
  */
 export class SqliteColumnNormalizer extends DialectColumnNormalizer {
   private sqlite: Database.Database;
@@ -13,18 +13,19 @@ export class SqliteColumnNormalizer extends DialectColumnNormalizer {
     this.sqlite = sqlite;
   }
 
-  protected async getJsonColumns(tableName: string): Promise<Set<string>> {
-    const cached = this.jsonColumnsCache.get(tableName);
+  protected async getColumnTypes(tableName: string): Promise<Map<string, string>> {
+    const cached = this.columnTypesCache.get(tableName);
     if (cached) return cached;
 
     const rows = this.sqlite.prepare(`PRAGMA table_info("${tableName.replace(/"/g, '""')}")`).all() as any[];
-    const columns = new Set(
-      (rows || [])
-        .filter((row: any) => String(row?.type || '').toUpperCase().includes('JSON'))
-        .map((row: any) => String(row?.name || '').toLowerCase())
+    const types = new Map<string, string>(
+      (rows || []).map((row: any) => [
+        String(row?.name || '').toLowerCase(),
+        String(row?.type || '').toUpperCase(),
+      ])
     );
-    this.jsonColumnsCache.set(tableName, columns);
-    return columns;
+    this.columnTypesCache.set(tableName, types);
+    return types;
   }
 
   protected normalizeParamValue(value: any): any {

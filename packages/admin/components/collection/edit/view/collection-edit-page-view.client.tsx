@@ -24,6 +24,7 @@ export class CollectionEditPageView extends Reactor {
   @prop declare theme: any;
 
   @state pluginSettings: Record<string, any> = {};
+  @state pluginSettingsSchema: Record<string, any> = {};
   @state status: { type: NotificationType; message: string } | null = null;
   @state loading = !this.isNewEntry || Boolean(this.duplicateFromId);
   @state deleting = false;
@@ -36,6 +37,12 @@ export class CollectionEditPageView extends Reactor {
   @state readOnlyOverridePasswordTarget: { name: string; label: string } | null = null;
   @state readOnlyOverrideVerifying = false;
   @state formData: Record<string, any> = {};
+  /**
+   * The record exactly as loaded (and as last saved). `formData` is compared against this to tell
+   * whether there is anything to save — see {@link CollectionEditDirtyState}. `null` until a record
+   * loads, which is why a failed load claims no unsaved changes.
+   */
+  @state pristineFormData: Record<string, any> | null = null;
   @state saving = false;
   @state fieldErrors: Record<string, string[]> = {};
   @state slugManuallyEdited = false;
@@ -113,7 +120,7 @@ export class CollectionEditPageView extends Reactor {
           <EditFooter
             collection={collection} theme={edit.theme} isNew={edit.isNew} discardHref={`/${pluginSlug}/${slug}`}
             handleSubmit={edit.handleSubmit} changeSummary={edit.changeSummary} setChangeSummary={edit.setChangeSummary} saving={edit.saving}
-            router={edit.router}
+            router={edit.router} isDirty={edit.isDirty}
           />
         )}
 

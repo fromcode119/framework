@@ -1,4 +1,4 @@
-import { ThemeMode } from '@fromcode119/core/client';
+import { ThemeConfigFieldType, ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/reactor';
 import Link from 'next/link';
@@ -9,10 +9,15 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
+import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
+import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 
 export class ThemeSettingsExtensionsPanel extends PureReactor {
-  @prop declare page: any;
-  @prop declare model: any;
+  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
+  declare props: Pick<ThemeSettingsExtensionsPanel, 'page' | 'model'>;
+
+  @prop declare page: IThemeSettingsPageView;
+  @prop declare model: ThemeSettingsRenderModel;
 
   render(): ReactNode {
     const page = this.page;
@@ -36,14 +41,18 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
         </div>
 
         <div className="space-y-5">
-          {Object.entries(groupedThemeSettings).map(([group, keys]: [string, any]) => (
+          {Object.entries(groupedThemeSettings).map(([group, keys]) => (
             <div key={group} className="space-y-4">
               <h4 className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{group}</h4>
-              {keys.map((key: string) => {
+              {keys.map((key) => {
                 const schema = themeSettingsSchema[key];
                 const rawValue = tempSettings[key];
-                const inferredType = schema?.type || (typeof rawValue === 'boolean' ? 'boolean' : typeof rawValue === 'number' ? 'number' : 'text');
-                const type = inferredType as 'text' | 'number' | 'boolean' | 'select' | 'integration' | 'json';
+                // Enum MEMBERS — `ThemeRecordHydrator` resolved `schema.type` at the fetch boundary. The
+                // old `inferredType as 'text' | 'number' | …` cast asserted a union the value never had.
+                const type = schema?.type
+                  ?? (typeof rawValue === 'boolean'
+                    ? ThemeConfigFieldType.BOOLEAN
+                    : typeof rawValue === 'number' ? ThemeConfigFieldType.NUMBER : ThemeConfigFieldType.TEXT);
 
                 return (
                   <div key={key} className={`p-6 ${AdminClass.SURFACE} transition-all ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5' : 'bg-white border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)]'}`}>
@@ -63,25 +72,25 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                       )}
                     </div>
 
-                    {type === 'boolean' ? (
+                    {type === ThemeConfigFieldType.BOOLEAN ? (
                       <Switch checked={Boolean(rawValue)} onChange={(checked) => page.handleSettingChange(key, checked)} />
-                    ) : type === 'select' ? (
+                    ) : type === ThemeConfigFieldType.SELECT ? (
                       <Select
                         value={String(rawValue ?? '')}
                         onChange={(nextValue) => page.handleSettingChange(key, String(nextValue ?? ''))}
-                        options={(schema?.options || []).map((opt: any) => ({ value: String(opt.value), label: opt.label }))}
+                        options={(schema?.options || []).map((opt) => ({ value: String(opt.value), label: opt.label }))}
                         placeholder={schema?.placeholder || 'Select value'}
                         searchable={false}
                         theme={adminTheme}
                         className="w-full"
                       />
-                    ) : type === 'number' ? (
+                    ) : type === ThemeConfigFieldType.NUMBER ? (
                       <NumberStepper
                         min={0}
-                        value={rawValue ?? ''}
+                        value={typeof rawValue === 'number' ? rawValue : String(rawValue ?? '')}
                         onChange={(v) => page.handleSettingChange(key, v === '' ? '' : Number(v))}
                       />
-                    ) : type === 'json' ? (
+                    ) : type === ThemeConfigFieldType.JSON ? (
                       <textarea
                         rows={4}
                         value={typeof rawValue === 'string' ? rawValue : JSON.stringify(rawValue ?? {}, null, 2)}
@@ -92,9 +101,9 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                     ) : (
                       <input
                         type="text"
-                        value={rawValue ?? ''}
+                        value={String(rawValue ?? '')}
                         onChange={(e) => page.handleSettingChange(key, e.target.value)}
-                        placeholder={schema?.placeholder || (type === 'integration' ? 'Integration value' : '')}
+                        placeholder={schema?.placeholder || (type === ThemeConfigFieldType.INTEGRATION ? 'Integration value' : '')}
                         className={`w-full ${AdminClass.SURFACE} px-4 py-2 text-sm font-semibold border ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/50 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                       />
                     )}

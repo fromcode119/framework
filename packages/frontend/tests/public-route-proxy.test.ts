@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PublicRouteProxy } from '@/lib/public-route-proxy';
 import { ServerApiUtils } from '@/lib/server-api';
+import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
 
 vi.mock('next/headers', () => ({
   headers: vi.fn(),
@@ -18,7 +19,7 @@ describe('PublicRouteProxy', () => {
       'x-forwarded-proto': 'https',
     }));
     vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
-    vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
+    vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(ServerFetchOutcome.resolved({
       plugins: [
         {
           slug: 'content',
@@ -32,7 +33,7 @@ describe('PublicRouteProxy', () => {
           },
         },
       ],
-    });
+    }));
     vi.spyOn(ServerApiUtils, 'buildPluginPath').mockReturnValue('/api/v1/plugins/content/feed.xml');
     vi.spyOn(ServerApiUtils, 'serverFetchResponse').mockResolvedValue(
       new Response('<feed />', {
@@ -70,7 +71,7 @@ describe('PublicRouteProxy', () => {
   it('returns a gateway error when the upstream public route is unavailable', async () => {
     vi.mocked(headers).mockResolvedValue(new Headers({ host: 'frontend.framework.local' }));
     vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
-    vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
+    vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(ServerFetchOutcome.resolved({
       plugins: [
         {
           slug: 'content',
@@ -84,7 +85,7 @@ describe('PublicRouteProxy', () => {
           },
         },
       ],
-    });
+    }));
     vi.spyOn(ServerApiUtils, 'buildPluginPath').mockReturnValue('/api/v1/plugins/content/directory.xml');
     vi.spyOn(ServerApiUtils, 'serverFetchResponse').mockResolvedValue(null);
 
@@ -97,11 +98,25 @@ describe('PublicRouteProxy', () => {
 
   it('returns not found when no plugin claims the requested public route', async () => {
     vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
-    vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({ plugins: [] });
+    vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(ServerFetchOutcome.resolved({ plugins: [] }));
 
     const response = await PublicRouteProxy.getResponse('catalog.xml');
 
     expect(response.status).toBe(404);
     expect(await response.text()).toBe('Not found');
+  });
+
+  it('returns a gateway error, NOT a 404, when the route table itself is unreachable', async () => {
+    vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(
+      ServerFetchOutcome.unreachable(new TypeError('fetch failed')),
+    );
+
+    const response = await PublicRouteProxy.getResponse('sitemap.xml');
+
+    // A 404 here would ask crawlers to delist a live sitemap that the API simply could not
+    // be asked about. 502 is the honest, retryable answer.
+    expect(response.status).toBe(502);
+    expect(await response.text()).toBe('Upstream public route table unavailable');
   });
 });

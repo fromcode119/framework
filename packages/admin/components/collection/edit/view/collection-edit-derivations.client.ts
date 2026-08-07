@@ -4,6 +4,7 @@ import { IField } from '@fromcode119/core/client';
 
 import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
+import { CollectionEditDirtyState } from '@/components/collection/edit/view/collection-edit-dirty-state.client';
 
 /**
  * Pure, render-time derivations for the collection edit page (field sections, resolved title, status
@@ -70,6 +71,7 @@ export class CollectionEditDerivations {
       hasDisablePermalink: collection?.fields.some((f: any) => f.name === 'disablePermalink'),
       showPreview: canPreviewCollection && !isNew, showPermalink, isFullWidth,
       hideFooter: (collection?.admin as any)?.hideFooter === true,
+      isDirty: CollectionEditDirtyState.isDirty(formData, self.state.pristineFormData, isNew),
       hasSidebarFields, renderSidebar: !isFullWidth,
       hasBuiltInSidebarContent: showPermalink || hasSidebarFields || !isNew
     };

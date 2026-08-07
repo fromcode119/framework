@@ -36,6 +36,7 @@ export class ReactExportSourceBuilder {
     'RootFramework',
     'CollectionQueryUtils',
     'BrowserLocalization',
+    'AdminComponentRegistry',
     'AsyncDataController',
     'LazyComponentLoaderService',
     'LazyLoadClass',

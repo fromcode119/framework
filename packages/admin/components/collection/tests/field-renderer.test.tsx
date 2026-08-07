@@ -4,9 +4,20 @@ import { describe, it, expect, vi } from 'vitest';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 
 // Mock usePlugins
-vi.mock('@fromcode119/react', () => {
+vi.mock('@fromcode119/react', async () => {
+  const React = await import('react');
   const MockIcon = () => <div data-testid="mock-icon" />;
   return {
+    /**
+     * `FieldRenderer` is a `PluginComponent` subclass, so the mock has to supply a real base CLASS —
+     * the suite omitted it and failed at import. It never surfaced because no vitest project collected
+     * `.tsx` files, so this suite had never run at all.
+     */
+    PluginComponent: class extends React.Component<any> {
+      get plugins() { return { collections: [], fieldComponents: {} }; }
+      get collections() { return []; }
+      get globalSettings() { return {}; }
+    },
     ContextHooks: {
       usePlugins: vi.fn(() => ({
         collections: [],

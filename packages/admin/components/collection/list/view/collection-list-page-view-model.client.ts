@@ -31,6 +31,7 @@ export class CollectionListPageViewModelBuilder {
       router, settings, theme, columnsMenuRef: self.columnsMenuRef, collection, resolvedSlug, slotSlug,
       pageSize: self.pageSize, frontendUrl,
       data: self.state.data, pluginSettings: self.state.pluginSettings, total: self.state.total, loading: self.state.loading,
+      loadError: self.state.loadError,
       search: self.state.search, setSearch: (v: any) => self.updateState('search', v),
       page: self.state.page, setPage: (v: any) => self.updateState('page', v),
       sort: self.state.sort, handleSort: (newSort: string) => self.handleSort(newSort),

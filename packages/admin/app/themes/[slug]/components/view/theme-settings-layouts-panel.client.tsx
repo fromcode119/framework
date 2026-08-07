@@ -6,10 +6,15 @@ import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeSettingsConstants } from '@/app/themes/[slug]/components/constants/theme-settings.constants';
 import { AdminClass } from '@/lib/admin-class';
+import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
+import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 
 export class ThemeSettingsLayoutsPanel extends PureReactor {
-  @prop declare page: any;
-  @prop declare model: any;
+  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
+  declare props: Pick<ThemeSettingsLayoutsPanel, 'page' | 'model'>;
+
+  @prop declare page: IThemeSettingsPageView;
+  @prop declare model: ThemeSettingsRenderModel;
 
   render(): ReactNode {
     const page = this.page;
@@ -31,7 +36,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {ThemeSettingsConstants.CORE_LAYOUTS.map(layout => {
-              const activeLayout = themeDetail.layouts?.find((l: any) => l.name === tempLayouts[layout.id]);
+              const activeLayout = themeDetail.layouts?.find((l) => l.name === tempLayouts[layout.id]);
               return (
                 <div key={layout.id} className={`flex flex-col p-5 rounded-xl transition-all duration-500 border ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5 focus-within:border-purple-500/30' : 'bg-white border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] focus-within:shadow-xl focus-within:shadow-purple-500/10 focus-within:border-purple-500/20'}`}>
                   <div className="flex items-start justify-between mb-4">
@@ -52,7 +57,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
                       onChange={(nextValue) => page.handleLayoutChange(layout.id, String(nextValue || ''))}
                       options={[
                         { value: '', label: 'System Default' },
-                        ...(themeDetail.layouts?.map((l: any) => ({ value: l.name, label: l.label })) || [])
+                        ...(themeDetail.layouts?.map((l) => ({ value: l.name, label: l.label })) || [])
                       ]}
                       placeholder="System Default"
                       searchable={false}
@@ -81,7 +86,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {themeDetail.overrides.map((o: any) => (
+              {themeDetail.overrides.map((o) => (
                 <div key={o.name} className={`p-5 rounded-xl border flex items-center gap-3 ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50/50 border-slate-100 shadow-sm'}`}>
                   <div className="h-6 w-6 rounded-full bg-amber-500/20 flex items-center justify-center">
                     <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />

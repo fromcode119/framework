@@ -27,14 +27,25 @@ export interface IDatabaseManager {
   connect(): Promise<void>;
   
   // High-level agnostic API
-  find(tableOrName: any, options?: { 
-    where?: any; 
-    limit?: number; 
-    offset?: number; 
+  find(tableOrName: any, options?: {
+    /**
+     * Filters, ANDed together. A value is either a LITERAL (equality) or an OPERATOR EXPRESSION
+     * whose keys are all operators — `{ createdAt: { gte: from, lte: to } }`, the only way to express
+     * a range. Supported operators: eq, ne, gt, gte, lt, lte. An object mixing operator and
+     * non-operator keys raises rather than being guessed at.
+     */
+    where?: any;
+    limit?: number;
+    offset?: number;
     orderBy?: any;
     columns?: Record<string, boolean>;
     joins?: any[]; // Can be JoinClause[] or Drizzle-style joins
-    /** Push a LIKE/ILIKE filter to the DB. columns are OR-ed, ANDed with where. */
+    /**
+     * Push a LIKE/ILIKE filter to the DB. columns are OR-ed, ANDed with where.
+     * Columns are canonical schema field names and are resolved against the table's real columns;
+     * an unresolvable column raises (UnknownColumnError) rather than silently matching, and a
+     * malformed option raises rather than being dropped (which would return the whole table).
+     */
     search?: { columns: string[]; value: string };
   }): Promise<any[]>;
   

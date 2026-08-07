@@ -1,38 +1,33 @@
 {
   "name": "@fromcode119/core",
-  "version": "0.1.80",
+  "version": "0.1.81",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./utils": {
+      "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.js",
-      "require": "./dist/utils/index.js",
-      "types": "./dist/utils/index.d.ts"
+      "require": "./dist/utils/index.js"
     },
     "./shared": {
+      "types": "./dist/shared.d.ts",
       "import": "./dist/shared.js",
-      "require": "./dist/shared.js",
-      "types": "./dist/shared.d.ts"
+      "require": "./dist/shared.js"
     },
     "./client": {
+      "types": "./dist/client.d.ts",
       "import": "./dist/client.js",
-      "require": "./dist/client.js",
-      "types": "./dist/client.d.ts"
+      "require": "./dist/client.js"
     },
-    "./route-constants": {
-      "import": "./dist/constants/route.constants.js",
-      "require": "./dist/constants/route.constants.js",
-      "types": "./dist/constants/route.constants.d.ts"
-    },
-    "./api-version-defaults": {
-      "import": "./dist/constants/api-version-defaults.constants.js",
-      "require": "./dist/constants/api-version-defaults.constants.js",
-      "types": "./dist/constants/api-version-defaults.constants.d.ts"
+    "./constants/*": {
+      "types": "./dist/constants/*.d.ts",
+      "import": "./dist/constants/*.js",
+      "require": "./dist/constants/*.js"
     }
   },
   "browser": {
@@ -71,7 +66,7 @@
   "scripts": {
     "build": "node ../typor/dist/typor-cli.cjs build && npm run copy:templates",
     "dev": "tsc -w",
-    "test": "vitest run",
+    "test": "vitest run --config ../../vitest.plugins.config.ts --project core",
     "copy:templates": "mkdir -p dist/plugin/services/templates && cp -r src/plugin/services/templates/. dist/plugin/services/templates/",
     "prepack": "npm run copy:templates"
   },

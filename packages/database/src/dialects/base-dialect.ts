@@ -1,6 +1,8 @@
 import { JoinType } from '@database/enums/join-type.enum';
-import { sql, eq } from 'drizzle-orm';
+import { sql, eq, ne, gt, gte, lt, lte } from 'drizzle-orm';
+import { WhereClauseParser } from '@database/dialects/where-clause-parser';
 import { NamingStrategy } from '@database/naming-strategy';
+import type { DialectColumnNormalizer } from '@database/dialects/dialect-column-normalizer';
 import type { IJoinClause } from '@database/interfaces/join-clause.interface';
 import { OrderByBuilder } from '@database/dialects/order-by-builder';
 
@@ -24,15 +26,28 @@ export abstract class BaseDialect {
   /**
    * Build WHERE clause conditions from a plain object
    * Converts { id: 1, status: 'active' } into drizzle condition array
+   *
+   * Keys are canonical camelCase field names; `resolveColumn` maps each to the real column (see there).
+   * Pass `tableOrName` whenever the caller has a drizzle table object so its declared columns win.
    */
-  protected buildWhereConditions(where: any): any[] {
+  protected buildWhereConditions(where: any, tableOrName?: any): any[] {
     if (typeof where !== 'object' || where === null) return [];
     if (Object.getPrototypeOf(where) !== Object.prototype) return [];
 
-    return Object.entries(where).map(([k, v]) =>
-      eq(sql`${sql.identifier(k)}`, v as any)
+    // Same parse as the raw-SQL path, so `{ createdAt: { gte, lte } }` means the same range whether the
+    // caller reached a drizzle table object or a string table name.
+    return WhereClauseParser.parse(where).map((comparison) =>
+      BaseDialect.DRIZZLE_OPERATORS[comparison.operator](
+        this.resolveColumn(comparison.column, tableOrName),
+        comparison.value
+      )
     );
   }
+
+  /** Canonical operator name -> drizzle condition builder, keyed exactly like WhereComparison. */
+  private static readonly DRIZZLE_OPERATORS: Record<string, (column: any, value: any) => any> = {
+    eq, ne, gt, gte, lt, lte,
+  };
 
   /**
    * Build ORDER BY clause from various formats
@@ -58,13 +73,16 @@ export abstract class BaseDialect {
       return { sql: '', values: [] };
     }
 
-    const whereColumns = Object.keys(where);
-    if (whereColumns.length === 0) {
+    const comparisons = WhereClauseParser.parse(where);
+    if (comparisons.length === 0) {
       return { sql: '', values: [] };
     }
 
-    const conditions = whereColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`);
-    const values = whereColumns.map((column) => this.normalizeParamValue(where[column]));
+    const conditions = comparisons.map(
+      (comparison, index) =>
+        `${this.quoteIdentifier(comparison.column)} ${comparison.sqlOperator} ${this.getParamPlaceholder(index + 1)}`
+    );
+    const values = comparisons.map((comparison) => this.normalizeParamValue(comparison.value));
 
     return {
       sql: ` WHERE ${conditions.join(' AND ')}`,
@@ -81,6 +99,72 @@ export abstract class BaseDialect {
   }
 
   /**
+   * Quote one identifier for raw-SQL interpolation, rejecting anything that is not a plain identifier.
+   *
+   * Every raw builder below interpolates column names directly into the statement, so the name is the
+   * one place a caller-supplied string reaches SQL as CODE rather than as a bound parameter. Neither
+   * plain quoting nor drizzle's `sql.identifier` escapes an embedded double quote, so a name carrying
+   * one would close the quoted identifier and inject. Names are canonical schema field names — always
+   * plain identifiers — so anything else is rejected rather than escaped.
+   */
+  protected quoteIdentifier(name: string): string {
+    return `"${NamingStrategy.toSafeColumnIdentifier(name)}"`;
+  }
+
+  /**
+   * Resolve one canonical field name (a `where` key or a `search.columns` entry) to a column expression.
+   *
+   * Callers pass CANONICAL camelCase schema field names; the PHYSICAL column is snake_case. A drizzle
+   * table object keys its columns by that same camelCase name, so prefer the declared property — it
+   * already maps to the right physical column, and it is the only thing that gets a genuinely
+   * camelCase physical column right. When the table object does not declare it — or there is no table
+   * object at all — fall back to a raw identifier, snake_cased: a verbatim camelCase identifier matches
+   * no column, and SQLite does not always reject it but degrades the double-quoted name to a STRING
+   * LITERAL, so the predicate compares the column NAME as text (matching nothing, or every row when the
+   * term is a substring of that name). Postgres/MySQL raise "column does not exist" instead.
+   *
+   * The fallback is shape-checked: `sql.identifier` does NOT escape an embedded double quote, so an
+   * unchecked name would break out of the quoted identifier.
+   */
+  protected resolveColumn(column: string, tableOrName?: any): any {
+    const declared = tableOrName?.[column] ?? tableOrName?.[NamingStrategy.toSnakeCase(column)];
+    if (declared !== undefined && declared !== null) return declared;
+    return sql`${sql.identifier(NamingStrategy.toSafeColumnIdentifier(column))}`;
+  }
+
+  /**
+   * Resolve a `search` option's canonical field names to REAL columns of `tableName`, or throw.
+   *
+   * Every string-table read path funnels through here so an unresolvable search column can never reach
+   * SQL — on SQLite it would degrade to a string literal and silently return the wrong rows. Returns
+   * undefined when there is nothing to search on, so the filter builder omits the clause entirely.
+   */
+  protected async resolveSearchArg(
+    normalizer: DialectColumnNormalizer,
+    tableName: string,
+    search?: { columns: string[]; value: string }
+  ): Promise<{ columns: string[]; value: string } | undefined> {
+    if (search === undefined || search === null) return undefined;
+
+    // A malformed option must not be DISCARDED: dropping it silently turns a filtered request into an
+    // unfiltered one, which answers a search with the entire table — the same silent-wrong-result class
+    // as an unresolvable column. `search: 'term'` (a bare string instead of { columns, value }) is the
+    // shape that actually shipped, so it is named explicitly here.
+    if (!Array.isArray((search as any).columns) || (search as any).columns.length === 0) {
+      throw new Error(
+        `Invalid search option for table "${tableName}": expected { columns: string[], value: string }, ` +
+        `received ${JSON.stringify(search)}. A search with no columns would return the whole table.`
+      );
+    }
+
+    // An empty term is how callers express "no search"; it filters nothing by design.
+    if (!search.value) return undefined;
+
+    const columns = await normalizer.resolveColumnsForTable(tableName, search.columns);
+    return { columns, value: search.value };
+  }
+
+  /**
    * Build a combined WHERE clause from exact matches (where) and LIKE search (search).
    * Exact conditions are ANDed; search columns are OR-ed and ANDed with the rest.
    * Uses getParamPlaceholder() so it works across dialects.
@@ -93,9 +177,11 @@ export abstract class BaseDialect {
     const values: any[] = [];
 
     if (where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-      for (const [column, value] of Object.entries(where)) {
-        values.push(this.normalizeParamValue(value as any));
-        conditions.push(`"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(values.length)}`);
+      for (const comparison of WhereClauseParser.parse(where)) {
+        values.push(this.normalizeParamValue(comparison.value));
+        conditions.push(
+          `${this.quoteIdentifier(comparison.column)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`
+        );
       }
     }
 
@@ -105,7 +191,11 @@ export abstract class BaseDialect {
       const likeParts: string[] = [];
       for (const col of search.columns) {
         values.push(pattern);
-        likeParts.push(`"${col}" ${likeOp} ${this.getParamPlaceholder(values.length)}`);
+        // Snake-cased for the same reason the `where` keys above are: the physical column is
+        // snake_case, and a verbatim camelCase identifier silently degrades to a string literal.
+        // Callers reaching here through `find` have already had these names validated against the
+        // table's real columns (see DialectColumnNormalizer.resolveColumnsForTable).
+        likeParts.push(`${this.quoteIdentifier(col)} ${likeOp} ${this.getParamPlaceholder(values.length)}`);
       }
       conditions.push(`(${likeParts.join(' OR ')})`);
     }
@@ -147,7 +237,7 @@ export abstract class BaseDialect {
     const selectParts: string[] = [];
     if (columns && Object.keys(columns).length > 0) {
       for (const [k, v] of Object.entries(columns)) {
-        if (v) selectParts.push(`"t0"."${NamingStrategy.toSnakeCase(k)}"`);
+        if (v) selectParts.push(`"t0".${this.quoteIdentifier(k)}`);
       }
     } else {
       selectParts.push('"t0".*');
@@ -155,7 +245,10 @@ export abstract class BaseDialect {
     for (let i = 0; i < joins.length; i++) {
       const alias = `t${i + 1}`;
       for (const col of joins[i].columns) {
-        selectParts.push(`"${alias}"."${NamingStrategy.toSnakeCase(col)}" AS "j${i}__${col}"`);
+        // The AS alias keeps the caller's spelling — `processJoinedRows` turns it back into the result
+        // key, so snake-casing it here would silently rename every joined field. Safe to interpolate:
+        // `quoteIdentifier` above has already rejected anything that is not a plain identifier.
+        selectParts.push(`"${alias}".${this.quoteIdentifier(col)} AS "j${i}__${col}"`);
       }
     }
 
@@ -166,17 +259,17 @@ export abstract class BaseDialect {
       const join = joins[i];
       const alias = `t${i + 1}`;
       const joinType = join.type === JoinType.LEFT ? 'LEFT JOIN' : 'INNER JOIN';
-      sqlStr += ` ${joinType} "${join.table}" "${alias}" ON "t0"."${NamingStrategy.toSnakeCase(join.on.from)}" = "${alias}"."${NamingStrategy.toSnakeCase(join.on.to)}"`;
+      sqlStr += ` ${joinType} "${join.table}" "${alias}" ON "t0".${this.quoteIdentifier(join.on.from)} = "${alias}".${this.quoteIdentifier(join.on.to)}`;
     }
 
     // WHERE clause (main table columns only)
     const values: any[] = [];
     if (where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-      const entries = Object.entries(where);
-      if (entries.length > 0) {
-        const conditions = entries.map(([k, v]) => {
-          values.push(this.normalizeParamValue(v));
-          return `"t0"."${NamingStrategy.toSnakeCase(k)}" = ${this.getParamPlaceholder(values.length)}`;
+      const comparisons = WhereClauseParser.parse(where);
+      if (comparisons.length > 0) {
+        const conditions = comparisons.map((comparison) => {
+          values.push(this.normalizeParamValue(comparison.value));
+          return `"t0".${this.quoteIdentifier(comparison.column)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`;
         });
         sqlStr += ` WHERE ${conditions.join(' AND ')}`;
       }
@@ -188,12 +281,12 @@ export abstract class BaseDialect {
         const parts = this.orderByBuilder.parseOrderByString(orderBy);
         if (parts.length > 0) {
           const clauses = parts
-            .map((part) => `"t0"."${NamingStrategy.toSnakeCase(part.column)}" ${part.direction}`);
+            .map((part) => `"t0".${this.quoteIdentifier(part.column)} ${part.direction}`);
           sqlStr += ` ORDER BY ${clauses.join(', ')}`;
         }
       } else if (typeof orderBy === 'object' && !Array.isArray(orderBy)) {
         const clauses = Object.entries(orderBy)
-          .map(([k, v]) => `"t0"."${NamingStrategy.toSnakeCase(k)}" ${this.orderByBuilder.normalizeOrderDirection(v)}`);
+          .map(([k, v]) => `"t0".${this.quoteIdentifier(k)} ${this.orderByBuilder.normalizeOrderDirection(v)}`);
         sqlStr += ` ORDER BY ${clauses.join(', ')}`;
       }
     }

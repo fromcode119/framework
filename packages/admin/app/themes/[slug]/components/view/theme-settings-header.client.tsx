@@ -6,16 +6,21 @@ import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeState } from '@fromcode119/core/client';
 import { Reactor, prop } from '@fromcode119/reactor';
+import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
+import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 
 export class ThemeSettingsHeader extends Reactor {
-  @prop declare page: any;
-  @prop declare model: any;
+  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
+  declare props: Pick<ThemeSettingsHeader, 'page' | 'model'>;
+
+  @prop declare page: IThemeSettingsPageView;
+  @prop declare model: ThemeSettingsRenderModel;
 
   render(): ReactNode {
     const page = this.page;
     const model = this.model;
     const { adminTheme, themeDetail, marketplaceVersion } = model;
-    const { activeTab, isUpdating, isSaving } = page.state;
+    const { activeTab, isUpdating, isSaving } = page;
     return (
       <div className="flex items-center gap-4">
         <Link
@@ -29,8 +34,11 @@ export class ThemeSettingsHeader extends Reactor {
             <h1 className={`text-xl font-bold tracking-tight truncate ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {themeDetail.name}
             </h1>
-            <Badge variant={ThemeState.resolve(themeDetail.state) === ThemeState.ACTIVE ? 'success' : 'gray'}>
-              {themeDetail.state}
+            {/* `.value`, not the member: the controller hydrates `themeDetail.state` into a `ThemeState`
+                at the fetch boundary, and an Enum handed to React as a child is an object — it threw
+                "Minified React error #31 … object with keys {value}" and blanked the whole page. */}
+            <Badge variant={themeDetail.state === ThemeState.ACTIVE ? 'success' : 'gray'}>
+              {themeDetail.state.value}
             </Badge>
           </div>
           <div className="flex items-center gap-2 mt-1">

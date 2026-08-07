@@ -1,49 +1,51 @@
-jest.mock('@fromcode119/core', () => ({
-  CoreServices: {
-    getInstance: jest.fn(),
-    reset: jest.fn(),
-  },
-  PluginState: {
-    ACTIVE: 'active',
-  },
-  EnvUtils: {
-    number: jest.fn((name: string, fallback: number) => {
-      const raw = process.env[name];
-      if (raw === undefined || raw === null || String(raw).trim() === '') return fallback;
-      const parsed = Number(String(raw).trim());
-      return Number.isFinite(parsed) ? parsed : fallback;
-    }),
-  },
-  CoercionUtils: {
-    toBoolean: jest.fn((value: unknown, fallback = false) => {
-      if (typeof value === 'boolean') return value;
-      if (typeof value === 'number' && Number.isFinite(value)) return value > 0;
-      const normalized = String(value ?? '').trim().toLowerCase();
-      if (['true', '1', '1.0', 'yes', 'on', 'enabled', 'active'].includes(normalized)) return true;
-      if (['false', '0', '0.0', 'no', 'off', 'disabled', 'inactive'].includes(normalized)) return false;
-      return fallback;
-    }),
-  },
-  SystemConstants: {
-    TABLE: {
-      META: 'meta',
+/**
+ * Mock ONLY the `CoreServices` singleton — everything else is the REAL module.
+ *
+ * This used to be a hand-rolled fake that re-declared `PluginState`, `CoercionUtils`, `EnvUtils` and
+ * `SystemConstants` as plain objects. Two things went wrong with that:
+ *
+ *  1. When the plain-enum -> reactor `Enum` migration added `PluginDefaultPageContractResolutionStatus`
+ *     and `PluginDefaultPageContractMaterializationMode` to core, the fake was never updated, so vitest
+ *     threw `No "PluginDefaultPageContractResolutionStatus" export is defined on the mock` and ALL SEVEN
+ *     routing tests were dark — the permalink / default-page-contract routing surface was verified by
+ *     nothing.
+ *  2. The fake declared `PluginState.ACTIVE` as the raw string `'active'`, so the suite asserted against
+ *     a contract production does not have: the real members are reactor `Enum` SINGLETONS, and
+ *     `member === 'active'` is ALWAYS false. A fixture built from raw strings can pass here and still
+ *     be wrong in production.
+ *
+ * Spreading the actual module means the mock can never drift from core's exports again, and the enum
+ * identity comparisons in `ResolutionService` (`contract.status !== …READY`) are exercised for real.
+ */
+vi.mock('@fromcode119/core', async () => {
+  const actual = await vi.importActual<Record<string, unknown>>('@fromcode119/core');
+  return {
+    ...actual,
+    CoreServices: {
+      getInstance: vi.fn(),
+      reset: vi.fn(),
     },
-  },
-}));
+  };
+});
 
-import { CoreServices } from '@fromcode119/core';
-import { ResolutionService } from '../src/services/resolution-service';
+import {
+  CoreServices,
+  PluginDefaultPageContractMaterializationMode,
+  PluginDefaultPageContractResolutionStatus,
+  PluginState,
+} from '@fromcode119/core';
+import { ResolutionService } from '@api/services/resolution-service';
 
 describe('ResolutionService default page contract routing', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
-    jest.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
     CoreServices.reset();
   });
 
   it('resolves singleton aliases through the contract canonical page slug', async () => {
     const restController = {
-      find: jest.fn().mockImplementation((_collection: any, options: any) => {
+      find: vi.fn().mockImplementation((_collection: any, options: any) => {
         if (options?.query?.slug === 'numerology') {
           return Promise.resolve({ docs: [] });
         }
@@ -56,8 +58,8 @@ describe('ResolutionService default page contract routing', () => {
       }),
     };
     const manager: any = {
-      db: { find: jest.fn().mockResolvedValue([]) },
-      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'ecommerce' } }]),
+      db: { find: vi.fn().mockResolvedValue([]) },
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'ecommerce' } }]),
       registeredCollections: new Map([
         [
           'pages',
@@ -73,18 +75,18 @@ describe('ResolutionService default page contract routing', () => {
       ]),
     };
     const themeManager: any = {
-      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+      getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
     };
 
-    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-      redirectResolvers: { resolve: jest.fn(async () => null) },
+    vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
-        resolveAll: jest.fn().mockReturnValue([
+        resolveAll: vi.fn().mockReturnValue([
           {
             install: true,
-            status: 'ready',
-            materializationMode: 'singleton-document',
+            status: PluginDefaultPageContractResolutionStatus.READY,
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/shop',
             effectiveAliases: ['/numerology'],
           },
@@ -110,11 +112,11 @@ describe('ResolutionService default page contract routing', () => {
 
   it('skips disabled singleton contracts during contract-aware resolution', async () => {
     const restController = {
-      find: jest.fn(),
+      find: vi.fn(),
     };
     const manager: any = {
-      db: { find: jest.fn().mockResolvedValue([]) },
-      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'privacy' } }]),
+      db: { find: vi.fn().mockResolvedValue([]) },
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'privacy' } }]),
       registeredCollections: new Map([
         [
           'pages',
@@ -130,18 +132,18 @@ describe('ResolutionService default page contract routing', () => {
       ]),
     };
     const themeManager: any = {
-      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+      getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
     };
 
-    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-      redirectResolvers: { resolve: jest.fn(async () => null) },
+    vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
-        resolveAll: jest.fn().mockReturnValue([
+        resolveAll: vi.fn().mockReturnValue([
           {
             install: false,
-            status: 'skipped',
-            materializationMode: 'singleton-document',
+            status: PluginDefaultPageContractResolutionStatus.SKIPPED,
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/privacy-policy',
             effectiveAliases: [],
           },
@@ -157,7 +159,7 @@ describe('ResolutionService default page contract routing', () => {
 
   it('resolves parameterized detail families through the contract record collection', async () => {
     const restController = {
-      find: jest.fn().mockImplementation((collection: any, options: any) => {
+      find: vi.fn().mockImplementation((collection: any, options: any) => {
         if (collection.slug === 'ecommerce-products') {
           return Promise.resolve({ docs: [{ id: 7, slug: 'lyubov', name: 'Love Box' }] });
         }
@@ -166,8 +168,8 @@ describe('ResolutionService default page contract routing', () => {
       }),
     };
     const manager: any = {
-      db: { find: jest.fn().mockResolvedValue([]) },
-      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'ecommerce' } }]),
+      db: { find: vi.fn().mockResolvedValue([]) },
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'ecommerce' } }]),
       registeredCollections: new Map([
         [
           'catalog',
@@ -183,18 +185,18 @@ describe('ResolutionService default page contract routing', () => {
       ]),
     };
     const themeManager: any = {
-      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+      getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
     };
 
-    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-      redirectResolvers: { resolve: jest.fn(async () => null) },
+    vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
-        resolveAll: jest.fn().mockReturnValue([
+        resolveAll: vi.fn().mockReturnValue([
           {
             install: true,
-            status: 'ready',
-            materializationMode: 'singleton-document',
+            status: PluginDefaultPageContractResolutionStatus.READY,
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/shop/:slug',
             effectiveAliases: ['/cosmic-box/:slug'],
             recordCollection: 'catalog',
@@ -216,7 +218,7 @@ describe('ResolutionService default page contract routing', () => {
 
   it('prefers exact permalink pages before contract detail fallback', async () => {
     const restController = {
-      find: jest.fn().mockImplementation((collection: any, options: any) => {
+      find: vi.fn().mockImplementation((collection: any, options: any) => {
         if (collection.slug === 'pages') {
           if (options?.query?.customPermalink === '/cosmic-box/lyubov') {
             return Promise.resolve({ docs: [{ id: 18, slug: 'cosmic-box/lyubov', customPermalink: '/cosmic-box/lyubov' }] });
@@ -231,8 +233,8 @@ describe('ResolutionService default page contract routing', () => {
       }),
     };
     const manager: any = {
-      db: { find: jest.fn().mockResolvedValue([]) },
-      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'ecommerce' } }]),
+      db: { find: vi.fn().mockResolvedValue([]) },
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'ecommerce' } }]),
       registeredCollections: new Map([
         [
           'pages',
@@ -259,18 +261,18 @@ describe('ResolutionService default page contract routing', () => {
       ]),
     };
     const themeManager: any = {
-      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+      getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
     };
 
-    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-      redirectResolvers: { resolve: jest.fn(async () => null) },
+    vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
-        resolveAll: jest.fn().mockReturnValue([
+        resolveAll: vi.fn().mockReturnValue([
           {
             install: true,
-            status: 'ready',
-            materializationMode: 'singleton-document',
+            status: PluginDefaultPageContractResolutionStatus.READY,
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/shop/:slug',
             effectiveAliases: ['/cosmic-box/:slug'],
             recordCollection: 'catalog',
@@ -292,7 +294,7 @@ describe('ResolutionService default page contract routing', () => {
 
   it('returns the CMS page for /shop when an exact page permalink exists and preserves safe contract presentation', async () => {
     const restController = {
-      find: jest.fn().mockImplementation((collection: any, options: any) => {
+      find: vi.fn().mockImplementation((collection: any, options: any) => {
         if (collection.slug === 'pages' && options?.query?.customPermalink === '/shop') {
           return Promise.resolve({ docs: [{ id: 9, slug: 'shop', customPermalink: '/shop' }] });
         }
@@ -305,8 +307,8 @@ describe('ResolutionService default page contract routing', () => {
       }),
     };
     const manager: any = {
-      db: { find: jest.fn().mockResolvedValue([]) },
-      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'catalog-module' } }]),
+      db: { find: vi.fn().mockResolvedValue([]) },
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'catalog-module' } }]),
       registeredCollections: new Map([
         [
           'pages',
@@ -333,18 +335,18 @@ describe('ResolutionService default page contract routing', () => {
       ]),
     };
     const themeManager: any = {
-      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+      getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
     };
 
-    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-      redirectResolvers: { resolve: jest.fn(async () => null) },
+    vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
-        resolveAll: jest.fn().mockReturnValue([
+        resolveAll: vi.fn().mockReturnValue([
           {
             install: true,
-            status: 'ready',
-            materializationMode: 'singleton-document',
+            status: PluginDefaultPageContractResolutionStatus.READY,
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/shop',
             effectiveAliases: [],
             effectiveTitle: 'Catalog Contract Page',
@@ -374,7 +376,7 @@ describe('ResolutionService default page contract routing', () => {
 
   it('falls back to the enabled contract for /shop when no exact CMS page exists', async () => {
     const restController = {
-      find: jest.fn().mockImplementation((collection: any, options: any) => {
+      find: vi.fn().mockImplementation((collection: any, options: any) => {
         if (collection.slug === 'pages' && options?.query?.customPermalink === '/shop') {
           return Promise.resolve({ docs: [] });
         }
@@ -387,8 +389,8 @@ describe('ResolutionService default page contract routing', () => {
       }),
     };
     const manager: any = {
-      db: { find: jest.fn().mockResolvedValue([]) },
-      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'catalog-module' } }]),
+      db: { find: vi.fn().mockResolvedValue([]) },
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'catalog-module' } }]),
       registeredCollections: new Map([
         [
           'pages',
@@ -404,18 +406,18 @@ describe('ResolutionService default page contract routing', () => {
       ]),
     };
     const themeManager: any = {
-      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+      getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
     };
 
-    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-      redirectResolvers: { resolve: jest.fn(async () => null) },
+    vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
-        resolveAll: jest.fn().mockReturnValue([
+        resolveAll: vi.fn().mockReturnValue([
           {
             install: true,
-            status: 'ready',
-            materializationMode: 'singleton-document',
+            status: PluginDefaultPageContractResolutionStatus.READY,
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/shop',
             effectiveAliases: [],
             pluginSlug: 'catalog-module',
@@ -442,7 +444,7 @@ describe('ResolutionService default page contract routing', () => {
 
   it('does not fall back for /shop when the matching contract is disabled', async () => {
     const restController = {
-      find: jest.fn().mockImplementation((collection: any, options: any) => {
+      find: vi.fn().mockImplementation((collection: any, options: any) => {
         if (collection.slug === 'pages' && options?.query?.customPermalink === '/shop') {
           return Promise.resolve({ docs: [] });
         }
@@ -451,8 +453,8 @@ describe('ResolutionService default page contract routing', () => {
       }),
     };
     const manager: any = {
-      db: { find: jest.fn().mockResolvedValue([]) },
-      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'catalog-module' } }]),
+      db: { find: vi.fn().mockResolvedValue([]) },
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'catalog-module' } }]),
       registeredCollections: new Map([
         [
           'pages',
@@ -468,18 +470,18 @@ describe('ResolutionService default page contract routing', () => {
       ]),
     };
     const themeManager: any = {
-      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+      getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
     };
 
-    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-      redirectResolvers: { resolve: jest.fn(async () => null) },
+    vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
-        resolveAll: jest.fn().mockReturnValue([
+        resolveAll: vi.fn().mockReturnValue([
           {
             install: false,
-            status: 'skipped',
-            materializationMode: 'singleton-document',
+            status: PluginDefaultPageContractResolutionStatus.SKIPPED,
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/shop',
             effectiveAliases: [],
             pluginSlug: 'catalog-module',
@@ -495,7 +497,7 @@ describe('ResolutionService default page contract routing', () => {
 
   it('does not resolve detail contracts for records with disabled permalinks', async () => {
     const restController = {
-      find: jest.fn().mockImplementation((collection: any) => {
+      find: vi.fn().mockImplementation((collection: any) => {
         if (collection.slug === 'ecommerce-products') {
           return Promise.resolve({ docs: [{ id: 7, slug: 'lyubov', disablePermalink: '1.0' }] });
         }
@@ -505,10 +507,10 @@ describe('ResolutionService default page contract routing', () => {
     };
     const manager: any = {
       db: {
-        find: jest.fn().mockResolvedValue([]),
-        findOne: jest.fn().mockResolvedValue({ id: 7, disablePermalink: '1.0' }),
+        find: vi.fn().mockResolvedValue([]),
+        findOne: vi.fn().mockResolvedValue({ id: 7, disablePermalink: '1.0' }),
       },
-      getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'ecommerce' } }]),
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'ecommerce' } }]),
       registeredCollections: new Map([
         [
           'catalog',
@@ -524,18 +526,18 @@ describe('ResolutionService default page contract routing', () => {
       ]),
     };
     const themeManager: any = {
-      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+      getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
     };
 
-    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-      redirectResolvers: { resolve: jest.fn(async () => null) },
+    vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
-        resolveAll: jest.fn().mockReturnValue([
+        resolveAll: vi.fn().mockReturnValue([
           {
             install: true,
-            status: 'ready',
-            materializationMode: 'singleton-document',
+            status: PluginDefaultPageContractResolutionStatus.READY,
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/shop/:slug',
             effectiveAliases: [],
             recordCollection: 'catalog',
@@ -553,7 +555,7 @@ describe('ResolutionService default page contract routing', () => {
 
   it('does not let path-only analytics records hijack public URLs', async () => {
     const restController = {
-      find: jest.fn().mockImplementation((collection: any, options: any) => {
+      find: vi.fn().mockImplementation((collection: any, options: any) => {
         if (collection.slug === 'pages' && options?.query?.slug === 'courses/21-dni-kurs-za-finansovo-izobilie') {
           return Promise.resolve({ docs: [] });
         }
@@ -566,10 +568,10 @@ describe('ResolutionService default page contract routing', () => {
       }),
     };
     const manager: any = {
-      db: { find: jest.fn().mockResolvedValue([]) },
-      getPlugins: jest.fn().mockReturnValue([
-        { state: 'active', manifest: { slug: 'analytics' } },
-        { state: 'active', manifest: { slug: 'lms' } },
+      db: { find: vi.fn().mockResolvedValue([]) },
+      getPlugins: vi.fn().mockReturnValue([
+        { state: PluginState.ACTIVE, manifest: { slug: 'analytics' } },
+        { state: PluginState.ACTIVE, manifest: { slug: 'lms' } },
       ]),
       registeredCollections: new Map([
         [
@@ -597,18 +599,18 @@ describe('ResolutionService default page contract routing', () => {
       ]),
     };
     const themeManager: any = {
-      getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+      getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
     };
 
-    jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-      contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-      redirectResolvers: { resolve: jest.fn(async () => null) },
+    vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+      contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+      redirectResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
-        resolveAll: jest.fn().mockReturnValue([
+        resolveAll: vi.fn().mockReturnValue([
           {
             install: true,
-            status: 'ready',
-            materializationMode: 'singleton-document',
+            status: PluginDefaultPageContractResolutionStatus.READY,
+            materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/courses/:slug',
             effectiveAliases: [],
             recordCollection: 'courses',

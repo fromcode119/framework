@@ -8,7 +8,12 @@ export class HookManager {
 
   constructor(options: { type?: string, redisUrl?: string, namespace?: string } = {}) {
     this.adapter = HookAdapterFactory.create(options.type, options);
-    this.initDistributed();
+    // A constructor cannot await, so this promise has no caller to reject to. With the Redis adapter,
+    // an unreachable Redis at boot rejected here and — unobserved — killed the process under Node 22.
+    // Log it instead: local hook delivery still works, only cross-instance broadcast is lost.
+    this.initDistributed().catch(err =>
+      console.error('[HookManager] Distributed hook subscription failed; hooks stay local to this instance:', err)
+    );
   }
 
   private async initDistributed() {
@@ -76,9 +81,13 @@ export class HookManager {
       }
     }
 
-    // 3. Broadcast to other instances via adapter
+    // 3. Broadcast to other instances via adapter.
+    // `emit` is synchronous by contract, so the publish cannot be awaited — but it IS async with the
+    // Redis adapter, so an unreachable Redis rejected here on EVERY emitted hook with nobody watching.
     if (!skipDistributed) {
-      this.adapter.publish(event, payload);
+      Promise.resolve(this.adapter.publish(event, payload)).catch(err =>
+        console.error(`[HookManager] Failed to broadcast "${event}" to other instances:`, err)
+      );
     }
   }
 
@@ -103,9 +112,17 @@ export class HookManager {
 
     let currentPayload = payload;
     for (const handler of handlersToCall) {
-      const result = await handler(currentPayload, event);
-      if (result !== undefined) {
-        currentPayload = result;
+      try {
+        const result = await handler(currentPayload, event);
+        if (result !== undefined) {
+          currentPayload = result;
+        }
+      } catch (err) {
+        // A filter that fails must NOT be swallowed — it was asked to vet or transform this payload and
+        // did not, so letting the write proceed would publish unvetted data. Name the event first, then
+        // rethrow: unnamed, this surfaced as an anonymous 500 with no clue which plugin refused.
+        console.error(`[HookManager] Handler for "${event}" threw; aborting the hook chain:`, err);
+        throw err;
       }
     }
 

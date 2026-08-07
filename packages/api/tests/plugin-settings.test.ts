@@ -1,5 +1,5 @@
 
-import { PluginSettingsController } from '../src/controllers/plugins/plugin-settings-controller';
+import { PluginSettingsController } from '@api/controllers/plugins/plugin-settings-controller';
 
 describe('plugin-settings-controller', () => {
   let controller: PluginSettingsController;
@@ -7,7 +7,7 @@ describe('plugin-settings-controller', () => {
 
   beforeEach(() => {
     mockPluginManager = {
-      getPlugins: jest.fn().mockReturnValue([
+      getPlugins: vi.fn().mockReturnValue([
         {
           manifest: {
             slug: 'test-plugin',
@@ -19,15 +19,15 @@ describe('plugin-settings-controller', () => {
           }
         }
       ]),
-      getPluginSettings: jest.fn().mockReturnValue({
+      getPluginSettings: vi.fn().mockReturnValue({
         fields: [
           { name: 'existingKey', type: 'text', defaultValue: 'default' },
           { name: 'newKey', type: 'text', defaultValue: 'newValue' }
         ]
       }),
-      savePluginConfig: jest.fn().mockResolvedValue(true),
-      emit: jest.fn(),
-      createContext: jest.fn().mockReturnValue({})
+      savePluginConfig: vi.fn().mockResolvedValue(true),
+      emit: vi.fn(),
+      createContext: vi.fn().mockReturnValue({})
     };
     controller = new PluginSettingsController(mockPluginManager);
   });
@@ -35,7 +35,7 @@ describe('plugin-settings-controller', () => {
   describe('getSettings', () => {
     it('returns merged settings for a valid plugin', async () => {
       const req: any = { params: { slug: 'test-plugin' } };
-      const res: any = { json: jest.fn() };
+      const res: any = { json: vi.fn() };
 
       await controller.getSettings(req, res);
 
@@ -50,8 +50,8 @@ describe('plugin-settings-controller', () => {
     it('returns 404 for unknown plugin', async () => {
       const req: any = { params: { slug: 'unknown' } };
       const res: any = { 
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn() 
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn() 
       };
 
       await controller.getSettings(req, res);
@@ -66,7 +66,7 @@ describe('plugin-settings-controller', () => {
         params: { slug: 'test-plugin' },
         body: { existingKey: 'updatedValue' }
       };
-      const res: any = { json: jest.fn() };
+      const res: any = { json: vi.fn() };
 
       await controller.updateSettings(req, res);
 
@@ -89,8 +89,8 @@ describe('plugin-settings-controller', () => {
         body: { count: 5 }
       };
       const res: any = { 
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn() 
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn() 
       };
 
       await controller.updateSettings(req, res);
@@ -121,7 +121,7 @@ describe('plugin-settings-controller', () => {
         params: { slug: 'test-plugin' },
         body: { enabled_payment_methods: ['stripe', 'bank_transfer', 'cash_on_delivery'] }
       };
-      const res: any = { json: jest.fn() };
+      const res: any = { json: vi.fn() };
 
       await controller.updateSettings(req, res);
 
@@ -135,7 +135,7 @@ describe('plugin-settings-controller', () => {
   describe('resetSettings', () => {
     it('resets settings to defaults', async () => {
       const req: any = { params: { slug: 'test-plugin' } };
-      const res: any = { json: jest.fn() };
+      const res: any = { json: vi.fn() };
 
       await controller.resetSettings(req, res);
 
@@ -149,8 +149,8 @@ describe('plugin-settings-controller', () => {
     it('successfully exports settings as JSON', async () => {
       const req: any = { params: { slug: 'test-plugin' } };
       const res: any = { 
-        setHeader: jest.fn(),
-        send: jest.fn() 
+        setHeader: vi.fn(),
+        send: vi.fn() 
       };
 
       await controller.exportSettings(req, res);
@@ -166,7 +166,7 @@ describe('plugin-settings-controller', () => {
         params: { slug: 'test-plugin' },
         body: { existingKey: 'importedValue', newKey: 'other' }
       };
-      const res: any = { json: jest.fn() };
+      const res: any = { json: vi.fn() };
 
       await controller.importSettings(req, res);
 
@@ -186,8 +186,8 @@ describe('plugin-settings-controller', () => {
         body: { count: 'not-a-number' }
       };
       const res: any = { 
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn() 
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn() 
       };
 
       await controller.importSettings(req, res);

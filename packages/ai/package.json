@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/ai",
-  "version": "0.1.80",
+  "version": "0.1.81",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -40,9 +40,12 @@
     "@fromcode119/sdk": "*"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.16",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.3.3"
   },
   "publishConfig": {

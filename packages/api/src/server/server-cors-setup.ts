@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import { ApplicationDomainSettingsUtils, ApplicationHostUtils, Logger, SystemConstants } from '@fromcode119/core';
+import { ApplicationDomainSettingsUtils, ApplicationHostUtils, EnvUtils, Logger, SystemConstants } from '@fromcode119/core';
 
 export class ServerCorsSetup {
   constructor(
@@ -16,8 +16,12 @@ export class ServerCorsSetup {
           return callback(null, true);
         }
 
-        const nodeEnv = (process.env.NODE_ENV || 'development').toLowerCase();
-        const isDevelopment = nodeEnv === 'development' || nodeEnv === 'dev' || nodeEnv === 'test';
+        // FAIL CLOSED. This is a `credentials: true` allowlist, so the relaxed branch below hands any
+        // loopback / `*.local` / `*.test` origin a cookie-bearing cross-origin channel. The old
+        // `process.env.NODE_ENV || 'development'` inverted that: an UNSET env var opted into the
+        // relaxation. EnvUtils.isDevelopment() is the framework's env accessor and is false unless
+        // NODE_ENV is explicitly `development`.
+        const isDevelopment = EnvUtils.isDevelopment();
 
         try {
           const url = new URL(origin);

@@ -27,10 +27,12 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
   private __unmountWrapped = false;
   private __uid?: string;
   private readonly __cleanups: Array<() => void> = [];
-  // Reactor's OWN last-seen values for watched keys. The `@state` setter mutates `this.state` in place
-  // (so `this.x++` reads back synchronously), which also mutates the object React later hands back as
-  // `prevState` — making React's prevState useless for change detection. We snapshot watched keys here
-  // instead, so `@watch` fires reliably on real mounts, not only on hand-called componentDidUpdate.
+  // Values written through a `@state` accessor that React has not committed yet — see
+  // `defineStateAccessors`. Reads consult this FIRST so a field reads back what was just assigned.
+  private __pendingState?: Record<string, unknown>;
+  // Reactor's OWN last-seen values for watched keys. React's `prevState` is not dependable here (the
+  // state object is rebuilt per commit and watchers can fire from a hand-called componentDidUpdate),
+  // so we snapshot watched keys ourselves and `@watch` fires reliably on real mounts.
   private readonly __watchPrev: Record<string, unknown> = {};
 
   /**
@@ -76,20 +78,38 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
 
   /** Define `@state` fields as accessors on the prototype, backed by React state, once per class. */
   private static defineStateAccessors(proto: object, keys: string[]): void {
+    type StateHost = {
+      state?: Record<string, unknown>;
+      __mounted?: boolean;
+      __pendingState?: Record<string, unknown>;
+      setState: (s: object, callback?: () => void) => void;
+    };
     for (const key of keys) {
       Object.defineProperty(proto, key, {
         configurable: true,
-        get(this: { state?: Record<string, unknown> }): unknown {
+        get(this: StateHost): unknown {
+          // Pending writes shadow committed state, so a field READS BACK what was just assigned to it
+          // — the decorator's documented contract ("assign it like a normal property", `this.count++`).
+          // Without this, every post-mount write was invisible for the rest of the tick: an admin
+          // detail page assigned `this.routeSlug = params.slug` and the fetch it kicked off one line
+          // later still read `''`, requesting `/api/v1/themes//config` (404) instead of the theme.
+          if (this.__pendingState && key in this.__pendingState) return this.__pendingState[key];
           return this.state ? this.state[key] : undefined;
         },
-        set(this: { state?: Record<string, unknown>; __mounted?: boolean; setState: (s: object) => void }, value: unknown): void {
+        set(this: StateHost, value: unknown): void {
           // MOUNTED: go through setState ONLY. Mutating `this.state` first made the change invisible
           // to `PureReactor.shouldComponentUpdate`, which compares `this.state` with `nextState` —
           // the in-place write meant they already matched, so with unchanged props it returned false
           // and the component NEVER RE-RENDERED. `@state` was silently dead on every PureReactor
-          // (a plain Reactor was fine only because it defines no shouldComponentUpdate).
+          // (a plain Reactor was fine only because it defines no shouldComponentUpdate). The pending
+          // overlay is a SEPARATE object for exactly that reason: it never touches `this.state`.
           if (this.__mounted) {
-            this.setState({ [key]: value });
+            (this.__pendingState ??= {})[key] = value;
+            // Drop the overlay entry once React has committed, so `this.state` is authoritative again
+            // and a later direct `setState` for the same key is not shadowed by a stale pending value.
+            this.setState({ [key]: value }, () => {
+              if (this.__pendingState) delete this.__pendingState[key];
+            });
             return;
           }
           // PRE-MOUNT: no setState available yet, so seed the initial state object directly. This is

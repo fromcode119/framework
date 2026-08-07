@@ -13,19 +13,6 @@ export class AuthControllerCookieInfrastructure extends AuthControllerEmailInfra
     this.clearCookieVariants(res, CookieConstants.ADMIN_EXPORT_AUTH_TOKEN, cookieOptions, false);
   }
 
-  protected clearConflictingSessionCookies(req: Request, res: Response) {
-    const cookieOptions = this.getCookieOptions(req, true);
-
-    if (this.isAdminRequestContext(req)) {
-      this.clearCookieVariants(res, CookieConstants.CLIENT_AUTH_TOKEN, cookieOptions, false);
-      return;
-    }
-
-    this.clearCookieVariants(res, CookieConstants.AUTH_TOKEN, cookieOptions, false);
-    this.clearCookieVariants(res, CookieConstants.AUTH_USER, cookieOptions, false);
-    this.clearCookieVariants(res, CookieConstants.ADMIN_EXPORT_AUTH_TOKEN, cookieOptions, false);
-  }
-
   protected clearCookieVariants(res: Response, name: string, cookieOptions: Record<string, any>, httpOnly: boolean) {
     res.clearCookie(name, { ...cookieOptions, httpOnly });
     const hostOptions = { ...cookieOptions } as any;

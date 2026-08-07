@@ -1,4 +1,4 @@
-import { BackupSectionKey } from '@fromcode119/core';
+import { BackupSectionKey, SnapshotType } from '@fromcode119/core';
 import React from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -40,7 +40,7 @@ export class SystemBackupHooks {
 
       try {
         const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.BACKUPS, { noDedupe: true }) as ISystemBackupListResponseView;
-        setGroups(Array.isArray(response?.groups) ? response.groups : []);
+        setGroups(SystemBackupPageUtils.hydrateGroups(response?.groups));
         setCapabilities(response?.capabilities || SystemBackupPageUtils.createEmptyListResponse().capabilities);
         setErrorMessage('');
         return response;
@@ -240,9 +240,15 @@ export class SystemBackupHooks {
     const previewRestore = React.useCallback(async (id: string, targetKind: string): Promise<IRestorePreviewResponseView> => {
       setActivePreviewId(id);
       try {
-        return await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_RESTORE_PREVIEW(id), {
+        const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_RESTORE_PREVIEW(id), {
           targetKind,
         }) as IRestorePreviewResponseView;
+        // Hydrate the enum at the FETCH BOUNDARY. `snapshotType` is DECLARED as `SnapshotType` but
+        // arrives as a plain string (`Enum.toJSON()` returns `.value`), so the restore confirmation
+        // dialog's `preview.snapshotType.value` was `undefined` and rendered
+        // "Safety snapshot type:" with nothing after it — in the one dialog that tells the operator
+        // what will protect them during a destructive restore.
+        return { ...response, snapshotType: SnapshotType.resolve(response?.snapshotType) };
       } finally {
         setActivePreviewId('');
       }

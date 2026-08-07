@@ -4,6 +4,7 @@ import type { IAssistantPromptProfile } from '@ai/admin-assistant-runtime/interf
 import type { IRuntimeIntent } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-intent.interface';
 import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
 import { RuntimeIntentKind } from '@ai/admin-assistant-runtime/runtime/enums/runtime-intent-kind.enum';
+import { AssistantRuntimeCapabilities } from '@ai/admin-assistant-runtime/assistant-runtime-capabilities';
 
 /**
  * Chat operations utilities for AI assistant runtime
@@ -80,17 +81,13 @@ export class ChatHelpers {
     copy: IAssistantPromptCopy;
   }> {
     const collections = Array.isArray(context.collections) ? context.collections : [];
-    const plugins = typeof context.options.getPlugins === 'function' ? context.options.getPlugins() || [] : [];
+    const plugins = AssistantRuntimeCapabilities.getPlugins(context.options);
     const tools = Array.isArray(context.tools) ? context.tools : [];
 
-    const profile = typeof context.options.resolvePromptProfile === 'function'
-      ? await Promise.resolve(context.options.resolvePromptProfile({ collections, plugins, tools }) || {})
-      : {};
-    const copy = typeof context.options.resolvePromptCopy === 'function'
-      ? await Promise.resolve(context.options.resolvePromptCopy({ collections, plugins, tools }) || {})
-      : {};
+    const profile = await AssistantRuntimeCapabilities.resolvePromptProfile(context.options, { collections, plugins, tools });
+    const copy = await AssistantRuntimeCapabilities.resolvePromptCopy(context.options, { collections, plugins, tools });
 
-    return { profile: profile || {}, copy: copy || {} };
+    return { profile, copy };
   }
 
   /**

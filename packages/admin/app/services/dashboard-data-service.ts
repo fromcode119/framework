@@ -1,5 +1,7 @@
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { PluginHealthPageController } from '@/app/plugins/health/plugin-health-page-controller';
+import type { IPluginHealthCounts } from '@/app/plugins/health/interfaces/plugin-health-counts.interface';
 
 /**
  * Fetches and normalizes the admin dashboard datasets. Each method returns the parsed
@@ -55,6 +57,24 @@ export class DashboardDataService {
       return null;
     } catch (err) {
       console.error("Failed to fetch dashboard activity:", err);
+      return null;
+    }
+  }
+
+  /**
+   * Plugin registry health counts — the SAME `buildReport` output the api logs at boot
+   * ("N active, N held, N error, N inactive"). Returns null on failure so the caller states nothing
+   * rather than defaulting to a healthy-looking value.
+   *
+   * Deliberately NOT `SYSTEM.HEALTH`: that endpoint returns a hardcoded `status: 'ok'` liveness
+   * literal, so driving a status line off it would just relocate the fabrication.
+   */
+  static async fetchPluginHealthCounts(): Promise<IPluginHealthCounts | null> {
+    try {
+      const report = await PluginHealthPageController.fetchReport();
+      return report?.counts ?? null;
+    } catch (err) {
+      console.error('Failed to fetch plugin health:', err);
       return null;
     }
   }

@@ -266,7 +266,6 @@ export class OopGuard {
     // value import — type-ifying it erased it at runtime and broke `next build`
     // ("ReferenceError: cache is not defined"). Not a migration gap.
     'frontend/lib/dynamic-page-resolver.ts',
-    'frontend/lib/esm-registry.ts',
     'frontend/lib/frontend-config-cache.ts',
     'frontend/lib/frontend-public-settings.ts',
     'frontend/lib/frontend-translations-cache.ts',

@@ -1,5 +1,7 @@
 import type { ComponentType } from 'react';
 import { Reactor } from '@fromcode119/reactor';
+// Value import, NOT `import type`: ThemeMode.LIGHT is dereferenced at runtime below.
+import { ThemeMode } from '@fromcode119/core/client';
 import { AdminRuntimeContext } from '@/components/view/admin-runtime-context.client';
 import type { IAdminRuntimeValue } from '@/components/interfaces/admin-runtime-value.interface';
 import type { IThemeContextType } from '@/components/interfaces/theme-context-type.interface';
@@ -15,23 +17,57 @@ import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
 export abstract class AdminComponent<P = Record<string, unknown>, S = Record<string, unknown>>
   extends Reactor<P, S> {
   static contextType = AdminRuntimeContext.context;
-  declare context: IAdminRuntimeValue;
 
+  /**
+   * Truthfully nullable: {@link AdminRuntimeContext} is created with a `null` default, so a
+   * component mounted outside {@link AdminRuntimeProvider} gets `null` here — NOT a runtime value.
+   * Typing this non-nullable was a lie that hid real null derefs from tsc: `PluginSettingsForm`
+   * shipped `this.runtime.plugins.triggerRefresh`, which tsc accepted and which threw on every
+   * bare mount, silently swallowed by the caller's own catch.
+   */
+  declare context: IAdminRuntimeValue | null;
+
+  /**
+   * The runtime value, fail-closed. `AdminRuntimeProvider` wraps the whole admin (see ClientLayout),
+   * so every mounted component genuinely has one and callers may deref this directly — that contract
+   * is now ENFORCED here rather than merely asserted by a type. Reading it without the provider is a
+   * wiring bug, and throwing names it at the point of failure instead of surfacing as an opaque
+   * `Cannot read properties of null` inside some unrelated catch block.
+   *
+   * Accessors that must tolerate a missing provider (theme, collections, pathname, …) read
+   * `this.context?.` directly and are unaffected.
+   */
   protected get runtime(): IAdminRuntimeValue {
-    return this.context;
+    const runtime = this.context;
+    if (!runtime) {
+      throw new Error(
+        `${(this.constructor as { name?: string }).name ?? 'AdminComponent'} read \`this.runtime\` `
+        + 'outside AdminRuntimeProvider. Mount it inside the admin provider tree (ClientLayout), or '
+        + 'in a test wrap it in <AdminRuntimeContext.context.Provider value={…}>.'
+      );
+    }
+    return runtime;
   }
 
+  /**
+   * Presentation-only, so this degrades instead of throwing: a component that somehow renders before
+   * the provider still paints, in light mode. LIGHT is not an invented default — it is the same
+   * default `ThemeMode.resolve()` already applies for an unrecognised value.
+   */
   protected get theme(): IThemeContextType['theme'] {
-    return this.context?.theme;
+    return this.context?.theme ?? ThemeMode.LIGHT;
   }
 
   protected get collections(): any[] {
     return this.context?.collections ?? [];
   }
 
-  /** App Router navigation — replaces `useRouter()` for hook-free classes. */
+  /**
+   * App Router navigation — replaces `useRouter()` for hook-free classes. Required capability, so it
+   * reads the enforced runtime: navigating without a provider is a wiring bug, not a soft state.
+   */
   protected get router(): IAdminRuntimeValue['router'] {
-    return this.context?.router;
+    return this.runtime.router;
   }
 
   /** Current pathname — replaces `usePathname()` for hook-free classes. */
@@ -50,9 +86,13 @@ export abstract class AdminComponent<P = Record<string, unknown>, S = Record<str
     return this.context?.params ?? {};
   }
 
-  /** Auth context — replaces `AuthHooks.useAuth()` for hook-free classes. */
+  /**
+   * Auth context — replaces `AuthHooks.useAuth()` for hook-free classes. Required capability, so it
+   * reads the enforced runtime: an auth read that silently returned `undefined` outside the provider
+   * would fail OPEN at call sites that branch on `this.auth.user`.
+   */
   protected get auth(): IAdminRuntimeValue['auth'] {
-    return this.context?.auth;
+    return this.runtime.auth;
   }
 
   /** Active admin appearance id (selection result) — lets classes branch on the chosen appearance. */

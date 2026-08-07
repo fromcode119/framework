@@ -1,5 +1,7 @@
-import { AdminAssistantRuntime } from '../src/admin-assistant-runtime';
-import type { IAssistantCollectionContext } from '../src/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
+import { AdminAssistantRuntime } from '@ai/admin-assistant-runtime';
+import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
 
 function createRuntimeHarness(input?: {
   collections?: IAssistantCollectionContext[];
@@ -119,7 +121,7 @@ describe('assistant-runtime behavior baseline', () => {
     expect(result.ui?.needsClarification).toBe(true);
     expect(result.ui?.clarifyingQuestion).toBeTruthy();
     expect(result.ui?.canContinue).toBe(false);
-    expect(result.checkpoint?.reason).toBe('clarification_needed');
+    expect(result.checkpoint?.reason).toBe(CheckpointReason.CLARIFICATION_NEEDED);
     expect(result.message.toLowerCase()).not.toContain('one more pass');
   });
 
@@ -139,7 +141,7 @@ describe('assistant-runtime behavior baseline', () => {
 
     expect(result.ui?.needsClarification).toBe(false);
     expect(result.ui?.canContinue).toBe(true);
-    expect(result.checkpoint?.reason).toBe('loop_cap');
+    expect(result.checkpoint?.reason).toBe(CheckpointReason.LOOP_CAP);
   });
 
   it('keeps safety approvals for staged writes', async () => {
@@ -242,7 +244,7 @@ describe('assistant-runtime behavior baseline', () => {
     });
 
     expect(result.ui?.needsClarification).toBe(true);
-    expect(result.checkpoint?.reason).toBe('clarification_needed');
+    expect(result.checkpoint?.reason).toBe(CheckpointReason.CLARIFICATION_NEEDED);
     expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
   });
 
@@ -257,7 +259,7 @@ describe('assistant-runtime behavior baseline', () => {
     });
 
     expect(result.ui?.needsClarification).toBe(true);
-    expect(result.checkpoint?.reason).toBe('clarification_needed');
+    expect(result.checkpoint?.reason).toBe(CheckpointReason.CLARIFICATION_NEEDED);
     expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
   });
 
@@ -365,7 +367,7 @@ Property Equity to +20%`,
       agentMode: 'advanced',
       history: [
         {
-          role: 'user',
+          role: AssistantRole.USER,
           content: `change Value Impact
 
 +15%
@@ -373,11 +375,11 @@ Property Equity to +20%`,
 Property Equity to +20%`,
         },
         {
-          role: 'assistant',
+          role: AssistantRole.ASSISTANT,
           content: 'Need one detail to finish staging: share collection + record id/slug + field path + new value.',
         },
         {
-          role: 'user',
+          role: AssistantRole.USER,
           content: "it's here http://localhost:3000/examples/roofing",
         },
       ],
@@ -444,8 +446,8 @@ Property Equity to +20%`,
       message: 'hey',
       agentMode: 'basic',
       history: [
-        { role: 'user', content: 'hey' },
-        { role: 'assistant', content: 'previous answer' },
+        { role: AssistantRole.USER, content: 'hey' },
+        { role: AssistantRole.ASSISTANT, content: 'previous answer' },
       ],
     });
 

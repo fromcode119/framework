@@ -112,7 +112,7 @@ export class ThemeViteConfig {
         rollupOptions: {
           external: [
             'react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client',
-            '@fromcode119/sdk', '@fromcode119/sdk/react', '@fromcode119/sdk/admin', '@fromcode119/sdk/admin/theme-style-variant-select', '@fromcode119/sdk/client/default-design',
+            '@fromcode119/sdk', '@fromcode119/sdk/react', '@fromcode119/sdk/admin', '@fromcode119/sdk/admin/theme-style-variant-select',
           ],
           // The theme bundle is loaded by the frontend via a plain dynamic import() with NO import map, so
           // it must contain ZERO bare specifiers — rewrite every external to read the ONE runtime registry
@@ -134,7 +134,6 @@ export class ThemeViteConfig {
               // @fromcode119/admin/components, which has no Node implementation). The browser still reads
               // it from the one runtime registry, exactly like the barrel.
               '@fromcode119/sdk/admin/theme-style-variant-select': bridge,
-              '@fromcode119/sdk/client/default-design': bridge,
             }),
           ],
           output: {

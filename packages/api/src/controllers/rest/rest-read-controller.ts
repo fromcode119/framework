@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ICollection, CoercionUtils } from '@fromcode119/core';
 import { Schema } from '@fromcode119/database';
 import { QueryHelper } from '@api/services/query-helper';
+import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 
 export class RestReadController {
@@ -134,6 +135,16 @@ export class RestReadController {
         return res.status(404).json({ error: 'Not found' });
       }
 
+      // A single-record read bypasses the list WHERE clause, so the system-meta restriction is
+      // re-applied here — otherwise `/collections/settings/auth:password_reset_token:<x>` hands back
+      // the one row by name.
+      if (!SystemMetaCollectionGuard.allowsRecord(collection, result as Record<string, unknown>)) {
+        if (!res) {
+          return null;
+        }
+        return res.status(404).json({ error: 'Not found' });
+      }
+
       if (!this.runtime.accessPolicy.matchesReadConstraints(result as Record<string, unknown>, accessConstraints)) {
         if (!res) {
           return null;
@@ -178,6 +189,11 @@ export class RestReadController {
   async getSuggestions(collection: ICollection, req: Request, res: Response) {
     try {
       await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
+      // Suggestions return DISTINCT column values, which on the system meta table means the stored
+      // token/secret values themselves. There is nothing to suggest there — fail closed.
+      if (SystemMetaCollectionGuard.guards(collection)) {
+        return res.json([]);
+      }
       const field = req.params.field;
       const query = (req.query as any).q;
       res.json(await this.runtime.suggestionService.getSuggestions(collection, field, query));
@@ -191,7 +207,10 @@ export class RestReadController {
       await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
       const format = req.query.format || 'json';
       const table = QueryHelper.getVirtualTable(collection);
-      let docs = await this.runtime.db.find(table, { limit: 10000 });
+      // The export path builds no WHERE of its own, so the system-meta restriction is applied here
+      // too — a CSV export must never be the way around the redaction.
+      const systemMetaClause = SystemMetaCollectionGuard.buildReadClause(collection);
+      let docs = await this.runtime.db.find(table, { where: systemMetaClause || undefined, limit: 10000 });
       // When the admin list passes `ids` (rows the user selected), export ONLY those records;
       // with no `ids`, export the whole collection.
       const idsParam = String(req.query.ids || '').trim();

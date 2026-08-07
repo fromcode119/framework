@@ -1,4 +1,6 @@
+import { LocalizationUtils, SystemConstants } from '@fromcode119/core';
 import { ThemedVerifyEmailTemplate } from '@api/controllers/auth/email-templates/themed-verify-email-template';
+import { ThemedVerifyEmailDefaultsService } from '@api/controllers/auth/email-templates/themed-verify-email-defaults-service';
 import { AuthControllerUrlInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-url-infrastructure';
 
 export class AuthControllerThemeEmailInfrastructure extends AuthControllerUrlInfrastructure {
@@ -14,65 +16,56 @@ export class AuthControllerThemeEmailInfrastructure extends AuthControllerUrlInf
 
     const themeVariables = await this.resolveActiveThemeVariables();
     const verifyEmailSettings = this.parseThemeConfigObject(themeSettings.verifyEmail);
+    // Framework defaults live in `templates/themed-verify-email.defaults.json`, never as literals here.
+    const defaults = await ThemedVerifyEmailDefaultsService.read();
     const firstName = String(options.firstName || '').trim();
     const brandName = this.readThemeConfigString(themeSettings.brandName)
       || this.readThemeConfigString(themeVariables.siteName)
       || options.fallbackAppName;
-    const accentColor = this.readThemeConfigString(themeSettings.accentColor) || '#8B5CF6';
-    const footerText = this.readThemeConfigString(themeSettings.footerText)
-      || this.readThemeConfigString(themeVariables.footerCopyright)
-      || `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`;
+    const tokens = {
+      brandName,
+      firstName,
+      // `, John` / '' — the token contract themes already write their greeting against. Unchanged.
+      firstNameSuffix: firstName ? `, ${firstName}` : '',
+      year: String(new Date().getFullYear()),
+    };
+    const accentColor = this.readThemeConfigString(themeSettings.accentColor) || defaults.accentColor;
+    const footerText = this.applyThemeEmailTokens(
+      this.readThemeConfigString(themeSettings.footerText)
+        || this.readThemeConfigString(themeVariables.footerCopyright)
+        || defaults.footerText,
+      tokens,
+    );
     const logoUrl = this.resolveThemeAssetUrl(
       this.readUrlOrigin(options.verificationUrl),
       this.readThemeConfigString(themeSettings.logoUrl),
     );
-    const greeting = this.applyThemeEmailTokens(
-      this.readThemeConfigString(verifyEmailSettings.greeting) || 'Здравей{{firstNameSuffix}}',
-      {
-        brandName,
-        firstName,
-        firstNameSuffix: firstName ? `, ${firstName}` : '',
-      },
-    );
-    const title = this.applyThemeEmailTokens(
-      this.readThemeConfigString(verifyEmailSettings.title) || 'Потвърди своя имейл адрес',
-      { brandName, firstName },
-    );
-    const message = this.applyThemeEmailTokens(
-      this.readThemeConfigString(verifyEmailSettings.message)
-        || 'Остава само една стъпка, за да активираш профила си и да получаваш важни известия от {{brandName}}.',
-      { brandName, firstName },
-    );
-    const buttonLabel = this.applyThemeEmailTokens(
-      this.readThemeConfigString(verifyEmailSettings.buttonLabel) || 'Потвърди имейла',
-      { brandName, firstName },
-    );
-    const fallbackLabel = this.applyThemeEmailTokens(
-      this.readThemeConfigString(verifyEmailSettings.fallbackLabel) || 'Ако бутонът не работи, копирай този адрес в браузъра си:',
-      { brandName, firstName },
-    );
-    const ignoreMessage = this.applyThemeEmailTokens(
-      this.readThemeConfigString(verifyEmailSettings.ignoreMessage) || 'Ако не си създавал този профил, можеш спокойно да игнорираш това писмо.',
-      { brandName, firstName },
-    );
-    const subject = this.applyThemeEmailTokens(
-      this.readThemeConfigString(verifyEmailSettings.subject) || '{{brandName}}: Потвърди своя имейл',
-      { brandName, firstName },
-    );
     return ThemedVerifyEmailTemplate.build({
-      subject,
-      greeting,
-      title,
-      message,
-      buttonLabel,
-      fallbackLabel,
-      ignoreMessage,
+      lang: await this.resolvePlatformEmailLocale(),
+      subject: this.applyThemeEmailTokens(this.readThemeConfigString(verifyEmailSettings.subject) || defaults.subject, tokens),
+      greeting: this.applyThemeEmailTokens(this.readThemeConfigString(verifyEmailSettings.greeting) || defaults.greeting, tokens),
+      title: this.applyThemeEmailTokens(this.readThemeConfigString(verifyEmailSettings.title) || defaults.title, tokens),
+      message: this.applyThemeEmailTokens(this.readThemeConfigString(verifyEmailSettings.message) || defaults.message, tokens),
+      buttonLabel: this.applyThemeEmailTokens(this.readThemeConfigString(verifyEmailSettings.buttonLabel) || defaults.buttonLabel, tokens),
+      fallbackLabel: this.applyThemeEmailTokens(this.readThemeConfigString(verifyEmailSettings.fallbackLabel) || defaults.fallbackLabel, tokens),
+      ignoreMessage: this.applyThemeEmailTokens(this.readThemeConfigString(verifyEmailSettings.ignoreMessage) || defaults.ignoreMessage, tokens),
       footerText,
       verificationUrl: options.verificationUrl,
       accentColor,
       brandName,
       logoUrl,
     });
+  }
+
+  /**
+   * The `lang` attribute of the rendered email. Driven by the platform's configured locale (admin
+   * Settings → Localization) — the storefront default first, then the platform default. It used to be
+   * a hardcoded `lang="bg"` in the template, on every verification email the framework sent.
+   */
+  protected async resolvePlatformEmailLocale(): Promise<string> {
+    const configured = await this.getMetaValue(SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE)
+      || await this.getMetaValue(SystemConstants.META_KEY.DEFAULT_LOCALE);
+    return LocalizationUtils.normalizeLocaleCode(configured || '');
   }
 
   protected async resolveThemeAuthEmailSettings(): Promise<Record<string, unknown>> {

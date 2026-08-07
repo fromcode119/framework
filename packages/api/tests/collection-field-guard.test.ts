@@ -1,5 +1,5 @@
-import { describe, expect, it } from '@jest/globals';
-import { CollectionFieldGuard } from '../src/controllers/collection-field-guard';
+import { describe, expect, it } from 'vitest';
+import { CollectionFieldGuard } from '@api/controllers/collection-field-guard';
 
 describe('CollectionFieldGuard', () => {
   it('treats read-only fields as overrideable by default', () => {

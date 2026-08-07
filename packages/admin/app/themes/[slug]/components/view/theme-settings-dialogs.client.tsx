@@ -2,24 +2,28 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/reactor';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { ThemeState } from '@fromcode119/core/client';
+import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
+import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 
 export class ThemeSettingsDialogs extends PureReactor {
-  @prop declare page: any;
-  @prop declare model: any;
+  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
+  declare props: Pick<ThemeSettingsDialogs, 'page' | 'model'>;
+
+  @prop declare page: IThemeSettingsPageView;
+  @prop declare model: ThemeSettingsRenderModel;
 
   render(): ReactNode {
     const page = this.page;
-    const model = this.model;
-    const { themeDetail } = model;
-    const { isRunSeedsConfirmOpen, isResetThemeConfirmOpen, isDeleteConfirmOpen, isReseeding, isResettingTheme, isDeleting } = page.state;
+    const { themeDetail } = this.model;
+    const { isRunSeedsConfirmOpen, isResetThemeConfirmOpen, isDeleteConfirmOpen, isReseeding, isResettingTheme, isDeleting } = page;
     return (
       <>
         <ConfirmDialog
           isOpen={isRunSeedsConfirmOpen}
-          onClose={() => page.setState({ isRunSeedsConfirmOpen: false })}
+          onClose={() => page.closeRunSeedsConfirm()}
           onConfirm={() => void page.handleRunSeeds()}
           title="Run Theme Seeds?"
-          description={`This will replay seed content for "${themeDetail?.name || 'this theme'}" and may overwrite existing records.`}
+          description={`This will replay seed content for "${themeDetail.name}" and may overwrite existing records.`}
           confirmLabel="Run Seeds"
           cancelLabel="Cancel"
           variant="primary"
@@ -28,10 +32,10 @@ export class ThemeSettingsDialogs extends PureReactor {
 
         <ConfirmDialog
           isOpen={isResetThemeConfirmOpen}
-          onClose={() => page.setState({ isResetThemeConfirmOpen: false })}
+          onClose={() => page.closeResetThemeConfirm()}
           onConfirm={() => void page.handleResetTheme()}
           title="Reset Theme + Re-seed?"
-          description={`This resets "${themeDetail?.name || 'this theme'}" config to defaults and then runs seeds again.`}
+          description={`This resets "${themeDetail.name}" config to defaults and then runs seeds again.`}
           confirmLabel="Reset & Run Seeds"
           cancelLabel="Cancel"
           variant="danger"
@@ -40,13 +44,13 @@ export class ThemeSettingsDialogs extends PureReactor {
 
         <ConfirmDialog
           isOpen={isDeleteConfirmOpen}
-          onClose={() => page.setState({ isDeleteConfirmOpen: false })}
+          onClose={() => page.closeDeleteConfirm()}
           onConfirm={() => void page.handleDelete()}
           title="Delete Theme?"
           description={
-            themeDetail?.state === ThemeState.ACTIVE
-              ? `Theme "${themeDetail?.name || 'this theme'}" is active. The system will activate another theme if available, or continue with no active theme. Continue?`
-              : `Are you sure you want to delete "${themeDetail?.name || 'this theme'}"? This action cannot be undone.`
+            themeDetail.state === ThemeState.ACTIVE
+              ? `Theme "${themeDetail.name}" is active. The system will activate another theme if available, or continue with no active theme. Continue?`
+              : `Are you sure you want to delete "${themeDetail.name}"? This action cannot be undone.`
           }
           confirmLabel="Delete Theme"
           cancelLabel="Cancel"

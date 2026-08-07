@@ -3,6 +3,7 @@
 import { SystemConstants } from '@core/constants/system.constants';
 import { ApplicationUrlUtils } from '@core/application-url-utils';
 import { IDatabaseManager } from '@fromcode119/database';
+import { PluginEmailTemplateFileService } from '@core/plugin/services/plugin-email-template-file-service';
 import { createHash } from 'crypto';
 
 export class PluginTelemetryService {
@@ -148,19 +149,23 @@ export class PluginTelemetryService {
     if (previousAt && now - previousAt < 10 * 60 * 1000) return;
     await this.upsertMetaValue(dedupeKey, new Date(now).toISOString());
 
-    const appName = await this.resolveAppName();
-    const from = this.resolveSenderAddress();
-    const pluginLabel = String(pluginSlug || 'system').trim() || 'system';
     const headline = String(message || '').trim() || 'Critical system log entry';
-    const shortHeadline = headline.length > 140 ? `${headline.slice(0, 137)}...` : headline;
-    const contextText = context ? JSON.stringify(context, null, 2) : '(none)';
-    const timestamp = new Date(now).toISOString();
+    const email = PluginEmailTemplateFileService.renderEmail('plugin-telemetry-critical', {
+      appName: await this.resolveAppName(),
+      pluginLabel: String(pluginSlug || 'system').trim() || 'system',
+      level: String(level || '').toUpperCase(),
+      timestamp: new Date(now).toISOString(),
+      headline,
+      shortHeadline: headline.length > 140 ? `${headline.slice(0, 137)}...` : headline,
+      contextText: context ? JSON.stringify(context, null, 2) : '(none)',
+    });
 
     await this.emailGetter().send({
-      to: recipients.join(','), from,
-      subject: `${appName}: Critical Alert [${pluginLabel}]`,
-      text: `A critical log event was captured.\n\nTime (UTC): ${timestamp}\nLevel: ${String(level || '').toUpperCase()}\nPlugin: ${pluginLabel}\nMessage: ${headline}\n\nContext:\n${contextText}\n`,
-      html: `<p><strong>A critical log event was captured.</strong></p><ul><li><strong>Time (UTC):</strong> ${timestamp}</li><li><strong>Level:</strong> ${String(level || '').toUpperCase()}</li><li><strong>Plugin:</strong> ${pluginLabel}</li><li><strong>Message:</strong> ${shortHeadline}</li></ul><p><strong>Context</strong></p><pre style="white-space:pre-wrap;background:#0b1020;color:#e2e8f0;padding:12px;border-radius:8px;">${contextText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`,
+      to: recipients.join(','),
+      from: this.resolveSenderAddress(),
+      subject: email.subject,
+      text: email.text,
+      html: email.html,
     });
   }
 
@@ -186,23 +191,38 @@ export class PluginTelemetryService {
       pluginCounts[plugin] = (pluginCounts[plugin] || 0) + 1;
     }
 
-    const topPlugins = Object.entries(pluginCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
-    const criticalRows = recent.filter((row: any) => this.isCriticalLevel(String(row?.level || ''))).slice(0, 8);
-    const appName = await this.resolveAppName();
-    const from = this.resolveSenderAddress();
-    const fromIso = new Date(weekAgo).toISOString();
-    const toIso = new Date(now).toISOString();
-
-    const topPluginsText = topPlugins.length ? topPlugins.map(([s, c]) => `- ${s}: ${c}`).join('\n') : '- (no activity)';
-    const criticalText = criticalRows.length ? criticalRows.map((row: any) => `- [${String(row?.timestamp || '')}] ${String(row?.plugin_slug || 'system')} ${String(row?.level || '')}: ${String(row?.message || '')}`).join('\n') : '- (none)';
-    const htmlPlugins = topPlugins.length ? `<ul>${topPlugins.map(([s, c]) => `<li><strong>${s}</strong>: ${c}</li>`).join('')}</ul>` : `<p>(no activity)</p>`;
-    const htmlCritical = criticalRows.length ? `<ul>${criticalRows.map((row: any) => `<li><strong>${String(row?.timestamp || '')}</strong> [${String(row?.plugin_slug || 'system')}] ${String(row?.level || '')}: ${String(row?.message || '')}</li>`).join('')}</ul>` : `<p>(none)</p>`;
+    const email = PluginEmailTemplateFileService.renderEmail('plugin-telemetry-digest', {
+      appName: await this.resolveAppName(),
+      fromIso: new Date(weekAgo).toISOString(),
+      toIso: new Date(now).toISOString(),
+      totalEntries: recent.length,
+      levels: {
+        error: levelCounts.ERROR || 0,
+        warn: levelCounts.WARN || 0,
+        info: levelCounts.INFO || 0,
+        debug: levelCounts.DEBUG || 0,
+      },
+      topPlugins: Object.entries(pluginCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([slug, count]) => ({ slug, count })),
+      criticalEntries: recent
+        .filter((row: any) => this.isCriticalLevel(String(row?.level || '')))
+        .slice(0, 8)
+        .map((row: any) => ({
+          timestamp: String(row?.timestamp || ''),
+          pluginSlug: String(row?.plugin_slug || 'system'),
+          level: String(row?.level || ''),
+          message: String(row?.message || ''),
+        })),
+    });
 
     await this.emailGetter().send({
-      to: recipients.join(','), from,
-      subject: `${appName}: Weekly System Summary`,
-      text: `System telemetry summary for ${fromIso} -> ${toIso}\n\nTotal log entries: ${recent.length}\nLevels:\n- ERROR: ${levelCounts.ERROR || 0}\n- WARN: ${levelCounts.WARN || 0}\n- INFO: ${levelCounts.INFO || 0}\n- DEBUG: ${levelCounts.DEBUG || 0}\n\nTop active plugins:\n${topPluginsText}\n\nRecent critical entries:\n${criticalText}\n`,
-      html: `<p><strong>System telemetry summary</strong></p><p>Window: ${fromIso} -> ${toIso}</p><p>Total log entries: <strong>${recent.length}</strong></p><ul><li>ERROR: <strong>${levelCounts.ERROR || 0}</strong></li><li>WARN: <strong>${levelCounts.WARN || 0}</strong></li><li>INFO: <strong>${levelCounts.INFO || 0}</strong></li><li>DEBUG: <strong>${levelCounts.DEBUG || 0}</strong></li></ul><p><strong>Top active plugins</strong></p>${htmlPlugins}<p><strong>Recent critical entries</strong></p>${htmlCritical}`,
+      to: recipients.join(','),
+      from: this.resolveSenderAddress(),
+      subject: email.subject,
+      text: email.text,
+      html: email.html,
     });
   }
 
@@ -213,18 +233,21 @@ export class PluginTelemetryService {
       throw new Error('No telemetry recipients are configured. Set Notification Email in Settings > General or ensure at least one admin user exists.');
     }
 
-    const nowIso = new Date().toISOString();
-    const appName = await this.resolveAppName();
-    const from = this.resolveSenderAddress();
-    const actorEmail = this.normalizeEmailAddress(triggeredBy?.email) || 'unknown';
-    const actorId = String(triggeredBy?.id || '').trim() || 'unknown';
     const actorRoles = Array.isArray(triggeredBy?.roles) ? triggeredBy.roles.join(', ') : '';
+    const email = PluginEmailTemplateFileService.renderEmail('plugin-telemetry-test', {
+      appName: await this.resolveAppName(),
+      nowIso: new Date().toISOString(),
+      actorId: String(triggeredBy?.id || '').trim() || 'unknown',
+      actorEmail: this.normalizeEmailAddress(triggeredBy?.email) || 'unknown',
+      actorRoles: actorRoles || '(none)',
+    });
 
     await this.emailGetter().send({
-      to: recipients.join(','), from,
-      subject: `${appName}: Telemetry Test Email`,
-      text: `This is a test telemetry email from ${appName}.\n\nTime (UTC): ${nowIso}\nTriggered by user id: ${actorId}\nTriggered by email: ${actorEmail}\nRoles: ${actorRoles || '(none)'}\n\nIf you received this message, your configured Email integration is working for telemetry delivery.\n`,
-      html: `<p><strong>This is a test telemetry email from ${appName}.</strong></p><ul><li><strong>Time (UTC):</strong> ${nowIso}</li><li><strong>Triggered by user id:</strong> ${actorId}</li><li><strong>Triggered by email:</strong> ${actorEmail}</li><li><strong>Roles:</strong> ${actorRoles || '(none)'}</li></ul><p>If you received this message, your configured Email integration is working for telemetry delivery.</p>`,
+      to: recipients.join(','),
+      from: this.resolveSenderAddress(),
+      subject: email.subject,
+      text: email.text,
+      html: email.html,
     });
     return { sent: true, recipientsCount: recipients.length };
   }

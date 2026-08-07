@@ -1,5 +1,6 @@
 import { ConversationMode } from '@ai/enums/conversation-mode.enum';
 import { AssistantConstants } from '@ai/constants/assistant.constants';
+import { AssistantRole } from '@ai/enums/assistant-role.enum';
 
 export class AdminAssistantPageUtils {
   static readonly DEFAULT_ADMIN_BASE_PATH = '/admin';
@@ -60,7 +61,7 @@ export class AdminAssistantPageUtils {
   }
 
   static createReadyMessage() {
-    return { role: 'system' as const, content: `${AssistantConstants.SURFACE_NAME} ready. Ask for changes and approve actions.` };
+    return { role: AssistantRole.SYSTEM, content: `${AssistantConstants.SURFACE_NAME} ready. Ask for changes and approve actions.` };
   }
 
   static createReadyConversation() {

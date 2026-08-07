@@ -58,6 +58,12 @@ export class ClientLayoutRuntimeService {
       // `@fromcode119/sdk/admin` re-exports AdminServices from this sub-path; plugins (e.g. privacy
       // banner/policy editors) crash with `AdminServices is undefined` if it isn't registered.
       '@fromcode119/admin/services': adminRuntimeModule,
+      // THEME and plugin bundles externalise `@fromcode119/sdk/admin` and resolve it through THIS
+      // registry, not the import map. Without the key their dynamic import yields an empty module and
+      // every admin component read off it is `undefined` — a media field then handed React an undefined
+      // lazy type and took down the whole block-settings panel. The console works either way because a
+      // console `import()` goes through the import map, which DOES define it.
+      '@fromcode119/sdk/admin': adminRuntimeModule,
       // reactor as ONE shared runtime instance — externalized appearance bundles resolve their `@state`/
       // `@watch` decorators + `Reactor` base from here, so they register on the SAME `ReactiveMetadata`.
       ...(reactorModule ? { '@fromcode119/reactor': reactorModule } : {}),
@@ -75,6 +81,8 @@ export class ClientLayoutRuntimeService {
     // The SDK re-exports AdminServices from `@fromcode119/admin/services`; register it so dynamic
     // plugin imports resolve it instead of crashing on `undefined.getInstance()`.
     runtimeRegistry['@fromcode119/admin/services'] = runtimeModule;
+    // Same reason as the map above: this is the key theme/plugin bundles actually look up.
+    runtimeRegistry['@fromcode119/sdk/admin'] = runtimeModule;
     if (reactorModule) runtimeRegistry['@fromcode119/reactor'] = reactorModule;
   }
 }

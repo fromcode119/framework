@@ -142,7 +142,14 @@ export class ChatAgentLoopHelpers {
     return { message: userFacingMessage, actions: safeActions, model: usedModel, agentMode: agentMode, done, traces, plan: buildPlan({ message: userFacingMessage, traces, actions: safeActions, loopCapReached: effectiveLoopCapReached, loopTimeLimitReached: loopRecoveryMode === ClarifyMode.NONE ? loopTimeLimitReached : false, done }), ui, skill: selectedSkill, sessionId, checkpoint, iterations: iterationsRan, loopCapReached: effectiveLoopCapReached };
   }
 
+  /**
+   * NOTE: validate the RAW type, do not `resolve()` then match strings. `resolve()` returns an
+   * `AssistantActionType`, and the old `['create_content','update_setting','mcp_call'].includes(a.type)`
+   * compared those raw strings to that Enum instance — always false, so EVERY staged action the
+   * model returned was silently discarded. `fromValue` yields `undefined` for an unknown type, which
+   * also keeps garbage out; `resolve()` would have coerced it to CREATE_CONTENT.
+   */
   private static _sanitizeActions(actions: any[]): IAssistantAction[] {
-    return (Array.isArray(actions) ? actions : []).filter((a: any) => a && typeof a === 'object').map((a: any) => ({ type: AssistantActionType.resolve(a.type), collectionSlug: a.collectionSlug ? String(a.collectionSlug) : undefined, data: a.data && typeof a.data === 'object' ? a.data : undefined, key: a.key ? String(a.key) : undefined, value: a.value !== undefined ? String(a.value) : undefined, reason: a.reason ? String(a.reason) : undefined, tool: a.tool ? String(a.tool) : undefined, input: a.input && typeof a.input === 'object' ? a.input : undefined })).filter((a: any) => ['create_content', 'update_setting', 'mcp_call'].includes(a.type)) as IAssistantAction[];
+    return (Array.isArray(actions) ? actions : []).filter((a: any) => a && typeof a === 'object').map((a: any) => ({ type: AssistantActionType.fromValue(String(a?.type ?? '').trim()), collectionSlug: a.collectionSlug ? String(a.collectionSlug) : undefined, data: a.data && typeof a.data === 'object' ? a.data : undefined, key: a.key ? String(a.key) : undefined, value: a.value !== undefined ? String(a.value) : undefined, reason: a.reason ? String(a.reason) : undefined, tool: a.tool ? String(a.tool) : undefined, input: a.input && typeof a.input === 'object' ? a.input : undefined })).filter((a: any) => !!a.type) as IAssistantAction[];
   }
 }

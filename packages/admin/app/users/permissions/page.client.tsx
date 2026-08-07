@@ -17,6 +17,8 @@ export class PermissionsPage extends AdminComponent {
 
   @state permissions: any[] = [];
   @state loading = true;
+  /** Set when the registry could not be loaded, so an empty table is never passed off as "no permissions". */
+  @state loadError = '';
 
   componentDidMount(): void {
     this.mounted = true;
@@ -32,9 +34,15 @@ export class PermissionsPage extends AdminComponent {
       // The permissions endpoint scans active plugins' manifest.capabilities and persists new ones,
       // so simply loading the page keeps the registry in sync — no manual scan button needed.
       const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS);
-      if (this.mounted) this.permissions = Array.isArray(data) ? data : [];
-    } catch (error) {
+      if (this.mounted) {
+        this.loadError = '';
+        this.permissions = Array.isArray(data) ? data : [];
+      }
+    } catch (error: any) {
+      // Without this the table fell back to "No permissions registered in system registry" — a positive
+      // claim about the registry, when in fact the request failed.
       console.error('Failed to fetch permissions:', error);
+      if (this.mounted) this.loadError = error?.message || 'The permission registry could not be loaded.';
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -47,7 +55,7 @@ export class PermissionsPage extends AdminComponent {
     if (loading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Inventorying Permissions..." />
+          <Loader label="Loading permissions..." />
         </div>
       );
     }
@@ -74,7 +82,7 @@ export class PermissionsPage extends AdminComponent {
                 totalDocs={permissions.length}
                 limit={100}
                 page={1}
-                emptyMessage="No permissions registered in system registry"
+                emptyMessage={this.loadError || 'No permissions registered in system registry'}
               />
             </div>
 

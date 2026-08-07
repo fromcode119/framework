@@ -19,6 +19,7 @@ import { DashboardSupportCard } from '@/app/dashboard-support-card';
 import { DashboardFooter } from '@/app/dashboard-footer';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import { state } from '@fromcode119/reactor';
+import type { IPluginHealthCounts } from '@/app/plugins/health/interfaces/plugin-health-counts.interface';
 
 export class AdminPage extends AdminComponent {
   private mounted = false;
@@ -30,6 +31,8 @@ export class AdminPage extends AdminComponent {
   @state loadingStats = true;
   @state updateAvailable: any = null;
   @state showAllCollections = false;
+  /** Real plugin-registry counts behind the header status line; null until loaded or on failure. */
+  @state health: IPluginHealthCounts | null = null;
 
   componentDidMount(): void {
     this.mounted = true;
@@ -70,6 +73,7 @@ export class AdminPage extends AdminComponent {
     this.fetchPlugins();
     this.fetchActivity();
     this.fetchUpdate();
+    this.fetchHealth();
   }
 
   /**
@@ -107,6 +111,15 @@ export class AdminPage extends AdminComponent {
     if (this.mounted && updateAvailable) this.updateAvailable = updateAvailable;
   }
 
+  /**
+   * Plugin registry health for the header status line. On failure `health` stays null and the header
+   * states nothing — it must never fall back to a cheerful default.
+   */
+  private async fetchHealth(): Promise<void> {
+    const counts = await DashboardDataService.fetchPluginHealthCounts();
+    if (this.mounted) this.health = counts;
+  }
+
   render(): ReactElement {
     const DashboardOverride = this.pageBody(AdminPageKeys.DASHBOARD);
     if (DashboardOverride) {
@@ -126,7 +139,7 @@ export class AdminPage extends AdminComponent {
     return (
       <div className="w-full pb-24 animate-in fade-in duration-500">
         {/* Premium Dashboard Header */}
-        <DashboardPageHeader user={user} theme={this.theme} />
+        <DashboardPageHeader user={user} theme={this.theme} health={this.health} />
 
         <div className="w-full px-6 lg:px-8 pt-6 space-y-6 pb-10">
           {/* Update Alert */}
@@ -195,12 +208,13 @@ export class AdminPage extends AdminComponent {
                 <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800"></div>
               </div>
 
-              {/* Activity Section */}
+              {/* Activity Section. "View All" used to open /plugins, which is not where these log
+                  entries live — the Activity Log is the surface that lists them all. */}
               <DashboardActivityFeed
                 activity={activity}
                 loadingActivity={loadingActivity}
                 hasMainContent={!!hasMainContent}
-                onViewAll={() => this.router.push('/plugins')}
+                onViewAll={() => this.router.push(AdminConstants.ROUTES.ACTIVITY)}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

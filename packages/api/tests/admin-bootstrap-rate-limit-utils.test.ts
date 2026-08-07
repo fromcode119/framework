@@ -1,4 +1,4 @@
-import { AdminBootstrapRateLimitUtils } from '../src/utils/admin-bootstrap-rate-limit-utils';
+import { AdminBootstrapRateLimitUtils } from '@api/utils/admin-bootstrap-rate-limit-utils';
 
 describe('AdminBootstrapRateLimitUtils', () => {
   it('uses a dedicated key for read-only admin initialization status requests', () => {

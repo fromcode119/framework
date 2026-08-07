@@ -14,7 +14,10 @@ import { ChatResponder } from '@ai/admin-assistant-runtime/runtime/chat-responde
 import { FactualQueryService } from '@ai/admin-assistant-runtime/runtime/factual-query-service';
 import { WorkspaceMapService } from '@ai/admin-assistant-runtime/runtime/workspace-map';
 import { OrchestratorActionUtils } from '@ai/admin-assistant-runtime/runtime/orchestrator-action-utils';
-import { OrchestratorListingUtils } from '@ai/admin-assistant-runtime/runtime/orchestrator-listing-utils';export class OrchestratorFinalizeUtils {
+import { OrchestratorListingUtils } from '@ai/admin-assistant-runtime/runtime/orchestrator-listing-utils';
+import { AssistantRuntimeCapabilities } from '@ai/admin-assistant-runtime/assistant-runtime-capabilities';
+
+export class OrchestratorFinalizeUtils {
   static async finalizeChatLike(
   deps: IRuntimeDependencies,
   context: IRuntimeContext,
@@ -28,19 +31,26 @@ import { OrchestratorListingUtils } from '@ai/admin-assistant-runtime/runtime/or
     OrchestratorListingUtils.parseListingCollectionFromCheckpoint(context.checkpoint) ||
     OrchestratorListingUtils.parseListingCollectionFromHistory(context.history);
   const listingMemory = OrchestratorListingUtils.getListingMemory(context.checkpoint);
-  if (
-    listingCollectionSlug &&
-    OrchestratorListingUtils.isRecordFollowupQuestion(message) &&
-    typeof context.options.listContent === 'function'
-  ) {
-    const collectionContext = context.collections.find((item) => {
+  // Resolved BEFORE the follow-up check so its schema can answer "did the user name one of my fields?".
+  const listingCollectionContext = listingCollectionSlug
+    ? context.collections.find((item) => {
       const slug = String(item?.slug || '').trim();
       const shortSlug = String(item?.shortSlug || '').trim();
       return slug === listingCollectionSlug || shortSlug === listingCollectionSlug;
-    });
+    })
+    : undefined;
+  if (
+    listingCollectionSlug &&
+    OrchestratorListingUtils.isRecordFollowupQuestion(
+      message,
+      OrchestratorListingUtils.collectCollectionFieldNames(listingCollectionContext, []),
+    ) &&
+    AssistantRuntimeCapabilities.canListContent(context.options)
+  ) {
+    const collectionContext = listingCollectionContext;
     if (collectionContext) {
       try {
-        const listed = await context.options.listContent(collectionContext, {
+        const listed = await AssistantRuntimeCapabilities.listContent(context.options, collectionContext, {
           limit: 10,
           offset: 0,
           context: {},
@@ -98,11 +108,14 @@ import { OrchestratorListingUtils } from '@ai/admin-assistant-runtime/runtime/or
   }
 
   const collectionMatch = WorkspaceMapService.matchWorkspaceCollection(message, context.workspaceMap);
+  // A generic record noun ("records", "rows", "entries") is SUFFICIENT but not necessary: the
+  // collection's own name is a record noun too. `collectionMatch` is derived from this same message,
+  // so a match already proves the user named the collection — demanding a second noun on top rejected
+  // ordinary phrasing like "what users we have" and dropped it to the model.
   const asksCollectionRecords =
     !!collectionMatch &&
-    /\b(list|show|what|which)\b/i.test(String(message || '')) &&
-    /\b(records?|entries|rows|docs?|data|items?|transactions?|orders?)\b/i.test(String(message || ''));
-  if (collectionMatch && asksCollectionRecords && typeof context.options.listContent === 'function') {
+    /\b(list|show|what|which)\b/i.test(String(message || ''));
+  if (collectionMatch && asksCollectionRecords && AssistantRuntimeCapabilities.canListContent(context.options)) {
     const collectionContext = context.collections.find((item) => {
       const slug = String(item?.slug || '').trim();
       const shortSlug = String(item?.shortSlug || '').trim();
@@ -110,7 +123,7 @@ import { OrchestratorListingUtils } from '@ai/admin-assistant-runtime/runtime/or
     });
     if (collectionContext) {
       try {
-        const listed = await context.options.listContent(collectionContext, {
+        const listed = await AssistantRuntimeCapabilities.listContent(context.options, collectionContext, {
           limit: 10,
           offset: 0,
           context: {},
@@ -192,19 +205,40 @@ import { OrchestratorListingUtils } from '@ai/admin-assistant-runtime/runtime/or
     });
   }
 
-  const inventoryFollowup = OrchestratorActionUtils.findInventoryFollowupReply(message, context);
-  const chatReply = inventoryFollowup
+  // `WorkspaceMapService` already knows how to answer "what have I got?" and "tell me about `users`",
+  // but `isWorkspaceInventoryRequest` / `buildWorkspaceInventoryMessage` / `findWorkspaceEntityReply`
+  // had NO callers anywhere — only the two hand-rolled cases in `findInventoryFollowupReply` were
+  // wired, so every other workspace question fell through to the model (and to "the AI model is
+  // unavailable" when there was none). Checked after the listing branch above, so "list records"
+  // phrasing still reaches the real listing path.
+  const inventoryFollowup =
+    OrchestratorActionUtils.findInventoryFollowupReply(message, context)
+    || (WorkspaceMapService.isWorkspaceInventoryRequest(message)
+      ? WorkspaceMapService.buildWorkspaceInventoryMessage(context.workspaceMap)
+      : null)
+    || WorkspaceMapService.findWorkspaceEntityReply(message, context.workspaceMap);
+  // A checkpoint carrying `memory.factual` already HAS the numbers, so a model round-trip that comes
+  // back with "could you clarify the period?" is strictly worse than answering — and it is a paid call
+  // for a worse answer, so this runs BEFORE the model, not as a fallback after it. Gated on the memory
+  // existing: with none, the model is still asked first and the service stays a fallback as before.
+  const hasFactualMemory = !!(context.checkpoint as any)?.memory?.factual;
+  const memoryReply = !inventoryFollowup && hasFactualMemory
+    ? await FactualQueryService.resolveReply(context, message)
+    : null;
+  const chatReply = inventoryFollowup || memoryReply
     ? null
     : await ChatResponder.generateChatReply(context, deps, intent, message, agentMode);
-  const factualReply = inventoryFollowup || (chatReply && chatReply.source !== ResponderRoute.FALLBACK)
-    ? null
-    : await FactualQueryService.resolveReply(context, message);
+  const modelAnswered = !!chatReply && chatReply.source !== ResponderRoute.FALLBACK;
+  const factualReply = memoryReply
+    ?? (inventoryFollowup || modelAnswered
+      ? null
+      : await FactualQueryService.resolveReply(context, message));
   const reply = inventoryFollowup
     ? { message: inventoryFollowup, model: 'inventory-followup' }
-    : chatReply && chatReply.source !== ResponderRoute.FALLBACK
-      ? chatReply
-      : factualReply
-        ? factualReply
+    : factualReply
+      ? factualReply
+      : modelAnswered
+        ? chatReply
         : chatReply || await ChatResponder.generateChatReply(context, deps, intent, message, agentMode);
 
   const ui = ResponseBuilder.buildUiHintsBase({ hasActions: false, selectedSkill: context.selectedSkill });

@@ -1,4 +1,4 @@
-import { CSRFMiddleware } from '../src/middlewares/csrf-middleware';
+import { CSRFMiddleware } from '@api/middlewares/csrf-middleware';
 import { CookieConstants } from '../../core/src/constants/cookie.constants';
 import { NextFunction } from 'express';
 
@@ -15,16 +15,16 @@ describe('CSRF Middleware Security Scenarios', () => {
             path: '/api/v1/test',
             hostname: 'admin.framework.local',
             protocol: 'http',
-            get: jest.fn().mockReturnValue(''),
+            get: vi.fn().mockReturnValue(''),
             headers: {},
             cookies: {}
         };
         res = {
-            cookie: jest.fn(),
-            status: jest.fn().mockReturnThis(),
-            json: jest.fn().mockReturnThis()
+            cookie: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
         };
-        next = jest.fn();
+        next = vi.fn();
     });
 
     it('should allow GET requests without CSRF check', () => {

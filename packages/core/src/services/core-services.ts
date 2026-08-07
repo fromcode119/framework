@@ -259,8 +259,15 @@ export class CoreServices {
 
   /**
    * Reset the singleton instance (useful for testing).
+   *
+   * The server-only services moved out to `ServerServiceRegistry`, which memoises them independently
+   * of this singleton — so dropping `instance` alone left every page-contract service alive and shared
+   * across tests. Their registered FACTORIES survive (that is boot-time wiring, not state); only the
+   * constructed instances go, which is what "reset" has always meant to callers. Test-only: nothing in
+   * production calls this.
    */
   static reset(): void {
     CoreServices.instance = null;
+    ServerServiceRegistry.reset();
   }
 }

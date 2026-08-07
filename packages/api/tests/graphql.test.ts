@@ -1,4 +1,4 @@
-import { GraphQLService } from '../src/services/graph-ql-service';
+import { GraphQLService } from '@api/services/graph-ql-service';
 import { graphql } from 'graphql';
 
 describe('graph-ql-service', () => {
@@ -8,7 +8,7 @@ describe('graph-ql-service', () => {
 
   beforeEach(() => {
     mockManager = {
-      getCollections: jest.fn().mockReturnValue([
+      getCollections: vi.fn().mockReturnValue([
         {
           slug: 'posts',
           shortSlug: 'posts',
@@ -21,9 +21,9 @@ describe('graph-ql-service', () => {
     };
 
     mockRestController = {
-      find: jest.fn().mockResolvedValue({ docs: [{ id: 1, title: 'GraphQL Post' }], totalDocs: 1 }),
-      findOne: jest.fn().mockResolvedValue({ id: 1, title: 'GraphQL Post' }),
-      create: jest.fn().mockResolvedValue({ id: 2, title: 'New Post' })
+      find: vi.fn().mockResolvedValue({ docs: [{ id: 1, title: 'GraphQL Post' }], totalDocs: 1 }),
+      findOne: vi.fn().mockResolvedValue({ id: 1, title: 'GraphQL Post' }),
+      create: vi.fn().mockResolvedValue({ id: 2, title: 'New Post' })
     };
 
     service = new GraphQLService(mockManager, mockRestController);

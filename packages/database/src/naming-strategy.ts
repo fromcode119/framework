@@ -6,8 +6,28 @@
  */
 
 export class NamingStrategy {
+  /** A column name safe to interpolate into SQL: letters, digits, underscore; never leading-digit. */
+  private static readonly SAFE_IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
   static toSnakeCase(field: string): string {
     return field.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+  }
+
+  /**
+   * Snake-case a canonical field name for use as a SQL identifier, rejecting anything that is not a
+   * plain identifier.
+   *
+   * Column names are the one caller-supplied value that reaches SQL as CODE rather than as a bound
+   * parameter, and neither plain double-quoting nor drizzle's `sql.identifier` escapes an embedded
+   * double quote — such a name would close the quoted identifier and inject. Canonical schema field
+   * names are always plain identifiers, so anything else is rejected rather than escaped.
+   */
+  static toSafeColumnIdentifier(field: string): string {
+    const identifier = NamingStrategy.toSnakeCase(String(field ?? ''));
+    if (!NamingStrategy.SAFE_IDENTIFIER.test(identifier)) {
+      throw new Error(`Invalid column identifier: ${JSON.stringify(String(field ?? ''))}`);
+    }
+    return identifier;
   }
 
   static toSnakeIdentifier(value: string): string {

@@ -1,4 +1,5 @@
-import { AssistantController } from '../src/api/controller';
+import { AssistantController } from '@ai/api/controller';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
 
 type MockReq = any;
 type MockRes = any;
@@ -34,6 +35,9 @@ function createControllerHarness() {
     },
     getCollections: jest.fn().mockReturnValue([]),
     getPlugins: jest.fn().mockReturnValue([]),
+    // `PluginPublicApiResolver.listInstalledPlugins` calls `getSortedPlugins(getPlugins())`; without it
+    // plugin discovery threw and `assistantTools` returned its 500 body, so the endpoint looked empty.
+    getSortedPlugins: jest.fn((plugins: any[]) => plugins || []),
     getRuntimeModules: jest.fn().mockReturnValue([]),
     getAdminMetadata: jest.fn().mockReturnValue({}),
   };
@@ -85,7 +89,7 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
     jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
       client: { chat: jest.fn() },
       provider: 'ollama',
@@ -143,7 +147,7 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
     jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
       client: { chat: jest.fn() },
       provider: 'ollama',
@@ -185,7 +189,7 @@ describe('assistant-controller modernization', () => {
         results: [{ ok: true, dryRun: true }],
       }),
     };
-    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
 
     const req: MockReq = {
       body: {
@@ -269,7 +273,7 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
     jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
       client: { chat: jest.fn() },
       provider: 'ollama',
@@ -332,7 +336,7 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
     jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
       client: { chat: jest.fn() },
       provider: 'ollama',
@@ -397,7 +401,7 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn(controller as any, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
     jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
       client: { chat: jest.fn() },
       provider: 'ollama',
@@ -423,7 +427,7 @@ describe('assistant-controller modernization', () => {
         sessionId: 'session-checkpoint',
         continueFrom: true,
         checkpoint: expect.objectContaining({
-          reason: 'clarification_needed',
+          reason: CheckpointReason.CLARIFICATION_NEEDED,
         }),
       }),
     );

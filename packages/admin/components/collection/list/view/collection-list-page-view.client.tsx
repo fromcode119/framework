@@ -29,6 +29,8 @@ export class CollectionListPageView extends Reactor {
   @state pluginSettings: Record<string, any> = {};
   @state total = 0;
   @state loading = true;
+  /** Set when the list could not be loaded, so an empty table is never passed off as "no records". */
+  @state loadError = '';
   @state search = '';
   @state debouncedSearch = '';
   @state page = typeof window === 'undefined'
@@ -90,10 +92,14 @@ export class CollectionListPageView extends Reactor {
         search: this.debouncedSearch, sort: this.sort,
         statusFilter: this.statusFilter, fieldFilters: this.fieldFilters
       });
+      this.loadError = '';
       this.data = result.docs;
       this.total = result.totalDocs;
-    } catch (error) {
+    } catch (error: any) {
+      // Without this the table fell back to "No records found" — a positive claim that the collection
+      // is empty, when in fact the request failed.
       console.error('Failed to fetch collection data:', error);
+      this.loadError = error?.message || 'The records could not be loaded.';
     } finally {
       this.updateState('loading', false);
     }

@@ -1,29 +1,34 @@
 import express from 'express';
 import request from 'supertest';
-import { MarketplaceRouter } from '../src/routes/marketplace';
+import { MarketplaceRouter } from '@api/routes/marketplace';
 
 describe('MarketplaceRouter install route', () => {
-  it('uses plugin manager installOrUpdateFromMarketplace so updates activate the new manifest', async () => {
-    const manifest = {
-      slug: 'analytics',
-      name: 'Site Analytics',
-      version: '0.1.2',
-    };
+  const manifest = {
+    slug: 'analytics',
+    name: 'Site Analytics',
+    version: '0.1.2',
+  };
 
+  const buildApp = () => {
     const manager: any = {
       marketplace: {
-        downloadAndInstall: jest.fn(),
+        downloadAndInstall: vi.fn(),
       },
-      installOrUpdateFromMarketplace: jest.fn().mockResolvedValue(manifest),
+      installOrUpdateFromMarketplace: vi.fn().mockResolvedValue(manifest),
     };
     const auth: any = {
-      middleware: jest.fn().mockReturnValue((_req: any, _res: any, next: () => void) => next()),
-      guard: jest.fn().mockReturnValue((_req: any, _res: any, next: () => void) => next()),
+      middleware: vi.fn().mockReturnValue((_req: any, _res: any, next: () => void) => next()),
+      guard: vi.fn().mockReturnValue((_req: any, _res: any, next: () => void) => next()),
     };
 
     const app = express();
     app.use(express.json());
     app.use('/api/v1/marketplace', new MarketplaceRouter(manager, auth).router);
+    return { app, manager };
+  };
+
+  it('uses plugin manager installOrUpdateFromMarketplace so updates activate the new manifest', async () => {
+    const { app, manager } = buildApp();
 
     const response = await request(app)
       .post('/api/v1/marketplace/install/analytics')
@@ -31,7 +36,32 @@ describe('MarketplaceRouter install route', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ success: true, manifest });
-    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('analytics');
+    // The route ALWAYS passes an options object — that is the only channel for the optional
+    // `?version=` pin, and with no pin the value is `undefined`, which is what the manager's
+    // defaulted `options` parameter means anyway. The old single-argument expectation was written
+    // before `?version=` existed and had simply gone stale.
+    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('analytics', { version: undefined });
     expect(manager.marketplace.downloadAndInstall).not.toHaveBeenCalled();
+  });
+
+  it('forwards an explicit ?version= pin to the plugin manager', async () => {
+    const { app, manager } = buildApp();
+
+    const response = await request(app)
+      .post('/api/v1/marketplace/install/analytics?version=0.1.2')
+      .send({});
+
+    expect(response.status).toBe(200);
+    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('analytics', { version: '0.1.2' });
+  });
+
+  it('treats a blank ?version= as no pin rather than an empty-string version', async () => {
+    const { app, manager } = buildApp();
+
+    await request(app)
+      .post('/api/v1/marketplace/install/analytics?version=%20%20')
+      .send({});
+
+    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('analytics', { version: undefined });
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AssetCacheHeaderService } from '../src/services/asset-cache-header-service';
+import { AssetCacheHeaderService } from '@api/services/asset-cache-header-service';
 
 describe('AssetCacheHeaderService.resolve', () => {
   it('pins content-hashed filenames as immutable (the name is the fingerprint)', () => {

@@ -10,6 +10,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Loader } from '@/components/ui/view/loader.client';
+import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { RoutingPageUtils } from '@/app/settings/routing/routing-page-utils';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
@@ -35,8 +36,19 @@ export class RoutingPage extends AdminComponent {
   private static readonly EMPTY_COLLECTIONS = [];
   @state isSaving = false;
   @state isLoading = true;
-  @state structure = '/:slug';
-  @state homeTarget = 'auto';
+  /**
+   * `null` means NEVER LOADED, for both of these.
+   *
+   * They were seeded `'/:slug'` and `'auto'` — which are exactly the values
+   * `packages/api/src/server/server-settings-service.ts` already DECLARES and seeds for
+   * `permalink_structure` / `routing_home_target`. So the copies here were a second, invisible
+   * default, and because `componentDidMount` had `try/finally` with no `catch`, a failed settings GET
+   * rendered them as the operator's saved routing and "Apply Routing" wrote them back over whatever
+   * was really stored.
+   */
+  @state structure: string | null = null;
+  @state homeTarget: string | null = null;
+  @state loadError: string | null = null;
   @state searchTerm = '';
   @state frontendMeta: any = null;
   @state autoResolvedSource: string | null = null;
@@ -49,7 +61,7 @@ export class RoutingPage extends AdminComponent {
   private optionsTimeout: ReturnType<typeof setTimeout> | null = null;
   private optionsDeps: { frontendMeta: any; availableCollections: any; collections: any; searchTerm: string } | null = null;
   private autoRequestId = 0;
-  private autoDeps: { availableCollections: any; collections: any; homeTarget: string } | null = null;
+  private autoDeps: { availableCollections: any; collections: any; homeTarget: string | null } | null = null;
 
   /** Collections published by the plugin registry (replaces `SettingsRegistrationService.useRegistration`). */
   private get safeCollections(): any[] {
@@ -65,6 +77,17 @@ export class RoutingPage extends AdminComponent {
 
   async componentDidMount(): Promise<void> {
     this.syncAutoSource();
+    await this.loadRouting();
+  }
+
+  @bound
+  async retryLoad(): Promise<void> {
+    this.isLoading = true;
+    await this.loadRouting();
+  }
+
+  private async loadRouting(): Promise<void> {
+    this.loadError = null;
     try {
       const [settingsResponse, frontendMeta, collectionStats] = await Promise.all([
         AdminSystemSettingsClient.getAll(),
@@ -72,10 +95,15 @@ export class RoutingPage extends AdminComponent {
         AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.STATS.COLLECTIONS).catch(() => [])
       ]);
 
-      if (settingsResponse?.permalink_structure) this.structure = String(settingsResponse.permalink_structure);
-      if (settingsResponse?.routing_home_target) this.homeTarget = String(settingsResponse.routing_home_target);
+      // Read from the response ALONE — an absent key renders empty, it does not fall back to a literal.
+      this.structure = String(settingsResponse?.permalink_structure ?? '');
+      this.homeTarget = String(settingsResponse?.routing_home_target ?? '');
       this.frontendMeta = frontendMeta;
       this.availableCollections = Array.isArray(collectionStats) ? collectionStats : [];
+    } catch (err: any) {
+      this.structure = null;
+      this.homeTarget = null;
+      this.loadError = err?.message || 'The routing settings request failed.';
     } finally {
       this.isLoading = false;
     }
@@ -328,23 +356,29 @@ export class RoutingPage extends AdminComponent {
 
   @bound
   appendPlaceholder(label: string): void {
-    if (this.structure.includes(label)) return;
-    this.structure = this.structure.endsWith('/') ? `${this.structure}${label}` : `${this.structure}/${label}`;
+    const structure = this.structure;
+    if (structure === null || structure.includes(label)) return;
+    this.structure = structure.endsWith('/') ? `${structure}${label}` : `${structure}/${label}`;
   }
 
   @bound
   async handleSave(): Promise<void> {
     const addNotification = this.runtime.notify.addNotification;
+    const structure = this.structure;
+    const homeTarget = this.homeTarget;
+    // Fail closed: never PUT values that were not read back from the server. The Save controls are not
+    // rendered in this state.
+    if (structure === null || homeTarget === null) return;
     this.isSaving = true;
     try {
       await AdminSystemSettingsClient.update({
-        permalink_structure: this.structure,
-        routing_home_target: this.homeTarget,
+        permalink_structure: structure,
+        routing_home_target: homeTarget,
       });
 
       this.registerSettings({
-        permalink_structure: this.structure,
-        routing_home_target: this.homeTarget
+        permalink_structure: structure,
+        routing_home_target: homeTarget
       });
 
       addNotification({
@@ -355,7 +389,7 @@ export class RoutingPage extends AdminComponent {
     } catch (err: any) {
       addNotification({
         title: 'Update Failed',
-        message: err.message || 'Failed to save routing settings.',
+        message: err?.message || 'Failed to save routing settings.',
         type: NotificationType.ERROR
       });
     } finally {
@@ -377,14 +411,34 @@ export class RoutingPage extends AdminComponent {
     if (this.isLoading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-[400px]">
-          <Loader label="Loading Routing Protocols..." />
+          <Loader label="Loading routing settings..." />
         </div>
       );
     }
 
     const theme = this.theme;
     const structure = this.structure;
+    const homeTarget = this.homeTarget;
     const resolvedSourceLabel = this.resolvedSourceLabel;
+
+    if (structure === null || homeTarget === null) {
+      return (
+        <div className="flex flex-col h-full animate-in fade-in duration-500">
+          <CompactPageHeader
+            theme={theme}
+            icon={<FrameworkIcons.Map size={18} strokeWidth={2} />}
+            title="Routing"
+            subtitle="Homepage target & permalink configuration"
+          />
+          <LoadErrorPanel
+            title="Routing settings could not be loaded"
+            message={this.loadError || 'The routing settings request failed.'}
+            onRetry={this.retryLoad}
+            isRetrying={this.isLoading}
+          />
+        </div>
+      );
+    }
 
     return (
       <div className="flex flex-col h-full animate-in fade-in duration-500">
@@ -413,7 +467,7 @@ export class RoutingPage extends AdminComponent {
                   Root Route (`/`)
                 </label>
                 <Select
-                  value={this.homeTarget}
+                  value={homeTarget}
                   onChange={this.setHomeTarget}
                   options={this.homeOptions}
                   placeholder="Select homepage target"

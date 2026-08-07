@@ -25,7 +25,12 @@ export class OrchestratorActionUtils {
     return history
       .filter((msg) => msg && typeof msg === 'object')
       .map((msg) => ({
-        role: ['system', 'user', 'assistant'].includes(msg.role) ? msg.role : 'user',
+        // `['system','user','assistant'].includes(msg.role)` compared raw strings against an
+        // `AssistantRole` member, so it was ALWAYS false and every turn — including the assistant's —
+        // was rewritten to the string 'user'. That erased the prior assistant message the classifier
+        // reads to continue a clarification. `fromValue` accepts a member (via `toString`) or a wire
+        // string; unknown still falls back to USER, as before.
+        role: AssistantRole.fromValue(String(msg.role ?? '')) ?? AssistantRole.USER,
         content: String(msg.content || '').trim(),
       }))
       .filter((msg) => msg.content);
@@ -177,8 +182,11 @@ export class OrchestratorActionUtils {
   static findInventoryFollowupReply(message: string, context: IRuntimeContext): string | null {
     const text = String(message || '').toLowerCase().trim();
     
-    // Check for capability questions
-    if (/\b(what can you|capabilities|what do you|help me)\b/.test(text)) {
+    // Check for capability questions. `what do you` must be `what do you do` — the bare prefix also
+    // swallowed "what do you MEAN by cms content?", a clarification the classifier had already answered
+    // precisely, and this canned blurb short-circuits `chatReply` below, so the specific answer lost to
+    // the generic one.
+    if (/\b(what can you|capabilities|what do you do|help me)\b/.test(text)) {
       return 'I can help you manage content, update settings, search your workspace, and more. Ask me to create, update, or find content in your collections.';
     }
     

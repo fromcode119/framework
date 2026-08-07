@@ -8,6 +8,8 @@ export interface IFieldRendererProps {
   theme: ThemeMode;
   collectionSlug: string;
   pluginSettings?: Record<string, any>;
+  /** The owning plugin's settings SCHEMA — supplies each setting's label and tab for provenance. */
+  pluginSettingsSchema?: Record<string, any>;
   globalSettings?: Record<string, any>;
   disabled?: boolean;
   isNew?: boolean;

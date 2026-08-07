@@ -104,28 +104,6 @@ export class ApplicationUrlUtils {
     return '';
   }
 
-  static isLegacyFrameworkUrlCandidate(value: unknown, roles: string[] = []): boolean {
-    const parsed = value instanceof URL ? value : ApplicationUrlUtils.parseAbsoluteUrl(value);
-    if (!parsed) {
-      return false;
-    }
-
-    if (ApplicationUrlUtils.isLoopbackCandidate(parsed)) {
-      return parsed.protocol === 'http:';
-    }
-
-    const role = ApplicationUrlUtils.detectHostRole(parsed);
-    if (roles.length > 0 && (!role || !roles.includes(role))) {
-      return false;
-    }
-
-    return ApplicationUrlUtils.derivePlatformDomain(parsed) === ApplicationUrlUtils.LEGACY_PLATFORM_DOMAIN;
-  }
-
-  static isLegacyPlatformDomain(value: unknown): boolean {
-    return String(value ?? '').trim().toLowerCase() === ApplicationUrlUtils.LEGACY_PLATFORM_DOMAIN;
-  }
-
   /**
    * Infers the browser-side base URL for an app, ALWAYS returning a clean base with NO
    * trailing slash, or '' (server/no-window or unresolved). Callers MUST NOT post-process the

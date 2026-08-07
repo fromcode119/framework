@@ -3,20 +3,30 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PluginSettingsForm } from '@/components/plugins/view/plugin-settings-form.client';
 import { vi } from 'vitest';
 import { AdminApi } from '@/lib/api';
+import { AdminRuntimeContext } from '@/components/view/admin-runtime-context.client';
+import { ThemeMode } from '@fromcode119/core/client';
 
-// Mock dependecies
-vi.mock('@fromcode119/react', async (importOriginal) => {
-  const actual = await importOriginal() as any;
-  return {
-    ...actual,
-    ContextHooks: {
-      ...actual.ContextHooks,
-      usePlugins: () => ({
-        triggerRefresh: vi.fn(),
-      }),
-    },
-  };
-});
+/**
+ * The form is a hook-free {@link AdminComponent}: it reads the plugin registry as
+ * `this.runtime.plugins.triggerRefresh` off {@link AdminRuntimeContext}, NOT via
+ * `ContextHooks.usePlugins()`. Rendering it bare leaves `this.context` at the context's `null`
+ * default, so every post-save `triggerRefresh()` threw and was swallowed by the component's own
+ * catch — the tests stayed green while the refresh path went completely unexercised. Mounting
+ * inside the provider is what actually exercises it.
+ *
+ * `theme` must be a real {@link ThemeMode} member, not the raw string `'light'`: ThemeMode is a
+ * reactor `Enum`, and `enumMember === 'light'` is always false.
+ */
+const triggerRefresh = vi.fn();
+
+const renderForm = (props: { pluginSlug: string }) =>
+  render(
+    <AdminRuntimeContext.context.Provider
+      value={{ theme: ThemeMode.LIGHT, plugins: { triggerRefresh }, collections: [] } as any}
+    >
+      <PluginSettingsForm {...props} />
+    </AdminRuntimeContext.context.Provider>
+  );
 
 vi.mock('@/lib/api', () => ({
   AdminApi: {
@@ -35,12 +45,6 @@ vi.mock('@/lib/constants', async () => {
     // Ensure we use the real ENDPOINTS so paths match the component
   };
 });
-
-vi.mock('@/components/view/use-theme.client', () => ({
-  ThemeHooks: {
-    useTheme: () => ({ theme: 'light', toggleTheme: vi.fn() })
-  }
-}));
 
 vi.mock('@/components/collection/view/field-renderer.client', () => ({
   FieldRenderer: ({ field, value, onChange }: any) => (
@@ -84,7 +88,7 @@ describe('./plugin-settings-form', () => {
   });
 
   it('renders loading state then settings form', async () => {
-    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
+    renderForm({ pluginSlug });
     
     // Wait for the loading to finish
     await waitFor(() => expect(screen.queryByText('Site Name')).toBeDefined());
@@ -95,7 +99,7 @@ describe('./plugin-settings-form', () => {
   });
 
   it('switches tabs and shows correct fields', async () => {
-    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
+    renderForm({ pluginSlug });
     
     await waitFor(() => screen.getByText('Site Name'));
     
@@ -110,7 +114,7 @@ describe('./plugin-settings-form', () => {
   });
 
   it('updates state when field changes', async () => {
-    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
+    renderForm({ pluginSlug });
     
     await waitFor(() => screen.getByTestId('input-siteName'));
     
@@ -125,7 +129,7 @@ describe('./plugin-settings-form', () => {
     (AdminApi.put as any).mockResolvedValue({ success: true });
     window.alert = vi.fn();
 
-    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
+    renderForm({ pluginSlug });
     
     await waitFor(() => screen.getByTestId('input-siteName'));
     
@@ -140,13 +144,35 @@ describe('./plugin-settings-form', () => {
         siteName: 'New Name'
       }));
     });
+
+    // The save must also refresh the plugin registry so the rest of the admin picks up the change.
+    await waitFor(() => expect(triggerRefresh).toHaveBeenCalledTimes(1));
+    expect(screen.getByText(/Settings saved successfully/i)).toBeDefined();
+  });
+
+  it('does not refresh the plugin registry when saving fails', async () => {
+    (AdminApi.put as any).mockRejectedValue(Object.assign(new Error('Boom'), { status: 500 }));
+    // The component logs the rejection itself; capture it so the expected failure is asserted
+    // rather than printed as stray stderr.
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    renderForm({ pluginSlug });
+
+    await waitFor(() => screen.getByTestId('input-siteName'));
+    fireEvent.change(screen.getByTestId('input-siteName'), { target: { value: 'New Name' } });
+    fireEvent.click(screen.getByRole('button', { name: /Save Settings/i }));
+
+    await waitFor(() => expect(screen.getByText(/Boom/i)).toBeDefined());
+    expect(triggerRefresh).not.toHaveBeenCalled();
+    expect(logged).toHaveBeenCalledWith('Save error:', expect.objectContaining({ message: 'Boom' }));
+    logged.mockRestore();
   });
 
   it('calls AdminApi.post when resetting', async () => {
     (AdminApi.post as any).mockResolvedValue({ settings: { siteName: 'default' } });
     window.confirm = vi.fn().mockReturnValue(true);
 
-    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
+    renderForm({ pluginSlug });
     
     await waitFor(() => screen.getByText('Reset'));
     
@@ -156,11 +182,14 @@ describe('./plugin-settings-form', () => {
     await waitFor(() => {
       expect(AdminApi.post).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings/reset`));
     });
+
+    // Reset takes the same refresh path as save, and was equally unexercised before.
+    await waitFor(() => expect(triggerRefresh).toHaveBeenCalledTimes(1));
   });
 
   it('handles export by opening new window', async () => {
     window.open = vi.fn();
-    render(<PluginSettingsForm pluginSlug={pluginSlug} />);
+    renderForm({ pluginSlug });
     
     await waitFor(() => screen.getByText('Export'));
     

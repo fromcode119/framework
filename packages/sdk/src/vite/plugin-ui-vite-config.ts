@@ -18,6 +18,12 @@ export class PluginUiViteConfig {
     const uiDir = process.env.PLUGIN_UI_DIR as string;
 
     return {
+      // `@plugin/` resolves to THIS plugin's `src` — the analogue of a theme's `@theme/`, and the
+      // same root the backend esbuild build maps. `PLUGIN_UI_DIR` is `<plugin>/ui`, so the plugin
+      // `PLUGIN_UI_DIR` is `<plugin>/src/ui`, so the SOURCE ROOT is its parent — NOT parent+'/src',
+      // which would give `<plugin>/src/src`. Trailing slashes matter: Vite aliases match by PREFIX, and
+      // `@plugin` entry would also swallow a package literally named `@plugin-something`.
+      resolve: { alias: { '@plugin/': `${path.dirname(path.dirname(uiDir))}/` } },
       // Per-plugin+bundle cache dir so concurrent plugin builds (the full build runs them in parallel)
       // never collide on a shared Vite cache.
       cacheDir: `/tmp/vite-plugin-${process.env.PLUGIN_SLUG || 'x'}-${process.env.UI_BUNDLE || 'admin'}`,

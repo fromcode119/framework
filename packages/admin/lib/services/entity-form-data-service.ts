@@ -39,7 +39,12 @@ export class EntityFormDataService {
       if (!fieldName || !(fieldName in nextPayload)) {
         continue;
       }
-      if (field.type !== FieldType.CHECKBOX && field.type !== FieldType.BOOLEAN) {
+      // `IField.type` is `FieldType | string` and a collection schema fetched from the API always
+      // carries the raw literal ('checkbox'), so a bare `field.type !== FieldType.CHECKBOX` compared a
+      // string to an Enum member — ALWAYS true, so this loop `continue`d on every field and the
+      // boolean normalisation below never ran once. Resolve before comparing.
+      const fieldType = FieldType.resolve(field.type);
+      if (fieldType !== FieldType.CHECKBOX && fieldType !== FieldType.BOOLEAN) {
         continue;
       }
       const parsed = this.parser.parseCollectionInput(collection, { [fieldName]: nextPayload[fieldName] }, { mode: EntityParseMode.UPDATE });

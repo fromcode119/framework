@@ -1,0 +1,22 @@
+System telemetry summary for {{fromIso}} -> {{toIso}}
+
+Total log entries: {{totalEntries}}
+Levels:
+- ERROR: {{levels.error}}
+- WARN: {{levels.warn}}
+- INFO: {{levels.info}}
+- DEBUG: {{levels.debug}}
+
+Top active plugins:
+{{#each topPlugins}}
+- {{slug}}: {{count}}
+{{else}}
+- (no activity)
+{{/each}}
+
+Recent critical entries:
+{{#each criticalEntries}}
+- [{{timestamp}}] {{pluginSlug}} {{level}}: {{message}}
+{{else}}
+- (none)
+{{/each}}

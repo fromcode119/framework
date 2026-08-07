@@ -14,6 +14,11 @@ export type { IBasePluginRouterOptions, IPluginHealthBuildOptions, IPluginHealth
 // that was importing `@fromcode119/core` directly, which the SDK boundary forbids for plugins.
 export { ServerCoreServices } from '@fromcode119/core';
 
+// The platform's per-install HMAC signing key, framework-owned. Plugins that mint capability links
+// (booking manage tokens, unsubscribe links) MUST derive their key from this and never carry a
+// literal fallback — see SigningSecretService.
+export { SigningSecretService } from '@fromcode119/core';
+
 export { PluginRegistry } from '@fromcode119/plugins';
 export { MediaImageOptimizer } from '@fromcode119/media';
 export type { IMediaImageOptimizationOptions, IMediaImageOptimizationResult } from '@fromcode119/media';

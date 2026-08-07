@@ -54,15 +54,17 @@ export class OrderByBuilder {
       if (parts.length === 0) return null;
       return parts.map((part) => {
         const orderFn = part.direction === SortDirection.DESC ? desc : asc;
-        return orderFn(sql.identifier(NamingStrategy.toSnakeCase(part.column)));
+        return orderFn(sql.identifier(NamingStrategy.toSafeColumnIdentifier(part.column)));
       });
     }
 
-    // Object format: { column_name: 'desc' }
+    // Object format: { column_name: 'desc' }. The string branch above whitelists its columns while
+    // parsing; an object's KEYS never passed through that check, so they are validated here — the same
+    // gate, so neither shape can put an unvalidated name into an identifier position.
     if (typeof orderBy === 'object' && Object.getPrototypeOf(orderBy) === Object.prototype) {
       return Object.entries(orderBy).map(([column, direction]) => {
         const orderFn = String(direction).toLowerCase() === 'desc' ? desc : asc;
-        return orderFn(sql.identifier(NamingStrategy.toSnakeCase(column)));
+        return orderFn(sql.identifier(NamingStrategy.toSafeColumnIdentifier(column)));
       });
     }
 
@@ -80,14 +82,14 @@ export class OrderByBuilder {
       const parts = this.parseOrderByString(orderBy);
       if (parts.length === 0) return '';
       const clauses = parts
-        .map((part) => `"${NamingStrategy.toSnakeCase(part.column)}" ${part.direction}`)
+        .map((part) => `"${NamingStrategy.toSafeColumnIdentifier(part.column)}" ${part.direction}`)
         .join(', ');
       return ` ORDER BY ${clauses}`;
     }
 
     if (typeof orderBy === 'object' && !Array.isArray(orderBy)) {
       const clauses = Object.entries(orderBy)
-        .map(([k, v]) => `"${NamingStrategy.toSnakeCase(k)}" ${this.normalizeOrderDirection(v)}`)
+        .map(([k, v]) => `"${NamingStrategy.toSafeColumnIdentifier(k)}" ${this.normalizeOrderDirection(v)}`)
         .join(', ');
       return ` ORDER BY ${clauses}`;
     }

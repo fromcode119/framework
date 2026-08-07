@@ -3,6 +3,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 import { headers } from 'next/headers';
 import { ServerApiUtils } from '@/lib/server-api';
 import { PublicRouteDefinition } from '@/lib/public-route-definition';
+import { ServerApiUnreachableError } from '@/lib/server-api-unreachable-error';
 
 export class PublicRouteProxy {
   private static readonly DEFAULT_CONTENT_TYPE = 'text/plain; charset=utf-8';
@@ -18,7 +19,22 @@ export class PublicRouteProxy {
   static async getResponse(path: string): Promise<Response> {
     noStore();
 
-    const route = await PublicRouteProxy.resolveRoute(path);
+    let route: PublicRouteDefinition | null;
+    try {
+      route = await PublicRouteProxy.resolveRoute(path);
+    } catch (error) {
+      // The plugin route table was unreachable, so we cannot know whether this path is a real
+      // public route. Answering 404 here would delist a live sitemap.xml/robots.txt.
+      if (!(error instanceof ServerApiUnreachableError)) throw error;
+      return new NextResponse('Upstream public route table unavailable', {
+        status: 502,
+        headers: {
+          'Cache-Control': 'no-store',
+          'Content-Type': 'text/plain; charset=utf-8',
+        },
+      });
+    }
+
     if (!route) {
       return new NextResponse('Not found', {
         status: 404,
@@ -56,7 +72,8 @@ export class PublicRouteProxy {
       return null;
     }
 
-    const metadata = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemFrontendPath()) as Record<string, unknown> | null;
+    const metadataPath = ServerApiUtils.buildSystemFrontendPath();
+    const metadata = (await ServerApiUtils.serverFetchJsonOutcome(metadataPath)).valueOrThrow(metadataPath) as Record<string, unknown> | null;
     const plugins = Array.isArray(metadata?.plugins) ? metadata.plugins as Array<Record<string, unknown>> : [];
 
     for (const plugin of plugins) {

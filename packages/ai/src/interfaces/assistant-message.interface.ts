@@ -11,7 +11,7 @@ import { AssistantRole } from '@ai/enums/assistant-role.enum';
 /** One entry in the assistant conversation — the user turn or the assistant turn plus everything
  * the runtime attached to it (actions, traces, plan, checkpoint). */
 export interface IAssistantMessage {
-  role: AssistantRole | 'system';
+  role: AssistantRole;
   content: string;
   attachments?: IUploadedAttachment[];
   actions?: IAssistantAction[];

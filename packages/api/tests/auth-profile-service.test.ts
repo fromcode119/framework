@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AuthProfileService } from '../src/services/auth-profile-service';
+import { AuthProfileService } from '@api/services/auth-profile-service';
 
 describe('AuthProfileService', () => {
   it('round-trips generic extra profile fields without naming them in framework code', () => {

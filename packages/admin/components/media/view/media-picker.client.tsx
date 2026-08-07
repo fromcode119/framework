@@ -1,77 +1,151 @@
 import type { IMediaItem } from '@/components/media/interfaces/media-item.interface';
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import type { ChangeEvent, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
-import { Search, Upload, X, Check, Image as ImageIcon, File, Loader2 } from 'lucide-react';
+import { Reactor, prop, state, bound, watch } from '@fromcode119/reactor';
+import { CoercionUtils } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { Button } from '@/components/ui/view/button.client';
-
 import { RootFramework } from '@fromcode119/react';
-import { AdminTypography } from '@/lib/typography';
-import { UiFieldUtils } from '@/lib/ui';
+import { MediaPickerSourceService } from '@/components/media/media-picker-source-service';
+import { MediaPickerHeader } from '@/components/media/view/media-picker-header.client';
+import { MediaPickerToolbar } from '@/components/media/view/media-picker-toolbar.client';
+import { MediaPickerGrid } from '@/components/media/view/media-picker-grid.client';
+import { MediaPickerDetails } from '@/components/media/view/media-picker-details.client';
 
 export class MediaPicker extends Reactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<MediaPicker, 'onSelect' | 'onClose' | 'allowMultiple'>;
+  declare props: Pick<MediaPicker, 'onSelect' | 'onClose' | 'allowMultiple' | 'value' | 'allowThemeAssets'>;
 
   @prop declare onSelect: (item: IMediaItem) => void;
   @prop declare onClose: () => void;
   @prop declare allowMultiple?: boolean;
-
-  @ref declare fileInputRef: Ref<HTMLInputElement>;
+  /** What the field currently holds, so the picker opens ON that asset instead of on nothing. */
+  @prop declare value?: string;
+  /**
+   * Opt-in second source: the images and videos that ship inside the active theme. Off by default
+   * because a field storing a media RECORD ID has nothing to point at for a theme asset — there is
+   * no media row behind it. Fields that store a path or a URL turn it on.
+   */
+  @prop declare allowThemeAssets?: boolean;
 
   @state items: IMediaItem[] = [];
+  @state themeItems: IMediaItem[] = [];
   @state loading = true;
+  @state themeLoading = false;
   @state uploading = false;
   @state search = '';
   @state selectedId: string | null = null;
   @state mounted = false;
+  @state themeSource = false;
 
-  @bound async fetchMedia(): Promise<void> {
+  componentDidMount(): void {
+    this.mounted = true;
+    void this.loadSources();
+  }
+
+  /**
+   * Both fetchers RETURN what they loaded and the selection reads those arrays, never `this.items` /
+   * `this.themeItems`: after mount a `@state` write goes through `setState`, so the accessor still
+   * reads the PREVIOUS value on the very next line. The first version selected against an empty list
+   * and silently opened on nothing, with the asset sitting right there in the grid.
+   */
+  @bound private async loadSources(): Promise<void> {
+    const [uploads, themeAssets] = await Promise.all([this.fetchMedia(), this.fetchThemeAssets()]);
+    this.selectCurrentValue(uploads, themeAssets);
+  }
+
+  @bound async fetchMedia(): Promise<IMediaItem[]> {
     this.loading = true;
+    let loaded: IMediaItem[] = [];
     try {
       const query = this.search ? `?q=${encodeURIComponent(this.search)}` : '';
       const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}${query}`);
-      this.items = Array.isArray(result) ? result : result.docs || [];
+      loaded = Array.isArray(result) ? result : result.docs || [];
+      this.items = loaded;
     } catch (error) {
       console.error('Failed to fetch media:', error);
     } finally {
       this.loading = false;
     }
+    return loaded;
   }
 
-  componentDidMount(): void {
-    this.mounted = true;
-    void this.fetchMedia();
+  @bound private async fetchThemeAssets(): Promise<IMediaItem[]> {
+    if (!this.allowThemeAssets) return [];
+    this.themeLoading = true;
+    let loaded: IMediaItem[] = [];
+    try {
+      loaded = await MediaPickerSourceService.fetchThemeAssets();
+      this.themeItems = loaded;
+    } catch (error) {
+      console.error('Failed to fetch theme assets:', error);
+    } finally {
+      this.themeLoading = false;
+    }
+    return loaded;
+  }
+
+  /** Opens on the asset the field already holds — on the tab it actually lives in. */
+  private selectCurrentValue(uploads: IMediaItem[], themeAssets: IMediaItem[]): void {
+    const match = MediaPickerSourceService.resolveSelection(CoercionUtils.toString(this.value), themeAssets, uploads);
+    if (!match) return;
+    this.selectedId = match.id;
+    this.themeSource = !!match.relativePath;
+  }
+
+  private get visibleItems(): IMediaItem[] {
+    if (!this.themeSource) return this.items;
+    return MediaPickerSourceService.search(this.themeItems, this.search);
+  }
+
+  private get visibleLoading(): boolean {
+    return this.themeSource ? this.themeLoading : this.loading;
+  }
+
+  private get emptyMessage(): string {
+    return this.themeSource ? 'No assets ship with this theme' : 'No media found';
+  }
+
+  private get selectedItem(): IMediaItem | null {
+    return this.items.concat(this.themeItems).find((item) => item.id === this.selectedId) || null;
   }
 
   @watch('search') onSearchChanged(): void {
+    if (this.themeSource) return;
     void this.fetchMedia();
   }
 
-  @bound async handleUpload(e: ChangeEvent<HTMLInputElement>): Promise<void> {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  @bound private handleSearchChange(value: string): void {
+    this.search = value;
+  }
 
+  @bound private handleSourceChange(themeSource: boolean): void {
+    this.themeSource = themeSource;
+  }
+
+  @bound private handleTileSelect(item: IMediaItem): void {
+    this.selectedId = item.id;
+  }
+
+  @bound private handleConfirm(item: IMediaItem): void {
+    this.onSelect(item);
+    this.onClose();
+  }
+
+  @bound async handleUpload(file: File): Promise<void> {
     this.uploading = true;
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      // First upload file (assuming specialized endpoint or generic collection upload)
-      // If no specialized endpoint, we'd use the general collection create with multipart
       const result = await AdminApi.upload(`${AdminConstants.ENDPOINTS.MEDIA.UPLOAD}`, formData);
 
       // Refresh list and select the new item
       await this.fetchMedia();
       if (result.id || result.doc?.id) {
-          const newItem = result.doc || result;
-          this.selectedId = newItem.id;
-          this.onSelect(newItem);
-          this.onClose();
+        const newItem = result.doc || result;
+        this.selectedId = newItem.id;
+        this.handleConfirm(newItem);
       }
     } catch (error) {
       console.error('Upload failed:', error);
@@ -81,185 +155,39 @@ export class MediaPicker extends Reactor {
     }
   }
 
-  @bound handleSearchChange(e: ChangeEvent<HTMLInputElement>): void {
-    this.search = e.target.value;
-  }
-
-  @bound openFilePicker(): void {
-    this.fileInputRef.current?.click();
-  }
-
   render(): ReactNode {
-    const onSelect = this.onSelect;
-    const onClose = this.onClose;
-    const { items, loading, uploading, search, selectedId, mounted } = this;
-    const setSelectedId = (v: string | null) => { this.selectedId = v; };
-    const selectedItem = items.find(i => i.id === selectedId);
-
-    if (!mounted) return null;
+    if (!this.mounted) return null;
 
     return createPortal(
     <RootFramework>
       <div className="fixed inset-0 z-[2147483000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
         <div className="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-lg shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
-          
-          {/* Header */}
-          <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <div>
-              <h2 className={`${AdminTypography.TYPOGRAPHY.HEADING.SUBTLE} text-slate-900 dark:text-white`}>Media Library</h2>
-              <p className={AdminTypography.TYPOGRAPHY.SUBTEXT}>Select or upload an asset to your project</p>
-            </div>
-            <button 
-              onClick={onClose}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          {/* Toolbar */}
-          <div className="px-8 py-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4">
-            <div className="relative flex-1 group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
-              <input 
-                type="text"
-                placeholder="Search media..."
-                value={search}
-                onChange={this.handleSearchChange}
-                className={`w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${AdminTypography.TYPOGRAPHY.LABEL}`}
+          <MediaPickerHeader
+            showSourceTabs={!!this.allowThemeAssets}
+            themeSource={this.themeSource}
+            onSourceChange={this.handleSourceChange}
+            onClose={this.onClose}
+          />
+          <MediaPickerToolbar
+            search={this.search}
+            onSearchChange={this.handleSearchChange}
+            uploading={this.uploading}
+            canUpload={!this.themeSource}
+            onFile={this.handleUpload}
+          />
+          <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-transparent">
+              <MediaPickerGrid
+                items={this.visibleItems}
+                loading={this.visibleLoading}
+                emptyMessage={this.emptyMessage}
+                selectedId={this.selectedId}
+                onSelect={this.handleTileSelect}
+                onConfirm={this.handleConfirm}
               />
             </div>
-            <input
-              type="file"
-              ref={this.fileInputRef}
-              className="hidden"
-              onChange={this.handleUpload}
-              accept="image/*,video/*,application/pdf"
-            />
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              onClick={this.openFilePicker}
-              disabled={uploading}
-            >
-              {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-              Upload New
-            </Button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Grid */}
-            <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-transparent">
-              {loading ? (
-                <div className="h-full flex items-center justify-center">
-                  <Loader2 className="animate-spin text-indigo-500" size={32} />
-                </div>
-              ) : items.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-400">
-                  <ImageIcon size={48} className="mb-4 opacity-20" />
-                  <p className={AdminTypography.TYPOGRAPHY.LABEL}>No media found</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                  {items.map(item => {
-                    const isImage = item.mimeType.startsWith('image/');
-                    const isSelected = selectedId === item.id;
-
-                    return (
-                      <div 
-                        key={item.id}
-                        onClick={() => setSelectedId(item.id)}
-                        onDoubleClick={() => {
-                          onSelect(item);
-                          onClose();
-                        }}
-                        className={`group relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                          isSelected 
-                            ? 'border-indigo-500 ring-4 ring-indigo-500/10' 
-                            : 'border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 bg-white dark:bg-slate-800'
-                        }`}
-                      >
-                        {isImage ? (
-                          <img 
-                            src={item.url} 
-                            alt={item.filename} 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center p-4">
-                            <File size={32} className="text-slate-300 mb-2" />
-                            <span className="text-[8px] font-semibold text-slate-400 text-center truncate w-full">{item.filename}</span>
-                          </div>
-                        )}
-                        
-                        {isSelected && (
-                          <div className="absolute top-2 right-2 bg-indigo-500 text-white rounded-full p-1 shadow-lg animate-in zoom-in-0">
-                            <Check size={12} />
-                          </div>
-                        )}
-
-                        <div className="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/5 transition-colors" />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Sidebar Details */}
             <div className="w-80 border-l border-slate-100 dark:border-slate-800 p-6 bg-white dark:bg-slate-900 flex flex-col">
-              {selectedItem ? (
-                <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2">
-                  <div className="aspect-video rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
-                    {selectedItem.mimeType.startsWith('image/') ? (
-                      <img src={selectedItem.url} className="w-full h-full object-contain" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <File size={40} className="text-slate-300" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <h4 className={UiFieldUtils.TEXT.LABEL}>Filename</h4>
-                    <p className="text-[11px] font-semibold text-slate-900 dark:text-white truncate">{selectedItem.filename}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h4 className={UiFieldUtils.TEXT.LABEL}>Format</h4>
-                      <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{selectedItem.mimeType.split('/')[1]}</p>
-                    </div>
-                    <div>
-                      <h4 className={UiFieldUtils.TEXT.LABEL}>Size</h4>
-                      <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{(selectedItem.filesize / 1024).toFixed(1)} KB</p>
-                    </div>
-                    {selectedItem.width && (
-                      <div className="col-span-2">
-                        <h4 className={UiFieldUtils.TEXT.LABEL}>Dimensions</h4>
-                        <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{selectedItem.width} × {selectedItem.height} px</p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
-                    <Button 
-                      onClick={() => {
-                        onSelect(selectedItem);
-                        onClose();
-                      }}
-                      className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-[1.02] transition-transform"
-                    >
-                      <span className="text-[11px] font-semibold">Insert Asset</span>
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 px-4">
-                  <ImageIcon size={40} className="mb-4 opacity-10" />
-                  <p className={UiFieldUtils.TEXT.SUBTEXT}>Select an item to view details</p>
-                </div>
-              )}
+              <MediaPickerDetails item={this.selectedItem} onConfirm={this.handleConfirm} />
             </div>
           </div>
         </div>

@@ -48,6 +48,9 @@ export { SystemShortcodes } from '@react/system-shortcodes';
 export { CollectionQueryUtils } from '@react/collection-queries';
 export { BrowserLocalization } from '@react/browser-localization';
 export { AsyncDataController } from '@react/async-data-controller';
+// Fail-closed lookup of admin components from the runtime registry, so a plugin/theme never
+// has to name the admin package (which the SDK boundary forbids).
+export { AdminComponentRegistry } from '@react/admin-component-registry';
 export { LazyComponentLoaderService } from '@react/lazy-component-loader-service';
 export { LazyLoadClass } from '@react/lazy-load-class';
 export { PageStyleContext } from '@react/page-style-context';

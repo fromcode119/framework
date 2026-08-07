@@ -133,7 +133,8 @@ export class PluginsLayout extends AdminComponent {
               </div>
 
               <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-                 <a href={AdminConstants.FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Documentation</a>
+                 {/* The "Documentation" link pointed at docs.fromcode.com, which does not resolve. */}
+                 <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Github</a>
               </div>
             </div>
           </div>

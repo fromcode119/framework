@@ -1,0 +1,12 @@
+{
+  "_comment": "Framework defaults for the THEMED verification email. Every value here is overridden per-theme by the active theme's `settings.authEmails` (admin → Appearance/Theme settings): `subject`, `brandName`, `accentColor`, `footerText`, `logoUrl` at the top level, and `verifyEmail.{greeting,title,message,buttonLabel,fallbackLabel,ignoreMessage}`. Copy lives here — never as string literals in .ts — so it is visible, editable and translatable. `{{token}}` placeholders are filled with brandName / firstName / firstNameSuffix / year.",
+  "subject": "{{brandName}}: Verify your email",
+  "greeting": "Hello{{firstNameSuffix}}",
+  "title": "Verify your email address",
+  "message": "One more step and your {{brandName}} account is active.",
+  "buttonLabel": "Verify email",
+  "fallbackLabel": "If the button does not work, copy this address into your browser:",
+  "ignoreMessage": "If you did not create this account, you can safely ignore this email.",
+  "footerText": "© {{year}} {{brandName}}. All rights reserved.",
+  "accentColor": "#5b2a9f"
+}

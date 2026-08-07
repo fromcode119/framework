@@ -1,58 +1,38 @@
 {
   "name": "@fromcode119/sdk",
-  "version": "0.1.80",
+  "version": "0.1.81",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./internal": {
-      "import": "./dist/internal.js",
-      "require": "./dist/internal.js",
-      "types": "./dist/internal.d.ts"
-    },
-    "./constants": {
-      "import": "./dist/constants.js",
-      "require": "./dist/constants.js",
-      "types": "./dist/constants.d.ts"
+      "require": "./dist/index.js"
     },
     "./server": {
+      "types": "./dist/server.d.ts",
       "import": "./dist/server.js",
-      "require": "./dist/server.js",
-      "types": "./dist/server.d.ts"
+      "require": "./dist/server.js"
     },
     "./database": {
+      "types": "./dist/database/index.d.ts",
       "import": "./dist/database/index.js",
-      "require": "./dist/database/index.js",
-      "types": "./dist/database/index.d.ts"
+      "require": "./dist/database/index.js"
     },
     "./react": {
+      "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js",
-      "require": "./dist/react/index.js",
-      "types": "./dist/react/index.d.ts"
+      "require": "./dist/react/index.js"
     },
     "./admin": {
+      "types": "./dist/admin/index.d.ts",
       "import": "./dist/admin/index.js",
-      "require": "./dist/admin/index.js",
-      "types": "./dist/admin/index.d.ts"
-    },
-    "./client/default-design": {
-      "import": "./dist/client/default-design/index.js",
-      "require": "./dist/client/default-design/index.js",
-      "types": "./dist/client/default-design/index.d.ts"
-    },
-    "./vite": {
-      "import": "./dist/vite/index.js",
-      "require": "./dist/vite/index.js",
-      "types": "./dist/vite/index.d.ts"
+      "require": "./dist/admin/index.js"
     },
     "./admin/theme-style-variant-select": {
+      "types": "./dist/admin/view/theme-style-variant-select.client.d.ts",
       "import": "./dist/admin/view/theme-style-variant-select.client.js",
-      "require": "./dist/admin/view/theme-style-variant-select.client.js",
-      "types": "./dist/admin/view/theme-style-variant-select.client.d.ts"
+      "require": "./dist/admin/view/theme-style-variant-select.client.js"
     }
   },
   "files": [

@@ -1,4 +1,4 @@
-import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
+import { IntegrationConfigSanitizer } from '@core/integrations/integration-config-sanitizer';
 import { Logger } from '@core/logging';
 import { SystemConstants } from '@core/constants/system.constants';
 import { CoreServices } from '@core/services';
@@ -85,6 +85,8 @@ export class IntegrationStoredProviderService {
       return null;
     }
 
+    // An unregistered provider stays fail-closed the way it already was: no entry at all, so the
+    // caller falls through to the stored profiles instead of publishing a config nobody can describe.
     const provider = this.types.get(normalizedType)?.providers.get(selected.providerKey);
     if (!provider) {
       return null;
@@ -92,7 +94,7 @@ export class IntegrationStoredProviderService {
 
     return {
       providerKey: selected.providerKey,
-      config: this.sanitizeConfigForAdmin(provider, selected.config || {}),
+      config: IntegrationConfigSanitizer.sanitizeForAdmin(provider, selected.config || {}),
     };
   }
 
@@ -108,25 +110,23 @@ export class IntegrationStoredProviderService {
       return null;
     }
 
-    return providers.map((entry) => {
-      const provider = runtime.providers.get(entry.providerKey);
-      if (!provider) {
-        return entry;
-      }
-      return {
-        ...entry,
-        config: this.sanitizeConfigForAdmin(provider, entry.config || {}),
-      };
-    });
+    // An entry whose provider is not registered (its plugin is disabled or failed to load) is the case
+    // where the server knows LEAST about the config — so it is the case that must reveal least.
+    return providers.map((entry) => ({
+      ...entry,
+      config: IntegrationConfigSanitizer.sanitizeForAdmin(
+        runtime.providers.get(entry.providerKey),
+        entry.config || {},
+      ),
+    }));
   }
 
   sanitizeResolvedConfig(typeKey: string, providerKey: string, config: Record<string, any> = {}): Record<string, any> {
     const normalizedType = this.normalize(typeKey);
-    const provider = this.types.get(normalizedType)?.providers.get(this.normalize(providerKey));
-    if (!provider) {
-      return config || {};
-    }
-    return this.sanitizeConfigForAdmin(provider, config || {});
+    return IntegrationConfigSanitizer.sanitizeForAdmin(
+      this.types.get(normalizedType)?.providers.get(this.normalize(providerKey)),
+      config || {},
+    );
   }
 
   async setProviderEnabled(typeKey: string, providerId: string, enabled: boolean) {
@@ -194,14 +194,18 @@ export class IntegrationStoredProviderService {
     provider: IIntegrationProviderDefinition<any>,
     config: Record<string, any>,
   ): Record<string, any> {
-    const passwordFields = this.getPasswordFieldNames(provider);
-    if (!passwordFields.length) {
+    const secretFields = IntegrationConfigSanitizer.secretFieldNames(provider);
+    if (!secretFields.length) {
       return config || {};
     }
 
     const resolvedConfig: Record<string, any> = { ...(config || {}) };
-    for (const fieldName of passwordFields) {
-      resolvedConfig[fieldName] = SecretService.decrypt(resolvedConfig[fieldName]);
+    for (const fieldName of secretFields) {
+      // Only ciphertext is decrypted, so anything else keeps its stored value AND its type — widening
+      // the secret set can never coerce a boolean/number field into a string.
+      if (SecretService.isEncryptedValue(resolvedConfig[fieldName])) {
+        resolvedConfig[fieldName] = SecretService.decrypt(resolvedConfig[fieldName]);
+      }
     }
     return resolvedConfig;
   }
@@ -239,15 +243,15 @@ export class IntegrationStoredProviderService {
     nextConfig: Record<string, any>,
     existingConfig: Record<string, any>,
   ): Record<string, any> {
-    const passwordFields = this.getPasswordFieldNames(provider);
-    if (!passwordFields.length) {
+    const secretFields = IntegrationConfigSanitizer.secretFieldNames(provider);
+    if (!secretFields.length) {
       return nextConfig || {};
     }
 
     const resolvedExistingConfig = this.resolveRuntimeConfig(provider, existingConfig || {});
     const mergedConfig: Record<string, any> = { ...(nextConfig || {}) };
 
-    for (const fieldName of passwordFields) {
+    for (const fieldName of secretFields) {
       const incomingValue = mergedConfig[fieldName];
       const existingValue = resolvedExistingConfig[fieldName];
       const hasExistingSecret = String(existingValue || '').trim().length > 0;
@@ -260,37 +264,12 @@ export class IntegrationStoredProviderService {
     }
 
     const storedConfig: Record<string, any> = { ...mergedConfig };
-    for (const fieldName of passwordFields) {
+    for (const fieldName of secretFields) {
       const secretValue = String(mergedConfig[fieldName] || '').trim();
       storedConfig[fieldName] = secretValue ? SecretService.encrypt(secretValue) : '';
     }
 
     return storedConfig;
-  }
-
-  private sanitizeConfigForAdmin(
-    provider: IIntegrationProviderDefinition<any>,
-    config: Record<string, any>,
-  ): Record<string, any> {
-    const passwordFields = this.getPasswordFieldNames(provider);
-    if (!passwordFields.length) {
-      return config || {};
-    }
-
-    const sanitizedConfig: Record<string, any> = { ...(config || {}) };
-    for (const fieldName of passwordFields) {
-      if (Object.prototype.hasOwnProperty.call(sanitizedConfig, fieldName)) {
-        sanitizedConfig[fieldName] = SecretService.maskIfPresent(sanitizedConfig[fieldName]);
-      }
-    }
-    return sanitizedConfig;
-  }
-
-  private getPasswordFieldNames(provider: IIntegrationProviderDefinition<any>): string[] {
-    return (provider.fields || [])
-      .filter((field) => IntegrationConfigFieldType.resolve(field.type) === IntegrationConfigFieldType.PASSWORD)
-      .map((field) => String(field.name || '').trim())
-      .filter(Boolean);
   }
 
   private normalize(value: string) {

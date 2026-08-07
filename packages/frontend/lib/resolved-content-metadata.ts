@@ -83,7 +83,10 @@ export class ResolvedContentMetadata {
     const provider = await ResolvedContentMetadata.resolveHeadDataProvider();
     if (!provider) return null;
     const path = ServerApiUtils.buildPluginPath(provider.pluginSlug, provider.headDataPath, queryString);
-    const data = (await ServerApiUtils.serverFetchJson(path)) as ISeoHeadData | null;
+    // Strict: an unreachable API must NOT be read as "the provider has no head data". Doing so
+    // publishes canonical/robots tags the operator never configured — a page that should be
+    // noindex would quietly get indexed. Throwing turns the request into an honest 5xx instead.
+    const data = (await ServerApiUtils.serverFetchJsonOutcome(path)).valueOrThrow(path) as ISeoHeadData | null;
     return data && typeof data === 'object' && typeof data.title === 'string' ? data : null;
   });
 
@@ -96,7 +99,9 @@ export class ResolvedContentMetadata {
    * skipped and callers fall back to base metadata.
    */
   private static async resolveHeadDataProvider(): Promise<{ pluginSlug: string; headDataPath: string } | null> {
-    const config = await FrontendConfigCache.read();
+    // Strict: "no plugin declares headDataPath" and "we could not read the plugin list" are
+    // different answers, and only the first justifies skipping SEO head data.
+    const config = (await FrontendConfigCache.readOutcome()).valueOrThrow('/system/frontend');
     const plugins = Array.isArray(config?.plugins) ? config?.plugins as Array<Record<string, unknown>> : [];
     for (const plugin of plugins) {
       const pluginSlug = String(plugin?.slug || '').trim();

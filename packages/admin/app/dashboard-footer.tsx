@@ -19,15 +19,13 @@ export class DashboardFooter extends PureReactor {
                   {this.platformName} Infrastructure // v{AppEnv.APP_VERSION} {AppEnv.APP_CHANNEL}
                 </span>
               </div>
-              <p className="text-[9px] font-bold text-slate-400 italic uppercase tracking-tight">Connected to distributed cluster node. All systems operational.</p>
+              {/* No health/topology claim here: this footer fetches nothing, so any "all systems
+                  operational" line would assert a status it never measured. Live status belongs to the
+                  plugin-health surface, which reads the health endpoint. */}
             </div>
 
             <div className="flex items-center gap-4 text-[10px] font-bold tracking-tight text-slate-400 uppercase">
-              <a href={AdminConstants.FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Documentation</a>
-              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <a href={AdminConstants.FRAMEWORK_RESOURCES.FRAMEWORK_ROADMAP} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Framework Roadmap</a>
-              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <a href={AdminConstants.FRAMEWORK_RESOURCES.SUPPORT} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Support</a>
+              <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Github</a>
             </div>
           </div>
         </div>

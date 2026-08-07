@@ -85,9 +85,15 @@ export class PluginDependencyInstallerService {
   private installDependencies(pluginPath: string): void {
     const hasLockfile = fs.existsSync(this.getPackageLockPath(pluginPath));
     const command = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    // `--ignore-scripts` is not optional here. Without it, installing a plugin runs the `preinstall`/
+    // `install`/`postinstall` hooks of that plugin AND of every transitive dependency — arbitrary code
+    // on the host, as the API process, as an ordinary consequence of installing a plugin. The archive
+    // digest check in front of this proves WHICH bytes arrived, not that they are safe to execute.
+    // A plugin that genuinely needs a lifecycle script must become a deliberate, separately approved
+    // capability with an operator-visible control; it must never be the silent default.
     const args = hasLockfile
-      ? ['ci', '--omit=dev', '--no-audit']
-      : ['install', '--omit=dev', '--no-audit'];
+      ? ['ci', '--omit=dev', '--no-audit', '--ignore-scripts']
+      : ['install', '--omit=dev', '--no-audit', '--ignore-scripts'];
 
     this.logger.info(`Installing plugin backend dependencies for ${pluginPath}`);
     const result = spawnSync(command, args, {

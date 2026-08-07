@@ -49,6 +49,11 @@ export class CollectionEditPageLifecycle {
       AdminApi.get(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings`)
         .then((res) => self.updateState('pluginSettings', res?.settings?.settings ?? res?.settings ?? res ?? {}))
         .catch((err) => console.error('Failed to load plugin settings:', err));
+      // The SCHEMA as well as the values: a field's provenance line names the setting it inherits from,
+      // and that name must come from the schema rather than being repeated in the field's own rule.
+      AdminApi.get(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings/schema`)
+        .then((res) => self.updateState('pluginSettingsSchema', res?.schema ?? res ?? {}))
+        .catch((err) => console.error('Failed to load plugin settings schema:', err));
     });
     CollectionEditPageLifecycle.runSlugGeneration(self, isNew);
     CollectionEditPageLifecycle.runSlugValidation(self, resolvedSlug, isNew);
@@ -86,7 +91,10 @@ export class CollectionEditPageLifecycle {
       AdminApi.get(`${base}/${resolvedSlug}/${self.props.id}?locale_mode=raw`)
         .then((entryData: any) => {
           if (!fresh()) return;
-          self.setState({ formData: services.entityFormData.normalizeLoadedRecord(collection, entryData) });
+          // The SAME normalized object seeds both, so a just-loaded record is byte-for-byte pristine and
+          // the save bar reports no unsaved changes until something actually edits a value.
+          const loaded = services.entityFormData.normalizeLoadedRecord(collection, entryData);
+          self.setState({ formData: loaded, pristineFormData: loaded });
           if (entryData.slug) self.updateState('slugManuallyEdited', true);
           CollectionEditPageHandlers.fetchRevisions(self, 1);
           self.updateState('loading', false);

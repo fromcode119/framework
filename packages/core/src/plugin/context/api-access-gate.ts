@@ -42,7 +42,11 @@ export class ApiAccessGate {
   static build(access: AccessLevel | ApiPermissionRequirement | undefined): ((req: Request, res: Response, next: NextFunction) => void) | null {
     if (!ApiAccessGate.enabled()) return null;
     return (req: Request, res: Response, next: NextFunction): void => {
-      void ApiAccessGate.evaluate(access, req, res, next);
+      // `void` discarded the rejection. evaluate() calls next() from inside its own promise, so the
+      // ENTIRE downstream Express chain runs there — any throw in it rejected this promise with nobody
+      // watching, which is fatal under Node 22. Route it back into Express instead. This gate is
+      // fail-closed, so an error here must never become an allow.
+      ApiAccessGate.evaluate(access, req, res, next).catch((error: unknown) => next(error));
     };
   }
 

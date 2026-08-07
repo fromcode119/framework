@@ -12,6 +12,7 @@ export class EditPageMain extends PureReactor {
   @prop declare resolvedSlug: string;
   @prop declare formData: Record<string, any>;
   @prop declare pluginSettings: Record<string, any>;
+  @prop declare pluginSettingsSchema: Record<string, any>;
   @prop declare fieldErrors: Record<string, any>;
   @prop declare saving: boolean;
   @prop declare isNew: boolean;
@@ -34,6 +35,7 @@ export class EditPageMain extends PureReactor {
         theme={this.theme}
         collectionSlug={this.resolvedSlug}
         pluginSettings={this.pluginSettings}
+        pluginSettingsSchema={this.pluginSettingsSchema}
         disabled={this.saving}
         isNew={this.isNew}
         errors={this.fieldErrors[field.name]}

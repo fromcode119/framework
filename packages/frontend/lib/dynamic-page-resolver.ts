@@ -8,6 +8,7 @@ import { QueryParamUtils } from '@/lib/query-param-utils';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { LocaleUrlStrategy } from '@fromcode119/core/client';
 import { IResolvedDocResult } from '@/lib/interfaces/resolved-doc-result.interface';
+import { ServerApiUnreachableError } from '@/lib/server-api-unreachable-error';
 
 export class DynamicPageResolver {
   /**
@@ -18,9 +19,15 @@ export class DynamicPageResolver {
    * only: nothing persists across requests, and the underlying fetch still forwards
    * the visitor's auth cookie and keeps `no-store`, so members-only gating is
    * evaluated with the visitor's identity exactly as before.
+   *
+   * Throws {@link ServerApiUnreachableError} when the API could not be reached at all. That is the
+   * whole point: a transport blip used to return the same `null` as "no such page", and the route
+   * then answered a hard 404 for a page that exists — telling crawlers to delist it. An
+   * unreachable API must surface as a 5xx, which is honest and retryable.
    */
   private static readonly resolveFetchCache = cache(async (queryString: string): Promise<Record<string, any> | null> => {
-    const response = await ServerApiUtils.serverFetchResponse(ServerApiUtils.buildSystemResolvePath(queryString));
+    const path = ServerApiUtils.buildSystemResolvePath(queryString);
+    const response = (await ServerApiUtils.serverFetchResponseOutcome(path)).valueOrThrow(path);
     if (!response || !response.ok) return null;
     return await response.json() as Record<string, any>;
   });
@@ -112,7 +119,9 @@ export class DynamicPageResolver {
    * The framework's route resolver consults a plugin-agnostic redirect registry (an SEO plugin, a CMS
    * table, … register into it) and returns a `redirect` resolution — so the frontend never names a plugin.
    * Returns the target + whether it's permanent (308) or temporary (307), or null when no rule matches.
-   * Failures resolve to null so a lookup error never breaks the page.
+   * A malformed payload resolves to null so a lookup quirk never breaks the page — but an
+   * UNREACHABLE API is re-thrown, because "no redirect rule matched" and "we could not ask"
+   * are different answers and only the first one justifies a 404.
    */
   static async resolveRedirect(slug: string): Promise<{ target: string; permanent: boolean } | null> {
     try {
@@ -123,8 +132,9 @@ export class DynamicPageResolver {
       if (result?.type === 'redirect' && result.redirect?.target) {
         return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false };
       }
-    } catch {
-      /* lookup failed — fall through to the normal 404 */
+    } catch (error) {
+      if (error instanceof ServerApiUnreachableError) throw error;
+      /* malformed lookup payload — fall through to the normal 404 */
     }
     return null;
   }

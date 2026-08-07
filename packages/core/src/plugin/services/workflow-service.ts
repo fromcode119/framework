@@ -2,6 +2,7 @@ import type { ICollection } from '@core/interfaces/collection.interface';
 import { IDatabaseManager, and, ne, lte, sql } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import { HookManager } from '@core/hooks/hook-manager';
+import { HookEventUtils } from '@core/hook-events';
 
 export class WorkflowService {
   private logger = new Logger({ namespace: 'workflow-service' });
@@ -42,12 +43,16 @@ export class WorkflowService {
               updated_at: now.toISOString()
             });
 
-            // Emit hook for other plugins to react (like clearing cache)
-            this.hooks.emit(`collection:${collection.shortSlug}:published`, item);
-            this.hooks.emit(`collection:published`, { 
-               collection: collection.shortSlug, 
+            // Emit hook for other plugins to react (like clearing cache).
+            // Identity comes from HookEventUtils like every other collection event. This used
+            // `shortSlug` — a THIRD naming rule, and one that is neither unique across plugins nor
+            // stable (ecommerce `products` registers as `catalog`), so a subscriber could not name this
+            // event from its own schema.
+            this.hooks.emit(HookEventUtils.collectionNotification(collection, 'published'), item);
+            this.hooks.emit(`collection:published`, {
+               collection: HookEventUtils.collectionIdentity(collection),
                fullSlug: collection.slug,
-               item 
+               item
             });
           }
         }

@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 // The component file exports only the class; render its static.
 import { ThemeAssetsView } from '@/components/theme-assets';
 import { ServerApiUtils } from '@/lib/server-api';
+import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
 
 const preloadSpy = vi.hoisted(() => vi.fn());
 
@@ -22,7 +23,8 @@ describe('ThemeAssets', () => {
   });
 
   it('uses the absolute theme entry origin for relative headLinks when api env is unavailable', async () => {
-    vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
+    vi.spyOn(ServerApiUtils, 'serverFetchInternalResponseOutcome').mockResolvedValue(ServerFetchOutcome.resolved<Response>(null));
+    vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(ServerFetchOutcome.resolved({
       activeTheme: {
         slug: 'vselenskiportal88',
         ui: {
@@ -37,7 +39,7 @@ describe('ThemeAssets', () => {
           ],
         },
       },
-    });
+    }));
     vi.spyOn(ServerApiUtils, 'buildPublicApiBaseUrl').mockReturnValue('');
 
     renderToStaticMarkup(await ThemeAssetsView.render());

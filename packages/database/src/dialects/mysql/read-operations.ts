@@ -55,14 +55,15 @@ export class MysqlReadOperations extends BaseDialect {
         const allConditions: any[] = [];
         if (normalizedWhere) {
         if (typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype) {
-            allConditions.push(...this.buildWhereConditions(normalizedWhere));
+            allConditions.push(...this.buildWhereConditions(normalizedWhere));  // string table — no column map
         } else {
             allConditions.push(normalizedWhere);
         }
         }
-        if (search && search.columns.length > 0 && search.value) {
-        const pattern = `%${search.value}%`;
-        const likeConditions = search.columns.map((col: string) => like(sql`${sql.identifier(col)}`, pattern));
+        const searchArg = await this.resolveSearchArg(this.normalizer, tableOrName, search);
+        if (searchArg) {
+        const pattern = `%${searchArg.value}%`;
+        const likeConditions = searchArg.columns.map((col: string) => like(this.resolveColumn(col), pattern));
         allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
         }
         if (allConditions.length > 0) {
@@ -104,17 +105,16 @@ export class MysqlReadOperations extends BaseDialect {
     const allConditions: any[] = [];
     if (where) {
       if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-        allConditions.push(...this.buildWhereConditions(where));
+        allConditions.push(...this.buildWhereConditions(where, tableOrName));
       } else {
         allConditions.push(where);
       }
     }
     if (search && search.columns.length > 0 && search.value) {
       const pattern = `%${search.value}%`;
-      const likeConditions = search.columns.map((col: string) => {
-          const colObj = typeof tableOrName[col] !== 'undefined' ? tableOrName[col] : sql`${sql.identifier(col)}`;
-          return this.like(colObj, pattern);
-      });
+      const likeConditions = search.columns.map((col: string) =>
+        this.like(this.resolveColumn(col, tableOrName), pattern)
+      );
       allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
     }
     if (allConditions.length > 0) {
@@ -151,7 +151,7 @@ export class MysqlReadOperations extends BaseDialect {
     const conditions: any[] = [];
     if (normalizedWhere) {
       if (typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype) {
-        conditions.push(...this.buildWhereConditions(normalizedWhere));
+        conditions.push(...this.buildWhereConditions(normalizedWhere, isString ? undefined : tableOrName));
       } else {
         conditions.push(normalizedWhere);
       }

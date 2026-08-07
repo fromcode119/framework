@@ -2,3 +2,4 @@ export type { IRegisteredWidgetDefinition } from '@core/widget/interfaces/regist
 export type { IWidgetDefinitionInput } from '@core/widget/interfaces/widget-definition-input.interface';
 export type { IWidgetSettingsRenderInput } from '@core/widget/interfaces/widget-settings-render-input.interface';
 export type { IWidgetStyle } from '@core/widget/interfaces/widget-style.interface';
+export { WidgetViewport } from '@core/widget/enums/widget-viewport.enum';

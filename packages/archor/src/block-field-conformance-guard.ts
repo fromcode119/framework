@@ -37,21 +37,32 @@ export class BlockFieldConformanceGuard {
 
       const renderers = BlockFieldConformanceGuard.rendererIndex(abs);
 
-      for (const blockFile of BlockFieldConformanceGuard.walk(abs, /blocks?[\\/].*\.tsx$/)) {
+      // `.tsx?`, not `.tsx`: a block whose definition carries no JSX lives in a `.ts` file (CMS's
+      // `team-block.ts`, `testimonials-block.ts`, `two-col-icons-block.ts`, …). Matching only `.tsx`
+      // skipped every one of them. The `renderSettings` gate below keeps enums/interfaces out.
+      for (const blockFile of BlockFieldConformanceGuard.walk(abs, /blocks?[\\/].*\.tsx?$/)) {
         const src = BlockFieldConformanceGuard.read(blockFile);
         if (!src.includes('renderSettings')) continue;
 
-        for (const [blockId, written] of BlockFieldConformanceGuard.writtenKeysByBlock(src)) {
+        for (const [blockId, written] of BlockFieldConformanceGuard.writtenKeysByBlock(src, blockFile)) {
           const rendererFile = renderers.get(BlockFieldConformanceGuard.normalize(blockId));
           if (!rendererFile) continue;
 
-          const read = BlockFieldConformanceGuard.readKeys(BlockFieldConformanceGuard.read(rendererFile));
+          // A renderer delegates the same way an editor does — CMS's `hero-renderer.tsx` picks between
+          // `home-hero-renderer.tsx`, `detail-hero-renderer.tsx` and `hero-slider-renderer.tsx`, and
+          // reads almost nothing itself. Judging it on its own text reported eleven working hero
+          // controls as FAKE.
+          const rawRendererSrc = BlockFieldConformanceGuard.read(rendererFile);
+          const rendererSrc = BlockFieldConformanceGuard.withDelegates(
+            rawRendererSrc,
+            BlockFieldConformanceGuard.siblingSources(rendererFile, rawRendererSrc, 2),
+          );
+          const read = BlockFieldConformanceGuard.readKeys(rendererSrc);
           if (read.size === 0) continue;
 
           const fake = [...written].filter(
             (key) => !read.has(key) && !BlockFieldConformanceGuard.IGNORED_KEYS.has(key),
           );
-          const rendererSrc = BlockFieldConformanceGuard.read(rendererFile);
           const fallbacks = BlockFieldConformanceGuard.fallbackKeys(rendererSrc);
           const groups = BlockFieldConformanceGuard.aliasGroups(rendererSrc);
           const covered = (key: string): boolean =>
@@ -95,20 +106,27 @@ export class BlockFieldConformanceGuard {
    * So: resolve member -> id first, then attribute each `<Owner>.<Member>.renderSettings =` chunk to
    * the id of THAT member. Only fall back to positional slicing for the inline form.
    */
-  private static writtenKeysByBlock(src: string): Map<string, Set<string>> {
+  private static writtenKeysByBlock(src: string, blockFile: string): Map<string, Set<string>> {
     const out = new Map<string, Set<string>>();
+    // A block whose `renderSettings` DELEGATES to a sibling settings component writes its keys from
+    // that sibling, not from this file (`renderSettings: (…) => React.createElement(TestimonialsBlockSettings, …)`).
+    // Scanning only this file found zero keys, so the block was silently dropped from the report.
+    const delegates = BlockFieldConformanceGuard.siblingSources(blockFile, src, 2);
     // Literal keys, plus keys fed in dynamically. A block that does
     // `['paragraph1','paragraph2'].map((k) => updateData(k, …))` writes those keys just as surely as
     // a literal call — counting only literals reported them as MISSING, which is a false alarm and
     // exactly the kind of noise that gets a check ignored.
-    const keysIn = (chunk: string) => {
+    const keysIn = (rawChunk: string) => {
+      // Pull in every delegated settings component this chunk references, TRANSITIVELY: a block
+      // delegates to `<X>Settings`, which delegates again to the row editor that owns `items`.
+      const chunk = BlockFieldConformanceGuard.withDelegates(rawChunk, delegates);
       const keys = new Set(
         [...chunk.matchAll(/updateData\(\s*['"]([A-Za-z0-9_]+)['"]/g)].map((match) => match[1]),
       );
       // Keys the editor READS count as covered too. An editor commonly shows a legacy fallback
       // (`value={data?.productSlug || data?.slug}`) without ever writing the old name; reporting that
       // as MISSING is noise, and noise is how a check gets ignored.
-      for (const read of chunk.matchAll(/\bdata\s*\??\.\s*([A-Za-z0-9_]+)/g)) keys.add(read[1]);
+      for (const read of chunk.matchAll(/\bdata\??\.([A-Za-z0-9_]+)/g)) keys.add(read[1]);
       const hasDynamicCall = /updateData\(\s*[A-Za-z_$][A-Za-z0-9_$]*\s*,/.test(chunk);
       if (hasDynamicCall) {
         for (const arrayLiteral of chunk.matchAll(/\[\s*((?:['"][A-Za-z0-9_]+['"]\s*,\s*)+['"][A-Za-z0-9_]+['"])\s*\]/g)) {
@@ -151,9 +169,63 @@ export class BlockFieldConformanceGuard {
     return out;
   }
 
+  /**
+   * Append the source of every delegate the text references, repeating until nothing new is pulled in.
+   * A single pass is not enough: the block file names only the settings component, and the key that
+   * matters (`items`) lives one hop further, in the row editor that settings component renders.
+   */
+  private static withDelegates(text: string, delegates: Map<string, string>): string {
+    let combined = text;
+    const used = new Set<string>();
+    for (let pass = 0; pass < delegates.size + 1; pass += 1) {
+      const next = [...delegates].filter(
+        ([name]) => !used.has(name) && new RegExp(`\\b${name}\\b`).test(combined),
+      );
+      if (!next.length) return combined;
+      for (const [name, source] of next) {
+        used.add(name);
+        combined += `\n${source}`;
+      }
+    }
+    return combined;
+  }
+
+  /**
+   * Imported name -> source text, for imports that resolve to a SIBLING file in the same directory.
+   *
+   * Deliberately narrow: only same-directory imports are followed (never the SDK, never another
+   * package), and `depth` bounds the chain so a settings component that itself delegates to a row
+   * editor is still seen (`testimonials-block.ts` -> `-settings.tsx` -> `manual-testimonials-editor.tsx`).
+   * Specifiers are matched by BASENAME so relative and `@plugin/…` aliased forms both resolve.
+   */
+  private static siblingSources(file: string, src: string, depth: number): Map<string, string> {
+    const out = new Map<string, string>();
+    const visit = (fromFile: string, fromSrc: string, left: number): void => {
+      if (left <= 0) return;
+      const dir = path.dirname(fromFile);
+      for (const match of fromSrc.matchAll(/import\s+(?:type\s+)?\{([^}]+)\}\s+from\s+['"]([^'"]+)['"]/g)) {
+        const basename = match[2].split('/').pop();
+        if (!basename) continue;
+        for (const ext of ['.tsx', '.ts']) {
+          const candidate = path.join(dir, `${basename}${ext}`);
+          if (!fs.existsSync(candidate) || candidate === fromFile) continue;
+          const source = BlockFieldConformanceGuard.read(candidate);
+          for (const raw of match[1].split(',')) {
+            const name = raw.trim().split(/\s+as\s+/).pop()?.trim() ?? '';
+            if (name && !out.has(name)) out.set(name, source);
+          }
+          visit(candidate, source, left - 1);
+          break;
+        }
+      }
+    };
+    visit(file, src, depth);
+    return out;
+  }
+
   /** `data?.key` / `data.key` reads in a renderer. */
   private static readKeys(src: string): Set<string> {
-    return new Set([...src.matchAll(/\bdata\s*\??\.\s*([A-Za-z0-9_]+)/g)].map((match) => match[1]));
+    return new Set([...src.matchAll(/\bdata\??\.([A-Za-z0-9_]+)/g)].map((match) => match[1]));
   }
 
   /**
@@ -171,9 +243,9 @@ export class BlockFieldConformanceGuard {
   private static aliasGroups(src: string): Array<Set<string>> {
     const groups: Array<Set<string>> = [];
     for (const chain of src.matchAll(
-      /\bdata\s*\??[.[][A-Za-z0-9_?.\[\]']*(?:\s*\|\|\s*data\s*\??\.\s*[A-Za-z0-9_]+)+/g,
+      /\bdata\??[.[][A-Za-z0-9_?.\[\]']*(?:\s*\|\|\s*data\??\.[A-Za-z0-9_]+)+/g,
     )) {
-      const keys = new Set([...chain[0].matchAll(/data\s*\??\.\s*([A-Za-z0-9_]+)/g)].map((m) => m[1]));
+      const keys = new Set([...chain[0].matchAll(/data\??\.([A-Za-z0-9_]+)/g)].map((m) => m[1]));
       if (keys.size > 1) groups.push(keys);
     }
     return groups;
@@ -187,19 +259,34 @@ export class BlockFieldConformanceGuard {
     // (`data?.left?.heading || data?.leftHeading`,
     //  `data?.paragraphs?.[0]?.text || data?.description`).
     for (const chain of src.matchAll(
-      /\bdata\s*\??[.[][A-Za-z0-9_?.\[\]']*((?:\s*\|\|\s*data\s*\??\.\s*[A-Za-z0-9_]+)+)/g,
+      /\bdata\??[.[][A-Za-z0-9_?.\[\]']*((?:\s*\|\|\s*data\??\.[A-Za-z0-9_]+)+)/g,
     )) {
-      for (const rest of chain[1].matchAll(/data\s*\??\.\s*([A-Za-z0-9_]+)/g)) fallbacks.add(rest[1]);
+      for (const rest of chain[1].matchAll(/data\??\.([A-Za-z0-9_]+)/g)) fallbacks.add(rest[1]);
     }
     return fallbacks;
   }
 
-  /** Renderer files indexed by normalised basename, so `custom-vision-board` matches `custom-visionBoard`. */
+  /**
+   * Renderer files indexed by normalised basename, so `custom-vision-board` matches `custom-visionBoard`.
+   *
+   * Two naming conventions are in use and only indexing the first made this guard SKIP an entire plugin:
+   *   - themes: `renderers/<id>.tsx`
+   *   - CMS:    `renderers/<id>-renderer.tsx`  (`cta-renderer.tsx`, `rich-content-renderer.tsx`, …)
+   * With only the exact basename indexed, every CMS block looked up `cta` against a map holding
+   * `ctarenderer`, found nothing, and `continue`d — so the guard's clean bill said nothing at all about
+   * CMS. Index the suffix-stripped name too, without letting it shadow an exact-name file.
+   */
   private static rendererIndex(abs: string): Map<string, string> {
     const index = new Map<string, string>();
+    const suffixed: Array<[string, string]> = [];
     for (const file of BlockFieldConformanceGuard.walk(abs, /renderers?[\\/].*\.tsx$/)) {
-      index.set(BlockFieldConformanceGuard.normalize(path.basename(file, '.tsx')), file);
+      const key = BlockFieldConformanceGuard.normalize(path.basename(file, '.tsx'));
+      index.set(key, file);
+      if (key.endsWith('renderer') && key.length > 'renderer'.length) {
+        suffixed.push([key.slice(0, -'renderer'.length), file]);
+      }
     }
+    for (const [key, file] of suffixed) if (!index.has(key)) index.set(key, file);
     return index;
   }
 

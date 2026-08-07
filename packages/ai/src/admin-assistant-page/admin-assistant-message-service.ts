@@ -140,10 +140,10 @@ export class AdminAssistantMessageService {
     const messages = Array.isArray(item?.messages)
       ? item.messages
           .map((entry: any) => ({
-            role:
-              entry?.role === 'assistant' || entry?.role === 'system' || entry?.role === 'user'
-                ? entry.role
-                : 'assistant',
+            // Wire boundary: stored messages arrive as raw strings, so hydrate ONCE here rather
+            // than letting a raw string flow on as an `AssistantRole`. Unknown still lands on
+            // ASSISTANT, as before — `AssistantRole.resolve` would default to SYSTEM.
+            role: AssistantRole.fromValue(String(entry?.role ?? '').trim()) ?? AssistantRole.ASSISTANT,
             content: String(entry?.content || '').trim(),
           }))
           .filter((entry: IAssistantMessage) => !!entry.content)

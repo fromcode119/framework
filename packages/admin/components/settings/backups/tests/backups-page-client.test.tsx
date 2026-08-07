@@ -3,6 +3,7 @@ import { BackupCatalogRootKind } from '@fromcode119/core';
 import { BackupSectionKey } from '@fromcode119/core';
 import { SnapshotType } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
+import { RestoreTargetScope } from '@/components/settings/backups/enums/restore-target-scope.enum';
 // @vitest-environment jsdom
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -119,13 +120,25 @@ vi.mock('@/components/settings/backups/view/backup-restore-dialog.client', () =>
     isOpen ? (
       <div>
         <div>restore-open</div>
-        <div>scope:{state.targetScope}</div>
+        {/*
+          `state.targetScope` is a reactor `RestoreTargetScope` Enum MEMBER, not a string. Rendering the
+          member itself threw `Objects are not valid as a React child (found: object with keys {value})`
+          and took both restore tests down — a fake that did not match the contract the real
+          `BackupRestoreDialog` is handed. The real dialog only ever COMPARES the member (never renders
+          it), so this is a fixture bug, not a product bug; `.value` is the string form.
+        */}
+        <div>scope:{state.targetScope.value}</div>
         <div>slug:{state.targetSlug}</div>
         <div>preview:{state.preview ? 'yes' : 'no'}</div>
         <div>execute-disabled:{state.preview ? 'no' : 'yes'}</div>
         <div>{state.formError}</div>
-        <button type="button" onClick={() => onTargetScopeChange('plugin')}>scope-plugin</button>
-        <button type="button" onClick={() => onTargetScopeChange('system')}>scope-system</button>
+        {/*
+          Pass real Enum MEMBERS, exactly as the real dialog's scope buttons do. The raw strings this
+          used to send could never satisfy the controller's `value === RestoreTargetScope.SYSTEM`
+          identity check — the recurring "Enum compared to a raw string is always false" trap.
+        */}
+        <button type="button" onClick={() => onTargetScopeChange(RestoreTargetScope.PLUGIN)}>scope-plugin</button>
+        <button type="button" onClick={() => onTargetScopeChange(RestoreTargetScope.SYSTEM)}>scope-system</button>
         <button type="button" onClick={() => onTargetSlugChange('')}>slug-empty</button>
         <button type="button" onClick={() => onTargetSlugChange('restored-plugin')}>slug-restored</button>
         <button type="button" onClick={() => onConfirmationTextChange('CONFIRM RESTORE plugin-1')}>set-confirmation</button>

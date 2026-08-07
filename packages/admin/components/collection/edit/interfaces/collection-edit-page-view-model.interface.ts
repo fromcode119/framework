@@ -8,6 +8,7 @@ export interface ICollectionEditPageViewModel {
   resolvedSlug: string;
   isNew: boolean;
   pluginSettings: Record<string, any>;
+  pluginSettingsSchema: Record<string, any>;
   status: { type: NotificationType; message: string } | null;
   setStatus: (value: { type: NotificationType; message: string } | null) => void;
   deleting: boolean;
@@ -60,6 +61,8 @@ export interface ICollectionEditPageViewModel {
   showPermalink: boolean;
   isFullWidth: boolean;
   hideFooter: boolean;
+  /** Whether the form differs from the loaded/last-saved record — drives the save bar's claim. */
+  isDirty: boolean;
   hasSidebarFields: boolean;
   renderSidebar: boolean;
   hasBuiltInSidebarContent: boolean;

@@ -22,6 +22,8 @@ export class CollectionListTable extends PureReactor {
   @prop declare columns: any[];
   @prop declare data: any[];
   @prop declare loading: boolean;
+  /** Non-empty when the fetch failed — shown instead of the "no records" empty state. */
+  @prop declare loadError: string;
   @prop declare sort: string;
   @prop declare onPageChange: (page: number) => void;
   @prop declare onSort: (sort: string) => void;
@@ -57,6 +59,7 @@ export class CollectionListTable extends PureReactor {
   columns,
   data,
   loading,
+  loadError,
   sort,
   onPageChange,
   onSort,
@@ -97,6 +100,7 @@ export class CollectionListTable extends PureReactor {
           onPageChange={onPageChange}
           onSort={onSort}
           currentSort={sort}
+          emptyMessage={loadError || undefined}
           onRowClick={onRowClick}
           selectable
           selectedIds={selectedIds}

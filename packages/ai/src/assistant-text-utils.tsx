@@ -189,7 +189,7 @@ export class AssistantTextUtils {
     return entries.filter((entry, index) => {
       if (
         index === 0 &&
-        entry.role === 'system' &&
+        entry.role === AssistantRole.SYSTEM &&
         String(entry.content || '').toLowerCase().includes('ready')
       ) {
         return false;

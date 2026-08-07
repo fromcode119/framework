@@ -61,7 +61,7 @@ export class SqliteReadOperations extends BaseDialect {
 
       // Use raw SQL for dynamic table names — drizzle.select() without args produces
       // an empty column list ("select  from …") which SQLite rejects
-      const searchArg = (search && search.columns?.length > 0 && search.value) ? search : undefined;
+      const searchArg = await this.resolveSearchArg(this.normalizer, tableName, search);
       const { sql: whereSql, values } = this.buildRawFilterSQL(normalizedWhere, searchArg);
       let sqlStr = `SELECT ${columnPart} FROM "${tableName}"${whereSql}`;
       if (orderBy) sqlStr += this.buildRawOrderByClause(orderBy);
@@ -94,17 +94,16 @@ export class SqliteReadOperations extends BaseDialect {
     const allConditions: any[] = [];
     if (where) {
       if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-        allConditions.push(...this.buildWhereConditions(where));
+        allConditions.push(...this.buildWhereConditions(where, tableOrName));
       } else {
         allConditions.push(where);
       }
     }
     if (search && search.columns.length > 0 && search.value) {
       const pattern = `%${search.value}%`;
-      const likeConditions = search.columns.map((col: string) => {
-          const colObj = typeof tableOrName[col] !== 'undefined' ? tableOrName[col] : sql`${sql.identifier(col)}`;
-          return this.like(colObj, pattern);
-      });
+      const likeConditions = search.columns.map((col: string) =>
+        this.like(this.resolveColumn(col, tableOrName), pattern)
+      );
       allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
     }
     if (allConditions.length > 0) {
@@ -157,7 +156,7 @@ export class SqliteReadOperations extends BaseDialect {
     const conditions: any[] = [];
     if (normalizedWhere) {
       if (isPlainWhere) {
-        conditions.push(...this.buildWhereConditions(normalizedWhere));
+        conditions.push(...this.buildWhereConditions(normalizedWhere, isString ? undefined : tableOrName));
       } else {
         conditions.push(normalizedWhere);
       }

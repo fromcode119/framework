@@ -16,6 +16,8 @@ export interface ICollectionListPageViewModel {
   pluginSettings: Record<string, any>;
   total: number;
   loading: boolean;
+  /** Non-empty when the record fetch failed — never render an empty table as "no records". */
+  loadError: string;
   search: string;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
   page: number;

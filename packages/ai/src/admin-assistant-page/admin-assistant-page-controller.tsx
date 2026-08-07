@@ -383,7 +383,7 @@ export class AdminAssistantPageController extends Reactor {
       this.apiKey = '';
       this.baseUrl = nextBaseUrl;
       this.notice = 'Gateway saved.';
-      this.messages = [...this.messages, { role: 'system', content: `Gateway updated (${this.provider}).` }];
+      this.messages = [...this.messages, { role: AssistantRole.SYSTEM, content: `Gateway updated (${this.provider}).` }];
     } catch (e: any) {
       this.error = String(e?.message || 'Failed to save gateway configuration.');
     } finally {
@@ -437,7 +437,7 @@ export class AdminAssistantPageController extends Reactor {
     } catch (e: any) {
       const requestError = String(e?.message || 'Request failed');
       this.error = requestError;
-      this.messages = [...this.messages, { role: 'system', content: `Request failed: ${requestError}` }];
+      this.messages = [...this.messages, { role: AssistantRole.SYSTEM, content: `Request failed: ${requestError}` }];
     } finally {
       this.loading = false;
     }
@@ -464,7 +464,7 @@ export class AdminAssistantPageController extends Reactor {
           : entry.ui ? { ...entry.ui, requiresApproval: false, canContinue: false, nextStep: NextStep.NONE, workflowState: WorkflowState.APPLIED, primaryAction: PrimaryAction.NONE, userSummary: 'Changes applied.', summaryMode: entry.ui.summaryMode ?? ResponseVerbosity.CONCISE } : entry.ui;
         return { ...entry, actionBatch: entry.actionBatch ? { ...entry.actionBatch, state: summary.batchState } : { id: summary.batchId || `batch-${Date.now()}`, state: summary.batchState, createdAt: Date.now() }, ui: nextUi, plan: !dryRun && entry.plan ? { ...entry.plan, status: AssistantPlanStatus.COMPLETED } : entry.plan };
       });
-      this.messages = [...nextMessages, { role: 'system', content: summary.summaryText, execution: result, actionBatch: summary.batchId ? { id: summary.batchId, state: summary.batchState, createdAt: Date.now() } : nextMessages.slice().reverse().find((entry) => entry.actionBatch)?.actionBatch || undefined }];
+      this.messages = [...nextMessages, { role: AssistantRole.SYSTEM, content: summary.summaryText, execution: result, actionBatch: summary.batchId ? { id: summary.batchId, state: summary.batchState, createdAt: Date.now() } : nextMessages.slice().reverse().find((entry) => entry.actionBatch)?.actionBatch || undefined }];
       if (!dryRun) this.selectedActionIndexes = [];
       this.notice = dryRun ? 'Previewed selected changes.' : 'Applied selected changes.';
       void this.refreshHistoryIfServer();
@@ -1007,7 +1007,7 @@ export class AdminAssistantPageController extends Reactor {
 
   private syncLocalHistory(): void {
     if (this.historySource !== ModelLocation.LOCAL) return;
-    const normalizedMessages = this.messages.filter((entry) => entry.role !== 'system' || entry.content !== AdminAssistantPageUtils.createReadyMessage().content);
+    const normalizedMessages = this.messages.filter((entry) => entry.role !== AssistantRole.SYSTEM || entry.content !== AdminAssistantPageUtils.createReadyMessage().content);
     if (!normalizedMessages.length) return;
     const sessionId = this.activeSessionId || AdminAssistantPageUtils.createSessionId();
     if (!this.activeSessionId) this.activeSessionId = sessionId;

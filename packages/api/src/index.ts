@@ -1,9 +1,8 @@
-import express from 'express';
+import express, { Router } from 'express';
 import cookieParser from 'cookie-parser';
-import rateLimit from 'express-rate-limit';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, RouteConstants } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, RouteConstants, AsyncRouteGuard } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -12,12 +11,12 @@ import { ApiConfig } from '@api/config/api-config';
 import { CoreCollections } from '@api/collections/core';
 import { CSRFMiddleware } from '@api/middlewares/csrf-middleware';
 import { XSSMiddleware } from '@api/middlewares/xss-middleware';
+import { ErrorResponseMiddleware } from '@api/middlewares/error-response-middleware';
+import { RateLimitMiddleware } from '@api/middlewares/rate-limit-middleware';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from '@api/services/graph-ql-service';
 import { ApiBootstrapService, ServerCorsSetup, ServerAuthSetup, ServerMaintenanceService, ServerMiddlewareSetup, ServerRoutesSetup, ServerSettingsService, ServerUploadsConfigService } from '@api/server/index';
-import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
 import { WebhookRouteUtils } from '@api/utils/webhook-route-utils';
-import { AdminBootstrapRateLimitUtils } from '@api/utils/admin-bootstrap-rate-limit-utils';
 
 export class APIServer {
   public app = express();
@@ -85,8 +84,7 @@ export class APIServer {
     // Trusting loopback + RFC1918 ranges restores per-visitor IPs from the edge proxy's X-Forwarded-For.
     this.app.set('trust proxy', (ip: string) => {
       if (EnvUtils.isDevelopment()) return true;
-      if (ip === '127.0.0.1' || ip === '::1') return true;
-      return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip) || /^::ffff:(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip);
+      return NetworkAddressUtils.isPrivate(ip);
     });
     
     // Core settings must be synced BEFORE CORS and other middlewares to ensure they have access to latest config
@@ -159,31 +157,11 @@ export class APIServer {
     this.app.use(new CSRFMiddleware().middleware());
 
     const apiConfig = ApiConfig.getInstance();
-    const limiter = rateLimit({
-      windowMs: parseInt(this.settingsCache.get('rate_limit_window') || process.env.RATE_LIMIT_WINDOW_MS || '900000'),
-      limit: (req) => {
-        if (process.env.NODE_ENV === 'development') return 10000;
-        // Token-bearing requests are keyed per ip+token (see AdminBootstrapRateLimitUtils.resolveKey) and
-        // get a far higher budget: one admin page load fans out dozens of plugin API calls, and the strict
-        // anonymous cap (100/15min) throttled the ENTIRE admin behind a shared proxy IP (429 storms —
-        // "Failed to load datasource catalog" etc.). Anonymous traffic keeps the strict IP cap.
-        if (AdminBootstrapRateLimitUtils.hasAuthToken(req as any)) {
-          return parseInt(this.settingsCache.get('rate_limit_max_authenticated') || process.env.RATE_LIMIT_MAX_AUTHENTICATED || '5000');
-        }
-        return parseInt(this.settingsCache.get('rate_limit_max') || process.env.RATE_LIMIT_MAX || '100');
-      },
-      keyGenerator: (req) => AdminBootstrapRateLimitUtils.resolveKey(req),
-      message: { error: 'Too many requests from this IP, please try again later' },
-      skip: (req) => {
-        if (PublicSystemRouteUtils.isRateLimitBypassPath(String(req.path || ''))) {
-          return true;
-        }
-
-        return !!req.headers['x-skip-rate-limit'] && req.headers['x-skip-rate-limit'] === process.env.ADMIN_SECRET;
-      }
-    } as any);
-
-    this.app.use(`${apiConfig.prefixes.BASE}/`, limiter);
+    // The limiter's buckets, budgets, window and bypass list all live in RateLimitMiddleware, which
+    // reads the operator's Settings → Security values through the same settings cache the rest of the
+    // server uses. This used to be a second, inline copy of that configuration — so a rule added to
+    // one limiter silently did not apply to the other.
+    this.app.use(`${apiConfig.prefixes.BASE}/`, new RateLimitMiddleware({}, this.settingsCache).middleware());
 
     this.setupAuthIntegration();
     await this.registerCoreCollection('users', CoreCollections.user);
@@ -193,29 +171,15 @@ export class APIServer {
     this.setupMiddleware();
     await this.setupRoutes();
 
-    // Global Error Handler with CORS support
-    this.app.use((err: any, req: any, res: any, next: any) => {
-      if (err?.status === 413 || err?.type === 'entity.too.large') {
-        return res.status(413).json({
-          error: 'Payload Too Large',
-          message: 'Request body is too large. Reduce staged action payload size or increase API_JSON_BODY_LIMIT.',
-        });
-      }
-      this.logger.error(`Unhandled Error: ${err.message}`, { stack: err.stack, path: req.path });
-      
-      // Ensure CORS headers even on error
-      if (req.headers.origin) {
-        res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client, X-CSRF-Token, X-Reset-Context');
-      }
-      
-      res.status(err.status || 500).json({
-        error: 'Internal Server Error',
-        message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
-      });
-    });
+    // Plugin handlers are guarded where they are registered (BaseRouter / context.api). Framework
+    // handlers registered STRAIGHT onto the app — the maintenance gate, the health and ready probes,
+    // the rate limiter — never pass through either, so sweep the app's own stack once, after every
+    // route exists and before the error handler is attached. Anything already guarded is skipped.
+    AsyncRouteGuard.wrapRouter(this.app as unknown as Router, 'framework');
+
+    // Global Error Handler with CORS support. Every rejected route handler arrives here via
+    // AsyncRouteGuard, which is what stops an async rejection from killing the process.
+    this.app.use(new ErrorResponseMiddleware(this.logger).middleware());
 
     this.logger.info('API Server initialized successfully.');
   }
@@ -232,6 +196,7 @@ export class APIServer {
 
   private async setupSettingsSync() {
     await this.settingsService.setupSettingsSync();
+    this.settingsService.subscribeToSettingsChanges(this.manager.hooks);
     this.settingsInterval = (this.settingsService as any).settingsInterval;
     // Seed the i18n manager's default locale from the configured platform setting (admin Settings →
     // Localization) so server-rendered legal documents (invoices, payout statements) render in the
@@ -267,7 +232,16 @@ export class APIServer {
     const wss = this.socket.initialize(server);
 
     server.on('upgrade', (request, socket, head) => {
-      const pathname = new URL(request.url || '', `http://${host}:${port}`).pathname;
+      // A malformed upgrade URL makes `new URL` throw, and an emitter callback has no caller to catch
+      // it — that is an uncaughtException, i.e. the process, from an unauthenticated socket. A request
+      // we cannot parse is a request we refuse.
+      let pathname: string;
+      try {
+        pathname = new URL(request.url || '', `http://${host}:${port}`).pathname;
+      } catch {
+        socket.destroy();
+        return;
+      }
 
       if (pathname === RouteConstants.SEGMENTS.WEBSOCKET && wss) {
         wss.handleUpgrade(request, socket, head, (ws) => {

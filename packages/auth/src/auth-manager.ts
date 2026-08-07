@@ -189,7 +189,7 @@ export class AuthManager {
         }
 
         if (hasExpiredToken && res.clearCookie) {
-          this.logger.info(`Expired token detected for ${req.url}. Clearing auth/security cookies.`);
+          this.logger.info(`Expired token detected for ${req.url}. Clearing this surface's session cookie.`);
 
           const isProd = process.env.NODE_ENV === 'production';
           const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' || req.get('x-forwarded-port') === '443';
@@ -201,10 +201,14 @@ export class AuthManager {
             sameSite: 'lax'
           };
 
-          res.clearCookie(CookieConstants.AUTH_TOKEN, baseOptions);
-          res.clearCookie(CookieConstants.CLIENT_AUTH_TOKEN, { ...baseOptions, httpOnly: false });
-          res.clearCookie(CookieConstants.AUTH_CSRF, { ...baseOptions, httpOnly: false });
-
+          // ONLY this surface's session cookie. Admin (`fc_token`) and storefront (`userToken`) are
+          // deliberately separate sessions so one person can be an admin in one tab and a customer in
+          // another; clearing both meant a storefront token aging out silently killed the admin session,
+          // which the operator experiences as "I clicked something and it logged me out".
+          //
+          // `fc_csrf` is deliberately NOT cleared: it is a single shared, identity-free token that the
+          // CSRF middleware regenerates on the next status/health GET, so clearing it here only breaks
+          // the OTHER surface's in-flight writes.
           let domain = process.env.COOKIE_DOMAIN;
           if (!domain && req.hostname && req.hostname.includes('.') && !req.hostname.match(/^\d+\.\d+\.\d+\.\d+$/) && req.hostname !== 'localhost') {
             const parts = req.hostname.split('.');
@@ -213,10 +217,13 @@ export class AuthManager {
             }
           }
 
-          if (domain) {
-            res.clearCookie(CookieConstants.AUTH_TOKEN, { ...baseOptions, domain });
-            res.clearCookie(CookieConstants.CLIENT_AUTH_TOKEN, { ...baseOptions, domain, httpOnly: false });
-            res.clearCookie(CookieConstants.AUTH_CSRF, { ...baseOptions, domain, httpOnly: false });
+          for (const cookieName of sessionCookieNames) {
+            // The storefront token is readable by its client, the admin token is httpOnly.
+            const httpOnly = cookieName !== CookieConstants.CLIENT_AUTH_TOKEN;
+            res.clearCookie(cookieName, { ...baseOptions, httpOnly });
+            if (domain) {
+              res.clearCookie(cookieName, { ...baseOptions, domain, httpOnly });
+            }
           }
         }
       }

@@ -1,10 +1,10 @@
-jest.mock('@fromcode119/core', () => ({
+vi.mock('@fromcode119/core', () => ({
   CoreServices: {
-    getInstance: jest.fn(),
-    reset: jest.fn(),
+    getInstance: vi.fn(),
+    reset: vi.fn(),
   },
   CoercionUtils: {
-    toBoolean: jest.fn((value: unknown, fallback = false) => {
+    toBoolean: vi.fn((value: unknown, fallback = false) => {
       if (typeof value === 'boolean') return value;
       return fallback;
     }),
@@ -13,7 +13,7 @@ jest.mock('@fromcode119/core', () => ({
     ACTIVE: 'active',
   },
   EnvUtils: {
-    number: jest.fn((name: string, fallback: number) => {
+    number: vi.fn((name: string, fallback: number) => {
       const raw = process.env[name];
       if (raw === undefined || raw === null || String(raw).trim() === '') return fallback;
       const parsed = Number(String(raw).trim());
@@ -28,7 +28,7 @@ jest.mock('@fromcode119/core', () => ({
 }));
 
 import { CoreServices } from '@fromcode119/core';
-import { ResolutionService } from '../src/services/resolution-service';
+import { ResolutionService } from '@api/services/resolution-service';
 
 const QUERY_DELAY_MS = 3;
 const COLLECTIONS = 30;
@@ -37,7 +37,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function buildService() {
   const concurrency = { inFlight: 0, max: 0 };
-  const find = jest.fn().mockImplementation(async () => {
+  const find = vi.fn().mockImplementation(async () => {
     concurrency.inFlight += 1;
     concurrency.max = Math.max(concurrency.max, concurrency.inFlight);
     await sleep(QUERY_DELAY_MS);
@@ -58,17 +58,17 @@ function buildService() {
     ]),
   );
   const manager: any = {
-    db: { find: jest.fn().mockResolvedValue([]), findOne: jest.fn().mockResolvedValue(null) },
-    getPlugins: jest.fn().mockReturnValue([]),
+    db: { find: vi.fn().mockResolvedValue([]), findOne: vi.fn().mockResolvedValue(null) },
+    getPlugins: vi.fn().mockReturnValue([]),
     registeredCollections,
   };
   const themeManager: any = {
-    getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+    getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
   };
-  jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
-    contentResolutionGates: { apply: jest.fn(async (resolved: any) => resolved) },
-    redirectResolvers: { resolve: jest.fn(async () => null) },
-    defaultPageContractResolution: { resolveAll: jest.fn().mockReturnValue([]) },
+  vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+    contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+    redirectResolvers: { resolve: vi.fn(async () => null) },
+    defaultPageContractResolution: { resolveAll: vi.fn().mockReturnValue([]) },
   } as any);
   return { service: new ResolutionService(manager, themeManager, { find } as any), find, concurrency };
 }
@@ -77,8 +77,8 @@ describe('ResolutionService micro-bench (worst-case miss over 30 slug-bearing co
   const ORIGINAL_TTL = process.env.RESOLVE_CACHE_TTL_MS;
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    jest.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
     if (ORIGINAL_TTL === undefined) delete process.env.RESOLVE_CACHE_TTL_MS;
     else process.env.RESOLVE_CACHE_TTL_MS = ORIGINAL_TTL;
   });

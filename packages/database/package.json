@@ -1,22 +1,22 @@
 {
   "name": "@fromcode119/database",
-  "version": "0.1.80",
+  "version": "0.1.81",
   "main": "dist/index.js",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./physical-table-name-utils": {
+      "types": "./dist/physical-table-name-utils.d.ts",
       "import": "./dist/physical-table-name-utils.js",
-      "require": "./dist/physical-table-name-utils.js",
-      "types": "./dist/physical-table-name-utils.d.ts"
+      "require": "./dist/physical-table-name-utils.js"
     },
     "./naming-strategy": {
+      "types": "./dist/naming-strategy.d.ts",
       "import": "./dist/naming-strategy.js",
-      "require": "./dist/naming-strategy.js",
-      "types": "./dist/naming-strategy.d.ts"
+      "require": "./dist/naming-strategy.js"
     }
   },
   "browser": {

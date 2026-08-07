@@ -15,6 +15,7 @@ export class CollectionEditPageViewModelBuilder {
       router: self.props.router, theme: self.props.theme, settings: self.props.settings,
       collection: d.collection, resolvedSlug: d.resolvedSlug, isNew: d.isNew,
       pluginSettings: s.pluginSettings,
+      pluginSettingsSchema: s.pluginSettingsSchema,
       status: s.status, setStatus: (v) => self.updateState('status', v),
       deleting: s.deleting,
       showDeleteConfirm: s.showDeleteConfirm, setShowDeleteConfirm: (v) => self.updateState('showDeleteConfirm', v),
@@ -57,7 +58,7 @@ export class CollectionEditPageViewModelBuilder {
       openReadOnlyOverridePasswordPrompt: () => CollectionEditPageHandlers.openReadOnlyOverridePasswordPrompt(self),
       handleReadOnlyOverridePasswordConfirm: (password) => CollectionEditPageHandlers.handleReadOnlyOverridePasswordConfirm(self, password),
       hasDisablePermalink: d.hasDisablePermalink, showPreview: d.showPreview, showPermalink: d.showPermalink,
-      isFullWidth: d.isFullWidth, hideFooter: d.hideFooter, hasSidebarFields: d.hasSidebarFields,
+      isFullWidth: d.isFullWidth, hideFooter: d.hideFooter, isDirty: d.isDirty, hasSidebarFields: d.hasSidebarFields,
       renderSidebar: d.renderSidebar, hasBuiltInSidebarContent: d.hasBuiltInSidebarContent,
       statusOptions: d.statusOptions, currentStatusValue: d.currentStatusValue
     };

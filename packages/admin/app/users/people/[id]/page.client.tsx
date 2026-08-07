@@ -7,6 +7,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons, RecordsHub } from '@fromcode119/react';
 import type { IRecordsHubItem } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
+import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { Input } from '@/components/ui/view/input.client';
@@ -14,7 +15,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { PersonAccountPanel } from '@/app/users/people/[id]/components/view/person-account-panel.client';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import type { IPersonEditPageFields } from '@/app/users/people/[id]/interfaces/person-edit-page-fields.interface';
-import { prop, state } from '@fromcode119/reactor';
+import { bound, prop, state } from '@fromcode119/reactor';
 import { AdminClass } from '@/lib/admin-class';
 
 /** Dedicated edit page for a single person (route `/users/people/:id`). Replaces the modal dialog. */
@@ -31,6 +32,9 @@ export class PersonEditPage extends AdminComponent {
   @state notice = '';
   @state error = '';
   @state notFound = false;
+  /** Set when the person request FAILED. Distinct from `notFound`, which means the server answered
+   *  and the record does not exist — a failed request must never be reported as "does not exist". */
+  @state loadError = '';
   @state users: Array<{ id: number; email?: string; username?: string }> = [];
   @state confirmDelete = false;
   @state deleting = false;
@@ -52,6 +56,13 @@ export class PersonEditPage extends AdminComponent {
     this.mounted = false;
   }
 
+  @bound
+  async retryLoad(): Promise<void> {
+    this.loading = true;
+    this.loadError = '';
+    await this.fetchPerson();
+  }
+
   private async fetchPerson(): Promise<void> {
     try {
       const res = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERSON(this.routeId));
@@ -64,8 +75,11 @@ export class PersonEditPage extends AdminComponent {
       void AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USERS)
         .then((u: any) => { if (this.mounted) this.users = Array.isArray(u?.docs) ? u.docs : (Array.isArray(u) ? u : []); })
         .catch(() => undefined);
-    } catch {
-      if (this.mounted) { this.loading = false; this.notFound = true; }
+    } catch (err: any) {
+      if (this.mounted) {
+        this.loading = false;
+        this.loadError = err?.message || 'The person record could not be loaded.';
+      }
     }
   }
 
@@ -201,10 +215,21 @@ export class PersonEditPage extends AdminComponent {
 
   render(): ReactElement {
     const theme = this.theme;
-    const { person, loading, saving, granting, sendingReset, notice, error, notFound, users, confirmDelete, deleting, reassignOpen, reassignTo, reassigning } = this;
+    const { person, loading, saving, granting, sendingReset, notice, error, notFound, loadError, users, confirmDelete, deleting, reassignOpen, reassignTo, reassigning } = this;
 
     if (loading) {
       return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label="Loading person…" /></div>;
+    }
+
+    if (loadError) {
+      return (
+        <LoadErrorPanel
+          title="This person could not be loaded"
+          message={loadError}
+          onRetry={this.retryLoad}
+          isRetrying={loading}
+        />
+      );
     }
 
     if (notFound || !person) {

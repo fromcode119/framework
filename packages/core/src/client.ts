@@ -123,6 +123,8 @@ export { LayoutLifecycleService } from '@core/plugin/layout/layout-lifecycle-ser
 export { LayoutRuntimeBridgeService } from '@core/plugin/layout/layout-runtime-bridge-service';
 export { PluginFrontendLayoutRegistrar, ThemeFrontendLayoutRegistrar } from '@core/layout';
 export type { IRegisteredWidgetDefinition, IWidgetDefinitionInput, IWidgetSettingsRenderInput, IWidgetStyle } from '@core/widget';
+// VALUE export: `IWidgetStyle.visibility` is typed as this Enum, so plugins need its MEMBERS.
+export { WidgetViewport } from '@core/widget';
 export type { IPluginFrontendLayoutRegistrarOptions, IPluginFrontendLayoutRegistration, IThemeFrontendLayoutRegistrarOptions, IThemeFrontendLayoutRegistration } from '@core/layout';
 export { ThemeLayoutOverrideRegistryService } from '@core/theme/theme-layout-override-registry-service';
 export { TypeUtils } from '@core/utils/type-utils';

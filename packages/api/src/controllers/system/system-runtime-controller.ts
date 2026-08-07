@@ -158,13 +158,24 @@ export class SystemRuntimeController {
       'Cache-Control': 'no-cache',
       Connection: 'keep-alive',
     });
-    const handler = (data: any) => res.write(`data: ${JSON.stringify(data)}\n\n`);
-    this.runtime.manager.hooks.on('system:hmr:reload', handler);
-    const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 15000);
-    req.on('close', () => {
+    // Writing to a destroyed socket THROWS, and a throw inside a hook callback or a timer has no
+    // caller to catch it — it becomes an uncaughtException and takes the process down. `close` does not
+    // fire for every abrupt teardown, so the write itself has to be the thing that gives up.
+    const stop = () => {
       clearInterval(heartbeat);
       this.runtime.manager.hooks.off('system:hmr:reload', handler);
-    });
+    };
+    const write = (chunk: string) => {
+      try {
+        res.write(chunk);
+      } catch {
+        stop();
+      }
+    };
+    const handler = (data: any) => write(`data: ${JSON.stringify(data)}\n\n`);
+    this.runtime.manager.hooks.on('system:hmr:reload', handler);
+    const heartbeat = setInterval(() => write(': heartbeat\n\n'), 15000);
+    req.on('close', stop);
   }
 
   async sendTestTelemetryEmail(req: Request, res: Response) {

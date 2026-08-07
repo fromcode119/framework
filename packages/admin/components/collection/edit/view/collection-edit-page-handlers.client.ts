@@ -12,6 +12,9 @@ import { CollectionEditUtils } from '@/components/collection/collection-edit-uti
  * `CollectionEditPageView` instance (typed loosely to avoid a circular import).
  */
 export class CollectionEditPageHandlers {
+  /** Version History page size. Sent as `limit`, and `offset` is derived from it. */
+  private static readonly REVISIONS_PAGE_SIZE = 20;
+
   private static context(self: any): { collection: any; resolvedSlug: string; isNew: boolean } {
     const collection = AdminCollectionUtils.resolveCollection(self.props.collections, self.props.pluginSlug, self.props.slug);
     return { collection, resolvedSlug: collection?.slug || self.props.slug, isNew: self.props.id === 'new' };
@@ -59,7 +62,9 @@ export class CollectionEditPageHandlers {
       const normalized = AdminServices.getInstance().entityFormData.normalizeSubmitPayload(collection, payloadBase, { isNew });
       const payload = summary ? { ...normalized, _change_summary: summary } : normalized;
       const result = await (isNew ? AdminApi.post(url, payload) : AdminApi.put(url, payload));
-      self.setState({ readOnlyOverrideFields: {}, readOnlyOverridePassword: '', status: { type: NotificationType.SUCCESS, message: `Entry ${isNew ? 'created' : 'updated'} successfully` } });
+      // What was just persisted becomes the new pristine baseline, so the save bar goes quiet until the
+      // operator edits again instead of insisting there is still unsaved work.
+      self.setState({ readOnlyOverrideFields: {}, readOnlyOverridePassword: '', pristineFormData: { ...self.state.formData }, status: { type: NotificationType.SUCCESS, message: `Entry ${isNew ? 'created' : 'updated'} successfully` } });
       if (!isNew) CollectionEditPageHandlers.fetchRevisions(self, 1);
       if (isNew) self.props.router.push(`/${self.props.pluginSlug}/${self.props.slug}/${result.id}`);
       return result;
@@ -98,17 +103,42 @@ export class CollectionEditPageHandlers {
     return { message, perField: { base: [message] } };
   }
 
+  /**
+   * One page of Version History.
+   *
+   * Three separate defects lived in the old version of this method:
+   *  1. it sent `page=`, which `rest-read-controller.getVersions` IGNORES (it reads only
+   *     `limit`/`offset`), so "load more" would have re-appended page 1;
+   *  2. `hasNextPage` is never returned by `versioning-service.getVersions`, and the fallback
+   *     compared `docs.length === 10` against a `limit=20` request — never true — so the
+   *     "Load More History" button NEVER rendered and history was silently capped at 20 revisions;
+   *  3. a revision with no recorded author was attributed to "System" and one with no summary was
+   *     labelled "Update" — invented entries in an AUDIT TRAIL.
+   *
+   * The versions endpoint serves rows straight off the raw DB manager, so the payload is snake_case
+   * only; the camelCase halves of the old `v.created_at || v.createdAt` reads were dead code.
+   */
   static async fetchRevisions(self: any, page: number): Promise<void> {
     const { resolvedSlug } = CollectionEditPageHandlers.context(self);
+    const limit = CollectionEditPageHandlers.REVISIONS_PAGE_SIZE;
+    const offset = (Math.max(1, page) - 1) * limit;
     self.setState({ revisionsLoading: true });
     try {
-      const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.VERSIONS.BASE}/${resolvedSlug}/${self.props.id}?limit=20&page=${page}`);
-      const mapped = (result.docs || []).map((v: any) => ({
-        id: v.id, version: v.version || 1, date: new Date(v.created_at || v.createdAt),
-        user: v.updated_by || v.updatedBy || 'System', action: v.change_summary || 'Update',
+      const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.VERSIONS.BASE}/${resolvedSlug}/${self.props.id}?limit=${limit}&offset=${offset}`);
+      const docs = result.docs || [];
+      const mapped = docs.map((v: any) => ({
+        id: v.id, version: v.version || 1, date: new Date(v.created_at),
+        user: v.updated_by || '-', action: v.change_summary || '-',
         changes: CollectionEditUtils.reviveSerializedRevisionValue(v.version_data || {})
       }));
-      self.setState((prev: any) => ({ revisions: page === 1 ? mapped : [...prev.revisions, ...mapped], hasMoreRevisions: result.hasNextPage || (result.docs?.length === 10) }));
+      self.setState((prev: any) => {
+        const revisions = page === 1 ? mapped : [...prev.revisions, ...mapped];
+        const total = Number(result.totalDocs);
+        return {
+          revisions,
+          hasMoreRevisions: Number.isFinite(total) ? revisions.length < total : docs.length === limit,
+        };
+      });
     } catch (err) {
       console.error('Failed to fetch revisions:', err);
     } finally {

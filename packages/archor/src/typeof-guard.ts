@@ -32,7 +32,7 @@ export class TypeofGuard {
   private static readonly EXEMPT_PACKAGES = new Set(['reactor', 'nextor', 'typor', 'archor']);
 
   static readonly BASELINE: Readonly<Record<string, number>> = {
-    plugins: 810,
+    plugins: 801,
     themes: 78,
     framework: 815,
     appearance: 20,

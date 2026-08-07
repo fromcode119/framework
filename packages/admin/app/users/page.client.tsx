@@ -25,6 +25,12 @@ export class UsersPage extends AdminComponent {
   @state stats: { total: number; active: number; roles: number } = { total: 0, active: 0, roles: 0 };
   @state deleteConfirm: IUser | null = null;
   @state isDeleting = false;
+  /** Current page of the client-side user table. */
+  @state page = 1;
+  /** Set when the user list could not be loaded, so an empty table is never passed off as "no users". */
+  @state loadError = '';
+
+  private readonly pageSize = 10;
 
   componentDidMount(): void {
     this.mounted = true;
@@ -40,6 +46,7 @@ export class UsersPage extends AdminComponent {
       const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USERS);
       const userData = response.docs || [];
       if (!this.mounted) return;
+      this.loadError = '';
 
       // Stats based on real RBAC data
       const activeUsers = userData.filter((user: any) => String(user.accountStatus || 'active').toLowerCase() !== 'suspended').length;
@@ -51,6 +58,9 @@ export class UsersPage extends AdminComponent {
       };
     } catch (err) {
       console.error('Failed to fetch users:', err);
+      // Without this the table fell back to "No user records match your query" — a positive claim
+      // that the account list is empty, when in fact the request failed.
+      if (this.mounted) this.loadError = err instanceof Error && err.message ? err.message : 'The user list could not be loaded.';
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -77,6 +87,21 @@ export class UsersPage extends AdminComponent {
        u.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
        (u.email?.toLowerCase() || '').includes(searchQuery.toLowerCase()))
     );
+  }
+
+  /**
+   * The table footer used to read "Showing 1-10 of N" while the body rendered ALL N rows, and every
+   * page button called an undefined `onPageChange`. The slice below is what makes that footer true.
+   * Clamped so a filter that shrinks the result set cannot strand the view on an empty page.
+   */
+  private get currentPage(): number {
+    const totalPages = Math.max(1, Math.ceil(this.filteredUsers.length / this.pageSize));
+    return Math.min(Math.max(1, this.page), totalPages);
+  }
+
+  private get pageItems(): IUser[] {
+    const page = this.currentPage;
+    return this.filteredUsers.slice((page - 1) * this.pageSize, page * this.pageSize);
   }
 
   private get columns(): any[] {
@@ -109,7 +134,6 @@ export class UsersPage extends AdminComponent {
               title="User Base"
               value={stats.total.toLocaleString()}
               icon={<FrameworkIcons.Users size={20} />}
-              trend={{ value: 4, isPositive: true }}
             />
             <StatCard
               title="Active Now"
@@ -147,12 +171,13 @@ export class UsersPage extends AdminComponent {
           }`}>
             <DataTable
               columns={this.columns}
-              data={this.filteredUsers}
+              data={this.pageItems}
               loading={false}
               totalDocs={this.filteredUsers.length}
-              limit={10}
-              page={1}
-              emptyMessage="No user records match your query"
+              limit={this.pageSize}
+              page={this.currentPage}
+              onPageChange={(p) => { this.page = p; }}
+              emptyMessage={this.loadError || 'No user records match your query'}
               actions={(user) => (
                 <UsersRowActions
                   user={user}

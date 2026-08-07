@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/nextor",
-  "version": "0.1.80",
+  "version": "0.1.81",
   "description": "Next.js + build integration for @fromcode119/reactor — `.client` directive injection and the Registry-resolved JSX template compiler. Keeps reactor pure React; all build/Next-specific machinery lives here.",
   "license": "MIT",
   "type": "module",

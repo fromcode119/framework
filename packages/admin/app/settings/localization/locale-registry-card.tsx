@@ -25,6 +25,14 @@ export class LocaleRegistryCard extends PureReactor {
             Define language name + ISO code, then enable or disable each locale.
           </p>
 
+          {/* An empty registry says so. It used to be impossible to see: the page seeded a hardcoded
+              English row, so "nothing configured" was indistinguishable from "English configured". */}
+          {locales.length === 0 && (
+            <p className="text-[11px] font-medium text-[var(--muted-foreground)]">
+              No locales configured. Add one below; nothing is stored until you save.
+            </p>
+          )}
+
           <div className="space-y-3">
             {locales.map((locale) => (
               <div

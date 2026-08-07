@@ -156,8 +156,11 @@ export class MediaPageActions {
         isDeleteDialogOpen: false,
         deletingId: null,
       }));
-    } catch (err) {
+    } catch (err: any) {
+      // Every sibling action in this file surfaces `error`; only delete swallowed it, so a failed
+      // delete left the confirm dialog sitting open with no message and the item still listed.
       console.error('Delete failed:', err);
+      this.host.patch({ error: err?.message || 'Failed to delete media item' });
     } finally {
       if (this.host.mounted) this.host.patch({ isActionLoading: false });
     }

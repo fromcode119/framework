@@ -41,7 +41,7 @@ export class AdminAssistantPageExecutionService {
     const contentForModel = attachmentContext ? `${params.content}\n\n${attachmentContext}` : params.content;
     const sessionId = String(params.activeSessionId || '').trim() || AdminAssistantPageUtils.createSessionId();
     const history = params.messages
-      .filter((entry) => entry.role !== 'system')
+      .filter((entry) => entry.role !== AssistantRole.SYSTEM)
       .map((entry) => {
         if (entry.role === AssistantRole.USER && Array.isArray(entry.attachments) && entry.attachments.length > 0) {
           const serialized = AssistantTextUtils.serializeAttachmentsForModel(entry.attachments);

@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/framework",
-  "version": "0.1.80",
+  "version": "0.1.81",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -37,7 +37,7 @@
     "check:plugin-architecture:phase:all": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error node packages/archor/dist/archor-cli.cjs plugin-architecture",
     "dev": "npm run dev --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "test:framework": "npm run test --workspace=@fromcode119/admin -- --config ../../vitest.plugins.config.ts",
+    "test:framework": "vitest run --config vitest.plugins.config.ts",
     "fromcode": "tsx packages/cli/src/bin.ts",
     "bundle:site-transfer": "npm run fromcode -- system site-transfer-bundle",
     "seed:theme": "npm run fromcode -- theme seed",

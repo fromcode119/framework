@@ -8,17 +8,22 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { ThemeState } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
+import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
+import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 
 export class ThemeSettingsSidebar extends Reactor {
-  @prop declare page: any;
-  @prop declare model: any;
+  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
+  declare props: Pick<ThemeSettingsSidebar, 'page' | 'model'>;
+
+  @prop declare page: IThemeSettingsPageView;
+  @prop declare model: ThemeSettingsRenderModel;
 
   render(): ReactNode {
     const page = this.page;
     const model = this.model;
     const { adminTheme, themeDetail, marketplaceVersion, integrationRequirements, livePreviewUrl } = model;
-    const { previewPrimary, previewBackground, previewForeground, previewMuted, previewCard, previewAccent } = model;
-    const { isUpdating, isReseeding, isResettingTheme } = page.state;
+    const { previewSwatches } = model;
+    const { isUpdating, isReseeding, isResettingTheme } = page;
     return (
       <div className="space-y-6">
         <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
@@ -58,7 +63,7 @@ export class ThemeSettingsSidebar extends Reactor {
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 className={`text-[10px] font-semibold uppercase tracking-[0.15em] ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
-              Visual Preview
+              Theme Colors
             </h3>
             <a
               href={livePreviewUrl}
@@ -70,37 +75,31 @@ export class ThemeSettingsSidebar extends Reactor {
               Open Site
             </a>
           </div>
-          <div className="w-full rounded-xl border p-3" style={{ borderColor: previewPrimary, backgroundColor: `${previewBackground}dd` }}>
-            <div className="mb-3 flex items-center justify-between rounded-xl border px-3 py-2" style={{ borderColor: `${previewPrimary}44`, backgroundColor: previewCard }}>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: previewPrimary }} />
-                <p className="text-[9px] font-semibold uppercase tracking-[0.15em]" style={{ color: previewMuted }}>
-                  Real-time Simulation Node
-                </p>
-              </div>
-              <FrameworkIcons.Eye size={12} style={{ color: previewMuted }} />
+          {previewSwatches.length === 0 ? (
+            <p className="text-[10px] font-semibold leading-relaxed text-slate-500">
+              This theme declares no color variables, so there is nothing to preview.
+            </p>
+          ) : (
+            <div className="space-y-1.5">
+              {previewSwatches.map((swatch) => (
+                <div
+                  key={swatch.key}
+                  className={`flex items-center gap-2.5 rounded-lg border px-2.5 py-1.5 ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50 border-slate-100'}`}
+                >
+                  <span
+                    className={`h-6 w-6 shrink-0 rounded-md border ${adminTheme === ThemeMode.DARK ? 'border-white/10' : 'border-slate-200'}`}
+                    style={{ backgroundColor: swatch.value }}
+                  />
+                  <span className="min-w-0 flex-1 truncate text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    {swatch.label}
+                  </span>
+                  <span className={`shrink-0 font-mono text-[10px] font-semibold uppercase ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-700'}`}>
+                    {swatch.value}
+                  </span>
+                </div>
+              ))}
             </div>
-            <div className="rounded-xl border p-4" style={{ borderColor: `${previewPrimary}33`, backgroundColor: previewBackground, color: previewForeground }}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em]" style={{ color: previewMuted }}>Theme Hero Simulation</p>
-              <h4 className="mt-2 text-base font-bold leading-tight">Build faster with {themeDetail.name}</h4>
-              <p className="mt-2 text-[11px] leading-relaxed" style={{ color: previewMuted }}>
-                Live palette + typography simulation from your current variable edits.
-              </p>
-              <div className="mt-3 flex items-center gap-2">
-                <button type="button" className="rounded-lg px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ backgroundColor: previewPrimary, color: previewBackground }}>
-                  Primary CTA
-                </button>
-                <button type="button" className="rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide" style={{ borderColor: `${previewAccent}55`, color: previewAccent }}>
-                  Secondary
-                </button>
-              </div>
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              <div className="h-6 rounded-lg" style={{ backgroundColor: previewPrimary }} />
-              <div className="h-6 rounded-lg border" style={{ backgroundColor: previewBackground, borderColor: `${previewMuted}55` }} />
-              <div className="h-6 rounded-lg" style={{ backgroundColor: previewForeground }} />
-            </div>
-          </div>
+          )}
         </Card>
 
         <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
@@ -136,7 +135,7 @@ export class ThemeSettingsSidebar extends Reactor {
               Integration Requirements
             </h3>
             <div className="space-y-3">
-              {integrationRequirements.map((integration: any) => (
+              {integrationRequirements.map((integration) => (
                 <div key={integration.type} className={`p-4 rounded-xl border ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/40 border-white/10' : 'bg-slate-50 border-slate-100'}`}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">

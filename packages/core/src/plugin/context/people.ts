@@ -4,13 +4,16 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 import { SystemConstants } from '@core/constants/system.constants';
 import { PersonCatalogService } from '@core/plugin/services/person-catalog-service';
 import { PeopleAddressService } from '@core/plugin/services/people-address-service';
+import { PeopleDirectoryService } from '@core/plugin/services/people-directory-service';
+import { MetaContextProxy } from '@core/plugin/context/meta';
 import type { IPeopleAddressRef } from '@core/plugin/services/interfaces/people-address-ref.interface';
 
 export class PeopleContextProxy {
 
   static createPeopleProxy(
     _plugin: ILoadedPlugin,
-    manager: IPluginManagerInterface
+    manager: IPluginManagerInterface,
+    pluginDb: any
   ) {
     const db = manager.db as any;
     const catalogs = new PersonCatalogService(db);
@@ -34,8 +37,55 @@ export class PeopleContextProxy {
       return null;
     }
 
+    async function upsert(input: Record<string, any>) {
+      const data = PeopleContextProxy.normalizeWrite(input);
+      const existing = await match({ userId: input?.userId, email: input?.email, phone: input?.phone });
+      if (existing) {
+        // `displayName` is USER-OWNED: it is set/cleared only via the admin person editor (which writes
+        // through db.update, not this upsert). Plugin people syncs funnel here with a plugin-derived
+        // name; letting them overwrite displayName clobbered an admin-set name and made a deliberately
+        // CLEARED displayName reappear on the next sync. Seed it on first insert, but never mutate it
+        // for an existing person — the person row owns it from then on.
+        const update = { ...data };
+        delete (update as any).displayName;
+        if (Object.keys(update).length > 0) {
+          await db.update(SystemConstants.TABLE.PEOPLE, { id: existing.id }, update);
+        }
+        return { ...existing, ...update };
+      }
+      return PeopleContextProxy.toPerson(await db.insert(SystemConstants.TABLE.PEOPLE, data));
+    }
+
+    const directory = new PeopleDirectoryService(
+      String(_plugin?.manifest?.slug || ''),
+      pluginDb,
+      MetaContextProxy.createMetaProxy(manager),
+      match,
+      upsert
+    );
+
     return {
       match,
+
+      upsert,
+
+      /**
+       * Resolve (or create) the person for one identity payload from a plugin row, filling only the
+       * fields the person does not already have. The framework owns the match/merge rules — a plugin
+       * never hand-rolls them and never touches the `people` table.
+       */
+      ingest: (input: Record<string, any>) => directory.ingest(input),
+
+      /**
+       * Ingest rows of one of THIS plugin's own tables into the people directory, resuming from a
+       * framework-owned cursor so only rows added since the last run are read. Replaces the
+       * whole-table scan every plugin used to run at boot.
+       */
+      syncDirectory: (
+        table: string,
+        map: (row: Record<string, any>) => Record<string, any> | Promise<Record<string, any>>,
+        batch?: number
+      ) => directory.sync(table, map, batch),
 
       async getById(id: any) {
         if (id == null || id === '') return null;
@@ -51,25 +101,6 @@ export class PeopleContextProxy {
         const folded = PeopleContextProxy.foldEmail(email);
         if (!folded) return null;
         return PeopleContextProxy.toPerson(await db.findOne(SystemConstants.TABLE.PEOPLE, { email: folded }));
-      },
-
-      async upsert(input: Record<string, any>) {
-        const data = PeopleContextProxy.normalizeWrite(input);
-        const existing = await match({ userId: input?.userId, email: input?.email, phone: input?.phone });
-        if (existing) {
-          // `displayName` is USER-OWNED: it is set/cleared only via the admin person editor (which writes
-          // through db.update, not this upsert). Plugin people-backfills funnel here every boot with a
-          // plugin-derived name; letting them overwrite displayName clobbered an admin-set name and made a
-          // deliberately CLEARED displayName reappear on the next backfill. Seed it on first insert, but
-          // never mutate it for an existing person — the person row owns it from then on.
-          const update = { ...data };
-          delete (update as any).displayName;
-          if (Object.keys(update).length > 0) {
-            await db.update(SystemConstants.TABLE.PEOPLE, { id: existing.id }, update);
-          }
-          return { ...existing, ...update };
-        }
-        return PeopleContextProxy.toPerson(await db.insert(SystemConstants.TABLE.PEOPLE, data));
       },
 
       async linkAccount(personId: any, userId: any) {

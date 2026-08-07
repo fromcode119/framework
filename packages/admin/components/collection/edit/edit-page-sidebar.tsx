@@ -21,6 +21,7 @@ export class EditPageSidebar extends PureReactor {
   @prop declare handleSubmit: any;
   @prop declare saving: boolean;
   @prop declare pluginSettings: Record<string, any>;
+  @prop declare pluginSettingsSchema: Record<string, any>;
   @prop declare fieldErrors: Record<string, any>;
   @prop declare handleInputChange: (name: string, value: any) => void;
   @prop declare handlePatch: (partial: Record<string, any>) => void;
@@ -42,7 +43,7 @@ export class EditPageSidebar extends PureReactor {
   render(): ReactNode {
     const {
       slug, id, isNew, theme, collection, resolvedSlug, formData, setFormData, handleSubmit, saving,
-      pluginSettings, fieldErrors, handleInputChange, handlePatch, handleReadOnlyOverrideRequest,
+      pluginSettings, pluginSettingsSchema, fieldErrors, handleInputChange, handlePatch, handleReadOnlyOverrideRequest,
       readOnlyOverrideFields, showPermalink, hasDisablePermalink, hasSidebarFields, sidebarFieldSections,
       hasBuiltInSidebarContent, revisions, revisionsLoading, activeVersionId, setSelectedRevision,
       setActiveVersionId, loadMoreRevisions, hasMoreRevisions

@@ -1,0 +1,25 @@
+<p><strong>System telemetry summary</strong></p>
+<p>Window: {{fromIso}} -&gt; {{toIso}}</p>
+<p>Total log entries: <strong>{{totalEntries}}</strong></p>
+<ul>
+  <li>ERROR: <strong>{{levels.error}}</strong></li>
+  <li>WARN: <strong>{{levels.warn}}</strong></li>
+  <li>INFO: <strong>{{levels.info}}</strong></li>
+  <li>DEBUG: <strong>{{levels.debug}}</strong></li>
+</ul>
+<p><strong>Top active plugins</strong></p>
+{{#if topPlugins.length}}
+<ul>
+  {{#each topPlugins}}<li><strong>{{slug}}</strong>: {{count}}</li>{{/each}}
+</ul>
+{{else}}
+<p>(no activity)</p>
+{{/if}}
+<p><strong>Recent critical entries</strong></p>
+{{#if criticalEntries.length}}
+<ul>
+  {{#each criticalEntries}}<li><strong>{{timestamp}}</strong> [{{pluginSlug}}] {{level}}: {{message}}</li>{{/each}}
+</ul>
+{{else}}
+<p>(none)</p>
+{{/if}}

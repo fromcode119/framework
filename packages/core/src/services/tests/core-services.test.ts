@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CoreServices } from '@core/services/core-services';
+import { ServerCoreServices } from '@core/services/server-core-services';
 import { LocalizationService } from '@core/services/localization-service';
 import { ContentService } from '@core/services/content-service';
 import { MenuService } from '@core/services/menu-service';
@@ -12,6 +13,12 @@ import { PluginDefaultPageContractRegistryService } from '@core/services/default
 import { PluginDefaultPageContractResolutionService } from '@core/services/default-page-contract/plugin-default-page-contract-resolution-service';
 
 describe('CoreServices', () => {
+  beforeEach(() => {
+    // The page-contract and collection-write services are SERVER-only: `CoreServices` resolves them
+    // through `ServerServiceRegistry`, so without the server factories every getter below throws.
+    ServerCoreServices.register();
+  });
+
   afterEach(() => {
     // Reset singleton between tests
     CoreServices.reset();
@@ -283,26 +290,28 @@ describe('CoreServices', () => {
       const menu1 = services1.menu;
       const collection1 = services1.collection;
       const compatibility1 = services1.collectionWriteCompatibility;
-      
+      // Every "before" instance must be read BEFORE the reset. These five used to be read after it,
+      // which for registry-backed services means both sides resolve the same post-reset instance.
+      const defaultPageContracts1 = services1.defaultPageContracts;
+      const defaultPageContractResolution1 = services1.defaultPageContractResolution;
+      const defaultPageBackfill1 = services1.defaultPageBackfill;
+      const defaultPageDiagnostic1 = services1.defaultPageDiagnostic;
+      const defaultPageMaterialization1 = services1.defaultPageMaterialization;
+
       CoreServices.reset();
-      
+
       const services2 = CoreServices.getInstance();
       const loc2 = services2.localization;
       const content2 = services2.content;
       const menu2 = services2.menu;
       const collection2 = services2.collection;
       const compatibility2 = services2.collectionWriteCompatibility;
-      const defaultPageContracts1 = services1.defaultPageContracts;
       const defaultPageContracts2 = services2.defaultPageContracts;
-      const defaultPageContractResolution1 = services1.defaultPageContractResolution;
       const defaultPageContractResolution2 = services2.defaultPageContractResolution;
-      const defaultPageBackfill1 = services1.defaultPageBackfill;
       const defaultPageBackfill2 = services2.defaultPageBackfill;
-      const defaultPageDiagnostic1 = services1.defaultPageDiagnostic;
       const defaultPageDiagnostic2 = services2.defaultPageDiagnostic;
-      const defaultPageMaterialization1 = services1.defaultPageMaterialization;
       const defaultPageMaterialization2 = services2.defaultPageMaterialization;
-      
+
       // All services should be different instances
       expect(loc1).not.toBe(loc2);
       expect(content1).not.toBe(content2);

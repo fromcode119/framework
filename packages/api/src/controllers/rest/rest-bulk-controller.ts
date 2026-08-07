@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ICollection, HookEventUtils } from '@fromcode119/core';
 import { QueryHelper } from '@api/services/query-helper';
+import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 
 export class RestBulkController {
@@ -10,6 +11,7 @@ export class RestBulkController {
     try {
       await this.runtime.accessPolicy.ensureCreateAllowed(collection, req);
       const items = Array.isArray(req.body) ? req.body : [req.body];
+      for (const item of items) SystemMetaCollectionGuard.ensureWritableKey(collection, item?.key);
       const table = QueryHelper.getVirtualTable(collection);
       const results: any[] = [];
       const globalSummary = req.body._change_summary || `Bulk creation of ${collection.slug}`;
@@ -57,6 +59,7 @@ export class RestBulkController {
   async bulkUpdate(collection: ICollection, req: any, res?: Response) {
     try {
       await this.runtime.accessPolicy.ensureUpdateAllowed(collection, req);
+      for (const id of Array.isArray(req.body?.ids) ? req.body.ids : []) SystemMetaCollectionGuard.ensureWritableKey(collection, id);
       const ids = req.body.ids;
       const data = req.body.data;
       const changeSummary = req.body._change_summary || `Bulk update of ${collection.slug}`;
@@ -135,6 +138,7 @@ export class RestBulkController {
     try {
       await this.runtime.accessPolicy.ensureDeleteAllowed(collection, req);
       const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
+      for (const id of ids) SystemMetaCollectionGuard.ensureWritableKey(collection, id);
       if (ids.length === 0) {
         if (!res) {
           throw new Error('ids must be a non-empty array');
@@ -176,6 +180,7 @@ export class RestBulkController {
       if (!Array.isArray(items)) {
         return res.status(400).json({ error: 'Payload must be an array of records' });
       }
+      for (const item of items) SystemMetaCollectionGuard.ensureWritableKey(collection, item?.key);
 
       const table = QueryHelper.getVirtualTable(collection);
       const results: any[] = [];

@@ -1,10 +1,10 @@
-import { MediaController } from '../src/controllers/media-controller';
+import { MediaController } from '@api/controllers/media-controller';
 
 describe('media-controller.listFiles', () => {
   const buildResponse = () => {
     const res: any = {
-      json: jest.fn(),
-      status: jest.fn().mockReturnThis(),
+      json: vi.fn(),
+      status: vi.fn().mockReturnThis(),
     };
     return res;
   };
@@ -37,9 +37,9 @@ describe('media-controller.listFiles', () => {
     ];
 
     const mockDb = { 
-      find: jest.fn().mockResolvedValue(mockFiles),
-      desc: jest.fn().mockReturnValue('desc_order'),
-      asc: jest.fn().mockReturnValue('asc_order'),
+      find: vi.fn().mockResolvedValue(mockFiles),
+      desc: vi.fn().mockReturnValue('desc_order'),
+      asc: vi.fn().mockReturnValue('asc_order'),
     } as any;
     
     const controller = new MediaController({ db: mockDb } as any, {
@@ -69,7 +69,10 @@ describe('media-controller.listFiles', () => {
       },
     ];
 
-    const findMock = jest
+    // `vi`, not `jest` — this suite runs under vitest, where `jest` is not a global. The single
+    // leftover `jest.fn()` threw `ReferenceError: jest is not defined` and kept this fallback path
+    // (the "full column select failed, retry with the basic set" branch) permanently unverified.
+    const findMock = vi
       .fn()
       .mockImplementationOnce(() => {
         throw new Error('missing column');
@@ -78,8 +81,8 @@ describe('media-controller.listFiles', () => {
 
     const mockDb = { 
       find: findMock,
-      desc: jest.fn().mockReturnValue('desc_order'),
-      asc: jest.fn().mockReturnValue('asc_order'),
+      desc: vi.fn().mockReturnValue('desc_order'),
+      asc: vi.fn().mockReturnValue('asc_order'),
     } as any;
 
     const controller = new MediaController({ db: mockDb } as any, {
@@ -111,9 +114,9 @@ describe('media-controller.listFiles', () => {
     ];
 
     const mockDb = {
-      find: jest.fn().mockResolvedValue(mockFiles),
-      desc: jest.fn().mockReturnValue('desc_order'),
-      asc: jest.fn().mockReturnValue('asc_order'),
+      find: vi.fn().mockResolvedValue(mockFiles),
+      desc: vi.fn().mockReturnValue('desc_order'),
+      asc: vi.fn().mockReturnValue('asc_order'),
     } as any;
 
     const controller = new MediaController({ db: mockDb } as any, {
@@ -123,7 +126,7 @@ describe('media-controller.listFiles', () => {
     const req = {
       query: {},
       protocol: 'http',
-      get: jest.fn((header: string) => {
+      get: vi.fn((header: string) => {
         if (header === 'x-forwarded-host') return 'admin.framework.local';
         if (header === 'x-forwarded-proto') return 'http';
         return undefined;

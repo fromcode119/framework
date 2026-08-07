@@ -24,7 +24,7 @@ export class RestControllerRuntime {
   constructor(
     readonly db: IDatabaseManager,
     auth?: AuthManager,
-    private readonly onSettingsUpdate?: (key: string, value: any) => void,
+    private readonly onSettingsUpdate?: (key: string, value: any) => void | Promise<void>,
     private readonly hooks?: HookManager
   ) {
     this.activityService = new ActivityService(db);
@@ -40,7 +40,9 @@ export class RestControllerRuntime {
     if (!this.hooks) {
       return payload;
     }
-    return await this.hooks.call(HookEventUtils.event(collection.slug, phase), payload) as T;
+    // Identity comes from HookEventUtils, not from `collection.slug` — see collectionIdentity() for
+    // why the declared slug is canonical and what silently broke while this used the physical one.
+    return await this.hooks.call(HookEventUtils.collectionEvent(collection, phase), payload) as T;
   }
 
   resolveWriteTarget(collection: ICollection): string {
@@ -87,10 +89,20 @@ export class RestControllerRuntime {
 
   emitCollectionEvent(collection: ICollection, action: string, payload: any): void {
     if (this.hooks) {
-      this.hooks.emit(`collection:${collection.slug}:${action}`, payload);
+      // Hand-built from `collection.slug` this carried the same physical-vs-declared mismatch as
+      // callCollectionHook. One identity rule, one place that knows the event format. `action` here is
+      // a past-tense notification (`saved`, `deleted`), NOT a lifecycle phase — hence the separate
+      // builder, which does not coerce it through CollectionHookPhase.
+      this.hooks.emit(HookEventUtils.collectionNotification(collection, action), payload);
     }
     if (this.onSettingsUpdate && collection.slug === 'settings' && action === 'saved' && payload?.key) {
-      this.onSettingsUpdate(String(payload.key), payload.value);
+      // The callback was TYPED `=> void` while the function actually supplied is async and writes to
+      // Redis — so the type checker could not see the floating promise, and a cache write failure on
+      // any settings save became an unobserved rejection. emitCollectionEvent is synchronous by
+      // contract, so the promise is observed here rather than awaited.
+      Promise.resolve(this.onSettingsUpdate(String(payload.key), payload.value)).catch((error: unknown) =>
+        console.error(`[RestControllerRuntime] Settings update side effect failed for "${String(payload.key)}":`, error)
+      );
     }
   }
 }

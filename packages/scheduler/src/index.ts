@@ -112,9 +112,16 @@ export class SchedulerService {
     // 1. Initialize cron jobs from DB
     await this.syncFromDatabase();
 
-    // 2. Start pulse for interval-based tasks
+    // 2. Start pulse for interval-based tasks.
+    // The catch is load-bearing, not defensive: a timer callback has no caller to reject to, so a
+    // single failed `db.find` inside pulse() became an unobserved rejection — fatal under Node 22 —
+    // once a minute, forever. A pulse that fails must be logged and retried on the next tick.
     this.pulseInterval = setInterval(() => {
-      this.pulse();
+      this.pulse().catch((error: unknown) => {
+        SchedulerService.logger.error(
+          `Scheduler pulse failed; retrying on the next tick: ${error instanceof Error ? error.message : String(error)}`
+        );
+      });
     }, pulseIntervalMs);
 
     SchedulerService.logger.info(`Scheduler service started (Pulse interval: ${pulseIntervalMs}ms)`);
@@ -176,8 +183,14 @@ export class SchedulerService {
       return;
     }
 
+    // Same reasoning as the pulse timer: a cron callback has no caller. runTask() catches today, but
+    // nothing structural keeps it that way, and the cost of it changing is a dead process.
     const job = cron.schedule(schedule, () => {
-      this.runTask(name);
+      this.runTask(name).catch((error: unknown) => {
+        SchedulerService.logger.error(
+          `Cron task "${name}" rejected: ${error instanceof Error ? error.message : String(error)}`
+        );
+      });
     });
 
     this.cronJobs.set(name, job);

@@ -20,7 +20,9 @@ export class DashboardActivityFeed extends PureReactor {
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
            <div>
             <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">System Events</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Real-time lifecycle telemetry</p>
+            {/* Not "Real-time lifecycle telemetry": this list is a slice of one system-logs fetch made
+                on dashboard load, with no stream and no polling. */}
+            <p className="text-[11px] text-slate-400 mt-0.5">Most recent system log entries</p>
            </div>
            <Button
              variant={ButtonVariant.GHOST}

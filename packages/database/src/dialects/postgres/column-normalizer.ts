@@ -3,7 +3,7 @@ import { DialectColumnNormalizer } from '@database/dialects/dialect-column-norma
 import { NamingStrategy } from '@database/naming-strategy';
 
 /**
- * PostgresColumnNormalizer - Postgres-specific JSON/JSONB column lookup.
+ * PostgresColumnNormalizer - Postgres-specific column metadata lookup.
  */
 export class PostgresColumnNormalizer extends DialectColumnNormalizer {
   private pool: Pool;
@@ -13,24 +13,26 @@ export class PostgresColumnNormalizer extends DialectColumnNormalizer {
     this.pool = pool;
   }
 
-  protected async getJsonColumns(tableName: string): Promise<Set<string>> {
-    const cached = this.jsonColumnsCache.get(tableName);
+  protected async getColumnTypes(tableName: string): Promise<Map<string, string>> {
+    const cached = this.columnTypesCache.get(tableName);
     if (cached) return cached;
 
     const result = await this.pool.query(
-      `SELECT column_name
+      `SELECT column_name, data_type
        FROM information_schema.columns
        WHERE table_schema = 'public'
-         AND table_name = $1
-         AND data_type IN ('json', 'jsonb')`,
+         AND table_name = $1`,
       [tableName]
     );
 
-    const columns = new Set(
-      (result.rows || []).map((row: any) => String(row?.column_name || '').toLowerCase())
+    const types = new Map<string, string>(
+      (result.rows || []).map((row: any) => [
+        String(row?.column_name || '').toLowerCase(),
+        String(row?.data_type || '').toUpperCase(),
+      ])
     );
-    this.jsonColumnsCache.set(tableName, columns);
-    return columns;
+    this.columnTypesCache.set(tableName, types);
+    return types;
   }
 
   protected normalizeParamValue(value: any): any {

@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { PluginAliasMigration } from './plugin-alias-migration';
 
 /**
  * Enforces that every import specifier RESOLVES and is written in the house style.
@@ -12,14 +13,16 @@ import path from 'node:path';
  *     `src/ui/src/` segment, and two theme imports naming a module that never existed.
  *
  *  2. **Every in-package import uses the alias — there is no relative form at all.** `@/` for admin and
- *     frontend, `@theme/` for a theme, `@ai/` for the ai package. Not `./x`, not `./interfaces/x`, not
- *     `../lib/x`: a module is named by where it LIVES, so the specifier never changes when the importing
- *     file moves, and two files importing the same module always spell it the same way. (An earlier
- *     version of this guard exempted same-directory targets; that exemption was invented here, never
- *     asked for, and it left the two forms mixed across the tree.)
+ *     frontend, `@theme/` for a theme, `@plugin/` for a plugin, `@ai/` for the ai package. Not `./x`, not
+ *     `./interfaces/x`, not `../lib/x`: a module is named by where it LIVES, so the specifier never
+ *     changes when the importing file moves, and two files importing the same module always spell it the
+ *     same way. (An earlier version of this guard exempted same-directory targets; that exemption was
+ *     invented here, never asked for, and it left the two forms mixed across the tree. `plugins/` was a
+ *     bigger version of the same hole: it was WALKED but had no alias root, so rule 2 could not fire
+ *     there at all and 6887 relative specifiers sat unreported until `@plugin/` existed.)
  *
  *  3. Packages with no path alias are exempt from rule 2 — they have no alias to use, so relative is
- *     correct there by definition. That is plugins/appearance (no tsconfig paths at all) and the four
+ *     correct there by definition. That is appearance (no tsconfig paths at all) and the four
  *     TOOLCHAIN packages (archor, reactor, nextor, typor): those build with raw `tsc`, not through
  *     `typor-build`, so `AliasEmitRewrite` never runs on them and an alias would survive into their
  *     `dist` where Node cannot resolve it. typor additionally cannot use one at all — resolving the
@@ -63,7 +66,7 @@ export class ImportGuard {
 
   /** Every alias prefix this guard understands, longest first so `@marketplace-client/` wins over `@m…`. */
   static aliasPrefixes(): string[] {
-    return ['@/', '@theme/', ...ImportGuard.PACKAGE_ALIASES.map(([, prefix]) => prefix)]
+    return ['@/', '@theme/', PluginAliasMigration.ALIAS, ...ImportGuard.PACKAGE_ALIASES.map(([, prefix]) => prefix)]
       .sort((a, b) => b.length - a.length);
   }
 
@@ -86,15 +89,37 @@ export class ImportGuard {
       const base = path.resolve(framework, 'packages', pkg);
       if (real.startsWith(base + path.sep)) return { root: base, prefix: '@/' };
     }
+    // Anchored on the PACKAGE, not on its `src` — same reasoning as the plugin branch below. A
+    // `tests/` file sits outside `src` but still resolves INTO it, and an src-anchored root returned
+    // null for it, which both suppressed the style rule there (33 relative `../src/…` imports sat
+    // unreported) and made every legitimate `@api/…` from `packages/api/tests` a FALSE `BROKEN` —
+    // `resolveSpecifier` bails to null when the importer has no alias root, whether or not the target
+    // exists. The alias root stays the package's `src` (that is what the prefix maps to); only the
+    // guard's reach widens to the whole package.
     for (const [pkg, prefix] of ImportGuard.PACKAGE_ALIASES) {
-      const src = path.resolve(framework, 'packages', pkg, 'src');
-      if (real.startsWith(src + path.sep)) return { root: src, prefix };
+      const packageRoot = path.resolve(framework, 'packages', pkg);
+      if (!real.startsWith(packageRoot + path.sep)) continue;
+      const src = path.join(packageRoot, 'src');
+      if (existsSync(src)) return { root: src, prefix };
     }
     const themes = path.resolve(repoRoot, 'themes');
     if (real.startsWith(themes + path.sep)) {
       const slug = real.slice(themes.length + 1).split(path.sep)[0];
       const src = path.resolve(themes, slug, 'src');
       if (real.startsWith(src + path.sep)) return { root: src, prefix: '@theme/' };
+    }
+    // A plugin is its own repo and spells its own source root `@plugin/`, exactly as a theme uses
+    // `@theme/`. This returned null for every plugin file, so `plugins/` was walked for BROKEN
+    // specifiers but the style rule could never fire there — 6861 relative imports sat unreported.
+    // Files OUTSIDE `src` (a root `index.ts`, a `tests/` helper) still resolve INTO it, so the alias
+    // root is the plugin's `src` while the guard's reach is the whole plugin.
+    const plugins = path.resolve(repoRoot, 'plugins');
+    if (real.startsWith(plugins + path.sep)) {
+      const slug = real.slice(plugins.length + 1).split(path.sep)[0];
+      const pluginRoot = path.resolve(plugins, slug);
+      // Root, not `src`: `settings.ts` / `seed.ts` / `index.ts` live here, and a src-anchored root made
+      // the guard blind to every import of them.
+      if (existsSync(path.join(pluginRoot, 'src'))) return { root: pluginRoot, prefix: PluginAliasMigration.ALIAS };
     }
     return null;
   }

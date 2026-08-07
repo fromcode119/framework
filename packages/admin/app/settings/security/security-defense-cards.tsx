@@ -15,36 +15,19 @@ export class SecurityDefenseCards extends PureReactor {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card title="Defense Modules" className="h-full">
+          {/* Only Signature Enforcement is a real reading — it comes from `stats.signatureEnforced`.
+              "Integrity Checking: Active", "Anomaly Detection: Active" and "Hardening Level:
+              Production" were green SUCCESS badges wired to nothing at all; they would have kept
+              reassuring the operator with those modules off. Removed until a stat backs them. */}
           <div className="space-y-6 pt-4">
-            <div className={`flex items-center justify-between p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
-              <div className="flex items-center gap-3">
-                <FrameworkIcons.Fingerprint size={18} className="text-indigo-500" />
-                <span className="text-xs font-semibold tracking-wide">Integrity Checking</span>
-              </div>
-              <Badge variant={BadgeVariant.SUCCESS}>Active</Badge>
-            </div>
             <div className={`flex items-center justify-between p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
               <div className="flex items-center gap-3">
                 <FrameworkIcons.Key size={18} className="text-indigo-500" />
                 <span className="text-xs font-semibold tracking-wide">Signature Enforcement</span>
               </div>
-              <Badge variant={stats.signatureEnforced ? 'success' : 'gray'}>
+              <Badge variant={stats.signatureEnforced ? BadgeVariant.SUCCESS : BadgeVariant.GRAY}>
                 {stats.signatureEnforced ? 'Enforced' : 'Optional'}
               </Badge>
-            </div>
-            <div className={`flex items-center justify-between p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
-              <div className="flex items-center gap-3">
-                <FrameworkIcons.Eye size={18} className="text-indigo-500" />
-                <span className="text-xs font-semibold tracking-wide">Anomaly Detection</span>
-              </div>
-              <Badge variant={BadgeVariant.SUCCESS}>Active</Badge>
-            </div>
-            <div className={`flex items-center justify-between p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
-              <div className="flex items-center gap-3">
-                <FrameworkIcons.Shield size={18} className="text-green-500" />
-                <span className="text-xs font-semibold tracking-wide">Hardening Level</span>
-              </div>
-              <Badge variant={BadgeVariant.SUCCESS}>Production</Badge>
             </div>
           </div>
         </Card>

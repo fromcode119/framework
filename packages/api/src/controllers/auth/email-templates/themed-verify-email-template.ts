@@ -3,6 +3,8 @@ import { AuthEmailTemplateRenderService } from '@api/controllers/auth/email-temp
 
 export class ThemedVerifyEmailTemplate {
   static async build(options: {
+    /** Platform locale code for the document's `lang` attribute. Empty renders no attribute. */
+    lang: string;
     subject: string;
     greeting: string;
     title: string;
@@ -40,6 +42,7 @@ export class ThemedVerifyEmailTemplate {
         ignoreMessage: options.ignoreMessage,
       }).trim(),
       html: AuthEmailTemplateRenderService.render(htmlTemplate, {
+        langAttribute: options.lang ? ` lang="${AuthEmailTemplateRenderService.escapeHtml(options.lang)}"` : '',
         greeting: AuthEmailTemplateRenderService.escapeHtml(options.greeting),
         title: AuthEmailTemplateRenderService.escapeHtml(options.title),
         message: AuthEmailTemplateRenderService.escapeHtml(options.message),

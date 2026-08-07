@@ -21,6 +21,8 @@ import { ExecuteActionsHandler } from '@ai/api/helpers/execute-actions-handler';
 import { AssistantModelsHandler } from '@ai/api/helpers/assistant-models-handler';
 import { SessionManagementHandlers } from '@ai/api/helpers/session-management-handlers';
 import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
+import { RuntimeStage } from '@ai/admin-assistant-runtime/runtime/enums/runtime-stage.enum';
 
 export class AssistantController {
   private static readonly ASSISTANT_PROMPT_BASIC_KEY = 'assistant.prompt.basic';
@@ -128,12 +130,16 @@ export class AssistantController {
     if (!input || typeof input !== 'object') return undefined;
     const resumePrompt = String((input as any)?.resumePrompt || '').trim();
     const rawReason = String((input as any)?.reason || '').trim().toLowerCase();
-    const reason = ['loop_cap', 'time_cap', 'user_continue', 'clarification_needed', 'loop_recovery'].includes(rawReason) ? rawReason as any : undefined;
+    // Hydrate at this wire boundary instead of re-listing the members: the interface declares
+    // `reason: CheckpointReason` / `stage: RuntimeStage`, so returning a raw string `as any` made the
+    // type a lie and forced every consumer to compare raw strings. `fromValue` is undefined for an
+    // unknown value — the same outcome the hand-listed `.includes()` produced, minus the drift.
+    const reason = CheckpointReason.fromValue(rawReason);
     if (!resumePrompt || !reason) return undefined;
     const planningPassesUsedRaw = Number((input as any)?.planningPassesUsed);
     const planningPassesUsed = Number.isFinite(planningPassesUsedRaw) ? Math.max(0, planningPassesUsedRaw) : undefined;
     const rawStage = String((input as any)?.stage || '').trim().toLowerCase();
-    const stage = ['classify', 'retrieve', 'plan', 'clarify', 'finalize'].includes(rawStage) ? rawStage as any : undefined;
+    const stage = RuntimeStage.fromValue(rawStage);
     const listingMemoryRaw = (input as any)?.memory?.listing;
     const factualMemoryRaw = (input as any)?.memory?.factual;
     const listingCollectionSlug = String(listingMemoryRaw?.collectionSlug || '').trim();

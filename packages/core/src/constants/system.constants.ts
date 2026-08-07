@@ -96,6 +96,30 @@ export class SystemConstants {
   AUTH_CAPTCHA_THRESHOLD: 'auth_captcha_threshold',
   TWO_FACTOR_ENABLED: 'two_factor_enabled',
   RATE_LIMIT_MAX: 'rate_limit_max',
+  /**
+   * Budget for TOKEN-BEARING requests, which are keyed per ip+token rather than per IP. One admin page
+   * load fans out dozens of plugin API calls, so the anonymous cap throttles the whole admin behind a
+   * shared proxy IP. Declared, seeded and editable in admin Settings → Security like every other
+   * setting — it must never be an undeclared magic number in the limiter.
+   */
+  RATE_LIMIT_MAX_AUTHENTICATED: 'rate_limit_max_authenticated',
+  /**
+   * Budget for INTERNAL SERVER-TO-SERVER requests, keyed per calling service address.
+   *
+   * Every storefront page render fetches this API from ONE frontend container, anonymously — so all
+   * SSR traffic for all visitors shared the single strict anonymous IP bucket and `/system/resolve`
+   * started answering 429 under ordinary crawler load, which the storefront can only serve as a 5xx.
+   * Internal callers are recognised by {@link RATE_LIMIT_INTERNAL_CLIENTS}, never by a header a
+   * public client could send.
+   */
+  RATE_LIMIT_MAX_INTERNAL: 'rate_limit_max_internal',
+  /**
+   * The network addresses / CIDR blocks internal services call this API from (the frontend renderer,
+   * workers). Seeded with loopback + the RFC1918 ranges a container network hands out; an operator
+   * can narrow it to a single address or clear it, in which case NOTHING is internal and every
+   * anonymous caller falls back to {@link RATE_LIMIT_MAX}.
+   */
+  RATE_LIMIT_INTERNAL_CLIENTS: 'rate_limit_internal_clients',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
   
   // Routing & Features

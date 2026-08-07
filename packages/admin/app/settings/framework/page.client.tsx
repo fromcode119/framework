@@ -8,21 +8,13 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 
 export class FrameworkSettingsPage extends AdminComponent {
+  /**
+   * Every entry must point at a destination that resolves. The Documentation, Developer Guide and
+   * Support cards linked to `docs.fromcode.com`, which does not exist (connection failure), so they
+   * were removed rather than left as dead ends. The OpenAPI spec is served by this running instance,
+   * and the GitHub org page is live.
+   */
   private static readonly resources = [
-  {
-    title: 'Documentation',
-    description: 'Platform docs, setup, architecture and deployment guides.',
-    href: AdminConstants.FRAMEWORK_RESOURCES.DOCUMENTATION,
-    external: true,
-    icon: FrameworkIcons.Globe,
-  },
-  {
-    title: 'Developer Guide',
-    description: 'Developer workflows, plugin patterns and implementation standards.',
-    href: AdminConstants.FRAMEWORK_RESOURCES.DEVELOPER_GUIDE,
-    external: true,
-    icon: FrameworkIcons.Terminal,
-  },
   {
     title: 'OpenAPI Spec',
     description: 'Live API contract exposed by the running framework instance.',
@@ -31,24 +23,15 @@ export class FrameworkSettingsPage extends AdminComponent {
     icon: FrameworkIcons.Link,
   },
   {
-    title: 'Framework Roadmap',
-    description: 'Track upcoming framework capabilities and milestones.',
-    href: AdminConstants.FRAMEWORK_RESOURCES.FRAMEWORK_ROADMAP,
+    title: 'Source & Issues',
+    description: 'Framework source, releases and issue tracker on GitHub.',
+    href: AdminConstants.FRAMEWORK_RESOURCES.GITHUB,
     external: true,
     icon: FrameworkIcons.Activity,
-  },
-  {
-    title: 'Support',
-    description: 'Support channels and troubleshooting documentation.',
-    href: AdminConstants.FRAMEWORK_RESOURCES.SUPPORT,
-    external: true,
-    icon: FrameworkIcons.Help,
   },
 ];
   private static readonly communities = [
   { label: 'Github', href: AdminConstants.FRAMEWORK_RESOURCES.GITHUB },
-  { label: 'Discord', href: AdminConstants.FRAMEWORK_RESOURCES.DISCORD },
-  { label: 'Twitter', href: AdminConstants.FRAMEWORK_RESOURCES.TWITTER },
 ];
   render() {
     const theme = this.theme;

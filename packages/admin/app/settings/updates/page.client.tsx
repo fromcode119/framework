@@ -19,6 +19,14 @@ export class UpdatesPage extends AdminComponent {
   @state loading = true;
   @state updating = false;
   @state showConfirm = false;
+  /**
+   * Set when the registry check FAILED, or answered without a `latest`.
+   *
+   * "We could not check" used to render as "you are current": `latestVersion` fell back to the
+   * installed version and the badge went green "Framework Up to Date". An unreachable registry now
+   * says so and the badge stays neutral.
+   */
+  @state checkError: string | null = null;
 
   async componentDidMount(): Promise<void> {
     await this.fetchStatus();
@@ -32,22 +40,33 @@ export class UpdatesPage extends AdminComponent {
     return String(this.status?.current || AppEnv.APP_VERSION || '').trim();
   }
 
+  /** The registry's answer, or `''` when it did not give one. NEVER the installed version. */
   private get latestVersion(): string {
-    return String(this.status?.latest || this.installedVersion || '').trim();
+    return String(this.status?.latest ?? '').trim();
   }
 
+  /** True only when the registry answered AND named a different version. */
   private get hasUpdate(): boolean {
     return Boolean(this.status?.hasUpdate && this.latestVersion && this.latestVersion !== this.installedVersion);
+  }
+
+  /** True when we do not know what the latest version is — distinct from "you are up to date". */
+  private get latestVersionUnknown(): boolean {
+    return Boolean(this.checkError) || !this.latestVersion;
   }
 
   @bound
   async fetchStatus(): Promise<void> {
     this.loading = true;
+    this.checkError = null;
     try {
       const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.UPDATE_CHECK);
       this.status = data;
     } catch (err: any) {
-      this.notify(NotificationType.ERROR, 'Update Check Failed', err.message);
+      const message = err?.message || 'The framework registry could not be reached.';
+      this.status = null;
+      this.checkError = message;
+      this.notify(NotificationType.ERROR, 'Update Check Failed', message);
     } finally {
       this.loading = false;
     }
@@ -90,13 +109,14 @@ export class UpdatesPage extends AdminComponent {
 
     if (loading && !status) return (
       <div className="flex-1 flex items-center justify-center min-h-screen">
-         <Loader label="Checking Framework Registry..." />
+         <Loader label="Checking the update registry..." />
       </div>
     );
 
     const installedVersion = this.installedVersion;
     const latestVersion = this.latestVersion;
     const hasUpdate = this.hasUpdate;
+    const latestVersionUnknown = this.latestVersionUnknown;
 
     return (
       <div className="flex flex-col h-full animate-in fade-in duration-500">
@@ -135,8 +155,11 @@ export class UpdatesPage extends AdminComponent {
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
                     <h2 className={`text-2xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>Fromcode Core Engine</h2>
-                    <Badge variant={hasUpdate ? 'warning' : 'success'} className="px-3 py-1 text-[10px] font-bold tracking-tight rounded-full">
-                      {hasUpdate ? 'Update Available' : 'Framework Up to Date'}
+                    <Badge
+                      variant={hasUpdate ? 'warning' : latestVersionUnknown ? 'gray' : 'success'}
+                      className="px-3 py-1 text-[10px] font-bold tracking-tight rounded-full"
+                    >
+                      {hasUpdate ? 'Update Available' : latestVersionUnknown ? 'Update Check Failed' : 'Framework Up to Date'}
                     </Badge>
                   </div>
 
@@ -149,13 +172,21 @@ export class UpdatesPage extends AdminComponent {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className={`p-4 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
                     <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">Installed Version</div>
-                    <div className={`font-mono font-bold text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>v{installedVersion}</div>
+                    <div className={`font-mono font-bold text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{installedVersion ? `v${installedVersion}` : '-'}</div>
                   </div>
                   <div className={`p-4 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
                     <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">Latest Registry Version</div>
-                    <div className={`font-mono font-bold text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>v{latestVersion}</div>
+                    {/* NEVER echo the installed version here. That is what made an unreachable
+                        registry look like "you are current". */}
+                    <div className={`font-mono font-bold text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{latestVersionUnknown ? 'Unknown' : `v${latestVersion}`}</div>
                   </div>
                 </div>
+
+                {latestVersionUnknown && (
+                  <p className="text-[11px] font-medium leading-relaxed text-rose-500">
+                    {this.checkError || 'The registry did not report a latest version, so whether an update exists is unknown.'}
+                  </p>
+                )}
 
                 {hasUpdate && (
                   <div className={`mt-5 p-5 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
@@ -165,10 +196,13 @@ export class UpdatesPage extends AdminComponent {
                       </div>
                       <span>v{latestVersion} Recommended Update</span>
                     </div>
-                    <p className={`text-sm leading-relaxed mb-5 ${theme === ThemeMode.DARK ? 'text-amber-200/70' : 'text-amber-800/80'}`}>
-                      This version introduces cumulative improvements to the plugin isolation layer
-                      and enhanced database driver stability. Apply this update to ensure compatibility with latest plugins.
-                    </p>
+                    {/* A hardcoded paragraph sat here — "cumulative improvements to the plugin
+                        isolation layer and enhanced database driver stability" — shown verbatim as
+                        the release notes for EVERY version. `SystemUpdateService.checkUpdate()`
+                        returns only current/latest/hasUpdate/downloadUrl/lastUpdated; no release
+                        notes exist anywhere in the payload, so the operator was making an
+                        "should I update?" decision on invented changelog text. Removed. Re-add a
+                        real paragraph only when the marketplace core payload carries release notes. */}
                     <button
                       onClick={this.openConfirm}
                       disabled={updating}

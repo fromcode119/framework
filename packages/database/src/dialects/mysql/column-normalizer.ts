@@ -3,7 +3,7 @@ import { DialectColumnNormalizer } from '@database/dialects/dialect-column-norma
 import { NamingStrategy } from '@database/naming-strategy';
 
 /**
- * MysqlColumnNormalizer - MySQL-specific JSON column lookup.
+ * MysqlColumnNormalizer - MySQL-specific column metadata lookup.
  */
 export class MysqlColumnNormalizer extends DialectColumnNormalizer {
   private pool: Pool;
@@ -13,23 +13,25 @@ export class MysqlColumnNormalizer extends DialectColumnNormalizer {
     this.pool = pool;
   }
 
-  protected async getJsonColumns(tableName: string): Promise<Set<string>> {
-    const cached = this.jsonColumnsCache.get(tableName);
+  protected async getColumnTypes(tableName: string): Promise<Map<string, string>> {
+    const cached = this.columnTypesCache.get(tableName);
     if (cached) return cached;
 
     const [rows]: any = await this.pool.execute(
-      `SELECT column_name
+      `SELECT column_name, data_type
        FROM information_schema.columns
        WHERE table_schema = DATABASE()
-         AND table_name = ?
-         AND data_type = 'json'`,
+         AND table_name = ?`,
       [tableName]
     );
-    const columns: Set<string> = new Set<string>(
-      (rows || []).map((row: any) => String(row?.column_name || '').toLowerCase())
+    const types = new Map<string, string>(
+      (rows || []).map((row: any) => [
+        String(row?.column_name || '').toLowerCase(),
+        String(row?.data_type || '').toUpperCase(),
+      ])
     );
-    this.jsonColumnsCache.set(tableName, columns);
-    return columns;
+    this.columnTypesCache.set(tableName, types);
+    return types;
   }
 
   protected normalizeParamValue(value: any): any {

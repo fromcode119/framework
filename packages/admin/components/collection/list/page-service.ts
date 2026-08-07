@@ -38,16 +38,45 @@ export class CollectionListPageService {
       .map((field: any) => field.name);
     const columnNames = Array.from(new Set(['id', ...defaultCols, ...fieldCols, 'createdAt']));
 
+    const timestamps = collection.timestamps !== undefined ? collection.timestamps : true;
+    const hasWorkflow = Boolean(collection.workflow);
+
     return columnNames.map((columnName) => {
       const field = collection.fields.find((item: any) => item.name === columnName);
       const header = field?.label || CollectionListUtils.prettifyColumnName(columnName);
       return {
         id: columnName,
         header,
-        sortable: true,
+        sortable: CollectionListPageService.isSortableColumn(columnName, field, { timestamps, hasWorkflow }),
         accessor: (row: any) => this.renderCellValue({ columnName, field, header, raw: row[columnName] })
       };
     });
+  }
+
+  /**
+   * Whether clicking this column header actually changes the order of the returned rows.
+   *
+   * Every column used to be `sortable: true`, so every header rendered a sort arrow. The API's
+   * `QueryHelper.buildOrderBy` looks the sort key up on the virtual table and, when it is not there,
+   * SILENTLY falls back to `desc(primaryKey)` — the rows come back in id order while the arrow
+   * renders as applied, and `handleSort` then PERSISTS that dead sort key to the operator's saved UI
+   * preferences, so the wrong order sticks across sessions.
+   *
+   * `QueryHelper.getVirtualTable` gives every DECLARED field a column, and adds `createdAt`/
+   * `updatedAt` when `timestamps` and `status` when `workflow`. Anything outside that set — most
+   * commonly an `admin.defaultColumns` entry naming something that is not a field — cannot be
+   * ordered by. A `ui` field is excluded too: it is presentational and holds no stored value, so
+   * ordering by it is a no-op that still looks applied.
+   */
+  private static isSortableColumn(
+    columnName: string,
+    field: any,
+    schema: { timestamps: boolean; hasWorkflow: boolean },
+  ): boolean {
+    if (field) return String(field.type) !== 'ui';
+    if (columnName === 'id') return true;
+    if (schema.timestamps && (columnName === 'createdAt' || columnName === 'updatedAt')) return true;
+    return schema.hasWorkflow && columnName === 'status';
   }
 
   static resolveSelectFilterFields(collection: any): any[] {

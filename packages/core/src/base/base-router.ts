@@ -7,6 +7,7 @@ import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
 import type { IApiAccessDescriptor } from '@core/plugin/context/interfaces/api-access-descriptor.interface';
 import type { ApiPermissionRequirement } from '@core/plugin/context/api-permission-requirement';
 import type { IRouteHandlerList } from '@core/interfaces/route-handler-list.interface';
+import { AsyncRouteGuard } from '@core/base/async-route-guard';
 
 /**
  * Base class for all API routers.
@@ -78,6 +79,10 @@ export abstract class BaseRouter {
   /**
    * Strip a leading `{ access }` declaration and prepend the central fail-closed gate (inert unless
    * ENFORCE_AUTHZ_GATEWAY=true). Undeclared routes default to admin-only inside the gate.
+   *
+   * Every remaining handler is then passed through {@link AsyncRouteGuard}, because Express 4 does not
+   * observe the promise an `async` handler returns — an unobserved rejection is fatal under Node 22 and
+   * killed the API process on an ordinary "not found" request. See AsyncRouteGuard for the full note.
    */
   private gated(handlers: IRouteHandlerList): RequestHandler[] {
     let list = handlers;
@@ -87,7 +92,7 @@ export abstract class BaseRouter {
       list = list.slice(1);
     }
     const gate = ApiAccessGate.build(access);
-    const rest = list as RequestHandler[];
+    const rest = AsyncRouteGuard.wrapAll(list as RequestHandler[], this.constructor.name);
     return gate ? [gate, ...rest] : rest;
   }
 

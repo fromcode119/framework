@@ -1,5 +1,5 @@
 import { ILocaleItem } from '@/app/settings/localization/interfaces/locale-item.interface';
-import { LocaleUrlStrategy } from '@fromcode119/core/client';
+import { LocaleUrlStrategy, MeasurementSystem } from '@fromcode119/core/client';
 
 export interface ILoadedLocalization {
   locales: ILocaleItem[];
@@ -7,4 +7,5 @@ export interface ILoadedLocalization {
   adminDefaultLocale: string;
   frontendDefaultLocale: string;
   localeUrlStrategy: LocaleUrlStrategy;
+  measurementSystem: MeasurementSystem;
 }

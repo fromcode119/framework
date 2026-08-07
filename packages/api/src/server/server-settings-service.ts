@@ -3,6 +3,7 @@
 import { ApplicationUrlUtils, Logger } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { CacheManager } from '@fromcode119/cache';
+import { RateLimitSettingsUtils } from '@api/utils/rate-limit-settings-utils';
 
 export class ServerSettingsService {
   private settingsInterval?: NodeJS.Timeout;
@@ -20,6 +21,21 @@ export class ServerSettingsService {
     this.settingsInterval = setInterval(() => {
       this.refreshSettingsCache().catch((err) => this.logger.error('Background cache sync failed: ' + err));
     }, interval);
+  }
+
+  /**
+   * Re-read the settings the moment an admin saves one, instead of after the next poll.
+   *
+   * Everything that reads through this cache -- the rate limiter's budgets and its internal-client
+   * allowlist, CORS, the maintenance gate -- was answering with the PREVIOUS value for up to five
+   * minutes in production. The operator saw the new number read back on the screen while the platform
+   * went on enforcing the old one, which is indistinguishable from a control that does nothing. The
+   * settings controller already announces every change; this listens.
+   */
+  subscribeToSettingsChanges(hooks: { on: (event: string, handler: (payload: unknown) => void) => void }) {
+    hooks.on('system:settings:updated', () => {
+      this.refreshSettingsCache().catch((err) => this.logger.error('Settings cache refresh after update failed: ' + err));
+    });
   }
 
   stopSettingsSync() {
@@ -73,8 +89,11 @@ export class ServerSettingsService {
         { key: SystemConstants.META_KEY.ROUTING_HOME_TARGET, value: 'auto', description: 'Homepage route target.', group: 'Routing' },
         { key: SystemConstants.META_KEY.PERMALINK_STRUCTURE, value: '/:slug', description: 'Default URL structure for content.', group: 'General' },
         { key: SystemConstants.META_KEY.MAINTENANCE_MODE, value: 'false', description: 'Enable global maintenance mode.', group: 'Settings' },
-        { key: SystemConstants.META_KEY.RATE_LIMIT_MAX, value: '100', description: 'Maximum requests per window per IP.', group: 'security' },
-        { key: SystemConstants.META_KEY.RATE_LIMIT_WINDOW, value: '900000', description: 'Rate limit window in milliseconds.', group: 'security' },
+        { key: SystemConstants.META_KEY.RATE_LIMIT_MAX, value: RateLimitSettingsUtils.DEFAULT_MAX_REQUESTS, description: 'Maximum requests per window per IP.', group: 'security' },
+        { key: SystemConstants.META_KEY.RATE_LIMIT_MAX_AUTHENTICATED, value: RateLimitSettingsUtils.DEFAULT_MAX_REQUESTS_AUTHENTICATED, description: 'Maximum requests per window for signed-in requests (counted per IP + token).', group: 'security' },
+        { key: SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL, value: RateLimitSettingsUtils.DEFAULT_MAX_REQUESTS_INTERNAL, description: 'Maximum requests per window for internal server-to-server calls (the storefront renderer), counted per calling service address.', group: 'security' },
+        { key: SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS, value: RateLimitSettingsUtils.DEFAULT_INTERNAL_CLIENTS, description: 'Addresses/CIDR blocks that count as internal service callers (the storefront renderer, workers). Clear it and nothing is internal: every anonymous caller falls back to the public limit.', group: 'security' },
+        { key: SystemConstants.META_KEY.RATE_LIMIT_WINDOW, value: RateLimitSettingsUtils.DEFAULT_WINDOW_MS, description: 'Rate limit window in milliseconds.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_SESSION_DURATION, value: '10080', description: 'Login session duration in minutes.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_PASSWORD_MIN_LENGTH, value: '8', description: 'Minimum required password length.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_UPPERCASE, value: 'true', description: 'Require uppercase letters.', group: 'security' },
@@ -82,7 +101,7 @@ export class ServerSettingsService {
         { key: SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_NUMBER, value: 'true', description: 'Require digits.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_SYMBOL, value: 'false', description: 'Require symbols.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_PASSWORD_HISTORY, value: '5', description: 'Prevent reuse of the last N passwords.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_PASSWORD_BREACH_CHECK, value: 'false', description: 'Enable breach-check hook.', group: 'security' },
+        { key: SystemConstants.META_KEY.AUTH_PASSWORD_BREACH_CHECK, value: 'false', description: 'Ask a breach-check provider whether a new password appears in known breaches. Calls the "auth:password:breach-check" hook. With no plugin answering it, nothing is rejected.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_PASSWORD_RESET_TOKEN_MINUTES, value: '30', description: 'Password reset token lifetime in minutes.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_EMAIL_CHANGE_TOKEN_MINUTES, value: '60', description: 'Email change token lifetime in minutes.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_LOCKOUT_THRESHOLD, value: '5', description: 'Failed logins before lockout.', group: 'security' },
@@ -98,6 +117,7 @@ export class ServerSettingsService {
         { key: SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE, value: 'en', description: 'Default admin language.', group: 'Localization' },
         { key: SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE, value: 'en', description: 'Default frontend language.', group: 'Localization' },
         { key: SystemConstants.META_KEY.LOCALE_URL_STRATEGY, value: 'query', description: 'Locale URL strategy.', group: 'Localization' },
+        { key: SystemConstants.META_KEY.MEASUREMENT_SYSTEM, value: 'metric', description: 'Units for physical dimensions and weight (metric cm/kg | imperial in/lb).', group: 'Localization' },
         { key: SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED, value: 'true', description: 'Enable frontend auth flows.', group: 'security' },
         { key: SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED, value: 'true', description: 'Allow new customer self-registration.', group: 'security' },
         { key: SystemConstants.META_KEY.EMAIL_NOTIFICATIONS, value: 'true', description: 'Receive system alerts via email.', group: 'Engagement' },
@@ -110,21 +130,13 @@ export class ServerSettingsService {
           this.settingsCache.set(d.key, d.value);
           await this.cache.set(`system_setting:${d.key}`, d.value);
         } else {
+          // A SAVED value is the operator's, full stop. This branch used to overwrite site_url /
+          // frontend_url / admin_url / platform_domain with the env-derived value whenever the saved one
+          // matched a literal-text "legacy" test (the `framework.local` domain, plus ANY http loopback
+          // URL) — on every cache refresh, i.e. every 10s in dev and every 5min in production. An
+          // operator could set http://localhost:3002 in the admin, save, and find it silently reverted.
+          // Defaults now apply on FIRST INSERT only; only the description/group metadata is reconciled.
           if (existing.key) { this.settingsCache.set(existing.key, existing.value); await this.cache.set(`system_setting:${existing.key}`, existing.value); }
-          const shouldReplaceLegacyUrlDefault =
-            (d.key === SystemConstants.META_KEY.SITE_URL ||
-              d.key === SystemConstants.META_KEY.FRONTEND_URL ||
-              d.key === SystemConstants.META_KEY.ADMIN_URL) &&
-            this.isLegacyUrlDefaultValue(String(existing.value || '').trim());
-          const shouldReplaceLegacyDomainDefault =
-            d.key === SystemConstants.META_KEY.PLATFORM_DOMAIN
-            && this.isLegacyPlatformDomainValue(String(existing.value || '').trim());
-          if ((shouldReplaceLegacyUrlDefault || shouldReplaceLegacyDomainDefault) && d.value && existing.value !== d.value) {
-            await this.db.update(SystemConstants.TABLE.META, { key: d.key }, { value: d.value, description: d.description, group: d.group });
-            this.settingsCache.set(d.key, d.value);
-            await this.cache.set(`system_setting:${d.key}`, d.value);
-            continue;
-          }
           if (existing.description !== d.description || existing.group !== d.group) {
             await this.db.update(SystemConstants.TABLE.META, { key: d.key }, { description: d.description, group: d.group });
           }
@@ -152,16 +164,5 @@ export class ServerSettingsService {
       adminUrl,
       platformDomain,
     };
-  }
-
-  private isLegacyUrlDefaultValue(value: string): boolean {
-    return ApplicationUrlUtils.isLegacyFrameworkUrlCandidate(value, [
-      ApplicationUrlUtils.FRONTEND_APP,
-      ApplicationUrlUtils.ADMIN_APP,
-    ]);
-  }
-
-  private isLegacyPlatformDomainValue(value: string): boolean {
-    return ApplicationUrlUtils.isLegacyPlatformDomain(value);
   }
 }

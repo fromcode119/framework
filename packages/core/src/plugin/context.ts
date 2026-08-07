@@ -6,6 +6,7 @@ import { Logger } from '@core/logging';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { ApiContextProxy } from '@core/plugin/context/api';
+import { AuthContextProxy } from '@core/plugin/context/auth';
 import { DatabaseContextProxy } from '@core/plugin/context/database';
 import { IntegrationsContextProxy } from '@core/plugin/context/integrations';
 import { JobsContextProxy } from '@core/plugin/context/jobs';
@@ -68,8 +69,12 @@ export class PluginContextFactory {
         return dependency === null || dependency === undefined ? null : dependency as TDependency;
       };
 
+      // Built once and shared: `context.people.syncDirectory` reads the plugin's OWN table through this
+      // same guarded proxy, so the plugin-isolation guard and camelCase denormalization apply there too.
+      const pluginDb = DatabaseContextProxy.createDatabaseProxy(plugin, manager, security) as any;
+
       const context: PluginContext = {
-        db: DatabaseContextProxy.createDatabaseProxy(plugin, manager, security) as any,
+        db: pluginDb,
         api: ApiContextProxy.createApiProxy(plugin, manager, pluginLogger, security),
         hooks: {
           on: (event: string, handler: any) => {
@@ -94,17 +99,11 @@ export class PluginContextFactory {
             return manager.hooks.call(event, payload);
           }
         },
-        auth: manager.auth || {
-          // Pre-init stub. `guard`/`requirePermission` are FAIL-CLOSED so a plugin can always call
-          // `context.auth.guard([...])` directly (no defensive `typeof` check) — a request that somehow
-          // arrives before auth is wired is denied, never allowed through.
-          guard: () => (_req: any, res: any) => res.status(503).json({ error: 'auth_unavailable' }),
-          requirePermission: () => (_req: any, res: any) => res.status(503).json({ error: 'auth_unavailable' }),
-          hashPassword: () => { throw new Error('Auth service not initialized'); },
-          comparePassword: () => { throw new Error('Auth service not initialized'); },
-          generateToken: () => { throw new Error('Auth service not initialized'); },
-          verifyToken: () => { throw new Error('Auth service not initialized'); },
-        },
+        // Fail-closed both ways: with auth wired this adapts the manager to the plugin contract
+        // (async, never-throwing `verifyToken` + the synchronous `isAuthenticated`); without it every
+        // member denies, so a plugin calls `context.auth.guard([...])` directly with no defensive
+        // check. See AuthContextProxy.
+        auth: AuthContextProxy.createAuthProxy(manager.auth),
         integrations: IntegrationsContextProxy.createIntegrationsProxy(plugin, manager, security) as any,
 
         // Shortcuts for core integrations
@@ -199,7 +198,7 @@ export class PluginContextFactory {
           }
         },
         users: UsersContextProxy.createUsersProxy(plugin, manager),
-        people: PeopleContextProxy.createPeopleProxy(plugin, manager),
+        people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb),
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
         meta: MetaContextProxy.createMetaProxy(manager),
         media: MediaContextProxy.createMediaProxy(manager),

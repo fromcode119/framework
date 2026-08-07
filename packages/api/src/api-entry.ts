@@ -1,4 +1,5 @@
 import { APIServer } from '@api/index';
+import { ProcessSafetyNet } from '@api/process-safety-net';
 
 /**
  * Boots the API server, turning an unhandled bootstrap failure into a non-zero exit.
@@ -10,6 +11,9 @@ import { APIServer } from '@api/index';
  */
 export class ApiEntry {
   static main(): void {
+    // Installed before bootstrap so a failure during plugin registration is also named rather than
+    // printing a bare stack and exiting.
+    ProcessSafetyNet.install();
     APIServer.bootstrap().catch(ApiEntry.fail);
   }
 

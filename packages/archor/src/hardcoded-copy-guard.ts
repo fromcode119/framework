@@ -27,7 +27,7 @@ export class HardcodedCopyGuard {
 
   static readonly BASELINE: Readonly<Record<string, number>> = {
     plugins: 2748,
-    themes: 513,
+    themes: 503,
     framework: 244,
     appearance: 280,
   };

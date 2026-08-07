@@ -15,6 +15,12 @@ export class EditFooter extends PureReactor {
   @prop declare setChangeSummary: (val: string) => void;
   @prop declare saving: boolean;
   @prop declare router: any;
+  @prop declare isDirty: boolean;
+
+  /** The collection's own name for itself, as the operator sees it in the nav. */
+  private get collectionName(): string {
+    return this.collection.displayName || this.collection.unprefixedSlug || this.collection.shortSlug || this.collection.slug;
+  }
 
   @bound
   private onDiscard(): void {
@@ -41,11 +47,23 @@ export class EditFooter extends PureReactor {
         <div className="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-3 pl-20 lg:pl-64">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2.5">
-              <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse" />
               {/* Was "Persistence Layer // <slug>" — internal jargon that told an editor nothing.
-                  It is a save bar, so it says what will be saved and where. */}
+                  It is a save bar, so it says what will be saved and where.
+
+                  It also used to say "Unsaved changes" UNCONDITIONALLY — there was no dirty state in the
+                  edit stack at all, so an untouched record announced unsaved work the moment it opened,
+                  on every collection. A permanent warning is not a warning, and it drowned the one case
+                  that matters. Both the pulse and the wording now follow whether anything actually differs
+                  from the loaded record. */}
+              <div className={`h-2 w-2 rounded-full ${
+                this.isDirty
+                  ? 'bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse'
+                  : 'bg-slate-300 dark:bg-slate-600'
+              }`} />
               <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                Unsaved changes to <strong className="font-bold">{this.collection.displayName || this.collection.unprefixedSlug || this.collection.shortSlug || this.collection.slug}</strong>
+                {this.isDirty
+                  ? <>Unsaved changes to <strong className="font-bold">{this.collectionName}</strong></>
+                  : <>No unsaved changes &middot; <strong className="font-bold">{this.collectionName}</strong></>}
               </span>
             </div>
           </div>

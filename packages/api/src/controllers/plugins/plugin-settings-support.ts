@@ -42,12 +42,24 @@ export class PluginSettingsSupport {
     const passwordFields = this.getPasswordFieldNames(fields);
     const result = { ...newSettings };
     for (const key of passwordFields) {
-      const incoming = result[key];
-      if (!incoming || SecretService.isSavedSecretMask(incoming)) {
-        // Preserve existing encrypted value
+      // "Untouched" and "cleared" are DIFFERENT, and treating them the same made a saved secret
+      // impossible to revoke from the admin: the field renders as the mask, so submitting an empty
+      // value is the only way an operator can say "remove this", and that was read as "keep it".
+      // Untouched is either the mask coming back, or the key not being submitted at all.
+      if (!(key in result) || SecretService.isSavedSecretMask(result[key])) {
         result[key] = existingSettings[key] ?? '';
-      } else if (!SecretService.isEncryptedValue(incoming)) {
-        result[key] = SecretService.encrypt(String(incoming));
+        continue;
+      }
+
+      const incoming = String(result[key] ?? '').trim();
+      if (!incoming) {
+        // Deliberately cleared — store empty, so the stored secret is actually gone.
+        result[key] = '';
+        continue;
+      }
+
+      if (!SecretService.isEncryptedValue(result[key])) {
+        result[key] = SecretService.encrypt(incoming);
       }
     }
     return result;

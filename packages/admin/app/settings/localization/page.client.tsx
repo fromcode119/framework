@@ -7,30 +7,46 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
+import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { LocalizationSettingsIo } from '@/app/settings/localization/localization-settings-io';
 import { LocaleRegistryCard } from '@/app/settings/localization/locale-registry-card';
 import { LocaleTargetsCard } from '@/app/settings/localization/locale-targets-card';
 import { MeasurementSystemCard } from '@/app/settings/localization/measurement-system-card';
-import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { ILocaleItem } from '@/app/settings/localization/interfaces/locale-item.interface';
 import { LocaleUrlStrategy } from '@fromcode119/core/client';
 
 export class LocalizationSettingsPage extends AdminComponent {
-  private static readonly FALLBACK_LOCALES: ILocaleItem[] = [
-    { id: 'en', code: 'en', name: 'English', enabled: true }
-  ];
-
   @state isLoading = true;
   @state isSaving = false;
-  @state locales: ILocaleItem[] = LocalizationSettingsPage.FALLBACK_LOCALES;
-  @state defaultLocale = 'en';
-  @state adminDefaultLocale = 'en';
-  @state frontendDefaultLocale = 'en';
+  /**
+   * `null` means NEVER LOADED — it is not an empty registry.
+   *
+   * This used to be seeded with a hardcoded `English (en)` row, and `componentDidMount` had
+   * `try/finally` with no `catch`, so a failed settings GET rendered English as a configured locale
+   * and "Save Localization" would then write `en` as the platform's ONLY locale — destroying a
+   * multi-locale configuration on the strength of a transient API failure.
+   */
+  @state locales: ILocaleItem[] | null = null;
+  @state loadError: string | null = null;
+  @state defaultLocale = '';
+  @state adminDefaultLocale = '';
+  @state frontendDefaultLocale = '';
   @state localeUrlStrategy: LocaleUrlStrategy = LocaleUrlStrategy.QUERY;
   @state measurementSystem: MeasurementSystem = MeasurementSystem.METRIC;
 
   async componentDidMount(): Promise<void> {
+    await this.loadLocalization();
+  }
+
+  @bound
+  async retryLoad(): Promise<void> {
+    this.isLoading = true;
+    await this.loadLocalization();
+  }
+
+  private async loadLocalization(): Promise<void> {
+    this.loadError = null;
     try {
       const loaded = await LocalizationSettingsIo.load();
       this.locales = loaded.locales;
@@ -38,8 +54,10 @@ export class LocalizationSettingsPage extends AdminComponent {
       this.adminDefaultLocale = loaded.adminDefaultLocale;
       this.frontendDefaultLocale = loaded.frontendDefaultLocale;
       this.localeUrlStrategy = loaded.localeUrlStrategy;
-      const all = await AdminSystemSettingsClient.getAll().catch(() => ({} as Record<string, any>));
-      this.measurementSystem = MeasurementSystem.resolve(all?.measurement_system);
+      this.measurementSystem = loaded.measurementSystem;
+    } catch (err: any) {
+      this.locales = null;
+      this.loadError = err?.message || 'The localization settings request failed.';
     } finally {
       this.isLoading = false;
     }
@@ -52,19 +70,23 @@ export class LocalizationSettingsPage extends AdminComponent {
   }
 
   private get localeSelectOptions(): { value: string; label: string }[] {
-    return LocalizationSettingsIo.buildSelectOptions(this.locales);
+    return LocalizationSettingsIo.buildSelectOptions(this.locales ?? []);
   }
 
   @bound
   updateLocale(id: string, patch: Partial<ILocaleItem>): void {
-    this.locales = this.locales.map((locale) => (locale.id === id ? { ...locale, ...patch } : locale));
+    const locales = this.locales;
+    if (!locales) return;
+    this.locales = locales.map((locale) => (locale.id === id ? { ...locale, ...patch } : locale));
   }
 
   @bound
   addLocale(): void {
+    const locales = this.locales;
+    if (!locales) return;
     const tempId = `locale-${Date.now()}`;
     this.locales = [
-      ...this.locales,
+      ...locales,
       {
         id: tempId,
         code: '',
@@ -76,8 +98,9 @@ export class LocalizationSettingsPage extends AdminComponent {
 
   @bound
   removeLocale(id: string): void {
-    if (this.locales.length <= 1) return;
-    this.locales = this.locales.filter((locale) => locale.id !== id);
+    const locales = this.locales;
+    if (!locales) return;
+    this.locales = locales.filter((locale) => locale.id !== id);
   }
 
   @bound
@@ -110,9 +133,13 @@ export class LocalizationSettingsPage extends AdminComponent {
   @bound
   async handleSave(): Promise<void> {
     const addNotification = this.runtime.notify.addNotification;
+    const locales = this.locales;
+    // Fail closed: never PUT a locale registry that was not read back from the server. The Save control
+    // is not rendered in this state.
+    if (!locales) return;
     this.isSaving = true;
     try {
-      const cleaned = LocalizationSettingsIo.cleanLocales(this.locales);
+      const cleaned = LocalizationSettingsIo.cleanLocales(locales);
 
       if (!cleaned.length) {
         addNotification({
@@ -131,6 +158,7 @@ export class LocalizationSettingsPage extends AdminComponent {
           frontendDefaultLocale: this.frontendDefaultLocale
         },
         this.localeUrlStrategy,
+        this.measurementSystem,
       );
 
       this.locales = saved.cleaned;
@@ -144,8 +172,11 @@ export class LocalizationSettingsPage extends AdminComponent {
         default_locale: saved.defaultLocale,
         admin_default_locale: saved.adminDefaultLocale,
         frontend_default_locale: saved.frontendDefaultLocale,
-        locale_url_strategy: this.localeUrlStrategy,
-        measurement_system: this.measurementSystem
+        // `.value`, not the Enum instance: every consumer of the settings context reads a plain string,
+        // so `settings.locale_url_strategy === 'path'` against a member object is permanently false and
+        // an Enum reaching JSX renders as `[object Object]`.
+        locale_url_strategy: this.localeUrlStrategy.value,
+        measurement_system: this.measurementSystem.value
       });
 
       addNotification({
@@ -168,12 +199,32 @@ export class LocalizationSettingsPage extends AdminComponent {
     if (this.isLoading) {
       return (
         <div className="p-12">
-          <Loader label="Loading Localization Matrix..." />
+          <Loader label="Loading localization settings..." />
         </div>
       );
     }
 
     const theme = this.theme;
+    const locales = this.locales;
+
+    if (!locales) {
+      return (
+        <div className="flex flex-col h-full animate-in fade-in duration-500">
+          <CompactPageHeader
+            theme={theme}
+            icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
+            title="Localization"
+            subtitle="Locale registry & language defaults"
+          />
+          <LoadErrorPanel
+            title="Localization settings could not be loaded"
+            message={this.loadError || 'The localization settings request failed.'}
+            onRetry={this.retryLoad}
+            isRetrying={this.isLoading}
+          />
+        </div>
+      );
+    }
 
     return (
       <div className="flex flex-col h-full animate-in fade-in duration-500">
@@ -196,7 +247,7 @@ export class LocalizationSettingsPage extends AdminComponent {
 
         <div className="p-6 w-full space-y-8">
           <LocaleRegistryCard
-            locales={this.locales}
+            locales={locales}
             theme={theme}
             updateLocale={this.updateLocale}
             addLocale={this.addLocale}

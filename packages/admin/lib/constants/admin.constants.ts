@@ -87,6 +87,7 @@ export class AdminConstants {
     UPLOAD: AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_UPLOAD),
     UPLOAD_INSPECT: AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_UPLOAD_INSPECT),
     UPLOAD_COMPLETE: AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_UPLOAD_COMPLETE),
+    ACTIVE_ASSETS: AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_ACTIVE_ASSETS),
     ACTIVATE: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, { slug }),
     DISABLE: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_DISABLE, { slug }),
     RESET: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_RESET, { slug }),
@@ -169,14 +170,15 @@ export class AdminConstants {
   }
 };
 
+  /**
+   * Only destinations that actually resolve may be listed here. `docs.fromcode.com` does not exist
+   * (DNS/connection failure on `/`, `/support` and `/developer-guide`) and `x.com/fromcode119` returns
+   * 404, so DOCUMENTATION, DEVELOPER_GUIDE, SUPPORT and TWITTER were removed along with every link
+   * that rendered them — shipping a nav item to nowhere is the same class of lie as a fabricated stat.
+   * Re-add an entry only once its URL has been verified to respond.
+   */
   static readonly FRAMEWORK_RESOURCES = {
-  DOCUMENTATION: 'https://docs.fromcode.com',
-  DEVELOPER_GUIDE: 'https://docs.fromcode.com/developer-guide',
-  FRAMEWORK_ROADMAP: 'https://github.com/fromcode119',
-  SUPPORT: 'https://docs.fromcode.com/support',
   GITHUB: 'https://github.com/fromcode119',
-  DISCORD: 'https://discord.gg/fromcode',
-  TWITTER: 'https://x.com/fromcode119',
   OPENAPI: AdminConstants.ENDPOINTS.SYSTEM.OPENAPI,
 } as const;
 

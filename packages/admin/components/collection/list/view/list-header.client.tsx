@@ -56,16 +56,9 @@ export class CollectionListHeader extends PureReactor {
         <div className="flex items-center gap-2">
           <Slot name={`admin.collection.${slug}.header.actions`} props={{ collection }} />
           <Slot name="admin.collection.list.header.actions" props={{ collection }} />
-          {collection.slug === 'users' && (
-            <Button
-              variant={ButtonVariant.SECONDARY}
-              size={FieldSize.SM}
-              className="h-9 px-4 rounded-lg font-semibold tracking-wide text-xs"
-              icon={<FrameworkIcons.More size={15} />}
-            >
-              Invite
-            </Button>
-          )}
+          {/* An "Invite" button used to render here for the users collection with no onClick and no
+              href — a visible, clickable control that did nothing. Removed until an invite flow
+              exists to wire it to. */}
           {!collection.admin?.disableCreate && (
             <Button
               variant={ButtonVariant.PRIMARY}

@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import { PluginComponent } from '@fromcode119/react';
+import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { FieldRendererView } from '@/components/collection/field-renderer-view';
 import type { IFieldRendererProps } from '@/components/collection/interfaces/field-renderer-props.interface';
 
@@ -13,7 +14,30 @@ import type { IFieldRendererProps } from '@/components/collection/interfaces/fie
  */
 export class FieldRenderer extends PluginComponent {
   declare props: Pick<IFieldRendererProps, keyof IFieldRendererProps>;
+
+  /**
+   * Which plugin owns the collection being edited — needed to link a field's provenance line to the
+   * settings screen that actually holds the inherited value. Resolved here rather than threaded as a
+   * prop through four layers of edit-page components, because this shim already has the registry.
+   * `'collections'` is the global-route form of the lookup: match on slug alone, any owner.
+   */
+  private get owningPluginSlug(): string {
+    const collection = AdminCollectionUtils.resolveCollection(
+      (this.collections || []) as any,
+      'collections',
+      this.props.collectionSlug,
+    );
+    return String((collection as any)?.pluginSlug || '');
+  }
+
   render(): ReactElement {
-    return <FieldRendererView {...this.props} plugins={this.plugins} globalSettings={this.globalSettings} />;
+    return (
+      <FieldRendererView
+        {...this.props}
+        plugins={this.plugins}
+        globalSettings={this.globalSettings}
+        pluginSlug={this.owningPluginSlug}
+      />
+    );
   }
 }

@@ -10,6 +10,22 @@ export interface IPluginContextPeople {
   getByUserId(userId: any): Promise<Record<string, any> | null>;
   getByEmail(email: string): Promise<Record<string, any> | null>;
   upsert(input: Record<string, any>): Promise<Record<string, any> | null>;
+  /**
+   * Resolve (or create) the person behind one identity payload taken from a plugin row, filling only
+   * fields the person does not already have. The framework owns the match/merge rules so no plugin
+   * hand-rolls them; returns `null` when the payload has no email/userId/phone to anchor on.
+   */
+  ingest(input: Record<string, any>): Promise<Record<string, any> | null>;
+  /**
+   * Ingest rows of one of THIS plugin's own tables into the shared people directory, resuming from a
+   * framework-owned cursor in `_system_meta` so only rows added since the last run are read. Returns
+   * how many people were ingested. Never scans the whole table.
+   */
+  syncDirectory(
+    table: string,
+    map: (row: Record<string, any>) => Record<string, any> | Promise<Record<string, any>>,
+    batch?: number
+  ): Promise<number>;
   linkAccount(personId: any, userId: any): Promise<any>;
   addRelationship(fromPersonId: any, toPersonId: any, type: string, metadata?: Record<string, any>): Promise<any>;
   listRelated(fromPersonId: any, type?: string): Promise<Array<Record<string, any>>>;

@@ -1,6 +1,7 @@
 import { RestoreTargetScope } from '@/components/settings/backups/enums/restore-target-scope.enum';
 import { BackupPreset } from '@/components/settings/backups/enums/backup-preset.enum';
 import { BackupSectionKey, BackupCatalogGroupKey, BackupCatalogRootKind } from '@fromcode119/core';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IBackupDownloadProgressView } from '@/components/settings/backups/interfaces/backup-download-progress-view.interface';
@@ -17,6 +18,28 @@ export class SystemBackupPageUtils {
         canRestore: false,
       },
     };
+  }
+
+  /**
+   * Hydrate a catalog list response at the FETCH BOUNDARY.
+   *
+   * `IBackupCatalogGroupView.key` and `IBackupCatalogItemView.group`/`rootKind` are DECLARED as
+   * reactor Enums but arrive as plain strings (`Enum.toJSON()` returns `.value`). The per-predicate
+   * `resolve()` calls below already cover the comparisons, but a raw string also made
+   * `group.key.value` — the React `key` for every catalog section — `undefined`. Resolving once here
+   * fixes that and makes the predicates' own hydration belt-and-braces.
+   */
+  static hydrateGroups(groups: unknown): IBackupCatalogGroupView[] {
+    if (!Array.isArray(groups)) return [];
+    return groups.map((group: any) => ({
+      ...group,
+      key: BackupCatalogGroupKey.resolve(group?.key),
+      items: (Array.isArray(group?.items) ? group.items : []).map((item: any) => ({
+        ...item,
+        group: BackupCatalogGroupKey.resolve(item?.group),
+        rootKind: BackupCatalogRootKind.resolve(item?.rootKind),
+      })),
+    })) as IBackupCatalogGroupView[];
   }
 
   static createInitialRestoreState(): IRestoreDialogState {
@@ -89,11 +112,19 @@ export class SystemBackupPageUtils {
     return sections.map((section) => this.getSectionLabel(section)).join(', ');
   }
 
-  static getSectionLabel(value: BackupSectionKey): string {
-    if (value === BackupSectionKey.CORE) return 'Core Files';
-    if (value === BackupSectionKey.DATABASE) return 'Database';
-    if (value === BackupSectionKey.PLUGINS) return 'Plugins';
-    return 'Themes';
+  /**
+   * `includedSections` arrives from the API, where `Enum.toJSON()` has already flattened each member
+   * to its plain string — so a bare `value === BackupSectionKey.CORE` is comparing a string to an
+   * object and is ALWAYS false. Every section then fell through to 'Themes' in the
+   * "Backup Created" toast. Hydrate first, exactly as the enum's own doc instructs.
+   */
+  static getSectionLabel(value: BackupSectionKey | string): string {
+    const section = BackupSectionKey.resolve(value);
+    if (section === BackupSectionKey.CORE) return 'Core Files';
+    if (section === BackupSectionKey.DATABASE) return 'Database';
+    if (section === BackupSectionKey.PLUGINS) return 'Plugins';
+    if (section === BackupSectionKey.THEMES) return 'Themes';
+    return String(value ?? '');
   }
 
   static createRestoreStateForItem(item: IBackupCatalogItemView): IRestoreDialogState {
@@ -107,9 +138,26 @@ export class SystemBackupPageUtils {
     };
   }
 
+  /**
+   * The catalog `group` / `rootKind` reach the browser as PLAIN STRINGS: they are reactor Enum
+   * members server-side, and `Enum.toJSON()` serialises each to its `.value`. Comparing that string
+   * to an Enum member object is always false, so every predicate below silently took its fallback
+   * branch — which is why a system backup offered no Restore and no Delete action, and why the
+   * System group was captioned with the site-transfer description. `resolve()` re-hydrates the
+   * string into the member before any `===`.
+   */
+  private static groupOf(item: IBackupCatalogItemView): BackupCatalogGroupKey {
+    return BackupCatalogGroupKey.resolve(item.group);
+  }
+
+  private static rootKindOf(item: IBackupCatalogItemView): BackupCatalogRootKind {
+    return BackupCatalogRootKind.resolve(item.rootKind);
+  }
+
   static getTargetScope(item: IBackupCatalogItemView): RestoreTargetScope {
-    if (item.group === BackupCatalogGroupKey.PLUGINS) return RestoreTargetScope.PLUGIN;
-    if (item.group === BackupCatalogGroupKey.THEMES) return RestoreTargetScope.THEME;
+    const group = this.groupOf(item);
+    if (group === BackupCatalogGroupKey.PLUGINS) return RestoreTargetScope.PLUGIN;
+    if (group === BackupCatalogGroupKey.THEMES) return RestoreTargetScope.THEME;
     return RestoreTargetScope.SYSTEM;
   }
 
@@ -119,11 +167,12 @@ export class SystemBackupPageUtils {
   }
 
   static canRestore(item: IBackupCatalogItemView): boolean {
-    return item.group === BackupCatalogGroupKey.SYSTEM || item.group === BackupCatalogGroupKey.PLUGINS || item.group === BackupCatalogGroupKey.THEMES;
+    const group = this.groupOf(item);
+    return group === BackupCatalogGroupKey.SYSTEM || group === BackupCatalogGroupKey.PLUGINS || group === BackupCatalogGroupKey.THEMES;
   }
 
   static canDelete(item: IBackupCatalogItemView): boolean {
-    return item.rootKind === BackupCatalogRootKind.BACKUPS;
+    return this.rootKindOf(item) === BackupCatalogRootKind.BACKUPS;
   }
 
   static formatBytes(value: number): string {
@@ -164,23 +213,33 @@ export class SystemBackupPageUtils {
   }
 
   static getGroupDescription(groupKey: IBackupCatalogGroupView['key']): string {
-    if (groupKey === BackupCatalogGroupKey.SYSTEM) return 'Framework snapshots for full-system rollback and safety checkpoints.';
-    if (groupKey === BackupCatalogGroupKey.PLUGINS) return 'Plugin-specific archives created during installs, updates, or manual protection.';
-    if (groupKey === BackupCatalogGroupKey.THEMES) return 'Theme snapshots captured before overwrite or restore operations.';
-    if (groupKey === BackupCatalogGroupKey.DATABASE) return 'Database-only dumps retained separately from tarball snapshots.';
+    const group = BackupCatalogGroupKey.resolve(groupKey);
+    if (group === BackupCatalogGroupKey.SYSTEM) return 'Framework snapshots for full-system rollback and safety checkpoints.';
+    if (group === BackupCatalogGroupKey.PLUGINS) return 'Plugin-specific archives created during installs, updates, or manual protection.';
+    if (group === BackupCatalogGroupKey.THEMES) return 'Theme snapshots captured before overwrite or restore operations.';
+    if (group === BackupCatalogGroupKey.DATABASE) return 'Database-only dumps retained separately from tarball snapshots.';
     return 'Site-transfer bundles and related artifacts staged for migration workflows.';
   }
 
   static getScopeLabel(item: IBackupCatalogItemView): string {
-    if (item.group === BackupCatalogGroupKey.PLUGINS && item.scopeSlug) return `Plugin: ${item.scopeSlug}`;
-    if (item.group === BackupCatalogGroupKey.THEMES && item.scopeSlug) return `Theme: ${item.scopeSlug}`;
-    if (item.group === BackupCatalogGroupKey.DATABASE) return 'Database';
-    if (item.group === BackupCatalogGroupKey.TRANSFER) return 'Site Transfer';
+    const group = this.groupOf(item);
+    if (group === BackupCatalogGroupKey.PLUGINS && item.scopeSlug) return `Plugin: ${item.scopeSlug}`;
+    if (group === BackupCatalogGroupKey.THEMES && item.scopeSlug) return `Theme: ${item.scopeSlug}`;
+    if (group === BackupCatalogGroupKey.DATABASE) return 'Database';
+    if (group === BackupCatalogGroupKey.TRANSFER) return 'Site Transfer';
     return 'System';
   }
 
+  /** Badge colour for a catalog row's scope chip, keyed off the hydrated group. */
+  static getGroupBadgeVariant(item: IBackupCatalogItemView): BadgeVariant {
+    const group = this.groupOf(item);
+    if (group === BackupCatalogGroupKey.SYSTEM) return BadgeVariant.BLUE;
+    if (group === BackupCatalogGroupKey.DATABASE) return BadgeVariant.AMBER;
+    return BadgeVariant.GRAY;
+  }
+
   static getStorageLabel(item: IBackupCatalogItemView): string {
-    return item.rootKind === BackupCatalogRootKind.SITE_TRANSFER ? 'artifacts/site-transfer' : 'backups';
+    return this.rootKindOf(item) === BackupCatalogRootKind.SITE_TRANSFER ? 'artifacts/site-transfer' : 'backups';
   }
 
   static getCreateProgressLabel(percent: number): string {

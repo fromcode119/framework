@@ -1,4 +1,4 @@
-import { ThemeMode } from '@fromcode119/core/client';
+import { ThemeMode, ThemeSettingType } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/reactor';
 import { Card } from '@/components/ui/view/card.client';
@@ -6,18 +6,24 @@ import { Select } from '@/components/ui/view/select.client';
 import { ColorPicker } from '@/components/ui/view/color-picker.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeSettingsConstants } from '@/app/themes/[slug]/components/constants/theme-settings.constants';
+import { ThemeVariableControl } from '@/lib/theme-variable-control';
 import { AdminClass } from '@/lib/admin-class';
+import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
+import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 
 export class ThemeSettingsVariablesPanel extends PureReactor {
-  @prop declare page: any;
-  @prop declare model: any;
+  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
+  declare props: Pick<ThemeSettingsVariablesPanel, 'page' | 'model'>;
+
+  @prop declare page: IThemeSettingsPageView;
+  @prop declare model: ThemeSettingsRenderModel;
 
   render(): ReactNode {
     const page = this.page;
     const { adminTheme, themeDetail, tempVariables, groupedVariables } = this.model;
     return (
       <>
-        {Object.entries(groupedVariables).map(([group, keys]: [string, any]) => keys.length > 0 && (
+        {Object.entries(groupedVariables).map(([group, keys]) => keys.length > 0 && (
           <Card key={group} className={`border-0 p-4 ${AdminClass.SURFACE} ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
             <div className="flex items-center gap-3 mb-4">
               <div className="h-9 w-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
@@ -32,10 +38,14 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {keys.map((key: string) => {
+              {keys.map((key) => {
                 const schema = themeDetail.variableSchema?.[key];
                 const value = tempVariables[key];
-                const type = schema?.type || (value?.startsWith('#') ? 'color' : 'text');
+                // Enum MEMBERS — `ThemeRecordHydrator` resolved `schema.type` at the fetch boundary, so
+                // `type === 'color'` would compare an object to a string and never match. The declared/
+                // inferred rule lives in `ThemeVariableControl` so the Visual Preview shows a swatch for
+                // exactly the keys that get a ColorPicker here.
+                const type = ThemeVariableControl.resolveType(schema?.type, value);
 
                 return (
                   <div key={key} className={`flex items-center justify-between p-4 ${AdminClass.SURFACE} transition-all duration-300 border group ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5 focus-within:border-indigo-500/30' : 'bg-white border-slate-100 shadow-sm focus-within:shadow-md focus-within:border-indigo-500/20'}`}>
@@ -52,17 +62,17 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                         )}
                       </div>
 
-                      {type === 'select' ? (
+                      {type === ThemeSettingType.SELECT ? (
                         <Select
                           value={value || ''}
                           onChange={(nextValue) => page.handleVariableChange(key, String(nextValue || ''))}
-                          options={(schema?.options || []).map((opt: any) => ({ value: String(opt.value), label: opt.label }))}
+                          options={(schema?.options || []).map((opt) => ({ value: String(opt.value), label: opt.label }))}
                           placeholder="Select value"
                           searchable={false}
                           theme={adminTheme}
                           className="w-full"
                         />
-                      ) : type === 'font' ? (
+                      ) : type === ThemeSettingType.FONT ? (
                         <div className="flex items-center gap-4">
                           <div className="flex-1 relative group/font">
                             <input
@@ -83,9 +93,9 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                             ABC
                           </div>
                         </div>
-                      ) : type === 'color' ? (
+                      ) : type === ThemeSettingType.COLOR ? (
                         <ColorPicker value={value} onChange={(nextValue) => page.handleVariableChange(key, nextValue)} className="w-full" />
-                      ) : type === 'image' ? (
+                      ) : type === ThemeSettingType.IMAGE ? (
                         <div className="flex items-center gap-4">
                           <input
                             type="text"
@@ -100,7 +110,7 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                         </div>
                       ) : (
                         <input
-                          type={type === 'number' ? 'number' : 'text'}
+                          type={type === ThemeSettingType.NUMBER ? 'number' : 'text'}
                           value={value}
                           onChange={e => page.handleVariableChange(key, e.target.value)}
                           className={`w-full bg-transparent border-0 p-0 text-sm font-semibold focus:ring-0 ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}

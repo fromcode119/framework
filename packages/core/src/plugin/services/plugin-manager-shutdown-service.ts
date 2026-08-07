@@ -52,7 +52,7 @@ export class PluginManagerShutdownService {
         this.logger.warn(`Failed to disable plugin "${plugin.manifest.slug}" during shutdown: ${err?.message || err}`);
       }
     }
-    manager.scheduler.stop();
+    await manager.scheduler.stop();
     manager.security.stop();
     await manager.jobs.close();
   }

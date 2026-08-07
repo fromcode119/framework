@@ -1,4 +1,4 @@
-import { AssistantPreviewUtils } from '../src/assistant-preview-utils';
+import { AssistantPreviewUtils } from '@ai/assistant-preview-utils';
 
 describe('assistant preview path normalization', () => {
   it('rejects local filesystem paths', () => {

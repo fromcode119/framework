@@ -43,7 +43,11 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     const cookieOptions = this.getCookieOptions(req, false, maxAgeMs);
     const sessionCookieName = this.getSessionCookieName(req);
 
-    this.clearConflictingSessionCookies(req, res);
+    // Each surface owns ONE cookie name (admin `fc_token`, storefront `userToken`) and the auth
+    // middleware only ever reads the one belonging to the caller's surface — so the two sessions cannot
+    // contaminate each other and there is nothing "conflicting" to clear. Logging in on the storefront
+    // used to delete `fc_token`/`fc_user`, i.e. signing in as a customer silently ended the operator's
+    // admin session in the other tab. A login issues its own cookie and touches no other surface.
     res.cookie(sessionCookieName, token, cookieOptions);
 
     return { token, user: userResponse };

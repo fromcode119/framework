@@ -75,7 +75,8 @@ export class PostgresReadOperations extends BaseDialect {
 
       sqlQuery += ` FROM "${tableName}"`;
 
-      const { sql: whereClause, values } = this.buildRawFilterSQL(normalizedWhere, search);
+      const searchArg = await this.resolveSearchArg(this.normalizer, tableName, search);
+      const { sql: whereClause, values } = this.buildRawFilterSQL(normalizedWhere, searchArg);
       sqlQuery += whereClause;
       sqlQuery += this.buildRawOrderByClause(orderBy);
 
@@ -107,7 +108,7 @@ export class PostgresReadOperations extends BaseDialect {
     }
 
     const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where);
+    const conditions = this.buildWhereConditions(where, tableOrName);
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
     } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
@@ -116,10 +117,9 @@ export class PostgresReadOperations extends BaseDialect {
 
     if (search && search.columns.length > 0 && search.value) {
         const pattern = `%${search.value}%`;
-        const likeConditions = search.columns.map((col: string) => {
-            const colObj = typeof tableOrName[col] !== 'undefined' ? tableOrName[col] : sql`${sql.identifier(col)}`;
-            return this.like(colObj, pattern);
-        });
+        const likeConditions = search.columns.map((col: string) =>
+            this.like(this.resolveColumn(col, tableOrName), pattern)
+        );
         const searchExpr = likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions);
         query = query.where(searchExpr);
     }
@@ -159,22 +159,17 @@ export class PostgresReadOperations extends BaseDialect {
       }
     }
 
-    // Snake-case the where keys for string (plugin) tables before building drizzle conditions.
-    // `buildWhereConditions` emits `eq(sql.identifier(key), value)` verbatim, and Postgres quotes
-    // identifiers case-sensitively — so a camelCase schema field like `affiliateCode` becomes the
-    // non-existent column `"affiliateCode"` and the count throws (`find` avoids this via its raw-SQL
-    // path that already snake-cases). Mirror that here so db.count(table, { where: { affiliateCode } })
-    // resolves to `affiliate_code`.
+    // `buildWhereConditions` resolves each camelCase key via `resolveColumn`, so a schema field like
+    // `affiliateCode` reaches the real `affiliate_code` column instead of the non-existent
+    // `"affiliateCode"` Postgres would reject (identifiers are quoted case-sensitively). For a string
+    // table there is no column map to consult, so pass none and let it snake-case the identifier.
     const normalizedWhere = isString ? await this.normalizer.normalizeWhereForTable(tableOrName, where) : where;
     const isPlainWhere = !!normalizedWhere && typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype;
-    const effectiveWhere = isString && isPlainWhere
-      ? Object.fromEntries(Object.entries(normalizedWhere).map(([k, v]) => [NamingStrategy.toSnakeCase(k), v]))
-      : normalizedWhere;
-    const conditions = this.buildWhereConditions(effectiveWhere);
+    const conditions = this.buildWhereConditions(normalizedWhere, isString ? undefined : tableOrName);
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
-    } else if (effectiveWhere && (!isPlainWhere || Object.keys(effectiveWhere).length > 0)) {
-      query = query.where(effectiveWhere);
+    } else if (normalizedWhere && (!isPlainWhere || Object.keys(normalizedWhere).length > 0)) {
+      query = query.where(normalizedWhere);
     }
 
     const [result] = await query;

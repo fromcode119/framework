@@ -1,9 +1,9 @@
-import { SystemController } from '../src/controllers/system/system-controller';
+import { SystemController } from '@api/controllers/system/system-controller';
 
 describe('SystemController.resolveSlug', () => {
   it('delegates slug resolution through the runtime controller', async () => {
     const manager: any = {
-      hooks: { on: jest.fn() },
+      hooks: { on: vi.fn() },
       email: {},
       db: {},
     };
@@ -16,8 +16,8 @@ describe('SystemController.resolveSlug', () => {
       user: { roles: [] },
     };
     const res: any = {
-      json: jest.fn(),
-      status: jest.fn().mockReturnThis(),
+      json: vi.fn(),
+      status: vi.fn().mockReturnThis(),
     };
 
     const expected = {
@@ -34,7 +34,7 @@ describe('SystemController.resolveSlug', () => {
     };
 
     (controller as any).runtimeController = {
-      resolveSlug: jest.fn().mockImplementation(async (_req: any, runtimeRes: any) => {
+      resolveSlug: vi.fn().mockImplementation(async (_req: any, runtimeRes: any) => {
         runtimeRes.json(expected);
       }),
     };

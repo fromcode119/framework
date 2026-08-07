@@ -127,8 +127,7 @@ export class ThemesLayout extends AdminComponent {
               </div>
 
               <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                 <a href={AdminConstants.FRAMEWORK_RESOURCES.DOCUMENTATION} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Theme Documentation</a>
-                 <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />
+                 {/* "Theme Documentation" pointed at docs.fromcode.com, which does not resolve. */}
                  <Link href={AdminConstants.ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">Marketplace Health</Link>
               </div>
             </div>

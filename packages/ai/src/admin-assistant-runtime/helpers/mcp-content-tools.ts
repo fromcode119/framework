@@ -3,6 +3,7 @@ import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/
 import { SearchTextHelpers } from '@ai/admin-assistant-runtime/helpers/search-text-helpers';
 import { PathObjectHelpers } from '@ai/admin-assistant-runtime/helpers/path-object-helpers';
 import { RuntimeMiscHelpers } from '@ai/admin-assistant-runtime/helpers/runtime-misc-helpers';
+import { AssistantRuntimeCapabilities } from '@ai/admin-assistant-runtime/assistant-runtime-capabilities';
 
 /** MCP tool definitions for content and collection operations. */
 export class McpContentTools {
@@ -32,10 +33,10 @@ export class McpContentTools {
           const collectionSlug = String(input?.collectionSlug || input?.slug || '').trim();
           const collection = options.findCollectionBySlug(collectionSlug);
           if (!collection) throw new Error(`Unknown collection: ${collectionSlug}`);
-          if (typeof options.listContent !== 'function') throw new Error('content.list is not available in this runtime.');
+          if (!AssistantRuntimeCapabilities.canListContent(options)) throw new Error('content.list is not available in this runtime.');
           const limit = Math.min(100, Math.max(1, Number(input?.limit || 20)));
           const offset = Math.max(0, Number(input?.offset || 0));
-          const result = await options.listContent(collection, { limit, offset, context: context || {} });
+          const result = await AssistantRuntimeCapabilities.listContent(options, collection, { limit, offset, context: context || {} });
           return { collectionSlug: collection.slug, docs: Array.isArray(result?.docs) ? result.docs : [], totalDocs: Number(result?.totalDocs || 0), limit, offset };
         },
       },

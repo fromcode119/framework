@@ -23,7 +23,7 @@ export class EditPageBody extends PureReactor {
     const { edit, slug, id } = this;
     const {
       status, setStatus, formData, setFormData, isNew, handleSubmit, saving, collection, theme,
-      activeTab, setActiveTab, navSections, renderSidebar, resolvedSlug, pluginSettings, fieldErrors,
+      activeTab, setActiveTab, navSections, renderSidebar, resolvedSlug, pluginSettings, pluginSettingsSchema, fieldErrors,
       slugWarning, slugManuallyEdited, readOnlyOverrideFields, handleInputChange, handlePatch,
       handleReadOnlyOverrideRequest, standardMainFieldSections, fullWidthMainFieldSections,
       showPermalink, hasDisablePermalink, hasSidebarFields, sidebarFieldSections, hasBuiltInSidebarContent,

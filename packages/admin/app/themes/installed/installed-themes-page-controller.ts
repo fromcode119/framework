@@ -1,3 +1,4 @@
+import { ThemeState } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { InstalledThemesUploadService } from '@/app/themes/installed/installed-themes-upload-service';
@@ -24,8 +25,14 @@ export class InstalledThemesPageController {
     };
   }
 
+  /**
+   * `IInstalledThemeManifest.state` is DECLARED as `ThemeState`, but the wire value is a plain string
+   * (`Enum.toJSON()` returns `.value`). Hydrate once here, at the fetch boundary, so a downstream
+   * `theme.state === ThemeState.ACTIVE` is a real comparison rather than object-vs-string.
+   */
   private static normalizeThemeList(data: any): IInstalledThemeManifest[] {
-    return Array.isArray(data) ? data : data?.themes || [];
+    const rows = Array.isArray(data) ? data : data?.themes || [];
+    return rows.map((row: any) => ({ ...row, state: ThemeState.resolve(row?.state) }));
   }
 
   /**

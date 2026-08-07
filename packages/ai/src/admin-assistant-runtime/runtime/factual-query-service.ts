@@ -271,12 +271,22 @@ export class FactualQueryService {
     message: string,
     factualMemory: NonNullable<IAssistantSessionEntityMemory['factual']>,
   ): string | null {
-    const metrics = (Array.isArray(factualMemory.metrics) ? factualMemory.metrics : [])
-      .filter((entry): entry is { path: string; value: number } => typeof entry?.value === 'number' && Number.isFinite(entry.value))
+    const usable = (Array.isArray(factualMemory.metrics) ? factualMemory.metrics : [])
+      .filter((entry): entry is { path: string; value: number } => typeof entry?.value === 'number' && Number.isFinite(entry.value));
+    // The +14 "stick with what we were just discussing" bonus is for a VAGUE follow-up ("and last
+    // month?"). If the message names any metric's own leaf token it is not vague, and the bonus was
+    // strong enough to beat a direct hit — "what is the total?" against a stored
+    // `primaryMetricPath: summary.transactionCount` answered with the transaction count (4+14) instead
+    // of total revenue (12). `summary` is excluded: it is the container every path shares, not a name.
+    const messageTokens = FactualQueryHelpers.tokenize(message);
+    const namesAMetric = usable.some((entry) => FactualQueryHelpers
+      .tokenize(String(entry.path || '').split('.').pop() || '')
+      .some((token) => token !== 'summary' && messageTokens.includes(token)));
+    const metrics = usable
       .map((entry) => ({
         ...entry,
         score: FactualQueryHelpers.scoreNumericEntry(entry.path, message)
-          + (!FactualQueryHelpers.hasSpecificMetricSubject(message) && entry.path === String(factualMemory.primaryMetricPath || '').trim() ? 14 : 0),
+          + (!namesAMetric && !FactualQueryHelpers.hasSpecificMetricSubject(message) && entry.path === String(factualMemory.primaryMetricPath || '').trim() ? 14 : 0),
       }))
       .sort((left, right) => right.score - left.score || left.path.localeCompare(right.path));
     if (metrics.length === 0) return null;

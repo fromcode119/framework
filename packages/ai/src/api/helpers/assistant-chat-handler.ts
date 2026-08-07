@@ -3,6 +3,7 @@ import { ClarifyMode } from '@ai/api/forge/enums/clarify-mode.enum';
 import { Request, Response } from 'express';
 import { TypeUtils } from '@fromcode119/core';
 import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
+import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
 
 /** Handles the assistantChat endpoint logic. */
 export class AssistantChatHandler {
@@ -57,7 +58,7 @@ export class AssistantChatHandler {
       const contextForLLM = await deps.prepareContextForLLM(sessionId, history);
       deps.recordReasoningStep(sessionId, `Processing: ${message.substring(0, 100)}... [${taskComplexity.level} task]`, { sessionId, agentMode: normalizedBody?.agentMode, complexity: taskComplexity.level }, {}, taskComplexity.confidence);
       const requestCheckpoint = deps.normalizeAssistantCheckpoint(normalizedBody?.checkpoint || existingSession?.lastCheckpoint);
-      const requestContinueFrom = TypeUtils.parseBoolean(normalizedBody?.continueFrom) === true || requestCheckpoint?.reason === 'clarification_needed' || requestCheckpoint?.reason === 'loop_recovery';
+      const requestContinueFrom = TypeUtils.parseBoolean(normalizedBody?.continueFrom) === true || requestCheckpoint?.reason === CheckpointReason.CLARIFICATION_NEEDED || requestCheckpoint?.reason === CheckpointReason.LOOP_RECOVERY;
 
       const result = await runtime.chat({ message, provider: resolvedAssistant.provider, history: contextForLLM, agentMode: String(normalizedBody?.agentMode || 'advanced'), maxIterations: complexityAdjustedIterations, maxDurationMs: Number(normalizedBody?.maxDurationMs || 35000), allowedTools: Array.isArray(normalizedBody?.tools) ? normalizedBody.tools : [], skillId: String(normalizedBody?.skillId || '').trim() || undefined, sessionId: sessionId || undefined, continueFrom: requestContinueFrom, checkpoint: requestCheckpoint } as any);
 

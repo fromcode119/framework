@@ -1,0 +1,9 @@
+A critical log event was captured.
+
+Time (UTC): {{timestamp}}
+Level: {{level}}
+Plugin: {{pluginLabel}}
+Message: {{headline}}
+
+Context:
+{{contextText}}

@@ -46,7 +46,9 @@ export class HomePageResolver {
       query.set('fallback_locale', fallbackLocale);
     }
 
-    const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemResolvePath(query)) as Record<string, unknown>;
+    // Strict: an unreachable API must not be rendered as "the home page does not exist".
+    const path = ServerApiUtils.buildSystemResolvePath(query);
+    const result = (await ServerApiUtils.serverFetchJsonOutcome(path)).valueOrThrow(path) as Record<string, unknown>;
     return {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),

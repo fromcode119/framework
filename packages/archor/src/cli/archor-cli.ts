@@ -11,6 +11,7 @@ import { DbFindWhereCommand } from './db-find-where-command';
 import { ImportsCommand } from './imports-command';
 import { InterfacePrefixCommand } from './interface-prefix-command';
 import { OopGuardCommand } from './oop-guard-command';
+import { PluginAliasCommand } from './plugin-alias-command';
 import { PluginArchitectureCommand } from './plugin-architecture-command';
 import { PluginUiHookfreeCommand } from './plugin-ui-hookfree-command';
 import { SdkBoundaryCommand } from './sdk-boundary-command';
@@ -39,6 +40,7 @@ export class ArchorCli {
     ['imports', ImportsCommand],
     ['interface-prefix', InterfacePrefixCommand],
     ['oop-guard', OopGuardCommand],
+    ['plugin-alias', PluginAliasCommand],
     ['plugin-architecture', PluginArchitectureCommand],
     ['plugin-ui-hookfree', PluginUiHookfreeCommand],
     ['sdk-boundary', SdkBoundaryCommand],

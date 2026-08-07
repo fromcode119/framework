@@ -1,5 +1,6 @@
 import { FieldType, ICollection } from '@fromcode119/core';
 import { DynamicSchema, IDatabaseManager, NamingStrategy, timestamp, sql } from '@fromcode119/database';
+import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 
 export class QueryHelper {
   private static virtualTables: Map<string, any> = new Map();
@@ -50,6 +51,14 @@ export class QueryHelper {
     relationshipMatches?: Record<string, any[]>,
   ) {
     const whereChunks: any[] = [];
+
+    // Non-negotiable first: reads of the framework's system meta table are restricted to the declared,
+    // operator-visible settings, so the generic collection API cannot serve what the settings endpoint
+    // redacts. See SystemMetaCollectionGuard.
+    const systemMetaClause = SystemMetaCollectionGuard.buildReadClause(collection);
+    if (systemMetaClause) {
+      whereChunks.push(systemMetaClause);
+    }
 
     // Handle Search across top-level scalar fields that users expect in the admin table.
     const normalizedSearch = QueryHelper.normalizeSearch(search);

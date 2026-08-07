@@ -1,10 +1,10 @@
-jest.mock('@fromcode119/core', () => ({
+vi.mock('@fromcode119/core', () => ({
   CoreServices: {
-    getInstance: jest.fn(),
-    reset: jest.fn(),
+    getInstance: vi.fn(),
+    reset: vi.fn(),
   },
   CoercionUtils: {
-    toBoolean: jest.fn((value: unknown, fallback = false) => {
+    toBoolean: vi.fn((value: unknown, fallback = false) => {
       if (typeof value === 'boolean') return value;
       const normalized = String(value ?? '').trim().toLowerCase();
       if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
@@ -16,7 +16,7 @@ jest.mock('@fromcode119/core', () => ({
     ACTIVE: 'active',
   },
   EnvUtils: {
-    number: jest.fn((name: string, fallback: number) => {
+    number: vi.fn((name: string, fallback: number) => {
       const raw = process.env[name];
       if (raw === undefined || raw === null || String(raw).trim() === '') return fallback;
       const parsed = Number(String(raw).trim());
@@ -31,15 +31,15 @@ jest.mock('@fromcode119/core', () => ({
 }));
 
 import { CoreServices } from '@fromcode119/core';
-import { ResolutionService } from '../src/services/resolution-service';
+import { ResolutionService } from '@api/services/resolution-service';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 interface Harness {
   service: ResolutionService;
-  find: jest.Mock;
-  metaFind: jest.Mock;
-  gatesApply: jest.Mock;
+  find: vi.Mock;
+  metaFind: vi.Mock;
+  gatesApply: vi.Mock;
   hookHandlers: Record<string, (payload: any) => void>;
 }
 
@@ -47,15 +47,15 @@ function buildHarness(overrides: {
   findImpl?: (collection: any, options: any) => Promise<any>;
   withHooks?: boolean;
 } = {}): Harness {
-  const find = jest.fn().mockImplementation(
+  const find = vi.fn().mockImplementation(
     overrides.findImpl ?? (() => Promise.resolve({ docs: [] })),
   );
-  const metaFind = jest.fn().mockResolvedValue([]);
+  const metaFind = vi.fn().mockResolvedValue([]);
   const hookHandlers: Record<string, (payload: any) => void> = {};
 
   const manager: any = {
-    db: { find: metaFind, findOne: jest.fn().mockResolvedValue(null) },
-    getPlugins: jest.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'cms' } }]),
+    db: { find: metaFind, findOne: vi.fn().mockResolvedValue(null) },
+    getPlugins: vi.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'cms' } }]),
     registeredCollections: new Map([
       [
         'pages',
@@ -72,19 +72,19 @@ function buildHarness(overrides: {
   };
   if (overrides.withHooks !== false) {
     manager.hooks = {
-      on: jest.fn((event: string, handler: (payload: any) => void) => {
+      on: vi.fn((event: string, handler: (payload: any) => void) => {
         hookHandlers[event] = handler;
       }),
     };
   }
   const themeManager: any = {
-    getActiveThemeDefaultPageContractOverrides: jest.fn().mockResolvedValue([]),
+    getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]),
   };
-  const gatesApply = jest.fn(async (resolved: any) => resolved);
-  jest.spyOn(CoreServices, 'getInstance').mockReturnValue({
+  const gatesApply = vi.fn(async (resolved: any) => resolved);
+  vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
     contentResolutionGates: { apply: gatesApply },
-    redirectResolvers: { resolve: jest.fn(async () => null) },
-    defaultPageContractResolution: { resolveAll: jest.fn().mockReturnValue([]) },
+    redirectResolvers: { resolve: vi.fn(async () => null) },
+    defaultPageContractResolution: { resolveAll: vi.fn().mockReturnValue([]) },
   } as any);
 
   const service = new ResolutionService(manager, themeManager, { find } as any);
@@ -102,8 +102,8 @@ describe('ResolutionService anonymous result cache', () => {
   const ORIGINAL_TTL = process.env.RESOLVE_CACHE_TTL_MS;
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    jest.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
     if (ORIGINAL_TTL === undefined) delete process.env.RESOLVE_CACHE_TTL_MS;
     else process.env.RESOLVE_CACHE_TTL_MS = ORIGINAL_TTL;
   });

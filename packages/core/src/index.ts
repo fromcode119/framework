@@ -137,6 +137,8 @@ export * from '@core/utils';
 export { EnvConfig } from '@core/config/env';
 export { SafeArchive } from '@core/security/safe-archive';
 export { MediaPathUtils } from '@core/security/media-path-utils';
+export { SystemSettingsExposureUtils } from '@core/security/system-settings-exposure-utils';
+export { NetworkAddressUtils } from '@core/security/network-address-utils';
 export { ProjectPaths } from '@core/config/paths';
 
 // Integrations
@@ -144,6 +146,7 @@ export { IntegrationManager } from '@core/integrations/integration-manager';
 export { IntegrationRegistry } from '@core/integrations/integration-registry';
 export { SecretService } from '@core/security/secret-service';
 export { SecretService as IntegrationSecretService } from '@core/security/secret-service';
+export { SigningSecretService } from '@core/security/signing-secret-service';
 export type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 export type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
 
@@ -203,6 +206,8 @@ export { SystemUpdateService } from '@core/management/system-update-service';
 export { BaseRepository, BaseService, BaseController } from '@core/base';
 export { AutocompleteOptionService } from '@core/services/autocomplete-option-service';
 export { BaseRouter } from '@core/base/base-router';
+export { AsyncRouteGuard } from '@core/base/async-route-guard';
+export type { IRouteFailureOrigin } from '@core/base/interfaces/route-failure-origin.interface';
 export { BaseEntity } from '@core/base/base-entity';
 export { BaseEntityCollection } from '@core/base/base-entity-collection';
 export { EntityColumn } from '@core/entity-column';
@@ -220,6 +225,8 @@ export { LayoutLifecycleService } from '@core/plugin/layout/layout-lifecycle-ser
 export { LayoutRuntimeBridgeService } from '@core/plugin/layout/layout-runtime-bridge-service';
 export { ThemeLayoutOverrideRegistryService } from '@core/theme/theme-layout-override-registry-service';
 export type { IRegisteredWidgetDefinition, IWidgetDefinitionInput, IWidgetSettingsRenderInput, IWidgetStyle } from '@core/widget';
+// VALUE export: `IWidgetStyle.visibility` is typed as this Enum, so plugins need its MEMBERS.
+export { WidgetViewport } from '@core/widget';
 export { ClientType } from '@core/enums/client-type.enum';
 export { UiScope } from '@core/enums/ui-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';

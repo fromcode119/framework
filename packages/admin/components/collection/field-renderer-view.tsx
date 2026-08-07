@@ -4,6 +4,8 @@ import type { ReactElement, ReactNode, RefObject } from 'react';
 import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/reactor';
 import type { Ref } from '@fromcode119/reactor';
 import { AdminServices } from '@/lib/admin-services';
+import { AdminPathUtils } from '@/lib/admin-path';
+import { FieldProvenance } from '@/lib/collection/field-provenance';
 import { FieldRendererUtils } from '@/components/collection/field-renderer-utils';
 import { FieldLocaleSwitcher } from '@/components/collection/field-locale-switcher';
 import { FieldRendererHeader } from '@/components/collection/field-renderer-header';
@@ -23,6 +25,7 @@ export class FieldRendererView extends Reactor {
   @prop declare theme: ThemeMode;
   @prop declare collectionSlug: string;
   @prop declare pluginSettings?: Record<string, any>;
+  @prop declare pluginSettingsSchema?: Record<string, any>;
   @prop declare globalSettings?: Record<string, any>;
   @prop declare disabled?: boolean;
   @prop declare isNew?: boolean;
@@ -35,6 +38,24 @@ export class FieldRendererView extends Reactor {
   @prop declare onPatch?: (partial: Record<string, any>) => void;
   /** Plugin registry from `ContextHooks.usePlugins()`, supplied by the thin functional shim. */
   @prop declare plugins: any;
+  /** Owner of the collection being edited — resolved by the shim, used to link provenance to settings. */
+  @prop declare pluginSlug?: string;
+
+  /**
+   * What the storefront actually uses for this field when the record leaves it empty, and which setting
+   * decides it. Null unless the field declares `admin.fallback`, so nothing changes for fields that
+   * simply mean what they say.
+   */
+  private get provenance(): FieldProvenance | null {
+    return FieldProvenance.resolve(
+      this.field.admin?.fallback,
+      this.currentValue,
+      this.record ?? {},
+      this.pluginSettings ?? {},
+      this.pluginSlug ? AdminPathUtils.toAdminPath(`/plugins/${this.pluginSlug}/settings`) : '',
+      this.pluginSettingsSchema,
+    );
+  }
 
   @ref declare private localeMenuRef: Ref<HTMLDivElement>;
 
@@ -292,6 +313,7 @@ export class FieldRendererView extends Reactor {
           field={this.field}
           resolvedFieldDescription={resolvedFieldDescription}
           errors={this.errors}
+          provenance={this.provenance}
         />
       </div>
     );

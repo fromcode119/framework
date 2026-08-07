@@ -20,6 +20,18 @@ export class MarketplaceDetailSidebar extends PureReactor {
   @prop declare installOperation: IPluginInstallOperation | null;
   @prop declare onInstall: () => void;
 
+  /**
+   * Whether the INSTALLED copy of this plugin is active, as a real enum comparison.
+   *
+   * `installedPlugin` is typed `any` and its `state` crosses the wire as a plain string
+   * (`Enum.toJSON()` returns `.value`). The marketplace page hydrates the row, but `resolve()`
+   * accepts either form, so a future un-hydrated caller can never make this silently `false` —
+   * which is exactly how the Backups Restore/Delete actions became unreachable.
+   */
+  private get isInstalledActive(): boolean {
+    return PluginState.resolve(this.installedPlugin?.state) === PluginState.ACTIVE;
+  }
+
   render(): ReactNode {
     const {
       plugin,
@@ -31,6 +43,7 @@ export class MarketplaceDetailSidebar extends PureReactor {
       installOperation,
       onInstall,
     } = this;
+    const isInstalledActive = this.isInstalledActive;
     return (
       <div className="w-full lg:w-96 space-y-6">
          <Card noPadding className={`sticky top-8 overflow-hidden ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-[#0f172a] ring-1 ring-white/5 border-0' : 'bg-white shadow-sm border-slate-100'}`}>
@@ -74,28 +87,23 @@ export class MarketplaceDetailSidebar extends PureReactor {
                   </div>
                 ) : (
                   <div className={`w-full flex flex-col items-center justify-center gap-2 py-6 rounded-xl border-2 border-dashed transition-all duration-500 ${
-                    installedPlugin.state === PluginState.ACTIVE
+                    isInstalledActive
                       ? (theme === ThemeMode.DARK ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-600 shadow-emerald-500/5')
                       : (theme === ThemeMode.DARK ? 'bg-indigo-500/5 border-indigo-500/20 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600')
                   }`}>
                     <div className={`p-3 rounded-lg ${theme === ThemeMode.DARK ? 'bg-current/10' : 'bg-white shadow-sm ring-1 ring-slate-100'}`}>
-                      {installedPlugin.state === PluginState.ACTIVE ? (
+                      {isInstalledActive ? (
                         <FrameworkIcons.CheckCircle2 size={24} strokeWidth={3.5} />
                       ) : (
                         <FrameworkIcons.Box size={24} strokeWidth={3.5} />
                       )}
                     </div>
-                    <span className="text-[11px] font-bold uppercase tracking-widest">{installedPlugin.state === PluginState.ACTIVE ? 'Fully Active' : 'Installed'}</span>
+                    <span className="text-[11px] font-bold uppercase tracking-widest">{isInstalledActive ? 'Fully Active' : 'Installed'}</span>
                   </div>
                 )}
 
-                  <button className={`w-full py-3 rounded-xl font-semibold uppercase tracking-widest text-[10px] border transition-all ${
-                  theme === ThemeMode.DARK
-                    ? 'border-white/5 text-slate-500 hover:bg-white/5 hover:text-white'
-                    : 'border-slate-100 text-slate-400 hover:bg-slate-50 hover:border-slate-200 hover:text-slate-900'
-                }`}>
-                   Share Extension
-                  </button>
+                  {/* A "Share Extension" button sat here with full hover affordances and no handler
+                      at all. Removed rather than left as a control that does nothing. */}
                   {installOperation?.message && (
                     <p className={`text-center text-[10px] font-semibold uppercase tracking-wide ${theme === ThemeMode.DARK ? 'text-indigo-300' : 'text-indigo-700'}`}>
                       {installOperation.message}

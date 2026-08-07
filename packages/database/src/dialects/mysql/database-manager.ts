@@ -117,7 +117,7 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     }
 
     const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where);
+    const conditions = this.buildWhereConditions(where, tableOrName);
     let query = this.drizzle.delete(tableOrName);
     if (conditions.length > 0) {
       query = query.where(and(...conditions));

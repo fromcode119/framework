@@ -47,7 +47,13 @@ export class OrchestratorListingUtils {
     return '';
   }
 
-  static isRecordFollowupQuestion(message: string): boolean {
+  /**
+   * @param availableFields the listing collection's OWN field names. Naming one of them is a reference —
+   *   without this the check fell back to a hardcoded `(id|slug|email|name|title)` map, so "what is site
+   *   title?" against a collection with a `site_title` field read as an unrelated question and dropped to
+   *   the model. The schema already knows its fields; it should not have to be re-listed in a regex.
+   */
+  static isRecordFollowupQuestion(message: string, availableFields: readonly string[] = []): boolean {
   const text = String(message || '').toLowerCase().replace(/\s+/g, ' ').trim();
   if (!text) return false;
   const asks =
@@ -55,7 +61,13 @@ export class OrchestratorListingUtils {
     /\b(do|can)\s+you\s+(know|tell|show)\b/.test(text) ||
     /\b(name|email|phone|mobile|title|id)\b/.test(text) ||
     text.endsWith('?');
+  const normalizedText = OrchestratorListingUtils.normalizeFieldToken(text);
+  const namesAField = (Array.isArray(availableFields) ? availableFields : []).some((field) => {
+    const token = OrchestratorListingUtils.normalizeFieldToken(field);
+    return !!token && normalizedText.includes(token);
+  });
   const hasReference =
+    namesAField ||
     /\b(his|her|their|that|this|first|second|third|field|value|record|entry)\b/.test(text) ||
     /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(text) ||
     /\b(?:id|slug|email|name|title)\s*[:=]?\s*[a-z0-9._%+-]+\b/i.test(text);

@@ -25,6 +25,7 @@ vi.mock('@core/plugin/services/plugin-failure-isolation-service', () => ({
 
 import { LifecycleService } from '@core/plugin/services/lifecycle-service';
 import { CoreServices } from '@core/services/core-services';
+import { ServerCoreServices } from '@core/services/server-core-services';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
@@ -350,6 +351,9 @@ describe('LifecycleService — collections auto-discovery', () => {
   });
 
   it('materializes default singleton pages after enabling a plugin', async () => {
+    // `defaultPageContracts` is a SERVER-only core service — without registering the server factories
+    // the getter below throws and this test asserts nothing.
+    ServerCoreServices.register();
     CoreServices.reset();
     const { service, manager } = buildService({ 'test-plugin': { state: PluginState.ACTIVE, version: '1.0.0' } });
     const pages: any[] = [];

@@ -11,6 +11,7 @@ import { ApiAccessGate } from '@core/plugin/context/api-access-gate';
 import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
 import type { ApiPermissionRequirement } from '@core/plugin/context/api-permission-requirement';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { AsyncRouteGuard } from '@core/base/async-route-guard';
 
 export class ApiContextProxy {
   private static readonly apiLimiter = new RateLimiter(1000, 60000);
@@ -59,6 +60,13 @@ export class ApiContextProxy {
           pluginLogger.debug(`Registered ${method.toUpperCase()} ${fullPath} (MOCK)`);
           return;
         }
+
+        // A plugin that hands over a whole express Router (`context.api.use('/', router.router)` — the
+        // repo convention) cannot be protected by the try/catch below: the Router returns synchronously
+        // and Express invokes its layers itself, so a rejection inside a layer is never observed and
+        // kills the process. Wrap the layers themselves. Handlers already guarded by BaseRouter are
+        // marked and skipped, so this never double-wraps.
+        handlers.forEach(handler => AsyncRouteGuard.wrapRouter(handler, plugin.manifest.slug));
 
         const wrappedHandlers = handlers.map(handler => async (req: any, res: any, next: any) => {
           try {

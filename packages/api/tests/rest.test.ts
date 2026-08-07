@@ -1,4 +1,4 @@
-import { RESTController } from '../src/controllers/rest/rest-controller';
+import { RESTController } from '@api/controllers/rest/rest-controller';
 
 describe('rest-controller', () => {
   let controller: RESTController;
@@ -7,16 +7,16 @@ describe('rest-controller', () => {
   beforeEach(() => {
     mockDb = {
       dialect: 'postgres',
-      find: jest.fn(),
-      findOne: jest.fn(),
-      insert: jest.fn(),
-      update: jest.fn(),
-      count: jest.fn().mockResolvedValue(1),
-      desc: jest.fn().mockImplementation((col) => ({ desc: col })),
-      asc: jest.fn().mockImplementation((col) => ({ asc: col })),
-      eq: jest.fn().mockImplementation((col, val) => ({ eq: [col, val] })),
-      and: jest.fn().mockImplementation((...args) => ({ and: args })),
-      or: jest.fn().mockImplementation((...args) => ({ or: args })),
+      find: vi.fn(),
+      findOne: vi.fn(),
+      insert: vi.fn(),
+      update: vi.fn(),
+      count: vi.fn().mockResolvedValue(1),
+      desc: vi.fn().mockImplementation((col) => ({ desc: col })),
+      asc: vi.fn().mockImplementation((col) => ({ asc: col })),
+      eq: vi.fn().mockImplementation((col, val) => ({ eq: [col, val] })),
+      and: vi.fn().mockImplementation((...args) => ({ and: args })),
+      or: vi.fn().mockImplementation((...args) => ({ or: args })),
     };
     controller = new RESTController(mockDb);
   });
@@ -33,7 +33,7 @@ describe('rest-controller', () => {
     mockDb.findOne.mockResolvedValue({ id: 1, title: 'Hello' });
     
     const req: any = { params: { id: '1' }, query: {} };
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
 
     await controller.findOne(mockCollection, req, res);
 
@@ -46,7 +46,7 @@ describe('rest-controller', () => {
     mockDb.update.mockResolvedValue({ id: '1', title: 'New Title' });
     
     const req: any = { params: { id: '1' }, body: { title: 'New Title' }, user: { roles: ['admin'] } };
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
 
     await controller.update(mockCollection, req, res);
 
@@ -59,7 +59,7 @@ describe('rest-controller', () => {
     mockDb.insert.mockResolvedValue({ id: 1, title: 'Hello' });
 
     const req: any = { body: { title: 'Hello' }, query: {}, user: { roles: ['admin'] } };
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
 
     await controller.create(mockCollection, req, res);
 
@@ -75,7 +75,7 @@ describe('rest-controller', () => {
       query: { page: '3', limit: '10', sort: '-createdAt' },
       user: { roles: ['admin'] }
     };
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
 
     await controller.find(mockCollection, req, res);
 
@@ -102,7 +102,7 @@ describe('rest-controller', () => {
       fields: [{ name: 'key', type: 'text' }]
     };
     const req: any = { query: {} };
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
 
     await controller.find(systemCollection, req, res);
 
@@ -121,7 +121,7 @@ describe('rest-controller', () => {
     mockDb.count.mockResolvedValue(1);
 
     const req: any = { query: {}, user: { roles: ['admin'] } };
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
 
     await controller.find(systemCollection, req, res);
 
@@ -137,7 +137,7 @@ describe('rest-controller', () => {
       fields: [{ name: 'email', type: 'text' }]
     };
     const req: any = { query: {}, user: { roles: ['editor'] } };
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
 
     await controller.find(systemCollection, req, res);
 
@@ -147,7 +147,7 @@ describe('rest-controller', () => {
 
   it('blocks anonymous writes for generic collections', async () => {
     const req: any = { body: { title: 'Hello' }, query: {} };
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
 
     await controller.create(mockCollection, req, res);
 
@@ -160,7 +160,7 @@ describe('rest-controller', () => {
     mockDb.count.mockResolvedValue(1);
 
     const req: any = { query: {} };
-    const res: any = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+    const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
 
     await controller.find(mockCollection, req, res);
 

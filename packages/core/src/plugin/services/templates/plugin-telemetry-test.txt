@@ -1,0 +1,8 @@
+This is a test telemetry email from {{appName}}.
+
+Time (UTC): {{nowIso}}
+Triggered by user id: {{actorId}}
+Triggered by email: {{actorEmail}}
+Roles: {{actorRoles}}
+
+If you received this message, your configured Email integration is working for telemetry delivery.

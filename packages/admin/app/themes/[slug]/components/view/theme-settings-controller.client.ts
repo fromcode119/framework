@@ -1,146 +1,148 @@
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { ThemeRecordHydrator } from '@/app/themes/[slug]/theme-record-hydrator';
+import type { IThemeSettingsPageHost } from '@/app/themes/[slug]/interfaces/theme-settings-page-host.interface';
 
 /**
  * Async data/action handlers for the theme settings page (fetch, activate, update, save config,
  * delete, run-seeds, reset), extracted from the former 1000-line page class. `page` is the
- * `ThemeSettingsPage` instance, typed loosely to avoid a circular import.
+ * `ThemeSettingsPage`, reached through {@link IThemeSettingsPageHost} so this file never imports the
+ * page class (which imports this one).
  */
 export class ThemeSettingsController {
-  static async fetchTheme(page: any): Promise<void> {
-    const slug = page.state.routeSlug;
+  static async fetchTheme(page: IThemeSettingsPageHost): Promise<void> {
+    const slug = page.routeSlug;
     try {
       const [installedData, marketplaceData, configData] = await Promise.all([
         AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST),
         AdminApi.get(AdminConstants.ENDPOINTS.THEMES.MARKETPLACE),
-        AdminApi.get(AdminConstants.ENDPOINTS.THEMES.CONFIG(slug))
+        AdminApi.get(AdminConstants.ENDPOINTS.THEMES.CONFIG(slug)),
       ]);
-      const found = installedData.find((t: any) => t.slug === slug);
-      if (found) {
-        if (!page.mounted) return;
-        page.setState({
-          themeDetail: found,
-          dbConfig: configData.config || {},
-          tempVariables: { ...(found.variables || {}), ...(configData.config?.variables || {}) },
-          tempLayouts: configData.config?.layouts || {},
-          tempSettings: { ...(found.settingsDefaults || {}), ...(configData.config?.settings || {}) }
-        });
-        const marketplace = Array.isArray(marketplaceData) ? marketplaceData : (marketplaceData.themes || []);
-        const marketMatch = marketplace.find((r: any) => r.slug === slug);
-        if (marketMatch && page.mounted) page.setState({ marketplaceVersion: marketMatch.version });
-      } else {
-        page.router.push('/themes');
+      const found = installedData.find((row: { slug?: string }) => row.slug === slug);
+      if (!found) {
+        page.goToThemesList();
+        return;
       }
+      if (!page.mounted) return;
+      const config = configData.config || {};
+      // Hydrated at the FETCH BOUNDARY — the wire carries plain strings where `ITheme` declares enum
+      // members. See ThemeRecordHydrator for what an un-hydrated row already broke in production.
+      const theme = ThemeRecordHydrator.hydrate(found);
+      page.themeDetail = theme;
+      page.dbConfig = config;
+      page.tempVariables = { ...(theme.variables || {}), ...(config.variables || {}) };
+      page.tempLayouts = config.layouts || {};
+      page.tempSettings = { ...(theme.settingsDefaults || {}), ...(config.settings || {}) };
+
+      const marketplace = Array.isArray(marketplaceData) ? marketplaceData : (marketplaceData.themes || []);
+      const marketMatch = marketplace.find((row: { slug?: string }) => row.slug === slug);
+      if (marketMatch && page.mounted) page.marketplaceVersion = marketMatch.version;
     } catch (err) {
       console.error('Failed to fetch theme detail', err);
     } finally {
-      if (page.mounted) page.setState({ loading: false });
+      if (page.mounted) page.loading = false;
     }
   }
 
-  static async handleActivate(page: any): Promise<void> {
-    const { themeDetail } = page.state;
+  static async handleActivate(page: IThemeSettingsPageHost): Promise<void> {
+    const themeDetail = page.themeDetail;
     if (!themeDetail) return;
-    const notify = page.runtime.notify.notify;
-    const triggerRefresh = page.runtime.plugins?.triggerRefresh;
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.ACTIVATE(themeDetail.slug));
-      notify(NotificationType.SUCCESS, 'Theme Activated', `${themeDetail.name} is now active.`);
-      triggerRefresh();
+      page.notify(NotificationType.SUCCESS, 'Theme Activated', `${themeDetail.name} is now active.`);
+      page.triggerRefresh();
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Activation Failed', err.message);
+      page.notify(NotificationType.ERROR, 'Activation Failed', err.message);
     }
   }
 
-  static async handleUpdate(page: any): Promise<void> {
-    const { themeDetail } = page.state;
+  static async handleUpdate(page: IThemeSettingsPageHost): Promise<void> {
+    const themeDetail = page.themeDetail;
     if (!themeDetail) return;
-    const notify = page.runtime.notify.notify;
-    const triggerRefresh = page.runtime.plugins?.triggerRefresh;
-    page.setState({ isUpdating: true });
+    page.isUpdating = true;
     try {
-      notify(NotificationType.INFO, 'Updating...', `Downloading latest version of ${themeDetail.slug}...`);
+      page.notify(NotificationType.INFO, 'Updating...', `Downloading latest version of ${themeDetail.slug}...`);
       await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.INSTALL(themeDetail.slug));
-      notify(NotificationType.SUCCESS, 'Updated', `Theme ${themeDetail.name} has been updated.`);
+      page.notify(NotificationType.SUCCESS, 'Updated', `Theme ${themeDetail.name} has been updated.`);
       await ThemeSettingsController.fetchTheme(page);
-      triggerRefresh();
+      page.triggerRefresh();
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Update Failed', err.message);
+      page.notify(NotificationType.ERROR, 'Update Failed', err.message);
     } finally {
-      page.setState({ isUpdating: false });
+      page.isUpdating = false;
     }
   }
 
-  static async handleSaveConfig(page: any): Promise<void> {
-    const { themeDetail, routeSlug, dbConfig, tempVariables, tempLayouts, tempSettings } = page.state;
+  static async handleSaveConfig(page: IThemeSettingsPageHost): Promise<void> {
+    const { themeDetail, routeSlug, dbConfig, tempVariables, tempLayouts, tempSettings } = page;
     if (!themeDetail) return;
-    const notify = page.runtime.notify.notify;
-    const triggerRefresh = page.runtime.plugins?.triggerRefresh;
-    page.setState({ isSaving: true });
+    page.isSaving = true;
     try {
-      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.CONFIG(routeSlug), { ...dbConfig, variables: tempVariables, layouts: tempLayouts, settings: tempSettings });
-      notify(NotificationType.SUCCESS, 'Configuration Saved', 'Visual protocols updated successfully.');
+      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.CONFIG(routeSlug), {
+        ...dbConfig,
+        variables: tempVariables,
+        layouts: tempLayouts,
+        settings: tempSettings,
+      });
+      page.notify(NotificationType.SUCCESS, 'Configuration Saved', 'Visual protocols updated successfully.');
       await ThemeSettingsController.fetchTheme(page);
-      triggerRefresh();
+      page.triggerRefresh();
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Save Failed', err.message);
+      page.notify(NotificationType.ERROR, 'Save Failed', err.message);
     } finally {
-      page.setState({ isSaving: false });
+      page.isSaving = false;
     }
   }
 
-  static async handleDelete(page: any): Promise<void> {
-    const { themeDetail } = page.state;
+  static async handleDelete(page: IThemeSettingsPageHost): Promise<void> {
+    const themeDetail = page.themeDetail;
     if (!themeDetail) return;
-    const notify = page.runtime.notify.notify;
-    const triggerRefresh = page.runtime.plugins?.triggerRefresh;
-    page.setState({ isDeleting: true, isDeleteConfirmOpen: false });
+    page.isDeleteConfirmOpen = false;
+    page.isDeleting = true;
     try {
       await AdminApi.delete(AdminConstants.ENDPOINTS.THEMES.DELETE(themeDetail.slug));
-      notify(NotificationType.SUCCESS, 'Theme Deleted', `${themeDetail.name} has been removed.`);
-      page.router.push('/themes');
-      triggerRefresh();
+      page.notify(NotificationType.SUCCESS, 'Theme Deleted', `${themeDetail.name} has been removed.`);
+      page.goToThemesList();
+      page.triggerRefresh();
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Deletion Failed', err.message);
+      page.notify(NotificationType.ERROR, 'Deletion Failed', err.message);
     } finally {
-      page.setState({ isDeleting: false });
+      page.isDeleting = false;
     }
   }
 
-  static async handleRunSeeds(page: any): Promise<void> {
-    const { themeDetail } = page.state;
+  static async handleRunSeeds(page: IThemeSettingsPageHost): Promise<void> {
+    const themeDetail = page.themeDetail;
     if (!themeDetail) return;
-    const notify = page.runtime.notify.notify;
-    const triggerRefresh = page.runtime.plugins?.triggerRefresh;
-    page.setState({ isRunSeedsConfirmOpen: false, isReseeding: true });
+    page.isRunSeedsConfirmOpen = false;
+    page.isReseeding = true;
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: false });
-      notify(NotificationType.SUCCESS, 'Seeds Executed', `Seed script executed for ${themeDetail.name}.`);
+      page.notify(NotificationType.SUCCESS, 'Seeds Executed', `Seed script executed for ${themeDetail.name}.`);
       await ThemeSettingsController.fetchTheme(page);
-      triggerRefresh();
+      page.triggerRefresh();
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Seed Failed', err.message);
+      page.notify(NotificationType.ERROR, 'Seed Failed', err.message);
     } finally {
-      page.setState({ isReseeding: false });
+      page.isReseeding = false;
     }
   }
 
-  static async handleResetTheme(page: any): Promise<void> {
-    const { themeDetail } = page.state;
+  static async handleResetTheme(page: IThemeSettingsPageHost): Promise<void> {
+    const themeDetail = page.themeDetail;
     if (!themeDetail) return;
-    const notify = page.runtime.notify.notify;
-    const triggerRefresh = page.runtime.plugins?.triggerRefresh;
-    page.setState({ isResetThemeConfirmOpen: false, isResettingTheme: true });
+    page.isResetThemeConfirmOpen = false;
+    page.isResettingTheme = true;
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: true });
-      notify(NotificationType.SUCCESS, 'Theme Reset', `${themeDetail.name} config reset and seeds executed.`);
+      page.notify(NotificationType.SUCCESS, 'Theme Reset', `${themeDetail.name} config reset and seeds executed.`);
       await ThemeSettingsController.fetchTheme(page);
-      triggerRefresh();
+      page.triggerRefresh();
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Reset Failed', err.message);
+      page.notify(NotificationType.ERROR, 'Reset Failed', err.message);
     } finally {
-      page.setState({ isResettingTheme: false });
+      page.isResettingTheme = false;
     }
   }
 }

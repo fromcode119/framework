@@ -19,7 +19,7 @@ export class RESTController {
   constructor(
     db: IDatabaseManager,
     auth?: AuthManager,
-    onSettingsUpdate?: (key: string, value: any) => void,
+    onSettingsUpdate?: (key: string, value: any) => void | Promise<void>,
     hooks?: HookManager,
     audit?: IRestAuditSink
   ) {

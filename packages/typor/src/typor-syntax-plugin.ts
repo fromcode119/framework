@@ -68,6 +68,14 @@ export class TyporSyntaxPlugin {
     return TyporSyntaxPlugin.findClauses(source).length > 0;
   }
 
+  /** True when the `implements` KEYWORD starts at `index` (word-bounded, so `implementsFoo` is not one). */
+  private static startsImplements(scan: string, index: number): boolean {
+    if (!scan.startsWith('implements', index)) return false;
+    const before = index === 0 ? ' ' : scan[index - 1];
+    const after = scan[index + 'implements'.length] ?? ' ';
+    return !/[\w$]/.test(before) && !/[\w$]/.test(after);
+  }
+
   /** Locate every `class X extends <clause> {` with more than one base. */
   private static findClauses(source: string): Array<{ start: number; end: number; clause: string }> {
     const found: Array<{ start: number; end: number; clause: string }> = [];
@@ -76,7 +84,11 @@ export class TyporSyntaxPlugin {
     const head = /\bclass\s+[A-Za-z_$][\w$]*(?:<[^{]*?>)?\s+extends\s+/g;
     let m = head.exec(scan);
     while (m) {
-      // the clause runs to the `{` that opens the body, at depth 0
+      // the clause runs to the `{` that opens the body, at depth 0 — or to an `implements` keyword,
+      // whichever comes first. `class X extends A implements IB, IC {` is ordinary TypeScript, and
+      // running to the `{` swallowed the implements list: its comma made ONE base look like two, and
+      // the rewrite emitted `Typor.mixin(A implements IB, IC)` — a syntax error in a file the author
+      // never touched, surfacing only as an unexplained +2 in the app-typecheck ratchet.
       let depth = 0, i = m.index + m[0].length, end = -1;
       for (; i < scan.length; i += 1) {
         const ch = scan[i];
@@ -85,6 +97,7 @@ export class TyporSyntaxPlugin {
         else if (ch === '{' && depth === 0) { end = i; break; }
         else if (ch === '{') depth += 1;
         else if (ch === '}') depth -= 1;
+        else if (depth === 0 && TyporSyntaxPlugin.startsImplements(scan, i)) { end = i; break; }
       }
       if (end > -1) {
         const clause = source.slice(m.index + m[0].length, end);
