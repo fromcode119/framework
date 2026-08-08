@@ -17,7 +17,12 @@ export class ScheduleType extends Enum {
    */
   static resolve(value: unknown): ScheduleType {
     if (value instanceof ScheduleType) return value;
-    const found = ScheduleType.fromValue(String(value ?? '').trim().toLowerCase());
+    // Strip surrounding double quotes before matching. Rows written before the enum was serialised by
+    // VALUE hold the JSON form `"interval"`; without this they fail to match any member and fall back
+    // to CRON below, which is how a `2m` interval task ended up being validated as a cron expression.
+    // Tolerating it here heals those rows on read, so no data migration is needed.
+    const raw = String(value ?? '').trim().replace(/^"(.*)"$/, '$1').toLowerCase();
+    const found = ScheduleType.fromValue(raw);
     return (found as ScheduleType | undefined) ?? ScheduleType.CRON;
   }
 }

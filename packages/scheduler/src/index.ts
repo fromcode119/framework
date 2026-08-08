@@ -73,7 +73,9 @@ export class SchedulerService {
       name: task.name,
       plugin_slug: task.plugin_slug,
       schedule: task.schedule,
-      type: task.type,
+      // Normalised to a member so a caller-supplied string is validated once, here. The dialect
+      // stores it by VALUE (see NamingStrategy.normalizeParamValue).
+      type: ScheduleType.resolve(task.type),
       is_active,
       updated_at: new Date()
     };

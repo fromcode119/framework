@@ -97,7 +97,18 @@ export class NamingStrategy {
     if (value === null) return null;
     if (value instanceof Date) return value;
     if (Buffer.isBuffer(value)) return value;
-    if (typeof value === 'object') return JSON.stringify(value);
+    if (typeof value === 'object') {
+      // An object whose `toJSON()` yields a PRIMITIVE stands for that primitive, so store it directly.
+      // `JSON.stringify` would wrap it in quotes: a reactor `Enum` returns its value from `toJSON()`,
+      // so `ScheduleType.INTERVAL` reached the column as the literal `"interval"` rather than
+      // `interval`. Reading it back matched no member, and `ScheduleType.resolve` fell through to its
+      // CRON default — which is how a `2m` INTERVAL task came to be validated as a cron expression.
+      // Fixing it here rather than at each call site: every enum written to any column had the same
+      // fault, and a per-caller `.value` is one someone must remember every time.
+      const asJson = (value as { toJSON?: () => unknown }).toJSON?.();
+      if (asJson !== undefined && asJson !== null && typeof asJson !== 'object') return asJson;
+      return JSON.stringify(value);
+    }
     return value;
   }
 }

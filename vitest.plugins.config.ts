@@ -115,6 +115,9 @@ export default defineConfig({
           include: [
             glob('packages/core/**/*.test.ts'),
             glob('packages/database/**/*.test.ts'),
+            // `packages/scheduler` matched NO project's include glob, so it had zero collected tests -
+            // dark by omission, exactly like the api and core cases noted above.
+            glob('packages/scheduler/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },
