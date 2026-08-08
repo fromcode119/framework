@@ -176,7 +176,23 @@ export abstract class BaseDialect {
     const conditions: string[] = [];
     const values: any[] = [];
 
-    if (where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
+    // A `where` that is an object but NOT a plain object cannot be parsed on this raw-SQL path — the
+    // only supported shape is `{ column: value }` / `{ column: { gte, lte } }`. Silently skipping it
+    // drops the filter ENTIRELY and turns the query into "every row", which is the most dangerous
+    // failure this layer has: it is invisible at the call site and reads as a successful query.
+    // It shipped exactly that way — WorkflowService passed a drizzle `and(ne(...), lte(...))`
+    // expression with a STRING table name, so every scheduler tick re-published every row of every
+    // workflow-enabled collection. Fail loudly instead; drizzle expressions belong on the typed-table
+    // path, which handles them.
+    if (where && typeof where === 'object' && Object.getPrototypeOf(where) !== Object.prototype) {
+      throw new Error(
+        'Unsupported `where` for a raw-SQL (string table) query: expected a plain object such as ' +
+        '{ status: { ne: "published" } }. A drizzle expression (and/eq/ne/lte/…) is only supported ' +
+        'when the table is passed as a typed table object, not as a table NAME.'
+      );
+    }
+
+    if (where && typeof where === 'object') {
       for (const comparison of WhereClauseParser.parse(where)) {
         values.push(this.normalizeParamValue(comparison.value));
         conditions.push(
