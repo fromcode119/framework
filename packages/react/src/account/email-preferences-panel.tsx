@@ -38,8 +38,35 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
    * `/api/v1/auth/*`; these routes are on the system router, so the auth client resolved
    * `/api/v1/auth/email-preferences` and the panel rendered "HTTP 404" over an empty list.
    */
-  private get client(): any {
+  protected get client(): any {
     return new SdkClient(this.api).getSystem();
+  }
+
+  /**
+   * Which endpoint answers for this viewer. The session-scoped one here; the token-authenticated twin
+   * overrides it. These three hooks are the ONLY things that differ between the two surfaces, so the
+   * rest is inherited rather than copied.
+   */
+  protected get preferencesPath(): string {
+    return RouteConstants.SEGMENTS.EMAIL_PREFERENCES;
+  }
+
+  protected get updatePath(): string {
+    return RouteConstants.SEGMENTS.EMAIL_PREFERENCES;
+  }
+
+  protected buildUpdateBody(key: string, subscribed: boolean): Record<string, unknown> {
+    return { key, subscribed };
+  }
+
+  /**
+   * What the viewer is told when a request fails.
+   *
+   * This is an ACCOUNT screen, so the raw message is at worst confusing to someone already signed in.
+   * The public page overrides it: an exception string is never customer-facing copy.
+   */
+  protected describeError(error: any): string { // eslint-disable-line @typescript-eslint/no-explicit-any
+    return String(error?.message || error);
   }
 
   componentDidMount(): void {
@@ -51,9 +78,9 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
     this.mounted = false;
   }
 
-  private async load(): Promise<void> {
+  protected async load(): Promise<void> {
     try {
-      const data = await this.client.get(RouteConstants.SEGMENTS.EMAIL_PREFERENCES, { silent: true });
+      const data = await this.client.get(this.preferencesPath, { silent: true });
       const body = data?.data ?? data;
       if (!this.mounted) return;
       this.setState({
@@ -62,7 +89,7 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
         loading: false,
       });
     } catch (error: any) {
-      if (this.mounted) this.setState({ error: String(error?.message || error), loading: false });
+      if (this.mounted) this.setState({ error: this.describeError(error), loading: false });
     }
   }
 
@@ -72,17 +99,17 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
    * A toggle that waits for a round trip before moving reads as broken, but the server is the authority
    * on what was actually stored — so the switch flips at once and `load()` settles it.
    */
-  private async toggle(key: string, subscribed: boolean): Promise<void> {
+  protected async toggle(key: string, subscribed: boolean): Promise<void> {
     this.setState({
       saving: key,
       error: '',
       preferences: this.preferences.map((p: any) => (p?.key === key ? { ...p, subscribed } : p)),
     });
     try {
-      await this.client.post(RouteConstants.SEGMENTS.EMAIL_PREFERENCES, { key, subscribed });
+      await this.client.post(this.updatePath, this.buildUpdateBody(key, subscribed));
       await this.load();
     } catch (error: any) {
-      if (this.mounted) this.setState({ error: String(error?.message || error) });
+      if (this.mounted) this.setState({ error: this.describeError(error) });
       await this.load();
     } finally {
       if (this.mounted) this.setState({ saving: '' });

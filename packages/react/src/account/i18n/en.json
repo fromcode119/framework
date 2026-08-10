@@ -105,7 +105,8 @@
       "empty": "There are no optional emails to manage.",
       "on": "On",
       "off": "Off",
-      "transactionalNote": "Order confirmations, receipts and account security emails are always sent and cannot be switched off."
+      "transactionalNote": "Order confirmations, receipts and account security emails are always sent and cannot be switched off.",
+      "linkInvalid": "This link is no longer valid. It may have expired, or it may be incomplete — please open the most recent email we sent you."
     }
   }
 }
