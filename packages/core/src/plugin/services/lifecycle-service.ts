@@ -326,7 +326,7 @@ export class LifecycleService {
       await this.activation.autoDiscoverCollections(plugin, ctx);
       await this.activation.syncPluginCollections(slug);
       await this.activation.runSeeds(slug);
-      await this.activation.materializeDefaultPages();
+      await this.activation.materializeDefaultPages(slug);
 
       plugin.state = PluginState.ACTIVE;
       plugin.error = undefined;

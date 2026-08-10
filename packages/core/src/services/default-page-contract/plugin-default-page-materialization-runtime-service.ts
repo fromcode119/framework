@@ -35,16 +35,12 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     return 'PluginDefaultPageMaterializationRuntimeService';
   }
 
-  async materialize(): Promise<IPluginDefaultPageContractMaterializationExecutionReport | null> {
-    const associationSnapshot = await this.associationStore.loadAssociationSnapshot();
-    const overrides = await this.loadOverrides();
-    const preliminaryContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
-      overrides,
-    });
-    const resolvedContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
-      overrides,
-      siteState: this.associationStore.createSiteStateSnapshot(associationSnapshot, preliminaryContracts),
-    });
+  /**
+   * @param requiredRouteOwnerPluginSlug the plugin this pass is materializing for. Only ITS required
+   * routes may throw; anyone else's failures are reported and stepped over. Omit it to assert every
+   * required route — for a caller that treats the throw as a report rather than as its own failure.
+   */
+  async materialize(requiredRouteOwnerPluginSlug?: string): Promise<IPluginDefaultPageContractMaterializationExecutionReport | null> {
     const pagesEntry = this.findPagesCollectionEntry();
 
     if (!pagesEntry) {
@@ -53,6 +49,19 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     }
 
     const existingPages = await this.loadExistingPages(pagesEntry.collection);
+    // Reconcile the association snapshot with the pages that actually exist BEFORE anything reads it:
+    // a claim on a deleted page otherwise blocks its own contract forever.
+    const associationSnapshot = await this.associationStore.pruneAssociationsForMissingPages(
+      existingPages.map((page) => page.id).filter((pageId) => pageId !== undefined && pageId !== null),
+    );
+    const overrides = await this.loadOverrides();
+    const preliminaryContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
+      overrides,
+    });
+    const resolvedContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
+      overrides,
+      siteState: this.associationStore.createSiteStateSnapshot(associationSnapshot, preliminaryContracts),
+    });
     const plan = CoreServices.getInstance().defaultPageMaterialization.createPlan({
       resolvedContracts,
       existingPages,
@@ -75,9 +84,27 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     });
 
     await this.reconcileMaterializedPageMetadata(pagesEntry.collection, report, resolvedContracts);
-    this.requiredRouteAssertion.assertRequiredRouteReconciliation(report, resolvedContracts);
+    this.reportRequiredRouteFailures(report, resolvedContracts);
+    this.requiredRouteAssertion.assertRequiredRouteReconciliation(report, resolvedContracts, requiredRouteOwnerPluginSlug);
 
     return report;
+  }
+
+  /**
+   * Every required route that failed, logged on every pass — including the ones this pass will not
+   * throw for. Stepping over another plugin's broken route must never mean hiding it.
+   */
+  private reportRequiredRouteFailures(
+    report: IPluginDefaultPageContractMaterializationExecutionReport,
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
+  ): void {
+    const failures = this.requiredRouteAssertion.collectRequiredRouteFailures(report, resolvedContracts);
+
+    if (!failures.length) {
+      return;
+    }
+
+    this.error(`Required route reconciliation failed: ${failures.join('; ')}`);
   }
 
   static isRequiredRouteFailure(error: unknown): boolean {

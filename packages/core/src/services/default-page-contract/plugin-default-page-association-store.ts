@@ -1,5 +1,6 @@
 import { SystemConstants } from '@core/constants/system.constants';
 import type { IPluginDefaultPageContractBackfillAssociationSnapshot } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-snapshot.interface';
+import type { IPluginDefaultPageContractBackfillAssociationSnapshotEntry } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-snapshot-entry.interface';
 import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
 import { BaseService } from '@core/services/base-service';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
@@ -46,6 +47,49 @@ export class PluginDefaultPageAssociationStore extends BaseService {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Forgets associations whose page is gone, and returns the snapshot that is actually true.
+   *
+   * An association is a claim about a row in the pages table. Delete that row and the claim outlives
+   * it: the contract stays "already associated" to an id nothing can match, every later pass reports
+   * `contract-already-associated-to-different-page`, and — because a required route that fails takes
+   * the plugin's registration with it — the site 404s until someone hand-edits `_system_meta`. That
+   * happened, twice, and only a manual DB edit brought the storefront back.
+   *
+   * Both directions are pruned. `createMaps` rebuilds a canonical→page mapping out of a `byPageId`
+   * entry alone, so a half-pruned snapshot resurrects the very claim this removes.
+   */
+  async pruneAssociationsForMissingPages(existingPageIds: Array<number | string>): Promise<IPluginDefaultPageContractBackfillAssociationSnapshot> {
+    const snapshot = await this.loadAssociationSnapshot();
+    const livePageIds = new Set(existingPageIds.map((pageId) => String(pageId)));
+    const byCanonicalKey = this.retainLivePageEntries(snapshot.byCanonicalKey, livePageIds);
+    const byPageId = this.retainLivePageEntries(snapshot.byPageId, livePageIds);
+    const removed = this.countEntries(snapshot) - (Object.keys(byCanonicalKey).length + Object.keys(byPageId).length);
+
+    if (!removed) {
+      return snapshot;
+    }
+
+    const nextSnapshot: IPluginDefaultPageContractBackfillAssociationSnapshot = { byCanonicalKey, byPageId };
+    await this.saveAssociationSnapshot(nextSnapshot);
+    this.warn(`Dropped ${removed} default page association entr${removed === 1 ? 'y' : 'ies'} pointing at pages that no longer exist.`);
+
+    return nextSnapshot;
+  }
+
+  private retainLivePageEntries(
+    entries: Record<string, IPluginDefaultPageContractBackfillAssociationSnapshotEntry> | undefined,
+    livePageIds: Set<string>,
+  ): Record<string, IPluginDefaultPageContractBackfillAssociationSnapshotEntry> {
+    return Object.fromEntries(
+      Object.entries(entries || {}).filter(([, entry]) => livePageIds.has(String(entry?.pageId))),
+    );
+  }
+
+  private countEntries(snapshot: IPluginDefaultPageContractBackfillAssociationSnapshot): number {
+    return Object.keys(snapshot.byCanonicalKey || {}).length + Object.keys(snapshot.byPageId || {}).length;
   }
 
   createSiteStateSnapshot(

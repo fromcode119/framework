@@ -77,6 +77,7 @@ export { PublicRouteConstants } from '@core/constants/public-route.constants';
 
 // ── Utility Classes ───────────────────────────────────────────────────────────
 export { CoercionUtils } from '@core/coercion-utils';
+export { ContentPreviewAccessUtils } from '@core/content-preview-access-utils';
 export { StringUtils } from '@core/string-utils';
 export { NumberUtils } from '@core/number-utils';
 export { MeasurementSystemUtils } from '@core/measurement-system-utils';

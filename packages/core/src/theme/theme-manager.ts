@@ -281,7 +281,11 @@ export class ThemeManager {
       await service.materialize();
     } catch (error) {
       if (PluginDefaultPageMaterializationRuntimeService.isRequiredRouteFailure(error)) {
-        throw error;
+        // A theme pass belongs to no single plugin, so it has no plugin to fail. Rethrowing here
+        // aborted theme activation over a route some unrelated plugin declared, and at boot it left
+        // the install with no active theme at all. Report it and let the theme apply.
+        this.logger.error(`Default page materialization reported unreconciled required routes after theme change: ${(error as Error).message}`);
+        return;
       }
       this.logger.warn(`Default page materialization failed after theme change: ${(error as Error).message}`);
     }

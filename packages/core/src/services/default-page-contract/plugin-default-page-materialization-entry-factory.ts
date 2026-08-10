@@ -131,12 +131,22 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
     );
   }
 
+  /**
+   * Match-time candidates. The `slug` fed in here is the SAME value {@link createCreatePayload} writes,
+   * resolved by the one derivation both sides share, so a page this factory created is always found
+   * again by the factory that looks for it.
+   *
+   * Passing `contract.effectiveSlug` here instead only agreed with what was created by coincidence —
+   * the two happened to normalize to the same string. Every past change to the derivation broke that
+   * coincidence silently: the pass that ran after the change did not recognise the page the pass before
+   * it had created, planned CREATE_MISSING, and produced a second page on the same permalink.
+   */
   private buildLookupCandidates(contract: IResolvedPluginDefaultPageContract): string[] {
     const baseCandidates = [...contract.effectiveAliases, ...contract.adoptionHints];
 
     return this.seedPageService.buildPageLookupCandidates(baseCandidates, {
       customPermalink: contract.effectiveSlug,
-      slug: contract.effectiveSlug,
+      slug: this.resolveSingletonDocumentSlug(contract.effectiveSlug),
     });
   }
 
@@ -273,24 +283,22 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
   }
 
   /**
-   * The internal page slug for a singleton route, derived from the WHOLE path.
+   * The internal page slug for a singleton route: the route path, minus its leading slash.
    *
-   * This used to take only the last segment, which made the slug a function of one word: any two
-   * contracts ending in the same word claimed the same page. `/reviews/unsubscribe` and
-   * `/newsletter/unsubscribe` both produced `unsubscribe`, so the second plugin to register latched
-   * onto the first one's page, and the resulting reconciliation failure hard-failed cms and finance
-   * and cascaded to every plugin depending on them. It was already latent for mlm, whose
-   * `/partners/privacy` claimed the bare slug `privacy`.
+   * A page slug MAY contain `/`, and for a nested route it must. The separator has to be the one the
+   * router resolves a request path with, and that is the slash — any other join (the last segment
+   * alone, or the segments hyphenated) produces a slug no request path can reach, so the page 404s
+   * even though it exists and is published. Taking the last segment alone is worse still: it makes the
+   * slug a function of one word, so any two contracts whose routes end in the same word claim the same
+   * page.
    *
-   * The separator is a SLASH, so the slug is the permalink path minus its leading slash. That is how
-   * every nested page in a live install is already stored — `partners/privacy`, `cosmic-box/novolunie`,
-   * `numerology/monthly` — and the router matches a request path against it directly. Joining with a
-   * hyphen instead produced `reviews-unsubscribe` for `/reviews/unsubscribe`, which matches no request
-   * path at all, and the page 404'd even though it existed and was published.
+   * Single-segment routes are unchanged, and the public URL never depends on this either way —
+   * `customPermalink` carries the real path, and a page is adopted by permalink (priority 0) ahead of
+   * slug, so nothing already materialized moves.
    *
-   * Single-segment routes — `/shop`, `/contact`, the overwhelming majority — are unchanged, and the
-   * public URL is never affected either way: `customPermalink` carries the real path, and existing
-   * pages are adopted by permalink (priority 0) ahead of slug, so nothing already materialized moves.
+   * This is the ONE derivation. {@link createCreatePayload} writes it and {@link buildLookupCandidates}
+   * searches for it, so the two cannot drift apart — changing it changes both sides at once. Nothing
+   * else may re-derive a page slug from a route path.
    */
   private resolveSingletonDocumentSlug(value: string): string {
     const segments = String(value || '').trim().split('?')[0].split('#')[0].split('/').filter(Boolean);

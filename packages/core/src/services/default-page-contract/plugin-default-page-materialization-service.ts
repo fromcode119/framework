@@ -26,7 +26,7 @@ export class PluginDefaultPageMaterializationService extends BaseService {
       .slice()
       .sort((left, right) => left.canonicalKey.localeCompare(right.canonicalKey))
       .map((contract) => this.entryFactory.createEntry(contract, pages));
-    const entries = this.resolveClaimCollisions(provisionalEntries);
+    const entries = this.resolveCreateCollisions(this.resolveClaimCollisions(provisionalEntries));
 
     return {
       entries,
@@ -94,6 +94,58 @@ export class PluginDefaultPageMaterializationService extends BaseService {
         reasons: this.appendReason(entry.reasons, 'matched-page-claimed-by-multiple-contracts'),
       };
     });
+  }
+
+  /**
+   * Two contracts planning a NEW page on one custom permalink is a conflict, not a race to insert.
+   *
+   * {@link resolveClaimCollisions} above only covers contracts adopting the same EXISTING page. When no
+   * page exists yet, both entries are CREATE_MISSING and each is individually valid, so the executor
+   * would create the first page and then a second one on the same permalink — two pages the router
+   * cannot tell apart, and an association snapshot that can only point at one of them. Fail both
+   * closed instead and name the collision; whichever contract should own the route says so by not
+   * colliding.
+   */
+  private resolveCreateCollisions(
+    entries: IPluginDefaultPageContractMaterializationPlanEntry[],
+  ): IPluginDefaultPageContractMaterializationPlanEntry[] {
+    const permalinkClaims = new Map<string, number>();
+
+    for (const entry of entries) {
+      const claimKey = this.getCreatePermalinkClaimKey(entry);
+      if (!claimKey) {
+        continue;
+      }
+
+      permalinkClaims.set(claimKey, (permalinkClaims.get(claimKey) || 0) + 1);
+    }
+
+    return entries.map((entry) => {
+      const claimKey = this.getCreatePermalinkClaimKey(entry);
+      if (!claimKey || (permalinkClaims.get(claimKey) || 0) < 2) {
+        return entry;
+      }
+
+      return {
+        ...entry,
+        action: PluginDefaultPageContractMaterializationAction.AMBIGUOUS,
+        status: PluginDefaultPageContractMaterializationStatus.AMBIGUOUS,
+        matchedPageId: undefined,
+        createPayload: undefined,
+        reasons: this.appendReason(entry.reasons, 'custom-permalink-claimed-by-multiple-contracts'),
+      };
+    });
+  }
+
+  private getCreatePermalinkClaimKey(entry: IPluginDefaultPageContractMaterializationPlanEntry): string {
+    if (entry.action !== PluginDefaultPageContractMaterializationAction.CREATE_MISSING || !entry.createPayload) {
+      return '';
+    }
+
+    return String(entry.createPayload.customPermalink || '')
+      .trim()
+      .replace(/\/+$/, '')
+      .toLowerCase();
   }
 
   private appendReason(existingReasons: string[], nextReason: string): string[] {

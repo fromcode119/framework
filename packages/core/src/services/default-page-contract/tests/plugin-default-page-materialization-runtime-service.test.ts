@@ -242,6 +242,79 @@ describe('PluginDefaultPageMaterializationRuntimeService', () => {
     );
   });
 
+  it('re-associates a contract whose associated page no longer exists', async () => {
+    const pages: any[] = [{ id: 7, slug: 'catalog', customPermalink: '/catalog', title: 'Catalog', status: 'published' }];
+    let metaValue = JSON.stringify({
+      byCanonicalKey: { [INDEX_CANONICAL_KEY]: { canonicalKey: INDEX_CANONICAL_KEY, pageId: 99 } },
+      byPageId: { '99': { canonicalKey: INDEX_CANONICAL_KEY, pageId: 99 } },
+    });
+    const manager = createManager(pages, () => metaValue, (next) => { metaValue = next; });
+
+    registerCatalogIndexContract();
+
+    const service = new PluginDefaultPageMaterializationRuntimeService(manager as any);
+    const report = await service.materialize();
+
+    expect(report?.entries).toEqual([
+      expect.objectContaining({
+        canonicalKey: INDEX_CANONICAL_KEY,
+        executionOutcome: PluginDefaultPageContractMaterializationExecutionOutcome.APPLIED,
+        matchedPageId: 7,
+      }),
+    ]);
+    expect(pages).toHaveLength(1);
+    expect(JSON.parse(metaValue)).toEqual({
+      byCanonicalKey: { [INDEX_CANONICAL_KEY]: { canonicalKey: INDEX_CANONICAL_KEY, pageId: 7 } },
+      byPageId: { '7': { canonicalKey: INDEX_CANONICAL_KEY, pageId: 7 } },
+    });
+  });
+
+  it('drops a one-sided page association left behind by a deleted page', async () => {
+    const pages: any[] = [{ id: 7, slug: 'catalog', customPermalink: '/catalog', title: 'Catalog', status: 'published' }];
+    let metaValue = JSON.stringify({
+      byCanonicalKey: {},
+      byPageId: { '99': { canonicalKey: INDEX_CANONICAL_KEY, pageId: 99 } },
+    });
+    const manager = createManager(pages, () => metaValue, (next) => { metaValue = next; });
+
+    registerCatalogIndexContract();
+
+    const service = new PluginDefaultPageMaterializationRuntimeService(manager as any);
+    const report = await service.materialize();
+
+    expect(report?.entries).toEqual([
+      expect.objectContaining({
+        canonicalKey: INDEX_CANONICAL_KEY,
+        executionOutcome: PluginDefaultPageContractMaterializationExecutionOutcome.APPLIED,
+        matchedPageId: 7,
+      }),
+    ]);
+    expect(JSON.parse(metaValue).byPageId).toEqual({
+      '7': { canonicalKey: INDEX_CANONICAL_KEY, pageId: 7 },
+    });
+  });
+
+  it('does not fail one plugin for another plugin s broken required route', async () => {
+    const pages: any[] = [];
+    let metaValue = '';
+    const manager = createManager(pages, () => metaValue, (next) => { metaValue = next; });
+
+    const service = new PluginDefaultPageMaterializationRuntimeService(
+      manager as any,
+      async () => [{
+        contract: { namespace: TEST_NAMESPACE, pluginSlug: TEST_PLUGIN, key: 'catalog-index' },
+        install: false,
+      }],
+    );
+
+    registerCatalogIndexContract();
+
+    await expect(service.materialize('unrelated-plugin')).resolves.not.toBeNull();
+    await expect(service.materialize(TEST_PLUGIN)).rejects.toThrow(
+      'Required route reconciliation failed: org.synthetic:catalog-module:catalog-index (install-disabled, contract-not-ready)',
+    );
+  });
+
   it('does not throw when the pages collection is unavailable during runtime materialization', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const manager = createManagerWithoutPagesCollection(() => '', () => undefined);
@@ -275,6 +348,27 @@ describe('PluginDefaultPageMaterializationRuntimeService', () => {
     warnSpy.mockRestore();
   });
 });
+
+function registerCatalogIndexContract(): void {
+  CoreServices.getInstance().defaultPageContracts.register({
+    namespace: TEST_NAMESPACE,
+    pluginSlug: TEST_PLUGIN,
+    contracts: [{
+      key: 'catalog-index',
+      capability: 'catalog',
+      kind: PluginDefaultPageContractKind.INDEX,
+      recipe: 'catalog-module.catalog-index',
+      defaultSlug: '/catalog',
+      title: 'Catalog',
+      themeLayout: 'CatalogLayout',
+      materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
+      required: true,
+      aliases: [],
+      adoptionHints: [],
+      dependencies: [],
+    }],
+  });
+}
 
 function createManager(pages: any[], getMetaValue: () => string, setMetaValue: (value: string) => void) {
   return {

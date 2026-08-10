@@ -19,14 +19,41 @@ export class PluginDefaultPageRequiredRouteAssertion {
     return message.includes(PluginDefaultPageRequiredRouteAssertion.REQUIRED_ROUTE_FAILURE_LABEL);
   }
 
+  /**
+   * Every required route that did not reconcile, as formatted failure descriptions.
+   *
+   * Pass `ownerPluginSlug` to narrow the result to the routes that plugin declared. A caller
+   * materializing on behalf of one plugin only gets to fail for that plugin's own routes.
+   */
+  collectRequiredRouteFailures(
+    report: IPluginDefaultPageContractMaterializationExecutionReport | null,
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
+    ownerPluginSlug?: string,
+  ): string[] {
+    const reportByCanonicalKey = new Map((report?.entries || []).map((entry) => [entry.canonicalKey, entry]));
+    const owner = String(ownerPluginSlug || '').trim();
+
+    return resolvedContracts
+      .filter((contract) => contract.required)
+      .filter((contract) => !owner || contract.pluginSlug === owner)
+      .flatMap((contract) => this.getRequiredRouteFailures(contract, reportByCanonicalKey, report));
+  }
+
+  /**
+   * Throws for the required routes DECLARED BY `ownerPluginSlug` that failed to reconcile.
+   *
+   * The owner filter is the whole point. This assertion runs once per plugin activation, and a throw
+   * aborts that activation — so an unscoped assertion made one broken route fail the registration of
+   * every plugin activated after it, and of everything depending on those, until nothing served a
+   * route. A plugin can only be failed by its own contract now; a broken route belonging to someone
+   * else is the caller's to report, not to die on.
+   */
   assertRequiredRouteReconciliation(
     report: IPluginDefaultPageContractMaterializationExecutionReport | null,
     resolvedContracts: IResolvedPluginDefaultPageContract[],
+    ownerPluginSlug?: string,
   ): void {
-    const reportByCanonicalKey = new Map((report?.entries || []).map((entry) => [entry.canonicalKey, entry]));
-    const failures = resolvedContracts
-      .filter((contract) => contract.required)
-      .flatMap((contract) => this.getRequiredRouteFailures(contract, reportByCanonicalKey, report));
+    const failures = this.collectRequiredRouteFailures(report, resolvedContracts, ownerPluginSlug);
 
     if (!failures.length) {
       return;

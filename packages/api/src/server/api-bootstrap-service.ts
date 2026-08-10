@@ -1,11 +1,27 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { HotReloadService, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemUpdateService, ThemeManager } from '@fromcode119/core';
+import { HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemUpdateService, ThemeManager } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 
 export class ApiBootstrapService {
   private logger = new Logger({ namespace: 'api-bootstrap-service' });
+
+  /**
+   * Set the i18n default locale from `_system_meta`, the store admin Settings → Localization writes.
+   * Silent when unset or unreadable: an unconfigured locale must not stop the server booting.
+   */
+  private static async seedPlatformLocale(manager: PluginManager): Promise<void> {
+    try {
+      const db = (manager as any).db; // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (!db || !(await db.tableExists(SystemConstants.TABLE.META))) return;
+      const row = await db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.DEFAULT_LOCALE });
+      const locale = LocalizationUtils.normalizeLocaleCode(String(row?.value || ''), { short: true });
+      if (locale) (manager as any).i18n.setLocale(locale); // eslint-disable-line @typescript-eslint/no-explicit-any
+    } catch {
+      // A locale that cannot be read is not a reason to fail boot.
+    }
+  }
 
   async bootstrap(
     createServer: (manager: PluginManager, themeManager: ThemeManager, auth: AuthManager) => any,
@@ -52,6 +68,17 @@ export class ApiBootstrapService {
 
     const auth = new AuthManager(jwtSecret);
     manager.setAuth(auth);
+
+    // Seed the platform locale BEFORE plugins register.
+    //
+    // `server.initialize()` seeds it too, but that runs AFTER `discoverPlugins()` below — so anything a
+    // plugin resolves at REGISTRATION time saw the env default instead of the operator's choice. A
+    // default-page contract's title is resolved exactly there, so a Bulgarian store had English titles
+    // written into its CMS pages while admin Settings → Localization plainly said `bg`.
+    //
+    // Runtime reads (an email subject at send time, an invoice at render time) were never affected —
+    // they run long after boot — which is why this stayed invisible.
+    await ApiBootstrapService.seedPlatformLocale(manager);
 
     try {
       await manager.discoverPlugins();

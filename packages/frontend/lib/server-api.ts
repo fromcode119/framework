@@ -1,4 +1,4 @@
-import { SystemConstants, ApiVersionUtils } from '@fromcode119/core/client';
+import { SystemConstants, ApiVersionUtils, CookieConstants } from '@fromcode119/core/client';
 import { ApplicationUrlUtils } from '@fromcode119/core/client';
 import { cookies } from 'next/headers';
 import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
@@ -118,12 +118,30 @@ export class ServerApiUtils {
    * the visitor's identity. Without this the API sees every SSR fetch as anonymous,
    * which makes members-only gated pages render the paywall even for entitled members.
    * Safe outside a request scope: `cookies()` throws there and we forward nothing.
+   *
+   * `forwardOperatorSession` additionally presents the OPERATOR's admin session (`fc_token`, set on
+   * the shared cookie domain, so the browser already sends it here) as a Bearer token. It exists for
+   * ONE caller: a `?preview=1` resolve. The admin's "Preview" button is a plain navigation to this
+   * storefront, and the admin and storefront sessions are deliberately separate cookies — so without
+   * this the API sees an anonymous request and, now that a query parameter no longer grants preview,
+   * would answer 404 for the operator's own draft. The API's auth middleware accepts a Bearer token
+   * on non-admin surfaces, and preview remains gated on that token's roles/permissions
+   * (`ContentPreviewAccessUtils`), so forwarding it grants nothing a plain visitor's token would not.
    */
-  static async buildForwardedAuthHeaders(): Promise<Record<string, string>> {
+  static async buildForwardedAuthHeaders(
+    options: { forwardOperatorSession?: boolean } = {},
+  ): Promise<Record<string, string>> {
     try {
       const store = await cookies();
-      const token = store.get('userToken')?.value;
-      if (token) return { cookie: `userToken=${token}` };
+      const headers: Record<string, string> = {};
+      const token = store.get(CookieConstants.CLIENT_AUTH_TOKEN)?.value;
+      if (token) headers.cookie = `${CookieConstants.CLIENT_AUTH_TOKEN}=${token}`;
+
+      if (options.forwardOperatorSession) {
+        const operatorToken = store.get(CookieConstants.AUTH_TOKEN)?.value;
+        if (operatorToken) headers.authorization = `Bearer ${operatorToken}`;
+      }
+      return headers;
     } catch {
       // No request scope (e.g. build-time) — nothing to forward.
     }
@@ -190,7 +208,11 @@ export class ServerApiUtils {
     return (await ServerApiUtils.serverFetchResponseOutcome(path, requestInit)).value;
   }
 
-  static async serverFetchResponseOutcome(path: string, requestInit?: RequestInit): Promise<ServerFetchOutcome<Response>> {
+  static async serverFetchResponseOutcome(
+    path: string,
+    requestInit?: RequestInit,
+    options: { forwardOperatorSession?: boolean } = {},
+  ): Promise<ServerFetchOutcome<Response>> {
     const requestPath = ServerApiUtils.AdminUrlUtils(path);
     if (!requestPath) {
       if (ServerApiUtils.DEBUG_SERVER_FETCH) {
@@ -200,7 +222,7 @@ export class ServerApiUtils {
     }
 
     const prefixes = ServerApiUtils.getServerApiPrefixes();
-    const forwardedHeaders = await ServerApiUtils.buildForwardedAuthHeaders();
+    const forwardedHeaders = await ServerApiUtils.buildForwardedAuthHeaders(options);
     let lastError: unknown = null;
     let lastResponse: Response | null = null;
 

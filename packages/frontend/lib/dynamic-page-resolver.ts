@@ -27,7 +27,14 @@ export class DynamicPageResolver {
    */
   private static readonly resolveFetchCache = cache(async (queryString: string): Promise<Record<string, any> | null> => {
     const path = ServerApiUtils.buildSystemResolvePath(queryString);
-    const response = (await ServerApiUtils.serverFetchResponseOutcome(path)).valueOrThrow(path);
+    // A preview navigation is the operator asking to see their own draft, so this one fetch also
+    // presents their admin session — the API decides from that identity whether unpublished content
+    // is readable. The `preview=1` in this query string is the FRONTEND's own marker (it drives the
+    // decision below and keeps this memo key distinct); the API deliberately ignores it, and must
+    // keep ignoring it — reading it back there is the exact hole that let anyone read drafts.
+    const forwardOperatorSession = new URLSearchParams(queryString).get('preview') === '1';
+    const response = (await ServerApiUtils.serverFetchResponseOutcome(path, undefined, { forwardOperatorSession }))
+      .valueOrThrow(path);
     if (!response || !response.ok) return null;
     return await response.json() as Record<string, any>;
   });

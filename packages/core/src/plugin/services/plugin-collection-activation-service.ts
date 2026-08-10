@@ -40,7 +40,14 @@ export class PluginCollectionActivationService {
     }
   }
 
-  public async materializeDefaultPages(): Promise<void> {
+  /**
+   * @param ownerPluginSlug the plugin being activated. Its own required routes still fail it — that is
+   * the guarantee the `required` flag buys. Another plugin's broken route is logged and stepped over:
+   * activation runs this for every plugin in turn, so rethrowing an unrelated failure took down the
+   * registration of every plugin after it and left the site serving nothing. Omit the slug for a pass
+   * that belongs to no single plugin; those failures are reported, never thrown.
+   */
+  public async materializeDefaultPages(ownerPluginSlug?: string): Promise<void> {
     try {
       const service = new PluginDefaultPageMaterializationRuntimeService(
         this.manager,
@@ -48,10 +55,14 @@ export class PluginCollectionActivationService {
           return await (this.manager.themeManager as any)?.getActiveThemeDefaultPageContractOverrides?.() || [];
         },
       );
-      await service.materialize();
+      await service.materialize(ownerPluginSlug);
     } catch (error: any) {
       if (PluginDefaultPageMaterializationRuntimeService.isRequiredRouteFailure(error)) {
-        throw error;
+        if (ownerPluginSlug) {
+          throw error;
+        }
+        this.logger.error(`Default page materialization reported unreconciled required routes: ${error?.message || error}`);
+        return;
       }
       this.logger.warn(`Default page materialization failed: ${error?.message || error}`);
     }

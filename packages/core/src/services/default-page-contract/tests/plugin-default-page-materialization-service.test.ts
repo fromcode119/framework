@@ -120,6 +120,79 @@ describe('PluginDefaultPageMaterializationService', () => {
     });
   });
 
+  it('offers the slug it would create as a lookup candidate for a nested route', () => {
+    const [entry] = service.createPlan({
+      resolvedContracts: [createResolvedContract({
+        canonicalKey: 'org.synthetic:broadcast-module:newsletter-unsubscribe',
+        pluginSlug: 'broadcast-module',
+        key: 'newsletter-unsubscribe',
+        effectiveSlug: '/newsletter/unsubscribe',
+        aliases: [],
+        effectiveAliases: [],
+        adoptionHints: [],
+      })],
+      existingPages: [],
+    }).entries;
+
+    expect(entry.action).toBe(PluginDefaultPageContractMaterializationAction.CREATE_MISSING);
+    expect(entry.createPayload?.slug).toBe('newsletter/unsubscribe');
+    expect(entry.lookupCandidates).toContain(entry.createPayload?.slug);
+  });
+
+  it('adopts a page whose only identifying value is the slug the contract would create', () => {
+    const [entry] = service.createPlan({
+      resolvedContracts: [createResolvedContract({
+        canonicalKey: 'org.synthetic:broadcast-module:newsletter-unsubscribe',
+        pluginSlug: 'broadcast-module',
+        key: 'newsletter-unsubscribe',
+        effectiveSlug: '/newsletter/unsubscribe',
+        aliases: [],
+        effectiveAliases: [],
+        adoptionHints: [],
+      })],
+      existingPages: [{ id: 54, slug: 'newsletter/unsubscribe' }],
+    }).entries;
+
+    expect(entry.action).toBe(PluginDefaultPageContractMaterializationAction.ADOPT_EXISTING);
+    expect(entry.matchedPageId).toBe(54);
+  });
+
+  it('fails closed instead of creating two pages on one custom permalink', () => {
+    const plan = service.createPlan({
+      resolvedContracts: [
+        createResolvedContract({ effectiveSlug: '/unsubscribe', aliases: [], effectiveAliases: [], adoptionHints: [] }),
+        createResolvedContract({
+          canonicalKey: 'org.synthetic:contact-module:contact-page',
+          pluginSlug: 'contact-module',
+          key: 'contact-page',
+          effectiveSlug: '/unsubscribe',
+          aliases: [],
+          effectiveAliases: [],
+          adoptionHints: [],
+        }),
+      ],
+      existingPages: [],
+    });
+
+    expect(plan.entries).toEqual([
+      expect.objectContaining({
+        canonicalKey: CATALOG_CANONICAL_KEY,
+        action: PluginDefaultPageContractMaterializationAction.AMBIGUOUS,
+        status: PluginDefaultPageContractMaterializationStatus.AMBIGUOUS,
+        createPayload: undefined,
+        reasons: ['no-existing-page-match', 'custom-permalink-claimed-by-multiple-contracts'],
+      }),
+      expect.objectContaining({
+        canonicalKey: 'org.synthetic:contact-module:contact-page',
+        action: PluginDefaultPageContractMaterializationAction.AMBIGUOUS,
+        status: PluginDefaultPageContractMaterializationStatus.AMBIGUOUS,
+        createPayload: undefined,
+        reasons: ['no-existing-page-match', 'custom-permalink-claimed-by-multiple-contracts'],
+      }),
+    ]);
+    expect(plan.summary.byAction['create-missing']).toBe(0);
+  });
+
   it('marks a contract ambiguous when multiple pages match the same best-priority candidates', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [createResolvedContract()],
