@@ -248,7 +248,7 @@ describe('PluginDefaultPageMaterializationService', () => {
    *
    * It was already latent for mlm, whose `/partners/privacy` claimed the bare slug `privacy`.
    */
-  it('derives a nested singleton slug from the whole path, not the last segment', () => {
+  it('derives a nested singleton slug as the whole path, so it matches the request path', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [
         createResolvedContract({
@@ -262,9 +262,11 @@ describe('PluginDefaultPageMaterializationService', () => {
     }).entries;
 
     expect(entry.action).toBe(PluginDefaultPageContractMaterializationAction.CREATE_MISSING);
-    expect(entry.createPayload?.slug).toBe('reviews-unsubscribe');
-    // The public URL is unaffected — only the internal page slug is disambiguated.
+    expect(entry.createPayload?.slug).toBe('reviews/unsubscribe');
     expect(entry.createPayload?.customPermalink).toBe('/reviews/unsubscribe');
+    // The router matches a request path against the slug, so the two must agree apart from the
+    // leading slash. A hyphenated slug matches no path and the page 404s while looking healthy.
+    expect(`/${entry.createPayload?.slug}`).toBe(entry.createPayload?.customPermalink);
   });
 
   it('gives two contracts ending in the same word distinct slugs', () => {
@@ -287,7 +289,7 @@ describe('PluginDefaultPageMaterializationService', () => {
     });
 
     const slugs = entries.map((entry) => entry.createPayload?.slug);
-    expect(slugs).toEqual(['reviews-unsubscribe', 'newsletter-unsubscribe']);
+    expect(slugs).toEqual(['reviews/unsubscribe', 'newsletter/unsubscribe']);
     expect(new Set(slugs).size).toBe(2);
   });
 

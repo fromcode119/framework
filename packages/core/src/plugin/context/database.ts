@@ -5,6 +5,7 @@ import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { EnumValueCoercion } from '@core/plugin/context/enum-value-coercion';
+import { LocalizedReadResolver } from '@core/plugin/context/localized-read-resolver';
 import { RateLimiter } from '@core/security/rate-limiter';
 import { SystemConstants } from '@core/constants/system.constants';
 
@@ -29,6 +30,17 @@ export class DatabaseContextProxy {
     if (result == null) return result;
     if (Array.isArray(result)) return result.map((row) => NamingStrategy.denormalizeRecord(row));
     return NamingStrategy.denormalizeRecord(result);
+  }
+
+  /**
+   * Everything a row must pass through on its way out to plugin code: names denormalized to the
+   * schema's camelCase, THEN `localized: true` fields collapsed to the request's locale.
+   *
+   * The order is load-bearing — {@link LocalizedReadResolver} looks fields up by their schema name, so
+   * it has to run after the snake_case keys have been converted.
+   */
+  private static postProcessResult(result: any, table: unknown, manager: IPluginManagerInterface): any { // eslint-disable-line @typescript-eslint/no-explicit-any
+    return LocalizedReadResolver.resolveResult(DatabaseContextProxy.denormalizeResult(result), table, manager);
   }
 
   /**
@@ -129,12 +141,13 @@ export class DatabaseContextProxy {
               // passed in a payload or a `where` would reach the driver as an object. Coerced here —
               // the one point every plugin DB call passes through — rather than at ~1,500 call sites
               // that tsc cannot police. See EnumValueCoercion.
+              const table = args[0];
               const out = fn.apply(this, EnumValueCoercion.coerceArguments(args));
               if (shouldDenormalize) {
                 if (out && typeof out.then === 'function') {
-                  return out.then(DatabaseContextProxy.denormalizeResult);
+                  return out.then((rows: any) => DatabaseContextProxy.postProcessResult(rows, table, manager));
                 }
-                return DatabaseContextProxy.denormalizeResult(out);
+                return DatabaseContextProxy.postProcessResult(out, table, manager);
               }
               return out;
             };

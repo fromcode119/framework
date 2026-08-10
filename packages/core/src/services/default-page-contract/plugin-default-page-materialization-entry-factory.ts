@@ -196,6 +196,10 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
       key: contract.key,
       slug: resolvedSlug,
       customPermalink: contract.effectiveSlug,
+      // NOTE: `disablePermalink` is deliberately NOT set here. See `buildPagePayload` in the
+      // materialization runtime service — writing the boolean `false` landed in the TEXT column as
+      // "0.0", which is truthy as a string, so every page this materializer created was served as a
+      // 404 while looking perfectly healthy in the admin. The column already defaults to "0".
       aliases: [...contract.effectiveAliases],
       recipe: contract.effectiveRecipe,
       title: contract.effectiveTitle,
@@ -278,12 +282,18 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
    * and cascaded to every plugin depending on them. It was already latent for mlm, whose
    * `/partners/privacy` claimed the bare slug `privacy`.
    *
+   * The separator is a SLASH, so the slug is the permalink path minus its leading slash. That is how
+   * every nested page in a live install is already stored — `partners/privacy`, `cosmic-box/novolunie`,
+   * `numerology/monthly` — and the router matches a request path against it directly. Joining with a
+   * hyphen instead produced `reviews-unsubscribe` for `/reviews/unsubscribe`, which matches no request
+   * path at all, and the page 404'd even though it existed and was published.
+   *
    * Single-segment routes — `/shop`, `/contact`, the overwhelming majority — are unchanged, and the
    * public URL is never affected either way: `customPermalink` carries the real path, and existing
    * pages are adopted by permalink (priority 0) ahead of slug, so nothing already materialized moves.
    */
   private resolveSingletonDocumentSlug(value: string): string {
     const segments = String(value || '').trim().split('?')[0].split('#')[0].split('/').filter(Boolean);
-    return segments.join('-') || String(value || '').trim();
+    return segments.join('/') || String(value || '').trim();
   }
 }

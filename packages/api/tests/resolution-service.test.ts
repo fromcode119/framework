@@ -105,9 +105,12 @@ describe('ResolutionService default page contract routing', () => {
     expect(restController.find).toHaveBeenCalledWith(
       expect.objectContaining({ slug: 'pages' }),
       expect.objectContaining({
-        query: expect.objectContaining({ slug: 'shop', limit: 1, preview: '0' }),
+        query: expect.objectContaining({ slug: 'shop', limit: 1 }),
       }),
     );
+    // Preview never travels as a QUERY parameter: visibility of unpublished records is decided from
+    // the identity in `user`, so a caller-supplied `preview` can never reach the read path.
+    expect(restController.find.mock.calls.every(([, options]: any[]) => !('preview' in options.query))).toBe(true);
   });
 
   it('skips disabled singleton contracts during contract-aware resolution', async () => {
@@ -437,9 +440,12 @@ describe('ResolutionService default page contract routing', () => {
     expect(restController.find).toHaveBeenCalledWith(
       expect.objectContaining({ slug: 'pages' }),
       expect.objectContaining({
-        query: expect.objectContaining({ slug: 'shop', limit: 1, preview: '0' }),
+        query: expect.objectContaining({ slug: 'shop', limit: 1 }),
       }),
     );
+    // Preview never travels as a QUERY parameter: visibility of unpublished records is decided from
+    // the identity in `user`, so a caller-supplied `preview` can never reach the read path.
+    expect(restController.find.mock.calls.every(([, options]: any[]) => !('preview' in options.query))).toBe(true);
   });
 
   it('does not fall back for /shop when the matching contract is disabled', async () => {

@@ -25,6 +25,9 @@ export class SMTPDriver implements IEmailDriver {
       subject: options.subject,
       text: options.text,
       html: options.html,
+      // Without this the header was accepted by the caller and silently dropped here — a field nothing
+      // reads. `List-Unsubscribe` only works as a real header.
+      headers: options.headers,
     });
   }
 }

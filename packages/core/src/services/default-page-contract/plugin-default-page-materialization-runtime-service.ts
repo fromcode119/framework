@@ -135,10 +135,19 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
 
   private buildPagePayload(collection: ICollection, payload: IPluginDefaultPageContractCreatePayload): Record<string, any> {
     const fieldNames = new Set((collection.fields || []).map((field) => String(field?.name || '').trim()).filter(Boolean));
+    /**
+     * `disablePermalink` is deliberately absent.
+     *
+     * Writing the boolean `false` here landed in the TEXT column as the string "0.0", and "0.0" is
+     * truthy in JS — so the router treated the permalink as disabled and served a 404 for every page
+     * this materializer created, while the page sat published and correct-looking in the admin. Pages
+     * created by any other path carry "0". The column already defaults to "0", so not writing it is
+     * both the fix and the honest thing: this service has no opinion about disabling a permalink it
+     * just created.
+     */
     const pagePayload: Record<string, any> = {
       slug: payload.slug,
       customPermalink: payload.customPermalink,
-      disablePermalink: false,
     };
 
     if (fieldNames.has('title')) {

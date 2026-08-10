@@ -6,6 +6,12 @@ import { ResolutionContractPathService } from '@api/services/helpers/resolution-
 import { PluginDefaultPageContractMaterializationMode } from '@fromcode119/core';
 import { PluginDefaultPageContractResolutionStatus } from '@fromcode119/core';
 
+/**
+ * Default-page-contract matching. Like the collection scans, these lookups pass only `options.user`:
+ * visibility of unpublished records is an authorization decision made from that identity, never from
+ * a `preview` query parameter. `options.preview` remains the routability signal for
+ * {@link isRoutableDetailRecord}.
+ */
 export class ResolutionContractMatchService {
   constructor(private readonly restController: RESTController) {}
 
@@ -100,7 +106,6 @@ export class ResolutionContractMatchService {
       query: withLocale({
         slug: slugValue,
         limit: 1,
-        preview: options.preview ? '1' : '0',
       }),
       user: options.user,
     } as any);
@@ -139,7 +144,6 @@ export class ResolutionContractMatchService {
       query: withLocale({
         slug: recordSlug,
         limit: 1,
-        preview: options.preview ? '1' : '0',
       }),
       user: options.user,
     } as any);
@@ -181,7 +185,6 @@ export class ResolutionContractMatchService {
       query: withLocale({
         slug: baseSlug,
         limit: 1,
-        preview: options.preview ? '1' : '0',
       }),
       user: options.user,
     } as any);

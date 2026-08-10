@@ -14,6 +14,12 @@ import type { IResolutionStructureScanContext } from '@api/services/helpers/inte
  * selection always walks candidates/collections in their original deterministic order, so a hit is
  * identical to what the old sequential loop returned. Concurrency is bounded (one collection's
  * candidate set, or a 4-collection chunk) — never all ~35 collections at once.
+ *
+ * These scans carry NO `preview` query parameter. Whether unpublished records are visible is decided
+ * by the identity in `options.user`, which is what `restController.find` reads — a `preview: '1'` in
+ * the query would be a second, request-shaped way to ask for drafts, and that is exactly the channel
+ * an anonymous `?preview=1` used to travel down. `options.preview` still gates the permalink checks
+ * below, which are about routability, not about who may read the record.
  */
 export class ResolutionCollectionScanService {
   private static readonly STRUCTURE_CHUNK_SIZE = 4;
@@ -26,18 +32,17 @@ export class ResolutionCollectionScanService {
 
   /** Pass 1 — custom permalinks first, then exact slugs, per collection in order. */
   async scanPriority(ctx: IResolutionPriorityScanContext): Promise<IResolutionScanResult | null> {
-    const previewFlag = ctx.options.preview ? '1' : '0';
     for (const { collection, pluginSlug } of ctx.entries) {
       const flags = this.cache.getCollectionFlags(collection);
       const finds: Array<{ kind: ResolutionMatchKind; candidate: string; query: any }> = [];
       if (flags.hasCustomPermalink) {
         for (const candidate of ctx.pathCandidates) {
-          finds.push({ kind: ResolutionMatchKind.CUSTOM, candidate, query: ctx.withLocale({ customPermalink: candidate, limit: 1, preview: previewFlag }) });
+          finds.push({ kind: ResolutionMatchKind.CUSTOM, candidate, query: ctx.withLocale({ customPermalink: candidate, limit: 1 }) });
         }
       }
       if (flags.hasSlug) {
         for (const candidate of ctx.slugCandidates) {
-          finds.push({ kind: ResolutionMatchKind.SLUG, candidate, query: ctx.withLocale({ slug: candidate, limit: 1, preview: previewFlag }) });
+          finds.push({ kind: ResolutionMatchKind.SLUG, candidate, query: ctx.withLocale({ slug: candidate, limit: 1 }) });
         }
       }
       if (finds.length === 0) continue;
@@ -123,7 +128,7 @@ export class ResolutionCollectionScanService {
     }
 
     if (!searchId && !searchSlug) return null;
-    const query: any = ctx.withLocale({ limit: 1, preview: ctx.options.preview ? '1' : '0' });
+    const query: any = ctx.withLocale({ limit: 1 });
     if (searchId) query.id = searchId;
     if (searchSlug) query.slug = searchSlug;
     return query;

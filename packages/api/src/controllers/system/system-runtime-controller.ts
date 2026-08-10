@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { CoercionUtils, PluginState, SystemUpdateService } from '@fromcode119/core';
+import { ContentPreviewAccessUtils, PluginState, SystemUpdateService } from '@fromcode119/core';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
@@ -133,11 +133,11 @@ export class SystemRuntimeController {
         return res.status(400).json({ error: 'Slug is required' });
       }
 
-      const isAdmin = (req as any).user?.roles?.includes('admin');
-      const isPreview = CoercionUtils.toBoolean(req.query.preview) || CoercionUtils.toBoolean(req.query.draft);
+      // Preview is decided by the SESSION, never by the query string. `?preview=1`/`?draft=1` used to
+      // be OR-ed in here, so any anonymous visitor could read every draft by asking for one.
       const result = await this.runtime.resolution.resolveSlug(slug, {
         user: (req as any).user,
-        preview: isAdmin || isPreview,
+        preview: ContentPreviewAccessUtils.canPreviewUnpublished((req as any).user),
         locale: req.query.locale as string,
         fallback_locale: req.query.fallback_locale as string,
         locale_mode: req.query.locale_mode as string,

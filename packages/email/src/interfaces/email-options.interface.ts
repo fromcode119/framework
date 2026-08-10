@@ -12,4 +12,10 @@ export interface IEmailOptions {
    * "stop emailing me" suppresses it, never a marketing opt-out.
    */
   category?: string;
+  /**
+   * Extra RFC-5322 headers. Exists for `List-Unsubscribe` above all: inbox clients render their own
+   * one-click unsubscribe from it, which is what keeps bulk mail out of spam folders, and it has to be
+   * a real header — a link in the body cannot serve that purpose.
+   */
+  headers?: Record<string, string>;
 }
