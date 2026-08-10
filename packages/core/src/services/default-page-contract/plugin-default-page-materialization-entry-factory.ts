@@ -268,8 +268,22 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
       .some((segment) => segment.startsWith(':'));
   }
 
+  /**
+   * The internal page slug for a singleton route, derived from the WHOLE path.
+   *
+   * This used to take only the last segment, which made the slug a function of one word: any two
+   * contracts ending in the same word claimed the same page. `/reviews/unsubscribe` and
+   * `/newsletter/unsubscribe` both produced `unsubscribe`, so the second plugin to register latched
+   * onto the first one's page, and the resulting reconciliation failure hard-failed cms and finance
+   * and cascaded to every plugin depending on them. It was already latent for mlm, whose
+   * `/partners/privacy` claimed the bare slug `privacy`.
+   *
+   * Single-segment routes — `/shop`, `/contact`, the overwhelming majority — are unchanged, and the
+   * public URL is never affected either way: `customPermalink` carries the real path, and existing
+   * pages are adopted by permalink (priority 0) ahead of slug, so nothing already materialized moves.
+   */
   private resolveSingletonDocumentSlug(value: string): string {
     const segments = String(value || '').trim().split('?')[0].split('#')[0].split('/').filter(Boolean);
-    return segments[segments.length - 1] || String(value || '').trim();
+    return segments.join('-') || String(value || '').trim();
   }
 }

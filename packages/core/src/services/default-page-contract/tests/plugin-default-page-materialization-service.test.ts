@@ -237,6 +237,70 @@ describe('PluginDefaultPageMaterializationService', () => {
     expect(entry.createPayload).toBeUndefined();
   });
 
+  /**
+   * A nested route must derive a slug from its WHOLE path, not its last segment.
+   *
+   * Taking only the last segment made the slug a function of one word, so any two contracts ending in
+   * the same word claimed the same page: `/reviews/unsubscribe` and `/newsletter/unsubscribe` both
+   * produced `unsubscribe`, and the second plugin to register latched onto the first one's page. The
+   * reconciliation failure that caused hard-failed cms and finance and cascaded to everything that
+   * depends on them — from two plugins doing nothing more exotic than owning an unsubscribe page.
+   *
+   * It was already latent for mlm, whose `/partners/privacy` claimed the bare slug `privacy`.
+   */
+  it('derives a nested singleton slug from the whole path, not the last segment', () => {
+    const [entry] = service.createPlan({
+      resolvedContracts: [
+        createResolvedContract({
+          canonicalKey: 'org.synthetic:mailer:reviews-unsubscribe',
+          pluginSlug: 'mailer',
+          key: 'reviews-unsubscribe',
+          effectiveSlug: '/reviews/unsubscribe',
+        }),
+      ],
+      existingPages: [],
+    }).entries;
+
+    expect(entry.action).toBe(PluginDefaultPageContractMaterializationAction.CREATE_MISSING);
+    expect(entry.createPayload?.slug).toBe('reviews-unsubscribe');
+    // The public URL is unaffected — only the internal page slug is disambiguated.
+    expect(entry.createPayload?.customPermalink).toBe('/reviews/unsubscribe');
+  });
+
+  it('gives two contracts ending in the same word distinct slugs', () => {
+    const { entries } = service.createPlan({
+      resolvedContracts: [
+        createResolvedContract({
+          canonicalKey: 'org.synthetic:a:reviews-unsubscribe',
+          pluginSlug: 'a',
+          key: 'reviews-unsubscribe',
+          effectiveSlug: '/reviews/unsubscribe',
+        }),
+        createResolvedContract({
+          canonicalKey: 'org.synthetic:b:newsletter-unsubscribe',
+          pluginSlug: 'b',
+          key: 'newsletter-unsubscribe',
+          effectiveSlug: '/newsletter/unsubscribe',
+        }),
+      ],
+      existingPages: [],
+    });
+
+    const slugs = entries.map((entry) => entry.createPayload?.slug);
+    expect(slugs).toEqual(['reviews-unsubscribe', 'newsletter-unsubscribe']);
+    expect(new Set(slugs).size).toBe(2);
+  });
+
+  /** Single-segment routes are the common case and must be untouched by the fix. */
+  it('leaves a single-segment slug exactly as it was', () => {
+    const [entry] = service.createPlan({
+      resolvedContracts: [createResolvedContract()],
+      existingPages: [],
+    }).entries;
+
+    expect(entry.createPayload?.slug).toBe('catalog');
+  });
+
   it('defers parameterized singleton routes instead of planning literal placeholder pages', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [
