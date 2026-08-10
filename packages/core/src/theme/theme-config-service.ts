@@ -1,6 +1,7 @@
 import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { ThemeState } from '@core/theme/enums/theme-state.enum';
+import { ThemeAssetFingerprintService } from '@core/theme/theme-asset-fingerprint-service';
 
 /**
  * ThemeConfigService
@@ -49,12 +50,18 @@ export class ThemeConfigService {
     const finalModules = { ...runtimeModules };
     const themeAny = theme as any;
     if (themeAny?.runtimeModules) Object.assign(finalModules, themeAny.runtimeModules);
+    // What the frontend should cache-bust its asset URLs with. Empty when the files cannot be read,
+    // and the frontend then falls back to `version` — never to a made-up token.
+    const assetVersion = ThemeAssetFingerprintService.forThemeAssets(
+      theme.slug,
+      [...(Array.isArray(theme.ui?.css) ? theme.ui.css as string[] : []), String(theme.ui?.entry || '')]
+    );
     return {
       // `defaultLayout` is the theme's own declaration of which layout a page gets when it names
       // none. Without it here the frontend and the admin both fell back to a hardcoded
       // 'DefaultLayout' literal that no theme declares — the admin then reported
       // "LAYOUT NOT FOUND IN THEME" for a layout that silently worked via a theme-side alias.
-      activeTheme: { slug: theme.slug, version: (theme as any).version || '0.0.0', variables, ui: theme.ui, layouts: theme.layouts, defaultLayout: (theme as any).defaultLayout || '', slots: theme.slots || [], overrides: (theme as any).overrides || [] },
+      activeTheme: { slug: theme.slug, version: (theme as any).version || '0.0.0', assetVersion, variables, ui: theme.ui, layouts: theme.layouts, defaultLayout: (theme as any).defaultLayout || '', slots: theme.slots || [], overrides: (theme as any).overrides || [] },
       runtimeModules: finalModules,
       cssVariables: this.generateCssVariables(variables),
     };

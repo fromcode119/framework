@@ -48,7 +48,12 @@ export class ThemeAssetsView {
     const entryUrl = rawEntryUrl
       ? (absoluteEntryUrl || ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, rawEntryUrl))
       : '';
-    const versionedEntryUrl = FrontendAssetVersionUrlService.appendVersion(entryUrl, theme.version);
+    // `assetVersion` is a digest of the theme's built files; `version` is a number someone edits. Prefer
+    // the one that actually moves when the theme is rebuilt — a rebuild at an unchanged version left the
+    // CSS fetch below on the same cache key, so a fixed stylesheet stayed invisible for the full hour.
+    // The API sends '' when it cannot read the files, and the version is the honest fallback.
+    const assetStamp = String(theme.assetVersion || '').trim() || theme.version;
+    const versionedEntryUrl = FrontendAssetVersionUrlService.appendVersion(entryUrl, assetStamp);
 
     // Tell browser to preconnect to API origin early — reduces DNS+TCP overhead
     // for all API calls (plugin bundles, theme JS, images, endpoints).
@@ -107,7 +112,7 @@ export class ThemeAssetsView {
         const cssResults = await Promise.all(
           (theme.ui.css as string[]).map(async (cssPath) => {
               const publicHref = cssPath.startsWith('http') ? cssPath : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, cssPath);
-              const versionedPublicHref = FrontendAssetVersionUrlService.appendVersion(publicHref, theme.version);
+              const versionedPublicHref = FrontendAssetVersionUrlService.appendVersion(publicHref, assetStamp);
               const internalHref = versionedPublicHref.replace(apiUrl, internalBase);
               const response = await fetch(internalHref, { next: { revalidate: 3600 } });
               return response.ok ? response.text() : Promise.resolve('');
@@ -122,7 +127,7 @@ export class ThemeAssetsView {
     const fallbackCssLinks = cssLoadFailed && Array.isArray(theme.ui?.css)
       ? (theme.ui.css as string[]).map((cssPath) => {
           const href = cssPath.startsWith('http') ? cssPath : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, cssPath);
-          const versionedHref = FrontendAssetVersionUrlService.appendVersion(href, theme.version);
+          const versionedHref = FrontendAssetVersionUrlService.appendVersion(href, assetStamp);
           return <link key={versionedHref} rel="stylesheet" href={versionedHref} />;
         })
       : [];
