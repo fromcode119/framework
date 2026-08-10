@@ -84,6 +84,12 @@ export class RouteConstants {
   ADMIN_PREFERENCES_KEY: '/admin/preferences/:key',
   /** A person's own email-stream preferences. Session-scoped: never takes an address from the caller. */
   EMAIL_PREFERENCES: '/email-preferences',
+  /**
+   * The same surface for someone arriving from a link in an email rather than a session. PUBLIC by
+   * necessity — most recipients have no account — and safe because the signed token is what names the
+   * address; an address supplied by the caller is ignored.
+   */
+  EMAIL_PREFERENCES_BY_TOKEN: '/email-preferences/by-token',
   ADMIN_WEBHOOKS: '/admin/webhooks',
   ADMIN_WEBHOOKS_ID_TEST: '/admin/webhooks/:id/test',
   ADMIN_WEBHOOK_DELIVERIES_ID_RESEND: '/admin/webhook-deliveries/:id/resend',

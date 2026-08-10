@@ -9,6 +9,7 @@ import { RESTController } from '@api/controllers/rest/rest-controller';
 import { SystemController } from '@api/controllers/system/system-controller';
 import { SystemBackupController } from '@api/controllers/system/system-backup-controller';
 import { SystemEmailPreferencesController } from '@api/controllers/system/system-email-preferences-controller';
+import { SystemEmailPreferencesTokenController } from '@api/controllers/system/system-email-preferences-token-controller';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { SystemBackupService } from '@api/services/system-backup-service';
 
@@ -53,13 +54,13 @@ export class SystemRouter extends BaseRouter {
     const backupService = new SystemBackupService(backupRepository);
     this.backupController = new SystemBackupController(backupService);
     // Labels are i18n KEYS in the registry; resolve them here so the response is ready to render.
-    this.emailPreferencesController = new SystemEmailPreferencesController(
-      manager,
-      (key: string, fallback: string) => (manager as any).i18n?.translateOrFallback?.(key, fallback) ?? fallback,
-    );
+    const translate = (key: string, fallback: string) => (manager as any).i18n?.translateOrFallback?.(key, fallback) ?? fallback;
+    this.emailPreferencesController = new SystemEmailPreferencesController(manager, translate);
+    this.emailPreferencesTokenController = new SystemEmailPreferencesTokenController(manager, translate);
   }
 
   private readonly emailPreferencesController!: SystemEmailPreferencesController;
+  private readonly emailPreferencesTokenController!: SystemEmailPreferencesTokenController;
 
   protected registerRoutes(): void {
     // Admin metadata: any authenticated user may fetch it — the admin client permission-scopes the nav
@@ -74,6 +75,13 @@ export class SystemRouter extends BaseRouter {
       (req: any, res: any) => this.emailPreferencesController.list(req, res));
     this.post(RouteConstants.SEGMENTS.EMAIL_PREFERENCES, this.auth.guard(),
       (req: any, res: any) => this.emailPreferencesController.update(req, res));
+    // The same surface, reached from a link in an email. No guard: most recipients have no account,
+    // and the signed token is the credential. The controller derives the address from that token
+    // alone, so an address in the query or body is ignored and cannot aim this at a stranger.
+    this.get(RouteConstants.SEGMENTS.EMAIL_PREFERENCES_BY_TOKEN,
+      (req: any, res: any) => this.emailPreferencesTokenController.list(req, res));
+    this.post(RouteConstants.SEGMENTS.EMAIL_PREFERENCES_BY_TOKEN,
+      (req: any, res: any) => this.emailPreferencesTokenController.update(req, res));
     // Global admin search (command palette). system:view — spans record labels across every collection.
     this.get(RouteConstants.SEGMENTS.ADMIN_SEARCH, this.auth.requirePermission('system:view'),
       this.controller.search);

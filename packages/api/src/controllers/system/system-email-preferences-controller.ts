@@ -12,7 +12,7 @@ import type { Request, Response } from 'express';
  */
 export class SystemEmailPreferencesController {
   constructor(
-    private readonly manager: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    protected readonly manager: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     private readonly translate: (key: string, fallback: string) => string,
   ) {}
 
@@ -20,13 +20,23 @@ export class SystemEmailPreferencesController {
     return this.manager?.integrations?.email;
   }
 
-  private static addressOf(req: Request): string {
+  /**
+   * Who this request is acting for. The session is the answer here; the token-authenticated twin
+   * overrides it, and that override is the ONLY difference between the two surfaces — everything
+   * below is identical, so it is inherited rather than copied.
+   */
+  protected async resolveAddress(req: Request): Promise<string> {
     return String((req as any).user?.email || '').trim().toLowerCase(); // eslint-disable-line @typescript-eslint/no-explicit-any
+  }
+
+  /** Recorded against a suppression so an operator can see WHERE an opt-out came from. */
+  protected get suppressionSource(): string {
+    return 'account:email-preferences';
   }
 
   async list(req: Request, res: Response): Promise<void> {
     try {
-      const address = SystemEmailPreferencesController.addressOf(req);
+      const address = await this.resolveAddress(req);
       if (!address) {
         res.status(401).json({ error: 'Not authenticated' });
         return;
@@ -50,7 +60,7 @@ export class SystemEmailPreferencesController {
 
   async update(req: Request, res: Response): Promise<void> {
     try {
-      const address = SystemEmailPreferencesController.addressOf(req);
+      const address = await this.resolveAddress(req);
       if (!address) {
         res.status(401).json({ error: 'Not authenticated' });
         return;
@@ -68,7 +78,7 @@ export class SystemEmailPreferencesController {
       if (subscribed) {
         await this.email?.unsuppress?.(address, key);
       } else {
-        await this.email?.suppress?.(address, key, 'account:email-preferences');
+        await this.email?.suppress?.(address, key, this.suppressionSource);
       }
 
       res.json({ ok: true, key, subscribed });
