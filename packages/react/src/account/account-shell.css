@@ -162,3 +162,26 @@
   .fc-acct-skeleton-navlink,
   .fc-acct-skeleton-line { animation: none; }
 }
+
+/* Toggle switch — the account's only on/off control, so it lives here beside the rows it sits in
+   rather than in the one panel that happens to need it first. The native checkbox stays in the DOM
+   (it IS the control: focusable, keyboard-operable, announced) and is visually replaced by the track. */
+.fc-acct-switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; flex: 0 0 auto; }
+.fc-acct-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.fc-acct-switch-track {
+  position: relative; width: 40px; height: 22px; border-radius: 999px; flex: 0 0 auto;
+  background: #cbd5e1; transition: background-color .18s ease;
+}
+.fc-acct-switch-track::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, .25); transition: transform .18s ease;
+}
+.fc-acct-switch input:checked + .fc-acct-switch-track { background: var(--fc-acct-accent); }
+.fc-acct-switch input:checked + .fc-acct-switch-track::after { transform: translateX(18px); }
+.fc-acct-switch input:focus-visible + .fc-acct-switch-track { outline: 2px solid var(--fc-acct-accent); outline-offset: 2px; }
+.fc-acct-switch input:disabled + .fc-acct-switch-track { opacity: .55; cursor: not-allowed; }
+.fc-acct-switch-label { font-size: 13px; font-weight: 600; color: var(--fc-acct-muted); min-width: 62px; }
+
+/* Vertical stack of rows — the shape every list-of-settings panel wants. */
+.fc-acct-rows { display: flex; flex-direction: column; gap: 10px; margin: 0 0 16px; padding: 0; list-style: none; }
+.fc-acct-note { color: var(--fc-acct-muted); font-size: 13px; margin: 0; }

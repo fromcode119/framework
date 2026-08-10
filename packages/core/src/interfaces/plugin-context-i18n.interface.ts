@@ -21,6 +21,8 @@ export interface IPluginContextI18n {
     scope?: ExtensionKind | null,
   ): string;
   t(key: string, params?: Record<string, any>, locale?: string): string;
+  /** The platform's configured default locale (admin Settings → Localization `default_locale`). */
+  defaultLocale(): string;
   registerTranslations(pluginDirectory?: string): void;
   registerTranslations(locale: string, translations: Record<string, any>): void;
 }

@@ -41,6 +41,7 @@ export class CollectionListPageView extends Reactor {
   @state statusFilter = 'all';
   @state fieldFilters: Record<string, string> = {};
   @state visibleColumnIds: string[] = [];
+  @state stickyColumnIds: string[] = [];
   @state showColumnsMenu = false;
   @state quickEditExpandedId: string | null = null;
   @state quickEditLoadingId: string | null = null;

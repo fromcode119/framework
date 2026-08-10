@@ -8,6 +8,7 @@ import { PluginManager, ThemeManager, RouteConstants } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { SystemController } from '@api/controllers/system/system-controller';
 import { SystemBackupController } from '@api/controllers/system/system-backup-controller';
+import { SystemEmailPreferencesController } from '@api/controllers/system/system-email-preferences-controller';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { SystemBackupService } from '@api/services/system-backup-service';
 
@@ -51,7 +52,14 @@ export class SystemRouter extends BaseRouter {
     const backupRepository = new SystemBackupRepository((manager as any).db);
     const backupService = new SystemBackupService(backupRepository);
     this.backupController = new SystemBackupController(backupService);
+    // Labels are i18n KEYS in the registry; resolve them here so the response is ready to render.
+    this.emailPreferencesController = new SystemEmailPreferencesController(
+      manager,
+      (key: string, fallback: string) => (manager as any).i18n?.translateOrFallback?.(key, fallback) ?? fallback,
+    );
   }
+
+  private readonly emailPreferencesController!: SystemEmailPreferencesController;
 
   protected registerRoutes(): void {
     // Admin metadata: any authenticated user may fetch it — the admin client permission-scopes the nav
@@ -59,6 +67,13 @@ export class SystemRouter extends BaseRouter {
     // self-service account view). Stats below stay system:view (admin dashboards).
     this.get(RouteConstants.SEGMENTS.ADMIN_METADATA, this.auth.guard(),
       this.controller.getAdminMetadata);
+
+    // A person's own email streams. `auth.guard()` (any authenticated user, not an admin permission):
+    // this is self-service, and the controller reads the address off the SESSION, never the request.
+    this.get(RouteConstants.SEGMENTS.EMAIL_PREFERENCES, this.auth.guard(),
+      (req: any, res: any) => this.emailPreferencesController.list(req, res));
+    this.post(RouteConstants.SEGMENTS.EMAIL_PREFERENCES, this.auth.guard(),
+      (req: any, res: any) => this.emailPreferencesController.update(req, res));
     // Global admin search (command palette). system:view — spans record labels across every collection.
     this.get(RouteConstants.SEGMENTS.ADMIN_SEARCH, this.auth.requirePermission('system:view'),
       this.controller.search);

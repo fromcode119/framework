@@ -11,6 +11,7 @@ import { SchemaManager } from '@core/database/schema-manager';
 import { MigrationManager } from '@core/database/migration-manager';
 import { Logger } from '@core/logging';
 import { I18nManager } from '@core/i18n/i18n-manager';
+import { EmailCategoryRegistry } from '@core/email/email-category-registry';
 import { DatabaseFactory, IDatabaseManager } from '@fromcode119/database';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { MigrationCoordinator } from '@core/management/migration-coordinator';
@@ -61,6 +62,9 @@ export class PluginManager implements IPluginManagerInterface {
   public jobs!: QueueManager;
   public scheduler!: SchedulerService;
   public i18n!: I18nManager;
+
+  /** The opt-outable email streams plugins have declared — what the account preferences screen lists. */
+  public readonly emailCategories = new EmailCategoryRegistry();
   public integrations: IntegrationManager;
 
   public middlewares: MiddlewareManager = new MiddlewareManager();

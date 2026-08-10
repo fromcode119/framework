@@ -1,4 +1,5 @@
 import { SystemLocaleField } from '@/components/collection/fields/view/system-locale-field.client';
+import { SystemLocalesField } from '@/components/collection/fields/view/system-locales-field.client';
 import { CountryField } from '@/components/collection/fields/view/country-field.client';
 import { ThemeLayoutField } from '@/components/collection/fields/view/theme-layout-field.client';
 
@@ -12,6 +13,7 @@ import { ThemeLayoutField } from '@/components/collection/fields/view/theme-layo
 export class AdminFieldComponentBootstrapService {
   private static readonly BUILTINS: Record<string, any> = {
     SystemLocaleField,
+    SystemLocalesField,
     CountryField,
     ThemeLayoutField,
   };

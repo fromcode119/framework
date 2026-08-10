@@ -32,6 +32,8 @@ packages/*/src/**/*.d.ts.map
 
 # Environment Variables
 .env
+# Plugin-owned secrets injected into the API container (see docker-compose.yml env_file).
+plugins.env
 .env.backup
 *.env.backup
 .env.local
@@ -83,3 +85,15 @@ public/uploads/
 # Generated service worker — built from packages/admin/service-worker/service-worker.ts
 # by `npm run build:sw` (chained into admin's build/prepack). Never hand-edit or commit.
 packages/admin/public/sw.js
+
+# Generated Vite config entries (nextor vite-config). Vite REQUIRES a default export from a config
+# module; the real config is an authored CLASS (ThemeViteConfig, PluginUiViteConfig, …) and nextor emits
+# this throwaway entry that calls it. Build output — never authored, never committed.
+#
+# The root repo already ignores these, but THIS directory is its own git repo and a parent repo's
+# .gitignore does not reach into a nested one — which is why they kept surfacing as untracked here.
+# `build-plugins.sh` deletes them in an EXIT trap; this is the backstop for a killed build.
+packages/sdk/src/vite/theme.config.ts
+packages/sdk/src/vite/theme-ssr.config.ts
+packages/sdk/src/vite/plugin-ui.config.ts
+packages/sdk/src/vite/plugin-ui-ssr.config.ts

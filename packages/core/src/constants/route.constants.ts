@@ -82,6 +82,8 @@ export class RouteConstants {
   ADMIN_SEARCH: '/admin/search',
   ADMIN_NOTIFICATIONS: '/admin/notifications',
   ADMIN_PREFERENCES_KEY: '/admin/preferences/:key',
+  /** A person's own email-stream preferences. Session-scoped: never takes an address from the caller. */
+  EMAIL_PREFERENCES: '/email-preferences',
   ADMIN_WEBHOOKS: '/admin/webhooks',
   ADMIN_WEBHOOKS_ID_TEST: '/admin/webhooks/:id/test',
   ADMIN_WEBHOOK_DELIVERIES_ID_RESEND: '/admin/webhook-deliveries/:id/resend',

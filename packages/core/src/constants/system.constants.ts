@@ -28,6 +28,7 @@ export class SystemConstants {
     AUDIT_LOGS: '_system_audit_logs',
     NOTIFICATIONS: '_system_notifications',
     WEBHOOK_DELIVERIES: '_system_webhook_deliveries',
+    EMAIL_SUPPRESSIONS: '_system_email_suppressions',
     META: '_system_meta',
     MEDIA: 'media',
     MEDIA_FOLDERS: 'media_folders',

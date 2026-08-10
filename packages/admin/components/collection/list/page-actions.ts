@@ -5,6 +5,7 @@ import type React from 'react';
 import { AdminServices } from '@/lib/admin-services';
 
 import { CollectionListPageService } from '@/components/collection/list/page-service';
+import { StickyColumnLayout } from '@/components/ui/sticky-column-layout';
 
 export class CollectionListPageActions {
   private static readonly adminServices = AdminServices.getInstance();
@@ -24,6 +25,25 @@ export class CollectionListPageActions {
       const next = prev.includes(columnId) ? prev.filter((id) => id !== columnId) : [...prev, columnId];
       if (!next.length) return prev;
       CollectionListPageActions.adminServices.uiPreference.writeCollectionColumns(pluginSlug, resolvedSlug, next);
+      return next;
+    });
+  }
+
+  /** Pinning is per collection and survives a reload — an operator pins once, not once per visit. */
+  static toggleStickyColumn({
+    columnId,
+    pluginSlug,
+    resolvedSlug,
+    setStickyColumnIds
+  }: {
+    columnId: string;
+    pluginSlug: string;
+    resolvedSlug: string;
+    setStickyColumnIds: React.Dispatch<React.SetStateAction<string[]>>;
+  }): void {
+    setStickyColumnIds((prev) => {
+      const next = StickyColumnLayout.toggle(prev, columnId);
+      CollectionListPageActions.adminServices.uiPreference.writeCollectionStickyColumns(pluginSlug, resolvedSlug, next);
       return next;
     });
   }

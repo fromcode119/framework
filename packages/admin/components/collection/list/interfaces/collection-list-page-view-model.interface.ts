@@ -31,6 +31,8 @@ export interface ICollectionListPageViewModel {
   fieldFilters: Record<string, string>;
   setFieldFilters: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   visibleColumnIds: string[];
+  stickyColumnIds: string[];
+  setStickyColumnIds: (value: any) => void;
   setVisibleColumnIds: React.Dispatch<React.SetStateAction<string[]>>;
   showColumnsMenu: boolean;
   setShowColumnsMenu: React.Dispatch<React.SetStateAction<boolean>>;

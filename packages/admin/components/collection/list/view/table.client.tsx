@@ -20,6 +20,7 @@ export class CollectionListTable extends PureReactor {
   @prop declare page: number;
   @prop declare search: string;
   @prop declare columns: any[];
+  @prop declare stickyColumnIds: string[];
   @prop declare data: any[];
   @prop declare loading: boolean;
   /** Non-empty when the fetch failed — shown instead of the "no records" empty state. */
@@ -57,6 +58,7 @@ export class CollectionListTable extends PureReactor {
   page,
   search,
   columns,
+  stickyColumnIds,
   data,
   loading,
   loadError,
@@ -92,6 +94,7 @@ export class CollectionListTable extends PureReactor {
       }`}>
         <DataTable
           columns={columns}
+          stickyColumnIds={stickyColumnIds}
           data={data || []}
           loading={loading}
           totalDocs={total}

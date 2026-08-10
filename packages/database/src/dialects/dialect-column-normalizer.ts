@@ -50,12 +50,36 @@ export abstract class DialectColumnNormalizer {
     return JSON.stringify(value);
   }
 
+  /**
+   * Declared types for which an empty string is not a value but an ABSENT one. Postgres rejects `''`
+   * for every one of them, so it can only ever be an error — `invalid input syntax for type date: ""`.
+   */
+  private static readonly EMPTY_STRING_MEANS_NULL = /DATE|TIME|INT|NUMERIC|DECIMAL|REAL|DOUBLE|FLOAT|BOOL|UUID/;
+
+  /**
+   * An empty string reaching a non-text column means the operator CLEARED the field, not that they typed
+   * the empty string — no admin control can produce `''` for a datepicker or a number input.
+   *
+   * Postgres is strict where SQLite is not: saving a person with a blank birth date sent `''` at a `date`
+   * column and the whole request died with a 400 (`invalid input syntax for type date: ""`), so the record
+   * could not be saved at all until some unrelated date was invented. Resolved here rather than at each
+   * call site because this is the one layer that knows the column's declared type.
+   */
+  private async coerceEmptyStringForColumn(tableName: string, physicalColumn: string, value: any): Promise<any | undefined> {
+    if (typeof value !== 'string' || value.trim() !== '') return undefined;
+    const types = await this.getColumnTypes(tableName).catch(() => new Map<string, string>());
+    const declaredType = types.get(physicalColumn) || '';
+    return DialectColumnNormalizer.EMPTY_STRING_MEANS_NULL.test(declaredType) ? null : undefined;
+  }
+
   async normalizeColumnValueForWrite(tableName: string, column: string, value: any): Promise<any> {
     const jsonColumns = await this.getJsonColumns(tableName);
     const normalizedColumn = NamingStrategy.toSnakeCase(column).toLowerCase();
     if (jsonColumns.has(normalizedColumn)) {
       return this.normalizeJsonColumnValue(value);
     }
+    const cleared = await this.coerceEmptyStringForColumn(tableName, normalizedColumn, value);
+    if (cleared === null) return null;
     return this.normalizeParamValue(value);
   }
 

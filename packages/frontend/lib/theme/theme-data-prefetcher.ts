@@ -23,6 +23,40 @@ import type { ILcpImagePreload } from '@/lib/theme/interfaces/lcp-image-preload.
 export class ThemeDataPrefetcher {
   private static readonly CACHE_REVALIDATE_SECONDS = 30;
 
+  /**
+   * How long to wait before the single retry below. Short on purpose: this is a startup race, not a
+   * backoff strategy — the API is either seconds from ready or genuinely down.
+   */
+  private static readonly RETRY_DELAY_MS = 400;
+
+  /**
+   * One entry's payload, with a single retry.
+   *
+   * A failure here used to be swallowed as "non-critical", which is true of the FETCH and false of its
+   * consequence: the page renders without that data and Next caches THAT render, so one unlucky request
+   * — the first one after a restart, when the API is still coming up — serves a page missing its social
+   * proof until the cache revalidates. Every visitor in that window sees the broken version.
+   *
+   * Retrying once inside the same render fixes the render that gets cached, which is the only one that
+   * matters. A genuinely absent API still degrades to no prefetch, exactly as before.
+   */
+  private static async fetchEntry(url: string): Promise<unknown | undefined> {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await fetch(url, {
+          next: { revalidate: ThemeDataPrefetcher.CACHE_REVALIDATE_SECONDS },
+        } as RequestInit);
+        if (response.ok) return await response.json();
+      } catch {
+        // Fall through to the retry; a second failure degrades to no prefetch for this entry.
+      }
+      if (attempt === 0) {
+        await new Promise((resolve) => setTimeout(resolve, ThemeDataPrefetcher.RETRY_DELAY_MS));
+      }
+    }
+    return undefined;
+  }
+
   static async prefetch(theme: Record<string, any>): Promise<Record<string, unknown>> {
     const apis = Array.isArray(theme.ui?.prefetchApis)
       ? (theme.ui.prefetchApis as ThemePrefetchApiEntry[])
@@ -45,14 +79,8 @@ export class ThemeDataPrefetcher {
         );
         const apiPath = ServerApiUtils.buildPluginPath(pluginSlug, entry.path || '', query);
         const url = `${internalBase}${ApiVersionUtils.prefix()}${apiPath}`;
-        try {
-          const response = await fetch(url, {
-            next: { revalidate: ThemeDataPrefetcher.CACHE_REVALIDATE_SECONDS },
-          } as RequestInit);
-          if (response.ok) results[key] = await response.json();
-        } catch {
-          // Non-critical — page still works without prefetch for this entry
-        }
+        const payload = await ThemeDataPrefetcher.fetchEntry(url);
+        if (payload !== undefined) results[key] = payload;
       }),
     );
 

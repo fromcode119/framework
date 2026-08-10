@@ -13,6 +13,7 @@ export interface ICollectionListPageViewState {
   statusFilter: string;
   fieldFilters: Record<string, string>;
   visibleColumnIds: string[];
+  stickyColumnIds: string[];
   showColumnsMenu: boolean;
   quickEditExpandedId: string | null;
   quickEditLoadingId: string | null;

@@ -10,9 +10,12 @@ export class CollectionColumnsMenu extends PureReactor {
   @prop declare visibleColumnIds: string[];
   @prop declare toggleColumn: (id: string) => void;
   @prop declare reorderColumn: (id: string, direction: ReorderDirection) => void;
+  /** Columns pinned to the left edge of the table, in pinning order. */
+  @prop declare stickyColumnIds: string[];
+  @prop declare toggleStickyColumn: (id: string) => void;
 
   render(): ReactNode {
-    const { theme, allColumns, visibleColumnIds, toggleColumn, reorderColumn } = this;
+    const { theme, allColumns, visibleColumnIds, toggleColumn, reorderColumn, stickyColumnIds, toggleStickyColumn } = this;
     const isDark = theme === ThemeMode.DARK;
     const visibleColumns = visibleColumnIds.map((id) => allColumns.find((c) => c.id === id)).filter(Boolean);
     const hiddenColumns = allColumns.filter((c) => !visibleColumnIds.includes(c.id));
@@ -24,6 +27,9 @@ export class CollectionColumnsMenu extends PureReactor {
       >
         <div className="px-2.5 py-2 mb-1 text-[10px] font-black uppercase tracking-widest text-slate-500/80">
           Visible Columns
+        </div>
+        <div className="px-2.5 pb-2 text-[10px] leading-relaxed text-slate-400">
+          Pinned columns stay put while the table scrolls, and move to the left edge.
         </div>
         <div className="max-h-80 overflow-auto pr-1 space-y-0.5 custom-scrollbar">
           {visibleColumns.map((column: any, idx: number) => (
@@ -50,6 +56,19 @@ export class CollectionColumnsMenu extends PureReactor {
                 <span className={`text-xs font-bold truncate ${isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>
                   {column.header}
                 </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleStickyColumn(column.id)}
+                title={stickyColumnIds.includes(column.id) ? 'Unpin column' : 'Pin column to the left'}
+                aria-pressed={stickyColumnIds.includes(column.id)}
+                className={`p-1 rounded-lg shrink-0 transition-colors ${
+                  stickyColumnIds.includes(column.id)
+                    ? isDark ? 'text-indigo-300 bg-indigo-500/20' : 'text-indigo-600 bg-indigo-100'
+                    : isDark ? 'text-slate-500 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                <FrameworkIcons.Pin size={12} />
               </button>
               <div className="flex flex-col shrink-0">
                 <button

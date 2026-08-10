@@ -10,7 +10,8 @@
       "subscription": "Subscription",
       "courses": "Courses",
       "partner": "Partner",
-      "affiliate": "Partner"
+      "affiliate": "Partner",
+      "emailPreferences": "Email preferences"
     },
     "shell": {
       "title": "My account",
@@ -95,7 +96,16 @@
       "profile": "Name, email and contact details",
       "security": "Password and sign-in",
       "sessions": "Devices you are signed in on",
-      "two-factor": "Extra protection when signing in"
+      "two-factor": "Extra protection when signing in",
+      "emailPreferences": "Choose which emails you receive"
+    },
+    "emailPreferences": {
+      "loading": "Loading…",
+      "intro": "Sent to {{address}}",
+      "empty": "There are no optional emails to manage.",
+      "on": "On",
+      "off": "Off",
+      "transactionalNote": "Order confirmations, receipts and account security emails are always sent and cannot be switched off."
     }
   }
 }

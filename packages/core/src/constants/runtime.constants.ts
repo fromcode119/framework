@@ -73,7 +73,7 @@ export class RuntimeConstants {
     'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 'NumberStepper',
     'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker',
     'CodeEditor', 'CurrencySelect', 'MoneyInput', 'VisualMenuField', 'Icon', 'ThemeContext', 'ThemeProvider',
-    'NotificationContext', 'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',
+    'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',
     'PluginChartCard', 'PluginEmptyState', 'PageHeading', 'StatCard', 'DataTable',
     'AdminServices', 'EditPageSectionNav', 'SectionCard', 'DayRangeToggle',
   ] as const;

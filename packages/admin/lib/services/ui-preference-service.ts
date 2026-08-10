@@ -112,6 +112,21 @@ export class UiPreferenceService extends BaseService {
     );
   }
 
+  /** Columns the operator pinned to the left edge of this collection's list, in pinning order. */
+  readCollectionStickyColumns(pluginSlug: string, collectionSlug: string): string[] {
+    return this.browserState.readLocalJson<string[]>(
+      this.buildCollectionStickyColumnsStorageKey(pluginSlug, collectionSlug),
+      [],
+    );
+  }
+
+  writeCollectionStickyColumns(pluginSlug: string, collectionSlug: string, columnIds: string[]): void {
+    this.browserState.writeLocalJson(
+      this.buildCollectionStickyColumnsStorageKey(pluginSlug, collectionSlug),
+      Array.isArray(columnIds) ? columnIds : [],
+    );
+  }
+
   readCollectionSort(pluginSlug: string, collectionSlug: string): string {
     return this.browserState.readLocalString(this.buildCollectionSortStorageKey(pluginSlug, collectionSlug));
   }
@@ -127,6 +142,10 @@ export class UiPreferenceService extends BaseService {
 
   private buildCollectionColumnsStorageKey(pluginSlug: string, collectionSlug: string): string {
     return `${ClientRuntimeConstants.ADMIN_UI.STORAGE_PREFIXES.COLLECTION_COLUMNS}${String(pluginSlug || '').trim()}_${String(collectionSlug || '').trim()}`;
+  }
+
+  private buildCollectionStickyColumnsStorageKey(pluginSlug: string, collectionSlug: string): string {
+    return `admin.ui.sticky-columns_${String(pluginSlug || '').trim()}_${String(collectionSlug || '').trim()}`;
   }
 
   private buildCollectionSortStorageKey(pluginSlug: string, collectionSlug: string): string {

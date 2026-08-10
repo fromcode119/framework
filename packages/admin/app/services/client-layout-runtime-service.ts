@@ -3,6 +3,24 @@ import { RuntimeConstants } from '@fromcode119/core/client';
 
 export class ClientLayoutRuntimeService {
   static buildAdminRuntimeModule(source: Record<string, unknown>): Record<string, unknown> {
+    /**
+     * NOTHING may be added here that `source` does not actually export.
+     *
+     * The catch-all loop below already copies every real key off `source`, so a name listed here can
+     * only ever change the outcome in one direction: if it is NOT on `source`, the first loop writes
+     * `bridge[key] = undefined` and the registry then advertises an export that does not exist. A
+     * plugin or theme bundle importing it gets `undefined` — for a component that means React error
+     * #306 and a dead panel, and the failure surfaces in the consumer, nowhere near this file.
+     *
+     * `'NotificationContext'` sat here doing exactly that: no such value is exported anywhere in the
+     * framework (only the admin-internal `INotificationContextType` and `NotificationContextStore`),
+     * so all four admin aliases carried `NotificationContext: undefined`. It was harmless only because
+     * nothing had imported it yet.
+     *
+     * This list is also the SECOND copy of `RuntimeConstants.ADMIN_RUNTIME_EXPORT_KEYS`; the two drift
+     * independently. Verify a change by reading `window.__fromcodeRuntimeModules` in the browser and
+     * checking that no advertised key is `undefined` — a green build proves nothing here.
+     */
     const requiredExports = [
       'PluginPageHeader',
       'PluginOverviewCard',
@@ -32,7 +50,6 @@ export class ClientLayoutRuntimeService {
       'Icon',
       'ThemeProvider',
       'ThemeContext',
-      'NotificationContext',
       'AdminServices',
     ];
     const bridge: Record<string, unknown> = {};

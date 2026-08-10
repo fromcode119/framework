@@ -68,8 +68,17 @@ export class FieldRendererView extends Reactor {
     return AdminServices.getInstance().localization;
   }
 
+  /**
+   * Where the configured locales come from: `globalSettings.localization_locales` (Settings →
+   * Localization), which this component already receives as a prop.
+   *
+   * It used to read `(this.plugins as any).settings` — a key nothing supplies. Neither the admin runtime
+   * provider nor `usePlugins()` puts `settings` on the plugins object, so the registry was ALWAYS empty
+   * and the in-input locale switcher rendered a button whose menu had no entries. Clicking it looked
+   * like a dead control rather than a missing list, which is why it was reported as "not working".
+   */
   private get registrySettings(): Record<string, any> {
-    return (this.plugins as any)?.settings || {};
+    return this.globalSettings || {};
   }
 
   private get localeRegistry(): Array<{ code: string; label: string }> {
@@ -240,6 +249,23 @@ export class FieldRendererView extends Reactor {
     this.isLocaleMenuOpen = false;
   }
 
+  /**
+   * A render prop whose OUTPUT depends on `isLocaleMenuOpen` / `activeLocale`, so its identity must
+   * change with them.
+   *
+   * As a stable `@bound` reference it never did, and every consumer down the chain
+   * (FieldRendererHeader, FieldControlRenderer, FieldTextInput, FieldTextualControl) is a PureReactor.
+   * Flipping the menu state re-rendered THIS component, the children saw shallow-equal props, their
+   * subtrees were skipped, and the switcher kept rendering with the state it was first called with. The
+   * button was live and the menu could never appear — indistinguishable from a dead control.
+   */
+  private get localeSwitcherProp(): (compact?: boolean) => ReactNode {
+    // Referenced so the closure identity changes with the state the switcher renders from.
+    void this.isLocaleMenuOpen;
+    void this.activeLocale;
+    return (compact?: boolean) => this.localeSwitcher(compact ?? false);
+  }
+
   @bound private localeSwitcher(compact: boolean = false): ReactNode {
     const localeRegistry = this.localeRegistry;
     const activeLocaleMeta = localeRegistry.find((item) => item.code === this.activeLocale) || localeRegistry[0];
@@ -282,7 +308,7 @@ export class FieldRendererView extends Reactor {
           componentHandlesLocalization={this.componentHandlesLocalization}
           shouldInlineLocaleSwitcher={this.shouldInlineLocaleSwitcher}
           onRequestReadOnlyOverride={this.requestReadOnlyOverride}
-          localeSwitcher={this.localeSwitcher}
+          localeSwitcher={this.localeSwitcherProp}
         />
 
         <FieldControlRenderer
@@ -304,7 +330,7 @@ export class FieldRendererView extends Reactor {
           slugManuallyEdited={this.slugManuallyEdited}
           isLocalizedField={isLocalizedField}
           shouldInlineLocaleSwitcher={this.shouldInlineLocaleSwitcher}
-          localeSwitcher={this.localeSwitcher}
+          localeSwitcher={this.localeSwitcherProp}
           record={this.record}
           onPatch={this.onPatch}
         />

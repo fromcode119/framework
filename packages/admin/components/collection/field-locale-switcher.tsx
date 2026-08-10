@@ -20,7 +20,12 @@ export class FieldLocaleSwitcher extends PureReactor {
     const compact = this.compact ?? false;
     const { theme, activeLocale, activeLocaleCode, localeRegistry, isOpen, onToggle, onSelect, menuRef } = this;
     return (
-      <div className="relative" ref={menuRef}>
+      // Raise the switcher's own stacking context while the menu is open. The wrapper that positions it
+      // over the input is `absolute … z-20`, and the menu is `z-30` INSIDE that context — so against a
+      // later sibling field (a two-column settings grid, say) the whole switcher still competes at 20 and
+      // the open menu paints underneath the next field. Lifting it only while open keeps the closed
+      // state out of the way of everything else.
+      <div className={`relative ${isOpen ? 'z-50' : ''}`} ref={menuRef}>
         <button
           type="button"
           onClick={onToggle}

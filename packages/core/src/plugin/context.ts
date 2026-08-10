@@ -13,6 +13,7 @@ import { JobsContextProxy } from '@core/plugin/context/jobs';
 import { SchedulerContextProxy } from '@core/plugin/context/scheduler';
 import { CollectionsContextProxy } from '@core/plugin/context/collections';
 import { I18nContextProxy } from '@core/plugin/context/i18n';
+import { EmailContextProxy } from '@core/plugin/context/email';
 import { SettingsContextProxy } from '@core/plugin/context/settings';
 import { UiContextProxy } from '@core/plugin/context/ui';
 import { UsersContextProxy } from '@core/plugin/context/users';
@@ -113,7 +114,7 @@ export class PluginContextFactory {
         },
         get email() {
           if (!security.hasCapability('email')) security.handleViolation('email');
-          return manager.integrations.email;
+          return EmailContextProxy.createEmailProxy(plugin, manager);
         },
         get cache() {
           if (!security.hasCapability('cache')) security.handleViolation('cache');

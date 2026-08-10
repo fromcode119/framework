@@ -27,6 +27,12 @@ module.exports = {
     // generates from scanned content; it does NOT synthesize arbitrary values. The Docker-built admin
     // CSS can't scan plugins/, so without these literals every such card renders SQUARE. Keep in sync
     // with: grep -rEoh 'rounded(-[a-z]+)?-\[[0-9]+px\]' plugins/*/src/ui
+    // STANDARD radii too, for the same reason. Tailwind only emits a core utility if it appears in
+    // SCANNED content, and plugins/ is not scanned in the Docker build — so a class the admin itself
+    // never uses is absent from the CSS and every plugin card carrying it renders SQUARE. That was
+    // `rounded-3xl`: 68 uses across plugin admin UIs, zero in the admin, zero in the built stylesheet.
+    // Verify after a change: grep '\.rounded-3xl' in .next/static/chunks/*.css.
+    'rounded-none', 'rounded-sm', 'rounded-md', 'rounded-lg', 'rounded-xl', 'rounded-2xl', 'rounded-3xl', 'rounded-full',
     'rounded-[1px]', 'rounded-[20px]', 'rounded-[24px]', 'rounded-[28px]', 'rounded-[32px]',
     'rounded-[36px]', 'rounded-[40px]', 'rounded-[48px]', 'rounded-[50px]', 'rounded-[56px]',
     'rounded-l-[4px]', 'rounded-r-[4px]',

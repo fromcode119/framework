@@ -13,6 +13,8 @@ export interface IPluginManagerInterface {
   redis?: any;
   auth: any;
   i18n: any;
+  /** Declared opt-outable email streams — see EmailCategoryRegistry. */
+  emailCategories?: any;
   middlewares: any;
   plugins: Map<string, ILoadedPlugin>;
   pluginsRoot: string;

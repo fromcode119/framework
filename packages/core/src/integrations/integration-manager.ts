@@ -1,3 +1,4 @@
+import { SuppressedEmailDriver } from '@core/email/suppressed-email-driver';
 import { IntegrationRegistry } from '@core/integrations/integration-registry';
 import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 import type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
@@ -22,11 +23,14 @@ export class IntegrationManager {
   private instances: Map<string, any> = new Map();
 
   // Integration instances
+  private readonly db: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+
   public email!: IEmailDriver;
   public storage!: MediaManager;
   public cache!: CacheManager;
 
   constructor(db: any, projectRoot: string, logger?: Logger) {
+    this.db = db;
     this.projectRoot = projectRoot;
     this.logger = logger || new Logger({ namespace: 'integration-manager' });
     this.registry = new IntegrationRegistry(db, this.logger);
@@ -141,7 +145,9 @@ export class IntegrationManager {
    */
   async refreshEmail(preferStored: boolean = true) {
     const { email, resolved } = await this.coreRefresh.refreshEmail(preferStored);
-    this.email = email;
+    // Wrapped here rather than at `context.email`, so framework-internal senders (admin notifications,
+    // auth mail) are covered too — everything that sends goes through this one driver.
+    this.email = SuppressedEmailDriver.wrap(email, this.db);
     return resolved;
   }
 

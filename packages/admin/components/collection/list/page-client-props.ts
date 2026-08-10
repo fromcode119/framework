@@ -12,7 +12,7 @@ export class CollectionListPageProps {
       router, settings, theme, columnsMenuRef, collection, resolvedSlug, slotSlug,
       data, pluginSettings, total, loading, loadError, search, setSearch, page, setPage, sort, handleSort,
       selectedIds, setSelectedIds, statusFilter, setStatusFilter, fieldFilters, setFieldFilters,
-      visibleColumnIds, setVisibleColumnIds, showColumnsMenu, setShowColumnsMenu,
+      visibleColumnIds, setVisibleColumnIds, stickyColumnIds, setStickyColumnIds, showColumnsMenu, setShowColumnsMenu,
       quickEditExpandedId, setQuickEditExpandedId, quickEditLoadingId, setQuickEditLoadingId, quickEditSavingId, setQuickEditSavingId,
       quickEditData, setQuickEditData, quickEditInitialData, setQuickEditInitialData, quickEditStatus, setQuickEditStatus,
       quickEditFields, deleteDialogState, setDeleteDialogState, deleteLoading, setDeleteLoading,
@@ -22,9 +22,10 @@ export class CollectionListPageProps {
     const toolbarProps = {
       filterBarProps: {
         collection, slug, theme, search, setSearch, statusFilter, setStatusFilter, statusOptions, setPage,
-        showColumnsMenu, setShowColumnsMenu, columnsMenuRef, allColumns, visibleColumnIds,
+        showColumnsMenu, setShowColumnsMenu, columnsMenuRef, allColumns, visibleColumnIds, stickyColumnIds,
         toggleColumn: (columnId: string) => CollectionListPageActions.toggleColumn({ columnId, pluginSlug, resolvedSlug, setVisibleColumnIds }),
         reorderColumn: (columnId: string, direction: ReorderDirection) => CollectionListPageActions.reorderColumn({ columnId, direction, pluginSlug, resolvedSlug, setVisibleColumnIds }),
+        toggleStickyColumn: (columnId: string) => CollectionListPageActions.toggleStickyColumn({ columnId, pluginSlug, resolvedSlug, setStickyColumnIds }),
         selectFilterFields, fieldFilters, setFieldFilters,
         prettifyColumnName: CollectionListUtils.prettifyColumnName
       },
@@ -39,6 +40,7 @@ export class CollectionListPageProps {
 
     const tableProps = {
       collection, pluginSlug, slug, slotSlug, resolvedSlug, theme, total, page, search, columns, data, loading, loadError, sort,
+      stickyColumnIds,
       onPageChange: setPage,
       onSort: handleSort,
       onRowClick: (row: any) => router.push(`/${pluginSlug}/${slug}/${row.id}`),

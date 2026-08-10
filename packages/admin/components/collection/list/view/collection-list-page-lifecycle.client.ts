@@ -17,6 +17,7 @@ export class CollectionListPageLifecycle {
   static onMount(self: any): void {
     CollectionListPageLifecycle.redirectIfGlobal(self);
     CollectionListPageLifecycle.syncVisibleColumns(self);
+    CollectionListPageLifecycle.syncStickyColumns(self);
     CollectionListPageLifecycle.syncSortDefault(self);
     CollectionListPageLifecycle.syncFieldFilters(self);
     CollectionListPageLifecycle.loadPluginSettings(self);
@@ -33,6 +34,7 @@ export class CollectionListPageLifecycle {
     if (collectionContextChanged) {
       CollectionListPageLifecycle.redirectIfGlobal(self);
       CollectionListPageLifecycle.syncVisibleColumns(self);
+    CollectionListPageLifecycle.syncStickyColumns(self);
       CollectionListPageLifecycle.syncSortDefault(self);
       CollectionListPageLifecycle.syncFieldFilters(self);
       CollectionListPageLifecycle.loadPluginSettings(self);
@@ -77,6 +79,16 @@ export class CollectionListPageLifecycle {
       persistedColumns: AdminServices.getInstance().uiPreference.readCollectionColumns(self.props.pluginSlug, CollectionListPageLifecycle.resolvedSlugOf(self))
     });
     if (!CollectionListUtils.areStringArraysEqual(self.state.visibleColumnIds, next)) self.updateState('visibleColumnIds', next);
+  }
+
+  private static syncStickyColumns(self: any): void {
+    const persisted = AdminServices.getInstance().uiPreference.readCollectionStickyColumns(
+      self.props.pluginSlug,
+      CollectionListPageLifecycle.resolvedSlugOf(self),
+    );
+    if (!CollectionListUtils.areStringArraysEqual(self.state.stickyColumnIds, persisted)) {
+      self.updateState('stickyColumnIds', persisted);
+    }
   }
 
   private static syncSortDefault(self: any): void {

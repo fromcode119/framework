@@ -39,6 +39,7 @@ export class CollectionListPageViewModelBuilder {
       statusFilter: self.state.statusFilter, setStatusFilter: (v: any) => self.updateState('statusFilter', v),
       fieldFilters: self.state.fieldFilters, setFieldFilters: (v: any) => self.updateState('fieldFilters', v),
       visibleColumnIds: self.state.visibleColumnIds, setVisibleColumnIds: (v: any) => self.updateState('visibleColumnIds', v),
+      stickyColumnIds: self.state.stickyColumnIds, setStickyColumnIds: (v: any) => self.updateState('stickyColumnIds', v),
       showColumnsMenu: self.state.showColumnsMenu, setShowColumnsMenu: (v: any) => self.updateState('showColumnsMenu', v),
       quickEditExpandedId: self.state.quickEditExpandedId, setQuickEditExpandedId: (v: any) => self.updateState('quickEditExpandedId', v),
       quickEditLoadingId: self.state.quickEditLoadingId, setQuickEditLoadingId: (v: any) => self.updateState('quickEditLoadingId', v),

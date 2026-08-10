@@ -25,6 +25,8 @@ export class FilterBar extends PureReactor {
   @prop declare visibleColumnIds: string[];
   @prop declare toggleColumn: (id: string) => void;
   @prop declare reorderColumn: (id: string, direction: ReorderDirection) => void;
+  @prop declare stickyColumnIds: string[];
+  @prop declare toggleStickyColumn: (id: string) => void;
   @prop declare selectFilterFields: any[];
   @prop declare fieldFilters: Record<string, string>;
   @prop declare setFieldFilters: (val: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
@@ -96,6 +98,8 @@ export class FilterBar extends PureReactor {
             visibleColumnIds={this.visibleColumnIds}
             toggleColumn={this.toggleColumn}
             reorderColumn={this.reorderColumn}
+            stickyColumnIds={this.stickyColumnIds}
+            toggleStickyColumn={this.toggleStickyColumn}
           />
         )}
       </div>

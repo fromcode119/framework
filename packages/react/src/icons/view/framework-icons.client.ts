@@ -80,6 +80,8 @@ export class FrameworkIcons {
   static readonly Folder = IconUtils.createProxyIcon('Folder');
   static readonly External = IconUtils.createProxyIcon('ExternalLink');
   static readonly Lock = IconUtils.createProxyIcon('Lock');
+  static readonly Pin = IconUtils.createProxyIcon('Pin');
+  static readonly PinOff = IconUtils.createProxyIcon('PinOff');
   static readonly UserCheck = IconUtils.createProxyIcon('UserCheck');
   static readonly Calendar = IconUtils.createProxyIcon('Calendar');
   static readonly Zap = IconUtils.createProxyIcon('Zap');
