@@ -84,27 +84,17 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     });
 
     await this.reconcileMaterializedPageMetadata(pagesEntry.collection, report, resolvedContracts);
-    this.reportRequiredRouteFailures(report, resolvedContracts);
+
+    // Log EVERY unreconciled required route, including the ones this pass will not throw for:
+    // stepping over another plugin's broken route must never mean hiding it.
+    const failures = this.requiredRouteAssertion.collectRequiredRouteFailures(report, resolvedContracts);
+    if (failures.length) {
+      this.error(`Required route reconciliation failed: ${failures.join('; ')}`);
+    }
+
     this.requiredRouteAssertion.assertRequiredRouteReconciliation(report, resolvedContracts, requiredRouteOwnerPluginSlug);
 
     return report;
-  }
-
-  /**
-   * Every required route that failed, logged on every pass — including the ones this pass will not
-   * throw for. Stepping over another plugin's broken route must never mean hiding it.
-   */
-  private reportRequiredRouteFailures(
-    report: IPluginDefaultPageContractMaterializationExecutionReport,
-    resolvedContracts: IResolvedPluginDefaultPageContract[],
-  ): void {
-    const failures = this.requiredRouteAssertion.collectRequiredRouteFailures(report, resolvedContracts);
-
-    if (!failures.length) {
-      return;
-    }
-
-    this.error(`Required route reconciliation failed: ${failures.join('; ')}`);
   }
 
   static isRequiredRouteFailure(error: unknown): boolean {

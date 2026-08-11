@@ -1,6 +1,5 @@
 import { ClientType } from '@fromcode119/core/client';
 import React from 'react';
-import { Platform } from '@fromcode119/reactor';
 import { ApiVersionUtils, BrowserStateClient, CookieConstants, SystemConstants } from '@fromcode119/core/client';
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
 import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
@@ -245,18 +244,14 @@ export class ContextProviderApiHooks {
           query += `&fallback_locale=${encodeURIComponent(fallbackLocale)}`;
         }
 
-        if (Platform.isBrowser) {
-          const currentUrl = new URL(window.location.href);
-          const params = currentUrl.searchParams;
-          if (params.get('preview') === '1') {
-            query += '&preview=1';
-          }
-
-          if (window.self !== window.top) {
-            query += '&preview=1';
-          }
-        }
-
+        // No `&preview=1` here. This used to append it from the page URL and again for any framed
+        // render, back when the API OR-ed that parameter into its preview decision — i.e. it was the
+        // browser-side half of the hole where `?preview=1` handed drafts to anyone. The API now
+        // decides preview purely from the caller's roles/permissions, so appending it would be a
+        // parameter nothing reads. This call resolves with whatever session the browser presents,
+        // which on the storefront origin is the visitor's, never the admin's (`fc_token` is only
+        // accepted on the admin surface). Operator preview is an SSR concern: the storefront's
+        // server render forwards the admin session for a `preview=1` navigation.
         return await api.get(`${SystemConstants.API_PATH.SYSTEM.RESOLVE}${query}`, { silent: true });
       } catch {
         return null;
