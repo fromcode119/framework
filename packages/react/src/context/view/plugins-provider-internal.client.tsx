@@ -63,6 +63,10 @@ export class PluginsProviderInternal extends Bridge<IPluginsProviderRuntimeValue
     // for legacy flat dicts). Kept separate from the server `translations` so a locale change recomputes
     // the active language without plugins having to re-register.
     const [registeredTranslations, setRegisteredTranslations] = React.useState<Record<string, Record<string, any>>>({});
+    // The theme's copy, in its OWN bucket. Merged after `registeredTranslations` by
+    // FrontendI18nService.resolveEffective, which is what makes the theme an override layer instead of
+    // whichever bundle happened to register last.
+    const [themeTranslations, setThemeTranslations] = React.useState<Record<string, Record<string, any>>>({});
     const [locale, setLocale] = React.useState<string>(() => FrontendI18nService.detectInitialLocale());
     const [refreshVersion, setRefreshVersion] = React.useState(0);
     const [isReady, setIsReady] = React.useState(false);
@@ -105,6 +109,7 @@ export class PluginsProviderInternal extends Bridge<IPluginsProviderRuntimeValue
       setRefreshVersion,
       setSettings,
       setRegisteredTranslations,
+      setThemeTranslations,
       setSlots,
       setThemeLayouts,
       setThemeStyleVariants,
@@ -135,7 +140,7 @@ export class PluginsProviderInternal extends Bridge<IPluginsProviderRuntimeValue
     } = registrationRuntime;
 
     const { triggerRefresh, effectiveTranslations, t } = ContextProviderI18nHooks.useI18nRuntime({
-      api, locale, translations, registeredTranslations, loadedConfigPathsRef, setTranslations,
+      api, locale, translations, registeredTranslations, themeTranslations, loadedConfigPathsRef, setTranslations,
       setRefreshVersion, setSlots, setOverrides, setMenuItems, setSecondaryPanel, setCollections,
     });
 

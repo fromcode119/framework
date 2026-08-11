@@ -6,11 +6,19 @@
  * Backward compatible: a flat (non-locale-keyed) dict still works — it is stored under the wildcard
  * bucket and applies to every locale, so plugins that have not migrated keep functioning. This
  * replaces the old per-plugin `document.documentElement.lang` overlay hack.
+ *
+ * ONE registration call, `registerTranslations(payload, layer)`, for plugins and themes alike. The
+ * second argument names which LAYER the copy belongs to — `registerTranslations(dict, 'theme')` from a
+ * theme, nothing (i.e. the plugin layer) from a plugin. {@link resolveEffective} then merges the layers
+ * in a fixed order. See that method for why the layer cannot be inferred from load order.
  */
 import { Platform } from '@fromcode119/reactor';
 
 export class FrontendI18nService {
   static readonly WILDCARD = '*';
+
+  /** The override layer — what a theme passes as the second argument to `registerTranslations`. */
+  static readonly THEME_LAYER = 'theme';
 
   /** A registration payload is a per-locale map when every top-level key is a locale code
    * (e.g. `en`, `bg`, `pt-BR`) and every value is a plain object. Plugin namespaces (`ecommerce`,
@@ -50,20 +58,45 @@ export class FrontendI18nService {
     return next;
   }
 
-  /** Effective dict for the active locale: server translations first, then locale-agnostic
-   * registrations, then the active locale's registrations (most specific wins). */
+  /**
+   * Effective dict for the active locale, merged in LAYER order — server, then plugins, then theme.
+   *
+   * The layer is DECLARED by the caller (`registerTranslations(dict, 'theme')`) rather than inferred
+   * from when it registered, because both plugins and themes register as a side effect of their bundle
+   * being imported and the plugin bundle evaluates last (`ThemeServerRenderer` imports plugins after
+   * the theme, deliberately). Ordering alone therefore made the PLUGIN win every collision — the exact
+   * inverse of "Plugin Owns Default Design — Theme Is Only an Override": a theme's copy silently lost
+   * to the plugin default it was written to replace.
+   *
+   * Within a layer the order is unchanged: locale-agnostic (wildcard) registrations first, then the
+   * active locale's (most specific wins). Across layers the whole theme layer beats the whole plugin
+   * layer, so a theme override applies whether the theme registered before or after the plugin.
+   */
   static resolveEffective(
     server: Record<string, any>,
     registeredByLocale: Record<string, Record<string, any>>,
     locale: string,
+    themeByLocale: Record<string, Record<string, any>> = {},
   ): Record<string, any> {
+    return FrontendI18nService.deepMerge(
+      FrontendI18nService.deepMerge(
+        server || {},
+        FrontendI18nService.resolveLayer(registeredByLocale, locale),
+      ),
+      FrontendI18nService.resolveLayer(themeByLocale, locale),
+    );
+  }
+
+  /** One registration layer flattened for the active locale: wildcard first, active locale over it. */
+  static resolveLayer(
+    byLocale: Record<string, Record<string, any>>,
+    locale: string,
+  ): Record<string, any> {
+    if (!byLocale) return {};
     const norm = FrontendI18nService.normalizeLocale(locale);
     const base = FrontendI18nService.baseLocale(norm);
-    const localeDict = registeredByLocale[norm] || registeredByLocale[base] || {};
-    return FrontendI18nService.deepMerge(
-      FrontendI18nService.deepMerge(server || {}, registeredByLocale[FrontendI18nService.WILDCARD] || {}),
-      localeDict,
-    );
+    const localeDict = byLocale[norm] || byLocale[base] || {};
+    return FrontendI18nService.deepMerge(byLocale[FrontendI18nService.WILDCARD] || {}, localeDict);
   }
 
   /**

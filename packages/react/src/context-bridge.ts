@@ -49,6 +49,11 @@ export class ContextBridge {
     return ContextBridge._args?.registerSettings?.(...args);
   }
 
+  /**
+   * `registerTranslations(payload)` — plugin copy. `registerTranslations(payload, 'theme')` — the
+   * theme's, which is the override layer and wins over every plugin default regardless of which
+   * bundle evaluated first. See `FrontendI18nService.resolveEffective`.
+   */
   static registerTranslations(...args: any[]): any {
     return ContextBridge._args?.registerTranslations?.(...args);
   }

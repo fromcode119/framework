@@ -29,13 +29,18 @@ export class ServerPluginContext {
   }): Record<string, unknown> {
     const { themeSlug, config, serverTranslations, locale } = args;
     const noop = () => undefined;
-    // Every `registerTranslations` payload, folded in registration order — the same reduction the
-    // browser provider performs, so a plugin's copy overlays the theme's the same way on both sides.
+    // Two layers, folded separately — the same reduction the browser provider performs, so a theme's
+    // copy overrides a plugin default identically on both sides. One shared bucket here would resolve
+    // collisions by registration order and swap the wording at hydration.
     let registered: Record<string, Record<string, unknown>> = {};
     for (const payload of ThemeServerRegistry.translationPayloads()) {
       registered = FrontendI18nService.foldRegistration(registered, payload);
     }
-    const translator = new ServerTranslator(serverTranslations, registered, locale);
+    let themeRegistered: Record<string, Record<string, unknown>> = {};
+    for (const payload of ThemeServerRegistry.themeTranslationPayloads()) {
+      themeRegistered = FrontendI18nService.foldRegistration(themeRegistered, payload);
+    }
+    const translator = new ServerTranslator(serverTranslations, registered, locale, themeRegistered);
     const pluginApiSubscription = new ServerPluginApiSubscription();
 
     return {

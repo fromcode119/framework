@@ -1,3 +1,4 @@
+import { FrontendI18nService } from '@fromcode119/react/context/frontend-i18n-service';
 import { ServerSlotEntry } from '@/lib/ssr/server-slot-entry';
 
 /**
@@ -24,6 +25,9 @@ export class ThemeServerRegistry {
   private static readonly themes = new Map<string, Record<string, unknown>>();
 
   private static readonly translations: Record<string, unknown>[] = [];
+
+  /** The THEME's copy, kept apart from the plugin payloads above so it can be merged as a later layer. */
+  private static readonly themeTranslations: Record<string, unknown>[] = [];
 
   private static readonly slots = new Map<string, ServerSlotEntry[]>();
 
@@ -53,8 +57,16 @@ export class ThemeServerRegistry {
         // paint for the 404 page, the account skeleton and anything else registered this way.
         ThemeServerRegistry.registerThemeOverrides(themeSlug, (payload || {}).overrides);
       },
-      registerTranslations: (payload: Record<string, unknown>) => {
-        if (payload) ThemeServerRegistry.translations.push(payload);
+      // `layer` routes the payload to the same bucket the browser provider would pick. Dropping it
+      // here — folding a theme's copy in with the plugin payloads — would make the server resolve a
+      // collision the opposite way from the client, which reads as text changing between the server
+      // paint and hydration.
+      registerTranslations: (payload: Record<string, unknown>, layer?: string) => {
+        if (!payload) return;
+        const bucket = layer === FrontendI18nService.THEME_LAYER
+          ? ThemeServerRegistry.themeTranslations
+          : ThemeServerRegistry.translations;
+        bucket.push(payload);
       },
       registerSlotComponent: (name: string, component: unknown, owner?: string, priority?: number) => {
         ThemeServerRegistry.addSlot(name, new ServerSlotEntry(component, owner, priority));
@@ -185,6 +197,11 @@ export class ThemeServerRegistry {
   /** Every `registerTranslations` payload captured so far, in registration order. */
   static translationPayloads(): Record<string, unknown>[] {
     return [...ThemeServerRegistry.translations];
+  }
+
+  /** Every `registerTranslations(…, 'theme')` payload — merged after the plugin ones. */
+  static themeTranslationPayloads(): Record<string, unknown>[] {
+    return [...ThemeServerRegistry.themeTranslations];
   }
 
   /** Slugs registered so far. Diagnostic — a theme that failed to import simply will not appear. */

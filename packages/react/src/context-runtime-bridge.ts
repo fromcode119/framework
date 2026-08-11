@@ -160,6 +160,8 @@ export class ContextRuntimeBridge {
             ContextBridge.registerSettings(...(item.args || [item.settings]));
             break;
           case 'translations':
+            // `item.args` carries the layer argument too, so a queued theme registration replays
+            // into the same bucket it would have gone to had the bridge been installed.
             ContextBridge.registerTranslations(...(item.args || [item.translations]));
             break;
           case 'emit':

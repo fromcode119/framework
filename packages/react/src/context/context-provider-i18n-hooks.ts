@@ -13,6 +13,7 @@ export class ContextProviderI18nHooks {
     locale: string;
     translations: Record<string, any>;
     registeredTranslations: Record<string, Record<string, any>>;
+    themeTranslations: Record<string, Record<string, any>>;
     loadedConfigPathsRef: React.MutableRefObject<Set<string>>;
     setTranslations: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setRefreshVersion: React.Dispatch<React.SetStateAction<number>>;
@@ -27,6 +28,7 @@ export class ContextProviderI18nHooks {
       locale,
       translations,
       registeredTranslations,
+      themeTranslations,
       loadedConfigPathsRef,
       setTranslations,
       setRefreshVersion,
@@ -62,11 +64,12 @@ export class ContextProviderI18nHooks {
       loadTranslations(locale);
     }, [locale, loadTranslations, loadedConfigPathsRef, setRefreshVersion, setSlots, setOverrides, setMenuItems, setSecondaryPanel, setCollections]);
 
-    // Server translations (active-locale, from /system/i18n) + plugin/theme registrations for the
-    // active locale. Recomputes when the locale changes — no plugin re-registration needed.
+    // Server translations (active-locale, from /system/i18n), then plugin registrations, then the
+    // theme's — three layers in that fixed order, so the theme overrides a plugin default whichever
+    // bundle registered first. Recomputes when the locale changes: no re-registration needed.
     const effectiveTranslations = React.useMemo(
-      () => FrontendI18nService.resolveEffective(translations, registeredTranslations, locale),
-      [translations, registeredTranslations, locale],
+      () => FrontendI18nService.resolveEffective(translations, registeredTranslations, locale, themeTranslations),
+      [translations, registeredTranslations, themeTranslations, locale],
     );
 
     // Lookup lives in FrontendI18nService so the server-side pre-render of a theme resolves keys

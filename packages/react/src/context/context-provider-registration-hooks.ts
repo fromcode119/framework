@@ -20,6 +20,7 @@ export class ContextProviderRegistrationHooks {
     setRefreshVersion: React.Dispatch<React.SetStateAction<number>>;
     setSettings: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setRegisteredTranslations: React.Dispatch<React.SetStateAction<Record<string, Record<string, any>>>>;
+    setThemeTranslations: React.Dispatch<React.SetStateAction<Record<string, Record<string, any>>>>;
     setSlots: React.Dispatch<React.SetStateAction<Record<string, ISlotComponent[]>>>;
     setThemeLayouts: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setThemeStyleVariants: React.Dispatch<React.SetStateAction<Record<string, any>>>;
@@ -37,6 +38,7 @@ export class ContextProviderRegistrationHooks {
       setRefreshVersion,
       setSettings,
       setRegisteredTranslations,
+      setThemeTranslations,
       setSlots,
       setThemeLayouts,
       setThemeStyleVariants,
@@ -107,9 +109,15 @@ export class ContextProviderRegistrationHooks {
 
     // Accepts a per-locale map — `registerTranslations({ en: {...}, bg: {...} })` — stored per locale
     // so `t()` resolves the active language. A flat dict still works (legacy: applies to all locales).
-    const registerTranslations = React.useCallback((newTranslations: Record<string, any>) => {
-      setRegisteredTranslations((prev) => FrontendI18nService.foldRegistration(prev, newTranslations));
-    }, [setRegisteredTranslations]);
+    //
+    // `layer` names WHICH store the copy lands in: omitted (a plugin) it is the base layer; passed as
+    // 'theme' it is the override layer, merged after every plugin registration by
+    // FrontendI18nService.resolveEffective. Declaring it is what makes a theme override survive
+    // regardless of which bundle evaluated first — see that method.
+    const registerTranslations = React.useCallback((newTranslations: Record<string, any>, layer?: string) => {
+      const setLayer = layer === FrontendI18nService.THEME_LAYER ? setThemeTranslations : setRegisteredTranslations;
+      setLayer((prev) => FrontendI18nService.foldRegistration(prev, newTranslations));
+    }, [setRegisteredTranslations, setThemeTranslations]);
 
     const slotRegistration = ContextProviderSlotRegistrationHooks.useSlotRegistration({
       setCollections,

@@ -11,6 +11,7 @@ export interface IRuntimeBridgeInstallArgs {
   registerPlugins: (...args: any[]) => void;
   registerTheme: (...args: any[]) => void;
   registerSettings: (...args: any[]) => void;
+  /** `(payload, layer?)` — `layer: 'theme'` folds into the override layer, merged after plugins. */
   registerTranslations: (...args: any[]) => void;
   registerPluginApi: (...args: any[]) => void;
   getPluginApi: (...args: any[]) => any;
