@@ -10,8 +10,8 @@ import { BaseService } from '@/lib/services/base-service';
  * @example
  * ```typescript
  * const services = AdminServices.getInstance();
- * const key = services.collection.normalizeKey('ecommerce_products'); // 'ecommerce-products'
- * const slug = services.collection.resolveSlug('@ecommerce/products', allCollections);
+ * const key = services.collection.normalizeKey('example_widgets'); // 'example-widgets'
+ * const slug = services.collection.resolveSlug('@example/widgets', allCollections);
  * ```
  */
 export class CollectionService extends BaseService {

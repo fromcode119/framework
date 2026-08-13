@@ -80,7 +80,7 @@ export class LocalizationSettingsIo {
    * `measurementSystem` is part of this PUT because the page's own control had NO persistence path at
    * all: it was passed only to `ContextBridge.registerSettings`, a client-side context setter, so the
    * operator got a green "Localization Updated" toast and the value was gone on reload — while
-   * `plugins/ecommerce` reads `globalSettings.measurement_system` from the SERVER settings for package
+   * A plugin reads `globalSettings.measurement_system` from the SERVER settings for its own
    * dimensions.
    *
    * REQUIRES an api-side change to land with it: `measurement_system` must be added to

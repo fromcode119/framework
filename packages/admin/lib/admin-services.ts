@@ -3,7 +3,6 @@ import { StringService } from '@/lib/services/string-service';
 import { MediaService } from '@/lib/services/media-service';
 import { ValidationService } from '@/lib/services/validation-service';
 import { LocalizationService } from '@/lib/services/localization-service';
-import { StatusService } from '@/lib/services/status-service';
 import { CollectionService } from '@/lib/services/collection-service';
 import { DateService } from '@/lib/services/date-service';
 import { UrlService } from '@/lib/services/url-service';
@@ -50,7 +49,6 @@ export class AdminServices {
   private _media: MediaService | null = null;
   private _validation: ValidationService | null = null;
   private _localization: LocalizationService | null = null;
-  private _status: StatusService | null = null;
   private _collection: CollectionService | null = null;
   private _date: DateService | null = null;
   private _url: UrlService | null = null;
@@ -131,10 +129,6 @@ export class AdminServices {
   /**
    * Status service (labels, colours, variants for status fields).
    */
-  get status(): StatusService {
-    if (!this._status) this._status = new StatusService();
-    return this._status;
-  }
 
   /**
    * Collection service (slug normalisation and resolution utilities).

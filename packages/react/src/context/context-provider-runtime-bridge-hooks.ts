@@ -106,7 +106,7 @@ export class ContextProviderRuntimeBridgeHooks {
     // evaluates, a few hundred ms later; pre-filling its key with the generic stand-in publishes an
     // object that is truthy but missing the plugin's real API for the whole gap. Consumers cannot
     // defend against that: the correct presence check (`if (!api) return fallback;`) passes, and the
-    // next line throws (`ecommerce.storefront(...)` -> "is not a function"), taking out the render
+    // next line throws (`<plugin>.storefront(...)` -> "is not a function"), taking out the render
     // tree. Leaving the key EMPTY until the real client lands is the honest state — "absent" is what
     // consumers already fall back on, and the registry notifies them the moment it resolves.
     React.useMemo(() => {

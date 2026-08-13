@@ -10,7 +10,7 @@ import { UrlUtils } from '@core/url-utils';
  *
  * UrlUtils.build('/products', { page: 2, limit: 20 }); // '/products?page=2&limit=20'
  * UrlUtils.isExternal('https://cdn.example.com');       // true
- * UrlUtils.joinPaths('/api/v1', 'plugins', 'ecommerce'); // '/api/v1/plugins/ecommerce'
+ * UrlUtils.joinPaths('/api/v1', 'plugins', 'example'); // '/api/v1/plugins/example'
  * ```
  */
 export class UrlUtils {
@@ -34,7 +34,7 @@ export class UrlUtils {
    * Safely joins URL path segments, preventing double slashes.
    *
    * @example
-   * UrlUtils.joinPaths('/api/v1', 'plugins', '/ecommerce/') // '/api/v1/plugins/ecommerce'
+   * UrlUtils.joinPaths('/api/v1', 'plugins', '/example/') // '/api/v1/plugins/example'
    */
   static joinPaths(...segments: string[]): string {
     return segments

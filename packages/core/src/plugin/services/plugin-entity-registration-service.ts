@@ -120,8 +120,8 @@ export class PluginEntityRegistrationService {
    * permalink panel for.
    *
    * The admin decides that with `supportsPreview()`: a slug field AND `admin.preview !== false`.
-   * Injection used to check the slug alone, so 17 collections that opt out of preview (mlm tiers,
-   * logistics shipping methods/zones, finance payment methods, forms, …) received a `customPermalink`
+   * Injection used to check the slug alone, so 17 collections that opt out of preview (rate tables,
+   * delivery zones, payment methods, form definitions, …) received a `customPermalink`
    * — `unique: true`, so a real unique index — plus `disablePermalink`, with no UI anywhere to reach
    * either. Matching the admin's rule here means a permalink field can no longer exist without a way
    * to set it. Checked before changing: NO row in ANY table has a `custom_permalink` value, so

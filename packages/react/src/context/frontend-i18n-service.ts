@@ -21,8 +21,8 @@ export class FrontendI18nService {
   static readonly THEME_LAYER = 'theme';
 
   /** A registration payload is a per-locale map when every top-level key is a locale code
-   * (e.g. `en`, `bg`, `pt-BR`) and every value is a plain object. Plugin namespaces (`ecommerce`,
-   * `mlm`, …) are never 2-letter codes, so a flat namespaced dict is correctly treated as legacy. */
+   * (e.g. `en`, `bg`, `pt-BR`) and every value is a plain object. Plugin namespaces are
+   * never 2-letter codes, so a flat namespaced dict is correctly treated as legacy. */
   static isLocaleMap(input: Record<string, any>): boolean {
     if (!input || typeof input !== 'object' || Array.isArray(input)) return false;
     const keys = Object.keys(input);

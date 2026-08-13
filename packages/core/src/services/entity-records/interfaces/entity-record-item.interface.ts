@@ -4,7 +4,7 @@ export interface IEntityRecordItem {
   id: string;
   /** Display bucket, e.g. 'Invoices', 'Declarations', 'Orders'. */
   group: string;
-  /** Machine kind for filtering/icons, e.g. 'finance:invoice', 'mlm:agreement'. */
+  /** Machine kind for filtering/icons, e.g. '<plugin>:<record>'. */
   kind: string;
   title: string;
   subtitle?: string;

@@ -80,7 +80,7 @@ export class SystemConstants {
   FRONTEND_DEFAULT_LOCALE: 'frontend_default_locale',
   LOCALE_URL_STRATEGY: 'locale_url_strategy',
   // Platform-wide measurement system (metric cm/kg | imperial in/lb). A regional format like locale —
-  // domain plugins (e.g. ecommerce package dimensions) read it; the framework stays domain-agnostic.
+  // domain plugins read it for their own units; the framework stays domain-agnostic.
   MEASUREMENT_SYSTEM: 'measurement_system',
   
   // Security & Auth

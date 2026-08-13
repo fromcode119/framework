@@ -20,7 +20,7 @@ export class AssetCacheHeaderService {
    * changes whenever the bytes do, which is the only property that makes `immutable` safe.
    *
    * Mixed case is required so ordinary hyphenated names are not mistaken for hashes
-   * (`montserrat-400-latin.woff2`, `vselenskiportal88-theme.css`). Both misreads are safe by
+   * (`montserrat-400-latin.woff2`, `<theme>-theme.css`). Both misreads are safe by
    * construction: an all-lowercase hash (~0.03% of hashes) merely gets the shorter cache, and a
    * lowercase real name never reaches `immutable`.
    */

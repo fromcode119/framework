@@ -30,7 +30,7 @@ export abstract class PluginComponent<P = Record<string, unknown>, S = Record<st
    * The no-provider fallback honours the caller's `defaultValue`. It used to be `(key) => key`, which
    * DISCARDED the third argument every call site passes — so a missing `PluginRuntimeProvider` did not
    * degrade to readable English, it printed the raw key into the DOM. That is exactly what shipped on
-   * the storefront: SSR never mounted the provider, and `aria-label="ecommerce.collection.loading"`
+   * the storefront: SSR never mounted the provider, and `aria-label="<plugin>.collection.loading"`
    * went out in the HTML on first paint. The provider gap is fixed in `ThemeSsrRuntime.provide`; this
    * makes the failure mode legible rather than user-visible if it ever recurs.
    */

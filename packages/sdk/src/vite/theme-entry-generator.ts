@@ -62,7 +62,7 @@ export class ThemeEntryGenerator {
    * The entry Vite should compile for this theme.
    *
    * A theme that ships its own `src/index.jsx` keeps it — not every theme is built from declared glob
-   * lists (snapbilt-theme hand-writes a 54KB entry), and generating over it would break its build.
+   * lists (one theme hand-writes a 54KB entry), and generating over it would break its build.
    */
   static resolveEntry(themeDir: string): string {
     const authored = path.join(themeDir, 'src', 'index.jsx');

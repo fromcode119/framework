@@ -5,7 +5,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { prop, state } from '@fromcode119/reactor';
 
 /**
- * Nested entity page — e.g. /numerology/profiles/3/readings, /mlm/affiliates/3/hub.
+ * Nested entity page — e.g. /<plugin>/<collection>/3/<sub-collection>.
  * Resolves to slot `admin.plugin.<plugin>.page.<plugin>.<slug>.<subSlug>` with `id`
  * passed as a prop.
  *

@@ -45,7 +45,7 @@ export class HookEventUtils {
    * A registered collection carries four names: `slug` (overwritten at registration with the PHYSICAL
    * table name, `fcp_ecommerce_orders`), `shortSlug` (`orders`, and freely overridable — `products`
    * registers as `catalog`), `pluginSlug`, and `unprefixedSlug` (the name the plugin wrote in its own
-   * schema, `ecommerce-orders`).
+   * schema, `example-widgets`).
    *
    * The emitter used `slug`, so every event went out under the physical table name while plugins
    * subscribed under the declared one. Nothing matched and nothing said so: saving an order through the

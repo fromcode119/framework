@@ -34,7 +34,7 @@ export class WorkflowService {
         // That is not a cosmetic bug: each "pending" row is then written with status 'published' and
         // `published_at: now`, so on every scheduler tick it re-published all 32 CMS pages, overwrote
         // their real publication dates, would silently publish genuine DRAFTS, and emitted 32 spurious
-        // `collection:published` hooks for subscribers to act on. Observed live on vselenskiportal88.
+        // `collection:published` hooks for subscribers to act on. Observed live on a production site.
         //
         // A NULL `scheduledPublishAt` correctly matches nothing (`NULL <= now` is NULL), which is the
         // whole point: only rows with a real scheduled date are due.
@@ -60,7 +60,7 @@ export class WorkflowService {
             // Emit hook for other plugins to react (like clearing cache).
             // Identity comes from HookEventUtils like every other collection event. This used
             // `shortSlug` — a THIRD naming rule, and one that is neither unique across plugins nor
-            // stable (ecommerce `products` registers as `catalog`), so a subscriber could not name this
+            // stable (a plugin's `widgets` may register under a different shortSlug), so a subscriber could not name this
             // event from its own schema.
             this.hooks.emit(HookEventUtils.collectionNotification(collection, 'published'), item);
             this.hooks.emit(`collection:published`, {

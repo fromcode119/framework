@@ -55,7 +55,7 @@ export class SidebarMenuService {
 
   static buildGroupedMenu(groupedMenuItems: any[]): { groupedMenu: Record<string, any[]>; groupLabels: Record<string, string> } {
     // groupLabels preserves the original casing from the collection definition so that
-    // "E-commerce" is not lowercased to "e-commerce" in the sidebar header.
+    // a group label carrying internal capitals keeps them in the sidebar header.
     const groupLabels: Record<string, string> = {};
     const groupedMenu = groupedMenuItems.reduce((acc: Record<string, any[]>, item) => {
       const rawGroup = NavUtils.normalizeGroupKey(item.group);
@@ -64,7 +64,7 @@ export class SidebarMenuService {
 
       // First item in this group wins the display label (all items in a group should have
       // the same casing). Built-in groups keep their configured label; plugin/theme groups
-      // use the original casing so "E-commerce" is not lowercased to "e-commerce".
+      // use the original casing so a label with internal capitals is not flattened.
       if (!groupLabels[groupKey] && originalLabel) {
         const configured = NavUtils.getMenuGroupMeta(groupKey);
         const isBuiltIn = ['core', 'management', 'settings', 'system'].includes(groupKey);

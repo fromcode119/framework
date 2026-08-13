@@ -13,7 +13,7 @@ import type { ISlotComponent } from '@react/interfaces/slot-component.interface'
  *
  * This is the ONLY place the account area learns what sections exist. The framework names no plugin: a
  * section exists because some panel declared `static accountSection = { key, labelKey, priority }`, so
- * orders/courses/subscription/affiliate arrive from ecommerce/lms/subscriptions/mlm and vanish with them.
+ * domain sections arrive from the plugins that own them and vanish with them.
  * Both the shell (nav + active panel) and the overview (quick links) read the list from here, so they can
  * never disagree about what the account contains.
  */

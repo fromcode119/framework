@@ -85,7 +85,7 @@ export class ApiAccessGate {
 
     // Resolve the permission to check. An explicit `{ permission }` declaration wins; otherwise an
     // UNDECLARED admin route derives a per-plugin permission `<slug>:manage` from the route path, so a
-    // scoped operator role (e.g. `mlm:*`, `cms:*`) grants that plugin's admin routes without tagging each
+    // scoped operator role (e.g. `<plugin>:*`) grants that plugin's admin routes without tagging each
     // one. `<slug>:*` matches `<slug>:manage` via the checker's hierarchical wildcard.
     let permission: string | null = null;
     if (level instanceof ApiPermissionRequirement) {

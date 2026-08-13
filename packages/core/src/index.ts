@@ -257,3 +257,6 @@ export { TwoFactorMethod } from '@core/enums/two-factor-method.enum';
 export { ServerCoreServices } from '@core/services/server-core-services';
 export { ServerServiceRegistry } from '@core/services/server-service-registry';
 export { ServerServiceKey } from '@core/services/server-service-key';
+
+export { AssistantVocabularyRegistryService } from '@core/services/assistant-vocabulary-registry-service';
+export { AssistantVocabularyRole } from '@core/services/enums/assistant-vocabulary-role.enum';

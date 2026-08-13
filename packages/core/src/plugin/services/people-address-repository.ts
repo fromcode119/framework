@@ -4,7 +4,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * Raw data access for the framework-owned `people_addresses` table — the reusable address book every
- * plugin shares (ecommerce delegates its account address book to it). This is core internal code, so
+ * plugin shares (a plugin may delegate its account address book to it). This is core internal code, so
  * it talks to the raw DB manager: writes use camelCase keys (the dialect maps them to snake_case
  * columns) and reads come back as snake_case rows, which are denormalized once to camelCase via
  * {@link NamingStrategy.denormalizeRecord} so callers always see a single canonical (camelCase) shape.

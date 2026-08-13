@@ -101,6 +101,7 @@ export { NamespacedPluginsFacade } from '@fromcode119/core/client';
 export { PluginsRegistry } from '@fromcode119/core/client';
 export { RuntimeBridge } from '@fromcode119/core/client';
 export { CoreServices } from '@fromcode119/core/client';
+export { AssistantVocabularyRole } from '@fromcode119/core/client';
 export { AutocompleteOptionService } from '@fromcode119/core/client';
 export { MediaRelationService } from '@fromcode119/core/client';
 export type { IFrontendRuntimeMetadata } from '@fromcode119/core/client';

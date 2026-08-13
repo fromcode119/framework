@@ -11,7 +11,7 @@ import type { IAppearanceSecurityGateValues } from '@/lib/appearance/interfaces/
  * state the default shell uses and renders the loading/redirect screens, so an appearance is presentation-
  * only and never re-owns auth. It renders the shell for ANY authenticated user — it deliberately does NOT
  * deny by role. Authorization is the appearance's job (the shell renders role-appropriate views) and the
- * API's job (every endpoint scopes/permits by role server-side). An MLM platform admin AND a partner both
+ * API's job (every endpoint scopes/permits by role server-side). A platform admin AND a restricted operator both
  * log in here; each sees what their role allows. The DEFAULT admin does NOT pass through this gate.
  */
 export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues, IAppearanceSecurityGateProps> {

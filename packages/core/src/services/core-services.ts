@@ -13,6 +13,7 @@ import type { PluginDefaultPageMaterializationService } from '@core/services/def
 import type { PluginDefaultPageContractRegistryService } from '@core/services/default-page-contract/plugin-default-page-contract-registry-service';
 import type { PluginDefaultPageContractResolutionService } from '@core/services/default-page-contract/plugin-default-page-contract-resolution-service';
 import type { SeedPageService } from '@core/services/seed-page-service';
+import type { AssistantVocabularyRegistryService } from '@core/services/assistant-vocabulary-registry-service';
 import type { ContentResolutionGateRegistryService } from '@core/services/content-resolution-gate-registry-service';
 import type { RedirectResolverRegistryService } from '@core/services/redirect-resolver-registry-service';
 import type { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
@@ -230,6 +231,10 @@ export class CoreServices {
    * transformers that rewrite a resolved document before it is sent to the
    * client (e.g. members-only paywall gating). The framework stays plugin-agnostic.
    */
+  get assistantVocabulary(): AssistantVocabularyRegistryService {
+    return ServerServiceRegistry.require<AssistantVocabularyRegistryService>(ServerServiceKey.ASSISTANT_VOCABULARY);
+  }
+
   get contentResolutionGates(): ContentResolutionGateRegistryService {
     return ServerServiceRegistry.require<ContentResolutionGateRegistryService>(ServerServiceKey.CONTENT_RESOLUTION_GATES);
   }

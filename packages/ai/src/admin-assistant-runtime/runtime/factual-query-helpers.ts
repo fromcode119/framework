@@ -1,6 +1,29 @@
+import { AssistantVocabularyRole, CoreServices } from '@fromcode119/core';
 import { TextHelpers } from '@ai/admin-assistant-runtime/runtime/helpers/text-helpers';
 
 export class FactualQueryHelpers {
+  /**
+   * Words that name data, supplied by the plugins that own the records.
+   *
+   * The framework contributes the analytical half of every matcher below ("how many", "total",
+   * "average") because that is language. The nouns are not its to know — with no domain plugins
+   * installed the domain half drops out of each pattern rather than matching everything.
+   */
+  private static vocabulary(...roles: AssistantVocabularyRole[]): string {
+    return CoreServices.getInstance().assistantVocabulary.alternation(...roles) ?? '';
+  }
+
+  /** Framework words plus the registered ones for the given roles, without a dangling separator. */
+  private static withVocabulary(generic: string, ...roles: AssistantVocabularyRole[]): string {
+    const domain = FactualQueryHelpers.vocabulary(...roles);
+    if (!generic) return domain;
+    return domain ? `${generic}|${domain}` : generic;
+  }
+
+  private static terms(role: AssistantVocabularyRole): string[] {
+    return CoreServices.getInstance().assistantVocabulary.terms(role);
+  }
+
   static trimLeadingGreeting(message: string): string {
     return String(message || '')
       .trim()
@@ -12,8 +35,9 @@ export class FactualQueryHelpers {
     const source = FactualQueryHelpers.trimLeadingGreeting(message) || String(message || '');
     const text = TextHelpers.normalize(source);
     const asksForMetric = /\b(how much|(?:how|now)\s+many|tell me|show me|summary|stats|stat|count|number|total|totals|report|overview|highest|lowest|largest|smallest|max(?:imum)?|min(?:imum)?|average)\b/.test(text);
-    const namesMetricTarget = /\b(revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount)\b/.test(text);
-    const directMetricQuestion = /\b(what is|what's|tell me|show me)\s+(the\s+)?(revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount)\b/.test(text);
+    const targets = FactualQueryHelpers.withVocabulary('metrics?|amount', AssistantVocabularyRole.MEASURE, AssistantVocabularyRole.COUNTABLE);
+    const namesMetricTarget = new RegExp(`\\b(${targets})\\b`).test(text);
+    const directMetricQuestion = new RegExp(`\\b(what is|what's|tell me|show me)\\s+(the\\s+)?(${targets})\\b`).test(text);
     const periodOrOwnershipHint = /\b(this|last|today|yesterday|month|week|year|i have|my)\b/.test(text);
     return /\baccess my\b/.test(text)
       || FactualQueryHelpers.looksLikeEntityDetailQuestion(source)
@@ -35,10 +59,11 @@ export class FactualQueryHelpers {
     if (/\bthis month\b/.test(text)) return 'this_month';
     if (/\blast 7 days\b|\bpast 7 days\b/.test(text)) return 'last_7_days';
     if (/\blast 30 days\b|\bpast 30 days\b/.test(text)) return 'last_30_days';
-    if (/\b(how many|count|number)\b/.test(text) && /\b(orders?|transactions?|records?|items?)\b/.test(text)) {
+    const countable = new RegExp(`\\b(${FactualQueryHelpers.withVocabulary('records?|items?', AssistantVocabularyRole.COUNTABLE)})\\b`);
+    if (/\b(how many|count|number)\b/.test(text) && countable.test(text)) {
       return 'all_time';
     }
-    return /\b(revenue|sales|earnings|income|profit|refunds?|wallet|balance|metrics?|amount)\b/.test(text)
+    return new RegExp(`\\b(${FactualQueryHelpers.withVocabulary('metrics?|amount', AssistantVocabularyRole.MEASURE)})\\b`).test(text)
       ? 'last_30_days'
       : undefined;
   }
@@ -52,25 +77,33 @@ export class FactualQueryHelpers {
     const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
     if (!text) return false;
     if (FactualQueryHelpers.inferPeriod(text)) return true;
-    return /\b(for|what about|and|total|revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount|highest|lowest|max(?:imum)?|min(?:imum)?|average|count|number|how much|how many)\b/.test(text);
+    const terms = FactualQueryHelpers.withVocabulary(
+      'for|what about|and|total|metrics?|amount|highest|lowest|max(?:imum)?|min(?:imum)?|average|count|number|how much|how many',
+      AssistantVocabularyRole.MEASURE, AssistantVocabularyRole.COUNTABLE);
+    return new RegExp(`\\b(${terms})\\b`).test(text);
   }
 
   static hasExplicitMetricTarget(message: string): boolean {
     const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
-    return /\b(total|revenue|sales|earnings|income|profit|refunds?|wallet|balance|metrics?|amount|highest|lowest|max(?:imum)?|min(?:imum)?|average|count|number)\b/.test(text);
+    const terms = FactualQueryHelpers.withVocabulary(
+      'total|metrics?|amount|highest|lowest|max(?:imum)?|min(?:imum)?|average|count|number',
+      AssistantVocabularyRole.MEASURE);
+    return new RegExp(`\\b(${terms})\\b`).test(text);
   }
 
   static hasSpecificMetricSubject(message: string): boolean {
     const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
-    return /\b(revenue|sales|earnings|income|profit|refunds?|wallet|balance|orders?|transactions?|metrics?|amount|shipping|weight|payment|method|status)\b/.test(text);
+    const terms = FactualQueryHelpers.withVocabulary('metrics?|amount|weight|method|status',
+      AssistantVocabularyRole.MEASURE, AssistantVocabularyRole.COUNTABLE, AssistantVocabularyRole.SUBJECT);
+    return new RegExp(`\\b(${terms})\\b`).test(text);
   }
 
   static looksLikeEntityDetailQuestion(message: string): boolean {
     const text = TextHelpers.normalize(FactualQueryHelpers.trimLeadingGreeting(message) || message);
-    const namesEntity = /\b(order|orders|transaction|transactions|payment|payments|invoice|invoices|shipment|shipments|record|records|item|items|product|products|customer|customers)\b/.test(text);
+    const namesEntity = new RegExp(`\\b(${FactualQueryHelpers.withVocabulary('record|records|item|items', AssistantVocabularyRole.ENTITY)})\\b`).test(text);
     const asksForPosition = /\b(first|last|latest|earliest|oldest|newest|highest|lowest|biggest|smallest)\b/.test(text);
     const asksForFieldValue = /\b(what|which|who|when)\b/.test(text)
-      && /\b(status|email|id|reference|provider|customer|name|title|color|colour|weight|shipping|address|phone|sku|tracking)\b/.test(text);
+      && new RegExp(`\\b(${FactualQueryHelpers.withVocabulary('status|email|id|reference|provider|name|title|color|colour|weight|address|phone', AssistantVocabularyRole.ATTRIBUTE)})\\b`).test(text);
     return namesEntity && (asksForPosition || asksForFieldValue || /\b(what was|which was|who was|when was)\b/.test(text));
   }
 
@@ -139,23 +172,31 @@ export class FactualQueryHelpers {
     if (/\b(how many|count|number)\b/.test(lowerMessage) && !FactualQueryHelpers.isCountLikePath(path)) {
       score -= 4;
     }
-    if (/\b(how many|count|number|transactions?)\b/.test(lowerMessage) && /\bcount\b|count[a-z]/i.test(path)) {
+    if (/\b(how many|count|number)\b/.test(lowerMessage) && /\bcount\b|count[a-z]/i.test(path)) {
       score += 10;
     }
-    if (/\borders?\b/.test(lowerMessage) && /\border\b|order[a-z]/i.test(path)) {
-      score += 18;
+
+    // A word in the question and a segment of the result path naming the SAME record is the signal.
+    // Which words those are is the registering plugin's business, not the framework's.
+    // `break` on first hit: a plugin registers singular AND plural for the same record, and scoring both
+    // would double the boost for one match.
+    for (const term of FactualQueryHelpers.terms(AssistantVocabularyRole.COUNTABLE)) {
+      if (!new RegExp(`\\b${term}s?\\b`).test(lowerMessage)) continue;
+      if (new RegExp(`\\b${term}\\b|${term}[a-z]`, 'i').test(path)) { score += 18; break; }
     }
-    if (/\borders?\b/.test(lowerMessage) && /checkout_payment/i.test(path)) {
-      score -= 2;
-    }
-    if (/\brevenue|sales|earnings|income|profit\b/.test(lowerMessage) && /\brevenue\b|revenue[a-z]/i.test(path)) {
-      score += 10;
+
+    const revenueLike = FactualQueryHelpers.vocabulary(AssistantVocabularyRole.REVENUE);
+    if (revenueLike && new RegExp(`\\b(${revenueLike})\\b`).test(lowerMessage)) {
+      for (const term of FactualQueryHelpers.terms(AssistantVocabularyRole.REVENUE)) {
+        if (new RegExp(`\\b${term}\\b|${term}[a-z]`, 'i').test(path)) { score += 10; break; }
+      }
     }
     if (!/\bnet\b/.test(lowerMessage) && /\bnet\b|net[a-z]/i.test(path)) {
       score -= 1;
     }
-    if (!/\brefund/.test(lowerMessage) && /\brefund\b|refund[a-z]/i.test(path)) {
-      score -= 3;
+    for (const term of FactualQueryHelpers.terms(AssistantVocabularyRole.DEMOTE_WHEN_ABSENT)) {
+      if (new RegExp(`\\b${term}`).test(lowerMessage)) continue;
+      if (new RegExp(`\\b${term}\\b|${term}[a-z]`, 'i').test(path)) score -= 3;
     }
     return score;
   }
@@ -210,7 +251,12 @@ export class FactualQueryHelpers {
   static isCountLikePath(path: string): boolean {
     const normalized = TextHelpers.normalize(path)
       .replace(/[_.-]+/g, ' ');
-    return /\b(count|number|totaldocs|total docs|qty|quantity|transaction count|transactioncount|order count|ordercount|record count|recordcount|entry count|entrycount|row count|rowcount|doc count|doccount|count by type|countbytype)\b/.test(normalized);
+    if (/\b(count|number|totaldocs|total docs|qty|quantity|record count|recordcount|entry count|entrycount|row count|rowcount|doc count|doccount|count by type|countbytype)\b/.test(normalized)) {
+      return true;
+    }
+    // `<record> count` / `<record>count`, for whatever records are actually installed.
+    return FactualQueryHelpers.terms(AssistantVocabularyRole.COUNTABLE)
+      .some((term) => new RegExp(`\\b${term}\\s?count\\b`).test(normalized));
   }
 
   static isSubCountLikePath(path: string): boolean {

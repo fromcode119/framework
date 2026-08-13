@@ -70,8 +70,8 @@ export class CollectionsContextProxy {
           } else {
             // Re-run the SAME lookup the immediate branch uses. Comparing `shortSlug` here instead
             // was a second, DIFFERENT identity rule, and the two disagreed whenever a collection's
-            // shortSlug is not its table name: `ecommerce/products` registers with
-            // shortSlug `catalog`, so `extend('ecommerce','products')` matched on the immediate path
+            // shortSlug is not its table name: `<plugin>/widgets` may register with
+            // a different shortSlug, so `extend('<plugin>','widgets')` matched on the immediate path
             // but never on the deferred one. Extensions were dropped silently — the SEO plugin's own
             // product columns existed and were populated while the admin showed no SEO fields at all.
             manager.hooks.on('collection:registered', (data: any) => {

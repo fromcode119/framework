@@ -2,7 +2,7 @@
  * A resolved CMS/plugin document on its way out of the server.
  *
  * A "gate" is a plugin-supplied transformer applied to this result before it leaves the server. The
- * framework holds NO knowledge of what any gate does (subscriptions, paywalls, geo-fencing, …) — it
+ * framework holds NO knowledge of what any gate does (membership, paywalls, geo-fencing, …) — it
  * only runs the registered transformers in sequence and returns the final result.
  *
  * Absence is expressed by the CALLER as `ContentResolutionResult | null`, not by folding `null` into

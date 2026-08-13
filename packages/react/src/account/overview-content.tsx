@@ -139,7 +139,7 @@ private get client(): any {
   /**
    * Links to the other sections of the account — taken from the sections the shell actually resolved, so
    * this list grows and shrinks with the installed plugins instead of naming orders/courses/subscription
-   * (which belong to ecommerce/lms/subscriptions, not to the framework). The overview itself is skipped.
+   * (which belong to the plugins that registered them, not to the framework). The overview itself is skipped.
    */
   private renderQuickLinks(): ReactNode {
     const links = (this.sections || []).filter((section) => section.key !== AccountOverviewContent.OWN_SECTION);

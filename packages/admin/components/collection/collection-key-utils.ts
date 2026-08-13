@@ -25,7 +25,7 @@ export class CollectionKeyUtils {
    * Used for fuzzy slug matching in relationship and tag field components.
    *
    * @example
-   * CollectionKeyUtils.normalizeKey('ecommerce_products') // => 'ecommerce-products'
+   * CollectionKeyUtils.normalizeKey('example_widgets') // => 'example-widgets'
    * CollectionKeyUtils.normalizeKey('  My Collection  ')  // => 'my-collection'
    */
   static normalizeKey(value: unknown): string {

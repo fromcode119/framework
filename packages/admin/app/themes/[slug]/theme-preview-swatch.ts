@@ -7,7 +7,7 @@ import type { ITheme } from '@/app/themes/[slug]/interfaces/theme.interface';
  *
  * This replaces a fixed six-role palette (`primary`/`background`/`foreground`/`muted`/`card`/`accent`)
  * that guessed at variable KEY NAMES. No theme names its variables that way, and no two themes agree —
- * vselenskiportal88 declares `primaryColor`/`secondaryColor`/`accentColor`, snapbilt declares
+ * one theme declares `primaryColor`/`secondaryColor`/`accentColor`, another declares
  * `primary`/`accent`/`obsidian`, and neither declares `muted` or `card` at all — so the lookups missed
  * and the card painted a hardcoded indigo palette nobody had set. Editing the theme's Primary Color
  * changed the field and left the preview untouched.

@@ -19,6 +19,8 @@ export class ServerServiceKey {
 
   static readonly SEED_PAGE = 'seedPage';
 
+  static readonly ASSISTANT_VOCABULARY = 'assistantVocabulary';
+  
   static readonly CONTENT_RESOLUTION_GATES = 'contentResolutionGates';
 
   static readonly REDIRECT_RESOLVERS = 'redirectResolvers';

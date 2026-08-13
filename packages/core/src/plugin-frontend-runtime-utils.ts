@@ -4,12 +4,12 @@
  *
  * It matters for the plugin API registry. A plugin whose runtime module is loaded registers its OWN
  * API client when that module evaluates (`ContextBridge.registerPluginClient(...)`), and that client
- * is the plugin's real, method-rich contract (`ecommerce.storefront(...)`, `.cartStore()`, ...).
+ * is the plugin's real, method-rich contract (`<plugin>.storefront(...)`, `.someStore()`, ...).
  *
  * Until that module lands the framework must leave the plugin's registry key EMPTY rather than fill
  * it with a generic `ApiScopeClient` stand-in. The stand-in only implements the bare REST surface
  * (`get`/`post`/...), yet it is truthy — so a consumer doing the correct presence check
- * (`const api = plugins.get('ecommerce'); if (!api) return fallback;`) sails past the guard and then
+ * (`const api = plugins.get('<plugin>'); if (!api) return fallback;`) sails past the guard and then
  * throws on `api.storefront(...)` ("is not a function"). "Absent" is a state consumers already
  * handle; "present but not really the plugin's API" is a lie no consumer can defend against.
  *

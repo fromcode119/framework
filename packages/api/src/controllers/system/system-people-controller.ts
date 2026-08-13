@@ -57,7 +57,7 @@ export class SystemPeopleController {
   /**
    * Aggregate records by a flexible reference (userId / email / personId) instead
    * of a resolved person id — used to embed the records hub on plugin record detail
-   * pages (e.g. an MLM affiliate, keyed by its login user) without first resolving
+   * pages (a domain record keyed by its login user) without first resolving
    * the person. Providers match on userId/email, so a person row is not required.
    */
   async getRecordsByRef(req: Request, res: Response) {

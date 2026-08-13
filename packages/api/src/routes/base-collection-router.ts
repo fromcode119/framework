@@ -11,7 +11,7 @@ import { RouteConstants } from '@fromcode119/core';
  * @example
  * ```typescript
  * const baseRouter = new BaseCollectionRouter(pluginManager, restController);
- * app.use('/api/v1/ecommerce', baseRouter.router);
+ * app.use('/api/v1/example', baseRouter.router);
  * ```
  */
 export class BaseCollectionRouter extends BaseRouter {

@@ -19,7 +19,7 @@ import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface
  * declared value rather than something the framework guesses over.
  *
  * The optional artifacts (UI bundles, migrations) are resolved only when the file/directory actually
- * exists, which also fixes a class of dangling declaration: `snapbilt` declared `entry: bundle.js`
+ * exists, which also fixes a class of dangling declaration: a theme declared `entry: bundle.js`
  * while shipping no bundle, so the admin advertised a UI asset that 404s. The SERVER entry is
  * deliberately NOT existence-checked — `PluginPackageValidator` must still be able to reject a
  * source-only archive by finding `index.js` missing.

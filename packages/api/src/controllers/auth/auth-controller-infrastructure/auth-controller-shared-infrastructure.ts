@@ -25,7 +25,7 @@ export class AuthControllerSharedInfrastructure extends BaseController {
 
   /**
    * Effective roles = the legacy `users.roles` column UNION the assignable `_system_users_roles`
-   * junction roles (managed by the admin Roles UI and plugins like MLM). Without this union, role
+   * junction roles (managed by the admin Roles UI and by plugins). Without this union, role
    * assignments made through the junction table would never reach auth/runtime — the role would be
    * cosmetic. Reads go through the raw DB manager, so the junction row is snake_case (`role_slug`),
    * the framework-internal convention for raw-manager access.

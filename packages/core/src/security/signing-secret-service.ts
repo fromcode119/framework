@@ -7,7 +7,7 @@ import type { IPluginContextMeta } from '@core/interfaces/plugin-context-meta.in
  *
  * Why this exists: every plugin that hands a guest a capability link (an appointment "manage your
  * booking" token, a newsletter unsubscribe token, a share link) needs an HMAC key. Left to itself each
- * plugin invented its own — and both `appointments` and `subscriptions` shipped a code-literal
+ * plugin invented its own — and two of them shipped a code-literal
  * `|| 'default-secret-change-me'` fallback, so the key was PUBLISHED IN THE SOURCE and anyone could
  * forge a token for anybody's record. A signing key is not a setting an operator should be asked to
  * invent, and it must never have a literal in code, so it is a framework capability instead.
@@ -16,8 +16,8 @@ import type { IPluginContextMeta } from '@core/interfaces/plugin-context-meta.in
  * - ONE per-install ROOT secret, 32 cryptographically-random bytes, generated on FIRST USE and stored
  *   in `_system_meta` (encrypted at rest whenever `SECRET_KEY` is configured — see {@link SecretService}).
  * - Callers never see the root. {@link signingKey} returns a key DERIVED for one named purpose, so a
- *   token minted for `subscriptions.unsubscribe` can never be replayed against
- *   `appointments.manage-booking`, and a leak of one purpose key does not expose the others.
+ *   token minted for one purpose can never be replayed against
+ *   another, and a leak of one purpose key does not expose the others.
  * - It FAILS CLOSED. If the root cannot be read or persisted, every method throws
  *   {@link SigningSecretService.UNAVAILABLE}; there is no default, no fallback, no "sign anyway".
  * - The value is never exposed to an admin client: the key is deliberately NOT one of
@@ -46,7 +46,7 @@ export class SigningSecretService {
   private static readonly ROOT_BYTES = 32;
 
   /**
-   * The HMAC key for one named `purpose` (e.g. `'appointments.manage-booking'`). Generates the
+   * The HMAC key for one named `purpose` (e.g. `'<plugin>.<action>'`). Generates the
    * install's root secret the first time anything asks for a key.
    *
    * @throws when `purpose` is blank or the root cannot be resolved — never returns a fallback.

@@ -111,8 +111,8 @@ export class Sidebar extends AdminComponent {
   }
 
   // Child-level active path (honours secondary-panel sourcePaths) — resolves to a CHILD route (e.g.
-  // /mlm/programs) so a sub-page like /mlm/compensation-plans highlights the right child, not the
-  // closest-prefix sibling. The primary override above stays group-level (e.g. /mlm) for expansion.
+  // /<plugin>/<group>) so a sub-page like /<plugin>/<group>-detail highlights the right child, not the
+  // closest-prefix sibling. The primary override above stays group-level (e.g. /<plugin>) for expansion.
   private get normalizedActiveChildPathOverride(): string {
     return NavUtils.normalizePath(this.activeChildPathOverride);
   }

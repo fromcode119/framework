@@ -31,7 +31,7 @@ export class SystemAdminController {
   SystemConstants.META_KEY.LOCALE_URL_STRATEGY,
   // Localization → Measurement System. The control existed and reported success while the PUT never
   // carried the key; with the admin now sending it, omitting it here turns that silent loss into a 400.
-  // Read live by plugins/ecommerce for package dimensions via `globalSettings.measurement_system`.
+  // Read live by plugins that size or weigh things, via `globalSettings.measurement_system`.
   SystemConstants.META_KEY.MEASUREMENT_SYSTEM,
   SystemConstants.META_KEY.PERMALINK_STRUCTURE,
   SystemConstants.META_KEY.ROUTING_HOME_TARGET,

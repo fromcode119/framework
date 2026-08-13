@@ -104,13 +104,13 @@ export class CollectionMiddleware extends BaseMiddleware {
   ): Array<{ field: string; tableName: string; columns: string[]; primaryKey: string }> {
     const targets: Array<{ field: string; tableName: string; columns: string[]; primaryKey: string }> = [];
     // Collections are registered under their PHYSICAL slug (e.g. `fcp_ecommerce_products`), but a
-    // relationship's `relationTo` is the logical collection slug (`ecommerce-products`). Resolve by
+    // relationship's `relationTo` is the logical collection slug (`example-widgets`). Resolve by
     // matching `.slug`/`.shortSlug` across the registry rather than a direct key lookup, which misses.
     const allCollections = this.manager.getCollections();
     const collectionIdentity = CoreServices.getInstance().collectionIdentity;
     for (const field of (collection?.fields || [])) {
       if (field?.type !== 'relationship' || !field?.relationTo || field?.hasMany) continue;
-      // `relationTo` is the logical slug (`ecommerce-products`); registered collections are keyed by
+      // `relationTo` is the logical slug (`example-widgets`); registered collections are keyed by
       // their PHYSICAL slug (`fcp_ecommerce_products`). Resolve logical→registered the same way the
       // request slug is resolved, then fetch the registered collection.
       const resolvedSlug = collectionIdentity.resolveRegisteredSlug(field.relationTo, allCollections, undefined);

@@ -108,6 +108,7 @@ export { PluginsRegistry } from '@core/plugins-registry';
 export * from '@core/data-sources';
 
 // ── Shared Utilities ──────────────────────────────────────────────────────────
+export { AssistantVocabularyRole } from '@core/services/enums/assistant-vocabulary-role.enum';
 export { CoreServices } from '@core/services/core-services';
 export { AutocompleteOptionService } from '@core/services/autocomplete-option-service';
 export { CollectionIdentityService } from '@core/services/collection-identity-service';

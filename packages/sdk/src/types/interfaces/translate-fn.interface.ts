@@ -5,8 +5,8 @@
  * An `interface` with a CALL SIGNATURE rather than a `type` alias: a function type has no class form,
  * but it IS a genuine behavioural contract, which is exactly what `interface` survives for.
  *
- * Framework-owned on purpose. Four byte-identical copies of this contract had grown up in cms, mlm,
- * ecommerce and forms (plus loose `type T = (key, vars?, fallback?) => string` aliases inside prop
+ * Framework-owned on purpose. Four byte-identical copies of this contract had grown up across
+ * separate plugins (plus loose `type T = (key, vars?, fallback?) => string` aliases inside prop
  * interface files) — the same helper in more than one plugin is framework work, not plugin work.
  * Import it as a TYPE, so it erases at build time and costs nothing at runtime.
  */

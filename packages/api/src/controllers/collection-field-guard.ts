@@ -44,7 +44,7 @@ export class CollectionFieldGuard {
     if (typeof value === 'string') {
       const trimmed = value.trim();
       if (!trimmed) return null;
-      // Boolean-as-string → 0/1 so a stored TEXT 'true'/'false' (e.g. MLM consent flags) compares equal
+      // Boolean-as-string → 0/1 so a stored TEXT 'true'/'false' (consent flags, say) compares equal
       // to a form BOOLEAN (`true` → 1). Without this, editing ANY other field on the record falsely
       // trips the "requires password override confirmation" guard on the unchanged consent field.
       const lower = trimmed.toLowerCase();

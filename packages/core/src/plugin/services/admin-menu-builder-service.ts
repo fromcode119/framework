@@ -62,7 +62,7 @@ export class AdminMenuBuilderService {
           // These are LOGICAL menu paths (resolved to the real admin URL later via toAdminPath) — they
           // never carry an admin base, and the admin may live at the root, a sub-path, or a separate
           // domain, so we must NOT sniff for any hardcoded `/admin/` prefix here. Only rewrite a bare
-          // single-segment collection slug (`/orders` → `/ecommerce/orders`); the plugin root
+          // single-segment collection slug (`/widgets` → `/<plugin>/widgets`); the plugin root
           // (`/${slug}`) and already-scoped paths (`/${slug}/...`) are left as-is. The hasMatchingCollection
           // guard below is what actually constrains the rewrite — a multi-segment path can't match a
           // collection slug, so it is never rewritten regardless of what its first segment is.

@@ -20,7 +20,7 @@ import { PluginUiCssAsTextPlugin } from './plugin-ui-css-as-text-plugin';
  *  - No minify — server code is never shipped over the wire, and readable frames make SSR errors legible.
  *  - The SAME `?raw` CSS convention as the client build. A plugin imports its stylesheet as a STRING and
  *    injects it itself, so the server bundle must transform it identically — otherwise every plugin that
- *    styles a storefront surface (ecommerce checkout, forms, …) simply has no server bundle.
+ *    styles a storefront surface simply has no server bundle.
  *
  * Vite requires the config module to DEFAULT-export its object. That single required export is generated
  * as build glue (nextor's `ViteConfigEntryGenerator`) so the authored source stays a plain class.

@@ -10,7 +10,7 @@ import { SettingRow } from '@/app/settings/localization/setting-row';
 
 /**
  * Platform-wide measurement system (metric / imperial). A regional format like locale — domain plugins
- * (e.g. ecommerce package dimensions & weight) read it; couriers still always receive kilograms.
+ * (dimensions & weight, for instance) read it; carriers still always receive kilograms.
  */
 export class MeasurementSystemCard extends PureReactor {
   @prop declare theme: ThemeMode;

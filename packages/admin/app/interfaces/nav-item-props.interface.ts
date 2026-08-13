@@ -17,6 +17,6 @@ export interface INavItemProps {
   onHoverPreviewEnd?: () => void;
   /** Resolved active primary path (honours secondary-panel sourcePaths). When it matches a child,
    * that child is highlighted instead of the raw best-prefix match — so a sub-page like
-   * /mlm/compensation-plans lights up its parent (Programs), not the closest-prefix sibling (Overview). */
+   * /<plugin>/<child> lights up its parent group, not the closest-prefix sibling. */
   activePathOverride?: string;
 }

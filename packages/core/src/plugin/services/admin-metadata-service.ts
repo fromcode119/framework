@@ -38,7 +38,7 @@ export class AdminMetadataService {
     // NOTE: `p.manifest.config` (the plugin's SAVED settings, hydrated from the DB by
     // lifecycle-service) is deliberately NOT included. This payload is served by a route guarded with
     // `auth.guard()` — any authenticated user, a storefront customer included — and nothing in the
-    // admin ever read it, so every plugin's settings VALUES (e.g. the broadcasts `tokenSecret`) were
+    // admin ever read it, so every plugin's settings VALUES (a `tokenSecret`, for instance) were
     // shipped to every logged-in visitor for no reader at all. Plugin settings have their own
     // admin-guarded endpoint (`/plugins/:slug/settings`); that is where they belong.
     const pluginMetadata = allPlugins

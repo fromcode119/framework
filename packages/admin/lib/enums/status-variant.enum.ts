@@ -5,7 +5,7 @@ import { Enum } from '@fromcode119/reactor';
  * itself (`shipped` and `completed` are different statuses, both `SUCCESS`).
  *
  * An `Enum`, not a string union: a union is invisible at runtime, so nothing can resolve an arbitrary
- * status string to a variant or list the variants. `StatusService` owns the status → variant mapping.
+ * status string to a variant or list the variants. The plugin that owns a record owns its status vocabulary and picks the variant.
  */
 export class StatusVariant extends Enum {
   static readonly SUCCESS = new StatusVariant('success');

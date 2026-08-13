@@ -2,7 +2,7 @@
  * Framework-owned ingestion of plugin domain rows into the shared `people` directory.
  *
  * WHY THIS EXISTS IN THE FRAMEWORK
- * Seven plugins (finance, ecommerce, mlm, lms, numerology, subscriptions, astrology) each shipped a
+ * Seven separate plugins had each shipped a
  * byte-similar `*PeopleBackfillService` with the same match -> fill-empty merge -> upsert block and the
  * same whole-table scan. Per the "cross-cutting work belongs to the framework" rule that logic lives
  * here ONCE; a plugin now supplies only the part that is genuinely its own — how one of ITS rows maps

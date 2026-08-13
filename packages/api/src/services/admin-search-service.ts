@@ -10,10 +10,17 @@ import type { IAdminSearchResult } from '@api/services/interfaces/admin-search-r
  * collections are discovered from the registry (never hardcoded), and the caller decides navigation.
  */
 export class AdminSearchService {
-  /** Field names worth matching against, in label-priority order (intersected with each schema). */
-  private static readonly CANDIDATE_FIELDS = [
-    'name', 'title', 'fullName', 'companyName', 'email', 'customerEmail', 'code', 'orderNumber',
-    'invoiceNumber', 'sku', 'label', 'slug',
+  /**
+   * Generic naming fields, in label-priority order. These are schema vocabulary the framework defines for
+   * every collection — nothing here belongs to a business domain.
+   *
+   * This list used to continue with identifier names borrowed from installed plugins, which meant the
+   * framework had to know what records those plugins keep in order to rank a search. It no longer does:
+   * a field not named here is still searched, just ranked after the generic names (see below), so a
+   * domain identifier remains findable without the framework having heard of it.
+   */
+  private static readonly GENERIC_NAME_FIELDS = [
+    'name', 'title', 'fullName', 'companyName', 'email', 'code', 'label', 'slug',
   ];
 
   private static readonly PER_SOURCE_LIMIT = 5;
@@ -94,9 +101,19 @@ export class AdminSearchService {
         .filter((f) => ['text', 'email'].includes(String(f?.type)) && f?.name)
         .map((f) => String(f.name)),
     );
+    // The collection's OWN declaration wins: `useAsTitle` is how a plugin already states which field
+    // names a record.
     const useAsTitle = String(collection?.admin?.useAsTitle || '');
-    const picked = AdminSearchService.CANDIDATE_FIELDS.filter((name) => textFields.has(name));
+    const picked = AdminSearchService.GENERIC_NAME_FIELDS.filter((name) => textFields.has(name));
     if (useAsTitle && textFields.has(useAsTitle) && !picked.includes(useAsTitle)) picked.unshift(useAsTitle);
+
+    // Then the collection's remaining text fields, in schema order. This is what keeps a domain
+    // identifier searchable — the framework does not need its name, only the fact that it is text.
+    for (const name of textFields) {
+      if (picked.length >= 4) break;
+      if (!picked.includes(name)) picked.push(name);
+    }
+
     return picked.slice(0, 4);
   }
 
@@ -118,7 +135,7 @@ export class AdminSearchService {
   /**
    * A human group label — never a raw machine slug. Prefer a display name the owning collection
    * declares; otherwise humanize the slug (drop the `fcp_`/plugin prefix, split, Title Case) so the
-   * palette shows "Tiers", not "mlm-tiers"/"fcp_mlm_tiers". Generic — no plugin names hardcoded.
+   * palette shows a collection's label, not its prefixed slug or physical table name.
    */
   private groupLabel(collection: any, pluginSlug: string): string {
     const declared = collection?.admin?.label || collection?.labels?.plural || collection?.label || collection?.name;

@@ -1,4 +1,5 @@
 import { CollectionWriteCompatibilityService } from '@core/services/collection-write-compatibility-service';
+import { AssistantVocabularyRegistryService } from '@core/services/assistant-vocabulary-registry-service';
 import { ContentResolutionGateRegistryService } from '@core/services/content-resolution-gate-registry-service';
 import { CoreServices } from '@core/services/core-services';
 import { EntityRecordsResolutionService } from '@core/services/entity-records/entity-records-resolution-service';
@@ -60,6 +61,10 @@ export class ServerCoreServices {
         core().defaultPageMaterialization,
         core().defaultPageBackfill,
       ),
+    );
+    ServerServiceRegistry.register(
+      ServerServiceKey.ASSISTANT_VOCABULARY,
+      () => new AssistantVocabularyRegistryService(),
     );
     ServerServiceRegistry.register(
       ServerServiceKey.CONTENT_RESOLUTION_GATES,
