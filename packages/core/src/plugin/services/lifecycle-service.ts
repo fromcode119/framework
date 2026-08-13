@@ -232,19 +232,6 @@ export class LifecycleService {
     const savedVersion = saved?.version;
     const isVersionUpdate = !isFreshInstall && !!savedVersion && savedVersion !== plugin.manifest.version;
     const ctx = (this.manager as any).createContext(loadedPlugin);
-    // Drop any hooks this plugin registered in a PREVIOUS registration within this same process
-    // (marketplace install/update, disable→enable) before it registers them again. `hooks.on` dedupes
-    // by function identity and every plugin passes inline arrows, so without this sweep a re-init
-    // left both copies live: one order then sent two admin emails and decremented stock twice.
-    // A cold boot is unaffected — nothing is registered yet, so this is a no-op.
-    const sweptHooks = this.manager.hooks.removeAllForOwner(slug);
-    if (sweptHooks > 0) {
-      this.logger.warn(
-        `[HOOKS] Plugin "${slug}" is re-initialising in a live process; removed ${sweptHooks} hook handler(s) `
-        + 'from its previous registration so they cannot fire twice. Before this sweep existed, a re-init '
-        + 'double-fired every hook (duplicate order emails, double stock decrements).',
-      );
-    }
     try {
       if (isFreshInstall && loadedPlugin.onInstall) await loadedPlugin.onInstall(ctx);
       if (isVersionUpdate && loadedPlugin.onUpdate && savedVersion) {

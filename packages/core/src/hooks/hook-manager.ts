@@ -4,16 +4,6 @@ import type { IHookHandler } from '@core/hooks/interfaces/hook-handler.interface
 
 export class HookManager {
   private handlers: Map<string, Set<IHookHandler>> = new Map();
-  /**
-   * Which handlers each OWNER (a plugin slug) registered, so they can be dropped as a group.
-   *
-   * `handlers` is a Set, which dedupes by function IDENTITY — and every plugin registers inline arrow
-   * functions, a fresh object per call. So when a plugin re-initialised inside a live process its
-   * hooks stacked instead of replacing, and one order sent two admin confirmation emails and
-   * decremented stock twice. Untagged handlers (the manager's own webhook catch-all) are never
-   * indexed here and so are never swept.
-   */
-  private ownedHandlers: Map<string, Array<{ event: string; handler: IHookHandler }>> = new Map();
   private adapter: IHookMessagingAdapter;
 
   constructor(options: { type?: string, redisUrl?: string, namespace?: string } = {}) {
@@ -35,17 +25,11 @@ export class HookManager {
   /**
    * Subscribe to an event
    */
-  on(event: string, handler: IHookHandler, owner?: string): void {
+  on(event: string, handler: IHookHandler): void {
     if (!this.handlers.has(event)) {
       this.handlers.set(event, new Set());
     }
     this.handlers.get(event)!.add(handler);
-
-    if (!owner) return;
-    if (!this.ownedHandlers.has(owner)) {
-      this.ownedHandlers.set(owner, []);
-    }
-    this.ownedHandlers.get(owner)!.push({ event, handler });
   }
 
   /**
@@ -56,35 +40,6 @@ export class HookManager {
     if (set) {
       set.delete(handler);
     }
-    // Drop it from the owner index too, so a later sweep cannot resurrect a stale reference.
-    for (const [owner, entries] of this.ownedHandlers.entries()) {
-      const remaining = entries.filter((entry) => entry.event !== event || entry.handler !== handler);
-      if (remaining.length === entries.length) continue;
-      if (remaining.length === 0) this.ownedHandlers.delete(owner);
-      else this.ownedHandlers.set(owner, remaining);
-    }
-  }
-
-  /**
-   * Remove every handler registered under `owner`.
-   *
-   * Called before a plugin re-registers its hooks, so re-initialising a plugin inside a live process
-   * REPLACES its handlers instead of stacking a second copy of all of them.
-   */
-  removeAllForOwner(owner: string): number {
-    const entries = this.ownedHandlers.get(owner);
-    if (!entries) return 0;
-
-    for (const { event, handler } of entries) {
-      const set = this.handlers.get(event);
-      if (!set) continue;
-      set.delete(handler);
-      if (set.size === 0) this.handlers.delete(event);
-    }
-    this.ownedHandlers.delete(owner);
-    // Returned so the caller can SAY it happened: a re-init that silently replaces 15 handlers is
-    // indistinguishable in the log from the cold boot that registers them for the first time.
-    return entries.length;
   }
 
   /**

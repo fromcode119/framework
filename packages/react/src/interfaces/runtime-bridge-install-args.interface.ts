@@ -61,6 +61,8 @@ export interface IRuntimeBridgeInstallArgs {
   AccountShellSkeleton: any;
   AccountShellPlaceholder: any;
   AccountClass: any;
+  /** The token-authenticated email-preferences panel, rendered by a theme layout for `/unsubscribe`. */
+  TokenEmailPreferencesPanel: any;
   /** The AuthMode Enum. A VALUE the theme reads at class-init — must be on the bridge, not lazy. */
   AuthMode: any;
   AuthShell: any;

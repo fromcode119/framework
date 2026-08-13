@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/framework",
-  "version": "0.1.82",
+  "version": "0.1.83",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -20,6 +20,7 @@
     "check:plugin-architecture": "node packages/archor/dist/archor-cli.cjs plugin-architecture",
     "check:sdk-boundary": "node packages/archor/dist/archor-cli.cjs sdk-boundary",
     "check:plugin-ui-hookfree": "node packages/archor/dist/archor-cli.cjs plugin-ui-hookfree",
+    "check:framework-domain": "node packages/archor/dist/archor-cli.cjs framework-domain",
     "check:db-find-where": "node packages/archor/dist/archor-cli.cjs db-find-where",
     "check:block-field-conformance": "node packages/archor/dist/archor-cli.cjs block-field-conformance",
     "check:block-field-conformance:error": "BLOCK_CONFORMANCE_MODE=error node packages/archor/dist/archor-cli.cjs block-field-conformance",

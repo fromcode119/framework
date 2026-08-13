@@ -45,9 +45,7 @@ const makeManager = () => {
     pluginsRoot: '/plugins',
     db: { findOne: vi.fn(), insert: vi.fn(), update: vi.fn(), delete: vi.fn() },
     audit: { log: vi.fn() },
-    // `removeAllForOwner` is part of the real HookManager: register() sweeps a plugin's previously
-    // registered hooks before re-init so they cannot stack. The mock mirrors the real contract.
-    hooks: { on: vi.fn(), emit: vi.fn(), removeAllForOwner: vi.fn() },
+    hooks: { on: vi.fn(), emit: vi.fn() },
     apiHost: null,
     integrations: {},
     jobs: {},

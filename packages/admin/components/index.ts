@@ -16,8 +16,6 @@ export * from '@/components/ui/view/data-table.client';
 export * from '@/components/ui/view/confirm-dialog.client';
 export * from '@/components/ui/view/prompt-dialog.client';
 export * from '@/components/ui/date-time-picker/view/index.client';
-export * from '@/components/ui/view/currency-select.client';
-export * from '@/components/ui/view/money-input.client';
 export * from '@/components/ui/view/color-picker.client';
 export * from '@/components/ui/view/code-editor.client';
 export * from '@/components/ui/view/visual-menu-field.client';

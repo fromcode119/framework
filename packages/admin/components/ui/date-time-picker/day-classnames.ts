@@ -9,19 +9,19 @@ export class DateTimePickerDayClassNames {
   static build(theme: ThemeMode): Record<string, string> {
     return {
       months: "flex flex-col",
-      month: "space-y-4",
+      month: "space-y-2",
       month_caption: "hidden",
       caption_label: "text-sm font-bold text-indigo-600",
       nav: "hidden",
       button_previous: "hidden",
       button_next: "hidden",
-      month_grid: "w-full border-separate border-spacing-1",
-      weekdays: "mb-1",
-      weekday: "h-9 w-11 p-0 text-center align-middle text-slate-400 font-bold text-[10px] uppercase tracking-wider",
+      month_grid: "w-full border-separate border-spacing-0.5",
+      weekdays: "mb-0.5",
+      weekday: "h-6 w-9 p-0 text-center align-middle text-slate-400 font-bold text-[10px] uppercase tracking-wider",
       weeks: "",
       week: "",
-      day: "h-11 w-11 p-0 text-center align-middle",
-      day_button: `flex h-10 w-10 items-center justify-center rounded-xl p-0 font-semibold text-[14px] tracking-tight transition-all duration-150 mx-auto
+      day: "h-9 w-9 p-0 text-center align-middle",
+      day_button: `flex h-8 w-8 items-center justify-center rounded-xl p-0 font-semibold text-[13px] tracking-tight transition-all duration-150 mx-auto
         ${theme === ThemeMode.DARK
           ? 'text-slate-100 hover:bg-slate-700/50 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-300 [[data-today=true]_&]:font-bold'
           : 'text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-600 [[data-today=true]_&]:font-bold'}`,

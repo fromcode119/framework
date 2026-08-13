@@ -45,6 +45,7 @@ export class BridgeObjectBuilder {
       AccountShellSkeleton: args.AccountShellSkeleton,
       AccountShellPlaceholder: args.AccountShellPlaceholder,
       AccountClass: args.AccountClass,
+      TokenEmailPreferencesPanel: args.TokenEmailPreferencesPanel,
       AuthMode: args.AuthMode,
       AuthShell: args.AuthShell,
       RecordsHub: args.RecordsHub,

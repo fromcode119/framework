@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { state } from '@fromcode119/reactor';
 import { RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
+import { AccountTranslations } from '@react/account/account-translations';
 import { SdkClient } from '@fromcode119/core/client';
 
 /**
@@ -20,7 +21,14 @@ import { SdkClient } from '@fromcode119/core/client';
 export class AccountEmailPreferencesPanel extends PluginComponent {
   @state loading: boolean = true;
   @state saving: string = '';
-  @state error: string = '';
+  /**
+   * The FAILURE, not a sentence about it. Holding `describeError(error)` here froze the copy at the
+   * moment the request failed — which is before the account translations have necessarily landed — so
+   * the message kept rendering in English while every render-time string beside it was already
+   * Bulgarian. Storing the raw error and translating in `render()` means the text follows the active
+   * locale like the rest of the panel.
+   */
+  @state error: unknown = null;
   @state address: string = '';
   @state preferences: any[] = [];
 
@@ -71,6 +79,7 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
 
   componentDidMount(): void {
     this.mounted = true;
+    AccountTranslations.register();
     void this.load();
   }
 
@@ -88,8 +97,8 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
         preferences: Array.isArray(body?.preferences) ? body.preferences : [],
         loading: false,
       });
-    } catch (error: any) {
-      if (this.mounted) this.setState({ error: this.describeError(error), loading: false });
+    } catch (error: unknown) {
+      if (this.mounted) this.setState({ error, loading: false });
     }
   }
 
@@ -102,14 +111,14 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
   protected async toggle(key: string, subscribed: boolean): Promise<void> {
     this.setState({
       saving: key,
-      error: '',
+      error: null,
       preferences: this.preferences.map((p: any) => (p?.key === key ? { ...p, subscribed } : p)),
     });
     try {
       await this.client.post(this.updatePath, this.buildUpdateBody(key, subscribed));
       await this.load();
-    } catch (error: any) {
-      if (this.mounted) this.setState({ error: this.describeError(error) });
+    } catch (error: unknown) {
+      if (this.mounted) this.setState({ error });
       await this.load();
     } finally {
       if (this.mounted) this.setState({ saving: '' });
@@ -117,6 +126,15 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
   }
 
   render(): ReactNode {
+    // This panel is its own SURFACE, not only a section of the account shell: `/unsubscribe` renders the
+    // token twin standalone, with no shell above it. `AccountTranslations.register()` used to be called
+    // only by AccountShell/AccountShellDefault/AccountAuthGate, so on that route the `account.*` copy was
+    // never loaded and every `t()` below fell through to its inline English default — an all-English page
+    // on a Bulgarian site whose bg.json already held every one of these keys. Registering here follows
+    // the same rule the shell states for itself: the surface that renders the words owns loading them.
+    // In render() as well as componentDidMount() so it lands before the first paint; the call is idempotent.
+    AccountTranslations.register();
+
     if (this.loading) {
       return <p className="fc-acct-loading">{this.t('account.emailPreferences.loading', {}, 'Loading…')}</p>;
     }
@@ -129,7 +147,7 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
           </p>
         ) : null}
 
-        {this.error ? <p className="fc-acct-error">{this.error}</p> : null}
+        {this.error ? <p className="fc-acct-error">{this.describeError(this.error)}</p> : null}
 
         {!this.preferences.length ? (
           <p className="fc-acct-empty">

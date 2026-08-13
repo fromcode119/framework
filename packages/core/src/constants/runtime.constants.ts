@@ -72,7 +72,12 @@ export class RuntimeConstants {
   static readonly ADMIN_RUNTIME_EXPORT_KEYS = [
     'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 'NumberStepper',
     'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker',
-    'CodeEditor', 'CurrencySelect', 'MoneyInput', 'VisualMenuField', 'Icon', 'ThemeContext', 'ThemeProvider',
+    // These are DOMAIN-AGNOSTIC controls only. Money/currency editors were removed rather than listed
+    // here: the framework has no business domain, so it cannot know what a valid currency is, and the
+    // pair that used to live here proved it by shipping a hardcoded currency list nothing configured.
+    // A domain control belongs to the plugin that owns the domain, which registers its own component
+    // and is selected by name through a field's `admin.component`.
+    'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'ThemeProvider',
     'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',
     'PluginChartCard', 'PluginEmptyState', 'PageHeading', 'StatCard', 'DataTable',
     'AdminServices', 'EditPageSectionNav', 'SectionCard', 'DayRangeToggle',

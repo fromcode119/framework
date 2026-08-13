@@ -36,6 +36,11 @@ export { AccountSectionIcons } from '@react/account/account-section-icons';
 export { AccountShellSkeleton } from '@react/account/account-shell-skeleton';
 export { AccountShellPlaceholder } from '@react/account/account-shell-placeholder';
 export { AccountClass } from '@react/account/account-class';
+// The token-authenticated email-preferences surface. Exported because a THEME renders it: `/unsubscribe`
+// resolves a themed CMS page, and the theme's layout renders this panel for that page's slug — the same
+// way it renders AccountShell for `/account`. Without the export the theme cannot reach it and the route
+// falls back to a chrome-less framework page.
+export { TokenEmailPreferencesPanel } from '@react/account/token-email-preferences-panel.client';
 export { AuthShell } from '@react/auth/auth-shell';
 export { AuthMode } from '@react/auth/enums/auth-mode.enum';
 export { Override } from '@react/view/override.client';

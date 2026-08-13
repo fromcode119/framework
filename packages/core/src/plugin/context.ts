@@ -86,10 +86,7 @@ export class PluginContextFactory {
               return handler(payload, ev);
             };
             (handler as any)._wrapped = wrappedHandler;
-            // Tagged with the plugin slug so the lifecycle can drop this plugin's handlers as a group
-            // before it re-registers. Without the tag a re-init stacked a second copy of every hook —
-            // two admin emails and a double stock decrement for a single order.
-            manager.hooks.on(event, wrappedHandler, plugin.manifest.slug);
+            manager.hooks.on(event, wrappedHandler);
           },
           off: (event: string, handler: any) => {
             manager.hooks.off(event, (handler as any)._wrapped || handler);
@@ -182,9 +179,7 @@ export class PluginContextFactory {
           },
           on: (event: string, handler: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            // Owned by the REGISTERING plugin, same as `context.hooks.on` above — a handler added
-            // through the plugins facade must be swept on re-init too, or it stacks.
-            manager.hooks.on(event, handler, plugin.manifest.slug);
+            manager.hooks.on(event, handler);
           }
         },
         dependencies: {

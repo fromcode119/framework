@@ -53,33 +53,6 @@ export class FormatterService extends BaseService {
   }
 
   /**
-   * Format a number as currency.
-   * 
-   * @example
-   * formatCurrency(1234.56, 'USD') // "$1,234.56"
-   * formatCurrency(1234.56, 'EUR') // "€1,234.56"
-   */
-  formatCurrency(value: number, currency: string = 'USD'): string {
-    if (typeof value !== 'number' || isNaN(value)) return '$0.00';
-    
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currency.toUpperCase(),
-      }).format(value);
-    } catch {
-      // Fallback for invalid currency codes
-      const symbols: Record<string, string> = {
-        USD: '$',
-        EUR: '€',
-        GBP: '£',
-      };
-      const symbol = symbols[currency.toUpperCase()] || currency;
-      return `${symbol}${this.formatNumber(value, 2)}`;
-    }
-  }
-
-  /**
    * Format duration in milliseconds to human-readable string.
    * 
    * @example

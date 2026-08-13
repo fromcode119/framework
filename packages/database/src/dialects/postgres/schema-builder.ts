@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import { NamingStrategy } from '@database/naming-strategy';
+import { SchemaKeyField } from '@database/schema-key-field';
 import { ISchemaBuilderHost } from '@database/dialects/interfaces/schema-builder-host.interface';
 
 /**
@@ -17,7 +18,8 @@ export class PostgresSchemaBuilder {
   async createTable(collection: ISchemaCollection): Promise<void> {
     const tableName = collection.slug;
     const columnDefs: any[] = [];
-    const fieldSnakeNames = collection.fields.map(f => NamingStrategy.toSnakeCase(f.name));
+    const fields = SchemaKeyField.withoutDeclaredKey(collection.fields);
+    const fieldSnakeNames = fields.map(f => NamingStrategy.toSnakeCase(f.name));
 
     if (!fieldSnakeNames.includes('id')) {
       columnDefs.push(sql`id SERIAL PRIMARY KEY`);
@@ -31,8 +33,7 @@ export class PostgresSchemaBuilder {
       columnDefs.push(sql`updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
     }
 
-    for (const field of collection.fields) {
-      if (field.name === 'id' && !fieldSnakeNames.includes('id')) continue;
+    for (const field of fields) {
       columnDefs.push(this.fieldToSqlFragment(field));
     }
 

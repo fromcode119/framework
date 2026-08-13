@@ -202,6 +202,11 @@ export class ContextProviderRuntimeBridgeHooks {
       const RecordsHub = ContextProviderRuntimeBridgeHooks.lazyShell(
         () => import('@react/records-hub').then((m) => ({ default: m.RecordsHub })),
       );
+      // Lazy for the same reason as the shells above: only a theme layout rendering `/unsubscribe` ever
+      // mounts it, so it must not sit in the storefront's first chunk.
+      const TokenEmailPreferencesPanel = ContextProviderRuntimeBridgeHooks.lazyShell(
+        () => import('@react/account/token-email-preferences-panel.client').then((m) => ({ default: m.TokenEmailPreferencesPanel })),
+      );
       const ReactDOM = require('react-dom');
 
       ContextRuntimeBridge.installRuntimeBridge({
@@ -266,6 +271,7 @@ export class ContextProviderRuntimeBridgeHooks {
         AccountSection,
         AccountSectionIcons,
         AccountClass,
+        TokenEmailPreferencesPanel,
         AuthMode,
         AuthShell,
         RecordsHub,

@@ -22,9 +22,11 @@ import { TableResolver } from '@database/table-resolver';
  *   readonly name    = 'add_tags_table';
  *
  *   async up(db: IDatabaseManager): Promise<void> {
+ *     // Never declare an `id` field — the builder emits the primary key itself, and a declared
+ *     // one used to suppress it and leave a nullable, keyless TEXT column behind.
  *     await this.createTableIfMissing(db, {
  *       slug: '@myplugin/tags',
- *       fields: [{ name: 'id', type: 'id' }, { name: 'label', type: 'text' }],
+ *       fields: [{ name: 'label', type: 'text' }],
  *     });
  *     await this.createIndexIfMissing(db, '@myplugin/tags', 'idx_tags_label', ['label']);
  *   }
@@ -184,6 +186,90 @@ export abstract class BaseMigration {
   ): Promise<void> {
     const table = BaseMigration.assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
     await db.execute(`DROP TABLE IF EXISTS "${table}"`);
+  }
+
+  /**
+   * Give `tableName` the sequence-backed integer primary key the schema builder should have emitted.
+   *
+   * Repairs a table created while a declared `{ name: 'id', type: 'id' }` field suppressed the
+   * builder's own key column (see {@link SchemaKeyField}) — leaving `id` as a nullable, keyless
+   * TEXT column. Inserts against that shape succeed and store NULL, so every later
+   * `update(table, { id }, …)` matches nothing and the write is silently discarded.
+   *
+   * Two independently guarded steps, so this is safe to run repeatedly, safe on a table that was
+   * never broken, and able to finish a half-applied run:
+   *   1. re-key — fires only while `id` is still a character type. `USING nextval(...)` ignores the
+   *      old value rather than parsing it, so NULLs and unparseable text alike get a fresh key;
+   *   2. add the primary key — fires only when the table has none and `id` is already integer.
+   * Each step is one self-guarding `DO` block so the decision and the DDL are a single atomic
+   * statement and the guard does not depend on the driver's result shape.
+   *
+   * **Postgres only** — SQLite cannot ALTER a column type in place; the call no-ops on every other
+   * dialect. A SQLite database carrying the broken shape has to be re-created, which is harmless
+   * because the builder now emits the key correctly on both dialects.
+   *
+   * **Check for referencing rows before calling.** Re-keying assigns fresh values, so anything that
+   * stored one of the old ids elsewhere will be orphaned. A foreign key would block the ALTER; an
+   * id copied into a JSON blob or another plugin's column would not.
+   *
+   * @param db        - The database manager instance.
+   * @param tableName - Physical table name or `@plugin/table` shorthand.
+   */
+  protected async repairTextIdPrimaryKey(
+    db: IDatabaseManager,
+    tableName: string,
+  ): Promise<void> {
+    if (db.dialect !== 'postgres') {
+      return;
+    }
+
+    const table = BaseMigration.assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
+    if (!(await db.tableExists(table))) {
+      return;
+    }
+
+    const sequence = BaseMigration.assertSafeIdentifier(`${table}_id_seq`, 'sequence');
+
+    await db.execute(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = '${table}'
+            AND column_name = 'id'
+            AND data_type IN ('text', 'character varying', 'character')
+        ) THEN
+          CREATE SEQUENCE IF NOT EXISTS "${sequence}";
+          ALTER TABLE "${table}" ALTER COLUMN "id" DROP DEFAULT;
+          ALTER TABLE "${table}" ALTER COLUMN "id" TYPE integer USING nextval('"${sequence}"');
+          ALTER TABLE "${table}" ALTER COLUMN "id" SET DEFAULT nextval('"${sequence}"');
+          ALTER TABLE "${table}" ALTER COLUMN "id" SET NOT NULL;
+          ALTER SEQUENCE "${sequence}" OWNED BY "${table}"."id";
+          PERFORM setval('"${sequence}"', COALESCE((SELECT MAX("id") FROM "${table}"), 0) + 1, false);
+        END IF;
+      END
+      $$;
+    `);
+
+    await db.execute(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint
+          WHERE conrelid = '"${table}"'::regclass AND contype = 'p'
+        ) AND EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = '${table}'
+            AND column_name = 'id'
+            AND data_type = 'integer'
+        ) THEN
+          ALTER TABLE "${table}" ADD PRIMARY KEY ("id");
+        END IF;
+      END
+      $$;
+    `);
   }
 
   /**

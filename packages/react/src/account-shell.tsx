@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Reactor, prop } from '@fromcode119/reactor';
 import { Override } from '@react/view/override.client';
 import { AccountShellDefault } from '@react/account/account-shell-default';
+import { AccountAuthGate } from '@react/account/account-auth-gate';
 import { AccountTranslations } from '@react/account/account-translations';
 
 /**
@@ -41,12 +42,20 @@ export class AccountShell extends Reactor {
     // Registering during render (not in a constructor) keeps this out of reactor's context-forwarding
     // trap and still lands before the first paint of whichever shell wins. The call is idempotent.
     AccountTranslations.register();
+    // The gate wraps the OVERRIDE, not the default shell, for the same reason the translations above
+    // are registered here: a theme replaces the account's LAYOUT, and must not be able to replace —
+    // or be required to re-ship — what the surface itself owns. While the gate sat inside
+    // `AccountShellDefault`, registering `account.shell` removed authentication along with the layout,
+    // and this store's account (every section name, so the whole installed plugin set) rendered to
+    // signed-out visitors with no redirect. A replacement shell can no longer opt out of it.
     return (
-      <Override
-        name={AccountShell.OVERRIDE}
-        props={{ page: this.page }}
-        fallback={<AccountShellDefault page={this.page} />}
-      />
+      <AccountAuthGate>
+        <Override
+          name={AccountShell.OVERRIDE}
+          props={{ page: this.page }}
+          fallback={<AccountShellDefault page={this.page} />}
+        />
+      </AccountAuthGate>
     );
   }
 }

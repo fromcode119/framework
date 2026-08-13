@@ -73,15 +73,18 @@ export class ContextProviderApiHooks {
       }
 
       // Read caller headers first so we can respect an explicit X-Framework-Client override.
-      // When a frontend plugin requests admin-ui context (e.g. the CMS visual editor), we must
-      // NOT send the frontend userToken as Bearer — it would authenticate as a non-admin user and
-      // shadow the fc_token cookie (which carries the admin role). Let the cookie travel on its own.
+      // NO Authorization header is built here. Every surface authenticates by its own `httpOnly`
+      // session cookie, which the browser attaches unaided under `credentials: 'include'` — verified
+      // live: `auth/me/person` answers 200 with cookies and no Bearer, 401 with the cookies omitted.
+      // Reading a token here required the token to be readable by scripts, which is exactly what
+      // defeated the server's `httpOnly` (see CookieConstants.CLIENT_SESSION_MARKER). Dropping it also
+      // deletes the old hazard where a frontend plugin asking for admin-ui context would send the
+      // storefront token as Bearer and shadow the admin `fc_token` cookie.
       const existingHeaders = (fetchOptions.headers || {}) as Record<string, string>;
-      const explicitClientType = existingHeaders['X-Framework-Client'] || existingHeaders['x-framework-client'] || '';
-      const token = (explicitClientType === ClientType.ADMIN_UI.value)
-        ? ''
-        : (clientType === ClientType.FRONTEND_UI ? browserState.readCookie(CookieConstants.CLIENT_AUTH_TOKEN) : '');
       const csrfToken = browserState.readCookie(CookieConstants.AUTH_CSRF);
+      // Only ever used to keep the GET dedupe cache for a signed-in visitor separate from a guest's.
+      // It is a flag, not a credential — the request authenticates by cookie.
+      const hasSession = Boolean(browserState.readCookie(CookieConstants.CLIENT_SESSION_MARKER));
       const method = String(fetchOptions.method || 'GET').toUpperCase();
       const isUnsafeMethod = !['GET', 'HEAD', 'OPTIONS'].includes(method);
 
@@ -94,7 +97,6 @@ export class ContextProviderApiHooks {
             ...(!existingHeaders['X-Framework-Client'] ? { 'X-Framework-Client': clientType } : {}),
             ...(isUnsafeMethod && !existingHeaders['X-Requested-With'] ? { 'X-Requested-With': 'XMLHttpRequest' } : {}),
             ...(isUnsafeMethod && csrfToken && !existingHeaders['X-CSRF-Token'] ? { 'X-CSRF-Token': csrfToken } : {}),
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
 
@@ -132,7 +134,7 @@ export class ContextProviderApiHooks {
         return execute();
       }
 
-      const dedupeKey = `${url}|${fetchOptions.credentials || 'include'}|${token ? 'auth' : 'anon'}`;
+      const dedupeKey = `${url}|${fetchOptions.credentials || 'include'}|${hasSession ? 'auth' : 'anon'}`;
       const now = Date.now();
       const cachedResponse = ContextProviderStateService.cachedGetResponses.get(dedupeKey);
       if (cachedResponse && cachedResponse.expiresAt > now) {

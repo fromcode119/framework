@@ -28,10 +28,6 @@ export class PluginFailureIsolationService {
   rollbackPartialRegistration(plugin: ILoadedPlugin): void {
     this.manager.plugins.delete(plugin.manifest.slug);
     this.manager.headInjections.delete(plugin.manifest.slug);
-    // Hooks were the one registration this rollback did not undo: a plugin that threw PART WAY through
-    // onInit left every hook it had already registered live and firing, on a plugin the manager now
-    // considers unregistered.
-    this.manager.hooks.removeAllForOwner(plugin.manifest.slug);
 
     for (const [collectionSlug, entry] of this.manager.registeredCollections.entries()) {
       if (entry.pluginSlug === plugin.manifest.slug) {

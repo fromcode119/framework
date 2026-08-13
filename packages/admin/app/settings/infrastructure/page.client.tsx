@@ -1,11 +1,16 @@
 import { ThemeMode } from '@fromcode119/core/client';
+import type { ReactNode } from 'react';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { state, bound } from '@fromcode119/reactor';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Switch } from '@/components/ui/view/switch.client';
+import { NumberStepper } from '@/components/ui/number-stepper';
+import { Button } from '@/components/ui/view/button.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
+import { FrameworkIcons } from '@fromcode119/react';
+import { SettingRow } from '@/app/settings/general/setting-row';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 
 export class InfrastructureSettingsPage extends AdminComponent {
@@ -17,6 +22,9 @@ export class InfrastructureSettingsPage extends AdminComponent {
    */
   @state maintenance: boolean | null = null;
   @state loadError: string | null = null;
+  /** Days of `_system_logs` history to keep. '' / '0' means keep forever — the description says so. */
+  @state logRetentionDays = '';
+  @state isSavingRetention = false;
 
   async componentDidMount() {
     await this.loadMaintenance();
@@ -33,6 +41,7 @@ export class InfrastructureSettingsPage extends AdminComponent {
     try {
       const response = await AdminSystemSettingsClient.getAll();
       this.maintenance = response?.maintenance_mode === true || response?.maintenance_mode === 'true';
+      this.logRetentionDays = String(response?.log_retention_days ?? '');
     } catch (err: any) {
       this.maintenance = null;
       this.loadError = err?.message || 'The system settings request failed.';
@@ -57,7 +66,31 @@ export class InfrastructureSettingsPage extends AdminComponent {
     }
   }
 
-  render() {
+  @bound
+  onRetentionChange(value: number | string): void {
+    this.logRetentionDays = String(value);
+  }
+
+  @bound
+  async saveRetention(): Promise<void> {
+    const addNotification = this.runtime.notify.addNotification;
+    this.isSavingRetention = true;
+    try {
+      await AdminSystemSettingsClient.update({ log_retention_days: this.logRetentionDays });
+      const days = Number(this.logRetentionDays);
+      addNotification({
+        title: 'System Updated',
+        message: days > 0 ? `System logs older than ${days} day(s) will be removed.` : 'System logs are kept forever.',
+        type: NotificationType.INFO,
+      });
+    } catch (err: any) {
+      addNotification({ title: 'Error', message: err?.message || 'Failed to save log retention.', type: NotificationType.ERROR });
+    } finally {
+      this.isSavingRetention = false;
+    }
+  }
+
+  render(): ReactNode {
     const theme = this.theme;
 
     if (this.isLoading) return <div className="p-12"><Loader label="Loading infrastructure settings..." /></div>;
@@ -89,17 +122,49 @@ export class InfrastructureSettingsPage extends AdminComponent {
               A real probe belongs here only once something actually polls it. */}
           {this.maintenance !== null && (
             <Card title="Maintenance">
-               <div className="space-y-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                      <span className={`text-xs font-semibold tracking-wide text-indigo-500`}>Maintenance Mode</span>
-                      <p className="text-[10px] text-slate-400 font-medium">Restricts frontend access.</p>
-                    </div>
-                    <Switch checked={this.maintenance} onChange={this.toggleMaintenance} />
-                  </div>
-               </div>
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Activity}
+                title="Maintenance Mode"
+                description="Restricts frontend access while you work on the instance."
+              >
+                <Switch checked={this.maintenance} onChange={this.toggleMaintenance} />
+              </SettingRow>
             </Card>
           )}
+
+          {/* `_system_logs` had no retention of any kind, so it grew without bound and a permanent
+              WARN stream buried the warnings worth reading. The window is declared HERE and nowhere
+              else: blank or 0 keeps everything, and the platform prunes only what this field asks
+              for — there is no code-level default quietly deleting an operator's history. */}
+          <Card title="System Logs">
+            <SettingRow
+              theme={theme}
+              icon={FrameworkIcons.Database}
+              title="Log Retention"
+              description="Removes system log entries older than this many days, swept daily. Leave blank to keep every entry forever."
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-full md:w-40">
+                  <NumberStepper
+                    min={0}
+                    step={1}
+                    value={this.logRetentionDays}
+                    onChange={this.onRetentionChange}
+                    placeholder="Keep forever"
+                  />
+                </div>
+                <Button
+                  onClick={this.saveRetention}
+                  isLoading={this.isSavingRetention}
+                  icon={<FrameworkIcons.Save size={13} />}
+                  className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+                >
+                  Save
+                </Button>
+              </div>
+            </SettingRow>
+          </Card>
 
           {/* The "Danger Zone" card held two buttons — "Flush Cache Clusters" and "Hard Factory
               Reset" — with no onClick, no href and no endpoint behind either. A destructive-looking

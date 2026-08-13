@@ -31,7 +31,9 @@ export class AuthLoginForm extends AuthFormBase<IAuthFormProps, IAuthLoginFormSt
         { silent: true, noDedupe: true },
       );
       if (data?.token) {
-        this.session.storeSession(data.token, data.user);
+        // The token itself is NOT stored: the login response already set the server's httpOnly
+        // session cookie. `data.token` here only proves the login succeeded.
+        this.session.storeSession(data.user);
         this.navigateAfterAuth();
         return;
       }

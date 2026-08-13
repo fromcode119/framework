@@ -8,23 +8,52 @@ export class SystemAuthSession {
   private static readonly CLIENT_TOKEN_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
   private readonly browserState = new BrowserStateClient();
 
-  getStoredToken(): string {
-    return this.browserState.readCookie(CookieConstants.CLIENT_AUTH_TOKEN);
+  constructor() {
+    this.migrateLegacyClientToken();
   }
 
+  /**
+   * Retires a client-written token cookie left in a browser by the previous scheme.
+   *
+   * Two things would otherwise break for anyone already signed in when this shipped: their session
+   * carries no marker, so the UI would read them as signed OUT while their `httpOnly` cookie is still
+   * perfectly valid; and the readable JWT would sit in their browser until it expired, up to seven
+   * days of the exact exposure this change removes. Swapping one for the other on first construction
+   * fixes both at once, and does nothing for a browser that never had the legacy cookie.
+   */
+  private migrateLegacyClientToken(): void {
+    if (EnvUtils.isServer()) return;
+    if (!this.browserState.readCookie(CookieConstants.CLIENT_AUTH_TOKEN)) return;
+
+    this.browserState.writeCookie(
+      CookieConstants.CLIENT_SESSION_MARKER,
+      '1',
+      { maxAgeSeconds: SystemAuthSession.CLIENT_TOKEN_MAX_AGE_SECONDS },
+    );
+    // Host-only, exactly as it was written — the server's domain-scoped httpOnly cookie is a
+    // DIFFERENT entry and is untouched, so the session itself survives this.
+    this.browserState.clearCookie(CookieConstants.CLIENT_AUTH_TOKEN);
+  }
+
+  /**
+   * There is NO `getStoredToken()`. The session JWT is deliberately unreadable from the browser — it
+   * lives only in the server's `httpOnly` cookie, which travels on its own with `credentials:
+   * 'include'`. A method promising the token would either have to lie or re-expose it.
+   */
   hasStoredSession(): boolean {
-    return Boolean(this.getStoredToken());
+    return Boolean(this.browserState.readCookie(CookieConstants.CLIENT_SESSION_MARKER));
   }
 
-  storeSession(token: string, user: any): void {
-    const normalizedToken = String(token || '').trim();
-    if (normalizedToken) {
-      this.browserState.writeCookie(
-        CookieConstants.CLIENT_AUTH_TOKEN,
-        normalizedToken,
-        { maxAgeSeconds: SystemAuthSession.CLIENT_TOKEN_MAX_AGE_SECONDS },
-      );
-    }
+  /**
+   * Records that a session EXISTS plus the cached user for UI. Takes no token: the credential is the
+   * server's `httpOnly` cookie, set by the login response, and the browser attaches it unaided.
+   */
+  storeSession(user: any): void {
+    this.browserState.writeCookie(
+      CookieConstants.CLIENT_SESSION_MARKER,
+      '1',
+      { maxAgeSeconds: SystemAuthSession.CLIENT_TOKEN_MAX_AGE_SECONDS },
+    );
 
     if (EnvUtils.isServer()) {
       return;
@@ -35,6 +64,9 @@ export class SystemAuthSession {
   }
 
   clearSession(): void {
+    this.browserState.clearCookie(CookieConstants.CLIENT_SESSION_MARKER);
+    // Also clear the legacy client-written token copy, so a browser carrying one from before this
+    // change stops exposing a live JWT to scripts the moment the user signs out.
     this.browserState.clearCookie(CookieConstants.CLIENT_AUTH_TOKEN);
 
     if (EnvUtils.isServer()) {
@@ -50,9 +82,8 @@ export class SystemAuthSession {
       return null;
     }
 
-    const token = this.getStoredToken();
     const rawUser = this.browserState.readLocalJson<any | null>(SystemAuthSession.USER_CACHE_KEY, null);
-    if (!token || !rawUser) {
+    if (!this.hasStoredSession() || !rawUser) {
       return null;
     }
 
@@ -72,16 +103,6 @@ export class SystemAuthSession {
     const current = this.readStoredUser() || {};
     this.browserState.writeLocalJson(SystemAuthSession.USER_CACHE_KEY, { ...current, ...(user || {}) });
     this.dispatchAuthStateChanged();
-  }
-
-  buildAuthorizationHeaders(headers?: Record<string, any>): Record<string, any> {
-    const nextHeaders: Record<string, any> = { ...(headers || {}) };
-    const token = this.getStoredToken();
-    if (token && !nextHeaders.Authorization) {
-      nextHeaders.Authorization = `Bearer ${token}`;
-    }
-
-    return nextHeaders;
   }
 
   private dispatchAuthStateChanged(): void {

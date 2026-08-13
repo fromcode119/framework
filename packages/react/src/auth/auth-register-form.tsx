@@ -48,7 +48,7 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
       }
       const loginData = await this.systemAuth.login({ email: email.trim(), password }, { silent: true, noDedupe: true });
       if (loginData?.token) {
-        this.session.storeSession(loginData.token, loginData.user);
+        this.session.storeSession(loginData.user);
         this.navigateAfterAuth();
         return;
       }

@@ -45,6 +45,7 @@ export { EntitySchemaPlanService } from '@core/database/entity-schema-plan-servi
 export type { IEntitySchemaColumnPlan } from '@core/database/interfaces/entity-schema-column-plan.interface';
 export type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 export { MigrationManager } from '@core/database/migration-manager';
+export { SystemLogRetentionService } from '@core/database/system-log-retention-service';
 export { Seeder } from '@core/database/seeder';
 export { HookManager } from '@core/hooks/hook-manager';
 export { HookAdapterFactory } from '@core/hooks/hook-adapter-factory';

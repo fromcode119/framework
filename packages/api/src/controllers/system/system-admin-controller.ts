@@ -19,6 +19,9 @@ export class SystemAdminController {
   SystemConstants.META_KEY.PLATFORM_NAME,
   SystemConstants.META_KEY.PLATFORM_DOMAIN,
   SystemConstants.META_KEY.TELEMETRY_ENABLED,
+  // Settings → Infrastructure → System Logs. Without this the field saves "successfully" from the
+  // admin's point of view and the PUT 400s — the silent-loss class named a few lines below.
+  SystemConstants.META_KEY.LOG_RETENTION_DAYS,
   SystemConstants.META_KEY.LOCALIZATION_LOCALES,
   SystemConstants.META_KEY.ENABLED_LOCALES,
   SystemConstants.META_KEY.DEFAULT_LOCALE,

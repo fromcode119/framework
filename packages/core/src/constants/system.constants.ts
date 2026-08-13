@@ -65,6 +65,11 @@ export class SystemConstants {
   PLATFORM_NAME: 'platform_name',
   PLATFORM_DOMAIN: 'platform_domain',
   TELEMETRY_ENABLED: 'telemetry_enabled',
+  /**
+   * Days of `_system_logs` history to keep. Empty or 0 means KEEP FOREVER, and the admin field
+   * says so — nothing prunes behind the operator's back. Read by SystemLogRetentionService.
+   */
+  LOG_RETENTION_DAYS: 'log_retention_days',
   
   // Localization
   LOCALIZATION_LOCALES: 'localization_locales',

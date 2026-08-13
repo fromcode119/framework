@@ -12,7 +12,6 @@ import { AccountTranslations } from '@react/account/account-translations';
 // a theme's SSR bundle can load it.
 import { AccountSectionIcons } from '@react/account/account-section-icons';
 import { AccountSectionRegistry } from '@react/account/account-section-registry';
-import { AccountAuthGate } from '@react/account/account-auth-gate';
 import { AccountClass } from '@react/account/account-class';
 
 /**
@@ -96,19 +95,21 @@ export class AccountShellDefault extends Reactor {
     if (sectionKey !== this.section) this.setState({ section: sectionKey });
   }
 
+  /**
+   * No auth gate here. It used to wrap this render, which meant a theme registering its own
+   * `account.shell` replaced the LAYOUT and silently took the AUTHENTICATION with it — the whole
+   * account, every section name included, was reachable signed out. The gate now lives on the
+   * surface ({@link AccountShell}), around the override, so replacing this shell cannot remove it.
+   */
   render(): ReactNode {
-    // Gate the entire shell behind authentication — the account is client-rendered, so without this an
-    // unauthenticated visitor could reach every panel. The gate renders a sign-in prompt for guests.
     return (
-      <AccountAuthGate>
-        <SlotsContext.Context.Consumer>
-          {(slots) => (
-            <TranslationContext.Context.Consumer>
-              {(translation) => this.renderShell(slots, translation?.t)}
-            </TranslationContext.Context.Consumer>
-          )}
-        </SlotsContext.Context.Consumer>
-      </AccountAuthGate>
+      <SlotsContext.Context.Consumer>
+        {(slots) => (
+          <TranslationContext.Context.Consumer>
+            {(translation) => this.renderShell(slots, translation?.t)}
+          </TranslationContext.Context.Consumer>
+        )}
+      </SlotsContext.Context.Consumer>
     );
   }
 

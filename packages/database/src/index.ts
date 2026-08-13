@@ -22,6 +22,7 @@ export * from '@database/table-resolver';
 export { PhysicalTableNameUtils } from '@database/physical-table-name-utils';
 export type { IPhysicalTableReference } from '@database/interfaces/physical-table-reference.interface';
 export { BaseMigration } from '@database/base-migration';
+export { SchemaKeyField } from '@database/schema-key-field';
 export * from '@database/naming-strategy';
 export { DatabaseFactory } from '@database/database-factory';
 export type { IDatabaseBackupContext } from '@database/dialects/interfaces/database-backup-context.interface';

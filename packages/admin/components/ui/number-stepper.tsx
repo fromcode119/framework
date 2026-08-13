@@ -80,17 +80,19 @@ export class NumberStepper extends PureReactor {
           min={min as any}
           max={max as any}
           step={this.stepSize()}
-          inputClassName={`${sm ? 'pr-7 text-center' : 'pr-12'} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+          inputClassName={`${sm ? 'pr-6 text-center' : 'pr-8'} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
         />
-        {/* A distinct stepper "well" on the right: fixed to the input height (an error below never shifts it),
-            separated by a border, with a divider between the up/down halves so it reads as a real control. */}
-        <div className={`absolute right-0 top-0 flex flex-col rounded-r-lg overflow-hidden border-l border-slate-200 dark:border-slate-700 ${sm ? 'h-8 w-6' : 'h-10 w-10'}`}>
+        {/* The stepper "well" sits INSIDE the input's 1px border (inset by a pixel on both axes) rather
+            than on top of it, and inherits the shared `--radius` token — a hardcoded `rounded-r-lg` (8px)
+            cut visibly across the input's 12px curve. Height is pinned to the input's own height minus
+            the two border pixels, so an error message rendering below never stretches or shifts it. */}
+        <div className={`absolute right-px top-px flex flex-col rounded-r-[calc(var(--radius)_-_1px)] overflow-hidden border-l border-slate-200 dark:border-slate-700 ${sm ? 'h-[calc(2.25rem_-_2px)] w-5' : 'h-[calc(2.5rem_-_2px)] w-6'}`}>
           <button type="button" tabIndex={-1} disabled={disabled} aria-label="Increment" onClick={this.increment} className={btn}>
-            <FrameworkIcons.ChevronUp size={sm ? 11 : 15} strokeWidth={2.5} />
+            <FrameworkIcons.ChevronUp size={sm ? 10 : 12} strokeWidth={2.75} />
           </button>
           <div className="h-px bg-slate-200 dark:bg-slate-700" />
           <button type="button" tabIndex={-1} disabled={disabled} aria-label="Decrement" onClick={this.decrement} className={btn}>
-            <FrameworkIcons.ChevronDown size={sm ? 11 : 15} strokeWidth={2.5} />
+            <FrameworkIcons.ChevronDown size={sm ? 10 : 12} strokeWidth={2.75} />
           </button>
         </div>
       </div>

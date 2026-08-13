@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, RouteConstants, AsyncRouteGuard } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, RouteConstants, AsyncRouteGuard, SystemLogRetentionService } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -36,7 +36,8 @@ export class APIServer {
   private authSetup!: ServerAuthSetup;
   private middlewareSetup!: ServerMiddlewareSetup;
   private routesSetup!: ServerRoutesSetup;
-  
+  private logRetention!: SystemLogRetentionService;
+
   constructor(private manager: PluginManager, private themeManager: ThemeManager, private auth: AuthManager) {
     const cacheDriver = process.env.REDIS_URL ? 'redis' : 'memory';
     const driver = CacheFactory.create(cacheDriver, { url: process.env.REDIS_URL });
@@ -59,6 +60,7 @@ export class APIServer {
     this.socket = new WebSocketManager(manager.hooks);
 
     this.settingsService = new ServerSettingsService((manager as any).db, this.cache, this.settingsCache, this.logger);
+    this.logRetention = new SystemLogRetentionService((manager as any).db, this.logger);
     this.corsSetup = new ServerCorsSetup(this.app, this.settingsCache, this.logger);
     this.maintenanceService = new ServerMaintenanceService(this.manager, this.cache, this.settingsCache, this.logger);
     this.authSetup = new ServerAuthSetup(this.auth, (manager as any).db, this.logger);
@@ -89,6 +91,10 @@ export class APIServer {
     
     // Core settings must be synced BEFORE CORS and other middlewares to ensure they have access to latest config
     await this.setupSettingsSync();
+
+    // `_system_logs` had no retention at all, so it grew without bound and buried real warnings.
+    // Starts AFTER the settings sync so the declared window is readable; an unset window prunes nothing.
+    this.logRetention.start();
 
     // Let ApplicationUrlUtils fall back to the DB-backed URL settings when the matching env
     // var is unset (env always wins), so a URL changed in admin Settings propagates to links,
@@ -190,6 +196,7 @@ export class APIServer {
       clearInterval(this.settingsInterval);
       this.settingsInterval = undefined;
     }
+    this.logRetention.stop();
     await this.manager.shutdown();
     this.logger.info('API Server shut down complete.');
   }

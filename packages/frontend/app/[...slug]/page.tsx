@@ -11,6 +11,7 @@ import { RouteSegmentUtils } from '@/lib/route-segment-utils';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
+import { AccountRouteGuard } from '@/lib/account-route-guard';
 
 export class DynamicContentPageRoute {
   /**
@@ -105,6 +106,11 @@ export class DynamicContentPageRoute {
       notFound();
     }
     const slug = normalizedSegments.join('/').trim();
+    // Before ANY content resolves: the account is private, and it is client-rendered, so without this
+    // a guest received the whole shell and every section name and was only bounced once a client
+    // component had mounted and asked. Matched on the locale-stripped path, returned to the path the
+    // visitor actually typed. A no-op everywhere outside `/account`.
+    await AccountRouteGuard.enforce(`/${slug}`, `/${slugArray.join('/')}`);
     const locale = await DynamicPageResolver.resolveLocale(resolvedSearchParams, pathLocale, routingConfig.strategy);
     const fallbackLocale = LocalizationUtils.normalizeLocaleCode(QueryParamUtils.readSearchValue(resolvedSearchParams, 'fallback_locale'));
     if (!slug) {

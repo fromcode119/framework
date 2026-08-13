@@ -30,8 +30,13 @@ export class DateTimePickerController {
   }
 
   static computeCoords(rect: DOMRect, showTime: boolean | undefined): IDateTimePickerCoords {
-    const popoverWidth = 360;
-    const popoverHeight = showTime !== false ? 460 : 380;
+    const popoverWidth = 340;
+    // Estimates only, used to pick a side to open on. They were 460/380 while the popover actually
+    // rendered 869px tall, so "will it fit below?" was answered against a number nothing measured and
+    // the picker opened downwards off the bottom of the screen. These match the compacted chrome, and
+    // the popover itself is clamped to `calc(100vh - 24px)` with internal scroll, so being wrong again
+    // costs a scroll rather than an unreachable Apply button.
+    const popoverHeight = showTime !== false ? 560 : 430;
     const viewportPadding = 12;
     const maxLeft = Math.max(viewportPadding, window.innerWidth - popoverWidth - viewportPadding);
     const preferredLeft = rect.left;
