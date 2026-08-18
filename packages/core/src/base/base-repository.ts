@@ -16,7 +16,7 @@ import { NumberUtils } from '@core/number-utils';
  * export class OrderRepository extends BaseRepository<Order, OrderQuery> {
  *   async findMany(query: OrderQuery): Promise<Order[]> {
  *     const limit = this.parseLimit(query.limit);
- *     const rows = await this.context.db.find(Tables.ECOMMERCE_ORDERS, { limit });
+ *     const rows = await this.context.db.find(Tables.ORDERS, { limit });
  *     return rows.map(mapOrder);
  *   }
  * }

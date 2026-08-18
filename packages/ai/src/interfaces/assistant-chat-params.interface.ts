@@ -7,7 +7,7 @@ export interface IAssistantChatParams {
   json?: boolean;
   temperature?: number;
   maxTokens?: number;
-  /** EU AI Act: the feature invoking the model (e.g. 'mlm.retention_insight') — recorded for the audit log. */
+  /** EU AI Act: the feature invoking the model (e.g. '<plugin>.retention_insight') — recorded for the audit log. */
   purpose?: string;
   /** EU AI Act risk classification for this call. Default 'limited' (AI interacting with a natural person). */
   riskTier?: CapabilityTier;

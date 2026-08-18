@@ -15,7 +15,7 @@ import type { ILcpImagePreload } from '@/lib/theme/interfaces/lcp-image-preload.
  * ```json
  * "ui": {
  *   "prefetchApis": [
- *     { "key": "products", "pluginSlug": "ecommerce", "path": "/products", "query": { "limit": "50" } }
+ *     { "key": "products", "pluginSlug": "<plugin>", "path": "/products", "query": { "limit": "50" } }
  *   ]
  * }
  * ```
@@ -98,7 +98,7 @@ export class ThemeDataPrefetcher {
    * ```json
    * "lcp": {
    *   "imagePath": "items.0.imageUrl",
-   *   "urlTemplate": "/api/v1/plugins/cms/img?src={value}&w={width}&q=60",
+   *   "urlTemplate": "/api/v1/plugins/content/img?src={value}&w={width}&q=60",
    *   "widths": [360, 520, 680, 800],
    *   "sizes": "(max-width: 48em) 100vw, (max-width: 62em) 92vw, 50vw"
    * }
@@ -119,7 +119,7 @@ export class ThemeDataPrefetcher {
 
       // If rawValue is a full URL (e.g. http://api.internal/uploads/file.webp),
       // extract just the pathname so the encoded value matches what the browser
-      // actually requests via the CMS image API.
+      // actually requests via the content image API.
       let uploadPath = rawValue;
       try {
         const parsed = new URL(rawValue);

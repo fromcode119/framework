@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemUpdateService, ThemeManager } from '@fromcode119/core';
+import { HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 
 export class ApiBootstrapService {
@@ -74,7 +74,7 @@ export class ApiBootstrapService {
     // `server.initialize()` seeds it too, but that runs AFTER `discoverPlugins()` below — so anything a
     // plugin resolves at REGISTRATION time saw the env default instead of the operator's choice. A
     // default-page contract's title is resolved exactly there, so a Bulgarian store had English titles
-    // written into its CMS pages while admin Settings → Localization plainly said `bg`.
+    // written into its content pages while admin Settings → Localization plainly said `bg`.
     //
     // Runtime reads (an email subject at send time, an invoice at render time) were never affected —
     // they run long after boot — which is why this stayed invisible.
@@ -93,6 +93,10 @@ export class ApiBootstrapService {
 
     // Framework owns the /account route tree (built-in AccountShell), independent of any plugin.
     FrameworkAccountPageContractService.register();
+
+    // Framework owns URL redirect rules (_system_redirects, Settings → Redirects) and consults its
+    // own store through the same plugin-agnostic registry every other resolver uses.
+    SystemRedirectService.register((manager as any).db);
 
     const server = createServer(manager, themeManager, auth);
     server.pluginRouter.use(pluginApiRouter);

@@ -19,8 +19,8 @@ export class RuntimeConstants {
    */
   static readonly SLOTS = {
     /** The framework's block-definition registry. Components flagged `static block = true` register their
-     *  `definition` here; the block editor (and any block host) reads it. Replaces the legacy, plugin-named
-     *  `cms.blocks` slot — the block registry is framework-owned, so its slot carries a framework name. */
+     *  `definition` here; the block editor (and any block host) reads it. Replaces the legacy,
+     *  plugin-named slot — the block registry is framework-owned, so its slot carries a framework name. */
     BLOCK_DEFINITIONS: 'fromcode.blocks',
   } as const;
 

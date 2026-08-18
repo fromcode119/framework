@@ -81,7 +81,7 @@ export class ClassifierClarificationHelpers {
     if (!text) return null;
     const latestAssistant = ClassifierClarificationHelpers.getLatestAssistantMessage(input.history || []);
     const askedScopeChoice =
-      /\bcms\/content\b/.test(latestAssistant.toLowerCase()) &&
+      /\bcontent-record\b/.test(latestAssistant.toLowerCase()) &&
       /\bfile changes\b/.test(latestAssistant.toLowerCase());
 
     const asksMeaning =
@@ -91,19 +91,19 @@ export class ClassifierClarificationHelpers {
       /\bmeaning\b/.test(text);
     const asksWhy = /^why\b/.test(text) || /\bwhy\?$/.test(text);
 
-    if (askedScopeChoice && (asksMeaning || /\b(cms|content)\b/.test(text))) {
+    if (askedScopeChoice && (asksMeaning || /\b(content|records)\b/.test(text))) {
       return [
-        'CMS/content means text stored in content records (for example pages/posts in your CMS collections), not source code files.',
-        'If you choose CMS, I update those record values.',
+        'Content means text stored in content records (for example pages/posts collections), not source code files.',
+        'If you choose content, I update those record values.',
         'If you choose files, I edit theme/plugin source files.',
-        'Reply with "CMS" or "files".',
+        'Reply with "content" or "files".',
       ].join(' ');
     }
 
     if (askedScopeChoice && asksWhy) {
       return [
         'I asked because I found matches only in source files, and applying them would edit code.',
-        'I need your choice before staging writes: update CMS/content values instead, or apply file edits.',
+        'I need your choice before staging writes: update content-record values instead, or apply file edits.',
       ].join(' ');
     }
 

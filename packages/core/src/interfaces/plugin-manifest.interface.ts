@@ -51,7 +51,7 @@ export interface IPluginManifest {
   // Metadata for Admin UI
   admin?: {
     group?: string;
-    /** Short display name for the dropdown entry (e.g. "CMS", "SEO"). Falls back to manifest.name then group. */
+    /** Short display name for the dropdown entry. Falls back to manifest.name then group. */
     label?: string;
     groupStrategy?: NavGroupStrategy | Record<string, 'dropdown' | 'section'>;
     icon?: string;

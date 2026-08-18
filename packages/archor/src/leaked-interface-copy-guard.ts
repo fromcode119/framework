@@ -11,7 +11,7 @@ import path from 'node:path';
  * reading the rendered page revealed it.
  *
  * The vocabulary is DERIVED, never listed: it is the set of interfaces the repo actually declares.
- * A hardcoded list would put domain nouns (`ICourse` is LMS, `IBlock` is CMS) inside archor, which is a
+ * A hardcoded list would put domain nouns (a course interface, a block interface) inside archor, which is a
  * standalone package that must hold no domain or plugin knowledge — and it would rot the moment an
  * interface is added or renamed. Declaring an interface is what puts its name under this rule.
  *

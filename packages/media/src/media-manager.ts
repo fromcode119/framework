@@ -7,15 +7,95 @@ import { MediaSvgSanitizer } from '@media/media-svg-sanitizer';
 import type { IMediaWebPConversionOptions } from '@media/interfaces/media-web-p-conversion-options.interface';
 
 export class MediaManager {
-  public driver: IStorageDriver;
+  /**
+   * The storage spaces this install has, keyed by name. PUBLIC always exists; PRIVATE exists only
+   * where it is configured.
+   *
+   * One collection rather than a field per space: a second `privateDriver` field would mean every new
+   * kind of storage adds another field, another constructor argument and another branch. Keying them
+   * also lets the two live on DIFFERENT providers, which is the realistic deployment — public media
+   * behind a CDN on S3, private files on local disk, because the S3 driver has no signed-URL support
+   * and would otherwise put "private" files in the same world-readable bucket.
+   */
+  private readonly drivers = new Map<string, IStorageDriver>();
 
-  constructor(driver: IStorageDriver) {
-    this.driver = driver;
+  /**
+   * The only space with an inherent meaning: it is the one served statically and therefore the only
+   * one whose files have a public URL. Everything else is gated by whoever owns it.
+   */
+  static readonly PUBLIC_SPACE = 'public';
+
+  /**
+   * @param drivers storage spaces by name. `public` is required; add as many others as an install
+   *                needs. Falsy entries are dropped, so a factory that declines to build a space
+   *                (a misconfigured directory, say) simply results in that space not existing —
+   *                `has()` then reports the truth rather than a half-built driver pretending.
+   */
+  constructor(drivers: Record<string, IStorageDriver | undefined>) {
+    Object.entries(drivers || {}).forEach(([space, driver]) => {
+      if (driver) this.drivers.set(space, driver);
+    });
+
+    if (!this.drivers.has(MediaManager.PUBLIC_SPACE)) {
+      throw new Error(`MediaManager requires a "${MediaManager.PUBLIC_SPACE}" storage space`);
+    }
+  }
+
+  /** Add a space after construction — how a plugin or a later boot phase contributes storage. */
+  register(space: string, driver: IStorageDriver): void {
+    this.drivers.set(space, driver);
+  }
+
+  has(space: string): boolean {
+    return this.drivers.has(space);
+  }
+
+  get spaces(): string[] {
+    return [...this.drivers.keys()];
+  }
+
+  /** The public-space driver. Named `driver` because that is what it has always been to callers. */
+  get driver(): IStorageDriver {
+    return this.drivers.get(MediaManager.PUBLIC_SPACE) as IStorageDriver;
   }
 
   get provider() { return this.driver.provider; }
 
-  async upload(file: Buffer, filename: string): Promise<{ url: string; path: string; width?: number; height?: number; size: number; mimeType: string; provider: string }> {
+  /**
+   * The driver that owns a file's bytes.
+   *
+   * An unknown space THROWS rather than falling back to the public one. Silently downgrading is how a
+   * file recorded as private ends up on a permanent public URL — the single failure this whole feature
+   * exists to prevent.
+   *
+   * Spaces are plain strings rather than an enum because core imports media, so media importing core's
+   * `MediaVisibility` would close a circular reference. The enum's `.value` IS the space name, so the
+   * two line up without the dependency.
+   */
+  private driverFor(space: string): IStorageDriver {
+    const driver = this.drivers.get(space || MediaManager.PUBLIC_SPACE);
+    if (!driver) throw new Error(`Storage space "${space}" is not configured`);
+    return driver;
+  }
+
+  /** Bytes for a stored file, as a stream. Large downloads must not be buffered into memory. */
+  async stream(filepath: string, space: string = MediaManager.PUBLIC_SPACE): Promise<NodeJS.ReadableStream> {
+    return this.driverFor(space).stream(filepath);
+  }
+
+  /**
+   * The public URL for a stored file, or `''` when it has none.
+   *
+   * Only the public space is served statically, so only it can produce a URL. Every other space is
+   * gated by whoever owns it and has no address a browser could fetch directly. `''` is this codebase's
+   * established way of saying "not configured" (`ApplicationUrlUtils` does the same) — never a
+   * fabricated path that would 404 or, worse, resolve.
+   */
+  publicUrl(filepath: string, space: string = MediaManager.PUBLIC_SPACE): string {
+    return space === MediaManager.PUBLIC_SPACE ? this.driver.getUrl(filepath) : '';
+  }
+
+  async upload(file: Buffer, filename: string, options?: { space?: string }): Promise<{ url: string; path: string; width?: number; height?: number; size: number; mimeType: string; provider: string; space: string }> {
     const ext = path.extname(filename).toLowerCase();
     const mimeMap: Record<string, string> = {
       '.jpg': 'image/jpeg',
@@ -52,16 +132,21 @@ export class MediaManager {
         height = optimized.height;
     }
 
-    const filePath = await this.driver.save(payload, filename);
-    
+    const space = options?.space || MediaManager.PUBLIC_SPACE;
+    const targetDriver = this.driverFor(space);
+    const filePath = await targetDriver.save(payload, filename);
+
     return {
-      url: this.driver.getUrl(filePath),
+      // Empty for any non-public space: those files have no public URL, and this is computed on the
+      // happy path right after the bytes land, so it must not be something that can throw.
+      url: this.publicUrl(filePath, space),
       path: filePath,
       width,
       height,
       size: payload.length,
       mimeType,
-      provider: this.driver.provider
+      provider: targetDriver.provider,
+      space
     };
   }
 
@@ -94,7 +179,7 @@ export class MediaManager {
     };
   }
 
-  async remove(filepath: string): Promise<void> {
-    await this.driver.delete(filepath);
+  async remove(filepath: string, space: string = MediaManager.PUBLIC_SPACE): Promise<void> {
+    await this.driverFor(space).delete(filepath);
   }
 }

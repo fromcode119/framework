@@ -28,6 +28,9 @@ export type { IContentResolutionGateOptions } from '@core/services/interfaces/co
 export { ContentResolutionResult } from '@core/services/content-resolution-result';
 
 export { RedirectResolverRegistryService } from '@core/services/redirect-resolver-registry-service';
+export { SystemRedirectService } from '@core/services/system-redirect-service';
+export { CanonicalPathResolverRegistryService } from '@core/services/canonical-path-resolver-registry-service';
+export type { ICanonicalPathResolver } from '@core/services/interfaces/canonical-path-resolver.interface';
 export { RedirectResolution } from '@core/services/redirect-resolution';
 export type { IRedirectResolver } from '@core/services/interfaces/redirect-resolver.interface';
 

@@ -10,7 +10,7 @@ import type { IFieldFallbackRule } from '@/lib/collection/interfaces/field-fallb
  */
 describe('FieldRendererFooter provenance line', () => {
   const field: any = { name: 'leadTimeMinDays', type: 'number' };
-  const HREF = '/admin/plugins/ecommerce/settings';
+  const HREF = '/admin/plugins/alpha/settings';
 
   /** The plugin's real settings schema shape: the single source of each setting's label and tab. */
   const SCHEMA = {

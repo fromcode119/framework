@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { PluginFrontendRuntimeUtils } from '@core/plugin-frontend-runtime-utils';
 
 describe('PluginFrontendRuntimeUtils.loadsOwnFrontendRuntime', () => {
-  it('is true for a plugin shipping a frontend entry (ecommerce) — it registers its own client', () => {
+  it('is true for a plugin shipping a frontend entry (alpha) — it registers its own client', () => {
     expect(PluginFrontendRuntimeUtils.loadsOwnFrontendRuntime({
-      slug: 'ecommerce',
+      slug: 'alpha',
       ui: { entry: 'bundle.js', frontendEntry: 'frontend.js' },
       capabilities: ['database', 'api', 'admin', 'frontend', 'i18n'],
     })).toBe(true);
@@ -12,15 +12,15 @@ describe('PluginFrontendRuntimeUtils.loadsOwnFrontendRuntime', () => {
 
   it('is true for a deferred (idle) frontend runtime — it still registers its own client, just later', () => {
     expect(PluginFrontendRuntimeUtils.loadsOwnFrontendRuntime({
-      slug: 'mlm',
+      slug: 'beta',
       ui: { entry: 'bundle.js', frontendEntry: 'frontend.js', loadStrategy: 'idle' },
       capabilities: ['api', 'admin', 'frontend'],
     })).toBe(true);
   });
 
-  it('is false when the capability list omits `frontend` (numerology) — storefront never loads it', () => {
+  it('is false when the capability list omits `frontend` (gamma) — storefront never loads it', () => {
     expect(PluginFrontendRuntimeUtils.loadsOwnFrontendRuntime({
-      slug: 'numerology',
+      slug: 'gamma',
       ui: { entry: 'bundle.js' },
       capabilities: ['api', 'database', 'admin', 'hooks', 'i18n'],
     })).toBe(false);

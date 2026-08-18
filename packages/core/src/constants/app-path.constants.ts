@@ -80,6 +80,7 @@ export class AppPathConstants {
       LOCALIZATION: '/settings/localization',
       APPEARANCE: '/settings/appearance',
       ROUTING: '/settings/routing',
+      REDIRECTS: '/settings/redirects',
       SECURITY: '/settings/security',
       INFRASTRUCTURE: '/settings/infrastructure',
       BACKUPS: '/settings/backups',

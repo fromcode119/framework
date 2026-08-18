@@ -40,13 +40,17 @@ export class ServerAuthSetup {
       }
     });
 
+    // Every API key resolves through the token record below — one code path, so a key always has an
+    // owner, an expiry and a revocation point. The `MASTER_API_KEY` env branch that used to sit here
+    // was the ORIGINAL PLACEHOLDER for this validator ("In a real app, you'd check a table of API
+    // keys", d54ab26): it returned a synthetic `roles: ['admin']` user with no record, no expiry and
+    // nothing to revoke. The real table-backed check landed underneath it and the stub was never
+    // removed, leaving a full-admin bypass that no admin screen could show and that nothing could
+    // scope. It was unset in production, so deleting it changes no running behaviour.
     this.auth.setApiKeyValidator(async (key: string) => {
       if (!key) return null;
       const rawKey = String(key || '').trim();
       if (!rawKey) return null;
-      if (rawKey === process.env.MASTER_API_KEY) {
-        return { id: '0', email: 'system@fromcode.com', roles: ['admin'] };
-      }
       try {
         const keyHash = createHash('sha256').update(rawKey).digest('hex');
         const lookupRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `auth:api_token:${keyHash}` });
@@ -63,7 +67,23 @@ export class ServerAuthSetup {
         const roles = Array.isArray(user.roles) ? user.roles : (() => {
           try { const p = JSON.parse(user.roles); return Array.isArray(p) ? p : []; } catch { return []; }
         })();
-        return { id: String(user.id), email: String(user.email || ''), roles: roles.map((r: any) => String(r)), isApiKey: true, jti: `api:${tokenId}` };
+        // Carried through so the MCP surface can narrow this token to a subset of tools. Left
+        // `undefined` when the token predates scopes, which the matcher reads as "not narrowed" —
+        // so existing tokens keep working exactly as before.
+        // NOT filtered here on purpose: `McpTokenScopeMatcher` distinguishes "no list" (unrestricted)
+        // from "a list that narrows to nothing usable" (deny). Dropping blanks at this layer would
+        // collapse the second case into the first and silently unrestrict a malformed token.
+        const mcpScopes = Array.isArray(payload?.scopes)
+          ? payload.scopes.map((s: any) => String(s || ''))
+          : undefined;
+        return {
+          id: String(user.id),
+          email: String(user.email || ''),
+          roles: roles.map((r: any) => String(r)),
+          isApiKey: true,
+          jti: `api:${tokenId}`,
+          mcpScopes,
+        };
       } catch (error) {
         this.logger.error(`API key validation failed: ${error}`);
         return null;

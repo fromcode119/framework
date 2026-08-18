@@ -55,6 +55,9 @@ export * from '@/components/ui/view/color-field.client';
 // raw strings — a raw string reaches the component as an Enum-typed prop and never matches.
 export * from '@/components/ui/enums/field-size.enum';
 export * from '@/components/ui/enums/button-variant.enum';
+// Badge itself was exported without the enum that types its `variant`, so a plugin could render a Badge
+// but not choose how it looked.
+export * from '@/components/ui/enums/badge-variant.enum';
 export { ThemeMode } from '@fromcode119/core/client';
 export * from '@/components/view/admin-component.client';
 export * from '@/lib/appearance/admin-component-keys';

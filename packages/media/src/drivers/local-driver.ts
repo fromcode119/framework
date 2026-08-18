@@ -1,22 +1,32 @@
 import fs from 'fs/promises';
+import { createReadStream } from 'fs';
 import path from 'path';
+import type { Readable } from 'stream';
 import { v4 as uuidv4 } from 'uuid';
 import { IStorageDriver } from '@media/index';
+import { MediaStorageConstants } from '@media/constants/media-storage.constants';
 
 export class LocalStorageDriver implements IStorageDriver {
   public readonly provider = 'local';
   constructor(private uploadDir: string, private publicUrlBase: string) {}
 
+  /**
+   * The public path segment files are served under, with no surrounding slashes.
+   *
+   * Both fallbacks come from ONE constant now. They used to be separate literals that disagreed —
+   * `/uploads` when no base was configured, `uploads` when the configured base failed to parse — so the
+   * result depended on which way it went wrong.
+   */
   private resolvePublicBasePath(): string {
     const rawBase = String(this.publicUrlBase || '').trim();
-    if (!rawBase) return '/uploads';
+    if (!rawBase) return MediaStorageConstants.DEFAULT_PUBLIC_SEGMENT;
 
     if (/^https?:\/\//i.test(rawBase)) {
       try {
         const pathname = new URL(rawBase).pathname || '';
         return pathname.replace(/^\/+|\/+$/g, '');
       } catch {
-        return 'uploads';
+        return MediaStorageConstants.DEFAULT_PUBLIC_SEGMENT;
       }
     }
 
@@ -70,6 +80,28 @@ export class LocalStorageDriver implements IStorageDriver {
   async read(filepath: string): Promise<Buffer> {
     const fullPath = path.join(this.uploadDir, this.normalizePublicFilePath(filepath));
     return fs.readFile(fullPath);
+  }
+
+  /**
+   * Resolves inside `uploadDir` or throws. `normalizePublicFilePath` strips leading slashes but does
+   * nothing about `..`, so a stored path is the only thing standing between a caller and the rest of
+   * the filesystem. That is acceptable for `read`, whose one caller passes a path it just wrote; it is
+   * not acceptable for the private-file route, which exists to serve bytes to strangers.
+   */
+  private resolveContainedPath(filepath: string): string {
+    const root = path.resolve(this.uploadDir);
+    const fullPath = path.resolve(root, this.normalizePublicFilePath(filepath));
+    const isContained = fullPath === root || fullPath.startsWith(`${root}${path.sep}`);
+    if (!isContained) throw new Error('Resolved path escapes the storage directory');
+    return fullPath;
+  }
+
+  async stream(filepath: string): Promise<Readable> {
+    const fullPath = this.resolveContainedPath(filepath);
+    // stat first: createReadStream reports a missing file asynchronously on the stream, by which point
+    // the caller has usually already committed response headers.
+    await fs.access(fullPath);
+    return createReadStream(fullPath);
   }
 
   async delete(filepath: string): Promise<void> {

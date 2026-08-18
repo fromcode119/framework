@@ -11,7 +11,8 @@
       "courses": "Courses",
       "partner": "Partner",
       "affiliate": "Partner",
-      "emailPreferences": "Email preferences"
+      "emailPreferences": "Email preferences",
+      "files": "Files"
     },
     "shell": {
       "title": "My account",
@@ -97,7 +98,8 @@
       "security": "Password and sign-in",
       "sessions": "Devices you are signed in on",
       "two-factor": "Extra protection when signing in",
-      "emailPreferences": "Choose which emails you receive"
+      "emailPreferences": "Choose which emails you receive",
+      "files": "Everything available for you to download"
     },
     "emailPreferences": {
       "loading": "Loading…",
@@ -107,6 +109,15 @@
       "off": "Off",
       "transactionalNote": "Order confirmations, receipts and account security emails are always sent and cannot be switched off.",
       "linkInvalid": "This link is no longer valid. It may have expired, or it may be incomplete — please open the most recent email we sent you."
+    },
+    "files": {
+      "loading": "Loading…",
+      "empty": "You have no files yet.",
+      "partialFailure": "Some files could not be loaded. Try again shortly.",
+      "remaining": "{{count}} left",
+      "sentToYou": "Sent to you",
+      "download": "Download",
+      "noFiles": "Nothing to download here yet."
     }
   }
 }

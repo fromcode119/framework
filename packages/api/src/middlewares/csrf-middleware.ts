@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { CookieConstants, Logger } from '@fromcode119/core';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
 import { ApiUrlUtils } from '@api/utils/url';
+import { McpRouteUtils } from '@api/utils/mcp-route-utils';
 import { WebhookRouteUtils } from '@api/utils/webhook-route-utils';
 import { BaseMiddleware } from '@api/middlewares/base-middleware';
 
@@ -60,6 +61,13 @@ export class CSRFMiddleware extends BaseMiddleware {
 
     // 4. Skip for webhooks (usually have their own signature verification)
     if (WebhookRouteUtils.isWebhookPath(req.path)) {
+        return next();
+    }
+
+    // 4b. Skip for the MCP surface. Those routes accept API tokens ONLY (`requireApiToken` rejects
+    // session cookies), so there is no cookie-borne authority for a cross-site post to ride on. Left
+    // in, a machine client that forgot its key was told "Invalid CSRF token" instead of 401.
+    if (McpRouteUtils.isMcpPath(req.path)) {
         return next();
     }
 

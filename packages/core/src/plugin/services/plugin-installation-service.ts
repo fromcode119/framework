@@ -7,6 +7,7 @@ import { Logger } from '@core/logging';
 import { MigrationManager } from '@core/database/migration-manager';
 import { DiscoveryService } from '@core/plugin/services/discovery-service';
 import { MarketplaceCatalogService } from '@core/marketplace/marketplace-catalog-service';
+import { VersionComparisonService } from '@core/services/version-comparison-service';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
@@ -30,7 +31,7 @@ export class PluginInstallationService {
 
   async installOrUpdateFromMarketplace(
     slug: string,
-    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter; version?: string } = {},
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter; version?: string; deferRestart?: boolean } = {},
   ): Promise<IPluginManifest> {
     const pkg = await this.marketplace.getPluginInfo(slug, options.version);
     if (!pkg) {
@@ -66,6 +67,7 @@ export class PluginInstallationService {
     await this.finalizeInstalledPlugin(manifest.slug, {
       enable: options.enable ?? existing?.state === PluginState.ACTIVE,
       progressReporter: options.progressReporter,
+      deferRestart: options.deferRestart,
     });
     return manifest;
   }
@@ -85,9 +87,67 @@ export class PluginInstallationService {
     return manifest;
   }
 
+  /**
+   * Updates every installed plugin the marketplace has a NEWER version of, then schedules ONE
+   * runtime restart at the end — the per-plugin path restarts after each replace, which made
+   * updating N plugins cost N restarts. A plugin that fails is reported and skipped; the rest of
+   * the batch still lands, and the single restart still happens for whatever was replaced.
+   */
+  async updateAllFromMarketplace(
+    options: { progressReporter?: IPluginInstallProgressReporter } = {},
+  ): Promise<{ updated: string[]; failed: { slug: string; error: string }[] }> {
+    const catalog = await this.marketplace.fetchCatalog();
+    const updates = (catalog || []).filter((entry) => {
+      const installed = this.plugins.get(entry.slug);
+      return Boolean(installed && VersionComparisonService.isGreater(entry.version, installed.manifest?.version));
+    });
+
+    const updated: string[] = [];
+    const failed: { slug: string; error: string }[] = [];
+
+    if (!updates.length) {
+      options.progressReporter?.({ phase: 'completed', message: 'Every installed plugin is already at its latest marketplace version.', pluginSlug: 'all' });
+      return { updated, failed };
+    }
+
+    for (const [index, entry] of updates.entries()) {
+      options.progressReporter?.({
+        phase: 'updating-plugin',
+        message: `Updating ${entry.slug} to v${entry.version} (${index + 1}/${updates.length})...`,
+        pluginSlug: entry.slug,
+      });
+      try {
+        await this.installOrUpdateFromMarketplace(entry.slug, {
+          progressReporter: options.progressReporter,
+          version: entry.version,
+          deferRestart: true,
+        });
+        updated.push(entry.slug);
+      } catch (error) {
+        failed.push({ slug: entry.slug, error: (error as Error).message });
+        options.progressReporter?.({
+          phase: 'plugin-failed',
+          message: `Update failed for ${entry.slug}: ${(error as Error).message} — continuing with the rest.`,
+          pluginSlug: entry.slug,
+        });
+      }
+    }
+
+    if (updated.length) {
+      options.progressReporter?.({
+        phase: 'restart-required',
+        message: `${updated.length} plugin(s) replaced (${updated.join(', ')}). Scheduling ONE API restart to load the new runtime code.`,
+        pluginSlug: 'all',
+      });
+      this.runtimeRestart.scheduleRestart(`Batch update replaced ${updated.length} plugin(s).`);
+    }
+
+    return { updated, failed };
+  }
+
   async finalizeInstalledPlugin(
     slug: string,
-    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter; deferRestart?: boolean } = {},
   ): Promise<void> {
     const existingPlugin = this.plugins.get(slug);
     const manifestPath = path.join(this.pluginsRoot, slug, 'manifest.json');
@@ -112,6 +172,17 @@ export class PluginInstallationService {
         existingPlugin.approvedCapabilities,
         manifest.version,
       );
+
+      if (options.deferRestart) {
+        // A batch driver replaces several plugins and restarts ONCE at the end — restarting here
+        // would kill the API mid-batch and abort every remaining update.
+        options.progressReporter?.({
+          phase: 'plugin-replaced',
+          message: `Plugin "${slug}" was replaced. Restart deferred to the end of the batch.`,
+          pluginSlug: slug,
+        });
+        return;
+      }
 
       options.progressReporter?.({
         phase: 'restart-required',

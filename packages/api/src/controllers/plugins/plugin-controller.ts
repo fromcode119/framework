@@ -212,6 +212,26 @@ export class PluginController extends BaseController {
     }
   }
 
+  /**
+   * Batch update: every installed plugin with a newer marketplace version, ONE operation, ONE API
+   * restart at the end (the per-plugin install path restarts per replace — N updates cost N
+   * restarts, which is exactly what this endpoint exists to avoid).
+   */
+  async updateAll(_req: Request, res: Response) {
+    try {
+      const operation = this.operations.start('all', 'marketplace update-all', async (reportProgress) => {
+        const result = await this.manager.updateAllFromMarketplace({ progressReporter: reportProgress });
+        if (result.failed.length && !result.updated.length) {
+          throw new Error(`Every update failed: ${result.failed.map((f) => `${f.slug} (${f.error})`).join('; ')}`);
+        }
+      });
+      res.status(202).json({ success: true, operationId: operation.id });
+    } catch (err: any) {
+      this.logger.error(`Failed to start batch plugin update: ${err.message}`);
+      res.status(500).json({ error: err.message });
+    }
+  }
+
   async installOperation(req: Request, res: Response) {
     const operation = this.operations.get(String(req.params.operationId || ''));
     if (!operation) {

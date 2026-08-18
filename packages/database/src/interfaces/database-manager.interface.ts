@@ -59,6 +59,8 @@ export interface IDatabaseManager {
   
   delete(tableOrName: any, where: any): Promise<boolean>;
   
+  groupCount(tableName: string, options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number }): Promise<Array<Record<string, unknown>>>;
+  
   count(tableOrName: any, options?: { where?: any; joins?: any[] }): Promise<number>;
 
   // Schema Management (Agnostic)

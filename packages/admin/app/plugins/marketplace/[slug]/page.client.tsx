@@ -9,7 +9,7 @@ import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operati
 import { Lightbox } from '@/components/ui/view/lightbox.client';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
-import { VersionComparisonService } from '@/lib/version-comparison-service';
+import { VersionComparisonService } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { MarketplaceDetailLoading } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-detail-loading.client';
 import { MarketplaceDetailError } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-detail-error.client';

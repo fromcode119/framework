@@ -1,5 +1,7 @@
 import { BaseService } from '@/lib/services/base-service';
 import { PublicAssetUrlUtils } from '@fromcode119/core/client';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
 /**
  * Service for media file handling and URL resolution.
@@ -24,6 +26,21 @@ export class MediaService extends BaseService {
    */
   resolveMediaUrl(value: any): string {
     return PublicAssetUrlUtils.resolveMediaUrl(value);
+  }
+
+  /**
+   * The URL an ADMIN screen should use to look at a file, whatever space it lives in.
+   *
+   * A private file has no public URL by design, so every admin surface drew a lock where the artwork
+   * should be — including the Shared list, where the whole point is recognising what was sent. This
+   * returns the admin-guarded raw route for those, which authenticates by the operator's own session
+   * and carries no token, so it can never become a link that leaks.
+   */
+  resolvePreviewUrl(file: { id: number | string; url?: unknown; visibility?: unknown }): string {
+    if (String(file?.visibility || 'public') !== 'private') return this.resolveMediaUrl(file?.url);
+    // Through `AdminApi.getURL`, not a hand-joined base: the admin's API paths carry an `/api` prefix
+    // this file has no business knowing. Joining it here produced `/v1/media/<id>/raw` and a 503.
+    return AdminApi.getURL(AdminConstants.ENDPOINTS.MEDIA.ID_RAW(file.id));
   }
 
   /**

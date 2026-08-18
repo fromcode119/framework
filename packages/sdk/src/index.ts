@@ -43,6 +43,13 @@ export { EntityColumn } from '@fromcode119/core/client';
 export { InteractiveCanvas } from '@fromcode119/core/client';
 export { LiveBlocks } from '@fromcode119/core/client';
 
+// ── MCP tool authoring ───────────────────────────────────────────────────────
+// A plugin registers MCP tools through `context.mcp.registerTools(...)`; the schema builder and the
+// definition type come through the SDK so a plugin never imports @fromcode119/mcp directly.
+// Both are pure data/builders — browser-safe.
+export { McpSchema } from '@fromcode119/mcp';
+export type { IMcpToolDefinition } from '@fromcode119/mcp';
+
 // ── Utility Classes ───────────────────────────────────────────────────────────
 export { AccessLevel } from '@fromcode119/core/client';
 export { CoercionUtils } from '@fromcode119/core/client';

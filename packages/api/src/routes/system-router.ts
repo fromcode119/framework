@@ -4,12 +4,13 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, ThemeManager, RouteConstants } from '@fromcode119/core';
+import { PluginManager, ThemeManager, RouteConstants, SystemRedirectService } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { SystemController } from '@api/controllers/system/system-controller';
 import { SystemBackupController } from '@api/controllers/system/system-backup-controller';
 import { SystemEmailPreferencesController } from '@api/controllers/system/system-email-preferences-controller';
 import { SystemEmailPreferencesTokenController } from '@api/controllers/system/system-email-preferences-token-controller';
+import { SystemRedirectsController } from '@api/controllers/system/system-redirects-controller';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { SystemBackupService } from '@api/services/system-backup-service';
 
@@ -57,10 +58,14 @@ export class SystemRouter extends BaseRouter {
     const translate = (key: string, fallback: string) => (manager as any).i18n?.translateOrFallback?.(key, fallback) ?? fallback;
     this.emailPreferencesController = new SystemEmailPreferencesController(manager, translate);
     this.emailPreferencesTokenController = new SystemEmailPreferencesTokenController(manager, translate);
+    // The redirect store service instance registered at boot is stateless beyond its db handle, so a
+    // second instance over the same manager db is equivalent.
+    this.redirectsController = new SystemRedirectsController(new SystemRedirectService((manager as any).db));
   }
 
   private readonly emailPreferencesController!: SystemEmailPreferencesController;
   private readonly emailPreferencesTokenController!: SystemEmailPreferencesTokenController;
+  private readonly redirectsController!: SystemRedirectsController;
 
   protected registerRoutes(): void {
     // Admin metadata: any authenticated user may fetch it — the admin client permission-scopes the nav
@@ -169,8 +174,18 @@ export class SystemRouter extends BaseRouter {
     this.delete(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID, this.auth.requirePermission('system:backup:manage'),
       this.backupController.deleteBackup);
     
+    // URL redirect rules (framework-owned store — Settings → Redirects)
+    this.get(RouteConstants.SEGMENTS.ADMIN_REDIRECTS, this.auth.requirePermission('system:manage'),
+      (req: any, res: any) => this.redirectsController.list(req, res));
+    this.post(RouteConstants.SEGMENTS.ADMIN_REDIRECTS, this.auth.requirePermission('system:manage'),
+      (req: any, res: any) => this.redirectsController.create(req, res));
+    this.patch(RouteConstants.SEGMENTS.ADMIN_REDIRECTS_ID, this.auth.requirePermission('system:manage'),
+      (req: any, res: any) => this.redirectsController.update(req, res));
+    this.delete(RouteConstants.SEGMENTS.ADMIN_REDIRECTS_ID, this.auth.requirePermission('system:manage'),
+      (req: any, res: any) => this.redirectsController.remove(req, res));
+
     // System settings
-    this.get(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
+    this.get(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'),
       this.controller.getSettings);
     this.post(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
       this.controller.updateSettings);
@@ -213,6 +228,10 @@ export class SystemRouter extends BaseRouter {
     // Static `/records` must be registered before `/:id` so it is not captured as an id.
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_RECORDS, this.auth.requirePermission('users:view'),
       this.controller.getRecordsByRef);
+    // Literal path first: `/admin/people/:id` matches any single segment and would resolve "suggest"
+    // as a person id.
+    this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_SUGGEST, this.auth.requirePermission('users:view'),
+      this.controller.suggestRecipients);
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID, this.auth.requirePermission('users:view'),
       this.controller.getPerson);
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_RECORDS, this.auth.requirePermission('users:view'),

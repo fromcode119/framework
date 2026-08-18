@@ -48,6 +48,7 @@
     "@fromcode119/api": "*",
     "@fromcode119/auth": "*",
     "@fromcode119/core": "*",
+    "@fromcode119/mcp": "*",
     "@fromcode119/media": "*"
   },
   "peerDependencies": {

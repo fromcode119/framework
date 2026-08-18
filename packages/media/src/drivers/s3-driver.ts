@@ -1,4 +1,5 @@
 import path from 'path';
+import { Readable } from 'stream';
 import { v4 as uuidv4 } from 'uuid';
 import { S3Client, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
@@ -59,6 +60,20 @@ export class S3StorageDriver implements IStorageDriver {
             chunks.push(chunk);
         }
         return Buffer.concat(chunks);
+    }
+
+    /**
+     * The SDK already hands back a streaming body — `read` buffers it only because its caller wanted a
+     * Buffer. Passing it through avoids holding an arbitrarily large object in memory.
+     */
+    async stream(filepath: string): Promise<Readable> {
+        const response = await this.client.send(new GetObjectCommand({
+            Bucket: this.bucket,
+            Key: filepath
+        }));
+        const body = response.Body as AsyncIterable<Uint8Array> | undefined;
+        if (!body) throw new Error(`Object has no body: ${filepath}`);
+        return body instanceof Readable ? body : Readable.from(body);
     }
 
     async delete(filepath: string): Promise<void> {

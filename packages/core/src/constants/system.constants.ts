@@ -12,6 +12,7 @@ export class SystemConstants {
   private static readonly PLUGINS_BASE = SystemConstants.ROUTE_SEGMENTS.PLUGINS;
   private static readonly THEMES_BASE = SystemConstants.ROUTE_SEGMENTS.THEMES;
   private static readonly MEDIA_BASE = SystemConstants.ROUTE_SEGMENTS.MEDIA;
+  private static readonly FILES_BASE = SystemConstants.ROUTE_SEGMENTS.FILES;
   private static readonly VERSIONS_BASE = SystemConstants.ROUTE_SEGMENTS.VERSIONS;
   private static readonly COLLECTIONS_BASE = '/collections';
   private static readonly joinPath = (base: string, segment: string): string => `${base}${segment}`;
@@ -40,7 +41,13 @@ export class SystemConstants {
     PEOPLE: 'people',
     PERSON_RELATIONSHIPS: 'person_relationships',
     PEOPLE_ADDRESSES: 'people_addresses',
-    PERSON_CATALOGS: 'person_catalogs'
+    PERSON_CATALOGS: 'person_catalogs',
+    // Private-file delivery. A SHARE is the send (files + message + policy defaults); a GRANT is one
+    // recipient's access to it, carrying its own token so a single person can be revoked without
+    // cutting off the others; the ACCESS LOG is the audit trail of what was actually opened.
+    FILE_SHARES: '_system_file_shares',
+    FILE_GRANTS: '_system_file_grants',
+    FILE_ACCESS_LOG: '_system_file_access_log'
   } as const;
 
   /**
@@ -51,6 +58,8 @@ export class SystemConstants {
   EMAIL_PROVIDER: 'integration_email_provider',
 
   MAINTENANCE_MODE: 'maintenance_mode',
+  /** Hosted MCP transport (Streamable HTTP at POST /mcp). Off unless the operator enables it — Settings → Integrations → MCP. */
+  MCP_REMOTE_ENABLED: 'mcp_remote_enabled',
   SETUP_COMPLETED: 'setup_completed',
   SITE_NAME: 'site_name',
   SITE_URL: 'site_url',
@@ -94,6 +103,13 @@ export class SystemConstants {
   AUTH_PASSWORD_HISTORY: 'auth_password_history',
   AUTH_PASSWORD_BREACH_CHECK: 'auth_password_breach_check',
   AUTH_PASSWORD_RESET_TOKEN_MINUTES: 'auth_password_reset_token_minutes',
+
+  // Private file delivery. Defaults for a new share; every one is overridable per send, and `0` means
+  // unlimited/never throughout — the one convention, chosen because the two features this generalises
+  // disagreed (one plugin used 0 for "never expires", another read 0 AND -1 as "unlimited").
+  FILE_SHARE_DEFAULT_EXPIRY_DAYS: 'file_share_default_expiry_days',
+  FILE_SHARE_DEFAULT_MAX_DOWNLOADS: 'file_share_default_max_downloads',
+  FILE_SHARE_RATE_LIMIT_PER_MINUTE: 'file_share_rate_limit_per_minute',
   AUTH_EMAIL_CHANGE_TOKEN_MINUTES: 'auth_email_change_token_minutes',
   AUTH_LOCKOUT_THRESHOLD: 'auth_lockout_threshold',
   AUTH_LOCKOUT_WINDOW_MINUTES: 'auth_lockout_window_minutes',
@@ -207,6 +223,7 @@ export class SystemConstants {
     ADMIN_PEOPLE_CREATE_USER: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_PEOPLE_ID_CREATE_USER),
     ADMIN_PEOPLE_ID_RECORDS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_PEOPLE_ID_RECORDS),
     ADMIN_PEOPLE_RECORDS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_PEOPLE_RECORDS),
+    ADMIN_PEOPLE_SUGGEST: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_PEOPLE_SUGGEST),
     RESOLVE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.RESOLVE),
     I18N: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.I18N),
     EVENTS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.EVENTS),
@@ -249,7 +266,19 @@ export class SystemConstants {
   },
   MEDIA: {
     BASE: SystemConstants.MEDIA_BASE,
-    UPLOAD: SystemConstants.joinPath(SystemConstants.MEDIA_BASE, SystemConstants.ROUTE_SEGMENTS.MEDIA_UPLOAD)
+    UPLOAD: SystemConstants.joinPath(SystemConstants.MEDIA_BASE, SystemConstants.ROUTE_SEGMENTS.MEDIA_UPLOAD),
+    /** An admin's own view of a file's bytes, whatever storage space it lives in. */
+    ID_RAW: SystemConstants.joinPath(SystemConstants.MEDIA_BASE, SystemConstants.ROUTE_SEGMENTS.MEDIA_ID_RAW)
+  },
+  FILES: {
+    BASE: SystemConstants.FILES_BASE,
+    SHARES: SystemConstants.joinPath(SystemConstants.FILES_BASE, SystemConstants.ROUTE_SEGMENTS.FILES_SHARES),
+    SHARE: SystemConstants.joinPath(SystemConstants.FILES_BASE, SystemConstants.ROUTE_SEGMENTS.FILES_SHARE_ID),
+    SHARE_GRANTS: SystemConstants.joinPath(SystemConstants.FILES_BASE, SystemConstants.ROUTE_SEGMENTS.FILES_SHARE_GRANTS),
+    GRANT: SystemConstants.joinPath(SystemConstants.FILES_BASE, SystemConstants.ROUTE_SEGMENTS.FILES_GRANT_ID),
+    MEDIA_GRANTS: SystemConstants.joinPath(SystemConstants.FILES_BASE, SystemConstants.ROUTE_SEGMENTS.FILES_MEDIA_GRANTS),
+    SHARE_ACTIVITY: SystemConstants.joinPath(SystemConstants.FILES_BASE, SystemConstants.ROUTE_SEGMENTS.FILES_SHARE_ACTIVITY),
+    ACTIVITY: SystemConstants.joinPath(SystemConstants.FILES_BASE, SystemConstants.ROUTE_SEGMENTS.FILES_ACTIVITY)
   },
   VERSIONS: {
     BASE: SystemConstants.VERSIONS_BASE,
@@ -282,7 +311,15 @@ export class SystemConstants {
   UPLOAD_DIR_ENV: 'STORAGE_UPLOAD_DIR',
   PUBLIC_URL_ENV: 'STORAGE_PUBLIC_URL',
   DEFAULT_UPLOADS_SUBDIR: 'public/uploads',
-  DEFAULT_PUBLIC_URL: '/uploads'
+  DEFAULT_PUBLIC_URL: '/uploads',
+  /**
+   * Where PRIVATE files live. The default deliberately sits OUTSIDE `public/`: the uploads dir is
+   * handed to `express.static` twice, and those mounts are registered before cookies, CSRF, auth and
+   * the rate limiter — so anything reachable from them is anonymous and unthrottled by construction.
+   * A private file under that tree would be public no matter what guards its route carries.
+   */
+  PRIVATE_DIR_ENV: 'STORAGE_PRIVATE_DIR',
+  DEFAULT_PRIVATE_SUBDIR: 'storage/private'
   } as const;
 
   /**

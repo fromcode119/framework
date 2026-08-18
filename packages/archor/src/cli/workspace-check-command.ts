@@ -19,15 +19,15 @@ export class WorkspaceCheckCommand extends ArchorCommand {
    * A count taken while any file FAILS TO PARSE is not a real count: a syntax error stops tsc from
    * processing that file's dependents, so their errors vanish and the total looks like an improvement.
    * `plugins` briefly read 110 for exactly that reason (an invalid `export { Class.MEMBER }` in
-   * numerology); the honest figure is 124. Always confirm the workspace BUILDS before lowering.
+   * one plugin); the honest figure is 124. Always confirm the workspace BUILDS before lowering.
    *
-   * `themes` read "2" only because a JSX syntax error in vselenskiportal88
+   * `themes` read "2" only because a JSX syntax error in one theme
    * (`Navbar.THEME_LOGO_URL={...}` as an attribute NAME) aborted that file's parse and hid the other
    * 848. With the syntax repaired and the theme `@theme` alias taught to the checker, this is the first
    * honest count — not a regression.
    */
   /**
-   * `plugins` lowered 119 → 118 when the `.types.ts` sweep converted logistics' duplicated
+   * `plugins` lowered 119 → 118 when the `.types.ts` sweep converted one plugin's duplicated
    * provider-state unions into shared reactor `Enum` classes: the enum's declared type made one
    * previously-invisible mismatch a compile error the conversion then fixed.
    */

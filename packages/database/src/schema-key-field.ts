@@ -10,7 +10,7 @@ import type { ISchemaField } from '@database/interfaces/schema-field.interface';
  * `fieldToSqlFragment`, which has no `'id'` case, to the `TEXT` default — producing a nullable,
  * keyless TEXT column instead of a key.
  *
- * That is what shipped five tables (four SEO + `@mlm/volume-periods`) whose rows could not be
+ * That is what shipped five plugin tables whose rows could not be
  * addressed at all: inserts omitting `id` succeeded and stored NULL, so every later
  * `update(table, { id }, …)` matched nothing and silently discarded the write. It is an easy
  * declaration to write — `BaseMigration`'s own usage example carried `{ name: 'id', type: 'id' }`

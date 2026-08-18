@@ -7,7 +7,7 @@ import type { RedirectResolution } from '@core/services/redirect-resolution';
  * Plugins register a resolver (keyed by a stable id, e.g. their slug) that, given a request path which
  * resolved to NO content, may return a redirect target. The framework stays plugin-agnostic: it only
  * runs the registered resolvers in registration order and returns the FIRST match — it holds no knowledge
- * of where the rules live (an SEO plugin, a CMS table, …).
+ * of where the rules live (one plugin's rules table or another's, …).
  *
  * Registration is idempotent per key: re-registering the same key replaces the previous resolver, so a
  * plugin re-init never stacks duplicates. A resolver that throws is skipped so one misbehaving plugin can

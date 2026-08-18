@@ -36,7 +36,7 @@ export class AssistantCopyUtils {
     riskPolicy: AssistantSkillRiskPolicy.APPROVAL_REQUIRED,
     entryExamples: [
       'Replace "Slow Websites" with "Better Sites" in homepage copy.',
-      'Update hero title in @cms/pages id=1.',
+      'Update the hero title on the homepage.',
     ],
   },
   {
@@ -83,7 +83,7 @@ export class AssistantCopyUtils {
   {
     id: 'page-audit',
     label: 'Page Auditor',
-    description: 'Inspect live pages, compare with CMS/theme settings, and stage targeted fixes.',
+    description: 'Inspect live pages, compare with content/theme settings, and stage targeted fixes.',
     defaultMode: AssistantRunMode.PLAN,
     allowedTools: [
       'web.fetch',

@@ -99,13 +99,13 @@ describe('AdminMetadataService', () => {
     fs.writeFileSync(cssPath, 'body { color: black; }');
 
     const plugin = {
-      instanceId: 'cms-1',
+      instanceId: 'alpha-1',
       state: PluginState.ACTIVE,
       path: pluginRoot,
       manifest: {
-        slug: 'cms',
+        slug: 'alpha',
         namespace: 'org.fromcode',
-        name: 'CMS',
+        name: 'Alpha',
         version: '1.0.0',
         category: 'content',
         admin: {},
@@ -119,9 +119,9 @@ describe('AdminMetadataService', () => {
     const result = service.getAdminMetadata([plugin], new Map(), {}, []);
     const metadata = result.plugins[0]?.ui;
 
-    expect(metadata?.entryUrl).toMatch(/^\/plugins\/cms\/ui\/bundle\.js\?v=\d+$/);
+    expect(metadata?.entryUrl).toMatch(/^\/plugins\/alpha\/ui\/bundle\.js\?v=\d+$/);
     expect(metadata?.cssUrls).toHaveLength(1);
-    expect(metadata?.cssUrls?.[0]).toMatch(/^\/plugins\/cms\/ui\/theme\.css\?v=\d+$/);
+    expect(metadata?.cssUrls?.[0]).toMatch(/^\/plugins\/alpha\/ui\/theme\.css\?v=\d+$/);
 
     fs.rmSync(pluginRoot, { recursive: true, force: true });
   });

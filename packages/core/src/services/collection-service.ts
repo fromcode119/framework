@@ -14,7 +14,7 @@ import { BaseService } from '@core/services/base-service';
  * import { CoreServices } from '@fromcode119/core';
  * 
  * const services = CoreServices.getInstance();
- * const collection = services.collection.resolveBySlug(collections, 'cms', 'pages');
+ * const collection = services.collection.resolveBySlug(collections, '<plugin>', 'pages');
  * const url = services.collection.generatePreviewUrl('https://example.com', record, collection);
  * ```
  */

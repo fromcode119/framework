@@ -5,7 +5,7 @@ import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 
-function makeDb(existingRow: any = { slug: 'ecommerce' }) {
+function makeDb(existingRow: any = { slug: 'alpha' }) {
   return {
     find: vi.fn().mockResolvedValue([]),
     findOne: vi.fn().mockResolvedValue(existingRow),
@@ -18,10 +18,10 @@ describe('PluginStateService.markPluginHeld', () => {
   it('writes inactive + warning + held_reason without touching capabilities', async () => {
     const db = makeDb();
     const svc = new PluginStateService(db);
-    await svc.markPluginHeld('Ecommerce', PluginHeldReason.CAPABILITY_DRIFT);
+    await svc.markPluginHeld('Alpha', PluginHeldReason.CAPABILITY_DRIFT);
     expect(db.update).toHaveBeenCalledTimes(1);
     const [, where, values] = db.update.mock.calls[0];
-    expect(where).toEqual({ slug: 'ecommerce' });
+    expect(where).toEqual({ slug: 'alpha' });
     expect(values.state).toBe('inactive');
     expect(values.health_status).toBe('warning');
     expect(values.held_reason).toBe('capability_drift');
@@ -40,12 +40,12 @@ describe('PluginStateService.loadInstalledPluginsState', () => {
   it('returns heldReason from the held_reason column', async () => {
     const db = makeDb();
     db.find.mockResolvedValue([
-      { slug: 'ecommerce', state: 'inactive', capabilities: '["api"]', health_status: 'warning', held_reason: 'capability_drift' },
+      { slug: 'alpha', state: 'inactive', capabilities: '["api"]', health_status: 'warning', held_reason: 'capability_drift' },
     ]);
     const svc = new PluginStateService(db);
     const reg = await svc.loadInstalledPluginsState();
-    expect(reg['ecommerce'].heldReason).toBe(PluginHeldReason.CAPABILITY_DRIFT);
-    expect(reg['ecommerce'].healthStatus).toBe(PluginRegistryHealth.WARNING);
+    expect(reg['alpha'].heldReason).toBe(PluginHeldReason.CAPABILITY_DRIFT);
+    expect(reg['alpha'].healthStatus).toBe(PluginRegistryHealth.WARNING);
   });
 
   it('surfaces signatureVerified from the signature_verified column', async () => {

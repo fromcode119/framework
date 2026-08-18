@@ -26,11 +26,11 @@ describe('LifecycleService.computeCapabilityDiff', () => {
 describe('capability gate auto-approve decision', () => {
   afterEach(() => { delete process.env.AUTO_APPROVE_PLUGIN_CAPABILITIES; delete process.env.AUTO_APPROVE_TRUSTED_SLUGS; });
   it('returns "hold" when auto-approve is off', () => {
-    expect(LifecycleService.resolveDriftAction('ecommerce', true)).toBe(PluginApprovalMode.HOLD);
+    expect(LifecycleService.resolveDriftAction('alpha', true)).toBe(PluginApprovalMode.HOLD);
   });
   it('returns "auto-approve" when enabled and trusted', () => {
     process.env.AUTO_APPROVE_PLUGIN_CAPABILITIES = 'true';
-    expect(LifecycleService.resolveDriftAction('ecommerce', true)).toBe(PluginApprovalMode.AUTO_APPROVE);
+    expect(LifecycleService.resolveDriftAction('alpha', true)).toBe(PluginApprovalMode.AUTO_APPROVE);
   });
   it('returns "hold" when enabled but untrusted', () => {
     process.env.AUTO_APPROVE_PLUGIN_CAPABILITIES = 'true';

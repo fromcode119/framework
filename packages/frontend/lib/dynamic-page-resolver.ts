@@ -118,12 +118,13 @@ export class DynamicPageResolver {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),
       doc: ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null),
+      canonicalPath: String(result?.canonicalPath || '').trim(),
     };
   }
 
   /**
    * Looks up a configured redirect rule for a would-be-404 path via the framework's OWN resolve endpoint.
-   * The framework's route resolver consults a plugin-agnostic redirect registry (an SEO plugin, a CMS
+   * The framework's route resolver consults a plugin-agnostic redirect registry (an SEO plugin, a content
    * table, … register into it) and returns a `redirect` resolution — so the frontend never names a plugin.
    * Returns the target + whether it's permanent (308) or temporary (307), or null when no rule matches.
    * A malformed payload resolves to null so a lookup quirk never breaks the page — but an
@@ -205,6 +206,7 @@ export class DynamicPageResolver {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),
       doc: ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null),
+      canonicalPath: String(result?.canonicalPath || '').trim(),
     };
   }
 
@@ -242,7 +244,9 @@ export class DynamicPageResolver {
         const doc = ServerApiUtils.extractFirstDoc(result);
         if (doc) {
           const normalized = ResolvedContentShape.normalize(doc as Record<string, unknown>);
-          return { content: normalized, forcedLayout: null, resolution: { type: '', plugin: '', doc: normalized } };
+          // An operator pinned this record to the home route, so home IS where it belongs — declaring
+          // any other canonical path here would bounce every visitor straight off the front page.
+          return { content: normalized, forcedLayout: null, resolution: { type: '', plugin: '', doc: normalized, canonicalPath: '' } };
         }
       }
     }

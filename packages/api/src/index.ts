@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, RouteConstants, AsyncRouteGuard, SystemLogRetentionService } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, SystemLogRetentionService } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -118,12 +118,13 @@ export class APIServer {
       this.logger.warn('Storage integration not initialized. Falling back to default LocalMediaManager.');
       const { StorageFactory } = require('@fromcode119/media');
       const fallback = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), undefined);
-      this.mediaManager = new MediaManager(
-        StorageFactory.create('local', { uploadDir: fallback.uploadDir, publicUrlBase: fallback.publicUrlBase })
-      );
+      this.mediaManager = new MediaManager({
+        [MediaManager.PUBLIC_SPACE]: StorageFactory.create('local', { uploadDir: fallback.uploadDir, publicUrlBase: fallback.publicUrlBase }),
+        [PrivateStorageDriverFactory.SPACE]: PrivateStorageDriverFactory.create(fallback.uploadDir),
+      });
     }
 
-    this.routesSetup = new ServerRoutesSetup(this.app, this.pluginRouter, this.manager, this.themeManager, this.auth, this.mediaManager, this.restController, this.graphQLService, () => this.maintenanceService.getStatus(), this.logger);
+    this.routesSetup = new ServerRoutesSetup(this.app, this.pluginRouter, this.manager, this.themeManager, this.auth, this.mediaManager, this.restController, this.graphQLService, () => this.maintenanceService.getStatus(), this.logger, this.settingsCache);
 
     const uploadsConfig = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), this.mediaManager);
     this.logger.info(`Serving static uploads from: ${uploadsConfig.uploadDir} at ${uploadsConfig.publicPath}`);

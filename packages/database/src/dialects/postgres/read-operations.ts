@@ -32,6 +32,21 @@ export class PostgresReadOperations extends BaseDialect {
     return `$${index}`;
   }
 
+  /** COUNT(*) per group — see `BaseDialect.buildGroupCountSQL` for the contract. */
+  async groupCount(
+    tableName: string,
+    options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },
+  ): Promise<Array<Record<string, unknown>>> {
+    const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, options.where);
+    const { sql: sqlStr, values } = this.buildGroupCountSQL(tableName, { ...options, where: normalizedWhere });
+    const rows = await this.executeRawSelect(sqlStr, values);
+    return (Array.isArray(rows) ? rows : []).map((row: any) => ({ ...row, count: Number(row.count) }));
+  }
+
+  protected dayBucketExpression(quotedColumn: string): string {
+    return `to_char(${quotedColumn}, 'YYYY-MM-DD')`;
+  }
+
   protected async executeRawSelect(sqlStr: string, values: any[]): Promise<any[]> {
     const result = await this.pool.query(sqlStr, values);
     return result.rows;

@@ -3,6 +3,7 @@ import path from 'path';
 import { EmailFactory, EmailManager } from '@fromcode119/email';
 import type { IEmailDriver } from '@fromcode119/email';
 import { MediaManager, StorageFactory } from '@fromcode119/media';
+import { PrivateStorageDriverFactory } from '@core/integrations/providers/private-storage-driver-factory';
 import { CacheManager, CacheFactory } from '@fromcode119/cache';
 import { Logger } from '@core/logging';
 import { IntegrationRegistry } from '@core/integrations/integration-registry';
@@ -65,7 +66,13 @@ export class IntegrationCoreRefreshService {
       // Fallback to local driver to prevent system-wide crashes
       const uploadDir = ProjectPaths.getUploadsDir();
       const publicUrl = process.env.STORAGE_PUBLIC_URL || '/uploads';
-      return { storage: new MediaManager(StorageFactory.create('local', { uploadDir, publicUrlBase: publicUrl })), resolved: null };
+      return {
+        storage: new MediaManager({
+          [MediaManager.PUBLIC_SPACE]: StorageFactory.create('local', { uploadDir, publicUrlBase: publicUrl }),
+          [PrivateStorageDriverFactory.SPACE]: PrivateStorageDriverFactory.create(uploadDir),
+        }),
+        resolved: null,
+      };
     }
   }
 

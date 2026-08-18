@@ -7,21 +7,21 @@ import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason
 describe('PluginHealthReportService.buildReport', () => {
   it('buckets, computes cap deltas, and sets ok=false when anything is held/errored', () => {
     const report = PluginHealthReportService.buildReport([
-      { slug: 'cms', state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY, manifestCapabilities: ['api'], approvedCapabilities: ['api'] },
-      { slug: 'ecommerce', state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.WARNING, heldReason: PluginHeldReason.CAPABILITY_DRIFT, manifestCapabilities: ['api', 'scheduler'], approvedCapabilities: ['api'] },
-      { slug: 'mlm', state: PluginState.ERROR, healthStatus: PluginRegistryHealth.ERROR, error: 'boom' },
+      { slug: 'alpha', state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY, manifestCapabilities: ['api'], approvedCapabilities: ['api'] },
+      { slug: 'alpha', state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.WARNING, heldReason: PluginHeldReason.CAPABILITY_DRIFT, manifestCapabilities: ['api', 'scheduler'], approvedCapabilities: ['api'] },
+      { slug: 'beta', state: PluginState.ERROR, healthStatus: PluginRegistryHealth.ERROR, error: 'boom' },
       { slug: 'search', state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.HEALTHY },
     ]);
     expect(report.ok).toBe(false);
     expect(report.counts).toEqual({ total: 4, active: 1, held: 1, error: 1, inactive: 1 });
-    expect(report.held[0].slug).toBe('ecommerce');
+    expect(report.held[0].slug).toBe('alpha');
     expect(report.held[0].addedCapabilities).toEqual(['scheduler']);
-    expect(report.error[0].slug).toBe('mlm');
+    expect(report.error[0].slug).toBe('beta');
   });
 
   it('ok=true when all active/healthy', () => {
     const report = PluginHealthReportService.buildReport([
-      { slug: 'cms', state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY },
+      { slug: 'alpha', state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY },
     ]);
     expect(report.ok).toBe(true);
     expect(report.counts.held).toBe(0);

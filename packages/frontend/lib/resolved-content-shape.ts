@@ -33,7 +33,7 @@ export class ResolvedContentShape {
   }
 
   static resolveLayoutName(content: Record<string, unknown> | null): string {
-    // CANONICAL camelCase only. Products historically used `pageTemplate`, CMS pages use
+    // CANONICAL camelCase only. Products historically used `pageTemplate`, content pages use
     // `themeLayout`; both are camelCase. The snake_case `page_template` was a DEAD read —
     // the DB proxy denormalizes every row to camelCase, so that key never exists.
     return this.readString(content, ['themeLayout', 'pageTemplate']);

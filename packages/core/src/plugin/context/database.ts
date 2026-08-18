@@ -74,10 +74,19 @@ export class DatabaseContextProxy {
   static createDatabaseProxy(
   plugin: ILoadedPlugin,
   manager: IPluginManagerInterface,
-  security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
+  security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>,
+  behaviour?: { resolveLocalized?: boolean }
 ) {
       const { hasCapability, handleViolation, handleRateLimit } = security;
       const tablePrefix = PhysicalTableNameUtils.createPluginPrefix(plugin.manifest.slug);
+      const resolveLocalized = behaviour?.resolveLocalized !== false;
+      // `db.stored` — the same proxy (same guards, same rate limit, same denormalization) minus the
+      // localized-field collapse, so rows read in the STORED shape. This exists for read-modify-write:
+      // reading a `localized: true` field through the collapsing view and writing it back REPLACES the
+      // whole locale map with one locale's value — every other language's content is silently lost.
+      // Any code that patches inside a localized value must read
+      // through `stored`. Lazily built once; `stored` on the stored view is itself.
+      let storedView: any = null;
 
       const wrappedSql = new Proxy(sql, {
         get: (target, prop) => {
@@ -91,7 +100,7 @@ export class DatabaseContextProxy {
         }
       });
 
-      return new Proxy(manager.db, {
+      const proxy: any = new Proxy(manager.db, {
         get: (target, prop) => {
           if (!hasCapability('database') && !hasCapability('database:read') && !hasCapability('database:write')) {
             handleViolation('database');
@@ -112,6 +121,13 @@ export class DatabaseContextProxy {
           if (prop === 'eq') return eq;
           if (prop === 'and') return and;
           if (prop === 'or') return or;
+          if (prop === 'stored') {
+            if (!resolveLocalized) return proxy;
+            if (!storedView) {
+              storedView = DatabaseContextProxy.createDatabaseProxy(plugin, manager, security, { resolveLocalized: false });
+            }
+            return storedView;
+          }
 
           if (typeof prop === 'string' && DatabaseContextProxy.TABLE_ARG_METHODS.has(prop)) {
             const fn = (target as any)[prop];
@@ -144,10 +160,13 @@ export class DatabaseContextProxy {
               const table = args[0];
               const out = fn.apply(this, EnumValueCoercion.coerceArguments(args));
               if (shouldDenormalize) {
+                const postProcess = (rows: any) => (resolveLocalized
+                  ? DatabaseContextProxy.postProcessResult(rows, table, manager)
+                  : DatabaseContextProxy.denormalizeResult(rows));
                 if (out && typeof out.then === 'function') {
-                  return out.then((rows: any) => DatabaseContextProxy.postProcessResult(rows, table, manager));
+                  return out.then(postProcess);
                 }
-                return DatabaseContextProxy.postProcessResult(out, table, manager);
+                return postProcess(out);
               }
               return out;
             };
@@ -157,5 +176,6 @@ export class DatabaseContextProxy {
         }
       });
 
+      return proxy;
   }
 }

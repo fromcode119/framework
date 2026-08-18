@@ -157,6 +157,10 @@ export class Schema {
   caption: text('caption'),
   path: text('path').notNull(),
   folderId: integer('folder_id').references(() => Schema.mediaFolders.id, { onDelete: 'set null' }),
+  // Nullable on purpose: the column is added to existing installs by schema sync, so rows written
+  // before it existed hold NULL. `MediaVisibility.resolve` reads NULL as public, which is what those
+  // rows factually are — their bytes are already under a static mount.
+  visibility: text('visibility').default('public'),
   optimizedPath: text('optimized_path'),
   optimizedSize: integer('optimized_size'),
   optimizedWidth: integer('optimized_width'),

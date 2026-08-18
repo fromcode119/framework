@@ -7,6 +7,7 @@ import { PromptDialog } from '@/components/ui/view/prompt-dialog.client';
 import { MoveDialog } from '@/components/ui/view/move-dialog.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { MediaDetailsDialog } from '@/app/media/components/view/media-details-dialog.client';
+import { MediaShareDialog } from '@/app/media/components/view/media-share-dialog.client';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
 import type { IMovingItem } from '@/app/media/interfaces/moving-item.interface';
@@ -15,7 +16,12 @@ export class MediaDialogs extends PureReactor {
   @prop declare editingFolder: IMediaFolder | null;
   @prop declare editingItem: IMediaItem | null;
   @prop declare setEditingItem: (item: IMediaItem | null) => void;
-  @prop declare handleUpdateDetails: (alt: string, caption: string) => Promise<void>;
+  @prop declare handleUpdateDetails: (alt: string, caption: string, visibility: string) => Promise<void>;
+  @prop declare items: IMediaItem[];
+  @prop declare selectedIds: number[];
+  @prop declare isShareDialogOpen: boolean;
+  @prop declare setIsShareDialogOpen: (value: boolean) => void;
+  @prop declare clearSelection: () => void;
   @prop declare isActionLoading: boolean;
   @prop declare isMoveDialogOpen: boolean;
   @prop declare isFolderPromptOpen: boolean;
@@ -64,6 +70,18 @@ export class MediaDialogs extends PureReactor {
     this.setEditingFolder(null);
   }
 
+  @bound closeShare(): void {
+    this.setIsShareDialogOpen(false);
+    // Clearing on close keeps the tick state honest: leaving files ticked after a send suggests the
+    // next action would apply to them, which is exactly how a file gets shared twice by accident.
+    this.clearSelection();
+  }
+
+  /** The selected media, resolved from ids so the dialog always sees current rows. */
+  private get selectedItems(): IMediaItem[] {
+    return (this.items || []).filter((item) => (this.selectedIds || []).includes(Number(item.id)));
+  }
+
   render(): ReactNode {
     return (
       <>
@@ -73,6 +91,16 @@ export class MediaDialogs extends PureReactor {
           onClose={this.closeDetails}
           onConfirm={this.handleUpdateDetails}
         />
+
+        {/* Keyed on the selection so the dialog remounts when it changes — otherwise its recipient box
+            and loaded grants would carry over from the previous set of files. */}
+        {this.isShareDialogOpen && this.selectedItems.length ? (
+          <MediaShareDialog
+            key={this.selectedIds.join('-')}
+            items={this.selectedItems}
+            onClose={this.closeShare}
+          />
+        ) : null}
 
         <MoveDialog
           isOpen={this.isMoveDialogOpen}

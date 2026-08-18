@@ -1,4 +1,4 @@
-import { CoreServices, PluginManager, type IResolvedPluginDefaultPageContract, ThemeManager, SystemConstants, type ICollection, PluginState } from '@fromcode119/core';
+import { CoreServices, HookEventUtils, PluginManager, type IResolvedPluginDefaultPageContract, ThemeManager, SystemConstants, type ICollection, PluginState } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { ResolutionContractMatchService } from '@api/services/helpers/resolution-contract-match-service';
 import { ResolutionContractPresentationService } from '@api/services/helpers/resolution-contract-presentation-service';
@@ -36,6 +36,7 @@ export class ResolutionService {
     hooks.on('collection:*:saved', () => this.cache.invalidateResults());
     hooks.on('collection:*:deleted', () => this.cache.invalidateResults());
     hooks.on('system:settings:updated', () => this.cache.invalidateAll());
+    hooks.on(HookEventUtils.HOOK_EVENTS.SYSTEM_CACHE_PURGE, () => this.cache.invalidateAll());
   }
 
   async resolveSlug(slug: string, options: {
@@ -55,7 +56,7 @@ export class ResolutionService {
       user: options.user,
       preview: options.preview,
     });
-    if (gated) return gated;
+    if (gated) return this.withCanonicalPath(gated);
 
     // Nothing resolved to content — consult plugin-registered redirect resolvers
     // (e.g. an SEO plugin's retired-URL rules) before returning null. The framework
@@ -65,6 +66,27 @@ export class ResolutionService {
       return { type: 'redirect', plugin: '', doc: null, redirect };
     }
     return gated;
+  }
+
+  /**
+   * Annotates a resolved document with the ONE path its owning plugin says it is served at, so the
+   * routing layer can send a request that arrived on any other path to that path instead. Asks only the
+   * resolver registered by the plugin that actually resolved this document — the framework never reads a
+   * plugin's own field name (`canonicalUrl`, `customPermalink`, …) from here.
+   *
+   * Deliberately AFTER the raw-resolution cache: the value is derived from the document, so it costs
+   * nothing to recompute and can never be served from a cache entry written for a different document.
+   */
+  private async withCanonicalPath<T extends { type?: unknown; plugin?: unknown; doc?: unknown }>(resolved: T): Promise<T> {
+    const doc = resolved?.doc;
+    if (!doc || typeof doc !== 'object' || Array.isArray(doc)) return resolved;
+    const canonicalPath = await CoreServices.getInstance().canonicalPathResolvers.resolve(
+      String(resolved.plugin || '').trim(),
+      doc as Record<string, unknown>,
+      String(resolved.type || '').trim(),
+    );
+    if (!canonicalPath) return resolved;
+    return { ...resolved, canonicalPath };
   }
 
   private async resolveRedirect(slug: string): Promise<{ target: string; permanent: boolean } | null> {

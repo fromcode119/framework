@@ -59,13 +59,13 @@ function makeHarness(rows: any[], seedPeople: any[] = [], seedCursor?: string) {
 describe('PeopleDirectoryService.mergeFillEmpty', () => {
   it('fills only EMPTY existing fields and never overwrites a non-empty one', () => {
     const merged = PeopleDirectoryService.mergeFillEmpty(
-      { id: 2, userId: null, firstName: 'К', lastName: '', source: 'astrology' },
+      { id: 2, userId: null, firstName: 'К', lastName: '', source: 'delta' },
       { userId: 1, firstName: 'Ignored', lastName: 'Д', source: 'finance' },
     );
     expect(merged.userId).toBe(1);
     expect(merged.firstName).toBe('К');
     expect(merged.lastName).toBe('Д');
-    expect(merged.source).toBe('astrology');
+    expect(merged.source).toBe('delta');
   });
 
   it('treats a whitespace-only existing value as empty', () => {
@@ -110,7 +110,7 @@ describe('PeopleDirectoryService.isIngestable', () => {
 describe('PeopleDirectoryService.ingest', () => {
   it('merges into an existing same-email person instead of duplicating', async () => {
     const { service, people } = makeHarness([], [
-      { id: 2, userId: null, email: 'k@x.com', firstName: 'Кристиян', lastName: '', source: 'astrology' },
+      { id: 2, userId: null, email: 'k@x.com', firstName: 'Кристиян', lastName: '', source: 'delta' },
     ]);
     const person = await service.ingest({ userId: 1, email: 'k@x.com', firstName: 'Ignored', lastName: 'Димитров', source: 'finance' });
     expect(people).toHaveLength(1);
@@ -118,7 +118,7 @@ describe('PeopleDirectoryService.ingest', () => {
     expect(people[0].userId).toBe(1);
     expect(people[0].firstName).toBe('Кристиян');
     expect(people[0].lastName).toBe('Димитров');
-    expect(people[0].source).toBe('astrology');
+    expect(people[0].source).toBe('delta');
   });
 
   it('returns null and writes nothing for a payload with no identity at all', async () => {

@@ -4,6 +4,7 @@ import "@/app/auth.css";
 // a runtime CSS import in that module compiles to a `require()` in `packages/react/dist`, which makes
 // the package unimportable by Node and blocks server-rendering a theme.
 import "@fromcode119/react/account/account-shell.css";
+import "@fromcode119/react/files/file-share.css";
 import type { Metadata } from 'next';
 import { StorefrontRuntimeGate } from "@/app/components/view/storefront-runtime-gate.client";
 import { ThemeAssetsView } from '@/components/theme-assets';

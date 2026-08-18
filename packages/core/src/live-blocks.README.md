@@ -1,13 +1,13 @@
 # Theme contract for visual editing
 
-The visual editor (admin overlay) is provided by the **CMS plugin** and built on
+The visual editor (admin overlay) is provided by the **content plugin** and built on
 two framework primitives in `@fromcode119/sdk`:
 
 | Primitive | Owner | What it does |
 |-----------|-------|-------------|
-| `InteractiveCanvas.Provider` | Framework | Tracks edit mode + selected block id. Mounted once at the layout level by the CMS plugin's `frontend.editor.app-shell` slot. |
+| `InteractiveCanvas.Provider` | Framework | Tracks edit mode + selected block id. Mounted once at the layout level by the content plugin's `frontend.editor.app-shell` slot. |
 | `InteractiveCanvas.Wrapper`  | Framework | Click target for a block. When the canvas is enabled, a click on the wrapper sets the target id → opens the inspector. |
-| `LiveBlocks.publish`         | CMS plugin (publisher) | Pushes the editor's optimistic patches into a global store + `fc:live-blocks` event. |
+| `LiveBlocks.publish`         | content plugin (publisher) | Pushes the editor's optimistic patches into a global store + `fc:live-blocks` event. |
 | `LiveBlocks.useLiveBlocks`   | Framework hook (consumer) | React hook themes call to get patched blocks for the current page; falls back to baseline when no edit is active. |
 
 ## What a theme has to do to make a page editable
@@ -39,7 +39,7 @@ function MyThemePage({ page }) {
 }
 ```
 
-That's the entire surface. Themes do **not** import from `@fromcode119/cms`,
+That's the entire surface. Themes do **not** import from `@fromcode119/<plugin>`,
 do **not** know about the runtime, do **not** know about the inspector — they
 just provide:
 
@@ -51,12 +51,12 @@ Adding a new theme follows the same three lines per page that should be editable
 
 ## Block schemas and inspector behavior
 
-Schemas (what fields the inspector shows for a block type) live in the CMS
+Schemas (what fields the inspector shows for a block type) live in the content
 plugin (`block-schemas.ts`). Adding a new schema or modifying an existing one
 is a **plugin** change — no theme involvement.
 
 Auto-insert of default blocks (e.g. product pages get `product-related` +
-`product-reviews` on first edit) lives in the CMS plugin's
+`product-reviews` on first edit) lives in the content plugin's
 `ProductPageDefaultsInjector` — also no theme involvement.
 
 ## Block renderers
@@ -65,7 +65,7 @@ The visual representation of a block is theme-specific and goes via the
 existing override slot mechanism:
 
 ```ts
-ContextBridge.registerOverride('cms.block.<type>', MyThemeRenderer, themeSlug, 11);
+ContextBridge.registerOverride('<plugin>.block.<type>', MyThemeRenderer, themeSlug, 11);
 ```
 
 A new theme provides its own renderers; the inspector behavior is identical
@@ -75,10 +75,10 @@ across themes because it lives in the plugin.
 
 | Concern | Lives in |
 |---------|---------|
-| Visual editor UI (inspector, toolbar, picker) | CMS plugin |
-| Block schemas (fields per type) | CMS plugin |
-| Auto-insert defaults | CMS plugin |
-| Runtime / save / undo | CMS plugin |
+| Visual editor UI (inspector, toolbar, picker) | content plugin |
+| Block schemas (fields per type) | content plugin |
+| Auto-insert defaults | content plugin |
+| Runtime / save / undo | content plugin |
 | InteractiveCanvas / LiveBlocks primitives | Framework (`@fromcode119/core`) |
 | Block visual renderers | Theme |
 | Click-target wrappers per editable section | Theme (3 lines per page) |

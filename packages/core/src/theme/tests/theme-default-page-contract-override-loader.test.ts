@@ -25,9 +25,9 @@ describe('ThemeDefaultPageContractOverrideLoader', () => {
       [
         'module.exports.getOverrides = function getOverrides() {',
         '  return [{',
-        "    contract: { namespace: 'org.fromcode', pluginSlug: 'ecommerce', key: 'store-index' },",
+        "    contract: { namespace: 'org.fromcode', pluginSlug: 'alpha', key: 'store-index' },",
         "    slug: '/shop',",
-        "    aliases: ['/numerology'],",
+        "    aliases: ['/gamma'],",
         '    install: true',
         '  }];',
         '};',
@@ -42,11 +42,11 @@ describe('ThemeDefaultPageContractOverrideLoader', () => {
       {
         contract: {
           namespace: 'org.fromcode',
-          pluginSlug: 'ecommerce',
+          pluginSlug: 'alpha',
           key: 'store-index',
         },
         slug: '/shop',
-        aliases: ['/numerology'],
+        aliases: ['/gamma'],
         title: undefined,
         themeLayout: undefined,
         recipe: undefined,
@@ -56,7 +56,7 @@ describe('ThemeDefaultPageContractOverrideLoader', () => {
 
     overrides[0].aliases?.push('/mutated');
     const reloadedOverrides = await loader.load(themeDirectory);
-    expect(reloadedOverrides[0].aliases).toEqual(['/numerology']);
+    expect(reloadedOverrides[0].aliases).toEqual(['/gamma']);
   });
 
   it('returns an empty list when the theme does not provide overrides', async () => {

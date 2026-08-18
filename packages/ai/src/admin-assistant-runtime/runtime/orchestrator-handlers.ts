@@ -114,7 +114,7 @@ export class OrchestratorHandlers {
     if (needsFileScopeClarification) {
       const clarificationQuestion = [
         `I found ${fileOnlyActions.length} file matches for "${intent.replace?.from}" -> "${intent.replace?.to}", but these are source-file edits.`,
-        'Do you want to update CMS/content values instead, or should I apply these file changes?',
+        'Do you want to update content-record values instead, or should I apply these file changes?',
       ].join(' ');
       const locationList = OrchestratorActionUtils.collectFileMatchPaths(fileOnlyActions, retrieval);
       const listPreview = locationList.slice(0, 5);
@@ -149,7 +149,7 @@ export class OrchestratorHandlers {
         sessionId: context.input?.sessionId,
         checkpoint: ResponseBuilder.makeCheckpoint({
           reason: CheckpointReason.CLARIFICATION_NEEDED,
-          resumePrompt: 'Choose target scope: CMS/content records or source files.',
+          resumePrompt: 'Choose target scope: content records or source files.',
           stage: RuntimeStage.CLARIFY,
           planningPassesUsed: Number(context.input?.checkpoint?.planningPassesUsed || 0),
         }),

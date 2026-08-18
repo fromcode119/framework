@@ -9,7 +9,7 @@ import { PluginUiCssAsTextPlugin } from './plugin-ui-css-as-text-plugin';
  * `PLUGIN_NAMESPACE` env the client build uses, so a plugin still ships no build config of its own.
  *
  * WHY: server-rendering the THEME got the storefront its chrome, but the page BODY is a block flow owned
- * by the cms plugin's browser bundle — so the LCP element (the first block's image) still does not exist
+ * by the content plugin's browser bundle — so the LCP element (the first block's image) still does not exist
  * until hydration, and LCP still scores 0. Giving a plugin's storefront UI a Node-importable bundle is
  * what lets the server render that flow. See `STOREFRONT-PERF-BASELINE.md`.
  *

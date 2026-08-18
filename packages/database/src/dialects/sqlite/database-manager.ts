@@ -196,6 +196,14 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     return this.reader.count(tableOrName, options);
   }
 
+  /** COUNT(*) per group — SQL aggregation, so analytics never page rows into memory to count them. */
+  async groupCount(
+    tableName: string,
+    options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },
+  ): Promise<Array<Record<string, unknown>>> {
+    return this.reader.groupCount(tableName, options);
+  }
+
   // Schema Management
   async getTables(): Promise<string[]> {
     const result: any = await this.drizzle.all(sql`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`);

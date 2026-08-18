@@ -1,5 +1,6 @@
 import { ExtensionArea } from '@ai/api/forge/enums/extension-area.enum';
 import { TypeUtils, ThemeManager } from '@fromcode119/core';
+import { McpSchema } from '@fromcode119/mcp';
 import type { IMcpToolDefinition } from '@fromcode119/mcp';
 import { AssistantToolingHelpers } from '@ai/api/forge/tools/helpers';
 
@@ -17,6 +18,8 @@ export class ThemeTools {
     }));
     return [{
       tool: 'themes.list',
+      permission: 'system:view',
+      inputSchema: McpSchema.object({}),
       readOnly: true,
       description: 'List installed themes and active state.',
       handler: async () => ({
@@ -25,6 +28,8 @@ export class ThemeTools {
     },
     {
       tool: 'themes.marketplace.list',
+      permission: 'system:view',
+      inputSchema: McpSchema.object({}),
       readOnly: true,
       description: 'List themes available from marketplace.',
       handler: async () => {
@@ -36,6 +41,12 @@ export class ThemeTools {
     },
     {
       tool: 'themes.install',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            version: McpSchema.string({ description: 'Version to install. Omit for latest.' }),
+            activate: McpSchema.boolean({ description: 'Activate after the operation. Defaults to true.' }),
+          }, ['slug']),
       readOnly: false,
       description: 'Install theme from marketplace by slug and optionally activate it.',
       handler: async (input, context) => {
@@ -83,6 +94,10 @@ export class ThemeTools {
     },
     {
       tool: 'themes.update',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+          }, ['slug']),
       readOnly: false,
       description: 'Update installed theme from marketplace by slug.',
       handler: async (input, context) => {
@@ -107,6 +122,10 @@ export class ThemeTools {
     },
     {
       tool: 'themes.activate',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+          }, ['slug']),
       readOnly: false,
       description: 'Activate installed theme by slug.',
       handler: async (input, context) => {
@@ -121,6 +140,10 @@ export class ThemeTools {
     },
     {
       tool: 'themes.config.get',
+      permission: 'system:view',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+          }, ['slug']),
       readOnly: true,
       description: 'Get theme configuration by slug.',
       handler: async (input) => {
@@ -135,6 +158,12 @@ export class ThemeTools {
     },
     {
       tool: 'themes.config.search_text',
+      permission: 'system:view',
+      inputSchema: McpSchema.object({
+            query: McpSchema.string({ description: 'Text to find.' }),
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            maxMatches: McpSchema.number({ description: 'Matches to return, 1-200. Defaults to 40.' }),
+          }, ['query']),
       readOnly: true,
       description: 'Search text across theme configuration objects.',
       handler: async (input) => {
@@ -178,6 +207,13 @@ export class ThemeTools {
     },
     {
       tool: 'themes.files.search_text',
+      permission: 'system:view',
+      inputSchema: McpSchema.object({
+            query: McpSchema.string({ description: 'Text to find.' }),
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            maxMatches: McpSchema.number({ description: 'Matches to return, 1-400.' }),
+            maxFiles: McpSchema.number({ description: 'Files to scan, 1-5000.' }),
+          }, ['query']),
       readOnly: true,
       description: 'Search text across theme source files.',
       handler: async (input) => {
@@ -205,6 +241,14 @@ export class ThemeTools {
     },
     {
       tool: 'themes.files.replace_text',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            from: McpSchema.string({ description: 'Exact text to find.' }),
+            to: McpSchema.string({ description: 'Replacement text.' }),
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            path: McpSchema.string({ description: 'File path within the plugin/theme.' }),
+            caseSensitive: McpSchema.boolean({ description: 'Match case exactly. Defaults to false.' }),
+          }, ['from', 'to']),
       readOnly: false,
       description: 'Replace exact text inside one theme source file.',
       handler: async (input, context) => {
@@ -235,6 +279,12 @@ export class ThemeTools {
     },
     {
       tool: 'themes.config.update',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            config: McpSchema.object({}),
+            merge: McpSchema.boolean({ description: 'Merge into existing config. Defaults to true.' }),
+          }, ['slug', 'config']),
       readOnly: false,
       description: 'Update theme configuration by slug.',
       handler: async (input, context) => {
@@ -270,6 +320,14 @@ export class ThemeTools {
     },
     {
       tool: 'themes.create.scaffold',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            name: McpSchema.string({ description: 'Human-readable name.' }),
+            description: McpSchema.string({ description: 'Short description.' }),
+            version: McpSchema.string({ description: 'Semver, e.g. "1.0.0". Defaults to 1.0.0.' }),
+            activate: McpSchema.boolean({ description: 'Activate after the operation. Defaults to true.' }),
+          }, ['name']),
       readOnly: false,
       description: 'Create a new theme scaffold on disk and optionally activate it.',
       handler: async (input, context) => {

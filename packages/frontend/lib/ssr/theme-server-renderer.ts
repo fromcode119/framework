@@ -21,7 +21,7 @@ import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
  *
  * Two artifacts feed it, both produced by `build-plugins.sh` and both mounted read-only:
  * `themes/<slug>/ui-ssr/entry.mjs` supplies the layouts, `plugins/<slug>/ui-ssr/entry.mjs` supplies the
- * storefront slot components — above all the cms block flow, which owns everything inside the layout.
+ * storefront slot components — above all the content block flow, which owns everything inside the layout.
  * Both register by SIDE EFFECT of import, which is why the bridge is installed first and the imports
  * are awaited before the registry is read.
  *
@@ -119,7 +119,7 @@ export class ThemeServerRenderer {
     return markup.hasBody ? markup : null;
   }
 
-  /** The slot a plugin fills with the page body — the cms block flow, on every content page. */
+  /** The slot a plugin fills with the page body — the content block flow, on every content page. */
   private static readonly CONTENT_SLOT = 'frontend.content.display';
 
   /**

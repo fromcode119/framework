@@ -31,6 +31,11 @@ export class SystemController extends BaseController {
     this.peopleController = new SystemPeopleController(runtime);
   }
 
+  /** Recipient suggestions for the share composer — the people directory, projected for a picker. */
+  async suggestRecipients(req: Request, res: Response) {
+    return this.peopleController.suggestRecipients(req, res);
+  }
+
   async getPeople(req: Request, res: Response) {
     return this.peopleController.getPeople(req, res);
   }

@@ -1,3 +1,4 @@
+import { McpSchema } from '@fromcode119/mcp';
 import type { IMcpToolDefinition } from '@fromcode119/mcp';
 import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
 import { SearchTextHelpers } from '@ai/admin-assistant-runtime/helpers/search-text-helpers';
@@ -11,6 +12,9 @@ export class McpContentTools {
     return [
       {
         tool: 'collections.list', readOnly: true,
+        title: 'List collections',
+        permission: 'content:read',
+        inputSchema: McpSchema.object({}),
         description: 'List available content collections.',
         handler: async () => ({
           collections: options.getCollections().map((c) => ({ slug: c.slug, shortSlug: c.shortSlug, label: c.label, pluginSlug: c.pluginSlug })),
@@ -18,6 +22,11 @@ export class McpContentTools {
       },
       {
         tool: 'collections.resolve', readOnly: true,
+        title: 'Resolve a collection',
+        permission: 'content:read',
+        inputSchema: McpSchema.object({
+          collectionSlug: McpSchema.string({ description: 'Collection slug, e.g. "pages".' }),
+        }, ['collectionSlug']),
         description: 'Resolve a collection by slug, short slug, or unprefixed slug.',
         handler: async (input) => {
           const collectionSlug = String(input?.collectionSlug || input?.slug || '').trim();
@@ -28,6 +37,13 @@ export class McpContentTools {
       },
       {
         tool: 'content.list', readOnly: true,
+        title: 'List records',
+        permission: 'content:read',
+        inputSchema: McpSchema.object({
+          collectionSlug: McpSchema.string({ description: 'Collection slug, e.g. "pages".' }),
+          limit: McpSchema.number({ description: 'Records to return, 1-100. Defaults to 20.' }),
+          offset: McpSchema.number({ description: 'Records to skip. Defaults to 0.' }),
+        }, ['collectionSlug']),
         description: 'List content items from a collection.',
         handler: async (input, context) => {
           const collectionSlug = String(input?.collectionSlug || input?.slug || '').trim();
@@ -42,6 +58,15 @@ export class McpContentTools {
       },
       {
         tool: 'content.search_text', readOnly: true,
+        title: 'Search record text',
+        permission: 'content:read',
+        inputSchema: McpSchema.object({
+          query: McpSchema.string({ description: 'Text to find.' }),
+          collectionSlug: McpSchema.string({ description: 'Restrict to one collection. Omit to search all.' }),
+          fields: McpSchema.array(McpSchema.string(), { description: 'Restrict to these field names.' }),
+          limit: McpSchema.number({ description: 'Documents to scan, 1-200. Defaults to 80.' }),
+          maxMatches: McpSchema.number({ description: 'Matches to return, 1-200. Defaults to 40.' }),
+        }, ['query']),
         description: 'Search text across content collections, including localized map fields.',
         handler: async (input, context) => {
           if (typeof options.listContent !== 'function') throw new Error('content.search_text is not available in this runtime.');
@@ -85,6 +110,12 @@ export class McpContentTools {
       },
       {
         tool: 'content.create', readOnly: false,
+        title: 'Create a record',
+        permission: 'content:write',
+        inputSchema: McpSchema.object({
+          collectionSlug: McpSchema.string({ description: 'Collection slug to create in.' }),
+          data: McpSchema.object({}),
+        }, ['collectionSlug', 'data']),
         description: 'Create a content item in a collection.',
         handler: async (input, context) => {
           const collectionSlug = String(input?.collectionSlug || input?.slug || '').trim();
@@ -103,6 +134,16 @@ export class McpContentTools {
       },
       {
         tool: 'content.resolve', readOnly: true,
+        title: 'Resolve one record',
+        permission: 'content:read',
+        // Selector: supply ONE of id / entrySlug / permalink / where.
+        inputSchema: McpSchema.object({
+          collectionSlug: McpSchema.string({ description: 'Collection slug.' }),
+          id: McpSchema.string({ description: 'Record id. Use this when known — it is unambiguous.' }),
+          entrySlug: McpSchema.string({ description: 'Record slug, when the id is unknown.' }),
+          permalink: McpSchema.string({ description: 'Record permalink/path, when the id is unknown.' }),
+          where: McpSchema.object({}),
+        }, ['collectionSlug']),
         description: 'Resolve a single content item by id, slug, permalink, or where filters.',
         handler: async (input, context) => {
           const collectionSlug = String(input?.collectionSlug || input?.slug || '').trim();
@@ -121,6 +162,17 @@ export class McpContentTools {
       },
       {
         tool: 'content.update', readOnly: false,
+        title: 'Update a record',
+        permission: 'content:write',
+        // Selector: supply ONE of id / entrySlug / permalink / where, plus the fields to set.
+        inputSchema: McpSchema.object({
+          collectionSlug: McpSchema.string({ description: 'Collection slug.' }),
+          id: McpSchema.string({ description: 'Record id. Use this when known — it is unambiguous.' }),
+          entrySlug: McpSchema.string({ description: 'Record slug, when the id is unknown.' }),
+          permalink: McpSchema.string({ description: 'Record permalink/path, when the id is unknown.' }),
+          where: McpSchema.object({}),
+          data: McpSchema.object({}),
+        }, ['collectionSlug', 'data']),
         description: 'Update one content item by id/slug/permalink and return before/after preview.',
         handler: async (input, context) => {
           const collectionSlug = String(input?.collectionSlug || input?.slug || '').trim();

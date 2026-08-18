@@ -1,6 +1,7 @@
 import { ProjectPaths } from '@core/config/paths';
 import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 import { MediaManager, StorageFactory } from '@fromcode119/media';
+import { PrivateStorageDriverFactory } from '@core/integrations/providers/private-storage-driver-factory';
 import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 import path from 'path';
 
@@ -53,7 +54,10 @@ export class StorageIntegrationDefinition {
         const absolutePath = path.isAbsolute(config.uploadDir) 
           ? config.uploadDir 
           : path.resolve(context?.projectRoot || process.cwd(), config.uploadDir);
-        return new MediaManager(StorageFactory.create('local', { ...config, uploadDir: absolutePath }));
+        return new MediaManager({
+          [MediaManager.PUBLIC_SPACE]: StorageFactory.create('local', { ...config, uploadDir: absolutePath }),
+          [PrivateStorageDriverFactory.SPACE]: PrivateStorageDriverFactory.create(absolutePath),
+        });
       }
     },
     {
@@ -79,7 +83,13 @@ export class StorageIntegrationDefinition {
           },
           publicUrlBase: config.publicUrlBase
         };
-        return new MediaManager(StorageFactory.create('s3', s3Config as any));
+        // Private files stay on local disk even when public media lives in S3 — see
+        // PrivateStorageDriverFactory for why. There is no served-uploads directory to collide with
+        // in this configuration, so the containment check has nothing to compare against.
+        return new MediaManager({
+          [MediaManager.PUBLIC_SPACE]: StorageFactory.create('s3', s3Config as any),
+          [PrivateStorageDriverFactory.SPACE]: PrivateStorageDriverFactory.create(''),
+        });
       }
     }
   ]

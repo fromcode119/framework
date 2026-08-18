@@ -183,7 +183,7 @@ export class OrchestratorActionUtils {
     const text = String(message || '').toLowerCase().trim();
     
     // Check for capability questions. `what do you` must be `what do you do` — the bare prefix also
-    // swallowed "what do you MEAN by cms content?", a clarification the classifier had already answered
+    // swallowed "what do you MEAN by content records?", a clarification the classifier had already answered
     // precisely, and this canned blurb short-circuits `chatReply` below, so the specific answer lost to
     // the generic one.
     if (/\b(what can you|capabilities|what do you do|help me)\b/.test(text)) {

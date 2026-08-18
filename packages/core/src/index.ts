@@ -40,6 +40,9 @@ export type { ILoadedCoreExtension } from '@core/extensions/interfaces/loaded-co
 export type { ICoreExtensionModule } from '@core/extensions/interfaces/core-extension-module.interface';
 export type { ICoreExtensionContext } from '@core/extensions/interfaces/core-extension-context.interface';
 export type { ICoreExtensionState } from '@core/extensions/interfaces/core-extension-state.interface';
+export { McpRegistryProvider } from '@core/mcp/mcp-registry-provider';
+export { CollectionWriteBridge } from '@core/plugin/collection-write-bridge';
+export { RateLimiter } from '@core/security/rate-limiter';
 export { SchemaManager } from '@core/database/schema-manager';
 export { EntitySchemaPlanService } from '@core/database/entity-schema-plan-service';
 export type { IEntitySchemaColumnPlan } from '@core/database/interfaces/entity-schema-column-plan.interface';
@@ -61,6 +64,21 @@ export type { ICapabilityMetadata } from '@core/interfaces/capability-metadata.i
 // ── Logging ─────────────────────────────────────────────────────────────────
 export { Logger } from '@core/logging';
 export { LogLevel } from '@core/enums/log-level.enum';
+export { MediaVisibility } from '@core/enums/media-visibility.enum';
+export { PrivateStorageDriverFactory } from '@core/integrations/providers/private-storage-driver-factory';
+export { FileGrantRepository } from '@core/files/file-grant-repository';
+export { FileActivityRepository } from '@core/files/file-activity-repository';
+export { FileActivityService } from '@core/files/file-activity-service';
+export { FileAccessKind } from '@core/files/enums/file-access-kind.enum';
+export { GrantOutcome } from '@core/security/enums/grant-outcome.enum';
+export { GrantTokenService } from '@core/security/grant-token-service';
+export type { IGrantEvaluable } from '@core/security/interfaces/grant-evaluable.interface';
+export { FileRoutePaths } from '@core/files/file-route-paths';
+export { FileSharePageSlug } from '@core/files/file-share-page-slug';
+export { FileShareAccessService } from '@core/files/file-share-access-service';
+export type { IFileGrantRecord } from '@core/files/interfaces/file-grant-record.interface';
+export type { IFileShareRecord } from '@core/files/interfaces/file-share-record.interface';
+export type { IFileShareResolution } from '@core/files/interfaces/file-share-resolution.interface';
 export type { ILoggerOptions } from '@core/interfaces/logger-options.interface';
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -255,6 +273,8 @@ export { TwoFactorMethod } from '@core/enums/two-factor-method.enum';
 // bundle — see ServerServiceRegistry. `ServerCoreServices.register()` is called explicitly at API boot;
 // it is deliberately NOT a barrel side effect, which tree-shaking makes unreliable.
 export { ServerCoreServices } from '@core/services/server-core-services';
+export { SystemRedirectService } from '@core/services/system-redirect-service';
+export { VersionComparisonService } from '@core/services/version-comparison-service';
 export { ServerServiceRegistry } from '@core/services/server-service-registry';
 export { ServerServiceKey } from '@core/services/server-service-key';
 

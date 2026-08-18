@@ -8,7 +8,8 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Card } from '@/components/ui/view/card.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { VersionComparisonService } from '@/lib/version-comparison-service';
+import { Icon } from '@/components/view/icon.client';
+import { VersionComparisonService } from '@fromcode119/core/client';
 
 import type { IPluginEntry } from '@fromcode119/core/client';
 
@@ -136,7 +137,7 @@ export class Marketplace extends AdminComponent {
                           onError={() => { this.imageErrors = { ...this.imageErrors, [plugin.slug]: true }; }}
                         />
                       ) : (
-                        <FrameworkIcons.Box size={48} strokeWidth={1.5} />
+                        <Icon name={String((plugin as any).icon || 'Box')} size={48} strokeWidth={1.5} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

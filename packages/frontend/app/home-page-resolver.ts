@@ -53,6 +53,9 @@ export class HomePageResolver {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),
       doc: ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null),
+      // This resolver only ever answers for `/`, and home is a path in its own right — carrying a
+      // canonical path here would redirect the front page to the document's other home.
+      canonicalPath: '',
     };
   }
 
@@ -96,6 +99,7 @@ export class HomePageResolver {
               type: this.resolveCollectionTargetType(normalizedDoc || {}, collectionSlug),
               plugin: '',
               doc: normalizedDoc,
+              canonicalPath: '',
             },
           };
         }

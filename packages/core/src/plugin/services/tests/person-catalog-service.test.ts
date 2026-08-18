@@ -21,16 +21,16 @@ describe('PersonCatalogService', () => {
     const db = makeDb();
     const svc = new PersonCatalogService(db as any);
 
-    await svc.register('source', { key: 'affiliate', label: 'people.source.affiliate', pluginSlug: 'mlm' });
+    await svc.register('source', { key: 'affiliate', label: 'people.source.affiliate', pluginSlug: 'beta' });
 
     expect(db.insert).toHaveBeenCalledTimes(1);
     expect(db.insert).toHaveBeenCalledWith('person_catalogs', expect.objectContaining({
-      kind: 'source', key: 'affiliate', label: 'people.source.affiliate', pluginSlug: 'mlm'
+      kind: 'source', key: 'affiliate', label: 'people.source.affiliate', pluginSlug: 'beta'
     }));
   });
 
   it('register() is idempotent — does not insert a duplicate kind+key', async () => {
-    const db = makeDb([{ id: 1, kind: 'source', key: 'affiliate', label: 'x', pluginSlug: 'mlm' }]);
+    const db = makeDb([{ id: 1, kind: 'source', key: 'affiliate', label: 'x', pluginSlug: 'beta' }]);
     const svc = new PersonCatalogService(db as any);
 
     await svc.register('source', { key: 'affiliate', label: 'people.source.affiliate' });

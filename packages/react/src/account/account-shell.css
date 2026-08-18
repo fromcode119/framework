@@ -184,4 +184,12 @@
 
 /* Vertical stack of rows — the shape every list-of-settings panel wants. */
 .fc-acct-rows { display: flex; flex-direction: column; gap: 10px; margin: 0 0 16px; padding: 0; list-style: none; }
+.fc-acct-rows:last-child { margin-bottom: 0; }
+
+/* A group's heading INSIDE a card: a title, not another row.
+   Wrapping it in `.fc-acct-row` gave it that class's border and radius, so a group holding one file
+   rendered as two near-identical boxes saying the same thing. */
+.fc-acct-group-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+.fc-acct-group-head .fc-acct-card-title { margin: 0; }
+.fc-acct-group-head .fc-acct-row-meta { margin: 4px 0 0; }
 .fc-acct-note { color: var(--fc-acct-muted); font-size: 13px; margin: 0; }

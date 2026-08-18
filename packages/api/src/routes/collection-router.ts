@@ -13,7 +13,7 @@ import { RouteConstants } from '@fromcode119/core';
  * @example
  * ```typescript
  * const collectionRouter = new CollectionRouter(pluginManager, restController);
- * app.use('/api/v1', collectionRouter.router);
+ * app.use(ApiVersionUtils.prefix(), collectionRouter.router);
  * ```
  */
 export class CollectionRouter extends BaseRouter {

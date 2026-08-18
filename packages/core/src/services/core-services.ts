@@ -16,6 +16,7 @@ import type { SeedPageService } from '@core/services/seed-page-service';
 import type { AssistantVocabularyRegistryService } from '@core/services/assistant-vocabulary-registry-service';
 import type { ContentResolutionGateRegistryService } from '@core/services/content-resolution-gate-registry-service';
 import type { RedirectResolverRegistryService } from '@core/services/redirect-resolver-registry-service';
+import type { CanonicalPathResolverRegistryService } from '@core/services/canonical-path-resolver-registry-service';
 import type { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
 import type { EntityRecordsResolutionService } from '@core/services/entity-records/entity-records-resolution-service';
 import { ServerServiceRegistry } from '@core/services/server-service-registry';
@@ -54,7 +55,7 @@ import { ThemeLayoutOverrideRegistryService } from '@core/theme/theme-layout-ove
  * const menuItems = services.menu.deduplicate(rawMenuItems);
  * 
  * // Collection
- * const collection = services.collection.resolveBySlug(collections, 'cms', 'pages');
+ * const collection = services.collection.resolveBySlug(collections, '<plugin>', 'pages');
  * ```
  */
 export class CoreServices {
@@ -256,6 +257,16 @@ export class CoreServices {
    */
   get redirectResolvers(): RedirectResolverRegistryService {
     return ServerServiceRegistry.require<RedirectResolverRegistryService>(ServerServiceKey.REDIRECT_RESOLVERS);
+  }
+
+  /**
+   * Registry of canonical-path resolvers (lazy-loaded). A plugin registers, under its own slug, the ONE
+   * path a document it owns is served at; the routing layer redirects any other path that resolved to
+   * that document onto it. This is routing, not SEO — an operator's `<link rel=canonical>` override must
+   * never move visitors, so it does not belong here.
+   */
+  get canonicalPathResolvers(): CanonicalPathResolverRegistryService {
+    return ServerServiceRegistry.require<CanonicalPathResolverRegistryService>(ServerServiceKey.CANONICAL_PATH_RESOLVERS);
   }
 
   get entityRecordsResolution(): EntityRecordsResolutionService {

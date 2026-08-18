@@ -119,7 +119,7 @@ export class LifecycleService {
   /**
    * Final default-page materialization pass, run by the discovery coordinator once EVERY plugin in the boot
    * set is registered. The per-plugin pass inside {@link register} can execute before the plugin that owns the
-   * `pages` collection (CMS) is registered — it then skips ("no registered page collection available") and
+   * `pages` collection is registered — it then skips ("no registered page collection available") and
    * required contract pages never materialize. This pass guarantees the pages collection is present.
    */
   public async materializeDefaultPagesFinalPass(): Promise<void> {

@@ -32,29 +32,22 @@ export class PluginUiHookGuard {
   // What happened to each original entry:
   //   - block-editor-settings-panel.tsx  → false positive (a code comment mentioned a
   //     `useXxx()` call); comment reworded, file was already a hook-free class.
-  //   - cms-document-context.ts          → dead `use()` (useContext) accessor removed;
+  //   - a document-context file          → dead `use()` (useContext) accessor removed;
   //     the file keeps only the React context object (consumed via .Consumer/.Provider).
   //   - visual-editor-runtime-context.ts → dead `VisualEditorRuntime.use()` class had no
   //     callers (consumers use VisualEditorRuntimeReactContext.value.Consumer); file deleted.
-  //   - cms/src/ui/hooks.ts (MenuHooks)  → dead, no callers; file deleted.
-  //   - numerology/src/ui/use-async-data.ts (AsyncDataLoader) → dead, no callers; file deleted.
+  //   - a plugin's ui/hooks.ts           → dead, no callers; file deleted.
+  //   - a plugin's use-async-data.ts (AsyncDataLoader) → dead, no callers; file deleted.
   //   - checkout-flow-controller.ts      → dead `static useState` React-hook adapter removed;
   //     the sole consumer (theme) already uses the hook-free `createCheckoutFlowController`.
-  //   - ecommerce-plugin-client.storefront.ts → dead `checkoutFlowController()` wrapper (which
+  //   - a plugin-client.storefront.ts → dead controller wrapper (which
   //     called `CheckoutFlowController.useState`) removed for the same reason.
   static readonly KNOWN_OFFENDERS = new Set<string>([]);
 
-  // Intentional React-hook APIs that legitimately live in plugin UI. These are NOT
-  // hook-free-class candidates: each is a hook that a React FUNCTION component consumes
-  // as a hook (subscribes to React state and re-renders). Reported as an allowlisted
-  // warning, not a violation.
-  //   - use-datasource-selector.ts: `DatasourceSelectorHooks.useDatasourceSelector(value,
-  //     onChange)` is consumed by the `DatasourceSelectorView` function component
-  //     (block-editor/datasource-selector.tsx), which itself uses ContextHooks.useTranslation().
-  //     It is genuinely a hook, not a component or convertible headless controller.
-  static readonly INTENTIONAL_HOOK_APIS = new Set<string>([
-    'cms/src/ui/hooks/use-datasource-selector.ts',
-  ]);
+  // Intentional React-hook APIs that legitimately live in plugin UI. Empty since the last
+  // holdout was converted to a hook-free PluginComponent; the mechanism stays for a genuine
+  // future case (a hook a FUNCTION component must consume as a hook).
+  static readonly INTENTIONAL_HOOK_APIS = new Set<string>([]);
 
   static readonly HOOK = /\buse(State|Effect|Memo|Ref|Callback|Context)\b/;
   // Custom hook invocation: bare `useXxx(` not preceded by `.` (method calls on a

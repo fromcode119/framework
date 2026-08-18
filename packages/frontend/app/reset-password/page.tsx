@@ -18,7 +18,7 @@ export class ResetPasswordPageRoute {
     if (!authEnabled) {
       notFound();
     }
-    // Prefer a themed CMS page (slug 'reset-password') so the active theme fully brands + translates
+    // Prefer a themed content page (slug 'reset-password') so the active theme fully brands + translates
     // the reset flow; fall back to the framework default client when no themed page is seeded. The
     // themed page reads the `?token=` itself, so the token is preserved through this delegation.
     try {

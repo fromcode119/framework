@@ -46,7 +46,12 @@ export class IntegrationRegistry {
   registerType<TInstance = any>(definition: IIntegrationTypeDefinition<TInstance>) {
     const key = this.normalize(definition.key);
     if (!key) throw new Error('Integration type key is required');
-    if (!definition.defaultProvider) {
+    // A type that ships providers must name a default, or nothing can be selected. A type that ships
+    // NONE is legitimate — MCP is configured entirely by its own panel and has nothing to pick between
+    // — and demanding a default there forces a placeholder provider the operator cannot remove
+    // (`removeProvider` refuses to delete the last one) and that no code reads.
+    const hasProviders = Array.isArray(definition.providers) && definition.providers.length > 0;
+    if (hasProviders && !definition.defaultProvider) {
       throw new Error(`Integration type "${key}" must declare a defaultProvider`);
     }
 

@@ -1,5 +1,6 @@
 import { ExtensionArea } from '@ai/api/forge/enums/extension-area.enum';
 import { TypeUtils, PluginManager } from '@fromcode119/core';
+import { McpSchema } from '@fromcode119/mcp';
 import type { IMcpToolDefinition } from '@fromcode119/mcp';
 import { AssistantToolingHelpers } from '@ai/api/forge/tools/helpers';
 
@@ -22,6 +23,8 @@ export class PluginTools {
   return [
     {
       tool: 'plugins.marketplace.list',
+      permission: 'system:view',
+      inputSchema: McpSchema.object({}),
       readOnly: true,
       description: 'List plugins available from marketplace.',
       handler: async () => {
@@ -33,6 +36,11 @@ export class PluginTools {
     },
     {
       tool: 'plugins.install',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            activate: McpSchema.boolean({ description: 'Activate after the operation. Defaults to true.' }),
+          }, ['slug']),
       readOnly: false,
       description: 'Install plugin from marketplace by slug and optionally enable it.',
       handler: async (input, context) => {
@@ -69,6 +77,10 @@ export class PluginTools {
     },
     {
       tool: 'plugins.update',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+          }, ['slug']),
       readOnly: false,
       description: 'Update plugin from marketplace by slug.',
       handler: async (input, context) => {
@@ -83,6 +95,12 @@ export class PluginTools {
     },
     {
       tool: 'plugins.enable',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            force: McpSchema.boolean({ description: 'Enable despite warnings.' }),
+            recursive: McpSchema.boolean({ description: 'Also enable dependencies. Defaults to true.' }),
+          }, ['slug']),
       readOnly: false,
       description: 'Enable installed plugin.',
       handler: async (input, context) => {
@@ -100,6 +118,10 @@ export class PluginTools {
     },
     {
       tool: 'plugins.disable',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+          }, ['slug']),
       readOnly: false,
       description: 'Disable installed plugin.',
       handler: async (input, context) => {
@@ -114,6 +136,10 @@ export class PluginTools {
     },
     {
       tool: 'plugins.settings.get',
+      permission: 'system:view',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+          }, ['slug']),
       readOnly: true,
       description: 'Get plugin configuration/settings by slug.',
       handler: async (input) => {
@@ -130,6 +156,12 @@ export class PluginTools {
     },
     {
       tool: 'plugins.settings.search_text',
+      permission: 'system:view',
+      inputSchema: McpSchema.object({
+            query: McpSchema.string({ description: 'Text to find.' }),
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            maxMatches: McpSchema.number({ description: 'Matches to return, 1-200. Defaults to 40.' }),
+          }, ['query']),
       readOnly: true,
       description: 'Search text across plugin configuration objects.',
       handler: async (input) => {
@@ -172,6 +204,13 @@ export class PluginTools {
     },
     {
       tool: 'plugins.files.search_text',
+      permission: 'system:view',
+      inputSchema: McpSchema.object({
+            query: McpSchema.string({ description: 'Text to find.' }),
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            maxMatches: McpSchema.number({ description: 'Matches to return, 1-400.' }),
+            maxFiles: McpSchema.number({ description: 'Files to scan, 1-5000.' }),
+          }, ['query']),
       readOnly: true,
       description: 'Search text across plugin source files.',
       handler: async (input) => {
@@ -199,6 +238,14 @@ export class PluginTools {
     },
     {
       tool: 'plugins.files.replace_text',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            from: McpSchema.string({ description: 'Exact text to find.' }),
+            to: McpSchema.string({ description: 'Replacement text.' }),
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            path: McpSchema.string({ description: 'File path within the plugin/theme.' }),
+            caseSensitive: McpSchema.boolean({ description: 'Match case exactly. Defaults to false.' }),
+          }, ['from', 'to']),
       readOnly: false,
       description: 'Replace exact text inside one plugin source file.',
       handler: async (input, context) => {
@@ -229,6 +276,12 @@ export class PluginTools {
     },
     {
       tool: 'plugins.settings.update',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            config: McpSchema.object({}),
+            merge: McpSchema.boolean({ description: 'Merge into existing config. Defaults to true.' }),
+          }, ['slug', 'config']),
       readOnly: false,
       description: 'Update plugin configuration/settings by slug.',
       handler: async (input, context) => {
@@ -264,6 +317,14 @@ export class PluginTools {
     },
     {
       tool: 'plugins.create.scaffold',
+      permission: 'system:manage',
+      inputSchema: McpSchema.object({
+            slug: McpSchema.string({ description: 'Plugin/theme slug.' }),
+            name: McpSchema.string({ description: 'Human-readable name.' }),
+            description: McpSchema.string({ description: 'Short description.' }),
+            version: McpSchema.string({ description: 'Semver, e.g. "1.0.0". Defaults to 1.0.0.' }),
+            activate: McpSchema.boolean({ description: 'Activate after the operation. Defaults to true.' }),
+          }, ['name']),
       readOnly: false,
       description: 'Create a new plugin scaffold on disk and optionally enable it.',
       handler: async (input, context) => {

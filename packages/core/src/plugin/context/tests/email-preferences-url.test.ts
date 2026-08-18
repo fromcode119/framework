@@ -14,7 +14,7 @@ import { SigningSecretService } from '@core/security/signing-secret-service';
 describe('context.email.buildPreferencesUrl', () => {
   const SECRET = 'a'.repeat(64);
   const manager: any = { integrations: { email: { send: async () => undefined } }, db: {} };
-  const plugin: any = { manifest: { slug: 'social-proof' } };
+  const plugin: any = { manifest: { slug: 'epsilon' } };
 
   const email = () => EmailContextProxy.createEmailProxy(plugin, manager);
 

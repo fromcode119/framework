@@ -33,6 +33,7 @@
       "@scheduler/*": ["packages/scheduler/src/*"],
       "@plugins/*": ["packages/plugins/src/*"],
       "@mcp/*": ["packages/mcp/src/*"],
+      "@mcp-server/*": ["packages/mcp-server/src/*"],
       "@sdk/*": ["packages/sdk/src/*"],
       "@nextjs/*": ["packages/next/src/*"],
       "@cli/*": ["packages/cli/src/*"],

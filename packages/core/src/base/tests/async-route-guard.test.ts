@@ -6,11 +6,11 @@ import { AsyncRouteGuard } from '@core/base/async-route-guard';
 /**
  * These tests exist because the failure they describe is not a bad response — it is a DEAD PROCESS.
  * An `async` route handler that rejects is invisible to Express 4's try/catch, and Node 22 kills the
- * process on an unobserved rejection. `GET /api/v1/plugins/cms/navigation/<missing>` did exactly that
+ * process on an unobserved rejection. `GET /api/v1/plugins/alpha/navigation/<missing>` did exactly that
  * to the live API, anonymously, on an ordinary not-found request.
  */
 describe('AsyncRouteGuard', () => {
-  const request = (): Request => ({ method: 'GET', originalUrl: '/api/v1/plugins/cms/navigation/x' } as Request);
+  const request = (): Request => ({ method: 'GET', originalUrl: '/api/v1/plugins/alpha/navigation/x' } as Request);
   const response = (): Response => ({ headersSent: false } as Response);
 
   const flush = async (): Promise<void> => {
@@ -24,7 +24,7 @@ describe('AsyncRouteGuard', () => {
     };
     const next = vi.fn() as unknown as NextFunction;
 
-    AsyncRouteGuard.wrap(handler, 'cms')(request(), response(), next);
+    AsyncRouteGuard.wrap(handler, 'alpha')(request(), response(), next);
     await flush();
 
     expect(next).toHaveBeenCalledWith(boom);
@@ -39,13 +39,13 @@ describe('AsyncRouteGuard', () => {
       forwarded = error;
     }) as NextFunction;
 
-    AsyncRouteGuard.wrap(handler, 'cms')(request(), response(), next);
+    AsyncRouteGuard.wrap(handler, 'alpha')(request(), response(), next);
     await flush();
 
     expect(AsyncRouteGuard.originOf(forwarded)).toEqual({
-      source: 'cms',
+      source: 'alpha',
       method: 'GET',
-      path: '/api/v1/plugins/cms/navigation/x',
+      path: '/api/v1/plugins/alpha/navigation/x',
     });
   });
 
@@ -56,7 +56,7 @@ describe('AsyncRouteGuard', () => {
     };
     const next = vi.fn() as unknown as NextFunction;
 
-    expect(() => AsyncRouteGuard.wrap(handler, 'cms')(request(), response(), next)).toThrow(signal);
+    expect(() => AsyncRouteGuard.wrap(handler, 'alpha')(request(), response(), next)).toThrow(signal);
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -67,7 +67,7 @@ describe('AsyncRouteGuard', () => {
     const next = vi.fn() as unknown as NextFunction;
     const res = response();
 
-    await AsyncRouteGuard.wrap(handler, 'cms')(request(), res, next);
+    await AsyncRouteGuard.wrap(handler, 'alpha')(request(), res, next);
     await flush();
 
     expect(next).not.toHaveBeenCalled();
@@ -76,13 +76,13 @@ describe('AsyncRouteGuard', () => {
 
   it('never rewraps an Express error handler — a 4-argument handler keeps its role', () => {
     const errorHandler = ((_e: unknown, _q: Request, _s: Response, _n: NextFunction) => undefined) as unknown as RequestHandler;
-    expect(AsyncRouteGuard.wrap(errorHandler, 'cms')).toBe(errorHandler);
+    expect(AsyncRouteGuard.wrap(errorHandler, 'alpha')).toBe(errorHandler);
   });
 
   it('is idempotent, so BaseRouter and context.api cannot nest wrappers', () => {
     const handler: RequestHandler = async () => undefined;
-    const once = AsyncRouteGuard.wrap(handler, 'cms');
-    expect(AsyncRouteGuard.wrap(once, 'cms')).toBe(once);
+    const once = AsyncRouteGuard.wrap(handler, 'alpha');
+    expect(AsyncRouteGuard.wrap(once, 'alpha')).toBe(once);
   });
 
   it('wrapRouter reaches handlers inside a router a plugin built by hand', async () => {

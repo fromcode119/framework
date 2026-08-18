@@ -49,6 +49,8 @@ export class MediaRouter extends BaseRouter {
     this.patch(RouteConstants.SEGMENTS.MEDIA_ID, this.auth.guard(['admin']), this.controller.updateFile);
     this.delete(RouteConstants.SEGMENTS.MEDIA_ID, this.auth.guard(['admin']), this.controller.deleteFile);
     this.post(RouteConstants.SEGMENTS.MEDIA_ID_OPTIMIZE, this.auth.guard(['admin']), this.controller.optimizeImage);
+    // The operator's own view of a private file. Admin-guarded and token-free — see `streamRaw`.
+    this.get(RouteConstants.SEGMENTS.MEDIA_ID_RAW, this.auth.guard(['admin']), this.controller.streamRaw);
     
     // Folder management
     this.get(RouteConstants.SEGMENTS.MEDIA_FOLDERS, this.auth.guard(['admin', 'user']), this.controller.listFolders);

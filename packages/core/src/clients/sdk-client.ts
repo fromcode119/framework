@@ -35,6 +35,11 @@ export class SdkClient {
     return new BrowserStateClient();
   }
 
+  /** Private file delivery — a recipient's own shares and downloads. */
+  getFiles(): ApiScopeClient {
+    return new ApiScopeClient(this.requester, ApiPathUtils.filesPath());
+  }
+
   getSystem(): ApiScopeClient {
     return new ApiScopeClient(this.requester, ApiPathUtils.systemPath());
   }

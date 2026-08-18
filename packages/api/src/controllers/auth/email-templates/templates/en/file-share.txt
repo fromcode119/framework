@@ -1,0 +1,11 @@
+{{title}}
+
+{{#if message}}{{message}}
+
+{{/if}}Open your files:
+{{shareUrl}}
+
+{{#if expiresAt}}This link stops working on {{expiresAt}}.
+{{/if}}{{#if maxDownloads}}It can be used {{maxDownloads}} time(s).
+{{/if}}
+This link was sent to you personally — please do not forward it.

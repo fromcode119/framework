@@ -67,6 +67,7 @@ export class AdminConstants {
     INSTALL: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.INSTALL, { slug })),
     TOGGLE: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.TOGGLE, { slug })),
     REAPPROVE_ALL: AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_REAPPROVE_ALL),
+    UPDATE_ALL: AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_UPDATE_ALL),
     HEALTH: AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_HEALTH),
     CONFIG: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.CONFIG, { slug })),
     LOGS: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_LOGS, { slug }),
@@ -130,6 +131,7 @@ export class AdminConstants {
     PERSON: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID, { id })),
     PERSON_SAVE: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID, { id })),
     PERSON_CREATE_USER: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_CREATE_USER, { id })),
+    PEOPLE_SUGGEST: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_SUGGEST),
     PERSON_RECORDS: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID_RECORDS, { id })),
     METADATA: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PLUGINS),
     INTEGRATIONS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS),
@@ -161,6 +163,20 @@ export class AdminConstants {
   MEDIA: {
     BASE: AdminConstants.v(SystemConstants.API_PATH.MEDIA.BASE),
     UPLOAD: AdminConstants.v(SystemConstants.API_PATH.MEDIA.UPLOAD),
+    ID_RAW: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.MEDIA.ID_RAW, { id })),
+  },
+  FILES: {
+    SHARES: AdminConstants.v(SystemConstants.API_PATH.FILES.SHARES),
+    SHARE: (shareId: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.FILES.SHARE, { shareId })),
+    SHARE_GRANTS: (shareId: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.FILES.SHARE_GRANTS, { shareId })),
+    GRANT: (grantId: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.FILES.GRANT, { grantId })),
+    MEDIA_GRANTS: (mediaId: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.FILES.MEDIA_GRANTS, { mediaId })),
+    SHARE_ACTIVITY: (shareId: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.FILES.SHARE_ACTIVITY, { shareId })),
+    ACTIVITY: (query: Record<string, string | number | undefined>) => {
+      const params = new URLSearchParams();
+      Object.entries(query).forEach(([key, value]) => { if (value !== undefined && value !== '') params.set(key, String(value)); });
+      return `${AdminConstants.v(SystemConstants.API_PATH.FILES.ACTIVITY)}?${params.toString()}`;
+    },
   },
   VERSIONS: {
     BASE: AdminConstants.v(SystemConstants.API_PATH.VERSIONS.BASE),

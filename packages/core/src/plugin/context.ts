@@ -9,6 +9,7 @@ import { ApiContextProxy } from '@core/plugin/context/api';
 import { AuthContextProxy } from '@core/plugin/context/auth';
 import { DatabaseContextProxy } from '@core/plugin/context/database';
 import { IntegrationsContextProxy } from '@core/plugin/context/integrations';
+import { McpContextProxy } from '@core/plugin/context/mcp';
 import { JobsContextProxy } from '@core/plugin/context/jobs';
 import { SchedulerContextProxy } from '@core/plugin/context/scheduler';
 import { CollectionsContextProxy } from '@core/plugin/context/collections';
@@ -106,6 +107,7 @@ export class PluginContextFactory {
         // check. See AuthContextProxy.
         auth: AuthContextProxy.createAuthProxy(manager.auth),
         integrations: IntegrationsContextProxy.createIntegrationsProxy(plugin, manager, security) as any,
+        mcp: McpContextProxy.createMcpProxy(plugin),
 
         // Shortcuts for core integrations
         get storage() {

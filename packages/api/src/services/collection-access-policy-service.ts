@@ -36,7 +36,7 @@ export class CollectionAccessPolicyService {
     // is admin-only when enforced (explicit denies are handled unconditionally above). Public/content collections opt in with
     // `access.read` returning true (or a row-scoping constraint). This uses its OWN flag
     // (ENFORCE_COLLECTION_READ_AUTHZ), SEPARATE from the route gateway, because server-side content
-    // resolution reads content collections (cms pages/posts, products) anonymously — so this must stay
+    // resolution reads content collections (pages/posts, products) anonymously — so this must stay
     // off until those collections are tagged with `access.read`. Inert by default.
     if (EnvUtils.flag('ENFORCE_COLLECTION_READ_AUTHZ') && accessResult === null) {
       if (this.isAdmin(req?.user)) {

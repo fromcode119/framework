@@ -2,7 +2,7 @@ import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { LoadedPluginHydration } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { VersionComparisonService } from '@/lib/version-comparison-service';
+import { VersionComparisonService } from '@fromcode119/core/client';
 
 export class PluginVersionWaitService {
   private static readonly POLL_INTERVAL_MS = 1000;

@@ -3,7 +3,7 @@
 import express from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ApiVersionUtils, Logger, PluginManager, ThemeManager } from '@fromcode119/core';
+import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, ThemeManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { RESTController } from '@api/controllers/rest/rest-controller';
@@ -19,7 +19,12 @@ import { MarketplaceRouter } from '@api/routes/marketplace';
 import { AppearanceRouter } from '@api/routes/appearances';
 import { SystemRouter } from '@api/routes/system-router';
 import { ScimRouter } from '@api/routes/scim-router';
+import { UserPermissionChecker } from '@fromcode119/auth';
 import { MediaRouter } from '@api/routes/media-router';
+import { McpRouter } from '@api/routes/mcp-routes';
+import { McpFrameworkToolsRegistrar } from '@api/controllers/mcp/mcp-framework-tools-registrar';
+import { McpAuditRecorder } from '@api/controllers/mcp/mcp-audit-recorder';
+import { FilesRouter } from '@api/routes/files-router';
 import { VersioningRouter } from '@api/routes/versioning';
 import { CollectionRouter } from '@api/routes/collection-router';
 import { BaseCollectionRouter } from '@api/routes/base-collection-router';
@@ -41,6 +46,8 @@ export class ServerRoutesSetup {
     private readonly graphQLService: GraphQLService,
     private readonly getMaintenanceStatus: () => Promise<boolean>,
     private readonly logger: Logger,
+    /** The live settings map, so routes read operator-tunable limits at request time. */
+    private readonly settingsCache: Map<string, string> = new Map(),
   ) {}
 
   /**
@@ -87,6 +94,17 @@ export class ServerRoutesSetup {
   }
 
   async setupRoutes() {
+    // The canonical in-plugin collection write path: `context.collections.update()` forwards here,
+    // so a plugin write goes through the SAME controller an admin save does — access policy,
+    // validation and collection lifecycle hooks included. Pushed into core (core cannot import api).
+    CollectionWriteBridge.install(async (collectionSlug, id, data, actor) => {
+      const collection = this.manager.getCollections().find((candidate) => candidate.slug === collectionSlug);
+      if (!collection) throw new Error(`Unknown collection "${collectionSlug}".`);
+      return this.restController.update(collection, {
+        body: data, query: {}, params: { id: String(id) }, user: actor, headers: {}, cookies: {},
+      });
+    });
+
     const healthHandler = async (req: any, res: any) => res.json({ status: 'ok', version: this.resolveCoreVersion(), maintenance: await this.getMaintenanceStatus(), bypass: !!(req.user?.roles?.includes('admin')) });
     this.app.get(ApiConfig.getInstance().probeRoutes.HEALTH, healthHandler);
     this.app.get(ApiConfig.getInstance().probeRoutes.READY, healthHandler);
@@ -103,7 +121,7 @@ export class ServerRoutesSetup {
     this.app.get(systemRoutes.OPENAPI, (_req, res) => res.json(SwaggerGenerator.generate(this.manager.getCollections())));
     this.app.get(systemRoutes.DOCS, (_req, res) => res.type('html').send(DeveloperPortalHtml.render(systemRoutes.OPENAPI)));
 
-    const { AUTH, PLUGINS, MARKETPLACE, THEMES, APPEARANCES, SYSTEM, MEDIA, VERSIONS } = RouteConstants.SEGMENTS;
+    const { AUTH, PLUGINS, MARKETPLACE, THEMES, APPEARANCES, SYSTEM, MEDIA, FILES, VERSIONS } = RouteConstants.SEGMENTS;
     const vApi = express.Router();
     const pluginAssetRouter = new PluginAssetRouter(this.manager).router;
     const themeAssetRouter = new ThemeAssetRouter(this.themeManager).router;
@@ -122,7 +140,24 @@ export class ServerRoutesSetup {
     // SCIM 2.0 provisioning — token-authenticated (not session), mounted at the standard /scim/v2 base.
     vApi.use(RouteConstants.SEGMENTS.SCIM_BASE, new ScimRouter(this.manager, this.auth).router);
     vApi.use(MEDIA, new MediaRouter(this.manager, this.auth, this.mediaManager).router);
+    vApi.use(FILES, new FilesRouter(this.manager, this.auth, this.mediaManager, this.settingsCache).router);
     vApi.use(VERSIONS, new VersioningRouter(this.manager, this.auth, this.restController).router);
+
+    // The generic MCP surface. Token-authenticated only (see `AuthManager.requireApiToken`), reading
+    // the ONE shared registry so the stdio transport, the hosted transport and the in-process Admin
+    // Assistant can never disagree about which tools exist.
+    vApi.use(McpRouter.create({
+      registry: McpFrameworkToolsRegistrar.ensure({ db: (this.manager as any).db, mediaManager: this.mediaManager, hooks: this.manager.hooks, logger: this.logger }),
+      // The platform's OWN checker, not a hand-rolled match. An earlier version compared
+      // `getUserPermissions().includes(permission)`, which cannot understand the wildcard grants the
+      // roles table actually stores — the admin role holds `*`, so a full admin was refused every
+      // tool. Unit tests injected a stub checker and never saw it; the first real request did.
+      permissions: new UserPermissionChecker((this.manager as any).db),
+      audit: new McpAuditRecorder(this.logger, this.manager.audit),
+      db: (this.manager as any).db,
+      auth: this.auth,
+      settingsCache: this.settingsCache,
+    }));
 
     vApi.use(new CollectionRouter(this.manager, this.restController).router);
     this.app.use(vPrefix, vApi);

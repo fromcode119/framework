@@ -120,35 +120,35 @@ describe('SecondarySidebarContextResolver', () => {
 
   it('resolves context from route segment when menu plugin slug is missing', () => {
     const result = resolver.resolve({
-      pathname: '/cms/templates',
+      pathname: '/alpha/templates',
       primaryContextId: '',
-      menuItems: [{ label: 'CMS', path: '/cms', pluginSlug: '' }],
+      menuItems: [{ label: 'Alpha', path: '/alpha', pluginSlug: '' }],
       secondaryPanel: {
         ...secondaryPanel,
         contexts: {
-          'org.fromcode:cms': {
-            id: 'org.fromcode:cms',
-            label: 'CMS',
+          'org.fromcode:alpha': {
+            id: 'org.fromcode:alpha',
+            label: 'Alpha',
             targetNamespace: 'org.fromcode',
-            targetPlugin: 'cms',
-            targetCanonicalKey: 'org.fromcode:cms',
+            targetPlugin: 'alpha',
+            targetCanonicalKey: 'org.fromcode:alpha',
           },
         },
         itemsByContext: {
-          'org.fromcode:cms': [
+          'org.fromcode:alpha': [
             {
-              canonicalId: 'org.fromcode:cms:self:org.fromcode:cms:templates',
+              canonicalId: 'org.fromcode:alpha:self:org.fromcode:alpha:templates',
               id: 'templates',
               label: 'Templates',
-              path: '/cms/templates',
-              sourcePaths: ['/cms'],
+              path: '/alpha/templates',
+              sourcePaths: ['/alpha'],
               scope: 'self',
               sourceNamespace: 'org.fromcode',
-              sourcePlugin: 'cms',
-              sourceCanonicalKey: 'org.fromcode:cms',
+              sourcePlugin: 'alpha',
+              sourceCanonicalKey: 'org.fromcode:alpha',
               targetNamespace: 'org.fromcode',
-              targetPlugin: 'cms',
-              targetCanonicalKey: 'org.fromcode:cms',
+              targetPlugin: 'alpha',
+              targetCanonicalKey: 'org.fromcode:alpha',
               priority: 10,
               requiredRoles: [],
               requiredCapabilities: [],
@@ -157,84 +157,84 @@ describe('SecondarySidebarContextResolver', () => {
         },
         globalItems: [],
       },
-      plugins: [{ slug: 'cms', namespace: 'org.fromcode' }],
+      plugins: [{ slug: 'alpha', namespace: 'org.fromcode' }],
       userRoles: ['admin'],
       userCapabilities: [],
     });
 
-    expect(result.activeContextId).toBe('org.fromcode:cms');
+    expect(result.activeContextId).toBe('org.fromcode:alpha');
     expect(result.items.map((entry) => entry.id)).toEqual(['templates']);
   });
 
   it('uses the owning source path for direct secondary routes', () => {
     const result = resolver.resolve({
-      pathname: '/cms/tags',
-      primaryContextId: 'cms',
+      pathname: '/alpha/tags',
+      primaryContextId: 'alpha',
       menuItems: [
-        { label: 'Overview', path: '/cms', pluginSlug: 'cms' },
-        { label: 'Posts', path: '/cms/posts', pluginSlug: 'cms' },
-        { label: 'Pages', path: '/cms/pages', pluginSlug: 'cms' },
+        { label: 'Overview', path: '/alpha', pluginSlug: 'alpha' },
+        { label: 'Posts', path: '/alpha/posts', pluginSlug: 'alpha' },
+        { label: 'Pages', path: '/alpha/pages', pluginSlug: 'alpha' },
       ],
       secondaryPanel: {
         ...secondaryPanel,
         contexts: {
-          'org.fromcode:cms': {
-            id: 'org.fromcode:cms',
-            label: 'CMS',
+          'org.fromcode:alpha': {
+            id: 'org.fromcode:alpha',
+            label: 'Alpha',
             targetNamespace: 'org.fromcode',
-            targetPlugin: 'cms',
-            targetCanonicalKey: 'org.fromcode:cms',
+            targetPlugin: 'alpha',
+            targetCanonicalKey: 'org.fromcode:alpha',
           },
         },
         itemsByContext: {
-          'org.fromcode:cms': [
+          'org.fromcode:alpha': [
             {
-              canonicalId: 'org.fromcode:cms:self:org.fromcode:cms:navigation',
+              canonicalId: 'org.fromcode:alpha:self:org.fromcode:alpha:navigation',
               id: 'navigation',
               label: 'Navigation',
-              path: '/cms/navigation',
-              sourcePaths: ['/cms'],
+              path: '/alpha/navigation',
+              sourcePaths: ['/alpha'],
               scope: 'self',
               sourceNamespace: 'org.fromcode',
-              sourcePlugin: 'cms',
-              sourceCanonicalKey: 'org.fromcode:cms',
+              sourcePlugin: 'alpha',
+              sourceCanonicalKey: 'org.fromcode:alpha',
               targetNamespace: 'org.fromcode',
-              targetPlugin: 'cms',
-              targetCanonicalKey: 'org.fromcode:cms',
+              targetPlugin: 'alpha',
+              targetCanonicalKey: 'org.fromcode:alpha',
               priority: 10,
               requiredRoles: [],
               requiredCapabilities: [],
             },
             {
-              canonicalId: 'org.fromcode:cms:self:org.fromcode:cms:categories',
+              canonicalId: 'org.fromcode:alpha:self:org.fromcode:alpha:categories',
               id: 'categories',
               label: 'Categories',
-              path: '/cms/categories',
-              sourcePaths: ['/cms/posts'],
+              path: '/alpha/categories',
+              sourcePaths: ['/alpha/posts'],
               scope: 'self',
               sourceNamespace: 'org.fromcode',
-              sourcePlugin: 'cms',
-              sourceCanonicalKey: 'org.fromcode:cms',
+              sourcePlugin: 'alpha',
+              sourceCanonicalKey: 'org.fromcode:alpha',
               targetNamespace: 'org.fromcode',
-              targetPlugin: 'cms',
-              targetCanonicalKey: 'org.fromcode:cms',
+              targetPlugin: 'alpha',
+              targetCanonicalKey: 'org.fromcode:alpha',
               priority: 20,
               requiredRoles: [],
               requiredCapabilities: [],
             },
             {
-              canonicalId: 'org.fromcode:cms:self:org.fromcode:cms:tags',
+              canonicalId: 'org.fromcode:alpha:self:org.fromcode:alpha:tags',
               id: 'tags',
               label: 'Tags',
-              path: '/cms/tags',
-              sourcePaths: ['/cms/posts'],
+              path: '/alpha/tags',
+              sourcePaths: ['/alpha/posts'],
               scope: 'self',
               sourceNamespace: 'org.fromcode',
-              sourcePlugin: 'cms',
-              sourceCanonicalKey: 'org.fromcode:cms',
+              sourcePlugin: 'alpha',
+              sourceCanonicalKey: 'org.fromcode:alpha',
               targetNamespace: 'org.fromcode',
-              targetPlugin: 'cms',
-              targetCanonicalKey: 'org.fromcode:cms',
+              targetPlugin: 'alpha',
+              targetCanonicalKey: 'org.fromcode:alpha',
               priority: 30,
               requiredRoles: [],
               requiredCapabilities: [],
@@ -243,54 +243,54 @@ describe('SecondarySidebarContextResolver', () => {
         },
         globalItems: [],
       },
-      plugins: [{ slug: 'cms', namespace: 'org.fromcode' }],
+      plugins: [{ slug: 'alpha', namespace: 'org.fromcode' }],
       userRoles: ['admin'],
       userCapabilities: [],
     });
 
-    expect(result.activeContextId).toBe('org.fromcode:cms');
-    expect(result.activeSourcePath).toBe('/cms/posts');
+    expect(result.activeContextId).toBe('org.fromcode:alpha');
+    expect(result.activeSourcePath).toBe('/alpha/posts');
     expect(result.items.map((entry) => entry.id)).toEqual(['categories', 'tags']);
   });
 
   it('prefers the owning top-level source path over a direct child route match', () => {
     const result = resolver.resolve({
-      pathname: '/mlm/networks',
-      primaryContextId: 'mlm',
+      pathname: '/beta/networks',
+      primaryContextId: 'beta',
       menuItems: [
         {
-          label: 'MLM',
-          path: '/mlm',
-          pluginSlug: 'mlm',
-          children: [{ label: 'Networks', path: '/mlm/networks', pluginSlug: 'mlm' }],
+          label: 'Beta',
+          path: '/beta',
+          pluginSlug: 'beta',
+          children: [{ label: 'Networks', path: '/beta/networks', pluginSlug: 'beta' }],
         },
       ],
       secondaryPanel: {
         ...secondaryPanel,
         contexts: {
-          'org.fromcode:mlm': {
-            id: 'org.fromcode:mlm',
-            label: 'MLM',
+          'org.fromcode:beta': {
+            id: 'org.fromcode:beta',
+            label: 'Beta',
             targetNamespace: 'org.fromcode',
-            targetPlugin: 'mlm',
-            targetCanonicalKey: 'org.fromcode:mlm',
+            targetPlugin: 'beta',
+            targetCanonicalKey: 'org.fromcode:beta',
           },
         },
         itemsByContext: {
-          'org.fromcode:mlm': [
+          'org.fromcode:beta': [
             {
-              canonicalId: 'org.fromcode:mlm:self:org.fromcode:mlm:networks',
+              canonicalId: 'org.fromcode:beta:self:org.fromcode:beta:networks',
               id: 'networks',
               label: 'Networks',
-              path: '/mlm/networks',
-              sourcePaths: ['/mlm'],
+              path: '/beta/networks',
+              sourcePaths: ['/beta'],
               scope: 'self',
               sourceNamespace: 'org.fromcode',
-              sourcePlugin: 'mlm',
-              sourceCanonicalKey: 'org.fromcode:mlm',
+              sourcePlugin: 'beta',
+              sourceCanonicalKey: 'org.fromcode:beta',
               targetNamespace: 'org.fromcode',
-              targetPlugin: 'mlm',
-              targetCanonicalKey: 'org.fromcode:mlm',
+              targetPlugin: 'beta',
+              targetCanonicalKey: 'org.fromcode:beta',
               priority: 10,
               requiredRoles: [],
               requiredCapabilities: [],
@@ -299,13 +299,13 @@ describe('SecondarySidebarContextResolver', () => {
         },
         globalItems: [],
       },
-      plugins: [{ slug: 'mlm', namespace: 'org.fromcode' }],
+      plugins: [{ slug: 'beta', namespace: 'org.fromcode' }],
       userRoles: ['admin'],
       userCapabilities: [],
     });
 
-    expect(result.activeContextId).toBe('org.fromcode:mlm');
-    expect(result.activeSourcePath).toBe('/mlm');
+    expect(result.activeContextId).toBe('org.fromcode:beta');
+    expect(result.activeSourcePath).toBe('/beta');
     expect(result.items.map((entry) => entry.id)).toEqual(['networks']);
   });
 

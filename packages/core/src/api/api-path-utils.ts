@@ -54,6 +54,17 @@ export class ApiPathUtils {
     return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.AUTH.BASE, path));
   }
 
+  /**
+   * Private file delivery (`/v1/files/...`).
+   *
+   * Exists so the account panel does not reach for the AUTH scope to fetch a recipient's own shares —
+   * it did, and every request went to `/v1/auth/files/my/shares`, which 404s. Each framework area owns
+   * a scope here; a caller picking someone else's is a silent 404, never a build error.
+   */
+  static filesPath(path = ''): string {
+    return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.FILES.BASE, path));
+  }
+
   static systemPath(path = ''): string {
     return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.SYSTEM.BASE, path));
   }

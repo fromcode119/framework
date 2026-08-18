@@ -8,7 +8,7 @@ describe('SystemSettingsExposureUtils.isExposable', () => {
   });
 
   it('EXCLUDES an unrecognised key by default — the allow-list never guesses', () => {
-    for (const key of ['totally_unknown_key', 'entity_schema:mlm:affiliate', 'userpref:1:views', '']) {
+    for (const key of ['totally_unknown_key', 'entity_schema:beta:affiliate', 'userpref:1:views', '']) {
       expect(SystemSettingsExposureUtils.isExposable(key)).toBe(false);
     }
   });

@@ -2,11 +2,13 @@ import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
 import type { ReactNode } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
-import { PureReactor, prop, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, bound, Ref } from '@fromcode119/reactor';
 import { Slot } from '@fromcode119/react';
 import { MediaToolbar } from '@/app/media/components/view/media-toolbar.client';
 import { MediaControls } from '@/app/media/components/view/media-controls.client';
 import { MediaGrid } from '@/app/media/components/view/media-grid.client';
+import { MediaSharesPanel } from '@/app/media/components/view/media-shares-panel.client';
+import { MediaActivityPanel } from '@/app/media/components/view/media-activity-panel.client';
 import { MediaDialogs } from '@/app/media/components/view/media-dialogs.client';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
@@ -42,7 +44,20 @@ export class MediaPageView extends PureReactor {
   @prop declare editingFolder: IMediaFolder | null;
   @prop declare setEditingFolder: (folder: IMediaFolder | null) => void;
   @prop declare editingItem: IMediaItem | null;
+  @prop declare themeAssets: IMediaItem[];
+  @prop declare source: string;
+  @prop declare setSource: (value: string) => void;
+  @prop declare activeView: string;
+  @prop declare setActiveView: (value: string) => void;
+  @prop declare hasMore: boolean;
+  @prop declare loadingMore: boolean;
+  @prop declare loadMore: () => void;
+  @prop declare selectedIds: number[];
+  @prop declare isShareDialogOpen: boolean;
   @prop declare setEditingItem: (item: IMediaItem | null) => void;
+  @prop declare toggleSelected: (id: number) => void;
+  @prop declare clearSelection: () => void;
+  @prop declare setIsShareDialogOpen: (value: boolean) => void;
   @prop declare setMovingItem: (item: IMovingItem | null) => void;
   @prop declare isActionLoading: boolean;
   @prop declare optimizingId: number | null;
@@ -59,6 +74,22 @@ export class MediaPageView extends PureReactor {
   @prop declare handleDelete: () => Promise<void>;
   @prop declare handleOptimize: (item: IMediaItem) => Promise<void>;
   @prop declare handleUpdateDetails: (alt: string, caption: string) => Promise<void>;
+
+  /**
+   * Uploads and theme assets as one list, honouring the source filter.
+   *
+   * Merged rather than tabbed because "find that picture" is one job — which directory the file lives
+   * in is our concern, not the operator's. The filter is there for when it IS their concern.
+   */
+  private get visibleItems(): any[] {
+    if (this.source === 'theme') return this.themeAssets || [];
+    if (this.source === 'uploads') return this.items || [];
+    return [...(this.items || []), ...(this.themeAssets || [])];
+  }
+
+  @bound openShareDialog(): void {
+    this.setIsShareDialogOpen(true);
+  }
 
   render(): ReactNode {
     return (
@@ -87,6 +118,9 @@ export class MediaPageView extends PureReactor {
           setSearchQuery={this.setSearchQuery}
           setViewMode={this.setViewMode}
           setError={this.setError}
+          selectedCount={(this.selectedIds || []).length}
+          onShareSelected={this.openShareDialog}
+          onClearSelection={this.clearSelection}
           handleDragEnter={this.handleDragEnter}
           handleDragOver={this.handleDragOver}
           handleDragLeave={this.handleDragLeave}
@@ -109,16 +143,21 @@ export class MediaPageView extends PureReactor {
             setSearchQuery={this.setSearchQuery}
             setViewMode={this.setViewMode}
             setError={this.setError}
+            source={this.source}
+            setSource={this.setSource}
+            activeView={this.activeView}
+            setActiveView={this.setActiveView}
             handleDragEnter={this.handleDragEnter}
             handleDragOver={this.handleDragOver}
             handleDragLeave={this.handleDragLeave}
             handleDrop={this.handleDrop}
           />
 
+          {this.activeView === 'activity' ? <MediaActivityPanel /> : this.activeView === 'shares' ? <MediaSharesPanel /> : (
           <MediaGrid
             theme={this.theme}
             loading={this.loading}
-            items={this.items}
+            items={this.visibleItems}
             folders={this.folders}
             viewMode={this.viewMode}
             optimizingId={this.optimizingId}
@@ -132,35 +171,36 @@ export class MediaPageView extends PureReactor {
             setDeletingId={this.setDeletingId}
             setIsDeleteDialogOpen={this.setIsDeleteDialogOpen}
             setEditingItem={this.setEditingItem}
+            selectedIds={this.selectedIds}
+            toggleSelected={this.toggleSelected}
             handleOptimize={this.handleOptimize}
           />
+          )}
         </div>
 
         <Slot name="admin.media.bottom" />
 
-        {/* Premium Footer */}
-        <div className={`p-10 border-t mt-auto ${
-          this.theme === ThemeMode.DARK ? 'bg-slate-950/20 border-slate-800' : 'bg-slate-50/50 border-slate-100'
+        {/* Was a 40px-tall block reading "Media Vault — Secure storage for all your platform assets."
+            That is a brand line and a marketing sentence: it told the operator nothing about their
+            library and cost more vertical space than the row of files above it. A footer here earns
+            its place only by stating what is actually on screen. */}
+        <div className={`px-6 py-3 border-t mt-auto text-[11px] ${
+          this.theme === ThemeMode.DARK ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'
         }`}>
-          <div className="w-full px-6 lg:px-12">
-             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                  <span className="text-[10px] font-semibold tracking-widest text-slate-500 dark:text-slate-400">
-                    Media Vault
-                  </span>
-                </div>
-                <p className="text-[9px] font-medium text-slate-400">Secure storage for all your platform assets.</p>
-              </div>
-            </div>
-          </div>
+          {(this.items || []).length} file{(this.items || []).length === 1 ? '' : 's'}
+          {(this.themeAssets || []).length ? ` · ${this.themeAssets.length} theme asset${this.themeAssets.length === 1 ? '' : 's'}` : ''}
+          {(this.folders || []).length ? ` · ${this.folders.length} folder${this.folders.length === 1 ? '' : 's'}` : ''}
         </div>
 
         <MediaDialogs
           theme={this.theme}
           editingFolder={this.editingFolder}
           editingItem={this.editingItem}
+          selectedIds={this.selectedIds}
+          items={this.items}
+          isShareDialogOpen={this.isShareDialogOpen}
+          setIsShareDialogOpen={this.setIsShareDialogOpen}
+          clearSelection={this.clearSelection}
           setEditingItem={this.setEditingItem}
           handleUpdateDetails={this.handleUpdateDetails}
           isActionLoading={this.isActionLoading}

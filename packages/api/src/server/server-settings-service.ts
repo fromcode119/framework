@@ -103,6 +103,9 @@ export class ServerSettingsService {
         { key: SystemConstants.META_KEY.AUTH_PASSWORD_HISTORY, value: '5', description: 'Prevent reuse of the last N passwords.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_PASSWORD_BREACH_CHECK, value: 'false', description: 'Ask a breach-check provider whether a new password appears in known breaches. Calls the "auth:password:breach-check" hook. With no plugin answering it, nothing is rejected.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_PASSWORD_RESET_TOKEN_MINUTES, value: '30', description: 'Password reset token lifetime in minutes.', group: 'security' },
+        { key: SystemConstants.META_KEY.FILE_SHARE_DEFAULT_EXPIRY_DAYS, value: '30', description: 'Default lifetime of a shared-file link, in days. 0 = never expires.', group: 'Files' },
+        { key: SystemConstants.META_KEY.FILE_SHARE_DEFAULT_MAX_DOWNLOADS, value: '0', description: 'Default number of downloads allowed per recipient. 0 = unlimited.', group: 'Files' },
+        { key: SystemConstants.META_KEY.FILE_SHARE_RATE_LIMIT_PER_MINUTE, value: '30', description: 'Maximum shared-file link requests per minute, per address.', group: 'Files' },
         { key: SystemConstants.META_KEY.AUTH_EMAIL_CHANGE_TOKEN_MINUTES, value: '60', description: 'Email change token lifetime in minutes.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_LOCKOUT_THRESHOLD, value: '5', description: 'Failed logins before lockout.', group: 'security' },
         { key: SystemConstants.META_KEY.AUTH_LOCKOUT_WINDOW_MINUTES, value: '15', description: 'Window for counting failed logins.', group: 'security' },
@@ -121,6 +124,7 @@ export class ServerSettingsService {
         { key: SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED, value: 'true', description: 'Enable frontend auth flows.', group: 'security' },
         { key: SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED, value: 'true', description: 'Allow new customer self-registration.', group: 'security' },
         { key: SystemConstants.META_KEY.EMAIL_NOTIFICATIONS, value: 'true', description: 'Receive system alerts via email.', group: 'Engagement' },
+        { key: SystemConstants.META_KEY.MCP_REMOTE_ENABLED, value: 'false', description: 'Allow remote MCP clients (Claude web/desktop) to connect over Streamable HTTP with an API token. Off by default.', group: 'Integrations' },
       ];
 
       for (const d of defaults) {

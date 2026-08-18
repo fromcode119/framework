@@ -5,7 +5,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 /**
  * Localized values are stored as a per-locale map. The REST controller has always resolved them for
  * `/collections/...`, but a plugin's OWN endpoints read through `context.db`, so they returned the raw
- * map — a storefront reading products through the ecommerce plugin API rendered
+ * map — a storefront reading products through the alpha plugin API rendered
  * `{"bg":"…","en":"…"}` as the product name the moment a second locale was filled in.
  *
  * These pin the resolver that closes the gap, including the property that makes the rollout safe: a
@@ -21,7 +21,7 @@ describe('LocalizedReadResolver.resolveResult', () => {
    * passed green while the storefront still received raw locale maps in the running system.
    */
   const managerFor = (fields: Array<Record<string, unknown>>) => ({
-    getCollection: () => ({ collection: { slug: 'ecommerce-products', fields }, pluginSlug: 'ecommerce' }),
+    getCollection: () => ({ collection: { slug: 'alpha-products', fields }, pluginSlug: 'alpha' }),
   }) as any;
 
   const PRODUCT_FIELDS = [
@@ -36,7 +36,7 @@ describe('LocalizedReadResolver.resolveResult', () => {
   it('collapses a locale map to the request locale', () => {
     const row = { id: 1, name: { bg: 'Примерен запис', en: 'Sample record' }, slug: 'sample-record' };
     const resolved = runInLocale('en', () =>
-      LocalizedReadResolver.resolveResult(row, '@ecommerce/products', managerFor(PRODUCT_FIELDS)),
+      LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS)),
     ) as any;
 
     expect(resolved.name).toBe('Sample record');
@@ -46,7 +46,7 @@ describe('LocalizedReadResolver.resolveResult', () => {
   it('resolves the other locale from the same row', () => {
     const row = { id: 1, name: { bg: 'Примерен запис', en: 'Sample record' } };
     const resolved = runInLocale('bg', () =>
-      LocalizedReadResolver.resolveResult(row, '@ecommerce/products', managerFor(PRODUCT_FIELDS)),
+      LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS)),
     ) as any;
 
     expect(resolved.name).toBe('Примерен запис');
@@ -55,7 +55,7 @@ describe('LocalizedReadResolver.resolveResult', () => {
   it('leaves a legacy flat string exactly as stored — the property that makes rollout safe', () => {
     const row = { id: 1, name: 'Примерен запис', description: 'Кратко описание' };
     const resolved = runInLocale('en', () =>
-      LocalizedReadResolver.resolveResult(row, '@ecommerce/products', managerFor(PRODUCT_FIELDS)),
+      LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS)),
     ) as any;
 
     expect(resolved).toEqual(row);
@@ -64,7 +64,7 @@ describe('LocalizedReadResolver.resolveResult', () => {
   it('accepts a locale map stored as JSON text, which is how it lands in a text column', () => {
     const row = { id: 1, name: '{"bg":"Примерен запис","en":"Sample record"}' };
     const resolved = runInLocale('en', () =>
-      LocalizedReadResolver.resolveResult(row, '@ecommerce/products', managerFor(PRODUCT_FIELDS)),
+      LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS)),
     ) as any;
 
     expect(resolved.name).toBe('Sample record');
@@ -73,7 +73,7 @@ describe('LocalizedReadResolver.resolveResult', () => {
   it('falls through to a populated locale when the requested one is blank', () => {
     const row = { id: 1, name: { bg: 'Примерен запис', en: '   ' } };
     const resolved = runInLocale('en', () =>
-      LocalizedReadResolver.resolveResult(row, '@ecommerce/products', managerFor(PRODUCT_FIELDS)),
+      LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS)),
     ) as any;
 
     expect(resolved.name).toBe('Примерен запис');
@@ -86,7 +86,7 @@ describe('LocalizedReadResolver.resolveResult', () => {
       { id: 3, name: 'Три' },
     ];
     const resolved = runInLocale('en', () =>
-      LocalizedReadResolver.resolveResult(rows, '@ecommerce/products', managerFor(PRODUCT_FIELDS)),
+      LocalizedReadResolver.resolveResult(rows, '@alpha/products', managerFor(PRODUCT_FIELDS)),
     ) as any[];
 
     expect(resolved.map((row) => row.name)).toEqual(['One', 'Two', 'Три']);
@@ -96,7 +96,7 @@ describe('LocalizedReadResolver.resolveResult', () => {
     const fields = [{ name: 'contentBlocks', type: 'json', localized: true }];
     const row = { id: 1, contentBlocks: { bg: [{ type: 'hero' }], en: [{ type: 'banner' }] } };
     const resolved = runInLocale('en', () =>
-      LocalizedReadResolver.resolveResult(row, '@ecommerce/products', managerFor(fields)),
+      LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(fields)),
     ) as any;
 
     expect(resolved.contentBlocks).toEqual([{ type: 'banner' }]);
@@ -106,7 +106,7 @@ describe('LocalizedReadResolver.resolveResult', () => {
     const row = { id: 1, name: { bg: 'Примерен запис', en: 'Sample record' } };
     const fields = [{ name: 'name', type: 'text' }];
     const resolved = runInLocale('en', () =>
-      LocalizedReadResolver.resolveResult(row, '@ecommerce/products', managerFor(fields)),
+      LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(fields)),
     ) as any;
 
     expect(resolved.name).toEqual({ bg: 'Примерен запис', en: 'Sample record' });
@@ -116,12 +116,12 @@ describe('LocalizedReadResolver.resolveResult', () => {
     const manager = { getCollection: () => null } as any;
     const row = { id: 1, name: { bg: 'Примерен запис', en: 'Sample record' } };
 
-    expect(LocalizedReadResolver.resolveResult(row, '@ecommerce/unknown', manager)).toBe(row);
+    expect(LocalizedReadResolver.resolveResult(row, '@alpha/unknown', manager)).toBe(row);
   });
 
   it('passes null and undefined straight through', () => {
     const manager = managerFor(PRODUCT_FIELDS);
-    expect(LocalizedReadResolver.resolveResult(null, '@ecommerce/products', manager)).toBeNull();
-    expect(LocalizedReadResolver.resolveResult(undefined, '@ecommerce/products', manager)).toBeUndefined();
+    expect(LocalizedReadResolver.resolveResult(null, '@alpha/products', manager)).toBeNull();
+    expect(LocalizedReadResolver.resolveResult(undefined, '@alpha/products', manager)).toBeUndefined();
   });
 });

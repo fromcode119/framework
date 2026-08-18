@@ -55,7 +55,7 @@ describe('CollectionService', () => {
     });
 
     it('returns undefined for non-matching slug', () => {
-      const result = service.resolveBySlug(collections, 'cms', 'invalid');
+      const result = service.resolveBySlug(collections, 'alpha', 'invalid');
       expect(result).toBeUndefined();
     });
 

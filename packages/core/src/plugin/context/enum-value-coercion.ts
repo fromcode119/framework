@@ -9,7 +9,7 @@ import { Enum } from '@fromcode119/reactor';
  * binds `'paid'`. A reactor `Enum` member is an OBJECT. `toJSON()` covers `JSON.stringify`, but SQL
  * parameter binding does NOT stringify — the driver receives an object and either throws or writes
  * something meaningless into the column. The columns in question are money-bearing
- * (`fcp_ecommerce_orders.status`, `fcp_mlm_commissions.status`).
+ * (`fcp_<plugin>_orders.status` and the like).
  *
  * Worse, `tsc` cannot find those call sites: an object is assignable to a loose payload type, so the
  * only diagnostics it emits are for *comparisons*, never for writes. That makes a per-call-site

@@ -35,7 +35,20 @@ export interface IMediaPageModel {
   editingFolder: IMediaFolder | null;
   setEditingFolder: (folder: IMediaFolder | null) => void;
   editingItem: IMediaItem | null;
+  themeAssets: IMediaItem[];
+  source: string;
+  setSource: (value: string) => void;
+  activeView: string;
+  setActiveView: (value: string) => void;
+  hasMore: boolean;
+  loadingMore: boolean;
+  loadMore: () => void;
+  selectedIds: number[];
+  isShareDialogOpen: boolean;
   setEditingItem: (item: IMediaItem | null) => void;
+  toggleSelected: (id: number) => void;
+  clearSelection: () => void;
+  setIsShareDialogOpen: (value: boolean) => void;
   setMovingItem: (item: IMovingItem | null) => void;
   isActionLoading: boolean;
   optimizingId: number | null;
@@ -51,5 +64,5 @@ export interface IMediaPageModel {
   handleDrop: (e: DragEvent) => Promise<void>;
   handleDelete: () => Promise<void>;
   handleOptimize: (item: IMediaItem) => Promise<void>;
-  handleUpdateDetails: (alt: string, caption: string) => Promise<void>;
+  handleUpdateDetails: (alt: string, caption: string, visibility: string) => Promise<void>;
 }

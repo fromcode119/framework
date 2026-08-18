@@ -12,6 +12,7 @@ import { IntegrationProviderList } from '@/app/settings/integrations/integration
 import { IntegrationProviderEditor } from '@/app/settings/integrations/integration-provider-editor';
 import { IntegrationProviderFormHelper } from '@/app/settings/integrations/integration-provider-form-helper';
 import { IntegrationReconciler } from '@/app/settings/integrations/integration-reconciler';
+import { IntegrationExtraPanels } from '@/app/settings/integrations/integration-extra-panels';
 import { IntegrationHeader } from '@/app/settings/integrations/integration-header';
 import { IntegrationEmptyState } from '@/app/settings/integrations/integration-empty-state';
 import { IntegrationSelectors } from '@/app/settings/integrations/integration-selectors';
@@ -52,7 +53,15 @@ export class IntegrationsSettingsPageClient extends AdminComponent {
     this.mounted = true;
     const searchParams = this.searchParams ? await this.searchParams : undefined;
     if (!this.mounted) return;
-    this.queryType = IntegrationsPageUtils.normalizeKey(String(searchParams?.type || ''));
+    // The `searchParams` promise resolves EMPTY on this route because the page is statically
+    // prerendered, so `?type=` was lost and the reconcile below rewrote the URL to the first
+    // integration — every deep link landed on "AI Assistant". The live URL is the source of truth on
+    // the client; the promise stays as the SSR path.
+    const fromPromise = String(searchParams?.type || '');
+    const fromLocation = typeof window === 'undefined'
+      ? ''
+      : String(new URLSearchParams(window.location.search).get('type') || '');
+    this.queryType = IntegrationsPageUtils.normalizeKey(fromPromise || fromLocation);
     this.resolved = true;
     void this.loadIntegrations();
   }
@@ -213,6 +222,11 @@ export class IntegrationsSettingsPageClient extends AdminComponent {
   private activateType(typeKey: string): void {
     const normalized = IntegrationsPageUtils.normalizeKey(typeKey);
     if (!normalized || normalized === this.activeType) return;
+    // The query type moves WITH the selection. `queryType` is captured at mount and treated as
+    // authoritative by `reconcileActiveType`; leaving it on the mounted value made every dropdown
+    // change revert on the next reconcile — the URL said one type, the user had picked another, and
+    // the URL won.
+    this.queryType = normalized;
     this.activeType = normalized;
     this.selectedProviderId = '';
     this.editor = null;
@@ -489,6 +503,10 @@ export class IntegrationsSettingsPageClient extends AdminComponent {
             </div>
           </Card>
 
+          {/* A type that declares NO providers gets no provider grid. Showing "add your first
+              provider instance" for something that has none is an instruction the operator cannot
+              follow — the type is configured entirely by its own panel below. */}
+          {(activeIntegration?.providers?.length ?? 0) > 0 && (
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
             <IntegrationProviderList
               activeIntegration={activeIntegration}
@@ -525,6 +543,11 @@ export class IntegrationsSettingsPageClient extends AdminComponent {
               onReset={() => this.resetEditor()}
             />
           </div>
+          )}
+
+          {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
+              registry so this page never names a type. */}
+          {IntegrationExtraPanels.render(activeType)}
         </div>
       </div>
     );

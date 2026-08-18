@@ -46,7 +46,6 @@ export class ProjectPaths {
       const root = ProjectPaths.getProjectRoot();
       const isDev = ProjectPaths.isFrameworkRoot(root);
       const candidates = [
-        process.env.SHARED_PLUGINS_DIR,
         process.env.PLUGINS_DIR,
         isDev ? '../../plugins' : null,
         isDev ? '../plugins' : null,
@@ -73,7 +72,6 @@ export class ProjectPaths {
       const root = ProjectPaths.getProjectRoot();
       const isDev = ProjectPaths.isFrameworkRoot(root);
       const candidates = [
-        process.env.SHARED_THEMES_DIR,
         process.env.THEMES_DIR,
         isDev ? '../../themes' : null,
         isDev ? '../themes' : null,
@@ -101,7 +99,7 @@ export class ProjectPaths {
    *
    * `STORAGE_UPLOAD_DIR` is set to a RELATIVE value (`./public/uploads`) in the shipped compose file,
    * while the api process runs with cwd `/app/packages/api`. Any consumer that used the env value
-   * directly therefore resolved to `/app/packages/api/public/uploads`, which does not exist — the cms
+   * directly therefore resolved to `/app/packages/api/public/uploads`, which does not exist — the content
    * image optimizer 404'd on EVERY image on the site while the static `/uploads` route (which resolves
    * correctly) served the same files fine. Three call sites had three different resolutions of this one
    * setting; this is the single one.
@@ -110,6 +108,33 @@ export class ProjectPaths {
       const root = ProjectPaths.getProjectRoot();
       const configured = String(process.env[SystemConstants.STORAGE.UPLOAD_DIR_ENV] || '').trim();
       return ProjectPaths.resolveFromRoot(root, configured || SystemConstants.STORAGE.DEFAULT_UPLOADS_SUBDIR);
+  }
+
+  /**
+   * The PRIVATE uploads directory — files that must never be served statically.
+   *
+   * Resolved against the project root for the same reason `getUploadsDir` is: a relative env value
+   * against a per-process cwd resolved three different ways once already.
+   *
+   * The caller's contract is that this directory is never passed to `express.static`. `isServedStatically`
+   * exists so that invariant can be asserted rather than assumed.
+   */
+  static getPrivateUploadsDir(): string {
+      const root = ProjectPaths.getProjectRoot();
+      const configured = String(process.env[SystemConstants.STORAGE.PRIVATE_DIR_ENV] || '').trim();
+      return ProjectPaths.resolveFromRoot(root, configured || SystemConstants.STORAGE.DEFAULT_PRIVATE_SUBDIR);
+  }
+
+  /**
+   * True when `candidate` sits inside `servedDir` and would therefore be reachable from a static mount.
+   * Compared on resolved paths with a trailing separator, so `/a/private-x` is not read as being inside
+   * `/a/private`.
+   */
+  static isServedStatically(candidate: string, servedDir: string): boolean {
+      const target = path.resolve(String(candidate || ''));
+      const served = path.resolve(String(servedDir || ''));
+      if (target === served) return true;
+      return target.startsWith(served.endsWith(path.sep) ? served : `${served}${path.sep}`);
   }
 
   static getAppearancesDir(): string {

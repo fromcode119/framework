@@ -359,13 +359,13 @@ describe('LifecycleService — collections auto-discovery', () => {
     const pages: any[] = [];
     let metaValue = '';
     (manager.db as any).find = vi.fn(async (table: string) => {
-      if (table === 'cms_pages') {
+      if (table === 'alpha_pages') {
         return [...pages];
       }
       return [];
     });
     (manager.db as any).findOne = vi.fn(async (table: string, where: any) => {
-      if (table === 'cms_pages') {
+      if (table === 'alpha_pages') {
         return pages.find((page) => Object.entries(where || {}).every(([key, value]) => page[key] === value)) || null;
       }
       if (table === '_system_meta' && where?.key === 'default_page_contract_associations' && metaValue) {
@@ -374,7 +374,7 @@ describe('LifecycleService — collections auto-discovery', () => {
       return null;
     });
     (manager.db as any).insert = vi.fn(async (table: string, data: any) => {
-      if (table === 'cms_pages') {
+      if (table === 'alpha_pages') {
         const record = { id: pages.length + 1, ...data };
         pages.push(record);
         return record;
@@ -393,12 +393,12 @@ describe('LifecycleService — collections auto-discovery', () => {
       return data;
     });
     (manager.db as any).count = vi.fn(async () => pages.length);
-    manager.registeredCollections.set('cms_pages', {
-      pluginSlug: 'cms',
+    manager.registeredCollections.set('alpha_pages', {
+      pluginSlug: 'alpha',
       collection: {
-        slug: 'cms_pages',
+        slug: 'alpha_pages',
         shortSlug: 'pages',
-        pluginSlug: 'cms',
+        pluginSlug: 'alpha',
         workflow: true,
         fields: [
           { name: 'title', type: 'text', localized: true },

@@ -35,7 +35,7 @@ export class TagFieldSuggestions extends PureReactor {
     }
 
     return (
-        <div className={`absolute z-[100] w-full mt-2 rounded-lg border shadow-2xl p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 overflow-hidden ${
+        <div className={`absolute z-[100] w-full mt-2 rounded-lg border shadow-2xl p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 max-h-64 overflow-y-auto ${
           theme === ThemeMode.DARK ? 'bg-[#0f172a] border-slate-800' : 'bg-white/90 border-slate-200/60 backdrop-blur-3xl shadow-slate-200/50'
         }`}>
           {sourceUnavailableMessage && (

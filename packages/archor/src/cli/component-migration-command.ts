@@ -9,7 +9,7 @@ import { FrameworkRoot } from './framework-root';
  * generics to `@prop` / `@state` fields. DRY RUN by default.
  *
  *   archor component-migration packages/react
- *   archor component-migration plugins/mlm --apply
+ *   archor component-migration plugins/<slug> --apply
  */
 export class ComponentMigrationCommand extends ArchorCommand {
   readonly summary = 'Convert <Props,State> components to @prop/@state [<path> --apply].';
@@ -26,7 +26,7 @@ export class ComponentMigrationCommand extends ArchorCommand {
 
     // The path may be given relative to EITHER root, so take the first candidate that actually exists.
     // (The `.mjs` this replaced used `.find(c => c)` on the two resolved strings, which always picked
-    // the framework one — a repo-root path such as `plugins/mlm` silently resolved to a missing dir.)
+    // the framework one — a repo-root path such as `plugins/<slug>` silently resolved to a missing dir.)
     const target = [path.resolve(framework, rel), path.resolve(repo, rel)].find((c) => fs.existsSync(c));
     if (!target) {
       console.error(`[archor] no such path "${rel}" under ${framework} or ${repo}`);

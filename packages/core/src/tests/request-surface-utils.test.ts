@@ -25,8 +25,8 @@ describe('RequestSurfaceUtils', () => {
 
   it('detects admin requests from admin subdomain origins', () => {
     expect(RequestSurfaceUtils.isAdminRequestContext({
-      headers: { origin: 'https://admin.example.test', referer: 'https://admin.example.test/ecommerce/customers' },
-      url: '/api/v1/plugins/ecommerce/orders?limit=200',
+      headers: { origin: 'https://admin.example.test', referer: 'https://admin.example.test/alpha/customers' },
+      url: '/api/v1/plugins/alpha/orders?limit=200',
     })).toBe(true);
   });
 

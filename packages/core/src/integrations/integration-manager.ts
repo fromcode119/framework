@@ -9,6 +9,7 @@ import { Logger } from '@core/logging';
 import { EmailIntegrationDefinition } from '@core/integrations/providers/email-integration-definition';
 import { StorageIntegrationDefinition } from '@core/integrations/providers/storage-provider';
 import { CacheIntegrationDefinition } from '@core/integrations/providers/cache-provider';
+import { McpIntegrationDefinition } from '@core/integrations/providers/mcp-integration-definition';
 import { SsoIntegrationDefinition } from '@core/integrations/providers/sso-provider';
 import { CoreServices } from '@core/services';
 import { IntegrationConfigReadService } from '@core/integrations/integration-config-read-service';
@@ -48,6 +49,7 @@ export class IntegrationManager {
     this.registry.registerType(StorageIntegrationDefinition.definition);
     this.registry.registerType(CacheIntegrationDefinition.definition);
     this.registry.registerType(SsoIntegrationDefinition.definition);
+    this.registry.registerType(McpIntegrationDefinition.definition);
     // AI integration is now registered by the AI core extension
     // (see packages/ai/src/extension.ts)
   }

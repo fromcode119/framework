@@ -18,7 +18,7 @@ export class ForgotPasswordPageRoute {
     if (!authEnabled) {
       notFound();
     }
-    // Prefer a themed CMS page (slug 'forgot-password') so the active theme fully brands + translates
+    // Prefer a themed content page (slug 'forgot-password') so the active theme fully brands + translates
     // the reset flow; fall back to the framework default client when no themed page is seeded.
     try {
       const resolvedSearchParams = await QueryParamUtils.resolveSearchParams(searchParams);

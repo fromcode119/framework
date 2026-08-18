@@ -7,6 +7,7 @@ import { ScimTokenService } from '@api/services/scim-token-service';
 export class SystemAdminController {
   private static readonly WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.MAINTENANCE_MODE,
+  SystemConstants.META_KEY.MCP_REMOTE_ENABLED,
   SystemConstants.META_KEY.SITE_NAME,
   SystemConstants.META_KEY.SITE_URL,
   SystemConstants.META_KEY.FRONTEND_URL,
@@ -70,6 +71,9 @@ export class SystemAdminController {
   SystemConstants.META_KEY.AUTH_CAPTCHA_THRESHOLD,
   // Token lifetimes — read by `AuthControllerTokenSupport` when a reset / email-change link is issued.
   SystemConstants.META_KEY.AUTH_PASSWORD_RESET_TOKEN_MINUTES,
+  SystemConstants.META_KEY.FILE_SHARE_DEFAULT_EXPIRY_DAYS,
+  SystemConstants.META_KEY.FILE_SHARE_DEFAULT_MAX_DOWNLOADS,
+  SystemConstants.META_KEY.FILE_SHARE_RATE_LIMIT_PER_MINUTE,
   SystemConstants.META_KEY.AUTH_EMAIL_CHANGE_TOKEN_MINUTES,
   // Security notification emails — read by `AuthControllerEmailInfrastructure` and `System2faService`.
   SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS,

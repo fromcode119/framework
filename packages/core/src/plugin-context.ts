@@ -3,7 +3,7 @@ import { ScheduleType } from '@fromcode119/scheduler';
 import { RuntimeModuleKind } from '@core/plugin/services/enums/runtime-module-kind.enum';
 import { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
-import type { IDatabaseManager } from '@core/interfaces/database-manager.interface';
+import type { IPluginContextDb } from '@core/interfaces/plugin-context-db.interface';
 import type { IMediaManager } from '@fromcode119/media';
 import type { IEmailDriver } from '@fromcode119/email';
 import type { ICacheManager } from '@fromcode119/cache';
@@ -20,6 +20,7 @@ import type { IPluginPathReadOptions } from '@core/interfaces/plugin-path-read-o
 import type { IPluginContextApi } from '@core/interfaces/plugin-context-api.interface';
 import type { IPluginContextLogger } from '@core/interfaces/plugin-context-logger.interface';
 import type { IPluginContextIntegrations } from '@core/interfaces/plugin-context-integrations.interface';
+import type { IPluginContextMcp } from '@core/interfaces/plugin-context-mcp.interface';
 import type { IPluginContextJobs } from '@core/interfaces/plugin-context-jobs.interface';
 import type { IPluginContextScheduler } from '@core/interfaces/plugin-context-scheduler.interface';
 import type { IPluginContextPlugin } from '@core/interfaces/plugin-context-plugin.interface';
@@ -44,13 +45,16 @@ import type { IPluginContextRoles } from '@core/interfaces/plugin-context-roles.
 import type { IPluginContextTheme } from '@core/interfaces/plugin-context-theme.interface';
 
 export class PluginContext {
-  declare readonly db: IDatabaseManager;
+  declare readonly db: IPluginContextDb;
   declare readonly api: IPluginContextApi;
   declare readonly hooks: IPluginContextHooks;
   declare readonly auth: IPluginContextAuth;
   declare readonly logger: IPluginContextLogger;
 
   declare readonly integrations: IPluginContextIntegrations;
+
+  /** Framework MCP registry — a plugin registers only `<its-slug>.*` tools; see IPluginContextMcp. */
+  declare readonly mcp: IPluginContextMcp;
 
   /**
    * Shortcuts for core integrations

@@ -10,6 +10,7 @@ import { PluginDefaultPageDiagnosticService } from '@core/services/default-page-
 import { PluginDefaultPageMaterializationService } from '@core/services/default-page-contract/plugin-default-page-materialization-service';
 import { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
 import { RedirectResolverRegistryService } from '@core/services/redirect-resolver-registry-service';
+import { CanonicalPathResolverRegistryService } from '@core/services/canonical-path-resolver-registry-service';
 import { SeedPageService } from '@core/services/seed-page-service';
 import { ServerServiceKey } from '@core/services/server-service-key';
 import { ServerServiceRegistry } from '@core/services/server-service-registry';
@@ -73,6 +74,10 @@ export class ServerCoreServices {
     ServerServiceRegistry.register(
       ServerServiceKey.REDIRECT_RESOLVERS,
       () => new RedirectResolverRegistryService(),
+    );
+    ServerServiceRegistry.register(
+      ServerServiceKey.CANONICAL_PATH_RESOLVERS,
+      () => new CanonicalPathResolverRegistryService(),
     );
     ServerServiceRegistry.register(
       ServerServiceKey.ENTITY_RECORDS,

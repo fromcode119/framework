@@ -3,7 +3,7 @@ import type { ReactElement } from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Lightbox } from '@/components/ui/view/lightbox.client';
-import { VersionComparisonService } from '@/lib/version-comparison-service';
+import { VersionComparisonService } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { ThemeMarketplaceHeader } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-header.client';
 import { ThemeMarketplaceGallery } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-gallery.client';

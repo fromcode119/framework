@@ -4,7 +4,7 @@ import { bound } from '@fromcode119/reactor';
  * The `api` a plugin client is constructed with during a server render.
  *
  * `ContextBridge.registerPluginClient` builds each client as `factory(ContextBridge.api, basePath)`, and
- * clients resolve their own absolute URLs through `requester.getBaseUrl()` — that is how the cms client
+ * clients resolve their own absolute URLs through `requester.getBaseUrl()` — that is how the content client
  * hands out image-optimizer URLs. Without a base URL those come back as bare paths, which resolve against
  * the FRONTEND origin instead of the api and quietly defeat the optimizer, so the storefront ships the
  * full-size original.

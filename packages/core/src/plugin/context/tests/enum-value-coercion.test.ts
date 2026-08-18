@@ -90,13 +90,13 @@ describe('EnumValueCoercion', () => {
   });
 
   it('coerceArguments leaves the table name alone and coerces the rest', () => {
-    const args = ['fcp_ecommerce_orders', { id: 1 }, { status: OrderStatus.COMPLETED }];
+    const args = ['fcp_alpha_orders', { id: 1 }, { status: OrderStatus.COMPLETED }];
     expect(EnumValueCoercion.coerceArguments(args))
-      .toEqual(['fcp_ecommerce_orders', { id: 1 }, { status: 'completed' }]);
+      .toEqual(['fcp_alpha_orders', { id: 1 }, { status: 'completed' }]);
   });
 
   it('coerceArguments returns the SAME array when no Enum is present', () => {
-    const args = ['fcp_ecommerce_orders', { id: 1 }];
+    const args = ['fcp_alpha_orders', { id: 1 }];
     expect(EnumValueCoercion.coerceArguments(args)).toBe(args);
   });
 });

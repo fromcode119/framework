@@ -56,11 +56,49 @@ export class PeopleManagementService {
   }
 
   /** List people (newest first), denormalized to the camelCase admin shape. */
-  async getPeople(): Promise<any[]> {
+  async getPeople(options?: { q?: string; limit?: number }): Promise<any[]> {
+    const limit = Math.max(1, Math.min(1000, Number(options?.limit) || 1000));
     const rows = await this.db
-      .find(SystemConstants.TABLE.PEOPLE, { orderBy: { createdAt: 'desc' }, limit: 1000 })
+      .find(SystemConstants.TABLE.PEOPLE, { orderBy: { createdAt: 'desc' }, limit })
       .catch(() => []);
-    return (Array.isArray(rows) ? rows : []).map((row: any) => PeopleSelfService.toCamel(row));
+    const people = (Array.isArray(rows) ? rows : []).map((row: any) => PeopleSelfService.toCamel(row));
+
+    const query = String(options?.q || '').trim().toLowerCase();
+    if (!query) return people;
+
+    // Filtered here rather than in SQL because the searchable value is a COMPOSITE of several nullable
+    // columns (display name, first/last, email); a LIKE over one of them would miss the others.
+    return people.filter((person: any) => PeopleManagementService.haystack(person).includes(query));
+  }
+
+  private static haystack(person: any): string {
+    return [person?.displayName, person?.firstName, person?.lastName, person?.email]
+      .map((value) => String(value || '').toLowerCase())
+      .join(' ');
+  }
+
+  /**
+   * Recipient suggestions for a share: people who actually have an email address.
+   *
+   * `people.email` is NULLABLE and NOT UNIQUE — the table holds contacts backfilled from orders and
+   * relatives entered by name alone — so blanks are dropped and duplicates collapsed. Without that the
+   * picker offers empty entries and the same address several times.
+   */
+  async suggestRecipients(options?: { q?: string; limit?: number }): Promise<Array<{ value: string; label: string }>> {
+    const people = await this.getPeople({ q: options?.q });
+    const limit = Math.max(1, Math.min(50, Number(options?.limit) || 20));
+    const byEmail = new Map<string, { value: string; label: string }>();
+
+    for (const person of people) {
+      const email = String(person?.email || '').trim().toLowerCase();
+      if (!email.includes('@') || byEmail.has(email)) continue;
+
+      const name = String(person?.displayName || [person?.firstName, person?.lastName].filter(Boolean).join(' ') || '').trim();
+      byEmail.set(email, { value: email, label: name ? `${name} <${email}>` : email });
+      if (byEmail.size >= limit) break;
+    }
+
+    return [...byEmail.values()];
   }
 
   /**

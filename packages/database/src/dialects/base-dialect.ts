@@ -1,5 +1,5 @@
 import { JoinType } from '@database/enums/join-type.enum';
-import { sql, eq, ne, gt, gte, lt, lte } from 'drizzle-orm';
+import { sql, eq, ne, gt, gte, lt, lte, isNull, isNotNull } from 'drizzle-orm';
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
 import { NamingStrategy } from '@database/naming-strategy';
 import type { DialectColumnNormalizer } from '@database/dialects/dialect-column-normalizer';
@@ -36,12 +36,26 @@ export abstract class BaseDialect {
 
     // Same parse as the raw-SQL path, so `{ createdAt: { gte, lte } }` means the same range whether the
     // caller reached a drizzle table object or a string table name.
-    return WhereClauseParser.parse(where).map((comparison) =>
-      BaseDialect.DRIZZLE_OPERATORS[comparison.operator](
-        this.resolveColumn(comparison.column, tableOrName),
-        comparison.value
-      )
-    );
+    return WhereClauseParser.parse(where).map((comparison) => {
+      const column = this.resolveColumn(comparison.column, tableOrName);
+      // Same null rule as the raw-SQL paths: absence is IS NULL / IS NOT NULL, never `= NULL`.
+      if (comparison.value === null) {
+        if (comparison.operator === 'eq') return isNull(column);
+        if (comparison.operator === 'ne') return isNotNull(column);
+        throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}"). Only eq/ne accept null, as IS NULL / IS NOT NULL.`);
+      }
+      return BaseDialect.DRIZZLE_OPERATORS[comparison.operator](column, comparison.value);
+    });
+  }
+
+  /**
+   * The predicate for a null operand. Only equality has a meaning against absence; a range against
+   * null is a call-site bug and raises rather than matching nothing.
+   */
+  private static nullPredicate(comparison: { operator: string; column: string }): string {
+    if (comparison.operator === 'eq') return 'IS NULL';
+    if (comparison.operator === 'ne') return 'IS NOT NULL';
+    throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}"). Only eq/ne accept null, as IS NULL / IS NOT NULL.`);
   }
 
   /** Canonical operator name -> drizzle condition builder, keyed exactly like WhereComparison. */
@@ -78,11 +92,19 @@ export abstract class BaseDialect {
       return { sql: '', values: [] };
     }
 
-    const conditions = comparisons.map(
-      (comparison, index) =>
-        `${this.quoteIdentifier(comparison.column)} ${comparison.sqlOperator} ${this.getParamPlaceholder(index + 1)}`
-    );
-    const values = comparisons.map((comparison) => this.normalizeParamValue(comparison.value));
+    // Null operands become IS NULL / IS NOT NULL and consume no placeholder — the same rule as
+    // `buildRawFilterSQL`, because the two paths emitting different predicates from one parse is
+    // exactly the drift the shared parser exists to prevent.
+    const conditions: string[] = [];
+    const values: any[] = [];
+    for (const comparison of comparisons) {
+      if (comparison.value === null) {
+        conditions.push(`${this.quoteIdentifier(comparison.column)} ${BaseDialect.nullPredicate(comparison)}`);
+        continue;
+      }
+      values.push(this.normalizeParamValue(comparison.value));
+      conditions.push(`${this.quoteIdentifier(comparison.column)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`);
+    }
 
     return {
       sql: ` WHERE ${conditions.join(' AND ')}`,
@@ -96,6 +118,55 @@ export abstract class BaseDialect {
    */
   protected getLikeOperator(): string {
     return 'LIKE';
+  }
+
+  /**
+   * The expression that turns a timestamp column into its `YYYY-MM-DD` day, in this dialect's SQL.
+   * SQLite stores these columns as TEXT so it slices; the others format a real timestamp.
+   */
+  protected dayBucketExpression(quotedColumn: string): string {
+    return `substr(${quotedColumn}, 1, 10)`;
+  }
+
+  /**
+   * COUNT(*) grouped by columns — real SQL aggregation for a string-named table.
+   *
+   * This is the primitive that lets an analytics screen ask "how many per outcome / per file / per
+   * day" as ONE query instead of paging every row into application memory and counting there. Group
+   * columns pass through the same identifier sanitiser as everything else; the optional `dateBucket`
+   * groups a timestamp column by calendar day using the dialect's own expression.
+   *
+   * Returns one row per group: the grouped columns (day under `day`), plus `count`. Ordered by count
+   * descending, because every caller so far wants the biggest groups first; an `orderBy` option can
+   * arrive when a caller genuinely needs another order.
+   */
+  protected buildGroupCountSQL(
+    tableName: string,
+    options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },
+  ): { sql: string; values: any[] } {
+    const groupExpressions: string[] = [];
+    const selectExpressions: string[] = [];
+
+    for (const column of options.groupBy ?? []) {
+      const quoted = this.quoteIdentifier(column);
+      groupExpressions.push(quoted);
+      selectExpressions.push(quoted);
+    }
+    if (options.dateBucket) {
+      const expression = this.dayBucketExpression(this.quoteIdentifier(options.dateBucket.column));
+      groupExpressions.push(expression);
+      selectExpressions.push(`${expression} AS "day"`);
+    }
+    if (groupExpressions.length === 0) {
+      throw new Error('groupCount needs at least one groupBy column or a dateBucket.');
+    }
+
+    const { sql: whereSql, values } = this.buildRawFilterSQL(options.where);
+    let sqlStr = `SELECT ${selectExpressions.join(', ')}, COUNT(*) AS "count" FROM "${tableName}"${whereSql}`
+      + ` GROUP BY ${groupExpressions.join(', ')} ORDER BY COUNT(*) DESC`;
+    if (options.limit) sqlStr += ` LIMIT ${Math.max(1, Math.floor(options.limit))}`;
+
+    return { sql: sqlStr, values };
   }
 
   /**
@@ -194,6 +265,13 @@ export abstract class BaseDialect {
 
     if (where && typeof where === 'object') {
       for (const comparison of WhereClauseParser.parse(where)) {
+        // `= NULL` is never true in SQL, so a null operand used to make the predicate match NOTHING —
+        // silently. `{ revokedAt: null }` guards and `{ mediaId: { ne: null } }` filters both fell into
+        // it. Null is a real operand meaning absence; it becomes IS NULL / IS NOT NULL, param-free.
+        if (comparison.value === null) {
+          conditions.push(`${this.quoteIdentifier(comparison.column)} ${BaseDialect.nullPredicate(comparison)}`);
+          continue;
+        }
         values.push(this.normalizeParamValue(comparison.value));
         conditions.push(
           `${this.quoteIdentifier(comparison.column)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`

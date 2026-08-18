@@ -1,4 +1,5 @@
 import { BackupService, ProjectPaths } from '@fromcode119/core';
+import { McpSchema } from '@fromcode119/mcp';
 import type { IMcpToolDefinition } from '@fromcode119/mcp';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -8,6 +9,8 @@ export class BackupTools {
       return [
         {
           tool: 'backups.list',
+          permission: 'system:backup:view',
+          inputSchema: McpSchema.object({}),
           readOnly: true,
           description: 'List available backup files.',
           handler: async () => {
@@ -39,6 +42,8 @@ export class BackupTools {
         },
         {
           tool: 'backups.create.system',
+          permission: 'system:backup:manage',
+          inputSchema: McpSchema.object({}),
           readOnly: false,
           description: 'Create a full system backup snapshot.',
           handler: async (_input, context) => {
@@ -59,6 +64,11 @@ export class BackupTools {
         },
         {
           tool: 'backups.restore.path',
+          permission: 'system:backup:restore',
+          inputSchema: McpSchema.object({
+            backupPath: McpSchema.string({ description: 'Path of the backup to restore.' }),
+            targetDir: McpSchema.string({ description: 'Directory to restore into.' }),
+          }, ['backupPath']),
           readOnly: false,
           description: 'Restore a backup archive to a target directory (requires explicit approval).',
           handler: async (input, context) => {

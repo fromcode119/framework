@@ -19,7 +19,7 @@ describe('AiActComplianceWrapper', () => {
 
   it('marks a high-risk (income-adjacent) call with a human-oversight disclosure', async () => {
     const wrapped = AiActComplianceWrapper.wrap(innerReturning('x'), 'anthropic');
-    const res = await wrapped.chat({ messages: [], purpose: 'mlm.copilot', riskTier: CapabilityTier.HIGH });
+    const res = await wrapped.chat({ messages: [], purpose: 'alpha.copilot', riskTier: CapabilityTier.HIGH });
     expect(res.aiAct?.riskTier).toBe(CapabilityTier.HIGH);
     expect(res.aiAct?.disclosure).toContain('Art. 14');
   });
@@ -35,11 +35,11 @@ describe('AiActComplianceWrapper', () => {
     AiActComplianceWrapper.useSink((e) => entries.push(e));
     try {
       const wrapped = AiActComplianceWrapper.wrap(innerReturning('generated'), 'anthropic');
-      await wrapped.chat({ messages: [{ role: AssistantRole.USER, content: 'hello' }], purpose: 'mlm.copilot', riskTier: CapabilityTier.HIGH });
+      await wrapped.chat({ messages: [{ role: AssistantRole.USER, content: 'hello' }], purpose: 'alpha.copilot', riskTier: CapabilityTier.HIGH });
       expect(entries.length).toBe(1);
       const e = entries[0];
       expect(e.provider).toBe('anthropic');
-      expect(e.purpose).toBe('mlm.copilot');
+      expect(e.purpose).toBe('alpha.copilot');
       expect(e.riskTier).toBe(CapabilityTier.HIGH);
       expect(e.ok).toBe(true);
       expect(e.promptChars).toBe(5);

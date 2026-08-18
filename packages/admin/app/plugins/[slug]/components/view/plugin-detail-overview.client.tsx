@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
-import { VersionComparisonService } from '@/lib/version-comparison-service';
+import { VersionComparisonService } from '@fromcode119/core/client';
 import type { IPluginLogEntry } from '@/app/plugins/[slug]/interfaces/plugin-log-entry.interface';
 import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
 import { AdminClass } from '@/lib/admin-class';

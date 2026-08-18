@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "sync:versions": "npm run fromcode -- system sync-versions",
-    "build": "npm run check:workspace-typecheck && npm run check:src-artifacts && npm run sync:versions && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && node packages/typor/dist/typor-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run check:app-typecheck && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend",
+    "build": "npm run check:workspace-typecheck && npm run check:src-artifacts && npm run sync:versions && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:mcp-tool-schemas && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && node packages/typor/dist/typor-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run check:app-typecheck && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend",
     "build:api": "npm run sync:versions && npm run build --workspace=@fromcode119/api",
     "build:admin": "npm run sync:versions && npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run sync:versions && npm run build --workspace=@fromcode119/frontend",
@@ -62,7 +62,8 @@
     "check:vite-glue": "node packages/nextor/dist/nextor-cli.cjs verify-vite-config packages/sdk/src/vite/theme.config.ts packages/sdk/src/vite/theme-ssr.config.ts packages/sdk/src/vite/plugin-ui.config.ts packages/sdk/src/vite/plugin-ui-ssr.config.ts",
     "check:conventions": "node packages/archor/dist/archor-cli.cjs convention-guard",
     "check:conventions:detail": "node packages/archor/dist/archor-cli.cjs convention-guard --detail",
-    "check:conventions:error": "FRAMEWORK_CONVENTION_MODE=error node packages/archor/dist/archor-cli.cjs convention-guard"
+    "check:conventions:error": "FRAMEWORK_CONVENTION_MODE=error node packages/archor/dist/archor-cli.cjs convention-guard",
+    "check:mcp-tool-schemas": "node packages/archor/dist/archor-cli.cjs mcp-tool-schemas"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",

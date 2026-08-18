@@ -10,7 +10,7 @@ import path from 'node:path';
  *
  * NOT flagged, deliberately:
  *  - `i18n/**` — that IS the copy.
- *  - `seeds/**` — seed content is initial CMS DATA that becomes editable records, not render-time copy.
+ *  - `seeds/**` — seed content is initial content DATA that becomes editable records, not render-time copy.
  *  - comments — a Cyrillic comment is documentation, not output.
  *
  * Ratcheted per area: the count may fall, never rise. Lower a number when copy is extracted; never raise

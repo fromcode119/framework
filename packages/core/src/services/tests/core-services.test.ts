@@ -261,9 +261,9 @@ describe('CoreServices', () => {
     it('handles collection URL generation', () => {
       const services = CoreServices.getInstance();
       const collection: any = {
-        slug: 'cms-posts',
+        slug: 'alpha-posts',
         shortSlug: 'posts',
-        pluginSlug: 'cms'
+        pluginSlug: 'alpha'
       };
       const record = {
         id: 1,

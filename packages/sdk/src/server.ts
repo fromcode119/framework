@@ -19,6 +19,14 @@ export { ServerCoreServices } from '@fromcode119/core';
 // literal fallback — see SigningSecretService.
 export { SigningSecretService } from '@fromcode119/core';
 
+// The framework's ONE revocable/expiring/countable token. A plugin that issues a share link stores
+// `GrantTokenService.hash(raw)` on its own row and asks `GrantTokenService.evaluate` whether the link is
+// still good — it does not reimplement expiry, revocation and usage caps, and it never reaches into the
+// framework's own `_system_file_grants` table. `SigningSecretService` above is the other half of the
+// choice: sign when the link must be stateless, mint a row when it must be revocable.
+export { GrantTokenService, GrantOutcome } from '@fromcode119/core';
+export type { IGrantEvaluable } from '@fromcode119/core';
+
 export { PluginRegistry } from '@fromcode119/plugins';
 export { MediaImageOptimizer } from '@fromcode119/media';
 export type { IMediaImageOptimizationOptions, IMediaImageOptimizationResult } from '@fromcode119/media';

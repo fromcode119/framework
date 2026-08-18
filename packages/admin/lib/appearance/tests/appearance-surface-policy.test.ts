@@ -3,24 +3,24 @@ import { AppearanceSurfacePolicy } from '@/lib/appearance/appearance-surface-pol
 
 describe('AppearanceSurfacePolicy.isPathAllowed', () => {
   it('allows every path when no surfaces are declared (legacy passthrough)', () => {
-    expect(AppearanceSurfacePolicy.isPathAllowed(undefined, '/cms/pages/1')).toBe(true);
+    expect(AppearanceSurfacePolicy.isPathAllowed(undefined, '/alpha/pages/1')).toBe(true);
     expect(AppearanceSurfacePolicy.isPathAllowed(undefined, '/anything')).toBe(true);
   });
 
   it('default-denies unlisted routes when surfaces are declared', () => {
-    const surfaces = { plugins: ['mlm', 'ecommerce'], paths: ['/my', '/settings/integrations'] };
-    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/cms/pages/1')).toBe(false);
+    const surfaces = { plugins: ['beta', 'alpha'], paths: ['/my', '/settings/integrations'] };
+    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/gamma/pages/1')).toBe(false);
     expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/seo')).toBe(false);
     expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/settings/general')).toBe(false);
   });
 
   it('allows listed plugin areas by first segment', () => {
-    const surfaces = { plugins: ['mlm', 'ecommerce'] };
-    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/mlm')).toBe(true);
-    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/mlm/affiliates')).toBe(true);
-    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/ecommerce/orders')).toBe(true);
-    // segment-boundary, not substring: '/mlmx' must NOT match plugin 'mlm'
-    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/mlmx')).toBe(false);
+    const surfaces = { plugins: ['beta', 'alpha'] };
+    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/beta')).toBe(true);
+    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/beta/affiliates')).toBe(true);
+    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/alpha/orders')).toBe(true);
+    // segment-boundary, not substring: '/betax' must NOT match plugin 'beta'
+    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/betax')).toBe(false);
   });
 
   it('allows listed path prefixes at a segment boundary', () => {
@@ -43,9 +43,9 @@ describe('AppearanceSurfacePolicy.isPathAllowed', () => {
   });
 
   it('ignores query/hash and a trailing slash', () => {
-    const surfaces = { plugins: ['mlm'] };
-    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/mlm/affiliates?tab=x')).toBe(true);
-    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/mlm/')).toBe(true);
-    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/cms/#frag')).toBe(false);
+    const surfaces = { plugins: ['beta'] };
+    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/beta/affiliates?tab=x')).toBe(true);
+    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/beta/')).toBe(true);
+    expect(AppearanceSurfacePolicy.isPathAllowed(surfaces, '/alpha/#frag')).toBe(false);
   });
 });

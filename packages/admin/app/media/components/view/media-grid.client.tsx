@@ -29,6 +29,8 @@ export class MediaGrid extends PureReactor {
   @prop declare setDeletingId: (id: number | null) => void;
   @prop declare setIsDeleteDialogOpen: (value: boolean) => void;
   @prop declare setEditingItem: (item: IMediaItem | null) => void;
+  @prop declare selectedIds: number[];
+  @prop declare toggleSelected: (id: number) => void;
   @prop declare handleOptimize: (item: IMediaItem) => Promise<void>;
 
   @bound
@@ -66,7 +68,7 @@ export class MediaGrid extends PureReactor {
     }
 
     return (
-      <div className={viewMode === ViewMode.GRID ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" : "space-y-2"}>
+      <div className={viewMode === ViewMode.GRID ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4" : "space-y-2"}>
         {this.folders.map(folder => (
           <MediaFolderCard
             key={`folder-${folder.id}`}
@@ -94,6 +96,8 @@ export class MediaGrid extends PureReactor {
             setDeletingId={this.setDeletingId}
             setIsDeleteDialogOpen={this.setIsDeleteDialogOpen}
             setEditingItem={this.setEditingItem}
+            selected={this.selectedIds.includes(Number(item.id))}
+            toggleSelected={this.toggleSelected}
             handleOptimize={this.handleOptimize}
           />
         ))}

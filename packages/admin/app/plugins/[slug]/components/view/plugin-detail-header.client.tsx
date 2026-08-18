@@ -8,7 +8,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { PluginState } from '@fromcode119/core/client';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { VersionComparisonService } from '@/lib/version-comparison-service';
+import { VersionComparisonService } from '@fromcode119/core/client';
 import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
 

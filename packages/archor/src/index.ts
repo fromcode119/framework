@@ -19,3 +19,4 @@ export { PluginUiHookGuard } from './plugin-ui-hook-guard';
 export { ClientViewMove } from './client-view-move';
 export { ComponentDecoratorMigration } from './component-decorator-migration';
 export { InterfacePrefixMigration } from './interface-prefix-migration';
+export { McpToolSchemaGuard } from './mcp-tool-schema-guard';

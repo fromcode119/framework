@@ -114,7 +114,7 @@ export class ThemeSsrRuntime {
    * plugin UI class (`PluginComponent`) declares it as its `contextType` and reads `this.t` off it; the
    * browser mounts it via `PluginRuntimeProvider` inside `RootProvider`, but nothing mounted it here. So
    * server-side `this.context` was undefined and `this.t` fell back to identity, printing RAW KEYS into
-   * the HTML — `aria-label="ecommerce.collection.loading"` shipped on every storefront page's first
+   * the HTML — `aria-label="<plugin>.collection.loading"` shipped on every storefront page's first
    * paint. It takes a value shaped like `PluginRuntimeValue`, and its provider is reached through
    * `.context` (a reactor `Context`), not the `.Context` the framework's own context objects expose.
    */

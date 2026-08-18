@@ -4,7 +4,7 @@ import path from 'node:path';
 /**
  * Writes the Vite entry module for a theme from the patterns the THEME declares.
  *
- * Contains no knowledge of what a theme puts where. It does not know about CMS, renderers, overrides,
+ * Contains no knowledge of what a theme puts where. It does not know about content plugins, renderers, overrides,
  * plugins, styles directories or any other layout: it reads arrays of glob strings out of `theme.json`
  * and emits the `import.meta.glob` calls for them. Naming a directory convention here would weld one
  * theme's layout into the framework, which is exactly what this replaced.

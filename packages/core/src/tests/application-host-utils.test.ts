@@ -11,7 +11,7 @@ describe('ApplicationHostUtils', () => {
   });
 
   it('rejects non-local hostnames', () => {
-    expect(ApplicationHostUtils.isLocalDevelopmentHostname('https://vselenskiportal88.com')).toBe(false);
+    expect(ApplicationHostUtils.isLocalDevelopmentHostname('https://example-shop.com')).toBe(false);
     expect(ApplicationHostUtils.isLocalDevelopmentHostname('fromcode.com')).toBe(false);
   });
 

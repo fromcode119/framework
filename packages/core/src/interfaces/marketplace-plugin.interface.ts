@@ -10,6 +10,8 @@ export class MarketplacePlugin {
   declare author: string;
   declare homepage?: string;
   declare iconUrl?: string;
+  /** Lucide icon NAME (e.g. 'ShoppingBag') rendered from the locally-bundled set when no iconUrl image is declared. */
+  declare icon?: string;
   declare capabilities?: string[];
   declare dependencies?: Record<string, string>;
   declare screenshots?: Screenshot[];

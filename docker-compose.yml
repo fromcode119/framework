@@ -54,6 +54,20 @@ services:
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
     command: npm run start --workspace=@fromcode119/api
+    # PLUGIN-owned env vars (e.g. a plugin's API credentials or signing key) reach the API through this,
+    # so the framework's compose never has to name an individual plugin's key — which would be exactly
+    # the cross-plugin coupling the architecture rules forbid. The explicit `environment:` list below
+    # still wins for anything it declares (compose precedence), so framework vars are unaffected.
+    #
+    # A DEDICATED file, not the root `.env`: Compose already reads `.env` for `${VAR}` substitution, and
+    # injecting it wholesale also pushed purely infrastructural values (TRAEFIK_*, EXTERNAL_PROXY_NETWORK)
+    # into the application container, which has no use for them.
+    #
+    # `required: false` so a checkout without the file still starts — as a mandatory path it made
+    # `docker compose up` fail outright for anyone who had not created one.
+    env_file:
+      - path: plugins.env
+        required: false
     environment:
       - DATABASE_URL=${DATABASE_URL:-file:/app/data/app.db}
       - DB_DIALECT=${DB_DIALECT:-sqlite}
@@ -68,6 +82,15 @@ services:
       - CORS_ALLOWED_DOMAINS=${CORS_ALLOWED_DOMAINS:-framework.local,api.framework.local,admin.framework.local,frontend.framework.local,localhost}
       - MARKETPLACE_URL=${MARKETPLACE_URL:-http://marketplace.framework.local}
       - COOKIE_DOMAIN=${COOKIE_DOMAIN:-.framework.local}
+      # Framework-owned config that used to arrive only by injecting the whole `.env`. Declared
+      # explicitly, like everything else here, so it still reaches the container while the purely
+      # infrastructural values in `.env` (TRAEFIK_*, EXTERNAL_PROXY_NETWORK) no longer do.
+      #
+      # STORAGE_UPLOAD_DIR is deliberately NOT among them: `.env` set it to the RELATIVE
+      # `./public/uploads`, and the framework's own `ProjectPaths.getUploadsDir()` already resolves to
+      # the same `/app/public/uploads` (verified serving 200). A relative value here is a known trap —
+      # it silently follows the process cwd instead of the project root.
+      - STORAGE_PUBLIC_URL=${STORAGE_PUBLIC_URL:-}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
       - APPEARANCE_DIR=/app/appearance
@@ -90,6 +113,11 @@ services:
       # Secure-by-default (ON). If a public frontend surface 404s, tag its collection then keep this on.
       - ENFORCE_COLLECTION_READ_AUTHZ=${ENFORCE_COLLECTION_READ_AUTHZ:-true}
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
+      # Where PRIVATE files live. Must sit OUTSIDE /app/public/uploads — that tree is served by
+      # express.static before cookies, CSRF and auth exist, so anything inside it is anonymous by
+      # construction and no route guard can compensate. It is a mounted volume below for the same
+      # reason /app/data is: without one, every image rebuild silently destroys every private file.
+      - STORAGE_PRIVATE_DIR=${STORAGE_PRIVATE_DIR:-/app/storage/private}
       - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
       # AI provider + keys are NOT env vars — they're configured securely in the admin via the
@@ -103,6 +131,9 @@ services:
     volumes:
       - ./data:/app/data
       - ./public/uploads:/app/public/uploads
+      # Private media. NOT under public/uploads (never statically served) and NOT image-internal
+      # (a rebuild would wipe it).
+      - ./storage/private:/app/storage/private
       - ${SHARED_PLUGINS_DIR:-../../plugins}:/app/plugins
       - ${SHARED_THEMES_DIR:-../../themes}:/app/themes
       - ${SHARED_APPEARANCE_DIR:-../../appearance}:/app/appearance

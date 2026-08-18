@@ -15,6 +15,9 @@ export interface ICoreExtensionContext {
     
     /** Integration manager for registering integration types */
     integrations: any;
+
+    /** Framework MCP tool registry — extensions PUSH their tools/sources into it (McpToolRegistry) */
+    mcp: any;
     
     /** Hook manager for events */
     hooks: any;

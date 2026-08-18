@@ -1,4 +1,15 @@
 import { MediaController } from '@api/controllers/media-controller';
+import { MediaManager } from '@fromcode119/media';
+
+/**
+ * A REAL MediaManager over a fake driver, not a hand-shaped mock. The previous mock was
+ * `{ driver: { getUrl } }`, which silently stopped matching the controller the moment storage grew
+ * spaces — a mock that models an old shape passes while the thing it stands for has changed.
+ */
+const buildMediaManager = (spaces: Record<string, unknown> = {}): any => new MediaManager({
+  [MediaManager.PUBLIC_SPACE]: { provider: 'local', getUrl: () => 'mock-url' } as any,
+  ...(spaces as any),
+});
 
 describe('media-controller.listFiles', () => {
   const buildResponse = () => {
@@ -42,9 +53,7 @@ describe('media-controller.listFiles', () => {
       asc: vi.fn().mockReturnValue('asc_order'),
     } as any;
     
-    const controller = new MediaController({ db: mockDb } as any, {
-      driver: { getUrl: () => 'mock-url' },
-    } as any);
+    const controller = new MediaController({ db: mockDb } as any, buildMediaManager());
 
     const res = buildResponse();
     await controller.listFiles({ query: {} } as any, res as any);
@@ -85,9 +94,7 @@ describe('media-controller.listFiles', () => {
       asc: vi.fn().mockReturnValue('asc_order'),
     } as any;
 
-    const controller = new MediaController({ db: mockDb } as any, {
-      driver: { getUrl: () => 'mock-url' },
-    } as any);
+    const controller = new MediaController({ db: mockDb } as any, buildMediaManager());
 
     const res = buildResponse();
     await controller.listFiles({ query: {} } as any, res as any);
@@ -119,9 +126,9 @@ describe('media-controller.listFiles', () => {
       asc: vi.fn().mockReturnValue('asc_order'),
     } as any;
 
-    const controller = new MediaController({ db: mockDb } as any, {
-      driver: { getUrl: () => '/uploads/file.jpg' },
-    } as any);
+    const controller = new MediaController({ db: mockDb } as any, buildMediaManager({
+      [MediaManager.PUBLIC_SPACE]: { provider: 'local', getUrl: () => '/uploads/file.jpg' },
+    }));
 
     const req = {
       query: {},

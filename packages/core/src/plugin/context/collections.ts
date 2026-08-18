@@ -8,6 +8,7 @@ import { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { PluginRegistry } from '@fromcode119/plugins';
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { PluginEntityRegistrationService } from '@core/plugin/services/plugin-entity-registration-service';
+import { CollectionWriteBridge } from '@core/plugin/collection-write-bridge';
 
 export class CollectionsContextProxy {
   private static readonly entityRegistration = new PluginEntityRegistrationService();
@@ -53,6 +54,19 @@ export class CollectionsContextProxy {
             collection: manager.registeredCollections.get(prefixedSlug)?.collection, 
             pluginSlug: plugin.manifest.slug 
           });
+        },
+        update: async (collectionSlug: string, id: number | string, data: Record<string, unknown>, options?: { user?: unknown }) => {
+          if (!hasCapability('database') && !hasCapability('content')) {
+            handleViolation('content');
+          }
+          // OWN collections only — same isolation as context.db. Cross-plugin writes go through the
+          // namespace API of the plugin that owns the data, never through this path.
+          const fullSlug = PhysicalTableNameUtils.create(plugin.manifest.slug, collectionSlug);
+          const entry = manager.getCollection(fullSlug);
+          if (!entry || entry.pluginSlug !== plugin.manifest.slug) {
+            throw new Error(`Plugin "${plugin.manifest.slug}" may update only its own collections; "${collectionSlug}" is not one of them.`);
+          }
+          return CollectionWriteBridge.update(fullSlug, id, data, options?.user ?? null);
         },
         extend: (targetPlugin: string, targetCollection: string, extensions: Partial<ICollection>) => {
           const fullSlug = PhysicalTableNameUtils.create(targetPlugin, targetCollection);

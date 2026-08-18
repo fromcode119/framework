@@ -4,7 +4,7 @@ export class MediaService {
   private manager: MediaManager;
 
   constructor(driver: IStorageDriver) {
-    this.manager = new MediaManager(driver);
+    this.manager = new MediaManager({ [MediaManager.PUBLIC_SPACE]: driver });
   }
 
   /**

@@ -94,7 +94,7 @@ export class LocalizedReadResolver {
    * The localized field names declared by the collection behind `table`.
    *
    * Plugins address their tables semantically (`@<plugin>/widgets`) while the registry is keyed on
-   * the PHYSICAL name (`fcp_ecommerce_products`), so the reference is parsed and rebuilt. The registry
+   * the PHYSICAL name (`fcp_<plugin>_products`), so the reference is parsed and rebuilt. The registry
    * hands back a `{ collection, pluginSlug }` entry rather than the collection itself.
    *
    * Deliberately NOT cached. `CollectionsContextProxy` merges an extension INTO the already-registered

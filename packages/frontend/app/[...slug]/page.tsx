@@ -10,6 +10,7 @@ import { ThemeServerRenderer } from '@/lib/ssr/theme-server-renderer';
 import { RouteSegmentUtils } from '@/lib/route-segment-utils';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
+import { CanonicalPathRedirect } from '@/lib/canonical-path-redirect';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
 import { AccountRouteGuard } from '@/lib/account-route-guard';
 
@@ -118,9 +119,21 @@ export class DynamicContentPageRoute {
       if (!content) notFound();
       return DynamicContentPageRoute.renderResolvedContent(content, routingConfig.strategy);
     }
-    const content = await DynamicPageResolver.resolveDocWithPermalinkFallback(slug, resolvedSearchParams, locale, routingConfig.strategy);
-    if (content) {
-      return DynamicContentPageRoute.renderResolvedContent(content, routingConfig.strategy);
+    const resolution = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, resolvedSearchParams, locale, routingConfig.strategy);
+    if (resolution?.doc) {
+      // The document resolved — but a document has ONE home, and several routes can match the same
+      // one (a product's own permalink and the generic `/shop/:slug` detail route both find it). Send
+      // the visitor to the path its owning plugin declares BEFORE rendering: painting the page here
+      // would publish the same document twice, each copy claiming to be the original.
+      const canonicalTarget = CanonicalPathRedirect.resolveTarget({
+        canonicalPath: resolution.canonicalPath,
+        requestSlug: slug,
+        pathLocale,
+        strategy: routingConfig.strategy,
+        searchParams: resolvedSearchParams,
+      });
+      if (canonicalTarget) permanentRedirect(canonicalTarget);
+      return DynamicContentPageRoute.renderResolvedContent(resolution.doc, routingConfig.strategy);
     }
     // Nothing resolved at this path — honour a configured SEO redirect (retired URL) before 404ing.
     const redirectRule = await DynamicPageResolver.resolveRedirect(slug);

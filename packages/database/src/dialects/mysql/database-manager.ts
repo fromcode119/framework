@@ -134,6 +134,14 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     return this.reader.count(tableOrName, options);
   }
 
+  /** COUNT(*) per group — SQL aggregation, so analytics never page rows into memory to count them. */
+  async groupCount(
+    tableName: string,
+    options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },
+  ): Promise<Array<Record<string, unknown>>> {
+    return this.reader.groupCount(tableName, options);
+  }
+
   // Schema Management
   async getTables(): Promise<string[]> {
     const [result]: any = await this.execute(sql`SHOW TABLES`);

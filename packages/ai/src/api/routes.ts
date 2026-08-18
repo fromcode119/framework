@@ -1,6 +1,7 @@
 import express from 'express';
 
 import { AssistantController } from '@ai/api/controller';
+import { AssistantMcpSourceService } from '@ai/api/forge/assistant-mcp-source-service';
 import { AssistantRouteConstants } from '@ai/api/constants/assistant-route.constants';
 import type { IAssistantRoutesContext } from '@ai/api/interfaces/assistant-routes-context.interface';
 
@@ -15,6 +16,10 @@ export class AssistantRouter {
   const { manager, themeManager, auth, restController } = context;
   const router = express.Router();
   const controller = new AssistantController(manager, themeManager, restController);
+
+  // Push the assistant's tools into the framework MCP registry as a lazy per-request source, so the
+  // token-authenticated /mcp surface lists the same tools the in-process assistant uses.
+  AssistantMcpSourceService.register(context.mcp, controller.runtimeFactory, controller.managementTools);
 
   router.post(AssistantRouter.R.ADMIN_ASSISTANT_CHAT, auth.requirePermission('content:read'), (req, res) => controller.assistantChat(req, res));
   router.get(AssistantRouter.R.ADMIN_ASSISTANT_SESSIONS, auth.requirePermission('content:read'), (req, res) => controller.assistantSessions(req, res));

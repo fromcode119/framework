@@ -2,6 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { Icon } from '@/components/view/icon.client';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { PureReactor, prop } from '@fromcode119/reactor';
 import type { IPluginEntry } from '@fromcode119/core/client';
@@ -44,11 +45,11 @@ export class MarketplaceDetailHeader extends PureReactor {
                     }}
                  />
                  <div className="hidden items-center justify-center">
-                   <FrameworkIcons.Box size={32} />
+                   <Icon name={String((plugin as any).icon || 'Box')} size={32} />
                  </div>
                </>
              ) : (
-               <FrameworkIcons.Box size={32} />
+               <Icon name={String((plugin as any).icon || 'Box')} size={32} />
              )}
            </div>
            <div className="flex-1">

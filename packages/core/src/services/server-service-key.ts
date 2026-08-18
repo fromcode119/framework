@@ -25,6 +25,8 @@ export class ServerServiceKey {
 
   static readonly REDIRECT_RESOLVERS = 'redirectResolvers';
 
+  static readonly CANONICAL_PATH_RESOLVERS = 'canonicalPathResolvers';
+
   static readonly ENTITY_RECORDS = 'entityRecords';
 
   static readonly ENTITY_RECORDS_RESOLUTION = 'entityRecordsResolution';

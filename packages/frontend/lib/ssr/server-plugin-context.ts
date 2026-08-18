@@ -72,7 +72,7 @@ export class ServerPluginContext {
       on: () => noop,
       pluginApiSubscription,
       // Backed by what the plugin bundles actually registered during import. Anything a theme resolves
-      // through `usePluginsNamespace` — the cms image optimizer above all — depends on these two.
+      // through `usePluginsNamespace` — the content image optimizer above all — depends on these two.
       getPluginApi: ThemeServerRegistry.pluginApi,
       hasPluginApi: ThemeServerRegistry.hasPluginApi,
       registerPluginApi: noop,

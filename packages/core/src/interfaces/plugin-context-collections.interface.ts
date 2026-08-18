@@ -10,4 +10,11 @@ import type { ICollectionInput } from '@core/interfaces/collection-input.interfa
 export interface IPluginContextCollections {
   register(collection: ICollectionInput): void;
   extend(targetPlugin: string, targetCollection: string, extensions: Partial<ICollection>): void;
+  /**
+   * Update one record of THIS plugin's own collection through the SAME path an admin save takes —
+   * access policy, validation and collection lifecycle hooks included. This is the canonical write
+   * for anything that must have side effects (licence minting, ledger writes, search indexing) — `context.db.update` is a
+   * raw write that fires none of them. `options.user` is the acting user (e.g. the MCP caller).
+   */
+  update(collectionSlug: string, id: number | string, data: Record<string, unknown>, options?: { user?: unknown }): Promise<unknown>;
 }

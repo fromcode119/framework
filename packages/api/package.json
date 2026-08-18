@@ -25,6 +25,7 @@
     "@fromcode119/admin": "*",
     "@fromcode119/auth": "*",
     "@fromcode119/core": "*",
+    "@fromcode119/mcp-server": "*",
     "@fromcode119/database": "*",
     "@fromcode119/frontend": "*",
     "@fromcode119/media": "*",

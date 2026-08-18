@@ -15,6 +15,9 @@ vi.mock('@fromcode119/core', () => ({
   PluginState: {
     ACTIVE: 'active',
   },
+  HookEventUtils: {
+    HOOK_EVENTS: { SYSTEM_CACHE_PURGE: 'system:cache:purge' },
+  },
   EnvUtils: {
     number: vi.fn((name: string, fallback: number) => {
       const raw = process.env[name];
@@ -55,7 +58,7 @@ function buildHarness(overrides: {
 
   const manager: any = {
     db: { find: metaFind, findOne: vi.fn().mockResolvedValue(null) },
-    getPlugins: vi.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'cms' } }]),
+    getPlugins: vi.fn().mockReturnValue([{ state: 'active', manifest: { slug: 'alpha' } }]),
     registeredCollections: new Map([
       [
         'pages',

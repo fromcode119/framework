@@ -15,7 +15,7 @@ export class MediaContextProxy {
         return row ?? null;
       },
       /**
-       * List media records (newest first). The sanctioned way for plugins (e.g. the CMS media
+       * List media records (newest first). The sanctioned way for plugins (e.g. a media
        * library) to enumerate media — they must NOT query the `media` system table via context.db.
        */
       async list(options?: { limit?: number; offset?: number }): Promise<Array<Record<string, any>>> {

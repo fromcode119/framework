@@ -5,6 +5,7 @@ import { PureReactor, prop } from '@fromcode119/reactor';
 import { Badge } from '@/components/ui/view/badge.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { Icon } from '@/components/view/icon.client';
 import { PluginHeldReason, PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -35,7 +36,11 @@ export class InstalledPluginCard extends PureReactor {
     return (
       <div className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
         <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
-          {(plugin as any).iconUrl && !hasImageError ? <img src={(plugin as any).iconUrl} alt={plugin.manifest.name} className="w-5 h-5 object-contain" onError={() => onImageError(plugin.manifest.slug)} /> : <FrameworkIcons.Box size={18} strokeWidth={1.5} />}
+          {/* A custom image only when one is genuinely declared; otherwise the manifest's own icon
+              NAME rendered from the locally-bundled set — never fetched from a remote host. */}
+          {(plugin as any).iconUrl && !hasImageError
+            ? <img src={(plugin as any).iconUrl} alt={plugin.manifest.name} className="w-5 h-5 object-contain" onError={() => onImageError(plugin.manifest.slug)} />
+            : <Icon name={String((plugin.manifest as any)?.admin?.icon || 'Box')} size={18} strokeWidth={1.5} />}
         </div>
 
         <div className="flex-1 min-w-0">

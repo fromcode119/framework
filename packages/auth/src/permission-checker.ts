@@ -8,7 +8,7 @@ export class UserPermissionChecker {
 
   /**
    * Effective role slugs for a user = the legacy `users.roles` JSON column UNION the assignable
-   * `_system_users_roles` junction (managed by the admin Roles UI and plugins like MLM). Without this
+   * `_system_users_roles` junction (managed by the admin Roles UI and by plugins). Without this
    * union, roles granted only through the junction would never reach permission checks — a silent
    * no-op. Junction rows are snake_case (`role_slug`), the framework-internal raw-manager convention.
    */

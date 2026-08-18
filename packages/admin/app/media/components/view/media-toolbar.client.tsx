@@ -6,6 +6,8 @@ import type { DragEvent } from 'react';
 import { PureReactor, prop, bound, Ref } from '@fromcode119/reactor';
 import { Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
+import { Select } from '@/components/ui/view/select.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
@@ -24,6 +26,11 @@ export class MediaToolbar extends PureReactor {
   @prop declare setSearchQuery: (value: string) => void;
   @prop declare setViewMode: (mode: ViewMode) => void;
   @prop declare setError: (value: string | null) => void;
+  @prop declare source: string;
+  @prop declare setSource: (value: string) => void;
+  @prop declare selectedCount: number;
+  @prop declare onShareSelected: () => void;
+  @prop declare onClearSelection: () => void;
   @prop declare handleDragEnter: (e: DragEvent) => void;
   @prop declare handleDragOver: (e: DragEvent) => void;
   @prop declare handleDragLeave: (e: DragEvent) => void;
@@ -87,16 +94,38 @@ export class MediaToolbar extends PureReactor {
             actions={
               <>
                 <Slot name="admin.media.header.actions" />
-                <button
-                  onClick={this.openFolderPrompt}
-                  className={`h-9 w-9 flex items-center justify-center rounded-lg border transition-all ${
-                    theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 shadow-sm'
-                  }`}
-                >
-                  <FrameworkIcons.FolderPlus size={16} strokeWidth={2.5} />
-                </button>
                 <Button
-                  className="px-4 h-9 rounded-lg font-semibold text-xs text-white"
+                  variant={ButtonVariant.SECONDARY}
+                  className="px-3 h-9 rounded-lg font-semibold text-xs whitespace-nowrap"
+                  onClick={this.openFolderPrompt}
+                  icon={<FrameworkIcons.FolderPlus size={15} strokeWidth={2.5} />}
+                >
+                  New folder
+                </Button>
+                {/* Uploads and theme assets are merged by default — "find that picture" is one job.
+                    The filter is for when the distinction actually matters. */}
+                {/* Only present when something is ticked: sharing acts on a selection, so an always-on
+                    button would have nothing to act upon. */}
+                {this.selectedCount > 0 ? (
+                  <>
+                    <Button
+                      className="px-4 h-9 rounded-lg font-semibold text-xs whitespace-nowrap"
+                      variant={ButtonVariant.GHOST}
+                      onClick={this.onClearSelection}
+                    >
+                      Clear ({this.selectedCount})
+                    </Button>
+                    <Button
+                      className="px-4 h-9 rounded-lg font-semibold text-xs text-white whitespace-nowrap"
+                      onClick={this.onShareSelected}
+                      icon={<FrameworkIcons.Share size={15} strokeWidth={3} />}
+                    >
+                      Share {this.selectedCount}
+                    </Button>
+                  </>
+                ) : null}
+                <Button
+                  className="px-4 h-9 rounded-lg font-semibold text-xs text-white whitespace-nowrap"
                   onClick={this.openFilePicker}
                   disabled={uploading}
                   icon={uploading ? <FrameworkIcons.Loader size={15} className="animate-spin" /> : <FrameworkIcons.Upload size={15} strokeWidth={3} />}

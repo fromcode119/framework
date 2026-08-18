@@ -226,8 +226,10 @@ export class RuntimeMiscHelpers {
     const data = (record as any)?.data && typeof (record as any).data === 'object' ? (record as any).data : null;
     if (data) { directKeys.forEach((k) => candidateValues.push((data as any)?.[k])); candidateValues.push((data as any)?.route); }
     for (const value of candidateValues) { const r = RuntimeMiscHelpers.normalizePreviewPath(value); if (r) return r; }
-    const normalizedSlug = String(collectionSlug || '').toLowerCase();
-    if (normalizedSlug.includes('cms_pages') || normalizedSlug.endsWith('.pages')) {
+    // A "site pages" collection is recognised STRUCTURALLY (its last name segment is `pages`),
+    // never by a specific plugin's table name — any plugin's pages collection gets the same preview.
+    const nameSegments = String(collectionSlug || '').toLowerCase().split(/[._/@-]+/).filter(Boolean);
+    if (nameSegments[nameSegments.length - 1] === 'pages') {
       const slug = String((record as any)?.slug || (data as any)?.slug || '').trim().toLowerCase();
       if (!slug || ['home', 'index', 'root'].includes(slug) || String((record as any)?.id ?? ((record as any)?.recordId || '')).trim() === '1') return '/';
     }

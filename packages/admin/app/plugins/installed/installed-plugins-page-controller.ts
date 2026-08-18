@@ -5,7 +5,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operation.interface';
-import { VersionComparisonService } from '@/lib/version-comparison-service';
+import { VersionComparisonService } from '@fromcode119/core/client';
 import { InstalledPluginsUploadService } from '@/app/plugins/installed/installed-plugins-upload-service';
 import type { IInstalledPluginMarketplaceItem } from '@/app/plugins/installed/interfaces/installed-plugin-marketplace-item.interface';
 import type { IInstalledPluginsArchiveInspection } from '@/app/plugins/installed/interfaces/installed-plugins-archive-inspection.interface';

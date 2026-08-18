@@ -68,6 +68,9 @@ data/
 !themes/[slug]/*
 public/uploads/
 !public/uploads/.gitkeep
+# Private media. Never committed, and never inside the statically served tree.
+storage/
+!storage/private/.gitkeep
 !packages/admin/app/plugins/
 !packages/admin/app/themes/
 !packages/admin/components/plugins

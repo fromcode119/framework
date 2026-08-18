@@ -8,6 +8,7 @@ export interface IDatabaseManager {
   insert(tableOrName: any, data: any): Promise<any>;
   update(tableOrName: any, where: any, data: any): Promise<any>;
   delete(tableOrName: any, where: any): Promise<boolean>;
+  groupCount(tableName: string, options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number }): Promise<Array<Record<string, unknown>>>;
   count(tableName: string, where?: any): Promise<number>;
   
   // Schema Management

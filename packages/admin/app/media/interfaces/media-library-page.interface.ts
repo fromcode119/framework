@@ -5,4 +5,6 @@ import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
 export interface IMediaLibraryPage {
   items: IMediaItem[];
   folders: IMediaFolder[];
+  /** Whether another page exists. Derived from a full page, not from a total. */
+  hasMore: boolean;
 }

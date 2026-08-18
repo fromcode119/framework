@@ -33,6 +33,17 @@ export class SqliteReadOperations extends BaseDialect {
     return value;
   }
 
+  /** COUNT(*) per group — see `BaseDialect.buildGroupCountSQL` for the contract. */
+  async groupCount(
+    tableName: string,
+    options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },
+  ): Promise<Array<Record<string, unknown>>> {
+    const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, options.where);
+    const { sql: sqlStr, values } = this.buildGroupCountSQL(tableName, { ...options, where: normalizedWhere });
+    const rows = await this.executeRawSelect(sqlStr, values);
+    return (Array.isArray(rows) ? rows : []).map((row: any) => ({ ...row, count: Number(row.count) }));
+  }
+
   protected async executeRawSelect(sqlStr: string, values: any[]): Promise<any[]> {
     return this.sqlite.prepare(sqlStr).all(...values);
   }

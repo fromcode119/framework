@@ -32,7 +32,7 @@ export class FromcodeCli {
 
     program
       .name('fromcode')
-      .description('Fromcode CLI - Manage your headless CMS/Framework instance')
+      .description('Fromcode CLI - Manage your Fromcode platform instance')
       .version('1.0.0');
 
     // Called directly rather than through a table of detached method references: a detached static

@@ -1,0 +1,32 @@
+{
+  "name": "@fromcode119/mcp-server",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "fromcode-mcp": "./dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node ../typor/dist/typor-cli.cjs build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@fromcode119/mcp": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "imports": {
+    "#sdk/server": "@modelcontextprotocol/sdk/server",
+    "#sdk/server-stdio": "@modelcontextprotocol/sdk/server/stdio.js",
+    "#sdk/server-streamable-http": "@modelcontextprotocol/sdk/server/streamableHttp.js",
+    "#sdk/types": "@modelcontextprotocol/sdk/types.js"
+  }
+}

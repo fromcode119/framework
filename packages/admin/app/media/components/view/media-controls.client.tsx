@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { PureReactor, prop, bound, Ref } from '@fromcode119/reactor';
 import { Button } from '@/components/ui/view/button.client';
+import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
 import { AdminClass } from '@/lib/admin-class';
@@ -16,6 +17,10 @@ export class MediaControls extends PureReactor {
   @prop declare error: string | null;
   @prop declare searchQuery: string;
   @prop declare viewMode: ViewMode;
+  @prop declare source: string;
+  @prop declare setSource: (value: string) => void;
+  @prop declare activeView: string;
+  @prop declare setActiveView: (value: string) => void;
   @prop declare fileInputRef: Ref<HTMLInputElement>;
   @prop declare currentFolderId: number | null;
   @prop declare folderPath: IMediaFolder[];
@@ -98,8 +103,24 @@ export class MediaControls extends PureReactor {
           </div>
         )}
 
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-1 group w-full">
+        <div className="flex flex-col md:flex-row gap-3 items-center">
+          <div className={`flex items-center border rounded-xl p-0.5 flex-shrink-0 ${
+            theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-100/80 border-slate-200/60'
+          }`}>
+            {[{ key: 'files', label: 'Files' }, { key: 'shares', label: 'Shared' }, { key: 'activity', label: 'Activity' }].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => this.setActiveView(tab.key)}
+                className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${this.activeView === tab.key
+                  ? (theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200/50')
+                  : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative flex-1 min-w-0 group">
             <FrameworkIcons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
             <input
               type="text"
@@ -109,6 +130,20 @@ export class MediaControls extends PureReactor {
               className={`w-full ${AdminClass.SURFACE} py-2 pl-12 pr-4 text-[13px] outline-none border transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`}
             />
           </div>
+          {this.activeView === 'files' ? (
+            <div className="w-36 flex-shrink-0">
+              <Select
+                value={this.source}
+                onChange={this.setSource}
+                options={[
+                  { value: '', label: 'All files' },
+                  { value: 'uploads', label: 'Uploads' },
+                  { value: 'theme', label: 'Theme assets' },
+                ]}
+              />
+            </div>
+          ) : null}
+
           <div className={`flex items-center border rounded-xl p-0.5 transition-all duration-300 shadow-sm ${
             theme === ThemeMode.DARK
               ? 'bg-slate-900 border-slate-800'

@@ -207,7 +207,7 @@ export class AdminMenuBuilderService {
           });
         });
       } else {
-        // Use admin.label (short display name, e.g. "CMS", "SEO") so that multiple
+        // Use admin.label (a short display name a plugin declares) so that multiple
         // plugins sharing the same group each appear as a distinctly-named dropdown.
         // Fall back to manifest.name then groupName.
         const dropdownLabel = String(
@@ -216,7 +216,7 @@ export class AdminMenuBuilderService {
           groupName
         ).trim();
         const groupIcon = plugin?.manifest.admin?.icon || items.find(i => i.icon)?.icon || 'Layers';
-        // Anchor the dropdown to its first child's real path (e.g. /cms) so the
+        // Anchor the dropdown to its first child's real path so the
         // secondary-sidebar resolver can preview that plugin's panel on hover.
         // Falls back to a synthetic group anchor when no concrete path exists.
         const anchorPath = String(items[0]?.path || '').trim() || `/#group-${pluginSlug}-${groupName.toLowerCase()}`;

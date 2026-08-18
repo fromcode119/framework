@@ -12,6 +12,11 @@ import type { IMovingItem } from '@/app/media/interfaces/moving-item.interface';
 export interface IMediaPageHost {
   /** True between `componentDidMount` and `componentWillUnmount`. */
   readonly mounted: boolean;
+  /** The page of items currently loaded — `loadMore` appends to it rather than replacing. */
+  readonly items: IMediaItem[];
+  /** Whether the server has another page. Derived from a full page, not from a total. */
+  readonly hasMore: boolean;
+  readonly loadingMore: boolean;
   readonly searchQuery: string;
   readonly currentFolderId: number | null;
   readonly editingFolder: IMediaFolder | null;

@@ -83,7 +83,7 @@ export abstract class BaseMigration {
    * literals inline. The migration still targets a collection by owner slug, but
    * the construction stays consistent and centralised at the framework layer.
    *
-   * @param pluginSlug     - Owner plugin slug, e.g. `cms`.
+   * @param pluginSlug     - Owner plugin slug.
    * @param collectionSlug - Collection slug within the owner plugin, e.g. `pages`.
    */
   protected collectionRef(pluginSlug: string, collectionSlug: string): string {

@@ -6,6 +6,7 @@ import type { IPluginEntry } from '@fromcode119/core/client';
 import { Card } from '@/components/ui/view/card.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { Icon } from '@/components/view/icon.client';
 import { MarketplaceCardActions } from '@/app/plugins/marketplace/components/view/marketplace-card-actions.client';
 import { AdminClass } from '@/lib/admin-class';
 
@@ -50,7 +51,7 @@ export class MarketplacePluginCard extends PureReactor {
                   onError={onImageError}
                 />
               ) : (
-                <FrameworkIcons.Box size={22} strokeWidth={1.5} />
+                <Icon name={String(plugin.icon || 'Box')} size={22} strokeWidth={1.5} />
               )}
             </div>
             <div className="flex items-center gap-2">

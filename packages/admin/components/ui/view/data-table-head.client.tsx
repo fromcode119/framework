@@ -1,5 +1,6 @@
 import type { ReactNode, RefObject } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { Checkbox } from '@/components/ui/view/checkbox.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Column } from '@/components/ui/column';
 
@@ -54,19 +55,7 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
               className={`px-3 py-3 w-4 ${stickyCount > 0 ? DataTableHead.PINNED : ''}`}
               style={stickyCount > 0 ? { left: checkboxOffset ?? 0 } : undefined}
             >
-              <div
-                onClick={this.handleToggleAll}
-                className={`w-4 h-4 rounded border-2 cursor-pointer transition-all flex items-center justify-center ${
-                  allSelected
-                    ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20'
-                    : someSelected
-                      ? 'bg-indigo-600/50 border-indigo-600'
-                      : 'bg-white border-slate-300 dark:bg-slate-800 dark:border-slate-600'
-                }`}
-              >
-                {someSelected && !allSelected && <div className="w-2 h-0.5 bg-white rounded-full" />}
-                {allSelected && <FrameworkIcons.Check size={10} className="text-white" strokeWidth={3} />}
-              </div>
+              <Checkbox checked={allSelected} indeterminate={someSelected && !allSelected} onChange={this.handleToggleAll} />
             </th>
           )}
           {columns.map((col, index) => {

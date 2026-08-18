@@ -258,6 +258,25 @@ export class AuthManager {
       && lastSegment !== RouteConstants.SEGMENTS.READY.slice(1);
   }
 
+  /**
+   * Requires an API-TOKEN identity specifically — a session cookie is not enough.
+   *
+   * The MCP surface is machine-to-machine and every call is scoped and audited against a token
+   * record. Allowing a browser session through would hand a logged-in admin's tab the full tool
+   * surface with no scopes attached, since scopes live on the token and a session has none.
+   */
+  requireApiToken() {
+    return (req: any, res: any, next: any) => {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized: missing or invalid token' });
+      }
+      if (req.user.isApiKey !== true) {
+        return res.status(403).json({ error: 'Forbidden: this endpoint requires an API token' });
+      }
+      next();
+    };
+  }
+
   guard(roles: string[] = []) {
     return (req: any, res: any, next: any) => {
       if (!req.user) {

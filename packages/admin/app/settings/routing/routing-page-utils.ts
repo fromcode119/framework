@@ -44,10 +44,10 @@ export class RoutingPageUtils {
    * 
    * @param pluginLabel - Plugin label
    * @param collectionLabel - Collection label
-   * @returns Source tag (e.g., 'CMS/Pages')
+   * @returns Source tag (e.g., '<Plugin>/Pages')
    * 
    * @example
-   * const tag = RoutingPageUtils.getCollectionSourceTag('CMS', 'Pages'); // "CMS/Pages"
+   * const tag = RoutingPageUtils.getCollectionSourceTag('<Plugin>', 'Pages'); // "<Plugin>/Pages"
    */
   static getCollectionSourceTag(pluginLabel: string, collectionLabel: string): string {
     const plugin = (pluginLabel || 'System').trim();

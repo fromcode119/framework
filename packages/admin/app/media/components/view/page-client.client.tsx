@@ -2,8 +2,9 @@ import { ViewMode } from '@/app/media/enums/view-mode.enum';
 import React from 'react';
 
 import type { ChangeEvent, ReactNode } from 'react';
-import { state, watch } from '@fromcode119/reactor';
+import { prop, state, watch } from '@fromcode119/reactor';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { AdminPathUtils } from '@/lib/admin-path';
 import { MediaPageView } from '@/app/media/components/view/media-page-view.client';
 import { MediaPageActions } from '@/app/media/media-page-actions';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
@@ -40,6 +41,21 @@ export class MediaPageClient extends AdminComponent implements IMediaPageHost {
   @state deletingId: number | null = null;
   @state editingFolder: IMediaFolder | null = null;
   @state editingItem: IMediaItem | null = null;
+  /** Files that ship inside the active theme. Listed beside uploads, never writable. */
+  @state themeAssets: IMediaItem[] = [];
+  /** '' = everything, 'uploads' = uploaded only, 'theme' = theme bundle only. */
+  @state source = '';
+  /** Which view this page mounted as — set by the /media/files|shared|activity route that rendered it. */
+  @prop declare initialView?: string;
+
+  /** 'files', 'shares' or 'activity'. Different things, so a top-level switch rather than a filter. */
+  @state activeView = 'files';
+  @state hasMore = false;
+  @state loadingMore = false;
+  /** Files ticked for a bulk action. A share groups whatever is selected into one send. */
+  @state selectedIds: number[] = [];
+  /** True while the Share dialog is open, for whatever is currently selected. */
+  @state isShareDialogOpen = false;
   @state movingItem: IMovingItem | null = null;
   @state isActionLoading = false;
   @state optimizingId: number | null = null;
@@ -57,6 +73,7 @@ export class MediaPageClient extends AdminComponent implements IMediaPageHost {
   }
 
   componentDidMount(): void {
+    if (this.initialView) this.activeView = this.initialView;
     this.mounted = true;
     this.scheduleFetch();
   }
@@ -112,7 +129,30 @@ export class MediaPageClient extends AdminComponent implements IMediaPageHost {
       editingFolder: this.editingFolder,
       setEditingFolder: (folder: IMediaFolder | null) => { this.editingFolder = folder; },
       editingItem: this.editingItem,
+      themeAssets: this.themeAssets,
+      source: this.source,
+      setSource: (value: string) => { this.source = value; },
+      activeView: this.activeView,
+      setActiveView: (value: string) => {
+        this.activeView = value;
+        // The URL follows the view, so reload and back keep the tab. `shares` is the internal name the
+        // Shared view has always had; the URL says what the tab says.
+        const segment = value === 'shares' ? 'shared' : value;
+        window.history.pushState(null, '', AdminPathUtils.toAdminPath(`/media/${segment}`));
+      },
+      hasMore: this.hasMore,
+      loadingMore: this.loadingMore,
+      loadMore: () => this.actions.loadMore(),
+      selectedIds: this.selectedIds,
+      isShareDialogOpen: this.isShareDialogOpen,
       setEditingItem: (item: IMediaItem | null) => { this.editingItem = item; },
+      toggleSelected: (id: number) => {
+        this.selectedIds = this.selectedIds.includes(id)
+          ? this.selectedIds.filter((value) => value !== id)
+          : [...this.selectedIds, id];
+      },
+      clearSelection: () => { this.selectedIds = []; },
+      setIsShareDialogOpen: (value: boolean) => { this.isShareDialogOpen = value; },
       setMovingItem: (item: IMovingItem | null) => { this.movingItem = item; },
       isActionLoading: this.isActionLoading,
       optimizingId: this.optimizingId,
@@ -128,7 +168,7 @@ export class MediaPageClient extends AdminComponent implements IMediaPageHost {
       handleDrop: (e) => this.actions.handleDrop(e),
       handleDelete: () => this.actions.deleteItem(),
       handleOptimize: (item) => this.actions.optimize(item),
-      handleUpdateDetails: (alt, caption) => this.actions.updateDetails(alt, caption),
+      handleUpdateDetails: (alt, caption, visibility) => this.actions.updateDetails(alt, caption, visibility),
     };
   }
 

@@ -140,15 +140,15 @@ describe('runtime classifier and fallback behavior', () => {
     expect(intent.replace?.to).toBe('£60k+');
   });
 
-  it('answers clarification follow-up for CMS/content scope without generic fallback', () => {
+  it('answers clarification follow-up for content scope without generic fallback', () => {
     const intent = IntentClassifier.classifyIntent({
-      message: 'what do you mean by cms content ?',
+      message: 'what do you mean by content records ?',
       history: [
         { role: AssistantRole.USER, content: 'want to change "£50k+" to "£60k+"' },
         {
           role: AssistantRole.ASSISTANT,
           content:
-            'I found 4 file matches for "£50k+" -> "£60k+". Do you want to update CMS/content values instead, or should I apply these file changes?',
+            'I found 4 file matches for "£50k+" -> "£60k+". Do you want to update content-record values instead, or should I apply these file changes?',
         },
       ],
       checkpoint: { reason: CheckpointReason.CLARIFICATION_NEEDED, stage: RuntimeStage.CLARIFY },
@@ -156,7 +156,7 @@ describe('runtime classifier and fallback behavior', () => {
 
     expect(intent.kind).toBe(RuntimeIntentKind.FACTUAL_QA);
     expect(String(intent.quickAnswer || '').toLowerCase()).toContain('content records');
-    expect(String(intent.quickAnswer || '').toLowerCase()).toContain('reply with "cms" or "files"');
+    expect(String(intent.quickAnswer || '').toLowerCase()).toContain('reply with "content" or "files"');
   });
 
   it('answers simple factual prompt directly without forcing staging language', async () => {
@@ -175,13 +175,13 @@ describe('runtime classifier and fallback behavior', () => {
   it('returns contextual clarification answer instead of generic factual fallback', async () => {
     const result = await OrchestratorRunner.runOrchestrator(
       {
-        message: 'what do you mean by cms content ?',
+        message: 'what do you mean by content records ?',
         history: [
           { role: AssistantRole.USER, content: 'want to change "£50k+" to "£60k+"' },
           {
             role: AssistantRole.ASSISTANT,
             content:
-              'I found 4 file matches for "£50k+" -> "£60k+". Do you want to update CMS/content values instead, or should I apply these file changes?',
+              'I found 4 file matches for "£50k+" -> "£60k+". Do you want to update content-record values instead, or should I apply these file changes?',
           },
         ],
         checkpoint: { reason: CheckpointReason.CLARIFICATION_NEEDED, stage: RuntimeStage.CLARIFY, resumePrompt: 'Choose target scope.' },
@@ -192,7 +192,7 @@ describe('runtime classifier and fallback behavior', () => {
 
     expect(result).toBeTruthy();
     expect((result?.message || '').toLowerCase()).toContain('content records');
-    expect((result?.message || '').toLowerCase()).toContain('reply with "cms" or "files"');
+    expect((result?.message || '').toLowerCase()).toContain('reply with "content" or "files"');
     expect((result?.message || '').toLowerCase()).not.toContain('share a bit more detail');
   });
 
@@ -600,7 +600,7 @@ describe('runtime classifier and fallback behavior', () => {
         { slug: 'users', shortSlug: 'users', label: 'Users', pluginSlug: 'system', raw: {} },
       ],
       getPlugins: () => [
-        { slug: 'cms', name: 'Content Management System', version: '1.5.9', state: 'active' },
+        { slug: 'alpha', name: 'Alpha Content Plugin', version: '1.5.9', state: 'active' },
       ] as any,
       getThemes: () => [
         { slug: 'snapbilt', name: 'SnapBilt Industrial', version: '1.0.0', state: 'active' },
@@ -716,7 +716,7 @@ describe('runtime classifier and fallback behavior', () => {
             output: {
               matches: [
                 {
-                  collectionSlug: '@cms/pages',
+                  collectionSlug: '@alpha/pages',
                   recordId: 1,
                   field: 'phone',
                   value: '07000 000001',

@@ -42,6 +42,7 @@ COPY packages/email/package.json ./packages/email/
 COPY packages/frontend/package.json ./packages/frontend/
 COPY packages/marketplace-client/package.json ./packages/marketplace-client/
 COPY packages/mcp/package.json ./packages/mcp/
+COPY packages/mcp-server/package.json ./packages/mcp-server/
 COPY packages/media/package.json ./packages/media/
 COPY packages/next/package.json ./packages/next/
 COPY packages/plugins/package.json ./packages/plugins/

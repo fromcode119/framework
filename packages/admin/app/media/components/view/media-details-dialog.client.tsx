@@ -5,6 +5,7 @@ import { Platform, bound, prop, state } from '@fromcode119/reactor';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
+import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminServices } from '@/lib/admin-services';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
@@ -13,10 +14,12 @@ export class MediaDetailsDialog extends AdminComponent {
   @prop declare item: IMediaItem | null;
   @prop declare isLoading: boolean;
   @prop declare onClose: () => void;
-  @prop declare onConfirm: (alt: string, caption: string) => void;
+  @prop declare onConfirm: (alt: string, caption: string, visibility: string) => void;
 
   @state alt = '';
   @state caption = '';
+  /** Which storage space holds the bytes. Changing it makes the server MOVE the file. */
+  @state visibility = 'public';
 
   private syncOpenState(): void {
     if (!Platform.isBrowser) return;
@@ -25,6 +28,7 @@ export class MediaDetailsDialog extends AdminComponent {
       document.body.style.overflow = 'hidden';
       this.alt = item.alt || '';
       this.caption = item.caption || '';
+      this.visibility = String(item.visibility || 'public');
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -46,7 +50,7 @@ export class MediaDetailsDialog extends AdminComponent {
 
   @bound private handleSubmit(e?: FormEvent): void {
     e?.preventDefault();
-    this.onConfirm(this.alt.trim(), this.caption.trim());
+    this.onConfirm(this.alt.trim(), this.caption.trim(), this.visibility);
   }
 
   @bound private handleAltChange(e: ChangeEvent<HTMLInputElement>): void {
@@ -55,6 +59,10 @@ export class MediaDetailsDialog extends AdminComponent {
 
   @bound private handleCaptionChange(e: ChangeEvent<HTMLInputElement>): void {
     this.caption = e.target.value;
+  }
+
+  @bound private handleVisibilityChange(value: string): void {
+    this.visibility = value;
   }
 
   render(): ReactNode {
@@ -78,7 +86,7 @@ export class MediaDetailsDialog extends AdminComponent {
           onClick={onClose}
         />
 
-        <div className={`relative w-full max-w-md my-auto rounded-xl border shadow-2xl p-8 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 ${
+        <div className={`relative w-full max-w-md my-auto rounded-xl border shadow-2xl p-8 max-h-[calc(100vh-3rem)] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 ${
           theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100 shadow-slate-200/50'
         }`}>
           <div className="flex items-start gap-4 mb-6">
@@ -130,6 +138,23 @@ export class MediaDetailsDialog extends AdminComponent {
                 disabled={isLoading}
                 className="w-full"
               />
+            </div>
+
+            <div>
+              <label className={labelClass}>Visibility</label>
+              <Select
+                value={this.visibility}
+                onChange={this.handleVisibilityChange}
+                disabled={isLoading}
+                options={[
+                  { value: 'public', label: 'Public — anyone with the URL can open it' },
+                  { value: 'private', label: 'Private — only reachable through a share link' },
+                ]}
+              />
+              <p className="mt-1 text-[10px] text-slate-500">
+                Changing this moves the file between storage. A file that was public may still be cached
+                by anyone who already had its URL.
+              </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-1">

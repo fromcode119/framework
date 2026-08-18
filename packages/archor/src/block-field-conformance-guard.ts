@@ -37,7 +37,7 @@ export class BlockFieldConformanceGuard {
 
       const renderers = BlockFieldConformanceGuard.rendererIndex(abs);
 
-      // `.tsx?`, not `.tsx`: a block whose definition carries no JSX lives in a `.ts` file (CMS's
+      // `.tsx?`, not `.tsx`: a block whose definition carries no JSX lives in a `.ts` file (the content plugin's
       // `team-block.ts`, `testimonials-block.ts`, `two-col-icons-block.ts`, …). Matching only `.tsx`
       // skipped every one of them. The `renderSettings` gate below keeps enums/interfaces out.
       for (const blockFile of BlockFieldConformanceGuard.walk(abs, /blocks?[\\/].*\.tsx?$/)) {
@@ -48,7 +48,7 @@ export class BlockFieldConformanceGuard {
           const rendererFile = renderers.get(BlockFieldConformanceGuard.normalize(blockId));
           if (!rendererFile) continue;
 
-          // A renderer delegates the same way an editor does — CMS's `hero-renderer.tsx` picks between
+          // A renderer delegates the same way an editor does — a `hero-renderer.tsx` picks between
           // `home-hero-renderer.tsx`, `detail-hero-renderer.tsx` and `hero-slider-renderer.tsx`, and
           // reads almost nothing itself. Judging it on its own text reported eleven working hero
           // controls as FAKE.
@@ -271,10 +271,10 @@ export class BlockFieldConformanceGuard {
    *
    * Two naming conventions are in use and only indexing the first made this guard SKIP an entire plugin:
    *   - themes: `renderers/<id>.tsx`
-   *   - CMS:    `renderers/<id>-renderer.tsx`  (`cta-renderer.tsx`, `rich-content-renderer.tsx`, …)
-   * With only the exact basename indexed, every CMS block looked up `cta` against a map holding
+   *   - content plugin: `renderers/<id>-renderer.tsx`  (`cta-renderer.tsx`, `rich-content-renderer.tsx`, …)
+   * With only the exact basename indexed, every such block looked up `cta` against a map holding
    * `ctarenderer`, found nothing, and `continue`d — so the guard's clean bill said nothing at all about
-   * CMS. Index the suffix-stripped name too, without letting it shadow an exact-name file.
+   * it. Index the suffix-stripped name too, without letting it shadow an exact-name file.
    */
   private static rendererIndex(abs: string): Map<string, string> {
     const index = new Map<string, string>();

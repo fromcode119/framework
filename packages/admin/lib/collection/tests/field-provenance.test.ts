@@ -7,7 +7,7 @@ import type { IFieldFallbackRule } from '@/lib/collection/interfaces/field-fallb
  * advertised the schema default of 10–15 days with nothing in the admin naming its source.
  */
 describe('FieldProvenance', () => {
-  const HREF = '/admin/plugins/ecommerce/settings';
+  const HREF = '/admin/plugins/alpha/settings';
 
   /** The plugin's real settings schema shape: the single source of each setting's label and tab. */
   const SCHEMA = {

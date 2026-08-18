@@ -2,7 +2,7 @@
  * Where a request path that resolved to NO content should be sent instead.
  *
  * A "redirect resolver" (see `IRedirectResolver`) is a plugin-supplied function that may produce one
- * of these. The framework holds NO knowledge of where the rules live (an SEO plugin, a CMS table, …)
+ * of these. The framework holds NO knowledge of where the rules live (one plugin's rules table or another's, …)
  * — it only runs the registered resolvers in order and returns the first match. That keeps
  * URL-redirect handling framework-owned at the routing layer while leaving rule storage/UI to
  * whichever plugin owns it.

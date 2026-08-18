@@ -31,11 +31,11 @@ export class AssistantController {
   private static readonly ASSISTANT_SESSION_GROUP = 'assistant-session';
 
   private db: IDatabaseManager;
-  private managementTools: AssistantManagementToolsService;
+  readonly managementTools: AssistantManagementToolsService;
   private sessions: AssistantSessionStore;
   private catalog: AssistantCatalogService;
   private pluginAssistantDiscovery: PluginAssistantDiscoveryService;
-  private runtimeFactory: AssistantRuntimeFactoryService;
+  readonly runtimeFactory: AssistantRuntimeFactoryService;
   private payloadService: AssistantRequestPayloadService;
   private toolSelector: IntelligentToolSelector;
   private complexityDetector: TaskComplexityDetector;

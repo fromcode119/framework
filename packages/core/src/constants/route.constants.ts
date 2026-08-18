@@ -20,6 +20,8 @@ export class RouteConstants {
   APPEARANCES_SLUG: '/:slug',
   SYSTEM: '/system',
   MEDIA: '/media',
+  /** Private-file delivery: the recipient-facing token routes and the operator's share management. */
+  FILES: '/files',
   VERSIONS: '/versions',
 
   /** Websocket upgrade path served by the API alongside the HTTP routes. */
@@ -119,6 +121,8 @@ export class RouteConstants {
   ADMIN_BACKUPS_ID_RESTORE_PREVIEW: '/admin/backups/:id/restore/preview',
   ADMIN_BACKUPS_ID_RESTORE_EXECUTE: '/admin/backups/:id/restore/execute',
   ADMIN_SETTINGS: '/admin/settings',
+  ADMIN_REDIRECTS: '/admin/redirects',
+  ADMIN_REDIRECTS_ID: '/admin/redirects/:id',
   ADMIN_ROLES: '/admin/roles',
   ADMIN_ROLES_SLUG: '/admin/roles/:slug',
   ADMIN_PERMISSIONS: '/admin/permissions',
@@ -126,6 +130,8 @@ export class RouteConstants {
   ADMIN_USERS_ID: '/admin/users/:id',
   ADMIN_PEOPLE: '/admin/people',
   ADMIN_PEOPLE_RECORDS: '/admin/people/records',
+  /** Recipient suggestions. Literal path — must be registered before ADMIN_PEOPLE_ID. */
+  ADMIN_PEOPLE_SUGGEST: '/admin/people/suggest',
   ADMIN_PEOPLE_ID: '/admin/people/:id',
   ADMIN_PEOPLE_ID_CREATE_USER: '/admin/people/:id/create-user',
   ADMIN_PEOPLE_ID_LINK_USER: '/admin/people/:id/link-user',
@@ -153,6 +159,7 @@ export class RouteConstants {
   // ── Plugins ──────────────────────────────────────────────────────────────
   PLUGINS_MARKETPLACE: '/marketplace',
   PLUGINS_INSTALL: '/install/:slug',
+  PLUGINS_UPDATE_ALL: '/update-all',
   PLUGINS_INSTALL_OPERATION: '/install-operations/:operationId',
   PLUGINS_UPLOAD_SESSION: '/upload/session',
   PLUGINS_UPLOAD_CHUNK: '/upload/chunk',
@@ -221,6 +228,25 @@ export class RouteConstants {
   MEDIA_FOLDERS_ID_PATH: '/folders/:id/path',
   MEDIA_ID: '/:id',
   MEDIA_ID_OPTIMIZE: '/:id/optimize',
+  MEDIA_ID_RAW: '/:id/raw',
   // MEDIA_BASE: '/' is implicitly handled by the router mount point or just ''
+
+  // ── Private file delivery ───────────────────────────────────────────────
+  // Literal paths FIRST in the router: `/:token` matches any single segment and would otherwise
+  // swallow every one of these.
+  FILES_SHARES: '/shares',
+  FILES_SHARE_ID: '/shares/:shareId',
+  FILES_SHARE_GRANTS: '/shares/:shareId/grants',
+  FILES_GRANT_ID: '/grants/:grantId',
+  /** Activity across EVERY share — the operator's view of what the log records. */
+  FILES_ACTIVITY: '/activity',
+  /** What actually happened to a share — opens, downloads and refusals from the access log. */
+  FILES_SHARE_ACTIVITY: '/shares/:shareId/activity',
+  /** Who can currently open one file — sharing is done FROM the file, so this is the question asked. */
+  FILES_MEDIA_GRANTS: '/media/:mediaId/grants',
+  FILES_MY_SHARES: '/my/shares',
+  FILES_MY_DOWNLOAD: '/my/shares/:shareId/download/:mediaId',
+  FILES_TOKEN: '/:token',
+  FILES_TOKEN_DOWNLOAD: '/:token/download/:mediaId',
   } as const;
 }

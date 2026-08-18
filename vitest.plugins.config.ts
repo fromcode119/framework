@@ -42,7 +42,7 @@ const packageAlias = Object.fromEntries(
     ['ai', '@ai'], ['core', '@core'], ['database', '@database'], ['react', '@react'],
     ['api', '@api'], ['auth', '@auth'], ['cache', '@cache'], ['marketplace-client', '@marketplace-client'],
     ['media', '@media'], ['email', '@email'], ['scheduler', '@scheduler'], ['plugins', '@plugins'],
-    ['mcp', '@mcp'], ['sdk', '@sdk'], ['next', '@nextjs'], ['cli', '@cli'],
+    ['mcp', '@mcp'], ['mcp-server', '@mcp-server'], ['sdk', '@sdk'], ['next', '@nextjs'], ['cli', '@cli'],
   ] as ReadonlyArray<readonly [string, string]>)
     .map(([pkg, prefix]) => [`${prefix}/`, `${path.resolve(frameworkRoot, `packages/${pkg}/src`)}/`]),
 );
@@ -82,6 +82,16 @@ const sharedAlias = {
   // BUILT dist — so they asserted against a five-day-old build and a source fix could not move them.
   // Tests must exercise source; a stale dist passing is the same class of lie as a dark test file.
   '@fromcode119/auth': path.resolve(frameworkRoot, 'packages/auth/src/index.ts'),
+  // mcp-server BEFORE mcp: a Vite string alias matches by PREFIX, so the bare mcp entry would
+  // otherwise swallow '@fromcode119/mcp-server' ids. Both point at SOURCE (stale-dist rule above).
+  '@fromcode119/mcp-server': path.resolve(frameworkRoot, 'packages/mcp-server/src/index.ts'),
+  '@fromcode119/mcp': path.resolve(frameworkRoot, 'packages/mcp/src/index.ts'),
+  // The mcp-server package's own subpath imports (package.json `imports`) — vite does not read the
+  // imports field, so the same map is repeated here, pointing at the SDK's CJS dist files.
+  '#sdk/server-streamable-http': path.resolve(frameworkRoot, 'node_modules/@modelcontextprotocol/sdk/dist/cjs/server/streamableHttp.js'),
+  '#sdk/server-stdio': path.resolve(frameworkRoot, 'node_modules/@modelcontextprotocol/sdk/dist/cjs/server/stdio.js'),
+  '#sdk/server': path.resolve(frameworkRoot, 'node_modules/@modelcontextprotocol/sdk/dist/cjs/server/index.js'),
+  '#sdk/types': path.resolve(frameworkRoot, 'node_modules/@modelcontextprotocol/sdk/dist/cjs/types.js'),
   '@fromcode119/sdk': path.resolve(frameworkRoot, 'packages/sdk/src'),
   '@fromcode119/sdk/react': path.resolve(frameworkRoot, 'packages/sdk/src/react/index.ts'),
   '@fromcode119/sdk/*': path.resolve(frameworkRoot, 'packages/sdk/src/*'),
@@ -127,6 +137,27 @@ export default defineConfig({
         plugins: [typorPlugin],
         resolve: { alias: { ...sharedAlias } },
         test: {
+          // `packages/mcp` and `packages/mcp-server` matched no project glob, so a test placed in
+          // either was collected by nothing and green by default — the same dark-by-omission problem
+          // the api and scheduler projects were added to fix. `packages/archor` was dark too, and it
+          // holds the build guards, so a broken guard would have reported nothing.
+          name: 'mcp',
+          root: frameworkRoot,
+          environment: 'node',
+          globals: true,
+          include: [
+            glob('packages/mcp/tests/**/*.test.ts'),
+            glob('packages/mcp-server/tests/**/*.test.ts'),
+            glob('packages/archor/tests/**/*.test.ts'),
+          ],
+          exclude: ['**/node_modules/**', '**/dist/**'],
+        },
+      },
+      {
+        esbuild,
+        plugins: [typorPlugin],
+        resolve: { alias: { ...sharedAlias } },
+        test: {
           // The api package's 21 test files matched NO project's include glob, so every one of them was
           // dark — collected by nothing, reported by nothing, and green by default. The auth-middleware
           // suite in particular guards which session cookie each surface may authenticate from, which is
@@ -136,6 +167,22 @@ export default defineConfig({
           environment: 'node',
           globals: true,
           include: [glob('packages/api/tests/**/*.test.ts')],
+          exclude: ['**/node_modules/**', '**/dist/**'],
+        },
+      },
+      {
+        esbuild,
+        plugins: [typorPlugin],
+        resolve: { alias: { ...sharedAlias } },
+        test: {
+          // `packages/media` matched NO project's include glob — the same dark-by-omission case as api,
+          // core and scheduler above. It had no test files either, so nothing was reported as missing.
+          // The storage drivers decide whether a private file can be read off disk, so they get a project.
+          name: 'media',
+          root: frameworkRoot,
+          environment: 'node',
+          globals: true,
+          include: [glob('packages/media/**/*.test.ts')],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },
       },

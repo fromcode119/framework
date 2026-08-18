@@ -9,6 +9,7 @@ import { AssistantManagementToolsService } from '@ai/api/forge/management-tools-
 import { AssistantCatalogService } from '@ai/api/forge/catalog-service';
 import { AssistantRuntimeContentResolver } from '@ai/api/forge/runtime-content-resolver';
 import { PluginAssistantDiscoveryService } from '@ai/api/forge/plugin-assistant-discovery-service';
+import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
 
 export class AssistantRuntimeFactoryService {
   constructor(
@@ -23,6 +24,15 @@ export class AssistantRuntimeFactoryService {
   ) {}
 
   createAssistantRuntime(req: Request, aiClient?: any) {
+    return new AdminAssistantRuntimeEngine(this.createRuntimeOptions(req, aiClient));
+  }
+
+  /**
+   * The options close over per-request state (auth headers/cookies drive the restController), which
+   * is why they are built per request. Exposed separately from the engine so the MCP source can
+   * build the same tool set from a live request without constructing a runtime engine.
+   */
+  createRuntimeOptions(req: Request, aiClient?: any): IAdminAssistantRuntimeOptions {
     const user = (req as any).user;
     const frameworkRoot = process.cwd();
     const themesRoot = String((this.themeManager as any)?.themesRoot || '').trim() || path.join(frameworkRoot, 'themes');
@@ -252,7 +262,7 @@ export class AssistantRuntimeFactoryService {
       },
     };
 
-    return new AdminAssistantRuntimeEngine(runtimeOptions);
+    return runtimeOptions;
   }
 
   private mergePromptLines(...groups: any[][]): string[] {

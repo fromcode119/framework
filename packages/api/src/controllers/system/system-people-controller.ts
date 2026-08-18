@@ -6,9 +6,21 @@ import { SystemControllerRuntime } from '@api/controllers/system/system-controll
 export class SystemPeopleController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
 
+  /**
+   * Recipient suggestions for the share composer. Same `users:view` permission as the other people
+   * routes — this is the people directory, just projected down to what a picker needs.
+   */
+  async suggestRecipients(req: Request, res: Response) {
+    try {
+      res.json({ docs: await this.runtime.people.suggestRecipients({ q: String(req.query.q || ''), limit: Number(req.query.limit) || undefined }) });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   async getPeople(req: Request, res: Response) {
     try {
-      res.json({ docs: await this.runtime.people.getPeople() });
+      res.json({ docs: await this.runtime.people.getPeople({ q: String(req.query.q || ''), limit: Number(req.query.limit) || undefined }) });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

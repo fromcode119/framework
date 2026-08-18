@@ -20,21 +20,21 @@ import { QueryParamUtils } from '@/lib/query-param-utils';
  * ## Why it resolves a themed page first
  *
  * It used to return the bare panel, and "renders server-side like /forgot-password beside it" was only
- * half true: those routes ALSO resolve a themed CMS page and hand it to `DynamicContentClient`, which is
+ * half true: those routes ALSO resolve a themed content page and hand it to `DynamicContentClient`, which is
  * what wraps them in the theme's layout. This one skipped that step, so it shipped with no nav, no
  * footer and no container — the card sat flush against the top of the viewport on an otherwise fully
  * branded site. Resolving the themed page first makes the three native routes behave alike; the theme
  * renders this panel for the page's slug exactly as it renders `AccountShell` for `/account`.
  *
  * The bare panel remains the fallback for an install whose theme seeds no such page: an unsubscribe link
- * must work on every install, so a missing CMS page degrades the CHROME and never the function.
+ * must work on every install, so a missing content page degrades the CHROME and never the function.
  *
  * No auth guard: most recipients have no account. The signed token in the query is the credential, and
  * the endpoint behind this panel derives the address from that token alone. The token is read from the
  * URL by the panel itself, so it survives the themed-page path untouched.
  */
 export class UnsubscribePageRoute {
-  /** The CMS slug a theme seeds to brand this route. Greppable, and named in one place only. */
+  /** The content slug a theme seeds to brand this route. Greppable, and named in one place only. */
   static readonly PAGE_SLUG = 'unsubscribe';
 
   static async render({

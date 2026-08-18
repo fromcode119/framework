@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PluginPublicSettingsService } from '@core/plugin/services/plugin-public-settings-service';
 
-const PLUGIN = { manifest: { slug: 'ecommerce', namespace: 'org.fromcode' } };
+const PLUGIN = { manifest: { slug: 'alpha', namespace: 'org.fromcode' } };
 
 function schemaWith(fields: any[]) {
   return { fields };
@@ -18,9 +18,9 @@ describe('PluginPublicSettingsService.resolve', () => {
 
     const result = await PluginPublicSettingsService.resolve([PLUGIN], getSchema, db);
 
-    expect(result['org.fromcode/ecommerce']).toEqual({ storeCurrency: 'BGN' });
-    expect(result['ecommerce']).toEqual({ storeCurrency: 'BGN' });
-    expect(result['org.fromcode/ecommerce']).not.toHaveProperty('productPermalinkBase');
+    expect(result['org.fromcode/alpha']).toEqual({ storeCurrency: 'BGN' });
+    expect(result['alpha']).toEqual({ storeCurrency: 'BGN' });
+    expect(result['org.fromcode/alpha']).not.toHaveProperty('productPermalinkBase');
     expect(JSON.stringify(result)).not.toContain('leak');
   });
 
@@ -32,7 +32,7 @@ describe('PluginPublicSettingsService.resolve', () => {
 
     const result = await PluginPublicSettingsService.resolve([PLUGIN], getSchema, db);
 
-    expect(result['org.fromcode/ecommerce']).toEqual({ defaultCheckoutMode: 'direct_buy' });
+    expect(result['org.fromcode/alpha']).toEqual({ defaultCheckoutMode: 'direct_buy' });
   });
 
   it('NEVER publishes password-typed fields even if flagged public', async () => {
@@ -43,7 +43,7 @@ describe('PluginPublicSettingsService.resolve', () => {
 
     const result = await PluginPublicSettingsService.resolve([PLUGIN], getSchema, db);
 
-    expect(result['org.fromcode/ecommerce']).toBeUndefined();
+    expect(result['org.fromcode/alpha']).toBeUndefined();
   });
 
   it('NEVER publishes credential-named fields even if flagged public', async () => {
@@ -55,7 +55,7 @@ describe('PluginPublicSettingsService.resolve', () => {
 
     const result = await PluginPublicSettingsService.resolve([PLUGIN], getSchema, db);
 
-    expect(result['org.fromcode/ecommerce']).toBeUndefined();
+    expect(result['org.fromcode/alpha']).toBeUndefined();
   });
 
   it('unwraps the {config:{settings:{...}}} stored shape', async () => {
@@ -66,7 +66,7 @@ describe('PluginPublicSettingsService.resolve', () => {
 
     const result = await PluginPublicSettingsService.resolve([PLUGIN], getSchema, db);
 
-    expect(result['org.fromcode/ecommerce']).toEqual({ taxRatePercent: 20 });
+    expect(result['org.fromcode/alpha']).toEqual({ taxRatePercent: 20 });
   });
 
   it('omits plugins with no public fields and never queries their stored settings', async () => {

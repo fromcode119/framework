@@ -145,6 +145,16 @@ export class AdminSystemNavigationMetadataService {
         requiredRoles: ['admin'],
       },
       {
+        id: 'redirects',
+        label: 'Redirects',
+        path: AppPathConstants.ADMIN.SETTINGS.REDIRECTS,
+        sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
+        icon: 'CornerRightUp',
+        scope: CapabilityScope.SELF,
+        priority: 145,
+        requiredRoles: ['admin'],
+      },
+      {
         id: 'security',
         label: 'Security',
         path: AppPathConstants.ADMIN.SETTINGS.SECURITY,

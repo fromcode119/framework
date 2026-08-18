@@ -76,7 +76,7 @@ export class PluginDiscoveryCoordinatorService {
       }
 
       // Final default-page materialization pass. The per-plugin pass (in `register`) can run before the
-      // collection that OWNS pages (CMS's `pages`) is registered, so it skips ("no registered page
+      // collection that OWNS pages is registered, so it skips ("no registered page
       // collection available") and required contract pages (e.g. /courses/:slug/learn, /instructors/:slug)
       // never get created. Running once more here — after EVERY plugin in the boot set is registered and its
       // collections are in the manager — guarantees the pages collection is present so all contracts materialize.

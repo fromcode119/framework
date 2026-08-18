@@ -84,7 +84,7 @@ export class ThemeServerRegistry {
       registerPlugins: noop,
       registerSettings: noop,
       // Captured, not dropped: a plugin's storefront entry registers its API client here, and theme
-      // components resolve it through the namespace facade. The cms client is what turns an upload path
+      // components resolve it through the namespace facade. The content client is what turns an upload path
       // into an optimizer URL — without it the server renders a `srcset` of full-size originals.
       registerPluginApi: (namespace: string, slug: string, client: unknown) => {
         ThemeServerRegistry.pluginApis.set(ThemeServerRegistry.pluginApiKey(namespace, slug), client);

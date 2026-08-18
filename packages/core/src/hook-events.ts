@@ -24,6 +24,8 @@ export class HookEventUtils {
 
   static readonly HOOK_EVENTS = {
     FRONTEND_HEAD: 'frontend:head',
+    /** Fired by cache.purge (MCP) — every framework cache that can go stale subscribes and invalidates. */
+    SYSTEM_CACHE_PURGE: 'system:cache:purge',
   } as const;
 
   private static readonly EVENT_PREFIX = 'collection';
@@ -43,13 +45,13 @@ export class HookEventUtils {
    * THE canonical identity of a collection in a hook event name — the slug the plugin DECLARED.
    *
    * A registered collection carries four names: `slug` (overwritten at registration with the PHYSICAL
-   * table name, `fcp_ecommerce_orders`), `shortSlug` (`orders`, and freely overridable — `products`
+   * table name, `fcp_<plugin>_orders`), `shortSlug` (`orders`, and freely overridable — `products`
    * registers as `catalog`), `pluginSlug`, and `unprefixedSlug` (the name the plugin wrote in its own
    * schema, `example-widgets`).
    *
    * The emitter used `slug`, so every event went out under the physical table name while plugins
    * subscribed under the declared one. Nothing matched and nothing said so: saving an order through the
-   * admin minted no licence and wrote no finance transaction, and the save still reported success.
+   * admin fired none of its downstream listeners (licence minting, ledger writes), and the save still reported success.
    *
    * The declared slug wins because it is the only one that is part of the plugin's public contract —
    * `slug` is a storage detail, and `shortSlug` is not unique across plugins. Core collections

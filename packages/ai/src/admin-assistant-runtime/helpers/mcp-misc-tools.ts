@@ -1,3 +1,4 @@
+import { McpSchema } from '@fromcode119/mcp';
 import type { IMcpToolDefinition } from '@fromcode119/mcp';
 import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
 import { SearchTextHelpers } from '@ai/admin-assistant-runtime/helpers/search-text-helpers';
@@ -11,7 +12,12 @@ export class McpMiscTools {
     return [
       {
         tool: 'settings.get', readOnly: true,
+        title: 'Read a system setting',
         description: 'Get value of a system meta setting key.',
+        permission: 'system:view',
+        inputSchema: McpSchema.object({
+          key: McpSchema.string({ description: 'The system meta key, e.g. "notification_email".' }),
+        }, ['key']),
         handler: async (input) => {
           const key = String(input?.key || '').trim();
           if (!key) throw new Error('Missing setting key');
@@ -21,7 +27,13 @@ export class McpMiscTools {
       },
       {
         tool: 'settings.set', readOnly: false,
+        title: 'Write a system setting',
         description: 'Update value of a system meta setting key.',
+        permission: 'system:manage',
+        inputSchema: McpSchema.object({
+          key: McpSchema.string({ description: 'The system meta key to write.' }),
+          value: McpSchema.string({ description: 'The new value, as a string.' }),
+        }, ['key', 'value']),
         handler: async (input, context) => {
           const key = String(input?.key || '').trim();
           const value = String(input?.value ?? '').trim();
@@ -38,7 +50,10 @@ export class McpMiscTools {
       },
       {
         tool: 'plugins.list', readOnly: true,
+        title: 'List plugins',
         description: 'List installed plugins and their activation state.',
+        permission: 'system:view',
+        inputSchema: McpSchema.object({}),
         handler: async () => {
           const plugins = typeof options.getPlugins === 'function' ? options.getPlugins() : [];
           return { plugins: plugins.map((p) => ({ slug: p.slug, name: p.name, version: p.version, state: p.state, capabilities: Array.isArray(p.capabilities) ? p.capabilities : [] })) };
@@ -46,7 +61,10 @@ export class McpMiscTools {
       },
       {
         tool: 'themes.list', readOnly: true,
+        title: 'List themes',
         description: 'List installed themes and their activation state.',
+        permission: 'system:view',
+        inputSchema: McpSchema.object({}),
         handler: async () => {
           const themes = typeof options.getThemes === 'function' ? options.getThemes() : [];
           return { themes: themes.map((t) => ({ slug: t.slug, name: t.name, version: t.version, state: t.state })) };
@@ -54,7 +72,15 @@ export class McpMiscTools {
       },
       {
         tool: 'web.search', readOnly: true,
+        title: 'Search the web',
         description: 'Search the web for current information.',
+        permission: 'content:read',
+        // The handler also accepts a legacy `q`; the schema names only `query` so the model is given
+        // ONE canonical spelling rather than a choice the codebase forbids elsewhere.
+        inputSchema: McpSchema.object({
+          query: McpSchema.string({ description: 'What to search for.' }),
+          limit: McpSchema.number({ description: 'Maximum results, 1-10. Defaults to 5.' }),
+        }, ['query']),
         handler: async (input) => {
           const query = String(input?.query || input?.q || '').trim();
           if (!query) throw new Error('Missing search query');
@@ -86,7 +112,16 @@ export class McpMiscTools {
       },
       {
         tool: 'web.fetch', readOnly: true,
+        title: 'Fetch a web page',
         description: 'Fetch and summarize a page by URL (HTML, JSON, or plain text).',
+        permission: 'content:read',
+        // `href` is a legacy alias the handler still reads; only `url` is advertised.
+        inputSchema: McpSchema.object({
+          url: McpSchema.string({ description: 'Absolute URL to fetch.' }),
+          timeoutMs: McpSchema.number({ description: 'Request timeout, 2000-20000. Defaults to 10000.' }),
+          maxChars: McpSchema.number({ description: 'Characters of body to return, 400-16000. Defaults to 4000.' }),
+          maxLinks: McpSchema.number({ description: 'Links to extract, 0-20. Defaults to 8.' }),
+        }, ['url']),
         handler: async (input) => {
           const parsedUrl = SearchTextHelpers.normalizeWebUrl(String(input?.url || input?.href || ''));
           const timeoutMs = Math.min(20_000, Math.max(2_000, Number(input?.timeoutMs || 10_000)));
@@ -119,6 +154,9 @@ export class McpMiscTools {
       },
       {
         tool: 'system.now', readOnly: true,
+        title: 'Current server time',
+        permission: 'content:read',
+        inputSchema: McpSchema.object({}),
         description: 'Get current server timestamp.',
         handler: async () => ({ now: nowFn() }),
       },

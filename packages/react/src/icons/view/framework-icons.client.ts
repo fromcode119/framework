@@ -22,6 +22,7 @@ export class FrameworkIcons {
   static readonly Logout = IconUtils.createProxyIcon('LogOut');
   static readonly Help = IconUtils.createProxyIcon('HelpCircle');
   static readonly Plus = IconUtils.createProxyIcon('Plus');
+  static readonly CornerRightUp = IconUtils.createProxyIcon('CornerRightUp');
   static readonly Trash = IconUtils.createProxyIcon('Trash2');
   static readonly Edit = IconUtils.createProxyIcon('Pencil');
   static readonly Save = IconUtils.createProxyIcon('Save');

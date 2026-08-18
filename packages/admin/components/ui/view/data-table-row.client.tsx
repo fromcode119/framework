@@ -1,5 +1,6 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { Checkbox } from '@/components/ui/view/checkbox.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Column } from '@/components/ui/column';
 
@@ -55,15 +56,9 @@ export class DataTableRow<T extends { id: any }> extends PureReactor {
             style={stickyCount > 0 ? { left: stickyOffsets[0] ?? 0 } : undefined}
             onClick={this.handleToggleOne}
           >
-            <div
-              className={`w-4 h-4 rounded border-2 transition-all flex items-center justify-center ${
-                selected
-                  ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20'
-                  : 'bg-white border-slate-300 dark:bg-slate-800 dark:border-slate-600'
-              }`}
-            >
-              {selected && <FrameworkIcons.Check size={10} className="text-white" strokeWidth={3} />}
-            </div>
+            {/* The cell's onClick above carries the event (shift-range select), so the box renders
+                presentational — a Checkbox with its own handler would fire the toggle twice. */}
+            <Checkbox checked={selected} presentational />
           </td>
         )}
         {columns.map((col, index) => {

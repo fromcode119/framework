@@ -7,15 +7,15 @@ import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason
 
 const heldMap = () =>
   new Map<string, any>([
-    ['ecommerce', { manifest: { slug: 'ecommerce' }, state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.WARNING, heldReason: PluginHeldReason.CAPABILITY_DRIFT }],
-    ['mlm', { manifest: { slug: 'mlm' }, state: PluginState.ERROR, healthStatus: PluginRegistryHealth.ERROR, error: 'boom' }],
-    ['cms', { manifest: { slug: 'cms' }, state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY }],
+    ['alpha', { manifest: { slug: 'alpha' }, state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.WARNING, heldReason: PluginHeldReason.CAPABILITY_DRIFT }],
+    ['beta', { manifest: { slug: 'beta' }, state: PluginState.ERROR, healthStatus: PluginRegistryHealth.ERROR, error: 'boom' }],
+    ['gamma', { manifest: { slug: 'gamma' }, state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY }],
   ]);
 
 describe('LifecycleService.summarizeHeldPlugins', () => {
   it('returns null when everything is healthy', () => {
     const healthy = new Map<string, any>([
-      ['cms', { manifest: { slug: 'cms' }, state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY }],
+      ['alpha', { manifest: { slug: 'alpha' }, state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY }],
     ]);
     expect(LifecycleService.summarizeHeldPlugins(healthy)).toBeNull();
   });
@@ -25,11 +25,11 @@ describe('LifecycleService.summarizeHeldPlugins', () => {
     expect(summary).not.toBeNull();
     expect(summary!.count).toBe(2);
 
-    const ecommerce = summary!.plugins.find((p) => p.slug === 'ecommerce');
-    expect(ecommerce).toMatchObject({ held: true, reason: PluginHeldReason.CAPABILITY_DRIFT });
+    const alpha = summary!.plugins.find((p) => p.slug === 'alpha');
+    expect(alpha).toMatchObject({ held: true, reason: PluginHeldReason.CAPABILITY_DRIFT });
 
-    const mlm = summary!.plugins.find((p) => p.slug === 'mlm');
-    expect(mlm).toMatchObject({ held: false, error: 'boom' });
+    const beta = summary!.plugins.find((p) => p.slug === 'beta');
+    expect(beta).toMatchObject({ held: false, error: 'boom' });
 
     // Fallback WORDING must not leak into the data — the template owns it.
     const noReason = LifecycleService.summarizeHeldPlugins(
@@ -49,14 +49,14 @@ describe('PluginHealthNotificationTemplateService.render', () => {
     const message = PluginHealthNotificationTemplateService.render(data);
 
     expect(message.subject).toMatch(/2 plugin\(s\) need attention/);
-    expect(message.text).toContain('ecommerce');
+    expect(message.text).toContain('alpha');
     expect(message.text).toContain('capability_drift');
-    expect(message.text).toContain('mlm');
+    expect(message.text).toContain('beta');
     expect(message.text).toContain('boom');
 
     expect(message.html).toContain('<ul>');
     expect(message.html).toContain('<li>');
-    expect(message.html).toContain('ecommerce');
+    expect(message.html).toContain('alpha');
     expect(message.html).toContain('capability_drift');
   });
 });

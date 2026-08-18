@@ -1,6 +1,7 @@
 import { Logger } from '@core/logging';
 import { IDatabaseManager } from '@fromcode119/database';
 import { CapabilityRegistry } from '@core/capabilities';
+import { McpRegistryProvider } from '@core/mcp/mcp-registry-provider';
 import type { ILoadedCoreExtension } from '@core/extensions/interfaces/loaded-core-extension.interface';
 import type { ICoreExtensionContext } from '@core/extensions/interfaces/core-extension-context.interface';
 
@@ -34,6 +35,7 @@ export class CoreExtensionContextFactory {
         logger,
         db: this.db,
         integrations: services.integrations,
+        mcp: McpRegistryProvider.get(),
         hooks: services.hooks,
         plugins: services.plugins,
       },

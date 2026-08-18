@@ -173,6 +173,13 @@ export class PluginManager implements IPluginManagerInterface {
     return this.installation.installOrUpdateFromMarketplace(slug, options);
   }
 
+  /** Update every installed plugin with a newer marketplace version — ONE restart at the end. */
+  async updateAllFromMarketplace(
+    options: { progressReporter?: IPluginInstallProgressReporter } = {},
+  ): Promise<{ updated: string[]; failed: { slug: string; error: string }[] }> {
+    return this.installation.updateAllFromMarketplace(options);
+  }
+
   async installUploadedPluginArchive(
     filePath: string,
     options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},

@@ -6,6 +6,13 @@ import type { IMovingItem } from '@/app/media/interfaces/moving-item.interface';
 
 export interface IMediaPageClientState {
   items: IMediaItem[];
+  /** Files shipped inside the active theme — listed beside uploads, never writable. */
+  themeAssets: IMediaItem[];
+  /** '' = all sources, 'uploads', or 'theme'. */
+  source: string;
+  activeView: string;
+  hasMore: boolean;
+  loadingMore: boolean;
   folders: IMediaFolder[];
   currentFolderId: number | null;
   folderPath: IMediaFolder[];

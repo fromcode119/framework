@@ -49,9 +49,22 @@ export class SystemLogRetentionService {
     this.sweepTimer = null;
   }
 
-  /** Read the declared window and prune to it. Returns the number of rows removed. */
+  /**
+   * Read the declared window and prune to it. Returns the number of rows removed.
+   *
+   * `start()` fires this without awaiting it, so a rejection here would escape as an unhandled
+   * rejection and kill the process (it did: a DB without `_system_meta` crashed the api test run).
+   * An unreadable settings read means "no retention configured" — prune nothing.
+   */
   async pruneFromSettings(): Promise<number> {
-    const retentionDays = await this.readRetentionDays();
+    let retentionDays: number;
+    try {
+      retentionDays = await this.readRetentionDays();
+    } catch (error) {
+      this.logger.error('[LogRetention] Failed to read the retention setting; pruning nothing', error);
+      return 0;
+    }
+
     if (retentionDays <= 0) {
       return 0;
     }

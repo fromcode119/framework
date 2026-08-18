@@ -1,5 +1,5 @@
 /**
- * A resolved CMS/plugin document on its way out of the server.
+ * A resolved content/plugin document on its way out of the server.
  *
  * A "gate" is a plugin-supplied transformer applied to this result before it leaves the server. The
  * framework holds NO knowledge of what any gate does (membership, paywalls, geo-fencing, …) — it

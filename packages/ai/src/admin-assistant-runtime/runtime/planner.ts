@@ -7,7 +7,7 @@ export class HomepagePlanner {
         const scope = `${collection.slug} ${collection.shortSlug} ${collection.label}`.toLowerCase();
         let score = 0;
         if (/\bhome(page)?\b/.test(scope)) score += 5;
-        if (/\b(page|pages|cms|landing|website|site)\b/.test(scope)) score += 3;
+        if (/\b(page|pages|content|landing|website|site)\b/.test(scope)) score += 3;
         if (/\bsettings|assistant|session\b/.test(scope)) score -= 4;
         return { collection, score };
       })

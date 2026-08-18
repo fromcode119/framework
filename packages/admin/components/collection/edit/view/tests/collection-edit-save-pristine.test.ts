@@ -9,7 +9,7 @@ vi.mock('@/lib/admin-services', () => ({
   AdminServices: { getInstance: () => ({ entityFormData: { normalizeSubmitPayload: (_c: unknown, payload: unknown) => payload } }) },
 }));
 vi.mock('@/lib/collection-utils', () => ({
-  AdminCollectionUtils: { resolveCollection: () => ({ slug: 'cms_pages', fields: [] }) },
+  AdminCollectionUtils: { resolveCollection: () => ({ slug: 'alpha_pages', fields: [] }) },
 }));
 
 import { CollectionEditPageHandlers } from '@/components/collection/edit/view/collection-edit-page-handlers.client';
@@ -17,7 +17,7 @@ import { CollectionEditPageHandlers } from '@/components/collection/edit/view/co
 /** Minimal stand-in for `CollectionEditPageView` — records what setState wrote. */
 class EditPageStub {
   state: Record<string, any> = { formData: { id: 7, title: 'Original' }, pristineFormData: { id: 7, title: 'Original' } };
-  props = { collections: [], pluginSlug: 'cms', slug: 'cms_pages', id: '7', router: { push: vi.fn() } };
+  props = { collections: [], pluginSlug: 'alpha', slug: 'alpha_pages', id: '7', router: { push: vi.fn() } };
 
   setState(patch: any): void {
     Object.assign(this.state, typeof patch === 'function' ? patch(this.state) : patch);

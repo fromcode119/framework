@@ -17,9 +17,19 @@ export class MediaPageActions {
     const { searchQuery, currentFolderId } = this.host;
     this.host.patch({ loading: true });
     try {
-      const { items, folders } = await MediaPageController.fetchLibrary(currentFolderId, searchQuery);
+      // Theme assets belong to no folder, so they are only listed at the root — inside a folder they
+      // would imply a location they do not have.
+      const wantsThemeAssets = currentFolderId === null;
+      const [{ items, folders, hasMore }, themeAssets] = await Promise.all([
+        MediaPageController.fetchLibrary(currentFolderId, searchQuery),
+        wantsThemeAssets ? MediaPageController.fetchThemeAssets() : Promise.resolve([]),
+      ]);
       if (!this.host.mounted) return;
-      this.host.patch({ items, folders });
+
+      const matchingThemeAssets = searchQuery
+        ? MediaPageActions.searchThemeAssets(themeAssets, searchQuery)
+        : themeAssets;
+      this.host.patch({ items, folders, themeAssets: matchingThemeAssets, hasMore });
 
       const folderPath = await MediaPageController.fetchFolderPath(currentFolderId);
       if (!this.host.mounted) return;
@@ -29,6 +39,38 @@ export class MediaPageActions {
     } finally {
       if (this.host.mounted) this.host.patch({ loading: false });
     }
+  }
+
+  /**
+   * Appends the next page.
+   *
+   * The listing is capped server-side, so without this the library silently showed only the first page
+   * and the rest of a real library simply did not exist on screen — worse than the unbounded fetch it
+   * replaced, because nothing indicated anything was missing.
+   */
+  async loadMore(): Promise<void> {
+    const { searchQuery, currentFolderId, items, hasMore, loadingMore } = this.host;
+    if (!hasMore || loadingMore) return;
+
+    this.host.patch({ loadingMore: true });
+    try {
+      const page = await MediaPageController.fetchLibrary(currentFolderId, searchQuery, items.length);
+      if (!this.host.mounted) return;
+      this.host.patch({ items: [...items, ...page.items], hasMore: page.hasMore });
+    } catch (err) {
+      console.error('Failed to load more media:', err);
+    } finally {
+      if (this.host.mounted) this.host.patch({ loadingMore: false });
+    }
+  }
+
+  /** Theme assets are listed client-side, so the library's server search has to be applied here. */
+  private static searchThemeAssets(assets: any[], query: string): any[] {
+    const needle = String(query || '').toLowerCase();
+    return assets.filter((asset: any) => (
+      String(asset.filename || '').toLowerCase().includes(needle) ||
+      String(asset.relativePath || '').toLowerCase().includes(needle)
+    ));
   }
 
   async createFolder(name: string): Promise<void> {
@@ -166,15 +208,15 @@ export class MediaPageActions {
     }
   }
 
-  async updateDetails(alt: string, caption: string): Promise<void> {
+  async updateDetails(alt: string, caption: string, visibility: string): Promise<void> {
     const { editingItem } = this.host;
     if (!editingItem) return;
     this.host.patch({ isActionLoading: true, error: null });
     try {
-      await MediaPageController.updateDetails(editingItem.id, alt, caption);
+      await MediaPageController.updateDetails(Number(editingItem.id), alt, caption, visibility);
       this.host.patchWith((value: IMediaPageClientState) => ({
         items: value.items.map((i) => i.id === editingItem.id
-          ? { ...i, alt: alt || null, caption: caption || null }
+          ? { ...i, alt: alt || null, caption: caption || null, visibility }
           : i),
         editingItem: null,
       }));
@@ -187,9 +229,9 @@ export class MediaPageActions {
   }
 
   async optimize(item: IMediaItem): Promise<void> {
-    this.host.patch({ optimizingId: item.id, error: null });
+    this.host.patch({ optimizingId: Number(item.id), error: null });
     try {
-      const optimized = await MediaPageController.optimize(item.id);
+      const optimized = await MediaPageController.optimize(Number(item.id));
       this.host.patchWith((value: IMediaPageClientState) => ({
         items: value.items.map((i) => i.id === item.id ? { ...i, ...optimized } : i),
       }));

@@ -6,7 +6,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
-import { VersionComparisonService } from '@/lib/version-comparison-service';
+import { VersionComparisonService } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { MarketplaceSearchBar } from '@/app/plugins/marketplace/components/view/marketplace-search-bar.client';
 import { MarketplacePluginCard } from '@/app/plugins/marketplace/components/view/marketplace-plugin-card.client';
@@ -22,6 +22,7 @@ export class MarketplacePage extends AdminComponent {
   @state installedPlugins: any[] = [];
   @state loading = true;
   @state installing: string | null = null;
+  @state updatingAll = false;
   @state searchQuery = '';
   @state imageErrors: Record<string, boolean> = {};
 
@@ -101,6 +102,31 @@ export class MarketplacePage extends AdminComponent {
     }
   }
 
+  /**
+   * Every plugin with an available update, in ONE server-side batch — the API replaces them all and
+   * restarts ONCE at the end, instead of the restart-per-plugin cost of clicking each card.
+   */
+  private async handleUpdateAll(updateCount: number): Promise<void> {
+    if (this.updatingAll || this.installing) return;
+    const notify = this.runtime.notify.notify;
+    const triggerRefresh = this.runtime.plugins?.triggerRefresh;
+    try {
+      this.updatingAll = true;
+      notify(NotificationType.INFO, 'Updating All Plugins', `Updating ${updateCount} plugin(s); the API restarts once at the end...`);
+      const response = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.UPDATE_ALL);
+      if (!response?.operationId) throw new Error(response?.error || 'The batch update could not be started.');
+      await PluginInstallOperationService.waitForCompletion(response.operationId);
+      if (triggerRefresh) await Promise.resolve(triggerRefresh());
+      await this.fetchData(true);
+      notify(NotificationType.SUCCESS, 'Plugins Updated', 'Every available update is installed and the API is back up.');
+    } catch (err: any) {
+      console.error('[Marketplace] Batch update failed:', err);
+      notify(NotificationType.ERROR, 'Update All Failed', err.message || 'The batch update did not complete.');
+    } finally {
+      this.updatingAll = false;
+    }
+  }
+
   private get filtered(): IPluginEntry[] {
     const { plugins, searchQuery } = this;
     return plugins.filter(p =>
@@ -142,6 +168,16 @@ export class MarketplacePage extends AdminComponent {
                 <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
               </div>
             ))}
+            {updateCount > 0 && (
+              <button
+                type="button"
+                disabled={this.updatingAll || !!installing}
+                onClick={() => this.handleUpdateAll(updateCount)}
+                className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition-all shadow-sm active:scale-[0.97] bg-amber-600 hover:bg-amber-700 ${this.updatingAll ? 'opacity-70 cursor-wait' : ''}`}
+              >
+                {this.updatingAll ? `Updating ${updateCount}…` : `Update All (${updateCount})`}
+              </button>
+            )}
           </div>
         ) : null}
 

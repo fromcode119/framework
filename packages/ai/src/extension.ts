@@ -41,9 +41,12 @@ export class AiExtension {
     context.registerCapability('mcp');
     context.registerCapability('llm');
     context.registerCapability('forge-assistant');
+    // The route factory injects the core-owned MCP registry (context.services.mcp) so the router can
+    // push the assistant's tool source into it. Registration cannot happen here directly: the tools
+    // close over per-request state and need the restController/themeManager the route context carries.
     context.registerApiRoute?.('ai', (routeContext: any) => ({
       basePath: String(context.extension.manifest.apiPath || context.extension.manifest.slug || 'ai').trim(),
-      router: AssistantRouter.create(routeContext),
+      router: AssistantRouter.create({ ...routeContext, mcp: context.services.mcp }),
     }));
 
     logger.info('AI extension initialized successfully');

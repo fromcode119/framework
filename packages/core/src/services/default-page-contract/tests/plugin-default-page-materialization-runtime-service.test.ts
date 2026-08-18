@@ -373,12 +373,12 @@ function registerCatalogIndexContract(): void {
 function createManager(pages: any[], getMetaValue: () => string, setMetaValue: (value: string) => void) {
   return {
     registeredCollections: new Map([
-      ['cms_pages', {
-        pluginSlug: 'cms',
+      ['alpha_pages', {
+        pluginSlug: 'alpha',
         collection: {
-          slug: 'cms_pages',
+          slug: 'alpha_pages',
           shortSlug: 'pages',
-          pluginSlug: 'cms',
+          pluginSlug: 'alpha',
           workflow: true,
           fields: [
             { name: 'title', type: 'text', localized: true },
@@ -408,7 +408,7 @@ function createManager(pages: any[], getMetaValue: () => string, setMetaValue: (
     ]),
     db: {
       find: vi.fn(async (table: string) => {
-        if (table === 'cms_pages') {
+        if (table === 'alpha_pages') {
           return [...pages];
         }
 
@@ -419,7 +419,7 @@ function createManager(pages: any[], getMetaValue: () => string, setMetaValue: (
         return [];
       }),
       findOne: vi.fn(async (table: string, where: any) => {
-        if (table === 'cms_pages') {
+        if (table === 'alpha_pages') {
           return pages.find((page) => Object.entries(where || {}).every(([key, value]) => page[key] === value)) || null;
         }
         if (table === TEST_COLLECTION) {
@@ -432,7 +432,7 @@ function createManager(pages: any[], getMetaValue: () => string, setMetaValue: (
         return null;
       }),
       insert: vi.fn(async (table: string, data: any) => {
-        if (table === 'cms_pages') {
+        if (table === 'alpha_pages') {
           const record = { id: pages.length + 1, ...data };
           pages.push(record);
           return record;
@@ -445,7 +445,7 @@ function createManager(pages: any[], getMetaValue: () => string, setMetaValue: (
         return data;
       }),
       update: vi.fn(async (table: string, where: any, data: any) => {
-        if (table === 'cms_pages') {
+        if (table === 'alpha_pages') {
           const record = pages.find((page) => Object.entries(where || {}).every(([key, value]) => page[key] === value));
           if (!record) {
             return null;

@@ -73,6 +73,9 @@
     },
     {
       "path": "../marketplace-client"
+    },
+    {
+      "path": "../mcp"
     }
   ],
   "exclude": [

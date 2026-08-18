@@ -41,6 +41,10 @@ export type { ILoggerOptions } from '@core/interfaces/logger-options.interface';
 // ── Constants ─────────────────────────────────────────────────────────────────
 export { SystemConstants } from '@core/constants/system.constants';
 export { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
+// Pure string composition over RouteConstants — no server imports, safe on the client, and the one
+// authority both the router and every link builder read from.
+export { FileRoutePaths } from '@core/files/file-route-paths';
+export { FileSharePageSlug } from '@core/files/file-share-page-slug';
 export { CookieConstants } from '@core/constants/cookie.constants';
 export { CookieSameSite } from '@core/clients/enums/cookie-same-site.enum';
 export { AppPathConstants } from '@core/constants/app-path.constants';
@@ -109,6 +113,7 @@ export * from '@core/data-sources';
 
 // ── Shared Utilities ──────────────────────────────────────────────────────────
 export { AssistantVocabularyRole } from '@core/services/enums/assistant-vocabulary-role.enum';
+export { VersionComparisonService } from '@core/services/version-comparison-service';
 export { CoreServices } from '@core/services/core-services';
 export { AutocompleteOptionService } from '@core/services/autocomplete-option-service';
 export { CollectionIdentityService } from '@core/services/collection-identity-service';

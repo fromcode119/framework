@@ -16,7 +16,7 @@ import { SqliteDatabaseManager } from '@database/dialects/sqlite/database-manage
  * That shipped: `WorkflowService.processScheduledContent` filtered with
  * `and(ne(sql.identifier('status'), 'published'), lte(sql.identifier('scheduled_publish_at'), now))`
  * against a string table name, so it matched EVERY row of every workflow-enabled collection. On
- * vselenskiportal88 that re-published all 32 CMS pages on every scheduler tick, overwrote their real
+ * a production site that re-published EVERY content page on every scheduler tick, overwrote their real
  * `published_at` dates with `now`, and fired 32 spurious `collection:published` hooks each run — and
  * it would have silently published any genuine draft.
  */
@@ -34,14 +34,14 @@ describe('raw-SQL where: unsupported shapes fail loudly', () => {
     dbPaths.push(dbPath);
     const manager = new SqliteDatabaseManager(dbPath);
     await manager.execute(
-      'CREATE TABLE "fcp_cms_pages" (' +
+      'CREATE TABLE "fcp_alpha_pages" (' +
         '"id" INTEGER PRIMARY KEY AUTOINCREMENT, ' +
         '"status" TEXT, ' +
         '"scheduled_publish_at" TEXT)'
     );
-    await manager.insert('fcp_cms_pages', { status: 'published', scheduledPublishAt: null });
-    await manager.insert('fcp_cms_pages', { status: 'published', scheduledPublishAt: null });
-    await manager.insert('fcp_cms_pages', { status: 'draft', scheduledPublishAt: '2020-01-01T00:00:00.000Z' });
+    await manager.insert('fcp_alpha_pages', { status: 'published', scheduledPublishAt: null });
+    await manager.insert('fcp_alpha_pages', { status: 'published', scheduledPublishAt: null });
+    await manager.insert('fcp_alpha_pages', { status: 'draft', scheduledPublishAt: '2020-01-01T00:00:00.000Z' });
     return manager;
   }
 
@@ -49,7 +49,7 @@ describe('raw-SQL where: unsupported shapes fail loudly', () => {
     const manager = await seedManager();
 
     await expect(
-      manager.find('fcp_cms_pages', {
+      manager.find('fcp_alpha_pages', {
         where: and(
           ne(sql.identifier('status'), 'published'),
           lte(sql.identifier('scheduled_publish_at'), new Date().toISOString()),
@@ -61,7 +61,7 @@ describe('raw-SQL where: unsupported shapes fail loudly', () => {
   it('the equivalent plain-object filter selects ONLY the genuinely due row', async () => {
     const manager = await seedManager();
 
-    const rows = await manager.find('fcp_cms_pages', {
+    const rows = await manager.find('fcp_alpha_pages', {
       where: {
         status: { ne: 'published' },
         scheduledPublishAt: { lte: new Date().toISOString() },
@@ -76,9 +76,9 @@ describe('raw-SQL where: unsupported shapes fail loudly', () => {
 
   it('a published row with a past schedule is still excluded by the status test', async () => {
     const manager = await seedManager();
-    await manager.insert('fcp_cms_pages', { status: 'published', scheduledPublishAt: '2019-01-01T00:00:00.000Z' });
+    await manager.insert('fcp_alpha_pages', { status: 'published', scheduledPublishAt: '2019-01-01T00:00:00.000Z' });
 
-    const rows = await manager.find('fcp_cms_pages', {
+    const rows = await manager.find('fcp_alpha_pages', {
       where: {
         status: { ne: 'published' },
         scheduledPublishAt: { lte: new Date().toISOString() },
@@ -92,7 +92,7 @@ describe('raw-SQL where: unsupported shapes fail loudly', () => {
   it('an empty or absent where still means "no filter" — the throw must not break that', async () => {
     const manager = await seedManager();
 
-    expect(await manager.find('fcp_cms_pages', {})).toHaveLength(3);
-    expect(await manager.find('fcp_cms_pages', { where: {} })).toHaveLength(3);
+    expect(await manager.find('fcp_alpha_pages', {})).toHaveLength(3);
+    expect(await manager.find('fcp_alpha_pages', { where: {} })).toHaveLength(3);
   });
 });

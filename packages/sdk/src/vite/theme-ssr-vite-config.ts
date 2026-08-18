@@ -52,7 +52,7 @@ export class ThemeSsrViteConfig {
       ],
       define: { 'process.env.NODE_ENV': JSON.stringify('production') },
       // A theme addresses its own source as `@theme/*`; without this the SSR build dies on the first
-      // such import ("Rollup failed to resolve @theme/cms/constants/cms.constants"). Same mapping the
+      // such import ("Rollup failed to resolve a @theme/<dir>/constants import"). Same mapping the
       // client config declares — it is the theme's own alias, not a framework path.
       resolve: { alias: { '@theme': path.join(themeDir, 'src') } },
       // Same legacy-decorator settings as the client build: Vite compiles theme sources with esbuild and
