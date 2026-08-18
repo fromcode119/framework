@@ -83,6 +83,21 @@ describe('SystemAdminController.updateSettings — measurement_system', () => {
     expect(SystemSettingsExposureUtils.isExposable(SystemConstants.META_KEY.MEASUREMENT_SYSTEM)).toBe(true);
   });
 
+  it('accepts audit_db_write_excluded_tables — the Security screen\'s audit-exclusion control must save', async () => {
+    const meta = new MetaTableStub();
+    const controller = createController(meta);
+    const res = createRes();
+
+    await controller.updateSettings(
+      { body: { [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: 'fcp_analytics_events' }, user: { id: 1 } } as any,
+      res,
+    );
+
+    expect(res.status).not.toHaveBeenCalledWith(400);
+    expect(meta.rows.get(SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES)).toBe('fcp_analytics_events');
+    expect(SystemSettingsExposureUtils.isExposable(SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES)).toBe(true);
+  });
+
   it('still rejects a key no control produces', async () => {
     const controller = createController(new MetaTableStub());
     const res = createRes();

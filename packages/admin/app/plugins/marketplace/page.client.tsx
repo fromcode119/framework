@@ -23,6 +23,7 @@ export class MarketplacePage extends AdminComponent {
   @state loading = true;
   @state installing: string | null = null;
   @state updatingAll = false;
+  @state updateAllProgress = '';
   @state searchQuery = '';
   @state imageErrors: Record<string, boolean> = {};
 
@@ -48,9 +49,11 @@ export class MarketplacePage extends AdminComponent {
       const listUrl = refresh
         ? `${AdminConstants.ENDPOINTS.PLUGINS.LIST}?refresh=true`
         : AdminConstants.ENDPOINTS.PLUGINS.LIST;
+      // A refresh must SEE the post-update state — the short-lived GET response cache would happily
+      // repaint the pre-update versions and make a finished update look like it did nothing.
       const [marketData, instData] = await Promise.all([
-        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE),
-        AdminApi.get(listUrl)
+        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE, refresh ? { noDedupe: true } : undefined),
+        AdminApi.get(listUrl, refresh ? { noDedupe: true } : undefined)
       ]);
       const rawPlugins = marketData.plugins || [];
 
@@ -112,18 +115,42 @@ export class MarketplacePage extends AdminComponent {
     const triggerRefresh = this.runtime.plugins?.triggerRefresh;
     try {
       this.updatingAll = true;
-      notify(NotificationType.INFO, 'Updating All Plugins', `Updating ${updateCount} plugin(s); the API restarts once at the end...`);
+      this.updateAllProgress = `Starting ${updateCount} update${updateCount === 1 ? '' : 's'}...`;
       const response = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.UPDATE_ALL);
       if (!response?.operationId) throw new Error(response?.error || 'The batch update could not be started.');
-      await PluginInstallOperationService.waitForCompletion(response.operationId);
+      // The server leads each message with the remaining count ("6 updates remaining — ...") and
+      // ends with "restarting the API" — shown verbatim so the operator watches it count down.
+      await PluginInstallOperationService.waitForCompletion(response.operationId, (operation) => {
+        if (this.mounted && operation?.message) this.updateAllProgress = operation.message;
+      });
+      this.updateAllProgress = 'API is back — refreshing the catalog...';
       if (triggerRefresh) await Promise.resolve(triggerRefresh());
-      await this.fetchData(true);
+      await this.refetchUntilSettled();
       notify(NotificationType.SUCCESS, 'Plugins Updated', 'Every available update is installed and the API is back up.');
     } catch (err: any) {
       console.error('[Marketplace] Batch update failed:', err);
       notify(NotificationType.ERROR, 'Update All Failed', err.message || 'The batch update did not complete.');
     } finally {
       this.updatingAll = false;
+      this.updateAllProgress = '';
+    }
+  }
+
+  /**
+   * Right after the restart the api may answer /health before the plugin registry has finished
+   * re-registering, so one immediate refetch can still show the OLD versions — which is exactly the
+   * "it updated but the page still offers updates" bug. Refetch (cache-bypassed) until the computed
+   * update count reaches zero, bounded so a genuinely-failed update still surfaces.
+   */
+  private async refetchUntilSettled(): Promise<void> {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await this.fetchData(true);
+      const settled = !this.plugins.some((p) => {
+        const inst = this.installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug);
+        return inst && VersionComparisonService.isGreater(p.version, inst.manifest?.version || inst.version);
+      });
+      if (settled || !this.mounted) return;
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
 
@@ -168,16 +195,23 @@ export class MarketplacePage extends AdminComponent {
                 <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
               </div>
             ))}
-            {updateCount > 0 && (
+            {this.updatingAll ? (
+              /* The button is GONE while the batch runs — in its place, the server's own progress
+                 messages counting down to the restart. */
+              <div className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-semibold ${isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
+                <span className="h-3 w-3 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                <span className="normal-case tracking-normal">{this.updateAllProgress || 'Updating plugins...'}</span>
+              </div>
+            ) : updateCount > 0 ? (
               <button
                 type="button"
-                disabled={this.updatingAll || !!installing}
+                disabled={!!installing}
                 onClick={() => this.handleUpdateAll(updateCount)}
-                className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition-all shadow-sm active:scale-[0.97] bg-amber-600 hover:bg-amber-700 ${this.updatingAll ? 'opacity-70 cursor-wait' : ''}`}
+                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition-all shadow-sm active:scale-[0.97] bg-amber-600 hover:bg-amber-700"
               >
-                {this.updatingAll ? `Updating ${updateCount}…` : `Update All (${updateCount})`}
+                Update All ({updateCount})
               </button>
-            )}
+            ) : null}
           </div>
         ) : null}
 

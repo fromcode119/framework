@@ -41,6 +41,21 @@ export interface IAdminAssistantRuntimeOptions {
     payload: Record<string, any>,
     context: Record<string, any>
   ) => Promise<any>;
+  listRecordVersions?: (
+    collection: IAssistantCollectionContext,
+    refId: string | number,
+    options: { limit?: number; offset?: number }
+  ) => Promise<{ docs: any[]; totalDocs?: number; limit?: number; offset?: number }>;
+  getRecordVersion?: (
+    collection: IAssistantCollectionContext,
+    refId: string | number,
+    version: number
+  ) => Promise<any | null>;
+  restoreRecordVersion?: (
+    collection: IAssistantCollectionContext,
+    refId: string | number,
+    version: number
+  ) => Promise<any>;
   getSetting: (key: string) => Promise<IAssistantSettingValue>;
   upsertSetting: (key: string, value: string, group: string) => Promise<void>;
   resolveAdditionalTools?: (context: { dryRun: boolean }) => Promise<IMcpToolDefinition[]> | IMcpToolDefinition[];

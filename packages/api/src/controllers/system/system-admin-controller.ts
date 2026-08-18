@@ -48,6 +48,9 @@ export class SystemAdminController {
   SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL,
   SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS,
   SystemConstants.META_KEY.RATE_LIMIT_WINDOW,
+  // Audit-trail exclusions — read by DatabaseWriteAudit on every plugin context.db write; the
+  // Security screen's control saves it here.
+  SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES,
   SystemConstants.META_KEY.AUTH_SESSION_DURATION,
   SystemConstants.META_KEY.TWO_FACTOR_ENABLED,
   // Password policy — read on every registration / password change / reset by

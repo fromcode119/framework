@@ -5,6 +5,9 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.ts'],
+  // Registers the SERVER-only core services (ServerCoreServices) that API boot normally wires —
+  // without it, runtime code reaching CoreServices (assistantVocabulary, …) hits the browser guard.
+  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.ts'],
   moduleNameMapper: {
     // Every typor-built package's PRIVATE alias for its own `src`, exactly as `vitest.plugins.config.ts`
     // repeats it. jest resolves modules itself and does NOT read tsconfig `paths`, so the root

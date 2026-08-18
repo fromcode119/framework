@@ -111,9 +111,12 @@ export class PluginInstallationService {
     }
 
     for (const [index, entry] of updates.entries()) {
+      // The admin shows this message VERBATIM as the live progress label — lead with the countdown
+      // so the operator watches it decrease (7, 6, 5…) instead of guessing how far along it is.
+      const remaining = updates.length - index;
       options.progressReporter?.({
         phase: 'updating-plugin',
-        message: `Updating ${entry.slug} to v${entry.version} (${index + 1}/${updates.length})...`,
+        message: `${remaining} update${remaining === 1 ? '' : 's'} remaining — updating ${entry.slug} to v${entry.version}...`,
         pluginSlug: entry.slug,
       });
       try {
@@ -136,7 +139,7 @@ export class PluginInstallationService {
     if (updated.length) {
       options.progressReporter?.({
         phase: 'restart-required',
-        message: `${updated.length} plugin(s) replaced (${updated.join(', ')}). Scheduling ONE API restart to load the new runtime code.`,
+        message: `All ${updated.length} update(s) installed — restarting the API...`,
         pluginSlug: 'all',
       });
       this.runtimeRestart.scheduleRestart(`Batch update replaced ${updated.length} plugin(s).`);

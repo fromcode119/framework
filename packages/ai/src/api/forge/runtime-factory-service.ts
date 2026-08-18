@@ -118,6 +118,18 @@ export class AssistantRuntimeFactoryService {
           cookies: (req as any).cookies,
         });
       },
+      listRecordVersions: async (collection, refId, versionOptions) => {
+        const rawCollection: any = collection.raw || collection;
+        return this.restController.versioning.getVersions(String(rawCollection.slug), refId, versionOptions || {});
+      },
+      getRecordVersion: async (collection, refId, version) => {
+        const rawCollection: any = collection.raw || collection;
+        return this.restController.versioning.getVersion(String(rawCollection.slug), refId, version);
+      },
+      restoreRecordVersion: async (collection, refId, version) => {
+        const rawCollection: any = collection.raw || collection;
+        return this.restController.versioning.restoreVersion(rawCollection, refId, version, user);
+      },
       getSetting: async (key: string) => {
         const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
         return {

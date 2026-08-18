@@ -48,6 +48,10 @@ export class DataProcessorService {
 
         if (incomingMap) {
           Object.assign(nextMap, incomingMap);
+        } else if (this.localization.isJunkForLocaleSlot(fieldConfig, value)) {
+          // Skip the field entirely so the stored value survives (a written-back map would wipe a
+          // legacy plain-string value). Clearing a slot is expressed by an empty STRING, never an object.
+          continue;
         } else {
           nextMap[options.localeContext.locale] = value;
         }

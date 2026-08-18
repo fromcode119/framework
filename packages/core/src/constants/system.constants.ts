@@ -143,6 +143,12 @@ export class SystemConstants {
    */
   RATE_LIMIT_INTERNAL_CLIENTS: 'rate_limit_internal_clients',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
+  /**
+   * Physical table names whose plugin `context.db` writes are NOT recorded in the audit log
+   * (comma-separated). Read by {@link DatabaseWriteAudit} on every plugin write; seeded with the
+   * high-volume analytics tables so telemetry does not drown the trail. Admin Settings → Security.
+   */
+  AUDIT_DB_WRITE_EXCLUDED_TABLES: 'audit_db_write_excluded_tables',
   
   // Routing & Features
   PERMALINK_STRUCTURE: 'permalink_structure',

@@ -87,6 +87,7 @@ function buildHarness(overrides: {
   vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
     contentResolutionGates: { apply: gatesApply },
     redirectResolvers: { resolve: vi.fn(async () => null) },
+    canonicalPathResolvers: { resolve: vi.fn(async () => null) },
     defaultPageContractResolution: { resolveAll: vi.fn().mockReturnValue([]) },
   } as any);
 

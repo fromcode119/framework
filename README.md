@@ -67,9 +67,13 @@ npm run dev:local
 
 🏪 **Plugin Marketplace** — Install plugins from the built-in marketplace. Every team can host their own private marketplace. Plugins and core are upgradable in place without breaking changes.
 
-� **Built-in i18n** — Multi-language support is a first-class kernel feature. Localize content, admin UI labels, and plugin data without external libraries.
+🌍 **Built-in i18n** — Multi-language support is a first-class kernel feature. Localize content (per-field `localized: true` locale maps), admin UI labels, and plugin data without external libraries.
 
-�🏛️ **Pure OOP Codebase** — Every layer is class-based. No standalone exported functions anywhere. Routers extend `BaseRouter`, middlewares extend `BaseMiddleware`, utilities live in service classes. Consistent, predictable, and fully tree-shakable.
+🕘 **Version History Everywhere** — Every admin edit of any plugin's record is snapshotted to a framework-owned versions table, with one-click restore in the admin and matching MCP tools. Not a CMS feature — a kernel feature.
+
+🔀 **Framework-owned Redirects** — Redirect rules and canonical paths live in the kernel (Settings → Redirects) with server-side 308s. Renaming a URL keeps every old link alive without an SEO plugin.
+
+🏛️ **Pure OOP Codebase** — Every layer is class-based. No standalone exported functions anywhere. Routers extend `BaseRouter`, middlewares extend `BaseMiddleware`, utilities live in service classes — and the UI layer runs on the standalone `reactor`/`nextor`/`typor` stack. Consistent, predictable, and fully tree-shakable.
 
 ---
 
@@ -107,7 +111,7 @@ cp .env.example .env
 
 ```bash
 npm install
-npm run fromcode -- migrate:push
+npm run fromcode -- db migrate
 ```
 
 #### 4. Start the development environment
@@ -345,7 +349,8 @@ POSTGRES_DB=fromcode
 | **Security Monitor** | Real-time threat detection loop that monitors for anomaly spikes, brute-force attempts, and suspicious patterns. |
 | **Plugin Sandboxing** | Execution-level isolation via `SandboxManager`. Plugins run with declared capabilities only. |
 | **Cryptographic Signing** | Plugin signature verification on load. Unsigned or tampered plugins are rejected. |
-| **Audit Logging** | Comprehensive audit trail via `AuditManager` for every admin action, login, and permission change. |
+| **Audit Logging** | Comprehensive audit trail via `AuditManager` (`_system_audit_logs`) covering admin collection mutations, MCP tool calls, plugin database writes, capability violations, and rate-limit denials. |
+| **Record Version History** | Every create/update through the admin/REST surface snapshots the record to `_system_record_versions` — for every collection of every plugin, not just CMS. Version History UI with one-click restore; also exposed over MCP (`content.versions_list` / `version_get` / `version_restore`). |
 | **JWT + API Keys** | Out-of-the-box support for JWT access tokens, refresh token rotation, and long-lived API keys. |
 | **SSO** | Single Sign-On provider integrations via the auth extension system. |
 
@@ -413,6 +418,7 @@ Localization is a first-class feature of the kernel, not a plugin add-on. Every 
 | **Plugin i18n** | Plugins register their own translation namespaces — no global conflicts. |
 | **Default Locale Config** | Set `DEFAULT_LOCALE=en` in `.env`. Additional locales load from plugin/theme translation files at boot. |
 | **Runtime Locale Switching** | Locale is resolved per-request via headers, query params, or user preferences — no server restart needed. |
+| **Localized Fields** | Any collection field can declare `localized: true` — values are stored as per-locale maps and collapsed to the active locale on every read (REST and plugin `context.db` alike), with fallback to a locale that has content. Legacy flat strings keep working untouched. |
 
 </details>
 
@@ -433,6 +439,16 @@ Every piece of Atlantis follows a strict class-based pattern. There are no bare 
 | **Utilities** | Static methods on service classes | `AdminServices.getInstance().formatter.formatSize(n)` |
 
 > **No arrow function methods.** Class methods always use prototype syntax and are bound explicitly when passed as callbacks: `router.get('/x', this.controller.handle.bind(this.controller))`.
+
+On the UI side the same philosophy is carried by three **standalone packages** (usable in any React project, zero Atlantis dependencies):
+
+| Package | Role |
+|---------|------|
+| `@fromcode119/reactor` | Class components without hook ceremony — `Reactor`/`PureReactor` base classes, `@prop`/`@state`/`@bound`/`@watch` decorators, method-bearing `Enum`, `Provider` contexts |
+| `@fromcode119/nextor` | Build-time only — compiles separate `.view` JSX templates onto component classes and stamps `'use client'` directives; zero runtime cost |
+| `@fromcode119/typor` | TypeScript build tool adding real OOP (multiple inheritance for data classes) and package-alias rewriting; also the framework's actual typecheck gate |
+
+Data shapes are **classes**, not interface aliases — a `Person` or `Order` carries its own behavior and hydrates from API JSON via `static from(row)`. `interface` remains only for genuine behavioral contracts. See `REACTOR-DESIGN.md` for the full design.
 
 This means every class is independently instantiable, mockable, and replaceable — making testing and extension straightforward at every layer.
 
@@ -460,17 +476,19 @@ Atlantis ships with a growing ecosystem of domain plugins. Each plugin registers
 <details open>
 <summary><b>Available Plugins</b></summary>
 
-The following plugins will be available in the ecosystem. You can install them from the marketplace, build your own, or host a private marketplace for your team.
+Domain plugins register into the kernel lifecycle and are installed from the marketplace — the public catalogue is being prepared for release. You can build your own today, or host a private marketplace for your team.
 
-| Slug | Domain | Purpose |
-|------|--------|---------|
-| `cms` | Content | Headless CMS with block editor, pages, navigation, and collections |
-| `ecommerce` | Commerce | Product registry, variant management, carts, and checkout flows |
-| `finance` | Ledger | Unified transaction engine, pricing, and revenue ledger |
-| `logistics` | Delivery | Shipping providers, fulfillment tracking, and carrier integration |
-| `forms` | Capture | Form builder, submission management, and webhook dispatch |
-| `analytics` | Insights | Event tracking, dashboards, and traffic analytics |
-| `seo` | Discoverability | Meta management, sitemaps, structured data, and redirects |
+Example domains a plugin can own:
+
+| Domain | Purpose |
+|--------|---------|
+| Content | Headless CMS with block editor, pages, navigation, and collections |
+| Commerce | Product registry, variant management, carts, and checkout flows |
+| Ledger | Unified transaction engine, pricing, and revenue ledger |
+| Delivery | Shipping providers, fulfillment tracking — country couriers as separate packs |
+| Capture | Form builder, submission management, and webhook dispatch |
+| Insights | Event tracking, dashboards, and traffic analytics |
+| Discoverability | Meta management, sitemaps, structured data (redirect rules are framework-owned: Settings → Redirects) |
 
 </details>
 
@@ -543,6 +561,7 @@ a human relaying clicks.
 |---|---|---|
 | `system.*`, `media.*`, `cache.*`, `deploy.*` | server time, media list/upload/replace, framework cache purge, process restart | `media.replace` always writes a **new filename** so CDNs cannot serve stale bytes; `cache.purge` reports the CDN half honestly (`cdn: false` when no credentials exist) |
 | `content.*`, `collections.*`, `settings.*`, `plugins.*`, `themes.*`, `web.*`, `backups.*` | the Admin Assistant's full toolset, exposed per request | built lazily from the live request, so they always match what the in-admin assistant can do |
+| `content.versions_*` | `versions_list` / `version_get` / `version_restore` | record version history over MCP, for every plugin's collections — list snapshots, read one, or restore it (a restore applies the full snapshot and records itself as a new version) |
 | `cms.*` | `cms.page.slots.list` / `cms.page.slots.set` | **named slots**: "the second gallery image" instead of raw block JSON; writes go through the same service the admin visual editor uses |
 | `ecommerce.*` | products list/get/**update**, orders list/get/**updateStatus** | writes run the canonical admin paths — collection hooks fire, order-status transitions are guarded (terminal states are final) |
 | `mlm.*`, `logistics.*`, `finance.*` | partners, commissions, shipments, invoices | read-only; PII-tiered projections |
@@ -647,15 +666,25 @@ npm run build:frontend   # Frontend (Next.js)
 <summary><b>Architecture Checks</b></summary>
 
 ```bash
-# Check plugin layer violations (warn mode)
+# Check plugin layer violations (warn mode / strict)
 npm run check:plugin-architecture
-
-# Strict mode — fail on any violation
 npm run check:plugin-architecture:strict
 
-# SDK boundary audit
+# SDK boundary audit — plugins/themes may import ONLY @fromcode119/sdk
 npm run check:sdk-boundary
 npm run audit:core-boundary
+
+# db.find/db.count filters must live under where:{...}
+npm run check:db-find-where
+
+# Plugin admin UI must be hook-free OOP classes
+npm run check:plugin-ui-hookfree
+
+# Framework OOP conventions (class-based, no export const components)
+npm run check:framework-oop
+
+# Real type gate for the Next apps (next build does NOT typecheck)
+npm run check:app-typecheck
 ```
 
 </details>
@@ -667,13 +696,19 @@ npm run audit:core-boundary
 npm run fromcode -- <command>
 ```
 
+Commands are grouped: `fromcode <group> <command>`.
+
 | Command | Description |
 |---------|-------------|
-| `plugin:create` | Scaffold a new plugin with the correct structure in `plugins/` |
-| `theme:create` | Scaffold a new theme in `themes/` |
-| `migrate:push` | Atomic schema synchronization across all active plugins |
-| `security:audit` | Verify plugin signatures and declared capability sets |
-| `seed:theme` | Seed theme configuration data |
+| `plugin create [name]` | Scaffold a new plugin with the correct structure in `plugins/` |
+| `plugin build / pack / publish <slug>` | Build, tarball, or publish a plugin |
+| `plugin install <slug>` / `plugin search` | Install from / search the marketplace |
+| `theme create [name]` | Scaffold a new theme in `themes/` |
+| `theme seed` | Seed theme configuration data (also `npm run seed:theme`) |
+| `db migrate / rollback / seed / status / reset` | Atomic schema synchronization across all active plugins |
+| `test / lint / typecheck / doctor` | Quality gates and environment diagnosis (top-level commands) |
+| `system info / version / site-transfer-bundle / sync-versions` | Operations — including the full site-transfer bundle |
+| `auth …` | Account recovery operations (run in-container; see docs) |
 
 </details>
 
@@ -790,12 +825,35 @@ Atlantis is built for teams who need a complete, extensible application platform
 ```bash
 .
 ├── packages/
-│   ├── api/           # Express API server — routes, middleware, bootstrap
-│   ├── admin/         # Next.js Admin panel — plugin-aware UI
-│   ├── frontend/      # Next.js Frontend — theme rendering engine
-│   ├── core/          # Kernel — RBAC, security, migrations, services
-│   ├── sdk/           # Public contract for plugins/themes
-│   └── cli/           # Atlantis CLI tool
+│   │  # Application kernel
+│   ├── core/               # Kernel — plugin lifecycle, RBAC, security, migrations, i18n, versioning
+│   ├── api/                # Express API server — REST controllers, routes, middleware, bootstrap
+│   ├── admin/              # Next.js Admin panel — plugin-aware UI
+│   ├── frontend/           # Next.js Frontend — theme rendering engine
+│   ├── sdk/                # Public contract for plugins/themes — the ONLY import surface they may use
+│   │  # Infrastructure providers (kernel-managed, swappable)
+│   ├── auth/               # JWT sessions, refresh rotation, MFA/TOTP, API keys, SSO extensions
+│   ├── database/           # Driver abstraction (SQLite/PostgreSQL), Drizzle integration, proxies
+│   ├── cache/              # CacheManager — Redis / Memcached / in-memory
+│   ├── email/              # EmailManager — SMTP / SendGrid / Mailgun / mock
+│   ├── media/              # StorageManager + media pipeline — local / S3 / Cloudinary
+│   ├── scheduler/          # Scheduled/background job execution
+│   │  # AI & MCP
+│   ├── ai/                 # Admin Assistant runtime — LLM clients, classifier, MCP tool packs
+│   ├── mcp/                # MCP schema/registry/bridge primitives (shared by server + clients)
+│   ├── mcp-server/         # Standalone MCP server binary (stdio + Streamable HTTP client)
+│   │  # Standalone OOP stack (reusable outside Atlantis)
+│   ├── reactor/            # Class-based React primitives — Reactor/PureReactor, @prop/@state/@bound/@watch, Enum
+│   ├── nextor/             # Build-time companion — .view template compiler, 'use client' injection
+│   ├── typor/              # TypeScript build tool — multiple inheritance, package aliases, real typecheck
+│   ├── archor/             # Architecture boundary enforcement — who may import what
+│   │  # Distribution & tooling
+│   ├── marketplace-client/ # Client for plugin/theme marketplace installs and updates
+│   ├── plugins/            # Plugin loading/packaging support
+│   ├── react/              # Legacy React bridge (being absorbed by reactor)
+│   ├── next/               # Shared Next.js glue
+│   ├── create/             # `npm create` scaffolder for new Fromcode apps
+│   └── cli/                # Atlantis CLI tool
 ├── plugins/           # 🔌 Domain plugins (cms, ecommerce, finance, logistics, ...)
 ├── themes/            # 🎨 UI themes and layout bundles
 ├── starters/          # Local dev proxy and startup scripts

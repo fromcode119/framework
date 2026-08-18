@@ -9,7 +9,12 @@
  */
 export class CoercionUtils {
   static toString(value: unknown): string {
-    return String(value ?? '').trim();
+    if (typeof value === 'string') return value.trim();
+    const coerced = String(value ?? '').trim();
+    // A coercion that yields "[object Object]" (plain object, or an array containing one) has no
+    // meaningful string form — junk data must become '', never render as-is. Dates, Enums, and other
+    // objects with a real toString still stringify; literal strings above pass through untouched.
+    return coerced.includes('[object Object]') ? '' : coerced;
   }
 
   static toNumber(value: unknown, fallback = 0): number {

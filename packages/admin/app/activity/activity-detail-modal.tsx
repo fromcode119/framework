@@ -32,12 +32,14 @@ export class ActivityDetailModal extends PureReactor {
           <div className={`w-full max-w-2xl max-h-[90vh] ${AdminClass.SURFACE} flex flex-col overflow-hidden relative transform animate-in zoom-in-95 slide-in-from-bottom-4 duration-500`}>
             <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                <div className="flex items-center gap-3">
+                  {/* System-log rows carry `level`; audit rows carry `status` instead — an audit
+                      row rendered `level[0]` and crashed the whole screen on the first click. */}
                   <div className={`h-10 w-10 rounded-lg flex items-center justify-center font-semibold ${
-                    selectedLog.level === 'ERROR' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
-                    selectedLog.level === 'WARN' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
+                    selectedLog.level === 'ERROR' || selectedLog.status === 'violation' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
+                    selectedLog.level === 'WARN' || selectedLog.status === 'denied' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
                     'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                   }`}>
-                     {selectedLog.level[0]}
+                     {String(selectedLog.level ?? selectedLog.status ?? '').charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <h3 className={`text-xl font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
@@ -59,7 +61,7 @@ export class ActivityDetailModal extends PureReactor {
                      <div className="space-y-4">
                         <div className="flex flex-col">
                            <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Resource</span>
-                           <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{selectedLog.plugin_slug ? (selectedLog.plugin_slug.charAt(0).toUpperCase() + selectedLog.plugin_slug.slice(1)) : 'System'}</span>
+                           <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{selectedLog.pluginSlug ? (selectedLog.pluginSlug.charAt(0).toUpperCase() + selectedLog.pluginSlug.slice(1)) : 'System'}</span>
                         </div>
                         <div className="flex flex-col">
                            <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Timestamp</span>

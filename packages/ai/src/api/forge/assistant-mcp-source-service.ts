@@ -4,6 +4,7 @@ import type { IMcpToolDefinition } from '@fromcode119/mcp';
 import { AssistantRuntimeFactoryService } from '@ai/api/forge/runtime-factory-service';
 import { AssistantManagementToolsService } from '@ai/api/forge/management-tools-service';
 import { McpContentTools } from '@ai/admin-assistant-runtime/helpers/mcp-content-tools';
+import { McpVersionTools } from '@ai/admin-assistant-runtime/helpers/mcp-version-tools';
 import { McpMiscTools } from '@ai/admin-assistant-runtime/helpers/mcp-misc-tools';
 
 /**
@@ -30,6 +31,7 @@ export class AssistantMcpSourceService {
       const options = runtimeFactory.createRuntimeOptions(req);
       return [
         ...McpContentTools.build(options, false),
+        ...McpVersionTools.build(options, false),
         ...McpMiscTools.build(options, false),
         ...managementTools.buildTools(),
       ];

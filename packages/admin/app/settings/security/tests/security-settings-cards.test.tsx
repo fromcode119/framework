@@ -95,6 +95,14 @@ describe('Settings -> Security controls', () => {
     expect(input?.getAttribute('type')).not.toBe('number');
   });
 
+  it('renders the audit exclusion list as a free-text field, since it holds a list of table names', () => {
+    renderCards();
+    const input = rowFor('Tables Excluded From Write Auditing').querySelector('input');
+
+    expect(input).not.toBeNull();
+    expect(input?.getAttribute('type')).not.toBe('number');
+  });
+
   it('renders a control for EVERY key the page loads and saves', () => {
     const { container } = renderCards();
     const controls = container.querySelectorAll('[role="switch"], input');

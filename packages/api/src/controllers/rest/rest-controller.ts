@@ -31,6 +31,14 @@ export class RESTController {
   }
 
   /**
+   * The record-versions service, for callers outside the REST request cycle (the assistant/MCP
+   * runtime lists and restores version snapshots through it instead of reaching into `runtime`).
+   */
+  get versioning(): RestControllerRuntime['versioningService'] {
+    return this.runtime.versioningService;
+  }
+
+  /**
    * Request-level audit of every collection MUTATION with the acting user — reads are never audited.
    * Fire-and-forget and best-effort: auditing must never slow or break the write path.
    */

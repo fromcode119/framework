@@ -1,3 +1,4 @@
+import { AssistantVocabularyRole, CoreServices } from '@fromcode119/core';
 import { McpBridgeFactory } from '@fromcode119/mcp';
 import { IntentClassifier } from '@ai/admin-assistant-runtime/runtime/intent-classifier';
 import { OrchestratorRunner } from '@ai/admin-assistant-runtime/runtime/orchestrator';
@@ -67,6 +68,24 @@ function createDeps(options?: Partial<IAdminAssistantRuntimeOptions>) {
 }
 
 describe('runtime classifier and fallback behavior', () => {
+  // The framework owns the vocabulary mechanism and none of the words — domain terms arrive from
+  // installed plugins at boot. These scenarios exercise a finance-shaped tool (`finance.summary.get`),
+  // so the fixture registers what that plugin registers; without it "what is the total?" ties
+  // totalRevenue with totalRefunds and the alphabetical tie-break answers with refunds.
+  beforeAll(() => {
+    const vocabulary = CoreServices.getInstance().assistantVocabulary;
+    vocabulary.register('finance', AssistantVocabularyRole.MEASURE, ['revenue', 'sales', 'earnings', 'income', 'profit', 'refund', 'refunds', 'wallet', 'balance']);
+    vocabulary.register('finance', AssistantVocabularyRole.REVENUE, ['revenue', 'sales', 'earnings', 'income', 'profit']);
+    vocabulary.register('finance', AssistantVocabularyRole.COUNTABLE, ['transaction', 'transactions']);
+    vocabulary.register('finance', AssistantVocabularyRole.ENTITY, ['transaction', 'transactions', 'payment', 'payments', 'invoice', 'invoices']);
+    vocabulary.register('finance', AssistantVocabularyRole.SUBJECT, ['payment']);
+    vocabulary.register('finance', AssistantVocabularyRole.DEMOTE_WHEN_ABSENT, ['refund']);
+  });
+
+  afterAll(() => {
+    CoreServices.getInstance().assistantVocabulary.unregister('finance');
+  });
+
   it('classifies greetings as smalltalk', () => {
     const intent = IntentClassifier.classifyIntent({
       message: 'hey',

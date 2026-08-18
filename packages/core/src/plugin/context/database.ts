@@ -4,6 +4,7 @@ import { sql, eq, and, or } from 'drizzle-orm';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
+import { DatabaseWriteAudit } from '@core/plugin/context/database-write-audit';
 import { EnumValueCoercion } from '@core/plugin/context/enum-value-coercion';
 import { LocalizedReadResolver } from '@core/plugin/context/localized-read-resolver';
 import { RateLimiter } from '@core/security/rate-limiter';
@@ -22,8 +23,12 @@ import { SystemConstants } from '@core/constants/system.constants';
 
 export class DatabaseContextProxy {
   private static readonly dbLimiter = new RateLimiter(5000, 60000);
-  private static readonly ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update']);
-  private static readonly TABLE_ARG_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'delete', 'count']);
+  private static readonly ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'upsert']);
+  private static readonly TABLE_ARG_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'upsert', 'delete', 'count', 'groupCount']);
+  /** Table-arg write methods audited per call via {@link DatabaseWriteAudit} (execute is wrapped separately). */
+  private static readonly WRITE_AUDIT_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
+  /** Write methods whose SECOND arg is the row payload — never mined for a record id in the audit resource. */
+  private static readonly PAYLOAD_SECOND_ARG_METHODS = new Set(['insert', 'upsert']);
   private static readonly SYSTEM_TABLES = new Set<string>(Object.values(SystemConstants.TABLE).map((t) => String(t).toLowerCase()));
 
   private static denormalizeResult(result: any): any { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -106,14 +111,15 @@ export class DatabaseContextProxy {
             handleViolation('database');
           }
 
-          const dbMethods = ['find', 'findOne', 'create', 'update', 'delete', 'execute', 'count'];
+          // `insert` is the standard plugin write and belongs here like every other db method; the
+          // manager has no `create`, so that entry was dead. Write AUDITING happens inside the
+          // wrapped invocation below (per CALL, with the target table in hand) — auditing here in
+          // the get trap logged once per property ACCESS, which both missed real calls
+          // (`const f = db.update; f(); f()`) and logged accesses that never became calls.
+          const dbMethods = ['find', 'findOne', 'insert', 'update', 'upsert', 'delete', 'execute', 'count', 'groupCount'];
           if (typeof prop === 'string' && dbMethods.includes(prop)) {
             if (!DatabaseContextProxy.dbLimiter.check(plugin.manifest.slug)) {
               handleRateLimit('database');
-            }
-
-            if (['create', 'update', 'delete', 'execute'].includes(prop)) {
-                manager.audit.logAction(plugin.manifest.slug, 'Database Write', prop, 'allowed');
             }
           }
 
@@ -127,6 +133,17 @@ export class DatabaseContextProxy {
               storedView = DatabaseContextProxy.createDatabaseProxy(plugin, manager, security, { resolveLocalized: false });
             }
             return storedView;
+          }
+
+          // Raw-SQL writes: no table arg to guard on, but the CALL is still audited (method only —
+          // the SQL text can embed payload values, so it never reaches the trail).
+          if (prop === 'execute') {
+            const executeFn = (target as any)[prop];
+            if (typeof executeFn !== 'function') return executeFn;
+            return function (this: any, ...args: any[]) {
+              DatabaseWriteAudit.logWrite(manager, plugin.manifest.slug, 'execute', tablePrefix, undefined);
+              return executeFn.apply(this, args);
+            };
           }
 
           if (typeof prop === 'string' && DatabaseContextProxy.TABLE_ARG_METHODS.has(prop)) {
@@ -151,6 +168,20 @@ export class DatabaseContextProxy {
                 console.warn(
                   `[plugin-db-isolation] plugin "${plugin.manifest.slug}" accessed protected table "${String(args[0])}" via context.db.${prop} `
                   + '— allowed because ENFORCE_PLUGIN_DB_ISOLATION=false. Migrate to the namespace API / dedicated context API, then re-enable isolation.',
+                );
+              }
+              // Audit the write per call, with the table (and the where's record id) as the
+              // resource. `insert`/`upsert`'s second arg is the PAYLOAD, never mined for an id —
+              // only update/delete carry a where. Fire-and-forget inside logWrite; a denied call
+              // above never reaches this line, so nothing is logged 'allowed' that was blocked.
+              if (DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop)) {
+                DatabaseWriteAudit.logWrite(
+                  manager,
+                  plugin.manifest.slug,
+                  prop,
+                  tablePrefix,
+                  args[0],
+                  DatabaseContextProxy.PAYLOAD_SECOND_ARG_METHODS.has(prop) ? undefined : args[1],
                 );
               }
               // A reactor Enum member is an object and SQL binding does not stringify it, so an Enum

@@ -36,6 +36,17 @@ export class LocalizationService {
     return ['json', 'relationship', 'upload', 'richText'].includes(type);
   }
 
+  /**
+   * A localized field with scalar storage (text/textarea/…) may only hold primitives in its locale
+   * slots. An object that is not a locale map (e.g. `{}` from a stale admin form) written into a slot
+   * produces `{"bg":{}}` junk — the write half of the wiped-shortDescription bug. JSON-storage fields
+   * (contentBlocks etc.) legitimately store objects in slots and are never junk here.
+   */
+  public isJunkForLocaleSlot(field: any, value: any): boolean {
+    if (this.isJsonStorageField(String(field?.type || ''))) return false;
+    return Boolean(value) && typeof value === 'object';
+  }
+
   public serializeLocaleMap(field: any, map: Record<string, any>): any {
     if (this.isJsonStorageField(String(field?.type || ''))) {
       return map;

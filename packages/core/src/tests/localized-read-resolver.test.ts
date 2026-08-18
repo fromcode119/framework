@@ -124,4 +124,48 @@ describe('LocalizedReadResolver.resolveResult', () => {
     expect(LocalizedReadResolver.resolveResult(null, '@alpha/products', manager)).toBeNull();
     expect(LocalizedReadResolver.resolveResult(undefined, '@alpha/products', manager)).toBeUndefined();
   });
+
+  /**
+   * The shapes a wiping save leaves behind. A production admin save collapsed a legacy flat
+   * `shortDescription` to `{}`; `isLocaleMap` rejects keyless objects, so the raw `{}` leaked through
+   * every plugin read and the storefront rendered "[object Object]" as the product blurb.
+   */
+  describe('wiped locale values', () => {
+    it('collapses an emptied locale map to empty string instead of leaking the raw object', () => {
+      const row = { id: 8, name: {}, description: 'Кратко описание' };
+      const resolved = runInLocale('bg', () =>
+        LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS)),
+      ) as any;
+
+      expect(resolved.name).toBe('');
+      expect(resolved.description).toBe('Кратко описание');
+    });
+
+    it('collapses the JSON-text form of an emptied map, which is how a text column stores it', () => {
+      const row = { id: 8, name: '{}' };
+      const resolved = runInLocale('bg', () =>
+        LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS)),
+      ) as any;
+
+      expect(resolved.name).toBe('');
+    });
+
+    it('skips an empty-object locale slot and falls through to the locale that has copy', () => {
+      const row = { id: 8, name: { bg: {}, en: 'Sample record' } };
+      const resolved = runInLocale('bg', () =>
+        LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS)),
+      ) as any;
+
+      expect(resolved.name).toBe('Sample record');
+    });
+
+    it('resolves to empty string when every locale slot is an empty object', () => {
+      const row = { id: 8, name: { bg: {} } };
+      const resolved = runInLocale('bg', () =>
+        LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS)),
+      ) as any;
+
+      expect(resolved.name).toBe('');
+    });
+  });
 });

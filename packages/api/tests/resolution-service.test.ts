@@ -81,6 +81,7 @@ describe('ResolutionService default page contract routing', () => {
     vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
       contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
       redirectResolvers: { resolve: vi.fn(async () => null) },
+      canonicalPathResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: vi.fn().mockReturnValue([
           {
@@ -141,6 +142,7 @@ describe('ResolutionService default page contract routing', () => {
     vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
       contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
       redirectResolvers: { resolve: vi.fn(async () => null) },
+      canonicalPathResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: vi.fn().mockReturnValue([
           {
@@ -194,6 +196,7 @@ describe('ResolutionService default page contract routing', () => {
     vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
       contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
       redirectResolvers: { resolve: vi.fn(async () => null) },
+      canonicalPathResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: vi.fn().mockReturnValue([
           {
@@ -270,6 +273,7 @@ describe('ResolutionService default page contract routing', () => {
     vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
       contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
       redirectResolvers: { resolve: vi.fn(async () => null) },
+      canonicalPathResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: vi.fn().mockReturnValue([
           {
@@ -344,6 +348,7 @@ describe('ResolutionService default page contract routing', () => {
     vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
       contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
       redirectResolvers: { resolve: vi.fn(async () => null) },
+      canonicalPathResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: vi.fn().mockReturnValue([
           {
@@ -415,6 +420,7 @@ describe('ResolutionService default page contract routing', () => {
     vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
       contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
       redirectResolvers: { resolve: vi.fn(async () => null) },
+      canonicalPathResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: vi.fn().mockReturnValue([
           {
@@ -482,6 +488,7 @@ describe('ResolutionService default page contract routing', () => {
     vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
       contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
       redirectResolvers: { resolve: vi.fn(async () => null) },
+      canonicalPathResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: vi.fn().mockReturnValue([
           {
@@ -538,6 +545,7 @@ describe('ResolutionService default page contract routing', () => {
     vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
       contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
       redirectResolvers: { resolve: vi.fn(async () => null) },
+      canonicalPathResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: vi.fn().mockReturnValue([
           {
@@ -611,6 +619,7 @@ describe('ResolutionService default page contract routing', () => {
     vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
       contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
       redirectResolvers: { resolve: vi.fn(async () => null) },
+      canonicalPathResolvers: { resolve: vi.fn(async () => null) },
       defaultPageContractResolution: {
         resolveAll: vi.fn().mockReturnValue([
           {

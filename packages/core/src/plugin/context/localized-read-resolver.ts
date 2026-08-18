@@ -46,9 +46,19 @@ export class LocalizedReadResolver {
 
     let resolved: Record<string, unknown> | null = null;
     for (const fieldName of localizedFields) {
-      const localeMap = LocalizedReadResolver.asLocaleMap((row as Record<string, unknown>)[fieldName]);
-      // Not a locale map — a legacy flat value, or simply absent. Left exactly as stored.
-      if (!localeMap) continue;
+      const rawValue = (row as Record<string, unknown>)[fieldName];
+      const localeMap = LocalizedReadResolver.asLocaleMap(rawValue);
+      if (!localeMap) {
+        // `isLocaleMap` rejects a keyless object, so a WIPED map (`{}` — every locale's value
+        // removed, the shape a bad save leaves behind) would pass through raw and render as
+        // "[object Object]" downstream. On a declared-localized field it is still localized data:
+        // collapse it to '' like any other unfilled value. Anything else non-map is a legacy flat
+        // value, left exactly as stored.
+        if (!LocalizedReadResolver.isWipedLocaleMap(rawValue)) continue;
+        if (!resolved) resolved = { ...(row as Record<string, unknown>) };
+        resolved[fieldName] = '';
+        continue;
+      }
 
       if (!resolved) resolved = { ...(row as Record<string, unknown>) };
       resolved[fieldName] = LocalizedReadResolver.pickLocaleValue(localeMap, locale);
@@ -87,7 +97,23 @@ export class LocalizedReadResolver {
   private static isMeaningful(value: unknown): boolean {
     if (value === null || value === undefined) return false;
     if (typeof value === 'string') return value.trim().length > 0;
+    // `{ bg: {} }` — a wiped SLOT inside an otherwise valid map. Non-empty objects stay meaningful
+    // (a localized json field's blocks are objects); an empty plain object never is.
+    if (LocalizedReadResolver.isEmptyPlainObject(value)) return false;
     return true;
+  }
+
+  /** The parsed form of a wiped locale map: `{}` itself, or the `'{}'` JSON text a text column stores. */
+  private static isWipedLocaleMap(value: unknown): boolean {
+    const candidate = typeof value === 'string' ? LocalizationUtils.tryParseLocaleJson(value) : value;
+    return LocalizedReadResolver.isEmptyPlainObject(candidate);
+  }
+
+  private static isEmptyPlainObject(value: unknown): boolean {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    const proto = Object.getPrototypeOf(value);
+    if (proto !== Object.prototype && proto !== null) return false;
+    return Object.keys(value).length === 0;
   }
 
   /**
