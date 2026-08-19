@@ -51,6 +51,11 @@ export class ThemeSsrViteConfig {
         FromcodeThemeOverridesPlugin.create({ themeSlug, priority: 11 }),
       ],
       define: { 'process.env.NODE_ENV': JSON.stringify('production') },
+      // Vite's DEFAULT would copy the theme's public/ (favicons, fonts — and the site's user uploads)
+      // into ui-ssr/ on every build. The server bundle dir must hold only modules; assets are already
+      // emitted by the client build. Leaving this unset once shipped user-uploaded PDFs inside the
+      // packed theme tarball.
+      publicDir: false,
       // A theme addresses its own source as `@theme/*`; without this the SSR build dies on the first
       // such import ("Rollup failed to resolve a @theme/<dir>/constants import"). Same mapping the
       // client config declares — it is the theme's own alias, not a framework path.
