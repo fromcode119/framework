@@ -5,6 +5,8 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
+import { PluginBatchUpdateWaitService } from '@/lib/plugin-batch-update-wait-service';
+import type { IPluginBatchSettleHost } from '@/lib/interfaces/plugin-batch-settle-host.interface';
 import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
 import { VersionComparisonService } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -14,7 +16,7 @@ import { MarketplaceLoadingGrid } from '@/app/plugins/marketplace/components/vie
 import { MarketplaceEmptyState } from '@/app/plugins/marketplace/components/view/marketplace-empty-state.client';
 import { state } from '@fromcode119/reactor';
 
-export class MarketplacePage extends AdminComponent {
+export class MarketplacePage extends AdminComponent implements IPluginBatchSettleHost {
   private mounted = false;
   private prevRefreshVersion: any = undefined;
 
@@ -33,6 +35,9 @@ export class MarketplacePage extends AdminComponent {
   }
 
   componentDidUpdate(): void {
+    // During a batch update the settle loop owns all fetching — reacting to the refreshVersion bump
+    // here would flip the grid into loading skeletons (and hit a restarting api) mid-batch.
+    if (this.updatingAll) return;
     if (this.runtime.plugins?.refreshVersion !== this.prevRefreshVersion) {
       void this.fetchData();
     }
@@ -42,9 +47,9 @@ export class MarketplacePage extends AdminComponent {
     this.mounted = false;
   }
 
-  private async fetchData(refresh = false): Promise<void> {
+  private async fetchData(refresh = false, background = false): Promise<void> {
     this.prevRefreshVersion = this.runtime.plugins?.refreshVersion;
-    this.loading = true;
+    if (!background) this.loading = true;
     try {
       const listUrl = refresh
         ? `${AdminConstants.ENDPOINTS.PLUGINS.LIST}?refresh=true`
@@ -69,9 +74,12 @@ export class MarketplacePage extends AdminComponent {
       this.plugins = Object.values(grouped);
       this.installedPlugins = Array.isArray(instData) ? instData : [];
     } catch (err) {
+      // A background refetch runs while the api may be mid-restart — the settle loop needs to SEE
+      // the failure (it is progress, not an error), so rethrow instead of spamming the console.
+      if (background) throw err;
       console.error("Failed to fetch marketplace data", err);
     } finally {
-      if (this.mounted) this.loading = false;
+      if (!background && this.mounted) this.loading = false;
     }
   }
 
@@ -108,6 +116,10 @@ export class MarketplacePage extends AdminComponent {
   /**
    * Every plugin with an available update, in ONE server-side batch — the API replaces them all and
    * restarts ONCE at the end, instead of the restart-per-plugin cost of clicking each card.
+   *
+   * The operation reports 'completed' BEFORE the scheduled restart actually fires, so "completed"
+   * here means "the batch landed on disk", NOT "the api survived the restart" — the settle wait
+   * below rides through the downtime and is the only thing allowed to declare success.
    */
   private async handleUpdateAll(updateCount: number): Promise<void> {
     if (this.updatingAll || this.installing) return;
@@ -123,10 +135,13 @@ export class MarketplacePage extends AdminComponent {
       await PluginInstallOperationService.waitForCompletion(response.operationId, (operation) => {
         if (this.mounted && operation?.message) this.updateAllProgress = operation.message;
       });
-      this.updateAllProgress = 'API is back — refreshing the catalog...';
+      const settled = await PluginBatchUpdateWaitService.waitUntilSettled(this);
       if (triggerRefresh) await Promise.resolve(triggerRefresh());
-      await this.refetchUntilSettled();
-      notify(NotificationType.SUCCESS, 'Plugins Updated', 'Every available update is installed and the API is back up.');
+      if (settled) {
+        notify(NotificationType.SUCCESS, 'Plugins Updated', 'Every available update is installed and the API is back up.');
+      } else if (this.mounted) {
+        notify(NotificationType.ERROR, 'Update Not Confirmed', 'The updates were applied, but the catalog still reports pending updates. Reload the page to re-check.');
+      }
     } catch (err: any) {
       console.error('[Marketplace] Batch update failed:', err);
       notify(NotificationType.ERROR, 'Update All Failed', err.message || 'The batch update did not complete.');
@@ -136,22 +151,25 @@ export class MarketplacePage extends AdminComponent {
     }
   }
 
-  /**
-   * Right after the restart the api may answer /health before the plugin registry has finished
-   * re-registering, so one immediate refetch can still show the OLD versions — which is exactly the
-   * "it updated but the page still offers updates" bug. Refetch (cache-bypassed) until the computed
-   * update count reaches zero, bounded so a genuinely-failed update still surfaces.
-   */
-  private async refetchUntilSettled(): Promise<void> {
-    for (let attempt = 0; attempt < 10; attempt += 1) {
-      await this.fetchData(true);
-      const settled = !this.plugins.some((p) => {
-        const inst = this.installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug);
-        return inst && VersionComparisonService.isGreater(p.version, inst.manifest?.version || inst.version);
-      });
-      if (settled || !this.mounted) return;
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
+  async refetchCatalogInBackground(): Promise<void> {
+    return this.fetchData(true, true);
+  }
+
+  isCatalogSettled(): boolean {
+    return !this.plugins.some((p) => this.hasPendingUpdateFor(p));
+  }
+
+  isStillMounted(): boolean {
+    return this.mounted;
+  }
+
+  reportSettleProgress(message: string): void {
+    if (this.mounted) this.updateAllProgress = message;
+  }
+
+  private hasPendingUpdateFor(plugin: IPluginEntry): boolean {
+    const inst = this.installedPlugins.find((i) => (i.manifest?.slug || i.slug) === plugin.slug);
+    return Boolean(inst && VersionComparisonService.isGreater(plugin.version, inst.manifest?.version || inst.version));
   }
 
   private get filtered(): IPluginEntry[] {
@@ -168,10 +186,7 @@ export class MarketplacePage extends AdminComponent {
     const filtered = this.filtered;
 
     const installedCount = filtered.filter((p) => installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug)).length;
-    const updateCount = filtered.filter((p) => {
-      const inst = installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug);
-      return inst && VersionComparisonService.isGreater(p.version, inst.manifest?.version || inst.version);
-    }).length;
+    const updateCount = filtered.filter((p) => this.hasPendingUpdateFor(p)).length;
     const isDark = theme === ThemeMode.DARK;
     const summary: Array<{ label: string; value: number; tone: string }> = [
       { label: 'Available', value: filtered.length, tone: isDark ? 'text-white' : 'text-slate-900' },

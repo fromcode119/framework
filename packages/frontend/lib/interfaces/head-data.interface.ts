@@ -15,4 +15,6 @@ export interface IHeadData {
   ogImage: string;
   twitterCard: string;
   twitterHandle: string;
+  /** JSON-LD payloads (each one standalone JSON) rendered as ld+json scripts in the page body. */
+  schema?: string[];
 }

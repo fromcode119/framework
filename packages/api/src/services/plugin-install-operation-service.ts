@@ -77,7 +77,12 @@ export class PluginInstallOperationService {
     }
 
     operation.status = 'completed';
-    operation.phase = 'completed';
+    // The execute fn SCHEDULES the process restart and returns — the restart is still ~2.5s away
+    // when this runs. The phase is the only signal clients key restart-recovery on; overwriting it
+    // made a batch update look fully done while the api was about to go down for a minute.
+    if (operation.phase !== 'restart-required') {
+      operation.phase = 'completed';
+    }
     operation.message = operation.message || `Completed ${operation.kind} for "${operation.pluginSlug}".`;
     operation.updatedAt = new Date().toISOString();
   }

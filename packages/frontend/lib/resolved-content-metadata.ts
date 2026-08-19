@@ -77,6 +77,28 @@ export class ResolvedContentMetadata {
     return ResolvedContentMetadata.fetchHeadData({ url: '/', contentType: '', contentId: '', title: '', description: '' });
   }
 
+  /**
+   * The page's JSON-LD payloads, for the page COMPONENT to render as ld+json scripts — Next's
+   * Metadata API carries no structured data, so the body owns it. Builds the identical head-data
+   * query `buildEnriched` builds, so the per-request cache serves both from ONE provider fetch.
+   */
+  static async buildStructuredData(
+    content: Record<string, unknown> | null,
+    resolutionType: string | undefined,
+    url: string,
+  ): Promise<string[]> {
+    const head = await ResolvedContentMetadata.fetchHeadData({
+      url,
+      contentType: ResolvedContentMetadata.resolveContentType(content, resolutionType),
+      contentId: ResolvedContentMetadata.resolveContentId(content),
+      title: ResolvedContentMetadata.resolveTitle(content),
+      description: ResolvedContentMetadata.resolveDescription(content),
+      record: content,
+    });
+    const schema = head?.schema;
+    return Array.isArray(schema) ? schema.filter((json) => typeof json === 'string' && json.trim()) : [];
+  }
+
   private static resolveStringField(content: Record<string, unknown> | null, field: string): string {
     const value = content?.[field];
     return typeof value === 'string' ? value.trim() : '';

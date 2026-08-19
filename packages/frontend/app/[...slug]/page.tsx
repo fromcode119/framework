@@ -12,6 +12,7 @@ import { QueryParamUtils } from '@/lib/query-param-utils';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { CanonicalPathRedirect } from '@/lib/canonical-path-redirect';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
+import { StructuredDataScriptsView } from '@/components/structured-data-scripts';
 import { AccountRouteGuard } from '@/lib/account-route-guard';
 
 export class DynamicContentPageRoute {
@@ -19,8 +20,10 @@ export class DynamicContentPageRoute {
    * One resolved document → the page tree. Shared by the home-target and slug branches so both get
    * the server-rendered theme chrome; without it the two would drift.
    */
-  private static async renderResolvedContent(content: unknown, strategy: LocaleUrlStrategy) {
+  private static async renderResolvedContent(content: unknown, strategy: LocaleUrlStrategy, resolutionType: string | undefined, url: string) {
     const locale = await FrontendLocaleService.resolveDocumentLocale(strategy);
+    // Same head-data query generateMetadata built, so the per-request cache serves both from one fetch.
+    const schema = await ResolvedContentMetadata.buildStructuredData((content as Record<string, unknown> | null) || null, resolutionType, url);
     // Mirrors DynamicContentClient's own content wrapper, so the box the server paints is the box
     // the client fills in.
     const ssrMarkup = await ThemeServerRenderer.render({
@@ -33,6 +36,8 @@ export class DynamicContentPageRoute {
       <>
         {/* Emotion styles + LCP image preload, hoisted into <head> by React. */}
         {ssrMarkup ? <ThemeSsrHeadView.render markup={ssrMarkup} /> : null}
+        {/* JSON-LD structured data — body-rendered; Next's Metadata API cannot carry it. */}
+        <StructuredDataScriptsView.render schema={schema} />
         {/* Page-scoped data prefetch (theme.json `fromPage` entries) — body script, pre-theme-boot. */}
         <PageDocPrefetchView.render content={content} />
         <DynamicContentClient content={content} ssrHtml={ssrMarkup?.bodyHtml || ''} ssrRendersContentSlot={Boolean(ssrMarkup?.rendersContentSlot)} />
@@ -115,9 +120,9 @@ export class DynamicContentPageRoute {
     const locale = await DynamicPageResolver.resolveLocale(resolvedSearchParams, pathLocale, routingConfig.strategy);
     const fallbackLocale = LocalizationUtils.normalizeLocaleCode(QueryParamUtils.readSearchValue(resolvedSearchParams, 'fallback_locale'));
     if (!slug) {
-      const { content } = await DynamicPageResolver.resolveHomeTarget(locale, fallbackLocale, resolvedSearchParams);
+      const { content, resolution } = await DynamicPageResolver.resolveHomeTarget(locale, fallbackLocale, resolvedSearchParams);
       if (!content) notFound();
-      return DynamicContentPageRoute.renderResolvedContent(content, routingConfig.strategy);
+      return DynamicContentPageRoute.renderResolvedContent(content, routingConfig.strategy, resolution?.type, '/');
     }
     const resolution = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, resolvedSearchParams, locale, routingConfig.strategy);
     if (resolution?.doc) {
@@ -133,7 +138,7 @@ export class DynamicContentPageRoute {
         searchParams: resolvedSearchParams,
       });
       if (canonicalTarget) permanentRedirect(canonicalTarget);
-      return DynamicContentPageRoute.renderResolvedContent(resolution.doc, routingConfig.strategy);
+      return DynamicContentPageRoute.renderResolvedContent(resolution.doc, routingConfig.strategy, resolution.type, `/${slug}`);
     }
     // Nothing resolved at this path — honour a configured SEO redirect (retired URL) before 404ing.
     const redirectRule = await DynamicPageResolver.resolveRedirect(slug);
