@@ -3,6 +3,7 @@ import { sql, and, or, count as drizzleCount } from 'drizzle-orm';
 import { BaseDialect } from '@database/dialects/base-dialect';
 import { NamingStrategy } from '@database/naming-strategy';
 import { PostgresColumnNormalizer } from '@database/dialects/postgres/column-normalizer';
+import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
 
 /**
  * PostgresReadOperations - SELECT / count read path for the Postgres manager.
@@ -30,6 +31,10 @@ export class PostgresReadOperations extends BaseDialect {
 
   protected getParamPlaceholder(index: number): string {
     return `$${index}`;
+  }
+
+  protected equalityColumnExpression(quotedColumn: string, value: any): string {
+    return PostgresTimestampPredicate.equalityColumn(quotedColumn, value);
   }
 
   /** COUNT(*) per group — see `BaseDialect.buildGroupCountSQL` for the contract. */

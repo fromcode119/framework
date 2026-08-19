@@ -41,7 +41,10 @@ export class PublicAssetUrlUtils {
    * remote URLs, data URIs) and an unregistered optimizer both return the input unchanged — the caller
    * always gets a usable `src`.
    */
-  static optimizedUploadUrl(url: any, width: number, quality = 60): string {
+  // Default quality 80: photographic content below ~75 shows visible artifacts, and sources that
+  // are themselves compressed (most uploads) degrade twice. 60 was cheap on bytes but every image
+  // on the storefront paid for it.
+  static optimizedUploadUrl(url: any, width: number, quality = 80): string {
     const raw = String(url || '').trim();
     if (!raw) return '';
     const uploadPath = PublicAssetUrlUtils.extractUploadPath(raw);
@@ -56,7 +59,7 @@ export class PublicAssetUrlUtils {
    * different width descriptors is worse than none, because the browser then picks by descriptor and
    * still downloads the original.
    */
-  static responsiveUploadSrcSet(url: any, widths: number[], quality = 60): string {
+  static responsiveUploadSrcSet(url: any, widths: number[], quality = 80): string {
     const raw = String(url || '').trim();
     if (!raw || !PublicAssetUrlUtils.imageOptimizer) return '';
     if (!PublicAssetUrlUtils.extractUploadPath(raw)) return '';

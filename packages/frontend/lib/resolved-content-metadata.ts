@@ -1,4 +1,4 @@
-import type { ISeoHeadData } from '@/lib/interfaces/seo-head-data.interface';
+import type { IHeadData } from '@/lib/interfaces/head-data.interface';
 import { cache } from 'react';
 
 import type { Metadata } from 'next';
@@ -30,63 +30,72 @@ export class ResolvedContentMetadata {
     url: string,
   ): Promise<Metadata> {
     const base = ResolvedContentMetadata.build(content, resolutionType);
-    const seo = await ResolvedContentMetadata.fetchSeoHeadData({
+    const head = await ResolvedContentMetadata.fetchHeadData({
       url,
       contentType: ResolvedContentMetadata.resolveContentType(content, resolutionType),
       contentId: ResolvedContentMetadata.resolveContentId(content),
       title: ResolvedContentMetadata.resolveTitle(content),
       description: ResolvedContentMetadata.resolveDescription(content),
+      // The resolved record itself: the provider declares which of the record's fields it
+      // wants forwarded (manifest `ui.headDataRecordFields`) and the framework forwards them
+      // opaquely — it never knows a provider field by name.
+      record: content,
     });
-    if (!seo) return base;
+    if (!head) return base;
 
-    const canonical = seo.canonical || undefined;
-    const images = seo.ogImage ? [seo.ogImage] : undefined;
-    const ogTitle = seo.ogTitle || seo.title || undefined;
-    const ogDescription = seo.ogDescription || seo.description || undefined;
+    const canonical = head.canonical || undefined;
+    const images = head.ogImage ? [head.ogImage] : undefined;
+    const ogTitle = head.ogTitle || head.title || undefined;
+    const ogDescription = head.ogDescription || head.description || undefined;
 
     return {
       ...base,
-      title: seo.title ? { absolute: seo.title } : base.title,
-      description: seo.description || base.description,
+      title: head.title ? { absolute: head.title } : base.title,
+      description: head.description || base.description,
       alternates: canonical ? { canonical } : base.alternates,
-      robots: ResolvedContentMetadata.parseRobots(seo.robots),
+      robots: ResolvedContentMetadata.parseRobots(head.robots),
       openGraph: {
         title: ogTitle,
         description: ogDescription,
         url: canonical,
-        siteName: seo.siteName || undefined,
+        siteName: head.siteName || undefined,
         type: 'website',
         images,
       },
       twitter: {
-        card: (seo.twitterCard as 'summary_large_image' | 'summary') || 'summary_large_image',
+        card: (head.twitterCard as 'summary_large_image' | 'summary') || 'summary_large_image',
         title: ogTitle,
         description: ogDescription,
         images,
-        site: seo.twitterHandle || undefined,
+        site: head.twitterHandle || undefined,
       },
     };
   }
 
   /** Public helper for site-wide brand defaults (used by the root layout). */
-  static async fetchSite(): Promise<ISeoHeadData | null> {
-    return ResolvedContentMetadata.fetchSeoHeadData({ url: '/', contentType: '', contentId: '', title: '', description: '' });
+  static async fetchSite(): Promise<IHeadData | null> {
+    return ResolvedContentMetadata.fetchHeadData({ url: '/', contentType: '', contentId: '', title: '', description: '' });
+  }
+
+  private static resolveStringField(content: Record<string, unknown> | null, field: string): string {
+    const value = content?.[field];
+    return typeof value === 'string' ? value.trim() : '';
   }
 
   /**
-   * Per-request memoized SEO head-data fetch (React `cache()`), keyed by the full
+   * Per-request memoized head-data fetch (React `cache()`), keyed by the full
    * query string (a primitive, so layout `fetchSite` and page `buildEnriched` dedupe
    * whenever they build the identical query). Per-request only — no cross-request
    * persistence (storefront-performance-audit.md §1.2 / Phase 1.2).
    */
-  private static readonly seoHeadDataCache = cache(async (queryString: string): Promise<ISeoHeadData | null> => {
+  private static readonly headDataCache = cache(async (queryString: string): Promise<IHeadData | null> => {
     const provider = await ResolvedContentMetadata.resolveHeadDataProvider();
     if (!provider) return null;
     const path = ServerApiUtils.buildPluginPath(provider.pluginSlug, provider.headDataPath, queryString);
     // Strict: an unreachable API must NOT be read as "the provider has no head data". Doing so
     // publishes canonical/robots tags the operator never configured — a page that should be
     // noindex would quietly get indexed. Throwing turns the request into an honest 5xx instead.
-    const data = (await ServerApiUtils.serverFetchJsonOutcome(path)).valueOrThrow(path) as ISeoHeadData | null;
+    const data = (await ServerApiUtils.serverFetchJsonOutcome(path)).valueOrThrow(path) as IHeadData | null;
     return data && typeof data === 'object' && typeof data.title === 'string' ? data : null;
   });
 
@@ -98,9 +107,9 @@ export class ResolvedContentMetadata {
    * deterministic priority sort) wins. No plugin declaring it means head-data is
    * skipped and callers fall back to base metadata.
    */
-  private static async resolveHeadDataProvider(): Promise<{ pluginSlug: string; headDataPath: string } | null> {
+  private static async resolveHeadDataProvider(): Promise<{ pluginSlug: string; headDataPath: string; recordFields: string[] } | null> {
     // Strict: "no plugin declares headDataPath" and "we could not read the plugin list" are
-    // different answers, and only the first justifies skipping SEO head data.
+    // different answers, and only the first justifies skipping head data.
     const config = (await FrontendConfigCache.readOutcome()).valueOrThrow('/system/frontend');
     const plugins = Array.isArray(config?.plugins) ? config?.plugins as Array<Record<string, unknown>> : [];
     for (const plugin of plugins) {
@@ -108,26 +117,52 @@ export class ResolvedContentMetadata {
       const ui = plugin?.ui as Record<string, unknown> | undefined;
       const headDataPath = String(ui?.headDataPath || '').trim().replace(/^\/+/, '');
       if (pluginSlug && headDataPath) {
-        return { pluginSlug, headDataPath };
+        return { pluginSlug, headDataPath, recordFields: ResolvedContentMetadata.sanitizeRecordFields(ui?.headDataRecordFields) };
       }
     }
     return null;
   }
 
-  private static async fetchSeoHeadData(params: {
+  /**
+   * The provider's `ui.headDataRecordFields` declaration: which fields of the resolved
+   * content record it wants forwarded on the head-data query. The names are the provider's
+   * own vocabulary — the framework treats them as opaque strings. Reserved base query keys
+   * are dropped so a declaration can never overwrite `url`/`title`/etc.
+   */
+  private static sanitizeRecordFields(declared: unknown): string[] {
+    const reserved = new Set(['url', 'contentType', 'contentId', 'title', 'description']);
+    const names = Array.isArray(declared) ? declared : [];
+    const fields: string[] = [];
+    for (const name of names) {
+      const field = String(name || '').trim();
+      if (field && !reserved.has(field) && !fields.includes(field)) fields.push(field);
+    }
+    return fields;
+  }
+
+  private static async fetchHeadData(params: {
     url: string;
     contentType: string;
     contentId: string;
     title: string;
     description: string;
-  }): Promise<ISeoHeadData | null> {
+    record?: Record<string, unknown> | null;
+  }): Promise<IHeadData | null> {
+    // Resolved here (and again inside the cache) from the per-request FrontendConfigCache —
+    // the declared record-field list must shape the query string before the cache key exists.
+    const provider = await ResolvedContentMetadata.resolveHeadDataProvider();
+    if (!provider) return null;
     const query = new URLSearchParams();
     query.set('url', params.url || '/');
     if (params.contentType) query.set('contentType', params.contentType);
     if (params.contentId) query.set('contentId', params.contentId);
     if (params.title) query.set('title', params.title);
     if (params.description) query.set('description', params.description);
-    return ResolvedContentMetadata.seoHeadDataCache(query.toString());
+    for (const field of provider.recordFields) {
+      const value = ResolvedContentMetadata.resolveStringField(params.record ?? null, field);
+      if (value) query.set(field, value);
+    }
+    return ResolvedContentMetadata.headDataCache(query.toString());
   }
 
   private static parseRobots(robots: string): Metadata['robots'] {

@@ -10,6 +10,7 @@ import { NamingStrategy } from '@database/naming-strategy';
 import { PostgresColumnNormalizer } from '@database/dialects/postgres/column-normalizer';
 import { PostgresSchemaBuilder } from '@database/dialects/postgres/schema-builder';
 import { PostgresReadOperations } from '@database/dialects/postgres/read-operations';
+import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
 
 export class PostgresDatabaseManager extends BaseDialect implements IDatabaseManager {
   private pool: Pool;
@@ -68,6 +69,10 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     return 'ILIKE';
   }
 
+  protected equalityColumnExpression(quotedColumn: string, value: any): string {
+    return PostgresTimestampPredicate.equalityColumn(quotedColumn, value);
+  }
+
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
     return this.reader.find(tableOrName, options);
   }
@@ -109,7 +114,10 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       if (!whereColumns.length) throw new Error(`Unsafe update blocked: missing where clause for table "${tableName}"`);
 
       const setClause = setColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`).join(', ');
-      const whereClause = whereColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(setColumns.length + index + 1)}`).join(' AND ');
+      // Equality on a Date operand compares at the driver's read-back precision — see
+      // PostgresTimestampPredicate; this is what keeps `update(table, { id, updatedAt }, …)`
+      // optimistic locks matching the row they just read.
+      const whereClause = whereColumns.map((column, index) => `${this.equalityColumnExpression(`"${NamingStrategy.toSnakeCase(column)}"`, where[column])} = ${this.getParamPlaceholder(setColumns.length + index + 1)}`).join(' AND ');
 
       const setValues = await Promise.all(
         setColumns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, data[column]))

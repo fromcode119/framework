@@ -6,7 +6,7 @@ import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 
 /**
  * Per-request memoized theme prefetch (React `cache()`), mirroring the pattern used by
- * `DynamicPageResolver.resolveFetchCache` and `ResolvedContentMetadata.seoHeadDataCache`.
+ * `DynamicPageResolver.resolveFetchCache` and `ResolvedContentMetadata.headDataCache`.
  *
  * Two server-side consumers share the SAME prefetch pass within one request:
  *  - `ThemeAssets` (head): injects `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}` + LCP image preload.

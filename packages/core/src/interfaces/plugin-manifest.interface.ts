@@ -93,6 +93,11 @@ export interface IPluginManifest {
     assets?: string[];
     headInjections?: any[];
     publicRoutes?: IPublicRouteManifest[];
+    // Head-data provider contract: the plugin's own API path serving resolved head data,
+    // plus the record field names it wants forwarded from the resolved content record.
+    // The framework forwards declared fields opaquely — it never knows what they mean.
+    headDataPath?: string;
+    headDataRecordFields?: string[];
   };
 
   // Marketplace / Organization

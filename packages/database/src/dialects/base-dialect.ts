@@ -49,6 +49,28 @@ export abstract class BaseDialect {
   }
 
   /**
+   * The left-hand column expression for one predicate, given the caller's already-quoted column.
+   *
+   * Equality operators route through `equalityColumnExpression` so a dialect can align the STORED
+   * precision with what the driver's read-back value can express — see the Postgres override, where a
+   * microsecond timestamp read back as a millisecond JS Date could otherwise never equal itself
+   * again (which broke every optimistic lock of the form `update(table, { id, updatedAt }, …)`).
+   * Range operators keep the plain column: they are not an identity check, so operand precision does
+   * not flip their meaning.
+   */
+  protected comparisonColumn(comparison: { operator: string; value: any }, quotedColumn: string): string {
+    if (comparison.operator === 'eq' || comparison.operator === 'ne') {
+      return this.equalityColumnExpression(quotedColumn, comparison.value);
+    }
+    return quotedColumn;
+  }
+
+  /** Dialect hook: the column expression used when comparing for (in)equality against `value`. */
+  protected equalityColumnExpression(quotedColumn: string, _value: any): string {
+    return quotedColumn;
+  }
+
+  /**
    * The predicate for a null operand. Only equality has a meaning against absence; a range against
    * null is a call-site bug and raises rather than matching nothing.
    */
@@ -103,7 +125,7 @@ export abstract class BaseDialect {
         continue;
       }
       values.push(this.normalizeParamValue(comparison.value));
-      conditions.push(`${this.quoteIdentifier(comparison.column)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`);
+      conditions.push(`${this.comparisonColumn(comparison, this.quoteIdentifier(comparison.column))} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`);
     }
 
     return {
@@ -274,7 +296,7 @@ export abstract class BaseDialect {
         }
         values.push(this.normalizeParamValue(comparison.value));
         conditions.push(
-          `${this.quoteIdentifier(comparison.column)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`
+          `${this.comparisonColumn(comparison, this.quoteIdentifier(comparison.column))} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`
         );
       }
     }
@@ -363,7 +385,7 @@ export abstract class BaseDialect {
       if (comparisons.length > 0) {
         const conditions = comparisons.map((comparison) => {
           values.push(this.normalizeParamValue(comparison.value));
-          return `"t0".${this.quoteIdentifier(comparison.column)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`;
+          return `${this.comparisonColumn(comparison, `"t0".${this.quoteIdentifier(comparison.column)}`)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`;
         });
         sqlStr += ` WHERE ${conditions.join(' AND ')}`;
       }
