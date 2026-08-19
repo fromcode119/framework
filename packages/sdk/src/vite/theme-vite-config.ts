@@ -52,15 +52,17 @@ export class ThemeViteConfig {
     }
   }
 
-  /** Split heavy vendor libs into cacheable chunks — UI/runtime libraries only, never a business vendor. */
-  private static chunkFor(id: string, extra: Record<string, string[]>): string | undefined {
+  /**
+   * Split heavy vendor libs into cacheable chunks. WHICH libraries those are is the THEME's business —
+   * it names them in `theme.json` `vendorChunks`. The framework knows no UI library: naming Chakra,
+   * emotion or an icon set here would bake one theme's stack into every theme's build (and this config
+   * is shared by all of them). Anything the theme does not claim lands in one generic `vendor` chunk.
+   */
+  private static chunkFor(id: string, declared: Record<string, string[]>): string | undefined {
     if (!id.includes('node_modules')) return undefined;
-    for (const [chunkName, matchers] of Object.entries(extra)) {
+    for (const [chunkName, matchers] of Object.entries(declared)) {
       if (matchers.some((m) => id.includes(m))) return chunkName;
     }
-    if (id.includes('@chakra-ui') || id.includes('@emotion')) return 'vendor-chakra';
-    if (id.includes('framer-motion') || id.includes('popmotion') || id.includes('@motionone') || id.includes('style-value-types')) return 'vendor-motion';
-    if (id.includes('lucide-react') || id.includes('react-icons')) return 'vendor-icons';
     return 'vendor';
   }
 

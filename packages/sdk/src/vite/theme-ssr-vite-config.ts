@@ -16,10 +16,18 @@ import { ThemeEntryGenerator } from './theme-entry-generator';
  *
  * Differences from the client config, each load-bearing:
  *  - `ssr: true` + `target: node20` — output runs in Node, not a browser.
- *  - Externals stay BARE specifiers. The client bundle rewrites them to the `window` runtime registry
- *    (`rollup-plugin-external-globals`) because it loads with no import map; on the server there IS no
- *    registry and Node resolves them normally. Bundling copies instead would give the server a SECOND
- *    React/SDK instance and break `Enum` reference identity.
+ *  - Externals stay BARE specifiers, but ONLY for the packages whose IDENTITY must be shared with the
+ *    host process: React (one dispatcher) and `@fromcode119/*` (one `Enum`, one context registry). The
+ *    client bundle rewrites those to the `window` runtime registry (`rollup-plugin-external-globals`)
+ *    because it loads with no import map; on the server there IS no registry and Node resolves them
+ *    normally — react/react-dom through the resolve hook in `ThemeSsrRuntime`.
+ *    Every other dependency the theme uses — its UI-component library, its styling engine, its animation
+ *    library, whatever it happens to be — is BUNDLED, exactly as the client bundle already bundles it
+ *    (the framework names none of them). Left external, those resolve only through the THEME's own
+ *    `node_modules`, which exists
+ *    in a dev checkout but NOT in an installed theme (the package ships no `node_modules`) — so on a
+ *    real deployment the server bundle failed to import, `ThemeServerRenderer` fell back to null, and
+ *    every page served an empty body. A server bundle must be self-contained.
  *  - No `publicDir` — assets are already emitted by the client build; copying them twice would clobber.
  *  - No minify — server code is never shipped over the wire, and readable frames make SSR errors legible.
  *
@@ -28,17 +36,18 @@ import { ThemeEntryGenerator } from './theme-entry-generator';
  */
 export class ThemeSsrViteConfig {
   /**
-   * Left for Node to resolve at runtime rather than bundled. Regexes (not exact strings) so deep imports
-   * such as `@chakra-ui/react/styled-system` are external too — a deep import that slipped through would
-   * bundle a duplicate of a package whose singleton identity matters.
+   * Left for Node to resolve at runtime rather than bundled — ONLY packages whose singleton identity
+   * matters (see the class comment). Regexes (not exact strings) so deep imports are external too: a
+   * deep `react-dom/server` that slipped through would bundle a second React.
+   *
+   * Nothing may be added here that an INSTALLED theme cannot resolve. An installed theme has no
+   * `node_modules`, so an external that is not provided by the frontend itself makes the whole server
+   * bundle unimportable — silently, because every SSR failure path returns null.
    */
   private static readonly EXTERNAL = [
     /^react($|\/)/,
     /^react-dom($|\/)/,
     /^@fromcode119\//,
-    /^@chakra-ui\//,
-    /^@emotion\//,
-    /^framer-motion$/,
   ];
 
   static create(): UserConfig {
