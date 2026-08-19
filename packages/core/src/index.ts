@@ -193,6 +193,7 @@ export type { IPluginHealthReport } from '@core/plugin/services/interfaces/plugi
 
 // Security (Server-only)
 export { AuditManager } from '@core/security/audit-manager';
+export { InternalServiceAuth } from '@core/security/internal-service-auth';
 export { SecurityMonitor } from '@core/security/security-monitor';
 export { PluginPermissionsService } from '@core/security/plugin-permissions-service';
 export { PluginPermission } from '@core/security/enums/plugin-permission.enum';
@@ -200,6 +201,9 @@ export { PluginSignatureService } from '@core/security/plugin-signature-service'
 
 // Management (Server-only)
 export { PlatformSettingsService } from '@core/management/platform-settings-service';
+export { ProcessRestartService } from '@core/management/process-restart-service';
+export { ApplicationRestartService } from '@core/management/application-restart-service';
+export { ApplicationRestartOutcome } from '@core/management/application-restart-outcome';
 export { BackupService } from '@core/management/backup-service';
 export { BackupImportService } from '@core/management/backup-import-service';
 export { ArchiveUploadSessionService } from '@core/management/archive-upload-session-service';

@@ -142,6 +142,8 @@ export class AdminConstants {
       AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_PROFILE, { type, profileId }),
     INTEGRATION_PROVIDER: (type: string, providerId: string) =>
       AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_PROVIDER, { type, providerId }),
+    DEPLOY_APPS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.DEPLOY_APPS),
+    DEPLOY_RESTART: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.DEPLOY_RESTART),
     UPDATE_CHECK: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.UPDATE_CHECK),
     UPDATE_APPLY: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.UPDATE_APPLY),
     OPENAPI: AdminConstants.legacy(SystemConstants.API_PATH.SYSTEM.OPENAPI),

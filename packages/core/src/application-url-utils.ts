@@ -31,8 +31,12 @@ export class ApplicationUrlUtils {
     return ApplicationUrlResolver.readEnvironmentBaseUrl(envKeys, options);
   }
 
-  /** Wire the DB-backed app URL settings (env still wins — see readAppBaseUrlFromEnvironment). */
-  static registerAppUrlSettingsReader(reader: (app: string) => string | null): void {
+  /**
+   * Wire the DB-backed app URL settings. NOTE: the setting takes precedence over the env var (see
+   * {@link readAppBaseUrlFromEnvironment}); pass `null` to unregister. This reader is deliberately NOT
+   * consulted by {@link readAppInternalBaseUrlFromEnvironment}.
+   */
+  static registerAppUrlSettingsReader(reader: ((app: string) => string | null) | null): void {
     ApplicationUrlResolver.registerAppUrlSettingsReader(reader);
   }
 
@@ -45,6 +49,34 @@ export class ApplicationUrlUtils {
    */
   static readAppBaseUrlFromEnvironment(app: string): string {
     return ApplicationUrlResolver.readAppBaseUrlFromEnvironment(app);
+  }
+
+  /**
+   * The base URL to use when one app of this deployment calls ANOTHER one directly, server to server.
+   *
+   * Same contract as {@link readAppBaseUrlFromEnvironment} — clean base, no trailing slash, `''` when
+   * unresolved — but it prefers the deployment-internal address (`INTERNAL_API_URL`,
+   * `INTERNAL_ADMIN_URL`, `INTERNAL_FRONTEND_URL`, which in Docker are the service names) over the
+   * app's public URL. The public hostname may not even resolve from inside a container, and routing an
+   * internal call out through the edge proxy and back is a slower, less private path to the container
+   * next door.
+   *
+   * **It reads the ENVIRONMENT only — never the DB-backed app URL settings, and that is a security
+   * boundary, not an oversight.** A server-to-server call carries `InternalServiceAuth`'s shared
+   * secret, so this value decides where a credential is SENT. `readAppBaseUrlFromEnvironment` is
+   * setting-first and resolves the frontend from `frontend_url` **or `site_url`** — a content/SEO
+   * setting any editor can change in the CMS, and one that stays populated on a deployment that runs
+   * no frontend at all (api + admin only). Through that path an operator pressing "Restart frontend"
+   * would have POSTed the internal secret to whatever host that setting named, outside the
+   * deployment. Where an app RUNS is deployment topology; it is declared in the deployment, not in
+   * the CMS.
+   *
+   * `''` therefore means "this deployment has not declared where that app is" — callers must report
+   * that rather than guess, which is also what makes the control for an app you do not run render as
+   * unavailable instead of looking live.
+   */
+  static readAppInternalBaseUrlFromEnvironment(app: string): string {
+    return ApplicationUrlResolver.readAppInternalBaseUrlFromEnvironment(app);
   }
 
   /**

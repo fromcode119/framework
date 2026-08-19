@@ -20,14 +20,21 @@ export class AdminProxyRoute {
    * - _next/image (image optimization files)
    * - _next/webpack-hmr (hot module replacement)
    * - icons-registry (framework internal icons)
+   * - internal (server-to-server endpoints — see below)
    * - favicon.ico (favicon file)
    * - Global JS/CSS and assets (Common file extensions, incl. .webmanifest so the
    *   PWA manifest is readable pre-login and the install prompt works from the login page;
    *   sw.js and /brand/*.png are already covered by the .js / .png extensions)
+   *
+   * `internal` is excluded because this gate is a BROWSER SESSION gate: no cookie means redirect to
+   * /login. The api calls `/internal/*` as a process, with the shared internal secret and no cookie,
+   * so the gate turned every one of those calls into a 307 to the login page — which then answered
+   * the POST with 405. Those routes are NOT unguarded: each verifies `InternalServiceAuth` itself and
+   * fails closed when the deployment has no secret, which is a stronger check than a session cookie.
    */
   static readonly config = {
     matcher: [
-      '/((?!api|_next/static|_next/image|_next/webpack-hmr|icons-registry|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf|webmanifest)).*)',
+      '/((?!api|_next/static|_next/image|_next/webpack-hmr|icons-registry|internal|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf|webmanifest)).*)',
     ],
   };
 }

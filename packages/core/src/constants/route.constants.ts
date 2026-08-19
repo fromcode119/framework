@@ -144,6 +144,10 @@ export class RouteConstants {
   ADMIN_USERS_2FA_DISABLE: '/admin/users/:id/2fa',
   UPDATE_CHECK: '/update/check',
   UPDATE_APPLY: '/update/apply',
+  /** Operator-triggered restart of one app of this deployment (api / admin / frontend). */
+  DEPLOY_RESTART: '/deploy/restart',
+  /** Which apps can be restarted here, and whether each one is reachable. */
+  DEPLOY_APPS: '/deploy/apps',
   EVENTS: '/events',
   FRONTEND: '/frontend',
   I18N: '/i18n',

@@ -12,6 +12,7 @@ import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
+import { RestartServicesCard } from '@/app/settings/infrastructure/restart-services-card';
 
 export class InfrastructureSettingsPage extends AdminComponent {
   @state isLoading = true;
@@ -170,7 +171,15 @@ export class InfrastructureSettingsPage extends AdminComponent {
               Reset" — with no onClick, no href and no endpoint behind either. A destructive-looking
               control that silently does nothing is worse than no control: an operator can believe a
               factory reset was queued. Both were removed; re-add them with a real handler and a
-              confirmation dialog when the endpoints exist. */}
+              confirmation dialog when the endpoints exist.
+
+              Restart Services below is what that note asked for: a real endpoint
+              (`/system/deploy/restart`, permission `system:deploy:restart`, audited), a confirmation
+              dialog, and a disabled button with a stated reason wherever the deployment cannot
+              honour it. */}
+          <RestartServicesCard />
+
+          {/* Cache flushing and factory reset still have no endpoint and so still have no button. */}
         </div>
       </div>
     );

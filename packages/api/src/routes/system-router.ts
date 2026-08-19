@@ -261,9 +261,16 @@ export class SystemRouter extends BaseRouter {
     // System updates
     this.get(RouteConstants.SEGMENTS.UPDATE_CHECK, this.auth.requirePermission('system:update'), 
       this.controller.checkUpdate);
-    this.post(RouteConstants.SEGMENTS.UPDATE_APPLY, this.auth.requirePermission('system:update'), 
+    this.post(RouteConstants.SEGMENTS.UPDATE_APPLY, this.auth.requirePermission('system:update'),
       this.controller.applyUpdate);
-    
+
+    // Operator-triggered restarts. Same permission as the `deploy.restart` MCP tool — one authority
+    // for "may cause downtime on this install", whether it is asked for from the admin or over MCP.
+    this.get(RouteConstants.SEGMENTS.DEPLOY_APPS, this.auth.requirePermission('system:deploy:restart'),
+      this.controller.listDeployApps);
+    this.post(RouteConstants.SEGMENTS.DEPLOY_RESTART, this.auth.requirePermission('system:deploy:restart'),
+      this.controller.restartApp);
+
     // Public/frontend endpoints
     this.get(RouteConstants.SEGMENTS.EVENTS, this.auth.guard(), this.controller.getEvents);
     this.get(RouteConstants.SEGMENTS.FRONTEND, this.controller.getFrontendMetadata);

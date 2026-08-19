@@ -33,6 +33,14 @@ services:
       - THEMES_DIR=/app/themes
       - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
+      # Shared secret for api -> admin/frontend calls (Settings -> Infrastructure restart buttons).
+      # Same value on every service of the deployment; unset means those endpoints reject every call.
+      - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
+      # The admin is in THIS stack, so its service name resolves. The frontend is deployed separately
+      # here, where a service name would not resolve across stacks — leave it empty and the framework
+      # falls back to the public FRONTEND_URL, or set it to an address the api can actually reach.
+      - INTERNAL_ADMIN_URL=${INTERNAL_ADMIN_URL:-http://admin:3000}
+      - INTERNAL_FRONTEND_URL=${INTERNAL_FRONTEND_URL:-}
     depends_on:
       - db
       - redis
@@ -52,6 +60,9 @@ services:
       - API_URL=http://api:3000
       - NEXT_PUBLIC_API_URL=${API_PUBLIC_URL}
       - ADMIN_URL=${ADMIN_PUBLIC_URL}
+      # Shared secret for api -> admin/frontend calls (Settings -> Infrastructure restart buttons).
+      # Same value on every service of the deployment; unset means those endpoints reject every call.
+      - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       - NODE_ENV=production
       - PORT=3000
     depends_on:

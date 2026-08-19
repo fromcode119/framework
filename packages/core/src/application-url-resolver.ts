@@ -14,7 +14,8 @@ export class ApplicationUrlResolver {
 
   private static appUrlSettingsReader: ((app: string) => string | null) | null = null;
 
-  static registerAppUrlSettingsReader(reader: (app: string) => string | null): void {
+  /** Pass `null` to unregister — the resolver then reads the environment alone. */
+  static registerAppUrlSettingsReader(reader: ((app: string) => string | null) | null): void {
     ApplicationUrlResolver.appUrlSettingsReader = reader;
   }
 
@@ -78,6 +79,38 @@ export class ApplicationUrlResolver {
     }
     return UrlUtils.trimTrailingSlash(
       ApplicationUrlResolver.readEnvironmentBaseUrl(envKeys, { stripApiPath }),
+    );
+  }
+
+  /**
+   * Deployment-internal address for an app — the ENVIRONMENT only, deliberately.
+   *
+   * Unlike {@link readAppBaseUrlFromEnvironment} this does NOT consult the DB-backed settings reader,
+   * and that omission is the point. See the public façade
+   * {@link ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment} for why.
+   */
+  static readAppInternalBaseUrlFromEnvironment(app: string): string {
+    const normalizedApp = String(app || '').trim().toLowerCase();
+
+    let envKeys: string[];
+    if (normalizedApp === ApplicationUrlResolver.API_APP) {
+      envKeys = ['INTERNAL_API_URL', 'API_URL'];
+    } else if (normalizedApp === ApplicationUrlResolver.ADMIN_APP) {
+      envKeys = ['INTERNAL_ADMIN_URL', 'ADMIN_URL'];
+    } else if (normalizedApp === ApplicationUrlResolver.FRONTEND_APP) {
+      envKeys = ['INTERNAL_FRONTEND_URL', 'FRONTEND_URL'];
+    } else {
+      return '';
+    }
+
+    // Only the app's OWN canonical URL variable is accepted as the fallback. The generic aliases
+    // `readAppBaseUrlFromEnvironment` allows for the frontend (`NEXT_PUBLIC_SITE_URL`, `APP_URL`, …)
+    // are excluded: they routinely name a marketing site rather than the storefront app, and this
+    // address decides where a credential is sent.
+    return UrlUtils.trimTrailingSlash(
+      ApplicationUrlResolver.readEnvironmentBaseUrl(envKeys, {
+        stripApiPath: normalizedApp === ApplicationUrlResolver.API_APP,
+      }),
     );
   }
 

@@ -77,9 +77,18 @@ export class ThemeSsrRuntime {
    *
    * The magic comments are load-bearing: without them the bundler tries to resolve a theme path that
    * exists only at runtime, in a directory that is not part of the build.
+   *
+   * `cacheBuster` is what makes a theme or plugin UPDATE visible without restarting the container.
+   * Node's ESM cache is keyed by the resolved URL and never invalidated, so re-importing the same path
+   * after `build-plugins.sh` rewrote `entry.mjs` hands back the module that was loaded at boot — and a
+   * cached module does not re-run, which matters because these bundles register themselves as a side
+   * effect of running. A distinct `?v=` is a distinct URL, so the new file is read and re-executed.
+   * Omit it and the module is imported at most once per process, exactly as before.
    */
-  static importRuntimeModule(absolutePath: string): Promise<Record<string, unknown>> {
-    return import(/* webpackIgnore: true */ /* turbopackIgnore: true */ pathToFileURL(absolutePath).href);
+  static importRuntimeModule(absolutePath: string, cacheBuster = ''): Promise<Record<string, unknown>> {
+    const url = pathToFileURL(absolutePath).href;
+    const target = cacheBuster ? `${url}?v=${encodeURIComponent(cacheBuster)}` : url;
+    return import(/* webpackIgnore: true */ /* turbopackIgnore: true */ target);
   }
 
   private static async build(): Promise<ThemeSsrRuntime> {

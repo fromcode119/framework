@@ -11,6 +11,7 @@ import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { ServerPluginContext } from '@/lib/ssr/server-plugin-context';
 import { ThemeServerRegistry } from '@/lib/ssr/theme-server-registry';
 import { ThemeSsrContentTree } from '@/lib/ssr/theme-ssr-content-tree';
+import { ThemeSsrGeneration } from '@/lib/ssr/theme-ssr-generation';
 import { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
 import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
 
@@ -29,10 +30,22 @@ import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
  * existed. Server rendering must never be able to take the storefront down.
  */
 export class ThemeServerRenderer {
-  /** In-flight/completed bundle imports, keyed by path — each bundle is imported ONCE per process. */
-  private static readonly imports = new Map<string, Promise<boolean>>();
+  /**
+   * Counts boots, and every bundle URL carries the count.
+   *
+   * Node's ESM cache is keyed by URL and a cached module does NOT re-run — and registration is a side
+   * effect of running. A generation is published from an EMPTY registry, so any bundle Node answered
+   * from cache would simply be missing from the new world. Keying the URL on the version alone was not
+   * enough: reverting to a version this process had already booted replayed the cached modules,
+   * nothing registered, and the storefront went back to serving an empty body. The counter makes every
+   * boot's URLs new, so the registrations always run.
+   */
+  private static boots = 0;
 
   private static bootstrap: Promise<ThemeSsrRuntime | null> | null = null;
+
+  /** The artifact versions {@link bootstrap} was built from. A different one means a rebuild is due. */
+  private static booted: ThemeSsrGeneration | null = null;
 
   static async render(args: {
     content: unknown;
@@ -69,10 +82,12 @@ export class ThemeServerRenderer {
     ]).then(([themeWide, pageScoped]) => ({ ...themeWide, ...pageScoped }));
 
     const config = (await FrontendConfigCache.read()) || {};
-    const themeSlug = String((config.activeTheme as Record<string, unknown>)?.slug || '').trim();
+    // The installed artifact versions, read off the config this render already needed — no extra fetch.
+    const generation = ThemeSsrGeneration.from(config);
+    const themeSlug = generation.themeSlug;
     if (!themeSlug) return null;
 
-    const runtime = await ThemeServerRenderer.boot(themeSlug);
+    const runtime = await ThemeServerRenderer.boot(generation);
     if (!runtime) return null;
 
     const layouts = ThemeServerRegistry.layoutsFor(themeSlug);
@@ -152,30 +167,53 @@ export class ThemeServerRenderer {
   }
 
   /**
-   * One-time, process-wide: load the runtime module world, install the capturing bridge, import the
-   * theme and every plugin that ships a storefront server bundle, then resolve the lazily-registered
-   * block renderers. Returns null when the theme itself could not be loaded — without layouts there is
-   * nothing to render into.
+   * Load the runtime module world, install the capturing bridge, import the theme and every plugin that
+   * ships a storefront server bundle, then resolve the lazily-registered block renderers. Returns null
+   * when the theme itself could not be loaded — without layouts there is nothing to render into.
+   *
+   * Done ONCE per set of installed artifact versions rather than once per process. Keying it by version
+   * is what makes a theme or plugin update take effect on the storefront: before this, an install had to
+   * be followed by an SSH `docker restart` or the frontend went on rendering the bundles it imported at
+   * boot — and if the artifact had not existed then, went on rendering nothing at all.
    */
-  private static boot(themeSlug: string): Promise<ThemeSsrRuntime | null> {
-    ThemeServerRenderer.bootstrap ||= ThemeServerRenderer.bootOnce(themeSlug);
+  private static boot(generation: ThemeSsrGeneration): Promise<ThemeSsrRuntime | null> {
+    // Swapped synchronously, before the first await, so concurrent requests share one rebuild.
+    if (!ThemeServerRenderer.bootstrap || !generation.matches(ThemeServerRenderer.booted)) {
+      ThemeServerRenderer.booted = generation;
+      ThemeServerRenderer.bootstrap = ThemeServerRenderer.bootOnce(generation);
+    }
     return ThemeServerRenderer.bootstrap;
   }
 
-  private static async bootOnce(themeSlug: string): Promise<ThemeSsrRuntime | null> {
+  private static async bootOnce(generation: ThemeSsrGeneration): Promise<ThemeSsrRuntime | null> {
+    ThemeServerRenderer.boots += 1;
+    // Unique to this boot, so no bundle can be answered from Node's module cache. See `boots`.
+    const cacheBuster = `${generation.token}-${ThemeServerRenderer.boots}`;
     const runtime = await ThemeSsrRuntime.load();
     // The PUBLIC api base, not the internal one: plugin clients bake it into `<img src>` / `srcset`
     // attributes that the BROWSER then requests, so it has to be the URL a visitor can reach.
     ThemeServerRegistry.install(runtime.contextBridge, new ServerApiBridge(ServerApiUtils.buildPublicApiBaseUrl()));
 
+    // Everything the re-imported bundles register lands here, not in the live state, until the whole
+    // generation is built — so requests arriving mid-rebuild keep rendering against the previous world
+    // instead of a half-populated one.
+    const state = ThemeServerRegistry.beginGeneration();
+    const themeSlug = generation.themeSlug;
     const themeEntry = join(ThemeSsrRuntime.themesDir(), themeSlug, 'ui-ssr', 'entry.mjs');
-    if (!(await ThemeServerRenderer.importBundle(themeEntry))) return null;
-    if (!ThemeServerRegistry.payloadFor(themeSlug)) return null;
+    if (!(await ThemeServerRenderer.importBundle(themeEntry, cacheBuster))
+      || !state.payloadFor(themeSlug)) {
+      ThemeServerRegistry.discardGeneration(state);
+      return null;
+    }
 
     // Plugins are imported AFTER the theme so a theme override, registered at the higher priority,
     // still wins — the browser load order this mirrors is the same.
-    await Promise.all(ThemeServerRenderer.pluginEntries().map((entry) => ThemeServerRenderer.importBundle(entry)));
-    await ThemeServerRegistry.warmOverrides();
+    await Promise.all(
+      ThemeServerRenderer.pluginEntries().map((entry) => ThemeServerRenderer.importBundle(entry, cacheBuster)),
+    );
+    await state.warmOverrides();
+    ThemeServerRegistry.publishGeneration(state);
+    console.info(`[frontend] SSR bundles loaded for ${generation.signature}`);
     return runtime;
   }
 
@@ -189,19 +227,16 @@ export class ThemeServerRenderer {
       .filter((entry) => existsSync(entry));
   }
 
-  private static importBundle(entry: string): Promise<boolean> {
-    const cached = ThemeServerRenderer.imports.get(entry);
-    if (cached) return cached;
-
-    const started = ThemeServerRenderer.importBundleOnce(entry);
-    ThemeServerRenderer.imports.set(entry, started);
-    return started;
-  }
-
-  private static async importBundleOnce(entry: string): Promise<boolean> {
+  /**
+   * Import one bundle for this boot. There is deliberately NO cache in front of this: `bootOnce` runs
+   * once per generation and asks for each bundle once, so a memo would only ever serve a STALE answer
+   * across boots — including the "this file does not exist" answer that kept the frontend rendering
+   * nothing after a theme update had already fixed it.
+   */
+  private static async importBundle(entry: string, cacheBuster: string): Promise<boolean> {
     if (!existsSync(entry)) return false;
     try {
-      await ThemeSsrRuntime.importRuntimeModule(entry);
+      await ThemeSsrRuntime.importRuntimeModule(entry, cacheBuster);
       return true;
     } catch (error) {
       // One bundle that will not load server-side must not cost the page the rest of them.

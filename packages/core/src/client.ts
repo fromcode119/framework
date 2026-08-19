@@ -69,6 +69,10 @@ export { RouteUtils } from '@core/route-utils';
 export { UrlUtils } from '@core/url-utils';
 export { ApplicationUrlUtils } from '@core/application-url-utils';
 export { ApplicationHostUtils } from '@core/application-host-utils';
+// Both are needed by the admin and frontend Next apps to serve their own internal restart endpoint,
+// and neither imports anything server-only — see the notes on those classes.
+export { InternalServiceAuth } from '@core/security/internal-service-auth';
+export { ProcessRestartService } from '@core/management/process-restart-service';
 export { RuntimeLocationUtils } from '@core/runtime-location-utils';
 export { PublicAssetUrlUtils } from '@core/public-asset-url-utils';
 export { ApiVersionUtils } from '@core/api-version';

@@ -235,6 +235,8 @@ export class SystemConstants {
     EVENTS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.EVENTS),
     SHORTCODES: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.SHORTCODES),
     SHORTCODES_RENDER: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.SHORTCODES_RENDER),
+    DEPLOY_RESTART: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.DEPLOY_RESTART),
+    DEPLOY_APPS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.DEPLOY_APPS),
     ADMIN_PLUGINS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_METADATA),
     ADMIN_STATS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_STATS_COLLECTIONS),
     OPENAPI: '/openapi.json',
@@ -291,6 +293,18 @@ export class SystemConstants {
     ITEM: SystemConstants.joinPath(SystemConstants.VERSIONS_BASE, SystemConstants.ROUTE_SEGMENTS.COLLECTIONS_SLUG_ID),
     RESTORE: SystemConstants.joinPath(SystemConstants.VERSIONS_BASE, SystemConstants.ROUTE_SEGMENTS.COLLECTIONS_SLUG_ID_VERSION_RESTORE)
   }
+  } as const;
+
+  /**
+   * Paths the admin and frontend apps serve for the api to call directly, server to server.
+   *
+   * Not part of `API_PATH`: these live on the Next apps themselves, not behind the api's versioned
+   * prefix, and they authenticate with {@link InternalServiceAuth}'s shared secret rather than a
+   * session. Declared here so the caller and the two receivers cannot drift.
+   */
+  static readonly INTERNAL_APP_PATH = {
+    /** Exits the app so its supervisor restarts it. */
+    RESTART: '/internal/restart',
   } as const;
 
   /**

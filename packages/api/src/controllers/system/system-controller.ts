@@ -4,6 +4,7 @@ import { BaseController, PluginManager, ThemeManager } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { SystemAdminController } from '@api/controllers/system/system-admin-controller';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { SystemDeployController } from '@api/controllers/system/system-deploy-controller';
 import { SystemIntegrationController } from '@api/controllers/system/system-integration-controller';
 import { SystemRuntimeController } from '@api/controllers/system/system-runtime-controller';
 import { SystemUserController } from '@api/controllers/system/system-user-controller';
@@ -15,6 +16,7 @@ export class SystemController extends BaseController {
   private readonly runtimeController: SystemRuntimeController;
   private readonly userController: SystemUserController;
   private readonly peopleController: SystemPeopleController;
+  private readonly deployController: SystemDeployController;
 
   constructor(
     manager: PluginManager,
@@ -29,6 +31,7 @@ export class SystemController extends BaseController {
     this.runtimeController = new SystemRuntimeController(runtime);
     this.userController = new SystemUserController(runtime);
     this.peopleController = new SystemPeopleController(runtime);
+    this.deployController = new SystemDeployController(runtime);
   }
 
   /** Recipient suggestions for the share composer — the people directory, projected for a picker. */
@@ -158,6 +161,14 @@ export class SystemController extends BaseController {
 
   async getFrontendMetadata(req: Request, res: Response) {
     return this.adminController.getFrontendMetadata(req, res);
+  }
+
+  async listDeployApps(req: Request, res: Response) {
+    return this.deployController.listApps(req, res);
+  }
+
+  async restartApp(req: Request, res: Response) {
+    return this.deployController.restart(req, res);
   }
 
   async getThemes(req: Request, res: Response) {

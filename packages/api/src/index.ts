@@ -96,9 +96,15 @@ export class APIServer {
     // Starts AFTER the settings sync so the declared window is readable; an unset window prunes nothing.
     this.logRetention.start();
 
-    // Let ApplicationUrlUtils fall back to the DB-backed URL settings when the matching env
-    // var is unset (env always wins), so a URL changed in admin Settings propagates to links,
-    // emails and PDFs — not only to CORS. Reads the same sync settings cache CORS uses.
+    // Let ApplicationUrlUtils resolve the app URLs from the DB-backed settings, so a URL changed in
+    // admin Settings propagates to links, emails and PDFs — not only to CORS. Reads the same sync
+    // settings cache CORS uses.
+    //
+    // NOTE: the resolver is SETTING-first, not env-first — a stale "env always wins" comment lived
+    // here and is what made `site_url` an invisible source of app URLs. It matters because the
+    // frontend resolves from `frontend_url` OR `site_url`, so this reader answers with a URL even on
+    // a deployment that runs no frontend. Anything choosing where to send a CREDENTIAL must use
+    // `ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment`, which deliberately ignores this.
     ApplicationUrlUtils.registerAppUrlSettingsReader((app: string) => {
       if (app === ApplicationUrlUtils.ADMIN_APP) {
         return this.settingsCache.get(SystemConstants.META_KEY.ADMIN_URL) || null;

@@ -10,6 +10,9 @@ services:
     environment:
       - API_URL=${EXTERNAL_API_URL}
       - NEXT_PUBLIC_API_URL=${EXTERNAL_API_URL}
+      # Shared secret for api -> admin/frontend calls (Settings -> Infrastructure restart buttons).
+      # Same value on every service of the deployment; unset means those endpoints reject every call.
+      - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       - NODE_ENV=production
     networks:
       - public

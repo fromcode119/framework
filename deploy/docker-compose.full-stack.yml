@@ -67,6 +67,22 @@ services:
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
       - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
+      # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
+      # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
+      # the Coolify dashboard; the SAME value reaches all three services from there. Unset means those
+      # endpoints reject every call, and the admin shows those buttons as unavailable.
+      - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
+      # Where the api reaches the other two apps from inside this stack. Compose service names, the
+      # same mechanism `INTERNAL_API_URL=http://api:3000` already relies on for admin -> api below, so
+      # they resolve wherever that one does. Cleared falls back to the ADMIN_URL / FRONTEND_URL env
+      # var — which is what a SPLIT deployment (separate Coolify resources) needs, since a service
+      # name only resolves within its own stack.
+      #
+      # These are read from the ENVIRONMENT only, never from admin Settings: this address decides
+      # where the shared secret above is sent, and a deployment that runs no frontend must resolve to
+      # nothing rather than to whatever `site_url` happens to say.
+      - INTERNAL_ADMIN_URL=${INTERNAL_ADMIN_URL:-http://admin:3000}
+      - INTERNAL_FRONTEND_URL=${INTERNAL_FRONTEND_URL:-http://frontend:3000}
     depends_on:
       - db
       - redis
@@ -100,6 +116,11 @@ services:
       - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
+      # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
+      # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
+      # the Coolify dashboard; the SAME value reaches all three services from there. Unset means those
+      # endpoints reject every call, and the admin shows those buttons as unavailable.
+      - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       - NODE_ENV=production
       - PORT=3000
     depends_on:
@@ -130,6 +151,11 @@ services:
       - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
+      # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
+      # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
+      # the Coolify dashboard; the SAME value reaches all three services from there. Unset means those
+      # endpoints reject every call, and the admin shows those buttons as unavailable.
+      - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       - NODE_ENV=production
       - PORT=3000
     depends_on:

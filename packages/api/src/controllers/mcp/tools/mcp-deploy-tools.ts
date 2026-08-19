@@ -1,5 +1,6 @@
 import { McpSchema } from '@fromcode119/mcp';
 import type { IMcpToolDefinition } from '@fromcode119/mcp';
+import { ProcessRestartService } from '@fromcode119/core';
 import { IMcpToolDependencies } from '@api/controllers/mcp/interfaces/mcp-tool-dependencies.interface';
 
 /**
@@ -10,11 +11,11 @@ import { IMcpToolDependencies } from '@api/controllers/mcp/interfaces/mcp-tool-d
  * deliberately — and its `deploy.*` scope is never part of any wider tool group a token might tick.
  *
  * The handler answers FIRST and exits shortly after, so the caller receives the response before the
- * process dies; the container supervisor (`restart: unless-stopped`) brings the server back.
+ * process dies; the container supervisor (`restart: unless-stopped`) brings the server back. The exit
+ * itself belongs to {@link ProcessRestartService} — the same one the admin's restart buttons use, so
+ * there is exactly one definition of what "restart" means.
  */
 export class McpDeployTools {
-  private static readonly EXIT_DELAY_MS = 500;
-
   static all(deps: IMcpToolDependencies): IMcpToolDefinition[] {
     return [
       {
@@ -25,10 +26,11 @@ export class McpDeployTools {
         permission: 'system:deploy:restart',
         inputSchema: McpSchema.object({}),
         handler: async (_input, context) => {
-          deps.logger.warn(`deploy.restart requested by user ${String(context?.user?.id || 'unknown')} — exiting in ${McpDeployTools.EXIT_DELAY_MS}ms`);
-          const timer = setTimeout(() => process.exit(0), McpDeployTools.EXIT_DELAY_MS);
-          timer.unref?.();
-          return { restarting: true, exitInMs: McpDeployTools.EXIT_DELAY_MS };
+          const exit = ProcessRestartService.scheduleExit(
+            `deploy.restart requested by user ${String(context?.user?.id || 'unknown')}`,
+            deps.logger,
+          );
+          return { restarting: exit.scheduled, exitInMs: exit.exitInMs };
         },
       },
     ];
