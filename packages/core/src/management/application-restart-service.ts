@@ -48,7 +48,12 @@ export class ApplicationRestartService {
     return ApplicationRestartService.requestRemoteRestart(target);
   }
 
-  private static async requestRemoteRestart(app: string): Promise<ApplicationRestartOutcome> {
+  /**
+   * Everything that must hold BEFORE a request carrying the secret is allowed to leave this process:
+   * a secret to present, and an address this deployment actually declared for that app. Returns the
+   * URL to call, or the outcome explaining why nothing will be called.
+   */
+  private static resolveRestartTarget(app: string): { url: string } | ApplicationRestartOutcome {
     if (!InternalServiceAuth.isConfigured()) {
       return ApplicationRestartOutcome.refused(
         app,
@@ -71,7 +76,14 @@ export class ApplicationRestartService {
     // The app's own base path counts: the admin Next app is served under one (`ADMIN_URL`'s path, or
     // `NEXT_PUBLIC_ADMIN_BASE_PATH`), so its routes — this one included — all live beneath it.
     const basePath = ApplicationUrlUtils.readAppBasePathFromEnvironment(app);
-    const url = ApplicationUrlUtils.joinApiPath(baseUrl, `${basePath}${SystemConstants.INTERNAL_APP_PATH.RESTART}`);
+    return { url: ApplicationUrlUtils.joinApiPath(baseUrl, `${basePath}${SystemConstants.INTERNAL_APP_PATH.RESTART}`) };
+  }
+
+  private static async requestRemoteRestart(app: string): Promise<ApplicationRestartOutcome> {
+    const target = ApplicationRestartService.resolveRestartTarget(app);
+    if (target instanceof ApplicationRestartOutcome) return target;
+
+    const { url } = target;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), ApplicationRestartService.REQUEST_TIMEOUT_MS);
     try {

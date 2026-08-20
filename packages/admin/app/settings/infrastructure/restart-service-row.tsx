@@ -26,6 +26,26 @@ export class RestartServiceRow extends PureReactor {
     this.onRequest(this.entry.app);
   }
 
+  /**
+   * The copy, why it is blocked, and — for an app the api calls over the network — the address it
+   * will call. The address is shown rather than merely held: it is the value that decides whether
+   * this button works and where the internal secret goes, so the operator can read it here instead
+   * of inferring it from the deployment's environment.
+   */
+  private get description(): ReactNode {
+    const copy = RestartAppCopy.for(this.entry.app);
+    return (
+      <>
+        {this.blockedReason ? `${copy.description} ${this.blockedReason}` : copy.description}
+        {this.entry.url && (
+          <span className="mt-1 block font-mono text-[11px] text-[var(--muted-foreground)]">
+            {this.entry.url}
+          </span>
+        )}
+      </>
+    );
+  }
+
   render(): ReactNode {
     const copy = RestartAppCopy.for(this.entry.app);
     return (
@@ -33,7 +53,7 @@ export class RestartServiceRow extends PureReactor {
         theme={this.theme}
         icon={FrameworkIcons.Refresh}
         title={copy.title}
-        description={this.blockedReason ? `${copy.description} ${this.blockedReason}` : copy.description}
+        description={this.description}
       >
         <Button
           variant={ButtonVariant.DANGER}
