@@ -1,5 +1,13 @@
 # Docker Compose for Full-Stack Mode (API + Admin + Frontend)
-# Usage: docker compose -f deploy/docker-compose.full-stack.yml up
+#
+# Usage, from `framework/Source`:
+#   docker compose -f deploy/docker-compose.full-stack.yml --project-directory . up
+#
+# The `--project-directory` is REQUIRED, not decoration. Every path here — `build.context: .`, the
+# `../plugins` mounts — resolves against the project directory, and Compose defaults that to THIS
+# file's own folder, where there is no Dockerfile. Without the flag the build fails outright with
+# "failed to read dockerfile". (On Coolify, set the base directory to `framework/Source`; the local
+# dev stack achieves the same by including this file with `project_directory: .`.)
 # Environment variables are injected via Coolify dashboard or a .env file at repo root.
 # All paths are relative to the repo root (project-directory) — required for Coolify compatibility.
 # Set COMPOSE_PROFILES=single-domain in Coolify only when you want the gateway service.
@@ -61,9 +69,13 @@ services:
       - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - API_URL=${API_URL:-http://api.framework.local}
+      # The api builds links back into the admin (emails, notifications), so it needs the admin's
+      # PUBLIC url — the internal one below is for server-to-server calls and is not a visitor address.
+      - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
       - MARKETPLACE_URL=${MARKETPLACE_URL:-https://marketplace.fromcode.com}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
+      - APPEARANCE_DIR=/app/appearance
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
       - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
@@ -88,8 +100,12 @@ services:
       - redis
     volumes:
       - ../public/uploads:/app/public/uploads
-      - ${SHARED_PLUGINS_DIR:-../plugins}:/app/plugins
-      - ${SHARED_THEMES_DIR:-../themes}:/app/themes
+      # ONE name per extension root: the container path declared above as PLUGINS_DIR / THEMES_DIR.
+      # A SHARED_*_DIR override was a SECOND name for the same thing, which let the api and the
+      # frontend end up pointed at different directories with nothing to say so.
+      - ../plugins:/app/plugins
+      - ../themes:/app/themes
+      - ../appearance:/app/appearance
     networks:
       - framework
       - proxy
@@ -121,10 +137,14 @@ services:
       # the Coolify dashboard; the SAME value reaches all three services from there. Unset means those
       # endpoints reject every call, and the admin shows those buttons as unavailable.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
+      # The admin renders appearance bundles, so it reads the same root the api installs them into.
+      - APPEARANCE_DIR=/app/appearance
       - NODE_ENV=production
       - PORT=3000
     depends_on:
       - api
+    volumes:
+      - ../appearance:/app/appearance
     networks:
       - framework
       - proxy
@@ -156,10 +176,20 @@ services:
       # the Coolify dashboard; the SAME value reaches all three services from there. Unset means those
       # endpoints reject every call, and the admin shows those buttons as unavailable.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
+      # The frontend SERVER-RENDERS the active theme and the plugins' storefront surfaces, so it reads
+      # the same two extension roots the api installs into — the same paths, under the same two names.
+      # Without them this app renders every page as an empty body: the theme's server bundle cannot be
+      # found, and every SSR failure path is deliberately non-fatal, so nothing anywhere says why.
+      - THEMES_DIR=/app/themes
+      - PLUGINS_DIR=/app/plugins
       - NODE_ENV=production
       - PORT=3000
     depends_on:
       - api
+    volumes:
+      # Read-only: the api owns installing and updating extensions; this app only renders from them.
+      - ../themes:/app/themes:ro
+      - ../plugins:/app/plugins:ro
     networks:
       - framework
       - proxy

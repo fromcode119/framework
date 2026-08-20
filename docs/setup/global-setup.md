@@ -40,10 +40,10 @@ Important variables to review:
 - `THEMES_DIR=/app/themes`
 - `MARKETPLACE_URL=http://marketplace.framework.local`
 
-If you use shared plugin/theme folders outside `framework/Source`, set:
-
-- `SHARED_PLUGINS_DIR`
-- `SHARED_THEMES_DIR`
+Each extension root has exactly ONE name — the container path above (`PLUGINS_DIR`, `THEMES_DIR`,
+`APPEARANCE_DIR`). Every service that reads them mounts those same paths, so the api cannot be
+installing into one directory while the frontend renders from another. There is deliberately no
+second, host-side variable to override them with.
 
 ## 4. Start the Stack
 

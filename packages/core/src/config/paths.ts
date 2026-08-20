@@ -140,8 +140,12 @@ export class ProjectPaths {
   static getAppearancesDir(): string {
       const root = ProjectPaths.getProjectRoot();
       const isDev = ProjectPaths.isFrameworkRoot(root);
+      // APPEARANCE_DIR is the ONE name for this root — declared per service in compose, exactly as
+      // PLUGINS_DIR and THEMES_DIR are. A SHARED_APPEARANCE_DIR used to be consulted first, which
+      // meant the same directory had two names and a deployment could set either (or, worse, one
+      // each on two services) with nothing to say so. The relative guesses below are the fallback for
+      // a checkout that declares nothing.
       const candidates = [
-        process.env.SHARED_APPEARANCE_DIR,
         process.env.APPEARANCE_DIR,
         isDev ? '../../appearance' : null,
         isDev ? '../appearance' : null,

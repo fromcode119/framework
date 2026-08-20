@@ -1,5 +1,10 @@
 # Docker Compose for API-Only (Headless) Mode
-# Usage: docker-compose -f deploy/docker-compose.api-only.yml up
+#
+# Usage, from `framework/Source`:
+#   docker compose -f deploy/docker-compose.api-only.yml --project-directory . up
+#
+# `--project-directory` is REQUIRED: build contexts and mounts resolve against it, and Compose would
+# otherwise default to this file's folder, which holds no Dockerfile.
 
 services:
   api:
@@ -15,6 +20,7 @@ services:
       - MARKETPLACE_URL=${MARKETPLACE_URL}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
+      - APPEARANCE_DIR=/app/appearance
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
       - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
@@ -31,8 +37,11 @@ services:
       - redis
     volumes:
       - ../public/uploads:/app/public/uploads
-      - ${SHARED_PLUGINS_DIR:-../plugins}:/app/plugins
-      - ${SHARED_THEMES_DIR:-../themes}:/app/themes
+      # ONE name per extension root — the container paths declared above as PLUGINS_DIR / THEMES_DIR /
+      # APPEARANCE_DIR.
+      - ../plugins:/app/plugins
+      - ../themes:/app/themes
+      - ../appearance:/app/appearance
     networks:
       - framework
     restart: unless-stopped

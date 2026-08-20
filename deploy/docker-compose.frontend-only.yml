@@ -13,7 +13,17 @@ services:
       # Shared secret for api -> admin/frontend calls (Settings -> Infrastructure restart buttons).
       # Same value on every service of the deployment; unset means those endpoints reject every call.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
+      # The frontend SERVER-RENDERS the active theme and the plugins' storefront surfaces, so it reads
+      # those two roots off disk — the same container paths every other service declares. Without them
+      # this app serves every page as an empty body, silently: the theme's server bundle cannot be
+      # found and every SSR failure path is deliberately non-fatal.
+      - THEMES_DIR=/app/themes
+      - PLUGINS_DIR=/app/plugins
       - NODE_ENV=production
+    volumes:
+      # Read-only: the api owns installing and updating extensions; this app only renders from them.
+      - ../themes:/app/themes:ro
+      - ../plugins:/app/plugins:ro
     networks:
       - public
     restart: unless-stopped
