@@ -4,6 +4,7 @@ import {
   ApplicationRestartService,
   ApplicationUrlUtils,
   CoercionUtils,
+  FrontendSsrStatusService,
   InternalServiceAuth,
 } from '@fromcode119/core';
 import { IMcpToolDependencies } from '@api/controllers/mcp/interfaces/mcp-tool-dependencies.interface';
@@ -42,6 +43,19 @@ export class McpDeployTools {
         permission: 'system:deploy:restart',
         inputSchema: McpSchema.object({}),
         handler: async () => McpDeployTools.describeApps(),
+      },
+      {
+        tool: 'deploy.ssrStatus',
+        title: 'What the frontend can see (server rendering)',
+        description:
+          'Ask the FRONTEND process what it can see of the theme and plugin server-render bundles. '
+          + 'Use this when pages render no content: the api listing a theme\'s ui-ssr files proves '
+          + 'nothing, because the frontend is a separate container and may be looking at a different '
+          + 'directory — or none. Returns a one-line diagnosis naming the actual cause.',
+        readOnly: true,
+        permission: 'system:deploy:restart',
+        inputSchema: McpSchema.object({}),
+        handler: async () => FrontendSsrStatusService.read(),
       },
       {
         tool: 'deploy.restart',

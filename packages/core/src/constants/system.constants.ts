@@ -305,6 +305,8 @@ export class SystemConstants {
   static readonly INTERNAL_APP_PATH = {
     /** Exits the app so its supervisor restarts it. */
     RESTART: '/internal/restart',
+    /** What the frontend can see of the theme/plugin server bundles it renders from. Read-only. */
+    SSR_STATUS: '/internal/ssr-status',
   } as const;
 
   /**

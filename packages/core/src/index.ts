@@ -203,6 +203,7 @@ export { PluginSignatureService } from '@core/security/plugin-signature-service'
 export { PlatformSettingsService } from '@core/management/platform-settings-service';
 export { ProcessRestartService } from '@core/management/process-restart-service';
 export { ApplicationRestartService } from '@core/management/application-restart-service';
+export { FrontendSsrStatusService } from '@core/management/frontend-ssr-status-service';
 export { ApplicationRestartOutcome } from '@core/management/application-restart-outcome';
 export { BackupService } from '@core/management/backup-service';
 export { BackupImportService } from '@core/management/backup-import-service';
