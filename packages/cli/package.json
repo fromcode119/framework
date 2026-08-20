@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/cli",
-  "version": "0.1.81",
+  "version": "0.1.87",
   "bin": {
     "fromcode": "dist/bin.js"
   },
