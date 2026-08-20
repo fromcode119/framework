@@ -28,12 +28,27 @@ export class SqliteColumnNormalizer extends DialectColumnNormalizer {
     return types;
   }
 
-  protected normalizeParamValue(value: any): any {
+  /** Declared column types with SQLite TEXT affinity (type name contains TEXT, CHAR, or CLOB). */
+  private static readonly TEXT_AFFINITY = /TEXT|CHAR|CLOB/;
+
+  protected normalizeParamValue(value: any, declaredType?: string): any {
     if (value === undefined || value === null) return null;
     if (value instanceof Date) return SqliteDateUtils.toSafeIsoDate(value);
     if (typeof value === 'boolean') return value ? 1 : 0;
     if (Buffer.isBuffer(value)) return value;
     if (typeof value === 'object') return JSON.stringify(value);
+    // better-sqlite3 binds EVERY JS number via sqlite3_bind_double, so the integer 5 reaches a
+    // TEXT-affinity column as REAL 5.0 and is stored as '5.0'. That silently corrupts id-like
+    // strings ('5' → '5.0') and breaks every string-equality lookup on them — bind the canonical
+    // string instead. Only at TEXT affinity: numeric columns must keep receiving real numbers.
+    if (
+      typeof value === 'number' &&
+      Number.isFinite(value) &&
+      declaredType &&
+      SqliteColumnNormalizer.TEXT_AFFINITY.test(declaredType)
+    ) {
+      return String(value);
+    }
     return value;
   }
 }

@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react';
+import fs from 'node:fs';
 import path from 'node:path';
 import type { UserConfig } from 'vite';
 import { FromcodeThemeOverridesPlugin } from './fromcode-theme-overrides-plugin';
@@ -16,18 +17,18 @@ import { ThemeEntryGenerator } from './theme-entry-generator';
  *
  * Differences from the client config, each load-bearing:
  *  - `ssr: true` + `target: node20` — output runs in Node, not a browser.
- *  - Externals stay BARE specifiers, but ONLY for the packages whose IDENTITY must be shared with the
- *    host process: React (one dispatcher) and `@fromcode119/*` (one `Enum`, one context registry). The
- *    client bundle rewrites those to the `window` runtime registry (`rollup-plugin-external-globals`)
+ *  - Externals stay BARE specifiers, for two sets: the packages whose IDENTITY must be shared with the
+ *    host process — React (one dispatcher) and `@fromcode119/*` (one `Enum`, one context registry) —
+ *    and everything the THEME declares as a runtime dependency, read from its own `package.json`
+ *    (see {@link ThemeSsrViteConfig.declaredDependencies}; the framework names no library). The client
+ *    bundle rewrites the singletons to the `window` runtime registry (`rollup-plugin-external-globals`)
  *    because it loads with no import map; on the server there IS no registry and Node resolves them
  *    normally — react/react-dom through the resolve hook in `ThemeSsrRuntime`.
- *    Every other dependency the theme uses — its UI-component library, its styling engine, its animation
- *    library, whatever it happens to be — is BUNDLED, exactly as the client bundle already bundles it
- *    (the framework names none of them). Left external, those resolve only through the THEME's own
- *    `node_modules`, which exists
- *    in a dev checkout but NOT in an installed theme (the package ships no `node_modules`) — so on a
- *    real deployment the server bundle failed to import, `ThemeServerRenderer` fell back to null, and
- *    every page served an empty body. A server bundle must be self-contained.
+ *    Because those resolve through the THEME's own `node_modules`, which exists in a dev checkout but
+ *    not in a freshly installed theme, the PACKAGE has to carry them: `collect-theme-ssr-deps.cjs`
+ *    copies that closure in at pack time. Skipping it is how a real deployment ended up unable to
+ *    import its own server bundle, with `ThemeServerRenderer` falling back to null and every page
+ *    serving an empty body.
  *  - No `publicDir` — assets are already emitted by the client build; copying them twice would clobber.
  *  - No minify — server code is never shipped over the wire, and readable frames make SSR errors legible.
  *
@@ -44,11 +45,37 @@ export class ThemeSsrViteConfig {
    * `node_modules`, so an external that is not provided by the frontend itself makes the whole server
    * bundle unimportable — silently, because every SSR failure path returns null.
    */
-  private static readonly EXTERNAL = [
+  private static readonly SINGLETONS = [
     /^react($|\/)/,
     /^react-dom($|\/)/,
     /^@fromcode119\//,
   ];
+
+  /**
+   * Everything the THEME declares as a runtime dependency, left for Node to resolve instead of bundled.
+   *
+   * Read from the theme's own `package.json` — the framework names no library. It must not: which UI
+   * component library, styling engine or animation library a theme uses is the theme's business, and a
+   * literal `@chakra-ui` here would bake one theme's stack into the build config every theme shares.
+   *
+   * They stay external for a correctness reason, not convenience. Bundling a styled-system library
+   * inlines it through Rollup's CJS interop and its style props stop being processed — the server then
+   * emits literal `max-width:container.md` and `.css-x fontSize{base:md}` instead of real CSS, so the
+   * first paint is mis-styled and snaps to the real design at hydration. Measured on a real theme:
+   * 0 broken rules external, 4 bundled.
+   *
+   * The consequence is that a theme PACKAGE must carry these — an installed theme has no node_modules
+   * of its own — which `collect-theme-ssr-deps.cjs` does at pack time, reading the built bundle rather
+   * than any hardcoded list.
+   */
+  private static declaredDependencies(themeDir: string): RegExp[] {
+    const manifestPath = path.join(themeDir, 'package.json');
+    if (!fs.existsSync(manifestPath)) return [];
+    const dependencies = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))?.dependencies || {};
+    return Object.keys(dependencies).map(
+      (name) => new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|\\/)`),
+    );
+  }
 
   static create(): UserConfig {
     const themeDir = process.env.THEME_DIR as string;
@@ -96,7 +123,7 @@ export class ThemeSsrViteConfig {
         // `ui-ssr/entry.mjs`; leaving it to the entry's basename would make the contract depend on what
         // a theme happens to call its source file.
         rollupOptions: {
-          external: ThemeSsrViteConfig.EXTERNAL,
+          external: [...ThemeSsrViteConfig.SINGLETONS, ...ThemeSsrViteConfig.declaredDependencies(themeDir)],
           output: { entryFileNames: 'entry.mjs', chunkFileNames: '[name]-[hash].mjs' },
         },
       },

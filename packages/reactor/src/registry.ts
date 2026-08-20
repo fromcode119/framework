@@ -3,15 +3,15 @@ import type { ComponentType } from 'react';
 /**
  * A key → component registry. Register what a surface uses ONCE (bulk), then resolve by key — so a
  * template/view can reference `Navbar` or `Box` without importing it, and the same file works whether
- * a tag is a Chakra component, a native element wrapper, or a custom class.
+ * a tag comes from a UI-component library, a native element wrapper, or a custom class.
  *
  * Register in bulk, never one-by-one:
- *   import * as Chakra from '@chakra-ui/react';
- *   Registry.addAll(Chakra);                       // Box, Flex, Text, … all at once
+ *   import * as UiKit from 'your-component-library';
+ *   Registry.addAll(UiKit);                        // Box, Flex, Text, … all at once
  *   Registry.addAll({ Navbar, Footer, CartDrawer }); // your components, shorthand keys
  *
  * Collisions THROW — you resolve them by choosing a distinct key, never by aliasing an import:
- *   Registry.addAll({ Link });                     // e.g. Chakra Link
+ *   Registry.addAll({ Link });                     // e.g. the library's own Link
  *   Registry.add('AppLink', MyLink);               // distinct key — no `import { Link as Link2 }`
  */
 export class Registry {

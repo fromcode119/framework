@@ -17,7 +17,7 @@ export abstract class DialectColumnNormalizer {
 
   protected abstract getColumnTypes(tableName: string): Promise<Map<string, string>>;
 
-  protected abstract normalizeParamValue(value: any): any;
+  protected abstract normalizeParamValue(value: any, declaredType?: string): any;
 
   invalidateTableCache(tableName: string): void {
     this.columnTypesCache.delete(tableName);
@@ -80,7 +80,8 @@ export abstract class DialectColumnNormalizer {
     }
     const cleared = await this.coerceEmptyStringForColumn(tableName, normalizedColumn, value);
     if (cleared === null) return null;
-    return this.normalizeParamValue(value);
+    const types = await this.getColumnTypes(tableName).catch(() => new Map<string, string>());
+    return this.normalizeParamValue(value, types.get(normalizedColumn));
   }
 
   async normalizeDataForTable(tableName: string, data: any): Promise<any> {
