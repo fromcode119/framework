@@ -203,6 +203,14 @@ export class ThemeServerRenderer {
     if (!(await ThemeServerRenderer.importBundle(themeEntry, cacheBuster))
       || !state.payloadFor(themeSlug)) {
       ThemeServerRegistry.discardGeneration(state);
+      // Say so, LOUDLY. Without the theme's server bundle there is no server rendering AT ALL — every
+      // page ships a content-free body — and until this line existed that catastrophic state looked
+      // exactly like a healthy boot: no error, no warning, just empty HTML. A theme packaged by tooling
+      // that drops `ui-ssr/**` produces precisely this, and it cost two production deploys to spot.
+      console.error(
+        `[frontend] NO SERVER RENDERING: active theme "${themeSlug}" registered no layouts from ` +
+        `${themeEntry}. Every page will serve an empty body until the theme package ships that bundle.`,
+      );
       return null;
     }
 
