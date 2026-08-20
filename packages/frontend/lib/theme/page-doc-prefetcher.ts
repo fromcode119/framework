@@ -1,4 +1,4 @@
-import { ApiVersionUtils, RuntimeConstants } from '@fromcode119/core/client';
+import { ApiVersionUtils, LocalizationUtils, RuntimeConstants } from '@fromcode119/core/client';
 import { ServerApiUtils } from '@/lib/server-api';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 import type { ThemePrefetchApiEntry } from '@/lib/theme/theme-prefetch-api-entry';
@@ -105,8 +105,35 @@ export class PageDocPrefetcher {
     }
   }
 
+  /**
+   * A document/block field holding a slug, reduced to the slug itself.
+   *
+   * Two shapes reach here that a bare `String(raw)` silently destroyed, and because a value that
+   * fails the slug test is dropped without a word, the whole prefetch then produced NOTHING and the
+   * page rendered its loading state server-side — no price, no delivery estimate — with nothing
+   * anywhere saying why:
+   *
+   * - A LOCALIZED field is a locale map (`{bg: 'individualna-ritualna-kutia'}`), not a string.
+   *   `String()` on it yields `[object Object]`, which the slug test then rejects. Any localized
+   *   site — the reason the field is a map at all — lost every block slug this way.
+   * - A nested page's slug is a PATH (`cosmic-box/individualna-ritualna-kutia`). The slug test
+   *   rejects the separator, so `pageSlug` contributed nothing for any page below the root. The
+   *   record is identified by the last segment, which is the slug the endpoint is queried by.
+   */
+  private static toSlug(raw: unknown): string {
+    // The locale-map branch is chosen by SHAPE — is this an object? — not by
+    // `LocalizationUtils.hasLocalizedValue`, which answers "is there a value here at all" and is true
+    // for a plain string too. Routing strings through the map reader returns nothing, which silently
+    // dropped every non-localized slug and took the price with it.
+    const localeMap = PageDocPrefetcher.asRecord(raw);
+    const text = localeMap
+      ? Object.values(LocalizationUtils.toLocaleMap(localeMap)).map((entry) => String(entry || '').trim()).find(Boolean) || ''
+      : String(raw ?? '').trim();
+    return text.split('/').filter(Boolean).pop() || '';
+  }
+
   private static pushValue(values: string[], raw: unknown): void {
-    const value = String(raw ?? '').trim();
+    const value = PageDocPrefetcher.toSlug(raw);
     // Slug-shaped values only — these are interpolated into a query string.
     if (!value || !/^[a-z0-9][a-z0-9_-]*$/i.test(value)) return;
     if (!values.includes(value)) values.push(value);
