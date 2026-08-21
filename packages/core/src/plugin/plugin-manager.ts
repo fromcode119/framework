@@ -47,6 +47,7 @@ import { PluginDiscoveryCoordinatorService } from '@core/plugin/services/plugin-
 import { PluginManagerShutdownService } from '@core/plugin/services/plugin-manager-shutdown-service';
 import { PluginExtensionArchiveInstaller } from '@core/plugin/services/plugin-extension-archive-installer';
 import { PluginManagerServiceFactory } from '@core/plugin/services/plugin-manager-service-factory';
+import { StorefrontRendererRefreshService } from '@core/management/storefront-renderer-refresh-service';
 import { PluginManagerQueryService } from '@core/plugin/services/plugin-manager-query-service';
 import type { IScaffoldPluginInput } from '@core/plugin/services/interfaces/scaffold-plugin-input.interface';
 import type { IScaffoldPluginResult } from '@core/plugin/services/interfaces/scaffold-plugin-result.interface';
@@ -170,21 +171,40 @@ export class PluginManager implements IPluginManagerInterface {
     slug: string,
     options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter; version?: string } = {},
   ): Promise<IPluginManifest> {
-    return this.installation.installOrUpdateFromMarketplace(slug, options);
+    const manifest = await this.installation.installOrUpdateFromMarketplace(slug, options);
+    await this.refreshStorefrontRenderer(`plugin "${slug}" installed/updated`);
+    return manifest;
   }
 
   /** Update every installed plugin with a newer marketplace version — ONE restart at the end. */
   async updateAllFromMarketplace(
     options: { progressReporter?: IPluginInstallProgressReporter } = {},
   ): Promise<{ updated: string[]; failed: { slug: string; error: string }[] }> {
-    return this.installation.updateAllFromMarketplace(options);
+    const outcome = await this.installation.updateAllFromMarketplace(options);
+    // ONE refresh for the whole batch, and only when something actually changed on disk.
+    if (outcome.updated.length) {
+      await this.refreshStorefrontRenderer(`plugins updated (${outcome.updated.join(', ')})`);
+    }
+    return outcome;
   }
 
   async installUploadedPluginArchive(
     filePath: string,
     options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
   ): Promise<IPluginManifest> {
-    return this.installation.installUploadedPluginArchive(filePath, options);
+    const manifest = await this.installation.installUploadedPluginArchive(filePath, options);
+    await this.refreshStorefrontRenderer(`plugin "${manifest.slug}" installed from an archive`);
+    return manifest;
+  }
+
+  /**
+   * The storefront server-renders each plugin's `ui-ssr` bundle and holds it for the life of its
+   * process, so a plugin whose files just changed keeps rendering from the previous copy until the
+   * renderer restarts — silently, as empty values rather than an error. Same contract as the theme
+   * side; never fatal (see {@link StorefrontRendererRefreshService}).
+   */
+  private async refreshStorefrontRenderer(reason: string): Promise<void> {
+    await StorefrontRendererRefreshService.afterExtensionsChanged(reason, this.logger);
   }
 
   setThemeArchiveInstaller(installer: (filePath: string, options?: { activate?: boolean }) => Promise<any>): void {
@@ -200,7 +220,13 @@ export class PluginManager implements IPluginManagerInterface {
     type: ExtensionScope,
     options: { enable?: boolean; activate?: boolean } = {},
   ): Promise<any> {
-    return this.archiveInstaller.installExtensionArchive(filePath, type, options);
+    const outcome = await this.archiveInstaller.installExtensionArchive(filePath, type, options);
+    // PLUGIN scope only: a theme archive is routed to the theme manager, which performs its own
+    // refresh — refreshing here as well would restart the storefront twice for one install.
+    if (ExtensionScope.resolve(type) === ExtensionScope.PLUGIN) {
+      await this.refreshStorefrontRenderer('a plugin archive was installed');
+    }
+    return outcome;
   }
 
   async shutdown() {

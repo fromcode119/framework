@@ -1,4 +1,5 @@
 import { ThemeSsrStyleGroup } from '@/lib/ssr/theme-ssr-style-group';
+import { ThemeSsrPluginStyle } from '@/lib/ssr/theme-ssr-plugin-style';
 
 /**
  * A server-rendered theme, split into the part that belongs in `<head>` and the part that belongs in
@@ -13,6 +14,9 @@ import { ThemeSsrStyleGroup } from '@/lib/ssr/theme-ssr-style-group';
  *   setup.
  * - **`<link rel="preload">`.** The theme preloads its logo — the LCP element. In `<head>` the browser
  *   discovers it in the preload scanner instead of after parsing the body.
+ * - **plugin DEFAULT stylesheets** (`<style data-fc-plugin-default="…">`). See {@link ThemeSsrPluginStyle}:
+ *   left in the body they land after the theme's stylesheet and beat the theme's own brand rules until
+ *   hydration, so the page re-styles itself mid-load.
  */
 export class ThemeSsrMarkup {
   /** Body markup with the head-bound tags removed. */
@@ -23,6 +27,9 @@ export class ThemeSsrMarkup {
 
   /** `href`s the theme asked to preload as images. */
   readonly imagePreloads: string[];
+
+  /** Plugin default stylesheets, deduped by key in first-appearance order. */
+  readonly pluginStyles: ThemeSsrPluginStyle[];
 
   /**
    * True when the page body was rendered by a plugin's `frontend.content.display` slot.
@@ -37,17 +44,21 @@ export class ThemeSsrMarkup {
     bodyHtml: string,
     styleGroups: ThemeSsrStyleGroup[],
     imagePreloads: string[],
+    pluginStyles: ThemeSsrPluginStyle[],
     rendersContentSlot: boolean,
   ) {
     this.bodyHtml = bodyHtml;
     this.styleGroups = styleGroups;
     this.imagePreloads = imagePreloads;
+    this.pluginStyles = pluginStyles;
     this.rendersContentSlot = rendersContentSlot;
   }
 
   private static readonly STYLE_TAG = /<style data-emotion="([^"]*)"[^>]*>([\s\S]*?)<\/style>/g;
 
   private static readonly IMAGE_PRELOAD_TAG = /<link rel="preload"[^>]*as="image"[^>]*\/?>/g;
+
+  private static readonly PLUGIN_STYLE_TAG = /<style data-fc-plugin-default="([^"]*)"[^>]*>([\s\S]*?)<\/style>/g;
 
   private static readonly HREF_ATTRIBUTE = /href="([^"]*)"/;
 
@@ -68,14 +79,26 @@ export class ThemeSsrMarkup {
       return '';
     });
 
+    const pluginStyles: ThemeSsrPluginStyle[] = [];
+    const seenPluginKeys = new Set<string>();
+    const withoutPluginStyles = withoutStyles.replace(ThemeSsrMarkup.PLUGIN_STYLE_TAG, (_match, key, css) => {
+      const styleKey = String(key || '').trim();
+      // A page can render the same block twice; the sheet is the same sheet either way.
+      if (styleKey && !seenPluginKeys.has(styleKey)) {
+        seenPluginKeys.add(styleKey);
+        pluginStyles.push(new ThemeSsrPluginStyle(styleKey, String(css || '')));
+      }
+      return '';
+    });
+
     const imagePreloads: string[] = [];
-    const bodyHtml = withoutStyles.replace(ThemeSsrMarkup.IMAGE_PRELOAD_TAG, (match) => {
+    const bodyHtml = withoutPluginStyles.replace(ThemeSsrMarkup.IMAGE_PRELOAD_TAG, (match) => {
       const href = match.match(ThemeSsrMarkup.HREF_ATTRIBUTE)?.[1];
       if (href) imagePreloads.push(href);
       return '';
     });
 
-    return new ThemeSsrMarkup(bodyHtml, groups, imagePreloads, rendersContentSlot);
+    return new ThemeSsrMarkup(bodyHtml, groups, imagePreloads, pluginStyles, rendersContentSlot);
   }
 
   /** True when the render produced actual markup — an empty shell is not worth shipping. */
