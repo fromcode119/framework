@@ -140,6 +140,10 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     try {
+      // Turning 2FA OFF must prove possession: a current authenticator code or an unused
+      // recovery code. A bare session is not enough — that let anyone with the unlocked
+      // device silently strip the second factor.
+      await this.getTwoFactorService().assertActiveToken(userId, String(req.body?.token || ''));
       return res.json(await this.getTwoFactorService().disableForUser(userId));
     } catch (error: any) {
       return res.status(this.resolveTwoFactorStatus(error)).json({ error: error?.message || 'Failed to disable 2FA' });

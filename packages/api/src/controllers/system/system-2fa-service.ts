@@ -140,6 +140,34 @@ export class SystemTwoFactorService {
     return { success: true, message: '2FA disabled successfully' };
   }
 
+  /**
+   * Prove possession before a sensitive self-service change (e.g. turning 2FA off): a CURRENT
+   * code from the ACTIVE secret, or an unused recovery code (consumed on success). Without this,
+   * anyone holding an unlocked signed-in device could silently strip the account's second factor.
+   * No-op when 2FA is not enabled.
+   */
+  async assertActiveToken(userId: number, token: string): Promise<void> {
+    const enabledRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
+    if (enabledRow?.value !== 'true') return;
+    const clean = String(token || '').trim();
+    if (!clean) throw new Error('Your current 6-digit code is required.');
+    const secretRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret` });
+    if (secretRow) {
+      const totpSecret = SecretService.decrypt(secretRow.value);
+      if (speakeasy.totp.verify({ secret: totpSecret, encoding: 'base32', token: clean, window: 1 })) return;
+    }
+    // Recovery-code fallback — a valid unused code is consumed so it can't be replayed.
+    const records = await this.readRecoveryCodeRecords(userId);
+    const hash = this.hashRecoveryCode(clean);
+    const hit = records.find((r) => !r.usedAt && r.hash === hash);
+    if (hit) {
+      hit.usedAt = new Date().toISOString();
+      await this.writeRecoveryCodeRecords(userId, records);
+      return;
+    }
+    throw new Error('That code didn’t work — use the current one from your authenticator, or a recovery code.');
+  }
+
   private getRecoveryCodesKey(userId: number) { return `user:${userId}:2fa_recovery_codes`; }
 
   private generateRecoveryCodes(count: number = 10): string[] {
