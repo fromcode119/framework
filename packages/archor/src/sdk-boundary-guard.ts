@@ -43,8 +43,12 @@ export class SdkBoundaryGuard {
     ];
 
     const IMPORT_PATTERN = /@fromcode119\/(?!sdk(?:\/|['"\s]|$))[A-Za-z0-9._/-]+/g;
-    const STRING_PATTERNS = [
-      { regex: /\/api\/v\d+\//g, label: 'hardcoded versioned API path' },
+    const STRING_PATTERNS: Array<{ regex: RegExp; label: string; skipInAbsoluteUrl?: boolean }> = [
+      // `skipInAbsoluteUrl`: a versioned segment inside an absolute third-party URL is that service's
+      // own address (Expo's https://exp.host/--/api/v2/push/send), not a path composed against OUR
+      // API — the rule targets relative-path composition that must go through the plugin's route
+      // resolver / ApplicationUrlUtils. Hardcoding one of OUR hosts is caught by the host rules below.
+      { regex: /\/api\/v\d+\//g, label: 'hardcoded versioned API path', skipInAbsoluteUrl: true },
       { regex: /api\.framework\.local/g, label: 'hardcoded api.framework.local host' },
       { regex: /__FROMCODE_API_URL/g, label: 'legacy __FROMCODE_API_URL bridge usage' },
       { regex: /FROMCODE_API_URL/g, label: 'direct FROMCODE_API_URL bridge usage' },
@@ -214,6 +218,14 @@ export class SdkBoundaryGuard {
 
       for (const candidate of STRING_PATTERNS) {
         for (const match of lineText.matchAll(candidate.regex)) {
+          // A match that directly continues an absolute `https?://…` token sits inside a
+          // third-party service URL — out of scope for path-composition rules (see the flag).
+          if (
+            candidate.skipInAbsoluteUrl &&
+            /https?:\/\/[^'"`\s]*$/.test(lineText.slice(0, match.index))
+          ) {
+            continue;
+          }
           violations.push({
             filePath,
             lineNumber,
