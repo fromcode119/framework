@@ -58,7 +58,70 @@ export class PageDocPrefetcher {
       }),
     );
 
+    await PageDocPrefetcher.prefetchDatasourceBlocks(doc, internalBase, results);
     return results;
+  }
+
+  /**
+   * Records for every DATASOURCE block on the page — a block that names a plugin and one of its
+   * datasources (`pluginSlug` + `datasourceKey`), which is how a CMS collection block says "list this".
+   *
+   * Those blocks load their own records after mount, so server-side they render placeholders: a
+   * category page went out with its heading and nothing else, giving search engines a catalogue with no
+   * products in it. Prefetching here lets the block paint its records in the first response.
+   *
+   * Domain-agnostic: the plugin, the datasource and the paging all come from the BLOCK. The framework
+   * names no plugin and knows nothing about what the records are.
+   */
+  private static async prefetchDatasourceBlocks(
+    doc: unknown,
+    internalBase: string,
+    results: Record<string, unknown>,
+  ): Promise<void> {
+    const blocks = PageDocPrefetcher.blocksOf(PageDocPrefetcher.asRecord(doc));
+    const seen = new Set<string>();
+
+    await Promise.allSettled(blocks.map(async (block) => {
+      const data = PageDocPrefetcher.asRecord(PageDocPrefetcher.asRecord(block)?.data) || PageDocPrefetcher.asRecord(block);
+      const pluginSlug = PageDocPrefetcher.slugToken(data?.pluginSlug);
+      const datasourceKey = PageDocPrefetcher.slugToken(data?.datasourceKey);
+      if (!pluginSlug || !datasourceKey) return;
+
+      const key = `${PageDocPrefetcher.DATASOURCE_KEY_PREFIX}${pluginSlug}:${datasourceKey}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+
+      const query = new URLSearchParams();
+      const limit = Number(data?.limit);
+      if (Number.isFinite(limit) && limit > 0) query.set('limit', String(Math.floor(limit)));
+      const sort = String(data?.sort || '').trim();
+      if (sort) query.set('sort', sort);
+
+      const apiPath = ServerApiUtils.buildPluginPath(pluginSlug, datasourceKey, query);
+      try {
+        const response = await fetch(`${internalBase}${ApiVersionUtils.prefix()}${apiPath}`, {
+          next: { revalidate: PageDocPrefetcher.CACHE_REVALIDATE_SECONDS },
+        } as RequestInit);
+        if (response.ok) results[key] = await response.json();
+      } catch {
+        // Non-critical — the block keeps its client fetch fallback.
+      }
+    }));
+  }
+
+  /** The key a datasource payload lands under, so the rendering plugin can read it without a contract. */
+  static readonly DATASOURCE_KEY_PREFIX = 'datasource:';
+
+  private static blocksOf(record: Record<string, unknown> | null): unknown[] {
+    const content = record?.content;
+    if (Array.isArray(content)) return content;
+    return (Object.values(PageDocPrefetcher.asRecord(content) || {}).find(Array.isArray) as unknown[]) || [];
+  }
+
+  /** A plugin slug / datasource key is a path segment; anything else is not addressable. */
+  private static slugToken(raw: unknown): string {
+    const value = String(raw ?? '').trim();
+    return /^[a-z0-9][a-z0-9_-]*$/i.test(value) ? value : '';
   }
 
   /** Inline-script body that merges page-scoped payloads into the shared prefetch global. */

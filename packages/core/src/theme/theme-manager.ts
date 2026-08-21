@@ -12,6 +12,7 @@ import { ThemeScaffoldService } from '@core/theme/theme-scaffold-service';
 import { ThemeDefaultPageContractOverrideLoader } from '@core/theme/theme-default-page-contract-override-loader';
 import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
 import { ThemeConfigService } from '@core/theme/theme-config-service';
+import { StorefrontRendererRefreshService } from '@core/management/storefront-renderer-refresh-service';
 import { ThemeEntryPreloadService } from '@core/theme/theme-entry-preload-service';
 import { ThemeUpdateService } from '@core/theme/theme-update-service';
 import type { IThemeDefaultPageContractOverride } from '@core/default-page-contract/interfaces/theme-default-page-contract-override.interface';
@@ -77,11 +78,24 @@ export class ThemeManager {
 
   async installTheme(pkg: any): Promise<void> {
     // Pass themes map so the installer can update after discovery
-    return this.installer.installTheme(pkg);
+    await this.installer.installTheme(pkg);
+    await this.refreshStorefrontRenderer(`theme "${String(pkg?.slug || '').trim() || 'unknown'}" installed`);
   }
 
   async installFromZip(filePath: string): Promise<IThemeManifest> {
-    return this.installer.installFromZip(filePath, this.themes);
+    const manifest = await this.installer.installFromZip(filePath, this.themes);
+    await this.refreshStorefrontRenderer(`theme "${manifest.slug}" installed`);
+    return manifest;
+  }
+
+  /**
+   * The storefront renders from the theme files this operation just replaced, and it holds them in
+   * memory for the life of its process — see {@link StorefrontRendererRefreshService}. Awaited so the
+   * restart is actually requested before the install reports success, but it can never fail the
+   * install: the service reports an unreachable or absent frontend as a reason, not an error.
+   */
+  private async refreshStorefrontRenderer(reason: string): Promise<void> {
+    await StorefrontRendererRefreshService.afterExtensionsChanged(reason, this.logger);
   }
 
   async discoverThemes() {
@@ -156,6 +170,9 @@ export class ThemeManager {
     await this.materializeDefaultPages();
     this.logger.info(`Theme "${slug}" activated.`);
     this.pluginManager?.emit?.('theme:activated', { slug, manifest });
+    // A different theme means a different server-render bundle; the storefront loaded the previous
+    // one at boot and cannot swap it in place.
+    await this.refreshStorefrontRenderer(`theme "${slug}" activated`);
   }
 
   async disableTheme(slug: string) {

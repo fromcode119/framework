@@ -69,12 +69,33 @@ export class ThemeSsrViteConfig {
    * than any hardcoded list.
    */
   private static declaredDependencies(themeDir: string): RegExp[] {
-    const manifestPath = path.join(themeDir, 'package.json');
-    if (!fs.existsSync(manifestPath)) return [];
-    const dependencies = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))?.dependencies || {};
-    return Object.keys(dependencies).map(
+    return ThemeSsrViteConfig.declaredNames(themeDir).map(
       (name) => new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|\\/)`),
     );
+  }
+
+  /**
+   * What the theme says must stay external, narrowest first.
+   *
+   * `theme.json` `ssrExternals` is the precise answer — normally just the styling stack — and a theme
+   * that states it keeps its package small, because everything else is bundled and tree-shaken. With
+   * nothing declared the SAFE answer is every runtime dependency: bundling the wrong one silently
+   * breaks its styles, and a package that is too big is a far better failure than a site that renders
+   * wrong. The difference is not academic — externalizing all 17 of one theme's dependencies pulled in
+   * a whole icon library and took its package from 127 MB to 148 MB.
+   */
+  private static declaredNames(themeDir: string): string[] {
+    const manifest = path.join(themeDir, 'theme.json');
+    if (fs.existsSync(manifest)) {
+      const declared = JSON.parse(fs.readFileSync(manifest, 'utf8'))?.ssrExternals;
+      if (Array.isArray(declared)) {
+        const names = declared.map((entry: unknown) => String(entry || '').trim()).filter(Boolean);
+        if (names.length) return names;
+      }
+    }
+    const packageJson = path.join(themeDir, 'package.json');
+    if (!fs.existsSync(packageJson)) return [];
+    return Object.keys(JSON.parse(fs.readFileSync(packageJson, 'utf8'))?.dependencies || {});
   }
 
   static create(): UserConfig {
