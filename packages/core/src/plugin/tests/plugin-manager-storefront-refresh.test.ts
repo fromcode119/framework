@@ -32,25 +32,25 @@ describe('PluginManager storefront renderer refresh', () => {
   });
 
   it('refreshes after a marketplace install/update', async () => {
-    const manager = managerWith({ installOrUpdateFromMarketplace: async () => ({ slug: 'ecommerce' }) });
+    const manager = managerWith({ installOrUpdateFromMarketplace: async () => ({ slug: 'alpha' }) });
 
-    const manifest = await manager.installOrUpdateFromMarketplace('ecommerce');
+    const manifest = await manager.installOrUpdateFromMarketplace('alpha');
 
-    expect(manifest).toEqual({ slug: 'ecommerce' });
+    expect(manifest).toEqual({ slug: 'alpha' });
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
   it('refreshes after an uploaded plugin archive', async () => {
-    const manager = managerWith({ installUploadedPluginArchive: async () => ({ slug: 'seo' }) });
+    const manager = managerWith({ installUploadedPluginArchive: async () => ({ slug: 'beta' }) });
 
-    await manager.installUploadedPluginArchive('/tmp/seo.tar.gz');
+    await manager.installUploadedPluginArchive('/tmp/beta.tar.gz');
 
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
   it('refreshes ONCE for a whole batch update, not once per plugin', async () => {
     const manager = managerWith({
-      updateAllFromMarketplace: async () => ({ updated: ['ecommerce', 'cms', 'seo'], failed: [] }),
+      updateAllFromMarketplace: async () => ({ updated: ['alpha', 'gamma', 'beta'], failed: [] }),
     });
 
     await manager.updateAllFromMarketplace();
@@ -67,17 +67,17 @@ describe('PluginManager storefront renderer refresh', () => {
   });
 
   it('refreshes for a PLUGIN extension archive', async () => {
-    const manager = managerWith({}, { installExtensionArchive: async () => ({ slug: 'forms' }) });
+    const manager = managerWith({}, { installExtensionArchive: async () => ({ slug: 'delta' }) });
 
-    await manager.installExtensionArchive('/tmp/forms.tar.gz', ExtensionScope.PLUGIN);
+    await manager.installExtensionArchive('/tmp/delta.tar.gz', ExtensionScope.PLUGIN);
 
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
   it('leaves a THEME extension archive to the theme manager, so the storefront restarts once', async () => {
-    const manager = managerWith({}, { installExtensionArchive: async () => ({ slug: 'atlantis' }) });
+    const manager = managerWith({}, { installExtensionArchive: async () => ({ slug: 'sample-theme' }) });
 
-    await manager.installExtensionArchive('/tmp/atlantis.tar.gz', ExtensionScope.THEME);
+    await manager.installExtensionArchive('/tmp/sample-theme.tar.gz', ExtensionScope.THEME);
 
     expect(refresh).not.toHaveBeenCalled();
   });

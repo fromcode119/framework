@@ -64,7 +64,7 @@ export class PageDocPrefetcher {
 
   /**
    * Records for every DATASOURCE block on the page — a block that names a plugin and one of its
-   * datasources (`pluginSlug` + `datasourceKey`), which is how a CMS collection block says "list this".
+   * datasources (`pluginSlug` + `datasourceKey`), which is how a collection block says "list this".
    *
    * Those blocks load their own records after mount, so server-side they render placeholders: a
    * category page went out with its heading and nothing else, giving search engines a catalogue with no
@@ -87,7 +87,14 @@ export class PageDocPrefetcher {
       const datasourceKey = PageDocPrefetcher.slugToken(data?.datasourceKey);
       if (!pluginSlug || !datasourceKey) return;
 
-      const key = `${PageDocPrefetcher.DATASOURCE_KEY_PREFIX}${pluginSlug}:${datasourceKey}`;
+      // Keyed by the BLOCK, not by plugin+datasource. Two blocks on one page routinely name the SAME
+      // datasource and narrow it differently — several sections of one catalogue, each filtered to its
+      // own subset. Sharing a payload between them meant every section seeded from whichever block was
+      // prefetched first, so records server-rendered under the wrong heading and only corrected
+      // themselves after hydration. The block is the unit that asked, so the block is the key.
+      const blockId = String(PageDocPrefetcher.asRecord(block)?.id || '').trim();
+      if (!blockId) return;
+      const key = `${PageDocPrefetcher.DATASOURCE_KEY_PREFIX}${blockId}`;
       if (seen.has(key)) return;
       seen.add(key);
 
@@ -109,7 +116,10 @@ export class PageDocPrefetcher {
     }));
   }
 
-  /** The key a datasource payload lands under, so the rendering plugin can read it without a contract. */
+  /**
+   * The key a datasource payload lands under — `datasource:<blockId>`, so the rendering plugin reads the
+   * payload fetched for ITS OWN block and nothing else.
+   */
   static readonly DATASOURCE_KEY_PREFIX = 'datasource:';
 
   private static blocksOf(record: Record<string, unknown> | null): unknown[] {
@@ -179,9 +189,9 @@ export class PageDocPrefetcher {
    * - A LOCALIZED field is a locale map (`{bg: 'individualna-ritualna-kutia'}`), not a string.
    *   `String()` on it yields `[object Object]`, which the slug test then rejects. Any localized
    *   site — the reason the field is a map at all — lost every block slug this way.
-   * - A nested page's slug is a PATH (`cosmic-box/individualna-ritualna-kutia`). The slug test
-   *   rejects the separator, so `pageSlug` contributed nothing for any page below the root. The
-   *   record is identified by the last segment, which is the slug the endpoint is queried by.
+   * - A nested page's slug is a PATH (`<parent>/<child>`). The slug test rejects the separator, so
+   *   `pageSlug` contributed nothing for any page below the root. The record is identified by the
+   *   last segment, which is the slug the endpoint is queried by.
    */
   private static toSlug(raw: unknown): string {
     // The locale-map branch is chosen by SHAPE — is this an object? — not by

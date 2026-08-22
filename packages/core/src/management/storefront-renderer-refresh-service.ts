@@ -23,7 +23,7 @@ import { ApplicationUrlUtils } from '@core/application-url-utils';
  */
 export class StorefrontRendererRefreshService {
   /**
-   * @param reason what changed, for the log — e.g. `theme "aurora" installed`.
+   * @param reason what changed, for the log — e.g. `theme "<slug>" installed`.
    */
   static async afterExtensionsChanged(
     reason: string,
