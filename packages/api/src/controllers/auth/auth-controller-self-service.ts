@@ -168,6 +168,7 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
       this.db,
       () => this.manager.email,
       new UserManagementService(this.db, this.auth, this.manager),
+      this.manager.integrations,
     );
   }
 

@@ -4,7 +4,8 @@ import { Request, Response } from 'express';
 import Handlebars from 'handlebars';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { ApplicationUrlUtils, SystemConstants, SecretService } from '@fromcode119/core';
+import { ApplicationUrlUtils, FrameworkEmailSenderService, Logger, SystemConstants, SecretService } from '@fromcode119/core';
+import type { FrameworkEmailSender } from '@fromcode119/core';
 import { createHash, randomBytes } from 'crypto';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
@@ -13,10 +14,14 @@ import { AuthUtils } from '@api/utils/auth';
 import { UserManagementService } from '@api/services/user-management-service';
 
 export class SystemTwoFactorService {
+  private readonly logger = new Logger({ namespace: 'System2FA' });
+
   constructor(
     private readonly db: any,
     private readonly emailGetter: () => { send: (opts: any) => Promise<any> },
     private readonly users: UserManagementService,
+    /** Reads the operator-configured sender — see {@link FrameworkEmailSenderService}. */
+    private readonly integrations: { getConfig(type: string): Promise<any> },
   ) {}
 
   async getTwoFactorStatus(req: Request, res: Response) {
@@ -236,7 +241,14 @@ export class SystemTwoFactorService {
       const recipient = AuthUtils.normalizeEmail(user?.email);
       if (!recipient) return;
       const appName = await this.resolveFrameworkAppName();
-      const from = await this.resolveFrameworkSenderIdentity();
+      const sender = await this.resolveFrameworkSender();
+      if (!sender.isConfigured) {
+        this.logger.error(
+          `[System2FA] Security notification not sent: no sender address is configured. Set ${FrameworkEmailSenderService.SETTING_HINT}.`,
+        );
+        return;
+      }
+      const from = sender.identity;
       const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
       const html = await this.renderSecurityNotificationHtml(options.title, details);
       const payload: Record<string, any> = {
@@ -279,29 +291,9 @@ export class SystemTwoFactorService {
     return String(process.env.APP_NAME || '').trim() || 'Platform';
   }
 
-  private async resolveFrameworkSenderAddress(): Promise<string> {
-    const platformDomain = await this.resolveFrameworkPlatformDomain();
-    if (platformDomain) {
-      return `no-reply@${platformDomain}`;
-    }
-
-    const envSender = String(process.env.EMAIL_FROM || process.env.SMTP_FROM || '').trim();
-    if (envSender) {
-      return envSender;
-    }
-
-    return 'no-reply@localhost';
-  }
-
-  private async resolveFrameworkSenderIdentity(): Promise<string> {
-    const appName = await this.resolveFrameworkAppName();
-    const senderAddress = await this.resolveFrameworkSenderAddress();
-    const normalizedAppName = appName.replace(/"/g, '\\"').trim();
-    if (!normalizedAppName) {
-      return senderAddress;
-    }
-
-    return `"${normalizedAppName}" <${senderAddress}>`;
+  /** The configured sender. Was a second copy of the invented `no-reply@<domain>` builder. */
+  private async resolveFrameworkSender(): Promise<FrameworkEmailSender> {
+    return FrameworkEmailSenderService.resolve(this.integrations, await this.resolveFrameworkAppName());
   }
 
   private async resolveFrameworkPlatformDomain(): Promise<string> {

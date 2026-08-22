@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { ApplicationUrlUtils, BaseController, CookieConstants, Logger, PluginManager, RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
+import { ApplicationUrlUtils, BaseController, CookieConstants, FrameworkEmailSenderService, Logger, PluginManager, RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
+import type { FrameworkEmailSender } from '@fromcode119/core';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { ApiUrlUtils } from '@api/utils/url';
 import { AuthUtils } from '@api/utils/auth';
@@ -131,29 +132,17 @@ export class AuthControllerSharedInfrastructure extends BaseController {
     return 'Platform';
   }
 
-  protected async resolveFrameworkSenderAddress(): Promise<string> {
-    const platformDomain = await this.resolveFrameworkPlatformDomain();
-    if (platformDomain) {
-      return `no-reply@${platformDomain}`;
-    }
-
-    const envSender = String(process.env.EMAIL_FROM || process.env.SMTP_FROM || '').trim();
-    if (envSender) {
-      return envSender;
-    }
-
-    return 'no-reply@localhost';
-  }
-
-  protected async resolveFrameworkSenderIdentity(): Promise<string> {
-    const appName = await this.resolveFrameworkAppName();
-    const senderAddress = await this.resolveFrameworkSenderAddress();
-    const normalizedAppName = appName.replace(/"/g, '\\"').trim();
-    if (!normalizedAppName) {
-      return senderAddress;
-    }
-
-    return `"${normalizedAppName}" <${senderAddress}>`;
+  /**
+   * The configured sender, or an unconfigured one. See {@link FrameworkEmailSenderService}: this used
+   * to build `no-reply@<platform domain>` in code — an address no admin control produced, which also
+   * outranked an explicitly set `EMAIL_FROM`. Callers check `isConfigured` and decline to send rather
+   * than address a message from somewhere nobody chose.
+   */
+  protected async resolveFrameworkSender(): Promise<FrameworkEmailSender> {
+    return FrameworkEmailSenderService.resolve(
+      this.manager.integrations,
+      await this.resolveFrameworkAppName(),
+    );
   }
 
   protected async resolveFrameworkPlatformDomain(): Promise<string> {

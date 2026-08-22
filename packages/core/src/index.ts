@@ -169,6 +169,8 @@ export { SigningSecretService } from '@core/security/signing-secret-service';
 // The global preferences page is served by the api package, which needs to mint and verify the token
 // and therefore needs a meta store to derive the key from.
 export { EmailPreferencesTokenService } from '@core/email/email-preferences-token-service';
+export { FrameworkEmailSender } from '@core/email/framework-email-sender';
+export { FrameworkEmailSenderService } from '@core/email/framework-email-sender-service';
 export { MetaContextProxy } from '@core/plugin/context/meta';
 export type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 export type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';

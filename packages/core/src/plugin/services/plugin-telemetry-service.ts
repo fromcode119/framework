@@ -1,6 +1,8 @@
 /** Plugin telemetry service — email alerting and digest. Extracted from PluginManager (ARC-007). */
 
 import { SystemConstants } from '@core/constants/system.constants';
+import { FrameworkEmailSenderService } from '@core/email/framework-email-sender-service';
+import type { FrameworkEmailSender } from '@core/email/framework-email-sender';
 import { ApplicationUrlUtils } from '@core/application-url-utils';
 import { IDatabaseManager } from '@fromcode119/database';
 import { PluginEmailTemplateFileService } from '@core/plugin/services/plugin-email-template-file-service';
@@ -10,6 +12,8 @@ export class PluginTelemetryService {
   constructor(
     private readonly db: IDatabaseManager,
     private readonly emailGetter: () => { send: (opts: any) => Promise<any> },
+    /** Reads the operator-configured sender — see {@link FrameworkEmailSenderService}. */
+    private readonly integrations: { getConfig(type: string): Promise<any> },
   ) {}
 
   // --- Checks ---
@@ -116,19 +120,13 @@ export class PluginTelemetryService {
     return String(process.env.APP_NAME || '').trim() || 'Platform';
   }
 
-  private resolveSenderAddress(): string {
-    const configuredSender = String(process.env.EMAIL_FROM || process.env.SMTP_FROM || '').trim();
-    if (configuredSender) {
-      return configuredSender;
-    }
-
-    const platformDomain = ApplicationUrlUtils.derivePlatformDomain(
-      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
-      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
-      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
-    );
-
-    return `no-reply@${platformDomain || 'localhost'}`;
+  /**
+   * The configured sender, or an unconfigured one. This was the THIRD copy of the invented
+   * `no-reply@<domain>` builder — here it even derived the domain from whichever app URL happened to
+   * be set, so telemetry could claim an address on the admin or api host.
+   */
+  private async resolveSender(): Promise<FrameworkEmailSender> {
+    return FrameworkEmailSenderService.resolve(this.integrations, await this.resolveAppName());
   }
 
   // --- Notification methods ---
@@ -160,9 +158,13 @@ export class PluginTelemetryService {
       contextText: context ? JSON.stringify(context, null, 2) : '(none)',
     });
 
+    const sender = await this.resolveSender();
+    // Telemetry is a best-effort side channel; it must not invent an address to reach the operator.
+    if (!sender.isConfigured) return;
+
     await this.emailGetter().send({
       to: recipients.join(','),
-      from: this.resolveSenderAddress(),
+      from: sender.identity,
       subject: email.subject,
       text: email.text,
       html: email.html,
@@ -217,9 +219,13 @@ export class PluginTelemetryService {
         })),
     });
 
+    const sender = await this.resolveSender();
+    // Telemetry is a best-effort side channel; it must not invent an address to reach the operator.
+    if (!sender.isConfigured) return;
+
     await this.emailGetter().send({
       to: recipients.join(','),
-      from: this.resolveSenderAddress(),
+      from: sender.identity,
       subject: email.subject,
       text: email.text,
       html: email.html,
@@ -242,9 +248,16 @@ export class PluginTelemetryService {
       actorRoles: actorRoles || '(none)',
     });
 
+    const sender = await this.resolveSender();
+    // This one is an operator-triggered TEST: it reports the misconfiguration the same way the
+    // checks above do, rather than returning quietly like the background telemetry paths.
+    if (!sender.isConfigured) {
+      throw new Error(`No sender address is configured. Set ${FrameworkEmailSenderService.SETTING_HINT}.`);
+    }
+
     await this.emailGetter().send({
       to: recipients.join(','),
-      from: this.resolveSenderAddress(),
+      from: sender.identity,
       subject: email.subject,
       text: email.text,
       html: email.html,

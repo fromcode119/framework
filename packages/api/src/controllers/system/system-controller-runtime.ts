@@ -42,7 +42,7 @@ export class SystemControllerRuntime {
     this.inbox = new NotificationInboxService(dbWrapper);
     this.preferences = new UserPreferencesService(dbWrapper);
     this.resolution = new ResolutionService(manager, themeManager, restController);
-    this.twoFactor = new SystemTwoFactorService(dbWrapper, () => manager.email, this.users);
+    this.twoFactor = new SystemTwoFactorService(dbWrapper, () => manager.email, this.users, manager.integrations);
     this.publicFrontendSettings = new PublicFrontendSettingsService();
 
     this.manager.hooks.on('system:shortcodes:render', async (payload: any) => {

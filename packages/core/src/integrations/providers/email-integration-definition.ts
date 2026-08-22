@@ -26,7 +26,23 @@ export class EmailIntegrationDefinition {
         { name: 'port', label: 'SMTP Port', type: IntegrationConfigFieldType.NUMBER, required: true, placeholder: '587' },
         { name: 'secure', label: 'Use TLS (secure)', type: IntegrationConfigFieldType.BOOLEAN },
         { name: 'user', label: 'SMTP Username', type: IntegrationConfigFieldType.TEXT },
-        { name: 'pass', label: 'SMTP Password', type: IntegrationConfigFieldType.PASSWORD }
+        { name: 'pass', label: 'SMTP Password', type: IntegrationConfigFieldType.PASSWORD },
+        // The sender. Framework email (auth, 2FA, telemetry) used to invent `no-reply@<site domain>`
+        // in code — an address no control produced, that the operator could not change, and that
+        // silently claimed the site's domain as a mail sender. It is configuration now; blank means
+        // the platform will not send rather than guess. See FrameworkEmailSenderService.
+        {
+          name: 'fromAddress',
+          label: 'From Address',
+          type: IntegrationConfigFieldType.TEXT,
+          placeholder: 'orders@example.com',
+        },
+        {
+          name: 'fromName',
+          label: 'From Name',
+          type: IntegrationConfigFieldType.TEXT,
+          placeholder: 'Shown beside the address; defaults to the platform name',
+        }
       ],
       normalizeConfig: EmailGateway.normalizeSmtpConfig,
       create: (config) =>

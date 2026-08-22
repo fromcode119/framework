@@ -1,4 +1,4 @@
-import { SystemConstants } from '@fromcode119/core';
+import { FrameworkEmailSenderService, SystemConstants } from '@fromcode119/core';
 import { EmailChangeVerificationTemplate } from '@api/controllers/auth/email-templates/email-change-verification-template';
 import { PasswordResetEmailTemplate } from '@api/controllers/auth/email-templates/password-reset-email-template';
 import { SecurityNotificationEmailTemplate } from '@api/controllers/auth/email-templates/security-notification-email-template';
@@ -9,7 +9,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerThemeEmailI
   protected async sendVerificationEmail(options: { to: string; verificationUrl: string; firstName?: string }): Promise<boolean> {
     const recipientName = String(options.firstName || '').trim();
     const appName = await this.resolveFrameworkAppName();
-    const fromAddress = await this.resolveFrameworkSenderIdentity();
+    const fromAddress = (await this.resolveFrameworkSender()).identity;
     const themedEmail = await this.buildThemeVerifyEmail({
       verificationUrl: options.verificationUrl,
       firstName: recipientName,
@@ -32,7 +32,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerThemeEmailI
     const recipientName = String(options.firstName || '').trim();
     const greeting = recipientName ? `Hi ${recipientName},` : 'Hi,';
     const appName = await this.resolveFrameworkAppName();
-    const fromAddress = await this.resolveFrameworkSenderIdentity();
+    const fromAddress = (await this.resolveFrameworkSender()).identity;
     const email = await PasswordResetEmailTemplate.build({ appName, greeting, resetUrl: options.resetUrl });
 
     return this.sendEmail({ to: options.to, subject: email.subject, text: email.text, html: email.html, from: fromAddress }, '[AuthController] Failed to send password reset email');
@@ -42,7 +42,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerThemeEmailI
     const recipientName = String(options.firstName || '').trim();
     const greeting = recipientName ? `Hi ${recipientName},` : 'Hi,';
     const appName = await this.resolveFrameworkAppName();
-    const fromAddress = await this.resolveFrameworkSenderIdentity();
+    const fromAddress = (await this.resolveFrameworkSender()).identity;
     const email = await EmailChangeVerificationTemplate.build({ appName, greeting, confirmUrl: options.confirmUrl });
 
     return this.sendEmail({ to: options.to, subject: email.subject, text: email.text, html: email.html, from: fromAddress }, '[AuthController] Failed to send email-change verification email');
@@ -65,7 +65,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerThemeEmailI
       if (!enabled) return;
 
       const appName = await this.resolveFrameworkAppName();
-      const fromAddress = await this.resolveFrameworkSenderIdentity();
+      const fromAddress = (await this.resolveFrameworkSender()).identity;
       const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
       const email = await SecurityNotificationEmailTemplate.build({
         appName,
@@ -95,6 +95,16 @@ export class AuthControllerEmailInfrastructure extends AuthControllerThemeEmailI
   }
 
   protected async sendEmail(payload: { to: string; from: string; subject: string; text: string; html: string }, logPrefix: string): Promise<boolean> {
+    // ONE guard for every framework email. Without a configured sender the platform used to invent
+    // `no-reply@<site domain>` and send anyway — an unroutable address on a domain nobody nominated
+    // for mail. Refusing here is honest and, unlike the invented address, it says what to fix.
+    if (!String(payload.from || '').trim()) {
+      this.logger.error(
+        `${logPrefix}: no sender address is configured. Set ${FrameworkEmailSenderService.SETTING_HINT}.`,
+      );
+      return false;
+    }
+
     try {
       await this.manager.email.send(payload);
       return true;

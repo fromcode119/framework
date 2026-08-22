@@ -77,7 +77,7 @@ export class PluginManagerServiceFactory {
     );
 
     // Telemetry & scaffold services (email getter deferred so integrations are ready)
-    const telemetry = new PluginTelemetryService(manager.db, () => manager.email);
+    const telemetry = new PluginTelemetryService(manager.db, () => manager.email, manager.integrations);
     const scaffold = new PluginScaffoldService(
       manager.logger,
       (slug: string) => manager.plugins.has(slug),
