@@ -315,12 +315,14 @@ POSTGRES_PASSWORD=your_secure_password
 POSTGRES_DB=fromcode
 ```
 
-> PostgreSQL is the database for every environment, local included, so what you run on your machine is
-> exactly what runs in production. SQLite remains supported for single-site installs that want a
-> zero-setup start.
+> **Why PostgreSQL everywhere:** sites are isolated by a PostgreSQL row-level-security policy. SQLite has no
+> such feature, so a multi-site install must run PostgreSQL — locally too, otherwise the isolation you rely on
+> in production is never exercised on your machine. SQLite still works for a single-site install.
 >
-> Give the application its own database role instead of the owner or a superuser account. Per-site data
-> isolation is enforced by the database, and only a regular role gets that protection.
+> **Why three roles:** PostgreSQL skips row-level security for the table owner and for superusers. If the app
+> connected as either, every site would see every other site's rows and nothing would look wrong. So the app
+> connects as a plain role (`DATABASE_URL`), a separate owner role runs migrations, and the superuser is never
+> used by the app.
 
 </details>
 
