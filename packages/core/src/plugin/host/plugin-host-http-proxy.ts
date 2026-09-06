@@ -38,11 +38,16 @@ export class PluginHostHttpProxy {
       headers[PluginGuestHttp.HEADER_USER] = (req as any).user ? JSON.stringify((req as any).user) : '';
       if (envelope.originalUrl) headers[PluginGuestHttp.HEADER_ORIGINAL_URL] = envelope.originalUrl;
 
+      // A webhook keeps its ORIGINAL bytes (the host captured `req.rawBody` for webhook paths): re-serialising
+      // the parsed JSON would change whitespace and key order and break the provider's signature check.
+      const rawBody = (req as any).rawBody;
+      const forwardRaw = Buffer.isBuffer(rawBody) && rawBody.length > 0;
       const parsedBody = (req as any).body;
-      const sendParsed = parsedBody !== undefined && parsedBody !== null && typeof parsedBody === 'object' && !Buffer.isBuffer(parsedBody) && Object.keys(parsedBody).length > 0;
-      const serialized = sendParsed ? Buffer.from(JSON.stringify(parsedBody)) : null;
+      const sendParsed = !forwardRaw && parsedBody !== undefined && parsedBody !== null && typeof parsedBody === 'object' && !Buffer.isBuffer(parsedBody) && Object.keys(parsedBody).length > 0;
+      const serialized = forwardRaw ? rawBody : (sendParsed ? Buffer.from(JSON.stringify(parsedBody)) : null);
       if (serialized) {
-        headers['content-type'] = 'application/json';
+        if (forwardRaw) headers[PluginGuestHttp.HEADER_RAW_BODY] = '1';
+        else headers['content-type'] = 'application/json';
         headers['content-length'] = String(serialized.length);
       }
 

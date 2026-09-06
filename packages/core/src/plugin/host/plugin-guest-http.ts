@@ -23,6 +23,8 @@ export class PluginGuestHttp {
   static readonly HEADER_USER = 'x-fc-user';
   static readonly HEADER_ORIGINAL_URL = 'x-fc-original-url';
   static readonly HEADER_NEXT = 'x-fc-next';
+  /** Set by the host when it forwarded the request's ORIGINAL bytes (a webhook): the guest keeps them as `req.rawBody`. */
+  static readonly HEADER_RAW_BODY = 'x-fc-raw-body';
   static readonly MIDDLEWARE_PATH = '/__fc/middleware';
 
   readonly app: Express;
@@ -32,7 +34,17 @@ export class PluginGuestHttp {
     this.app = express();
     this.app.disable('x-powered-by');
     this.app.use(this.enterInvocation.bind(this));
-    this.app.use(express.json({ limit: '25mb' }));
+    this.app.use(express.json({
+      limit: '25mb',
+      // A webhook's HMAC is over the exact bytes; the host forwards them untouched and flags it, so the
+      // plugin's verifier reads `req.rawBody` here exactly as it would on the host.
+      verify: (req: any, _res, buf, encoding) => {
+        if (req.fcKeepRawBody) {
+          req.rawBody = Buffer.from(buf);
+          req.rawBodyString = buf.toString((encoding as BufferEncoding) || 'utf8');
+        }
+      },
+    }));
     this.app.use(express.urlencoded({ extended: true, limit: '25mb' }));
   }
 
@@ -108,6 +120,8 @@ export class PluginGuestHttp {
   }
 
   private enterInvocation(req: Request, _res: Response, next: NextFunction): void {
+    // Read before the private headers are stripped below; the JSON parser (which runs after this) checks it.
+    (req as any).fcKeepRawBody = Boolean(req.headers[PluginGuestHttp.HEADER_RAW_BODY]);
     const token = String(req.headers[PluginGuestHttp.HEADER_TOKEN] ?? '');
     const tenantId = String(req.headers[PluginGuestHttp.HEADER_TENANT] ?? '').trim() || null;
     const locale = String(req.headers[PluginGuestHttp.HEADER_LOCALE] ?? '');
@@ -115,7 +129,7 @@ export class PluginGuestHttp {
     if (typeof rawUser === 'string' && rawUser) {
       try { (req as any).user = JSON.parse(rawUser); } catch { (req as any).user = undefined; }
     }
-    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_USER]) {
+    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY]) {
       delete req.headers[header];
     }
     (req as any).tenantId = tenantId ?? undefined;
