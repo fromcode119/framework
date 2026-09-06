@@ -1,3 +1,4 @@
+import { EditorSessionParams } from '@fromcode119/core/client';
 
 /**
  * Utilities for reading and processing URL query parameters.
@@ -22,10 +23,11 @@ export class QueryParamUtils {
   }
 
   /**
-   * Check if preview mode is enabled via ?preview=1 query parameter.
+   * Check if preview mode is enabled via `?preview=1` — the framework's own editor-session marker
+   * (`EditorSessionParams.PREVIEW`), the one `CollectionService` builds the admin's Preview links with.
    */
   static isPreviewMode(searchParams: Record<string, string | string[] | undefined> | undefined): boolean {
-    const preview = searchParams?.preview;
+    const preview = searchParams?.[EditorSessionParams.PREVIEW];
     const previewEnabled = preview === '1' || (Array.isArray(preview) && preview.includes('1'));
     return previewEnabled;
   }

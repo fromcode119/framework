@@ -111,6 +111,14 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // The framework's runtime assets under this app's public/ — today the per-icon Lucide data
+        // modules (`/fc-runtime/icons/<lucide version>/<name>.js`, emitted by `build:frontend-icons`).
+        // The version segment content-addresses them (a lucide upgrade mints new URLs), so they are safe
+        // to cache immutably for a year — the same rule the storefront applies to the same path.
+        source: '/fc-runtime/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
         source: '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf)).*)',
         headers: [
           {
@@ -159,21 +167,11 @@ const nextConfig = {
     // through the API server via HTTP. core/src statically imports from these
     // packages; we replace them with a no-op proxy so webpack doesn't chase
     // server-only imports (drizzle-orm, pg, nodemailer, ffmpeg, etc.).
-    const serverOnlyStub = path.resolve(__dirname, './webpack/database-stub.js');
-    [
-      '@fromcode119/database$',
-      '@fromcode119/media$',
-      '@fromcode119/cache$',
-      '@fromcode119/email$',
-      '@fromcode119/scheduler$',
-      '@fromcode119/marketplace-client$',
-      '@fromcode119/plugins$',
-      'express$', // defense-in-depth: BaseRouter (and any plugin code) must never reach the client bundle
-    ].forEach(pkg => { config.resolve.alias[pkg] = serverOnlyStub; });
-
-    // Stub async_hooks so the AsyncLocalStorage static initialiser in
-    // core/src/context/request-context.ts doesn't crash the browser bundle.
-    config.resolve.alias['async_hooks'] = path.resolve(__dirname, './webpack/async-hooks-stub.js');
+    for (const [pkg, stub] of Object.entries(NextConfigEnv.getServerOnlyStubFiles())) {
+      config.resolve.alias[`${pkg}$`] = stub;
+    }
+    // async_hooks: `RequestContext` instantiates an AsyncLocalStorage at class-evaluation time.
+    config.resolve.alias['async_hooks'] = NextConfigEnv.getNodeBuiltinFallbacks().async_hooks;
 
     config.resolve.alias['@fromcode119/react$'] = path.resolve(__dirname, '../react/src/index.ts');
     config.resolve.alias['@fromcode119/core$'] = path.resolve(__dirname, '../core/src/client.ts');

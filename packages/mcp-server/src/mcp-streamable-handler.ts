@@ -1,6 +1,6 @@
 // `#sdk/*` are THIS package's subpath imports (package.json `imports`) — the one place the SDK's
 // published `.js` specifiers are named. Source never carries an extension.
-import { Server } from '#sdk/server';
+import { McpServer } from '#sdk/server-mcp';
 import { StreamableHTTPServerTransport } from '#sdk/server-streamable-http';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '#sdk/types';
 
@@ -19,12 +19,12 @@ export class McpStreamableHandler {
 
   /** Handle one POST. GET/DELETE have no meaning in stateless mode — the route answers 405 itself. */
   async handle(req: any, res: any): Promise<void> {
-    const server = new Server(
+    const server = new McpServer(
       { name: 'fromcode', version: '0.1.0' },
       { capabilities: { tools: {} } },
     );
 
-    server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    server.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: this.bridge.listTools(req).map((tool) => ({
         name: tool.tool,
         title: tool.title,
@@ -33,7 +33,7 @@ export class McpStreamableHandler {
       })),
     }));
 
-    server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    server.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const result = await this.bridge.callTool(
         request.params.name,
         (request.params.arguments || {}) as Record<string, unknown>,

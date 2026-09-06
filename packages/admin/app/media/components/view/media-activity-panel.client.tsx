@@ -15,6 +15,7 @@ import { MediaShareController } from '@/app/media/media-share-controller';
 import { MediaActivityLabels } from '@/app/media/media-activity-labels';
 import { PluginTrendChart } from '@/components/plugin-dashboard/view/plugin-trend-chart.client';
 import { AdminPathUtils } from '@/lib/admin-path';
+import { TimezoneUtils } from '@/lib/timezone';
 
 /**
  * What has happened to everything the operator has sent.
@@ -111,11 +112,14 @@ export class MediaActivityPanel extends AdminComponent {
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
   }
 
-  /** An emitted picker instant, as the operator's own calendar day — never the UTC slice of it. */
+  /**
+   * The picker's date-only mode emits the literal calendar day (`YYYY-MM-DD`); pass it through
+   * unchanged. Re-parsing it as an instant and re-localizing (the previous workaround for the
+   * picker's old UTC-instant emit) would shift the day again in negative-offset browsers.
+   */
   private static pickedDay(iso: string | null): string {
-    if (!iso) return '';
-    const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-CA');
+    const day = String(iso || '').split('T')[0]!;
+    return TimezoneUtils.isDateOnlyValue(day) ? day : '';
   }
 
   /**

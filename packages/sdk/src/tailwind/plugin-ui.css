@@ -1,0 +1,10 @@
+/*
+ * Input stylesheet for a plugin's admin-UI Tailwind build (see plugin-ui.tailwind.config.cjs).
+ *
+ * `@tailwind base` is deliberately absent. Base is Preflight — a global reset for `*`, headings,
+ * lists and form controls. This stylesheet is loaded INTO the running admin alongside the admin's
+ * own, so emitting a second reset would restyle the admin's chrome from a plugin's stylesheet.
+ * A plugin contributes the utilities it uses and nothing else.
+ */
+@tailwind components;
+@tailwind utilities;

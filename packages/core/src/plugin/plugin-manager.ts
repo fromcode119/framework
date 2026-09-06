@@ -1,18 +1,24 @@
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { PluginContext } from '@core/plugin-context';
 import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
 import type { ICollection } from '@core/interfaces/collection.interface';
+import { PluginHostRegistry } from '@core/plugin/host/plugin-host-registry';
 
 import { HookManager } from '@core/hooks/hook-manager';
 import { QueueManager } from '@core/queue/queue-manager';
 import { SchemaManager } from '@core/database/schema-manager';
 import { MigrationManager } from '@core/database/migration-manager';
+import { DatabaseRoleGuard } from '@core/tenant/database-role-guard';
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { SystemConstants } from '@core/constants/system.constants';
 import { Logger } from '@core/logging';
 import { I18nManager } from '@core/i18n/i18n-manager';
 import { EmailCategoryRegistry } from '@core/email/email-category-registry';
-import { DatabaseFactory, IDatabaseManager } from '@fromcode119/database';
+import { DatabaseFactory, DatabaseConnectionUrls, IDatabaseManager } from '@fromcode119/database';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { MigrationCoordinator } from '@core/management/migration-coordinator';
 import { AuditManager } from '@core/security/audit-manager';
@@ -23,6 +29,7 @@ import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plu
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { CoreExtensionManager } from '@core/extensions/extension-manager';
 import { ProjectPaths } from '@core/config/paths';
+import type { ThemeManager } from '@core/theme/theme-manager';
 
 // Services
 import { RuntimeService } from '@core/plugin/services/runtime-service';
@@ -53,6 +60,9 @@ import type { IScaffoldPluginInput } from '@core/plugin/services/interfaces/scaf
 import type { IScaffoldPluginResult } from '@core/plugin/services/interfaces/scaffold-plugin-result.interface';
 
 export class PluginManager implements IPluginManagerInterface {
+  /** Emitted after `discoverPlugins()` has registered and enabled the whole boot set. */
+  static readonly PLUGINS_READY_EVENT = 'plugins:ready';
+
   public audit: AuditManager;
   public security: SecurityMonitor;
   public marketplace: MarketplaceCatalogService;
@@ -60,6 +70,12 @@ export class PluginManager implements IPluginManagerInterface {
   public apiHost: any = null;
   public hooks: HookManager = new HookManager();
   public db: IDatabaseManager;
+  /**
+   * The DDL connection: migrations and collection schema sync. Runs as the schema OWNER, which
+   * `db` deliberately does not — see DatabaseConnectionUrls. Identical to `db` when the deployment
+   * has not separated the roles.
+   */
+  public schemaDb: IDatabaseManager;
   public jobs!: QueueManager;
   public scheduler!: SchedulerService;
   public i18n!: I18nManager;
@@ -70,6 +86,13 @@ export class PluginManager implements IPluginManagerInterface {
 
   public middlewares: MiddlewareManager = new MiddlewareManager();
   public auth: any = null;
+  /**
+   * Set by the API bootstrap once the ThemeManager exists — see {@link setThemeManager}. Every plugin's
+   * `context.theme.*` (active slug, config, per-plugin theme settings) resolves through this, as does the
+   * theme-scoped i18n key and the active theme's default-page overrides. Null until wired, and the
+   * context then reports NO theme rather than inventing one.
+   */
+  public themeManager: ThemeManager | null = null;
   public webhooks: WebhookService;
   public headInjections: Map<string, any[]> = new Map();
   public logger = new Logger({ namespace: 'plugin-manager' });
@@ -80,6 +103,8 @@ export class PluginManager implements IPluginManagerInterface {
   public schemaManager: SchemaManager;
   private migrationManager: MigrationManager;
   public projectRoot: string;
+  /** T5: the isolated plugins' processes. Built before discovery, which is what asks it to describe a plugin. */
+  public pluginHosts: PluginHostRegistry;
   public pluginsRoot: string;
 
   public runtime: RuntimeService;
@@ -107,13 +132,30 @@ export class PluginManager implements IPluginManagerInterface {
 
   constructor() {
     this.projectRoot = ProjectPaths.getProjectRoot();
-    this.db = DatabaseFactory.create(process.env.DATABASE_URL || '');
+    this.pluginHosts = new PluginHostRegistry(this, this.projectRoot);
+    // Two connections, deliberately. Requests run on the least-privilege runtime role so that
+    // row-level security actually applies to them; DDL (migrations, collection schema sync) runs on
+    // the role that OWNS the schema. A deployment that sets no DATABASE_MIGRATION_URL gets the same
+    // connection for both, which is the correct single-tenant behaviour.
+    this.db = DatabaseFactory.create(DatabaseConnectionUrls.runtime());
+    this.schemaDb = DatabaseConnectionUrls.hasSeparateMigrationConnection()
+      ? DatabaseFactory.create(DatabaseConnectionUrls.migration())
+      : this.db;
+    // The DDL connection acts for the PLATFORM: it writes schema fingerprints and migration
+    // bookkeeping, which belong to no tenant. Without this the first boot after settings became
+    // tenant-scoped dies on its own metadata write.
+    //
+    // On a deployment with no separate DDL connection this marks the single connection, and that is
+    // correct rather than a hole: such a deployment is single-tenant (a multi-tenant one must split
+    // the roles — the request role is a non-owner and cannot run DDL at all), and a single-tenant
+    // install has to be able to write its own platform-level settings.
+    this.schemaDb.markAsPlatformConnection();
     this.integrations = new IntegrationManager(this.db as any, this.projectRoot, this.logger);
     this.audit = new AuditManager(this.db);
     this.security = new SecurityMonitor(this.db, this);
-    this.coordinator = new MigrationCoordinator(this.db);
-    this.schemaManager = new SchemaManager(this.db);
-    this.migrationManager = new MigrationManager(this.db);
+    this.coordinator = new MigrationCoordinator(this.schemaDb);
+    this.schemaManager = new SchemaManager(this.schemaDb);
+    this.migrationManager = new MigrationManager(this.schemaDb);
     this.i18n = new I18nManager(process.env.DEFAULT_LOCALE || 'en');
     this.jobs = new QueueManager({ redisUrl: process.env.REDIS_URL });
     this.scheduler = new SchedulerService(this.db, { queueManager: this.jobs });
@@ -157,10 +199,53 @@ export class PluginManager implements IPluginManagerInterface {
 
   async init() {
     await this.bootstrap.init();
+    await this.configureTenantMode();
   }
 
+  /**
+   * Decides once, after migrations have run, whether this deployment is multi-tenant — and refuses
+   * to continue if it is multi-tenant on a driver that cannot isolate, or on a connection that
+   * bypasses row-level security.
+   *
+   * Runs AFTER bootstrap because `_system_tenants` only exists once migration 020 has run. A
+   * deployment with no tenant rows stays single-tenant and skips both checks: it behaves exactly as
+   * it did before tenancy existed, on any driver.
+   */
+  private async configureTenantMode(): Promise<void> {
+    const tenants = await this.schemaDb.count(SystemConstants.TABLE.TENANTS).catch(() => 0);
+
+    TenantMode.configure({
+      tenantCount: Number(tenants || 0),
+      dialect: String(this.db.dialect || ''),
+      isolationSupported: this.db.supportsTenantIsolation(),
+    });
+
+    // The tenant axis of plugin enablement reads on the REQUEST connection, like every other
+    // per-request lookup — not the owner connection, which exists only for DDL.
+    PluginTenantAccess.configure(this.db);
+
+    // Only meaningful once tenants exist: a single-tenant deployment has nothing to isolate, and
+    // demanding a least-privilege role there would break every existing installation.
+    if (TenantMode.isEnabled()) {
+      await DatabaseRoleGuard.assertNotPrivileged(this.db as any);
+    }
+  }
+
+  /**
+   * Boots every plugin, then announces `plugins:ready` ONCE the whole set is registered and enabled.
+   *
+   * A plugin's own onInit/onEnable run inside the boot loop, so a cross-plugin registration made
+   * there (numerology → broadcasts provider) can only see the plugins that booted BEFORE it. Without
+   * this event plugins resorted to setTimeout polling of the namespace. The payload lists the active
+   * slugs so a handler can tell which peers exist without probing.
+   */
   async discoverPlugins() {
     await this.discoveryCoordinator.discoverPlugins();
+    // Every tenant-scoped table, not just the ones a registered collection happened to sync — a
+    // table belonging to a disabled plugin would otherwise stay globally readable.
+    await this.schemaManager.applyTenantIsolationSweep(this.systemCollectionTables());
+    const active = [...this.plugins.values()].filter((plugin) => plugin.state === PluginState.ACTIVE).map((plugin) => plugin.manifest.slug);
+    this.hooks.emit(PluginManager.PLUGINS_READY_EVENT, { plugins: active });
   }
 
   async updatePlugin(slug: string, pkg?: any): Promise<void> {
@@ -234,6 +319,12 @@ export class PluginManager implements IPluginManagerInterface {
   }
 
   // Delegate Lifecycle
+  /**
+   * Materialize the default pages of every plugin the CURRENT site runs (call inside that site's
+   * tenant scope). This is what gives a newly created site its /shop, /login and friends — the boot
+   * pass runs untenanted and cannot write a site's pages.
+   */
+  async materializeDefaultPages(): Promise<void> { return this.lifecycle.materializeDefaultPagesFinalPass(); }
   async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}) { return this.lifecycle.enable(slug, options); }
   async disable(slug: string, options: { persistState?: boolean } = {}) { return this.lifecycle.disable(slug, options); }
   async delete(slug: string) { return this.lifecycle.delete(slug); }
@@ -330,6 +421,13 @@ export class PluginManager implements IPluginManagerInterface {
   createContext(plugin: ILoadedPlugin): PluginContext { return PluginContextFactory.createPluginContext(plugin, this, this.logger); }
   getPlugins(): ILoadedPlugin[] { return Array.from(this.plugins.values()); }
   setAuth(auth: any) { this.auth = auth; }
+  /**
+   * The API boots the ThemeManager separately (it needs the manager's db) and MUST hand it back before
+   * `discoverPlugins()`: plugins read `context.theme` in their onInit (the forms plugin builds its default
+   * contact form from the theme's `contactFormDefaults` there). This hand-off was missing for every boot,
+   * so `context.theme` was `{}` for every plugin and every theme-declared plugin default was ignored.
+   */
+  setThemeManager(themeManager: ThemeManager) { this.themeManager = themeManager; }
   setApiHost(host: any) { this.apiHost = host; }
 
   emit(event: string, payload: any) { 
@@ -339,4 +437,21 @@ export class PluginManager implements IPluginManagerInterface {
   async close() {
     return this.shutdownService.close();
   }
+
+  /**
+   * Physical tables belonging to collections declared `system: true` — framework configuration,
+   * which is never tenant-scoped in T0 regardless of what the table is called.
+   */
+  private systemCollectionTables(): Set<string> {
+    const tables = new Set<string>();
+    for (const [, entry] of this.registeredCollections) {
+      const collection: any = entry.collection;
+      if (collection?.system !== true) continue;
+      for (const name of [collection.tableName, collection.slug]) {
+        if (name) tables.add(String(name).toLowerCase());
+      }
+    }
+    return tables;
+  }
+
 }

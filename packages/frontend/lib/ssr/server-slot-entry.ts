@@ -4,7 +4,7 @@
  * The same record `ContextProviderSlotRegistrationHooks` builds in the browser (`component`,
  * `pluginSlug`, `priority`), plus the raw module `loader` that `ThemeOverrideRegistrar` now passes
  * alongside a lazily-registered override. The loader is what lets the server turn a `React.lazy`
- * registration into a real component before rendering — `renderToStaticMarkup` renders the Suspense
+ * registration into a real component before rendering — a synchronous server render emits the Suspense
  * fallback, never the lazy child.
  */
 export class ServerSlotEntry {
@@ -39,17 +39,20 @@ export class ServerSlotEntry {
   }
 
   /**
-   * This entry with its lazy component replaced by the loaded one. Returns `this` when there is no
-   * loader, or when loading fails — a renderer that cannot be loaded server-side degrades to the
-   * client render of that one block rather than failing the page.
+   * This entry with its lazy component replaced by the loaded one, passed through `wrap` — the SAME
+   * Suspense boundary the browser registration carries around its `React.lazy`
+   * (`ThemeOverrideRegistrar.withSuspense`), so the server markup and the client tree have the boundary in
+   * the same place and `hydrateRoot` adopts the block. Returns `this` when there is no loader, or when
+   * loading fails — a renderer that cannot be loaded server-side degrades to the client render of that one
+   * block rather than failing the page.
    */
-  async resolve(): Promise<ServerSlotEntry> {
+  async resolve(wrap: (component: unknown) => unknown): Promise<ServerSlotEntry> {
     if (!this.loader) return this;
     try {
       const loaded = await (this.loader as () => Promise<{ default?: unknown }>)();
       const component = loaded?.default;
       if (!component) return this;
-      return new ServerSlotEntry(component, this.pluginSlug, this.priority);
+      return new ServerSlotEntry(wrap(component), this.pluginSlug, this.priority);
     } catch {
       return this;
     }

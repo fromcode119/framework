@@ -3,6 +3,7 @@ import type { ICollectionQueryInterface } from '@core/interfaces/collection-quer
 import type { ICandidateLookupOptions } from '@core/interfaces/candidate-lookup-options.interface';
 import type { IUpsertByCandidatesOptions } from '@core/interfaces/upsert-by-candidates-options.interface';
 import { BaseService } from '@core/services/base-service';
+import { EditorSessionParams } from '@core/editor-session-params';
 
 /**
  * Collection Service.
@@ -91,7 +92,7 @@ export class CollectionService extends BaseService {
         path = `${prefix}/${path}`.replace(/\/+/g, '/');
       }
 
-      return `${cleanBaseUrl}/${path.startsWith('/') ? path.substring(1) : path}?preview=1`;
+      return `${cleanBaseUrl}/${path.startsWith('/') ? path.substring(1) : path}?${EditorSessionParams.PREVIEW}=1`;
     }
 
     // FALLBACK: Use the global structure logic
@@ -122,7 +123,7 @@ export class CollectionService extends BaseService {
       path = `/${prefix}${path}`;
     }
 
-    return `${cleanBaseUrl}${path}?preview=1`;
+    return `${cleanBaseUrl}${path}?${EditorSessionParams.PREVIEW}=1`;
   }
 
   /**

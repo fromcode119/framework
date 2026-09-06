@@ -1,5 +1,6 @@
-import { ApiPathUtils, PluginFrontendRuntimeUtils } from '@fromcode119/core/client';
+import { ApiPathUtils, PluginFrontendRuntimeUtils, PublicAssetUrlUtils } from '@fromcode119/core/client';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
+import { RuntimeModuleRef } from '@/app/runtime-module-ref';
 
 export class PluginLoaderMountService {
 
@@ -42,7 +43,7 @@ export class PluginLoaderMountService {
     const themeCss = Array.isArray(theme?.ui?.css) ? theme.ui.css : [];
     themeCss.forEach((style: string) => {
       const href = style.startsWith('http') ? style : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, style);
-      const versionedHref = FrontendAssetVersionUrlService.appendVersion(href, theme.version);
+      const versionedHref = FrontendAssetVersionUrlService.appendVersion(href, PublicAssetUrlUtils.themeAssetStamp(theme));
       if (document.head.querySelector(`link[href="${versionedHref}"]`)) return;
       const link = document.createElement('link');
       link.rel = 'stylesheet';
@@ -95,24 +96,31 @@ export class PluginLoaderMountService {
     }
   }
 
-  static loadThemeRuntime(theme: any, apiUrl: string, loadModule: (key: string, url: string) => Promise<void>): void {
-    if (!theme?.slug) return;
+  /** The theme's runtime bundle, or null when the theme ships none. */
+  static themeRuntimeModule(theme: any, apiUrl: string): RuntimeModuleRef | null {
+    if (!theme?.slug) return null;
     const themeEntry = String(theme?.ui?.entry || '').trim();
-    if (!themeEntry) return;
+    if (!themeEntry) return null;
     const themeEntryUrl = themeEntry.startsWith('http')
       ? themeEntry
       : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, themeEntry);
-    const versionedThemeEntryUrl = FrontendAssetVersionUrlService.appendVersion(themeEntryUrl, theme.version);
-    const themeModuleKey = `theme:${theme.slug}:${themeEntry}`;
-    void loadModule(themeModuleKey, versionedThemeEntryUrl);
+    const versionedThemeEntryUrl = FrontendAssetVersionUrlService.appendVersion(themeEntryUrl, PublicAssetUrlUtils.themeAssetStamp(theme));
+    return new RuntimeModuleRef(`theme:${theme.slug}:${themeEntry}`, versionedThemeEntryUrl);
   }
 
-  // Load plugin runtime modules after import map is registered.
-  // Only load plugins with the 'frontend' capability — admin-only plugins have no
-  // frontend-visible slots and should not bloat the public page JS payload.
-  // Plugins with loadStrategy "idle" are deferred until the browser is idle.
-  // Plugins with loadStrategy "none" are skipped entirely on the frontend.
-  static loadPluginRuntimes(pluginList: any[], apiUrl: string, loadModule: (key: string, url: string) => Promise<void>): void {
+  static loadThemeRuntime(theme: any, apiUrl: string, loadModule: (key: string, url: string) => Promise<void>): void {
+    const ref = PluginLoaderMountService.themeRuntimeModule(theme, apiUrl);
+    if (ref) void loadModule(ref.key, ref.url);
+  }
+
+  /**
+   * The plugin runtime bundles this storefront loads, in manifest order.
+   * Only plugins with the 'frontend' capability — admin-only plugins have no frontend-visible slots and
+   * should not bloat the public page JS payload. `loadStrategy: 'idle'` is carried on the ref;
+   * `loadStrategy: 'none'` is excluded entirely.
+   */
+  static pluginRuntimeModules(pluginList: any[], apiUrl: string): RuntimeModuleRef[] {
+    const refs: RuntimeModuleRef[] = [];
     pluginList.forEach((plugin: any) => {
       // Frontend-only plugins ship only a `frontendEntry` (no admin `entry`); still load them.
       // Shared with the plugin API registry, which leaves these plugins' keys empty until the module
@@ -124,20 +132,27 @@ export class PluginLoaderMountService {
         ApiPathUtils.pluginUiAssetUrl(apiUrl, plugin.slug, entryFile),
         plugin.version || plugin.manifest?.version,
       );
-      const key = `plugin:${plugin.slug}:${entryFile}`;
       // `none` is already excluded by loadsOwnFrontendRuntime above.
       const strategy = String(plugin?.ui?.loadStrategy || 'eager').trim();
-
-      if (strategy === 'idle') {
-        if (typeof requestIdleCallback !== 'undefined') {
-          requestIdleCallback(() => void loadModule(key, moduleUrl), { timeout: 5000 });
-        } else {
-          setTimeout(() => void loadModule(key, moduleUrl), 2000);
-        }
-      } else {
-        void loadModule(key, moduleUrl);
-      }
+      refs.push(new RuntimeModuleRef(`plugin:${plugin.slug}:${entryFile}`, moduleUrl, strategy === 'idle', String(plugin.slug || '')));
     });
+    return refs;
+  }
+
+  // Load plugin runtime modules after import map is registered. Idle-strategy plugins are deferred
+  // until the browser is idle.
+  static loadPluginRuntimes(pluginList: any[], apiUrl: string, loadModule: (key: string, url: string) => Promise<void>, skip: Set<string> = new Set()): void {
+    for (const ref of PluginLoaderMountService.pluginRuntimeModules(pluginList, apiUrl)) {
+      // The islands document names the idle plugins this page never renders — see PluginBundlePolicy.
+      if (ref.idle && skip.has(ref.pluginSlug)) continue;
+      if (!ref.idle) {
+        void loadModule(ref.key, ref.url);
+      } else if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback(() => void loadModule(ref.key, ref.url), { timeout: 5000 });
+      } else {
+        setTimeout(() => void loadModule(ref.key, ref.url), 2000);
+      }
+    }
   }
 
   // Ensure plugin-provided CSS is mounted (idempotent).

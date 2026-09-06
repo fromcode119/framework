@@ -3,6 +3,7 @@ import { Slot } from '@fromcode119/react/slot';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import type { IPluginContextValue } from '@fromcode119/react';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
+import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { DefaultPageDesignRenderer } from '@/app/components/view/default-page-design-renderer.client';
 import { StarterHero } from '@/app/components/view/starter-hero.client';
@@ -40,7 +41,7 @@ export class HomeClient extends Reactor {
         {hasDefaultPageDesign ? (
           <DefaultPageDesignRenderer content={rawContent} entry={content} />
         ) : (
-          <Slot name="frontend.content.display" props={{ content: rawContent, entry: content }} />
+          <Slot name={StorefrontContentContract.DISPLAY_SLOT} props={{ content: rawContent, entry: content }} />
         )}
 
         {(!hasDefaultPageDesign && typeof rawContent === 'string') && (
@@ -50,7 +51,7 @@ export class HomeClient extends Reactor {
           </div>
         )}
 
-        <Slot name="frontend.content.footer" props={{ content }} />
+        <Slot name={StorefrontContentContract.FOOTER_SLOT} props={{ content }} />
       </div>
     );
   }
@@ -67,13 +68,11 @@ export class HomeClient extends Reactor {
   /** The server render used a plugin's content slot, so the swap must wait for that plugin too. */
   @prop declare ssrRendersContentSlot: boolean;
 
-  private static readonly CONTENT_SLOT = 'frontend.content.display';
-
   /** See the same getter on `DynamicContentClient` — swapping early blanks the body for a beat. */
   private get serverMarkupStillNeeded(): boolean {
     if (!this.context?.themeLayouts?.[this.declaredDefaultLayout]) return true;
     if (!this.ssrRendersContentSlot) return false;
-    return !this.context?.slots?.[HomeClient.CONTENT_SLOT]?.length;
+    return !this.context?.slots?.[StorefrontContentContract.DISPLAY_SLOT]?.length;
   }
 
   render() {

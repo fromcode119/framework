@@ -14,6 +14,13 @@ export class AdminClass {
   /** The raised-panel treatment — the one definition of what a card looks like in this admin. */
   static readonly SURFACE = `${ClientRuntimeConstants.DOM_PREFIX}surface`;
 
+  /**
+   * The full-bleed wrapper for a sticky page header. It cancels the padding of the page root it sits
+   * in, resolved per root in `admin.css` — a component must never spell that offset itself, because
+   * the header does not own the padding it is breaking out of.
+   */
+  static readonly PAGE_BLEED = `${ClientRuntimeConstants.DOM_PREFIX}page-bleed`;
+
   /** `of('foo')` → `fc-foo`, for any other class the admin shares with `admin.css`. */
   static of(element: string): string {
     return `${ClientRuntimeConstants.DOM_PREFIX}${element}`;

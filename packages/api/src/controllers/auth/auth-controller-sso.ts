@@ -1,3 +1,4 @@
+import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-access-denied-error';
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason.enum';
 import { Request, Response } from 'express';
@@ -211,6 +212,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
         userAgent: req.headers['user-agent']
       });
     } catch (err: any) {
+      if (err instanceof WorkspaceAccessDeniedError) return res.status(403).json({ error: WorkspaceAccessDeniedError.CODE, message: err.message });
       return res.status(400).json({ error: err?.message || 'SSO provider rejected this login' });
     }
 

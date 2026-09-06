@@ -15,6 +15,8 @@ export { CollectionMiddleware } from '@api/middlewares/collection-middleware';
 
 // Security middlewares
 export { CSRFMiddleware } from '@api/middlewares/csrf-middleware';
+export { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
+export { TenantPluginGuard } from '@api/middlewares/tenant-plugin-guard';
 export { XSSMiddleware } from '@api/middlewares/xss-middleware';
 export { SecurityHeadersMiddleware } from '@api/middlewares/security-headers-middleware';
 export { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';

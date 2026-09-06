@@ -79,11 +79,36 @@ export class PluginAssetLoaderService {
             link.href = href;
             link.setAttribute('data-plugin', plugin.slug);
             link.setAttribute('data-index', index.toString());
-            document.head.appendChild(link);
+            // PREPEND, never append. A plugin's stylesheet carries the Tailwind utilities its own
+            // components use, and the admin uses many of the same ones. Appended, a plugin's plain
+            // `.flex-col` is the LAST declaration in the document and so beats the admin's
+            // `@media(min-width:1024px){.lg\:flex-row}` — equal specificity, later wins — and the
+            // admin shell collapses to a single column with the sidebar overlaying the page.
+            // Prepending puts every plugin sheet ahead of the admin's own, so the admin wins each
+            // tie for the chrome it owns while a plugin's UNIQUE classes still apply, since nothing
+            // else declares them. Same rule the storefront already follows for plugin default CSS.
+            PluginAssetLoaderService.prependStylesheet(link);
           }
         });
       }
     }
+  }
+
+  /**
+   * Put a plugin stylesheet ahead of the admin's own, and after any plugin sheet already placed.
+   *
+   * Inserting before `head.firstChild` would reverse the plugins relative to each other on every
+   * load; keeping them in arrival order means two plugins that declare the same class resolve the
+   * same way every time rather than by whichever happened to be injected last.
+   */
+  private static prependStylesheet(link: HTMLLinkElement): void {
+    const placed = document.head.querySelectorAll('link[rel="stylesheet"][data-plugin]');
+    const last = placed[placed.length - 1];
+    if (last) {
+      last.after(link);
+      return;
+    }
+    document.head.prepend(link);
   }
 
   private static importEntries(plugins: IAdminPluginMetadata[], callbacks: IPluginAssetLoaderCallbacks): void {

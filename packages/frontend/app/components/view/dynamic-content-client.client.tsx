@@ -4,6 +4,7 @@ import { Slot } from '@fromcode119/react/slot';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import type { IPluginContextValue } from '@fromcode119/react';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
+import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { DefaultPageDesignRenderer } from '@/app/components/view/default-page-design-renderer.client';
 import { PassthroughLayout } from '@/components/view/passthrough-layout.client';
@@ -48,10 +49,8 @@ export class DynamicContentClient extends Reactor {
     const selectedLayoutName = ResolvedContentShape.resolveLayoutName(this.normalizedContent) || this.declaredDefaultLayout;
     if (!themeLayouts?.[selectedLayoutName] && !themeLayouts?.[this.declaredDefaultLayout]) return true;
     if (!this.ssrRendersContentSlot) return false;
-    return !this.context?.slots?.[DynamicContentClient.CONTENT_SLOT]?.length;
+    return !this.context?.slots?.[StorefrontContentContract.DISPLAY_SLOT]?.length;
   }
-
-  private static readonly CONTENT_SLOT = 'frontend.content.display';
 
   private get normalizedContent() {
     return ResolvedContentShape.normalize((this.content as Record<string, unknown> | null) || null);
@@ -99,7 +98,7 @@ export class DynamicContentClient extends Reactor {
           {hasDefaultPageDesign ? (
             <DefaultPageDesignRenderer content={renderableContent} entry={normalizedContent} />
           ) : (
-            <Slot name="frontend.content.display" props={{ content: renderableContent, entry: normalizedContent }} />
+            <Slot name={StorefrontContentContract.DISPLAY_SLOT} props={{ content: renderableContent, entry: normalizedContent }} />
           )}
 
           {(!hasDefaultPageDesign && (!renderableContent || typeof renderableContent === 'string')) && (
@@ -109,7 +108,7 @@ export class DynamicContentClient extends Reactor {
             </div>
           )}
 
-          <Slot name="frontend.content.footer" props={{ content: normalizedContent }} />
+          <Slot name={StorefrontContentContract.FOOTER_SLOT} props={{ content: normalizedContent }} />
         </div>
       ) : null}
     </LayoutComponent>

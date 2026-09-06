@@ -48,7 +48,11 @@ export class AuthProviderView extends Reactor {
             this.user = parsed;
             this.isLoading = false;
           }
-          return;
+          // Deliberately NO early return. Hydrating from the cookie paints the admin at once, but the
+          // cookie is a snapshot taken at LOGIN and lives seven days — so a role change, a revoked
+          // permission, or a flag that did not exist when the cookie was written (`platformAdmin`,
+          // `multiTenant`) never reached a warm session. The refresh below is what keeps the client's
+          // idea of the user honest; it was unreachable from here before this line.
         }
       } catch {
         console.error('[AuthProvider] Failed to parse user session');

@@ -5,6 +5,7 @@ import type { ICollection } from '@core/interfaces/collection.interface';
 import { Logger } from '@core/logging';
 
 import { SystemConstants } from '@core/constants/system.constants';
+import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { ApiPathUtils } from '@core/api/api-path-utils';
 import type { IAdminSecondaryPanelAllowlistEntry } from '@core/plugin/services/interfaces/admin-secondary-panel-allowlist-entry.interface';
 import type { IAdminSecondaryPanelInputItem } from '@core/plugin/services/interfaces/admin-secondary-panel-input-item.interface';
@@ -41,8 +42,12 @@ export class AdminMetadataService {
     // admin ever read it, so every plugin's settings VALUES (a `tokenSecret`, for instance) were
     // shipped to every logged-in visitor for no reader at all. Plugin settings have their own
     // admin-guarded endpoint (`/plugins/:slug/settings`); that is where they belong.
+    // Both axes. The admin is served on ONE host for every tenant, so the menu, the collections and
+    // the secondary panel must reflect the tenant the session has selected — otherwise an operator
+    // sees entries for plugins this customer does not run, and every one of them 403s on click.
     const pluginMetadata = allPlugins
       .filter(p => p.state === PluginState.ACTIVE && p.manifest.admin)
+      .filter(p => PluginTenantAccess.isEnabledForCurrentTenant(p.manifest.slug))
       .map(p => {
         const collections = Array.from(registeredCollections.values())
           .filter(c => String(c.pluginSlug).toLowerCase() === String(p.manifest.slug).toLowerCase())
@@ -62,7 +67,9 @@ export class AdminMetadataService {
           ui: {
             ...(p.manifest.ui || {}),
             entryUrl: p.manifest.ui?.entry ? this.pluginUiAssetPath(p, p.manifest.ui.entry) : undefined,
-            cssUrls: p.manifest.ui?.css ? p.manifest.ui.css.map(css => this.pluginUiAssetPath(p, css)) : [],
+            // Both keys: `css` is a plugin's own declaration (shared with the storefront), `adminCss` is
+            // admin-only — the compiled admin-UI utilities the build derives.
+            cssUrls: [...(p.manifest.ui?.css || []), ...(p.manifest.ui?.adminCss || [])].map(css => this.pluginUiAssetPath(p, css)),
             headInjections: []
           }
         };
@@ -85,6 +92,7 @@ export class AdminMetadataService {
       ...this.systemNavigationMetadata.getSecondaryPanelInputs(),
       ...allPlugins
         .filter(plugin => plugin.state === PluginState.ACTIVE)
+        .filter(plugin => PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug))
         .flatMap((plugin) => this.getSecondaryPanelInputs(plugin)),
     ]
       .map((input) => this.secondaryPanelNormalizer.normalize(input));

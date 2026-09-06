@@ -1,3 +1,4 @@
+import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-access-denied-error';
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { TwoFactorMethod } from '@fromcode119/core';
 import { Request, Response } from 'express';
@@ -164,9 +165,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
           });
         }
 
-        const twoFactorMeta = await this.db.findOne(SystemConstants.TABLE.META, {
-          key: `user:${user.id}:2fa_enabled`
-        });
+        const twoFactorMeta = await this.readMetaRow(`user:${user.id}:2fa_enabled`);
 
         if (twoFactorMeta?.value === 'true') {
           const hasTotpToken = !!String(totpToken || '').trim();
@@ -183,9 +182,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
           let twoFactorMethod: TwoFactorMethod | null = null;
 
           if (hasTotpToken) {
-            const secretRow = await this.db.findOne(SystemConstants.TABLE.META, {
-              key: `user:${user.id}:totp_secret`
-            });
+            const secretRow = await this.readMetaRow(`user:${user.id}:totp_secret`);
 
             if (secretRow?.value && this.verifyTOTP(SecretService.decrypt(secretRow.value), String(totpToken).trim())) {
               twoFactorVerified = true;
@@ -251,7 +248,10 @@ export class AuthControllerLifecycle extends AuthControllerSso {
 
         return res.json({
           token: loginResult.token,
-          user: loginResult.user
+          user: loginResult.user,
+          // Which tenants this account may enter. Empty on a single-tenant deployment. More than
+          // one means the client must ask which — the token carries no tenant until it does.
+          availableTenants: loginResult.availableTenants ?? []
         });
       }
 
@@ -264,6 +264,9 @@ export class AuthControllerLifecycle extends AuthControllerSso {
       ).catch(() => {});
       return res.status(401).json({ error: 'Invalid email or password' });
     } catch (err: any) {
+      if (err instanceof WorkspaceAccessDeniedError) {
+        return res.status(403).json({ error: WorkspaceAccessDeniedError.CODE, message: err.message });
+      }
       this.logger.error(`[AuthController] Login exception for ${email}: ${err}`);
       return res.status(500).json({ error: 'Internal server error during login' });
     }

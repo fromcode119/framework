@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
-import { Override } from '@react/view/override.client';
-import { AccountShellDefault } from '@react/account/account-shell-default';
-import { AccountAuthGate } from '@react/account/account-auth-gate';
-import { AccountTranslations } from '@react/account/account-translations';
+import { prop } from '@fromcode119/reactor';
+import { ShellBoundary } from '@react/view/shell-boundary';
+import { ShellImplementation } from '@react/shell-implementation';
+import { AccountShellPlaceholder } from '@react/account/account-shell-placeholder';
 
 /**
- * The account page — an overridable surface.
+ * The account page — an overridable surface, rendered inside its Suspense boundary.
  *
- * The framework ships a complete one ({@link AccountShellDefault}: header, section nav, panel host) and a
+ * The framework ships a complete one (`AccountShellDefault`: header, section nav, panel host) and a
  * theme that wants a DIFFERENT account entirely registers its own on this key:
  *
  *   ContextBridge.registerOverride(AccountShell.OVERRIDE, MyAccountShell, '<theme-slug>');
@@ -17,8 +16,11 @@ import { AccountTranslations } from '@react/account/account-translations';
  * slot — so every plugin section (orders, courses, affiliate, …) keeps working in it without the theme
  * knowing any of them by name. Nothing about the account is fixed: the shell, its loading shape and every
  * class are all replaceable.
+ *
+ * This class is the BOUNDARY (see `ShellBoundary`); the surface itself — the auth gate around the
+ * override — is `AccountShellImplementation`, static on the server and code-split in the browser.
  */
-export class AccountShell extends Reactor {
+export class AccountShell extends ShellBoundary {
   /**
    * The override key for the whole account page. A plain string, because the override registry is a
    * GLOBAL namespace — a theme writes `'account.shell'` the same way it writes `'framework.page.404'`,
@@ -26,36 +28,20 @@ export class AccountShell extends Reactor {
    */
   static readonly OVERRIDE = 'account.shell';
 
+  /** Filled by `AccountShellImplementation` on evaluation; the browser bridge swaps in its lazy twin. */
+  static readonly implementation = new ShellImplementation();
+
   @prop declare page?: any;
 
-  /**
-   * The framework's own account copy (the labels for overview/profile/security/sessions/two-factor) is
-   * registered HERE, on the surface itself, not inside the default implementation. A theme that replaces
-   * the shell replaces the layout — it must not have to re-ship the framework's words, and before this
-   * those sections rendered as raw keys ("overview", "two-factor") in any replacement.
-   */
-  componentDidMount(): void {
-    AccountTranslations.register();
+  protected get shellImplementation(): ShellImplementation {
+    return AccountShell.implementation;
   }
 
-  render(): ReactNode {
-    // Registering during render (not in a constructor) keeps this out of reactor's context-forwarding
-    // trap and still lands before the first paint of whichever shell wins. The call is idempotent.
-    AccountTranslations.register();
-    // The gate wraps the OVERRIDE, not the default shell, for the same reason the translations above
-    // are registered here: a theme replaces the account's LAYOUT, and must not be able to replace —
-    // or be required to re-ship — what the surface itself owns. While the gate sat inside
-    // `AccountShellDefault`, registering `account.shell` removed authentication along with the layout,
-    // and this store's account (every section name, so the whole installed plugin set) rendered to
-    // signed-out visitors with no redirect. A replacement shell can no longer opt out of it.
-    return (
-      <AccountAuthGate>
-        <Override
-          name={AccountShell.OVERRIDE}
-          props={{ page: this.page }}
-          fallback={<AccountShellDefault page={this.page} />}
-        />
-      </AccountAuthGate>
-    );
+  /**
+   * The account's shape while the chunk loads. Without it the boundary renders nothing in that window —
+   * a navbar, a footer and a hole — and the layout jumps when the real shell arrives.
+   */
+  protected get fallback(): ReactNode {
+    return <AccountShellPlaceholder />;
   }
 }

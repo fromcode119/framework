@@ -72,7 +72,18 @@ export class AuthControllerSharedInfrastructure extends BaseController {
     return AuthUtils.hashRecoveryCode(code);
   }
 
+  /**
+   * Auth rows in `_system_meta` — login throttles, 2FA flags and TOTP secrets, verification and reset
+   * tokens — belong to the PLATFORM, like the users they key on: login runs before any site is bound,
+   * and a user is one account across every site. Since `_system_meta` became per-site they were
+   * being written as untenanted rows (refused: "new row violates row-level security policy" on every
+   * login) and read without the platform marker (invisible: a 2FA flag nobody could see). Every read
+   * and write here now runs as the platform. A row written earlier from inside a site session sits in
+   * that site's partition; the read falls back to the request's own scope so it is still honoured.
+   */
   protected async readMetaRow(key: string): Promise<any | null> {
+    const platform = await this.db.withPlatformAdmin(() => this.db.findOne(SystemConstants.TABLE.META, { key }));
+    if (platform) return platform;
     return this.db.findOne(SystemConstants.TABLE.META, { key });
   }
 
@@ -83,15 +94,18 @@ export class AuthControllerSharedInfrastructure extends BaseController {
   }
 
   protected async upsertMeta(key: string, value: string) {
-    const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.META, { key }, { value });
-      return;
-    }
-    await this.db.insert(SystemConstants.TABLE.META, { key, value });
+    await this.db.withPlatformAdmin(async () => {
+      const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
+      if (existing) {
+        await this.db.update(SystemConstants.TABLE.META, { key }, { value });
+        return;
+      }
+      await this.db.insert(SystemConstants.TABLE.META, { key, value });
+    });
   }
 
   protected async deleteMeta(key: string) {
+    await this.db.withPlatformAdmin(() => this.db.delete(SystemConstants.TABLE.META, { key }));
     await this.db.delete(SystemConstants.TABLE.META, { key });
   }
 

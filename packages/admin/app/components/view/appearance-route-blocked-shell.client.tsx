@@ -1,3 +1,4 @@
+import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
 import type { IAppearanceShellProps } from '@/lib/appearance/interfaces/appearance-shell-props.interface';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/reactor';
@@ -57,7 +58,7 @@ export class AppearanceRouteBlockedShell extends AdminComponent {
             <a href={AppPathConstants.ADMIN.ROOT} className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
               Back to {label}
             </a>
-            {this.isSuperAdmin && (
+            {this.isSuperAdmin && !WorkspaceAppearanceLock.locked && (
               <a href={AppPathConstants.ADMIN.SETTINGS.APPEARANCE} className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
                 Switch appearance / open standard admin
               </a>

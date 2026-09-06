@@ -4,7 +4,10 @@ import { Logger } from '@fromcode119/core';
 import { SystemConstants, ApiAccessGate } from '@fromcode119/core';
 import { AuthManager, UserPermissionChecker } from '@fromcode119/auth';
 import { Schema } from '@fromcode119/database';
-import { createHash } from 'crypto';
+import { TenantRegistryService, TenantResolverService } from '@fromcode119/core';
+import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resolver';
+import { McpTokenLookupService } from '@api/controllers/mcp/mcp-token-lookup-service';
+import { McpTokenStore } from '@api/controllers/mcp/mcp-token-store';
 
 export class ServerAuthSetup {
   constructor(
@@ -12,6 +15,16 @@ export class ServerAuthSetup {
     private readonly db: any,
     private readonly logger: Logger,
   ) {}
+
+  private lookup: McpTokenLookupService | null = null;
+
+  private tokenLookup(): McpTokenLookupService {
+    if (!this.lookup) {
+      const tenants = TenantResolverService.shared(this.db);
+      this.lookup = new McpTokenLookupService(new McpTokenStore(this.db), () => new TenantRegistryService(this.db, tenants).list());
+    }
+    return this.lookup;
+  }
 
   configure() {
     const permissionChecker = new UserPermissionChecker(this.db);
@@ -47,42 +60,30 @@ export class ServerAuthSetup {
     // nothing to revoke. The real table-backed check landed underneath it and the stub was never
     // removed, leaving a full-admin bypass that no admin screen could show and that nothing could
     // scope. It was unset in production, so deleting it changes no running behaviour.
-    this.auth.setApiKeyValidator(async (key: string) => {
-      if (!key) return null;
+    this.auth.setApiKeyValidator(async (key: string, req?: unknown) => {
       const rawKey = String(key || '').trim();
       if (!rawKey) return null;
       try {
-        const keyHash = createHash('sha256').update(rawKey).digest('hex');
-        const lookupRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `auth:api_token:${keyHash}` });
-        if (!lookupRow?.value) return null;
-        let payload: any = null;
-        try { payload = JSON.parse(String(lookupRow.value)); } catch { return null; }
-        const userId = Number(payload?.userId || 0);
-        const tokenId = String(payload?.tokenId || '').trim();
-        if (!userId || !tokenId) return null;
-        const expiresAt = payload?.expiresAt ? new Date(String(payload.expiresAt)) : null;
-        if (expiresAt && !Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() < Date.now()) return null;
-        const user = await this.db.findOne('users', { id: userId });
+        // The tenancy layer resolved the token first (it is how the request's site was chosen) and
+        // published it on the request; authenticate THAT record, so the two layers can never disagree
+        // about which token a request carries. Without one — a single-site deployment has no tenancy
+        // step — look it up here through the same service.
+        const record = ApiKeyTenantResolver.tokenOf(req) ?? await this.tokenLookup().find(rawKey);
+        if (!record || record.isExpired) return null;
+        const user = await this.db.findOne('users', { id: record.userId });
         if (!user) return null;
         const roles = Array.isArray(user.roles) ? user.roles : (() => {
           try { const p = JSON.parse(user.roles); return Array.isArray(p) ? p : []; } catch { return []; }
         })();
-        // Carried through so the MCP surface can narrow this token to a subset of tools. Left
-        // `undefined` when the token predates scopes, which the matcher reads as "not narrowed" —
-        // so existing tokens keep working exactly as before.
-        // NOT filtered here on purpose: `McpTokenScopeMatcher` distinguishes "no list" (unrestricted)
-        // from "a list that narrows to nothing usable" (deny). Dropping blanks at this layer would
-        // collapse the second case into the first and silently unrestrict a malformed token.
-        const mcpScopes = Array.isArray(payload?.scopes)
-          ? payload.scopes.map((s: any) => String(s || ''))
-          : undefined;
         return {
           id: String(user.id),
           email: String(user.email || ''),
           roles: roles.map((r: any) => String(r)),
           isApiKey: true,
-          jti: `api:${tokenId}`,
-          mcpScopes,
+          jti: `api:${record.tokenId}`,
+          // Carried through so the MCP surface can narrow this token to a subset of tools. `undefined`
+          // when the token predates scopes, which the matcher reads as "not narrowed".
+          mcpScopes: record.scopes,
         };
       } catch (error) {
         this.logger.error(`API key validation failed: ${error}`);

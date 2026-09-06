@@ -60,9 +60,31 @@ services:
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
     command: npm run start --workspace=@fromcode119/api
+    # T5c: the container starts as root for exactly one fork (the privileged spawner that runs plugin
+    # processes as their own users); the app itself drops to `node` at once. Root keeps only the
+    # capabilities that fork needs — change identity (SETUID/SETGID), own the guests' directories
+    # (CHOWN/FOWNER/DAC_OVERRIDE) and signal processes of other users (KILL) — and nothing may regain any.
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - CHOWN
+      - FOWNER
+      - DAC_OVERRIDE
+      - KILL
+      # The guest egress rule in the entrypoint (iptables owner match) — root-only, applied once, before
+      # the app drops privileges.
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-fromcode}:${POSTGRES_PASSWORD:-ChangeMe_Pg_P@ssw0rd}@db:5432/${POSTGRES_DB:-fromcode}
       - DB_DIALECT=postgres
+      # DDL connection: migrations and collection schema sync run as the role that OWNS the
+      # schema, while DATABASE_URL serves requests as a non-owner role so row-level security
+      # applies to them. Unset means both use DATABASE_URL — correct for single-tenant installs.
+      - DATABASE_MIGRATION_URL=${DATABASE_MIGRATION_URL:-}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       - JWT_SECRET=${JWT_SECRET:-CHANGE_ME_JWT_SECRET_MIN_32_CHARS}
       - NODE_ENV=production
@@ -95,6 +117,9 @@ services:
       # nothing rather than to whatever `site_url` happens to say.
       - INTERNAL_ADMIN_URL=${INTERNAL_ADMIN_URL:-http://admin:3000}
       - INTERNAL_FRONTEND_URL=${INTERNAL_FRONTEND_URL:-http://frontend:3000}
+      # T5c: plugin processes get NO network of their own (the api makes their HTTP calls). `allow`
+      # only for a deployment whose plugins still do raw network I/O; the entrypoint logs the policy.
+      - GUEST_EGRESS_POLICY=${GUEST_EGRESS_POLICY:-deny}
     depends_on:
       - db
       - redis
@@ -126,6 +151,16 @@ services:
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
     command: npm run start --workspace=@fromcode119/admin
+    # T5c: starts as root only to drop to `node` (app-launcher); no guests, so no spawner capabilities.
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - CHOWN
+      - DAC_OVERRIDE
+    security_opt:
+      - no-new-privileges:true
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
       - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
@@ -165,6 +200,24 @@ services:
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
     command: npm run start --workspace=@fromcode119/frontend
+    # T5c: the container starts as root for exactly one fork (the privileged spawner that runs theme
+    # render hosts as their own user); the app itself drops to `node` at once. Root keeps only the
+    # capabilities that fork needs — change identity (SETUID/SETGID), own the guests' directories
+    # (CHOWN/FOWNER/DAC_OVERRIDE) and signal processes of other users (KILL) — and nothing may regain any.
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - CHOWN
+      - FOWNER
+      - DAC_OVERRIDE
+      - KILL
+      # The guest egress rule in the entrypoint (iptables owner match) — root-only, applied once, before
+      # the app drops privileges.
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
       - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
@@ -184,6 +237,7 @@ services:
       - PLUGINS_DIR=/app/plugins
       - NODE_ENV=production
       - PORT=3000
+      - GUEST_EGRESS_POLICY=${GUEST_EGRESS_POLICY:-deny}
     depends_on:
       - api
     volumes:

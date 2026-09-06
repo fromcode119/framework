@@ -50,6 +50,7 @@ export class RestartServiceRow extends PureReactor {
     const copy = RestartAppCopy.for(this.entry.app);
     return (
       <SettingRow
+        stacked
         theme={this.theme}
         icon={FrameworkIcons.Refresh}
         title={copy.title}

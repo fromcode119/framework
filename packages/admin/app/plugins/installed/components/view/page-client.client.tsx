@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { state } from '@fromcode119/reactor';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import type { INotificationContextType } from '@/components/interfaces/notification-context-type.interface';
 import { IDependencyIssue } from '@/components/ui/interfaces/dependency-issue.interface';
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
@@ -87,9 +88,15 @@ export class InstalledPluginsPageClient
     this.mounted = false;
   }
 
+  /** The host's answer for the actions class and the view alike — one source, never two. */
+  get canManage(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user);
+  }
+
   render(): ReactNode {
     return (
       <InstalledPluginsView
+        canManage={this.canManage}
         closeDeleteConfirm={() => {
           this.showDeleteConfirm = false;
           this.pluginToDelete = null;

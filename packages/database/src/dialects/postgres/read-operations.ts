@@ -1,8 +1,12 @@
 import { Pool } from 'pg';
 import { sql, and, or, count as drizzleCount } from 'drizzle-orm';
+// Aliased: the constructor parameter is also called `drizzle`, and an unaliased import would be
+// shadowed by it inside methods — silently resolving to the wrong thing rather than failing.
+import { drizzle as createDrizzle } from 'drizzle-orm/node-postgres';
 import { BaseDialect } from '@database/dialects/base-dialect';
 import { NamingStrategy } from '@database/naming-strategy';
 import { PostgresColumnNormalizer } from '@database/dialects/postgres/column-normalizer';
+import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
 import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
 
 /**
@@ -14,6 +18,21 @@ import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestam
 export class PostgresReadOperations extends BaseDialect {
   private pool: Pool;
   private drizzle: any;
+
+  /** Raw statements: the request's held client when a tenant scope is open, else the pool. */
+  private get executor(): { query: (text: any, values?: any[]) => Promise<any> } {
+    return (TenantConnectionScope.currentClient(this.pool) as any) ?? this.pool;
+  }
+
+  /**
+   * Drizzle bound to the request's held client when a tenant scope is open, else the pool-wide
+   * instance. Without this, Drizzle reads would take an arbitrary pooled connection with no
+   * `app.tenant_id` set and return zero rows — RLS failing closed, but on the wrong connection.
+   */
+  private get orm(): any {
+    const client = TenantConnectionScope.currentClient(this.pool);
+    return client ? createDrizzle(client as any) : this.drizzle;
+  }
   private normalizer: PostgresColumnNormalizer;
   public readonly like: any;
 
@@ -53,13 +72,13 @@ export class PostgresReadOperations extends BaseDialect {
   }
 
   protected async executeRawSelect(sqlStr: string, values: any[]): Promise<any[]> {
-    const result = await this.pool.query(sqlStr, values);
+    const result = await this.executor.query(sqlStr, values);
     return result.rows;
   }
 
   private async tableExists(tableName: string): Promise<boolean> {
     const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
-    const result: any = await this.drizzle.execute(query);
+    const result: any = await this.orm.execute(query);
     return (result.rows[0]?.total || 0) > 0;
   }
 
@@ -103,7 +122,7 @@ export class PostgresReadOperations extends BaseDialect {
       if (limit) sqlQuery += ` LIMIT ${limit}`;
       if (offset) sqlQuery += ` OFFSET ${offset}`;
 
-      const result = await this.pool.query(sqlQuery, values);
+      const result = await this.executor.query(sqlQuery, values);
       return result.rows;
     }
 
@@ -115,9 +134,9 @@ export class PostgresReadOperations extends BaseDialect {
       for (const [key, val] of Object.entries(columns)) {
         if (val) selection[key] = (tableOrName as any)[key];
       }
-      query = this.drizzle.select(selection).from(tableOrName);
+      query = this.orm.select(selection).from(tableOrName);
     } else {
-      query = this.drizzle.select().from(tableOrName);
+      query = this.orm.select().from(tableOrName);
     }
 
     if (joins && joins.length > 0) {
@@ -170,7 +189,7 @@ export class PostgresReadOperations extends BaseDialect {
 
     const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
 
-    let query = this.drizzle.select({ total: drizzleCount() }).from(tableIdentifier);
+    let query = this.orm.select({ total: drizzleCount() }).from(tableIdentifier);
 
     if (joins && joins.length > 0) {
       for (const join of joins) {

@@ -3,6 +3,7 @@ import { ClientType } from '@fromcode119/core/client';
 import { Reactor, prop } from '@fromcode119/reactor';
 import * as ReactorRuntime from '@fromcode119/reactor';
 import { PluginsProvider, PluginRuntimeProvider } from '@fromcode119/react';
+import { AdminLocaleSync } from '@/app/components/view/admin-locale-sync.client';
 import { ThemeProvider } from '@/components/view/theme-context.client';
 import { AdminRuntimeProvider } from '@/components/view/admin-runtime-provider.client';
 import * as SharedComponents from '@/components';
@@ -57,6 +58,7 @@ export class ClientLayout extends Reactor {
         clientType={ClientType.ADMIN_UI}
         runtimeModules={this.runtimeModules}
       >
+        <AdminLocaleSync />
         <AppearanceRuntimeLoader>
           <ThemeProvider>
             <AdminRuntimeProvider>

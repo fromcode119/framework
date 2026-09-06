@@ -28,6 +28,21 @@ export class PersonCatalogService {
     });
   }
 
+  /**
+   * Remove one catalog entry. The catalog is shared by every plugin, so removal is as narrow as
+   * registration: exactly one (kind, key) pair, nothing pattern-based. Returns whether a row was removed
+   * so the caller can tell "deleted" from "was never there".
+   */
+  async remove(kind: string, key: string): Promise<boolean> {
+    const normalizedKind = String(kind ?? '').trim();
+    const normalizedKey = String(key ?? '').trim();
+    if (!normalizedKind || !normalizedKey) return false;
+    const existing = await this.db.findOne(SystemConstants.TABLE.PERSON_CATALOGS, { kind: normalizedKind, key: normalizedKey });
+    if (!existing) return false;
+    await this.db.delete(SystemConstants.TABLE.PERSON_CATALOGS, { kind: normalizedKind, key: normalizedKey });
+    return true;
+  }
+
   async list(kind: string): Promise<{ key: string; label: string }[]> {
     const rows = await this.db.find(SystemConstants.TABLE.PERSON_CATALOGS, { where: { kind: String(kind ?? '').trim() } });
     return (Array.isArray(rows) ? rows : []).map((r) => ({ key: String(r?.key ?? ''), label: String(r?.label ?? '') }));

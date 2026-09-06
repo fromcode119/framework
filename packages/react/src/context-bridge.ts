@@ -41,6 +41,14 @@ export class ContextBridge {
     return ContextBridge._args?.registerPlugins?.(...args);
   }
 
+  static replaceMenuItems(...args: any[]): any {
+    return ContextBridge._args?.replaceMenuItems?.(...args);
+  }
+
+  static replaceCollections(...args: any[]): any {
+    return ContextBridge._args?.replaceCollections?.(...args);
+  }
+
   static registerTheme(...args: any[]): any {
     return ContextBridge._args?.registerTheme?.(...args);
   }
@@ -112,6 +120,11 @@ export class ContextBridge {
 
   static locale(): string | undefined {
     return ContextBridge._args?.stabilityRef?.current?.locale;
+  }
+
+  /** The provider's latest stability snapshot — what the bridge's `getState()` reads at CALL time. */
+  static getState(): any {
+    return ContextBridge._args?.stabilityRef?.current;
   }
 
   static setLocale(...args: any[]): any {

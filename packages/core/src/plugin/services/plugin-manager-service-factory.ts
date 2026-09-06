@@ -40,7 +40,7 @@ export class PluginManagerServiceFactory {
   ): IPluginManagerServiceBundle {
     const runtime = new RuntimeService(manager.projectRoot);
     const registry = new PluginStateService(manager.db);
-    const discovery = new DiscoveryService(manager.pluginsRoot, manager.projectRoot);
+    const discovery = new DiscoveryService(manager.pluginsRoot, manager.projectRoot, manager.pluginHosts);
     const marketplace = new MarketplaceCatalogService(discovery);
     const admin = new AdminMetadataService();
     const lifecycle = new LifecycleService(manager, registry, discovery, manager.schemaManager);
@@ -53,6 +53,7 @@ export class PluginManagerServiceFactory {
       manager.security,
       manager.plugins,
       manager.registeredCollections,
+      manager.pluginHosts,
     );
     const runtimeState = new PluginRuntimeStateService(
       manager.logger,
@@ -74,6 +75,7 @@ export class PluginManagerServiceFactory {
       manager.pluginsRoot,
       () => manager.discoverPlugins(),
       (slug: string) => manager.enable(slug),
+      (slug: string, manifest) => manager.pluginHosts.reload(slug, manifest as unknown as Record<string, unknown>),
     );
 
     // Telemetry & scaffold services (email getter deferred so integrations are ready)

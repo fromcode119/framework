@@ -1,5 +1,7 @@
+import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
+import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-access-denied-error';
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/core';
+import { SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { randomUUID } from 'crypto';
 import { AuthControllerInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-infrastructure';
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
@@ -8,6 +10,9 @@ import type { ILoginThrottleSettings } from '@api/controllers/auth/interfaces/lo
 import type { ILoginThrottleState } from '@api/controllers/auth/interfaces/login-throttle-state.interface';
 
 export class AuthControllerPolicy extends AuthControllerInfrastructure {
+  /** How a platform admin opens a workspace from the shared host: as its appearance, or the default console. */
+  static readonly WORKSPACE_MODES = ['appearance', 'configure'];
+
   protected async issueLoginSession(req: Request, res: Response, user: any) {
     // Bake EFFECTIVE roles (legacy column ∪ `_system_users_roles` junction) into the session token so
     // role assignments from the admin Roles UI / plugins actually drive guards and runtime behavior.
@@ -16,6 +21,13 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     // nav without an extra round-trip. Admins get ['*']; scoped operators get their set.
     const permissions = await this.auth.getUserPermissions(Number(user.id)).catch(() => [] as string[]);
     const jti = randomUUID();
+    // Both flags ride on the user so the admin knows, before any page renders, whether this account
+    // may act on the PLATFORM (install code, delete a plugin, switch the theme) or only on its site.
+    // On a single-tenant deployment every admin is the platform, exactly as before tenancy existed.
+    const multiTenant = TenantMode.isEnabled();
+    const platformAdmin = multiTenant
+      ? await new TenantMembershipService(this.db).isPlatformAdminAccount(String(user.id))
+      : true;
     const userResponse = {
       id: String(user.id),
       email: this.normalizeEmail(user.email),
@@ -24,16 +36,37 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
       roles,
       permissions,
       jti,
+      platformAdmin,
+      multiTenant,
     };
     const sessionDurationMinutes = await this.getSessionDurationMinutes();
     const maxAgeMs = sessionDurationMinutes * 60 * 1000;
-    const token = await this.auth.generateToken(userResponse, { expiresIn: `${sessionDurationMinutes}m` });
+    // Which tenants may this account enter, and which is it entering now?
+    //
+    // Login itself is TENANT-LESS: the account is global, so credentials are checked before any
+    // tenant is known. Only afterwards does membership decide where they may go. Exactly one tenant
+    // selects itself; several mean the client must ask, and the token carries no tenant until it
+    // does. Single-tenant deployments skip all of this and behave exactly as before.
+    const availableTenants = await this.resolveAvailableTenants(String(user.id));
+    // On a WORKSPACE host the host names the tenant (T6): the session enters it, and an account
+    // that is not a member of it is refused here rather than signed in with nowhere to go.
+    const workspace = WorkspaceHostService.of(req);
+    if (workspace && !availableTenants.some((tenant) => tenant.id === workspace.id)) {
+      throw new WorkspaceAccessDeniedError(workspace.slug);
+    }
+    const selectedTenantId = workspace ? workspace.id : (availableTenants.length === 1 ? availableTenants[0].id : undefined);
+
+    const token = await this.auth.generateToken(userResponse, {
+      expiresIn: `${sessionDurationMinutes}m`,
+      tenantId: selectedTenantId,
+    });
     const expiresAt = new Date(Date.now() + maxAgeMs);
     const sessionId = randomUUID();
 
     await this.db.insert(SystemConstants.TABLE.SESSIONS, {
       id: sessionId,
       userId: user.id,
+      tenantId: selectedTenantId,
       tokenId: jti,
       expiresAt,
       userAgent: req.headers['user-agent'],
@@ -50,7 +83,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     // admin session in the other tab. A login issues its own cookie and touches no other surface.
     res.cookie(sessionCookieName, token, cookieOptions);
 
-    return { token, user: userResponse };
+    return { token, user: userResponse, availableTenants };
   }
 
   protected async getSessionDurationMinutes(): Promise<number> {
@@ -271,4 +304,112 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     const row = await this.readMetaRow(this.getForcePasswordResetKey(userId));
     return String(row?.value || '').trim().toLowerCase() === 'true';
   }
+
+  /**
+   * The tenants this account may enter. Empty on a single-tenant deployment, where tenancy is off
+   * entirely and there is nothing to choose between.
+   */
+  protected async resolveAvailableTenants(userId: string): Promise<Array<{ id: string; slug: string; primaryHost: string; platformAccess: boolean; kind: string; appearance: string }>> {
+    if (!TenantMode.isEnabled()) return [];
+    const memberships = new TenantMembershipService(this.db);
+    const access = await memberships.listForUser(userId);
+    // `platformAccess` travels with every entry so the admin can mark the tenants this account
+    // reaches only through the platform role — i.e. someone else's customer data.
+    return access.map((entry) => ({
+      id: entry.tenant.id,
+      slug: entry.tenant.slug,
+      primaryHost: entry.tenant.primaryHost,
+      platformAccess: entry.viaPlatformRole,
+      kind: entry.tenant.kind.value,
+      appearance: entry.tenant.appearance,
+    }));
+  }
+
+
+  /**
+   * Re-mints the session token for a DIFFERENT tenant and replaces the cookie.
+   *
+   * The tenant lives in a signed claim, so switching is a re-mint rather than a client-side flag —
+   * nothing the browser can set decides which customer's data it sees. The caller has already
+   * checked membership; this only issues.
+   */
+  protected async reissueSessionForTenant(req: Request, res: Response, user: any, tenantId: string, workspaceMode?: string): Promise<string> {
+    const sessionDurationMinutes = await this.getSessionDurationMinutes();
+    const maxAgeMs = sessionDurationMinutes * 60 * 1000;
+    // `req.user` is a DECODED token, so it already carries the claims jwt issued — `exp`, `iat`,
+    // `nbf`. Re-signing with those still present makes jwt.sign reject `expiresIn` outright
+    // ("the payload already has an exp property"), so they are dropped and re-issued fresh.
+    const { exp, iat, nbf, workspaceMode: previousMode, ...identity } = user as Record<string, unknown>;
+    void exp; void iat; void nbf; void previousMode;
+    // How the PLATFORM admin opens a workspace from the shared host — as its appearance, or in the
+    // default console to configure it. A per-session claim, never a tenant setting: the workspace's
+    // own admins can never obtain it, because on their host the appearance is locked (T6 §3.3).
+    if (workspaceMode) (identity as Record<string, unknown>).workspaceMode = workspaceMode;
+    const token = await this.auth.generateToken(
+      identity as any,
+      { expiresIn: `${sessionDurationMinutes}m`, tenantId },
+    );
+    res.cookie(this.getSessionCookieName(req), token, this.getCookieOptions(req, false, maxAgeMs));
+    await this.db.update(
+      SystemConstants.TABLE.SESSIONS,
+      { tokenId: user.jti },
+      { tenantId },
+    ).catch(() => undefined);
+    return token;
+  }
+
+  /** The tenants this account may enter. Empty on a single-tenant deployment. */
+  async availableTenants(req: Request, res: Response) {
+    const user = (req as any).user;
+    if (!TenantMode.isEnabled()) return res.json({ multiTenant: false, tenants: [], current: null, locked: false, mode: null });
+    const all = await this.resolveAvailableTenants(String(user.id));
+    const workspace = WorkspaceHostService.of(req);
+    // On a workspace host there is exactly one tenant and no switching (T6 §3.2).
+    const tenants = workspace ? all.filter((tenant) => tenant.id === workspace.id) : all;
+    return res.json({
+      multiTenant: true,
+      current: String((req as any).tenantId || '') || null,
+      locked: workspace !== null,
+      mode: String(user?.workspaceMode || '') || null,
+      tenants,
+    });
+  }
+
+  /**
+   * PUBLIC: whose console is this host? The admin app asks before anyone is signed in, so a
+   * workspace domain shows its own login (locked appearance, tenant name) rather than the platform's.
+   * Nothing here that the domain itself does not already tell.
+   */
+  async hostInfo(req: Request, res: Response) {
+    const workspace = WorkspaceHostService.of(req);
+    return res.json({
+      multiTenant: TenantMode.isEnabled(),
+      workspace: workspace ? { id: workspace.id, slug: workspace.slug, appearance: workspace.appearance } : null,
+    });
+  }
+
+  /**
+   * Switch tenant. A tenant the account may not enter is a 403 — never a redirect into one it can,
+   * which would quietly put an operator in the wrong customer's site.
+   */
+  async selectTenant(req: Request, res: Response) {
+    const user = (req as any).user;
+    if (!TenantMode.isEnabled()) return res.status(400).json({ error: 'not_multi_tenant' });
+
+    if (WorkspaceHostService.of(req)) return res.status(403).json({ error: 'workspace_host_locks_tenant' });
+
+    const tenantId = String((req.body as any)?.tenantId || '').trim();
+    if (!tenantId) return res.status(400).json({ error: 'tenantId_required' });
+    const mode = String((req.body as any)?.mode || '').trim();
+    if (mode && !AuthControllerPolicy.WORKSPACE_MODES.includes(mode)) return res.status(400).json({ error: 'mode_invalid', modes: AuthControllerPolicy.WORKSPACE_MODES });
+
+    const memberships = new TenantMembershipService(this.db);
+    if (!(await memberships.hasAccess(String(user.id), tenantId))) {
+      return res.status(403).json({ error: 'tenant_access_denied' });
+    }
+
+    await this.reissueSessionForTenant(req, res, user, tenantId, mode || undefined);
+    return res.json({ ok: true, tenantId, mode: mode || null });
+  }
+
 }

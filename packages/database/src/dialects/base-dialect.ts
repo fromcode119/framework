@@ -16,6 +16,53 @@ export abstract class BaseDialect {
   protected orderByBuilder = new OrderByBuilder();
 
   /**
+   * Marks this connection as the PLATFORM's own — the one that runs migrations and schema sync.
+   *
+   * Such a connection is never serving a tenant request, and it legitimately writes deployment-level
+   * rows (schema fingerprints and the like) that belong to no tenant. Default is a no-op: a driver
+   * without row-level security has nothing to mark.
+   */
+  markAsPlatformConnection(): void {
+    // no-op
+  }
+
+  /**
+   * Whether this driver can actually isolate tenants. Default FALSE.
+   *
+   * The default is deliberately the refusing one. An earlier version of this class returned a
+   * permissive passthrough, which meant any driver that did not override it — MySQL, and every
+   * future driver — silently ran with NO isolation and no error: every tenant reading every other
+   * tenant's rows, looking perfectly healthy. A base class must not hand out a security property
+   * nobody implemented.
+   */
+  supportsTenantIsolation(): boolean {
+    return false;
+  }
+
+  /**
+   * Runs `fn` with every statement bound to `tenantId`.
+   *
+   * Overridden per driver by its isolation strategy — Postgres holds a pooled client with
+   * `app.tenant_id` set (see TenantConnectionScope); a separate-database driver would bind that
+   * tenant's connection. A driver that has not implemented one REFUSES rather than running `fn`
+   * unisolated.
+   *
+   * This is never reached on a single-tenant deployment: TenantMode leaves tenancy off entirely, so
+   * no tenant scope is opened and drivers without a strategy keep working exactly as before.
+   */
+  async withTenant<T>(_tenantId: string, _fn: () => Promise<T>): Promise<T> {
+    throw new Error(
+      `${this.constructor.name}: this driver has no tenant isolation strategy, so a tenant-scoped `
+      + 'request cannot be served safely. Refusing rather than running the query unisolated.',
+    );
+  }
+
+  /** No row-level security here, so there is nothing to lift: `fn` runs as is. */
+  async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> {
+    return fn();
+  }
+
+  /**
    * Normalize parameter values for database queries
    * Handles undefined, null, Date, Buffer, and objects (JSON stringify)
    */

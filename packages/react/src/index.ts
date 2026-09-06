@@ -28,6 +28,12 @@ export type { IRenderableContentTransformerMetadata } from '@react/interfaces/re
 // Lucide icon name from '@fromcode119/react' (verified), so nothing static breaks.
 export { Slot } from '@react/slot';
 export { AccountShell } from '@react/account-shell';
+// The four route-level shells are Suspense BOUNDARIES; each implementation module registers itself as the
+// boundary's default when evaluated. They are exported so this package's module graph evaluates them —
+// the server render (built package) then emits the real shell inside the same boundary the browser has.
+export { AccountShellImplementation } from '@react/account/account-shell-implementation';
+export { ShellImplementation } from '@react/shell-implementation';
+export { ShellBoundary } from '@react/view/shell-boundary';
 export { Platform } from '@fromcode119/reactor';
 export { AccountShellDefault } from '@react/account/account-shell-default';
 export { AccountSectionRegistry } from '@react/account/account-section-registry';
@@ -41,10 +47,15 @@ export { AccountClass } from '@react/account/account-class';
 // way it renders AccountShell for `/account`. Without the export the theme cannot reach it and the route
 // falls back to a chrome-less framework page.
 export { TokenEmailPreferencesPanel } from '@react/account/token-email-preferences-panel.client';
+export { TokenEmailPreferencesPanelImplementation } from '@react/account/token-email-preferences-panel-implementation.client';
 export { AuthShell } from '@react/auth/auth-shell';
+export { AuthShellImplementation } from '@react/auth/auth-shell-implementation';
 export { AuthMode } from '@react/auth/enums/auth-mode.enum';
 export { Override } from '@react/view/override.client';
+export { NotFoundBody } from '@react/view/not-found-body';
+export { PluginUsageTracker } from '@react/plugin-usage-tracker';
 export { RecordsHub } from '@react/records-hub';
+export { RecordsHubImplementation } from '@react/records-hub-implementation';
 export type { IRecordsHubItem } from '@react/interfaces/records-hub-item.interface';
 export type { IRecordsHubGroup } from '@react/interfaces/records-hub-group.interface';
 export type { IRecordsHubResult } from '@react/interfaces/records-hub-result.interface';
@@ -65,6 +76,7 @@ export { PageStyleProvider } from '@react/page-style-provider';
 export { PluginContextRegistry } from '@react/plugin-context';
 export { SettingsContext } from '@react/context/settings-context';
 export { TranslationContext } from '@react/context/translation-context';
+export type { ITranslationContextValue } from '@react/context/interfaces/translation-context-value.interface';
 export { CollectionsContext } from '@react/context/collections-context';
 export { MenuContext } from '@react/context/menu-context';
 export { PluginStateContext } from '@react/context/plugin-state-context';
@@ -80,6 +92,7 @@ export { ThemeOverrideRegistrar } from '@react/theme-override-registrar';
 export { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
 export { PluginRuntimeProvider } from '@react/view/plugin-runtime-provider.client';
 export { PluginComponent } from '@react/view/plugin-component.client';
+export { PluginDefaultStyle } from '@react/view/plugin-default-style';
 export type { PluginRuntimeValue } from '@react/plugin-runtime-value';
 
 // reactor's OOP surface, re-exported so plugins/themes reach it through the SDK boundary.

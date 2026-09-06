@@ -17,15 +17,18 @@ export interface IPluginManagerInterface {
   emailCategories?: any;
   middlewares: any;
   plugins: Map<string, ILoadedPlugin>;
+  /** T5: the isolated plugins' processes, by slug. Absent on a manager built without hosts (tests). */
+  pluginHosts?: any;
   pluginsRoot: string;
   registeredCollections: Map<string, any>;
   headInjections: Map<string, any[]>;
   schemaManager: any;
   runtime: any;
-  themeManager?: {
+  /** Null until the API bootstrap hands the ThemeManager over; a context then reports no theme. */
+  themeManager: {
     getActiveThemeManifest(): { slug: string } | null;
     getThemeConfig(slug: string): Promise<any>;
-  };
+  } | null;
   getPlugins(): ILoadedPlugin[];
   enable(slug: string): Promise<void>;
   disable(slug: string, options?: { persistState?: boolean }): Promise<void>;

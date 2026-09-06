@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/admin",
-  "version": "0.1.87",
+  "version": "0.1.88",
   "main": "lib/index.ts",
   "types": "lib/index.ts",
   "bin": {
@@ -29,7 +29,7 @@
     "build": "npm run build:sw && node ../nextor/dist/nextor-cli.cjs with-middleware -- next build",
     "prepack": "npm run build:sw",
     "dev": "node ../nextor/dist/nextor-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
-    "start": "next start -H 0.0.0.0",
+    "start": "node ../core/dist/process/app-launcher-main.js --app admin --hostname 0.0.0.0",
     "test": "vitest run --config ../../vitest.plugins.config.ts --project admin --project admin-dom"
   },
   "dependencies": {

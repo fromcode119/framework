@@ -22,6 +22,8 @@ export class ContextProviderI18nHooks {
     setMenuItems: React.Dispatch<React.SetStateAction<IMenuItem[]>>;
     setSecondaryPanel: React.Dispatch<React.SetStateAction<ISecondaryPanelState>>;
     setCollections: React.Dispatch<React.SetStateAction<ICollectionMetadata[]>>;
+    /** Set when the initial `translations` were seeded for this locale: its first fetch is skipped. */
+    seededTranslationsLocale?: string;
   }) {
     const {
       api,
@@ -37,6 +39,7 @@ export class ContextProviderI18nHooks {
       setMenuItems,
       setSecondaryPanel,
       setCollections,
+      seededTranslationsLocale,
     } = args;
 
     const loadTranslations = React.useCallback(async (newLocale: string) => {
@@ -81,7 +84,16 @@ export class ContextProviderI18nHooks {
       [effectiveTranslations],
     );
 
+    // A seeded provider (islands runtime) already holds this locale's server translations from the
+    // document; fetching them again would only re-set identical state. The skip is consumed once, so a
+    // locale switch — including back to the seeded one — loads as before.
+    const seededLocaleRef = React.useRef(seededTranslationsLocale || '');
     React.useEffect(() => {
+      if (seededLocaleRef.current && seededLocaleRef.current === locale) {
+        seededLocaleRef.current = '';
+        return;
+      }
+      seededLocaleRef.current = '';
       loadTranslations(locale);
     }, [locale, loadTranslations]);
 

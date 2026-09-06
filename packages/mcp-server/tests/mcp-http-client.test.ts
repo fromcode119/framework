@@ -42,3 +42,28 @@ describe('McpHttpClient', () => {
     expect((fetchMock.mock.calls[0] as any[])[0]).toBe('https://example.test/api/v1/mcp/tools');
   });
 });
+
+describe('McpHttpClient sites', () => {
+  it('sends no site header until a site is selected, then names it on every call', async () => {
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ tools: [] }) }));
+    const client = new McpHttpClient('https://example.test/api/v1', 'secret', fetchMock as any);
+    await client.listTools();
+    expect((fetchMock.mock.calls[0] as any[])[1].headers['x-fc-site']).toBeUndefined();
+
+    client.selectSite('acme');
+    await client.listTools();
+    await client.callTool('content.list', {});
+    expect((fetchMock.mock.calls[1] as any[])[1].headers['x-fc-site']).toBe('acme');
+    expect((fetchMock.mock.calls[2] as any[])[1].headers['x-fc-site']).toBe('acme');
+  });
+
+  it('lists the sites the token reaches, and turns a refusal into an envelope', async () => {
+    const ok = vi.fn(async () => ({ ok: true, json: async () => ({ multiTenant: true, allSites: true, current: null, sites: [{ id: 'acme', slug: 'acme', host: 'acme.test' }] }) }));
+    const sites = await new McpHttpClient('https://example.test/api/v1', 'secret', ok as any).listSites();
+    expect((ok.mock.calls[0] as any[])[0]).toBe('https://example.test/api/v1/mcp/sites');
+    expect(sites).toMatchObject({ ok: true, multiTenant: true, allSites: true, sites: [{ id: 'acme' }] });
+
+    const refused = vi.fn(async () => ({ ok: false, status: 401, json: async () => ({ error: 'invalid_token' }) }));
+    expect(await new McpHttpClient('https://example.test/api/v1', 'bad', refused as any).listSites()).toMatchObject({ ok: false, sites: [], error: 'HTTP 401: invalid_token' });
+  });
+});

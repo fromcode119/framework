@@ -97,6 +97,8 @@ describe('SystemController.getFrontendMetadata public settings', () => {
       getHeadInjections: vi.fn().mockReturnValue([]),
       getPublicFrontendPluginSettings: vi.fn().mockResolvedValue(pluginPublicSettings),
       db: {
+        // The SSR generation cap is read with findOne; no row means the mirrored default is in force.
+        findOne: vi.fn().mockResolvedValue(null),
         find: vi.fn().mockResolvedValue([
           { key: 'routing_home_target', value: 'auto' },
           { key: 'locale_url_strategy', value: 'query' },

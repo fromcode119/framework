@@ -33,4 +33,15 @@ describe('TimezoneUtils', () => {
 
     expect(roundTripped).toEqual(originalParts);
   });
+
+  it('formats a literal date-only value as that calendar day in negative-offset timezones', () => {
+    // 'YYYY-MM-DD' parses as UTC midnight; formatting it through America/New_York would
+    // otherwise render the PREVIOUS day. A bare date names a calendar day, not an instant.
+    expect(TimezoneUtils.formatSystemDateOnly('2026-08-11', '-', 'America/New_York')).toContain('11');
+  });
+
+  it('extracts zoned parts of a literal date-only value without shifting the day', () => {
+    const parts = TimezoneUtils.getZonedDateParts('2026-08-11', 'America/New_York');
+    expect(parts).toMatchObject({ year: 2026, month: 8, day: 11, hour: 0 });
+  });
 });

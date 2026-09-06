@@ -9,6 +9,10 @@ import { EnumValueCoercion } from '@core/plugin/context/enum-value-coercion';
 import { LocalizedReadResolver } from '@core/plugin/context/localized-read-resolver';
 import { RateLimiter } from '@core/security/rate-limiter';
 import { SystemConstants } from '@core/constants/system.constants';
+import { RequestContextUtils } from '@core/context/request-context';
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { UntenantedBootAccess } from '@core/plugin/context/untenanted-boot-access';
+import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
 
 // Plugins read with the schema's camelCase field names. Raw-SQL paths in
 // the dialects return rows keyed by snake_case DB columns; convert top-level
@@ -29,7 +33,48 @@ export class DatabaseContextProxy {
   private static readonly WRITE_AUDIT_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
   /** Write methods whose SECOND arg is the row payload — never mined for a record id in the audit resource. */
   private static readonly PAYLOAD_SECOND_ARG_METHODS = new Set(['insert', 'upsert']);
+  /** Filter lives under `options.where` for these. */
+  private static readonly WHERE_OPTION_METHODS = new Set(['find', 'count', 'groupCount']);
+  /** Filter IS the second argument for these — not an option. */
+  private static readonly WHERE_DIRECT_METHODS = new Set(['findOne', 'update', 'delete']);
   private static readonly SYSTEM_TABLES = new Set<string>(Object.values(SystemConstants.TABLE).map((t) => String(t).toLowerCase()));
+
+  /**
+   * Layer 1 of tenant isolation: the predicate the query SHOULD have carried.
+   *
+   * Row-level security (layer 2) already makes a missing predicate harmless, so this is not the
+   * security boundary — it is what keeps the query CORRECT, and what turns an absent tenant into a
+   * loud failure instead of a silently empty result set.
+   *
+   * `find`/`count`/`groupCount` take the filter under `options.where`; `findOne`/`update`/`delete`
+   * take the where DIRECTLY as the second argument. Confusing the two is the exact shape of the
+   * documented `db.find` bug — a filter at the top level is silently ignored and the query returns
+   * every row — so the two forms are handled separately and explicitly.
+   *
+   * `insert`/`upsert` are deliberately absent: the column DEFAULT stamps the tenant from the
+   * connection and WITH CHECK rejects a wrong one. Stamping here too would be a second source for
+   * the same value.
+   */
+  private static injectTenant(prop: string, args: any[]): any[] {
+    // Single-tenant deployment: no tenant exists to scope by, and injecting one would filter every
+    // query to nothing. Pre-tenancy behaviour, unchanged.
+    if (!TenantMode.isEnabled()) return args;
+    if (!TenantScopedTableDdl.isTenantScoped(String(args[0] ?? ''))) return args;
+    const tenantId = RequestContextUtils.requireTenantId();
+    const next = [...args];
+
+    if (DatabaseContextProxy.WHERE_OPTION_METHODS.has(prop)) {
+      const options = { ...(next[1] ?? {}) };
+      options.where = { ...(options.where ?? {}), tenantId };
+      next[1] = options;
+      return next;
+    }
+    if (DatabaseContextProxy.WHERE_DIRECT_METHODS.has(prop)) {
+      next[1] = { ...(next[1] ?? {}), tenantId };
+      return next;
+    }
+    return next;
+  }
 
   private static denormalizeResult(result: any): any { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (result == null) return result;
@@ -189,7 +234,13 @@ export class DatabaseContextProxy {
               // the one point every plugin DB call passes through — rather than at ~1,500 call sites
               // that tsc cannot police. See EnumValueCoercion.
               const table = args[0];
-              const out = fn.apply(this, EnumValueCoercion.coerceArguments(args));
+              // Plugin boot work has no tenant. Skip it loudly rather than failing the plugin or
+              // running it unscoped — see UntenantedBootAccess.
+              if (UntenantedBootAccess.shouldSkip(table)) {
+                return UntenantedBootAccess.skip(plugin.manifest.slug, prop, table);
+              }
+              const scoped = DatabaseContextProxy.injectTenant(prop, args);
+              const out = fn.apply(this, EnumValueCoercion.coerceArguments(scoped));
               if (shouldDenormalize) {
                 const postProcess = (rows: any) => (resolveLocalized
                   ? DatabaseContextProxy.postProcessResult(rows, table, manager)

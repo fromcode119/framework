@@ -19,7 +19,9 @@ export class DateTimePickerController {
   }
 
   static getZonedParts(value?: string) {
-    return TimezoneUtils.getZonedDateParts(DateTimePickerController.getUtcDate(value), DateTimePickerController.timezone);
+    // Pass the RAW value: a literal `YYYY-MM-DD` must reach getZonedDateParts as a string so it
+    // extracts the calendar day in UTC instead of shifting it through the system timezone.
+    return TimezoneUtils.getZonedDateParts(value, DateTimePickerController.timezone);
   }
 
   static getPickerDate(value?: string): Date | undefined {
@@ -55,6 +57,14 @@ export class DateTimePickerController {
 
   static computeCommitIso(props: IDateTimePickerProps, selectedDate: Date): string {
     const { showTime = true, value } = props;
+    if (showTime === false) {
+      // Date-only mode names a CALENDAR DAY, never an instant: emit the literal picked day.
+      // Converting local midnight to a UTC ISO shifted it to the previous day for every
+      // date-part consumer in a positive-offset timezone.
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      return `${selectedDate.getFullYear()}-${month}-${day}`;
+    }
     const tz = DateTimePickerController.timezone;
     const baseTime = DateTimePickerController.getZonedParts(value) || TimezoneUtils.getZonedDateParts(new Date(), tz);
     const finalUtcDate = TimezoneUtils.zonedPartsToUtcDate({

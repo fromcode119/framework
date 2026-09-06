@@ -19,6 +19,7 @@ RUN if command -v apk >/dev/null 2>&1; then \
                 postgresql-client \
                 python3 \
                 build-essential \
+                iptables \
             && rm -rf /var/lib/apt/lists/*; \
         else \
             echo "Unsupported base image package manager" >&2; \
@@ -56,6 +57,12 @@ COPY packages/archor/package.json ./packages/archor/
 
 # Install dependencies
 RUN npm install --no-audit
+
+# Headless Chromium for server-side HTML→PDF rendering (plugin reading/report exports). Installed
+# right after npm install so the ~150MB browser layer caches until dependencies change, instead of
+# re-downloading on every source edit.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx playwright install --with-deps chromium
 
 # Now copy the rest of the source
 COPY . .
@@ -118,6 +125,12 @@ RUN npm run build:libs > /tmp/build-libs.log 2>&1; ec=$?; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:libs FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:libs OK ==="
 
+# Step 3b: Per-icon data modules for BOTH apps BEFORE the app builds — the Next bundles bake the lucide
+# version string into the icon URL, so the files must exist for exactly that version (the drift test
+# guards it) or every icon 404s in the image.
+RUN npm run build:frontend-icons > /tmp/build-frontend-icons.log 2>&1; ec=$?; \
+    tail -n 40 /tmp/build-frontend-icons.log; exit $ec
+
 # Step 4: Build admin UI
 RUN npm run build:admin > /tmp/build-admin.log 2>&1; ec=$?; \
     tail -80 /tmp/build-admin.log; \
@@ -130,13 +143,39 @@ RUN npm run build:frontend > /tmp/build-frontend.log 2>&1; ec=$?; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:frontend FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:frontend OK ==="
 
+# Step 6: Build the storefront runtime bundle — ONE classic script under public/fc-runtime/, built by
+# Vite from the SAME alias/stub map next.config.js reads (config/next-config-env.js). Runs after
+# build:frontend because Next serves public/ from disk at runtime; nothing in .next depends on it.
+RUN npm run build:frontend-runtime > /tmp/build-frontend-runtime.log 2>&1; ec=$?; \
+    tail -80 /tmp/build-frontend-runtime.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:frontend-runtime FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:frontend-runtime OK ==="
+
+# Step 7: The theme render host — the one storefront module that runs OUTSIDE Next, as its own process
+# per theme world (T5b). Bundled here so the image ships it; without it the storefront says so and renders
+# worlds in-process.
+RUN npm run build:frontend-host > /tmp/build-frontend-host.log 2>&1; ec=$?; \
+    tail -40 /tmp/build-frontend-host.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:frontend-host FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:frontend-host OK ==="
+
+# Step 8: Runtime identities (T5c). Every app process gives up root for `node` the moment it starts
+# (`PrivilegeDrop`), so what it writes at runtime must be writable by `node`: the Next caches. The build
+# caches are dropped first — they are build-time state, and `chown -R` over them would double the layer.
+# `deploy/docker-entrypoint.sh` does the same for the MOUNTED directories, which do not exist yet here.
+RUN rm -rf packages/frontend/.next/cache packages/admin/.next/cache && \
+    mkdir -p packages/frontend/.next/cache packages/admin/.next/cache /home/node && \
+    chown -R node:node packages/frontend/.next/cache packages/admin/.next/cache /home/node && \
+    chmod +x deploy/docker-entrypoint.sh
+ENTRYPOINT ["/app/deploy/docker-entrypoint.sh"]
+
 # ===================================
 # MODE 1: API Only
 # ===================================
 FROM builder AS api-only
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=api
-CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start --workspace=@fromcode119/api"]
+CMD ["npm", "run", "start", "--workspace=@fromcode119/api"]
 
 # ===================================
 # MODE 2: API + Admin
@@ -144,7 +183,7 @@ CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start 
 FROM builder AS api-admin
 EXPOSE 3000 3001
 ENV DEPLOYMENT_MODE=api-admin
-CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:api-admin"]
+CMD ["npm", "run", "start:api-admin"]
 
 # ===================================
 # MODE 3: Full Stack (API + Admin + Frontend)
@@ -152,7 +191,7 @@ CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:
 FROM builder AS full-stack
 EXPOSE 3000 3001 3002
 ENV DEPLOYMENT_MODE=full
-CMD ["sh", "-lc", "npm run fromcode -- plugin deps-install-all && npm run start:all"]
+CMD ["npm", "run", "start:all"]
 
 # ===================================
 # MODE 3B: Single-Domain Gateway

@@ -25,16 +25,31 @@ include:
     project_directory: .
 
 services:
+  # T6: the platform gateway is the ONE upstream Traefik forwards every framework.local host to. It
+  # routes by host from the tenant table (`GET /internal/routing`): site hosts → frontend, workspace
+  # hosts → admin, `api.` aliases → api, the platform's own hosts as configured. api/admin/frontend
+  # are no longer exposed to Traefik directly (see their `traefik.enable=false` below).
   gateway:
+    environment:
+      - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
+      - GATEWAY_ROUTING_TTL_MS=${GATEWAY_ROUTING_TTL_MS:-30000}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-proxy}"
-      - "traefik.http.routers.fc-framework-gateway.rule=Host(`${GATEWAY_HOST:-framework.local}`)"
+      - "traefik.http.routers.fc-framework-gateway.rule=Host(`${GATEWAY_HOST:-framework.local}`) || HostRegexp(`^[a-z0-9.-]+\\.framework\\.local$`)"
+      - "traefik.http.routers.fc-framework-gateway.priority=1"
       - "traefik.http.routers.fc-framework-gateway.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}"
       - "traefik.http.routers.fc-framework-gateway.tls=${TRAEFIK_TLS_ENABLED:-true}"
       - "traefik.http.services.fc-framework-gateway.loadbalancer.server.port=3000"
 
   api:
+    # T5: isolated plugins are separate processes INSIDE this container — one per ACTIVE plugin, each
+    # with its own heap ceiling (Settings → Infrastructure → Plugin Isolation). The base file's 768M
+    # was sized for one process; this checkout runs seven active plugins plus the api itself.
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     # PLUGIN-owned env vars (a plugin's API credentials or signing key) reach the api through this, so
     # the framework's compose never names an individual plugin's key. `required: false` so a checkout
     # without the file still starts.
@@ -45,11 +60,14 @@ services:
       # SQLite by default locally: no Postgres to run, and the file lives in the ./data mount below.
       - DATABASE_URL=${DATABASE_URL:-file:/app/data/app.db}
       - DB_DIALECT=${DB_DIALECT:-sqlite}
+      - DATABASE_MIGRATION_URL=${DATABASE_MIGRATION_URL:-}
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
       - CORS_ALLOWED_DOMAINS=${CORS_ALLOWED_DOMAINS:-framework.local,api.framework.local,admin.framework.local,frontend.framework.local,localhost}
       - MARKETPLACE_URL=${MARKETPLACE_URL:-http://marketplace.framework.local}
       - COOKIE_DOMAIN=${COOKIE_DOMAIN:-.framework.local}
       - STORAGE_PUBLIC_URL=${STORAGE_PUBLIC_URL:-}
+      # T6: where the api pushes "the tenant table changed" so the gateway re-reads its routing map.
+      - GATEWAY_INTERNAL_URL=${GATEWAY_INTERNAL_URL:-http://gateway:3000}
       # A directory-checksum mismatch re-stamps rather than disabling the plugin — local source edits
       # change the hash constantly. Real tamper protection is signature signing.
       - ENFORCE_PLUGIN_INTEGRITY=${ENFORCE_PLUGIN_INTEGRITY:-false}
@@ -67,12 +85,16 @@ services:
       - ./data:/app/data
       - ./public/uploads:/app/public/uploads
       - ./storage/private:/app/storage/private
+      # Backups — system snapshots AND tenant exports. Without this mount every export a delete wrote as
+      # its "undo" vanished the next time the api container was recreated (seen 2026-09-05).
+      - ./backups:/app/backups
       # This checkout's extension roots. Same container paths as production; different host location.
       - ../../plugins:/app/plugins
       - ../../themes:/app/themes
       - ../../appearance:/app/appearance
     labels:
-      - "traefik.enable=true"
+      # T6: reached through the platform gateway only.
+      - "traefik.enable=false"
       - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-proxy}"
       - "traefik.http.routers.fc-framework-api.rule=Host(`${API_HOST:-api.framework.local}`)"
       - "traefik.http.routers.fc-framework-api.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}"
@@ -89,7 +111,8 @@ services:
     volumes:
       - ../../appearance:/app/appearance
     labels:
-      - "traefik.enable=true"
+      # T6: reached through the platform gateway only.
+      - "traefik.enable=false"
       - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-proxy}"
       - "traefik.http.routers.fc-framework-admin.rule=Host(`${ADMIN_HOST:-admin.framework.local}`)"
       - "traefik.http.routers.fc-framework-admin.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}"
@@ -103,12 +126,25 @@ services:
       - ../../plugins:/app/plugins:ro
 
     labels:
-      - "traefik.enable=true"
+      # T6: reached through the platform gateway only.
+      - "traefik.enable=false"
       - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK:-proxy}"
-      - "traefik.http.routers.fc-framework-frontend.rule=Host(`${FRONTEND_HOST:-frontend.framework.local}`)"
+      # Every SITE is its own host on the storefront (T3/T4: `_system_tenants.primary_host` + aliases), so
+      # the storefront router matches any `*.framework.local` that no other router claims. Priority 1 puts
+      # it BELOW the admin, api and marketplace routers, whose exact Host() rules win first.
+      - "traefik.http.routers.fc-framework-frontend.rule=Host(`${FRONTEND_HOST:-frontend.framework.local}`) || HostRegexp(`^[a-z0-9-]+\\.framework\\.local$`)"
+      - "traefik.http.routers.fc-framework-frontend.priority=1"
       - "traefik.http.routers.fc-framework-frontend.entrypoints=${TRAEFIK_ENTRYPOINTS:-websecure}"
       - "traefik.http.routers.fc-framework-frontend.tls=${TRAEFIK_TLS_ENABLED:-true}"
       - "traefik.http.services.fc-framework-frontend.loadbalancer.server.port=3000"
+
+  # DEV DELTA: publish Postgres to the host so the tenant-isolation suite can connect as the runtime
+  # role from outside the containers. Production keeps the database unpublished — it is reachable
+  # only on the internal network there, which is why this belongs here and not in the deploy file.
+  db:
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+
 
 # The edge proxy this checkout shares with the other local stacks. Production names it after the
 # Coolify resource instead, which is why the name has to be stated here rather than inherited.

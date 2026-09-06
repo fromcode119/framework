@@ -38,7 +38,7 @@ export class ImportMapInstaller {
       react:
         `data:application/javascript,const __fcReact = ${reactExpr}; export default __fcReact; export const { useState, useEffect, useMemo, useCallback, useRef, createRef, createContext, useContext, useReducer, useLayoutEffect, useInsertionEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, useSyncExternalStore, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = __fcReact;`,
       'react-dom':
-        `data:application/javascript,const __fcReactDom = ${reactDomExpr}; export default __fcReactDom; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot } = __fcReactDom;`,
+        `data:application/javascript,const __fcReactDom = ${reactDomExpr}; export default __fcReactDom; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot, hydrateRoot } = __fcReactDom;`,
       'react/jsx-runtime':
         `data:application/javascript,const __fcR = ${reactExpr}; const __fcJsx = (type, props, key) => __fcR.createElement(type, key === undefined ? props : { ...(props || {}), key }); export const jsx = __fcJsx; export const jsxs = __fcJsx; export const Fragment = __fcR.Fragment; export default { jsx, jsxs, Fragment };`,
       'react/jsx-dev-runtime':

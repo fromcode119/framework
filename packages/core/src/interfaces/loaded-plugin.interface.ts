@@ -20,5 +20,5 @@ export interface ILoadedPlugin extends IFromcodePlugin {
   iconUrl?: string; // Resolved absolute URL for the plugin icon
   // Runtime-populated fields from API/management
   config?: Record<string, any>;
-  sandbox?: boolean | { memoryLimit?: number; timeout?: number; allowNative?: boolean; enabled?: boolean };
+  sandbox?: boolean | { memoryLimit?: number; timeout?: number; allowNative?: boolean; enabled?: boolean; reason?: string };
 }

@@ -16,9 +16,15 @@ export class InstalledThemeCard extends PureReactor {
   @prop declare onUpdate: (slug: string) => Promise<void>;
   @prop declare theme: IInstalledThemeManifest;
   @prop declare updateVersion: string | null;
+  /**
+   * False for a tenant admin on a multi-tenant deployment. Gates the PLATFORM actions only — upgrade and
+   * delete change the files every site renders from. Activate, disable and settings are SITE actions
+   * (T3): every admin of a site may choose that site's theme from what the operator installed.
+   */
+  @prop declare canManage: boolean;
 
   render(): ReactNode {
-    const { isDark, onActivate, onDelete, onDisable, onUpdate, theme, updateVersion } = this;
+    const { canManage, isDark, onActivate, onDelete, onDisable, onUpdate, theme, updateVersion } = this;
     // API JSON: `state` is a raw string, so resolve rather than compare a string to a member.
     const isActive = ThemeState.resolve(theme.state) === ThemeState.ACTIVE;
 
@@ -41,7 +47,7 @@ export class InstalledThemeCard extends PureReactor {
         <Badge variant={isActive ? 'blue' : 'gray'} className="shrink-0 w-[64px] justify-center">{isActive ? 'Active' : 'Installed'}</Badge>
 
         <div className="flex items-center gap-1 shrink-0">
-          {updateVersion ? (
+          {updateVersion && canManage ? (
             <button onClick={() => onUpdate(theme.slug)} title={`Upgrade to v${updateVersion}`} className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors"><FrameworkIcons.Clock size={14} />Upgrade</button>
           ) : null}
           {isActive ? (
@@ -53,7 +59,7 @@ export class InstalledThemeCard extends PureReactor {
           ) : (
             <button onClick={() => onActivate(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-slate-900 dark:bg-white dark:text-slate-900 text-white hover:bg-slate-800 transition-colors">Activate</button>
           )}
-          <button onClick={() => onDelete(theme.slug, isActive)} title="Delete" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button>
+          {canManage ? <button onClick={() => onDelete(theme.slug, isActive)} title="Delete" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
         </div>
       </div>
     );

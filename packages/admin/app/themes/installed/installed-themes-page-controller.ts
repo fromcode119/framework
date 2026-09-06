@@ -13,11 +13,20 @@ export class InstalledThemesPageController {
   private static readonly ARCHIVE_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
 
   /** Load installed + marketplace themes, normalizing both list shapes the API may return. */
-  static async fetchThemes(): Promise<IInstalledThemesFetchResult> {
-    const [installedData, marketplaceData] = await Promise.all([
-      AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST),
-      AdminApi.get(AdminConstants.ENDPOINTS.THEMES.MARKETPLACE),
-    ]);
+  static async fetchThemes(options: { includeMarketplace?: boolean } = {}): Promise<IInstalledThemesFetchResult> {
+    // The installed list is the page. The marketplace is an enrichment (update badges), so it is
+    // fetched separately and best-effort: a `Promise.all` over both meant one 403 on the marketplace
+    // blanked the installed list and logged "Failed to fetch themes" for a tenant admin whose
+    // installed list had loaded fine. And a tenant admin is not asked at all — the route is
+    // platform-only, and a page must not fire a request it is not allowed to make.
+    const installedData = await AdminApi.get(AdminConstants.ENDPOINTS.THEMES.LIST);
+    // Opt-IN, defaulting to no: a caller that has not established platform access gets no catalogue.
+    const marketplaceData = options.includeMarketplace === true
+      ? await AdminApi.get(AdminConstants.ENDPOINTS.THEMES.MARKETPLACE).catch((error: unknown) => {
+          console.warn('[InstalledThemesPage] Marketplace unavailable, continuing with installed themes only:', error);
+          return [];
+        })
+      : [];
 
     return {
       themes: InstalledThemesPageController.normalizeThemeList(installedData),

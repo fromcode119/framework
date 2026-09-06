@@ -1,4 +1,5 @@
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
+import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
 
 /**
@@ -6,7 +7,8 @@ import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
  *
  * This mirrors what `DynamicContentClient` / `HomeClient` render inside the layout — the same wrapper
  * div, the same `frontend.content.display` / `frontend.content.footer` slots, the same string-content
- * fallback. It has to be a second construction rather than the client component itself: those live in
+ * fallback. Slot names and prose classes come from `StorefrontContentContract`, shared with the browser
+ * twin (`StorefrontPageTree`). It has to be a second construction rather than the client component itself: those live in
  * Next's module graph and use Next's React, while the theme and plugin bundles use the runtime copy, and
  * mixing the two is the dead-dispatcher crash `ThemeSsrRuntime` exists to prevent. The shared decisions
  * (`ContentRenderingUtils`) ARE imported, so only the element shape is restated — keep them in step.
@@ -21,12 +23,15 @@ export class ThemeSsrContentTree {
     content: unknown;
     className: string;
     style: Record<string, string> | null;
+    /** A 404 document: the override chain around `NotFoundBody` instead of the content slots. */
+    notFoundPath?: string;
   }): unknown {
-    const { runtime, content, className, style } = args;
+    const { runtime, content, className, style, notFoundPath } = args;
     const { createElement } = runtime.react;
     const wrapper = { className, style: style ?? undefined };
     const entry = content as Record<string, unknown> | null;
 
+    if (notFoundPath !== undefined) return createElement('div', wrapper, ThemeSsrContentTree.buildNotFound(runtime, notFoundPath));
     if (entry?.recipe) return createElement('div', wrapper);
 
     const Slot = runtime.frameworkReact.Slot;
@@ -36,10 +41,19 @@ export class ThemeSsrContentTree {
     return createElement(
       'div',
       wrapper,
-      createElement(Slot, { key: 'display', name: 'frontend.content.display', props: { content: renderable, entry } }),
+      createElement(Slot, { key: 'display', name: StorefrontContentContract.DISPLAY_SLOT, props: { content: renderable, entry } }),
       isStringContent ? ThemeSsrContentTree.buildProse(runtime, entry, String(renderable || '')) : null,
-      createElement(Slot, { key: 'footer', name: 'frontend.content.footer', props: { content: entry } }),
+      createElement(Slot, { key: 'footer', name: StorefrontContentContract.FOOTER_SLOT, props: { content: entry } }),
     );
+  }
+
+  /** `framework.page.404` → `frontend.page.404` → `NotFoundBody`, exactly as `StorefrontPageTree.renderNotFound`. */
+  private static buildNotFound(runtime: ThemeSsrRuntime, path: string): unknown {
+    const { createElement } = runtime.react;
+    const { Override, NotFoundBody } = runtime.frameworkReact;
+    const props = { path };
+    const [framework, theme] = StorefrontContentContract.NOT_FOUND_OVERRIDES;
+    return createElement(Override, { key: 'not-found', name: framework, props, fallback: createElement(Override, { name: theme, props, fallback: createElement(NotFoundBody, {}) }) });
   }
 
   /**
@@ -51,8 +65,8 @@ export class ThemeSsrContentTree {
     const { createElement } = runtime.react;
     return createElement(
       'div',
-      { key: 'prose', className: 'prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6' },
-      createElement('h1', { className: 'text-4xl font-black mb-8' }, ContentRenderingUtils.resolveDisplayTitle(entry)),
+      { key: 'prose', className: StorefrontContentContract.PROSE_CLASS },
+      createElement('h1', { className: StorefrontContentContract.TITLE_CLASS }, ContentRenderingUtils.resolveDisplayTitle(entry)),
       createElement('div', { dangerouslySetInnerHTML: { __html: html } }),
     );
   }

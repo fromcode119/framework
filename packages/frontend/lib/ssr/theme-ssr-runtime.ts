@@ -27,8 +27,16 @@ export class ThemeSsrRuntime {
   /** `react` — the framework's single instance, shared with the theme bundle by the resolve hook. */
   readonly react: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-  /** `react-dom/server`'s `renderToStaticMarkup`, bound to the same React instance. */
-  readonly renderToStaticMarkup: (element: unknown) => string;
+  /**
+   * `react-dom/server`'s `renderToString`, bound to the same React instance.
+   *
+   * `renderToString`, NOT `renderToStaticMarkup`: the storefront runtime hydrates the server markup in
+   * place (`hydrateRoot`), and static markup is not hydratable — it omits the `<!-- -->` text separators
+   * and the `<!--$-->`/`<!--/$-->` Suspense boundary markers React matches its client tree against. Still
+   * synchronous: a Suspense boundary whose child is not resolved renders its fallback as a client-rendered
+   * boundary (`<!--$!-->`), which is why the server registry warms every lazy override before rendering.
+   */
+  readonly renderToString: (element: unknown) => string;
 
   /** The `ContextBridge` the THEME registers into — `packages/react/dist`, not Next's bundled source. */
   readonly contextBridge: any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -47,11 +55,11 @@ export class ThemeSsrRuntime {
 
   private constructor(
     react: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    renderToStaticMarkup: (element: unknown) => string,
+    renderToString: (element: unknown) => string,
     frameworkReact: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   ) {
     this.react = react;
-    this.renderToStaticMarkup = renderToStaticMarkup;
+    this.renderToString = renderToString;
     this.frameworkReact = frameworkReact;
     this.contextBridge = frameworkReact.ContextBridge;
   }
@@ -104,7 +112,7 @@ export class ThemeSsrRuntime {
     const reactDomServer = frameworkRequire('react-dom/server');
     const frameworkReact = appRequire('@fromcode119/react');
 
-    return new ThemeSsrRuntime(react, reactDomServer.renderToStaticMarkup, frameworkReact);
+    return new ThemeSsrRuntime(react, reactDomServer.renderToString, frameworkReact);
   }
 
   /**
@@ -158,6 +166,17 @@ export class ThemeSsrRuntime {
               wrap(fc.MenuContext, values.menuItems,
                 wrap(fc.SettingsContext, values.settings,
                   createElement(fc.PluginContextRegistry.Context.Provider, { value: values.context }, withPluginRuntime))))))));
+  }
+
+  /**
+   * Wrap a warmed (resolved) override exactly as `ThemeOverrideRegistrar.withSuspense` wraps the
+   * `React.lazy` a theme registers in the browser — the RUNTIME copy of the registrar, so the wrapper is
+   * built with the same React the theme bundle renders with. Resolving a lazy override server-side is what
+   * makes the block render at all; re-wrapping it is what makes the server emit the same `<!--$-->`
+   * boundary the client tree has, so `hydrateRoot` adopts the block instead of re-rendering it.
+   */
+  wrapOverride(component: unknown): unknown {
+    return this.frameworkReact.ThemeOverrideRegistrar.withSuspense(component);
   }
 
   private static installResolveHook(frameworkRequire: NodeRequire): void {

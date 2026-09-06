@@ -91,6 +91,11 @@ const buildService = (savedState: Record<string, any> = {}) => {
     clearPluginHeld: vi.fn().mockResolvedValue(undefined),
     getPluginConfig: vi.fn().mockResolvedValue({}),
     writeLog: vi.fn().mockResolvedValue(undefined),
+    // The registry row is created BEFORE the lifecycle hooks run, so a plugin that registers a
+    // scheduled task or writes settings from onInit has the row its foreign key points at.
+    // `true` = this call created it, which is what makes the failure path undo it.
+    ensurePluginRegistryRow: vi.fn().mockResolvedValue(true),
+    removePluginRegistryRow: vi.fn().mockResolvedValue(undefined),
   };
   const discovery = {
     validateDependencies: vi.fn(),
@@ -152,6 +157,39 @@ describe('LifecycleService.register() — install/update hooks', () => {
     const onInstall = vi.fn().mockRejectedValue(new Error('setup failed'));
 
     await expect(service.register(makePlugin({ onInstall }))).rejects.toThrow('onInstall/onInit');
+  });
+
+  it('creates the registry row BEFORE the lifecycle hooks run', async () => {
+    const { service, registry } = buildService({});
+    const order: string[] = [];
+    registry.ensurePluginRegistryRow.mockImplementation(async () => { order.push('row'); return true; });
+    const onInstall = vi.fn().mockImplementation(async () => { order.push('onInstall'); });
+
+    await service.register(makePlugin({ onInstall }));
+
+    // The whole point of the fix: a plugin writing a scheduled task or its settings from onInit needs
+    // the row its foreign key points at to exist already.
+    expect(order).toEqual(['row', 'onInstall']);
+  });
+
+  it('undoes a row it created when registration fails, so onInstall runs again next boot', async () => {
+    const { service, registry } = buildService({});
+    registry.ensurePluginRegistryRow.mockResolvedValue(true);
+    const onInstall = vi.fn().mockRejectedValue(new Error('setup failed'));
+
+    await expect(service.register(makePlugin({ onInstall }))).rejects.toThrow('onInstall/onInit');
+    expect(registry.removePluginRegistryRow).toHaveBeenCalledWith('test-plugin');
+  });
+
+  it('does NOT remove a PRE-EXISTING row when registration fails', async () => {
+    // The dangerous branch: deleting the row of an already-installed plugin would drop its state and
+    // cascade away its settings, turning a failed boot into data loss.
+    const { service, registry } = buildService({ 'test-plugin': { state: PluginState.INACTIVE, version: '1.0.0' } });
+    registry.ensurePluginRegistryRow.mockResolvedValue(false);
+    const onInit = vi.fn().mockRejectedValue(new Error('boom'));
+
+    await expect(service.register(makePlugin({ onInit }))).rejects.toThrow('onInit');
+    expect(registry.removePluginRegistryRow).not.toHaveBeenCalled();
   });
 
   it('rehydrates a persisted capability-drift hold across reboot (stays held + warning) and self-heals stale health', async () => {

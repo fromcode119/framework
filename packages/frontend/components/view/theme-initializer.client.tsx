@@ -28,7 +28,10 @@ export class ThemeInitializer extends Reactor {
   }
 
   componentDidMount(): void {
-    this.plugins.loadConfig(SystemConstants.API_PATH.SYSTEM.FRONTEND);
+    // A provider seeded from the document (islands runtime) is READY at mount and already holds this
+    // payload; fetching it again would only re-set identical state. Unseeded (admin, Next storefront)
+    // it is never ready at mount, so the load runs exactly as before.
+    if (!this.plugins.isReady) this.plugins.loadConfig(SystemConstants.API_PATH.SYSTEM.FRONTEND);
     this.applyThemeVariables();
   }
 

@@ -23,6 +23,15 @@ export class TimezoneUtils {
     return (window as any)?.[RuntimeRegistryAccess.globalName]?.[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] || null;
   }
 
+  /**
+   * A bare `YYYY-MM-DD` names a CALENDAR DAY, not an instant. It parses as UTC midnight, so
+   * formatting or part-extracting it through a non-UTC timezone silently shifts it to the
+   * previous/next day. Callers use this to keep literal dates literal.
+   */
+  static isDateOnlyValue(value: any): boolean {
+      return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.trim());
+  }
+
   static parseDateValue(value: any): Date | null {
       if (!value) return null;
       const date = value instanceof Date ? value : new Date(value);
@@ -95,7 +104,10 @@ export class TimezoneUtils {
     const date = TimezoneUtils.parseDateValue(value);
     if (!date) return fallback;
     const locale = TimezoneUtils.resolveSystemLocale();
-    const timezone = TimezoneUtils.resolveSystemTimezone(preferredTimezone);
+    // A literal calendar day is UTC midnight; format it in UTC so it renders as that day everywhere.
+    const timezone = TimezoneUtils.isDateOnlyValue(value)
+      ? 'UTC'
+      : TimezoneUtils.resolveSystemTimezone(preferredTimezone);
     const normalizedOptions = TimezoneUtils.withTimezoneOption(options, timezone);
     try {
       return new Intl.DateTimeFormat(locale, normalizedOptions).format(date);
@@ -134,7 +146,10 @@ export class TimezoneUtils {
   static getZonedDateParts(value: any, preferredTimezone?: string): IZonedDateParts | null {
       const date = TimezoneUtils.parseDateValue(value);
       if (!date) return null;
-      const timeZone = TimezoneUtils.resolveSystemTimezone(preferredTimezone);
+      // A literal calendar day is UTC midnight; extract its parts in UTC so the day never shifts.
+      const timeZone = TimezoneUtils.isDateOnlyValue(value)
+        ? 'UTC'
+        : TimezoneUtils.resolveSystemTimezone(preferredTimezone);
 
       const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone,

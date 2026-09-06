@@ -75,21 +75,24 @@ export class ThemeServerRegistryState {
   }
 
   /**
-   * Replace every lazily-registered override with its resolved component.
+   * Replace every lazily-registered override with its resolved component, re-wrapped by `wrap`.
    *
    * `ThemeOverrideRegistrar` registers block renderers as `React.lazy` wrapped in a Suspense boundary,
-   * which `renderToStaticMarkup` renders as the FALLBACK — for the home page that means the hero, the
+   * which a synchronous server render emits as the FALLBACK — for the home page that means the hero, the
    * LCP element, never appears. Awaiting the raw loaders once per generation (they are the theme's own
-   * renderer modules) is what makes the block flow render for real. A loader that fails leaves its lazy
-   * entry in place, so that one block degrades to the client render instead of taking the page down.
+   * renderer modules) is what makes the block flow render for real. `wrap` puts the resolved component
+   * back inside exactly the boundary the browser registration has (`ThemeSsrRuntime.wrapOverride`), so
+   * the server's `<!--$-->` markers sit where the client tree's Suspense is and hydration adopts the
+   * block in place. A loader that fails leaves its lazy entry in place, so that one block degrades to the
+   * client render instead of taking the page down.
    */
-  async warmOverrides(): Promise<void> {
+  async warmOverrides(wrap: (component: unknown) => unknown): Promise<void> {
     if (this.warmed) return;
     this.warmed = true;
 
     await Promise.all(
       [...this.overrides.entries()].map(async ([name, entry]) => {
-        const resolved = await entry.resolve();
+        const resolved = await entry.resolve(wrap);
         if (resolved !== entry) this.overrides.set(name, resolved);
       }),
     );

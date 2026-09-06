@@ -1,4 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { RequestContextUtils } from '@core/context/request-context';
 import { CoreServices } from '@core/services/core-services';
 import { ServerCoreServices } from '@core/services/server-core-services';
 import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
@@ -495,3 +498,48 @@ function createManagerWithoutPagesCollection(getMetaValue: () => string, setMeta
     },
   };
 }
+describe('PluginDefaultPageMaterializationRuntimeService inside a site', () => {
+  const contract = (pluginSlug: string, key: string, slug: string) => ({
+    namespace: TEST_NAMESPACE,
+    pluginSlug,
+    contracts: [{
+      key, capability: key, kind: PluginDefaultPageContractKind.INDEX, recipe: `${pluginSlug}.${key}`, defaultSlug: slug, title: key,
+      themeLayout: 'Layout', materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
+      required: true, aliases: [], adoptionHints: [], dependencies: [],
+    }],
+  });
+
+  beforeEach(() => {
+    ServerCoreServices.register();
+    CoreServices.reset();
+    TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
+    PluginTenantAccess.configure({ find: async () => [{ tenant_id: 't1', plugin_slug: 'shop-plugin', state: 'active' }] });
+  });
+
+  afterEach(() => { TenantMode.reset(); PluginTenantAccess.reset(); });
+
+  it('materializes only the contracts of plugins the site runs', async () => {
+    const pages: any[] = [];
+    let metaValue = '';
+    const manager = createManager(pages, () => metaValue, (next) => { metaValue = next; });
+    CoreServices.getInstance().defaultPageContracts.register(contract('shop-plugin', 'shop-index', '/shop'));
+    CoreServices.getInstance().defaultPageContracts.register(contract('stars-plugin', 'stars-index', '/stars'));
+    await PluginTenantAccess.warm('t1');
+
+    await RequestContextUtils.storage.run({ locale: '', tenantId: 't1' }, () =>
+      new PluginDefaultPageMaterializationRuntimeService(manager as any).materialize());
+
+    expect(pages.map((page) => page.customPermalink)).toEqual(['/shop']);
+  });
+
+  it('outside a site (the single-site boot pass) every contract still applies', async () => {
+    TenantMode.reset();
+    const pages: any[] = [];
+    let metaValue = '';
+    const manager = createManager(pages, () => metaValue, (next) => { metaValue = next; });
+    CoreServices.getInstance().defaultPageContracts.register(contract('shop-plugin', 'shop-index', '/shop'));
+    CoreServices.getInstance().defaultPageContracts.register(contract('stars-plugin', 'stars-index', '/stars'));
+    await new PluginDefaultPageMaterializationRuntimeService(manager as any).materialize();
+    expect(pages.map((page) => page.customPermalink).sort()).toEqual(['/shop', '/stars']);
+  });
+});

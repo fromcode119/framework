@@ -2,7 +2,10 @@ import crypto from 'crypto';
 import type { IPluginInstallProgress } from '@fromcode119/core';
 import type { IPluginInstallOperationState } from '@api/services/interfaces/plugin-install-operation-state.interface';
 
+import { Logger } from '@fromcode119/core';
+
 export class PluginInstallOperationService {
+  private static readonly logger = new Logger({ namespace: 'plugin-install' });
   private static readonly TTL_MS = 15 * 60 * 1000;
   private static instance: PluginInstallOperationService | null = null;
 
@@ -98,6 +101,9 @@ export class PluginInstallOperationService {
     operation.error = error instanceof Error ? error.message : String(error);
     operation.message = operation.error;
     operation.updatedAt = new Date().toISOString();
+    // The admin polls this record and shows the message; the LOG must say it too, or a failed install
+    // leaves no trace once the operation is pruned from memory.
+    PluginInstallOperationService.logger.warn(`${operation.kind} for "${operation.pluginSlug}" failed: ${operation.error}`);
   }
 
   private pruneExpired(): void {

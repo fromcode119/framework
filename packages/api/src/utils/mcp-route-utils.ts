@@ -15,6 +15,12 @@ export class McpRouteUtils {
    * protection exists to defend. Without this exemption a caller that simply forgot its key gets
    * "Invalid CSRF token" instead of a 401, sending a machine client after the wrong problem.
    */
+  /** `GET /mcp/sites` — the one token route an all-sites token may call before naming a site. */
+  static isSitesPath(pathname: string): boolean {
+    const path = String(pathname || '').replace(/\/+$/, '');
+    return path === McpWirePaths.SITES || path.endsWith(McpWirePaths.SITES);
+  }
+
   static isMcpPath(pathname: string): boolean {
     const path = String(pathname || '');
     if (!path) return false;

@@ -62,6 +62,11 @@ export class RouteConstants {
   ADMIN_SEND_PASSWORD_RESET: '/admin/send-password-reset',
   LOGIN: '/login',
   LOGOUT: '/logout',
+  /** Tenants this account may enter, and switching between them (multi-tenant only). */
+  TENANTS_AVAILABLE: '/tenants/available',
+  TENANTS_SELECT: '/tenants/select',
+  /** Public: whose console is this host (a workspace tenant), before anyone is signed in. */
+  HOST_INFO: '/host',
   SSO_PROVIDERS: '/sso/providers',
   SSO_LOGIN: '/sso/login',
   SECURITY: '/security',
@@ -110,6 +115,27 @@ export class RouteConstants {
   ADMIN_ACTIVITY: '/admin/activity',
   ADMIN_LOGS: '/admin/logs',
   ADMIN_AUDIT: '/admin/audit',
+  /**
+   * Tenant provisioning (T4). Mounted under SYSTEM; every route is platform-admin only. The `TENANTS_*`
+   * entries are RELATIVE to the tenants router's root.
+   */
+  ADMIN_TENANTS: '/admin/tenants',
+  TENANTS_ROOT: '/',
+  TENANTS_ID: '/:id',
+  TENANTS_ID_EXPORT: '/:id/export',
+  TENANTS_ID_PAGES: '/:id/pages',
+  INTERNAL: '/internal',
+  INTERNAL_ROUTING: '/internal/routing',
+  /** Gateway-side: the api pushes here after a tenant change; the gateway answers its health here. */
+  INTERNAL_ROUTING_RELOAD: '/internal/routing/reload',
+  GATEWAY_HEALTH: '/healthz',
+  TENANTS_ID_MEMBERS: '/:id/members',
+  TENANTS_ID_MEMBERS_USER: '/:id/members/:userId',
+  TENANTS_IMPORT_SESSION: '/import/session',
+  TENANTS_IMPORT_CHUNK: '/import/chunk',
+  TENANTS_IMPORT_PREVIEW: '/import/preview',
+  TENANTS_IMPORT_EXECUTE: '/import/execute',
+  TENANTS_ADOPT: '/adopt',
   ADMIN_BACKUPS: '/admin/backups',
   ADMIN_BACKUPS_CREATE_SYSTEM: '/admin/backups/system',
   ADMIN_BACKUPS_IMPORT: '/admin/backups/import',

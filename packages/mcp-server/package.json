@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/mcp-server",
-  "version": "0.1.87",
+  "version": "0.1.88",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -24,7 +24,7 @@
     "registry": "https://npm.pkg.github.com"
   },
   "imports": {
-    "#sdk/server": "@modelcontextprotocol/sdk/server",
+    "#sdk/server-mcp": "@modelcontextprotocol/sdk/server/mcp.js",
     "#sdk/server-stdio": "@modelcontextprotocol/sdk/server/stdio.js",
     "#sdk/server-streamable-http": "@modelcontextprotocol/sdk/server/streamableHttp.js",
     "#sdk/types": "@modelcontextprotocol/sdk/types.js"

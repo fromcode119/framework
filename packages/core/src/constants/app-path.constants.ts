@@ -96,6 +96,13 @@ export class AppPathConstants {
       UI_BUNDLE: (id: string) => AppPathConstants.appearanceAsset(id, AppPathConstants.APPEARANCE_ASSETS.BUNDLE),
       UI_STYLESHEET: (id: string) => AppPathConstants.appearanceAsset(id, AppPathConstants.APPEARANCE_ASSETS.STYLESHEET),
     },
+    /** Tenant provisioning — platform admins only. */
+    SITES: {
+      ROOT: '/sites',
+      NEW: '/sites/new',
+      IMPORT: '/sites/import',
+      DETAIL: (id: string) => `/sites/${encodeURIComponent(id)}`,
+    },
     THEMES: {
       ROOT: '/themes',
       INSTALLED: '/themes/installed',

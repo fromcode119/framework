@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform, ReactPrimitives } from '@fromcode119/reactor';
 import { RuntimeRegistryAccess } from '@fromcode119/core/client';
 import type { IGlobalStubSetupArgs } from '@react/interfaces/global-stub-setup-args.interface';
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
@@ -10,6 +10,8 @@ import { LucideNamespaceProxy } from '@react/icons/lucide-namespace-proxy';
 import { ReactExportSourceBuilder } from '@react/helpers/react-export-source-builder';
 import { SdkExportSourceBuilder } from '@react/helpers/sdk-export-source-builder';
 import { LazyLoadClass } from '@react/lazy-load-class';
+import { PreBootApiBridge } from '@react/helpers/pre-boot-api-bridge';
+import { PreBootRegistrationSeed } from '@react/context/pre-boot-registration-seed';
 
 export class ContextRuntimeBridge {
   static setupGlobalStubs(args: IGlobalStubSetupArgs): void {
@@ -22,7 +24,7 @@ export class ContextRuntimeBridge {
     const registry = RuntimeRegistryAccess.ensure();
     registry[RuntimeRegistryAccess.KEYS.REACT] = args.ReactRef;
     registry[RuntimeRegistryAccess.KEYS.JSX_RUNTIME] = RuntimeRegistryAccess.jsxRuntimeFor(args.ReactRef);
-    registry[RuntimeRegistryAccess.KEYS.REACT_DOM] = args.ReactDOMRef;
+    registry[RuntimeRegistryAccess.KEYS.REACT_DOM] = ContextRuntimeBridge.reactDomEntry(args.ReactDOMRef);
     registry[RuntimeRegistryAccess.KEYS.LUCIDE] = LucideNamespaceProxy.create(args.getIcon);
 
     const fc = (registry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] ||= {});
@@ -33,8 +35,8 @@ export class ContextRuntimeBridge {
     fc.ReactDom = args.ReactDOMRef;
 
     const queueMethod = (type: string) => (...methodArgs: any[]) => {
-      if (!(window as any)._fromcodeQueue) (window as any)._fromcodeQueue = [];
-      (window as any)._fromcodeQueue.push({ type, args: methodArgs });
+      const target = window as unknown as Record<string, any>;
+      (target[PreBootRegistrationSeed.QUEUE_KEY] ||= []).push({ type, args: methodArgs });
     };
 
     // Queue stubs via class-based namespace.
@@ -80,8 +82,34 @@ export class ContextRuntimeBridge {
     fc.createProxyIcon = args.createProxyIcon;
   }
 
+  /**
+   * The LIVE install, from the mounted provider's effect: the bridge with the provider's closures, then
+   * the pre-boot queue replayed into them. Also releases every API request made against the pre-boot
+   * bridge (see `PreBootApiBridge`).
+   */
   static installRuntimeBridge(args: IRuntimeBridgeInstallArgs): void {
     if (!Platform.isBrowser) return;
+    ContextRuntimeBridge.installBridge(args);
+    PreBootApiBridge.resolve(args.stableApiBridge);
+    ContextRuntimeBridge.flushQueue();
+  }
+
+  /**
+   * The PRE-BOOT install (islands runtime): the FULL bridge — every SDK class, reactor's surface, the
+   * icons, the shells, the import map — before any provider exists, so theme and plugin bundles can
+   * evaluate first. Its registration methods write the pre-boot queue, which the runtime folds into the
+   * provider's seed and the live install flushes for the rest; nothing is replayed here. The queue is
+   * created up front so `PreBootRegistrationSeed.consume` always finds an array.
+   */
+  static installPreBootBridge(args: IRuntimeBridgeInstallArgs): void {
+    if (!Platform.isBrowser) return;
+    const target = window as unknown as Record<string, any>;
+    target[PreBootRegistrationSeed.QUEUE_KEY] ||= [];
+    ContextRuntimeBridge.installBridge(args);
+  }
+
+  /** Shared by both installs: ContextBridge args, the ONE runtime registry, the import map. */
+  private static installBridge(args: IRuntimeBridgeInstallArgs): void {
     if (args.apiUrl) (window as any).FROMCODE_API_URL = args.apiUrl;
 
     // Install args into ContextBridge so its static methods delegate to live implementations.
@@ -96,7 +124,7 @@ export class ContextRuntimeBridge {
     runtimeRegistry[RuntimeRegistryAccess.KEYS.SDK_REACT] = bridge;
     runtimeRegistry[RuntimeRegistryAccess.KEYS.REACT] = args.ReactRef;
     runtimeRegistry[RuntimeRegistryAccess.KEYS.JSX_RUNTIME] = RuntimeRegistryAccess.jsxRuntimeFor(args.ReactRef);
-    runtimeRegistry[RuntimeRegistryAccess.KEYS.REACT_DOM] = args.ReactDOMRef;
+    runtimeRegistry[RuntimeRegistryAccess.KEYS.REACT_DOM] = ContextRuntimeBridge.reactDomEntry(args.ReactDOMRef);
     runtimeRegistry[RuntimeRegistryAccess.KEYS.LUCIDE] = LucideNamespaceProxy.create(args.getIcon);
 
     // Assign LazyLoadClass through an explicit window property chain so webpack cannot tree-shake it —
@@ -105,7 +133,6 @@ export class ContextRuntimeBridge {
       LazyLoadClass;
 
     ContextRuntimeBridge.installImportMap(args, bridge, runtimeRegistry);
-    ContextRuntimeBridge.flushQueue(args);
   }
 
   private static installImportMap(
@@ -126,54 +153,55 @@ export class ContextRuntimeBridge {
     );
   }
 
-  private static flushQueue(_args: IRuntimeBridgeInstallArgs): void {
-    if (!(window as any)._fromcodeQueue) return;
+  /**
+   * Queue item type → the `ContextBridge` method that replays it. The legacy item shapes (`name`/`comp`,
+   * `item`, `collection`, …) predate `args` on the queue and are still accepted.
+   */
+  private static readonly QUEUE_DISPATCH: Record<string, { method: keyof typeof ContextBridge; legacy: (item: any) => unknown[] }> = {
+    contentTransformer: { method: 'registerContentTransformer', legacy: () => [] },
+    slot: { method: 'registerSlotComponent', legacy: (item) => [item.name, item.comp] },
+    field: { method: 'registerFieldComponent', legacy: (item) => [item.name, item.component] },
+    override: { method: 'registerOverride', legacy: (item) => [item.name, item.component] },
+    menuItem: { method: 'registerMenuItem', legacy: (item) => [item.item] },
+    replaceMenuItems: { method: 'replaceMenuItems', legacy: () => [] },
+    collection: { method: 'registerCollection', legacy: (item) => [item.collection] },
+    replaceCollections: { method: 'replaceCollections', legacy: () => [] },
+    plugins: { method: 'registerPlugins', legacy: () => [] },
+    theme: { method: 'registerTheme', legacy: (item) => [item.slug, item.config] },
+    settings: { method: 'registerSettings', legacy: (item) => [item.settings] },
+    // `item.args` carries the layer argument too, so a queued theme registration replays into the same
+    // bucket it would have gone to had the bridge been installed.
+    translations: { method: 'registerTranslations', legacy: (item) => [item.translations] },
+    pluginApi: { method: 'registerPluginApi', legacy: () => [] },
+    pluginState: { method: 'setPluginState', legacy: () => [] },
+    emit: { method: 'emit', legacy: () => [] },
+    on: { method: 'on', legacy: () => [] },
+  };
 
-    const queue = (window as any)._fromcodeQueue;
-    delete (window as any)._fromcodeQueue;
+  private static flushQueue(): void {
+    const target = window as unknown as Record<string, any>;
+    const queue = target[PreBootRegistrationSeed.QUEUE_KEY];
+    if (!queue) return;
+    delete target[PreBootRegistrationSeed.QUEUE_KEY];
 
-    queue.forEach((item: any) => {
+    (queue as any[]).forEach((item: any) => {
+      const dispatch = ContextRuntimeBridge.QUEUE_DISPATCH[String(item?.type)];
+      if (!dispatch) return;
       try {
-        switch (item.type) {
-          case 'contentTransformer':
-            ContextBridge.registerContentTransformer(...(item.args || []));
-            break;
-          case 'slot':
-            ContextBridge.registerSlotComponent(...(item.args || [item.name, item.comp]));
-            break;
-          case 'field':
-            ContextBridge.registerFieldComponent(...(item.args || [item.name, item.component]));
-            break;
-          case 'override':
-            ContextBridge.registerOverride(...(item.args || [item.name, item.component]));
-            break;
-          case 'menuItem':
-            ContextBridge.registerMenuItem(...(item.args || [item.item]));
-            break;
-          case 'collection':
-            ContextBridge.registerCollection(...(item.args || [item.collection]));
-            break;
-          case 'theme':
-            ContextBridge.registerTheme(...(item.args || [item.slug, item.config]));
-            break;
-          case 'settings':
-            ContextBridge.registerSettings(...(item.args || [item.settings]));
-            break;
-          case 'translations':
-            // `item.args` carries the layer argument too, so a queued theme registration replays
-            // into the same bucket it would have gone to had the bridge been installed.
-            ContextBridge.registerTranslations(...(item.args || [item.translations]));
-            break;
-          case 'emit':
-            ContextBridge.emit(...(item.args || []));
-            break;
-          case 'on':
-            ContextBridge.on(...(item.args || []));
-            break;
-        }
+        (ContextBridge[dispatch.method] as (...args: unknown[]) => unknown)(...(item.args || dispatch.legacy(item)));
       } catch (error) {
         console.error(`[Fromcode] Failed to flush queued item of type ${item.type}:`, error);
       }
     });
+  }
+
+  /**
+   * The registry's `react-dom` module. React 19's `react-dom` no longer exports the root factories
+   * (`createRoot` / `hydrateRoot` live in `react-dom/client`), but the import map's `react-dom` module
+   * destructures them from this entry, so a runtime bundle mounting its own root would read `undefined`.
+   * The one bundled react-dom supplies them, through reactor's single door to raw React values.
+   */
+  private static reactDomEntry(reactDom: any): any {
+    return { ...reactDom, createRoot: ReactPrimitives.createRoot, hydrateRoot: ReactPrimitives.hydrateRoot };
   }
 }

@@ -1,4 +1,5 @@
 import { ThemeMode } from '@fromcode119/core/client';
+import { SystemConstants } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { state, bound } from '@fromcode119/reactor';
@@ -11,6 +12,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
+import { Select } from '@/components/ui/view/select.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { RestartServicesCard } from '@/app/settings/infrastructure/restart-services-card';
 
@@ -25,7 +27,17 @@ export class InfrastructureSettingsPage extends AdminComponent {
   @state loadError: string | null = null;
   /** Days of `_system_logs` history to keep. '' / '0' means keep forever — the description says so. */
   @state logRetentionDays = '';
+  @state ssrGenerationCap = '';
+  /** T5b render hosts: '' = the declared defaults. */
+  @state ssrRenderMemoryMb = '';
+  @state ssrRenderTimeoutMs = '';
+  /** T5 plugin isolation: '' = the declared default (isolated). */
+  @state isolationDefault = '';
+  @state isolationMemoryMb = '';
+  @state isolationTimeoutMs = '';
+  @state isSavingIsolation = false;
   @state isSavingRetention = false;
+  @state isSavingSsrCap = false;
 
   async componentDidMount() {
     await this.loadMaintenance();
@@ -43,6 +55,12 @@ export class InfrastructureSettingsPage extends AdminComponent {
       const response = await AdminSystemSettingsClient.getAll();
       this.maintenance = response?.maintenance_mode === true || response?.maintenance_mode === 'true';
       this.logRetentionDays = String(response?.log_retention_days ?? '');
+      this.ssrGenerationCap = String(response?.ssr_generation_cap ?? '');
+      this.ssrRenderMemoryMb = String(response?.ssr_render_memory_mb ?? '');
+      this.ssrRenderTimeoutMs = String(response?.ssr_render_timeout_ms ?? '');
+      this.isolationDefault = String(response?.plugin_isolation_default ?? '');
+      this.isolationMemoryMb = String(response?.plugin_isolation_memory_mb ?? '');
+      this.isolationTimeoutMs = String(response?.plugin_isolation_timeout_ms ?? '');
     } catch (err: any) {
       this.maintenance = null;
       this.loadError = err?.message || 'The system settings request failed.';
@@ -88,6 +106,61 @@ export class InfrastructureSettingsPage extends AdminComponent {
       addNotification({ title: 'Error', message: err?.message || 'Failed to save log retention.', type: NotificationType.ERROR });
     } finally {
       this.isSavingRetention = false;
+    }
+  }
+
+  @bound
+  onSsrCapChange(value: number | string): void {
+    this.ssrGenerationCap = String(value);
+  }
+
+  @bound onSsrRenderMemory(value: number | string): void { this.ssrRenderMemoryMb = String(value); }
+  @bound onSsrRenderTimeout(value: number | string): void { this.ssrRenderTimeoutMs = String(value); }
+
+  @bound
+  async saveSsrCap(): Promise<void> {
+    const addNotification = this.runtime.notify.addNotification;
+    this.isSavingSsrCap = true;
+    try {
+      await AdminSystemSettingsClient.update({
+        ssr_generation_cap: this.ssrGenerationCap,
+        ssr_render_memory_mb: this.ssrRenderMemoryMb,
+        ssr_render_timeout_ms: this.ssrRenderTimeoutMs,
+      });
+      const cap = Number(this.ssrGenerationCap);
+      addNotification({
+        title: 'System Updated',
+        message: cap >= 1
+          ? `The storefront keeps up to ${cap} theme world(s) resident. Memory and deadline apply to render hosts started from now on.`
+          : `The storefront uses its default of ${SystemConstants.SSR_GENERATION_CAP_DEFAULT} resident theme world(s). Memory and deadline apply to render hosts started from now on.`,
+        type: NotificationType.INFO,
+      });
+    } catch (err: any) {
+      addNotification({ title: 'Error', message: err?.message || 'Failed to save the server rendering cap.', type: NotificationType.ERROR });
+    } finally {
+      this.isSavingSsrCap = false;
+    }
+  }
+
+  @bound onIsolationDefault(value: string): void { this.isolationDefault = value; }
+  @bound onIsolationMemory(value: number | string): void { this.isolationMemoryMb = String(value); }
+  @bound onIsolationTimeout(value: number | string): void { this.isolationTimeoutMs = String(value); }
+
+  @bound
+  async saveIsolation(): Promise<void> {
+    const addNotification = this.runtime.notify.addNotification;
+    this.isSavingIsolation = true;
+    try {
+      await AdminSystemSettingsClient.update({
+        plugin_isolation_default: this.isolationDefault,
+        plugin_isolation_memory_mb: this.isolationMemoryMb,
+        plugin_isolation_timeout_ms: this.isolationTimeoutMs,
+      });
+      addNotification({ title: 'System Updated', message: 'Plugin isolation settings saved. They apply to plugin processes started from now on; restart the API to apply them to every plugin.', type: NotificationType.INFO });
+    } catch (err: any) {
+      addNotification({ title: 'Error', message: err?.message || 'Failed to save the plugin isolation settings.', type: NotificationType.ERROR });
+    } finally {
+      this.isSavingIsolation = false;
     }
   }
 
@@ -138,11 +211,126 @@ export class InfrastructureSettingsPage extends AdminComponent {
               WARN stream buried the warnings worth reading. The window is declared HERE and nowhere
               else: blank or 0 keeps everything, and the platform prunes only what this field asks
               for — there is no code-level default quietly deleting an operator's history. */}
+          {/* One theme+plugin version set is one server-render "world" resident in the storefront process.
+              On a multi-tenant deployment several are live at once — one per distinct set, NOT per site —
+              and this is how many stay resident before the least-recently-used is dropped and rebuilt on
+              demand. The placeholder is the storefront's own default, stated once in SystemConstants. */}
+          <Card title="Server Rendering">
+            <SettingRow
+              theme={theme}
+              icon={FrameworkIcons.Layers}
+              title="Resident theme worlds"
+              stacked
+              description="How many distinct theme + plugin sets the storefront keeps loaded at once, each in its own render process; sites on the same set share one. Beyond this, the least recently used is stopped and rebuilt on demand."
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-full md:w-40">
+                  <NumberStepper
+                    min={1}
+                    step={1}
+                    value={this.ssrGenerationCap}
+                    onChange={this.onSsrCapChange}
+                    placeholder={`Default ${SystemConstants.SSR_GENERATION_CAP_DEFAULT}`}
+                  />
+                </div>
+              </div>
+            </SettingRow>
+            {/* T5b: a theme world is a PROCESS with no secrets in its environment, a heap ceiling and a
+                per-render deadline. A theme that leaks or hangs loses its own process, never the storefront. */}
+            <SettingRow
+              theme={theme}
+              icon={FrameworkIcons.Database}
+              title="Memory ceiling per render process (MB)"
+              stacked
+              description="A theme world that allocates past this is killed; the storefront answers that request without server rendering and starts a fresh process on the next one."
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-full md:w-40">
+                  <NumberStepper min={128} step={64} value={this.ssrRenderMemoryMb} onChange={this.onSsrRenderMemory} placeholder={`Default ${SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT}`} />
+                </div>
+              </div>
+            </SettingRow>
+            <SettingRow
+              theme={theme}
+              icon={FrameworkIcons.Clock}
+              title="Deadline per render (ms)"
+              stacked
+              description="A page render that does not finish within this is abandoned and its process restarted; the page is served for client-side rendering instead."
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-full md:w-40">
+                  <NumberStepper min={1000} step={1000} value={this.ssrRenderTimeoutMs} onChange={this.onSsrRenderTimeout} placeholder={`Default ${SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT}`} />
+                </div>
+                <Button
+                  onClick={this.saveSsrCap}
+                  isLoading={this.isSavingSsrCap}
+                  icon={<FrameworkIcons.Save size={13} />}
+                  className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+                >
+                  Save
+                </Button>
+              </div>
+            </SettingRow>
+          </Card>
+
+          {/* T5: WHERE plugin code runs is an operator decision with a declared default. Isolated = each
+              active plugin in its own process with no secrets, tenant-bound calls, a heap ceiling and a
+              per-request deadline; shared = inside the api process, as before. A plugin's manifest may
+              declare `sandbox: false` (shown as "Shared" on the Plugins page with its reason). */}
+          <Card title="Plugin Isolation">
+            <SettingRow
+              theme={theme}
+              icon={FrameworkIcons.Shield}
+              title="Where plugins run"
+              stacked
+              description="Isolated: each active plugin runs in its own process — it cannot read the platform's secrets, every database call is bound to the request's site, and it has a memory ceiling and a deadline. Shared: inside the API process. Plugins that declare sandbox: false stay shared either way."
+            >
+              <Select
+                theme={theme}
+                value={this.isolationDefault}
+                onChange={this.onIsolationDefault}
+                placeholder="Default: isolated"
+                clearable
+                options={[{ value: 'isolated', label: 'Isolated — own process per plugin' }, { value: 'shared', label: 'Shared — inside the API process' }]}
+              />
+            </SettingRow>
+            <SettingRow
+              theme={theme}
+              icon={FrameworkIcons.Database}
+              title="Memory ceiling per plugin process (MB)"
+              stacked
+              description="A plugin that allocates past this is killed and restarted; the API and every other plugin are untouched. A plugin manifest's sandbox.memoryLimit overrides it for that plugin."
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-full md:w-40">
+                  <NumberStepper min={64} step={64} value={this.isolationMemoryMb} onChange={this.onIsolationMemory} placeholder={`Default ${SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT}`} />
+                </div>
+              </div>
+            </SettingRow>
+            <SettingRow
+              theme={theme}
+              icon={FrameworkIcons.Clock}
+              title="Deadline per request (ms)"
+              stacked
+              description="A plugin route or hook that does not answer within this is failed (504) and its process restarted. A manifest's sandbox.timeout overrides it for that plugin."
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-full md:w-40">
+                  <NumberStepper min={1000} step={1000} value={this.isolationTimeoutMs} onChange={this.onIsolationTimeout} placeholder={`Default ${SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT}`} />
+                </div>
+                <Button onClick={this.saveIsolation} isLoading={this.isSavingIsolation} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight">
+                  Save
+                </Button>
+              </div>
+            </SettingRow>
+          </Card>
+
           <Card title="System Logs">
             <SettingRow
               theme={theme}
               icon={FrameworkIcons.Database}
               title="Log Retention"
+              stacked
               description="Removes system log entries older than this many days, swept daily. Leave blank to keep every entry forever."
             >
               <div className="flex items-center gap-3">

@@ -3,7 +3,6 @@ import { PluginStateService } from '@core/plugin/services/plugin-state-service';
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
-import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 
 function makeDb(existingRow: any = { slug: 'alpha' }) {
   return {

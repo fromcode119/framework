@@ -10,6 +10,8 @@ import { ThemeState } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
 
 export class InstalledThemesView extends PureReactor {
+  /** False for a tenant admin on a multi-tenant deployment: no upload, no activate/delete. */
+  @prop declare canManage: boolean;
   @prop declare closeUploadPreview: () => void;
   @prop declare confirmUploadPreview: () => Promise<void>;
   @prop declare fileInputRef: Ref<HTMLInputElement>;
@@ -43,6 +45,7 @@ export class InstalledThemesView extends PureReactor {
   fileInputRef,
   handleDragLeave,
   handleDragOver,
+  canManage,
   handleDrop,
   handleFileChange,
   handleUploadClick,
@@ -79,26 +82,30 @@ export class InstalledThemesView extends PureReactor {
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
-      <div onClick={handleUploadClick} onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave} className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-4 transition-all ${isDropActive ? (themeMode === ThemeMode.DARK ? 'border-indigo-400 bg-indigo-500/10' : 'border-indigo-500 bg-indigo-50') : (themeMode === ThemeMode.DARK ? 'border-slate-700 bg-slate-900/30 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300')}`}>
-        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" />
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} /><p className={`text-sm font-medium ${themeMode === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>Drag and drop theme `.zip` or `.tar.gz` here, or click to upload.</p></div>
-          <button type="button" onClick={(event) => { event.stopPropagation(); handleUploadClick(); }} disabled={isUploading || isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{isUploading || isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{isInspectingUpload ? 'Inspecting...' : 'Upload Theme (.zip/.tar.gz)'}</span></button>
-        </div>
-        {uploadProgressLabel ? (
-          <div className="mt-4 space-y-2">
-            <div className={`h-2 overflow-hidden rounded-full ${themeMode === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-100'}`}>
-              <div
-                className="h-full rounded-full bg-indigo-600 transition-all duration-200"
-                style={{ width: `${Math.max(4, Math.min(uploadProgressPercent ?? 0, 100))}%` }}
-              />
-            </div>
-            <p className={`text-xs font-medium ${themeMode === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
-              {uploadProgressLabel}
-            </p>
+      {/* Hidden entirely for a tenant admin: uploading puts code on the box every site runs on,
+          and a dropzone that can only ever 403 is a bug, not a hint. */}
+      {canManage ? (
+        <div onClick={handleUploadClick} onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave} className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-4 transition-all ${isDropActive ? (themeMode === ThemeMode.DARK ? 'border-indigo-400 bg-indigo-500/10' : 'border-indigo-500 bg-indigo-50') : (themeMode === ThemeMode.DARK ? 'border-slate-700 bg-slate-900/30 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300')}`}>
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} /><p className={`text-sm font-medium ${themeMode === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>Drag and drop theme `.zip` or `.tar.gz` here, or click to upload.</p></div>
+            <button type="button" onClick={(event) => { event.stopPropagation(); handleUploadClick(); }} disabled={isUploading || isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{isUploading || isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{isInspectingUpload ? 'Inspecting...' : 'Upload Theme (.zip/.tar.gz)'}</span></button>
           </div>
-        ) : null}
-      </div>
+          {uploadProgressLabel ? (
+            <div className="mt-4 space-y-2">
+              <div className={`h-2 overflow-hidden rounded-full ${themeMode === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                <div
+                  className="h-full rounded-full bg-indigo-600 transition-all duration-200"
+                  style={{ width: `${Math.max(4, Math.min(uploadProgressPercent ?? 0, 100))}%` }}
+                />
+              </div>
+              <p className={`text-xs font-medium ${themeMode === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
+                {uploadProgressLabel}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-2">
         {summaryStats.map((s) => (
@@ -113,7 +120,7 @@ export class InstalledThemesView extends PureReactor {
         <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20"><div className="w-12 h-12 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-3"><FrameworkIcons.Palette size={24} className="text-slate-300 dark:text-slate-700" /></div><h3 className={`text-base font-semibold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>No themes installed</h3><p className="text-slate-500 font-medium text-sm">Your creative workspace is currently empty.</p></div>
       ) : (
         <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
-          {themes.map((theme) => <InstalledThemeCard key={theme.slug} isDark={isDark} onActivate={onActivate} onDisable={onDisable} onDelete={onDelete} onUpdate={onUpdate} theme={theme} updateVersion={updateVersionForTheme(theme)} />)}
+          {themes.map((theme) => <InstalledThemeCard key={theme.slug} isDark={isDark} onActivate={onActivate} onDisable={onDisable} onDelete={onDelete} onUpdate={onUpdate} theme={theme} updateVersion={updateVersionForTheme(theme)} canManage={canManage} />)}
         </div>
       )}
 

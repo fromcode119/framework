@@ -5,6 +5,8 @@ import type { IInstalledPluginsPageClientState } from '@/app/plugins/installed/i
 export interface IInstalledPluginsPageHost {
   /** True between `componentDidMount` and `componentWillUnmount`. */
   readonly mounted: boolean;
+  /** May this admin act on the platform? False for a tenant admin: no marketplace calls are made. */
+  readonly canManage: boolean;
   readonly state: IInstalledPluginsPageClientState;
   /** Raw `setState` pass-through — deliberately UNGUARDED; callers keep the `mounted` check explicit. */
   patch(patch: Partial<IInstalledPluginsPageClientState>): void;

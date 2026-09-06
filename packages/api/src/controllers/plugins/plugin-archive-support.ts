@@ -28,6 +28,30 @@ export class PluginArchiveSupport {
 
   constructor(private manager: PluginManager) {}
 
+  /**
+   * Locate a plugin's built UI asset, or null when the request escapes its directory.
+   *
+   * `ui/` is the plugin's DIST directory and is checked first. `src/ui/` is the SOURCE tree; the
+   * build used to emit into it and mirror the result to `ui/`, so packages shipped every bundle
+   * twice and the source tree carried build output beside its components. The build now writes to
+   * `ui/` only — but a plugin installed before that change has its bundles solely in `src/ui/`, so
+   * that path stays as a fallback and those installs keep serving until they are repacked.
+   *
+   * Containment is checked against whichever root is used, so `..` cannot climb out of either.
+   */
+  static resolveUiAsset(pluginPath: string, filePath: string): string | null {
+    for (const dir of [path.resolve(pluginPath, 'ui'), path.resolve(pluginPath, 'src', 'ui')]) {
+      const abs = path.resolve(dir, filePath);
+      if (!abs.startsWith(dir + path.sep) && abs !== dir) continue;
+      if (fs.existsSync(abs)) return abs;
+    }
+    // Nothing on disk: return the DIST path so the caller reports 404 for the canonical location,
+    // but only when the request is actually contained by it.
+    const distRoot = path.resolve(pluginPath, 'ui');
+    const distAbs = path.resolve(distRoot, filePath);
+    return distAbs.startsWith(distRoot + path.sep) || distAbs === distRoot ? distAbs : null;
+  }
+
   serveAssets(req: Request, res: Response) {
     const { slug } = req.params;
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
@@ -36,8 +60,8 @@ export class PluginArchiveSupport {
     }
 
     const filePath = (req.params as any)[0];
-    const abs = path.resolve(plugin.path, 'src', 'ui', filePath);
-    if (!abs.startsWith(path.resolve(plugin.path, 'src', 'ui'))) {
+    const abs = PluginArchiveSupport.resolveUiAsset(plugin.path, filePath);
+    if (!abs) {
       return res.status(400).json({ error: 'Invalid path' });
     }
 

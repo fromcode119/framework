@@ -76,10 +76,13 @@ describe('FrontendI18nService layering', () => {
     let bridge: Record<string, (...args: unknown[]) => unknown> = {};
     ThemeServerRegistry.install({ install: (args: unknown) => { bridge = args as typeof bridge; } }, {});
 
+    // Registrations belong to the generation being built; a reader names that generation.
+    const generation = ThemeServerRegistry.beginGeneration();
     bridge.registerTranslations({ bg: { demo: { key: 'from-plugin' } } });
     bridge.registerTranslations({ bg: { demo: { key: 'from-theme' } } }, FrontendI18nService.THEME_LAYER);
+    ThemeServerRegistry.publishGeneration('theme:i18n@1', generation);
 
-    expect(ThemeServerRegistry.translationPayloads()).toEqual([{ bg: { demo: { key: 'from-plugin' } } }]);
-    expect(ThemeServerRegistry.themeTranslationPayloads()).toEqual([{ bg: { demo: { key: 'from-theme' } } }]);
+    expect(ThemeServerRegistry.translationPayloads('theme:i18n@1')).toEqual([{ bg: { demo: { key: 'from-plugin' } } }]);
+    expect(ThemeServerRegistry.themeTranslationPayloads('theme:i18n@1')).toEqual([{ bg: { demo: { key: 'from-theme' } } }]);
   });
 });

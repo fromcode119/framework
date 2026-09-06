@@ -1,4 +1,5 @@
 import { ThemeMode } from '@fromcode119/core/client';
+import { MediaPickerSourceService } from '@/components/media/media-picker-source-service';
 import type React from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/reactor';
 import { AdminApi } from '@/lib/api';
@@ -38,6 +39,16 @@ export class MediaRelationField extends Reactor {
       ? String(preview?.filename || '').replace(/^media-/, '')
       : '';
     if (preview?.url && currentPreviewId === String(firstId)) {
+      return;
+    }
+
+    // A theme-asset selection ("theme:<relativePath>") is not a media record — resolve its preview
+    // from the active theme's asset listing instead of the media collection.
+    if (String(firstId).startsWith('theme:')) {
+      const themeAssets = await MediaPickerSourceService.fetchThemeAssets();
+      if (!isCurrent()) return;
+      const match = themeAssets.find((item) => item.id === String(firstId));
+      this.preview = match ? { url: match.url, filename: match.filename } : null;
       return;
     }
 

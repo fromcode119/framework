@@ -1,4 +1,4 @@
-import { Reactor, bound, state } from '@fromcode119/reactor';
+import { Reactor, bound, prop, state } from '@fromcode119/reactor';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import type { IPluginContextValue } from '@fromcode119/react';
 import { EnvUtils } from '@fromcode119/core/client';
@@ -11,9 +11,19 @@ export class PluginLoader extends Reactor {
   static contextType = PluginContextRegistry.Context;
   declare context: IPluginContextValue | null;
 
+  /**
+   * Module keys the islands runtime already `import()`ed before mounting this tree (the theme and every
+   * eager plugin bundle). Pre-filling the dedupe set is what stops them being fetched twice; the idle
+   * plugins still load through this component exactly as before.
+   */
+  @prop declare preloadedModules?: Iterable<string>;
+
+  /** Plugin slugs whose storefront bundle is not loaded on this page at all (islands document policy). */
+  @prop declare skipPlugins?: Iterable<string>;
+
   @state retryTick = 0;
 
-  private readonly loadedModules = new Set<string>();
+  private readonly loadedModules = new Set<string>(this.preloadedModules ?? []);
   private readonly previousPluginOwnersRef = { current: [] as Array<{ namespace: string; pluginSlug: string }> };
   private readonly previousThemeSlugRef = { current: '' };
   private cleanupImportMapWait?: () => void;
@@ -97,7 +107,7 @@ export class PluginLoader extends Reactor {
   private async loadModule(moduleKey: string, moduleUrl: string): Promise<void> {
     if (!moduleUrl || this.loadedModules.has(moduleKey)) return;
     try {
-      await import(/* webpackIgnore: true */ moduleUrl);
+      await import(/* webpackIgnore: true */ /* @vite-ignore */ moduleUrl);
       this.loadedModules.add(moduleKey);
     } catch (err) {
       console.error(`[frontend] Failed to import runtime module ${moduleKey}:`, err);
@@ -142,7 +152,7 @@ export class PluginLoader extends Reactor {
     // the LCP image only delays that image. See FrontendRuntimeScheduler.
     FrontendRuntimeScheduler.run(() => {
       PluginLoaderMountService.loadThemeRuntime(theme, apiUrl, this.loadModule);
-      PluginLoaderMountService.loadPluginRuntimes(pluginList, apiUrl, this.loadModule);
+      PluginLoaderMountService.loadPluginRuntimes(pluginList, apiUrl, this.loadModule, new Set(this.skipPlugins ?? []));
     });
   }
 

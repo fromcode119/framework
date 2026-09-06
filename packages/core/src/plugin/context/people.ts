@@ -126,7 +126,8 @@ export class PeopleContextProxy {
 
       catalogs: {
         register: (kind: string, entry: { key: string; label: string; pluginSlug?: string }) => catalogs.register(kind, entry),
-        list: (kind: string) => catalogs.list(kind)
+        list: (kind: string) => catalogs.list(kind),
+        unregister: (kind: string, key: string) => catalogs.remove(kind, key)
       },
 
       // Reusable address book on the shared `people_addresses` table. Plugins delegate their account

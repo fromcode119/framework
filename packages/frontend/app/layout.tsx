@@ -16,24 +16,8 @@ import { ColorSchemeBootScript } from '@/lib/color-scheme-boot-script';
 
 export class FrontendRootLayoutRoute {
   static async generateMetadata(): Promise<Metadata> {
-  // Brand defaults come from the head-data provider plugin's settings (site name/description/OG),
-  // not a hardcoded value. Per-page generateMetadata overrides title/description/OG with absolute
-  // values; these are the site-wide fallbacks.
-  const head = await ResolvedContentMetadata.fetchSite();
-  const siteName = head?.siteName || head?.title || 'Home';
-  const images = head?.ogImage ? [head.ogImage] : undefined;
-  return {
-    title: { default: siteName, template: `%s | ${siteName}` },
-    description: head?.description || undefined,
-    openGraph: { siteName, title: siteName, description: head?.description || undefined, type: 'website', images },
-    twitter: { card: 'summary_large_image', title: siteName, description: head?.description || undefined, images },
-    icons: {
-      icon: '/favicon.ico',
-      shortcut: '/favicon.ico',
-      apple: '/apple-touch-icon.png',
-    },
-  };
-}
+    return ResolvedContentMetadata.buildSiteMetadata();
+  }
 
   static async render({ children }: Readonly<{ children: React.ReactNode }>) {
 

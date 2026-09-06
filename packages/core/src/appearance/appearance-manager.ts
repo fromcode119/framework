@@ -9,6 +9,7 @@ import { AppearanceInstallerService } from '@core/appearance/appearance-installe
 import type { IAppearanceManifest } from '@core/appearance/interfaces/appearance-manifest.interface';
 import type { IAppearanceSummary } from '@core/appearance/interfaces/appearance-summary.interface';
 import type { IAppearanceCatalogEntry } from '@core/appearance/interfaces/appearance-catalog-entry.interface';
+import { AppearanceWorkspaceDeclarationReader } from '@core/appearance/appearance-workspace-declaration-reader';
 
 /**
  * Manages admin appearances as a SETTINGS concern (distinct from the plugin/theme marketplace UI):
@@ -42,6 +43,7 @@ export class AppearanceManager {
               version: String(m.version || ''),
               builtIn: false,
               sourceUrl: m.sourceUrl ? String(m.sourceUrl) : undefined,
+              workspace: AppearanceWorkspaceDeclarationReader.read(m),
             });
           } catch {
             /* skip unreadable manifest */

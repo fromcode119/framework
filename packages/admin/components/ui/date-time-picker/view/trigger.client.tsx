@@ -1,4 +1,5 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 import type { MouseEvent, ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/reactor';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -6,6 +7,7 @@ import { UiFieldUtils } from '@/lib/ui';
 import { TimezoneUtils } from '@/lib/timezone';
 
 export class DateTimePickerTrigger extends PureReactor {
+  @prop declare granularity: DateTimePickerGranularity;
   @prop declare size: FieldSize;
   @prop declare isOpen: boolean;
   @prop declare disabled?: boolean;
@@ -37,9 +39,13 @@ export class DateTimePickerTrigger extends PureReactor {
         <div className="flex items-center gap-2.5">
            <FrameworkIcons.Calendar size={17} className={`transition-colors ${isOpen ? 'text-indigo-500' : 'text-slate-400'}`} />
            <span className={`tracking-tight ${!value ? 'text-slate-400 font-normal' : 'font-medium'}`}>
-             {value && utcDate
+             {value && !this.granularity.usesCalendar
+               ? this.granularity.formatValue(value)
+               : value && utcDate
                ? TimezoneUtils.formatSystemDate(
-                   utcDate,
+                   // The RAW value, not the pre-parsed Date: a literal `YYYY-MM-DD` must be
+                   // recognized and rendered as that calendar day, not shifted through a timezone.
+                   value,
                    showTime
                      ? { dateStyle: 'medium', timeStyle: 'short' }
                      : { dateStyle: 'medium' },

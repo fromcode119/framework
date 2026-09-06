@@ -35,6 +35,13 @@ export class InstalledPluginsPageActions {
       if (this.host.mounted) this.host.patch({ loading: false });
     }
 
+    // A tenant admin never asks the marketplace: the route is platform-only (403), and a page that
+    // fires a request it is not allowed to make is a bug, not a graceful degradation.
+    if (!this.host.canManage) {
+      if (this.host.mounted) this.host.patch({ marketplaceData: [] });
+      return;
+    }
+
     try {
       const marketplaceData = await InstalledPluginsPageController.fetchMarketplace();
       if (this.host.mounted) this.host.patch({ marketplaceData });

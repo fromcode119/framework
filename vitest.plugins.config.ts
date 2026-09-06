@@ -128,6 +128,9 @@ export default defineConfig({
             // `packages/scheduler` matched NO project's include glob, so it had zero collected tests -
             // dark by omission, exactly like the api and core cases noted above.
             glob('packages/scheduler/**/*.test.ts'),
+            // `packages/auth` matched no project glob either, so a test placed there was collected
+            // by nothing and green by default — the same dark-by-omission problem as the others.
+            glob('packages/auth/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },
@@ -148,6 +151,7 @@ export default defineConfig({
           include: [
             glob('packages/mcp/tests/**/*.test.ts'),
             glob('packages/mcp-server/tests/**/*.test.ts'),
+            glob('packages/cli/tests/**/*.test.ts'),
             glob('packages/archor/tests/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],

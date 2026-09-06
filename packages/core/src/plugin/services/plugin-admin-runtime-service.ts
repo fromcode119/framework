@@ -19,6 +19,8 @@ export class PluginAdminRuntimeService {
     private readonly security: SecurityMonitor,
     private readonly plugins: Map<string, ILoadedPlugin>,
     private readonly registeredCollections: Map<string, { collection: ICollection; pluginSlug: string }>,
+    /** T5: the isolated plugins' processes, for the security summary. */
+    private readonly hosts: { status(): Array<{ slug: string; pid: number | null; memoryMb: number; timeoutMs: number }> } | null = null,
   ) {}
 
   async getSecuritySummary(): Promise<any> {
@@ -26,7 +28,8 @@ export class PluginAdminRuntimeService {
     const active = all.filter((plugin) => plugin.state === PluginState.ACTIVE);
     const isSandboxed = (plugin: ILoadedPlugin) => plugin.manifest?.sandbox !== false;
     const mismatch = active.filter(isSandboxed).filter((plugin) => !plugin.isSandboxed);
-    const sandbox = await this.lifecycle.getSandboxStats();
+    // T5: `sandbox` used to be an isolate's heap statistics; it is now the list of plugin PROCESSES.
+    const sandbox = { processes: this.hosts?.status() ?? [] };
     const memoryUsage = process.memoryUsage();
 
     return {
@@ -38,7 +41,6 @@ export class PluginAdminRuntimeService {
         externalBytes: memoryUsage.external,
         arrayBuffersBytes: memoryUsage.arrayBuffers || 0,
         dbNetworkBuffersEstimateBytes: memoryUsage.arrayBuffers || 0,
-        otherNonIsolateAllocationsEstimateBytes: Math.max(0, memoryUsage.rss - Number(sandbox?.heap?.used_heap_size || 0)),
       },
       monitor: await this.security.getSecurityStats(),
       pluginIsolation: {

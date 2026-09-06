@@ -17,6 +17,21 @@ export class ThemeConfigService {
     private themes: Map<string, IThemeManifest>,
   ) {}
 
+  /** The shape rules on their own, so the per-tenant path can validate without writing the platform row. */
+  validateThemeConfig(slug: string, config: { variables?: Record<string, string> }): void {
+    if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
+    const extraKeys = Object.keys(config).filter((k) => k !== 'variables');
+    if (extraKeys.length > 0) throw new Error(`Unknown theme config keys: ${extraKeys.join(', ')}`);
+    if (config.variables !== undefined) {
+      if (typeof config.variables !== 'object' || Array.isArray(config.variables)) {
+        throw new Error('Theme variables must be a plain object.');
+      }
+      for (const [key, value] of Object.entries(config.variables)) {
+        if (typeof value !== 'string') throw new Error(`Theme variable "${key}" must be a string.`);
+      }
+    }
+  }
+
   async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
     if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
     const extraKeys = Object.keys(config).filter((k) => k !== 'variables');
@@ -43,9 +58,15 @@ export class ThemeConfigService {
     return row?.config || {};
   }
 
-  async getFrontendMetadata(theme: IThemeManifest | null, runtimeModules: Record<string, any> = {}) {
+  async getFrontendMetadata(
+    theme: IThemeManifest | null,
+    runtimeModules: Record<string, any> = {},
+    configOverride?: Record<string, unknown>,
+  ) {
     if (!theme) return { activeTheme: null, runtimeModules };
-    const config = await this.getThemeConfig(theme.slug);
+    // A tenant's overrides come from its own row (`configOverride`); the platform row is the single-tenant
+    // source. Never both, never merged — that would let one site's variables leak into another.
+    const config = configOverride !== undefined ? configOverride : await this.getThemeConfig(theme.slug);
     const variables = { ...(theme.variables || {}), ...(config.variables || {}) };
     const finalModules = { ...runtimeModules };
     const themeAny = theme as any;
@@ -61,7 +82,9 @@ export class ThemeConfigService {
       // none. Without it here the frontend and the admin both fell back to a hardcoded
       // 'DefaultLayout' literal that no theme declares — the admin then reported
       // "LAYOUT NOT FOUND IN THEME" for a layout that silently worked via a theme-side alias.
-      activeTheme: { slug: theme.slug, version: (theme as any).version || '0.0.0', assetVersion, variables, ui: theme.ui, layouts: theme.layouts, defaultLayout: (theme as any).defaultLayout || '', slots: theme.slots || [], overrides: (theme as any).overrides || [] },
+      // `dependencies`: the plugins the theme's own code calls (theme.json). The storefront reads it to keep
+      // those plugins' bundles on every page even when a page renders none of their components.
+      activeTheme: { slug: theme.slug, version: (theme as any).version || '0.0.0', assetVersion, variables, ui: theme.ui, layouts: theme.layouts, defaultLayout: (theme as any).defaultLayout || '', slots: theme.slots || [], overrides: (theme as any).overrides || [], dependencies: ((theme as any).dependencies && typeof (theme as any).dependencies === 'object') ? (theme as any).dependencies : {} },
       runtimeModules: finalModules,
       cssVariables: this.generateCssVariables(variables),
     };

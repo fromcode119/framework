@@ -47,7 +47,7 @@ export class ContextProviderConfigLoaderHooks {
       const entryUrl = themeEntry.startsWith('http')
         ? themeEntry
         : ApiPathUtils.themeUiAssetUrl(baseUrl, themeSlug, themeEntry);
-      const versionedEntryUrl = PublicAssetUrlUtils.appendVersion(entryUrl, theme?.version);
+      const versionedEntryUrl = PublicAssetUrlUtils.appendVersion(entryUrl, PublicAssetUrlUtils.themeAssetStamp(theme));
       const registry = ((window as any).__fromcodeLoadedThemeEntries ||= new Set<string>()) as Set<string>;
       const slugRegistry = ((window as any).__fromcodeLoadedThemeEntryUrls ||= new Map<string, string>()) as Map<string, string>;
       const existingEntryUrl = slugRegistry.get(themeSlug) || '';
@@ -160,7 +160,7 @@ export class ContextProviderConfigLoaderHooks {
                 const fullUrl = cssPath.startsWith('http')
                   ? cssPath
                   : ApiPathUtils.themeUiAssetUrl(base, theme.slug, cssPath);
-                const versionedCssUrl = PublicAssetUrlUtils.appendVersion(fullUrl, theme?.version);
+                const versionedCssUrl = PublicAssetUrlUtils.appendVersion(fullUrl, PublicAssetUrlUtils.themeAssetStamp(theme));
                 if (!cssRegistry.has(versionedCssUrl)) {
                   cssRegistry.add(versionedCssUrl);
                   const link = document.createElement('link');

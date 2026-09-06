@@ -18,7 +18,7 @@ export class InstalledThemesPageActions {
     const { notify } = this.host.notify;
     this.host.patch({ loading: true });
     try {
-      const { themes, marketplaceThemes } = await InstalledThemesPageController.fetchThemes();
+      const { themes, marketplaceThemes } = await InstalledThemesPageController.fetchThemes({ includeMarketplace: this.host.canManage });
       if (!this.host.mounted) return;
       this.host.patch({ themes, marketplaceThemes });
     } catch (error) {

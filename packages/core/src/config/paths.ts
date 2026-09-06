@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '@core/constants/system.constants';
 
 /**
@@ -107,7 +108,27 @@ export class ProjectPaths {
   static getUploadsDir(): string {
       const root = ProjectPaths.getProjectRoot();
       const configured = String(process.env[SystemConstants.STORAGE.UPLOAD_DIR_ENV] || '').trim();
-      return ProjectPaths.resolveFromRoot(root, configured || SystemConstants.STORAGE.DEFAULT_UPLOADS_SUBDIR);
+      const base = ProjectPaths.resolveFromRoot(root, configured || SystemConstants.STORAGE.DEFAULT_UPLOADS_SUBDIR);
+      return ProjectPaths.withTenantSubdirectory(base);
+  }
+
+  /**
+   * A tenant's files live in their own subdirectory of the uploads root.
+   *
+   * Single-tenant deployments get the base directory unchanged — every existing installation keeps
+   * the paths it already has, and nothing needs moving.
+   *
+   * The tenant id is used as a single path SEGMENT and is validated before use: a tenant id is
+   * framework-controlled, but joining an unvalidated identifier into a filesystem path is how
+   * traversal bugs happen, so the check is here rather than assumed upstream. Framework-owned path
+   * resolution only — a hand-built relative upload path has already broken every image on this
+   * platform once.
+   */
+  private static withTenantSubdirectory(base: string): string {
+    const tenantId = RequestContextUtils.getTenantId();
+    if (!tenantId) return base;
+    if (!/^[A-Za-z0-9_-]+$/.test(tenantId)) return base;
+    return path.join(base, SystemConstants.STORAGE.TENANTS_SUBDIR, tenantId);
   }
 
   /**

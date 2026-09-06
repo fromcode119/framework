@@ -1,3 +1,5 @@
+import { Card } from '@/components/ui/view/card.client';
+import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
@@ -155,6 +157,19 @@ export class AppearanceSettingsPage extends AdminComponent {
 
   render(): ReactNode {
     if (this.loading) return <div className="p-12"><Loader label="Loading appearances…" /></div>;
+    if (WorkspaceAppearanceLock.locked) {
+      return (
+        <div className="p-12">
+          <Card className="p-6 max-w-2xl">
+            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">Locked by this workspace's kind</h2>
+            <p className="text-sm text-slate-500 mt-2">
+              <span className="font-semibold">{WorkspaceAppearanceLock.slug}</span> is a workspace: its console is <span className="font-semibold">{WorkspaceAppearanceLock.appearance}</span>,
+              decided when the workspace was created. There is no appearance setting here to change. The platform admin can open this workspace in the default console from the platform's own admin host.
+            </p>
+          </Card>
+        </div>
+      );
+    }
 
     return (
       <div className="flex flex-col h-full animate-in fade-in duration-500">

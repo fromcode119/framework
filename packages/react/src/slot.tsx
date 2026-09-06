@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import { Reactor } from '@fromcode119/reactor';
 import { SlotsContext } from '@react/context/slots-context';
+import { PluginUsageTracker } from '@react/plugin-usage-tracker';
 import type { ISlotComponent } from '@react/interfaces/slot-component.interface';
 import type { ISlotProps } from '@react/interfaces/slot-props.interface';
 
@@ -32,6 +33,7 @@ export class Slot extends Reactor {
     try {
       const componentName = (item.component as any)?.displayName || (item.component as any)?.name || `c${index}`;
       const Component = item.component as ComponentType<any>;
+      PluginUsageTracker.record(item.pluginSlug);
       return <Component {...this.props.props} key={`${item.pluginSlug}-${componentName}-${index}`} />;
     } catch (error) {
       console.error(`[Slot] Runtime error in slot component "${this.props.name}":`, error);

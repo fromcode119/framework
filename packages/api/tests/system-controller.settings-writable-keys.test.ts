@@ -1,4 +1,4 @@
-import { SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
+import { SystemConstants, SystemSettingsExposureUtils, TenantMode } from '@fromcode119/core';
 import { SystemController } from '@api/controllers/system/system-controller';
 
 /** A `_system_meta` stand-in that records what updateSettings actually wrote. */
@@ -105,5 +105,29 @@ describe('SystemAdminController.updateSettings — measurement_system', () => {
     await controller.updateSettings({ body: { 'user:1:totp_secret': 'x' }, user: { id: 1 } } as any, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
+  });
+});
+
+describe('SystemAdminController.updateSettings — platform keys on a multi-site platform', () => {
+  afterEach(() => TenantMode.reset());
+
+  it('refuses a platform-only key from a site admin instead of writing a row nothing reads', async () => {
+    TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
+    const meta = new MetaTableStub();
+    const res = createRes();
+    // No `users` row answers for this account, so it is not the platform admin.
+    await createController(meta).updateSettings({ body: { ssr_render_memory_mb: '999' }, user: { id: 247 } } as any, res);
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json.mock.calls[0][0]).toMatchObject({ error: 'platform_admin_required', keys: ['ssr_render_memory_mb'] });
+    expect(meta.rows.has('ssr_render_memory_mb')).toBe(false);
+  });
+
+  it('still lets a site admin write a per-site key', async () => {
+    TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
+    const meta = new MetaTableStub();
+    const res = createRes();
+    await createController(meta).updateSettings({ body: { measurement_system: 'imperial' }, user: { id: 247 } } as any, res);
+    expect(res.status).not.toHaveBeenCalledWith(403);
+    expect(meta.rows.get('measurement_system')).toBe('imperial');
   });
 });

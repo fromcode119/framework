@@ -171,9 +171,7 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
    * has already been sent.
    */
   protected async enforceTwoFactorChallenge(req: Request, res: Response, user: any): Promise<boolean> {
-    const twoFactorMeta = await this.db.findOne(SystemConstants.TABLE.META, {
-      key: `user:${user.id}:2fa_enabled`
-    });
+    const twoFactorMeta = await this.readMetaRow(`user:${user.id}:2fa_enabled`);
     if (twoFactorMeta?.value !== 'true') return true;
 
     const totpToken = String(req.body?.totpToken || '').trim();
@@ -191,9 +189,7 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
     let method: TwoFactorMethod | null = null;
 
     if (totpToken) {
-      const secretRow = await this.db.findOne(SystemConstants.TABLE.META, {
-        key: `user:${user.id}:totp_secret`
-      });
+      const secretRow = await this.readMetaRow(`user:${user.id}:totp_secret`);
       if (secretRow?.value && this.verifyTOTP(SecretService.decrypt(secretRow.value), totpToken)) {
         verified = true;
         method = TwoFactorMethod.TOTP;

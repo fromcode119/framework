@@ -1,11 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* The storefront's framework baseline. No Tailwind: the frontend package has no Tailwind/PostCSS
+   pipeline, so `@tailwind` directives here were inert text in the shipped CSS — and with them the
+   preflight reset that would have zeroed the body margin. The browser's default 8px margin then framed
+   every theme in a white border. The reset is stated explicitly instead. */
 :root {
   --background: var(--theme-background, #ffffff);
   --foreground: var(--theme-foreground, #0f172a);
   --primary: var(--theme-primary, #10b981);
+}
+
+html, body {
+  margin: 0;
 }
 
 body {

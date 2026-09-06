@@ -40,6 +40,9 @@ export class ThemeAssetsListController {
       const uiRoot = path.resolve(themeDir, 'ui');
 
       const assets: IThemeAssetEntry[] = [];
+      // Root-level ui/ files first — themes keep their logo and favicons there, and a media popup
+      // that cannot offer the theme's own logo defeats its purpose.
+      this.collectFiles(uiRoot, '', themeSlug, req, assets);
       for (const subdir of ThemeAssetsListController.SCANNED_SUBDIRS) {
         const absoluteSubdir = path.join(uiRoot, subdir);
         if (!this.isDirectory(absoluteSubdir)) continue;
@@ -53,6 +56,29 @@ export class ThemeAssetsListController {
       res.status(500).json({ error: err?.message || 'Failed to list theme assets' });
     }
   };
+
+  /** One directory level, files only — the non-recursive sibling of {@link walk} for the ui/ root. */
+  private collectFiles(
+    absoluteDir: string,
+    relativeDir: string,
+    themeSlug: string,
+    req: Request,
+    out: IThemeAssetEntry[],
+  ): void {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(absoluteDir, { withFileTypes: true });
+    } catch { return; }
+    for (const entry of entries) {
+      if (entry.name.startsWith('.') || !entry.isFile()) continue;
+      const ext = path.extname(entry.name).toLowerCase();
+      const mimeType = ThemeAssetsListController.IMAGE_MIME[ext] || ThemeAssetsListController.VIDEO_MIME[ext];
+      if (!mimeType) continue;
+      const relativeChild = relativeDir ? path.posix.join(relativeDir, entry.name) : entry.name;
+      const url = ApiUrlUtils.resolvePublicUrl(req, ApiPathUtils.themeUiAssetPath(themeSlug, relativeChild));
+      out.push({ filename: entry.name, relativePath: relativeChild, mimeType, url });
+    }
+  }
 
   private walk(
     absoluteDir: string,

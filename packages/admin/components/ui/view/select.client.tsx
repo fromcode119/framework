@@ -11,7 +11,7 @@ import type { IOption } from '@/components/ui/interfaces/option.interface';
 
 export class Select extends Reactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<Select, 'value' | 'onChange' | 'options' | 'placeholder' | 'disabled' | 'theme' | 'className' | 'triggerClassName' | 'label' | 'searchable' | 'size' | 'onSearchChange' | 'clearable'>;
+  declare props: Pick<Select, 'value' | 'onChange' | 'options' | 'placeholder' | 'disabled' | 'theme' | 'className' | 'triggerClassName' | 'label' | 'searchable' | 'size' | 'onSearchChange' | 'clearable' | 'onCreateOption' | 'createOptionLabel' | 'onDeleteOption'>;
 
   @prop declare value: string;
   @prop declare onChange: (value: string) => void;
@@ -26,6 +26,21 @@ export class Select extends Reactor {
   @prop declare size?: FieldSize;
   @prop declare onSearchChange?: (value: string) => void;
   @prop declare clearable?: boolean;
+  /**
+   * Makes the select creatable: when the typed text matches no option, the menu offers to create it and
+   * hands the text here. The owner creates the option and updates `options`; this select does not hold a
+   * list of its own, so what the user sees afterwards is whatever the owner supplies.
+   *
+   * Selecting the newly created value is the owner's job too — it knows the value the label maps to.
+   */
+  @prop declare onCreateOption?: (label: string) => void;
+  /** Wording for the create row. Callers with their own i18n pass it; default is English like the rest of this menu. */
+  @prop declare createOptionLabel?: (input: string) => string;
+  /**
+   * Lets the operator remove an option the owner marked `deletable`. The owner performs the actual
+   * removal and updates `options`; the menu stays open-agnostic — deletion is not selection.
+   */
+  @prop declare onDeleteOption?: (value: string) => void;
 
   @ref declare triggerRef: Ref<HTMLDivElement>;
   @ref declare menuRef: Ref<HTMLDivElement>;
@@ -33,7 +48,7 @@ export class Select extends Reactor {
 
   @state isOpen = false;
   @state searchValue = '';
-  @state coords: { top: number; left: number; width: number } = { top: 0, left: 0, width: 0 };
+  @state coords: { top?: number; bottom?: number; left: number; width: number } = { left: 0, width: 0 };
 
   private getFilteredOptions() {
     return SelectUtils.filter(this.options, this.searchValue);
@@ -44,15 +59,22 @@ export class Select extends Reactor {
       const rect = this.triggerRef.current.getBoundingClientRect();
       const margin = 8;
       const filteredCount = this.getFilteredOptions().length;
-      const menuHeight = Math.min(filteredCount * 48 + (this.searchable !== false ? 100 : 40), 300);
+      // Estimate decides only WHICH SIDE the menu opens on. It must never place the flipped menu:
+      // positioning a flip by `rect.top - estimatedHeight` floated the menu a detached gap above its
+      // trigger whenever the estimate overshot the real height. A flipped menu instead anchors its
+      // BOTTOM to the trigger, so its actual rendered height is irrelevant.
+      const estimatedHeight = Math.min(filteredCount * 40 + (this.searchable !== false ? 58 : 8) + 8, 300);
+      const opensUp = rect.bottom + margin + estimatedHeight > window.innerHeight && rect.top > window.innerHeight - rect.bottom;
 
-      let top = rect.bottom + margin;
-      if (top + menuHeight > window.innerHeight) {
-        top = rect.top - menuHeight - margin;
-      }
-
-      this.coords = { top, left: rect.left, width: rect.width };
+      this.coords = opensUp
+        ? { bottom: window.innerHeight - rect.top + margin, left: rect.left, width: rect.width }
+        : { top: rect.bottom + margin, left: rect.left, width: rect.width };
     }
+  }
+
+  @bound handleCreate(label: string): void {
+    this.onCreateOption?.(label);
+    this.isOpen = false;
   }
 
   @bound handleClickOutside(event: MouseEvent): void {
@@ -202,6 +224,9 @@ export class Select extends Reactor {
               onChange(finalVal);
               setIsOpen(false);
             }}
+            onCreate={this.onCreateOption ? this.handleCreate : undefined}
+            onDelete={this.onDeleteOption}
+            createLabel={this.createOptionLabel?.(searchValue.trim())}
           />
         )}
       </div>

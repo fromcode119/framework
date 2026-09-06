@@ -6,7 +6,7 @@ import { CliUtils } from '@cli/utils';
 import { SiteTransferBundleCommandService } from '@cli/services/site-transfer-bundle-command-service';
 import { SystemUpdateCommandService } from '@cli/services/system-update-command-service';
 import { PackageVersionSyncCommandService } from '@cli/services/package-version-sync-command-service';
-import { SingleDomainGateway } from '@cli/services/single-domain-gateway';
+import { PlatformGateway } from '@cli/services/platform-gateway';
 
 export class SystemCommands {
   static registerSystemCommands(program: Command) {
@@ -84,9 +84,9 @@ export class SystemCommands {
 
     system
       .command('gateway')
-      .description('Serve API, admin and frontend behind one public domain (container entrypoint)')
+      .description('The platform gateway: routes every host to api, admin or frontend from the tenant table (container entrypoint)')
       .action(() => {
-        new SingleDomainGateway().start();
+        new PlatformGateway().start();
       });
   }
 }

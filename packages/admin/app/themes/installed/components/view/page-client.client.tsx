@@ -2,6 +2,7 @@ import type { ChangeEvent, DragEvent, ReactNode } from 'react';
 import { bound, ref, state } from '@fromcode119/reactor';
 import type { Ref } from '@fromcode119/reactor';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import type { INotificationContextType } from '@/components/interfaces/notification-context-type.interface';
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 import { InstalledThemesView } from '@/app/themes/installed/components/view/installed-themes-view.client';
@@ -123,9 +124,15 @@ export class InstalledThemesPageClient
     return InstalledThemesPageController.resolveUpdateVersion(installedTheme, this.marketplaceThemes);
   }
 
+  /** The host's answer for the actions class and the view alike — one source, never two. */
+  get canManage(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user);
+  }
+
   render(): ReactNode {
     return (
       <InstalledThemesView
+        canManage={this.canManage}
         closeUploadPreview={this.closeUploadPreview}
         confirmUploadPreview={this.confirmUploadPreview}
         fileInputRef={this.fileInputRef}

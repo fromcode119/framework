@@ -65,53 +65,88 @@ describe('ThemeServerRegistry generations', () => {
     ThemeServerRegistry.install({ install: (args: unknown) => { bridge = args as typeof bridge; } }, {});
   });
 
-  it('keeps serving the published world while the next generation is still importing', async () => {
+  it('keeps serving a published world while another generation is still importing', async () => {
+    // Generations are keyed by SIGNATURE (theme@version + plugin versions). On a multi-tenant deployment
+    // two sites on different themes are resident at once, so publishing a second world must never
+    // touch the first — and a request mid-rebuild still gets the COMPLETE previous one, never an empty one.
     const oldLayout = () => null;
     const live = ThemeServerRegistry.beginGeneration();
     bridge.registerTheme('demo', { layouts: { Main: oldLayout } });
-    ThemeServerRegistry.publishGeneration(live);
+    ThemeServerRegistry.publishGeneration('theme:demo@1', live);
 
-    // A version change opens a staging generation; the imports register into it, not into the live one.
     const staged = ThemeServerRegistry.beginGeneration();
-    expect(ThemeServerRegistry.layoutsFor('demo').Main).toBe(oldLayout);
+    expect(ThemeServerRegistry.layoutsFor('theme:demo@1', 'demo').Main).toBe(oldLayout);
 
     const newLayout = () => null;
     bridge.registerTheme('demo', { layouts: { Main: newLayout } });
-    // Mid-rebuild a request still gets the COMPLETE previous theme, never an empty one.
-    expect(ThemeServerRegistry.layoutsFor('demo').Main).toBe(oldLayout);
+    // Registrations land in staging, not in any published world.
+    expect(ThemeServerRegistry.layoutsFor('theme:demo@1', 'demo').Main).toBe(oldLayout);
+    expect(ThemeServerRegistry.layoutsFor('theme:demo@2', 'demo').Main).toBeUndefined();
 
-    await staged.warmOverrides();
-    ThemeServerRegistry.publishGeneration(staged);
-    expect(ThemeServerRegistry.layoutsFor('demo').Main).toBe(newLayout);
+    await staged.warmOverrides((component) => component);
+    ThemeServerRegistry.publishGeneration('theme:demo@2', staged);
+    expect(ThemeServerRegistry.layoutsFor('theme:demo@2', 'demo').Main).toBe(newLayout);
+    // BOTH remain resident and distinct: that is what lets two sites render two themes in one process.
+    expect(ThemeServerRegistry.layoutsFor('theme:demo@1', 'demo').Main).toBe(oldLayout);
+    expect(ThemeServerRegistry.publishedSignatures()).toEqual(expect.arrayContaining(['theme:demo@1', 'theme:demo@2']));
+  });
+
+  it('answers EMPTY for a signature nobody built — never another generation\'s theme', () => {
+    const layout = () => null;
+    const built = ThemeServerRegistry.beginGeneration();
+    bridge.registerTheme('demo', { layouts: { Main: layout } });
+    ThemeServerRegistry.publishGeneration('theme:built@1', built);
+
+    expect(ThemeServerRegistry.layoutsFor('theme:never-built@1', 'demo')).toEqual({});
+    expect(ThemeServerRegistry.slotMap('theme:never-built@1')).toEqual({});
+    expect(ThemeServerRegistry.hasGeneration('theme:never-built@1')).toBe(false);
   });
 
   it('discards a failed generation rather than leaving the storefront with no theme', () => {
     const liveLayout = () => null;
     const live = ThemeServerRegistry.beginGeneration();
     bridge.registerTheme('demo', { layouts: { Main: liveLayout } });
-    ThemeServerRegistry.publishGeneration(live);
+    ThemeServerRegistry.publishGeneration('theme:live@1', live);
 
     const doomed = ThemeServerRegistry.beginGeneration();
     ThemeServerRegistry.discardGeneration(doomed);
 
-    expect(ThemeServerRegistry.layoutsFor('demo').Main).toBe(liveLayout);
+    expect(ThemeServerRegistry.layoutsFor('theme:live@1', 'demo').Main).toBe(liveLayout);
+  });
+
+  it('evicting a generation forgets it, and a rebuild republishes it under the same key', () => {
+    const layout = () => null;
+    const gen = ThemeServerRegistry.beginGeneration();
+    bridge.registerTheme('demo', { layouts: { Main: layout } });
+    ThemeServerRegistry.publishGeneration('theme:evict@1', gen);
+    expect(ThemeServerRegistry.hasGeneration('theme:evict@1')).toBe(true);
+
+    ThemeServerRegistry.evict('theme:evict@1');
+    expect(ThemeServerRegistry.hasGeneration('theme:evict@1')).toBe(false);
+    expect(ThemeServerRegistry.layoutsFor('theme:evict@1', 'demo')).toEqual({});
+
+    const rebuilt = ThemeServerRegistry.beginGeneration();
+    bridge.registerTheme('demo', { layouts: { Main: layout } });
+    ThemeServerRegistry.publishGeneration('theme:evict@1', rebuilt);
+    expect(ThemeServerRegistry.layoutsFor('theme:evict@1', 'demo').Main).toBe(layout);
   });
 
   it('lets a new generation replace an override of equal priority', () => {
     const first = () => null;
     const generationOne = ThemeServerRegistry.beginGeneration();
     bridge.registerSlotComponent('frontend.content.display', first, 'cms', 10);
-    ThemeServerRegistry.publishGeneration(generationOne);
+    ThemeServerRegistry.publishGeneration('theme:slots@1', generationOne);
 
     const second = () => null;
     const generationTwo = ThemeServerRegistry.beginGeneration();
     bridge.registerSlotComponent('frontend.content.display', second, 'cms', 10);
-    ThemeServerRegistry.publishGeneration(generationTwo);
+    ThemeServerRegistry.publishGeneration('theme:slots@2', generationTwo);
 
-    // Clearing in place is not enough on its own — an empty generation is what makes the NEW component
-    // the only one registered. Re-registering into the old maps appended a duplicate instead.
-    const slot = ThemeServerRegistry.slotMap()['frontend.content.display'];
+    // An empty generation is what makes the NEW component the only one registered in ITS world;
+    // re-registering into the old maps appended a duplicate instead. The old world keeps its own.
+    const slot = ThemeServerRegistry.slotMap('theme:slots@2')['frontend.content.display'];
     expect(slot).toHaveLength(1);
     expect(slot[0]).toEqual({ component: second, pluginSlug: 'cms', priority: 10 });
+    expect(ThemeServerRegistry.slotMap('theme:slots@1')['frontend.content.display'][0]).toEqual({ component: first, pluginSlug: 'cms', priority: 10 });
   });
 });

@@ -1,9 +1,10 @@
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
 import { AdminComponentRegistry } from '@react/admin-component-registry';
 import { AsyncDataController } from '@react/async-data-controller';
-import { AccountRouteUtils, AdminGlobalClient, AdminResourceClient, AdminSdkClient, AdminUserClient, ApiPathUtils, ApiQueryUtils, ApiRequestError, ApiRequestService, ApiScopeClient, ApiVersionUtils, ApplicationUrlUtils, BaseController, BaseRepository, BaseService, BrowserStateClient, BrowserStateRuntimeBuilder, CapabilityRegistry, ClientRuntimeConstants, CoercionUtils, CollectionScopeClient, CollectionUtils, CookieConstants, CoreServices, DataSourceConstants, FormatUtils, HookEventUtils, InteractiveCanvas, LayoutTargetKind, LiveBlocks, LocalizationUtils, LocalizedField, LogLevel, Logger, MeasurementSystemUtils, MediaRelationService, MiddlewareStage, NamespacedPluginsFacade, NumberUtils, PaginationUtils, PluginCapability, PluginFrontendLayoutRegistrar, Plugins, PluginsFacade, PluginsRegistry, PublicAssetUrlUtils, PublicRouteConstants, PublicSettings, RecordVersions, RelationUtils, RouteConstants, RouteUtils, RuntimeBridge, RuntimeConstants, RuntimeLocationUtils, SdkClient, SettingsScopeClient, ShortcodeUtils, StringUtils, SystemAuthClient, SystemAuthSession, SystemConstants, ThemeFrontendLayoutRegistrar, ThemeMode, UrlUtils, WidgetViewport } from '@fromcode119/core/client';
+import { AccountRouteUtils, AdminGlobalClient, AdminResourceClient, AdminSdkClient, AdminUserClient, ApiPathUtils, ApiQueryUtils, ApiRequestError, ApiRequestService, ApiScopeClient, ApiVersionUtils, ApplicationUrlUtils, BaseController, BaseRepository, BaseService, BrowserStateClient, BrowserStateRuntimeBuilder, CapabilityRegistry, ClientRuntimeConstants, CoercionUtils, CollectionScopeClient, CollectionUtils, CookieConstants, CoreServices, DataSourceConstants, EditorSessionParams, FormatUtils, HookEventUtils, InteractiveCanvas, LayoutTargetKind, LiveBlocks, LocalizationUtils, LocalizedField, LogLevel, Logger, MeasurementSystemUtils, MediaRelationService, MiddlewareStage, NamespacedPluginsFacade, NumberUtils, PaginationUtils, PluginCapability, PluginFrontendLayoutRegistrar, Plugins, PluginsFacade, PluginsRegistry, PublicAssetUrlUtils, PublicRouteConstants, PublicSettings, RecordVersions, RelationUtils, RouteConstants, RouteUtils, RuntimeBridge, RuntimeConstants, RuntimeLocationUtils, SdkClient, SettingsScopeClient, ShortcodeUtils, StringUtils, SystemAuthClient, SystemAuthSession, SystemConstants, ThemeFrontendLayoutRegistrar, ThemeMode, UrlUtils, WidgetViewport } from '@fromcode119/core/client';
 import { ContextBridge } from '@react/context-bridge';
 import { PluginUiRegistrar } from '@react/plugin-ui-registrar';
+import { PluginDefaultStyle } from '@react/view/plugin-default-style';
 import { ContextHooks } from '@react/context-hooks/context-hooks';
 import { ThemeOverrideRegistrar } from '@react/theme-override-registrar';
 import { LazyComponentLoaderService } from '@react/lazy-component-loader-service';
@@ -72,12 +73,19 @@ export class BridgeObjectBuilder {
     };
   }
 
+  /**
+   * Provider-backed entries, resolved at CALL time through `ContextBridge` rather than captured from
+   * `args`. A bundle's import-map module binds these ONCE, when it first evaluates; under the islands
+   * runtime that is against the PRE-BOOT bridge, before any provider exists. Forwarding keeps a binding
+   * taken then pointing at whatever install is current — the live provider's `t` and `loadConfig` —
+   * instead of the stand-ins it was made against.
+   */
   private static buildRuntimeStateRefs(args: IRuntimeBridgeInstallArgs): Record<string, unknown> {
     return {
-      getState: () => args.stabilityRef.current,
-      loadConfig: args.stableLoadConfig,
+      getState: () => ContextBridge.getState(),
+      loadConfig: (...loadArgs: unknown[]) => ContextBridge.loadConfig(...loadArgs),
       isReady: args.isReady,
-      t: args.stableT,
+      t: (...tArgs: unknown[]) => ContextBridge.t(...tArgs),
     };
   }
 
@@ -100,6 +108,7 @@ export class BridgeObjectBuilder {
       PluginRuntimeContext,
       PluginRuntimeProvider,
       PluginComponent,
+      PluginDefaultStyle,
     };
   }
 
@@ -140,6 +149,7 @@ export class BridgeObjectBuilder {
       ApplicationUrlUtils,
       RuntimeLocationUtils,
       PublicAssetUrlUtils,
+      EditorSessionParams,
       ApiVersionUtils,
       LocalizationUtils,
       CollectionUtils,

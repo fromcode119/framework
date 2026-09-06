@@ -130,6 +130,14 @@ export class PluginContext {
    * Use instead of querying SystemTable.META directly.
    */
   declare readonly meta: IPluginContextMeta;
+  /**
+   * Run this plugin's schema migrations on the FRAMEWORK's DDL connection.
+   *
+   * The request connection is a non-owner role and cannot ALTER tables, so a plugin that runs its
+   * own DDL through `context.db` fails with "must be owner of table …". Plugins declare WHAT to
+   * migrate; the framework decides which connection runs it, and audits the run.
+   */
+  declare readonly migrations: { run: (migrations: Array<{ up: (db: any) => Promise<void> }>) => Promise<void> };
 
   /**
    * Read-only access to the system media library. Use instead of querying SystemTable.MEDIA directly.

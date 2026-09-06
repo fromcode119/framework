@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/core",
-  "version": "0.1.87",
+  "version": "0.1.88",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -28,6 +28,11 @@
       "types": "./dist/constants/*.d.ts",
       "import": "./dist/constants/*.js",
       "require": "./dist/constants/*.js"
+    },
+    "./process": {
+      "types": "./dist/process/index.d.ts",
+      "import": "./dist/process/index.js",
+      "require": "./dist/process/index.js"
     }
   },
   "browser": {
@@ -48,7 +53,6 @@
     "adm-zip": false,
     "chokidar": false,
     "tar": false,
-    "isolated-vm": false,
     "async_hooks": false,
     "events": false,
     "ioredis": false,
@@ -86,7 +90,6 @@
     "chokidar": "^3.6.0",
     "drizzle-orm": "^0.45.1",
     "ioredis": "^5.9.2",
-    "isolated-vm": "^6.0.2",
     "semver": "^7.6.0",
     "tar": "^7.5.7",
     "uuid": "^9.0.1",

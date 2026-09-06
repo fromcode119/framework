@@ -56,11 +56,19 @@ export class AuthManager {
     return bcrypt.compare(password, hash);
   }
 
-  async generateToken(user: IUser, options: { expiresIn?: SignOptions['expiresIn'] } = {}): Promise<string> {
-    const payload = {
+  /**
+   * `tenantId` is stated explicitly rather than left to ride along on the user object, so a token
+   * is never silently minted without the tenant it belongs to.
+   */
+  async generateToken(
+    user: IUser,
+    options: { expiresIn?: SignOptions['expiresIn']; tenantId?: string } = {},
+  ): Promise<string> {
+    const payload: Record<string, unknown> = {
       ...user,
       jti: user.jti || randomUUID(),
     };
+    if (options.tenantId) payload.tenantId = options.tenantId;
     return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: options.expiresIn ?? '15m' });
   }
 
@@ -73,12 +81,28 @@ export class AuthManager {
     return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: '7d' });
   }
 
-  async verifyToken(token: string): Promise<IUser> {
+  /**
+   * `expected.tenantId` is supplied by the caller — this package stays framework-agnostic and does
+   * not decide whether the deployment is multi-tenant. When it IS supplied, the token's own claim
+   * must match: a token minted for one tenant is refused against another, never re-scoped to
+   * whatever tenant the request happened to resolve to.
+   *
+   * When no tenant is expected (a single-tenant deployment) a token without the claim verifies
+   * exactly as before, which is what keeps existing installations working.
+   */
+  async verifyToken(token: string, expected: { tenantId?: string } = {}): Promise<IUser> {
     try {
       const decoded = jwt.verify(token, this.secret, { algorithms: ['HS256'] }) as any;
 
       if (decoded.type === 'refresh') {
         throw new Error('Cannot use refresh token as access token');
+      }
+
+      if (expected.tenantId && decoded.tenantId !== expected.tenantId) {
+        throw new Error(
+          `Token tenant mismatch: minted for "${decoded.tenantId ?? 'no tenant'}", presented to `
+          + `"${expected.tenantId}".`,
+        );
       }
 
       if (this.sessionValidator && decoded.jti && !decoded.isApiKey) {
@@ -112,7 +136,7 @@ export class AuthManager {
       const apiKey = req.headers?.['x-api-key'];
       if (apiKey && this.apiKeyValidator) {
         try {
-          const user = await this.apiKeyValidator(String(apiKey));
+          const user = await this.apiKeyValidator(String(apiKey), req);
           if (user) {
             req.user = { ...user, isApiKey: true };
             return next();

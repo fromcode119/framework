@@ -1,13 +1,17 @@
 import type React from 'react';
+import type { IconNode } from 'lucide-react';
+import { Platform } from '@fromcode119/reactor';
+import { LucideIconAssetUrl } from '@react/icons/lucide-icon-asset-url';
+import lucideIconNames from '@react/icons/lucide-icon-names.generated.json';
 // Lucide's deep ESM entry ships no declaration file. Suppressed locally rather than papered over with
 // an ambient `.d.ts`: that file had to sit in `src/`, was swallowed by the `packages/*/src/**/*.d.ts`
 // ignore rule, and so never reached CI — every clean checkout failed with TS6053. The value is given
-// its real, narrow type by `thunks` on the very next line, so nothing is left untyped.
+// its real, narrow type by `build` below, so nothing is left untyped.
 // `@ts-ignore`, not `@ts-expect-error`: this file is compiled under BOTH react's config
 // (`noImplicitAny: false` -> no error, so `expect-error` itself errors as unused, TS2578) and
 // admin's (`noImplicitAny: true` -> the suppression is required). Only `ts-ignore` satisfies both.
-// @ts-ignore -- untyped deep import; given its real type by `thunks` below.
-import dynamicIconImports from 'lucide-react/dist/esm/dynamicIconImports.js';
+// @ts-ignore -- untyped deep import; given its real type by `build` below.
+import createLucideIcon from 'lucide-react/dist/esm/createLucideIcon.js';
 
 /**
  * On-demand resolver for the Lucide icon set.
@@ -22,19 +26,24 @@ import dynamicIconImports from 'lucide-react/dist/esm/dynamicIconImports.js';
  * renders a handful of icons at most.
  *
  * The insight: the *names* are cheap, the *implementations* are expensive.
- * lucide-react's own `dynamicIconImports` table is ~13KB gz and holds every icon
- * name plus a per-icon lazy import thunk. From its 1,914 kebab keys this class
- * reconstructs the complete public export surface — verified as an exact set
- * match (5,730 names, 0 missing, 0 extra) against `import * as Lucide`:
+ * From the generated list of 1,914 kebab icon keys (`lucide-icon-names.generated.json`,
+ * written by `build:frontend-icons` and pinned to the installed lucide by a drift test)
+ * this class reconstructs the complete public export surface — verified as an exact
+ * set match (5,730 names, 0 missing, 0 extra) against `import * as Lucide`:
  *
  *   'chevron-down' -> ChevronDown, ChevronDownIcon, LucideChevronDown
  *
- * So the full name surface is preserved byte-for-byte while each icon's ~450b
- * implementation loads only if something actually renders it. No allowlist, no
- * build-time enumeration of installed plugins, no behaviour change for callers.
+ * An icon's implementation is a ~300-byte DATA module (`/fc-runtime/icons/<version>/<kebab>.js`,
+ * the icon's `[tag, attrs][]` node and nothing else) fetched with a native `import()` only when
+ * something actually renders it, then turned into a component by the ONE `createLucideIcon` this
+ * bundle carries. No allowlist, no build-time enumeration of installed plugins, no behaviour change
+ * for callers — and no lucide table in any bundle: neither Next's chunk graph nor the storefront
+ * runtime IIFE (which would have had to inline all 1,914 icon modules) carries an icon it does not draw.
  */
 export class LucideLazyLoader {
-  private static readonly thunks: Record<string, () => Promise<{ default: unknown }>> = dynamicIconImports;
+  /** The one bundled component factory — lucide's own, so every icon renders exactly as `lucide-react` would. */
+  private static readonly build: (iconName: string, iconNode: IconNode) => React.ComponentType<any> = createLucideIcon;
+  private static readonly kebabNames: readonly string[] = lucideIconNames.names;
   private static readonly resolved = new Map<string, React.ComponentType<any>>();
   private static readonly inFlight = new Set<string>();
   private static readonly listeners = new Set<() => void>();
@@ -83,33 +92,43 @@ export class LucideLazyLoader {
     return LucideLazyLoader.revision;
   }
 
+  /**
+   * ONE native dynamic import of the icon's data module. The specifier is a runtime URL, so every
+   * bundler is told to leave the call alone (Vite / webpack / Turbopack each read their own comment);
+   * the browser resolves it against the current document, on this app's origin.
+   */
+  static fetchIconNode(kebab: string): Promise<IconNode> {
+    const url = LucideIconAssetUrl.for(kebab);
+    return import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ url).then(
+      (mod: { default: IconNode }) => mod.default,
+    );
+  }
+
   private static request(kebab: string): void {
+    // Only a browser can fetch a public asset; on the server a proxy icon renders nothing, as before.
+    if (!Platform.isBrowser) return;
     if (LucideLazyLoader.inFlight.has(kebab)) return;
-    const thunk = LucideLazyLoader.thunks[kebab];
-    if (!thunk) return;
 
     LucideLazyLoader.inFlight.add(kebab);
-    thunk()
-      .then((mod) => {
-        const component = (mod?.default ?? mod) as React.ComponentType<any>;
-        if (component) {
-          LucideLazyLoader.resolved.set(kebab, component);
-          LucideLazyLoader.revision += 1;
-          LucideLazyLoader.listeners.forEach((listener) => listener());
-        }
+    LucideLazyLoader.fetchIconNode(kebab)
+      .then((iconNode) => {
+        if (!Array.isArray(iconNode)) return;
+        LucideLazyLoader.resolved.set(kebab, LucideLazyLoader.build(kebab, iconNode));
+        LucideLazyLoader.revision += 1;
+        LucideLazyLoader.listeners.forEach((listener) => listener());
       })
       .catch(() => {
-        // Allow a later render to retry a transient chunk-load failure.
+        // Allow a later render to retry a transient fetch failure.
         LucideLazyLoader.inFlight.delete(kebab);
       });
   }
 
-  /** Lazily-built map of every export name (all alias forms) -> kebab thunk key. */
+  /** Lazily-built map of every export name (all alias forms) -> kebab key. */
   private static nameIndex(): Map<string, string> {
     if (LucideLazyLoader.nameToKebabCache) return LucideLazyLoader.nameToKebabCache;
 
     const index = new Map<string, string>();
-    Object.keys(LucideLazyLoader.thunks).forEach((kebab) => {
+    LucideLazyLoader.kebabNames.forEach((kebab) => {
       const pascal = LucideLazyLoader.toPascalCase(kebab);
       index.set(pascal, kebab);
       index.set(`${pascal}Icon`, kebab);

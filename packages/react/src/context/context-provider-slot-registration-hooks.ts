@@ -2,7 +2,14 @@ import React from 'react';
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
 import type { IMenuItem } from '@react/interfaces/menu-item.interface';
 import type { ISlotComponent } from '@react/interfaces/slot-component.interface';
+import { RegistrationStateReducers } from '@react/context/registration-state-reducers';
 
+/**
+ * The live registration callbacks. Each one normalises its payload and folds it into provider state
+ * through {@link RegistrationStateReducers} — the SAME reducers `PreBootRegistrationSeed` uses to fold
+ * registrations that were queued before the provider existed, so a seeded first render and a live replay
+ * of the same calls produce identical state.
+ */
 export class ContextProviderSlotRegistrationHooks {
   static useSlotRegistration(args: {
     setCollections: React.Dispatch<React.SetStateAction<ICollectionMetadata[]>>;
@@ -30,77 +37,9 @@ export class ContextProviderSlotRegistrationHooks {
     } = args;
 
     const registerSlotComponent = React.useCallback((slotName: string, component: any, pluginSlug?: string, priority?: number) => {
-      if (!component) {
-        console.warn(`[Fromcode] Attempted to register undefined component for slot "${slotName}" from plugin "${pluginSlug || 'unknown'}". Ignored.`);
-        return;
-      }
-
-      let actualComponent = component;
-      if (component && !component.$$typeof && typeof component === 'object' && component.default) {
-        actualComponent = component.default;
-      }
-
-      if (!actualComponent) {
-        console.warn(`[Fromcode] Component for slot "${slotName}" resolved to undefined. Plugin: ${pluginSlug || 'unknown'}`);
-        return;
-      }
-
-      let componentObj: ISlotComponent;
-      if (actualComponent && typeof actualComponent === 'object' && (actualComponent as any).component) {
-        componentObj = {
-          ...(actualComponent as any),
-          pluginSlug: (actualComponent as any).pluginSlug || pluginSlug || 'unknown',
-          priority: typeof (actualComponent as any).priority === 'number'
-            ? (actualComponent as any).priority
-            : (priority || 0),
-        } as ISlotComponent;
-      } else {
-        componentObj = {
-          component: actualComponent,
-          pluginSlug: pluginSlug || 'unknown',
-          priority: priority || 0,
-        };
-      }
-
-      if (!componentObj || !componentObj.component) {
-        console.warn(`[Fromcode] Invalid component object for slot "${slotName}" from plugin "${pluginSlug || 'unknown'}".`);
-        return;
-      }
-
-      setSlots((prev) => {
-        const existing = prev[slotName] || [];
-        const incomingSignature = ContextProviderSlotRegistrationHooks.getSlotComponentSignature(componentObj);
-        const existingIndex = existing.findIndex((item) => {
-          if (item.pluginSlug !== componentObj.pluginSlug) {
-            return false;
-          }
-
-          if (item.component === componentObj.component) {
-            return true;
-          }
-
-          return ContextProviderSlotRegistrationHooks.getSlotComponentSignature(item) === incomingSignature;
-        });
-
-        if (existingIndex >= 0) {
-          const current = existing[existingIndex];
-          if (current.component === componentObj.component && current.priority === componentObj.priority) {
-            return prev;
-          }
-
-          const next = [...existing];
-          next[existingIndex] = componentObj;
-          return {
-            ...prev,
-            [slotName]: next.sort((a, b) => a.priority - b.priority),
-          };
-        }
-
-        return {
-          ...prev,
-          [slotName]: [...existing, componentObj].sort((a, b) => a.priority - b.priority),
-        };
-      });
+      const componentObj = RegistrationStateReducers.normalizeSlotComponent(slotName, component, pluginSlug, priority);
+      if (!componentObj) return;
+      setSlots((prev) => RegistrationStateReducers.foldSlot(prev, slotName, componentObj));
     }, [setSlots]);
 
     const registerFieldComponent = React.useCallback((name: string, component: any) => {
@@ -145,28 +84,10 @@ export class ContextProviderSlotRegistrationHooks {
       });
     }, [setFieldComponents]);
 
-    const registerOverride = React.useCallback((name: string, component: any, pluginSlug?: string, priority?: number) => {
-      if (!component) {
-        return;
-      }
-
-      let actualComponent = component;
-      if (component && !component.$$typeof && typeof component === 'object' && component.default) {
-        actualComponent = component.default;
-      }
-
-      const componentObj: ISlotComponent = typeof actualComponent === 'function' || (actualComponent && (actualComponent as any).$$typeof)
-        ? { component: actualComponent, pluginSlug: pluginSlug || 'unknown', priority: priority || 0 }
-        : actualComponent;
-
-      setOverrides((prev) => {
-        const existing = prev[name];
-        if (existing && existing.priority >= componentObj.priority) {
-          return prev;
-        }
-
-        return { ...prev, [name]: componentObj };
-      });
+    const registerOverride = React.useCallback((name: string, component: any, pluginSlug?: string, priority?: number, loader?: ISlotComponent['loader']) => {
+      const componentObj = RegistrationStateReducers.normalizeOverride(component, pluginSlug, priority, loader);
+      if (!componentObj) return;
+      setOverrides((prev) => RegistrationStateReducers.foldOverride(prev, name, componentObj));
     }, [setOverrides]);
 
     const registerMenuItem = React.useCallback((item: IMenuItem) => {
@@ -211,30 +132,19 @@ export class ContextProviderSlotRegistrationHooks {
 
     const registerTheme = React.useCallback((slug: string, config: any) => {
       if (config?.variables) {
-        setThemeVariables((prev) => ({ ...prev, ...config.variables }));
+        setThemeVariables((prev) => RegistrationStateReducers.foldThemeVariables(prev, config));
       }
 
       if (config?.layouts && !Array.isArray(config.layouts)) {
-        setThemeLayouts((prev) => ({ ...prev, ...config.layouts }));
+        setThemeLayouts((prev) => RegistrationStateReducers.foldThemeLayouts(prev, config));
       }
 
       if (config?.styleVariants && !Array.isArray(config.styleVariants)) {
-        setThemeStyleVariants((prev) => ({ ...prev, ...config.styleVariants }));
+        setThemeStyleVariants((prev) => RegistrationStateReducers.foldThemeStyleVariants(prev, config));
       }
 
-      if (config?.overrides) {
-        if (Array.isArray(config.overrides)) {
-          config.overrides.forEach((override: any) => {
-            if (override.name && override.component) {
-              registerOverride(override.name, override.component, slug, override.priority || 10);
-            }
-          });
-          return;
-        }
-
-        Object.entries(config.overrides).forEach(([name, component]) => {
-          registerOverride(name, component, slug, 10);
-        });
+      for (const [name, component, owner, priority] of RegistrationStateReducers.themeOverrideRegistrations(slug, config)) {
+        registerOverride(name, component, owner, priority);
       }
     }, [registerOverride, setThemeLayouts, setThemeStyleVariants, setThemeVariables]);
 
@@ -250,49 +160,5 @@ export class ContextProviderSlotRegistrationHooks {
       replaceCollections,
       replaceMenuItems,
     };
-  }
-
-  private static getSlotComponentSignature(componentObj: any): string {
-    const component = componentObj?.component;
-    if (!component) {
-      return `missing:${componentObj?.pluginSlug || 'unknown'}`;
-    }
-
-    if (typeof component === 'string') {
-      return `string:${component}`;
-    }
-
-    if (typeof component === 'function') {
-      return `fn:${component.displayName || component.name || 'anonymous'}`;
-    }
-
-    if ((component as any)?.$$typeof && (component as any)?.type) {
-      const type = (component as any).type;
-      if (typeof type === 'function') {
-        return `react-element:${type.displayName || type.name || 'anonymous'}`;
-      }
-
-      if (typeof type === 'string') {
-        return `react-element:${type}`;
-      }
-    }
-
-    if (typeof component === 'object') {
-      const objectValue = component as any;
-      if (objectValue.id) {
-        return `object-id:${String(objectValue.id)}`;
-      }
-      if (objectValue.slug) {
-        return `object-slug:${String(objectValue.slug)}`;
-      }
-      if (objectValue.name) {
-        return `object-name:${String(objectValue.name)}`;
-      }
-      if (objectValue.type && typeof objectValue.type === 'string') {
-        return `object-type:${objectValue.type}`;
-      }
-    }
-
-    return `unknown:${componentObj?.pluginSlug || 'unknown'}`;
   }
 }

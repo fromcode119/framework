@@ -43,6 +43,11 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     await this.pool.getConnection();
   }
 
+  async queryRaw(sqlText: string, values: unknown[] = []): Promise<Array<Record<string, unknown>>> {
+    const [rows] = await this.pool.query(sqlText, values as any[]);
+    return (Array.isArray(rows) ? rows : []) as Array<Record<string, unknown>>;
+  }
+
   async execute(query: any) {
     return this.drizzle.execute(query);
   }

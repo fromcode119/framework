@@ -1,5 +1,5 @@
 import { connection } from 'next/server';
-import { TokenEmailPreferencesPanel } from '@fromcode119/react/account/token-email-preferences-panel.client';
+import { TokenEmailPreferencesPanelImplementation } from '@fromcode119/react/account/token-email-preferences-panel-implementation.client';
 import { DynamicContentClient } from '@/app/components/view/dynamic-content-client.client';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { QueryParamUtils } from '@/lib/query-param-utils';
@@ -27,7 +27,10 @@ import { QueryParamUtils } from '@/lib/query-param-utils';
  * renders this panel for the page's slug exactly as it renders `AccountShell` for `/account`.
  *
  * The bare panel remains the fallback for an install whose theme seeds no such page: an unsubscribe link
- * must work on every install, so a missing content page degrades the CHROME and never the function.
+ * must work on every install, so a missing content page degrades the CHROME and never the function. It is
+ * the panel's IMPLEMENTATION, rendered directly: this is a Next route hydrated by Next from the same module
+ * graph, so it needs no code-split boundary — `TokenEmailPreferencesPanel` (the boundary) is what a theme
+ * layout renders through the bridge.
  *
  * No auth guard: most recipients have no account. The signed token in the query is the credential, and
  * the endpoint behind this panel derives the address from that token alone. The token is read from the
@@ -62,6 +65,6 @@ export class UnsubscribePageRoute {
       // fall through to the framework default
     }
 
-    return <TokenEmailPreferencesPanel />;
+    return <TokenEmailPreferencesPanelImplementation />;
   }
 }

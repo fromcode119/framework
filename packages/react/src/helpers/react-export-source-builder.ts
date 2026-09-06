@@ -47,6 +47,7 @@ export class ReactExportSourceBuilder {
     'PluginRuntimeContext',
     'PluginRuntimeProvider',
     'PluginComponent',
+    'PluginDefaultStyle',
     'Reactor',
     'PureReactor',
     'Provider',

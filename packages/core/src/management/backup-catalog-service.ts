@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ProjectPaths } from '@core/config/paths';
+import { SystemConstants } from '@core/constants/system.constants';
 import { BackupService } from '@core/management/backup-service';
 import { BackupOperationError } from '@core/management/backup-operation-error';
 import { BackupCatalogRootKind } from '@core/management/enums/backup-catalog-root-kind.enum';
@@ -16,6 +17,7 @@ export class BackupCatalogService {
     themes: 'Themes',
     database: 'Database',
     transfer: 'Site Transfer',
+    tenants: 'Sites',
   };
 
   async listBackupGroups(includeTransferArtifacts: boolean = false): Promise<IBackupCatalogGroup[]> {
@@ -118,10 +120,15 @@ export class BackupCatalogService {
     if (normalizedPath.startsWith('plugins/')) return BackupCatalogGroupKey.PLUGINS;
     if (normalizedPath.startsWith('themes/')) return BackupCatalogGroupKey.THEMES;
     if (normalizedPath.startsWith('database/')) return BackupCatalogGroupKey.DATABASE;
+    if (normalizedPath.startsWith(`${SystemConstants.BACKUPS.TENANTS_SUBDIR}/`)) return BackupCatalogGroupKey.TENANTS;
     return BackupCatalogGroupKey.SYSTEM;
   }
 
   private resolveScopeSlug(group: BackupCatalogGroupKey, filename: string): string | null {
+    if (group === BackupCatalogGroupKey.TENANTS) {
+      const tenant = filename.match(/^tenant-([a-z0-9][a-z0-9-]*?)-\d{4}-\d{2}-\d{2}T/i);
+      return tenant ? String(tenant[1]).toLowerCase() : null;
+    }
     if (group !== BackupCatalogGroupKey.PLUGINS && group !== BackupCatalogGroupKey.THEMES) {
       return null;
     }
@@ -136,6 +143,9 @@ export class BackupCatalogService {
     }
     if (group === BackupCatalogGroupKey.THEMES && scopeSlug) {
       return `Theme ${scopeSlug}`;
+    }
+    if (group === BackupCatalogGroupKey.TENANTS) {
+      return scopeSlug ? `Site ${scopeSlug}` : 'Site export';
     }
     if (group === BackupCatalogGroupKey.DATABASE) {
       return 'Database backup';
@@ -207,6 +217,6 @@ export class BackupCatalogService {
   }
 
   private groupPriority(key: BackupCatalogGroupKey): number {
-    return ['system', 'plugins', 'themes', 'database', 'transfer'].indexOf(key.value);
+    return ['system', 'tenants', 'plugins', 'themes', 'database', 'transfer'].indexOf(key.value);
   }
 }

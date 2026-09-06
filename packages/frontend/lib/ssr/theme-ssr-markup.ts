@@ -1,5 +1,6 @@
 import { ThemeSsrStyleGroup } from '@/lib/ssr/theme-ssr-style-group';
 import { ThemeSsrPluginStyle } from '@/lib/ssr/theme-ssr-plugin-style';
+import type { IThemeSsrMarkupParts } from '@/lib/ssr/interfaces/theme-ssr-markup-parts.interface';
 
 /**
  * A server-rendered theme, split into the part that belongs in `<head>` and the part that belongs in
@@ -40,18 +41,23 @@ export class ThemeSsrMarkup {
    */
   readonly rendersContentSlot: boolean;
 
+  /** Plugins whose slot/override components this render mounted (`PluginUsageTracker`), sorted. */
+  readonly usedPlugins: string[];
+
   private constructor(
     bodyHtml: string,
     styleGroups: ThemeSsrStyleGroup[],
     imagePreloads: string[],
     pluginStyles: ThemeSsrPluginStyle[],
     rendersContentSlot: boolean,
+    usedPlugins: string[] = [],
   ) {
     this.bodyHtml = bodyHtml;
     this.styleGroups = styleGroups;
     this.imagePreloads = imagePreloads;
     this.pluginStyles = pluginStyles;
     this.rendersContentSlot = rendersContentSlot;
+    this.usedPlugins = usedPlugins;
   }
 
   private static readonly STYLE_TAG = /<style data-emotion="([^"]*)"[^>]*>([\s\S]*?)<\/style>/g;
@@ -62,7 +68,7 @@ export class ThemeSsrMarkup {
 
   private static readonly HREF_ATTRIBUTE = /href="([^"]*)"/;
 
-  static from(html: string, rendersContentSlot = false): ThemeSsrMarkup {
+  static from(html: string, rendersContentSlot = false, usedPlugins: string[] = []): ThemeSsrMarkup {
     const groups: ThemeSsrStyleGroup[] = [];
     const byKey = new Map<string, number>();
 
@@ -93,16 +99,55 @@ export class ThemeSsrMarkup {
 
     const imagePreloads: string[] = [];
     const bodyHtml = withoutPluginStyles.replace(ThemeSsrMarkup.IMAGE_PRELOAD_TAG, (match) => {
-      const href = match.match(ThemeSsrMarkup.HREF_ATTRIBUTE)?.[1];
-      if (href) imagePreloads.push(href);
+      // The href is lifted out of serialized HTML, so it is attribute-ESCAPED (`&amp;w=1400`). It is
+      // rendered again as a React attribute, which escapes once more — without decoding here the head
+      // carried `&amp;amp;w=` and the browser preloaded a third, different URL (the optimizer read
+      // `amp;w` and served its default size), then warned the preload was never used.
+      const href = ThemeSsrMarkup.decodeAttribute(match.match(ThemeSsrMarkup.HREF_ATTRIBUTE)?.[1]);
+      // Two blocks preloading the same image (hero + a product card) must yield ONE head link.
+      if (href && !imagePreloads.includes(href)) imagePreloads.push(href);
       return '';
     });
 
-    return new ThemeSsrMarkup(bodyHtml, groups, imagePreloads, pluginStyles, rendersContentSlot);
+    return new ThemeSsrMarkup(bodyHtml, groups, imagePreloads, pluginStyles, rendersContentSlot, usedPlugins);
+  }
+
+  /** Reverses HTML attribute escaping (the five entities React emits for attribute values). */
+  private static decodeAttribute(value: string | undefined): string {
+    return String(value || '')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&');
   }
 
   /** True when the render produced actual markup — an empty shell is not worth shipping. */
   get hasBody(): boolean {
     return this.bodyHtml.trim().length > 0;
+  }
+
+  /** Plain data for the wire (a render host answers with this); `fromParts` is its inverse. */
+  toParts(): IThemeSsrMarkupParts {
+    return {
+      bodyHtml: this.bodyHtml,
+      styleGroups: this.styleGroups.map((group) => ({ emotionKey: group.emotionKey, names: [...group.names], css: group.css })),
+      imagePreloads: [...this.imagePreloads],
+      pluginStyles: this.pluginStyles.map((style) => ({ key: style.key, css: style.css })),
+      rendersContentSlot: this.rendersContentSlot,
+      usedPlugins: [...this.usedPlugins],
+    };
+  }
+
+  static fromParts(parts: IThemeSsrMarkupParts): ThemeSsrMarkup {
+    return new ThemeSsrMarkup(
+      String(parts.bodyHtml || ''),
+      (parts.styleGroups || []).map((group) => new ThemeSsrStyleGroup(group.emotionKey, group.names, group.css)),
+      [...(parts.imagePreloads || [])],
+      (parts.pluginStyles || []).map((style) => new ThemeSsrPluginStyle(style.key, style.css)),
+      Boolean(parts.rendersContentSlot),
+      [...(parts.usedPlugins || [])],
+    );
   }
 }

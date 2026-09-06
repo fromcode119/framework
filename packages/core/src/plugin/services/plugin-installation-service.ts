@@ -27,7 +27,12 @@ export class PluginInstallationService {
     private readonly pluginsRoot: string,
     private readonly discoverPlugins: () => Promise<void>,
     private readonly enablePlugin: (slug: string) => Promise<void>,
+    /** T5: swap an isolated plugin's process for one running the new files; false when it runs in the api process. */
+    private readonly reloadHost: (slug: string, manifest: IPluginManifest) => Promise<boolean> = async () => false,
   ) {}
+
+  /** Set when a replaced plugin could NOT be reloaded in place (shared) and a deferred api restart is owed. */
+  private restartOwed = false;
 
   async installOrUpdateFromMarketplace(
     slug: string,
@@ -136,13 +141,16 @@ export class PluginInstallationService {
       }
     }
 
-    if (updated.length) {
+    if (updated.length && this.restartOwed) {
+      this.restartOwed = false;
       options.progressReporter?.({
         phase: 'restart-required',
-        message: `All ${updated.length} update(s) installed — restarting the API...`,
+        message: `All ${updated.length} update(s) installed — restarting the API for the plugin(s) that run inside it...`,
         pluginSlug: 'all',
       });
       this.runtimeRestart.scheduleRestart(`Batch update replaced ${updated.length} plugin(s).`);
+    } else if (updated.length) {
+      options.progressReporter?.({ phase: 'completed', message: `All ${updated.length} update(s) installed; each plugin's process was replaced in place.`, pluginSlug: 'all' });
     }
 
     return { updated, failed };
@@ -176,7 +184,21 @@ export class PluginInstallationService {
         manifest.version,
       );
 
+      // T5: an ISOLATED plugin is its own process — start a new one on the new files and the update is
+      // live, with every other plugin and every request in flight untouched. Only a plugin that runs
+      // inside the api process still needs the api restarted to load new code.
+      if (await this.reloadHost(slug, manifest)) {
+        existingPlugin.manifest = manifest;
+        options.progressReporter?.({
+          phase: 'plugin-reloaded',
+          message: `Plugin "${slug}" was replaced and its process restarted on the new code. No API restart needed.`,
+          pluginSlug: slug,
+        });
+        return;
+      }
+
       if (options.deferRestart) {
+        this.restartOwed = true;
         // A batch driver replaces several plugins and restarts ONCE at the end — restarting here
         // would kill the API mid-batch and abort every remaining update.
         options.progressReporter?.({

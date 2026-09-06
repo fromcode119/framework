@@ -2,6 +2,7 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import { Reactor, prop } from '@fromcode119/reactor';
 import { OverridesContext } from '@react/context/overrides-context';
+import { PluginUsageTracker } from '@react/plugin-usage-tracker';
 
 /**
  * Renders a plugin- or theme-registered replacement for a named surface, falling back to the children
@@ -54,6 +55,7 @@ export class Override extends Reactor {
           }
 
           try {
+            PluginUsageTracker.record(item.pluginSlug);
             return React.createElement(item.component, {
               ...this.overrideProps,
               key: `${item.pluginSlug}-${this.name}`,

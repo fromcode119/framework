@@ -37,6 +37,17 @@ export class PluginPackageLayout {
   /** The storefront UI bundle, relative to `UI_DIR`. */
   static readonly FRONTEND_ENTRY = 'frontend.js';
 
+  /**
+   * The plugin's compiled admin-UI stylesheet, relative to `UI_DIR`.
+   *
+   * A plugin's admin UI is styled by utility classes the ADMIN's stylesheet has to contain, and the
+   * admin cannot know them: plugins arrive as tarballs at RUNTIME, so a plugin installed today may
+   * be new to an image built months ago. The plugin therefore compiles its own utilities at pack
+   * time and ships them here; the admin loads the file at runtime from `ui.cssUrls`. That is the
+   * only arrangement that holds for every instance rather than for one checkout.
+   */
+  static readonly UI_STYLESHEET = 'style.css';
+
   /** Directory holding compiled migrations, relative to the package root. */
   static readonly MIGRATIONS_DIR = path.join('dist', 'migrations');
 
@@ -68,6 +79,12 @@ export class PluginPackageLayout {
       ui.frontendEntry = PluginPackageLayout.FRONTEND_ENTRY;
     }
 
+    // `adminCss`, not `css`: the storefront mounts `css` too, and these are ADMIN utilities.
+    const hasStylesheet = PluginPackageLayout.hasUiAsset(pluginPath, PluginPackageLayout.UI_STYLESHEET);
+    if (!ui.adminCss && hasStylesheet) {
+      ui.adminCss = [PluginPackageLayout.UI_STYLESHEET];
+    }
+
     // A declared entry whose bundle is not in the package would have the admin request a 404 asset.
     if (ui.entry === PluginPackageLayout.UI_ENTRY && !hasAdminBundle) {
       delete ui.entry;
@@ -75,12 +92,24 @@ export class PluginPackageLayout {
     if (ui.frontendEntry === PluginPackageLayout.FRONTEND_ENTRY && !hasFrontendBundle) {
       delete ui.frontendEntry;
     }
+    if (PluginPackageLayout.isDerivedStylesheet(ui.adminCss) && !hasStylesheet) {
+      delete ui.adminCss;
+    }
 
     if (Object.keys(ui).length > 0) {
       target.ui = ui as IPluginManifest['ui'];
     }
 
     return manifest;
+  }
+
+  /**
+   * True when `css` is exactly the stylesheet THIS class derives, and so may be withdrawn again when
+   * the file turns out to be absent. A manifest that lists its own stylesheets is left alone — the
+   * dangling-declaration guard exists to undo our own guess, never an operator's declaration.
+   */
+  static isDerivedStylesheet(css: unknown): boolean {
+    return Array.isArray(css) && css.length === 1 && css[0] === PluginPackageLayout.UI_STYLESHEET;
   }
 
   /** True when the package ships compiled migrations at the conventional location. */

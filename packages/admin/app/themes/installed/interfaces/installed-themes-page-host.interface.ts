@@ -8,6 +8,8 @@ import type { IInstalledThemesPageClientState } from '@/app/themes/installed/int
 export interface IInstalledThemesPageHost {
   /** True between `componentDidMount` and `componentWillUnmount`. */
   readonly mounted: boolean;
+  /** May this admin act on the platform? False for a tenant admin: no marketplace calls are made. */
+  readonly canManage: boolean;
   readonly state: IInstalledThemesPageClientState;
   /** Raw `setState` pass-through — deliberately UNGUARDED; callers keep the `mounted` check explicit. */
   patch(patch: Partial<IInstalledThemesPageClientState>): void;

@@ -1,6 +1,6 @@
 import { SystemConstants, ApiVersionUtils, CookieConstants } from '@fromcode119/core/client';
 import { ApplicationUrlUtils } from '@fromcode119/core/client';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
 
 export class ServerApiUtils {
@@ -133,15 +133,29 @@ export class ServerApiUtils {
   ): Promise<Record<string, string>> {
     try {
       const store = await cookies();
-      const headers: Record<string, string> = {};
+      const forwarded: Record<string, string> = {};
       const token = store.get(CookieConstants.CLIENT_AUTH_TOKEN)?.value;
-      if (token) headers.cookie = `${CookieConstants.CLIENT_AUTH_TOKEN}=${token}`;
+      if (token) forwarded.cookie = `${CookieConstants.CLIENT_AUTH_TOKEN}=${token}`;
 
       if (options.forwardOperatorSession) {
         const operatorToken = store.get(CookieConstants.AUTH_TOKEN)?.value;
-        if (operatorToken) headers.authorization = `Bearer ${operatorToken}`;
+        if (operatorToken) forwarded.authorization = `Bearer ${operatorToken}`;
       }
-      return headers;
+
+      // THE TENANT. A server-to-server fetch reaches the API as `Host: api:3000`, and on a
+      // multi-tenant deployment the API routes the storefront by host — so without this every SSR
+      // fetch (`/system/frontend`, `/system/resolve`, the page document itself) answered
+      // `404 unknown_host` and the storefront rendered an empty shell with a 200. The public host of
+      // the INCOMING request is what identifies the customer; `x-forwarded-host` is what the API's
+      // tenant router reads first (`RequestTenantService.hostFrom`). Harmless on a single-tenant
+      // deployment, where the tenancy middleware passes everything through.
+      const incoming = await headers();
+      const publicHost = String(incoming.get('x-forwarded-host') || incoming.get('host') || '').split(',')[0].trim();
+      if (publicHost) forwarded['x-forwarded-host'] = publicHost;
+      const publicProto = String(incoming.get('x-forwarded-proto') || '').split(',')[0].trim();
+      if (publicProto) forwarded['x-forwarded-proto'] = publicProto;
+
+      return forwarded;
     } catch {
       // No request scope (e.g. build-time) — nothing to forward.
     }
@@ -285,10 +299,14 @@ export class ServerApiUtils {
       const normalizedPath = requestPath.startsWith(ApiVersionUtils.prefix())
         ? requestPath
         : `${ApiVersionUtils.prefix()}${requestPath}`;
+      // Same forwarded headers as the other two paths. This one bypassed the builder, so the
+      // internal fetch — the one `/system/frontend` prefers — carried no host and was the first to 404.
+      const forwardedHeaders = await ServerApiUtils.buildForwardedAuthHeaders();
       const response = await fetch(`${baseUrl}${normalizedPath}`, {
         ...requestInit,
         cache: requestInit?.cache ?? 'no-store',
         signal: controller.signal,
+        headers: { ...forwardedHeaders, ...(requestInit?.headers as Record<string, string> | undefined) },
       });
       return ServerFetchOutcome.resolved<Response>(response);
     } catch (error) {

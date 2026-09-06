@@ -32,6 +32,8 @@ export interface IPluginContextPeople {
   catalogs: {
     register(kind: string, entry: { key: string; label: string; pluginSlug?: string }): Promise<void>;
     list(kind: string): Promise<Array<{ key: string; label: string }>>;
+    /** Remove one (kind, key) entry. Returns whether a row was removed. */
+    unregister(kind: string, key: string): Promise<boolean>;
   };
   /**
    * Reusable address book on the shared `people_addresses` table. Plugins delegate their account

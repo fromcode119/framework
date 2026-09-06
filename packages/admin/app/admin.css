@@ -177,7 +177,10 @@ html.dark {
 
 .fc-surface {
   border-radius: var(--radius);
-  border: 1px solid #fff;
+  /* The edge comes from the SAME token an appearance can repaint (--fc-border), not a literal — a
+     hardcoded #fff here made every top-level panel edgeless in light mode while nested ones (which
+     read var(--border) below) kept a real slate-200 edge, so cards looked inconsistently borderless. */
+  border: 1px solid var(--fc-border);
   background: var(--card);
   box-shadow: var(--fc-elevation-surface);
 }
@@ -185,6 +188,33 @@ html.dark {
 .dark .fc-surface,
 :root[data-theme='dark'] .fc-surface {
   border-color: rgb(30 41 59 / 0.5);
+}
+
+/* ── Full-bleed page header ──────────────────────────────────────────────────
+   `PluginPageHeader`'s sticky bar spans the whole content column, so its wrapper has to cancel EXACTLY
+   the padding of the page root it sits in. That padding belongs to the PAGE, not to the header — plugin
+   page roots declare p-4 (50 of them), p-6, p-8, and responsive pairs — so a fixed `-mx-8 -mt-8` in the
+   component was right only for the p-8 pages and overhung every p-4 page by 16px, painting its white
+   background over the sidebar divider and the top bar.
+
+   The page root answers for its own padding here; the header just reads the answer. An unmapped root
+   (e.g. one padded from an inline style) resolves to 0 — the bar is then inset, never overhanging. */
+.fc-page-bleed {
+  margin: calc(-1 * var(--fc-page-pad, 0px)) calc(-1 * var(--fc-page-pad, 0px)) 1.5rem;
+}
+
+.p-4:has(> .fc-page-bleed) { --fc-page-pad: 1rem; }
+.p-6:has(> .fc-page-bleed) { --fc-page-pad: 1.5rem; }
+.p-8:has(> .fc-page-bleed),
+.px-8:has(> .fc-page-bleed) { --fc-page-pad: 2rem; }
+
+/* Responsive roots (`p-4 md:p-6`, `p-6 lg:p-8`) — these must stay AFTER the rules above: same
+   specificity, so source order is what lets the larger padding win at its breakpoint. */
+@media (min-width: 768px) {
+  .md\:p-6:has(> .fc-page-bleed) { --fc-page-pad: 1.5rem; }
+}
+@media (min-width: 1024px) {
+  .lg\:p-8:has(> .fc-page-bleed) { --fc-page-pad: 2rem; }
 }
 
 /* Controls opt in by class, so a button is elevated by the same token as a panel. */
@@ -195,3 +225,136 @@ html.dark {
 /* A surface that sits INSIDE another surface gets the edge but not a second shadow — stacked elevation
    is what makes a panel look like it is floating off the page. */
 .fc-surface .fc-surface { box-shadow: none; border-color: var(--border); }
+
+/* ---------------------------------------------------------------------------
+   Tenant switcher — which customer's site is being edited.
+   Compact by design: it sits in the header next to status, and the admin is
+   deliberately dense. Hidden entirely when there is nothing to switch between.
+   --------------------------------------------------------------------------- */
+/* ── Site switcher (which customer's site the admin is editing) ─────────────────────────────────
+   Compact enough to sit in the header beside the status dot, loud where it must be: an unselected
+   state and a platform-access badge are the two things an operator must never miss. Tokens fall back
+   to neutral greys so the control reads correctly on every admin theme. */
+.fc-site { position: relative; display: inline-flex; align-items: center; }
+
+.fc-site__icon { flex: none; opacity: 0.7; }
+
+.fc-site--static {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 10px; border-radius: 8px;
+  font-size: 12px; font-weight: 600;
+  background: var(--fc-surface-2, rgba(127, 127, 127, 0.1));
+  color: var(--fc-text, inherit);
+}
+
+.fc-site__trigger {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 30px; padding: 0 10px 0 9px; border-radius: 8px;
+  border: 1px solid var(--fc-border, rgba(127, 127, 127, 0.28));
+  background: var(--fc-surface, transparent); color: inherit; cursor: pointer;
+  text-align: left; line-height: 1;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.fc-site__trigger:hover { border-color: var(--fc-accent, #4f46e5); }
+.fc-site__trigger:focus-visible { outline: 2px solid var(--fc-accent, #4f46e5); outline-offset: 1px; }
+.fc-site__trigger:disabled { opacity: 0.6; cursor: progress; }
+/* Nothing chosen yet: the eyebrow turns amber so the state reads at a glance, before the words do. */
+.fc-site__trigger--unset { border-style: dashed; }
+.fc-site__trigger--unset .fc-site__eyebrow { color: var(--fc-warning-text, #b45309); }
+
+.fc-site__text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.fc-site__eyebrow {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--fc-text-muted, rgba(127, 127, 127, 0.9)); line-height: 1;
+}
+.fc-site__name {
+  font-size: 12px; font-weight: 600; line-height: 1.1;
+  max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fc-site__caret { flex: none; opacity: 0.6; transition: transform 120ms ease; }
+.fc-site__caret--open { transform: rotate(180deg); }
+
+.fc-site__menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 60;
+  min-width: 240px; padding: 6px;
+  border: 1px solid var(--fc-border, rgba(127, 127, 127, 0.25)); border-radius: 10px;
+  background: var(--fc-surface, #fff);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.16), 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+.fc-site__menu-head {
+  padding: 6px 8px 8px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--fc-text-muted, rgba(127, 127, 127, 0.9));
+}
+
+.fc-site__item {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 7px 8px; border: 0; border-radius: 7px;
+  background: transparent; color: inherit; text-align: left; cursor: pointer;
+}
+.fc-site__item:hover, .fc-site__item:focus-visible { background: var(--fc-surface-2, rgba(127, 127, 127, 0.1)); outline: none; }
+.fc-site__item--current { background: var(--fc-accent-soft, rgba(79, 70, 229, 0.08)); }
+.fc-site__item-mark { flex: none; width: 14px; display: inline-flex; justify-content: center; color: var(--fc-accent, #4f46e5); }
+.fc-site__item-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fc-site__item-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+.fc-site__item-host { font-size: 11px; opacity: 0.65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Platform access: reached through the platform-admin role, NOT through a membership. Deliberately
+   the loudest thing in the control — it means the operator is inside a customer it does not belong
+   to, which is the mistake this whole switcher exists to prevent. */
+.fc-site__platform {
+  flex: none; padding: 0 5px; border-radius: 999px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  line-height: 15px; white-space: nowrap;
+  background: var(--fc-warning-surface, #fde68a); color: var(--fc-warning-text, #713f12);
+}
+
+.fc-site__manage { display: flex; align-items: center; gap: 6px; margin-top: 4px; padding: 8px 12px; border-top: 1px solid rgba(100, 116, 139, 0.15); font-size: 12px; font-weight: 600; text-decoration: none; color: inherit; opacity: 0.85; }
+.fc-site__manage:hover { opacity: 1; }
+
+/* Sites (tenant provisioning) — platform admins only. */
+.fc-sites { display: flex; flex-direction: column; }
+.fc-sites__body { display: flex; flex-direction: column; gap: 24px; padding: 24px 24px 96px; }
+@media (min-width: 1024px) { .fc-sites__body { padding: 32px 32px 96px; } }
+.fc-sites__delete { color: #dc2626; }
+.fc-sites__stack { display: flex; flex-direction: column; gap: 16px; }
+.fc-sites__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.fc-sites__row-actions { display: flex; flex-wrap: nowrap; gap: 2px; justify-content: flex-end; }
+.fc-sites__name { display: flex; flex-direction: column; gap: 2px; }
+.fc-sites__slug { font-weight: 600; font-size: 13px; }
+.fc-sites__id { font-size: 11px; opacity: 0.6; }
+.fc-sites__hosts { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.fc-sites__host--primary { font-weight: 600; }
+.fc-sites__none { font-size: 12px; opacity: 0.55; font-style: italic; }
+.fc-sites__export { font-size: 12px; font-variant-numeric: tabular-nums; }
+.fc-sites__text { font-size: 13px; line-height: 1.55; margin: 0 0 8px; }
+.fc-sites__text--warn { color: #b45309; }
+.fc-sites__members { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.fc-sites__member { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(100, 116, 139, 0.15); }
+.fc-sites__member:last-child { border-bottom: 0; }
+.fc-sites__member-email { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-sites__member-roles { display: flex; gap: 4px; }
+.fc-sites__grant { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; }
+.fc-sites__upload { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.fc-sites__file { font-size: 13px; }
+.fc-sites__danger { border-color: rgba(220, 38, 38, 0.35); }
+.fc-sites__warnings, .fc-sites__blockers { margin: 8px 0; padding-left: 18px; font-size: 12px; line-height: 1.5; }
+.fc-sites__blockers { color: #b91c1c; font-weight: 600; }
+.fc-sites__warnings { color: #92400e; }
+.fc-site-form { display: flex; flex-direction: column; gap: 12px; }
+.fc-site-form__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.fc-site-form__hint { font-size: 12px; opacity: 0.7; margin: 0; }
+.fc-site-form__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.fc-site-form__block { display: flex; flex-direction: column; gap: 8px; }
+.fc-site-form__label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
+.fc-site-form__plugins { display: flex; flex-direction: column; gap: 6px; }
+.fc-import-plan { display: flex; flex-direction: column; gap: 12px; }
+.fc-import-plan__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.fc-import-plan__item { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 4px; }
+.fc-import-plan__tables { overflow-x: auto; }
+.fc-import-plan__table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.fc-import-plan__table th, .fc-import-plan__table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid rgba(100, 116, 139, 0.15); vertical-align: top; }
+.fc-import-plan__table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
+@media (max-width: 767px) {
+  .fc-sites__member, .fc-sites__grant { grid-template-columns: 1fr; }
+}

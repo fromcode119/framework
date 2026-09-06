@@ -8,6 +8,7 @@ import { ProjectPaths } from '@core/config/paths';
 import { ManifestNormalizer } from '@core/manifest-normalizer';
 import { PluginDependencyInstallerService } from '@core/plugin/services/plugin-dependency-installer-service';
 import { PluginModuleResolverService } from '@core/plugin/services/plugin-module-resolver-service';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 
 /**
@@ -38,6 +39,8 @@ export class PluginDirectoryScannerService {
     private projectRoot: string,
     private logger: Logger,
     private dependencyInstaller: PluginDependencyInstallerService,
+    /** T5: when present, isolated plugins are DESCRIBED by their own process instead of required here. */
+    private hosts: { isIsolated(sandbox: unknown): Promise<boolean>; describe(slug: string, dir: string, entry: string, manifest: Record<string, unknown>, active: boolean): Promise<Record<string, unknown>> } | null = null,
   ) {
     this.ensureSharedModuleResolution();
   }
@@ -97,7 +100,7 @@ export class PluginDirectoryScannerService {
 
   public async discoverPlugins(
     existingPlugins: Map<string, ILoadedPlugin>,
-    installedState: Record<string, { sandboxConfig?: any }> = {}
+    installedState: Record<string, { sandboxConfig?: any; state?: unknown }> = {}
   ): Promise<{
     discovered: { plugin: any, path: string }[],
     errored: { manifest: any, path: string, error: string }[]
@@ -189,16 +192,20 @@ export class PluginDirectoryScannerService {
                 const savedSandboxConfig = hasPersistedSandboxConfig
                   ? persistedState.sandboxConfig
                   : savedPluginState?.manifest?.sandbox;
-                const effectiveSandboxConfig = savedSandboxConfig !== undefined ? savedSandboxConfig : manifest.sandbox;
-                const shouldSandbox = effectiveSandboxConfig !== false;
-
+                // `{}` in the registry says nothing about the plugin; a manifest's `sandbox: false` / `reason` must win over it.
+                const meaningfulSaved = savedSandboxConfig !== undefined && !(savedSandboxConfig && typeof savedSandboxConfig === 'object' && Object.keys(savedSandboxConfig).length === 0);
+                const effectiveSandboxConfig = meaningfulSaved ? savedSandboxConfig : manifest.sandbox;
                 // Default to sandbox enabled unless explicitly set to false.
                 manifest.sandbox = effectiveSandboxConfig !== undefined ? effectiveSandboxConfig : true;
 
-                // Always load plugin module so lifecycle hooks remain available.
-                // Sandbox mode controls runtime isolation policy, not module metadata availability.
-                const rawModule = await this.loadPluginModule(indexPath);
-                const pluginModule = PluginModuleResolverService.resolve(rawModule);
+                // T5: an ISOLATED plugin is never required into this process. Its own process loads it
+                // and reports which lifecycle hooks and public-API functions it has; what is staged
+                // here is a set of forwarding stubs. `shouldSandbox` is therefore a real statement
+                // about where the code runs, which the admin's counters report.
+                const shouldSandbox = !!this.hosts && await this.hosts.isIsolated(effectiveSandboxConfig);
+                const pluginModule = shouldSandbox
+                  ? await this.hosts!.describe(String(manifest.slug), pluginPath, indexPath, manifest as Record<string, unknown>, String(persistedState?.state ?? '') === PluginState.ACTIVE.value)
+                  : PluginModuleResolverService.resolve(await this.loadPluginModule(indexPath));
 
                 // An inline-manifest plugin (a `static manifest` on the entry class) REPLACES the disk
                 // manifest in the spread below, so the layout resolved above would be dropped. Resolve

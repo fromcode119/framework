@@ -143,6 +143,44 @@ export class RequestSurfaceUtils {
     )) || RequestSurfaceUtils.isExtensionAdminApiPath(unversionedPath);
   }
 
+  /**
+   * Installed extension ASSETS the api serves from disk for every tenant — `plugins/<slug>/ui/*`,
+   * `themes/<slug>/ui/*`, `themes/<slug>/public/*` — on the versioned api base or bare. The admin's
+   * own PAGES under the same first segment (`/plugins/<slug>/settings`, `/plugins/installed`) are not.
+   */
+  static isExtensionAssetPath(value: unknown): boolean {
+    const unversionedPath = RequestSurfaceHelper.stripApiVersionPrefix(RequestSurfaceHelper.normalizePathname(value));
+    const [root, slug, kind, ...file] = unversionedPath.split('/').filter(Boolean);
+    if (!root || !slug || !kind || !file.length) {
+      return false;
+    }
+    const kinds = RequestSurfaceUtils.EXTENSION_ASSET_DIRS[`/${root}`] || [];
+    return kinds.includes(kind);
+  }
+
+  /** The asset directories the api serves per extension root; the ONE place their names live. */
+  static readonly EXTENSION_ASSET_DIRS: Record<string, readonly string[]> = {
+    [RouteConstants.SEGMENTS.PLUGINS]: ['ui'],
+    [RouteConstants.SEGMENTS.THEMES]: ['ui', 'public'],
+  };
+
+  /**
+   * What an admin/console HOST hands to the api when the console calls the api on its own origin
+   * (T6 §3.4): the versioned api, the public uploads tree and installed extension assets. Every other
+   * path on that host — `/media`, `/plugins/<slug>/settings`, `/themes` — is an admin PAGE, which is
+   * why this is narrower than `isApiPath`: that one classifies the api's own host, where the bare
+   * `/plugins`, `/themes` and `/media` roots are api routes.
+   */
+  static isApiPathOnAdminHost(value: unknown): boolean {
+    const normalizedPath = RequestSurfaceHelper.normalizePathname(value);
+    if (!normalizedPath) {
+      return false;
+    }
+    return RequestSurfaceHelper.hasPathPrefix(normalizedPath, ApiVersionUtils.API_BASE_PATH)
+      || RequestSurfaceHelper.hasPathPrefix(normalizedPath, SystemConstants.STORAGE.DEFAULT_PUBLIC_URL)
+      || RequestSurfaceUtils.isExtensionAssetPath(normalizedPath);
+  }
+
   static isFrontendPath(value: unknown): boolean {
     const normalizedPath = RequestSurfaceHelper.normalizePathname(value);
     if (!normalizedPath) {

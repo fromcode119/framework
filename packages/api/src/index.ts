@@ -59,7 +59,17 @@ export class APIServer {
     this.graphQLService = new GraphQLService(manager, this.restController);
     this.socket = new WebSocketManager(manager.hooks);
 
-    this.settingsService = new ServerSettingsService((manager as any).db, this.cache, this.settingsCache, this.logger);
+    // Seeding DEFAULT settings is platform work, not tenant work: the rows belong to no tenant, and
+    // the request connection is a non-owner role with no platform marker, so row-level security
+    // refuses its writes. Writing them on the DDL connection is what keeps a fresh install from
+    // booting with no `maintenance_mode` row — which fails closed to maintenance ON and 503s every
+    // route on the deployment.
+    this.settingsService = new ServerSettingsService(
+      (manager as any).schemaDb ?? (manager as any).db,
+      this.cache,
+      this.settingsCache,
+      this.logger,
+    );
     this.logRetention = new SystemLogRetentionService((manager as any).db, this.logger);
     this.corsSetup = new ServerCorsSetup(this.app, this.settingsCache, this.logger);
     this.maintenanceService = new ServerMaintenanceService(this.manager, this.cache, this.settingsCache, this.logger);

@@ -7,6 +7,7 @@ import { PageDocPrefetchView } from '@/components/page-doc-prefetch';
 import { ThemeSsrHeadView } from '@/components/theme-ssr-head';
 import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { ThemeServerRenderer } from '@/lib/ssr/theme-server-renderer';
+import { StorefrontPageKind } from '@/runtime/storefront-page-kind';
 import { RouteSegmentUtils } from '@/lib/route-segment-utils';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
@@ -24,13 +25,13 @@ export class DynamicContentPageRoute {
     const locale = await FrontendLocaleService.resolveDocumentLocale(strategy);
     // Same head-data query generateMetadata built, so the per-request cache serves both from one fetch.
     const schema = await ResolvedContentMetadata.buildStructuredData((content as Record<string, unknown> | null) || null, resolutionType, url);
-    // Mirrors DynamicContentClient's own content wrapper, so the box the server paints is the box
-    // the client fills in.
+    // `StorefrontPageKind.CONTENT` mirrors DynamicContentClient's own content wrapper, so the box the
+    // server paints is the box the client fills in — and the box the runtime's client twin hydrates.
     const ssrMarkup = await ThemeServerRenderer.render({
       content,
       locale,
-      contentClassName: 'w-full',
-      contentStyle: { minHeight: '100svh' },
+      contentClassName: StorefrontPageKind.CONTENT.contentClassName,
+      contentStyle: StorefrontPageKind.CONTENT.contentStyle,
     });
     return (
       <>

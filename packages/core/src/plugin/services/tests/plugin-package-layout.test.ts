@@ -79,6 +79,43 @@ describe('PluginPackageLayout.resolve', () => {
     expect(manifest.ui.entry).toBe('admin.js');
   });
 
+  /**
+   * A plugin's admin UI is styled by utilities the admin's own stylesheet cannot contain — plugins
+   * install at runtime, so the plugin set is unknown when that stylesheet is built. The plugin ships
+   * its own `style.css` instead and the admin loads it from `ui.css`. Deriving that here is what
+   * keeps every manifest from restating a path the build already decided.
+   */
+  it('derives ui.css from the stylesheet the plugin ships', () => {
+    const styled = makePackage(['index.js', 'src/ui/bundle.js', 'src/ui/style.css']);
+    const manifest = PluginPackageLayout.resolve(styled, { slug: 'x' } as any) as any;
+    expect(manifest.ui.adminCss).toEqual(['style.css']);
+
+    // An archive may carry the mirrored `ui/` copy instead of `src/ui/`.
+    const mirrored = makePackage(['index.js', 'ui/bundle.js', 'ui/style.css']);
+    expect((PluginPackageLayout.resolve(mirrored, { slug: 'x' } as any) as any).ui.adminCss).toEqual(['style.css']);
+  });
+
+  it('advertises no stylesheet when the plugin ships none', () => {
+    const root = makePackage(['index.js', 'src/ui/bundle.js']);
+    const manifest = PluginPackageLayout.resolve(root, { slug: 'x' } as any) as any;
+    expect(manifest.ui.adminCss).toBeUndefined();
+  });
+
+  it('withdraws only its OWN guess, never an operator declaration', () => {
+    // A stale `["style.css"]` on a package that ships none would have the admin fetch a 404.
+    const root = makePackage(['index.js', 'src/ui/bundle.js']);
+    const derived = PluginPackageLayout.resolve(root, { slug: 'x', ui: { adminCss: ['style.css'] } } as any) as any;
+    expect(derived.ui.adminCss).toBeUndefined();
+
+    // A manifest naming its own stylesheets is left exactly as declared, present on disk or not.
+    const declared = PluginPackageLayout.resolve(root, { slug: 'x', ui: { adminCss: ['theme.css'] } } as any) as any;
+    expect(declared.ui.adminCss).toEqual(['theme.css']);
+
+    // A plugin's own `css` is for BOTH surfaces and must never be touched by the admin derivation.
+    const shared = PluginPackageLayout.resolve(root, { slug: 'x', ui: { css: ['shared.css'] } } as any) as any;
+    expect(shared.ui.css).toEqual(['shared.css']);
+  });
+
   it('is idempotent — resolving twice changes nothing', () => {
     const root = makePackage(['index.js', 'src/ui/bundle.js', 'dist/migrations/001-init.js']);
     const once = JSON.stringify(PluginPackageLayout.resolve(root, { slug: 'x' } as any));

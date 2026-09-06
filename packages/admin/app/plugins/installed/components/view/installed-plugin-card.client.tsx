@@ -18,17 +18,44 @@ export class InstalledPluginCard extends PureReactor {
   @prop declare onImageError: (slug: string) => void;
   @prop declare onToggle: (slug: string, currentEnabled: boolean, options?: { force?: boolean; recursive?: boolean }) => Promise<void>;
   @prop declare plugin: ILoadedPlugin;
+  /** False for a tenant admin on a multi-tenant deployment: the switch and delete are not rendered. */
+  @prop declare canManage: boolean;
 
   render(): ReactNode {
-    const { hasImageError, hasUpdate, isDark, onDelete, onImageError, onToggle, plugin } = this;
+    const { canManage, hasImageError, hasUpdate, isDark, onDelete, onImageError, onToggle, plugin } = this;
     const hasRuntimeError = Boolean(plugin.error) || plugin.state === PluginState.ERROR;
     const isHeld = plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason);
     const heldLabel = plugin.heldReason === PluginHeldReason.CAPABILITY_DRIFT ? 'Needs re-approval' : 'Held';
     const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
     const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
     const driftSummary = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
-    const statusLabel = hasRuntimeError ? 'Error' : isHeld ? heldLabel : plugin.state === PluginState.ACTIVE ? 'Active' : 'Inactive';
-    const statusVariant = hasRuntimeError ? 'danger' : isHeld ? 'amber' : plugin.state === PluginState.ACTIVE ? 'success' : 'gray';
+    // TWO AXES on a multi-tenant deployment, and the switch drives the TENANT one.
+    //
+    //   plugin.state       — the PLATFORM axis: installed, loadable, healthy, not held. Changing it
+    //                        affects every customer, so only a platform admin may.
+    //   enabledForTenant   — does the site currently open in this admin run it.
+    //
+    // The switch must show and set the tenant axis, or an operator flips it and the badge disagrees.
+    // A platform problem (Error/Held) still wins the badge: it explains why the switch cannot help.
+    const multiTenant = (plugin as any).multiTenant === true;
+    const enabledForTenant = (plugin as any).enabledForTenant === true;
+    const availableOnPlatform = plugin.state === PluginState.ACTIVE;
+    const switchedOn = multiTenant ? enabledForTenant : availableOnPlatform;
+    // Installed and healthy, but this site does not run it — a state that only exists per tenant and
+    // is NOT the same as "inactive on the platform".
+    const notOnThisSite = multiTenant && availableOnPlatform && !enabledForTenant;
+
+    const statusLabel = hasRuntimeError ? 'Error' : isHeld ? heldLabel
+      : notOnThisSite ? 'Off here'
+      : multiTenant ? (enabledForTenant ? 'Active' : 'Unavailable')
+      : (availableOnPlatform ? 'Active' : 'Inactive');
+    const statusVariant = hasRuntimeError ? 'danger' : isHeld ? 'amber'
+      : notOnThisSite ? 'gray'
+      : (switchedOn ? 'success' : 'gray');
+    const isolated = (plugin as any).isolation === 'isolated';
+    const isolationTitle = isolated
+      ? `Runs in its own process${(plugin as any).isolationPid ? ` (pid ${(plugin as any).isolationPid})` : ''} — no secrets, tenant-bound, memory and time limited`
+      : String((plugin as any).isolationReason || 'Runs inside the api process');
     const author = typeof plugin.manifest.author === 'object'
       ? (plugin.manifest.author as { name?: string }).name
       : (plugin.manifest.author || 'Official');
@@ -78,13 +105,37 @@ export class InstalledPluginCard extends PureReactor {
 
           <div className="flex items-center gap-2.5">
             <Badge variant={statusVariant} className={`shrink-0 justify-center ${isHeld ? 'min-w-[68px] px-2' : 'w-[68px]'}`}>{statusLabel}</Badge>
-            <Switch checked={plugin.state === PluginState.ACTIVE} onChange={(_: boolean) => onToggle(plugin.manifest.slug, plugin.state === PluginState.ACTIVE)} className="scale-75 origin-right shrink-0" />
+            {/* T5: WHERE the code runs is a fact the operator must see, not infer. */}
+            {(plugin as any).isolation ? (
+              <span title={isolationTitle}>
+                <Badge variant={isolated ? BadgeVariant.INFO : BadgeVariant.GRAY} className="shrink-0 flex items-center gap-1">
+                  <FrameworkIcons.Shield size={9} />{isolated ? 'Isolated' : 'Shared'}
+                </Badge>
+              </span>
+            ) : null}
+            {/* Disabled when the platform axis says the plugin is not usable at all: a tenant switch
+                cannot override a platform hold, so offering one would be a control that does
+                nothing. The title says which axis is blocking. */}
+            {/* Not rendered at all for a tenant admin: enablement is an operator action (T2 §8), and a
+                control that would only ever 403 is a bug, not a hint. */}
+            {canManage ? (
+              <span title={multiTenant && !availableOnPlatform
+                ? 'Not available on this platform — a platform admin must enable it first'
+                : multiTenant ? 'Run this plugin on the current site' : undefined}>
+                <Switch
+                  checked={switchedOn}
+                  disabled={multiTenant && !availableOnPlatform}
+                  onChange={(_: boolean) => onToggle(plugin.manifest.slug, switchedOn)}
+                  className="scale-75 origin-right shrink-0"
+                />
+              </span>
+            ) : null}
           </div>
 
           <div className={`flex items-center gap-0.5 pl-3 border-l ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
           <Link href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} title="Open" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Right size={15} /></Link>
           <Link href={AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(plugin.manifest.slug)} title="Settings" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></Link>
-          <button onClick={() => onDelete(plugin.manifest.slug)} title="Remove" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-red-400 hover:bg-slate-700' : 'text-slate-400 hover:text-red-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button>
+          {canManage ? <button onClick={() => onDelete(plugin.manifest.slug)} title="Remove" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-red-400 hover:bg-slate-700' : 'text-slate-400 hover:text-red-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
           </div>
         </div>
       </div>

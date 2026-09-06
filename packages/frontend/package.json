@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/frontend",
-  "version": "0.1.87",
+  "version": "0.1.88",
   "bin": {
     "fromcode-frontend": "scripts/frontend.js"
   },
@@ -21,9 +21,9 @@
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
-    "dev": "next dev --webpack -H 0.0.0.0",
-    "build": "next build",
-    "start": "next start -H 0.0.0.0",
+    "dev": "node ../nextor/dist/nextor-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
+    "build": "node ../nextor/dist/nextor-cli.cjs with-middleware -- next build",
+    "start": "node ../core/dist/process/app-launcher-main.js --app frontend --hostname 0.0.0.0",
     "lint": "next lint",
     "test": "vitest run --config ../../vitest.plugins.config.ts --project frontend"
   },

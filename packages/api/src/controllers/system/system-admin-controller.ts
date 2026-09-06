@@ -1,12 +1,16 @@
 import { AuditOutcome } from '@fromcode119/core';
+import { PluginTenantAccess, TenantBespokePolicies } from '@fromcode119/core';
 import { Request, Response } from 'express';
-import { ApiVersionUtils, ApplicationDomainSettingsUtils, PluginState, RouteConstants, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
+import { ApiVersionUtils, ApplicationDomainSettingsUtils, PluginState, RequestContextUtils, RouteConstants, SystemConstants, SystemSettingsExposureUtils, TenantMembershipService, TenantMode, TenantResolverService } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { ScimTokenService } from '@api/services/scim-token-service';
 
 export class SystemAdminController {
   private static readonly WRITABLE_SETTINGS_KEYS = new Set<string>([
   SystemConstants.META_KEY.MAINTENANCE_MODE,
+  SystemConstants.META_KEY.PLUGIN_ISOLATION_DEFAULT,
+  SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB,
+  SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS,
   SystemConstants.META_KEY.MCP_REMOTE_ENABLED,
   SystemConstants.META_KEY.SITE_NAME,
   SystemConstants.META_KEY.SITE_URL,
@@ -23,6 +27,10 @@ export class SystemAdminController {
   // Settings → Infrastructure → System Logs. Without this the field saves "successfully" from the
   // admin's point of view and the PUT 400s — the silent-loss class named a few lines below.
   SystemConstants.META_KEY.LOG_RETENTION_DAYS,
+  // Settings → Infrastructure → Server rendering: how many theme+plugin worlds the storefront keeps.
+  SystemConstants.META_KEY.SSR_GENERATION_CAP,
+  SystemConstants.META_KEY.SSR_RENDER_MEMORY_MB,
+  SystemConstants.META_KEY.SSR_RENDER_TIMEOUT_MS,
   SystemConstants.META_KEY.LOCALIZATION_LOCALES,
   SystemConstants.META_KEY.ENABLED_LOCALES,
   SystemConstants.META_KEY.DEFAULT_LOCALE,
@@ -199,6 +207,29 @@ export class SystemAdminController {
     }
   }
 
+  /** Single-tenant: every admin is the platform. Multi-tenant: only a flagged account. */
+  /** The platform row (`tenant_id IS NULL`) of a platform key, upserted under the platform-admin marker. Returns the previous value. */
+  private async writePlatformSetting(key: string, value: string, timestamp: Date): Promise<string | undefined> {
+    return this.runtime.db.withPlatformAdmin(async () => {
+      const table = SystemConstants.TABLE.META;
+      const rows = await this.runtime.db.queryRaw(`SELECT "value" FROM "${table}" WHERE "key" = $1 AND "tenant_id" IS NULL LIMIT 1`, [key]);
+      const previous = rows[0] ? String(rows[0].value ?? '') : undefined;
+      await this.runtime.db.queryRaw(
+        `INSERT INTO "${table}" ("key", "value", "updated_at", "tenant_id") VALUES ($1, $2, $3, NULL) `
+        + 'ON CONFLICT ("key", "tenant_id") DO UPDATE SET "value" = EXCLUDED."value", "updated_at" = EXCLUDED."updated_at"',
+        [key, value, timestamp],
+      );
+      return previous;
+    });
+  }
+
+  private async isPlatformAdmin(req: Request): Promise<boolean> {
+    if (!TenantMode.isEnabled()) return true;
+    const userId = String((req as any).user?.id ?? '').trim();
+    if (!userId) return false;
+    return new TenantMembershipService(this.runtime.db).isPlatformAdminAccount(userId);
+  }
+
   async getAdminMetadata(req: Request, res: Response) {
     try {
       const metadata = await this.runtime.manager.getAdminMetadata() as any;
@@ -221,6 +252,11 @@ export class SystemAdminController {
       // user's TOTP secret/recovery codes and the SCIM + API machine tokens.
       metadata.settings = SystemSettingsExposureUtils.toExposableSettingsMap(settings);
       metadata.secondaryPanel = metadata.secondaryPanel || this.runtime.buildDefaultSecondaryPanel();
+      // Platform-only entries (Sites) never reach a tenant admin's payload. Filtered HERE, server
+      // side: hiding in the client would still hand every customer the platform's navigation.
+      if (Array.isArray(metadata.menu) && !(await this.isPlatformAdmin(req))) {
+        metadata.menu = metadata.menu.filter((item: any) => item?.platformOnly !== true);
+      }
       res.json(metadata);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -260,22 +296,41 @@ export class SystemAdminController {
       const timestamp = new Date();
 
       const actor = (req as any).user || {};
+      // A PLATFORM key (deployment truths: URLs, maintenance, render and isolation limits) belongs to
+      // the platform row, whichever site the admin happens to have selected. Writing it under the
+      // request's tenant made the setting per-site by accident: that site read it, every other site
+      // saw the default. Only a platform admin may write that row — and on a multi-site platform a
+      // site admin may not write it AT ALL: a site row of a platform key is read by nothing, so
+      // accepting it would be a control that silently does nothing. Refused, with the reason.
+      const platformKeys = new Set(TenantBespokePolicies.platformKeys());
+      const platformAdmin = await this.isPlatformAdmin(req);
+      const refused = Object.keys(preparedPayload).filter((key) => platformKeys.has(key));
+      if (refused.length > 0 && TenantMode.isEnabled() && !platformAdmin) {
+        return res.status(403).json({ error: 'platform_admin_required', message: `Platform setting(s) ${refused.join(', ')} apply to every site and only a platform admin may change them.`, keys: refused });
+      }
+      // A WORKSPACE's appearance is carried by its kind (T6 §3.3): no setting exists for it, so a
+      // write is refused rather than stored where nothing reads it.
+      if (SystemConstants.META_KEY.ADMIN_APPEARANCE in preparedPayload && TenantMode.isEnabled()) {
+        const tenantId = RequestContextUtils.getTenantId();
+        const tenant = tenantId ? await TenantResolverService.shared(this.runtime.db).resolveById(tenantId) : null;
+        if (tenant?.isWorkspace) {
+          return res.status(403).json({ error: 'kind_locks_appearance', message: `"${tenant.slug}" is a workspace: its console is locked to "${tenant.appearance || 'default'}" by its kind.` });
+        }
+      }
+      const asPlatform = platformAdmin && this.runtime.db.dialect === 'postgres';
       for (const [key, value] of Object.entries(preparedPayload)) {
         const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
-        const existing = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });
-        const previousValue = existing ? String((existing as any).value ?? '') : undefined;
-
-        if (existing) {
-          await this.runtime.db.update(SystemConstants.TABLE.META, { key }, {
-            value: serializedValue,
-            updated_at: timestamp,
-          });
+        let previousValue: string | undefined;
+        if (asPlatform && platformKeys.has(key)) {
+          previousValue = await this.writePlatformSetting(key, serializedValue, timestamp);
         } else {
-          await this.runtime.db.insert(SystemConstants.TABLE.META, {
-            key,
-            value: serializedValue,
-            updated_at: timestamp,
-          });
+          const existing = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });
+          previousValue = existing ? String((existing as any).value ?? '') : undefined;
+          if (existing) {
+            await this.runtime.db.update(SystemConstants.TABLE.META, { key }, { value: serializedValue, updated_at: timestamp });
+          } else {
+            await this.runtime.db.insert(SystemConstants.TABLE.META, { key, value: serializedValue, updated_at: timestamp });
+          }
         }
 
         // Audit every setting change WITH the actor + old→new. This is what finally attributes
@@ -367,8 +422,12 @@ export class SystemAdminController {
     // Per-plugin, security-filtered settings (only fields flagged `public: true`) keyed by
     // namespace/slug — consumed by the storefront via `runtime.globalSettings`.
     const pluginPublicSettings = await this.runtime.manager.getPublicFrontendPluginSettings();
+    // Both axes (T2): a tenant's storefront lists — and server-renders with — only the plugins its site
+    // runs. The frontend derives its render signature from this list, so two sites with different plugin
+    // sets get different SSR worlds, and a plugin a site does not run never contributes a slot to its pages.
     const plugins = this.runtime.manager.getSortedPlugins(
-      this.runtime.manager.getPlugins().filter((plugin: any) => plugin.state === PluginState.ACTIVE)
+      this.runtime.manager.getPlugins().filter((plugin: any) =>
+        plugin.state === PluginState.ACTIVE && PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug))
     ).map((plugin: any) => ({
       namespace: plugin.manifest.namespace,
       slug: plugin.manifest.slug,
@@ -381,6 +440,21 @@ export class SystemAdminController {
       },
     }));
 
+    // How many server-render worlds the storefront keeps resident (Settings → Infrastructure). The
+    // frontend reads it off this payload rather than owning a constant, so the operator's number is the
+    // one in force; the default here mirrors the declared setting's own default and nothing else.
+    const capRow = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.SSR_GENERATION_CAP }).catch(() => null);
+    const declaredCap = Number(capRow?.value);
+    const ssrGenerationCap = Number.isFinite(declaredCap) && declaredCap >= 1 ? Math.floor(declaredCap) : SystemConstants.SSR_GENERATION_CAP_DEFAULT;
+    // T5b: each resident world is a process; its heap ceiling and per-render deadline are declared here too.
+    const declaredNumber = async (key: string, fallback: number) => {
+      const row = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key }).catch(() => null);
+      const value = Number(row?.value);
+      return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
+    };
+    const ssrRenderMemoryMb = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_MEMORY_MB, SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT);
+    const ssrRenderTimeoutMs = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_TIMEOUT_MS, SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT);
+
     res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=300');
     res.json({
       ...metadata,
@@ -390,6 +464,9 @@ export class SystemAdminController {
       plugins,
       publicSettings,
       settings: pluginPublicSettings,
+      ssrGenerationCap,
+      ssrRenderMemoryMb,
+      ssrRenderTimeoutMs,
     });
   }
 

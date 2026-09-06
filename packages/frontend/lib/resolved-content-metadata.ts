@@ -72,6 +72,24 @@ export class ResolvedContentMetadata {
     };
   }
 
+  /**
+   * The site-wide brand defaults every document starts from — the root layout's metadata and the
+   * islands document's `site` metadata are this ONE object, so the two heads cannot drift. Brand
+   * values come from the head-data provider plugin's settings, never a hardcoded value.
+   */
+  static async buildSiteMetadata(): Promise<Metadata> {
+    const head = await ResolvedContentMetadata.fetchSite();
+    const siteName = head?.siteName || head?.title || 'Home';
+    const images = head?.ogImage ? [head.ogImage] : undefined;
+    return {
+      title: { default: siteName, template: `%s | ${siteName}` },
+      description: head?.description || undefined,
+      openGraph: { siteName, title: siteName, description: head?.description || undefined, type: 'website', images },
+      twitter: { card: 'summary_large_image', title: siteName, description: head?.description || undefined, images },
+      icons: { icon: '/favicon.ico', shortcut: '/favicon.ico', apple: '/apple-touch-icon.png' },
+    };
+  }
+
   /** Public helper for site-wide brand defaults (used by the root layout). */
   static async fetchSite(): Promise<IHeadData | null> {
     return ResolvedContentMetadata.fetchHeadData({ url: '/', contentType: '', contentId: '', title: '', description: '' });
@@ -117,9 +135,21 @@ export class ResolvedContentMetadata {
     // Strict: an unreachable API must NOT be read as "the provider has no head data". Doing so
     // publishes canonical/robots tags the operator never configured — a page that should be
     // noindex would quietly get indexed. Throwing turns the request into an honest 5xx instead.
-    const data = (await ServerApiUtils.serverFetchJsonOutcome(path)).valueOrThrow(path) as IHeadData | null;
+    // The provider is a PLUGIN route. An isolated plugin's process is replaced in place on update or
+    // after a crash, and for that moment its route answers 502. That is not the api being down, so it
+    // is retried briefly before it is treated as unreachable and this page becomes an honest 5xx.
+    let outcome = await ServerApiUtils.serverFetchJsonOutcome(path);
+    for (const delayMs of ResolvedContentMetadata.PLUGIN_SWAP_RETRY_DELAYS_MS) {
+      if (!outcome.isUnreachable) break;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      outcome = await ServerApiUtils.serverFetchJsonOutcome(path);
+    }
+    const data = outcome.valueOrThrow(path) as IHeadData | null;
     return data && typeof data === 'object' && typeof data.title === 'string' ? data : null;
   });
+
+  /** Two short waits cover a plugin process swap (~1 s); an api that is really down still fails fast. */
+  private static readonly PLUGIN_SWAP_RETRY_DELAYS_MS = [400, 1200];
 
   /**
    * Discovers the head-data provider from `/system/frontend` plugin metadata (via the

@@ -18,6 +18,22 @@ export class SystemConstants {
   private static readonly joinPath = (base: string, segment: string): string => `${base}${segment}`;
 
   static readonly TABLE = {
+    /**
+     * The tenant registry. This is the table that RESOLVES tenancy, so it is the one table that is
+     * never itself tenant-scoped and carries no row-level-security policy — it must be readable
+     * before a tenant is known.
+     */
+    TENANTS: '_system_tenants',
+    /** One account's access to one tenant. See TenantMembership — identity is global, access is not. */
+    TENANT_MEMBERSHIPS: '_system_tenant_memberships',
+    /**
+     * Which plugins one tenant runs. INSTALLATION is platform-wide (`PLUGINS` below); only
+     * ENABLEMENT is per tenant, because a tenant cannot put code on disk — it can only turn on code
+     * the operator already installed.
+     */
+    TENANT_PLUGINS: '_system_tenant_plugins',
+    /** Which theme one tenant renders with. Install is platform-wide (`THEMES`); only activation is per tenant. */
+    TENANT_THEMES: '_system_tenant_themes',
     USERS: 'users',
     ROLES: '_system_roles',
     PERMISSIONS: '_system_permissions',
@@ -53,6 +69,40 @@ export class SystemConstants {
   /**
    * Well-known keys in the system meta table.
    */
+  /**
+   * The storefront's default for `META_KEY.SSR_GENERATION_CAP` when the operator has not set one.
+   * Mirrored by the Infrastructure page's placeholder — one number, stated in one place.
+   */
+  static readonly SSR_GENERATION_CAP_DEFAULT = 4;
+
+  /**
+   * Plugin isolation (T5): the platform defaults the Infrastructure page shows as placeholders. An
+   * isolated plugin runs in its own process with this heap ceiling and this per-invocation deadline.
+   */
+  static readonly PLUGIN_ISOLATION_MEMORY_MB_DEFAULT = 256;
+  static readonly PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT = 30_000;
+
+  /**
+   * Theme render hosts (T5b): each resident server-render world is its own process with this heap
+   * ceiling and this per-render deadline. Placeholders on the Infrastructure page mirror these.
+   */
+  static readonly SSR_RENDER_MEMORY_MB_DEFAULT = 512;
+  static readonly SSR_RENDER_TIMEOUT_MS_DEFAULT = 10_000;
+
+  /**
+   * OS identities (T5c). The app processes give up root for RUN_AS_USER the moment they start; each
+   * isolated plugin runs as PLUGIN_UID_BASE plus the number the registry assigned it (kept in
+   * `_system_plugins.isolation_uid`, so a plugin keeps its files across restarts); every theme render
+   * host runs as THEME_UID. None of these need a passwd entry — the kernel only needs the number.
+   * RUNTIME_DIR holds the per-guest socket directories the privileged spawner creates.
+   */
+  static readonly PROCESS_ISOLATION = {
+    RUN_AS_USER: 'node',
+    PLUGIN_UID_BASE: 20000,
+    THEME_UID: 21000,
+    RUNTIME_DIR: '/run/fromcode',
+  } as const;
+
   static readonly META_KEY = {
   EMAIL_PROFILES: 'integration_email_profiles',
   EMAIL_PROVIDER: 'integration_email_provider',
@@ -95,6 +145,15 @@ export class SystemConstants {
   // Security & Auth
   AUTH_SECURITY_NOTIFICATIONS: 'auth_security_notifications',
   AUTH_SESSION_DURATION: 'auth_session_duration_minutes',
+  /** How many distinct server-render worlds (theme+plugin version sets) the storefront keeps resident. Settings → Infrastructure. */
+  SSR_GENERATION_CAP: 'ssr_generation_cap',
+  /** `isolated` (own process per plugin, the default) or `shared` (in the api process). */
+  PLUGIN_ISOLATION_DEFAULT: 'plugin_isolation_default',
+  PLUGIN_ISOLATION_MEMORY_MB: 'plugin_isolation_memory_mb',
+  PLUGIN_ISOLATION_TIMEOUT_MS: 'plugin_isolation_timeout_ms',
+  /** Heap ceiling (MB) and per-render deadline (ms) of one theme render host process. */
+  SSR_RENDER_MEMORY_MB: 'ssr_render_memory_mb',
+  SSR_RENDER_TIMEOUT_MS: 'ssr_render_timeout_ms',
   AUTH_PASSWORD_MIN_LENGTH: 'auth_password_min_length',
   AUTH_PASSWORD_REQUIRE_UPPERCASE: 'auth_password_require_uppercase',
   AUTH_PASSWORD_REQUIRE_LOWERCASE: 'auth_password_require_lowercase',
@@ -164,6 +223,9 @@ export class SystemConstants {
   AUTH: {
     BASE: SystemConstants.AUTH_BASE,
     STATUS: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.STATUS),
+    HOST_INFO: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.HOST_INFO),
+    TENANTS_AVAILABLE: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.TENANTS_AVAILABLE),
+    TENANTS_SELECT: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.TENANTS_SELECT),
     SETUP: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.SETUP),
     LOGIN: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.LOGIN),
     LOGOUT: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.LOGOUT),
@@ -212,6 +274,16 @@ export class SystemConstants {
     HEALTH: SystemConstants.ROUTE_SEGMENTS.HEALTH,
     STATUS: SystemConstants.ROUTE_SEGMENTS.STATUS,
     FRONTEND: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.FRONTEND),
+    ADMIN_TENANTS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS),
+    ADMIN_TENANT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID}`),
+    ADMIN_TENANT_EXPORT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID_EXPORT}`),
+    ADMIN_TENANT_MEMBERS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID_MEMBERS}`),
+    ADMIN_TENANT_MEMBER: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID_MEMBERS_USER}`),
+    ADMIN_TENANTS_IMPORT_SESSION: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_IMPORT_SESSION}`),
+    ADMIN_TENANTS_IMPORT_CHUNK: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_IMPORT_CHUNK}`),
+    ADMIN_TENANTS_IMPORT_PREVIEW: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_IMPORT_PREVIEW}`),
+    ADMIN_TENANTS_IMPORT_EXECUTE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_IMPORT_EXECUTE}`),
+    ADMIN_TENANTS_ADOPT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ADOPT}`),
     ADMIN_BACKUPS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_BACKUPS),
     ADMIN_BACKUP: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_BACKUPS_ID),
     ADMIN_BACKUP_CREATE_SYSTEM: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_BACKUPS_CREATE_SYSTEM),
@@ -329,10 +401,17 @@ export class SystemConstants {
     UI: 'ui',
   } as const;
 
+  /** Where tenant archives (exports, pre-delete safety copies) live under the backups root. */
+  static readonly BACKUPS = {
+    TENANTS_SUBDIR: 'tenants',
+  };
+
   static readonly STORAGE = {
   UPLOAD_DIR_ENV: 'STORAGE_UPLOAD_DIR',
   PUBLIC_URL_ENV: 'STORAGE_PUBLIC_URL',
   DEFAULT_UPLOADS_SUBDIR: 'public/uploads',
+  /** Per-tenant file subdirectory under the uploads root. Single-tenant installs never use it. */
+  TENANTS_SUBDIR: 'tenants',
   DEFAULT_PUBLIC_URL: '/uploads',
   /**
    * Where PRIVATE files live. The default deliberately sits OUTSIDE `public/`: the uploads dir is

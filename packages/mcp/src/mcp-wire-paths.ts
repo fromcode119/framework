@@ -12,4 +12,13 @@ export class McpWirePaths {
   static readonly BASE = '/mcp';
   static readonly TOOLS = '/mcp/tools';
   static readonly TOOLS_CALL = '/mcp/tools/call';
+  /** The sites a token may act on. The one MCP route an all-sites token may call before naming a site. */
+  static readonly SITES = '/mcp/sites';
+  /**
+   * Names the site an ALL-SITES token acts on for this request. Ignored for a token bound to one site
+   * (a mismatch is refused, never silently redirected). The site is an id or a host of the tenant.
+   * A header, not a body field, so the same selection covers tool listing, tool calls and the hosted
+   * transport alike — and because the token, not this header, is what grants access.
+   */
+  static readonly SITE_HEADER = 'x-fc-site';
 }

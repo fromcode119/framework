@@ -227,6 +227,7 @@ export class SystemBackupPageUtils {
     if (group === BackupCatalogGroupKey.THEMES && item.scopeSlug) return `Theme: ${item.scopeSlug}`;
     if (group === BackupCatalogGroupKey.DATABASE) return 'Database';
     if (group === BackupCatalogGroupKey.TRANSFER) return 'Site Transfer';
+    if (group === BackupCatalogGroupKey.TENANTS) return 'Sites';
     return 'System';
   }
 

@@ -34,12 +34,18 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   constructor(connection: string) {
     super();
-    const dbPath = connection.startsWith('sqlite:')
+    const stripped = connection.startsWith('sqlite:')
       ? connection.replace('sqlite:', '')
       : connection.startsWith('file:')
         ? connection.replace('file:', '')
         : connection;
-    this.sqlite = new Database(dbPath);
+    // `sqlite:/path/app.db?mode=ro` opens the file READ-ONLY. The tenant-migration CLI reads a live
+    // single-tenant database this way: a real client's data, never to be written by an export.
+    const queryIndex = stripped.indexOf('?');
+    const dbPath = queryIndex >= 0 ? stripped.slice(0, queryIndex) : stripped;
+    const params = new URLSearchParams(queryIndex >= 0 ? stripped.slice(queryIndex + 1) : '');
+    const readonly = params.get('mode') === 'ro';
+    this.sqlite = new Database(dbPath, readonly ? { readonly: true, fileMustExist: true } : {});
     this.drizzle = drizzle(this.sqlite);
     this.normalizer = new SqliteColumnNormalizer(this.sqlite);
     this.schemaBuilder = new SqliteSchemaBuilder(this);
@@ -55,6 +61,15 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       return this.sqlite.exec(query);
     }
     return this.drizzle.run(query);
+  }
+
+  async queryRaw(sqlText: string, values: unknown[] = []): Promise<Array<Record<string, unknown>>> {
+    const statement = this.sqlite.prepare(sqlText);
+    if (!statement.reader) {
+      statement.run(...(values as any[]));
+      return [];
+    }
+    return statement.all(...(values as any[])) as Array<Record<string, unknown>>;
   }
 
   invalidateTableCache(tableName: string): void {

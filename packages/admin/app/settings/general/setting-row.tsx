@@ -9,6 +9,12 @@ export class SettingRow extends PureReactor {
   @prop declare description: ReactNode;
   @prop declare children: ReactNode;
   @prop declare theme: ThemeMode;
+  /**
+   * Control BELOW the copy instead of beside it. For a row inside a half-width card: beside, a
+   * stepper plus a button leaves the description a few words wide and pushes the button out of the
+   * card; below, both get the full width.
+   */
+  @prop declare stacked?: boolean;
 
   private get isDark(): boolean {
     return this.theme === ThemeMode.DARK;
@@ -17,7 +23,7 @@ export class SettingRow extends PureReactor {
   render(): ReactNode {
     const Icon = this.icon;
     return (
-      <div className={`py-4 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b last:border-0 ${this.isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+      <div className={`py-4 flex flex-col ${this.stacked ? 'gap-4' : 'md:flex-row md:items-center justify-between gap-6'} border-b last:border-0 ${this.isDark ? 'border-slate-800' : 'border-slate-100'}`}>
         <div className="flex gap-3">
           <div className={`p-2 rounded-lg h-fit ${this.isDark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
             {Icon ? <Icon size={18} /> : <div className="w-[18px] h-[18px]" />}
@@ -27,7 +33,7 @@ export class SettingRow extends PureReactor {
             <p className={`text-[13px] font-normal mt-0.5 max-w-md leading-relaxed ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>{this.description}</p>
           </div>
         </div>
-        <div className="flex-shrink-0">
+        <div className={this.stacked ? 'md:pl-12' : 'flex-shrink-0'}>
           {this.children}
         </div>
       </div>

@@ -17,6 +17,10 @@ import { ThemeEntryPreloadService } from '@core/theme/theme-entry-preload-servic
 import { ThemeUpdateService } from '@core/theme/theme-update-service';
 import type { IThemeDefaultPageContractOverride } from '@core/default-page-contract/interfaces/theme-default-page-contract-override.interface';
 import { ThemeState } from '@core/theme/enums/theme-state.enum';
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { RequestContextUtils } from '@core/context/request-context';
+import { TenantThemeAccess } from '@core/theme/tenant-theme-access';
+import { TenantThemeStateService } from '@core/theme/tenant-theme-state-service';
 
 export class ThemeManager {
   private activeTheme: string | null = null;
@@ -54,6 +58,8 @@ export class ThemeManager {
     this.overrideLoader = new ThemeDefaultPageContractOverrideLoader();
     this.configService = new ThemeConfigService(db, this.themes);
     this.updateService = new ThemeUpdateService(this.themes, this.client, this.logger);
+    // The tenant axis of theme activation reads on the REQUEST connection, like every per-request lookup.
+    TenantThemeAccess.configure(db);
   }
 
   async checkForUpdates(slug: string): Promise<{ available: boolean; currentVersion: string; latestVersion?: string; updateUrl?: string }> {
@@ -142,14 +148,52 @@ export class ThemeManager {
       if (row) {
         this.activeTheme = row.slug;
         this.logger.info(`Active theme set to: ${row.slug}`);
-        await this.materializeDefaultPages();
+        // Boot has no tenant. On a multi-tenant deployment default pages are tenant-scoped rows, so
+        // materializing here would write orphans no tenant can see (T0 §8.8's shape) — each tenant's
+        // pages are materialized when ITS theme is activated, on its own connection.
+        if (!TenantMode.isEnabled()) await this.materializeDefaultPages();
       }
     } catch (e) { this.logger.error("Failed to load active theme from DB", e); }
+  }
+
+  /** The tenant this request acts for, or a thrown error — theme activation is never ambiguous about whose site. */
+  private requireTenant(action: string): string {
+    const tenantId = RequestContextUtils.getTenantId();
+    if (!tenantId) throw new Error(`Cannot ${action}: no site is selected for this request.`);
+    return tenantId;
+  }
+
+  /**
+   * Run a theme's declared INITIAL content (its `seeds` file) for the site this request is bound to.
+   * On a multi-site platform the install-time seed runs untenanted and can write no site's rows, so a
+   * site gets its theme's pages and navigation here — at creation, or on demand from the Sites page.
+   * A theme without seeds is a no-op; a theme whose seed file is missing reports it rather than
+   * pretending.
+   */
+  async seedThemeForCurrentSite(slug: string): Promise<{ seeded: boolean; reason?: string }> {
+    const manifest = this.themes.get(slug);
+    if (!manifest) throw new Error(`Theme "${slug}" not found.`);
+    if (!(manifest as any).seeds) return { seeded: false, reason: 'theme declares no seeds' };
+    if (TenantMode.isEnabled()) this.requireTenant('seed a theme');
+    await this.installer.runSeeds(manifest);
+    return { seeded: true };
   }
 
   async activateTheme(slug: string) {
     const manifest = this.themes.get(slug);
     if (!manifest) throw new Error(`Theme "${slug}" not found.`);
+
+    // MULTI-TENANT: activation is a SITE action. It writes the tenant's row, materializes the tenant's
+    // default pages on this (tenant-bound) connection, and touches no file — so it needs no storefront
+    // restart: the tenant's next request carries a new render signature and the renderer rebuilds.
+    if (TenantMode.isEnabled()) {
+      const tenantId = this.requireTenant('activate a theme');
+      await new TenantThemeStateService(this.db).activate(tenantId, slug);
+      await this.materializeDefaultPages();
+      this.logger.info(`Theme "${slug}" activated for tenant "${tenantId}".`);
+      this.pluginManager?.emit?.('theme:activated', { slug, manifest, tenantId });
+      return;
+    }
 
     const timestamp = new Date();
     const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
@@ -179,6 +223,14 @@ export class ThemeManager {
     const manifest = this.themes.get(slug);
     if (!manifest) throw new Error(`Theme "${slug}" not found.`);
 
+    if (TenantMode.isEnabled()) {
+      const tenantId = this.requireTenant('disable a theme');
+      await new TenantThemeStateService(this.db).disable(tenantId, slug);
+      this.logger.info(`Theme "${slug}" disabled for tenant "${tenantId}".`);
+      this.pluginManager?.emit?.('theme:deactivated', { slug, tenantId });
+      return;
+    }
+
     const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
     if (!existing && this.activeTheme !== slug) {
       return;
@@ -200,25 +252,46 @@ export class ThemeManager {
     const resetConfig = options?.resetConfig === true;
     if (resetConfig) {
       const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
-      if (existing) await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: null });
+      if (TenantMode.isEnabled()) {
+        await new TenantThemeStateService(this.db).saveConfig(this.requireTenant('reset a theme'), slug, null);
+      } else if (existing) {
+        await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: null });
+      }
     }
     if (runSeeds) await this.installer.runSeeds(manifest);
-    if (this.activeTheme === slug) {
+    // Seeds and default pages write tenant-scoped rows; inside a request the connection is tenant-bound,
+    // so on a multi-tenant deployment they land in the tenant that asked and nowhere else.
+    if (this.getActiveThemeManifest()?.slug === slug) {
       await this.materializeDefaultPages();
     }
     this.logger.info(`Theme "${slug}" reset.`);
   }
 
   async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
+    if (TenantMode.isEnabled()) {
+      this.configService.validateThemeConfig(slug, config);
+      return new TenantThemeStateService(this.db).saveConfig(this.requireTenant('configure a theme'), slug, config);
+    }
     return this.configService.saveThemeConfig(slug, config);
   }
 
   async getThemeConfig(slug: string): Promise<any> {
+    if (TenantMode.isEnabled()) {
+      const choice = await TenantThemeAccess.choiceForAsync(this.requireTenant('read a theme config'));
+      return choice.activeSlug === slug ? (choice.config || {}) : {};
+    }
     return this.configService.getThemeConfig(slug);
   }
 
   async deleteTheme(slug: string) {
-    if (this.activeTheme === slug) {
+    if (TenantMode.isEnabled()) {
+      // Every tenant's row for it goes, or a customer stays "active" on files that no longer exist and
+      // its storefront logs NO SERVER RENDERING until someone notices. Said out loud, per tenant.
+      const orphaned = await new TenantThemeStateService(this.db).clearForTheme(slug);
+      for (const tenantId of orphaned) {
+        this.logger.warn(`Theme "${slug}" was deleted while ACTIVE for tenant "${tenantId}": that site now renders with no theme.`);
+      }
+    } else if (this.activeTheme === slug) {
       await this.discoverThemes();
       const fallbackSlug = Array.from(this.themes.keys()).find((c) => c !== slug);
       if (fallbackSlug) {
@@ -236,21 +309,38 @@ export class ThemeManager {
     this.logger.info(`Theme "${slug}" deleted.`);
   }
 
-  getActiveThemeManifest(): IThemeManifest | null {
-    if (!this.activeTheme) return null;
-    return this.loadThemeManifestFromDisk(this.activeTheme) || this.themes.get(this.activeTheme) || null;
+  /**
+   * The slug the CURRENT request renders with. Single-tenant: the process-wide field, as always.
+   * Multi-tenant: the request's tenant's choice — and a request with no tenant gets NO theme, never
+   * another site's.
+   */
+  private currentActiveSlug(): string | null {
+    const choice = TenantThemeAccess.currentChoice();
+    if (choice === null) return this.activeTheme;
+    return choice.activeSlug;
   }
 
+  getActiveThemeManifest(): IThemeManifest | null {
+    const slug = this.currentActiveSlug();
+    if (!slug) return null;
+    return this.loadThemeManifestFromDisk(slug) || this.themes.get(slug) || null;
+  }
+
+  /** Every INSTALLED theme, with `state` = active for the current request's site. */
   getThemes(): (IThemeManifest & { state: ThemeState })[] {
+    const active = this.currentActiveSlug();
     return Array.from(this.themes.values()).map((theme) => ({
       ...theme,
-      state: theme.slug === this.activeTheme ? ThemeState.ACTIVE : ThemeState.INACTIVE,
+      state: theme.slug === active ? ThemeState.ACTIVE : ThemeState.INACTIVE,
     }));
   }
 
   async getFrontendMetadata(runtimeModules: Record<string, any> = {}) {
     const manifest = this.getActiveThemeManifest();
-    const metadata = await this.configService.getFrontendMetadata(manifest, runtimeModules);
+    // The TENANT's variable overrides, when there is a tenant; the platform row's otherwise.
+    const choice = TenantThemeAccess.currentChoice();
+    const configOverride = choice && manifest && choice.activeSlug === manifest.slug ? (choice.config || {}) : undefined;
+    const metadata = await this.configService.getFrontendMetadata(manifest, runtimeModules, configOverride);
     // Expose the real entry + its static chunk dependencies so the frontend can emit
     // `<link rel="modulepreload">` hints and skip the shim's serialized round-trip.
     // Server-derived from the active theme's own ui/ directory only — never request input.

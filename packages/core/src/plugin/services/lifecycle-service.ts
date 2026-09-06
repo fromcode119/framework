@@ -1,7 +1,10 @@
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { RequestContextUtils } from '@core/context/request-context';
 import { DependencyIssueKind } from '@core/plugin/services/enums/dependency-issue-kind.enum';
 import { PluginApprovalMode } from '@core/plugin/services/enums/plugin-approval-mode.enum';
 import { v4 as uuidv4 } from 'uuid';
 import { Logger } from '@core/logging';
+import { PluginArchiveInstallerService } from '@core/plugin/services/plugin-archive-installer-service';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -12,7 +15,6 @@ import { DiscoveryService } from '@core/plugin/services/discovery-service';
 import { SchemaManager } from '@core/database/schema-manager';
 
 import { ManifestValidator } from '@core/management/manifest';
-import { SandboxManager } from '@core/security/sandbox-manager';
 import { Seeder } from '@core/database/seeder';
 import { PluginFailureIsolationService } from '@core/plugin/services/plugin-failure-isolation-service';
 import { PluginCollectionActivationService } from '@core/plugin/services/plugin-collection-activation-service';
@@ -28,7 +30,6 @@ import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
-  private sandbox?: SandboxManager;
   private seeder: Seeder;
   private failureIsolation: PluginFailureIsolationService;
   private activation: PluginCollectionActivationService;
@@ -42,11 +43,6 @@ export class LifecycleService {
     this.seeder = new Seeder(manager.db);
     this.failureIsolation = new PluginFailureIsolationService(manager, registry, this.logger);
     this.activation = new PluginCollectionActivationService(manager, schemaManager, this.seeder, this.logger);
-    try {
-      this.sandbox = new SandboxManager();
-    } catch (e) {
-      this.logger.warn('SandboxManager failed to initialize (isolated-vm might not be supported in this environment)');
-    }
   }
 
   /** Pure set-diff of manifest vs approved capabilities. Order-independent; used by the held gate. */
@@ -112,10 +108,6 @@ export class LifecycleService {
     }
   }
 
-  public async getSandboxStats() {
-    return this.sandbox ? await this.sandbox.getStats() : null;
-  }
-
   /**
    * Final default-page materialization pass, run by the discovery coordinator once EVERY plugin in the boot
    * set is registered. The per-plugin pass inside {@link register} can execute before the plugin that owns the
@@ -123,6 +115,10 @@ export class LifecycleService {
    * required contract pages never materialize. This pass guarantees the pages collection is present.
    */
   public async materializeDefaultPagesFinalPass(): Promise<void> {
+    // On a multi-site platform pages belong to a SITE: the untenanted boot pass could only ever be
+    // refused by row security (six "materialization failed" warnings per boot). Sites get their pages
+    // when created (`TenantAdminService.materializePages`), inside their own tenant scope.
+    if (TenantMode.isEnabled() && !RequestContextUtils.getTenantId()) return;
     await this.activation.materializeDefaultPages();
   }
 
@@ -232,6 +228,9 @@ export class LifecycleService {
     const savedVersion = saved?.version;
     const isVersionUpdate = !isFreshInstall && !!savedVersion && savedVersion !== plugin.manifest.version;
     const ctx = (this.manager as any).createContext(loadedPlugin);
+    // The registry row has to exist BEFORE the hooks run: a plugin that registers a scheduled task or
+    // writes its settings from onInit writes a row whose plugin_slug is a foreign key onto this table.
+    const createdRegistryRow = await this.registry.ensurePluginRegistryRow(slug, plugin.manifest.version);
     try {
       if (isFreshInstall && loadedPlugin.onInstall) await loadedPlugin.onInstall(ctx);
       if (isVersionUpdate && loadedPlugin.onUpdate && savedVersion) {
@@ -243,6 +242,9 @@ export class LifecycleService {
       await this.failureIsolation.markPluginError(loadedPlugin, err.message);
       const hook = isFreshInstall ? 'onInstall/onInit' : isVersionUpdate ? 'onUpdate/onInit' : 'onInit';
       this.logger.error(`Error during ${hook} for plugin "${slug}": ${err.message}`, err.stack);
+      // Undo the row this boot created so the plugin stays a FRESH install and onInstall runs again
+      // next time. markPluginError above already recorded the failure for a pre-existing plugin.
+      if (createdRegistryRow) await this.registry.removePluginRegistryRow(slug);
       throw new Error(`Plugin "${slug}" failed during ${hook}: ${err.message}`);
     }
 
@@ -316,13 +318,8 @@ export class LifecycleService {
     
     try {
       plugin.state = PluginState.LOADING;
-      if (plugin.isSandboxed && plugin.entryPath && this.sandbox) {
-        this.logger.info(`Initializing sandbox for "${slug}"...`);
-        await this.sandbox.initPluginContext(slug, ctx, plugin.manifest);
-        if (plugin.onEnable) await plugin.onEnable(ctx);
-      } else {
-        if (plugin.onEnable) await plugin.onEnable(ctx);
-      }
+      // An isolated plugin's `onEnable` is a forwarding stub (T5): it runs in the plugin's own process.
+      if (plugin.onEnable) await plugin.onEnable(ctx);
       await this.activation.autoDiscoverCollections(plugin, ctx);
       await this.activation.syncPluginCollections(slug);
       await this.activation.runSeeds(slug);
@@ -368,11 +365,7 @@ export class LifecycleService {
 
     const ctx = (this.manager as any).createContext(plugin);
     try {
-      if (plugin.isSandboxed && this.sandbox) {
-        this.sandbox.disposePluginContext(slug);
-      } else {
-        if (plugin.onDisable) await plugin.onDisable(ctx);
-      }
+      if (plugin.onDisable) await plugin.onDisable(ctx);
       plugin.state = PluginState.INACTIVE;
       this.manager.middlewares.unregisterByPlugin(slug);
       if (options.persistState !== false) {
@@ -387,6 +380,8 @@ export class LifecycleService {
   async delete(slug: string): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (plugin) {
+      // Never `rm -rf` a developer's mounted source checkout from the admin (see PluginArchiveInstallerService).
+      PluginArchiveInstallerService.refuseSourceCheckout(String(plugin.path || ''), slug, 'delete');
       const dependents = Array.from(this.manager.plugins.values()).filter(p =>
         p.manifest.dependencies && p.manifest.dependencies[slug]
       );
@@ -403,6 +398,8 @@ export class LifecycleService {
           this.logger.error(`Error during onUninstall for plugin "${slug}": ${err.message}`);
         }
       }
+      // T5: a plugin's process goes with it — after onDisable/onUninstall ran inside it.
+      await this.manager.pluginHosts?.stop(slug);
     }
 
     await this.manager.db.delete(SystemConstants.TABLE.PLUGINS, { slug });

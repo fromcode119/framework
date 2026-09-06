@@ -1,3 +1,5 @@
+import { SystemConstants } from '@fromcode119/core';
+import { PrivilegeDrop } from '@fromcode119/core/process';
 import { APIServer } from '@api/index';
 import { ProcessSafetyNet } from '@api/process-safety-net';
 
@@ -14,7 +16,12 @@ export class ApiEntry {
     // Installed before bootstrap so a failure during plugin registration is also named rather than
     // printing a bare stack and exiting.
     ProcessSafetyNet.install();
-    APIServer.bootstrap().catch(ApiEntry.fail);
+    // T5c: root for exactly one fork (the privileged spawner that starts plugin processes as their own
+    // users), then this process is the unprivileged app for the rest of its life. Not root to begin
+    // with (development) → nothing changes.
+    PrivilegeDrop.perform({ runAs: SystemConstants.PROCESS_ISOLATION.RUN_AS_USER, withSpawner: true })
+      .then(() => APIServer.bootstrap())
+      .catch(ApiEntry.fail);
   }
 
   private static fail(error: unknown): void {

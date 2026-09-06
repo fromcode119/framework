@@ -187,6 +187,17 @@ export class PublicAssetUrlUtils {
     return '';
   }
 
+  /**
+   * The ONE rule for the `?v=` stamp on a theme's versioned assets (entry, css): the api-derived
+   * asset fingerprint first, the manifest version only when there is none. Every stamper — the
+   * server-rendered head, the React config loader and the frontend plugin loader — must use this,
+   * or the same file is fetched twice under two cache keys (measured: `bundle.js?v=<fingerprint>`
+   * from the head and `bundle.js?v=<version>` from the loader on every storefront view).
+   */
+  static themeAssetStamp(theme: { assetVersion?: unknown; version?: unknown } | null | undefined): string {
+    return String(theme?.assetVersion || '').trim() || String(theme?.version || '').trim();
+  }
+
   static appendVersion(url: any, version: any): string {
     const normalizedUrl = String(url || '').trim();
     const normalizedVersion = String(version || '').trim();

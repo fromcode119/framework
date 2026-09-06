@@ -44,8 +44,34 @@ export class PostgresSchemaBuilder {
 
   async addColumn(tableName: string, field: ISchemaField): Promise<void> {
     const columnDef = this.fieldToSqlFragment(field);
-    await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+    // A REQUIRED column with no declared default cannot be added to a table that already has rows:
+    // Postgres refuses `ADD COLUMN … NOT NULL` outright. The rows that exist get the type's empty
+    // value ('' / 0 / false / now), and the default is dropped again immediately so every NEW row
+    // still has to supply the field — the schema's `required` keeps its meaning.
+    if (field.required && field.defaultValue === undefined) {
+      const backfill = PostgresSchemaBuilder.emptyValueFor(field);
+      const column = sql.identifier(NamingStrategy.toSnakeCase(field.name));
+      await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef} DEFAULT ${backfill}`);
+      await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ALTER COLUMN ${column} DROP DEFAULT`);
+    } else {
+      await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+    }
     this.host.invalidateTableCache(tableName);
+  }
+
+  /** The value existing rows receive when a required column arrives after them. */
+  private static emptyValueFor(field: ISchemaField): any {
+    switch (field.type) {
+      case 'number': return sql.raw('0');
+      case 'boolean': return sql.raw('false');
+      case 'date': return sql.raw('CURRENT_TIMESTAMP');
+      case 'json':
+      case 'relationship':
+      case 'upload':
+      case 'richText':
+        return sql.raw("'null'::jsonb");
+      default: return sql.raw("''");
+    }
   }
 
   async ensureMigrationTable(tableName: string): Promise<void> {

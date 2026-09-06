@@ -19,15 +19,15 @@ export class DiscoveryService {
   private archiveInstaller: PluginArchiveInstallerService;
   private scanner: PluginDirectoryScannerService;
 
-  constructor(private pluginsRoot: string, private projectRoot: string) {
+  constructor(private pluginsRoot: string, private projectRoot: string, hosts: ConstructorParameters<typeof PluginDirectoryScannerService>[4] = null) {
     this.dependencyInstaller = new PluginDependencyInstallerService(projectRoot);
     this.archiveInstaller = new PluginArchiveInstallerService(pluginsRoot, this.dependencyInstaller);
-    this.scanner = new PluginDirectoryScannerService(pluginsRoot, projectRoot, this.logger, this.dependencyInstaller);
+    this.scanner = new PluginDirectoryScannerService(pluginsRoot, projectRoot, this.logger, this.dependencyInstaller, hosts);
   }
 
   public async discoverPlugins(
     existingPlugins: Map<string, ILoadedPlugin>,
-    installedState: Record<string, { sandboxConfig?: any }> = {}
+    installedState: Record<string, { sandboxConfig?: any; state?: unknown }> = {}
   ): Promise<{
     discovered: { plugin: any, path: string }[],
     errored: { manifest: any, path: string, error: string }[]

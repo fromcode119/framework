@@ -9,7 +9,10 @@ describe('MarketplaceRouter install route', () => {
     version: '0.1.2',
   };
 
-  const buildApp = () => {
+  const passthrough = (_req: any, _res: any, next: () => void) => next();
+  const refuse = (_req: any, res: any) => res.status(403).json({ error: 'platform_admin_required' });
+
+  const buildApp = (options: { platformAdminAllows?: boolean } = {}) => {
     const manager: any = {
       marketplace: {
         downloadAndInstall: vi.fn(),
@@ -17,15 +20,36 @@ describe('MarketplaceRouter install route', () => {
       installOrUpdateFromMarketplace: vi.fn().mockResolvedValue(manifest),
     };
     const auth: any = {
-      middleware: vi.fn().mockReturnValue((_req: any, _res: any, next: () => void) => next()),
-      guard: vi.fn().mockReturnValue((_req: any, _res: any, next: () => void) => next()),
+      middleware: vi.fn().mockReturnValue(passthrough),
+      guard: vi.fn().mockReturnValue(passthrough),
+    };
+    // The PLATFORM guard is a separate collaborator from `auth`: `admin` is a tenant's own
+    // administrator on a multi-tenant deployment, and installing code onto the shared container
+    // needs more than that. Faked structurally, like `auth`, so these tests stay about the route.
+    const platformAdmin: any = {
+      middleware: vi.fn().mockReturnValue(options.platformAdminAllows === false ? refuse : passthrough),
     };
 
     const app = express();
     app.use(express.json());
-    app.use('/api/v1/marketplace', new MarketplaceRouter(manager, auth).router);
+    app.use('/api/v1/marketplace', new MarketplaceRouter(manager, auth, platformAdmin).router);
     return { app, manager };
   };
+
+  it('REFUSES install when the caller is not a platform admin, and never reaches the manager', async () => {
+    // Before this guard the route was gated on `admin` alone — so on a multi-tenant deployment a
+    // customer's own administrator could put arbitrary code on the box every other customer runs on.
+    const { app, manager } = buildApp({ platformAdminAllows: false });
+
+    const response = await request(app)
+      .post('/api/v1/marketplace/install/analytics')
+      .send({});
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({ error: 'platform_admin_required' });
+    expect(manager.installOrUpdateFromMarketplace).not.toHaveBeenCalled();
+    expect(manager.marketplace.downloadAndInstall).not.toHaveBeenCalled();
+  });
 
   it('uses plugin manager installOrUpdateFromMarketplace so updates activate the new manifest', async () => {
     const { app, manager } = buildApp();

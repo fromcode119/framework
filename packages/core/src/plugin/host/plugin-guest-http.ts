@@ -1,0 +1,126 @@
+import fs from 'fs';
+import express from 'express';
+import type { Express, Request, Response, NextFunction } from 'express';
+import { RequestContextUtils } from '@core/context/request-context';
+import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
+
+/**
+ * The guest's own Express app, served on a Unix socket the host proxies to.
+ *
+ * Plugin routers run here UNCHANGED — real `req`/`res`, streaming, multer, everything Express gives
+ * them — which is the reason routes cross as HTTP and not as messages. The host has already
+ * authenticated the request: it forwards the user it established as `x-fc-user`, and the invocation
+ * token / tenant / locale as `x-fc-*` headers; the first middleware here turns those into the guest's
+ * request context and strips them, so plugin code sees an ordinary request.
+ *
+ * Guards are local: `context.auth.guard(roles)` checks the forwarded user's roles;
+ * `requirePermission` asks the host for the user's permissions (one call, cached per request).
+ */
+export class PluginGuestHttp {
+  static readonly HEADER_TOKEN = 'x-fc-token';
+  static readonly HEADER_TENANT = 'x-fc-tenant';
+  static readonly HEADER_LOCALE = 'x-fc-locale';
+  static readonly HEADER_USER = 'x-fc-user';
+  static readonly HEADER_ORIGINAL_URL = 'x-fc-original-url';
+  static readonly HEADER_NEXT = 'x-fc-next';
+  static readonly MIDDLEWARE_PATH = '/__fc/middleware';
+
+  readonly app: Express;
+  private server: ReturnType<Express['listen']> | null = null;
+
+  constructor(private readonly socketPath: string, private readonly remote: PluginGuestRemote, private readonly socketMode = 0o600) {
+    this.app = express();
+    this.app.disable('x-powered-by');
+    this.app.use(this.enterInvocation.bind(this));
+    this.app.use(express.json({ limit: '25mb' }));
+    this.app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+  }
+
+  async listen(): Promise<void> {
+    if (fs.existsSync(this.socketPath)) fs.rmSync(this.socketPath, { force: true });
+    await new Promise<void>((resolve, reject) => {
+      this.server = this.app.listen(this.socketPath, () => resolve());
+      this.server.on('error', reject);
+    });
+    fs.chmodSync(this.socketPath, this.socketMode);
+  }
+
+  async close(): Promise<void> {
+    await new Promise<void>((resolve) => (this.server ? this.server.close(() => resolve()) : resolve()));
+    if (fs.existsSync(this.socketPath)) fs.rmSync(this.socketPath, { force: true });
+  }
+
+  /** A global middleware the plugin registered: mounted under a private path the host targets by id. */
+  mountMiddleware(id: string, handler: (req: any, res: any, next: (err?: any) => void) => void): void {
+    this.app.all(`${PluginGuestHttp.MIDDLEWARE_PATH}/${encodeURIComponent(id)}`, (req: Request, res: Response) => {
+      const original = String(req.headers[PluginGuestHttp.HEADER_ORIGINAL_URL] ?? '/');
+      (req as any).url = original;
+      (req as any).originalUrl = original;
+      handler(req, res, (err?: unknown) => {
+        if (res.headersSent) return;
+        if (err) {
+          res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+          return;
+        }
+        res.setHeader(PluginGuestHttp.HEADER_NEXT, '1');
+        res.status(204).end();
+      });
+    });
+  }
+
+  /** `context.auth.guard(roles)` — the host authenticated; the guest authorises on what it forwarded. */
+  static guard(roles: string[] = []): (req: any, res: any, next: NextFunction) => void {
+    return (req, res, next) => {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized: missing or invalid token' });
+        return;
+      }
+      if (roles.length > 0) {
+        const held: string[] = Array.isArray(req.user.roles) ? req.user.roles : [];
+        if (!roles.some((role) => held.includes(role))) {
+          res.status(403).json({ error: 'Forbidden: insufficient permissions' });
+          return;
+        }
+      }
+      next();
+    };
+  }
+
+  requirePermission(permission: string | string[]): (req: any, res: any, next: NextFunction) => Promise<void> {
+    const required = Array.isArray(permission) ? permission : [permission];
+    return async (req, res, next) => {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized: missing or invalid token' });
+        return;
+      }
+      try {
+        const permissions = (await this.remote.call('context', [{ name: 'auth' }, { name: 'getUserPermissions', args: [req.user.id] }])) as string[];
+        const granted = Array.isArray(permissions) ? permissions.map(String) : [];
+        if (granted.includes('*') || required.every((entry) => granted.includes(entry))) {
+          next();
+          return;
+        }
+        res.status(403).json({ error: 'Forbidden: insufficient permissions', required });
+      } catch (error) {
+        res.status(503).json({ error: 'permission check unavailable', detail: error instanceof Error ? error.message : String(error) });
+      }
+    };
+  }
+
+  private enterInvocation(req: Request, _res: Response, next: NextFunction): void {
+    const token = String(req.headers[PluginGuestHttp.HEADER_TOKEN] ?? '');
+    const tenantId = String(req.headers[PluginGuestHttp.HEADER_TENANT] ?? '').trim() || null;
+    const locale = String(req.headers[PluginGuestHttp.HEADER_LOCALE] ?? '');
+    const rawUser = req.headers[PluginGuestHttp.HEADER_USER];
+    if (typeof rawUser === 'string' && rawUser) {
+      try { (req as any).user = JSON.parse(rawUser); } catch { (req as any).user = undefined; }
+    }
+    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_USER]) {
+      delete req.headers[header];
+    }
+    (req as any).tenantId = tenantId ?? undefined;
+    PluginGuestRemote.invocation.run({ token, tenantId }, () => {
+      RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined }, () => next());
+    });
+  }
+}

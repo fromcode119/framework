@@ -21,6 +21,7 @@ import { UsersContextProxy } from '@core/plugin/context/users';
 import { PeopleContextProxy } from '@core/plugin/context/people';
 import { EntityRecordsContextProxy } from '@core/plugin/context/entity-records';
 import { MetaContextProxy } from '@core/plugin/context/meta';
+import { MigrationsContextProxy } from '@core/plugin/context/migrations';
 import { MediaContextProxy } from '@core/plugin/context/media';
 import { RecordVersionsContextProxy } from '@core/plugin/context/record-versions';
 import { RolesContextProxy } from '@core/plugin/context/roles';
@@ -31,6 +32,7 @@ import { PluginsManagerResolver } from '@core/plugins-manager-resolver';
 import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -84,6 +86,13 @@ export class PluginContextFactory {
             const wrappedHandler = async (payload: any, ev: string) => {
               const currentPlugin = manager.plugins.get(plugin.manifest.slug);
               if (!currentPlugin || currentPlugin.state !== PluginState.ACTIVE) return;
+              // The TENANT axis. A hook fired inside a request carries that request's tenant, so a
+              // plugin the tenant does not run never sees the event. A hook fired OUTSIDE a request
+              // (boot, a scheduler tick) has no tenant, and the gate answers false — the handler
+              // does not run "for everyone", which is the same fail-open shape closed elsewhere.
+              // Per-tenant scheduled work is not delivered by T2; a task that needs it must iterate
+              // tenants explicitly.
+              if (!PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug)) return;
               return handler(payload, ev);
             };
             (handler as any)._wrapped = wrappedHandler;
@@ -173,7 +182,11 @@ export class PluginContextFactory {
           optional: optionalDependency,
           isEnabled: (slug: string) => {
             if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
-            return manager.plugins.get(slug)?.state === PluginState.ACTIVE;
+            // Both axes, so a plugin asking about a peer gets the answer for the CURRENT tenant.
+            // Answering on the platform axis alone would have one plugin call another that this
+            // customer does not run.
+            return manager.plugins.get(slug)?.state === PluginState.ACTIVE
+              && PluginTenantAccess.isEnabledForCurrentTenant(slug);
           },
           emit: (event: string, payload: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
@@ -204,6 +217,8 @@ export class PluginContextFactory {
         people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb),
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
         meta: MetaContextProxy.createMetaProxy(manager),
+        // Schema migrations run on the framework's DDL connection, never the request role.
+        migrations: MigrationsContextProxy.createMigrationsProxy(plugin, manager),
         media: MediaContextProxy.createMediaProxy(manager),
         recordVersions: RecordVersionsContextProxy.createRecordVersionsProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager),

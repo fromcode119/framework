@@ -24,6 +24,34 @@ export interface IDatabaseManager {
   readonly asc: any;
 
   execute(query: any): Promise<any>;
+  /**
+   * One parametrized SQL statement, returning its rows. Runs on the SAME connection the manager would
+   * use for any other statement — inside a tenant scope that is the held client carrying
+   * `app.tenant_id`, so row-level security applies. `execute` with a drizzle `sql` template goes
+   * through drizzle's own pool and does NOT, which is why this exists: raw, parametrized, tenant-bound.
+   */
+  queryRaw(sqlText: string, values?: unknown[]): Promise<Array<Record<string, unknown>>>;
+
+  /**
+   * Runs `fn` with every statement it issues bound to `tenantId`. On Postgres this holds one pooled
+   * client with `app.tenant_id` set so row-level security applies; on dialects without RLS it is a
+   * passthrough. GUARANTEED present — callers call it directly, never type-check for it.
+   */
+  withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T>;
+  /** Run `fn` as a platform admin: no tenant, allowed to write tenant-less platform rows. Dialects without RLS run `fn` as is. */
+  withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T>;
+
+  /**
+   * Whether this driver can actually isolate tenants. FALSE unless the driver implements a strategy,
+   * and a multi-tenant deployment on such a driver refuses to boot (see TenantMode).
+   */
+  supportsTenantIsolation(): boolean;
+
+  /**
+   * Marks this connection as the platform's own (migrations, schema sync), permitting writes to
+   * deployment-level rows that belong to no tenant. Never called for the request connection.
+   */
+  markAsPlatformConnection(): void;
   connect(): Promise<void>;
   
   // High-level agnostic API

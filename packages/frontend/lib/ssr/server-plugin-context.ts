@@ -16,44 +16,46 @@ import { ServerTranslator } from '@/lib/ssr/server-translator';
  * `fieldComponents` stays empty because nothing renders an admin field on the storefront.
  *
  * `api` is null. Nothing in a theme's layout chrome issues a request during render — data-loading
- * components fetch from an effect, which never runs in `renderToStaticMarkup`. A layout that does
+ * components fetch from an effect, which never runs in a synchronous `renderToString`. A layout that does
  * dereference it throws, `ThemeServerRenderer` catches, and the page falls back to today's
  * client-only rendering.
  */
 export class ServerPluginContext {
   static build(args: {
+    /** The generation this render is for — every registry read below is scoped to it. */
+    signature: string;
     themeSlug: string;
     config: Record<string, unknown>;
     serverTranslations: Record<string, unknown>;
     locale: string;
   }): Record<string, unknown> {
-    const { themeSlug, config, serverTranslations, locale } = args;
+    const { signature, themeSlug, config, serverTranslations, locale } = args;
     const noop = () => undefined;
     // Two layers, folded separately — the same reduction the browser provider performs, so a theme's
     // copy overrides a plugin default identically on both sides. One shared bucket here would resolve
     // collisions by registration order and swap the wording at hydration.
     let registered: Record<string, Record<string, unknown>> = {};
-    for (const payload of ThemeServerRegistry.translationPayloads()) {
+    for (const payload of ThemeServerRegistry.translationPayloads(signature)) {
       registered = FrontendI18nService.foldRegistration(registered, payload);
     }
     let themeRegistered: Record<string, Record<string, unknown>> = {};
-    for (const payload of ThemeServerRegistry.themeTranslationPayloads()) {
+    for (const payload of ThemeServerRegistry.themeTranslationPayloads(signature)) {
       themeRegistered = FrontendI18nService.foldRegistration(themeRegistered, payload);
     }
     const translator = new ServerTranslator(serverTranslations, registered, locale, themeRegistered);
     const pluginApiSubscription = new ServerPluginApiSubscription();
 
     return {
-      slots: ThemeServerRegistry.slotMap(),
-      overrides: ThemeServerRegistry.overrideMap(),
+      slots: ThemeServerRegistry.slotMap(signature),
+      overrides: ThemeServerRegistry.overrideMap(signature),
       fieldComponents: {},
       collections: [],
       pluginState: {},
       secondaryPanel: { isOpen: false, activePluginSlug: null, items: [] },
 
       themeVariables: {},
-      themeLayouts: ThemeServerRegistry.layoutsFor(themeSlug),
-      themeStyleVariants: ThemeServerRegistry.styleVariantsFor(themeSlug),
+      themeLayouts: ThemeServerRegistry.layoutsFor(signature, themeSlug),
+      themeStyleVariants: ThemeServerRegistry.styleVariantsFor(signature, themeSlug),
       activeTheme: config.activeTheme ?? null,
       menuItems: Array.isArray(config.menu) ? config.menu : [],
       plugins: Array.isArray(config.plugins) ? config.plugins : [],
@@ -73,8 +75,8 @@ export class ServerPluginContext {
       pluginApiSubscription,
       // Backed by what the plugin bundles actually registered during import. Anything a theme resolves
       // through `usePluginsNamespace` — the content image optimizer above all — depends on these two.
-      getPluginApi: ThemeServerRegistry.pluginApi,
-      hasPluginApi: ThemeServerRegistry.hasPluginApi,
+      getPluginApi: (namespace: string, slug: string) => ThemeServerRegistry.pluginApi(signature, namespace, slug),
+      hasPluginApi: (namespace: string, slug: string) => ThemeServerRegistry.hasPluginApi(signature, namespace, slug),
       registerPluginApi: noop,
       setPluginState: noop,
       registerContentTransformer: noop,

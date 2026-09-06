@@ -3,12 +3,13 @@ import { state } from '@fromcode119/reactor';
 import { AdminApi } from '@/lib/api';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
-import { Input } from '@/components/ui/view/input.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Loader } from '@/components/ui/view/loader.client';
-import { Checkbox } from '@/components/ui/view/checkbox.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
+import { McpTokenCreateForm } from '@/app/settings/integrations/mcp/components/view/mcp-token-create-form.client';
+import { McpTokensTable } from '@/app/settings/integrations/mcp/components/view/mcp-tokens-table.client';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
@@ -27,16 +28,21 @@ import type { IMcpToken } from '@/app/settings/integrations/mcp/interfaces/mcp-t
  *
  * A created key is shown ONCE, held only until dismissed. The API stores a SHA-256 hash and cannot
  * return it again.
+ *
+ * A token is bound to the SITE this session is in. The platform admin may instead issue one for all
+ * sites — that token then names its site per request (`sites.select` in the MCP server). A site admin
+ * never sees that choice, and never sees another site's tokens.
  */
 export class McpTokensPanel extends AdminComponent {
   @state loading = true;
   @state saving = false;
   @state tokens: IMcpToken[] = [];
   @state toolNames: string[] = [];
-  @state label = '';
-  @state selectedScopes: string[] = [];
   @state newKey: string | null = null;
   @state revokeCandidate: IMcpToken | null = null;
+  @state currentSite: string | null = null;
+  @state multiTenant = false;
+  @state platformAdmin = false;
 
   private mounted = false;
 
@@ -58,6 +64,9 @@ export class McpTokensPanel extends AdminComponent {
       ]);
       if (!this.mounted) return;
       this.tokens = Array.isArray(tokenResponse?.tokens) ? tokenResponse.tokens : [];
+      this.currentSite = tokenResponse?.site ?? null;
+      this.multiTenant = tokenResponse?.multiTenant === true;
+      this.platformAdmin = tokenResponse?.platformAdmin === true && PlatformAccess.canManagePlatform(this.auth.user);
       // `/mcp/scopes` is the session-readable companion to `/mcp/tools` (which is token-only, so an
       // admin session cannot read it). It returns tool NAMES only — enough to build the picker.
       const tools = Array.isArray(toolResponse?.tools) ? toolResponse.tools : [];
@@ -77,45 +86,9 @@ export class McpTokensPanel extends AdminComponent {
     });
   }
 
-  /** One `<group>.*` per namespace, derived from the tools that actually exist. */
-  private get scopeOptions(): string[] {
-    const groups = new Set<string>();
-    for (const name of this.toolNames) groups.add(`${name.split('.')[0]}.*`);
-    for (const token of this.tokens) for (const scope of token.scopes) groups.add(scope);
-    return [...groups].sort();
-  }
-
-  private toggleScope(scope: string): void {
-    this.selectedScopes = this.selectedScopes.includes(scope)
-      ? this.selectedScopes.filter((s) => s !== scope)
-      : [...this.selectedScopes, scope];
-  }
-
-  private async createToken(): Promise<void> {
-    if (!this.label.trim()) {
-      this.runtime.notify.addNotification({
-        type: NotificationType.ERROR,
-        title: 'A label is required',
-        message: 'Name the token so it can be recognised later.',
-      });
-      return;
-    }
-    this.saving = true;
-    try {
-      const response = await AdminApi.post('/mcp/tokens', {
-        label: this.label.trim(),
-        scopes: this.selectedScopes,
-      });
-      if (!this.mounted) return;
-      this.newKey = String(response?.rawKey || '');
-      this.label = '';
-      this.selectedScopes = [];
-      await this.load();
-    } catch (error: any) {
-      this.notifyError('Failed to create token', error);
-    } finally {
-      if (this.mounted) this.saving = false;
-    }
+  private async created(rawKey: string): Promise<void> {
+    this.newKey = rawKey;
+    await this.load();
   }
 
   private async revokeToken(): Promise<void> {
@@ -167,111 +140,12 @@ export class McpTokensPanel extends AdminComponent {
     );
   }
 
-  private renderCreate(): ReactNode {
-    const options = this.scopeOptions;
-    return this.section(
-      'Create a token',
-      'Name the token, choose what it may reach, then copy the key once.',
-      <div className="flex flex-col gap-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Label"
-            placeholder="e.g. laptop"
-            size={FieldSize.MD}
-            value={this.label}
-            onChange={(e: any) => { this.label = e?.target?.value ?? ''; }}
-          />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Scopes</h3>
-            <p className="text-sm text-slate-500 mt-1">
-              Scopes only narrow what this token may reach. They never grant more than the owning user already has.
-            </p>
-          </div>
-          {options.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-8 text-center">
-              <p className="text-sm text-slate-500">
-                No tools are registered yet, so there is nothing to scope. A token created now is unrestricted.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {options.map((scope) => (
-                <div key={scope} className="rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2.5">
-                  <Checkbox
-                    checked={this.selectedScopes.includes(scope)}
-                    onChange={() => this.toggleScope(scope)}
-                    label={
-                      <span className="flex items-center gap-2">
-                        <code className="font-mono text-xs text-slate-700 dark:text-slate-200">{scope}</code>
-                        {scope.startsWith('deploy.') ? <Badge variant={BadgeVariant.DANGER}>restarts services</Badge> : null}
-                      </span>
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-end">
-          <Button variant={ButtonVariant.PRIMARY} size={FieldSize.MD} isLoading={this.saving} onClick={() => this.createToken()}>
-            Create token
-          </Button>
-        </div>
-      </div>,
-    );
-  }
-
   private renderTokens(): ReactNode {
-    const body = !this.tokens.length ? (
-      <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-8 text-center">
-        <p className="text-sm text-slate-500">No tokens yet.</p>
-      </div>
-    ) : (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="border-b border-slate-100 dark:border-slate-800 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-            <tr>
-              <th className="py-3 pr-4">Label</th>
-              <th className="py-3 pr-4">Scopes</th>
-              <th className="py-3 pr-4">Created</th>
-              <th className="py-3 pr-4">Last used</th>
-              <th className="py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {this.tokens.map((token) => (
-              <tr key={token.tokenId} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                <td className="py-3 pr-4 font-semibold text-slate-900 dark:text-white">{token.label}</td>
-                <td className="py-3 pr-4">
-                  {token.scopes.length ? (
-                    <span className="flex flex-wrap gap-1">
-                      {token.scopes.map((scope) => (
-                        <Badge key={scope} variant={BadgeVariant.GRAY}>{scope}</Badge>
-                      ))}
-                    </span>
-                  ) : (
-                    <Badge variant={BadgeVariant.WARNING}>unrestricted</Badge>
-                  )}
-                </td>
-                <td className="py-3 pr-4 text-slate-500">{token.createdAt || '—'}</td>
-                <td className="py-3 pr-4 text-slate-500">{token.lastUsedAt || 'never'}</td>
-                <td className="py-3 text-right">
-                  <Button variant={ButtonVariant.DANGER} size={FieldSize.SM} onClick={() => { this.revokeCandidate = token; }}>
-                    Revoke
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    return this.section(
+      'Existing tokens',
+      this.multiTenant && !this.platformAdmin ? 'Tokens for this site. Revoking one takes effect immediately.' : 'Every token issued for this installation. Revoking one takes effect immediately.',
+      <McpTokensTable tokens={this.tokens} multiTenant={this.multiTenant} onRevoke={(token: IMcpToken) => { this.revokeCandidate = token; }} />,
     );
-
-    return this.section('Existing tokens', 'Every token issued for this installation. Revoking one takes effect immediately.', body);
   }
 
   render(): ReactNode {
@@ -280,7 +154,14 @@ export class McpTokensPanel extends AdminComponent {
     return (
       <>
         {this.renderNewKey()}
-        {this.renderCreate()}
+        <McpTokenCreateForm
+          toolNames={this.toolNames}
+          tokens={this.tokens}
+          multiTenant={this.multiTenant}
+          platformAdmin={this.platformAdmin}
+          currentSite={this.currentSite}
+          onCreated={(rawKey: string) => this.created(rawKey)}
+        />
         {this.renderTokens()}
 
         <ConfirmDialog

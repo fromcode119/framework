@@ -46,7 +46,14 @@ export class SqliteSchemaBuilder {
 
   async addColumn(tableName: string, field: ISchemaField): Promise<void> {
     const columnDef = this.fieldToSqlFragment(field, { includeUnique: false });
-    await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+    // SQLite likewise refuses a NOT NULL column without a default on a populated table; SQLite cannot
+    // drop a default afterwards, so the type's empty value stays as the column default here.
+    if (field.required && field.defaultValue === undefined) {
+      const backfill = field.type === 'number' || field.type === 'boolean' ? sql.raw('0') : field.type === 'date' ? sql.raw('CURRENT_TIMESTAMP') : sql.raw("''");
+      await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef} DEFAULT ${backfill}`);
+    } else {
+      await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+    }
     if (field.unique) {
       await this.createUniqueIndex(tableName, NamingStrategy.toSnakeCase(field.name));
     }

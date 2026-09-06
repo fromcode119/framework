@@ -15,6 +15,10 @@ describe('McpServerLauncher.create', () => {
     expect(() => McpServerLauncher.create({ FROMCODE_API_URL: '  ', FROMCODE_API_TOKEN: '' })).toThrow(McpServerLauncher.USAGE);
   });
 
+  it('accepts an optional preselected site', () => {
+    expect(McpServerLauncher.create({ FROMCODE_API_URL: 'https://example.test', FROMCODE_API_TOKEN: 'secret', FROMCODE_SITE: 'acme' })).toBeInstanceOf(McpStdioServer);
+  });
+
   it('wires a stdio server when both values are set', () => {
     const server = McpServerLauncher.create({ FROMCODE_API_URL: 'https://example.test', FROMCODE_API_TOKEN: 'secret' });
     expect(server).toBeInstanceOf(McpStdioServer);

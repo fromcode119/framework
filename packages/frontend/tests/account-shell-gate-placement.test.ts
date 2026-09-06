@@ -21,12 +21,20 @@ describe('account shell auth gate placement', () => {
     readFileSync(new URL(`../../react/src/${relative}`, import.meta.url), 'utf8');
 
   it('gates the override surface, so a theme shell cannot opt out of authentication', () => {
-    const surface = read('account-shell.tsx');
+    // The surface is the shell's IMPLEMENTATION; `account-shell.tsx` is only its Suspense boundary.
+    const surface = read('account/account-shell-implementation.tsx');
     expect(surface).toContain('AccountAuthGate');
     // The gate must WRAP the override, not sit beside it.
     const gateOpensBeforeOverride = surface.indexOf('<AccountAuthGate>') < surface.indexOf('<Override');
     expect(gateOpensBeforeOverride).toBe(true);
     expect(surface).toContain('</AccountAuthGate>');
+  });
+
+  it('keeps the boundary class free of the surface — it renders the registered implementation and nothing else', () => {
+    const boundary = read('account-shell.tsx');
+    expect(boundary).toContain('extends ShellBoundary');
+    expect(boundary).not.toContain('AccountAuthGate');
+    expect(boundary).not.toContain('<Override');
   });
 
   it('does not gate inside the replaceable default shell', () => {

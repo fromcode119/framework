@@ -7,6 +7,8 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { DateTimePickerPopover } from '@/components/ui/date-time-picker/view/popover.client';
 import { DateTimePickerTrigger } from '@/components/ui/date-time-picker/view/trigger.client';
 import { DateTimePickerController } from '@/components/ui/date-time-picker/controller';
+import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
+import { DateTimePickerGranularPopover } from '@/components/ui/date-time-picker/view/granular-popover.client';
 import type { IDateTimePickerCoords } from '@/components/ui/date-time-picker/interfaces/date-time-picker-coords.interface';
 
 export class DateTimePicker extends AdminComponent {
@@ -14,6 +16,7 @@ export class DateTimePicker extends AdminComponent {
   @prop declare onChange: (value: string | null) => void;
   @prop declare disabled?: boolean;
   @prop declare showTime?: boolean;
+  @prop declare granularity?: DateTimePickerGranularity;
   @prop declare placeholder?: string;
   @prop declare className?: string;
   @prop declare size?: FieldSize;
@@ -23,23 +26,37 @@ export class DateTimePicker extends AdminComponent {
 
   @state isOpen = false;
   @state coords: IDateTimePickerCoords = { top: 0, left: 0, width: 0 };
-  @state visibleMonth: Date = DateTimePickerController.getPickerDate(this.value) || new Date();
+  @state visibleMonth: Date = DateTimePickerController.getPickerDate(this.expandedValue) || new Date();
   @state isJumpViewOpen = false;
 
   private get timezone(): string {
     return DateTimePickerController.timezone;
   }
 
+  private get resolvedGranularity(): DateTimePickerGranularity {
+    if (this.granularity) return this.granularity;
+    return this.showTime === false ? DateTimePickerGranularity.DATE : DateTimePickerGranularity.DATETIME;
+  }
+
+  private get expandedValue(): string | undefined {
+    return this.value ? this.resolvedGranularity.expandValue(this.value) : this.value;
+  }
+
+  @bound private handleGranularPick(year: number, monthIndex: number | null): void {
+    this.onChange(monthIndex === null ? String(year) : `${year}-${String(monthIndex + 1).padStart(2, '0')}`);
+    this.isOpen = false;
+  }
+
   private get zonedParts() {
-    return DateTimePickerController.getZonedParts(this.value);
+    return DateTimePickerController.getZonedParts(this.expandedValue);
   }
 
   private get utcDate(): Date | null {
-    return DateTimePickerController.getUtcDate(this.value);
+    return DateTimePickerController.getUtcDate(this.expandedValue);
   }
 
   private get pickerDate(): Date | undefined {
-    return DateTimePickerController.getPickerDate(this.value);
+    return DateTimePickerController.getPickerDate(this.expandedValue);
   }
 
   @bound private updatePosition(): void {
@@ -174,6 +191,7 @@ export class DateTimePicker extends AdminComponent {
     return (
     <div className={`relative w-full ${className}`} ref={this.containerRef}>
       <DateTimePickerTrigger
+        granularity={this.resolvedGranularity}
         size={size}
         isOpen={this.isOpen}
         disabled={this.disabled}
@@ -186,7 +204,19 @@ export class DateTimePicker extends AdminComponent {
         onClear={this.clearValue}
       />
 
-      {this.isOpen && (
+      {this.isOpen && !this.resolvedGranularity.usesCalendar && (
+        <DateTimePickerGranularPopover
+          theme={this.theme}
+          granularity={this.resolvedGranularity}
+          selectedYear={this.zonedParts ? this.zonedParts.year : null}
+          selectedMonth={this.zonedParts ? this.zonedParts.month - 1 : null}
+          coords={this.coords}
+          popoverRef={this.popoverRef}
+          onPick={this.handleGranularPick}
+        />
+      )}
+
+      {this.isOpen && this.resolvedGranularity.usesCalendar && (
         <DateTimePickerPopover
           theme={this.theme}
           showTime={showTime}

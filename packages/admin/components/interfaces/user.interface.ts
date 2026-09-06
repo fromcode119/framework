@@ -22,4 +22,12 @@ export interface IUser {
   permissions: string[];
   /** Login payload only — the session's JWT id. */
   jti?: string;
+  /**
+   * May this account act on the PLATFORM — the container every site runs on? False for a tenant's
+   * own admin on a multi-tenant deployment; true for every admin on a single-tenant one. Drives
+   * whether install/delete/activate controls are rendered at all (see `PlatformAccess`).
+   */
+  platformAdmin?: boolean;
+  /** Is this a multi-tenant deployment? When false, `admin` IS the platform and nothing is hidden. */
+  multiTenant?: boolean;
 }

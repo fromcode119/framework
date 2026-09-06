@@ -2,6 +2,25 @@ import { describe, expect, it } from 'vitest';
 import { RequestSurfaceUtils } from '@core/request-surface-utils';
 
 describe('RequestSurfaceUtils', () => {
+  it('tells extension assets from admin pages under the same root', () => {
+    expect(RequestSurfaceUtils.isExtensionAssetPath('/plugins/cms/ui/bundle.js')).toBe(true);
+    expect(RequestSurfaceUtils.isExtensionAssetPath('/api/v1/plugins/cms/ui/style.css')).toBe(true);
+    expect(RequestSurfaceUtils.isExtensionAssetPath('/themes/atlantis/public/logo.svg')).toBe(true);
+    expect(RequestSurfaceUtils.isExtensionAssetPath('/plugins/tagiqx/settings')).toBe(false);
+    expect(RequestSurfaceUtils.isExtensionAssetPath('/plugins/installed')).toBe(false);
+    expect(RequestSurfaceUtils.isExtensionAssetPath('/plugins/cms/ui')).toBe(false);
+    expect(RequestSurfaceUtils.isExtensionAssetPath('/media')).toBe(false);
+  });
+
+  it('on an admin host only the api, uploads and extension assets are api paths', () => {
+    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/api/v1/auth/host')).toBe(true);
+    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/uploads/a.png')).toBe(true);
+    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/plugins/cms/ui/bundle.js')).toBe(true);
+    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/media')).toBe(false);
+    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/plugins/tagiqx/settings')).toBe(false);
+    expect(RequestSurfaceUtils.isApiPath('/plugins/tagiqx/settings')).toBe(true);
+  });
+
   it('classifies admin requests from the framework client header', () => {
     expect(RequestSurfaceUtils.isAdminRequestContext({
       headers: { 'x-framework-client': 'admin-ui' },

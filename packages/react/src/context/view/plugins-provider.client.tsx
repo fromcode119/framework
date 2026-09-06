@@ -3,6 +3,7 @@ import { Reactor, prop } from '@fromcode119/reactor';
 import { ClientType } from '@fromcode119/core/client';
 import { PluginContextRegistry } from '@react/plugin-context';
 import { PluginsProviderInternal } from '@react/context/view/plugins-provider-internal.client';
+import type { PluginsProviderSeed } from '@react/context/plugins-provider-seed';
 
 /**
  * Public entry point for the plugin runtime context.
@@ -19,6 +20,8 @@ export class PluginsProvider extends Reactor {
   @prop declare apiUrl: string;
   @prop declare clientType: ClientType;
   @prop declare runtimeModules?: Record<string, unknown>;
+  /** Initial state (islands runtime). Omitted, the provider starts from its own defaults — see PluginsProviderSeed. */
+  @prop declare seed?: PluginsProviderSeed;
 
   render(): ReactNode {
     return (
@@ -26,6 +29,7 @@ export class PluginsProvider extends Reactor {
         apiUrl={this.apiUrl}
         clientType={this.clientType}
         runtimeModules={this.runtimeModules}
+        seed={this.seed}
         providerClass={PluginsProvider}
       >
         {this.children}

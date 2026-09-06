@@ -48,7 +48,9 @@ export class DateTimePickerPopover extends PureReactor {
 
     const selectedSummary = value && utcDate
       ? TimezoneUtils.formatSystemDate(
-          utcDate,
+          // The RAW value, not the pre-parsed Date: a literal `YYYY-MM-DD` must be
+          // recognized and rendered as that calendar day, not shifted through a timezone.
+          value,
           showTime ? { dateStyle: 'full', timeStyle: 'short' } : { dateStyle: 'full' },
           placeholder,
           timezone,

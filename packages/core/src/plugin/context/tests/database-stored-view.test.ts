@@ -1,5 +1,16 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DatabaseContextProxy } from '../database';
+import { RequestContextUtils } from '@core/context/request-context';
+
+/**
+ * Plugin `context.db` is tenant-scoped: an untenanted query THROWS rather than silently returning
+ * every tenant's rows. These suites exercise other behaviour, so each test runs inside a tenant the
+ * way a real request does. `enterWith` in a beforeEach does NOT work here — vitest runs the hook and
+ * the test in separate async contexts, so the store has to wrap the test body itself.
+ */
+const tenantIt = (name: string, fn: () => unknown) =>
+  it(name, () => RequestContextUtils.storage.run({ locale: 'en', tenantId: 't1' }, async () => { await fn(); }));
+
 
 const plugin = { manifest: { slug: 'alpha', name: 'alpha', version: '1.0.0' } } as any;
 
@@ -21,14 +32,15 @@ const buildManager = (row: Record<string, unknown>) => ({
 const LOCALIZED_ROW = { id: 5, content: JSON.stringify({ bg: 'къща', en: 'house' }) };
 
 describe('context.db stored view', () => {
-  it('the default view collapses a localized field to one locale value', async () => {
+
+  tenantIt('the default view collapses a localized field to one locale value', async () => {
     const db: any = DatabaseContextProxy.createDatabaseProxy(plugin, buildManager(LOCALIZED_ROW), security);
     const row = await db.findOne('fcp_alpha_pages', { id: 5 });
     expect(typeof row.content).toBe('string');
     expect(['къща', 'house']).toContain(row.content);
   });
 
-  it('db.stored returns the STORED locale map, so read-modify-write cannot destroy other locales', async () => {
+  tenantIt('db.stored returns the STORED locale map, so read-modify-write cannot destroy other locales', async () => {
     const db: any = DatabaseContextProxy.createDatabaseProxy(plugin, buildManager(LOCALIZED_ROW), security);
     const row = await db.stored.findOne('fcp_alpha_pages', { id: 5 });
     const parsed = JSON.parse(row.content);
@@ -37,12 +49,12 @@ describe('context.db stored view', () => {
     expect(parsed.en).toBe('house');
   });
 
-  it('stored keeps the table isolation guard — another plugin\'s table still throws', async () => {
+  tenantIt('stored keeps the table isolation guard — another plugin\'s table still throws', async () => {
     const db: any = DatabaseContextProxy.createDatabaseProxy(plugin, buildManager(LOCALIZED_ROW), security);
     await expect(async () => db.stored.findOne('fcp_beta_orders', { id: 1 })).rejects.toThrow(/Security Violation/);
   });
 
-  it('upsert rows pass through denormalization and the localized collapse like insert', async () => {
+  tenantIt('upsert rows pass through denormalization and the localized collapse like insert', async () => {
     const manager = buildManager({ id: 5, page_title: 'Home', content: JSON.stringify({ bg: 'къща', en: 'house' }) });
     const db: any = DatabaseContextProxy.createDatabaseProxy(plugin, manager, security);
     const row = await db.upsert('fcp_alpha_pages', { id: 5 }, { target: 'id', set: {} });
@@ -51,7 +63,7 @@ describe('context.db stored view', () => {
     expect(['къща', 'house']).toContain(row.content);
   });
 
-  it('stored upsert returns the STORED locale map, denormalized', async () => {
+  tenantIt('stored upsert returns the STORED locale map, denormalized', async () => {
     const manager = buildManager({ id: 5, page_title: 'Home', content: JSON.stringify({ bg: 'къща', en: 'house' }) });
     const db: any = DatabaseContextProxy.createDatabaseProxy(plugin, manager, security);
     const row = await db.stored.upsert('fcp_alpha_pages', { id: 5 }, { target: 'id', set: {} });
@@ -59,7 +71,7 @@ describe('context.db stored view', () => {
     expect(Object.keys(JSON.parse(row.content)).sort()).toEqual(['bg', 'en']);
   });
 
-  it('stored on the stored view is itself, not an endless chain of proxies', () => {
+  tenantIt('stored on the stored view is itself, not an endless chain of proxies', () => {
     const db: any = DatabaseContextProxy.createDatabaseProxy(plugin, buildManager(LOCALIZED_ROW), security);
     expect(db.stored.stored).toBe(db.stored);
   });

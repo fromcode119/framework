@@ -20,7 +20,7 @@ import { FrontendI18nService } from '@react/context/frontend-i18n-service';
 import { CollectionsContext } from '@react/context/collections-context';
 import { MenuContext } from '@react/context/menu-context';
 import { OverridesContext } from '@react/context/overrides-context';
-import { PluginApiRegistryStore } from '@react/context/plugin-api-registry-store';
+import { PluginsProviderSeed } from '@react/context/plugins-provider-seed';
 import { PluginStateContext } from '@react/context/plugin-state-context';
 import { SettingsContext } from '@react/context/settings-context';
 import { SlotsContext } from '@react/context/slots-context';
@@ -43,38 +43,48 @@ export class PluginsProviderInternal extends Bridge<IPluginsProviderRuntimeValue
   /** The public `PluginsProvider` class, handed to the runtime bridge installer. */
   @prop declare providerClass: unknown;
 
+  /**
+   * Initial state for every slice below. Absent (the admin, the Next storefront) it is `empty()` — the
+   * provider's own defaults, unchanged. The islands runtime passes a seed built from the document's
+   * inlined config and the registrations queued before the provider existed, so the FIRST render is the
+   * server tree and React can hydrate the markup in place.
+   */
+  @prop declare seed?: PluginsProviderSeed;
+
   protected read(): IPluginsProviderRuntimeValues {
     const { children: _children, apiUrl, clientType, providerClass, runtimeModules } = this;
-    const [slots, setSlots] = React.useState<Record<string, ISlotComponent[]>>({});
-    const [overrides, setOverrides] = React.useState<Record<string, ISlotComponent>>({});
-    const [themeVariables, setThemeVariables] = React.useState<Record<string, string>>({});
-    const [themeLayouts, setThemeLayouts] = React.useState<Record<string, any>>({});
-    const [themeStyleVariants, setThemeStyleVariants] = React.useState<Record<string, any>>({});
-    const [activeTheme, setActiveTheme] = React.useState<any>(null);
-    const [menuItems, setMenuItems] = React.useState<IMenuItem[]>([]);
-    const [secondaryPanel, setSecondaryPanel] = React.useState<ISecondaryPanelState>(ContextProviderStateService.createEmptySecondaryPanelState());
-    const [collections, setCollections] = React.useState<ICollectionMetadata[]>([]);
+    // Read ONCE: a seed describes the initial state, and `useState` initialisers only run on mount.
+    const [seed] = React.useState(() => this.seed ?? PluginsProviderSeed.empty());
+    const [slots, setSlots] = React.useState<Record<string, ISlotComponent[]>>(seed.slots);
+    const [overrides, setOverrides] = React.useState<Record<string, ISlotComponent>>(seed.overrides);
+    const [themeVariables, setThemeVariables] = React.useState<Record<string, string>>(seed.themeVariables);
+    const [themeLayouts, setThemeLayouts] = React.useState<Record<string, any>>(seed.themeLayouts);
+    const [themeStyleVariants, setThemeStyleVariants] = React.useState<Record<string, any>>(seed.themeStyleVariants);
+    const [activeTheme, setActiveTheme] = React.useState<any>(seed.activeTheme);
+    const [menuItems, setMenuItems] = React.useState<IMenuItem[]>(seed.menuItems);
+    const [secondaryPanel, setSecondaryPanel] = React.useState<ISecondaryPanelState>(seed.secondaryPanel);
+    const [collections, setCollections] = React.useState<ICollectionMetadata[]>(seed.collections);
     const [fieldComponents, setFieldComponents] = React.useState<Record<string, any>>({});
-    const [plugins, setPlugins] = React.useState<any[]>([]);
-    const [settings, setSettings] = React.useState<Record<string, any>>({});
+    const [plugins, setPlugins] = React.useState<any[]>(seed.plugins);
+    const [settings, setSettings] = React.useState<Record<string, any>>(seed.settings);
     const [pluginState, setPluginStateInternal] = React.useState<Record<string, Record<string, any>>>({});
-    const [translations, setTranslations] = React.useState<Record<string, any>>({});
+    const [translations, setTranslations] = React.useState<Record<string, any>>(seed.translations);
     // Plugin/theme UI translations registered via registerTranslations, stored per locale ('*' bucket
     // for legacy flat dicts). Kept separate from the server `translations` so a locale change recomputes
     // the active language without plugins having to re-register.
-    const [registeredTranslations, setRegisteredTranslations] = React.useState<Record<string, Record<string, any>>>({});
+    const [registeredTranslations, setRegisteredTranslations] = React.useState<Record<string, Record<string, any>>>(seed.registeredTranslations);
     // The theme's copy, in its OWN bucket. Merged after `registeredTranslations` by
     // FrontendI18nService.resolveEffective, which is what makes the theme an override layer instead of
     // whichever bundle happened to register last.
-    const [themeTranslations, setThemeTranslations] = React.useState<Record<string, Record<string, any>>>({});
-    const [locale, setLocale] = React.useState<string>(() => FrontendI18nService.detectInitialLocale());
+    const [themeTranslations, setThemeTranslations] = React.useState<Record<string, Record<string, any>>>(seed.themeTranslations);
+    const [locale, setLocale] = React.useState<string>(seed.locale);
     const [refreshVersion, setRefreshVersion] = React.useState(0);
-    const [isReady, setIsReady] = React.useState(false);
-    const [pluginApiStore] = React.useState(() => new PluginApiRegistryStore());
-    const [events] = React.useState(() => new Map<string, Set<(data: any) => void>>());
-    const [serverRuntimeModules, setServerRuntimeModules] = React.useState<Record<string, any>>({});
+    const [isReady, setIsReady] = React.useState(seed.isReady);
+    const [pluginApiStore] = React.useState(seed.pluginApiStore);
+    const [events] = React.useState(seed.events);
+    const [serverRuntimeModules, setServerRuntimeModules] = React.useState<Record<string, any>>(seed.serverRuntimeModules);
     const inFlightConfigLoadsRef = React.useRef<Map<string, Promise<any>>>(new Map());
-    const loadedConfigPathsRef = React.useRef<Set<string>>(new Set());
+    const loadedConfigPathsRef = React.useRef<Set<string>>(new Set(seed.loadedConfigPaths));
     const stabilityRef = React.useRef<any>({});
     const browserState = React.useMemo(() => new BrowserStateClient(), []);
 
@@ -142,6 +152,7 @@ export class PluginsProviderInternal extends Bridge<IPluginsProviderRuntimeValue
     const { triggerRefresh, effectiveTranslations, t } = ContextProviderI18nHooks.useI18nRuntime({
       api, locale, translations, registeredTranslations, themeTranslations, loadedConfigPathsRef, setTranslations,
       setRefreshVersion, setSlots, setOverrides, setMenuItems, setSecondaryPanel, setCollections,
+      seededTranslationsLocale: seed.seededTranslationsLocale,
     });
 
     ContextProviderStabilityHooks.useStabilitySnapshot({

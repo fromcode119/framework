@@ -11,9 +11,34 @@ import { PostgresColumnNormalizer } from '@database/dialects/postgres/column-nor
 import { PostgresSchemaBuilder } from '@database/dialects/postgres/schema-builder';
 import { PostgresReadOperations } from '@database/dialects/postgres/read-operations';
 import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
+import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
+import { TenantRlsSql } from '@database/tenant/tenant-rls-sql';
 
 export class PostgresDatabaseManager extends BaseDialect implements IDatabaseManager {
   private pool: Pool;
+
+  /**
+   * The connection this statement must run on.
+   *
+   * When a tenant scope is open, the request's HELD client — the one carrying `app.tenant_id`, so
+   * row-level security applies. Otherwise the pool. Untenanted callers (migrations, boot, the
+   * tenant resolver itself) take the pool path deliberately; they run as the owner and must be able
+   * to see across tenants.
+   */
+  private get executor(): { query: (text: any, values?: any[]) => Promise<any> } {
+    return (TenantConnectionScope.currentClient(this.pool) as any) ?? this.pool;
+  }
+
+  /**
+   * Drizzle bound to the same connection as `executor`. The pool-wide instance is for untenanted
+   * callers only: a Drizzle statement issued INSIDE a scope on the pool would need a second client
+   * while the scope holds its own — ten concurrent scopes, ten held clients, and every such
+   * statement waits for an eleventh that never comes (the column normalizer had exactly this bug).
+   */
+  private get orm(): any {
+    const client = TenantConnectionScope.currentClient(this.pool);
+    return client ? drizzle(client as any) : this.drizzle;
+  }
   public readonly drizzle: any;
   public readonly dialect = 'postgres' as const;
   private normalizer: PostgresColumnNormalizer;
@@ -41,6 +66,37 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     this.reader = new PostgresReadOperations(this.pool, this.drizzle, this.normalizer, this.like);
   }
 
+  /**
+   * Every client this pool hands out is marked as acting for the platform, which is what lets the
+   * framework write tenant-less rows (schema fingerprints, migration bookkeeping) that no tenant
+   * owns. Applied on the POOL's connect event, because the marker is per-connection and a pool
+   * hands out many.
+   *
+   * Only ever called for the DDL connection. The request connection is never marked, so nothing a
+   * tenant request does can write platform rows.
+   */
+  markAsPlatformConnection(): void {
+    this.pool.on('connect', (client: any) => {
+      client.query(TenantRlsSql.setPlatformAdminStatement(), ['on']).catch(() => undefined);
+    });
+  }
+
+  /** Postgres isolates with row-level security; see TenantRlsSql and DatabaseRoleGuard. */
+  supportsTenantIsolation(): boolean {
+    return true;
+  }
+
+  /** Holds one pooled client with `app.tenant_id` set, so row-level security applies to every
+   * statement `fn` issues. See TenantConnectionScope for why this is not `SET LOCAL`. */
+  async withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> {
+    return TenantConnectionScope.run(this.pool, tenantId, fn);
+  }
+
+  /** Every statement `fn` issues runs untenanted with the platform-admin marker set. See TenantConnectionScope. */
+  async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> {
+    return TenantConnectionScope.runAsPlatformAdmin(this.pool, fn);
+  }
+
   async connect(): Promise<void> {
     const client = await this.pool.connect();
     client.release();
@@ -48,9 +104,9 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
 
   async execute(query: any): Promise<any> {
     if (typeof query === 'string') {
-      return this.pool.query(query);
+      return this.executor.query(query);
     }
-    return this.drizzle.execute(query);
+    return this.orm.execute(query);
   }
 
   invalidateTableCache(tableName: string): void {
@@ -87,7 +143,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       const tableName = tableOrName;
       const columns = Object.keys(data || {});
       if (!columns.length) {
-        const result = await this.pool.query(`INSERT INTO "${tableName}" DEFAULT VALUES RETURNING *`);
+        const result = await this.executor.query(`INSERT INTO "${tableName}" DEFAULT VALUES RETURNING *`);
         return result.rows[0] || null;
       }
       const identifiers = columns.map((column) => `"${NamingStrategy.toSnakeCase(column)}"`).join(', ');
@@ -95,13 +151,13 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       const values = await Promise.all(
         columns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, data[column]))
       );
-      const result = await this.pool.query(
+      const result = await this.executor.query(
         `INSERT INTO "${tableName}" (${identifiers}) VALUES (${placeholders}) RETURNING *`,
         values
       );
       return result.rows[0] || null;
     }
-    const [result] = await this.drizzle.insert(tableOrName).values(data).returning();
+    const [result] = await this.orm.insert(tableOrName).values(data).returning();
     return result;
   }
 
@@ -127,12 +183,12 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       );
       const values = [...setValues, ...whereValues];
 
-      const result = await this.pool.query(`UPDATE "${tableName}" SET ${setClause} WHERE ${whereClause} RETURNING *`, values);
+      const result = await this.executor.query(`UPDATE "${tableName}" SET ${setClause} WHERE ${whereClause} RETURNING *`, values);
       return result.rows[0] || null;
     }
 
     const conditions = this.buildWhereConditions(where, tableOrName);
-    const [result] = await this.drizzle
+    const [result] = await this.orm
       .update(tableOrName)
       .set(data)
       .where(and(...conditions))
@@ -142,7 +198,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
 
   async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
     const { target, set } = options;
-    const query = this.drizzle.insert(tableOrName).values(data).onConflictDoUpdate({
+    const query = this.orm.insert(tableOrName).values(data).onConflictDoUpdate({
       target: typeof target === 'string' ? (tableOrName as any)[target] : target,
       set
     }).returning();
@@ -157,13 +213,13 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
       const { sql: whereClause, values } = this.buildRawWhereClause(normalizedWhere);
       if (!whereClause) throw new Error(`Unsafe delete blocked: missing where clause for table "${tableName}"`);
 
-      const result = await this.pool.query(`DELETE FROM "${tableName}"${whereClause} RETURNING *`, values);
+      const result = await this.executor.query(`DELETE FROM "${tableName}"${whereClause} RETURNING *`, values);
       return (result.rowCount || 0) > 0;
     }
 
     const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
     const conditions = this.buildWhereConditions(where, tableOrName);
-    let query = this.drizzle.delete(tableOrName);
+    let query = this.orm.delete(tableOrName);
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
     } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
@@ -180,8 +236,13 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   }
 
   protected async executeRawSelect(sqlStr: string, values: any[]): Promise<any[]> {
-    const result = await this.pool.query(sqlStr, values);
+    const result = await this.executor.query(sqlStr, values);
     return result.rows;
+  }
+
+  async queryRaw(sqlText: string, values: unknown[] = []): Promise<Array<Record<string, unknown>>> {
+    const result = await this.executor.query(sqlText, values);
+    return (result?.rows ?? []) as Array<Record<string, unknown>>;
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {

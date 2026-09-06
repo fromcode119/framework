@@ -12,12 +12,13 @@ import type { ISelectOptionGroup } from '@/components/ui/interfaces/select-optio
 
 export class SelectMenu extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<SelectMenu, 'theme' | 'searchable' | 'searchValue' | 'coords' | 'filteredOptions' | 'groupedFilteredOptions' | 'showGroupHeaders' | 'selectedOption' | 'menuRef' | 'searchInputRef' | 'onSearchChange' | 'onSelect'>;
+  declare props: Pick<SelectMenu, 'theme' | 'searchable' | 'searchValue' | 'coords' | 'filteredOptions' | 'groupedFilteredOptions' | 'showGroupHeaders' | 'selectedOption' | 'menuRef' | 'searchInputRef' | 'onSearchChange' | 'onSelect' | 'onCreate' | 'createLabel' | 'onDelete'>;
 
   @prop declare theme: ThemeMode;
   @prop declare searchable: boolean;
   @prop declare searchValue: string;
-  @prop declare coords: { top: number; left: number; width: number };
+  /** Either `top` (opens downward) or `bottom` (opens upward, anchored to the trigger) is set — never both. */
+  @prop declare coords: { top?: number; bottom?: number; left: number; width: number };
   @prop declare filteredOptions: IOption[];
   @prop declare groupedFilteredOptions: ISelectOptionGroup[];
   @prop declare showGroupHeaders: boolean;
@@ -26,12 +27,32 @@ export class SelectMenu extends PureReactor {
   @prop declare searchInputRef: Ref<HTMLInputElement>;
   @prop declare onSearchChange: (value: string) => void;
   @prop declare onSelect: (value: string) => void;
+  /** Present only when the caller allows creating an option; receives the typed text. */
+  @prop declare onCreate?: (label: string) => void;
+  /** Present only when the caller allows deleting its deletable options; receives the option value. */
+  @prop declare onDelete?: (value: string) => void;
+  /** Caller-supplied wording for the create row, e.g. `Add "Кръстник"`. */
+  @prop declare createLabel?: string;
+
+  /**
+   * The typed text is offered as a new option only when it is non-empty and no visible option already
+   * carries it. Matching on the LABEL (not the value) is deliberate: the user is typing what they want to
+   * see, and offering to create a duplicate of something already in the list is how duplicate catalog
+   * entries get made.
+   */
+  private get canCreate(): boolean {
+    if (!this.onCreate) return false;
+    const typed = this.searchValue.trim().toLowerCase();
+    if (!typed) return false;
+    return !this.filteredOptions.some((option) => String(option.label ?? '').trim().toLowerCase() === typed);
+  }
 
   render(): React.ReactNode {
     const {
       theme, searchable, searchValue, coords, filteredOptions, groupedFilteredOptions,
-      showGroupHeaders, selectedOption, menuRef, searchInputRef, onSearchChange, onSelect,
+      showGroupHeaders, selectedOption, menuRef, searchInputRef, onSearchChange, onSelect, onCreate,
     } = this;
+    const canCreate = this.canCreate;
     const isDarkTheme = theme === ThemeMode.DARK;
     const searchInputThemeClasses = isDarkTheme
       ? '!bg-slate-900/60 !border-slate-800 !text-white caret-white placeholder:text-slate-600 hover:!border-indigo-500/50 focus:!border-indigo-500 focus:!ring-0 [color-scheme:dark]'
@@ -43,7 +64,7 @@ export class SelectMenu extends PureReactor {
               ref={menuRef}
               style={{
                 position: 'fixed',
-                top: coords.top,
+                ...(coords.top !== undefined ? { top: coords.top } : { bottom: coords.bottom }),
                 left: coords.left,
                 width: coords.width,
                 zIndex: 9999
@@ -73,10 +94,26 @@ export class SelectMenu extends PureReactor {
               )}
 
               <div className="flex-1 overflow-y-auto p-1 scrollbar-hide">
+                {canCreate && (
+                  <button
+                    type="button"
+                    onClick={() => onCreate?.(searchValue.trim())}
+                    className={`w-full text-left px-3.5 py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center gap-2 mb-0.5 font-semibold ${
+                      theme === ThemeMode.DARK
+                        ? 'text-indigo-300 hover:bg-indigo-500/10'
+                        : 'text-indigo-600 hover:bg-indigo-50'
+                    }`}
+                  >
+                    <FrameworkIcons.Plus size={12} className="flex-shrink-0" />
+                    <span className="truncate">{this.createLabel ?? `Create "${searchValue.trim()}"`}</span>
+                  </button>
+                )}
                 {filteredOptions.length === 0 ? (
+                  canCreate ? null : (
                   <div className="px-4 py-8 text-center">
                     <p className="text-[11px] font-semibold text-slate-500 tracking-wide opacity-50">No results found</p>
                   </div>
+                  )
                 ) : (
                   groupedFilteredOptions.map((group) => {
                     const sections = SelectUtils.sections(group.options);
@@ -118,6 +155,19 @@ export class SelectMenu extends PureReactor {
                           </span>
                           {(selectedOption && selectedOption === opt) ? (
                             <FrameworkIcons.Check size={12} className="relative z-10 flex-shrink-0" />
+                          ) : this.onDelete && opt.deletable ? (
+                            <span
+                              role="button"
+                              aria-label="Remove option"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                this.onDelete?.(SelectUtils.normalizeValue(opt.value));
+                              }}
+                              className="relative z-10 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                            >
+                              <FrameworkIcons.Trash size={11} />
+                            </span>
                           ) : (
                             <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100 flex-shrink-0" />
                           )}

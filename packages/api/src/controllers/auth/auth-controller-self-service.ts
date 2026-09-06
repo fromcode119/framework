@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { TenantMode, TenantMembershipService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerSecurity } from '@api/controllers/auth/auth-controller-security';
 import { SystemTwoFactorService } from '@api/controllers/system/system-2fa-service';
@@ -49,6 +50,15 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
         // so omitting permissions here silently stripped them on every security refresh and broke
         // permission-scoped nav (`requiredCapabilities`) until the next full login.
         permissions: await this.auth.getUserPermissions(userId).catch(() => [] as string[]),
+        // Same rule, same reason, for the two tenancy flags: the admin hides platform controls
+        // (install, delete, activate) from `platformAdmin`/`multiTenant`. Present at login and absent
+        // here would show them on sign-in and hide them after the first reload — or the reverse.
+        // This is the override that actually serves /auth/security; the base class's method is
+        // shadowed, so the flags have to live HERE or nothing reads them.
+        platformAdmin: TenantMode.isEnabled()
+          ? await new TenantMembershipService(this.db).isPlatformAdminAccount(String(userId))
+          : true,
+        multiTenant: TenantMode.isEnabled(),
       },
       profile,
       account: {

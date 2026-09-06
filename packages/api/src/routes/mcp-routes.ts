@@ -2,10 +2,13 @@ import express from 'express';
 
 import { CoercionUtils, RateLimiter, SystemConstants } from '@fromcode119/core';
 import { McpStreamableHandler } from '@fromcode119/mcp-server';
+import { McpWirePaths } from '@fromcode119/mcp';
 import { McpController } from '@api/controllers/mcp/mcp-controller';
 import { McpToolCallService } from '@api/controllers/mcp/mcp-tool-call-service';
 import { McpTokenController } from '@api/controllers/mcp/mcp-token-controller';
 import { McpTokenService } from '@api/controllers/mcp/mcp-token-service';
+import { McpTokenStore } from '@api/controllers/mcp/mcp-token-store';
+import { McpSitesController } from '@api/controllers/mcp/mcp-sites-controller';
 import { McpRouteUtils } from '@api/utils/mcp-route-utils';
 import { IMcpRoutesContext } from '@api/routes/interfaces/mcp-routes-context.interface';
 
@@ -34,6 +37,11 @@ export class McpRouter {
     router.get(`${McpRouteUtils.BASE_PATH}/tools`, context.auth.requireApiToken(), (req, res) => controller.listTools(req, res));
     router.post(`${McpRouteUtils.BASE_PATH}/tools/call`, context.auth.requireApiToken(), (req, res) => controller.callTool(req, res));
 
+    // Which sites this token may act on. An all-sites token calls this BEFORE naming a site (the
+    // tenancy gate lets exactly this route through unbound); a site-bound token sees its one site.
+    const sites = new McpSitesController(context.tenants);
+    router.get(McpWirePaths.SITES, context.auth.requireApiToken(), (req, res) => sites.list(req, res));
+
     McpRouter.registerStreamableTransport(router, context, service);
 
     // The scope picker needs the tool NAMES while the operator is on an admin SESSION, and
@@ -48,7 +56,7 @@ export class McpRouter {
       res.json({ tools: names.sort(), groups });
     });
 
-    const tokens = new McpTokenController(new McpTokenService(context.db));
+    const tokens = new McpTokenController(new McpTokenService(new McpTokenStore(context.db)), context.memberships);
     const adminOnly = context.auth.guard(['admin']);
     router.get(`${McpRouteUtils.BASE_PATH}/tokens`, adminOnly, (req, res) => tokens.listTokens(req, res));
     router.post(`${McpRouteUtils.BASE_PATH}/tokens`, adminOnly, (req, res) => tokens.createToken(req, res));

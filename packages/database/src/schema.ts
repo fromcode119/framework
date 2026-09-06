@@ -72,6 +72,8 @@ export class Schema {
   signatureVerified: boolean('signature_verified').default(false),
   healthStatus: text('health_status').default('healthy'), // healthy, error, warning
   sandboxConfig: jsonb('sandbox_config'),
+  /** T5c: the OS user this plugin's isolated process runs as (PLUGIN_UID_BASE + n), fixed on first isolated start. */
+  isolationUid: integer('isolation_uid'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 

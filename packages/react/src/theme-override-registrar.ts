@@ -14,9 +14,10 @@ export class ThemeOverrideRegistrar {
     for (const [slotKey, loader] of Object.entries(slots)) {
       const Lazy = React.lazy(loader);
       // The RAW loader rides along as a fifth argument. The browser reducer takes four and ignores it;
-      // a SERVER render needs it, because `renderToStaticMarkup` cannot resolve `React.lazy` — it emits
-      // the Suspense fallback instead of the renderer, which for the home hero is the LCP element. The
-      // server registry awaits these loaders once and registers the resolved component in place.
+      // a SERVER render needs it, because a synchronous server render cannot resolve `React.lazy` — it
+      // emits the Suspense fallback instead of the renderer, which for the home hero is the LCP element.
+      // The server registry awaits these loaders once and registers the resolved component in place,
+      // wrapped in the same `withSuspense` boundary as here.
       ContextBridge.registerOverride(slotKey, ThemeOverrideRegistrar.withSuspense(Lazy), themeSlug, priority, loader);
     }
   }
@@ -72,19 +73,38 @@ export class ThemeOverrideRegistrar {
    * Resolve to the component — explicit `default`, then a PascalCase function, then any function.
    */
   private static normalizeLoader(loader: () => Promise<unknown>): IBlockRendererLoader {
-    return () =>
-      loader().then((mod) => {
-        const record = (mod ?? {}) as Record<string, unknown>;
-        const values = Object.values(record);
-        const component =
-          record.default ||
-          values.find((v) => typeof v === 'function' && /^[A-Z]/.test((v as { name?: string }).name || '')) ||
-          values.find((v) => typeof v === 'function');
-        return { default: component as React.ComponentType<any> };
-      });
+    let cached: { default: React.ComponentType<any> } | null = null;
+    const load = () => loader().then((mod) => {
+      const record = (mod ?? {}) as Record<string, unknown>;
+      const values = Object.values(record);
+      const component =
+        record.default ||
+        values.find((v) => typeof v === 'function' && /^[A-Z]/.test((v as { name?: string }).name || '')) ||
+        values.find((v) => typeof v === 'function');
+      cached = { default: component as React.ComponentType<any> };
+      return cached;
+    });
+    // Once the module is cached the loader answers with a thenable whose `then` calls back SYNCHRONOUSLY.
+    // `React.lazy`'s initialiser subscribes with `then` before it checks its own status, so a synchronous
+    // callback settles it in the same tick: the lazy renders without suspending. That is what lets the
+    // runtime warm every renderer before `hydrateRoot` and hydrate each block in place — a boundary that
+    // suspends during hydration and then receives an update is thrown away by React and re-rendered
+    // client-side (the block flashes out and back in, a 0.36 layout shift on the home page).
+    return () => (cached ? ThemeOverrideRegistrar.settled(cached) : load());
   }
 
-  private static withSuspense(Component: React.ComponentType<any>): React.ComponentType<any> {
+  /** A thenable that resolves synchronously — see `normalizeLoader`. */
+  private static settled<T>(value: T): Promise<T> {
+    const thenable = { then(onFulfilled?: (v: T) => unknown) { onFulfilled?.(value); return thenable; } };
+    return thenable as unknown as Promise<T>;
+  }
+
+  /**
+   * The boundary every registered renderer is wrapped in. PUBLIC because the server registry re-wraps a
+   * warmed (resolved) override with exactly this — `renderToString` then emits the same `<!--$-->`
+   * boundary the browser tree has around its `React.lazy`, so `hydrateRoot` adopts the block in place.
+   */
+  static withSuspense(Component: React.ComponentType<any>): React.ComponentType<any> {
     return function SuspenseWrapper(props: any) {
       return React.createElement(React.Suspense, { fallback: null }, React.createElement(Component, props));
     };

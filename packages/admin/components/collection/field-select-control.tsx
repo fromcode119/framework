@@ -14,6 +14,21 @@ export class FieldSelectControl extends PureReactor {
   @prop declare isFieldReadOnly: boolean;
   @prop declare wrapWithReadOnlyOverride: (node: ReactNode, roundedClass?: string) => ReactNode;
 
+  private static toSelectedValues(currentValue: unknown): string[] {
+    if (Array.isArray(currentValue)) return currentValue.map((item: any) => String(item)).filter(Boolean);
+    if (typeof currentValue !== 'string') return [];
+    const trimmed = currentValue.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed.map((item: any) => String(item)).filter(Boolean);
+      } catch {
+        // not JSON — fall through to the comma list
+      }
+    }
+    return trimmed.split(',').map((item) => item.trim()).filter(Boolean);
+  }
+
   render(): ReactNode {
     const { field, currentValue, updateValue, theme, isFieldReadOnly, wrapWithReadOnlyOverride } = this;
     const options = (field.options || []).map((option: any) => ({
@@ -38,11 +53,10 @@ export class FieldSelectControl extends PureReactor {
       );
     }
 
-    const selectedValues = Array.isArray(currentValue)
-      ? currentValue.map((item: any) => String(item)).filter(Boolean)
-      : (typeof currentValue === 'string'
-        ? currentValue.split(',').map((item) => item.trim()).filter(Boolean)
-        : []);
+    // A multi-value select persists an ARRAY; a TEXT column hands it back as its JSON string, so a
+    // JSON array is parsed before the legacy comma-list fallback (which turned `["mon","tue"]` into
+    // the chips `["mon"` and `"tue"]`).
+    const selectedValues = FieldSelectControl.toSelectedValues(currentValue);
     const selectedSet = new Set(selectedValues);
     const optionValueToRaw = new Map(options.map((option) => [String(option.value), option.value]));
     const optionValueToLabel = new Map(options.map((option) => [String(option.value), option.label]));

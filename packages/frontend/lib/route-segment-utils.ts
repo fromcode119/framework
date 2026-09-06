@@ -1,8 +1,10 @@
+import { RuntimeAssetConstants } from '@fromcode119/core/client';
+
 /**
  * Utilities for processing route segments and path matching.
  */
 export class RouteSegmentUtils {
-  static readonly RESERVED_ROOT_SEGMENTS = new Set(['api', '_next', 'plugins', 'themes', 'media', 'uploads']);
+  static readonly RESERVED_ROOT_SEGMENTS = new Set(['api', '_next', RuntimeAssetConstants.SEGMENT, 'fc-document', 'plugins', 'themes', 'media', 'uploads']);
   static readonly STATIC_FILE_EXT_RE = /\.(?:map|js|mjs|cjs|css|png|jpe?g|gif|svg|ico|webp|avif|woff2?|ttf|eot|json|txt|xml|webm|mp4|mov|pdf)$/i;
 
   /**

@@ -5,4 +5,6 @@ export interface IMenuItemManifest {
   priority?: number;
   group?: string;
   children?: IMenuItemManifest[];
+  /** Shown to PLATFORM admins only; dropped from the payload for everyone else on a multi-tenant deployment. */
+  platformOnly?: boolean;
 }

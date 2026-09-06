@@ -1,9 +1,12 @@
 /** ServerRoutesSetup — registers API routes. Extracted from APIServer (ARC-007). */
 
 import express from 'express';
+import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
+import { TenantPluginGuard } from '@api/middlewares/tenant-plugin-guard';
+import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, ThemeManager } from '@fromcode119/core';
+import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { RESTController } from '@api/controllers/rest/rest-controller';
@@ -18,10 +21,13 @@ import { ThemeAssetRouter } from '@api/routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '@api/routes/marketplace';
 import { AppearanceRouter } from '@api/routes/appearances';
 import { SystemRouter } from '@api/routes/system-router';
+import { TenantAdminRouter } from '@api/routes/tenant-admin-router';
+import { ServerUploadsConfigService } from '@api/server/server-uploads-config-service';
 import { ScimRouter } from '@api/routes/scim-router';
 import { UserPermissionChecker } from '@fromcode119/auth';
 import { MediaRouter } from '@api/routes/media-router';
 import { McpRouter } from '@api/routes/mcp-routes';
+import { RoutingRouter } from '@api/routes/routing-router';
 import { McpFrameworkToolsRegistrar } from '@api/controllers/mcp/mcp-framework-tools-registrar';
 import { McpAuditRecorder } from '@api/controllers/mcp/mcp-audit-recorder';
 import { FilesRouter } from '@api/routes/files-router';
@@ -126,17 +132,27 @@ export class ServerRoutesSetup {
     const pluginAssetRouter = new PluginAssetRouter(this.manager).router;
     const themeAssetRouter = new ThemeAssetRouter(this.themeManager).router;
 
+    // One resolver, shared by the guards AND the list filters, so "who is a platform admin" is
+    // answered in exactly one place and memoised per request.
+    const platformAccess = new PlatformAccessResolver((this.manager as any).schemaDb ?? this.manager.db);
+    const platformAdmin = new PlatformAdminGuard(platformAccess);
+    const tenantPlugin = new TenantPluginGuard(platformAccess);
+
     vApi.use(AUTH, new AuthRouter(this.manager, this.auth).router);
     vApi.use(PLUGINS, pluginAssetRouter);
-    vApi.use(PLUGINS, new PluginRouter(this.manager, this.auth).router);
-    vApi.use(PLUGINS, new PluginSettingsRouter(this.manager, this.auth).router);
+    vApi.use(PLUGINS, new PluginRouter(this.manager, this.auth, platformAdmin).router);
+    vApi.use(PLUGINS, new PluginSettingsRouter(this.manager, this.auth, tenantPlugin).router);
     vApi.use(PLUGINS, this.pluginRouter);
-    vApi.use(MARKETPLACE, new MarketplaceRouter(this.manager, this.auth).router);
+    vApi.use(MARKETPLACE, new MarketplaceRouter(this.manager, this.auth, platformAdmin).router);
     vApi.use(THEMES, themeAssetRouter);
-    vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth).router);
+    vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth, platformAdmin).router);
     vApi.use(APPEARANCES, new AppearanceRouter(this.auth).router);
     this.registerCoreExtensionRoutes(vApi);
     vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController).router);
+    // Tenant provisioning (T4): platform admins only, on the owner connection. Mounted under SYSTEM
+    // at its own prefix so its `/:id` never shadows a system route.
+    const uploadsDir = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), this.mediaManager ?? undefined).uploadDir;
+    vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_TENANTS}`, new TenantAdminRouter(this.manager, this.themeManager, uploadsDir, this.auth, platformAdmin).router);
     // SCIM 2.0 provisioning — token-authenticated (not session), mounted at the standard /scim/v2 base.
     vApi.use(RouteConstants.SEGMENTS.SCIM_BASE, new ScimRouter(this.manager, this.auth).router);
     vApi.use(MEDIA, new MediaRouter(this.manager, this.auth, this.mediaManager).router);
@@ -157,8 +173,12 @@ export class ServerRoutesSetup {
       db: (this.manager as any).db,
       auth: this.auth,
       settingsCache: this.settingsCache,
+      tenants: new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db)),
+      memberships: new TenantMembershipService((this.manager as any).db),
     }));
 
+    // The platform gateway's host → app map (T6). Secret-only; see RoutingRouter.
+    vApi.use(new RoutingRouter(new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db))).router);
     vApi.use(new CollectionRouter(this.manager, this.restController).router);
     this.app.use(vPrefix, vApi);
     this.app.use(PLUGINS, pluginAssetRouter);

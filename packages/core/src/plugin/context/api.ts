@@ -1,6 +1,7 @@
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IMiddlewareConfig } from '@core/interfaces/middleware-config.interface';
 import { Logger } from '@core/logging';
+import { RequestContextUtils } from '@core/context/request-context';
 import { PluginHealthRouteHandler } from '@core/plugin-health-route-handler';
 import { RouteConstants } from '@core/constants/route.constants';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
@@ -11,6 +12,7 @@ import { ApiAccessGate } from '@core/plugin/context/api-access-gate';
 import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
 import type { ApiPermissionRequirement } from '@core/plugin/context/api-permission-requirement';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { AsyncRouteGuard } from '@core/base/async-route-guard';
 
 export class ApiContextProxy {
@@ -77,6 +79,24 @@ export class ApiContextProxy {
                 code: 'PLUGIN_DISABLED'
               });
             }
+            // The TENANT axis. Routes are registered once at boot for every installed plugin, and
+            // this gate runs on every request — which is exactly why turning a plugin on or off for
+            // a customer needs no restart. The reason is reported separately from the platform one
+            // above: "your site does not run this" and "this plugin is broken" are different
+            // answers, and telling an operator the wrong one costs an afternoon.
+            if (!PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug)) {
+              // Name the tenant. "Not enabled for this site" and "this request never got a site"
+              // are different faults with different fixes, and a 403 that cannot tell them apart
+              // sends an operator looking in the wrong place.
+              const tenantId = RequestContextUtils.getTenantId();
+              return res.status(403).json({
+                error: tenantId
+                  ? `Plugin "${plugin.manifest.slug}" is not enabled for this site`
+                  : `Plugin "${plugin.manifest.slug}" is unavailable: this request resolved no site`,
+                code: tenantId ? 'PLUGIN_NOT_ENABLED_FOR_TENANT' : 'NO_TENANT_IN_REQUEST',
+                tenantId: tenantId ?? null,
+              });
+            }
             await handler(req, res, next);
           } catch (error) {
             next(error);
@@ -117,6 +137,11 @@ export class ApiContextProxy {
           config.handler = (req: any, res: any, next: any) => {
             const currentPlugin = manager.plugins.get(plugin.manifest.slug);
             if (!currentPlugin || currentPlugin.state !== PluginState.ACTIVE) {
+              return next();
+            }
+            // Same two axes for global middleware: a plugin a tenant does not run must not observe,
+            // rewrite or short-circuit that tenant's requests.
+            if (!PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug)) {
               return next();
             }
             return originalHandler(req, res, next);

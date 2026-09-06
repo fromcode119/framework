@@ -7,6 +7,8 @@ export class BackupCatalogGroupKey extends Enum {
   static readonly THEMES = new BackupCatalogGroupKey('themes');
   static readonly DATABASE = new BackupCatalogGroupKey('database');
   static readonly TRANSFER = new BackupCatalogGroupKey('transfer');
+  /** Tenant archives: one site's rows, files and members (T4). */
+  static readonly TENANTS = new BackupCatalogGroupKey('tenants');
 
   private constructor(value: string) {
     super(value);

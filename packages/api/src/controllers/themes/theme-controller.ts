@@ -1,4 +1,6 @@
 import { ThemeAssetScope } from '@api/controllers/themes/enums/theme-asset-scope.enum';
+import { TenantMode, ThemeState } from '@fromcode119/core';
+import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { Request, Response } from 'express';
 import { ArchiveUploadSessionService, BaseController, ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
@@ -16,7 +18,18 @@ export class ThemeController extends BaseController {
   }
 
   async list(req: Request, res: Response) {
-    res.json(this.manager.getThemes());
+    // Until T3 the active theme is process-wide, so a tenant admin has exactly one theme that is in
+    // any sense "its": the active one. The rest of the installed set is platform inventory, and a
+    // customer reading it off the shared box is the leak this filter closes.
+    // T3: a tenant admin chooses among the themes the operator INSTALLED, for its own site — so it sees
+    // every installed theme, with `state` marking the one ITS site renders with. Putting files on disk
+    // stays a platform action elsewhere in this router.
+    const themes = this.manager.getThemes();
+    res.json(themes.map((theme) => ({
+      ...theme,
+      multiTenant: TenantMode.isEnabled(),
+      activeForTenant: TenantMode.isEnabled() ? theme.state === ThemeState.ACTIVE : null,
+    })));
   }
 
   async checkUpdate(req: Request, res: Response) {

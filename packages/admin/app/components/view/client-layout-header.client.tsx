@@ -9,6 +9,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AppEnv } from '@/lib/env';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { TenantSwitcher } from '@/app/components/view/tenant-switcher.client';
 export class ClientLayoutHeader extends AdminComponent {
   @prop declare onMenuClick: () => void;
 
@@ -66,8 +67,15 @@ export class ClientLayoutHeader extends AdminComponent {
     const toggleTheme = this.runtime.toggleTheme;
 
     return (
-      <header className="flex h-16 items-center justify-between border-b bg-white/80 px-6 backdrop-blur-md transition-all duration-300 ease-in-out dark:border-slate-800 dark:bg-[#020617]/80 lg:px-12">
+      // `backdrop-blur-md` makes this header its own stacking context, so a popover inside it
+      // (the tenant switcher) cannot escape via z-index alone. `relative z-50` lifts the whole
+      // header above page-level sticky bars (z-40) while staying under the sidebar (z-200).
+      <header className="relative z-50 flex h-16 items-center justify-between border-b bg-white/80 px-6 backdrop-blur-md transition-all duration-300 ease-in-out dark:border-slate-800 dark:bg-[#020617]/80 lg:px-12">
         <div className="flex items-center gap-4">
+          {/* Which customer's site is being edited. Renders nothing on a single-tenant deployment;
+              on a multi-tenant one it is visible on EVERY screen, because editing content in the
+              wrong customer's site is the mistake this control exists to prevent. */}
+          <TenantSwitcher />
           <button
             onClick={onMenuClick}
             className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"

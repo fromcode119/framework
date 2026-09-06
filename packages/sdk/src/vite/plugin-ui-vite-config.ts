@@ -16,6 +16,12 @@ import { PluginUiCssAsTextPlugin } from './plugin-ui-css-as-text-plugin';
 export class PluginUiViteConfig {
   static create(): UserConfig {
     const uiDir = process.env.PLUGIN_UI_DIR as string;
+    // Build output belongs in the plugin's `ui/` DIST directory, never beside the `.tsx` sources it
+    // was compiled from. Writing into the source root is what put `bundle.js` next to 48 components,
+    // forced ~10 `.gitignore` lines per plugin to hide it, and left every package shipping the same
+    // bundle twice once the build also copied it to `ui/`. Falls back to the source dir so a caller
+    // that has not been updated still builds where it always did.
+    const outDir = process.env.PLUGIN_UI_OUT_DIR || uiDir;
 
     return {
       // `@plugin/` resolves to THIS plugin's `src` — the analogue of a theme's `@theme/`, and the
@@ -53,7 +59,7 @@ export class PluginUiViteConfig {
       // every plugin build dumps hundreds of site images into src/ui.
       publicDir: false,
       build: {
-        outDir: uiDir,
+        outDir,
         emptyOutDir: false,
         target: 'es2022',
         minify: 'esbuild',

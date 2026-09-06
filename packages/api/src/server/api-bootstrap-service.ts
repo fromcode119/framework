@@ -50,6 +50,11 @@ export class ApiBootstrapService {
     });
 
     const themeManager = new ThemeManager((manager as any).db);
+    // The plugin manager resolves every plugin's `context.theme.*` through this reference, and plugins
+    // read it during `discoverPlugins()` below (the forms plugin builds its default contact form from the
+    // theme's `contactFormDefaults` in onInit). Without this hand-off `context.theme` was `{}` for every
+    // plugin on every boot, and each theme-declared plugin default silently lost to the plugin's own.
+    manager.setThemeManager(themeManager);
     manager.setThemeArchiveInstaller(async (filePath: string, options?: { activate?: boolean }) => {
       const manifest = await themeManager.installFromZip(filePath);
       if (options?.activate !== false) {

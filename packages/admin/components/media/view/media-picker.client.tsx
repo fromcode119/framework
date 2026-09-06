@@ -71,7 +71,8 @@ export class MediaPicker extends Reactor {
   }
 
   @bound private async fetchThemeAssets(): Promise<IMediaItem[]> {
-    if (!this.allowThemeAssets) return [];
+    // Theme assets are part of the ONE media popup everywhere; a caller opts OUT explicitly.
+    if (this.allowThemeAssets === false) return [];
     this.themeLoading = true;
     let loaded: IMediaItem[] = [];
     try {
@@ -163,7 +164,7 @@ export class MediaPicker extends Reactor {
       <div className="fixed inset-0 z-[2147483000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
         <div className="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-lg shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
           <MediaPickerHeader
-            showSourceTabs={!!this.allowThemeAssets}
+            showSourceTabs={this.allowThemeAssets !== false}
             themeSource={this.themeSource}
             onSourceChange={this.handleSourceChange}
             onClose={this.onClose}

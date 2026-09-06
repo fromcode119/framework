@@ -46,10 +46,13 @@ export class PluginPackageValidator {
     ].filter(Boolean);
 
     for (const uiEntry of uiEntries) {
-      const uiPath = path.resolve(packageRoot, PluginPackageLayout.UI_DIR, uiEntry);
-      if (fs.existsSync(uiPath)) {
+      // The SAME lookup that decided the entry exists: a packed archive ships its bundles under `ui/`
+      // (the served directory), a source checkout under `src/ui/`. Checking only the latter refused
+      // every built upload with "missing UI file" — including archives this repo's own pack produced.
+      if (PluginPackageLayout.hasUiAsset(packageRoot, uiEntry)) {
         continue;
       }
+      const uiPath = path.resolve(packageRoot, PluginPackageLayout.UI_DIR, uiEntry);
 
       const sourceCandidate = this.toTypeScriptCandidate(uiPath);
       if (sourceCandidate && fs.existsSync(sourceCandidate)) {

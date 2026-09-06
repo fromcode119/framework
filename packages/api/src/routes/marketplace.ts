@@ -1,6 +1,7 @@
 import { BaseRouter } from '@fromcode119/core';
 import { PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
+import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 
 /**
  * Marketplace routes for browsing and installing plugins.
@@ -8,7 +9,8 @@ import { AuthManager } from '@fromcode119/auth';
 export class MarketplaceRouter extends BaseRouter {
   constructor(
     private manager: PluginManager,
-    private auth: AuthManager
+    private auth: AuthManager,
+    private platformAdmin: PlatformAdminGuard,
   ) {
     super();
   }
@@ -16,6 +18,10 @@ export class MarketplaceRouter extends BaseRouter {
   protected registerRoutes(): void {
     this.use(this.auth.middleware());
     this.use(this.auth.guard(['admin']));
+    // Every route here is a PLATFORM action: browsing the catalogue exposes what the operator has
+    // available across all customers, and `install` puts code on the container every customer runs
+    // on. `admin` alone is a tenant's own administrator on a multi-tenant deployment — not enough.
+    this.use(this.platformAdmin.middleware());
 
     this.get('/plugins', this.asyncHandler(async (_req, res) => {
       const plugins = await this.manager.marketplace.fetchCatalog();

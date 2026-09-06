@@ -36,6 +36,11 @@ class MetaTableStub {
     return true;
   }
 
+  /** The real manager runs these under the platform marker; in one flat table it is the same rows. */
+  async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> {
+    return fn();
+  }
+
   async delete(_table: string, where: { key: string }): Promise<boolean> {
     return this.rows.delete(where.key);
   }

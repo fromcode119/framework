@@ -17,14 +17,25 @@ import { ThemeServerRegistryState } from '@/lib/ssr/theme-server-registry-state'
  * theme and plugin bundles resolve it through node_modules, so only the copy `ThemeSsrRuntime` loads is
  * the one they will actually call. See the resolution notes on that class.
  *
- * The registrations themselves live in a {@link ThemeServerRegistryState} generation. Readers always see
- * the PUBLISHED one; while a theme/plugin update is being re-imported, the incoming bundles register into
- * a staging generation that is published only once it is complete. That is what keeps a version change
- * from serving half-rendered pages to whatever requests happen to be in flight.
+ * The registrations themselves live in {@link ThemeServerRegistryState} generations, ONE PER SIGNATURE
+ * (theme@version + the plugin versions a site runs — see `ThemeSsrGeneration`). On a multi-tenant
+ * deployment two sites on different themes render in the same process at the same time, so there is
+ * no single "published" world any more: every reader names the generation it is rendering, and a
+ * reader that names one this process has not built gets an EMPTY state — never another site's theme.
+ * Two sites on the same theme and plugin set share one generation, so memory is bounded by distinct
+ * signatures, not by tenants.
+ *
+ * While a generation is being imported, the incoming bundles register into a single STAGING state
+ * (the bridge is a process-wide singleton, so builds are serialized by the renderer) that is published
+ * under its signature only once complete. That is what keeps a rebuild from serving half-rendered pages
+ * to whatever requests happen to be in flight.
  */
 export class ThemeServerRegistry {
-  /** What every reader sees. Replaced wholesale by {@link publishGeneration}, never mutated in place. */
-  private static published = new ThemeServerRegistryState();
+  /** Published worlds by signature. Replaced per key by {@link publishGeneration}, never mutated in place. */
+  private static published = new Map<string, ThemeServerRegistryState>();
+
+  /** The empty answer for a signature nobody built. Shared and never registered into. */
+  private static readonly EMPTY = new ThemeServerRegistryState();
 
   /** The generation currently being imported, if any. Registrations land here while it exists. */
   private static staging: ThemeServerRegistryState | null = null;
@@ -84,10 +95,24 @@ export class ThemeServerRegistry {
     return ThemeServerRegistry.staging;
   }
 
-  /** Publish a staged generation. Anything registered after this point lands in the published state. */
-  static publishGeneration(state: ThemeServerRegistryState): void {
-    ThemeServerRegistry.published = state;
+  /** Publish a staged generation under its signature. */
+  static publishGeneration(signature: string, state: ThemeServerRegistryState): void {
+    ThemeServerRegistry.published.set(signature, state);
     if (ThemeServerRegistry.staging === state) ThemeServerRegistry.staging = null;
+  }
+
+  /** Drop a published generation (the renderer evicts least-recently-used ones above its cap). */
+  static evict(signature: string): void {
+    ThemeServerRegistry.published.delete(signature);
+  }
+
+  static hasGeneration(signature: string): boolean {
+    return ThemeServerRegistry.published.has(signature);
+  }
+
+  /** The published state for a signature, or the shared EMPTY one — never a different generation's. */
+  private static world(signature: string): ThemeServerRegistryState {
+    return ThemeServerRegistry.published.get(signature) ?? ThemeServerRegistry.EMPTY;
   }
 
   /**
@@ -99,56 +124,68 @@ export class ThemeServerRegistry {
   }
 
   /** The `{ layouts, styleVariants, overrides }` a theme registered, or null if it never registered. */
-  static payloadFor(slug: string): Record<string, unknown> | null {
-    return ThemeServerRegistry.published.payloadFor(slug);
+  static payloadFor(signature: string, slug: string): Record<string, unknown> | null {
+    return ThemeServerRegistry.world(signature).payloadFor(slug);
   }
 
   /** Layout components by name (`DefaultLayout`, …) — the server equivalent of `context.themeLayouts`. */
-  static layoutsFor(slug: string): Record<string, unknown> {
-    return ThemeServerRegistry.published.layoutsFor(slug);
+  static layoutsFor(signature: string, slug: string): Record<string, unknown> {
+    return ThemeServerRegistry.world(signature).layoutsFor(slug);
   }
 
   /** Style variants the theme registered — `PageStyleProvider` reads them to resolve a page's palette. */
-  static styleVariantsFor(slug: string): Record<string, unknown> {
-    return ThemeServerRegistry.published.styleVariantsFor(slug);
+  static styleVariantsFor(signature: string, slug: string): Record<string, unknown> {
+    return ThemeServerRegistry.world(signature).styleVariantsFor(slug);
   }
 
   /** Slot components by slot name, in the shape `SlotsContext` publishes. */
-  static slotMap(): Record<string, unknown[]> {
-    return ThemeServerRegistry.published.slotMap();
+  static slotMap(signature: string): Record<string, unknown[]> {
+    return ThemeServerRegistry.world(signature).slotMap();
   }
 
   /** Overrides by name, in the shape `OverridesContext` publishes. */
-  static overrideMap(): Record<string, unknown> {
-    return ThemeServerRegistry.published.overrideMap();
+  static overrideMap(signature: string): Record<string, unknown> {
+    return ThemeServerRegistry.world(signature).overrideMap();
   }
 
   /** Every `registerTranslations` payload captured so far, in registration order. */
-  static translationPayloads(): Record<string, unknown>[] {
-    return ThemeServerRegistry.published.translationPayloads();
+  static translationPayloads(signature: string): Record<string, unknown>[] {
+    return ThemeServerRegistry.world(signature).translationPayloads();
   }
 
   /** Every `registerTranslations(…, 'theme')` payload — merged after the plugin ones. */
-  static themeTranslationPayloads(): Record<string, unknown>[] {
-    return ThemeServerRegistry.published.themeTranslationPayloads();
+  static themeTranslationPayloads(signature: string): Record<string, unknown>[] {
+    return ThemeServerRegistry.world(signature).themeTranslationPayloads();
   }
 
   /** The client a plugin registered, or undefined — the shape `getPluginApi` publishes. */
-  static pluginApi(namespace: string, slug: string): unknown {
-    return ThemeServerRegistry.published.pluginApi(namespace, slug);
+  static pluginApi(signature: string, namespace: string, slug: string): unknown {
+    return ThemeServerRegistry.world(signature).pluginApi(namespace, slug);
   }
 
-  static hasPluginApi(namespace: string, slug: string): boolean {
-    return ThemeServerRegistry.pluginApi(namespace, slug) !== undefined;
+  static hasPluginApi(signature: string, namespace: string, slug: string): boolean {
+    return ThemeServerRegistry.pluginApi(signature, namespace, slug) !== undefined;
   }
 
-  /** Slugs registered so far. Diagnostic — a theme that failed to import simply will not appear. */
-  static registeredSlugs(): string[] {
-    return ThemeServerRegistry.published.registeredSlugs();
+  /** Slugs registered in a generation. Diagnostic — a theme that failed to import simply will not appear. */
+  static registeredSlugs(signature: string): string[] {
+    return ThemeServerRegistry.world(signature).registeredSlugs();
   }
 
-  /** Where an incoming `register*` call belongs: the generation being built, else the live one. */
+  /** Signatures currently resident — what the LRU cap is measured against. */
+  static publishedSignatures(): string[] {
+    return [...ThemeServerRegistry.published.keys()];
+  }
+
+  /**
+   * Where an incoming `register*` call belongs: the generation being built. A registration that arrives
+   * with NO build in progress has no home — bundles register as a side effect of import, and every
+   * import happens inside a build — so it is dropped into a throwaway state and said out loud, rather
+   * than mutating some published world behind a live render.
+   */
   private static target(): ThemeServerRegistryState {
-    return ThemeServerRegistry.staging ?? ThemeServerRegistry.published;
+    if (ThemeServerRegistry.staging) return ThemeServerRegistry.staging;
+    console.warn('[frontend] SSR registration arrived outside a generation build and was ignored.');
+    return new ThemeServerRegistryState();
   }
 }

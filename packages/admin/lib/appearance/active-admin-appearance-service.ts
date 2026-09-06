@@ -3,6 +3,8 @@ import { ClientRuntimeConstants } from '@fromcode119/core/client';
 import { AppEnv } from '@/lib/env';
 import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';
 import { AdminAppearanceResolver } from '@/lib/appearance/admin-appearance-resolver';
+import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
+import { SessionAppearanceChoice } from '@/lib/appearance/session-appearance-choice';
 
 /**
  * Resolves the active admin appearance id from runtime inputs: the per-tenant override (system setting
@@ -47,6 +49,10 @@ export class ActiveAdminAppearanceService {
    * ensure is loaded. Uses the live setting once settings have loaded, else the first-paint hint.
    */
   static desiredFrom(globalSettings?: Record<string, unknown> | null): string {
+    // T6: the tenant's KIND outranks any setting — a workspace domain is locked to its appearance, and
+    // a platform admin who opened a workspace from the shared host chose for this session.
+    if (WorkspaceAppearanceLock.locked) return WorkspaceAppearanceLock.appearance;
+    if (SessionAppearanceChoice.current !== null) return SessionAppearanceChoice.current;
     const settingsLoaded = !!globalSettings && Object.keys(globalSettings).length > 0;
     if (!settingsLoaded) return ActiveAdminAppearanceService.firstPaintHint();
     const deploymentDefault = String(AppEnv.ADMIN_APPEARANCE || '').trim();

@@ -102,5 +102,6 @@ See `themes/my-theme/theme.json` for an example.
 
 ## SQLite data
 
-Stored at `framework/Source/data/app.db` (gitignored).  
-Delete the file to reset all data and re-run setup.
+This starter runs on SQLite for a zero-setup, single-site install. Data is stored at
+`framework/Source/data/app.db` (gitignored). Delete the file to reset all data and re-run setup.
+For multi-site installs use PostgreSQL, as described in the main README.

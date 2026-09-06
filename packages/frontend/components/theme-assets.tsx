@@ -1,208 +1,57 @@
 import { preconnect, preload } from 'react-dom';
-import { ServerApiUtils } from '@/lib/server-api';
-import { FrontendConfigCache } from '@/lib/frontend-config-cache';
-import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
-import { ThemePrefetchRequestCache } from '@/lib/theme/theme-prefetch-request-cache';
-import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
-import { ApiPathUtils, RuntimeConstants } from '@fromcode119/core/client';
+import { ThemeHeadModel } from '@/lib/document/theme-head-model';
 
 /**
- * Server Component: injects active theme CSS and head link hints into <head>.
+ * Server Component: injects active theme CSS and head link hints into <head> of the App Router
+ * document. All the DATA comes from `ThemeHeadModel` (shared with the islands document's head); this
+ * component only issues React's resource hints and renders the elements.
  *
- * Theme JS entry is intentionally NOT injected here because it can execute
- * before the frontend runtime bridge initializes `window.React/window.Fromcode`.
- * JS is loaded client-side via PluginsProvider.loadConfig().
- *
- * Themes may declare `ui.headLinks` in theme.json to inject resource hints
- * (preconnect, preload) and stylesheets (e.g. Google Fonts) directly into
- * <head> without a render-blocking @import waterfall inside theme CSS.
- *
- * @example theme.json
- * ```json
- * "ui": {
- *   "headLinks": [
- *     { "rel": "preconnect", "href": "https://fonts.googleapis.com" },
- *     { "rel": "preconnect", "href": "https://fonts.gstatic.com", "crossOrigin": "anonymous" },
- *     { "rel": "stylesheet", "href": "https://fonts.googleapis.com/css2?...", "precedence": "low" }
- *   ]
- * }
- * ```
+ * Theme JS entry is intentionally NOT injected as a `<link rel="preload">`: React 19 rewrites preload
+ * links into :HL directives without `crossOrigin` for scripts, so the bundle downloaded twice (no-CORS
+ * preload + CORS `import()`). The entry + its chunks are `modulepreload`ed by the injector script after
+ * `load` instead, and imported once by the plugin loader.
  */
-
 export class ThemeAssetsView {
   static async render() {
-  try {
-    const config = await FrontendConfigCache.read() as Record<string, any>;
-    const theme = config?.activeTheme;
+    try {
+      const model = await ThemeHeadModel.load();
+      if (!model) return null;
 
-    if (!theme?.slug) {
+      // Preconnect to the API origin early — reduces DNS+TCP overhead for every asset and endpoint.
+      if (model.apiUrl) preconnect(model.apiUrl, { crossOrigin: 'anonymous' });
+      for (const link of model.preloadLinks) {
+        preload(link.href, {
+          as: (link.as || 'fetch') as NonNullable<Parameters<typeof preload>[1]>['as'],
+          type: link.type || undefined,
+          crossOrigin: link.crossOrigin || undefined,
+          fetchPriority: (link.fetchPriority || undefined) as 'high' | 'low' | 'auto' | undefined,
+        } as Parameters<typeof preload>[1]);
+      }
+      if (model.lcpPreload) {
+        preload(model.lcpPreload.href, {
+          as: 'image',
+          fetchPriority: 'high',
+          ...(model.lcpPreload.imageSrcSet ? { imageSrcSet: model.lcpPreload.imageSrcSet } : {}),
+          ...(model.lcpPreload.imageSizes ? { imageSizes: model.lcpPreload.imageSizes } : {}),
+        });
+      }
+
+      return (
+        <>
+          {model.elementLinks.map((link, i) => <link key={`hl-${i}`} {...link.elementProps} />)}
+          {model.fallbackCssHrefs.map((href) => <link key={href} rel="stylesheet" href={href} />)}
+          {model.cssVariables ? <style id="fc-theme-variables" dangerouslySetInnerHTML={{ __html: model.cssVariables }} /> : null}
+          {model.inlinedCss ? <style data-theme={model.slug} dangerouslySetInnerHTML={{ __html: model.inlinedCss }} /> : null}
+          {model.prefetchScript ? <script dangerouslySetInnerHTML={{ __html: model.prefetchScript }} /> : null}
+          {model.versionedEntryUrl ? <meta name="fromcode:theme-entry" content={model.versionedEntryUrl} /> : null}
+          {/* Inline script: modulepreload + non-blocking external stylesheets, so React 19's resource
+              hoisting cannot interfere (see ThemeHeadModel.injectorScript). */}
+          {model.injectorScript ? <script dangerouslySetInnerHTML={{ __html: model.injectorScript }} /> : null}
+        </>
+      );
+    } catch (error) {
+      console.error('[ThemeAssets] Error:', error);
       return null;
     }
-
-    const cssVariables = typeof config?.cssVariables === 'string' ? config.cssVariables : '';
-
-    const rawEntryUrl = String(theme.ui?.entry || '').trim();
-    const absoluteEntryUrl = rawEntryUrl.startsWith('http') ? rawEntryUrl : '';
-    const derivedApiUrl = absoluteEntryUrl ? new URL(absoluteEntryUrl).origin : '';
-    const apiUrl = derivedApiUrl || ServerApiUtils.buildPublicApiBaseUrl();
-    const entryUrl = rawEntryUrl
-      ? (absoluteEntryUrl || ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, rawEntryUrl))
-      : '';
-    // `assetVersion` is a digest of the theme's built files; `version` is a number someone edits. Prefer
-    // the one that actually moves when the theme is rebuilt — a rebuild at an unchanged version left the
-    // CSS fetch below on the same cache key, so a fixed stylesheet stayed invisible for the full hour.
-    // The API sends '' when it cannot read the files, and the version is the honest fallback.
-    const assetStamp = String(theme.assetVersion || '').trim() || theme.version;
-    const versionedEntryUrl = FrontendAssetVersionUrlService.appendVersion(entryUrl, assetStamp);
-
-    // Tell browser to preconnect to API origin early — reduces DNS+TCP overhead
-    // for all API calls (plugin bundles, theme JS, images, endpoints).
-    if (apiUrl) {
-      preconnect(apiUrl, { crossOrigin: 'anonymous' });
-    }
-
-    // NOTE: No explicit preload for entryUrl here.
-    // React 19 intercepts all <link rel="preload|modulepreload"> elements and converts
-    // them to :HL RSC directives that omit crossOrigin for script resources. This causes
-    // the browser to fetch bundle.js twice: once as no-CORS (preload) and once as CORS
-    // (import()). Removing the preload avoids the double-download at the cost of ~100ms
-    // earlier fetch. The bundle is fetched once via import() in plugin-loader.tsx.
-
-    const headLinks = Array.isArray(theme.ui?.headLinks)
-      ? theme.ui.headLinks.map((link: Record<string, string>, i: number) => {
-          if (!link?.rel || !link?.href) return null;
-          const href = link.href.startsWith('http') ? link.href : `${apiUrl}${link.href}`;
-          if (link.rel === 'preload') {
-            preload(href, {
-              as: (link.as || 'fetch') as NonNullable<Parameters<typeof preload>[1]>['as'],
-              type: link.type,
-              crossOrigin: link.crossOrigin,
-              fetchPriority: link.fetchPriority as 'high' | 'low' | 'auto' | undefined,
-            } as Parameters<typeof preload>[1]);
-            return null;
-          }
-          // External stylesheets (e.g. Google Fonts) are injected via DOM script below — not here
-          if (link.rel === 'stylesheet' && href.startsWith('https://')) return null;
-          const props: Record<string, string> = { rel: link.rel, href };
-          if (link.crossOrigin) props.crossOrigin = link.crossOrigin;
-          if (link.as) props.as = link.as;
-          if (link.type) props.type = link.type;
-          if (link.media) props.media = link.media;
-          if (link.precedence) props.precedence = link.precedence;
-          if (link.fetchPriority) props.fetchPriority = link.fetchPriority;
-          return <link key={`hl-${i}`} {...props} />;
-        })
-      : [];
-
-    // Collect external stylesheets for non-blocking injection via DOM script (media="print" trick)
-    const externalStylesheets = Array.isArray(theme.ui?.headLinks)
-      ? theme.ui.headLinks
-          .filter((link: Record<string, string>) => link?.rel === 'stylesheet' && link?.href?.startsWith('https://'))
-          .map((link: Record<string, string>) => link.href)
-      : [];
-
-    // Fetch theme CSS server-side and inline as <style> to eliminate render-blocking
-    // external stylesheet. Server-to-server fetch has near-zero latency.
-    // Falls back to <link rel="stylesheet"> if fetch fails.
-    let inlinedCss = '';
-    let cssLoadFailed = false;
-    if (Array.isArray(theme.ui?.css) && theme.ui.css.length > 0) {
-      try {
-        const internalBase = ServerApiUtils.buildInternalApiBaseUrl();
-        const cssResults = await Promise.all(
-          (theme.ui.css as string[]).map(async (cssPath) => {
-              const publicHref = cssPath.startsWith('http') ? cssPath : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, cssPath);
-              const versionedPublicHref = FrontendAssetVersionUrlService.appendVersion(publicHref, assetStamp);
-              const internalHref = versionedPublicHref.replace(apiUrl, internalBase);
-              const response = await fetch(internalHref, { next: { revalidate: 3600 } });
-              return response.ok ? response.text() : Promise.resolve('');
-            })
-        );
-        inlinedCss = cssResults.join('\n');
-      } catch {
-        cssLoadFailed = true;
-      }
-    }
-
-    const fallbackCssLinks = cssLoadFailed && Array.isArray(theme.ui?.css)
-      ? (theme.ui.css as string[]).map((cssPath) => {
-          const href = cssPath.startsWith('http') ? cssPath : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, cssPath);
-          const versionedHref = FrontendAssetVersionUrlService.appendVersion(href, assetStamp);
-          return <link key={versionedHref} rel="stylesheet" href={versionedHref} />;
-        })
-      : [];
-
-    // Preload the REAL entry + its static chunk dependencies (index-<hash>.js,
-    // vendor chunks), derived server-side by the api from the theme's ui/ directory
-    // (`ui.modulepreload`). bundle.js stays the loader contract; preloading its
-    // target kills the 60-byte shim's serialized RTT plus the entry->vendor wave.
-    //
-    // These are deliberately NOT `?v=`-versioned. They are content-hashed by the theme
-    // bundler (`index-<hash>.js`), so the filename already busts the cache, and — decisive
-    // here — bundle.js imports them RELATIVELY and unversioned (`import "./index-<hash>.js"`).
-    // A modulepreload only pays off when its url is byte-identical to the url the importer
-    // later requests; appending `?v=` produced a url nothing ever imported, so the entry
-    // chunk was downloaded TWICE (measured: 65 KiB gz duplicated on every storefront view).
-    const modulePreloadUrls: string[] = (Array.isArray(theme.ui?.modulepreload) ? theme.ui.modulepreload : [])
-      .map((file: string) => {
-        const fileName = String(file || '').trim();
-        if (!fileName || fileName.includes('/') || fileName.includes('\\')) return '';
-        return ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, fileName);
-      })
-      .filter(Boolean);
-
-    // Shared per-request prefetch — same pass feeds the SsrContentShell body shell.
-    const prefetchData = await ThemePrefetchRequestCache.read();
-    const prefetchScript = Object.keys(prefetchData).length > 0
-      ? `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}=${ThemeDataPrefetcher.safeSerialize(prefetchData)};`
-      : null;
-
-    const prefetchApis = Array.isArray(theme.ui?.prefetchApis) ? theme.ui.prefetchApis : [];
-    const lcpPreload = ThemeDataPrefetcher.extractLcpImageUrl(prefetchData, prefetchApis, apiUrl);
-    if (lcpPreload) {
-      preload(lcpPreload.href, {
-        as: 'image',
-        fetchPriority: 'high',
-        ...(lcpPreload.imageSrcSet ? { imageSrcSet: lcpPreload.imageSrcSet } : {}),
-        ...(lcpPreload.imageSizes ? { imageSizes: lcpPreload.imageSizes } : {}),
-      });
-    }
-
-    return (
-      <>
-        {headLinks}
-        {fallbackCssLinks}
-        {cssVariables ? <style id="fc-theme-variables" dangerouslySetInnerHTML={{ __html: cssVariables }} /> : null}
-        {inlinedCss ? <style data-theme={theme.slug} dangerouslySetInnerHTML={{ __html: inlinedCss }} /> : null}
-        {prefetchScript ? <script dangerouslySetInnerHTML={{ __html: prefetchScript }} /> : null}
-        {versionedEntryUrl ? <meta name="fromcode:theme-entry" content={versionedEntryUrl} /> : null}
-        {versionedEntryUrl ? (
-          // Use an inline script to insert the modulepreload link and non-blocking external
-          // stylesheets (Google Fonts) so React 19's resource-hoisting cannot interfere.
-          // modulepreload: bypasses crossOrigin stripping that would cause credentials-mode mismatch.
-          // stylesheets: media="print" trick defers rendering until after fonts load — no FCP penalty.
-          //
-          // The modulepreloads wait for `load`. They used to start at ~78 ms, alongside the LCP image,
-          // and the theme entry plus its vendor chunks are ~130 KB — bandwidth the image needed more.
-          // Nothing on screen depends on them any more: the server renders the page, and the runtime
-          // bundles only take over interactivity (see FrontendRuntimeScheduler, which imports them on
-          // the same schedule). The stylesheet injection stays immediate — fonts are wanted early and
-          // the media="print" swap keeps them off the critical path.
-          <script dangerouslySetInnerHTML={{ __html:
-            `(function(){var u=${JSON.stringify([versionedEntryUrl, ...modulePreloadUrls])};var p=function(){for(var i=0;i<u.length;i++){var l=document.createElement('link');l.rel='modulepreload';l.href=u[i];document.head.appendChild(l);}};var d=function(){if(window.requestIdleCallback){window.requestIdleCallback(p,{timeout:1500});}else{setTimeout(p,1);}};if(document.readyState==='complete'){d();}else{addEventListener('load',d,{once:true});}${
-              externalStylesheets.length > 0
-                ? externalStylesheets.map((href: string) =>
-                    `var f=document.createElement('link');f.rel='stylesheet';f.href=${JSON.stringify(href)};f.media='print';f.onload=function(){f.media='all';f.onload=null;};document.head.appendChild(f);`
-                  ).join('')
-                : ''
-            }})();`
-          }} />
-        ) : null}
-      </>
-    );
-  } catch (error) {
-    console.error('[ThemeAssets] Error:', error);
-    return null;
   }
-}
 }

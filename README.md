@@ -39,7 +39,7 @@ npm run dev:local
 2. Set **Docker Compose Location** to `deploy/docker-compose.full-stack.yml`
 3. Set required environment variables: `API_URL`, `POSTGRES_PASSWORD`, `JWT_SECRET`, `POSTGRES_USER`, `POSTGRES_DB`
 4. Set `EXTERNAL_PROXY_NETWORK` to the actual Coolify proxy network name on your server. Do not rely on `docker_web` unless your host really uses that network name.
-5. If you want the single-domain gateway service enabled, set `COMPOSE_PROFILES=single-domain`. Leave it unset when you want the API, admin, and frontend exposed separately.
+5. The **platform gateway** is the one upstream your proxy forwards every hostname to (it routes by host from the site table). On a single-site install you may instead set `COMPOSE_PROFILES=single-domain` for the path-routed shape (`example.com/api`, `example.com/admin`), or leave it unset to expose api, admin and frontend as separate services.
 6. Add a GitHub webhook: repo → Settings → Webhooks → Payload URL from Coolify → `application/json` → push event
 7. Deploy
 
@@ -57,11 +57,19 @@ npm run dev:local
 
 🔧 **Built-in MCP Server** — Every installation is an [MCP](https://modelcontextprotocol.io) server: Claude (and any MCP client) can list content, swap page images by named slot, read orders and invoices, update products, and purge caches — over stdio or hosted Streamable HTTP, gated by scoped access tokens minted in the admin. Plugins ship their own tool packs through `context.mcp.registerTools()`.
 
+🏢 **Multi-site, one platform** — Serve many customer sites from one deployment. Every site has its own hosts, content, people, plugins and theme; isolation is enforced twice, by the application and by PostgreSQL row-level security, so a query that forgets its filter still returns only that site's rows. A site is either a **storefront** (a theme on its domain) or a **workspace** (its domain *is* the console, locked to a product appearance). The platform admin runs all of them from one Sites page; a site's own admins see only their site.
+
+🌐 **Framework-owned edge** — The platform gateway routes every hostname from the site table: storefront hosts → frontend, workspace hosts → admin, `api.` aliases → api, unknown hosts → 404. Creating a site on the Sites page is live within a second — no proxy rules, no generated files. Your reverse proxy only terminates TLS.
+
+🎛️ **Admin appearances** — The admin is skinnable end to end: an installed appearance (`appearance/<slug>`) can replace the whole console for a product, declare which surfaces its users may reach, and declare the workspace preset (plugins) it provisions. The default console stays the platform admin's "configure" mode.
+
 🏗️ **Zero Architecture Lock-In** — Run as API only, API + Admin, or Full Stack. Swap any provider (DB, cache, storage, email, queue) without touching business logic.
 
 📊 **Atomic Migrations** — 7-phase database synchronization system handles schema updates across core and all active plugins atomically.
 
-🛡️ **Kernel Security Loop** — Real-time threat detection, plugin sandboxing with cryptographic signature verification, and comprehensive audit logging built into the kernel.
+🛡️ **Kernel Security Loop** — Real-time threat detection, cryptographic plugin signature verification, and comprehensive audit logging built into the kernel.
+
+🧱 **Plugin process isolation** — An isolated plugin runs in its own OS process under its own unprivileged user, with a heap ceiling, a per-call deadline and a read-only plugin directory; it talks to the kernel over a message contract and its requests carry the host's tenant, never its own claim. A crash or hang takes down that plugin only, and it is restarted in place. Isolation is a visible, declared setting per plugin (Settings → Infrastructure → Plugin Isolation), never a hidden default.
 
 📦 **Backups + Site Transfer** — Managed system backups, constrained restore preview and execution, and a repository-root site-transfer bundle command are available from the framework-owned operations surface.
 
@@ -106,6 +114,10 @@ cp .env.example .env
 
 # Edit .env as needed — at minimum, set a strong JWT_SECRET before running
 ```
+
+The default `.env` expects a PostgreSQL at `localhost:5432` (start one with `docker compose up -d db`, or point
+`DATABASE_URL` at your own). A zero-setup single-site alternative on SQLite lives in `starters/local/` — it has no
+multi-site mode, because SQLite cannot enforce row-level security.
 
 #### 3. Install and migrate
 
@@ -205,16 +217,17 @@ curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
 2. Point it to `deploy/docker-compose.full-stack.yml`
 3. Set all required **Environment Variables** in the Coolify dashboard
 4. Set `EXTERNAL_PROXY_NETWORK` to the actual Coolify proxy network name on the host
-5. Set `COMPOSE_PROFILES=single-domain` only if you want the gateway service enabled
+5. Point the proxy's routes at the `gateway` service; set `COMPOSE_PROFILES=single-domain` only for the path-routed single-site shape
 
 #### 3. Choose the routing shape
 
-Use the compose profile to decide whether Coolify runs the single-domain gateway:
+| Mode | What the proxy forwards | What runs |
+|------|------|-----------|
+| Multi-site (host-routed) | every hostname → `gateway` | Gateway routes by host from the site table → API / Admin / Frontend |
+| Single domain (path-routed) | one hostname → `gateway` (`COMPOSE_PROFILES=single-domain`) | Gateway routes `/api`, `/admin`, else frontend |
+| Split services | one hostname per service, no gateway | API + Admin + Frontend exposed directly |
 
-| Mode | Env | What runs |
-|------|-----|-----------|
-| Single domain | `COMPOSE_PROFILES=single-domain` | Gateway + API + Admin + Frontend |
-| Split services | unset `COMPOSE_PROFILES` | API + Admin + Frontend without gateway |
+The gateway needs `INTERNAL_SERVICE_SECRET` (shared with the api) to fetch the routing map; without it, it falls back to path routing and behaves as the single-domain gateway always did.
 
 #### 4. Deploy
 
@@ -279,8 +292,8 @@ Copy `.env.example` to `.env` at the repo root.
 |----------|---------|-------------|
 | `NODE_ENV` | `development` | `development` \| `production` |
 | `JWT_SECRET` | — | **Required.** Minimum 32 characters. Set before going live. |
-| `DB_DIALECT` | `postgres` | `sqlite` or `postgres` |
-| `DATABASE_URL` | `file:./data/app.db` | Full DB connection string |
+| `DB_DIALECT` | `postgres` | `postgres` (every multi-site deployment) or `sqlite` (single-site only) |
+| `DATABASE_URL` | `postgresql://…` | Full DB connection string |
 | `PORT` | `3000` | API server port |
 | `ADMIN_PORT` | `3001` | Admin panel port |
 | `FRONTEND_PORT` | `3002` | Frontend server port |
@@ -302,7 +315,12 @@ POSTGRES_PASSWORD=your_secure_password
 POSTGRES_DB=fromcode
 ```
 
-> SQLite works out of the box for local development with zero setup. Switch to PostgreSQL for production.
+> PostgreSQL is the database for every environment, local included, so what you run on your machine is
+> exactly what runs in production. SQLite remains supported for single-site installs that want a
+> zero-setup start.
+>
+> Give the application its own database role instead of the owner or a superuser account. Per-site data
+> isolation is enforced by the database, and only a regular role gets that protection.
 
 </details>
 
@@ -319,6 +337,23 @@ POSTGRES_DB=fromcode
 | `SMTP_PORT` | `587` | SMTP port |
 | `SMTP_USER` | — | SMTP username |
 | `SMTP_PASS` | — | SMTP password |
+
+</details>
+
+<details>
+<summary><b>Multi-site, Gateway & Isolation</b></summary>
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `INTERNAL_SERVICE_SECRET` | — | Shared secret for service-to-service calls: the gateway's routing map, operator restart endpoints. Required for host routing. |
+| `GATEWAY_INTERNAL_URL` | `http://gateway:3000` | Where the api pushes routing reloads when a site is created, changed or removed |
+| `GATEWAY_ROUTING_TTL_MS` | `30000` | How long the gateway keeps its routing map before refreshing (it also keeps the last map if the api is down) |
+| `API_TARGET_URL` / `ADMIN_TARGET_URL` / `FRONTEND_TARGET_URL` | `http://api:3000` … | The gateway's upstreams |
+| `GATEWAY_PORT` | `80` | Host port the gateway listens on (compose) |
+| `APPEARANCE_DIR` | `./appearance` | Installed admin appearances (product consoles) |
+| `ADMIN_APPEARANCE` | _(empty)_ | Deployment default appearance for a standalone product install (a single-site deployment that IS a workspace) |
+
+> Multi-site mode switches on by itself when the site table has rows; an installation with no sites behaves exactly as a single-site install. Adding the first site needs a restart.
 
 </details>
 
@@ -347,7 +382,7 @@ POSTGRES_DB=fromcode
 | **Users, Roles, Permissions** | Full RBAC system. Define granular permissions and assign them to roles, roles to users. |
 | **Built-in MFA (TOTP)** | Native Time-based OTP with recovery code generation and encrypted secret storage. Works with any authenticator app. |
 | **Security Monitor** | Real-time threat detection loop that monitors for anomaly spikes, brute-force attempts, and suspicious patterns. |
-| **Plugin Sandboxing** | Execution-level isolation via `SandboxManager`. Plugins run with declared capabilities only. |
+| **Plugin Process Isolation** | An isolated plugin is a separate OS process (own unprivileged user, heap ceiling, per-call deadline, read-only code dir) speaking a message contract; capabilities are declared in the manifest and a drift is HELD until a platform admin re-approves it. |
 | **Cryptographic Signing** | Plugin signature verification on load. Unsigned or tampered plugins are rejected. |
 | **Audit Logging** | Comprehensive audit trail via `AuditManager` (`_system_audit_logs`) covering admin collection mutations, MCP tool calls, plugin database writes, capability violations, and rate-limit denials. |
 | **Record Version History** | Every create/update through the admin/REST surface snapshots the record to `_system_record_versions` — for every collection of every plugin, not just CMS. Version History UI with one-click restore; also exposed over MCP (`content.versions_list` / `version_get` / `version_restore`). |
@@ -396,10 +431,40 @@ The kernel manages all shared infrastructure so plugins share resources without 
 | Capability | Description |
 |------------|-------------|
 | **Driver Abstraction** | Database connections managed by the kernel. Plugins receive a typed `context.db` — never manage connections directly. |
-| **SQLite (default)** | Zero-setup for local development. `DB_DIALECT=sqlite` just works. |
-| **PostgreSQL** | Production-ready. Set `DB_DIALECT=postgres` and update `DATABASE_URL`. |
+| **PostgreSQL (default)** | The database for every environment, local included. Per-site isolation is a row-level-security policy the database enforces; the app connects as a plain role, never as the owner or a superuser. |
+| **SQLite** | Single-site installs only (`DB_DIALECT=sqlite`): zero setup, no row-level security, so no multi-site mode. |
 | **Drizzle ORM** | Default query builder. Full TypeScript inference for schema and queries. |
 | **7-Phase Migrations** | Atomic migration orchestration across core and all active plugins simultaneously. Schema changes are coordinated, not scattered. |
+
+</details>
+
+---
+
+<details open>
+<summary>🏢 <b>Multi-site Tenancy</b> — Sites, Workspaces, Isolation, Provisioning</summary>
+
+| Capability | Description |
+|------------|-------------|
+| **Sites** | A site is a customer: its own hosts (primary + aliases), content, people, plugin set, theme and settings on one shared platform. Resolved from the request host (storefront, api) or the signed session (admin), fail-closed: an unknown host is a 404, never a default site. |
+| **Two layers of isolation** | Every tenant table carries `tenant_id`; the application injects the predicate on every query AND PostgreSQL row-level security refuses rows outside the bound site. Unique constraints are per site. |
+| **Site kinds** | `site` = a storefront (theme on its domain, admins on the shared admin host). `workspace` = no storefront: the domain serves the admin, locked to a product **appearance**; the api sits on the same origin and on an `api.` alias for devices and apps. A workspace's own admins can never switch to the default console; the platform admin opens it either "as the product" or in configure mode, per session. |
+| **Memberships & platform admin** | Users are members of sites with per-site roles; an admin of one site never sees another. The platform admin (`users.is_platform_admin`) runs every site from one admin with a site switcher, and is the only one who may install or platform-enable plugins, change platform keys or mint all-sites tokens. |
+| **Per-site plugins, themes, settings** | Each site enables its own subset of the installed plugins (shared processes, never shared data), activates its own theme, and keeps its own plugin and system settings. New sites get their theme's initial pages seeded and their plugins' default pages materialized. |
+| **Provisioning** | Sites page: create (kind, hosts, plugins, theme, or appearance + a preset the appearance declares), members, export to a portable archive, import with a preview, adopt an existing single-site deployment. A single-site install is migrated with the read-only `tenant-export` CLI. |
+| **Platform gateway** | `fromcode system gateway`: routes every host from the site table, refreshed on a TTL and pushed on every change; `/healthz` reports the map age. Storefront hosts → frontend, workspace hosts → admin, `api.` aliases → api. |
+
+</details>
+
+---
+
+<details>
+<summary>🎛️ <b>Admin Appearances</b> — Product Consoles on the Same Admin</summary>
+
+| Capability | Description |
+|------------|-------------|
+| **Installed appearances** | `appearance/<slug>/appearance.json` + a runtime bundle. Built with `./build-appearances.sh <slug>`, loaded at runtime, switchable per site in Settings → Appearance (or locked by a workspace's kind). |
+| **Surface allowlist** | An appearance declares which plugins and admin paths its users may reach; everything else shows a containment screen — a product console, not a re-skinned admin. |
+| **Workspace presets** | An appearance that is a product's console declares the plugins that product runs (`workspace` block). The "New site" form offers one preset per such appearance; the framework itself names no product. |
 
 </details>
 
@@ -555,6 +620,15 @@ a human relaying clicks.
 - **Remote transport is off by default.** The hosted endpoint answers `403` until an operator flips
   **Settings → Integrations → MCP → Remote access**, and it is rate-limited per address.
 
+### Sites
+
+On a multi-site platform every token names the site it acts on. A site admin can only mint tokens for
+their own site; the platform admin may mint an **all-sites** token and pick the site per call with the
+`x-fc-site` header. The stdio server exposes two local tools, `sites.list` and `sites.select`, and
+`FROMCODE_SITE` preselects one at launch; selecting a site re-announces the tool list, because the site
+decides which plugins' tools exist. A workspace's console can also reach the hosted endpoint on its own
+domain (`https://<workspace-domain>/api/v1/mcp`).
+
 ### Tool surface
 
 | Namespace | Tools | Notes |
@@ -708,6 +782,8 @@ Commands are grouped: `fromcode <group> <command>`.
 | `db migrate / rollback / seed / status / reset` | Atomic schema synchronization across all active plugins |
 | `test / lint / typecheck / doctor` | Quality gates and environment diagnosis (top-level commands) |
 | `system info / version / site-transfer-bundle / sync-versions` | Operations — including the full site-transfer bundle |
+| `system gateway` | The platform gateway (container entrypoint of the `gateway` image): host routing from the site table |
+| `node dist/cli/tenant-export.js --database … --uploads … --slug … --host …` | Read-only export of a single-site deployment into a site archive the Sites page can import |
 | `auth …` | Account recovery operations (run in-container; see docs) |
 
 </details>
@@ -762,13 +838,16 @@ graph TB
 Browser / API Client
         │
         ▼
-  Local Proxy (dev) or Reverse Proxy (Coolify/Nginx)
+  Reverse Proxy (Coolify/Traefik/Nginx) — TLS only
         │
-   ┌────┴────────────────────┐
-   │                         │
-   ▼                         ▼
-API Server               Admin (Next.js)
-(packages/api)           (packages/admin)
+        ▼
+  Platform Gateway (packages/cli — routes by HOST from the site table)
+        │
+   ┌────┼────────────────────┬──────────────────┐
+   │    │                    │                  │
+   ▼    ▼                    ▼                  ▼
+API Server               Admin (Next.js)    Frontend (Next.js)
+(packages/api)           (packages/admin)   (packages/frontend)
    │                         │
    └────────────┬────────────┘
                 │
@@ -856,6 +935,8 @@ Atlantis is built for teams who need a complete, extensible application platform
 │   └── cli/                # Atlantis CLI tool
 ├── plugins/           # 🔌 Domain plugins (cms, ecommerce, finance, logistics, ...)
 ├── themes/            # 🎨 UI themes and layout bundles
+├── appearance/        # 🎛️ Admin appearances — product consoles (nexora, tagiqx, ...)
+├── deploy/            # Production compose files and the container entrypoint
 ├── starters/          # Local dev proxy and startup scripts
 ├── docker-compose.yml
 ├── Dockerfile

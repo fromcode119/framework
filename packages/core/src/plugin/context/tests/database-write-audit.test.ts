@@ -1,6 +1,17 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DatabaseContextProxy } from '../database';
+import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '../../../constants/system.constants';
+
+/**
+ * Plugin `context.db` is tenant-scoped: an untenanted query THROWS rather than silently returning
+ * every tenant's rows. These suites exercise other behaviour, so each test runs inside a tenant the
+ * way a real request does. `enterWith` in a beforeEach does NOT work here — vitest runs the hook and
+ * the test in separate async contexts, so the store has to wrap the test body itself.
+ */
+const tenantIt = (name: string, fn: () => unknown) =>
+  it(name, () => RequestContextUtils.storage.run({ locale: 'en', tenantId: 't1' }, async () => { await fn(); }));
+
 
 const security = {
   hasCapability: () => true,
@@ -45,7 +56,8 @@ const writeAuditCalls = (manager: any) =>
   manager.audit.logAction.mock.calls.filter((call: unknown[]) => call[1] === 'Database Write');
 
 describe('plugin context.db write audit', () => {
-  it('audits an insert with the physical table as the resource — the standard write path was silent', async () => {
+
+  tenantIt('audits an insert with the physical table as the resource — the standard write path was silent', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -57,7 +69,7 @@ describe('plugin context.db write audit', () => {
     ]);
   });
 
-  it('never logs payload values — only table, id and method reach the audit row', async () => {
+  tenantIt('never logs payload values — only table, id and method reach the audit row', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -69,7 +81,7 @@ describe('plugin context.db write audit', () => {
     expect(serialized).not.toContain('person@example.com');
   });
 
-  it('audits an update as table/id when the where carries a scalar id', async () => {
+  tenantIt('audits an update as table/id when the where carries a scalar id', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('ecommerce'), manager, security);
 
@@ -81,7 +93,7 @@ describe('plugin context.db write audit', () => {
     ]);
   });
 
-  it('audits a delete as table/id', async () => {
+  tenantIt('audits a delete as table/id', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -93,7 +105,7 @@ describe('plugin context.db write audit', () => {
     ]);
   });
 
-  it('falls back to the table alone when the where has no scalar id', async () => {
+  tenantIt('falls back to the table alone when the where has no scalar id', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -105,7 +117,7 @@ describe('plugin context.db write audit', () => {
     ]);
   });
 
-  it('resolves a semantic table reference to its physical name in the resource', async () => {
+  tenantIt('resolves a semantic table reference to its physical name in the resource', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -117,7 +129,7 @@ describe('plugin context.db write audit', () => {
     ]);
   });
 
-  it('resolves a bare table name against the plugin prefix in the resource', async () => {
+  tenantIt('resolves a bare table name against the plugin prefix in the resource', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -129,7 +141,7 @@ describe('plugin context.db write audit', () => {
     ]);
   });
 
-  it('skips tables the operator listed in the excluded-tables setting, and only those', async () => {
+  tenantIt('skips tables the operator listed in the excluded-tables setting, and only those', async () => {
     const manager = buildManager({ excludedTables: 'fcp_alpha_events, fcp_alpha_sessions' });
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -143,7 +155,7 @@ describe('plugin context.db write audit', () => {
     ]);
   });
 
-  it('audits everything when the excluded-tables setting cannot be read — no invented exclusions', async () => {
+  tenantIt('audits everything when the excluded-tables setting cannot be read — no invented exclusions', async () => {
     const manager = buildManager({ failMetaRead: true });
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -153,7 +165,7 @@ describe('plugin context.db write audit', () => {
     expect(writeAuditCalls(manager)).toHaveLength(1);
   });
 
-  it('does not audit reads', async () => {
+  tenantIt('does not audit reads', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -164,7 +176,7 @@ describe('plugin context.db write audit', () => {
     expect(writeAuditCalls(manager)).toHaveLength(0);
   });
 
-  it('audits execute per call as a write, without recording the SQL text', async () => {
+  tenantIt('audits execute per call as a write, without recording the SQL text', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -177,7 +189,7 @@ describe('plugin context.db write audit', () => {
     expect(JSON.stringify(manager.audit.logAction.mock.calls)).not.toContain('SET secret');
   });
 
-  it('is per CALL, not per property access — accessing the method audits nothing, two calls audit two rows', async () => {
+  tenantIt('is per CALL, not per property access — accessing the method audits nothing, two calls audit two rows', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -191,7 +203,7 @@ describe('plugin context.db write audit', () => {
     expect(writeAuditCalls(manager)).toHaveLength(2);
   });
 
-  it('a failing audit sink never breaks or rejects the write itself', async () => {
+  tenantIt('a failing audit sink never breaks or rejects the write itself', async () => {
     const manager = buildManager({ failAudit: true });
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -202,7 +214,7 @@ describe('plugin context.db write audit', () => {
     expect(manager.db.insert).toHaveBeenCalledTimes(1);
   });
 
-  it('a denied write on a protected table is not also logged as an allowed Database Write', async () => {
+  tenantIt('a denied write on a protected table is not also logged as an allowed Database Write', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -212,7 +224,7 @@ describe('plugin context.db write audit', () => {
     expect(writeAuditCalls(manager)).toHaveLength(0);
   });
 
-  it('audits an upsert as a write with the table as the resource — its second arg is the payload, never mined for an id', async () => {
+  tenantIt('audits an upsert as a write with the table as the resource — its second arg is the payload, never mined for an id', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -225,7 +237,7 @@ describe('plugin context.db write audit', () => {
     expect(JSON.stringify(manager.audit.logAction.mock.calls)).not.toContain('person@example.com');
   });
 
-  it('a denied upsert on a system table throws and is not logged as an allowed write', async () => {
+  tenantIt('a denied upsert on a system table throws and is not logged as an allowed write', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -237,7 +249,7 @@ describe('plugin context.db write audit', () => {
     expect(manager.db.upsert).not.toHaveBeenCalled();
   });
 
-  it('groupCount is a guarded read — another plugin\'s table throws, own table is not audited as a write', async () => {
+  tenantIt('groupCount is a guarded read — another plugin\'s table throws, own table is not audited as a write', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
 
@@ -251,7 +263,7 @@ describe('plugin context.db write audit', () => {
     expect(writeAuditCalls(manager)).toHaveLength(0);
   });
 
-  it('upsert and groupCount consume the database rate limit — they were exempt while missing from the method list', async () => {
+  tenantIt('upsert and groupCount consume the database rate limit — they were exempt while missing from the method list', async () => {
     const manager = buildManager();
     const rateSecurity = { hasCapability: () => true, handleViolation: vi.fn(), handleRateLimit: vi.fn() } as any;
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('rate-limit-upsert-probe'), manager, rateSecurity);
@@ -260,7 +272,7 @@ describe('plugin context.db write audit', () => {
     expect(rateSecurity.handleRateLimit).toHaveBeenCalledWith('database');
   });
 
-  it('insert consumes the database rate limit — it was exempt while missing from the method list', async () => {
+  tenantIt('insert consumes the database rate limit — it was exempt while missing from the method list', async () => {
     const manager = buildManager();
     const rateSecurity = { hasCapability: () => true, handleViolation: vi.fn(), handleRateLimit: vi.fn() } as any;
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('rate-limit-insert-probe'), manager, rateSecurity);

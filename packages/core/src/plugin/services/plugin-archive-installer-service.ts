@@ -35,6 +35,18 @@ export class PluginArchiveInstallerService {
     return null;
   }
 
+  /** Throws when `dir` is a git checkout — an archive install or a delete must never destroy source. */
+  static refuseSourceCheckout(dir: string, slug: string, action: 'replace' | 'delete'): void {
+    // An EMPTY path must never be checked: `path.join('', '.git')` is the process's working directory,
+    // which is the framework checkout itself — every plugin without a recorded path looked like source.
+    if (!String(dir || '').trim()) return;
+    if (!fs.existsSync(path.join(dir, '.git'))) return;
+    throw new Error(
+      `Refusing to ${action} plugin "${slug}": its directory is a git checkout (source), not an installed package. `
+      + 'Update or remove a source plugin through its repository, not from the admin.',
+    );
+  }
+
   public moveDir(src: string, dest: string) {
     const files = fs.readdirSync(src);
     for (const file of files) {
@@ -103,6 +115,11 @@ export class PluginArchiveInstallerService {
       const targetDir = path.join(this.pluginsRoot, manifest.slug);
 
       if (fs.existsSync(targetDir)) {
+          // A plugin directory that is a git CHECKOUT is somebody's source tree (a developer's mounted
+          // plugins folder), not an installed artifact. Replacing it with a packed archive deletes the
+          // TypeScript, the tests and the repository metadata — which happened once, from an admin
+          // upload over a mounted repo. Source is updated from its repository, never from an archive.
+          PluginArchiveInstallerService.refuseSourceCheckout(targetDir, manifest.slug, 'replace');
           await BackupService.create(manifest.slug, targetDir, BackupSectionKey.PLUGINS);
           fs.rmSync(targetDir, { recursive: true, force: true });
       }

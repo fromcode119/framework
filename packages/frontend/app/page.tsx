@@ -8,6 +8,7 @@ import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
 import { StructuredDataScriptsView } from '@/components/structured-data-scripts';
 import { ThemeServerRenderer } from '@/lib/ssr/theme-server-renderer';
+import { StorefrontPageKind } from '@/runtime/storefront-page-kind';
 import type { IHomePageProps } from '@/app/interfaces/home-page-props.interface';
 
 export class HomePageRoute {
@@ -25,13 +26,14 @@ export class HomePageRoute {
     const locale = await FrontendLocaleService.resolveDocumentLocale(routingConfig.strategy);
     // Same head-data query generateMetadata built, so the per-request cache serves both from one fetch.
     const schema = await ResolvedContentMetadata.buildStructuredData((content as Record<string, unknown> | null) || null, resolution?.type, '/');
-    // `w-full` with no reserved height matches HomeClient's own content wrapper; the theme's layout
-    // is what reserves the viewport (`min-height: calc(100vh + 64px)`), so the box does not collapse.
+    // `StorefrontPageKind.HOME`: `w-full` with no reserved height matches HomeClient's own content wrapper;
+    // the theme's layout is what reserves the viewport (`min-height: calc(100vh + 64px)`), so the box does
+    // not collapse. The runtime's client twin hydrates the same wrapper from the same kind.
     const ssrMarkup = await ThemeServerRenderer.render({
       content,
       locale,
-      contentClassName: 'w-full',
-      contentStyle: null,
+      contentClassName: StorefrontPageKind.HOME.contentClassName,
+      contentStyle: StorefrontPageKind.HOME.contentStyle,
     });
     return (
       <>

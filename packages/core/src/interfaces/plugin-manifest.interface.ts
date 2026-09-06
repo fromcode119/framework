@@ -90,6 +90,13 @@ export interface IPluginManifest {
   ui?: {
     entry?: string; // e.g., "dist/index.js"
     css?: string[];
+    /**
+     * Stylesheets for the ADMIN only. Separate from `css`, which both the admin and the storefront
+     * mount: the compiled admin-UI utilities are meaningless on a public page and were downloading
+     * ~79KB gzipped of admin CSS onto every storefront request when they shared one key. Mirrors the
+     * `entry` / `frontendEntry` split that already separates the two bundles.
+     */
+    adminCss?: string[];
     assets?: string[];
     headInjections?: any[];
     publicRoutes?: IPublicRouteManifest[];
@@ -111,7 +118,12 @@ export interface IPluginManifest {
 
   // Configuration
   config?: Record<string, any>;
+  /**
+   * T5: `false` (or `{ enabled: false }`) keeps the plugin in the api process ("shared") — give a `reason`,
+   * the admin shows it. `{ enabled: true }` isolates it even when the platform default is shared.
+   */
   sandbox?: boolean | {
+    reason?: string;
     // Sandbox is enabled by default. Set `sandbox: false` to disable isolation.
     memoryLimit?: number; // In MB
     timeout?: number;     // In ms

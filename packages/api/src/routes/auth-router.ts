@@ -54,6 +54,11 @@ export class AuthRouter extends BaseRouter {
     // Login/logout
     this.post(RouteConstants.SEGMENTS.LOGIN, this.controller.login);
     this.post(RouteConstants.SEGMENTS.LOGOUT, this.controller.logout);
+    // Tenant switching. Both are behind the auth guard: which tenants you may enter is not public,
+    // and switching re-mints your session.
+    this.get(RouteConstants.SEGMENTS.HOST_INFO, this.controller.hostInfo);
+    this.get(RouteConstants.SEGMENTS.TENANTS_AVAILABLE, this.auth.guard(), this.controller.availableTenants);
+    this.post(RouteConstants.SEGMENTS.TENANTS_SELECT, this.auth.guard(), this.controller.selectTenant);
 
     // User security (requires authentication)
     this.get(RouteConstants.SEGMENTS.SECURITY, this.auth.guard(), this.controller.getMySecurityState);

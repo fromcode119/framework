@@ -5,37 +5,18 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "../../packages/ai/src/**/*.{js,ts,jsx,tsx,mdx}", // Forge UI mounted via admin slot
-    "../../plugins/**/*.{js,ts,jsx,tsx,mdx}", // Scanned locally; Docker build uses safelist below
-  ],
-  // Plugin UI components use arbitrary Tailwind values (e.g. grid-cols-[...], tracking-[...]).
-  // The plugins/ directory is outside the Docker build context so it cannot be scanned at image
-  // build time. The safelist ensures these classes are always emitted in the production CSS.
-  safelist: [
-    { pattern: /^grid-cols-\[/, variants: ['sm', 'md', 'lg', 'xl'] },
-    { pattern: /^col-span-\[/, variants: ['sm', 'md', 'lg'] },
-    { pattern: /^tracking-\[/ },
-    { pattern: /^text-\[/ },
-    { pattern: /^(h|w)-\[/, variants: ['sm', 'md', 'lg'] },
-    { pattern: /^(min-h|min-w|max-h|max-w)-\[/, variants: ['sm', 'md', 'lg'] },
-    { pattern: /^z-\[/ },
-    { pattern: /^scale-\[/, variants: ['hover', 'active'] },
-    { pattern: /^blur-\[/ },
-    { pattern: /^shadow-\[/, variants: ['hover'] },
-    { pattern: /^aspect-\[/ },
-    // Plugin admin cards use arbitrary corner radii (rounded-[32px], rounded-l-[4px], …). These MUST
-    // be LITERAL strings, not a { pattern } — a safelist regex only matches candidates Tailwind already
-    // generates from scanned content; it does NOT synthesize arbitrary values. The Docker-built admin
-    // CSS can't scan plugins/, so without these literals every such card renders SQUARE. Keep in sync
-    // with: grep -rEoh 'rounded(-[a-z]+)?-\[[0-9]+px\]' plugins/*/src/ui
-    // STANDARD radii too, for the same reason. Tailwind only emits a core utility if it appears in
-    // SCANNED content, and plugins/ is not scanned in the Docker build — so a class the admin itself
-    // never uses is absent from the CSS and every plugin card carrying it renders SQUARE. That was
-    // `rounded-3xl`: 68 uses across plugin admin UIs, zero in the admin, zero in the built stylesheet.
-    // Verify after a change: grep '\.rounded-3xl' in .next/static/chunks/*.css.
-    'rounded-none', 'rounded-sm', 'rounded-md', 'rounded-lg', 'rounded-xl', 'rounded-2xl', 'rounded-3xl', 'rounded-full',
-    'rounded-[1px]', 'rounded-[20px]', 'rounded-[24px]', 'rounded-[28px]', 'rounded-[32px]',
-    'rounded-[36px]', 'rounded-[40px]', 'rounded-[48px]', 'rounded-[50px]', 'rounded-[56px]',
-    'rounded-l-[4px]', 'rounded-r-[4px]',
+    // Plugin admin UI is deliberately ABSENT here, and no glob or generated list belongs in its place.
+    //
+    // Plugins install at RUNTIME from tarballs, so the plugin set is not knowable when this stylesheet
+    // is built — an image built today has to style a plugin installed tomorrow — and plugins/ is not in
+    // the admin image's build context regardless. Every attempt to solve it from this side (a
+    // `../../plugins/**` glob that resolved to an empty dir, a safelist that went stale on every plugin
+    // edit, a generated class inventory that froze one checkout's plugin list into the image) worked
+    // only where the framework happened to sit beside the plugins.
+    //
+    // Each plugin now compiles the utilities it uses into `src/ui/style.css` at pack time and ships it
+    // in its own tarball; `PluginPackageLayout` derives `ui.css` from that file and the admin loads it
+    // at runtime. See packages/sdk/src/tailwind/plugin-ui.tailwind.config.cjs.
   ],
   theme: {
     extend: {

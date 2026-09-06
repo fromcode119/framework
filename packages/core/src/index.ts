@@ -97,6 +97,7 @@ export { PublicRouteConstants } from '@core/constants/public-route.constants';
 // ── Utility Classes ───────────────────────────────────────────────────────────
 export { CoercionUtils } from '@core/coercion-utils';
 export { ContentPreviewAccessUtils } from '@core/content-preview-access-utils';
+export { EditorSessionParams } from '@core/editor-session-params';
 export { StringUtils } from '@core/string-utils';
 export { NumberUtils } from '@core/number-utils';
 export { MeasurementSystemUtils } from '@core/measurement-system-utils';
@@ -177,6 +178,45 @@ export type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.in
 
 // Context
 export { RequestContextUtils } from '@core/context/request-context';
+export { TenantRecord } from '@core/tenant/tenant-record';
+export { TenantKind } from '@core/tenant/tenant-kind';
+export { TenantKindPreset } from '@core/tenant/provisioning/tenant-kind-preset';
+export { TenantKindPresets } from '@core/tenant/provisioning/tenant-kind-presets';
+export { AppearanceWorkspaceDeclarationReader } from '@core/appearance/appearance-workspace-declaration-reader';
+export type { IAppearanceWorkspaceDeclaration } from '@core/appearance/interfaces/appearance-workspace-declaration.interface';
+export { GatewayTarget } from '@core/tenant/gateway-target';
+export { TenantRoute } from '@core/tenant/tenant-route';
+export { TenantRouteMap } from '@core/tenant/tenant-route-map';
+export { TenantMembership } from '@core/tenant/tenant-membership';
+export { TenantAccess } from '@core/tenant/tenant-access';
+export { TenantMembershipService } from '@core/tenant/tenant-membership-service';
+export { DatabaseRoleGuard } from '@core/tenant/database-role-guard';
+export { TenantResolverService } from '@core/tenant/tenant-resolver-service';
+export { TenantMode } from '@core/tenant/tenant-mode';
+export { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+export { PluginTenantStateService } from '@core/plugin/tenant/plugin-tenant-state-service';
+export { TenantThemeAccess } from '@core/theme/tenant-theme-access';
+export { TenantThemeChoice } from '@core/theme/tenant-theme-choice';
+export { TenantThemeStateService } from '@core/theme/tenant-theme-state-service';
+export { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
+export { TenantRegistryService } from '@core/tenant/provisioning/tenant-registry-service';
+export { TenantTableCatalog } from '@core/tenant/provisioning/tenant-table-catalog';
+export { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+export { TenantArchiveSource } from '@core/tenant/provisioning/tenant-archive-source';
+export { TenantArchiveWriter } from '@core/tenant/provisioning/tenant-archive-writer';
+export { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
+export { TenantArchiveManifest } from '@core/tenant/provisioning/tenant-archive-manifest';
+export { TenantArchiveLayout } from '@core/tenant/provisioning/tenant-archive-layout';
+export { TenantImportPlanner } from '@core/tenant/provisioning/tenant-import-planner';
+export { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
+export { TenantImportExecutor } from '@core/tenant/provisioning/tenant-import-executor';
+export { TenantImportResult } from '@core/tenant/provisioning/tenant-import-result';
+export { TenantEraser } from '@core/tenant/provisioning/tenant-eraser';
+export { TenantAdoptionService } from '@core/tenant/provisioning/tenant-adoption-service';
+export { PluginHostRegistry } from '@core/plugin/host/plugin-host-registry';
+export { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
+export { PluginHost } from '@core/plugin/host/plugin-host';
+export { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
 export type { IRequestStore } from '@core/context/interfaces/request-store.interface';
 
 // Plugin Services (Server-only)

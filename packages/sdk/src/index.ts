@@ -83,6 +83,9 @@ export { ApplicationUrlUtils } from '@fromcode119/core/client';
 export { ApplicationHostUtils } from '@fromcode119/core/client';
 export { RuntimeLocationUtils } from '@fromcode119/core/client';
 export { PublicAssetUrlUtils } from '@fromcode119/core/client';
+// A plugin that ships a storefront editor registers the query params that activate it here; themes and
+// the framework ask `EditorSessionParams.isEditorSession()` instead of keeping a list of their own.
+export { EditorSessionParams } from '@fromcode119/core/client';
 export { ApiVersionUtils } from '@fromcode119/core/client';
 export { LocalizationUtils } from '@fromcode119/core/client';
 export type { INormalizeLocaleOptions, IResolveAnyStringOptions } from '@fromcode119/core/client';
@@ -199,3 +202,4 @@ export { LocalizedField } from '@fromcode119/core/client';
 // Same divergence, found by diffing the two surfaces: on the browser list, absent here. Closed now
 // rather than when it next breaks a Node import of plugin code.
 export { PublicSettings } from '@fromcode119/core/client';
+export { PluginPeerRegistration } from '@sdk/plugin-peer-registration';

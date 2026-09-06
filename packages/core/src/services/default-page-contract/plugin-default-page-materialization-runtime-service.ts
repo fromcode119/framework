@@ -7,6 +7,8 @@ import type { IResolvedPluginDefaultPageContract } from '@core/default-page-cont
 import type { IThemeDefaultPageContractOverride } from '@core/default-page-contract/interfaces/theme-default-page-contract-override.interface';
 import { BaseService } from '@core/services/base-service';
 import { CoreServices } from '@core/services/core-services';
+import { RequestContextUtils } from '@core/context/request-context';
+import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SeedPageService } from '@core/services/seed-page-service';
 import { PluginDefaultPageBackfillAssociationService } from '@core/services/default-page-contract/plugin-default-page-backfill-association-service';
 import { PluginDefaultPageMaterializationExecutorService } from '@core/services/default-page-contract/plugin-default-page-materialization-executor-service';
@@ -58,10 +60,12 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     const preliminaryContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
       overrides,
     });
-    const resolvedContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
-      overrides,
-      siteState: this.associationStore.createSiteStateSnapshot(associationSnapshot, preliminaryContracts),
-    });
+    const resolvedContracts = PluginDefaultPageMaterializationRuntimeService.forCurrentTenant(
+      CoreServices.getInstance().defaultPageContractResolution.resolveAll({
+        overrides,
+        siteState: this.associationStore.createSiteStateSnapshot(associationSnapshot, preliminaryContracts),
+      }),
+    );
     const plan = CoreServices.getInstance().defaultPageMaterialization.createPlan({
       resolvedContracts,
       existingPages,
@@ -95,6 +99,16 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     this.requiredRouteAssertion.assertRequiredRouteReconciliation(report, resolvedContracts, requiredRouteOwnerPluginSlug);
 
     return report;
+  }
+
+  /**
+   * Inside a SITE (a tenant in the request context) only the contracts of plugins that site runs
+   * materialize: a site without the numerology plugin must not receive numerology pages. Outside a
+   * site — the single-site deployment's boot pass — every contract applies, exactly as before.
+   */
+  private static forCurrentTenant(contracts: IResolvedPluginDefaultPageContract[]): IResolvedPluginDefaultPageContract[] {
+    if (!RequestContextUtils.getTenantId()) return contracts;
+    return contracts.filter((contract) => PluginTenantAccess.isEnabledForCurrentTenant(contract.pluginSlug));
   }
 
   static isRequiredRouteFailure(error: unknown): boolean {

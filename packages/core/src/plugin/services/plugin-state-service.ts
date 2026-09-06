@@ -49,6 +49,50 @@ export class PluginStateService {
     }
   }
 
+  /**
+   * Create the plugin's registry row BEFORE its lifecycle hooks run, when it does not exist yet.
+   *
+   * `_system_scheduler_tasks.plugin_slug` and `_system_plugin_settings.plugin_slug` are foreign keys
+   * onto this table. A plugin registering a scheduled task (or writing its settings) from `onInit`
+   * therefore needs its own row to already exist — and `register()` only persisted it AFTER the hooks
+   * had run, so on a first boot every such write hit the FK. Postgres enforces that; SQLite did not,
+   * which is why the ordering looked correct for years.
+   *
+   * The row is written in its pre-hook shape only: state 'inactive', healthy, no capabilities. The
+   * approved capability set is still advanced exactly once, by the savePluginState/enable() call that
+   * follows a SUCCESSFUL registration, so nothing is approved on the strength of a plugin that failed
+   * to boot. Returns true when this call created the row, so a failed registration can undo it and
+   * leave the plugin a fresh install for the next boot (`onInstall` must still run).
+   */
+  async ensurePluginRegistryRow(slug: string, version?: string): Promise<boolean> {
+    const normSlug = slug.toLowerCase();
+    const existing = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
+    if (existing) {
+      return false;
+    }
+    await this.db.insert(SystemConstants.TABLE.PLUGINS, {
+      slug: normSlug,
+      state: PluginState.INACTIVE.value,
+      health_status: PluginRegistryHealth.HEALTHY.value,
+      version,
+      updated_at: new Date(),
+    });
+    return true;
+  }
+
+  /**
+   * Drop a registry row this boot created but could not complete (see ensurePluginRegistryRow).
+   * The FK cascades take any settings/scheduler rows the half-registered plugin wrote with it.
+   */
+  async removePluginRegistryRow(slug: string): Promise<void> {
+    const normSlug = slug.toLowerCase();
+    try {
+      await this.db.delete(SystemConstants.TABLE.PLUGINS, { slug: normSlug });
+    } catch (err) {
+      this.logger.error(`Failed to remove the registry row for ${normSlug} after a failed registration`, err);
+    }
+  }
+
   async savePluginState(slug: string, state: PluginState, capabilities?: string[], version?: string) {
     const normSlug = slug.toLowerCase();
     try {
