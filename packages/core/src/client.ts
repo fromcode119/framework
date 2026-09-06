@@ -164,6 +164,8 @@ export { EntityColumn } from '@core/entity-column';
 // referenced it, while it pulled the whole integration service tree (~17 KB) into every client bundle.
 // It stays on `@fromcode119/core` for server code.
 export type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
+export type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
+export type { IIntegrationConfigField } from '@core/integrations/interfaces/integration-config-field.interface';
 export type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
 
 // ── Interactive Canvas (visual editor primitives) ─────────────────────────────

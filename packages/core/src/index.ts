@@ -174,6 +174,8 @@ export { FrameworkEmailSender } from '@core/email/framework-email-sender';
 export { FrameworkEmailSenderService } from '@core/email/framework-email-sender-service';
 export { MetaContextProxy } from '@core/plugin/context/meta';
 export type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
+export type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
+export type { IIntegrationConfigField } from '@core/integrations/interfaces/integration-config-field.interface';
 export type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
 
 // Context

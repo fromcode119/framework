@@ -148,6 +148,7 @@ export { PluginFrontendLayoutRegistrar, ThemeFrontendLayoutRegistrar } from '@fr
 export type { IRegisteredWidgetDefinition, IWidgetDefinitionInput, IWidgetSettingsRenderInput, IWidgetStyle } from '@fromcode119/core/client';
 export { WidgetViewport } from '@fromcode119/core/client';
 export type { IIntegrationTypeDefinition } from '@fromcode119/core/client';
+export type { IIntegrationProviderDefinition, IIntegrationConfigField } from '@fromcode119/core/client';
 export type { IPluginApiResolver } from '@fromcode119/core/client';
 export type { IPluginDefaultPageContractIdentity, IPluginDefaultPageContract, IPluginDefaultPageContractRegistration, IRegisteredPluginDefaultPageContract, IThemeDefaultPageContractOverride, ILayoutDiagnosticEntry, ILayoutOwnerIdentity, IPluginLayoutDefinition, IPluginLayoutRegistration, IRegisteredPluginLayoutDefinition, IRegisteredThemeLayoutDisableDefinition, IRegisteredThemeLayoutReplacementDefinition, IResolvedLayout, IThemeLayoutDisableDefinition, IThemeLayoutOverrideRegistration, IThemeLayoutReplacementDefinition, IPluginFrontendLayoutRegistrarOptions, IThemeFrontendLayoutRegistrarOptions, IPluginFrontendLayoutRegistration, IThemeFrontendLayoutRegistration } from '@fromcode119/core/client';
 // RequestContextUtils / RequestStore intentionally omitted — server-only (AsyncLocalStorage),

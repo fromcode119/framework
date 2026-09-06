@@ -11,4 +11,10 @@ export interface IIntegrationConfigField {
   optionsEndpoint?: string;
   searchable?: boolean;
   defaultValue?: string | number | boolean;
+  /**
+   * The value may be sent to a browser (a publishable key, a display name, bank details a customer must
+   * see). Absent means private: the owner never exposes it past the server. Generic — what "public"
+   * means for a payment or shipping provider is that owner's business, this flag only marks the field.
+   */
+  public?: boolean;
 }
