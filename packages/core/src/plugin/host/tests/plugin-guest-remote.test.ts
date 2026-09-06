@@ -14,11 +14,11 @@ describe('PluginGuestRemote', () => {
   it('turns a property/call chain into ONE message when awaited', async () => {
     const { remote, calls } = remoteWithRecorder();
     const context = remote.ref('context');
-    const result = await context.plugins.namespace('org.x').mlm.record({ id: 7 });
+    const result = await context.plugins.namespace('org.x').ledger.record({ id: 7 });
     expect(result).toBe('ok');
     expect(calls).toEqual([{
       root: 'context',
-      steps: [{ name: 'plugins' }, { name: 'namespace', args: ['org.x'] }, { name: 'mlm' }, { name: 'record', args: [{ id: 7 }] }],
+      steps: [{ name: 'plugins' }, { name: 'namespace', args: ['org.x'] }, { name: 'ledger' }, { name: 'record', args: [{ id: 7 }] }],
       token: null,
     }]);
   });

@@ -76,7 +76,7 @@ export class PluginHost {
     this.settings = settings;
     this.limits = settings.forPlugin(manifest.sandbox);
     this.proxy = new PluginHostHttpProxy('');
-    this.callbacks = new PluginHostCallbacks((handlerId, args, store) => this.invoke({ kind: 'callback', handlerId, args }, store));
+    this.callbacks = new PluginHostCallbacks(slug, (handlerId, args, store) => this.invoke({ kind: 'callback', handlerId, args }, store));
     this.dispatcher = new PluginHostDispatcher(slug, this.tokens, manager.db, (manager as any).schemaDb ?? manager.db, this.callbacks);
     this.registrations = new PluginHostRegistrations(
       slug,

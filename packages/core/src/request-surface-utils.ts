@@ -165,13 +165,16 @@ export class RequestSurfaceUtils {
   };
 
   /**
-   * What an admin/console HOST hands to the api when the console calls the api on its own origin
-   * (T6 §3.4): the versioned api, the public uploads tree and installed extension assets. Every other
-   * path on that host — `/media`, `/plugins/<slug>/settings`, `/themes` — is an admin PAGE, which is
-   * why this is narrower than `isApiPath`: that one classifies the api's own host, where the bare
-   * `/plugins`, `/themes` and `/media` roots are api routes.
+   * What an APP host — a site's storefront or a workspace console — hands to the api when it calls the
+   * api on its own origin (T6 §3.4): the versioned api, the public uploads tree and installed extension
+   * assets. Every other path on that host — `/media`, `/plugins/<slug>/settings`, `/themes`, and every
+   * storefront page — belongs to the app, which is why this is narrower than `isApiPath`: that one
+   * classifies the api's OWN host, where the bare `/plugins`, `/themes` and `/media` roots are api routes.
+   *
+   * The host must travel with the call, because on a multi-site deployment the host is the only thing
+   * that names the site.
    */
-  static isApiPathOnAdminHost(value: unknown): boolean {
+  static isApiPathOnAppHost(value: unknown): boolean {
     const normalizedPath = RequestSurfaceHelper.normalizePathname(value);
     if (!normalizedPath) {
       return false;

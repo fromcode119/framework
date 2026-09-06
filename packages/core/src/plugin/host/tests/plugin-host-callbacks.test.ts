@@ -22,7 +22,7 @@ describe('callbacks across the process boundary', () => {
 
   it('revives handles into stand-ins that invoke the guest with portable arguments', async () => {
     const invoked: Array<{ id: string; args: unknown[] }> = [];
-    const callbacks = new PluginHostCallbacks(async (id, args) => { invoked.push({ id, args }); return { ok: true, id }; });
+    const callbacks = new PluginHostCallbacks('alpha', async (id, args) => { invoked.push({ id, args }); return { ok: true, id }; });
     const revived = callbacks.revive({ slug: 'products', search: { $fcCallback: 'callback:1' }, list: [{ $fcCallback: 'callback:2' }] }) as any;
     expect(typeof revived.search).toBe('function');
     expect(typeof revived.list[0]).toBe('function');
@@ -37,7 +37,7 @@ describe('callbacks across the process boundary', () => {
   });
 
   it('leaves data alone and cuts cycles rather than looping', () => {
-    const callbacks = new PluginHostCallbacks(async () => undefined);
+    const callbacks = new PluginHostCallbacks('alpha', async () => undefined);
     const buffer = Buffer.from('b');
     expect(callbacks.revive({ a: 1, when: new Date(0), buffer, list: [1, 'x'] })).toEqual({ a: 1, when: new Date(0), buffer, list: [1, 'x'] });
     const cyclic: any = { name: 'c' };

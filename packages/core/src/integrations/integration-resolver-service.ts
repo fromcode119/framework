@@ -37,7 +37,12 @@ export class IntegrationResolverService {
     const preferStored = options.preferStored !== false;
     const storedProviders = preferStored ? await this.storedProviderService.readStoredProvidersInternal(normalizedType) : null;
     const storedProfiles = preferStored ? await this.readStoredProfilesConfig(normalizedType) : null;
-    const envCandidate = runtime.definition.resolveFromEnv?.() || null;
+    // AWAIT on every provider hook here and below: a hook can belong to an ISOLATED plugin, where it is
+    // a stand-in that returns a promise. In-process these were synchronous, and the un-awaited promise
+    // flowed on as the "config" — validation read `username` off a Promise, found nothing, and every
+    // Econt call failed with "requires field username" while the credentials sat correctly in the
+    // tenant's own row.
+    const envCandidate = (await runtime.definition.resolveFromEnv?.()) || null;
 
     if (storedProviders?.length) {
       const enabledProviders = storedProviders.filter((entry) => entry.enabled !== false);
@@ -48,7 +53,7 @@ export class IntegrationResolverService {
         if (!provider) continue;
         const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, entry.config || {});
         const normalizedConfig = provider.normalizeConfig
-          ? provider.normalizeConfig(resolvedConfig)
+          ? await provider.normalizeConfig(resolvedConfig)
           : resolvedConfig;
         resolvedFromStored.push({ type: normalizedType, providerKey: entry.providerKey, provider, config: normalizedConfig, source: SettingSource.STORED });
       }
@@ -62,7 +67,7 @@ export class IntegrationResolverService {
         if (provider) {
           const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, activeProfile.config || {});
           const normalizedConfig = provider.normalizeConfig
-            ? provider.normalizeConfig(resolvedConfig)
+            ? await provider.normalizeConfig(resolvedConfig)
             : resolvedConfig;
           return [{ type: normalizedType, providerKey: activeProfile.providerKey, provider, config: normalizedConfig, source: SettingSource.STORED }];
         }
@@ -77,7 +82,7 @@ export class IntegrationResolverService {
         const provider = runtime.providers.get(envProvider);
         if (provider) {
           const normalizedConfig = provider.normalizeConfig
-            ? provider.normalizeConfig(envCandidate.config || {})
+            ? await provider.normalizeConfig(envCandidate.config || {})
             : envCandidate.config || {};
           return [{ type: normalizedType, providerKey: envProvider, provider, config: normalizedConfig, source: SettingSource.ENV }];
         }
@@ -93,7 +98,7 @@ export class IntegrationResolverService {
         `Integration "${normalizedType}" provider "${providerKey}" is not registered. Available: ${Array.from(runtime.providers.keys()).join(', ')}`,
       );
     }
-    const normalizedConfig = provider.normalizeConfig ? provider.normalizeConfig({}) : {};
+    const normalizedConfig = provider.normalizeConfig ? await provider.normalizeConfig({}) : {};
     return [{ type: normalizedType, providerKey, provider, config: normalizedConfig, source: SettingSource.DEFAULT }];
   }
 }

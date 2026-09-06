@@ -14,6 +14,8 @@ import { SsoIntegrationDefinition } from '@core/integrations/providers/sso-provi
 import { CoreServices } from '@core/services';
 import { IntegrationConfigReadService } from '@core/integrations/integration-config-read-service';
 import { IntegrationCoreRefreshService } from '@core/integrations/integration-core-refresh-service';
+import { RequestContextUtils } from '@core/context/request-context';
+import { TenantScopedIntegration } from '@core/integrations/tenant-scoped-integration';
 
 export class IntegrationManager {
   private registry: IntegrationRegistry;
@@ -21,12 +23,24 @@ export class IntegrationManager {
   private coreRefresh: IntegrationCoreRefreshService;
   private logger: Logger;
   private projectRoot: string;
+  /**
+   * Resolved integration instances, keyed by TENANT + type.
+   *
+   * An instance carries the stored configuration of one tenant — a courier's credentials, a payment
+   * gateway's secret. Keying this by type alone made it process-wide: whichever tenant (or the
+   * untenanted boot) resolved a type first served every request afterwards. On this deployment that
+   * showed up as a configured Econt reading back with an empty username, because the platform-level
+   * record won the cache; the same sharing would hand one tenant another tenant's live credential.
+   */
   private instances: Map<string, any> = new Map();
 
   // Integration instances
   private readonly db: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   public email!: IEmailDriver;
+
+  /** The driver resolved with no tenant in scope: framework mail, and the fallback for untenanted work. */
+  private platformEmail!: IEmailDriver;
   public storage!: MediaManager;
   public cache!: CacheManager;
 
@@ -101,8 +115,9 @@ export class IntegrationManager {
     if (normalized === 'storage') return this.storage as any;
     if (normalized === 'cache') return this.cache as any;
 
-    if (this.instances.has(normalized)) {
-      return this.instances.get(normalized);
+    const instanceKey = this.instanceKey(normalized);
+    if (this.instances.has(instanceKey)) {
+      return this.instances.get(instanceKey);
     }
 
     try {
@@ -110,12 +125,22 @@ export class IntegrationManager {
         preferStored,
         context: { projectRoot: this.projectRoot, logger: this.logger }
       });
-      this.instances.set(normalized, instance);
+      this.instances.set(instanceKey, instance);
       return instance;
     } catch (error: any) {
       this.logger.error(`Failed to get integration "${normalized}": ${error.message}`);
       throw error;
     }
+  }
+
+  /** Cache key for a resolved instance: the request's tenant (empty for platform-level work) plus the type. */
+  private instanceKey(normalizedType: string): string {
+    return `${RequestContextUtils.getTenantId() ?? ''}::${normalizedType}`;
+  }
+
+  /** Drops the current tenant's instance of a type, so the next `get()` re-reads that tenant's config. */
+  private forgetInstance(normalizedType: string): void {
+    this.instances.delete(this.instanceKey(normalizedType));
   }
 
   async instantiateWithConfig<T = any>(
@@ -147,10 +172,26 @@ export class IntegrationManager {
    */
   async refreshEmail(preferStored: boolean = true) {
     const { email, resolved } = await this.coreRefresh.refreshEmail(preferStored);
+    this.platformEmail = email;
     // Wrapped here rather than at `context.email`, so framework-internal senders (admin notifications,
-    // auth mail) are covered too — everything that sends goes through this one driver.
-    this.email = SuppressedEmailDriver.wrap(email, this.db);
+    // auth mail) are covered too — everything that sends goes through this one driver. The tenant layer
+    // sits INSIDE the suppression layer, so a bounced or unsubscribed address is refused whichever
+    // site's mail server is about to be used.
+    this.email = SuppressedEmailDriver.wrap(
+      TenantScopedIntegration.wrap<IEmailDriver>(() => this.platformEmail, (tenantId) => this.emailForTenant(tenantId)),
+      this.db,
+    );
     return resolved;
+  }
+
+  /** That tenant's own email driver, resolved on first send and kept beside its other integrations. */
+  private async emailForTenant(tenantId: string): Promise<IEmailDriver> {
+    const key = `${tenantId}::email`;
+    const cached = this.instances.get(key);
+    if (cached) return cached;
+    const { email } = await this.coreRefresh.refreshEmail(true);
+    this.instances.set(key, email);
+    return email;
   }
 
   /**
@@ -262,6 +303,6 @@ export class IntegrationManager {
       return;
     }
 
-    this.instances.delete(normalizedType);
+    this.forgetInstance(normalizedType);
   }
 }

@@ -13,6 +13,16 @@ export class PluginPathContextProxy {
   constructor(
     private readonly plugin: ILoadedPlugin,
     private readonly manager: IPluginManagerInterface,
+    /**
+     * How to find the active theme, when a plain read of the themes table is not available.
+     *
+     * This proxy is FRAMEWORK code, and framework code reads the raw manager db — that is exactly why
+     * the plugin-isolation guard exempts it. Inside an isolated plugin's own process there is no raw db
+     * to read, and wiring the plugin's guarded `context.db` in its place made the framework's own call
+     * look like the plugin reaching into `_system_themes`: the guard refused it and every order
+     * confirmation email died before it was sent. The guest passes the host's own answer instead.
+     */
+    private readonly activeThemeSlug?: () => Promise<string | null>,
   ) {
     this.fileReader = new PluginContextFileReader(
       () => this.resolveCurrentPluginRoot(),
@@ -51,6 +61,10 @@ export class PluginPathContextProxy {
   }
 
   async resolveActiveThemeSlug(): Promise<string | null> {
+    if (this.activeThemeSlug) {
+      const supplied = String((await this.activeThemeSlug()) || '').trim();
+      return supplied || null;
+    }
     const activeTheme = await this.manager.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value });
     const slug = String(activeTheme?.slug || '').trim();
     return slug || null;

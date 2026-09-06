@@ -12,6 +12,12 @@ import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remo
  * AsyncLocalStorage, filled by the runtime when the host hands it work.
  */
 export class PluginGuestRemote {
+  /** Wire marker for a host object whose methods the guest may call back into (`PluginHostPortableView`). */
+  static readonly HOST_OBJECT = '$fcHostObject';
+
+  /** Wire marker for a function of this guest's own, travelling home (`PluginHostCallbacks.MARKER`). */
+  static readonly CALLBACK = '$fcCallback';
+
   /** Which invocation the current async flow belongs to; set by the guest runtime around each invocation. */
   static readonly invocation = new AsyncLocalStorage<{ token: string; tenantId: string | null }>();
 
@@ -20,7 +26,9 @@ export class PluginGuestRemote {
     private readonly timeoutMs: number,
     /** Keeps a function under a stable id and returns the id; without one, functions are dropped (and named). */
     private readonly keep: ((handler: (...args: any[]) => unknown) => string) | null = null,
-  ) {}
+    /** The reverse of `keep`: the local function behind an id, so one of ours coming home stays local. */
+    private readonly recall: ((id: string) => ((...args: any[]) => unknown) | null) | null = null,
+  ) { }
 
   /** A chainable proxy rooted at `root` (`context`, `core` or `ddl`). */
   ref(root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'] = []): any {
@@ -31,8 +39,51 @@ export class PluginGuestRemote {
    * Sends one call and returns its result. The token is the one captured when the chain was built —
    * inside the handler the host invoked — so a chain awaited later still belongs to its invocation.
    */
-  call(root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'], token: string | null = PluginGuestRemote.currentToken()): Promise<unknown> {
-    return this.channel.request('call', { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
+  async call(root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'], token: string | null = PluginGuestRemote.currentToken()): Promise<unknown> {
+    const result = await this.channel.request('call', { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
+    return this.rehydrate(result, root, steps, token);
+  }
+
+  /**
+   * Turns the host's portable view back into something a plugin can USE.
+   *
+   * A host object that carries behaviour crosses as `{ $fcHostObject: { methods, path, data } }`
+   * (`PluginHostPortableView`). Here each method name becomes a call that re-walks the SAME chain on the
+   * host and then the method — so `await context.integrations.get('shipping_provider')` gives back an
+   * object whose `requestByKey(...)` really reaches the courier, while its plain fields read as data.
+   * The host stays the only owner of the instance; nothing but names and data ever crosses.
+   */
+  private rehydrate(value: unknown, root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'], token: string | null): unknown {
+    if (value === null || typeof value !== 'object') return value;
+    // Payload types the host sends verbatim; walking a Buffer's bytes would cost more than the call.
+    if (Buffer.isBuffer(value) || value instanceof Date || value instanceof Map || value instanceof Set) return value;
+    if (Array.isArray(value)) return value.map((entry) => this.rehydrate(entry, root, steps, token));
+    const local = PluginGuestRemote.localHandler(value, this.recall);
+    if (local) return local;
+    const marker = (value as Record<string, unknown>)[PluginGuestRemote.HOST_OBJECT] as
+      | { methods?: string[]; path?: string[]; data?: Record<string, unknown>; opaque?: boolean; names?: string[] }
+      | undefined;
+    if (marker?.opaque) return this.forwarder(root, steps, marker.path || [], token, marker.names || []);
+    if (!marker) {
+      const plain: Record<string, unknown> = {};
+      let changed = false;
+      for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+        plain[key] = this.rehydrate(entry, root, steps, token);
+        if (plain[key] !== entry) changed = true;
+      }
+      return changed ? plain : value;
+    }
+
+    const at = (marker.path || []).map((name) => ({ name }));
+    const object: Record<string, unknown> = {};
+    for (const [key, entry] of Object.entries(marker.data || {})) {
+      object[key] = this.rehydrate(entry, root, steps, token);
+    }
+    for (const name of marker.methods || []) {
+      object[name] = (...args: unknown[]) =>
+        this.call(root, [...steps, ...at, { name, args: PluginGuestRemote.portable(args, [], this.keep) }], token);
+    }
+    return object;
   }
 
   static currentToken(): string | null {
@@ -163,6 +214,43 @@ export class PluginGuestRemote {
       out[key] = PluginGuestRemote.portableValue(entry, depth + 1, `${at}.${key}`, dropped, keep);
     }
     return out;
+  }
+
+  /**
+   * Another plugin's public API: an object that answers whatever is called on it by forwarding the name
+   * to the host, where the real thing lives. Nothing is enumerated, because the host side is a Proxy with
+   * nothing to enumerate — describing it produced `{}` and silently dropped every method.
+   *
+   * `then` must stay undefined: this value is returned from `async` methods, and a thenable here would
+   * make every `await` of it call the host with the promise's resolvers as arguments.
+   */
+  private forwarder(root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'], path: string[], token: string | null, names: string[]): unknown {
+    const remote = this;
+    const at = path.map((name) => ({ name }));
+    const answers = new Set(names);
+    return new Proxy({}, {
+      get(_target, prop) {
+        if (typeof prop !== 'string') return undefined;
+        if (prop === 'then' || prop === 'catch' || prop === 'finally') return undefined;
+        // Answer only what the other side actually has, so `api.a || api.b` still picks the one that
+        // exists. An empty list means the host could not say, and anything may be forwarded.
+        if (answers.size && !answers.has(prop)) return undefined;
+        return (...args: unknown[]) =>
+          remote.call(root, [...steps, ...at, { name: prop, args: PluginGuestRemote.portable(args, [], remote.keep) }], token);
+      },
+      has(_target, prop) { return typeof prop === 'string' && (!answers.size || answers.has(prop)); },
+      ownKeys() { return [...answers]; },
+      getOwnPropertyDescriptor() { return { enumerable: true, configurable: true, value: undefined }; },
+    });
+  }
+
+  /** `{ $fcCallback: id }` coming back from the host is one of THIS guest's functions — return the original. */
+  private static localHandler(value: object, recall: ((id: string) => ((...args: any[]) => unknown) | null) | null): ((...args: any[]) => unknown) | null {
+    if (!recall) return null;
+    const keys = Object.keys(value);
+    if (keys.length !== 1 || keys[0] !== PluginGuestRemote.CALLBACK) return null;
+    const id = (value as Record<string, unknown>)[PluginGuestRemote.CALLBACK];
+    return typeof id === 'string' ? recall(id) : null;
   }
 
   private readonly warned = new Set<string>();

@@ -10,9 +10,9 @@ function dispatcher() {
   const db = { withTenant: vi.fn(async (tenantId: string, fn: () => Promise<unknown>) => { scopes.push(tenantId); return fn(); }) };
   const context: any = {
     db: { find: vi.fn(async (table: string) => [{ table, tenant: RequestContextUtils.getTenantId() }]) },
-    plugins: { namespace: (ns: string) => ({ mlm: { record: async (p: unknown) => ({ ns, p }) } }) },
+    plugins: { namespace: (ns: string) => ({ ledger: { record: async (p: unknown) => ({ ns, p }) } }) },
   };
-  return { dispatcher: new PluginHostDispatcher('seo', tokens, db, {}, new PluginHostCallbacks(async () => undefined)), tokens, db, context, scopes };
+  return { dispatcher: new PluginHostDispatcher('alpha', tokens, db, {}, new PluginHostCallbacks('alpha', async () => undefined)), tokens, db, context, scopes };
 }
 
 describe('PluginHostDispatcher', () => {
@@ -34,7 +34,7 @@ describe('PluginHostDispatcher', () => {
   it('walks property and call steps, awaiting each call', async () => {
     const { dispatcher: d, tokens, context } = dispatcher();
     const token = tokens.mint('hook', undefined);
-    const out = await d.dispatch(context, { root: 'context', steps: [{ name: 'plugins' }, { name: 'namespace', args: ['org.x'] }, { name: 'mlm' }, { name: 'record', args: [{ id: 1 }] }], token });
+    const out = await d.dispatch(context, { root: 'context', steps: [{ name: 'plugins' }, { name: 'namespace', args: ['org.x'] }, { name: 'ledger' }, { name: 'record', args: [{ id: 1 }] }], token });
     expect(out).toEqual({ ns: 'org.x', p: { id: 1 } });
   });
 

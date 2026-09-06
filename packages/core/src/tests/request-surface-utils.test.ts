@@ -13,11 +13,11 @@ describe('RequestSurfaceUtils', () => {
   });
 
   it('on an admin host only the api, uploads and extension assets are api paths', () => {
-    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/api/v1/auth/host')).toBe(true);
-    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/uploads/a.png')).toBe(true);
-    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/plugins/cms/ui/bundle.js')).toBe(true);
-    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/media')).toBe(false);
-    expect(RequestSurfaceUtils.isApiPathOnAdminHost('/plugins/tagiqx/settings')).toBe(false);
+    expect(RequestSurfaceUtils.isApiPathOnAppHost('/api/v1/auth/host')).toBe(true);
+    expect(RequestSurfaceUtils.isApiPathOnAppHost('/uploads/a.png')).toBe(true);
+    expect(RequestSurfaceUtils.isApiPathOnAppHost('/plugins/cms/ui/bundle.js')).toBe(true);
+    expect(RequestSurfaceUtils.isApiPathOnAppHost('/media')).toBe(false);
+    expect(RequestSurfaceUtils.isApiPathOnAppHost('/plugins/tagiqx/settings')).toBe(false);
     expect(RequestSurfaceUtils.isApiPath('/plugins/tagiqx/settings')).toBe(true);
   });
 

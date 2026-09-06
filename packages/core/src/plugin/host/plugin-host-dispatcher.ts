@@ -4,6 +4,7 @@ import { AssistantVocabularyRole } from '@core/services/enums/assistant-vocabula
 import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
 import { PluginInvocationTokens } from '@core/plugin/host/plugin-invocation-tokens';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
+import { PluginHostPortableView } from '@core/plugin/host/plugin-host-portable-view';
 import type { PluginContext } from '@core/plugin-context';
 
 /**
@@ -63,7 +64,26 @@ export class PluginHostDispatcher {
         target = next;
       }
     }
-    return PluginHostDispatcher.portableResult(target);
+    if (PluginHostDispatcher.resolvesAnotherPluginsApi(steps)) return PluginHostPortableView.opaque(target);
+    return this.portableResult(target);
+  }
+
+  /**
+   * Did this call ask for ANOTHER plugin's public API (`plugins.namespace('org.x').get('ledger')`,
+   * `dependencies.require(...)`)?
+   *
+   * That value is a Proxy on this side — a facade that resolves a slug on demand, and for an isolated
+   * plugin a forwarder into its process. It has no own properties to describe, so copying it produced
+   * `{}` and the caller silently lost every method: logistics asked Econt for cities, got an object with
+   * no `searchCities`, and answered an empty list with no error at all. So it crosses as an OPAQUE
+   * handle, and the guest forwards whatever is called on it back here by name.
+   */
+  private static resolvesAnotherPluginsApi(steps: IPluginRemoteCall['steps']): boolean {
+    const last = steps[steps.length - 1];
+    const previous = steps[steps.length - 2]?.name;
+    if (!last?.args) return false;
+    if (!['get', 'require', 'optional'].includes(last.name)) return false;
+    return ['namespace', 'plugins', 'dependencies'].includes(String(previous));
   }
 
   /** Values that crossed as their wire form and must be objects again on this side. */
@@ -86,7 +106,7 @@ export class PluginHostDispatcher {
   }
 
   /** The last value must survive structured clone: a `Response` from `fetch` is read into bytes; functions cannot cross. */
-  private static async portableResult(value: unknown): Promise<unknown> {
+  private async portableResult(value: unknown): Promise<unknown> {
     if (value && typeof value === 'object' && typeof (value as Response).arrayBuffer === 'function' && typeof (value as Response).status === 'number') {
       const response = value as Response;
       const headers: Record<string, string> = {};
@@ -100,13 +120,10 @@ export class PluginHostDispatcher {
       const result = value as { rows: unknown[]; rowCount?: number | null; command?: string };
       return { rows: result.rows, rowCount: result.rowCount ?? null, command: result.command };
     }
-    try {
-      structuredClone(value);
-      return value;
-    } catch {
-      // Something in the graph is not cloneable (a method, a class instance with closures): send the
-      // plain data view of it. Functions vanish; everything a plugin can act on stays.
-      return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
-    }
+    // Data crosses untouched; an object that carries METHODS crosses as a portable view naming them, so
+    // an integration client reaches the guest as behaviour instead of a lifeless copy. A structured clone
+    // would not have complained about that client — prototype methods are dropped silently — so the view
+    // decides, not the clone.
+    return PluginHostPortableView.of(value, this.callbacks.owner);
   }
 }

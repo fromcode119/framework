@@ -38,8 +38,12 @@ export class IntegrationStoredProviderService {
     const normalizedProviderId = this.profileService.normalize(String(options.providerId || ''));
     const existing = normalizedProviderId ? existingProviders.find((entry) => entry.id === normalizedProviderId) : null;
     const storedConfig = this.buildStoredConfig(normalizedType, provider, config || {}, existing?.config || {});
+    // AWAIT: a provider hook can belong to an ISOLATED plugin, where it is a stand-in that returns a
+    // promise. In-process these were synchronous, and the un-awaited promise then flowed on as the
+    // "config" — validation read `username` off a Promise, found nothing, and every Econt call died with
+    // "requires field username" while the credentials sat correctly in the tenant's own row.
     const normalizedConfig = provider.normalizeConfig
-      ? provider.normalizeConfig(this.resolveRuntimeConfig(provider, storedConfig))
+      ? await provider.normalizeConfig(this.resolveRuntimeConfig(provider, storedConfig))
       : this.resolveRuntimeConfig(provider, storedConfig);
     this.profileService.validateProviderConfig(typeKey, provider, normalizedConfig);
 

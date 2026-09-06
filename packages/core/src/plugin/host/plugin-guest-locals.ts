@@ -30,7 +30,12 @@ export class PluginGuestLocals {
       writeLog: async () => undefined,
     };
     const security: any = { hasCapability: () => true, handleViolation: () => undefined, handleRateLimit: () => undefined };
-    this.paths = new PluginPathContextProxy(plugin, manager);
+    // The active theme comes from the HOST's own answer, not from a table read through the plugin's
+    // guarded `context.db` — that read is framework work, and the guard rightly refuses it here.
+    this.paths = new PluginPathContextProxy(plugin, manager, async () => {
+      const slug = await remote.ref('context', [{ name: 'theme' }]).getActiveSlug();
+      return typeof slug === 'string' ? slug : null;
+    });
     this.i18n = I18nContextProxy.createI18nProxy(plugin, manager, this.paths, security);
   }
 

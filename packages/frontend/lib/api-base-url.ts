@@ -1,22 +1,31 @@
 import { ApplicationUrlUtils, EnvUtils } from '@fromcode119/core/client';
 
 export class FrontendApiBaseUrl {
+  /**
+   * Where the storefront calls the API.
+   *
+   * In the BROWSER the answer is always this page's own origin, and it takes no configuration. On a
+   * multi-site deployment every site is its own host, and that host is the only thing that says WHICH
+   * site a call belongs to — send the browser to one shared api host and the site is gone, which is how
+   * a shop with Econt credentials ended up reading the platform's empty ones. Behind the gateway those
+   * paths route straight to the api; without it the storefront's own `/api` route proxies them, for
+   * every method.
+   *
+   * On the SERVER there is no origin to speak of, so the configured base still answers.
+   */
   static resolveFrontendApiBaseUrl(explicit?: string): string {
+      if (EnvUtils.isBrowser()) {
+        const origin = FrontendApiBaseUrl.trimTrailingSlashes(String((window as any)?.location?.origin || ''));
+        if (origin) return origin;
+      }
+
       const fromExplicit = FrontendApiBaseUrl.normalizeCandidate(String(explicit || ''));
       if (fromExplicit) return fromExplicit;
-
-      const fromBridge =
-        EnvUtils.isBrowser() ? FrontendApiBaseUrl.normalizeCandidate(FrontendApiBaseUrl.readBridgeValue('FROMCODE_API_URL')) : '';
-      if (fromBridge) return fromBridge;
 
       const fromEnv = FrontendApiBaseUrl.normalizeCandidate(String(process.env.NEXT_PUBLIC_API_URL || ''));
       if (fromEnv) return fromEnv;
 
-      const fromLocation = FrontendApiBaseUrl.inferFromBrowserLocation();
-      if (fromLocation) return fromLocation;
-
       return '';
-
   }
 
   // ---------------------------------------------------------------------------
@@ -37,52 +46,4 @@ export class FrontendApiBaseUrl {
     return FrontendApiBaseUrl.trimTrailingSlashes(`http://${raw}`);
   }
 
-  private static readBridgeValue(key: string): string {
-    if (!EnvUtils.isBrowser()) return '';
-    return String((window as any)?.[key] || '').trim();
-  }
-
-  private static parseOriginMap(raw: string): Record<string, string> {
-    const normalized = String(raw || '').trim();
-    if (!normalized) return {};
-    try {
-      const parsed = JSON.parse(normalized);
-      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-      return Object.entries(parsed as Record<string, unknown>).reduce<Record<string, string>>((acc, [key, value]) => {
-        const mapKey = String(key || '').trim();
-        const mapValue = FrontendApiBaseUrl.normalizeCandidate(String(value || ''));
-        if (mapKey && mapValue) acc[mapKey] = mapValue;
-        return acc;
-      }, {});
-    } catch {
-      return {};
-    }
-  }
-
-  private static inferFromBrowserLocation(): string {
-    if (!EnvUtils.isBrowser()) return '';
-    try {
-      const current = new URL(window.location.href);
-      const origin = FrontendApiBaseUrl.trimTrailingSlashes(current.origin);
-      const host = String(current.hostname || '').trim();
-
-      const originMap = {
-        ...FrontendApiBaseUrl.parseOriginMap(String(process.env.NEXT_PUBLIC_API_ORIGIN_MAP || '')),
-        ...FrontendApiBaseUrl.parseOriginMap(FrontendApiBaseUrl.readBridgeValue('FROMCODE_API_ORIGIN_MAP'))
-      };
-
-      const mapped = FrontendApiBaseUrl.normalizeCandidate(
-        originMap[origin] ||
-        originMap[host] ||
-        ''
-      );
-      if (mapped) return mapped;
-
-      // Neutral fallback: same origin with versioned API path (/api/vX) appended by route builders.
-      return origin;
-    } catch {
-      // Ignore inference failures and fallback.
-    }
-    return '';
-  }
 }

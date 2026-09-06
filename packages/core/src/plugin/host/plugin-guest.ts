@@ -35,7 +35,7 @@ export class PluginGuest {
 
   constructor(transport: ConstructorParameters<typeof PluginChannel>[0]) {
     this.channel = new PluginChannel(transport);
-    this.remote = new PluginGuestRemote(this.channel, PluginGuest.CALL_TIMEOUT_MS, (handler) => this.handlers.keepStable(handler));
+    this.remote = new PluginGuestRemote(this.channel, PluginGuest.CALL_TIMEOUT_MS, (handler) => this.handlers.keepStable(handler), (id) => this.handlers.take(id));
     this.channel.serve((type, payload) => this.handle(type, payload));
   }
 

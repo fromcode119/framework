@@ -22,7 +22,14 @@ export class PlatformGateway {
   static readonly ROUTING_PATH = ApiPathUtils.versioned(RouteConstants.SEGMENTS.INTERNAL_ROUTING);
   private static readonly DEFAULT_PORT = 3000;
 
-  private readonly proxy = httpProxy.createProxyServer({ ws: true, xfwd: true });
+  /**
+   * One pooled connection set to each app instead of a fresh socket per request. Without it every
+   * proxied call opened and closed its own connection, and a burst from ONE page load answered
+   * `Parse Error: Data after 'Connection: close'`.
+   */
+  private readonly agent = new http.Agent({ keepAlive: true, maxSockets: 256, maxFreeSockets: 32 });
+
+  private readonly proxy = httpProxy.createProxyServer({ ws: true, xfwd: true, agent: this.agent });
   private readonly port = PlatformGateway.readPort();
   private readonly targets: Record<string, string> = {
     [GatewayTarget.API.value]: process.env.API_TARGET_URL || 'http://api:3000',
@@ -30,28 +37,48 @@ export class PlatformGateway {
     [GatewayTarget.FRONTEND.value]: String(process.env.FRONTEND_TARGET_URL || '').trim(),
   };
 
+  /** The listening server, so a caller (and the tests) can reach and close it. */
+  server: http.Server | null = null;
+
   constructor(private readonly routing: RoutingMapClient = new RoutingMapClient(`${process.env.API_TARGET_URL || 'http://api:3000'}${PlatformGateway.ROUTING_PATH}`)) {}
 
   start(): void {
     this.proxy.on('error', (error, _req, res) => {
       console.error('[platform-gateway] proxy error:', error.message);
-      if (res && 'writeHead' in res && typeof res.writeHead === 'function' && !res.headersSent) {
+      if (!res || !('writeHead' in res) || typeof res.writeHead !== 'function') return;
+      if (!res.headersSent) {
         res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
         res.end('Service unavailable - is the target process running?');
+        return;
       }
+      // The response is already on the wire, so there is nothing to say — cut it, or the upstream keeps
+      // writing into a finished response.
+      res.destroy();
     });
     this.proxy.on('proxyReq', (proxyReq, req) => {
       const host = String(req.headers.host || '');
       if (host && !proxyReq.getHeader('x-forwarded-host')) proxyReq.setHeader('x-forwarded-host', host);
     });
 
-    const server = http.createServer((req, res) => { void this.handle(req, res); });
+    const server = http.createServer((req, res) => {
+      // A connection that goes away mid-response leaves the upstream still writing into a response that
+      // has ended. With no listener, Node turns that into an UNHANDLED 'error' and the process exits —
+      // so one aborted request took the whole edge down and every site answered 502 until it restarted.
+      res.on('error', (error: Error) => console.warn('[platform-gateway] response error:', error.message));
+      req.on('error', (error: Error) => console.warn('[platform-gateway] request error:', error.message));
+      void this.handle(req, res);
+    });
+    server.on('clientError', (error: Error, socket) => {
+      console.warn('[platform-gateway] client error:', error.message);
+      socket.destroy();
+    });
     server.on('upgrade', (req, socket, head) => {
       void this.targetFor(req).then((target) => {
         if (!target) { socket.destroy(); return; }
         this.proxy.ws(req, socket, head, { target });
       });
     });
+    this.server = server;
     server.listen(this.port, () => {
       void this.routing.refresh().then(() => this.logStartup());
     });
@@ -81,11 +108,14 @@ export class PlatformGateway {
     if (map) {
       const route = map.resolve(host);
       if (!route) return null;
-      // A workspace console calls the api on ITS OWN origin (`/api/*`, uploads, plugin and theme
-      // assets): same site, so its session cookie and CORS need nothing special, and the api reads the
-      // workspace from the Host. Only those paths — the admin owns `/media`, `/plugins/<slug>/settings`
-      // and the rest. A site's storefront keeps proxying its api paths itself (frontend `/api` route).
-      if (route.target === GatewayTarget.ADMIN && RequestSurfaceUtils.isApiPathOnAdminHost(pathname)) return targets[GatewayTarget.API.value] || null;
+      // An app host — a workspace console OR a site's storefront — calls the api on ITS OWN origin
+      // (`/api/*`, uploads, plugin and theme assets): same site, so its session cookie and CORS need
+      // nothing special, and the api reads the tenant from the Host. That last part is the point: on a
+      // multi-site deployment the host is the only thing that says WHICH site a call belongs to, and a
+      // storefront sent to one shared api host loses it — the courier integration then read the
+      // platform-level record instead of the shop's. Only these paths; the app owns `/media`,
+      // `/plugins/<slug>/settings` and every storefront page.
+      if (RequestSurfaceUtils.isApiPathOnAppHost(pathname)) return targets[GatewayTarget.API.value] || null;
       return targets[route.target.value] || null;
     }
     if (RequestSurfaceUtils.isApiPath(pathname)) return targets[GatewayTarget.API.value];
@@ -124,6 +154,7 @@ export class PlatformGateway {
 
   private static readPort(): number {
     const parsed = Number.parseInt(String(process.env.PORT || PlatformGateway.DEFAULT_PORT), 10);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : PlatformGateway.DEFAULT_PORT;
+    // 0 is a real answer — "any free port" — and rejecting it sent a test gateway onto the live 3000.
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : PlatformGateway.DEFAULT_PORT;
   }
 }

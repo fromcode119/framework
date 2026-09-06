@@ -18,7 +18,9 @@ describe('PlatformGateway.resolveTarget', () => {
   it('a workspace console reaches the api on its own origin: /api and asset paths on an admin host go to the api', () => {
     expect(PlatformGateway.resolveTarget(map, 'nexora.test', '/api/v1/auth/host', targets)).toBe(targets.api);
     expect(PlatformGateway.resolveTarget(map, 'nexora.test', '/plugins/mlm/ui/bundle.js', targets)).toBe(targets.api);
-    expect(PlatformGateway.resolveTarget(map, 'acme.test', '/api/v1/system/frontend', targets)).toBe(targets.frontend);
+    // A SITE's storefront reaches the api on its own host too, so the site's name survives the call.
+    expect(PlatformGateway.resolveTarget(map, 'acme.test', '/api/v1/system/frontend', targets)).toBe(targets.api);
+    expect(PlatformGateway.resolveTarget(map, 'acme.test', '/shop/cosmic-box', targets)).toBe(targets.frontend);
     expect(PlatformGateway.resolveTarget(map, 'nexora.test', '/uploads/2026/09/logo.png', targets)).toBe(targets.api);
   });
 
@@ -41,5 +43,36 @@ describe('PlatformGateway.resolveTarget', () => {
     expect(PlatformGateway.resolveTarget(null, 'platform.test', '/api/v1/health', targets)).toBe(targets.api);
     expect(PlatformGateway.resolveTarget(null, 'platform.test', '/admin/sites', targets)).toBe(targets.admin);
     expect(PlatformGateway.resolveTarget(null, 'platform.test', '/shop', targets)).toBe(targets.frontend);
+  });
+});
+
+describe('PlatformGateway under a burst', () => {
+  it('serves every request of one page load and stays up', async () => {
+    const http = await import('http');
+    const upstream = http.createServer((_req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end('{"ok":true}');
+    });
+    await new Promise<void>((resolve) => upstream.listen(0, resolve));
+    const upstreamPort = (upstream.address() as any).port;
+
+    process.env.PORT = '0';
+    process.env.API_TARGET_URL = `http://127.0.0.1:${upstreamPort}`;
+    process.env.FRONTEND_TARGET_URL = `http://127.0.0.1:${upstreamPort}`;
+    const gateway = new PlatformGateway({ refresh: async () => null, resolveMap: async () => null, map: () => null, enabled: false, ageMs: 0 } as any);
+    gateway.start();
+    const server = (gateway as any).server as import('http').Server;
+    await new Promise<void>((resolve) => server.listening ? resolve() : server.once('listening', () => resolve()));
+    const port = (server.address() as any).port;
+
+    // One storefront page load is a burst, not a trickle. A gateway that opened and closed a socket per
+    // call answered `Parse Error: Data after 'Connection: close'` and then DIED on the first response it
+    // could no longer write to — every site 502 until the container came back.
+    const statuses = await Promise.all(Array.from({ length: 25 }, () =>
+      fetch(`http://127.0.0.1:${port}/api/v1/system/frontend`).then((r) => r.status).catch((e) => String(e))));
+    expect(statuses.every((status) => status === 200)).toBe(true);
+
+    server.close();
+    upstream.close();
   });
 });

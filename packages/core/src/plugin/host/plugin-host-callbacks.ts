@@ -17,9 +17,24 @@ import type { IRequestStore } from '@core/context/interfaces/request-store.inter
  */
 export class PluginHostCallbacks {
   static readonly MARKER = '$fcCallback';
+  /**
+   * Stamped on every stand-in so a value travelling BACK to the guest can be recognised as that guest's
+   * own function and restored locally, instead of making a round trip out to the host and in again.
+   */
+  static readonly ID = '$fcCallbackId';
+  /**
+   * Which plugin's function this stand-in forwards to. Ids are per-guest counters, so `callback:3`
+   * names a different function in every plugin — without the owner, handing one plugin's API to another
+   * would let the receiver "recognise" an id that was never its own and call the wrong function.
+   */
+  static readonly OWNER = '$fcCallbackOwner';
   private static readonly MAX_DEPTH = 8;
 
-  constructor(private readonly invoke: (handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown>) {}
+  constructor(
+    /** The plugin whose functions these stand-ins forward to. */
+    readonly owner: string,
+    private readonly invoke: (handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown>,
+  ) {}
 
   /** Replaces every callback marker in `value` (deeply) with a host-side function. */
   revive<T>(value: T): T {
@@ -39,7 +54,10 @@ export class PluginHostCallbacks {
 
   private standIn(id: string): (...args: unknown[]) => Promise<unknown> {
     const callbacks = this;
-    return (...args: unknown[]) => callbacks.invoke(id, PluginHostCallbacks.portableArgs(args), RequestContextUtils.storage.getStore());
+    const fn = (...args: unknown[]) => callbacks.invoke(id, PluginHostCallbacks.portableArgs(args), RequestContextUtils.storage.getStore());
+    Object.defineProperty(fn, PluginHostCallbacks.ID, { value: id, enumerable: false });
+    Object.defineProperty(fn, PluginHostCallbacks.OWNER, { value: callbacks.owner, enumerable: false });
+    return fn;
   }
 
   /** Arguments as data: functions vanish, a request is reduced to what a handler may read of it, cycles are cut. */
