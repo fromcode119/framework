@@ -114,6 +114,27 @@ export class TenantMembershipService {
    * (installed / loadable / held) is an operator-wide fact, so changing it is a platform-admin
    * action and the controller has to be able to ask.
    */
+  /**
+   * What this account may do ON THIS SITE, or `null` when the question does not apply.
+   *
+   * `null` for a platform admin (their reach is the platform, not one membership) and for an account
+   * with no active membership here (other gates decide whether it may be present at all). Anything else
+   * returns the membership's own roles — which is what makes "customer on one site, administrator on
+   * another" a real distinction rather than a stored value nothing reads.
+   */
+  async rolesForTenant(userId: string, tenantId: string): Promise<string[] | null> {
+    const id = CoercionUtils.toString(userId);
+    const tenant = CoercionUtils.toString(tenantId);
+    if (!id || !tenant) return null;
+    if (await this.isPlatformAdmin(id)) return null;
+
+    const row = await this.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: id, tenant_id: tenant });
+    if (!row) return null;
+    const membership = TenantMembership.from(row);
+    if (!membership.isActive) return null;
+    return membership.roles;
+  }
+
   async isPlatformAdminAccount(userId: string): Promise<boolean> {
     const id = CoercionUtils.toString(userId);
     if (!id) return false;

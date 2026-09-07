@@ -335,6 +335,8 @@ export class PluginManager implements IPluginManagerInterface {
    * pass runs untenanted and cannot write a site's pages.
    */
   async materializeDefaultPages(): Promise<void> { return this.lifecycle.materializeDefaultPagesFinalPass(); }
+  /** Every active plugin's seed data, for the site currently in scope. */
+  async runPluginSeedsForCurrentSite(): Promise<string[]> { return this.lifecycle.runSeedsForCurrentSite(); }
   async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}) { return this.lifecycle.enable(slug, options); }
   async disable(slug: string, options: { persistState?: boolean } = {}) { return this.lifecycle.disable(slug, options); }
   async delete(slug: string) { return this.lifecycle.delete(slug); }

@@ -350,7 +350,8 @@ html.dark {
 .fc-site-form__plugins { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
 /* A plugin row carries its state beside the toggle, so an unrunnable one explains itself in place. */
 .fc-site-form__plugin { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
-.fc-site-form__plugin-state { font-size: 11px; color: var(--muted-foreground); white-space: nowrap; }
+.fc-site-form__plugin-state { font-size: 11px; color: var(--muted-foreground); white-space: nowrap; text-decoration: none; }
+.fc-site-form__plugin-state:hover { color: var(--primary); text-decoration: underline; }
 .fc-site-form__count { font-size: 11px; color: var(--muted-foreground); margin-left: 8px; font-weight: 500; }
 .fc-site-form__meta { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; }
 .fc-site-form__meta code { font-family: var(--font-mono, monospace); }

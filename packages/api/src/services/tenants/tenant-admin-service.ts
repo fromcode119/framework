@@ -6,8 +6,7 @@ import {
   TenantAdoptionService, TenantArchiveLayout, TenantArchiveManifest, TenantArchiveReader, TenantArchiveSource, TenantArchiveWriter, TenantEraser, TenantIdentity,
   TenantImportExecutor, TenantImportPlan, TenantImportPlanner, TenantImportResult, TenantMembershipService, TenantMode, TenantRecord,
   TenantRegistryService, TenantResolverService, TenantTableCatalog, TenantTableDescriptor, TenantThemeAccess, TenantThemeStateService, ThemeManager,
-  PluginTenantAccess, RequestContextUtils, AppearanceManager, Logger, TenantKindPreset, TenantKindPresets,
-} from '@fromcode119/core';
+  PluginTenantAccess, RequestContextUtils, AppearanceManager, Logger, TenantKindPreset, TenantKindPresets, StringUtils } from '@fromcode119/core';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { TenantSummary } from '@api/services/tenants/tenant-summary';
@@ -24,6 +23,8 @@ import { TenantSummary } from '@api/services/tenants/tenant-summary';
  */
 export class TenantAdminService {
   /** Members returned per page, and the ceiling a caller may ask for. */
+  /** The role that lets an account load the admin; membership decides which sites it then sees. */
+  private static readonly ADMIN_ROLE = 'admin';
   private static readonly MEMBER_PAGE = 25;
   private static readonly MEMBER_PAGE_MAX = 200;
 
@@ -142,6 +143,13 @@ export class TenantAdminService {
             warnings.push(`Theme "${themeSlug}" seed failed: ${error?.message || error}`);
           }
         }
+        // Plugin seed data is per-site: skipped at boot (no site there), run here, inside this
+        // tenant's scope, which is what makes the write pass row-level security.
+        try {
+          await this.manager.runPluginSeedsForCurrentSite();
+        } catch (error: any) {
+          warnings.push(`Plugin seeds: ${error?.message || error}`);
+        }
         await this.manager.materializeDefaultPages();
       }));
     const pages = await this.manager.db.withTenant(tenant.id, () => this.countPages());
@@ -242,11 +250,20 @@ export class TenantAdminService {
     };
   }
 
+  /**
+   * Grants an existing account access to a site.
+   *
+   * The roles are the account's roles ON THIS SITE — `AuthManager.useTenantRoles` resolves them per
+   * request — so the same account can be a customer on one site and an administrator on another. The
+   * account's global roles are not touched.
+   */
   async addMember(tenantId: string, email: string, roles: string[]): Promise<void> {
-    const user = await this.db.findOne(SystemConstants.TABLE.USERS, { email: email.trim().toLowerCase() });
+    const user = await this.db.findOne(SystemConstants.TABLE.USERS, { email: CoercionUtils.toKey(email) });
     if (!user) throw new Error(`No account with email "${email}" exists on this platform. Create the account first.`);
-    await this.memberships.grant(CoercionUtils.toString(user.id), tenantId, roles);
+    const userId = CoercionUtils.toString(user.id);
+    await this.memberships.grant(userId, tenantId, roles);
   }
+
 
   async removeMember(tenantId: string, userId: string): Promise<void> {
     await this.memberships.revoke(userId, tenantId);

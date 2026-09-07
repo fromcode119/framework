@@ -7,6 +7,8 @@ import { PluginPermissionsService } from '@core/security/plugin-permissions-serv
 import { PluginPermission } from '@core/security/enums/plugin-permission.enum';
 import { SchemaManager } from '@core/database/schema-manager';
 import { Seeder } from '@core/database/seeder';
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { RequestContextUtils } from '@core/context/request-context';
 import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
 
 /**
@@ -25,9 +27,29 @@ export class PluginCollectionActivationService {
     private logger: Logger,
   ) {}
 
+  /**
+   * Runs a plugin's declared seed data.
+   *
+   * A plugin's seed writes into that plugin's own tables, which are tenant-scoped — so on a multi-tenant
+   * platform it is PER-SITE work, and boot has no site. Attempting it anyway is what produced
+   * "new row violates row-level security policy" on every restart: the write is correctly refused, the
+   * plugin reports a failure, and nothing is seeded for anyone. It is skipped here and run per site by
+   * `materializePages`, which already holds a tenant scope, so a site gets its seed at creation and
+   * whenever the operator rebuilds its pages.
+   *
+   * Single-tenant deployments are unchanged: there is one scope, and it is always in effect.
+   */
   public async runSeeds(slug: string): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin || !plugin.manifest.seeds || !plugin.path) return;
+
+    if (TenantMode.isEnabled() && !RequestContextUtils.getTenantId()) {
+      this.logger.info(
+        `Skipping seeds for plugin "${slug}": this deployment is multi-tenant and boot has no site. `
+        + 'They run per site — at creation, or from Sites → Rebuild pages.',
+      );
+      return;
+    }
 
     const seedPath = path.resolve(plugin.path, plugin.manifest.seeds);
     if (fs.existsSync(seedPath)) {

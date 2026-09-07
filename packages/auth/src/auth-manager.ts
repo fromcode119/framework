@@ -10,6 +10,7 @@ import type { IApiKeyValidator } from '@auth/interfaces/api-key-validator.interf
 
 export class AuthManager {
   private secret: string;
+  private tenantRoleResolver?: (userId: string, tenantId: string) => Promise<string[] | null>;
   private sessionValidator?: ISessionValidator;
   private apiKeyValidator?: IApiKeyValidator;
   private permissionChecker?: UserPermissionChecker;
@@ -20,6 +21,38 @@ export class AuthManager {
       throw new Error('AuthManager: JWT_SECRET must be set in environment variables. No default is allowed for security.');
     }
     this.secret = secret;
+  }
+
+  /**
+   * How to find what an account may do on the site a request is bound to.
+   *
+   * Injected rather than looked up here: this class holds a signing secret and nothing else, and the
+   * membership tables belong to core. Left unset — every single-tenant deployment — roles stay exactly
+   * what the account carries globally, which is the behaviour that existed before tenancy.
+   */
+  useTenantRoles(resolver: (userId: string, tenantId: string) => Promise<string[] | null>): void {
+    this.tenantRoleResolver = resolver;
+  }
+
+  /**
+   * The roles a request actually gets: the membership's, when there is one.
+   *
+   * Site membership carried roles that NOTHING read — every guard saw the account's global roles — so
+   * an account that was a customer on one site and an administrator on another was one or the other
+   * everywhere. A platform admin and a non-member both come back `null` and keep their global roles;
+   * only a real membership narrows them.
+   */
+  private async applyTenantRoles(user: any, tenantId: string): Promise<any> {
+    if (!this.tenantRoleResolver || !tenantId) return user;
+    try {
+      const roles = await this.tenantRoleResolver(String(user?.id ?? ''), tenantId);
+      return roles ? { ...user, roles } : user;
+    } catch (error: any) {
+      // Fail CLOSED on the narrowing, not on the request: keeping global roles here would hand a site
+      // the very privileges this is meant to scope away.
+      this.logger.warn(`Could not resolve site roles for user ${user?.id}: ${error?.message || error}`);
+      return { ...user, roles: [] };
+    }
   }
 
   setSessionValidator(validator: ISessionValidator) {
@@ -201,7 +234,7 @@ export class AuthManager {
           const tenantId = String(req.tenantId ?? '').trim();
           const user = await this.verifyToken(t, tenantId ? { tenantId } : {});
           if (user) {
-            req.user = user;
+            req.user = await this.applyTenantRoles(user, tenantId);
             this.logger.debug(`Session validated for ${req.url || 'unknown'}`);
             break;
           }

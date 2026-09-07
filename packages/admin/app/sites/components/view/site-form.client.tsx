@@ -1,4 +1,6 @@
 import type { ChangeEvent, ReactNode } from 'react';
+import Link from 'next/link';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { ThemeMode } from '@fromcode119/core/client';
 import { PureReactor, bound, prop, state } from '@fromcode119/reactor';
 import { Input } from '@/components/ui/view/input.client';
@@ -85,9 +87,24 @@ export class SiteForm extends PureReactor {
 
   /** Why this plugin cannot be run by a site, in the operator's terms. */
   private static stateLabel(plugin: { state?: string; heldReason?: string }): string {
-    if (plugin.heldReason) return `held — ${plugin.heldReason.replace(/_/g, ' ')}; re-approve it under Plugins`;
-    if (plugin.state === 'error') return 'failed to start — see the plugin detail page';
+    if (plugin.heldReason) return `held — ${plugin.heldReason.replace(/_/g, ' ')}; re-approve`;
+    if (plugin.state === 'error') return 'failed to start';
     return 'not enabled on this platform';
+  }
+
+  /**
+   * Where an operator goes to make this plugin runnable.
+   *
+   * From `AdminConstants.ROUTES`, where every admin path is declared once. Note it is NOT the SDK's
+   * path helper: importing that into a CLIENT component pulled `@fromcode119/sdk`'s index in with it,
+   * and `@fromcode119/database` and `pg` behind that, failing the browser build on `Can't resolve 'tls'`.
+   *
+   * A row that states a problem and offers nothing is worse than no row: it is the same dead end as
+   * hiding the plugin, with more words. Every unrunnable state has a page that resolves it.
+   */
+  private static stateHref(plugin: { slug: string; state?: string; heldReason?: string }): string {
+    if (plugin.heldReason || plugin.state === 'error') return AdminConstants.ROUTES.PLUGINS.HEALTH;
+    return AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.slug);
   }
 
   /** The rows the filter leaves, matched on the name and the slug an operator would type. */
@@ -206,7 +223,9 @@ export class SiteForm extends PureReactor {
                     {/* A plugin the platform cannot run says so HERE. Ticking it otherwise claims the
                         site runs something that is disabled — which is what "Toggle Failed" was. */}
                     {plugin.runnable === false ? (
-                      <span className="fc-site-form__plugin-state">{SiteForm.stateLabel(plugin)}</span>
+                      <Link className="fc-site-form__plugin-state" href={SiteForm.stateHref(plugin)}>
+                        {SiteForm.stateLabel(plugin)} →
+                      </Link>
                     ) : null}
                   </div>
                 ))}

@@ -1,0 +1,44 @@
+# Run the apps from THIS checkout's source, with hot reload, instead of from the baked image.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.sources.yml up -d admin api
+#
+# Why this exists: admin and api are baked images, so seeing a one-line change meant a full
+# `docker compose build` — minutes per iteration, and the reason changes appeared not to land at all.
+# Here the container keeps its own node_modules and its place on the network (so the *.framework.local
+# hostnames, host-based tenancy and Traefik routing all behave exactly as they do in production) while
+# the SOURCE comes from the host. Save a file, the dev server reloads.
+#
+# Deliberately a SEPARATE file rather than part of the dev delta: a dev server is slower to start and
+# uses more memory than the built app, so it is something you opt into for an editing session.
+#
+# Return to the built images with:
+#   docker compose -f docker-compose.yml up -d admin api
+#
+# Only source directories are mounted. `node_modules`, `.next` and `dist` stay INSIDE the container —
+# mounting the host's over them is what makes a Linux container try to run macOS-built binaries.
+services:
+  admin:
+    command: ["npm", "run", "dev", "--workspace=@fromcode119/admin"]
+    environment:
+      - NODE_ENV=development
+      # Next's dev server watches the mounted tree; polling is what makes that work across a bind mount.
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./packages/admin/app:/app/packages/admin/app
+      - ./packages/admin/components:/app/packages/admin/components
+      - ./packages/admin/lib:/app/packages/admin/lib
+      - ./packages/core/src:/app/packages/core/src
+      - ./packages/react/src:/app/packages/react/src
+      - ./packages/sdk/src:/app/packages/sdk/src
+
+  api:
+    command: ["npm", "run", "dev", "--workspace=@fromcode119/api"]
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./packages/api/src:/app/packages/api/src
+      - ./packages/core/src:/app/packages/core/src
+      - ./packages/database/src:/app/packages/database/src
+      - ./packages/auth/src:/app/packages/auth/src
+      - ./packages/queue/src:/app/packages/queue/src

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager } from '@fromcode119/core';
+import { HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 
 export class ApiBootstrapService {
@@ -76,6 +76,11 @@ export class ApiBootstrapService {
     const jwtSecret = process.env.JWT_SECRET as string;
 
     const auth = new AuthManager(jwtSecret);
+    // What an account may do is decided PER SITE: a membership's roles, not the account's global ones.
+    // Without this a user who is a customer on one site and an administrator on another was whichever
+    // the global roles column said, everywhere.
+    auth.useTenantRoles((userId, tenantId) =>
+      new TenantMembershipService(manager.db).rolesForTenant(userId, tenantId));
     manager.setAuth(auth);
 
     // Seed the platform locale BEFORE plugins register.

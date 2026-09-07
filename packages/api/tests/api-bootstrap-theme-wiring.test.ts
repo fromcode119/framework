@@ -29,7 +29,14 @@ const themeManagerInstance = {
 
 vi.mock('dotenv', () => ({ default: { config: () => {} } }));
 vi.mock('express', () => ({ default: { Router: () => ({ use: () => {} }) } }));
-vi.mock('@fromcode119/auth', () => ({ AuthManager: class { constructor(public secret: string) {} } }));
+// The stub must carry the same surface bootstrap uses, or it passes for the wrong reason: `useTenantRoles`
+// is how per-site roles reach the guard, and a stub without it fails the moment bootstrap wires it.
+vi.mock('@fromcode119/auth', () => ({
+  AuthManager: class {
+    constructor(public secret: string) {}
+    useTenantRoles(_resolver: unknown): void {}
+  },
+}));
 vi.mock('@api/services/framework-account-page-contract-service', () => ({
   FrameworkAccountPageContractService: { register: () => {} },
 }));
