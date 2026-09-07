@@ -1,3 +1,4 @@
+import { vi, type Mock } from 'vitest';
 import { AdminAssistantRuntime } from '@ai/admin-assistant-runtime';
 import type { IAssistantCollectionContext } from '@ai/admin-assistant-runtime/interfaces/assistant-collection-context.interface';
 import { AssistantRole } from '@ai/enums/assistant-role.enum';
@@ -16,7 +17,7 @@ function createRuntimeHarness(input?: {
   const aiResponses = Array.isArray(input?.aiResponses) ? [...input!.aiResponses] : [];
   if (input?.aiResponse) aiResponses.push(input.aiResponse);
   const aiClient = {
-    chat: jest.fn().mockImplementation(async () => {
+    chat: vi.fn().mockImplementation(async () => {
       if (aiResponses.length > 0) return aiResponses.shift();
       return { content: 'ok', model: 'mock-model' };
     }),
@@ -56,7 +57,7 @@ describe('assistant-runtime behavior baseline', () => {
       agentMode: 'basic',
     });
 
-    const call = (aiClient.chat as jest.Mock).mock.calls[0][0];
+    const call = (aiClient.chat as Mock).mock.calls[0][0];
     const systemPrompt = String(call?.messages?.[0]?.content || '');
     expect(systemPrompt).toContain('CUSTOM BASIC PROMPT LINE');
     expect(systemPrompt).toContain("Be the assistant you'd actually want to talk to at 2am. Not a corporate drone. Not a sycophant. Just... good.");
@@ -80,7 +81,7 @@ describe('assistant-runtime behavior baseline', () => {
       maxIterations: 1,
     });
 
-    const call = (aiClient.chat as jest.Mock).mock.calls[0][0];
+    const call = (aiClient.chat as Mock).mock.calls[0][0];
     const systemPrompt = String(call?.messages?.[0]?.content || '');
     expect(systemPrompt).toContain('CUSTOM ADVANCED PROMPT LINE');
     expect(systemPrompt).toContain("Never open with Great question, I'd be happy to help, or Absolutely. Just answer.");
@@ -245,7 +246,7 @@ describe('assistant-runtime behavior baseline', () => {
 
     expect(result.ui?.needsClarification).toBe(true);
     expect(result.checkpoint?.reason).toBe(CheckpointReason.CLARIFICATION_NEEDED);
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('returns instant clarification for vague change requests in basic mode too', async () => {
@@ -260,7 +261,7 @@ describe('assistant-runtime behavior baseline', () => {
 
     expect(result.ui?.needsClarification).toBe(true);
     expect(result.checkpoint?.reason).toBe(CheckpointReason.CLARIFICATION_NEEDED);
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('returns homepage draft fast-path without model call in basic mode', async () => {
@@ -286,7 +287,7 @@ describe('assistant-runtime behavior baseline', () => {
     expect((result.actions || []).length).toBeGreaterThan(0);
     expect(result.message.toLowerCase()).toContain('live homepage stays untouched');
     expect((result.actions || [])[0]?.tool).toBe('content.create');
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('uses content.update for homepage draft only when target record is explicit', async () => {
@@ -312,7 +313,7 @@ describe('assistant-runtime behavior baseline', () => {
     expect((result.actions || []).length).toBeGreaterThan(0);
     expect((result.actions || [])[0]?.tool).toBe('content.update');
     expect((result.actions || [])[0]?.input?.id).toBe(8);
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('parses conversational replace phrasing and avoids freeform model staging', async () => {
@@ -335,7 +336,7 @@ describe('assistant-runtime behavior baseline', () => {
     });
 
     expect(result.traces?.[0]?.message || '').toContain('exact text search');
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('parses multiline percentage change requests as deterministic replace intent', async () => {
@@ -354,7 +355,7 @@ Property Equity to +20%`,
 
     expect(result.traces?.[0]?.message || '').toContain('exact text search');
     expect((result.message || '').toLowerCase()).not.toContain('need one detail to finish staging');
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('continues deterministic replace from history when user follow-up is short', async () => {
@@ -387,7 +388,7 @@ Property Equity to +20%`,
 
     expect(result.traces?.[0]?.message || '').toContain('exact text search');
     expect((result.message || '').toLowerCase()).not.toContain('need one detail to finish staging');
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('accepts typo variant "chage ... to ..." as deterministic replace intent', async () => {
@@ -402,7 +403,7 @@ Property Equity to +20%`,
 
     expect(result.traces?.[0]?.message || '').toContain('exact text search');
     expect((result.message || '').toLowerCase()).not.toContain('need one detail to finish staging');
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('reports blocked search tools instead of claiming a full replace scan', async () => {
@@ -420,7 +421,7 @@ Property Equity to +20%`,
     expect(result.message).toContain('"Content Search"');
     expect(result.message).not.toContain('I searched content, plugin settings, and theme config');
     expect((result.actions || []).length).toBe(0);
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('returns instant greeting guidance without model call', async () => {
@@ -434,7 +435,7 @@ Property Equity to +20%`,
     });
 
     expect(result.message.toLowerCase()).toContain('we can chat');
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(0);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(0);
   });
 
   it('does not force greeting fast-path when conversation already has context', async () => {
@@ -452,7 +453,7 @@ Property Equity to +20%`,
     });
 
     expect(result.message.toLowerCase()).toContain('hey again');
-    expect((aiClient.chat as jest.Mock).mock.calls.length).toBe(1);
+    expect((aiClient.chat as Mock).mock.calls.length).toBe(1);
   });
 
 });

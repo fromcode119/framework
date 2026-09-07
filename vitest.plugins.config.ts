@@ -136,6 +136,9 @@ export default defineConfig({
             // Same dark-by-omission rule: `packages/queue` was extracted out of core, and a test that
             // moves with it must move into a project's include glob too or it is collected by nothing.
             glob('packages/queue/**/*.test.ts'),
+            // `packages/ai` declared `jest -c jest.config.js` with no such config file, so its tests ran
+            // under nothing while the jest toolchain still pulled a deprecated dependency chain in.
+            glob('packages/ai/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },

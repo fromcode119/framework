@@ -93,6 +93,13 @@ export abstract class BaseDialect {
     );
   }
 
+  /** Nothing to grant where there are no roles to grant to. */
+  async grantRuntimePrivileges(_role: string): Promise<DatabaseRoleOutcome> {
+    return DatabaseRoleOutcome.unsupported(
+      `${this.constructor.name}: this driver has no login system, so there are no privileges to grant.`,
+    );
+  }
+
   /**
    * Normalize parameter values for database queries
    * Handles undefined, null, Date, Buffer, and objects (JSON stringify)

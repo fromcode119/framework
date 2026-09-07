@@ -68,6 +68,15 @@ export interface IDatabaseManager {
   provisionRoles(plan: DatabaseRolePlan): Promise<DatabaseRoleOutcome>;
 
   /**
+   * Lets `role` read and write the tables THIS connection owns, including ones created later.
+   *
+   * Run on the owner connection after migrations, every boot. Separate from `provisionRoles` because it
+   * depends on the schema rather than the server: privileges follow the role that created each object,
+   * so they have to be reapplied whenever new objects appear, and only the owner can grant them.
+   */
+  grantRuntimePrivileges(role: string): Promise<DatabaseRoleOutcome>;
+
+  /**
    * Whether this driver can actually isolate tenants. FALSE unless the driver implements a strategy,
    * and a multi-tenant deployment on such a driver refuses to boot (see TenantMode).
    */

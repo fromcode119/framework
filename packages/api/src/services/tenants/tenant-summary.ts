@@ -7,7 +7,6 @@ export class TenantSummary {
     readonly memberCount: number,
     readonly plugins: string[],
     readonly theme: string | null,
-    readonly members: Array<{ userId: string; email: string; roles: string[]; state: string }>,
     readonly lastExport: string | null,
     /**
      * How many storefront pages the site actually has.
@@ -26,7 +25,6 @@ export class TenantSummary {
       pageCount: this.pageCount,
       plugins: this.plugins,
       theme: this.theme,
-      members: this.members,
       lastExport: this.lastExport,
     };
   }

@@ -1,9 +1,9 @@
 import type { ChangeEvent, ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
-import { PureReactor, bound, prop } from '@fromcode119/reactor';
+import { PureReactor, bound, prop, state } from '@fromcode119/reactor';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
-import { Checkbox } from '@/components/ui/view/checkbox.client';
+import { Switch } from '@/components/ui/view/switch.client';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 
@@ -21,6 +21,8 @@ export class SiteForm extends PureReactor {
   @prop declare onChange: (values: SiteFormValues) => void;
   @prop declare inventory?: SiteInventory;
   @prop declare isNew: boolean;
+
+  @state pluginSearch = '';
 
   private emit(patch: Partial<SiteFormValues>): void {
     this.onChange(this.values.with(patch));
@@ -78,6 +80,28 @@ export class SiteForm extends PureReactor {
   }
 
   /** What only a workspace has: the console it is locked to, and an optional declared preset. */
+  /** Above this many rows a flat list stops being readable, so it gains a filter. */
+  private static readonly SEARCH_THRESHOLD = 12;
+
+  /** Why this plugin cannot be run by a site, in the operator's terms. */
+  private static stateLabel(plugin: { state?: string; heldReason?: string }): string {
+    if (plugin.heldReason) return `held — ${plugin.heldReason.replace(/_/g, ' ')}; re-approve it under Plugins`;
+    if (plugin.state === 'error') return 'failed to start — see the plugin detail page';
+    return 'not enabled on this platform';
+  }
+
+  /** The rows the filter leaves, matched on the name and the slug an operator would type. */
+  private visiblePlugins(inventory: SiteInventory): SiteInventory['plugins'] {
+    const term = this.pluginSearch.trim().toLowerCase();
+    if (!term) return inventory.plugins;
+    return inventory.plugins.filter((plugin) =>
+      plugin.name.toLowerCase().includes(term) || plugin.slug.toLowerCase().includes(term));
+  }
+
+  @bound private onPluginSearch(e: ChangeEvent<HTMLInputElement>): void {
+    this.pluginSearch = e.target.value;
+  }
+
   private renderWorkspaceChoices(inventory: SiteInventory, values: SiteFormValues): ReactNode {
     return (
       <>
@@ -127,7 +151,9 @@ export class SiteForm extends PureReactor {
             ]}
           />
           <Input label="Slug" value={values.slug} onChange={this.onSlug} placeholder="acme" />
-          <Input label="Id" value={values.id} onChange={this.onId} placeholder="acme" disabled={!this.isNew} />
+          {this.isNew
+            ? <Input label="Id" value={values.id} onChange={this.onId} placeholder="acme" />
+            : null}
           <Input label="Primary host" value={values.primaryHost} onChange={this.onPrimaryHost} placeholder="acme.example.com" />
           <Input label="Host aliases" value={values.hostAliases} onChange={this.onAliases} placeholder="www.acme.example.com, shop.acme.example.com" />
           {this.isNew ? (
@@ -136,7 +162,13 @@ export class SiteForm extends PureReactor {
             <Select label="State" theme={this.theme} value={values.state} onChange={this.onState} options={[{ value: 'active', label: 'Active' }, { value: 'suspended', label: 'Suspended — the site answers 503' }]} />
           )}
         </div>
-        <p className="fc-site-form__hint">Hosts are bare hostnames — no scheme, path or port. The id and the kind cannot change later.{values.isWorkspace ? ' An "api." alias of the domain is routed to the api for devices and apps.' : ''}</p>
+        {this.isNew ? null : (
+          /* The id is the row-level-security discriminator stamped into every row this site owns, so it
+             cannot change without rewriting them all. Shown as the fact it is, rather than as a greyed
+             out input that reads like something that ought to work. */
+          <p className="fc-site-form__meta">Site id <code>{values.id}</code> — fixed for the life of the site. Rename with the slug and hosts above.</p>
+        )}
+        <p className="fc-site-form__hint">Hosts are bare hostnames — no scheme, path or port. The kind cannot change later.{values.isWorkspace ? ' An "api." alias of the domain is routed to the api for devices and apps.' : ''}</p>
 
         {inventory ? (
           <div className="fc-site-form__inventory">
@@ -154,16 +186,29 @@ export class SiteForm extends PureReactor {
               </div>
             )}
             <div className="fc-site-form__block">
-              <span className="fc-site-form__label">Plugins this site runs</span>
+              <span className="fc-site-form__label">
+                Plugins this site runs
+                <span className="fc-site-form__count">{values.plugins.length} of {inventory.plugins.length}</span>
+              </span>
               {inventory.plugins.length === 0 ? <span className="fc-sites__none">No plugins are installed on the platform.</span> : null}
+              {inventory.plugins.length > SiteForm.SEARCH_THRESHOLD ? (
+                <Input value={this.pluginSearch} onChange={this.onPluginSearch} placeholder="search plugins" />
+              ) : null}
               <div className="fc-site-form__plugins">
-                {inventory.plugins.map((plugin) => (
-                  <Checkbox
-                    key={plugin.slug}
-                    checked={values.plugins.includes(plugin.slug)}
-                    onChange={(checked: boolean) => this.togglePlugin(plugin.slug, checked)}
-                    label={`${plugin.name} ${plugin.version}`.trim()}
-                  />
+                {this.visiblePlugins(inventory).map((plugin) => (
+                  <div key={plugin.slug} className="fc-site-form__plugin">
+                    <Switch
+                      checked={values.plugins.includes(plugin.slug)}
+                      onChange={(checked: boolean) => this.togglePlugin(plugin.slug, checked)}
+                      disabled={plugin.runnable === false}
+                      label={`${plugin.name} ${plugin.version}`.trim()}
+                    />
+                    {/* A plugin the platform cannot run says so HERE. Ticking it otherwise claims the
+                        site runs something that is disabled — which is what "Toggle Failed" was. */}
+                    {plugin.runnable === false ? (
+                      <span className="fc-site-form__plugin-state">{SiteForm.stateLabel(plugin)}</span>
+                    ) : null}
+                  </div>
                 ))}
               </div>
             </div>

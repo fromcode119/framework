@@ -7,13 +7,15 @@ import { AppRoleGrantService } from '@core/database/app-role-grant-service';
  * all — issuing owner-level grants on a deployment that has no separate owner would be noise at best.
  */
 class FakeDb {
-  statements: string[] = [];
+  granted: string[] = [];
 
-  constructor(readonly dialect: string) {}
+  constructor(readonly dialect: string, private readonly supported = true) {}
 
-  async execute(query: any) {
-    this.statements.push(String(query?.queryChunks ? 'sql' : query));
-    return { rows: [] };
+  async grantRuntimePrivileges(role: string) {
+    this.granted.push(role);
+    return this.supported
+      ? { supported: true, reason: '' }
+      : { supported: false, reason: 'no login system here' };
   }
 }
 
@@ -29,34 +31,39 @@ describe('AppRoleGrantService', () => {
     process.env = { ...env };
   });
 
-  it('grants on postgres when the owner and runtime roles are separate', async () => {
+  it('grants to the role DATABASE_URL names when owner and runtime are separate', async () => {
     const db = new FakeDb('postgres');
     await AppRoleGrantService.apply(db as any);
-    expect(db.statements).toHaveLength(1);
+    expect(db.granted).toEqual(['fromcode_app']);
+  });
+
+  it('reports a driver with no login system instead of failing', async () => {
+    const db = new FakeDb('postgres', false);
+    await expect(AppRoleGrantService.apply(db as any)).resolves.toBeUndefined();
   });
 
   it('does nothing on a dialect without role separation', async () => {
     const db = new FakeDb('sqlite');
     await AppRoleGrantService.apply(db as any);
-    expect(db.statements).toEqual([]);
+    expect(db.granted).toEqual([]);
   });
 
   it('does nothing when one role does both jobs', async () => {
     process.env.DATABASE_MIGRATION_URL = process.env.DATABASE_URL;
     const db = new FakeDb('postgres');
     await AppRoleGrantService.apply(db as any);
-    expect(db.statements).toEqual([]);
+    expect(db.granted).toEqual([]);
   });
 
   it('does nothing, rather than guessing a role, when DATABASE_URL names none', async () => {
     process.env.DATABASE_URL = 'postgresql://db:5432/fromcode';
     const db = new FakeDb('postgres');
     await AppRoleGrantService.apply(db as any);
-    expect(db.statements).toEqual([]);
+    expect(db.granted).toEqual([]);
   });
 
   it('survives a database that refuses the grant rather than failing the boot', async () => {
-    const db = { dialect: 'postgres', execute: async () => { throw new Error('permission denied'); } };
+    const db = { dialect: 'postgres', grantRuntimePrivileges: async () => { throw new Error('permission denied'); } };
     await expect(AppRoleGrantService.apply(db as any)).resolves.toBeUndefined();
   });
 });

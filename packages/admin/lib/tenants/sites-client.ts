@@ -3,6 +3,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SiteRecord } from '@/lib/tenants/site-record';
+import { SiteMember } from '@/lib/tenants/site-member';
 
 /**
  * The admin's client for `/system/admin/tenants`. Every call is a platform-admin call; a 403 here
@@ -45,6 +46,23 @@ export class SitesClient {
 
   static async remove(id: string, confirmSlug: string): Promise<{ archive: string; files: number; deleted: Record<string, number> }> {
     return AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.TENANT(id), { body: JSON.stringify({ confirmSlug }), headers: { 'Content-Type': 'application/json' } });
+  }
+
+  /** One page of a site's members. The roster is unbounded, so it is never fetched whole. */
+  static async members(id: string, options: { q?: string; limit?: number; offset?: number } = {}): Promise<{ members: SiteMember[]; total: number }> {
+    const query = new URLSearchParams();
+    if (options.q) query.set('q', options.q);
+    if (options.limit) query.set('limit', String(options.limit));
+    if (options.offset) query.set('offset', String(options.offset));
+    const suffix = query.toString();
+    const response = await AdminApi.get(
+      `${AdminConstants.ENDPOINTS.SYSTEM.TENANT_MEMBERS_LIST(id)}${suffix ? `?${suffix}` : ''}`,
+      { noDedupe: true },
+    );
+    return {
+      members: Array.isArray(response?.members) ? response.members.map((m: unknown) => SiteMember.from(m)) : [],
+      total: CoercionUtils.toNumber(response?.total),
+    };
   }
 
   static async addMember(id: string, email: string, roles: string[]): Promise<SiteRecord> {

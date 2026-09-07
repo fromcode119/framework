@@ -1,4 +1,10 @@
-import { AssistantVocabularyRole, CoreServices } from '@fromcode119/core';
+import { vi, type Mock } from 'vitest';
+import { AssistantVocabularyRole, CoreServices, ServerCoreServices } from '@fromcode119/core';
+
+// `assistantVocabulary` is a SERVER-only core service: it reaches the registry rather than being
+// imported, so browser bundles stay smaller. A test that resolves one has to run the registration the
+// server runs at boot, or the registry is empty and the lookup throws by design.
+ServerCoreServices.register();
 import { McpBridgeFactory } from '@fromcode119/mcp';
 import { IntentClassifier } from '@ai/admin-assistant-runtime/runtime/intent-classifier';
 import { OrchestratorRunner } from '@ai/admin-assistant-runtime/runtime/orchestrator';
@@ -641,7 +647,7 @@ describe('runtime classifier and fallback behavior', () => {
 
   it('uses ai client reply for conversational chat turns when available', async () => {
     const aiClient = {
-      chat: jest.fn().mockResolvedValue({
+      chat: vi.fn().mockResolvedValue({
         content: 'Sure, let us chat. What is on your mind?',
         model: 'mock-chat-model',
       }),
@@ -662,7 +668,7 @@ describe('runtime classifier and fallback behavior', () => {
 
   it('uses ai client reply for greeting turns when available (no canned hey shortcut)', async () => {
     const aiClient = {
-      chat: jest.fn().mockResolvedValue({
+      chat: vi.fn().mockResolvedValue({
         content: 'Hey there. Ready when you are.',
         model: 'mock-chat-model',
       }),
@@ -683,7 +689,7 @@ describe('runtime classifier and fallback behavior', () => {
 
   it('prefers factual checkpoint followup over generic model clarification', async () => {
     const aiClient = {
-      chat: jest.fn().mockResolvedValue({
+      chat: vi.fn().mockResolvedValue({
         content: 'To give you an accurate total, could you clarify the period?',
         model: 'mock-chat-model',
       }),

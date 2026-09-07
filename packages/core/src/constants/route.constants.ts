@@ -124,6 +124,7 @@ export class RouteConstants {
   TENANTS_ID: '/:id',
   TENANTS_ID_EXPORT: '/:id/export',
   TENANTS_ID_PAGES: '/:id/pages',
+  TENANTS_ID_MEMBERS_LIST: '/:id/members',
   INTERNAL: '/internal',
   INTERNAL_ROUTING: '/internal/routing',
   /** Gateway-side: the api pushes here after a tenant change; the gateway answers its health here. */

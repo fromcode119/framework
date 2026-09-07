@@ -165,6 +165,39 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   }
 
   /**
+   * Grants the runtime role rights over what this owner has created, and will create.
+   *
+   * `ON ALL TABLES` covers what exists now; `ALTER DEFAULT PRIVILEGES FOR ROLE CURRENT_USER` covers what
+   * this role creates later. Naming CURRENT_USER rather than a configured owner is the point: privileges
+   * attach to the role that creates an object, and the deployment's init script used to name the
+   * superuser while migrations actually ran as a different role — so every migrated table came out
+   * unreadable by the app.
+   */
+  async grantRuntimePrivileges(role: string): Promise<DatabaseRoleOutcome> {
+    await this.runFormatted('GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO %I', [role]);
+    await this.runFormatted('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', [role]);
+    await this.runFormattedWithCurrentUser(
+      'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO %I',
+      role,
+    );
+    await this.runFormattedWithCurrentUser(
+      'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO %I',
+      role,
+    );
+    return DatabaseRoleOutcome.applied([role]);
+  }
+
+  /** As `runFormatted`, with CURRENT_USER as the first `%I` — the role whose future objects are covered. */
+  private async runFormattedWithCurrentUser(template: string, role: string): Promise<void> {
+    const rows = await this.queryRaw(
+      `SELECT format($f$${template}$f$, CURRENT_USER, $1::text) AS statement`,
+      [role],
+    );
+    const statement = rows?.[0]?.statement;
+    if (statement) await this.queryRaw(String(statement));
+  }
+
+  /**
    * Builds a DDL statement with the server's own `format()`, then executes what it returned.
    *
    * DDL takes no bind parameters and a `DO $$ … $$` body is an opaque string, so `$1` inside one is not

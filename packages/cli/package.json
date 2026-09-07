@@ -13,7 +13,7 @@
     "@fromcode119/core": "*",
     "@fromcode119/database": "*",
     "@fromcode119/marketplace-client": "^0.1.6",
-    "archiver": "^7.0.1",
+    "archiver": "^8.0.0",
     "bcryptjs": "^3.0.3",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",

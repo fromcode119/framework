@@ -1,3 +1,4 @@
+import { vi, type Mock } from 'vitest';
 import { AssistantController } from '@ai/api/controller';
 import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
 
@@ -6,45 +7,45 @@ type MockRes = any;
 
 function createResponseMock(): MockRes {
   return {
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn(),
-    setHeader: jest.fn(),
+    status: vi.fn().mockReturnThis(),
+    json: vi.fn(),
+    setHeader: vi.fn(),
   };
 }
 
 function createControllerHarness() {
   const db = {
-    findOne: jest.fn().mockResolvedValue(null),
-    find: jest.fn().mockResolvedValue([]),
-    insert: jest.fn().mockResolvedValue(undefined),
-    update: jest.fn().mockResolvedValue(undefined),
-    delete: jest.fn().mockResolvedValue(true),
+    findOne: vi.fn().mockResolvedValue(null),
+    find: vi.fn().mockResolvedValue([]),
+    insert: vi.fn().mockResolvedValue(undefined),
+    update: vi.fn().mockResolvedValue(undefined),
+    delete: vi.fn().mockResolvedValue(true),
   };
 
   const manager: any = {
     db,
     auth: {},
     hooks: {
-      call: jest.fn().mockResolvedValue({}),
+      call: vi.fn().mockResolvedValue({}),
     },
-    emit: jest.fn(),
+    emit: vi.fn(),
     integrations: {
-      get: jest.fn().mockResolvedValue({ chat: jest.fn() }),
-      getConfig: jest.fn().mockResolvedValue({ active: { provider: 'ollama', config: {} }, storedProviders: [] }),
-      instantiateWithConfig: jest.fn().mockResolvedValue({ instance: { chat: jest.fn() } }),
+      get: vi.fn().mockResolvedValue({ chat: vi.fn() }),
+      getConfig: vi.fn().mockResolvedValue({ active: { provider: 'ollama', config: {} }, storedProviders: [] }),
+      instantiateWithConfig: vi.fn().mockResolvedValue({ instance: { chat: vi.fn() } }),
     },
-    getCollections: jest.fn().mockReturnValue([]),
-    getPlugins: jest.fn().mockReturnValue([]),
+    getCollections: vi.fn().mockReturnValue([]),
+    getPlugins: vi.fn().mockReturnValue([]),
     // `PluginPublicApiResolver.listInstalledPlugins` calls `getSortedPlugins(getPlugins())`; without it
     // plugin discovery threw and `assistantTools` returned its 500 body, so the endpoint looked empty.
-    getSortedPlugins: jest.fn((plugins: any[]) => plugins || []),
-    getRuntimeModules: jest.fn().mockReturnValue([]),
-    getAdminMetadata: jest.fn().mockReturnValue({}),
+    getSortedPlugins: vi.fn((plugins: any[]) => plugins || []),
+    getRuntimeModules: vi.fn().mockReturnValue([]),
+    getAdminMetadata: vi.fn().mockReturnValue({}),
   };
 
   const themeManager: any = {
-    getThemes: jest.fn().mockReturnValue([]),
-    getFrontendMetadata: jest.fn().mockResolvedValue({}),
+    getThemes: vi.fn().mockReturnValue([]),
+    getFrontendMetadata: vi.fn().mockResolvedValue({}),
   };
 
   const restController: any = {};
@@ -57,7 +58,7 @@ describe('assistant-controller modernization', () => {
   it('uses canonical chat contract and returns structured artifacts', async () => {
     const { controller, manager } = createControllerHarness();
     const runtime = {
-      chat: jest.fn().mockResolvedValue({
+      chat: vi.fn().mockResolvedValue({
         message: 'Plan ready.',
         actions: [],
         model: 'llama3.1:8b',
@@ -89,9 +90,9 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
-    jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
-      client: { chat: jest.fn() },
+    vi.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    vi.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
+      client: { chat: vi.fn() },
       provider: 'ollama',
     });
 
@@ -137,7 +138,7 @@ describe('assistant-controller modernization', () => {
   it('accepts legacy chat payload and emits deprecation headers', async () => {
     const { controller } = createControllerHarness();
     const runtime = {
-      chat: jest.fn().mockResolvedValue({
+      chat: vi.fn().mockResolvedValue({
         message: 'Legacy ok.',
         actions: [],
         model: 'llama3.1:8b',
@@ -147,9 +148,9 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
-    jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
-      client: { chat: jest.fn() },
+    vi.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    vi.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
+      client: { chat: vi.fn() },
       provider: 'ollama',
     });
 
@@ -183,13 +184,13 @@ describe('assistant-controller modernization', () => {
   it('maps legacy execute payload to canonical execute contract', async () => {
     const { controller } = createControllerHarness();
     const runtime = {
-      executeActions: jest.fn().mockResolvedValue({
+      executeActions: vi.fn().mockResolvedValue({
         success: true,
         dryRun: true,
         results: [{ ok: true, dryRun: true }],
       }),
     };
-    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    vi.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
 
     const req: MockReq = {
       body: {
@@ -240,7 +241,7 @@ describe('assistant-controller modernization', () => {
     });
 
     const runtime = {
-      chat: jest.fn().mockResolvedValue({
+      chat: vi.fn().mockResolvedValue({
         message: 'Continued.',
         actions: [],
         model: 'llama3.1:8b',
@@ -273,9 +274,9 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
-    jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
-      client: { chat: jest.fn() },
+    vi.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    vi.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
+      client: { chat: vi.fn() },
       provider: 'ollama',
     });
 
@@ -311,7 +312,7 @@ describe('assistant-controller modernization', () => {
   it('does not auto-continue when runtime CliUtils.asks for clarification', async () => {
     const { controller } = createControllerHarness();
     const runtime = {
-      chat: jest.fn().mockResolvedValue({
+      chat: vi.fn().mockResolvedValue({
         message: "Here's a draft now; confirm target to apply. Which page should I stage this in?",
         actions: [],
         model: 'llama3.1:8b',
@@ -336,9 +337,9 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
-    jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
-      client: { chat: jest.fn() },
+    vi.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    vi.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
+      client: { chat: vi.fn() },
       provider: 'ollama',
     });
 
@@ -385,7 +386,7 @@ describe('assistant-controller modernization', () => {
     });
 
     const runtime = {
-      chat: jest.fn().mockResolvedValue({
+      chat: vi.fn().mockResolvedValue({
         message: 'Staged.',
         actions: [],
         model: 'llama3.1:8b',
@@ -401,9 +402,9 @@ describe('assistant-controller modernization', () => {
       }),
     };
 
-    jest.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
-    jest.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
-      client: { chat: jest.fn() },
+    vi.spyOn((controller as any).runtimeFactory, 'createAssistantRuntime').mockReturnValue(runtime as any);
+    vi.spyOn(controller as any, 'resolveAssistantClientFromRequest').mockResolvedValue({
+      client: { chat: vi.fn() },
       provider: 'ollama',
     });
 
@@ -440,7 +441,7 @@ describe('assistant-controller modernization', () => {
 
     await controller.assistantSkills(req as any, res as any);
 
-    const payload = (res.json as jest.Mock).mock.calls[0][0];
+    const payload = (res.json as Mock).mock.calls[0][0];
     const skillIds = Array.isArray(payload?.skills) ? payload.skills.map((entry: any) => entry.id) : [];
     expect(skillIds).toEqual(expect.arrayContaining(['general', 'research', 'page-audit']));
 
@@ -457,7 +458,7 @@ describe('assistant-controller modernization', () => {
 
     await controller.assistantTools(req as any, res as any);
 
-    const payload = (res.json as jest.Mock).mock.calls[0][0];
+    const payload = (res.json as Mock).mock.calls[0][0];
     const toolNames = Array.isArray(payload?.tools) ? payload.tools.map((entry: any) => entry.tool) : [];
     expect(toolNames).toEqual(expect.arrayContaining(['web.search', 'web.fetch']));
   });
@@ -466,7 +467,7 @@ describe('assistant-controller modernization', () => {
     const { controller } = createControllerHarness();
     const originalFetch = (global as any).fetch;
     try {
-      (global as any).fetch = jest.fn().mockResolvedValue({
+      (global as any).fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           data: [{ id: 'claude-3-5-sonnet-latest' }, { id: 'claude-3-7-sonnet-latest' }],
@@ -494,7 +495,7 @@ describe('assistant-controller modernization', () => {
     const { controller } = createControllerHarness();
     const originalFetch = (global as any).fetch;
     try {
-      (global as any).fetch = jest.fn().mockResolvedValue({
+      (global as any).fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({
           models: [{ name: 'models/gemini-1.5-pro' }, { name: 'models/gemini-1.5-flash' }],

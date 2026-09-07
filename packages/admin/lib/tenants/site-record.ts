@@ -12,7 +12,6 @@ export class SiteRecord {
     readonly memberCount: number,
     readonly plugins: string[],
     readonly theme: string | null,
-    readonly members: SiteMember[],
     readonly lastExport: string | null,
     /** `site` (storefront) or `workspace` (its domain serves the console). */
     readonly kind: string,
@@ -50,7 +49,6 @@ export class SiteRecord {
       CoercionUtils.toNumber(input.memberCount),
       Array.isArray(input.plugins) ? input.plugins.map((p: unknown) => CoercionUtils.toString(p)) : [],
       input.theme ? CoercionUtils.toString(input.theme) : null,
-      Array.isArray(input.members) ? input.members.map((m: unknown) => SiteMember.from(m)) : [],
       input.lastExport ? CoercionUtils.toString(input.lastExport) : null,
       CoercionUtils.toString(input.kind) || 'site',
       CoercionUtils.toString(input.appearance),

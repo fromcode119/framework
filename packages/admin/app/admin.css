@@ -347,7 +347,16 @@ html.dark {
 .fc-site-form__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .fc-site-form__block { display: flex; flex-direction: column; gap: 8px; }
 .fc-site-form__label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
-.fc-site-form__plugins { display: flex; flex-direction: column; gap: 6px; }
+.fc-site-form__plugins { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+/* A plugin row carries its state beside the toggle, so an unrunnable one explains itself in place. */
+.fc-site-form__plugin { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.fc-site-form__plugin-state { font-size: 11px; color: var(--muted-foreground); white-space: nowrap; }
+.fc-site-form__count { font-size: 11px; color: var(--muted-foreground); margin-left: 8px; font-weight: 500; }
+.fc-site-form__meta { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; }
+.fc-site-form__meta code { font-family: var(--font-mono, monospace); }
+/* Paging for an unbounded roster — see SiteMembersCard. */
+.fc-sites__paging { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.fc-sites__paging-label { font-size: 11px; color: var(--muted-foreground); }
 .fc-import-plan { display: flex; flex-direction: column; gap: 12px; }
 .fc-import-plan__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .fc-import-plan__item { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 4px; }

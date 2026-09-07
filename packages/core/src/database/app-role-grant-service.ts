@@ -1,4 +1,3 @@
-import { sql } from '@fromcode119/database';
 import { DatabaseConnectionUrls } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 
@@ -26,7 +25,7 @@ export class AppRoleGrantService {
 
   static async apply(db: {
     dialect?: string;
-    execute: (query: unknown) => Promise<any>;
+    grantRuntimePrivileges(role: string): Promise<{ supported: boolean; reason: string }>;
   }): Promise<void> {
     if (String(db?.dialect || '').toLowerCase() !== AppRoleGrantService.POSTGRES) return;
     // One role doing both jobs has nothing to grant to itself.
@@ -41,24 +40,11 @@ export class AppRoleGrantService {
     }
 
     try {
-      // `format(%I)` quotes the identifier in the database rather than in a template string here, so a
-      // role name never reaches the parser as raw text.
-      await db.execute(sql`
-        DO $$
-        BEGIN
-          EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO %I', ${role});
-          EXECUTE format('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', ${role});
-          EXECUTE format(
-            'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO %I',
-            CURRENT_USER, ${role}
-          );
-          EXECUTE format(
-            'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO %I',
-            CURRENT_USER, ${role}
-          );
-        END
-        $$;
-      `);
+      const outcome = await db.grantRuntimePrivileges(role);
+      if (!outcome.supported) {
+        AppRoleGrantService.logger.info(outcome.reason);
+        return;
+      }
       AppRoleGrantService.logger.info(`Runtime role "${role}" granted table and sequence privileges.`);
     } catch (error: any) {
       // Not fatal on its own: a deployment whose grants were made by hand is already correct, and

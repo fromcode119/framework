@@ -47,6 +47,7 @@ export class TenantAdminRouter extends BaseRouter {
     this.delete(S.TENANTS_ID, admin, platform, this.controller.deleteTenant);
     this.post(S.TENANTS_ID_EXPORT, admin, platform, this.controller.exportTenant);
     this.post(S.TENANTS_ID_PAGES, admin, platform, this.controller.materializePages);
+    this.get(S.TENANTS_ID_MEMBERS_LIST, admin, platform, this.controller.listMembers);
     this.post(S.TENANTS_ID_MEMBERS, admin, platform, this.controller.addMember);
     this.delete(S.TENANTS_ID_MEMBERS_USER, admin, platform, this.controller.removeMember);
   }

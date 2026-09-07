@@ -1,3 +1,4 @@
+import { vi, type Mock } from 'vitest';
 import { McpVersionTools } from '@ai/admin-assistant-runtime/helpers/mcp-version-tools';
 
 /**
@@ -11,20 +12,20 @@ describe('McpVersionTools', () => {
 
   const buildOptions = (overrides?: Record<string, any>) => ({
     findCollectionBySlug: (source: string) => (source === 'fcp_ecommerce_products' || source === 'catalog' ? collection : null),
-    listRecordVersions: jest.fn().mockResolvedValue({
+    listRecordVersions: vi.fn().mockResolvedValue({
       docs: [
         { id: 3, ref_id: '8', ref_collection: 'fcp_ecommerce_products', version: 3, created_at: '2026-08-18 11:28:00', updated_by: 'kristian.dimitrov@fromcode.com', change_summary: 'Update fcp_ecommerce_products record', version_data: '{"name":"x"}' },
         { id: 1, ref_id: '8', ref_collection: 'fcp_ecommerce_products', version: 1, created_at: '2026-04-18 09:06:00', updated_by: 'kristian.dimitrov@fromcode.com', change_summary: 'Update fcp_ecommerce_products record', version_data: '{"name":"y"}' },
       ],
       totalDocs: 2, limit: 20, offset: 0,
     }),
-    getRecordVersion: jest.fn().mockResolvedValue({
+    getRecordVersion: vi.fn().mockResolvedValue({
       id: 1, ref_id: '8', ref_collection: 'fcp_ecommerce_products', version: 1,
       created_at: '2026-04-18 09:06:00', updated_by: 'kristian.dimitrov@fromcode.com',
       change_summary: 'Update fcp_ecommerce_products record',
       version_data: '{"short_description":"Кратко описание","name":"Годишен Нумерологичен Анализ"}',
     }),
-    restoreRecordVersion: jest.fn().mockResolvedValue({ id: 8, name: 'Годишен Нумерологичен Анализ' }),
+    restoreRecordVersion: vi.fn().mockResolvedValue({ id: 8, name: 'Годишен Нумерологичен Анализ' }),
     ...overrides,
   }) as any;
 
@@ -62,7 +63,7 @@ describe('McpVersionTools', () => {
   });
 
   it('reports a missing version as not found instead of throwing', async () => {
-    const options = buildOptions({ getRecordVersion: jest.fn().mockResolvedValue(null) });
+    const options = buildOptions({ getRecordVersion: vi.fn().mockResolvedValue(null) });
     const result = await toolByName(options, 'content.version_get').handler({ collectionSlug: 'catalog', id: '8', version: 99 }, {});
     expect(result.found).toBe(false);
   });

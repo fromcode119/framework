@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@fromcode119/sdk": "*",
-    "archiver": "^7.0.1",
+    "archiver": "^8.0.0",
     "fs-extra": "^11.3.3"
   },
   "devDependencies": {

@@ -23,6 +23,10 @@ import { TenantSummary } from '@api/services/tenants/tenant-summary';
  * Every operation that changes what exists is recorded in the backup audit table, with the actor.
  */
 export class TenantAdminService {
+  /** Members returned per page, and the ceiling a caller may ask for. */
+  private static readonly MEMBER_PAGE = 25;
+  private static readonly MEMBER_PAGE_MAX = 200;
+
   private readonly db: IDatabaseManager;
   private readonly registry: TenantRegistryService;
   private readonly memberships: TenantMembershipService;
@@ -193,6 +197,51 @@ export class TenantAdminService {
     TenantThemeAccess.invalidate(tenantId);
   }
 
+  /**
+   * One page of a site's members, newest membership first, optionally narrowed by email.
+   *
+   * Paged because a site's membership is unbounded: rendering all of it was the reason loading the
+   * Sites page could issue a query per member. `limit` is clamped so a caller cannot ask for the whole
+   * table by passing a large number.
+   */
+  async members(tenantId: string, options: { q?: string; limit?: number; offset?: number } = {}): Promise<{
+    members: Array<{ userId: string; email: string; roles: string[]; state: string }>;
+    total: number;
+  }> {
+    const tenant = await this.requireTenant(tenantId);
+    const limit = Math.min(Math.max(CoercionUtils.toNumber(options.limit, TenantAdminService.MEMBER_PAGE), 1), TenantAdminService.MEMBER_PAGE_MAX);
+    const offset = Math.max(CoercionUtils.toNumber(options.offset, 0), 0);
+    const search = CoercionUtils.toKey(options.q);
+
+    // One join rather than a lookup per row — the N+1 this replaces is the whole point.
+    const rows = await this.db.queryRaw(
+      `SELECT m.user_id, m.roles, m.state, u.email
+         FROM ${SystemConstants.TABLE.TENANT_MEMBERSHIPS} m
+         LEFT JOIN ${SystemConstants.TABLE.USERS} u ON u.id::text = m.user_id::text
+        WHERE m.tenant_id = $1 ${search ? 'AND LOWER(u.email) LIKE $4' : ''}
+        ORDER BY m.user_id DESC
+        LIMIT $2 OFFSET $3`,
+      search ? [tenant.id, limit, offset, `%${search}%`] : [tenant.id, limit, offset],
+    );
+    const counted = await this.db.queryRaw(
+      `SELECT COUNT(*)::int AS total
+         FROM ${SystemConstants.TABLE.TENANT_MEMBERSHIPS} m
+         ${search ? `LEFT JOIN ${SystemConstants.TABLE.USERS} u ON u.id::text = m.user_id::text` : ''}
+        WHERE m.tenant_id = $1 ${search ? 'AND LOWER(u.email) LIKE $2' : ''}`,
+      search ? [tenant.id, `%${search}%`] : [tenant.id],
+    );
+
+    return {
+      members: (rows ?? []).map((row: any) => ({
+        userId: CoercionUtils.toString(row.user_id),
+        email: CoercionUtils.toString(row.email),
+        roles: TenantSummary.roles(row.roles),
+        state: CoercionUtils.toString(row.state),
+      })),
+      total: CoercionUtils.toNumber(counted?.[0]?.total),
+    };
+  }
+
   async addMember(tenantId: string, email: string, roles: string[]): Promise<void> {
     const user = await this.db.findOne(SystemConstants.TABLE.USERS, { email: email.trim().toLowerCase() });
     if (!user) throw new Error(`No account with email "${email}" exists on this platform. Create the account first.`);
@@ -267,9 +316,18 @@ export class TenantAdminService {
     presets: Array<Record<string, unknown>>;
   } {
     return {
+      // EVERY installed plugin, with its platform state — not only the runnable ones. Filtering the
+      // rest out silently is what made the site form look like the platform had fewer plugins than it
+      // does: a held or disabled plugin simply vanished, with no row and no reason.
       plugins: this.manager.getPlugins()
-        .filter((plugin) => plugin.state === PluginState.ACTIVE)
-        .map((plugin) => ({ slug: plugin.manifest.slug, version: String(plugin.manifest.version || ''), name: String(plugin.manifest.name || plugin.manifest.slug) })),
+        .map((plugin) => ({
+          slug: plugin.manifest.slug,
+          version: String(plugin.manifest.version || ''),
+          name: String(plugin.manifest.name || plugin.manifest.slug),
+          state: String(plugin.state ?? ''),
+          heldReason: String((plugin as { heldReason?: unknown }).heldReason ?? ''),
+          runnable: plugin.state === PluginState.ACTIVE,
+        })),
       themes: this.themeManager.getThemes().map((theme) => ({ slug: theme.slug, version: String(theme.version || ''), name: String(theme.name || theme.slug) })),
       appearances: this.appearances.list().map((entry) => ({ slug: entry.slug, version: String(entry.version || ''), name: String(entry.name || entry.slug) })),
       presets: this.presets().map((preset) => preset.toJSON()),
@@ -311,14 +369,13 @@ export class TenantAdminService {
       new PluginTenantStateService(this.db).listEnabled(tenant.id),
       TenantThemeAccess.choiceForAsync(tenant.id),
     ]);
-    const memberRows = await this.db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenant.id } });
-    const memberList = await Promise.all((memberRows ?? []).map(async (row: any) => {
-      const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: CoercionUtils.toString(row.user_id) });
-      return { userId: CoercionUtils.toString(row.user_id), email: CoercionUtils.toString(user?.email), roles: TenantSummary.roles(row.roles), state: CoercionUtils.toString(row.state) };
-    }));
+    // The member LIST is deliberately not loaded here. `list()` summarizes every site, and this used
+    // to read every membership row and then issue one user lookup PER MEMBER — so a platform with eight
+    // sites and a hundred thousand members each rendered the Sites page with hundreds of thousands of
+    // queries. The count is a single COUNT; the roster is paged on demand (`members()` below).
     // A workspace serves a console, not a storefront, so counting pages for one would be noise.
     const pageCount = tenant.isWorkspace ? 0 : await this.db.withTenant(tenant.id, () => this.countPages());
-    return new TenantSummary(tenant, members, plugins, choice.activeSlug, memberList, this.lastExport(tenant.slug), pageCount);
+    return new TenantSummary(tenant, members, plugins, choice.activeSlug, this.lastExport(tenant.slug), pageCount);
   }
 
   private lastExport(slug: string): string | null {

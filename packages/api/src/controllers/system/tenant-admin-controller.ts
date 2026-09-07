@@ -51,6 +51,19 @@ export class TenantAdminController extends BaseController {
     }
   }
 
+  /** One page of a site's members. Paged and searchable — a roster is unbounded. */
+  async listMembers(req: Request, res: Response): Promise<void> {
+    try {
+      res.json(await this.service.members(CoercionUtils.toString(req.params?.id), {
+        q: CoercionUtils.toString(req.query?.q),
+        limit: CoercionUtils.toNumber(req.query?.limit, 0) || undefined,
+        offset: CoercionUtils.toNumber(req.query?.offset, 0),
+      }));
+    } catch (error) {
+      this.fail(res, error);
+    }
+  }
+
   async addMember(req: Request, res: Response): Promise<void> {
     try {
       const body = TenantAdminController.body(req);
