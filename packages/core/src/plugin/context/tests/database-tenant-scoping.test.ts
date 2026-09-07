@@ -21,6 +21,8 @@ function buildManager() {
       insert: vi.fn(async (_table: string, data: any) => ({ ...data })),
       update: vi.fn(async () => ({})),
       delete: vi.fn(async () => true),
+      tableExists: vi.fn(async () => true),
+      getColumns: vi.fn(async () => []),
     },
     audit: { logAction: vi.fn() },
     getCollection: () => ({ collection: { fields: [] } }),
@@ -36,6 +38,30 @@ describe('context.db tenant scoping', () => {
   // must behave exactly as it did before tenancy existed. See the last case in this file.
   beforeAll(() => TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true }));
   afterAll(() => TenantMode.reset());
+
+  /**
+   * A plugin's `onInit` runs outside any request, and several plugins ask whether their own table
+   * exists before normalising it. That question returns no rows, so it cannot leak across tenants —
+   * but the tenant injection used to demand a tenant for it anyway while the boot-access skip waved it
+   * through as harmless. The two disagreeing killed finance at boot with "No tenant in the request
+   * context", and took logistics-econt down with it as a dependant.
+   */
+  it('answers a shape question at boot, with no tenant, rather than failing the plugin', async () => {
+    const manager = buildManager();
+    const db: any = DatabaseContextProxy.createDatabaseProxy(plugin, manager, security);
+    await expect(db.tableExists('fcp_alpha_things')).resolves.toBe(true);
+    await expect(db.getColumns('fcp_alpha_things')).resolves.toEqual([]);
+    expect(manager.db.tableExists).toHaveBeenCalledWith('fcp_alpha_things');
+  });
+
+  it('still refuses an untenanted call that WOULD return rows', async () => {
+    const manager = buildManager();
+    const db: any = DatabaseContextProxy.createDatabaseProxy(plugin, manager, security);
+    // Skipped-and-logged by UntenantedBootAccess rather than run unscoped: an empty result, never
+    // every tenant's rows.
+    await expect(db.find('fcp_alpha_things', {})).resolves.toEqual([]);
+    expect(manager.db.find).not.toHaveBeenCalled();
+  });
 
   it('ANDs the tenant into a find that has no where at all', async () => {
     const manager = buildManager();

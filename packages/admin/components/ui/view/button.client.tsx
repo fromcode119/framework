@@ -1,5 +1,6 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import Link from 'next/link';
 import type { ButtonHTMLAttributes } from 'react';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/reactor';
@@ -36,7 +37,11 @@ export class Button extends PureReactor {
   const className = this.className ?? '';
   const isLoading = this.isLoading;
   const icon = this.icon;
-  const Component = this.as ?? 'button';
+  // An `href` has to change the ELEMENT, not just ride along as an attribute. A <button href="…"> is
+  // inert — HTML buttons have no href — so three admin buttons (Sites → New site, Sites → Import, and
+  // "Open the site" after an import) rendered correctly and did nothing when clicked. Only the one
+  // call site that also passed `as={Link}` worked, which is what made the prop look supported.
+  const Component = this.as ?? (this.href ? Link : 'button');
   // Solid variants carry elevation via `fc-elevated-control`, NOT a hardcoded `shadow-sm`: the token
   // behind it is what the Appearance → Surface shadows switch turns off. A literal utility here would
   // survive the switch and leave buttons the only elevated thing on a flat admin.

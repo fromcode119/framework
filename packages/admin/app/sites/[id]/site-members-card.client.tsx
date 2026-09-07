@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { Card } from '@/components/ui/view/card.client';
-import { Checkbox } from '@/components/ui/view/checkbox.client';
+import { Switch } from '@/components/ui/view/switch.client';
 import { Input } from '@/components/ui/view/input.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SiteRecord } from '@/lib/tenants/site-record';
@@ -76,7 +76,7 @@ export class SiteMembersCard extends AdminComponent {
         </ul>
         <div className="fc-sites__grant">
           <Input value={this.email} onChange={this.onEmail} placeholder="email of an existing account" />
-          <Checkbox checked={this.asAdmin} onChange={this.onAsAdmin} label="Site administrator" />
+          <Switch checked={this.asAdmin} onChange={this.onAsAdmin} label="Site administrator" />
           <Button onClick={this.grant} isLoading={this.busy} icon={<FrameworkIcons.Plus size={14} />}>Grant access</Button>
         </div>
       </Card>

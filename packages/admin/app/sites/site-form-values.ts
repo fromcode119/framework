@@ -64,7 +64,16 @@ export class SiteFormValues {
 
   /** The identity-only patch a detail page sends. */
   toUpdatePayload(): Record<string, unknown> {
-    return { slug: this.slug.trim(), primaryHost: this.primaryHost.trim(), hostAliases: this.aliasList, state: this.state, ...(this.isWorkspace ? { appearance: this.appearance } : {}) };
+    return {
+      slug: this.slug.trim(),
+      primaryHost: this.primaryHost.trim(),
+      hostAliases: this.aliasList,
+      state: this.state,
+      // Theme and plugins are part of an EDIT now, not only of creation. A workspace has no storefront,
+      // so it sends no theme rather than sending an empty one, which would read as "clear the theme".
+      plugins: this.plugins,
+      ...(this.isWorkspace ? { appearance: this.appearance } : { theme: this.theme }),
+    };
   }
 
   /** The identity an import/adopt uses (no plugins/theme: those come from the archive or the deployment). */

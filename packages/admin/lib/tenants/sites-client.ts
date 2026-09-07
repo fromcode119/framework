@@ -1,3 +1,4 @@
+import { CoercionUtils } from '@fromcode119/core';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
@@ -30,6 +31,16 @@ export class SitesClient {
   static async exportSite(id: string): Promise<{ filename: string; rows: number }> {
     const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANT_EXPORT(id), {});
     return { filename: String(response?.backup?.filename || ''), rows: Number(response?.manifest?.tables?.reduce?.((sum: number, t: any) => sum + Number(t?.rows || 0), 0) ?? 0) };
+  }
+
+  /** Rebuilds the site's pages from its theme's seed and its plugins' default page contracts. */
+  static async materializePages(id: string): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
+    const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANT_PAGES(id), {});
+    return {
+      pages: CoercionUtils.toNumber(response?.pages),
+      themeSeeded: response?.themeSeeded === true,
+      warnings: Array.isArray(response?.warnings) ? response.warnings.map((w: unknown) => CoercionUtils.toString(w)) : [],
+    };
   }
 
   static async remove(id: string, confirmSlug: string): Promise<{ archive: string; files: number; deleted: Record<string, number> }> {

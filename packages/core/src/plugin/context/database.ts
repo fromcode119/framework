@@ -31,6 +31,17 @@ export class DatabaseContextProxy {
   private static readonly READ_METHODS = new Set(['find', 'findOne', 'count', 'groupCount', 'tableExists', 'getColumns']);
   private static readonly WRITE_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
   private static readonly SCHEMA_METHODS = new Set(['addColumn']);
+  /**
+   * Methods that ask about a table's SHAPE, never its rows.
+   *
+   * They cannot leak one tenant's data to another because they return no rows at all, so a tenant is
+   * neither injected nor required for them. Naming the set once matters: the boot-access skip and the
+   * tenant injection below both have to agree about which calls these are, and when they disagreed —
+   * the skip let `tableExists` through as harmless while the injection still demanded a tenant — every
+   * plugin that checked for its own table in `onInit` died at boot with "No tenant in the request
+   * context", taking its dependants down with it.
+   */
+  private static readonly ROW_FREE_METHODS = new Set(['addColumn', 'tableExists', 'getColumns']);
   private static readonly TABLE_ARG_METHODS = new Set([
     ...DatabaseContextProxy.READ_METHODS,
     ...DatabaseContextProxy.WRITE_METHODS,
@@ -67,6 +78,8 @@ export class DatabaseContextProxy {
     // query to nothing. Pre-tenancy behaviour, unchanged.
     if (!TenantMode.isEnabled()) return args;
     if (!TenantScopedTableDdl.isTenantScoped(String(args[0] ?? ''))) return args;
+    // A question about the table's shape has no rows to scope, so it needs no tenant to answer.
+    if (DatabaseContextProxy.ROW_FREE_METHODS.has(prop)) return args;
     const tenantId = RequestContextUtils.requireTenantId();
     const next = [...args];
 
@@ -244,8 +257,7 @@ export class DatabaseContextProxy {
               const table = args[0];
               // Plugin boot work has no tenant. Skip it loudly rather than failing the plugin or
               // running it unscoped — see UntenantedBootAccess.
-              if (!DatabaseContextProxy.SCHEMA_METHODS.has(prop)
-                && !['tableExists', 'getColumns'].includes(prop)
+              if (!DatabaseContextProxy.ROW_FREE_METHODS.has(prop)
                 && UntenantedBootAccess.shouldSkip(table)) {
                 return UntenantedBootAccess.skip(plugin.manifest.slug, prop, table);
               }

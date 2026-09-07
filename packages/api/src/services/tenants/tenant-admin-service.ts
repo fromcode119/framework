@@ -144,13 +144,53 @@ export class TenantAdminService {
     return { pages, themeSeeded, warnings };
   }
 
+  /**
+   * Changes a site. Theme and plugin choices are applied here, not only at creation.
+   *
+   * They live in their own tables rather than on the tenant row, so `registry.update` cannot carry
+   * them — which is why they were settable when a site was created and never afterwards. The same
+   * services and the same validation `create` uses are reused, so the two paths cannot drift into
+   * disagreeing about what a valid choice is.
+   *
+   * Both keys are OPTIONAL and absent means "leave alone": a patch that only renames a host must not
+   * read as "this site now has no plugins".
+   */
   async update(id: string, patch: Record<string, unknown>, actor: Record<string, unknown>): Promise<TenantSummary> {
     const current = await this.requireTenant(id);
     if (patch.appearance !== undefined && current.isWorkspace) this.assertAppearanceInstalled(CoercionUtils.toKey(patch.appearance));
-    const tenant = await this.registry.update(id, patch);
+
+    const { theme, plugins, ...row } = patch;
+    if (theme !== undefined) {
+      const slug = CoercionUtils.toString(theme);
+      if (current.isWorkspace && slug) throw new Error('A workspace has no storefront, so it takes no theme.');
+    }
+    if (plugins !== undefined) this.assertPluginsInstalled(TenantAdminService.slugs(plugins));
+
+    const tenant = await this.registry.update(id, row);
+    if (plugins !== undefined) await this.applyPlugins(tenant.id, TenantAdminService.slugs(plugins));
+    if (theme !== undefined) await this.applyTheme(tenant.id, CoercionUtils.toString(theme));
+
     await this.record('tenant.update', tenant.slug, actor, { id: tenant.id, patch });
     await this.gateway.notify();
     return this.summarize(tenant);
+  }
+
+  /** Brings the site's enabled plugins to exactly `wanted` — enabling what is new, disabling what left. */
+  private async applyPlugins(tenantId: string, wanted: string[]): Promise<void> {
+    const state = new PluginTenantStateService(this.db);
+    const current = await state.listEnabled(tenantId);
+    for (const slug of wanted.filter((entry) => !current.includes(entry))) await state.enable(tenantId, slug);
+    for (const slug of current.filter((entry) => !wanted.includes(entry))) await state.disable(tenantId, slug);
+    PluginTenantAccess.invalidate(tenantId);
+  }
+
+  /** Activates the chosen theme, or clears the current one when the choice is empty. */
+  private async applyTheme(tenantId: string, slug: string): Promise<void> {
+    const state = new TenantThemeStateService(this.db);
+    const active = (await TenantThemeAccess.choiceForAsync(tenantId)).activeSlug;
+    if (slug) await state.activate(tenantId, slug);
+    else if (active) await state.disable(tenantId, active);
+    TenantThemeAccess.invalidate(tenantId);
   }
 
   async addMember(tenantId: string, email: string, roles: string[]): Promise<void> {
@@ -276,7 +316,9 @@ export class TenantAdminService {
       const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: CoercionUtils.toString(row.user_id) });
       return { userId: CoercionUtils.toString(row.user_id), email: CoercionUtils.toString(user?.email), roles: TenantSummary.roles(row.roles), state: CoercionUtils.toString(row.state) };
     }));
-    return new TenantSummary(tenant, members, plugins, choice.activeSlug, memberList, this.lastExport(tenant.slug));
+    // A workspace serves a console, not a storefront, so counting pages for one would be noise.
+    const pageCount = tenant.isWorkspace ? 0 : await this.db.withTenant(tenant.id, () => this.countPages());
+    return new TenantSummary(tenant, members, plugins, choice.activeSlug, memberList, this.lastExport(tenant.slug), pageCount);
   }
 
   private lastExport(slug: string): string | null {

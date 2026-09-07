@@ -18,6 +18,8 @@ export class SiteRecord {
     readonly kind: string,
     /** Workspace only: the appearance its console is locked to; `''` = default console. */
     readonly appearance: string,
+    /** Storefront pages this site actually has. Zero on a storefront site means its seed never ran. */
+    readonly pageCount: number,
   ) {}
 
   get isWorkspace(): boolean {
@@ -52,6 +54,7 @@ export class SiteRecord {
       input.lastExport ? CoercionUtils.toString(input.lastExport) : null,
       CoercionUtils.toString(input.kind) || 'site',
       CoercionUtils.toString(input.appearance),
+      CoercionUtils.toNumber(input.pageCount),
     );
   }
 

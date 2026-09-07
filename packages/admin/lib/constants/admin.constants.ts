@@ -116,6 +116,7 @@ export class AdminConstants {
     TENANTS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANTS),
     TENANT: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT, { id })),
     TENANT_EXPORT: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_EXPORT, { id })),
+    TENANT_PAGES: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_PAGES, { id })),
     TENANT_MEMBERS: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_MEMBERS, { id })),
     TENANT_MEMBER: (id: string, userId: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_MEMBER, { id, userId })),
     TENANTS_IMPORT_SESSION: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANTS_IMPORT_SESSION),

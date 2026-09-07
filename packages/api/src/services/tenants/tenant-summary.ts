@@ -9,12 +9,21 @@ export class TenantSummary {
     readonly theme: string | null,
     readonly members: Array<{ userId: string; email: string; roles: string[]; state: string }>,
     readonly lastExport: string | null,
+    /**
+     * How many storefront pages the site actually has.
+     *
+     * A real, derived number rather than a "last seeded" timestamp: nothing records when a seed ran, and
+     * inventing a date the operator never set would be exactly the kind of value that cannot be traced
+     * to a control. Zero pages on a storefront site is the visible symptom of a seed that never ran.
+     */
+    readonly pageCount: number,
   ) {}
 
   toJSON(): Record<string, unknown> {
     return {
       ...TenantSummary.tenantJson(this.tenant),
       memberCount: this.memberCount,
+      pageCount: this.pageCount,
       plugins: this.plugins,
       theme: this.theme,
       members: this.members,
