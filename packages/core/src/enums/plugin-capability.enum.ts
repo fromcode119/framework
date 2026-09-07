@@ -11,6 +11,9 @@ export class PluginCapability extends Enum {
   static readonly DATABASE = new PluginCapability('database');
   static readonly DATABASE_READ = new PluginCapability('database:read');
   static readonly DATABASE_WRITE = new PluginCapability('database:write');
+  static readonly DATABASE_SCHEMA = new PluginCapability('database:schema');
+  static readonly DATABASE_RAW = new PluginCapability('database:raw');
+  static readonly DATABASE_SCHEMA_CROSS_PLUGIN = new PluginCapability('database:schema:cross-plugin');
   static readonly FILESYSTEM_READ = new PluginCapability('filesystem:read');
   static readonly FILESYSTEM_WRITE = new PluginCapability('filesystem:write');
   static readonly NETWORK = new PluginCapability('network');

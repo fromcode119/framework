@@ -22,6 +22,20 @@ export class DatabaseConnectionUrls {
     return String(process.env.DATABASE_MIGRATION_URL || process.env.DATABASE_URL || '');
   }
 
+  /**
+   * The role name the application serves requests as, read out of `DATABASE_URL`.
+   *
+   * Nothing else needs to be configured to know it: the runtime connection string already names the
+   * role, so a second environment variable saying the same thing could only ever disagree with it.
+   */
+  static runtimeRole(): string {
+    try {
+      return decodeURIComponent(new URL(DatabaseConnectionUrls.runtime()).username || '');
+    } catch {
+      return '';
+    }
+  }
+
   /** True when the deployment has actually separated the two roles. */
   static hasSeparateMigrationConnection(): boolean {
     const migration = String(process.env.DATABASE_MIGRATION_URL || '').trim();

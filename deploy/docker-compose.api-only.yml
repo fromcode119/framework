@@ -13,7 +13,7 @@ services:
       target: base
     command: npm run start --workspace=@fromcode119/api
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=${DATABASE_URL:?Set the runtime DATABASE_URL in your deployment environment}
       - REDIS_URL=${REDIS_URL}
       - NODE_ENV=production
       - API_URL=${API_PUBLIC_URL}
@@ -22,7 +22,7 @@ services:
       - THEMES_DIR=/app/themes
       - APPEARANCE_DIR=/app/appearance
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
-      - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
+      - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:?Set a unique INTEGRATION_SECRET_KEY of at least 32 characters}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
       # Shared secret for api -> admin/frontend calls (Settings -> Infrastructure restart buttons).
       # Same value on every service of the deployment; unset means those endpoints reject every call.

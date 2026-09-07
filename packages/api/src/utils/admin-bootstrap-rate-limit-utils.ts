@@ -1,4 +1,5 @@
 import { CookieConstants, RouteConstants, SystemConstants } from '@fromcode119/core';
+import { createHash, createHmac, timingSafeEqual } from 'crypto';
 
 export class AdminBootstrapRateLimitUtils {
   static readonly AUTH_STATUS_PATH = SystemConstants.API_PATH.AUTH.STATUS;
@@ -35,17 +36,16 @@ export class AdminBootstrapRateLimitUtils {
     const clientKey = AdminBootstrapRateLimitUtils.resolveClientKey(requestLike.ip);
     const bootstrapGroup = AdminBootstrapRateLimitUtils.resolveBootstrapGroup(requestLike);
     if (bootstrapGroup) return `admin-bootstrap:${clientKey}:${bootstrapGroup}`;
-    // Authenticated (token-bearing) traffic gets its OWN bucket per ip+token so a busy admin session —
+    // Authenticated traffic gets its OWN bucket per ip+token so a busy admin session —
     // or several users behind one NAT/proxy (all sharing one client IP) — can never starve each other or
-    // be throttled by the strict anonymous IP cap. The key stays bound to the IP so rotating tokens from
-    // one machine multiplies buckets but not across IPs, and only JWT-shaped tokens qualify — garbage
-    // Authorization headers still land in the anonymous ip bucket.
+    // be throttled by the strict anonymous IP cap. Only a correctly signed, unexpired HS256 token
+    // qualifies; a client cannot mint arbitrary JWT-shaped strings to manufacture fresh buckets.
     const tokenKey = AdminBootstrapRateLimitUtils.resolveAuthTokenKey(requestLike);
     if (tokenKey) return `tok:${clientKey}:${tokenKey}`;
     return `ip:${clientKey}`;
   }
 
-  /** True when the request carries a JWT-shaped auth token (Authorization Bearer or the session cookie). */
+  /** True when the request carries a signed auth token (Authorization Bearer or the session cookie). */
   static hasAuthToken(requestLike: { headers?: Record<string, unknown>; cookies?: Record<string, unknown> }): boolean {
     return AdminBootstrapRateLimitUtils.resolveAuthTokenKey(requestLike) !== '';
   }
@@ -55,13 +55,23 @@ export class AdminBootstrapRateLimitUtils {
     const bearer = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
     const cookieToken = String(requestLike.cookies?.[CookieConstants.cookie('token')] || '');
     const token = bearer || cookieToken;
-    // JWT shape: three non-empty dot-separated base64url segments. Cheap structural gate only — real
-    // validation happens in auth middleware; a forged-but-shaped token gets 401s within its own budget.
-    if (!/^[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}$/.test(token)) return '';
-    // Short stable digest — do not keep raw tokens as limiter keys.
-    let hash = 0;
-    for (let i = 0; i < token.length; i++) hash = ((hash << 5) - hash + token.charCodeAt(i)) | 0;
-    return (hash >>> 0).toString(36);
+    const secret = process.env.JWT_SECRET || '';
+    const parts = token.split('.');
+    if (!secret || parts.length !== 3 || parts.some((part) => !/^[A-Za-z0-9_-]+$/.test(part))) return '';
+
+    try {
+      const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8')) as { alg?: unknown };
+      const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as { exp?: unknown };
+      if (header.alg !== 'HS256') return '';
+      if (Number(payload.exp || 0) <= Math.floor(Date.now() / 1000)) return '';
+
+      const actual = Buffer.from(parts[2], 'base64url');
+      const expected = createHmac('sha256', secret).update(`${parts[0]}.${parts[1]}`).digest();
+      if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return '';
+      return createHash('sha256').update(token).digest('base64url').slice(0, 16);
+    } catch {
+      return '';
+    }
   }
 
   static isAdminBootstrapRead(requestLike: {

@@ -40,7 +40,7 @@ const esbuild = {
 const packageAlias = Object.fromEntries(
   ([
     ['ai', '@ai'], ['core', '@core'], ['database', '@database'], ['react', '@react'],
-    ['api', '@api'], ['auth', '@auth'], ['cache', '@cache'], ['marketplace-client', '@marketplace-client'],
+    ['api', '@api'], ['auth', '@auth'], ['cache', '@cache'], ['queue', '@queue'], ['marketplace-client', '@marketplace-client'],
     ['media', '@media'], ['email', '@email'], ['scheduler', '@scheduler'], ['plugins', '@plugins'],
     ['mcp', '@mcp'], ['mcp-server', '@mcp-server'], ['sdk', '@sdk'], ['next', '@nextjs'], ['cli', '@cli'],
   ] as ReadonlyArray<readonly [string, string]>)
@@ -82,6 +82,8 @@ const sharedAlias = {
   // BUILT dist — so they asserted against a five-day-old build and a source fix could not move them.
   // Tests must exercise source; a stale dist passing is the same class of lie as a dark test file.
   '@fromcode119/auth': path.resolve(frameworkRoot, 'packages/auth/src/index.ts'),
+  // Same stale-dist rule: core imports the queue, and both must be exercised from source.
+  '@fromcode119/queue': path.resolve(frameworkRoot, 'packages/queue/src/index.ts'),
   // mcp-server BEFORE mcp: a Vite string alias matches by PREFIX, so the bare mcp entry would
   // otherwise swallow '@fromcode119/mcp-server' ids. Both point at SOURCE (stale-dist rule above).
   '@fromcode119/mcp-server': path.resolve(frameworkRoot, 'packages/mcp-server/src/index.ts'),
@@ -131,6 +133,9 @@ export default defineConfig({
             // `packages/auth` matched no project glob either, so a test placed there was collected
             // by nothing and green by default — the same dark-by-omission problem as the others.
             glob('packages/auth/**/*.test.ts'),
+            // Same dark-by-omission rule: `packages/queue` was extracted out of core, and a test that
+            // moves with it must move into a project's include glob too or it is collected by nothing.
+            glob('packages/queue/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },

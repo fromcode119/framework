@@ -29,7 +29,7 @@ export class TenantAdminController extends BaseController {
 
   async get(req: Request, res: Response): Promise<void> {
     try {
-      res.json((await this.service.get(String(req.params.id))).toJSON());
+      res.json((await this.service.get(CoercionUtils.toString(req.params.id))).toJSON());
     } catch (error) {
       this.fail(res, error);
     }
@@ -45,7 +45,7 @@ export class TenantAdminController extends BaseController {
 
   async update(req: Request, res: Response): Promise<void> {
     try {
-      res.json((await this.service.update(String(req.params.id), TenantAdminController.body(req), this.actor(req))).toJSON());
+      res.json((await this.service.update(CoercionUtils.toString(req.params.id), TenantAdminController.body(req), this.actor(req))).toJSON());
     } catch (error) {
       this.fail(res, error);
     }
@@ -55,8 +55,8 @@ export class TenantAdminController extends BaseController {
     try {
       const body = TenantAdminController.body(req);
       const roles = Array.isArray(body.roles) ? body.roles.map((role) => CoercionUtils.toString(role)) : [];
-      await this.service.addMember(String(req.params.id), CoercionUtils.toString(body.email), roles);
-      res.status(201).json((await this.service.get(String(req.params.id))).toJSON());
+      await this.service.addMember(CoercionUtils.toString(req.params.id), CoercionUtils.toString(body.email), roles);
+      res.status(201).json((await this.service.get(CoercionUtils.toString(req.params.id))).toJSON());
     } catch (error) {
       this.fail(res, error);
     }
@@ -64,8 +64,8 @@ export class TenantAdminController extends BaseController {
 
   async removeMember(req: Request, res: Response): Promise<void> {
     try {
-      await this.service.removeMember(String(req.params.id), String(req.params.userId));
-      res.json((await this.service.get(String(req.params.id))).toJSON());
+      await this.service.removeMember(CoercionUtils.toString(req.params.id), CoercionUtils.toString(req.params.userId));
+      res.json((await this.service.get(CoercionUtils.toString(req.params.id))).toJSON());
     } catch (error) {
       this.fail(res, error);
     }
@@ -73,7 +73,7 @@ export class TenantAdminController extends BaseController {
 
   async materializePages(req: Request, res: Response): Promise<void> {
     try {
-      res.json(await this.service.materializePages(String(req.params.id)));
+      res.json(await this.service.materializePages(CoercionUtils.toString(req.params.id)));
     } catch (error) {
       this.fail(res, error);
     }
@@ -81,7 +81,7 @@ export class TenantAdminController extends BaseController {
 
   async exportTenant(req: Request, res: Response): Promise<void> {
     try {
-      const result = await this.service.exportTenant(String(req.params.id), this.actor(req));
+      const result = await this.service.exportTenant(CoercionUtils.toString(req.params.id), this.actor(req));
       res.status(201).json({ backup: result.backup, manifest: result.manifest });
     } catch (error) {
       this.fail(res, error);
@@ -91,7 +91,7 @@ export class TenantAdminController extends BaseController {
   async deleteTenant(req: Request, res: Response): Promise<void> {
     try {
       const body = TenantAdminController.body(req);
-      res.json(await this.service.deleteTenant(String(req.params.id), CoercionUtils.toString(body.confirmSlug), this.actor(req)));
+      res.json(await this.service.deleteTenant(CoercionUtils.toString(req.params.id), CoercionUtils.toString(body.confirmSlug), this.actor(req)));
     } catch (error) {
       this.fail(res, error);
     }

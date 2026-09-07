@@ -7,6 +7,7 @@ import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginGuest } from '@core/plugin/host/plugin-guest';
 import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
+import { PluginSchemaDatabaseProxy } from '@core/plugin/context/plugin-schema-database-proxy';
 import { PluginHostDispatcher } from '@core/plugin/host/plugin-host-dispatcher';
 import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
 import { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrations';
@@ -21,6 +22,7 @@ import type { IPluginInvocation } from '@core/plugin/host/interfaces/plugin-invo
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
 import type { IRequestStore } from '@core/context/interfaces/request-store.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { PluginContext } from '@core/plugin-context';
 
 /**
@@ -77,7 +79,9 @@ export class PluginHost {
     this.limits = settings.forPlugin(manifest.sandbox);
     this.proxy = new PluginHostHttpProxy('');
     this.callbacks = new PluginHostCallbacks(slug, (handlerId, args, store) => this.invoke({ kind: 'callback', handlerId, args }, store));
-    this.dispatcher = new PluginHostDispatcher(slug, this.tokens, manager.db, (manager as any).schemaDb ?? manager.db, this.callbacks);
+    const plugin = { manifest } as unknown as ILoadedPlugin;
+    const ddl = PluginSchemaDatabaseProxy.create(plugin, manager);
+    this.dispatcher = new PluginHostDispatcher(slug, this.tokens, manager.db, ddl, this.callbacks);
     this.registrations = new PluginHostRegistrations(
       slug,
       this.proxy,

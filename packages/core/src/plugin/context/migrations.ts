@@ -1,6 +1,7 @@
 import { Logger } from '@core/logging';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import { PluginSchemaDatabaseProxy } from '@core/plugin/context/plugin-schema-database-proxy';
 
 /**
  * Runs a plugin's schema migrations on the framework's DDL connection.
@@ -29,7 +30,7 @@ export class MigrationsContextProxy {
        */
       async run(migrations: Array<{ up: (db: any) => Promise<void> }>): Promise<void> {
         const list = Array.isArray(migrations) ? migrations : [migrations];
-        const ddl = (manager as any).schemaDb ?? manager.db;
+        const ddl = PluginSchemaDatabaseProxy.create(plugin, manager);
 
         for (const migration of list) {
           const name = migration?.constructor?.name || 'anonymous';

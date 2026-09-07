@@ -1,3 +1,5 @@
+import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
+import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, desc, asc } from 'drizzle-orm';
@@ -41,6 +43,76 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
 
   async connect() {
     await this.pool.getConnection();
+  }
+
+  /**
+   * A named lock held for the length of the transaction. MySQL's `GET_LOCK` is connection-scoped rather
+   * than transaction-scoped, so it is released explicitly on every path — including the failure one,
+   * or the next caller would wait for a lock nobody still needs.
+   */
+  async withExclusiveLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const acquired = await this.queryRaw('SELECT GET_LOCK(?, ?) AS acquired', [name, MysqlDatabaseManager.LOCK_TIMEOUT_SECONDS]);
+    if (Number(acquired?.[0]?.acquired) !== 1) {
+      throw new Error(`Could not acquire the exclusive lock "${name}" within ${MysqlDatabaseManager.LOCK_TIMEOUT_SECONDS}s.`);
+    }
+    await this.queryRaw('START TRANSACTION');
+    try {
+      const result = await fn();
+      await this.queryRaw('COMMIT');
+      return result;
+    } catch (error) {
+      await this.queryRaw('ROLLBACK').catch(() => undefined);
+      throw error;
+    } finally {
+      await this.queryRaw('SELECT RELEASE_LOCK(?)', [name]).catch(() => undefined);
+    }
+  }
+
+  /** Long enough for a slow first-admin insert, short enough that a stuck caller surfaces as an error. */
+  private static readonly LOCK_TIMEOUT_SECONDS = 10;
+
+  /**
+   * Creates or realigns the deployment's logins.
+   *
+   * MySQL does not accept placeholders in DDL, so every name and password is quoted here instead of
+   * being bound — a user name is a string literal in `CREATE USER`, a schema is a backtick identifier
+   * in `GRANT`, and the two escape differently.
+   *
+   * The runtime role gets DML only, never DDL: it must not be able to alter the schema it serves. Note
+   * that MySQL has no row-level security, so `supportsTenantIsolation()` is false and a multi-tenant
+   * deployment on this driver is refused before it boots — these roles are least privilege, not
+   * isolation.
+   */
+  async provisionRoles(plan: DatabaseRolePlan): Promise<DatabaseRoleOutcome> {
+    const schema = MysqlDatabaseManager.quoteIdentifier(plan.database);
+    const roles = plan.isSingleRole ? [plan.owner] : [plan.owner, plan.runtime];
+
+    for (const role of roles) {
+      const user = `${MysqlDatabaseManager.quoteLiteral(role.name)}@'%'`;
+      const password = MysqlDatabaseManager.quoteLiteral(role.password);
+      await this.queryRaw(`CREATE USER IF NOT EXISTS ${user} IDENTIFIED BY ${password}`);
+      await this.queryRaw(`ALTER USER ${user} IDENTIFIED BY ${password}`);
+    }
+
+    await this.queryRaw(`GRANT ALL PRIVILEGES ON ${schema}.* TO ${MysqlDatabaseManager.quoteLiteral(plan.owner.name)}@'%'`);
+    if (!plan.isSingleRole) {
+      await this.queryRaw(
+        `GRANT SELECT, INSERT, UPDATE, DELETE ON ${schema}.* TO ${MysqlDatabaseManager.quoteLiteral(plan.runtime.name)}@'%'`,
+      );
+    }
+    await this.queryRaw('FLUSH PRIVILEGES');
+
+    return DatabaseRoleOutcome.applied(roles.map(role => role.name));
+  }
+
+  /** A string literal: doubles quotes and escapes backslashes, which MySQL treats as an escape char. */
+  private static quoteLiteral(value: string): string {
+    return `'${String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "''")}'`;
+  }
+
+  /** A backtick identifier: a backtick inside one is written twice. */
+  private static quoteIdentifier(value: string): string {
+    return `\`${String(value ?? '').replace(/`/g, '``')}\``;
   }
 
   async queryRaw(sqlText: string, values: unknown[] = []): Promise<Array<Record<string, unknown>>> {

@@ -28,8 +28,15 @@ import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
 export class DatabaseContextProxy {
   private static readonly dbLimiter = new RateLimiter(5000, 60000);
   private static readonly ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'upsert']);
-  private static readonly TABLE_ARG_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'upsert', 'delete', 'count', 'groupCount']);
-  /** Table-arg write methods audited per call via {@link DatabaseWriteAudit} (execute is wrapped separately). */
+  private static readonly READ_METHODS = new Set(['find', 'findOne', 'count', 'groupCount', 'tableExists', 'getColumns']);
+  private static readonly WRITE_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
+  private static readonly SCHEMA_METHODS = new Set(['addColumn']);
+  private static readonly TABLE_ARG_METHODS = new Set([
+    ...DatabaseContextProxy.READ_METHODS,
+    ...DatabaseContextProxy.WRITE_METHODS,
+    ...DatabaseContextProxy.SCHEMA_METHODS,
+  ]);
+  /** Table-arg write methods audited per call via {@link DatabaseWriteAudit}. */
   private static readonly WRITE_AUDIT_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
   /** Write methods whose SECOND arg is the row payload — never mined for a record id in the audit resource. */
   private static readonly PAYLOAD_SECOND_ARG_METHODS = new Set(['insert', 'upsert']);
@@ -152,17 +159,8 @@ export class DatabaseContextProxy {
 
       const proxy: any = new Proxy(manager.db, {
         get: (target, prop) => {
-          if (!hasCapability('database') && !hasCapability('database:read') && !hasCapability('database:write')) {
-            handleViolation('database');
-          }
-
-          // `insert` is the standard plugin write and belongs here like every other db method; the
-          // manager has no `create`, so that entry was dead. Write AUDITING happens inside the
-          // wrapped invocation below (per CALL, with the target table in hand) — auditing here in
-          // the get trap logged once per property ACCESS, which both missed real calls
-          // (`const f = db.update; f(); f()`) and logged accesses that never became calls.
-          const dbMethods = ['find', 'findOne', 'insert', 'update', 'upsert', 'delete', 'execute', 'count', 'groupCount'];
-          if (typeof prop === 'string' && dbMethods.includes(prop)) {
+          if (prop === 'then') return undefined;
+          if (typeof prop === 'string' && DatabaseContextProxy.TABLE_ARG_METHODS.has(prop)) {
             if (!DatabaseContextProxy.dbLimiter.check(plugin.manifest.slug)) {
               handleRateLimit('database');
             }
@@ -180,9 +178,10 @@ export class DatabaseContextProxy {
             return storedView;
           }
 
-          // Raw-SQL writes: no table arg to guard on, but the CALL is still audited (method only —
-          // the SQL text can embed payload values, so it never reaches the trail).
+          // Arbitrary SQL is an explicit, separately approved escape hatch. It is never implied by
+          // ordinary database read/write access.
           if (prop === 'execute') {
+            if (!hasCapability('database:raw')) handleViolation('database:raw');
             const executeFn = (target as any)[prop];
             if (typeof executeFn !== 'function') return executeFn;
             return function (this: any, ...args: any[]) {
@@ -192,6 +191,15 @@ export class DatabaseContextProxy {
           }
 
           if (typeof prop === 'string' && DatabaseContextProxy.TABLE_ARG_METHODS.has(prop)) {
+            if (DatabaseContextProxy.READ_METHODS.has(prop) && !hasCapability('database:read')) {
+              handleViolation('database:read');
+            }
+            if (DatabaseContextProxy.WRITE_METHODS.has(prop) && !hasCapability('database:write')) {
+              handleViolation('database:write');
+            }
+            if (DatabaseContextProxy.SCHEMA_METHODS.has(prop) && !hasCapability('database:schema')) {
+              handleViolation('database:schema');
+            }
             const fn = (target as any)[prop];
             if (typeof fn !== 'function') return fn;
             const shouldDenormalize = DatabaseContextProxy.ROW_RETURNING_METHODS.has(prop);
@@ -236,7 +244,9 @@ export class DatabaseContextProxy {
               const table = args[0];
               // Plugin boot work has no tenant. Skip it loudly rather than failing the plugin or
               // running it unscoped — see UntenantedBootAccess.
-              if (UntenantedBootAccess.shouldSkip(table)) {
+              if (!DatabaseContextProxy.SCHEMA_METHODS.has(prop)
+                && !['tableExists', 'getColumns'].includes(prop)
+                && UntenantedBootAccess.shouldSkip(table)) {
                 return UntenantedBootAccess.skip(plugin.manifest.slug, prop, table);
               }
               const scoped = DatabaseContextProxy.injectTenant(prop, args);
@@ -254,7 +264,12 @@ export class DatabaseContextProxy {
             };
           }
 
-          return (target as any)[prop];
+          if (typeof prop === 'symbol') return undefined;
+          manager.audit.logAction(plugin.manifest.slug, 'Database Property Denied', String(prop), 'blocked');
+          throw new Error(
+            `Security Violation: plugin "${plugin.manifest.slug}" cannot access context.db.${String(prop)}. `
+            + 'Only the declared plugin database API is exposed.',
+          );
         }
       });
 

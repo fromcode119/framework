@@ -14,6 +14,7 @@ import { ArchiveUploadRequestParser } from '@api/controllers/archive-upload-requ
  * the same PluginManager and delegates, so behavior is unchanged.
  */
 import { AssetCacheHeaderService } from '@api/services/asset-cache-header-service';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class PluginArchiveSupport {
 
@@ -53,13 +54,14 @@ export class PluginArchiveSupport {
   }
 
   serveAssets(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
     if (!plugin || !plugin.path || plugin.state !== PluginState.ACTIVE) {
       return res.status(404).json({ error: 'Not found or disabled' });
     }
 
-    const filePath = (req.params as any)[0];
+    const pathSegments = req.params.assetPath;
+    const filePath = Array.isArray(pathSegments) ? pathSegments.join('/') : String(pathSegments || '');
     const abs = PluginArchiveSupport.resolveUiAsset(plugin.path, filePath);
     if (!abs) {
       return res.status(400).json({ error: 'Invalid path' });

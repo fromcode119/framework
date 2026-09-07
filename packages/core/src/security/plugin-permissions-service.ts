@@ -23,6 +23,13 @@ export class PluginPermissionsService {
 
     if (allAllowed.includes('*')) return true;
     if (allAllowed.includes(target)) return true;
+
+    // These capabilities cross the ordinary row-level CRUD boundary. A legacy `database`
+    // declaration must not silently grant owner DDL, arbitrary SQL, or another plugin's schema.
+    // `database:*` remains the one explicit wildcard that grants them.
+    if (['database:schema', 'database:raw', 'database:schema:cross-plugin'].includes(target)) {
+      return allAllowed.includes('database:*');
+    }
     
     // Database permission hierarchy
     if (target.startsWith('database:')) {

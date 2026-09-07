@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { TypeUtils } from '@fromcode119/core';
 import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
 import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
+import { CoercionUtils } from '@fromcode119/core';
 
 /** Handles the assistantChat endpoint logic. */
 export class AssistantChatHandler {
@@ -87,7 +88,7 @@ export class AssistantChatHandler {
     } catch (e: any) {
       const message = String(e?.message || 'Assistant request failed');
       const configurationError = /api key|incorrect api key|invalid api key|not configured|unable to initialize requested provider|fetch failed|econnrefused|network|connection refused|unauthorized|forbidden/i.test(message);
-      await deps.emitAssistantTelemetry('chat.failed', { provider: String(req.body?.provider || '').trim().toLowerCase() || null, error: message, durationMs: Date.now() - startedAt, provider_model_error_rate: 1 });
+      await deps.emitAssistantTelemetry('chat.failed', { provider: CoercionUtils.toKey(req.body?.provider) || null, error: message, durationMs: Date.now() - startedAt, provider_model_error_rate: 1 });
       return res.status(configurationError ? 400 : 500).json({ error: message });
     }
   }

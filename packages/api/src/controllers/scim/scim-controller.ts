@@ -2,6 +2,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { UserManagementService } from '@api/services/user-management-service';
 import { ScimService } from '@api/services/scim-service';
+import { CoercionUtils } from '@fromcode119/core';
 
 /**
  * SCIM 2.0 controller — thin HTTP orchestration over {@link ScimService}. Emits `application/scim+json`
@@ -30,7 +31,7 @@ export class ScimController {
   }
 
   async get(req: any, res: any): Promise<void> {
-    const user = await this.scim.get(String(req.params?.id));
+    const user = await this.scim.get(CoercionUtils.toString(req.params?.id));
     if (!user) { this.notFound(res, req.params?.id); return; }
     res.type(ScimController.SCIM_CONTENT_TYPE).json(user);
   }
@@ -42,19 +43,19 @@ export class ScimController {
   }
 
   async replace(req: any, res: any): Promise<void> {
-    const user = await this.scim.replace(String(req.params?.id), req.body || {});
+    const user = await this.scim.replace(CoercionUtils.toString(req.params?.id), req.body || {});
     if (!user) { this.notFound(res, req.params?.id); return; }
     res.type(ScimController.SCIM_CONTENT_TYPE).json(user);
   }
 
   async patch(req: any, res: any): Promise<void> {
-    const user = await this.scim.patch(String(req.params?.id), req.body || {});
+    const user = await this.scim.patch(CoercionUtils.toString(req.params?.id), req.body || {});
     if (!user) { this.notFound(res, req.params?.id); return; }
     res.type(ScimController.SCIM_CONTENT_TYPE).json(user);
   }
 
   async remove(req: any, res: any): Promise<void> {
-    const ok = await this.scim.remove(String(req.params?.id));
+    const ok = await this.scim.remove(CoercionUtils.toString(req.params?.id));
     if (!ok) { this.notFound(res, req.params?.id); return; }
     res.status(204).end();
   }

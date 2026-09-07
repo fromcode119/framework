@@ -8,9 +8,11 @@
 # file's own folder, where there is no Dockerfile. Without the flag the build fails outright with
 # "failed to read dockerfile". (On Coolify, set the base directory to `framework/Source`; the local
 # dev stack achieves the same by including this file with `project_directory: .`.)
-# Environment variables are injected via Coolify dashboard or a .env file at repo root.
-# All paths are relative to the repo root (project-directory) — required for Coolify compatibility.
-# Set COMPOSE_PROFILES=single-domain in Coolify only when you want the gateway service.
+# Environment variables come from the deployment platform's own environment settings, or a .env file
+# at the repo root.
+# All paths are relative to the repo root (project-directory), which is what a platform building from
+# the repository root requires.
+# Set COMPOSE_PROFILES=single-domain only when you want the gateway service.
 # This deploy file is for Coolify. Use the per-resource ingress network
 # (`COOLIFY_RESOURCE_UUID`) so Traefik resolves the public service through the
 # app-specific proxy network instead of the global `coolify` network, which can
@@ -36,6 +38,13 @@ services:
       - API_TARGET_URL=http://api:3000
       - ADMIN_TARGET_URL=http://admin:3000
       - FRONTEND_TARGET_URL=http://frontend:3000
+    # The gateway is the ingress, so it listens where an ingress is expected: port 80. It only exists
+    # under the `single-domain` profile, i.e. when you have asked for it to serve.
+    #
+    # Note what publishing means where a reverse proxy also fronts this stack (the `proxy` network
+    # below): the published port answers directly, in FRONT of that proxy's TLS and access policy. On
+    # such a host Traefik already holds 80 too, so set GATEWAY_PORT to something else — or drop this
+    # mapping and let the proxy reach the container over the network.
     ports:
       - ${GATEWAY_PORT:-80}:3000
     labels:
@@ -79,14 +88,22 @@ services:
     security_opt:
       - no-new-privileges:true
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-fromcode}:${POSTGRES_PASSWORD:-ChangeMe_Pg_P@ssw0rd}@db:5432/${POSTGRES_DB:-fromcode}
+      # Runtime traffic MUST use the non-owner role provisioned by the db init script below, so
+      # PostgreSQL row-level security applies. Supply complete, URL-encoded connection strings in
+      # the deployment environment; keeping credentials out of this interpolation also means a password
+      # may contain characters that compose interpolation would otherwise mangle.
+      - DATABASE_URL=${DATABASE_URL:?Set the non-owner runtime DATABASE_URL in your deployment environment}
       - DB_DIALECT=postgres
+      # OPTIONAL, and privileged: used once by the entrypoint to create the two logins above, then unset
+      # before the app starts. Leave it unset wherever the operator creates roles themselves — every
+      # managed database, and any deployment that provisioned them by hand.
+      - DATABASE_BOOTSTRAP_URL=${DATABASE_BOOTSTRAP_URL:-}
       # DDL connection: migrations and collection schema sync run as the role that OWNS the
       # schema, while DATABASE_URL serves requests as a non-owner role so row-level security
       # applies to them. Unset means both use DATABASE_URL — correct for single-tenant installs.
-      - DATABASE_MIGRATION_URL=${DATABASE_MIGRATION_URL:-}
+      - DATABASE_MIGRATION_URL=${DATABASE_MIGRATION_URL:?Set the schema-owner DATABASE_MIGRATION_URL in your deployment environment}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - JWT_SECRET=${JWT_SECRET:-CHANGE_ME_JWT_SECRET_MIN_32_CHARS}
+      - JWT_SECRET=${JWT_SECRET:?Set a unique JWT_SECRET of at least 32 characters in your deployment environment}
       - NODE_ENV=production
       - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
@@ -99,17 +116,17 @@ services:
       - THEMES_DIR=/app/themes
       - APPEARANCE_DIR=/app/appearance
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
-      - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:-CHANGE_ME_INTEGRATION_SECRET_MIN_32_CHARS}
+      - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:?Set a unique INTEGRATION_SECRET_KEY of at least 32 characters in your deployment environment}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
       # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
       # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
-      # the Coolify dashboard; the SAME value reaches all three services from there. Unset means those
+      # the deployment environment; the SAME value reaches all three services from there. Unset means those
       # endpoints reject every call, and the admin shows those buttons as unavailable.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       # Where the api reaches the other two apps from inside this stack. Compose service names, the
       # same mechanism `INTERNAL_API_URL=http://api:3000` already relies on for admin -> api below, so
       # they resolve wherever that one does. Cleared falls back to the ADMIN_URL / FRONTEND_URL env
-      # var — which is what a SPLIT deployment (separate Coolify resources) needs, since a service
+      # var — which is what a SPLIT deployment (each service deployed separately) needs, since a service
       # name only resolves within its own stack.
       #
       # These are read from the ENVIRONMENT only, never from admin Settings: this address decides
@@ -120,6 +137,9 @@ services:
       # T5c: plugin processes get NO network of their own (the api makes their HTTP calls). `allow`
       # only for a deployment whose plugins still do raw network I/O; the entrypoint logs the policy.
       - GUEST_EGRESS_POLICY=${GUEST_EGRESS_POLICY:-deny}
+      - ENFORCE_AUTHZ_GATEWAY=true
+      - ENFORCE_COLLECTION_READ_AUTHZ=true
+      - ENFORCE_PLUGIN_INTEGRITY=true
     depends_on:
       - db
       - redis
@@ -169,7 +189,7 @@ services:
       - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
       # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
       # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
-      # the Coolify dashboard; the SAME value reaches all three services from there. Unset means those
+      # the deployment environment; the SAME value reaches all three services from there. Unset means those
       # endpoints reject every call, and the admin shows those buttons as unavailable.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       # The admin renders appearance bundles, so it reads the same root the api installs them into.
@@ -226,7 +246,7 @@ services:
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
       # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
       # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
-      # the Coolify dashboard; the SAME value reaches all three services from there. Unset means those
+      # the deployment environment; the SAME value reaches all three services from there. Unset means those
       # endpoints reject every call, and the admin shows those buttons as unavailable.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       # The frontend SERVER-RENDERS the active theme and the plugins' storefront surfaces, so it reads
@@ -256,9 +276,15 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-fromcode}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ChangeMe_Pg_P@ssw0rd}
-      - POSTGRES_DB=${POSTGRES_DB:-fromcode}
+      # The image creates POSTGRES_USER as a SUPERUSER — that is unavoidable — so nothing else may use
+      # it. The init script below spends it once, to create the two roles the framework actually runs
+      # as, and neither application container ever receives these credentials.
+      - POSTGRES_USER=${POSTGRES_USER:?Set the PostgreSQL superuser name in your deployment environment}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set the PostgreSQL superuser password in your deployment environment}
+      - POSTGRES_DB=${POSTGRES_DB:?Set the PostgreSQL database name in your deployment environment}
+      # The owner and runtime logins are NOT configured here. They are named, with their passwords, by
+      # DATABASE_MIGRATION_URL and DATABASE_URL on the api service, and the api entrypoint creates them
+      # from DATABASE_BOOTSTRAP_URL on every boot. Declaring them twice is how the two copies drift.
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

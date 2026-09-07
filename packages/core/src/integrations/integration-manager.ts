@@ -5,10 +5,12 @@ import type { IIntegrationProviderDefinition } from '@core/integrations/interfac
 import type { IEmailDriver } from '@fromcode119/email';
 import { MediaManager } from '@fromcode119/media';
 import { CacheManager } from '@fromcode119/cache';
+import type { QueueManager } from '@fromcode119/queue';
 import { Logger } from '@core/logging';
 import { EmailIntegrationDefinition } from '@core/integrations/providers/email-integration-definition';
 import { StorageIntegrationDefinition } from '@core/integrations/providers/storage-provider';
 import { CacheIntegrationDefinition } from '@core/integrations/providers/cache-provider';
+import { QueueIntegrationDefinition } from '@core/integrations/providers/queue-provider';
 import { McpIntegrationDefinition } from '@core/integrations/providers/mcp-integration-definition';
 import { SsoIntegrationDefinition } from '@core/integrations/providers/sso-provider';
 import { CoreServices } from '@core/services';
@@ -43,6 +45,7 @@ export class IntegrationManager {
   private platformEmail!: IEmailDriver;
   public storage!: MediaManager;
   public cache!: CacheManager;
+  public queue!: QueueManager;
 
   constructor(db: any, projectRoot: string, logger?: Logger) {
     this.db = db;
@@ -62,6 +65,7 @@ export class IntegrationManager {
     this.registry.registerType(EmailIntegrationDefinition.definition);
     this.registry.registerType(StorageIntegrationDefinition.definition);
     this.registry.registerType(CacheIntegrationDefinition.definition);
+    this.registry.registerType(QueueIntegrationDefinition.definition);
     this.registry.registerType(SsoIntegrationDefinition.definition);
     this.registry.registerType(McpIntegrationDefinition.definition);
     // AI integration is now registered by the AI core extension
@@ -114,6 +118,7 @@ export class IntegrationManager {
     if (normalized === 'email') return this.email as any;
     if (normalized === 'storage') return this.storage as any;
     if (normalized === 'cache') return this.cache as any;
+    if (normalized === 'queue') return this.queue as any;
 
     const instanceKey = this.instanceKey(normalized);
     if (this.instances.has(instanceKey)) {
@@ -162,6 +167,7 @@ export class IntegrationManager {
     await this.refreshEmail(preferStored);
     await this.refreshStorage(preferStored);
     await this.refreshCache(preferStored);
+    await this.refreshQueue(preferStored);
     
     // Clear dynamic instances so they are re-instantiated on next get()
     this.instances.clear();
@@ -200,6 +206,15 @@ export class IntegrationManager {
   async refreshStorage(preferStored: boolean = true) {
     const { storage, resolved } = await this.coreRefresh.refreshStorage(preferStored);
     this.storage = storage;
+    return resolved;
+  }
+
+  /**
+   * Refresh queue integration
+   */
+  async refreshQueue(preferStored: boolean = true) {
+    const { queue, resolved } = await this.coreRefresh.refreshQueue(preferStored);
+    this.queue = queue;
     return resolved;
   }
 

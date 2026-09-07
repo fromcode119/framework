@@ -1,7 +1,8 @@
 import { randomUUID } from 'crypto';
+import { lookup } from 'dns/promises';
 import { McpSchema } from '@fromcode119/mcp';
 import { IMcpToolDefinition } from '@fromcode119/mcp';
-import { CoercionUtils } from '@fromcode119/core';
+import { CoercionUtils, NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { IMcpToolDependencies } from '@api/controllers/mcp/interfaces/mcp-tool-dependencies.interface';
 
 /**
@@ -14,6 +15,8 @@ import { IMcpToolDependencies } from '@api/controllers/mcp/interfaces/mcp-tool-d
  * file is left to age out.
  */
 export class McpMediaTools {
+  private static readonly MAX_REDIRECTS = 3;
+
   static all(deps: IMcpToolDependencies): IMcpToolDefinition[] {
     return [
       {
@@ -29,7 +32,7 @@ export class McpMediaTools {
         handler: async (input: any = {}) => {
           const limit = Math.min(200, Math.max(1, CoercionUtils.toNumber(input.limit) || 50));
           const rows = await deps.db.find('media', { limit, orderBy: { id: 'desc' } });
-          const needle = CoercionUtils.toString(input.filename).trim().toLowerCase();
+          const needle = CoercionUtils.toKey(input.filename);
           const items = (Array.isArray(rows) ? rows : [])
             .filter((row: any) => !needle || String(row?.filename || '').toLowerCase().includes(needle))
             .map((row: any) => ({
@@ -85,7 +88,7 @@ export class McpMediaTools {
 
   /** Fetch or decode the bytes, store them, generate the webp variant, and write the media row. */
   private static async store(deps: IMcpToolDependencies, input: any, existing: any): Promise<any> {
-    const bytes = await McpMediaTools.readBytes(input);
+    const bytes = await McpMediaTools.readBytes(deps, input);
     const filename = McpMediaTools.uniqueFilename(CoercionUtils.toString(input.filename));
 
     const stored = await deps.mediaManager.upload(bytes, filename);
@@ -123,15 +126,83 @@ export class McpMediaTools {
     return { id: inserted?.id ?? inserted?.[0]?.id ?? null, replaced: false, ...record, ...urls };
   }
 
-  private static async readBytes(input: any): Promise<Buffer> {
+  private static async readBytes(deps: IMcpToolDependencies, input: any): Promise<Buffer> {
+    const maxBytes = McpMediaTools.maxBytes(deps);
+    const maxMb = McpMediaTools.maxMegabytes(deps);
     const base64 = CoercionUtils.toString(input.base64);
-    if (base64) return Buffer.from(base64.replace(/^data:[^;]+;base64,/, ''), 'base64');
+    if (base64) {
+      const decoded = Buffer.from(base64.replace(/^data:[^;]+;base64,/, ''), 'base64');
+      if (decoded.length > maxBytes) throw new Error(`Media input exceeds the configured ${maxMb} MB limit.`);
+      return decoded;
+    }
 
     const sourceUrl = CoercionUtils.toString(input.sourceUrl);
     if (!sourceUrl) throw new Error('Supply either base64 or sourceUrl.');
-    const response = await fetch(sourceUrl);
-    if (!response.ok) throw new Error(`Could not fetch ${sourceUrl} (${response.status}).`);
-    return Buffer.from(await response.arrayBuffer());
+    return McpMediaTools.fetchRemoteBytes(deps, sourceUrl);
+  }
+
+  private static async fetchRemoteBytes(deps: IMcpToolDependencies, sourceUrl: string): Promise<Buffer> {
+    const maxBytes = McpMediaTools.maxBytes(deps);
+    const maxMb = McpMediaTools.maxMegabytes(deps);
+    let current = new URL(sourceUrl);
+    for (let redirect = 0; redirect <= McpMediaTools.MAX_REDIRECTS; redirect += 1) {
+      await McpMediaTools.assertPublicUrl(current);
+      const response = await fetch(current, {
+        redirect: 'manual',
+        signal: AbortSignal.timeout(15_000),
+      });
+
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location');
+        if (!location || redirect === McpMediaTools.MAX_REDIRECTS) throw new Error('Remote media redirect limit exceeded.');
+        current = new URL(location, current);
+        continue;
+      }
+      if (!response.ok) throw new Error(`Could not fetch remote media (${response.status}).`);
+
+      const declaredSize = Number(response.headers.get('content-length') || 0);
+      if (declaredSize > maxBytes) throw new Error(`Remote media exceeds the configured ${maxMb} MB limit.`);
+      if (!response.body) return Buffer.alloc(0);
+
+      const reader = response.body.getReader();
+      const chunks: Buffer[] = [];
+      let total = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        total += value.byteLength;
+        if (total > maxBytes) {
+          await reader.cancel();
+          throw new Error(`Remote media exceeds the configured ${maxMb} MB limit.`);
+        }
+        chunks.push(Buffer.from(value));
+      }
+      return Buffer.concat(chunks, total);
+    }
+    throw new Error('Remote media redirect limit exceeded.');
+  }
+
+  private static async assertPublicUrl(url: URL): Promise<void> {
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') throw new Error('Remote media URL must use HTTP or HTTPS.');
+    if (url.username || url.password) throw new Error('Remote media URL must not contain credentials.');
+
+    const hostname = url.hostname.replace(/^\[|\]$/g, '');
+    const addresses = await lookup(hostname, { all: true, verbatim: true });
+    if (addresses.length === 0 || addresses.some((entry) => !NetworkAddressUtils.isPublic(entry.address))) {
+      throw new Error('Remote media URL resolves to a non-public network address.');
+    }
+  }
+
+  private static maxMegabytes(deps: IMcpToolDependencies): number {
+    const configured = Number(deps.settingsCache.get(SystemConstants.META_KEY.MCP_REMOTE_MEDIA_MAX_MB));
+    if (!Number.isFinite(configured) || configured <= 0) {
+      throw new Error('MCP remote media limit is missing or invalid in Settings → Integrations → MCP.');
+    }
+    return configured;
+  }
+
+  private static maxBytes(deps: IMcpToolDependencies): number {
+    return Math.floor(McpMediaTools.maxMegabytes(deps) * 1024 * 1024);
   }
 
   /**

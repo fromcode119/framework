@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import { createReadStream } from 'fs';
 import path from 'path';
 import type { Readable } from 'stream';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { IStorageDriver } from '@media/index';
 import { MediaStorageConstants } from '@media/constants/media-storage.constants';
 
@@ -66,7 +66,7 @@ export class LocalStorageDriver implements IStorageDriver {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
         
-    const id = uuidv4();
+    const id = randomUUID();
     const newFilename = `${slugifiedBasename || 'file'}-${id}${ext.toLowerCase()}`;
     const fullPath = path.join(this.uploadDir, newFilename);
 

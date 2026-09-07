@@ -60,20 +60,20 @@ export class TenantRecord {
    * are the real snake_case COLUMN names. One canonical name, never a camel/snake dual read.
    */
   static from(row: Record<string, unknown>): TenantRecord {
-    const id = CoercionUtils.toString(row?.id).trim();
+    const id = CoercionUtils.toString(row?.id);
     if (!id) {
       throw new Error('TenantRecord.from: row has no id; refusing to build an unidentified tenant.');
     }
     return new TenantRecord({
       id,
-      slug: CoercionUtils.toString(row?.slug).trim(),
-      primaryHost: CoercionUtils.toString(row?.primary_host).trim(),
+      slug: CoercionUtils.toString(row?.slug),
+      primaryHost: CoercionUtils.toString(row?.primary_host),
       hostAliases: TenantRecord.parseAliases(row?.host_aliases),
-      state: CoercionUtils.toString(row?.state).trim(),
+      state: CoercionUtils.toString(row?.state),
       // Migration 027 stamps every row; a blank here can only be a row read before it ran, and
       // `site` is that migration's declared default — mirrored, not invented.
       kind: TenantKind.parse(row?.kind) ?? TenantKind.SITE,
-      appearance: CoercionUtils.toString(row?.appearance).trim(),
+      appearance: CoercionUtils.toString(row?.appearance),
     });
   }
 
@@ -83,7 +83,7 @@ export class TenantRecord {
    */
   private static parseAliases(value: unknown): string[] {
     if (Array.isArray(value)) return value.map((entry) => CoercionUtils.toString(entry));
-    const raw = CoercionUtils.toString(value).trim();
+    const raw = CoercionUtils.toString(value);
     if (!raw) return [];
     try {
       const parsed: unknown = JSON.parse(raw);

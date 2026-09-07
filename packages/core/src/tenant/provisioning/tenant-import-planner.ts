@@ -112,7 +112,7 @@ export class TenantImportPlanner {
     let existing = 0;
     for await (const user of reader.users()) {
       total += 1;
-      const email = CoercionUtils.toString(user.email).trim().toLowerCase();
+      const email = CoercionUtils.toKey(user.email);
       if (email && await this.db.findOne(SystemConstants.TABLE.USERS, { email })) existing += 1;
     }
     return { total, existing, toCreate: total - existing };

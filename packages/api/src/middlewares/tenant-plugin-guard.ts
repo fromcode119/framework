@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { PluginTenantAccess, TenantMode } from '@fromcode119/core';
 import { BaseMiddleware } from '@api/middlewares/base-middleware';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
+import { CoercionUtils } from '@fromcode119/core';
 
 /**
  * A tenant configures the plugins it RUNS, and no others.
@@ -25,7 +26,7 @@ export class TenantPluginGuard extends BaseMiddleware {
       return;
     }
 
-    const slug = String(req.params?.slug ?? '').trim();
+    const slug = CoercionUtils.toString(req.params?.slug);
     if (PluginTenantAccess.isEnabledForCurrentTenant(slug) || await this.access.isPlatformAdmin(req)) {
       next();
       return;

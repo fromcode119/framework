@@ -110,7 +110,7 @@ export class PluginController extends BaseController {
    * request, so invalidating the cache is the whole deployment step.
    */
   async toggle(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const { enabled, force, recursive } = req.body;
 
     // `scope: 'platform'` is the operator-wide axis — is this plugin loadable AT ALL. It is a
@@ -239,14 +239,14 @@ export class PluginController extends BaseController {
   }
 
   async getConfig(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
     if (!plugin) return res.status(404).json({ error: 'Plugin not found' });
     res.json(plugin.manifest.config || {});
   }
 
   async saveConfig(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     try {
       await this.manager.savePluginConfig(slug, req.body);
       res.json({ success: true });
@@ -256,7 +256,7 @@ export class PluginController extends BaseController {
   }
 
   async saveSandboxConfig(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     try {
       await (this.manager as any).saveSandboxConfig(slug, req.body);
       res.json({ success: true });
@@ -266,7 +266,7 @@ export class PluginController extends BaseController {
   }
 
   async delete(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     try {
       await this.manager.delete(slug);
       res.json({ success: true });
@@ -295,8 +295,8 @@ export class PluginController extends BaseController {
   }
 
   async install(req: Request, res: Response) {
-    const { slug } = req.params;
-    const requestedVersion = String(req.query.version || '').trim();
+    const slug = CoercionUtils.toString(req.params.slug);
+    const requestedVersion = CoercionUtils.toString(req.query?.version);
     this.logger.info(`Installation request received for plugin: ${slug}`);
 
     try {
@@ -345,7 +345,7 @@ export class PluginController extends BaseController {
   }
 
   async installOperation(req: Request, res: Response) {
-    const operation = this.operations.get(String(req.params.operationId || ''));
+    const operation = this.operations.get(CoercionUtils.toString(req.params.operationId));
     if (!operation) {
       return res.status(404).json({ error: 'Plugin install operation not found.' });
     }
@@ -363,7 +363,7 @@ export class PluginController extends BaseController {
    * system controller does. Framework internals use the raw manager, so the column is snake_case here.
    */
   async logs(req: Request, res: Response) {
-    const slug = CoercionUtils.toString(req.params?.slug).trim();
+    const slug = CoercionUtils.toString(req.params?.slug);
     if (!slug) {
       return res.status(400).json({ error: 'Plugin slug is required.' });
     }

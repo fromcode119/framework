@@ -38,6 +38,17 @@ export class SchedulerService {
   }
 
   /**
+   * Hands the scheduler the queue once it exists.
+   *
+   * Which queue driver runs is the operator's choice, resolved asynchronously from the `queue`
+   * integration, so it is not available when this service is constructed. Until it arrives the
+   * scheduler runs task handlers inline, which is the same behaviour as having no queue configured.
+   */
+  useQueue(queueManager: IQueueManager): void {
+    this.queueManager = queueManager;
+  }
+
+  /**
    * Register a task handler.
    * This is called by plugins during their initialization.
    */

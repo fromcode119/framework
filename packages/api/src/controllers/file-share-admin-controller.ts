@@ -42,11 +42,11 @@ export class FileShareAdminController extends BaseController {
   }
 
   async createShare(req: any, res: Response): Promise<Response> {
-    const title = CoercionUtils.toString(req.body?.title).trim();
-    const message = CoercionUtils.toString(req.body?.message).trim();
+    const title = CoercionUtils.toString(req.body?.title);
+    const message = CoercionUtils.toString(req.body?.message);
     const mediaIds = (Array.isArray(req.body?.mediaIds) ? req.body.mediaIds : []).map(Number).filter(Number.isFinite);
     const recipients = (Array.isArray(req.body?.recipients) ? req.body.recipients : [])
-      .map((value: unknown) => CoercionUtils.toString(value).trim().toLowerCase())
+      .map((value: unknown) => CoercionUtils.toKey(value))
       .filter((value: string) => value.includes('@'));
 
     if (!title) return res.status(400).json({ error: 'A title is required.' });
@@ -178,8 +178,8 @@ export class FileShareAdminController extends BaseController {
   /** The same terms applied to every link in a share, plus its title and message. */
   async updateShare(req: any, res: Response): Promise<Response> {
     const shareId = Number(req.params.shareId);
-    const title = req.body?.title === undefined ? undefined : CoercionUtils.toString(req.body.title).trim();
-    const message = req.body?.message === undefined ? undefined : CoercionUtils.toString(req.body.message).trim();
+    const title = req.body?.title === undefined ? undefined : CoercionUtils.toString(req.body.title);
+    const message = req.body?.message === undefined ? undefined : CoercionUtils.toString(req.body.message);
     if (title !== undefined && !title) return res.status(400).json({ error: 'A title is required.' });
 
     await this.grants.updateShare(shareId, { title, message });
@@ -208,7 +208,7 @@ export class FileShareAdminController extends BaseController {
 
     const existing = new Set((await this.grants.listGrantsForShare(shareId)).map((grant) => grant.email));
     const recipients = (Array.isArray(req.body?.recipients) ? req.body.recipients : [])
-      .map((value: unknown) => CoercionUtils.toString(value).trim().toLowerCase())
+      .map((value: unknown) => CoercionUtils.toKey(value))
       .filter((value: string) => value.includes('@') && !existing.has(value));
     if (!recipients.length) return res.status(400).json({ error: 'Add at least one new recipient.' });
 

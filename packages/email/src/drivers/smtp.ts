@@ -1,9 +1,9 @@
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter } from 'nodemailer';
 import type { IEmailDriver } from '@email/interfaces/email-driver.interface';
 import type { IEmailOptions } from '@email/interfaces/email-options.interface';
 
 export class SMTPDriver implements IEmailDriver {
-  private transporter: nodemailer.Transporter;
+  private transporter: Transporter;
 
   constructor(config: {
     host: string;

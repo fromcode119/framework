@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import jwt from 'jsonwebtoken';
+import { describe, expect, it, vi } from 'vitest';
 import { AuthManager } from '@fromcode119/auth';
 
 /**
@@ -40,5 +41,16 @@ describe('AuthManager tenant claim', () => {
     const auth = new AuthManager('test-secret-123');
     const token = await auth.generateToken(user, { tenantId: 't1' });
     await expect(auth.verifyToken(token)).resolves.toBeTruthy();
+  });
+
+  it('refuses a non-API token without a session id when session validation is enabled', async () => {
+    const secret = 'test-secret-123';
+    const auth = new AuthManager(secret);
+    const validator = vi.fn().mockResolvedValue(true);
+    auth.setSessionValidator(validator);
+    const token = jwt.sign(user, secret, { algorithm: 'HS256' });
+
+    await expect(auth.verifyToken(token)).rejects.toThrow(/session identifier/i);
+    expect(validator).not.toHaveBeenCalled();
   });
 });

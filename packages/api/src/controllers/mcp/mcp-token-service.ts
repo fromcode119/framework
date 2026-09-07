@@ -24,8 +24,8 @@ export class McpTokenService {
     const tokenId = randomUUID();
     const hash = McpTokenStore.hash(rawKey);
     const createdAt = new Date().toISOString();
-    const cleanScopes = scopes.map((s) => CoercionUtils.toString(s).trim()).filter(Boolean);
-    const cleanLabel = CoercionUtils.toString(label).trim();
+    const cleanScopes = scopes.map((s) => CoercionUtils.toString(s)).filter(Boolean);
+    const cleanLabel = CoercionUtils.toString(label);
 
     await this.store.writePlatformRow(hash, { userId, tokenId, label: cleanLabel, scopes: cleanScopes, createdAt, expiresAt, tenantId });
 
@@ -47,7 +47,7 @@ export class McpTokenService {
   }
 
   async revoke(tokenId: string, view: McpTokenView): Promise<boolean> {
-    const target = CoercionUtils.toString(tokenId).trim();
+    const target = CoercionUtils.toString(tokenId);
     if (!target) return false;
 
     const index = await this.store.readPlatformIndex();
@@ -72,7 +72,7 @@ export class McpTokenService {
   }
 
   private static tenantOf(entry: any): string | null {
-    const tenant = CoercionUtils.toString(entry?.tenantId).trim();
+    const tenant = CoercionUtils.toString(entry?.tenantId);
     return tenant || null;
   }
 

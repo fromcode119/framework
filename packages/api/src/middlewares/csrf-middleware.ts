@@ -50,12 +50,13 @@ export class CSRFMiddleware extends BaseMiddleware {
 
     // 3. Skip for non-cookie authentication (Authorization header or API Key)
     // These are safe from CSRF as browsers never auto-attach them.
-    // Also skip for programmatic requests containing custom framework headers,
-    // as browsers require CORS preflight for these, making them safe from automatic form-based CSRF.
+    // An arbitrary custom header is NOT authentication. A browser on another allowlisted tenant
+    // origin can pass CORS preflight, attach shared-domain cookies, and choose that header itself.
+    // Cookie-authenticated clients must therefore present the CSRF token even when they identify as
+    // admin-ui/frontend-ui or use X-Requested-With.
     const clientHeader = req.get('X-Framework-Client');
-    const xRequestedWith = req.get('X-Requested-With');
-    
-    if (req.headers.authorization || req.headers['x-api-key'] || clientHeader || xRequestedWith) {
+
+    if (req.headers.authorization || req.headers['x-api-key']) {
         return next();
     }
 

@@ -2,10 +2,43 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { MigrationManager, Seeder } from '@fromcode119/core';
+import { MigrationManager, Seeder, DatabaseRoleBootstrapService } from '@fromcode119/core';
+import { DatabaseFactory } from '@fromcode119/database';
 import { CliUtils } from '@cli/utils';
 
 export class DatabaseCommands {
+  /**
+   * `fromcode db bootstrap-roles` — creates the logins the app runs as, from a privileged connection.
+   *
+   * Runs from the container entrypoint BEFORE the application starts, so the privileged URL lives only
+   * for this command; the entrypoint unsets it before exec'ing the app. Absent that variable this is a
+   * no-op, which is the correct behaviour for a managed database where the operator owns role creation.
+   */
+  private static registerBootstrapRoles(db: Command): void {
+    db
+      .command('bootstrap-roles')
+      .description('Create or realign the database logins named by DATABASE_URL / DATABASE_MIGRATION_URL')
+      .action(async () => {
+        const url = process.env[DatabaseRoleBootstrapService.BOOTSTRAP_URL_ENV];
+        if (!url) {
+          console.log(chalk.gray(`${DatabaseRoleBootstrapService.BOOTSTRAP_URL_ENV} is not set; leaving database roles to the operator.`));
+          process.exit(0);
+        }
+
+        const database = DatabaseFactory.create(url);
+        try {
+          await database.connect();
+          await DatabaseRoleBootstrapService.run(database as any);
+          console.log(chalk.green('✔ Database roles are in place.'));
+          process.exit(0);
+        } catch (error: any) {
+          console.error(chalk.red('Could not provision database roles:'), error.message);
+          process.exit(1);
+        }
+        // No teardown: the managers expose none, and this command exits, which closes the pool with it.
+      });
+  }
+
   static registerDatabaseCommands(program: Command) {
     const db = program.command('db').description('Manage database');
 
@@ -27,6 +60,8 @@ export class DatabaseCommands {
           process.exit(1);
         }
       });
+
+    DatabaseCommands.registerBootstrapRoles(db);
 
     db
       .command('rollback')

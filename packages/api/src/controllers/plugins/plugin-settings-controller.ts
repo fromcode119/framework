@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PluginManager, Logger } from '@fromcode119/core';
 import { PluginSettingsSupport } from '@api/controllers/plugins/plugin-settings-support';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class PluginSettingsController {
   private logger = new Logger({ namespace: 'plugin-settings-controller' });
@@ -11,7 +12,7 @@ export class PluginSettingsController {
   }
 
   async getSettings(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
     if (!plugin) {
       return res.status(404).json({ error: 'Plugin not found' });
@@ -32,7 +33,7 @@ export class PluginSettingsController {
   }
 
   async updateSettings(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const newSettings = req.body;
 
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
@@ -82,7 +83,7 @@ export class PluginSettingsController {
   }
 
   async getSchema(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const schema = await this.support.getEffectiveSchema(slug);
 
     if (!schema) {
@@ -101,7 +102,7 @@ export class PluginSettingsController {
   }
 
   async resetSettings(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const schema = await this.support.getEffectiveSchema(slug);
 
     if (!schema) {
@@ -122,7 +123,7 @@ export class PluginSettingsController {
   }
 
   async exportSettings(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
 
     if (!plugin) {
@@ -142,7 +143,7 @@ export class PluginSettingsController {
   }
 
   async importSettings(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const importedSettings = req.body;
 
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);

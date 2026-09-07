@@ -6,6 +6,7 @@ import { SystemTwoFactorService } from '@api/controllers/system/system-2fa-servi
 import { AuthProfileService } from '@api/services/auth-profile-service';
 import { UserManagementService } from '@api/services/user-management-service';
 import { PeopleSelfService } from '@api/services/people-self-service';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class AuthControllerSelfService extends AuthControllerSecurity {
   async getMyPerson(req: any, res: Response) {
@@ -127,7 +128,7 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
   async verifyMyTwoFactor(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const token = String(req.body?.token || '').trim();
+    const token = CoercionUtils.toString(req.body?.token);
     if (!token) return res.status(400).json({ error: 'Token is required' });
     try {
       return res.json(await this.getTwoFactorService().verifyForUser(userId, token));
@@ -153,7 +154,7 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
       // Turning 2FA OFF must prove possession: a current authenticator code or an unused
       // recovery code. A bare session is not enough — that let anyone with the unlocked
       // device silently strip the second factor.
-      await this.getTwoFactorService().assertActiveToken(userId, String(req.body?.token || ''));
+      await this.getTwoFactorService().assertActiveToken(userId, CoercionUtils.toString(req.body?.token));
       return res.json(await this.getTwoFactorService().disableForUser(userId));
     } catch (error: any) {
       return res.status(this.resolveTwoFactorStatus(error)).json({ error: error?.message || 'Failed to disable 2FA' });

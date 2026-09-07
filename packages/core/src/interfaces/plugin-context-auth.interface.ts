@@ -8,6 +8,8 @@ import type { IPluginRequestHandler } from '@core/interfaces/plugin-request-hand
  */
 export interface IPluginContextAuth {
 guard(roles?: string[]): IPluginRequestHandler;
+/** Require an admin who may operate the shared platform, not merely one tenant. */
+platformGuard(): IPluginRequestHandler;
 requirePermission?(permission: string | string[]): IPluginRequestHandler;
 hashPassword(password: string): Promise<string> | string;
 comparePassword(password: string, hash: string): Promise<boolean> | boolean;

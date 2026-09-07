@@ -4,6 +4,7 @@ import { Schema } from '@fromcode119/database';
 import { QueryHelper } from '@api/services/query-helper';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class RestReadController {
   constructor(private readonly runtime: RestControllerRuntime) {}
@@ -124,7 +125,7 @@ export class RestReadController {
       const accessConstraints = await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
       const table = QueryHelper.getVirtualTable(collection);
       const localeContext = await this.runtime.localization.getLocaleContext(req);
-      const rawLocalized = String(req.query?.locale_mode || '').toLowerCase() === 'raw';
+      const rawLocalized = CoercionUtils.toKey(req.query?.locale_mode) === 'raw';
       const id = this.runtime.parseRecordIdentifier(collection, req.params.id);
       const primaryKey = collection.primaryKey || 'id';
       const result = await this.runtime.db.findOne(table, { [primaryKey]: id });
@@ -194,7 +195,7 @@ export class RestReadController {
       if (SystemMetaCollectionGuard.guards(collection)) {
         return res.json([]);
       }
-      const field = req.params.field;
+      const field = CoercionUtils.toString(req.params.field);
       const query = (req.query as any).q;
       res.json(await this.runtime.suggestionService.getSuggestions(collection, field, query));
     } catch (err: any) {
@@ -213,7 +214,7 @@ export class RestReadController {
       let docs = await this.runtime.db.find(table, { where: systemMetaClause || undefined, limit: 10000 });
       // When the admin list passes `ids` (rows the user selected), export ONLY those records;
       // with no `ids`, export the whole collection.
-      const idsParam = String(req.query.ids || '').trim();
+      const idsParam = CoercionUtils.toString(req.query?.ids);
       if (idsParam) {
         const primaryKey = collection.primaryKey || 'id';
         const selected = new Set(idsParam.split(',').map((value) => value.trim()).filter(Boolean));

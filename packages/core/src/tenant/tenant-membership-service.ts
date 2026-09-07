@@ -25,7 +25,7 @@ export class TenantMembershipService {
    * the operator when it is working inside a customer it does not belong to.
    */
   async listForUser(userId: string): Promise<TenantAccess[]> {
-    const id = CoercionUtils.toString(userId).trim();
+    const id = CoercionUtils.toString(userId);
     if (!id) return [];
 
     const memberTenantIds = await this.activeMembershipTenantIds(id);
@@ -67,8 +67,8 @@ export class TenantMembershipService {
    * effect immediately instead of when the token happens to expire.
    */
   async hasAccess(userId: string, tenantId: string): Promise<boolean> {
-    const id = CoercionUtils.toString(userId).trim();
-    const tenant = CoercionUtils.toString(tenantId).trim();
+    const id = CoercionUtils.toString(userId);
+    const tenant = CoercionUtils.toString(tenantId);
     if (!id || !tenant) return false;
 
     if (await this.isPlatformAdmin(id)) return true;
@@ -115,7 +115,7 @@ export class TenantMembershipService {
    * action and the controller has to be able to ask.
    */
   async isPlatformAdminAccount(userId: string): Promise<boolean> {
-    const id = CoercionUtils.toString(userId).trim();
+    const id = CoercionUtils.toString(userId);
     if (!id) return false;
     return this.isPlatformAdmin(id);
   }

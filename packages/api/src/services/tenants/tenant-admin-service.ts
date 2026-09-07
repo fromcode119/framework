@@ -61,7 +61,7 @@ export class TenantAdminService {
   async create(input: Record<string, unknown>, actor: Record<string, unknown>): Promise<TenantSummary> {
     // A workspace may start from a preset an installed appearance declares (its plugins, locked to that
     // appearance); anything passed explicitly wins over the preset. Validated BEFORE the row exists.
-    const presetId = CoercionUtils.toString(input.preset).trim();
+    const presetId = CoercionUtils.toString(input.preset);
     const preset = presetId ? TenantKindPresets.find(this.presets(), presetId) : undefined;
     if (presetId && !preset) throw new Error(`Unknown workspace preset "${presetId}".`);
     const identity = TenantIdentity.from({ ...input, appearance: input.appearance ?? preset?.appearance });
@@ -69,14 +69,14 @@ export class TenantAdminService {
     const requested = TenantAdminService.slugs(input.plugins);
     const plugins = requested.length ? requested : [...(preset?.plugins ?? [])];
     this.assertPluginsInstalled(plugins);
-    const theme = CoercionUtils.toString(input.theme).trim();
+    const theme = CoercionUtils.toString(input.theme);
     if (identity.kind.isWorkspace && theme) throw new Error('A workspace has no storefront, so it takes no theme.');
 
     const tenant = await this.registry.create(identity);
     const pluginState = new PluginTenantStateService(this.db);
     for (const slug of plugins) await pluginState.enable(tenant.id, slug);
     if (theme) await new TenantThemeStateService(this.db).activate(tenant.id, theme);
-    const adminEmail = CoercionUtils.toString(input.adminEmail).trim().toLowerCase();
+    const adminEmail = CoercionUtils.toKey(input.adminEmail);
     if (adminEmail) await this.addMember(tenant.id, adminEmail, ['admin']);
     // Pages are a storefront's; a workspace's domain serves the console.
     if (!tenant.isWorkspace) await this.materializePages(tenant.id);
@@ -146,7 +146,7 @@ export class TenantAdminService {
 
   async update(id: string, patch: Record<string, unknown>, actor: Record<string, unknown>): Promise<TenantSummary> {
     const current = await this.requireTenant(id);
-    if (patch.appearance !== undefined && current.isWorkspace) this.assertAppearanceInstalled(CoercionUtils.toString(patch.appearance).trim().toLowerCase());
+    if (patch.appearance !== undefined && current.isWorkspace) this.assertAppearanceInstalled(CoercionUtils.toKey(patch.appearance));
     const tenant = await this.registry.update(id, patch);
     await this.record('tenant.update', tenant.slug, actor, { id: tenant.id, patch });
     await this.gateway.notify();
@@ -174,7 +174,7 @@ export class TenantAdminService {
   /** Export first, ALWAYS; then erase. The typed slug is the operator's confirmation. */
   async deleteTenant(id: string, confirmSlug: string, actor: Record<string, unknown>): Promise<{ archive: string; deleted: Record<string, number>; files: number }> {
     const tenant = await this.requireTenant(id);
-    if (CoercionUtils.toString(confirmSlug).trim() !== tenant.slug) {
+    if (CoercionUtils.toString(confirmSlug) !== tenant.slug) {
       throw new Error(`Type the site's slug ("${tenant.slug}") to confirm deletion.`);
     }
     const exported = await this.writeArchive(tenant);
@@ -309,7 +309,7 @@ export class TenantAdminService {
   }
 
   private static slugs(value: unknown): string[] {
-    return Array.isArray(value) ? [...new Set(value.map((entry) => CoercionUtils.toString(entry).trim()).filter(Boolean))] : [];
+    return Array.isArray(value) ? [...new Set(value.map((entry) => CoercionUtils.toString(entry)).filter(Boolean))] : [];
   }
 
   private async record(action: string, resource: string, actor: Record<string, unknown>, metadata: Record<string, unknown>): Promise<void> {

@@ -32,7 +32,7 @@ export class TenantImportFiles {
   /** Rewrites `path` / `optimized_path` of a media row whose file was renamed. */
   rewriteMediaRow(values: Record<string, unknown>): void {
     for (const key of ['path', 'optimized_path']) {
-      const raw = CoercionUtils.toString(values[key]).trim();
+      const raw = CoercionUtils.toString(values[key]);
       if (!raw) continue;
       const name = path.posix.basename(raw);
       const renamed = this.renamed.get(name);

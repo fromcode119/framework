@@ -22,9 +22,9 @@ export class ContentRenderingUtils {
     const slugs = Array.isArray(layoutComponent.handlesOwnContentSlugs)
       ? layoutComponent.handlesOwnContentSlugs
       : [];
-    const normalizedSlug = CoercionUtils.toString(content?.slug).trim().toLowerCase();
+    const normalizedSlug = CoercionUtils.toKey(content?.slug);
 
-    return Boolean(normalizedSlug && slugs.map((entry: any) => CoercionUtils.toString(entry).trim().toLowerCase()).includes(normalizedSlug));
+    return Boolean(normalizedSlug && slugs.map((entry: any) => CoercionUtils.toKey(entry)).includes(normalizedSlug));
   }
 
   /**

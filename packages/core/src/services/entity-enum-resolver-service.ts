@@ -3,7 +3,7 @@ import type { IEntityEnumOptions } from '@core/interfaces/entity-enum-options.in
 
 export class EntityEnumResolverService {
   static resolve(value: unknown, options: IEntityEnumOptions): string {
-    const normalized = CoercionUtils.toString(value).trim().toLowerCase();
+    const normalized = CoercionUtils.toKey(value);
     for (const [target, aliases] of Object.entries(options.values)) {
       if (normalized === target.toLowerCase()) {
         return target;

@@ -37,8 +37,8 @@ describe('PluginManager theme context', () => {
     manager.registeredCollections = new Map();
     // The context proxies wrap these at creation time; the theme proxy never reads them.
     manager.db = {};
-    manager.jobs = {};
-    manager.integrations = {};
+    // `jobs` is a getter onto the resolved `queue` integration, so the stub goes on integrations.
+    manager.integrations = { queue: {} };
     manager.auth = null;
     manager.hooks = { on: () => {}, emit: () => {} };
     return manager;

@@ -1,3 +1,5 @@
+import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
+import type { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 
@@ -40,6 +42,30 @@ export interface IDatabaseManager {
   withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T>;
   /** Run `fn` as a platform admin: no tenant, allowed to write tenant-less platform rows. Dialects without RLS run `fn` as is. */
   withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T>;
+
+  /**
+   * Runs `fn` once, exclusively, across every process talking to this database, inside one transaction.
+   *
+   * For a check-then-write that must not race: two API replicas both seeing "no users yet" and both
+   * creating a first administrator is the case this exists for. The caller names the thing being
+   * guarded and knows nothing about how the driver achieves it — an advisory lock, an immediate write
+   * transaction, a named lock — which is what keeps dialect knowledge out of controllers and services.
+   *
+   * `fn` runs inside a transaction: returning commits, throwing rolls back.
+   */
+  withExclusiveLock<T>(name: string, fn: () => Promise<T>): Promise<T>;
+
+  /**
+   * Makes sure the logins a deployment runs as exist, with the credentials its connection strings name.
+   *
+   * Called on a privileged BOOTSTRAP connection before the application opens its own, never on the
+   * running app's connection — the whole point is that the app's role cannot create roles.
+   *
+   * Idempotent: an existing role has its password and attributes brought back into line rather than
+   * being recreated. A driver with no concept of a login answers `unsupported` instead of throwing,
+   * because a database whose boundary is file permissions is a legitimate deployment, not an error.
+   */
+  provisionRoles(plan: DatabaseRolePlan): Promise<DatabaseRoleOutcome>;
 
   /**
    * Whether this driver can actually isolate tenants. FALSE unless the driver implements a strategy,

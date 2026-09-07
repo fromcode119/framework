@@ -8,6 +8,8 @@ import { LifecycleService } from '@core/plugin/services/lifecycle-service';
 import { RuntimeService } from '@core/plugin/services/runtime-service';
 import { SecurityMonitor } from '@core/security/security-monitor';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { IntegrityService } from '@core/security/integrity-service';
+import { PluginSignatureService } from '@core/security/plugin-signature-service';
 
 export class PluginAdminRuntimeService {
   constructor(
@@ -54,8 +56,8 @@ export class PluginAdminRuntimeService {
         unsandboxedActivePlugins: active.filter((plugin) => !isSandboxed(plugin)).length,
         unsandboxedActivePluginSlugs: active.filter((plugin) => !isSandboxed(plugin)).map((plugin) => plugin.manifest.slug),
       },
-      integrityEnforced: true,
-      signatureEnforced: !!process.env.REQUIRE_SIGNATURES,
+      integrityEnforced: IntegrityService.isEnforced(),
+      signatureEnforced: PluginSignatureService.isEnforced(),
     };
   }
 

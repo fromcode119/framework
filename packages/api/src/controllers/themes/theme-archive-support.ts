@@ -7,6 +7,7 @@ import { BackupService, ThemeManager, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
 import { ArchiveUploadRequestParser } from '@api/controllers/archive-upload-request-parser';
 import { AssetCacheHeaderService } from '@api/services/asset-cache-header-service';
+import { CoercionUtils } from '@fromcode119/core';
 
 /**
  * Archive inspection/extraction, upload-request parsing, asset serving and
@@ -28,11 +29,12 @@ export class ThemeArchiveSupport {
   constructor(private manager: ThemeManager) {}
 
   serveAssetDirectory(req: Request, res: Response, directory: ThemeAssetScope) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const theme = this.manager.getThemes().find(t => t.slug === slug);
     if (!theme) return res.status(404).end();
 
-    const requestedPath = String((req.params as any)[0] || '').trim();
+    const pathSegments = req.params.assetPath;
+    const requestedPath = (Array.isArray(pathSegments) ? pathSegments.join('/') : String(pathSegments || '')).trim();
     if (!requestedPath) {
       return res.status(404).end();
     }

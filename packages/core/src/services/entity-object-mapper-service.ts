@@ -138,13 +138,13 @@ export class EntityObjectMapperService {
       return CoercionUtils.toParsedArray(value).map((entry) => CoercionUtils.toString(entry)).filter(Boolean);
     }
     if (transform === 'lowercase') {
-      return CoercionUtils.toString(value).toLowerCase();
+      return CoercionUtils.toKey(value);
     }
     if (transform === 'uppercase') {
       return CoercionUtils.toString(value).toUpperCase();
     }
     if (transform === 'trim') {
-      return CoercionUtils.toString(value).trim();
+      return CoercionUtils.toString(value);
     }
     return value;
   }

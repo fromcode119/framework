@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 import { ArchiveUploadSessionService, BaseController, ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
 import { ThemeArchiveSupport } from '@api/controllers/themes/theme-archive-support';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class ThemeController extends BaseController {
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
@@ -33,7 +34,7 @@ export class ThemeController extends BaseController {
   }
 
   async checkUpdate(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     try {
       const result = await this.manager.checkForUpdates(slug);
       res.json(result);
@@ -52,7 +53,7 @@ export class ThemeController extends BaseController {
   }
 
   async install(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const { version, url } = req.query;
     const { url: bodyUrl } = req.body;
 
@@ -162,7 +163,7 @@ export class ThemeController extends BaseController {
   }
 
   async activate(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     try {
       await this.manager.activateTheme(slug);
       res.json({ success: true });
@@ -172,7 +173,7 @@ export class ThemeController extends BaseController {
   }
 
   async disable(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     try {
       await this.manager.disableTheme(slug);
       res.json({ success: true });
@@ -182,7 +183,7 @@ export class ThemeController extends BaseController {
   }
 
   async reset(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     const runSeeds = req.body?.runSeeds !== false;
     const resetConfig = req.body?.resetConfig === true;
 
@@ -197,7 +198,7 @@ export class ThemeController extends BaseController {
 
   async getConfig(req: Request, res: Response) {
     try {
-      const { slug } = req.params;
+      const slug = CoercionUtils.toString(req.params.slug);
       const config = await this.manager.getThemeConfig(slug);
       res.json({ success: true, config });
     } catch (err: any) {
@@ -207,7 +208,7 @@ export class ThemeController extends BaseController {
 
   async saveConfig(req: Request, res: Response) {
     try {
-      const { slug } = req.params;
+      const slug = CoercionUtils.toString(req.params.slug);
       const config = req.body;
       await this.manager.saveThemeConfig(slug, config);
       res.json({ success: true, message: `Theme ${slug} configuration saved` });
@@ -217,7 +218,7 @@ export class ThemeController extends BaseController {
   }
 
   async delete(req: Request, res: Response) {
-    const { slug } = req.params;
+    const slug = CoercionUtils.toString(req.params.slug);
     try {
       await this.manager.deleteTheme(slug);
       res.json({ success: true });

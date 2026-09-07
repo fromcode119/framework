@@ -1,3 +1,4 @@
+import { AppRoleGrantService } from '@core/database/app-role-grant-service';
 import { Logger } from '@core/logging';
 import { IDatabaseManager } from '@fromcode119/database';
 import { MigrationManager } from '@core/database/migration-manager';
@@ -31,6 +32,9 @@ export class PluginManagerInitService {
     const manager = this.manager;
 
     await this.migrationManager.migrate();
+    // Immediately after migrations, on the OWNER connection: whatever DDL just ran may have created
+    // tables the runtime role has no rights to yet.
+    await AppRoleGrantService.apply(this.manager.schemaDb);
     try {
       await new PersonCatalogService(this.db as any).seedDefaults();
     } catch (error) {

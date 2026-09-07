@@ -27,6 +27,13 @@ export class ApiBootstrapService {
     createServer: (manager: PluginManager, themeManager: ThemeManager, auth: AuthManager) => any,
   ): Promise<void> {
     dotenv.config();
+    ApiBootstrapService.assertProductionSecret('JWT_SECRET', process.env.JWT_SECRET);
+    if (process.env.NODE_ENV === 'production') {
+      ApiBootstrapService.assertProductionSecret(
+        'INTEGRATION_SECRET_KEY',
+        process.env.SECRET_KEY || process.env.INTEGRATION_SECRET_KEY,
+      );
+    }
     // FIRST, before anything can resolve a core service. `CoreServices` reaches the server-only ones
     // through a registry rather than importing them (so browser bundles stay ~47 KB lighter), and
     // plugins hit the very first of them — `defaultPageContracts.register(...)` — inside
@@ -66,10 +73,7 @@ export class ApiBootstrapService {
 
     await themeManager.init();
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET is required to start the API server');
-    }
+    const jwtSecret = process.env.JWT_SECRET as string;
 
     const auth = new AuthManager(jwtSecret);
     manager.setAuth(auth);
@@ -121,5 +125,15 @@ export class ApiBootstrapService {
     const port = parseInt(process.env.PORT || '3000', 10);
     const host = process.env.HOST || '0.0.0.0';
     server.start(port, host);
+  }
+
+  private static assertProductionSecret(name: string, value: string | undefined): void {
+    if (!value) throw new Error(`${name} is required to start the API server`);
+    if (process.env.NODE_ENV !== 'production') return;
+
+    const normalized = value.trim().toLowerCase();
+    if (value.length < 32 || normalized.includes('change_me') || normalized.includes('changeme')) {
+      throw new Error(`${name} must be a non-placeholder secret of at least 32 characters in production`);
+    }
   }
 }

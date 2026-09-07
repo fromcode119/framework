@@ -8,7 +8,8 @@ import type { ICollection } from '@core/interfaces/collection.interface';
 import { PluginHostRegistry } from '@core/plugin/host/plugin-host-registry';
 
 import { HookManager } from '@core/hooks/hook-manager';
-import { QueueManager } from '@core/queue/queue-manager';
+import type { QueueManager } from '@fromcode119/queue';
+import { QueueSettingsReader } from '@core/queue/queue-settings-reader';
 import { SchemaManager } from '@core/database/schema-manager';
 import { MigrationManager } from '@core/database/migration-manager';
 import { DatabaseRoleGuard } from '@core/tenant/database-role-guard';
@@ -76,7 +77,6 @@ export class PluginManager implements IPluginManagerInterface {
    * has not separated the roles.
    */
   public schemaDb: IDatabaseManager;
-  public jobs!: QueueManager;
   public scheduler!: SchedulerService;
   public i18n!: I18nManager;
 
@@ -126,6 +126,7 @@ export class PluginManager implements IPluginManagerInterface {
   public get storage() { return this.integrations.storage; }
   public get email() { return this.integrations.email; }
   public get cache() { return this.integrations.cache; }
+  public get jobs(): QueueManager { return this.integrations.queue; }
 
   // Core Extension System
   public extensions: CoreExtensionManager;
@@ -157,8 +158,10 @@ export class PluginManager implements IPluginManagerInterface {
     this.schemaManager = new SchemaManager(this.schemaDb);
     this.migrationManager = new MigrationManager(this.schemaDb);
     this.i18n = new I18nManager(process.env.DEFAULT_LOCALE || 'en');
-    this.jobs = new QueueManager({ redisUrl: process.env.REDIS_URL });
-    this.scheduler = new SchedulerService(this.db, { queueManager: this.jobs });
+    // The queue is the operator's `queue` integration, resolved during integrations.initialize(); the
+    // scheduler is handed it there too. Constructing one from the environment here is what made the
+    // running driver invisible to the admin.
+    this.scheduler = new SchedulerService(this.db);
     this.workflow = new WorkflowService(this.db, this.hooks);
     this.webhooks = new WebhookService(this.db, this.hooks);
     // Forward every emitted hook event to the webhook dispatcher.
@@ -200,6 +203,10 @@ export class PluginManager implements IPluginManagerInterface {
   async init() {
     await this.bootstrap.init();
     await this.configureTenantMode();
+    // After migrations, so `_system_meta` exists: the queue's retry, backoff and retention policy is
+    // the operator's, not a constant. Until this runs the declared defaults apply.
+    this.scheduler.useQueue(this.jobs);
+    this.jobs.applySettings(await QueueSettingsReader.read(this.db));
   }
 
   /**
@@ -212,7 +219,10 @@ export class PluginManager implements IPluginManagerInterface {
    * it did before tenancy existed, on any driver.
    */
   private async configureTenantMode(): Promise<void> {
-    const tenants = await this.schemaDb.count(SystemConstants.TABLE.TENANTS).catch(() => 0);
+    // Failure to read the tenancy registry must stop startup. Treating a database error as
+    // "zero tenants" silently disabled RLS checks and could start a multi-tenant deployment on
+    // the privileged migration connection.
+    const tenants = await this.schemaDb.count(SystemConstants.TABLE.TENANTS);
 
     TenantMode.configure({
       tenantCount: Number(tenants || 0),

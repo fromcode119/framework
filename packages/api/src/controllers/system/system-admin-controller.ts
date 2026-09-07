@@ -12,6 +12,7 @@ export class SystemAdminController {
   SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB,
   SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS,
   SystemConstants.META_KEY.MCP_REMOTE_ENABLED,
+  SystemConstants.META_KEY.MCP_REMOTE_MEDIA_MAX_MB,
   SystemConstants.META_KEY.SITE_NAME,
   SystemConstants.META_KEY.SITE_URL,
   SystemConstants.META_KEY.FRONTEND_URL,

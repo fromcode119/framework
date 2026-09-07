@@ -127,7 +127,8 @@ export class AdminMetadataService {
   }
 
   private pluginUiAssetPath(plugin: ILoadedPlugin, asset: string): string {
-    const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug: plugin.manifest.slug }).replace('*', asset.replace(/^\/+/, ''));
+    const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug: plugin.manifest.slug })
+      .replace('*assetPath', asset.replace(/^\/+/, ''));
     const assetVersion = this.resolvePluginUiAssetVersion(plugin, asset);
     if (!assetVersion) {
       return basePath;

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerLifecycle } from '@api/controllers/auth/auth-controller-lifecycle';
 import { AuthSessionRecordService } from '@api/controllers/auth/auth-session-record-service';
+import { CoercionUtils } from '@fromcode119/core';
 
 /**
  * Session listing/revocation handlers. Extracted from AuthControllerAccount to
@@ -85,7 +86,7 @@ export class AuthControllerSession extends AuthControllerLifecycle {
   async revokeMySession(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const sessionId = String(req.params?.id || '').trim();
+    const sessionId = CoercionUtils.toString(req.params?.id);
     if (!sessionId) return res.status(400).json({ error: 'Session id is required' });
 
     try {

@@ -105,7 +105,8 @@ export class AuthManager {
         );
       }
 
-      if (this.sessionValidator && decoded.jti && !decoded.isApiKey) {
+      if (this.sessionValidator && !decoded.isApiKey) {
+        if (!decoded.jti) throw new Error('Access token has no session identifier');
         const isValid = await this.sessionValidator(decoded.jti);
         if (!isValid) throw new Error('Session revoked or expired');
       }
@@ -192,7 +193,13 @@ export class AuthManager {
       let hasExpiredToken = false;
       for (const t of tokenCandidates) {
         try {
-          const user = await this.verifyToken(t);
+          // Tenant resolution runs before authentication and publishes the tenant selected by the
+          // host / admin session / API-key gate on the request. Bind the signed session to that exact
+          // tenant here. Without this comparison a tenant-A admin token presented as a frontend Bearer
+          // token could be replayed while the request itself was scoped to tenant B; downstream role
+          // guards saw only `admin` and the database correctly served the *request* tenant.
+          const tenantId = String(req.tenantId ?? '').trim();
+          const user = await this.verifyToken(t, tenantId ? { tenantId } : {});
           if (user) {
             req.user = user;
             this.logger.debug(`Session validated for ${req.url || 'unknown'}`);

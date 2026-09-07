@@ -5,6 +5,7 @@ import type { Request, Response } from 'express';
 import { randomBytes } from 'crypto';
 import { SystemConstants, SecretService } from '@fromcode119/core';
 import { AuthControllerPolicy } from '@api/controllers/auth/auth-controller-policy';
+import { CoercionUtils } from '@fromcode119/core';
 
 /**
  * Email-verification tokens, 2FA recovery codes, and the non-password 2FA
@@ -174,8 +175,8 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
     const twoFactorMeta = await this.readMetaRow(`user:${user.id}:2fa_enabled`);
     if (twoFactorMeta?.value !== 'true') return true;
 
-    const totpToken = String(req.body?.totpToken || '').trim();
-    const recoveryCode = String(req.body?.recoveryCode || '').trim();
+    const totpToken = CoercionUtils.toString(req.body?.totpToken);
+    const recoveryCode = CoercionUtils.toString(req.body?.recoveryCode);
 
     if (!totpToken && !recoveryCode) {
       res.status(200).json({

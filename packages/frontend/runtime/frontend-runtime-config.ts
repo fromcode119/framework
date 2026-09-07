@@ -43,16 +43,16 @@ export class FrontendRuntimeConfig {
   readonly translations: Record<string, unknown>;
 
   private constructor(raw: Record<string, unknown>) {
-    this.apiUrl = CoercionUtils.toString(raw.apiUrl).trim();
-    this.locale = CoercionUtils.toString(raw.locale).trim();
+    this.apiUrl = CoercionUtils.toString(raw.apiUrl);
+    this.locale = CoercionUtils.toString(raw.locale);
     this.content = raw.content && typeof raw.content === 'object' ? (raw.content as Record<string, unknown>) : null;
-    this.layoutName = CoercionUtils.toString(raw.layoutName).trim();
+    this.layoutName = CoercionUtils.toString(raw.layoutName);
     this.ssrRendersContentSlot = CoercionUtils.toBoolean(raw.ssrRendersContentSlot) === true;
     this.pageKind = StorefrontPageKind.fromValue(CoercionUtils.toString(raw.pageKind)) ?? StorefrontPageKind.CONTENT;
     this.notFoundPath = CoercionUtils.toString(raw.notFoundPath);
     this.frontend = raw.frontend && typeof raw.frontend === 'object' ? (raw.frontend as Record<string, any>) : {};
     this.translations = raw.translations && typeof raw.translations === 'object' ? (raw.translations as Record<string, unknown>) : {};
-    this.skipPlugins = Array.isArray(raw.skipPlugins) ? raw.skipPlugins.map((slug) => CoercionUtils.toString(slug).trim()).filter(Boolean) : [];
+    this.skipPlugins = Array.isArray(raw.skipPlugins) ? raw.skipPlugins.map((slug) => CoercionUtils.toString(slug)).filter(Boolean) : [];
   }
 
   /** The config element's JSON, or null when the document carries none (nothing to hydrate). */
@@ -83,7 +83,7 @@ export class FrontendRuntimeConfig {
 
   /** The theme's declared default layout (theme.json `defaultLayout`); never guessed. */
   get declaredDefaultLayout(): string {
-    return CoercionUtils.toString(this.activeTheme?.defaultLayout).trim();
+    return CoercionUtils.toString(this.activeTheme?.defaultLayout);
   }
 
   /** The layout the server rendered with: the content's own, else the route's forced one, else the theme's default. */

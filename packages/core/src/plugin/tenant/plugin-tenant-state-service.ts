@@ -28,7 +28,7 @@ export class PluginTenantStateService {
 
   /** Slugs this tenant runs. Ordered by nothing in particular — the caller presents them. */
   async listEnabled(tenantId: string): Promise<string[]> {
-    const tenant = CoercionUtils.toString(tenantId).trim();
+    const tenant = CoercionUtils.toString(tenantId);
     if (!tenant) return [];
 
     const rows = await this.db.find(SystemConstants.TABLE.TENANT_PLUGINS, {
@@ -53,8 +53,8 @@ export class PluginTenantStateService {
    * raw SQL and has to work on every dialect the framework supports.
    */
   private async write(tenantId: string, slug: string, state: string): Promise<void> {
-    const tenant = CoercionUtils.toString(tenantId).trim();
-    const name = CoercionUtils.toString(slug).trim();
+    const tenant = CoercionUtils.toString(tenantId);
+    const name = CoercionUtils.toString(slug);
     if (!tenant || !name) {
       throw new Error('PluginTenantStateService: a tenant id and a plugin slug are both required.');
     }

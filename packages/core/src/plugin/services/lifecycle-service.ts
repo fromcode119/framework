@@ -2,7 +2,7 @@ import { TenantMode } from '@core/tenant/tenant-mode';
 import { RequestContextUtils } from '@core/context/request-context';
 import { DependencyIssueKind } from '@core/plugin/services/enums/dependency-issue-kind.enum';
 import { PluginApprovalMode } from '@core/plugin/services/enums/plugin-approval-mode.enum';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { Logger } from '@core/logging';
 import { PluginArchiveInstallerService } from '@core/plugin/services/plugin-archive-installer-service';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
@@ -202,7 +202,7 @@ export class LifecycleService {
 
     const loadedPlugin: ILoadedPlugin = {
       ...plugin,
-      instanceId: uuidv4(),
+      instanceId: randomUUID(),
       state: PluginState.INACTIVE,
       path: pluginPath,
       approvedCapabilities: saved?.approvedCapabilities || [],

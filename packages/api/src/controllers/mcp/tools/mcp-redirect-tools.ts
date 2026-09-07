@@ -39,7 +39,7 @@ export class McpRedirectTools {
           notes: McpSchema.string({ description: 'Optional operator note stored with the rule.' }),
         }, ['fromPath', 'toPath']),
         handler: async (input: any = {}) => {
-          const type = CoercionUtils.toString(input.type).trim();
+          const type = CoercionUtils.toString(input.type);
           if (type && type !== '301' && type !== '302') throw new Error('type must be "301" or "302".');
           const redirect = await service.create({
             fromPath: input.fromPath,

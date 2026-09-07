@@ -1,6 +1,6 @@
 import path from 'path';
 import { Readable } from 'stream';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { S3Client, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { IStorageDriver } from '@media/index';
@@ -33,7 +33,7 @@ export class S3StorageDriver implements IStorageDriver {
     async save(file: Buffer, filename: string, options?: any): Promise<string> {
         const ext = path.extname(filename);
         const basename = path.basename(filename, ext);
-        const id = uuidv4();
+        const id = randomUUID();
         const newFilename = `${basename}-${id}${ext}`;
         
         const upload = new Upload({

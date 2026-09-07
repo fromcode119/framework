@@ -7,6 +7,8 @@ import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerSso } from '@api/controllers/auth/auth-controller-sso';
 
 export class AuthControllerLifecycle extends AuthControllerSso {
+  private setupInProgress = false;
+
   async getStatus(req: Request, res: Response) {
     try {
       const initialized = (await this.db.count(SystemConstants.TABLE.USERS)) > 0;
@@ -16,20 +18,26 @@ export class AuthControllerLifecycle extends AuthControllerSso {
       }
 
       res.json({ initialized });
-    } catch {
-      res.json({ initialized: false });
+    } catch (error) {
+      this.logger.error(`[AuthController] Initialization status read failed: ${error}`);
+      res.status(503).json({ error: 'Initialization status is temporarily unavailable' });
     }
   }
 
   async setup(req: Request, res: Response) {
-    try {
-      if ((await this.db.count(SystemConstants.TABLE.USERS)) > 0) {
-        return res.status(400).json({ error: 'System already initialized' });
-      }
-    } catch (e) {
-      this.logger.error(`[AuthController] Setup initialization failed: ${e}`);
+    if (this.setupInProgress) {
+      return res.status(409).json({ error: 'System initialization is already in progress' });
     }
 
+    this.setupInProgress = true;
+    try {
+      return await this.initializeSystem(req, res);
+    } finally {
+      this.setupInProgress = false;
+    }
+  }
+
+  private async initializeSystem(req: Request, res: Response) {
     const { email, password } = req.body || {};
     const normalizedEmail = this.normalizeEmail(email);
     if (!normalizedEmail || !password) {
@@ -44,11 +52,14 @@ export class AuthControllerLifecycle extends AuthControllerSso {
     }
 
     const hashedPassword = await this.auth.hashPassword(String(password));
-    const newUser: any = await this.db.insert(SystemConstants.TABLE.USERS, {
-      email: normalizedEmail,
-      password: hashedPassword,
-      roles: ['admin']
-    });
+    let newUser: any;
+    try {
+      newUser = await this.createInitialUser(normalizedEmail, hashedPassword);
+    } catch (error) {
+      this.logger.error(`[AuthController] Setup initialization failed: ${error}`);
+      return res.status(503).json({ error: 'System initialization state is temporarily unavailable' });
+    }
+    if (!newUser) return res.status(400).json({ error: 'System already initialized' });
 
     await this.setEmailVerified(newUser.id, true);
     await this.setUserAccountStatus(newUser.id, AccountStatus.ACTIVE);
@@ -68,6 +79,34 @@ export class AuthControllerLifecycle extends AuthControllerSso {
     res.json({
       token: loginResult.token,
       user: loginResult.user
+    });
+  }
+
+  /** Names the section this must not race with; how it is serialised is the driver's business. */
+  private static readonly INITIAL_ADMIN_LOCK = 'fromcode.initial-admin-setup';
+
+  /**
+   * Wins the right to create the first user, exclusively.
+   *
+   * The check and the insert must be one indivisible step: two API replicas both seeing "no users yet"
+   * would both create an administrator nobody intended. This used to hold a Postgres advisory lock
+   * here, in the controller, and every other driver took an unguarded check-then-insert — so the race
+   * was open on SQLite and MySQL while the comment said it was handled. The lock now belongs to the
+   * database layer, which is the only place that knows how each driver serialises, and a driver with no
+   * strategy refuses rather than pretending.
+   */
+  private async createInitialUser(email: string, password: string): Promise<any | null> {
+    return this.db.withExclusiveLock(AuthControllerLifecycle.INITIAL_ADMIN_LOCK, async () => {
+      if ((await this.db.count(SystemConstants.TABLE.USERS)) > 0) return null;
+      return this.insertInitialUser(email, password);
+    });
+  }
+
+  private async insertInitialUser(email: string, password: string): Promise<any> {
+    return this.db.insert(SystemConstants.TABLE.USERS, {
+      email,
+      password,
+      roles: ['admin'],
     });
   }
 

@@ -27,7 +27,7 @@ export class TenantRegistryService {
   }
 
   async get(id: string): Promise<TenantRecord | null> {
-    const row = await this.db.findOne(SystemConstants.TABLE.TENANTS, { id: CoercionUtils.toString(id).trim() });
+    const row = await this.db.findOne(SystemConstants.TABLE.TENANTS, { id: CoercionUtils.toString(id) });
     return row ? TenantRecord.from(row) : null;
   }
 
@@ -97,7 +97,7 @@ export class TenantRegistryService {
 
   /** Removes the registry row and the tenant's configuration rows. Tenant DATA is `TenantEraser`'s job, and runs first. */
   async remove(id: string): Promise<void> {
-    const tenantId = CoercionUtils.toString(id).trim();
+    const tenantId = CoercionUtils.toString(id);
     if (!tenantId) return;
     await this.db.delete(SystemConstants.TABLE.TENANT_PLUGINS, { tenant_id: tenantId });
     await this.db.delete(SystemConstants.TABLE.TENANT_THEMES, { tenant_id: tenantId });

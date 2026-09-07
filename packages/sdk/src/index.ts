@@ -15,7 +15,7 @@
  *   PluginManager, ThemeManager, CoreExtensionManager,
  *   SchemaManager, MigrationManager, Seeder,
  *   HookManager, HookAdapterFactory,
- *   QueueManager, QueueAdapterFactory,
+ *   QueueManager,
  *   I18nManager, WebSocketManager,
  *   DiscoveryService, PluginStateService, MarketplaceCatalogService,
  *   RuntimeService, LifecycleService, AdminMetadataService,

@@ -113,6 +113,6 @@ export class MetadataHeadView {
     if (value === null || value === undefined) return '';
     if (value instanceof URL) return value.href;
     if (typeof value === 'object') return '';
-    return CoercionUtils.toString(value).trim();
+    return CoercionUtils.toString(value);
   }
 }

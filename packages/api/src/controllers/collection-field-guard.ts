@@ -104,7 +104,7 @@ export class CollectionFieldGuard {
     if (!changedOverrideableFields.length) return;
     if (!overrideMeta.password) throw this.makeClientError('Password is required for read-only field overrides.');
     if (!this.auth) throw this.makeClientError('Password verification is unavailable.', 503);
-    const userId = Number.parseInt(String(req?.user?.id || ''), 10);
+    const userId = CoercionUtils.toRelationId(req?.user?.id);
     if (!userId) throw this.makeClientError('Authentication is required for read-only field overrides.', 401);
     const user = await this.db.findOne('users', { id: userId });
     if (!user) throw this.makeClientError('User not found.', 404);

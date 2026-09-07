@@ -1,4 +1,5 @@
 import type { IPluginContextAuth } from '@core/interfaces/plugin-context-auth.interface';
+import { TenantMode } from '@core/tenant/tenant-mode';
 
 /**
  * The auth surface handed to a plugin.
@@ -35,6 +36,9 @@ export class AuthContextProxy {
         if (property === 'isAuthenticated') {
           return (request: unknown) => AuthContextProxy.isAuthenticated(request);
         }
+        if (property === 'platformGuard') {
+          return () => AuthContextProxy.platformGuard();
+        }
         // Receiver is the TARGET, so prototype getters resolve against the real manager; methods come
         // back unbound and pick `this` up from the call site exactly as before this proxy existed.
         return Reflect.get(target, property, target);
@@ -45,6 +49,21 @@ export class AuthContextProxy {
   /** True only when the framework's auth middleware verified a session and attached the user. */
   static isAuthenticated(request: unknown): boolean {
     return !!(request as { user?: unknown } | null)?.user;
+  }
+
+  static platformGuard(): (req: any, res: any, next: any) => void {
+    return (req, res, next) => {
+      const roles = Array.isArray(req.user?.roles) ? req.user.roles : [];
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized: missing or invalid token' });
+        return;
+      }
+      if (!roles.includes('admin') || (TenantMode.isEnabled() && req.user.platformAdmin !== true)) {
+        res.status(403).json({ error: 'platform_admin_required' });
+        return;
+      }
+      next();
+    };
   }
 
   private static async verifyToken(
@@ -67,6 +86,7 @@ export class AuthContextProxy {
   private static createUnavailableAuth(): IPluginContextAuth {
     return {
       guard: () => (_req: any, res: any) => res.status(503).json({ error: 'auth_unavailable' }),
+      platformGuard: () => (_req: any, res: any) => res.status(503).json({ error: 'auth_unavailable' }),
       requirePermission: () => (_req: any, res: any) => res.status(503).json({ error: 'auth_unavailable' }),
       hashPassword: () => { throw new Error('Auth service not initialized'); },
       comparePassword: () => { throw new Error('Auth service not initialized'); },

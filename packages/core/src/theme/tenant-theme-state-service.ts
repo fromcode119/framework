@@ -74,7 +74,7 @@ export class TenantThemeStateService {
    * as nobody notices. Returns the tenants that were left with no theme, so the caller can say so.
    */
   async clearForTheme(slug: string): Promise<string[]> {
-    const name = CoercionUtils.toString(slug).trim();
+    const name = CoercionUtils.toString(slug);
     if (!name) return [];
     const rows: any[] = await this.db.find(SystemConstants.TABLE.TENANT_THEMES, { where: { theme_slug: name } });
     const orphaned: string[] = [];
@@ -89,8 +89,8 @@ export class TenantThemeStateService {
   }
 
   private identify(tenantId: string, slug: string): { tenant: string; name: string } {
-    const tenant = CoercionUtils.toString(tenantId).trim();
-    const name = CoercionUtils.toString(slug).trim();
+    const tenant = CoercionUtils.toString(tenantId);
+    const name = CoercionUtils.toString(slug);
     if (!tenant || !name) {
       throw new Error('TenantThemeStateService: a tenant id and a theme slug are both required.');
     }

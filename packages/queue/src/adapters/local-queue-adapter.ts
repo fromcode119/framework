@@ -1,10 +1,13 @@
-import { IQueueAdapter } from '@core/queue/interfaces/queue-adapter.interface';
+import { IQueueAdapter } from '@queue/interfaces/queue-adapter.interface';
 
 /**
  * Local adapter: Executes jobs immediately/asynchronously via setTimeout (for dev/test)
  */
 export class LocalQueueAdapter implements IQueueAdapter {
   private workers: Map<string, (job: any) => Promise<any>> = new Map();
+
+  /** Nothing to apply: there is no broker to carry attempts, backoff or retention. */
+  applySettings(): void {}
 
   async addJob(queueName: string, name: string, data: any): Promise<any> {
     const jobId = 'local-' + Math.random().toString(36).substring(2, 9);

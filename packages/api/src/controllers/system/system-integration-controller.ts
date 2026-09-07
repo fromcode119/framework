@@ -16,7 +16,7 @@ export class SystemIntegrationController {
 
   async getIntegration(req: Request, res: Response) {
     try {
-      const integration = await this.runtime.manager.integrations.getConfig(req.params.type);
+      const integration = await this.runtime.manager.integrations.getConfig(CoercionUtils.toString(req.params.type));
       if (!integration) {
         return res.status(404).json({ error: 'Not found' });
       }
@@ -80,7 +80,7 @@ export class SystemIntegrationController {
 
   async renameIntegrationProfile(req: Request, res: Response) {
     try {
-      const profileName = String(req.body?.profileName || req.body?.name || '').trim();
+      const profileName = CoercionUtils.toString(req.body?.profileName) || CoercionUtils.toString(req.body?.name);
       if (!profileName) {
         return res.status(400).json({ error: 'profileName is required' });
       }

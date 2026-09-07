@@ -35,11 +35,11 @@ export class TenantMembership {
    * names. One canonical name, never a camel/snake dual read.
    */
   static from(row: Record<string, unknown>): TenantMembership {
-    const userId = CoercionUtils.toString(row?.user_id).trim();
+    const userId = CoercionUtils.toString(row?.user_id);
     if (!userId) {
       throw new Error('TenantMembership.from: row has no user_id; refusing to build a membership with no account.');
     }
-    const tenantId = CoercionUtils.toString(row?.tenant_id).trim();
+    const tenantId = CoercionUtils.toString(row?.tenant_id);
     if (!tenantId) {
       throw new Error('TenantMembership.from: row has no tenant_id; refusing to build a membership with no tenant.');
     }
@@ -47,7 +47,7 @@ export class TenantMembership {
       userId,
       tenantId,
       roles: TenantMembership.parseRoles(row?.roles),
-      state: CoercionUtils.toString(row?.state).trim(),
+      state: CoercionUtils.toString(row?.state),
     });
   }
 
@@ -57,7 +57,7 @@ export class TenantMembership {
    */
   private static parseRoles(value: unknown): string[] {
     if (Array.isArray(value)) return value.map((entry) => CoercionUtils.toString(entry));
-    const raw = CoercionUtils.toString(value).trim();
+    const raw = CoercionUtils.toString(value);
     if (!raw) return [];
     try {
       const parsed: unknown = JSON.parse(raw);

@@ -134,7 +134,7 @@ export class TenantArchiveWriter {
   }
 
   static fileNameOf(value: unknown): string {
-    const raw = CoercionUtils.toString(value).trim();
+    const raw = CoercionUtils.toString(value);
     if (!raw || /^https?:\/\//i.test(raw)) return '';
     return path.posix.basename(raw);
   }

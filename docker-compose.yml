@@ -68,6 +68,13 @@ services:
       - STORAGE_PUBLIC_URL=${STORAGE_PUBLIC_URL:-}
       # T6: where the api pushes "the tenant table changed" so the gateway re-reads its routing map.
       - GATEWAY_INTERNAL_URL=${GATEWAY_INTERNAL_URL:-http://gateway:3000}
+      # DEV DELTA: this checkout runs the api as development. The deploy topology hardcodes
+      # `NODE_ENV=production`, which turns on a boot guard that refuses a JWT/integration secret shorter
+      # than 32 characters or containing "change_me" — correct for a server, wrong for a local checkout
+      # whose integration key IS a placeholder string and cannot simply be replaced, because it is the
+      # AES key for every stored credential. Rotating it properly (re-encrypting those values) is the
+      # real fix; until then this keeps the local stack bootable without touching a single secret.
+      - NODE_ENV=${API_NODE_ENV:-development}
       # A directory-checksum mismatch re-stamps rather than disabling the plugin — local source edits
       # change the hash constantly. Real tamper protection is signature signing.
       - ENFORCE_PLUGIN_INTEGRITY=${ENFORCE_PLUGIN_INTEGRITY:-false}

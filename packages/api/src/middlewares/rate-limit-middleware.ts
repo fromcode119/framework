@@ -46,7 +46,7 @@ export class RateLimitMiddleware extends BaseMiddleware {
 
   async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
     this.rebuildOnWindowChange();
-    return this.limiter(req, res, next);
+    await this.limiter(req, res, next);
   }
 
   /** An explicit `windowMs` option wins; otherwise the operator's setting → env → seeded default. */

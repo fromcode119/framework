@@ -1,3 +1,5 @@
+import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
+import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, desc, asc, ilike } from 'drizzle-orm';
@@ -95,6 +97,93 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   /** Every statement `fn` issues runs untenanted with the platform-admin marker set. See TenantConnectionScope. */
   async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> {
     return TenantConnectionScope.runAsPlatformAdmin(this.pool, fn);
+  }
+
+  /**
+   * A transaction-scoped advisory lock, held on ONE pooled client for the whole of `fn`.
+   *
+   * `withPlatformAdmin` pins the connection, which is what makes this safe: BEGIN, the lock, the read
+   * and the write cannot drift onto different clients. The lock is released by COMMIT or ROLLBACK, so a
+   * crash mid-transaction cannot leave it held. A second replica blocks on the lock, then sees the
+   * committed row and takes the losing branch.
+   */
+  async withExclusiveLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    return this.withPlatformAdmin(async () => {
+      await this.queryRaw('BEGIN');
+      try {
+        await this.queryRaw('SELECT pg_advisory_xact_lock(hashtext($1))', [name]);
+        const result = await fn();
+        await this.queryRaw('COMMIT');
+        return result;
+      } catch (error) {
+        await this.queryRaw('ROLLBACK').catch(() => undefined);
+        throw error;
+      }
+    });
+  }
+
+  /**
+   * Creates or realigns the deployment's logins.
+   *
+   * Every identifier and password goes through the server's own `format()` with `%I`/`%L`, so a role
+   * name or a password containing a quote is quoted by PostgreSQL rather than by string building here.
+   *
+   * The attributes are the point of the whole exercise: NOSUPERUSER and NOBYPASSRLS on the runtime role
+   * are what make row-level security apply to it at all. A superuser bypasses policies unconditionally
+   * and an owner bypasses them on any table missing FORCE — in both cases every query still succeeds
+   * and isolation is simply absent, with nothing to notice.
+   */
+  async provisionRoles(plan: DatabaseRolePlan): Promise<DatabaseRoleOutcome> {
+    const roles = plan.isSingleRole ? [plan.owner] : [plan.owner, plan.runtime];
+
+    for (const role of roles) {
+      await this.runFormatted(
+        'CREATE ROLE %I LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS',
+        [role.name, role.password],
+        'NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = $1)',
+      );
+      // Always realign an existing role: a password rotated in the connection string has to reach the
+      // database, and an attribute someone widened by hand has to come back.
+      await this.runFormatted(
+        'ALTER ROLE %I LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS',
+        [role.name, role.password],
+      );
+      await this.runFormatted('GRANT CONNECT ON DATABASE %I TO %I', [plan.database, role.name]);
+    }
+
+    // PostgreSQL 15 removed PUBLIC's CREATE on the `public` schema, so the owner must be granted it
+    // explicitly or the very first migration fails with "permission denied for schema public".
+    await this.runFormatted('GRANT USAGE, CREATE ON SCHEMA public TO %I', [plan.owner.name]);
+    if (!plan.isSingleRole) {
+      await this.runFormatted('GRANT USAGE ON SCHEMA public TO %I', [plan.runtime.name]);
+    }
+
+    // Table and sequence privileges are deliberately NOT set here: they belong to whoever owns the
+    // tables, which is the migration role, and they must be reapplied after every migration rather than
+    // once at provisioning time. AppRoleGrantService does that on the owner connection each boot.
+    return DatabaseRoleOutcome.applied(roles.map(role => role.name));
+  }
+
+  /**
+   * Builds a DDL statement with the server's own `format()`, then executes what it returned.
+   *
+   * DDL takes no bind parameters and a `DO $$ … $$` body is an opaque string, so `$1` inside one is not
+   * a parameter at all — the driver rejects it with "bind message supplies N parameters, but prepared
+   * statement requires 0". Doing it in two steps keeps the quoting where it belongs: `%I` and `%L` are
+   * applied by PostgreSQL to bound values, so a role name or password containing a quote is escaped by
+   * the server rather than by string building here. `when` is an optional SQL predicate over the same
+   * parameters; the statement is produced, and therefore run, only if it holds.
+   */
+  private async runFormatted(template: string, values: string[], when?: string): Promise<void> {
+    const placeholders = values.map((_value, index) => `$${index + 1}::text`).join(', ');
+    const rows = await this.queryRaw(
+      `SELECT format($f$${template}$f$, ${placeholders}) AS statement${when ? ` WHERE ${when}` : ''}`,
+      values,
+    );
+    const statement = rows?.[0]?.statement;
+    if (statement) {
+      await this.queryRaw(String(statement));
+    }
   }
 
   async connect(): Promise<void> {

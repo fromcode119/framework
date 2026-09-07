@@ -32,17 +32,17 @@ export class TenantIdentity {
   }
 
   static from(input: { id?: unknown; slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; kind?: unknown; appearance?: unknown }): TenantIdentity {
-    const slug = CoercionUtils.toString(input.slug).trim().toLowerCase();
+    const slug = CoercionUtils.toKey(input.slug);
     if (!TenantIdentity.SLUG.test(slug)) {
       throw new Error(`Tenant slug "${slug}" must be lowercase letters, digits and dashes, starting with a letter or digit.`);
     }
-    const id = CoercionUtils.toString(input.id).trim() || slug;
+    const id = CoercionUtils.toString(input.id) || slug;
     if (!TenantIdentity.ID.test(id)) {
       throw new Error(`Tenant id "${id}" must be letters, digits, dashes or underscores (it becomes a path segment).`);
     }
     const primaryHost = TenantIdentity.host(input.primaryHost, 'primary host');
     const aliases = TenantIdentity.aliases(input.hostAliases).filter((alias) => alias !== primaryHost);
-    const state = CoercionUtils.toString(input.state).trim() || 'active';
+    const state = CoercionUtils.toString(input.state) || 'active';
     if (!(TenantIdentity.STATES as readonly string[]).includes(state)) {
       throw new Error(`Tenant state "${state}" is not one of: ${TenantIdentity.STATES.join(', ')}.`);
     }
@@ -56,7 +56,7 @@ export class TenantIdentity {
 
   /** A workspace names its appearance (`''` = the default console); a site has none and may not pass one. */
   private static appearanceFor(kind: TenantKind, value: unknown): string {
-    const raw = CoercionUtils.toString(value).trim().toLowerCase();
+    const raw = CoercionUtils.toKey(value);
     if (!kind.isWorkspace) {
       if (raw) throw new Error('Only a workspace has an appearance; a site renders its theme and uses the shared admin.');
       return '';
@@ -67,7 +67,7 @@ export class TenantIdentity {
   }
 
   static host(value: unknown, label: string): string {
-    const raw = CoercionUtils.toString(value).trim().toLowerCase();
+    const raw = CoercionUtils.toKey(value);
     if (!raw) throw new Error(`A tenant ${label} is required.`);
     if (/^[a-z]+:\/\//.test(raw) || raw.includes('/') || /:\d+$/.test(raw)) {
       throw new Error(`Tenant ${label} "${raw}" must be a bare hostname: no scheme, path or port.`);
@@ -80,6 +80,6 @@ export class TenantIdentity {
     const list = Array.isArray(value)
       ? value
       : CoercionUtils.toString(value).split(/[\s,]+/);
-    return [...new Set(list.map((entry) => CoercionUtils.toString(entry).trim().toLowerCase()).filter(Boolean).map((entry) => TenantIdentity.host(entry, 'host alias')))];
+    return [...new Set(list.map((entry) => CoercionUtils.toKey(entry)).filter(Boolean).map((entry) => TenantIdentity.host(entry, 'host alias')))];
   }
 }

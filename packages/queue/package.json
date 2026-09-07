@@ -1,0 +1,24 @@
+{
+  "name": "@fromcode119/queue",
+  "version": "0.1.88",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node ../typor/dist/typor-cli.cjs build",
+    "dev": "tsc -w"
+  },
+  "dependencies": {
+    "bullmq": "^6.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "typescript": "^5.3.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  }
+}

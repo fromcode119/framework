@@ -28,12 +28,12 @@ export class McpTokenRecord {
     let payload: any;
     try { payload = JSON.parse(String(row.value)); } catch { return null; }
     const userId = Number(payload?.userId || 0);
-    const tokenId = CoercionUtils.toString(payload?.tokenId).trim();
+    const tokenId = CoercionUtils.toString(payload?.tokenId);
     if (!userId || !tokenId) return null;
     // NOT filtered: `McpTokenScopeMatcher` distinguishes "no list" (unrestricted) from "a list that
     // narrows to nothing usable" (deny). Dropping blanks here would collapse the second into the first.
     const scopes = Array.isArray(payload?.scopes) ? payload.scopes.map((s: unknown) => String(s ?? '')) : undefined;
-    const stored = CoercionUtils.toString(payload?.tenantId).trim();
+    const stored = CoercionUtils.toString(payload?.tenantId);
     return new McpTokenRecord(
       tokenId,
       userId,

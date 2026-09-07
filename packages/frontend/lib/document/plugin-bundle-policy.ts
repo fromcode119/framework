@@ -18,8 +18,8 @@ export class PluginBundlePolicy {
     const deps = new Set(args.themeDependencies.map((slug) => String(slug)));
     return (args.plugins || [])
       .filter((plugin) => PluginFrontendRuntimeUtils.loadsOwnFrontendRuntime(plugin))
-      .filter((plugin) => CoercionUtils.toString(plugin?.ui?.loadStrategy).trim() === 'idle')
-      .map((plugin) => CoercionUtils.toString(plugin?.slug).trim())
+      .filter((plugin) => CoercionUtils.toString(plugin?.ui?.loadStrategy) === 'idle')
+      .map((plugin) => CoercionUtils.toString(plugin?.slug))
       .filter((slug) => slug && server.has(slug) && !used.has(slug) && !deps.has(slug))
       .sort();
   }

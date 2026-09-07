@@ -11,7 +11,7 @@ export class PluginConditionUtils {
       return Number.isFinite(actualNumber) && actualNumber === expectedValue;
     }
     if (typeof expectedValue === 'string') {
-      return CoercionUtils.toString(actualValue).toLowerCase() === expectedValue.trim().toLowerCase();
+      return CoercionUtils.toKey(actualValue) === expectedValue.trim().toLowerCase();
     }
     return actualValue === expectedValue;
   }

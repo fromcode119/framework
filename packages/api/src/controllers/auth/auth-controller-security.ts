@@ -3,6 +3,7 @@ import { randomBytes } from 'crypto';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerAccount } from '@api/controllers/auth/auth-controller-account';
 import type { IApiTokenRecord } from '@api/controllers/auth/interfaces/api-token-record.interface';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class AuthControllerSecurity extends AuthControllerAccount {
   async getMySecurityState(req: any, res: Response) {
@@ -62,7 +63,7 @@ export class AuthControllerSecurity extends AuthControllerAccount {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const name = String(req.body?.name || '').trim();
+    const name = CoercionUtils.toString(req.body?.name);
     const expiresInDays = Number.parseInt(String(req.body?.expiresInDays || ''), 10);
     const scopes = Array.isArray(req.body?.scopes) ? req.body.scopes.map((v: any) => String(v || '').trim()).filter(Boolean) : [];
 
@@ -126,7 +127,7 @@ export class AuthControllerSecurity extends AuthControllerAccount {
   async revokeMyApiToken(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const tokenId = String(req.params?.id || '').trim();
+    const tokenId = CoercionUtils.toString(req.params?.id);
     if (!tokenId) return res.status(400).json({ error: 'Token id is required' });
 
     const records = await this.readApiTokenRecords(userId);

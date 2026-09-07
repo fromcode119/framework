@@ -48,7 +48,7 @@ export class SystemDeployController extends BaseController {
   }
 
   async restart(req: Request, res: Response) {
-    const app = CoercionUtils.toString(req.body?.app).trim().toLowerCase();
+    const app = CoercionUtils.toKey(req.body?.app);
     if (!ApplicationRestartService.supports(app)) {
       res.status(400).json({
         error: `Unknown app "${app}".`,

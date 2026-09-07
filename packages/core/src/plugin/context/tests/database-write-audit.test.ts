@@ -189,6 +189,32 @@ describe('plugin context.db write audit', () => {
     expect(JSON.stringify(manager.audit.logAction.mock.calls)).not.toContain('SET secret');
   });
 
+  tenantIt('does not expose arbitrary raw manager methods', async () => {
+    const manager = buildManager();
+    manager.db.queryRaw = vi.fn();
+    manager.db.resetDatabase = vi.fn();
+    const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);
+
+    expect(() => db.queryRaw).toThrow(/cannot access context\.db\.queryRaw/);
+    expect(() => db.resetDatabase).toThrow(/cannot access context\.db\.resetDatabase/);
+    expect(manager.db.queryRaw).not.toHaveBeenCalled();
+    expect(manager.db.resetDatabase).not.toHaveBeenCalled();
+  });
+
+  tenantIt('does not let a read-only capability call a write method', async () => {
+    const manager = buildManager();
+    const readOnlySecurity = {
+      hasCapability: (capability: string) => capability === 'database:read',
+      handleViolation: (capability: string) => { throw new Error(`missing ${capability}`); },
+      handleRateLimit: vi.fn(),
+    } as any;
+    const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, readOnlySecurity);
+
+    await expect(async () => db.insert('fcp_alpha_products', { name: 'x' }))
+      .rejects.toThrow(/database:write/);
+    expect(manager.db.insert).not.toHaveBeenCalled();
+  });
+
   tenantIt('is per CALL, not per property access — accessing the method audits nothing, two calls audit two rows', async () => {
     const manager = buildManager();
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('alpha'), manager, security);

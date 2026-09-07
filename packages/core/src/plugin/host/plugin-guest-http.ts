@@ -98,6 +98,21 @@ export class PluginGuestHttp {
     };
   }
 
+  static platformGuard(): (req: any, res: any, next: NextFunction) => void {
+    return (req, res, next) => {
+      const roles = Array.isArray(req.user?.roles) ? req.user.roles : [];
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized: missing or invalid token' });
+        return;
+      }
+      if (!roles.includes('admin') || (req.user.multiTenant === true && req.user.platformAdmin !== true)) {
+        res.status(403).json({ error: 'platform_admin_required' });
+        return;
+      }
+      next();
+    };
+  }
+
   requirePermission(permission: string | string[]): (req: any, res: any, next: NextFunction) => Promise<void> {
     const required = Array.isArray(permission) ? permission : [permission];
     return async (req, res, next) => {

@@ -1,6 +1,7 @@
 import { BaseRouter } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { AppearanceManager, Logger, RouteConstants } from '@fromcode119/core';
+import { CoercionUtils } from '@fromcode119/core';
 /**
  * Admin appearance management — a SETTINGS concern, deliberately separate from the plugin/theme
  * marketplace. Lists available appearances (built-in default + those in the appearances dir),
@@ -30,8 +31,8 @@ export class AppearanceRouter extends BaseRouter {
 
     // Single install verb: install from the marketplace catalog by `slug`, else from a package `url`.
     this.post(RouteConstants.SEGMENTS.APPEARANCES_INSTALL, this.asyncHandler(async (req, res) => {
-      const slug = String(req.body?.slug || '').trim();
-      const url = String(req.body?.url || '').trim();
+      const slug = CoercionUtils.toString(req.body?.slug);
+      const url = CoercionUtils.toString(req.body?.url);
       if (!slug && !url) {
         res.status(400).json({ error: 'A marketplace slug or a package URL is required.' });
         return;
@@ -43,7 +44,7 @@ export class AppearanceRouter extends BaseRouter {
     }));
 
     this.delete(RouteConstants.SEGMENTS.APPEARANCES_SLUG, this.asyncHandler(async (req, res) => {
-      this.manager.remove(req.params.slug);
+      this.manager.remove(CoercionUtils.toString(req.params.slug));
       res.json({ success: true });
     }));
   }

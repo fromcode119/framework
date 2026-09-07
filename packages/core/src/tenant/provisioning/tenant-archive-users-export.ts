@@ -83,6 +83,6 @@ export class TenantArchiveUsersExport {
     if (typeof value === 'string') {
       try { parsed = JSON.parse(value); } catch { parsed = []; }
     }
-    return Array.isArray(parsed) ? parsed.map((role) => CoercionUtils.toString(role).trim()).filter(Boolean) : [];
+    return Array.isArray(parsed) ? parsed.map((role) => CoercionUtils.toString(role)).filter(Boolean) : [];
   }
 }

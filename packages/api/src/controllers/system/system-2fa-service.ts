@@ -1,5 +1,4 @@
 /** SystemTwoFactorService — 2FA management endpoints. Extracted from SystemController (ARC-007). */
-
 import { Request, Response } from 'express';
 import Handlebars from 'handlebars';
 import { promises as fs } from 'fs';
@@ -12,6 +11,7 @@ import * as QRCode from 'qrcode';
 import { Schema } from '@fromcode119/database';
 import { AuthUtils } from '@api/utils/auth';
 import { UserManagementService } from '@api/services/user-management-service';
+import { RequestParamUtils } from '@api/utils/request-param-utils';
 
 export class SystemTwoFactorService {
   private readonly logger = new Logger({ namespace: 'System2FA' });
@@ -26,24 +26,24 @@ export class SystemTwoFactorService {
 
   async getTwoFactorStatus(req: Request, res: Response) {
     try {
-      const userId = parseInt(req.params.id, 10);
-      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+      const userId = RequestParamUtils.relationId(req, res, 'user');
+      if (userId === null) return;
       res.json(await this.getStatusForUser(userId));
     } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
   }
 
   async setup2FA(req: Request, res: Response) {
     try {
-      const userId = parseInt(req.params.id, 10);
-      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+      const userId = RequestParamUtils.relationId(req, res, 'user');
+      if (userId === null) return;
       res.json(await this.setupForUser(userId));
     } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
   }
 
   async verify2FA(req: Request, res: Response) {
     try {
-      const userId = parseInt(req.params.id, 10);
-      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+      const userId = RequestParamUtils.relationId(req, res, 'user');
+      if (userId === null) return;
       const { token } = req.body;
       if (!token) return res.status(400).json({ error: 'Token is required' });
       res.json(await this.verifyForUser(userId, String(token)));
@@ -52,16 +52,16 @@ export class SystemTwoFactorService {
 
   async regenerateRecoveryCodes(req: Request, res: Response) {
     try {
-      const userId = parseInt(req.params.id, 10);
-      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+      const userId = RequestParamUtils.relationId(req, res, 'user');
+      if (userId === null) return;
       res.json(await this.regenerateRecoveryCodesForUser(userId));
     } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
   }
 
   async disable2FA(req: Request, res: Response) {
     try {
-      const userId = parseInt(req.params.id, 10);
-      if (Number.isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
+      const userId = RequestParamUtils.relationId(req, res, 'user');
+      if (userId === null) return;
       res.json(await this.disableForUser(userId));
     } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
   }

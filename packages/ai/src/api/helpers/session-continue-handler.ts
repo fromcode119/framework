@@ -1,6 +1,7 @@
 import { ClarifyMode } from '@ai/api/forge/enums/clarify-mode.enum';
 import { Request, Response } from 'express';
 import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
+import { CoercionUtils } from '@fromcode119/core';
 
 /** Handles the continueAssistantSession endpoint logic. */
 export class SessionContinueHandler {
@@ -19,7 +20,7 @@ export class SessionContinueHandler {
         deps.recordReasoningStep(sessionId, 'Resumed session with restored context and reasoning', { previousReasoningSteps: session.reasoningReport.length }, {}, 0.95);
       }
 
-      const message = String(req.body?.message || session?.lastCheckpoint?.resumePrompt || '').trim() || 'Continue planning from previous context. Run more steps and stage executable actions if safe.';
+      const message = CoercionUtils.toString(req.body?.message) || CoercionUtils.toString(session?.lastCheckpoint?.resumePrompt) || 'Continue planning from previous context. Run more steps and stage executable actions if safe.';
       const history = deps.sessions.normalizeHistory(session?.history);
       const sessionCheckpoint = deps.normalizeAssistantCheckpoint(req.body?.checkpoint || session?.lastCheckpoint);
       await deps.restoreSessionContext(sessionId, session);
@@ -27,7 +28,7 @@ export class SessionContinueHandler {
       const resolvedAssistant = await (async () => {
         const originalBody = req.body;
         try {
-          (req as any).body = { ...(req.body || {}), provider: String(req.body?.provider || session?.provider || '').trim() || undefined, config: { ...(session?.config && typeof session.config === 'object' ? session.config : {}), ...(req.body?.config && typeof req.body.config === 'object' ? req.body.config : {}) } };
+          (req as any).body = { ...(req.body || {}), provider: CoercionUtils.toString(req.body?.provider) || CoercionUtils.toString(session?.provider) || undefined, config: { ...(session?.config && typeof session.config === 'object' ? session.config : {}), ...(req.body?.config && typeof req.body.config === 'object' ? req.body.config : {}) } };
           return await deps.resolveAssistantClientFromRequest(req);
         } finally { (req as any).body = originalBody; }
       })();
@@ -50,7 +51,7 @@ export class SessionContinueHandler {
       const nextHistory = deps.sessions.normalizeHistory([...history, { role: 'user', content: message }, { role: 'assistant', content: String(result?.message || '').trim() || 'No response generated.' }]);
       const reasoningReport = deps.getReasoningReport(sessionId);
 
-      await deps.sessions.save(sessionId, { ...session, id: sessionId, title: String(session?.title || '').trim() || deps.sessions.summarizeTitle(nextHistory), updatedAt: Date.now(), provider: resolvedAssistant.provider, model: String(result?.model || '').trim() || String(session?.model || '').trim() || '', agentMode: String(req.body?.agentMode || session?.agentMode || 'advanced').trim(), skillId: String(req.body?.skillId || session?.skillId || 'general').trim().toLowerCase() || 'general', tools: Array.isArray(req.body?.tools) ? req.body.tools : Array.isArray(session?.tools) ? session.tools : [], config: { ...(session?.config || {}), ...(req.body?.config || {}) }, history: nextHistory, lastPlan: result?.plan || null, lastUi: result?.ui || null, lastActions: Array.isArray(result?.actions) ? result.actions : [], lastCheckpoint: result?.checkpoint || null, lastActionBatchState: String(result?.actionBatch?.state || session?.lastActionBatchState || '').trim() || null, reasoningReport });
+      await deps.sessions.save(sessionId, { ...session, id: sessionId, title: String(session?.title || '').trim() || deps.sessions.summarizeTitle(nextHistory), updatedAt: Date.now(), provider: resolvedAssistant.provider, model: String(result?.model || '').trim() || String(session?.model || '').trim() || '', agentMode: String(req.body?.agentMode || session?.agentMode || 'advanced').trim(), skillId: String(req.body?.skillId || session?.skillId || 'general').trim().toLowerCase() || 'general', tools: Array.isArray(req.body?.tools) ? req.body.tools : Array.isArray(session?.tools) ? session.tools : [], config: { ...(session?.config || {}), ...(req.body?.config || {}) }, history: nextHistory, lastPlan: result?.plan || null, lastUi: result?.ui || null, lastActions: Array.isArray(result?.actions) ? result.actions : [], lastCheckpoint: result?.checkpoint || null, lastActionBatchState: CoercionUtils.toString(result?.actionBatch?.state) || CoercionUtils.toString(session?.lastActionBatchState) || null, reasoningReport });
 
       const reasoningStats = trackers.reasoning.generateReport();
       const resultMessage = String(result?.message || '');

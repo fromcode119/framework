@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ContentPreviewAccessUtils, PluginState, SystemUpdateService } from '@fromcode119/core';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class SystemRuntimeController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
@@ -84,7 +85,7 @@ export class SystemRuntimeController {
 
   async queryDataSource(req: Request, res: Response) {
     try {
-      const source = String(req.query.source || req.body?.source || req.query.slug || req.body?.slug || '').trim();
+      const source = CoercionUtils.toString(req.query?.source) || CoercionUtils.toString(req.body?.source) || CoercionUtils.toString(req.query?.slug) || CoercionUtils.toString(req.body?.slug);
       if (!source) {
         return res.status(400).json({ error: 'source is required' });
       }

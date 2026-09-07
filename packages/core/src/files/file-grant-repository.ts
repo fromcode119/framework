@@ -44,11 +44,20 @@ export class FileGrantRepository {
     return (Array.isArray(rows) ? rows : []).map(FileGrantRepository.toGrant);
   }
 
-  async createShare(input: { title: string; message: string; mediaIds: number[]; createdBy: number | null }): Promise<number> {
+  async createShare(input: {
+    title: string;
+    message: string;
+    mediaIds: number[];
+    resourceType?: string;
+    resourceIds?: string[];
+    createdBy: number | null;
+  }): Promise<number> {
     const inserted = await this.db.insert(SystemConstants.TABLE.FILE_SHARES, {
       title: input.title,
       message: input.message,
       media_ids: JSON.stringify(input.mediaIds || []),
+      resource_type: String(input.resourceType || ''),
+      resource_ids: JSON.stringify(input.resourceIds || []),
       created_by: input.createdBy,
     });
     return Number(inserted?.id);
@@ -253,8 +262,21 @@ export class FileGrantRepository {
       title: String(row?.title || ''),
       message: String(row?.message || ''),
       mediaIds: FileGrantRepository.parseMediaIds(row?.media_ids ?? row?.mediaIds),
+      resourceType: String(row?.resource_type ?? row?.resourceType ?? ''),
+      resourceIds: FileGrantRepository.parseResourceIds(row?.resource_ids ?? row?.resourceIds),
       createdBy: row?.created_by ?? row?.createdBy ?? null,
     };
+  }
+
+  /** Record ids stay STRINGS: a plugin's key may not be numeric, and the framework never interprets them. */
+  private static parseResourceIds(value: unknown): string[] {
+    if (Array.isArray(value)) return value.map((entry) => String(entry)).filter(Boolean);
+    try {
+      const parsed = JSON.parse(String(value ?? '[]'));
+      return Array.isArray(parsed) ? parsed.map((entry) => String(entry)).filter(Boolean) : [];
+    } catch {
+      return [];
+    }
   }
 
   /** A malformed list yields no files rather than throwing — a corrupt row must not 500 the page. */

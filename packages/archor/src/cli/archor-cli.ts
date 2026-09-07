@@ -8,7 +8,9 @@ import { ConventionGuardCommand } from './convention-guard-command';
 import { CoreBoundaryCommand } from './core-boundary-command';
 import { FrameworkDomainCommand } from './framework-domain-command';
 import { BlockFieldConformanceCommand } from './block-field-conformance-command';
+import { DependencyOverridesCommand } from './dependency-overrides-command';
 import { DbFindWhereCommand } from './db-find-where-command';
+import { RequestCoercionCommand } from './request-coercion-command';
 import { ImportsCommand } from './imports-command';
 import { InterfacePrefixCommand } from './interface-prefix-command';
 import { OopGuardCommand } from './oop-guard-command';
@@ -38,6 +40,7 @@ export class ArchorCli {
     ['convention-guard', ConventionGuardCommand],
     ['core-boundary', CoreBoundaryCommand],
     ['db-find-where', DbFindWhereCommand],
+    ['dependency-overrides', DependencyOverridesCommand],
     ['framework-domain', FrameworkDomainCommand],
     ['block-field-conformance', BlockFieldConformanceCommand],
     ['imports', ImportsCommand],
@@ -46,6 +49,7 @@ export class ArchorCli {
     ['plugin-alias', PluginAliasCommand],
     ['plugin-architecture', PluginArchitectureCommand],
     ['plugin-ui-hookfree', PluginUiHookfreeCommand],
+    ['request-coercion', RequestCoercionCommand],
     ['mcp-tool-schemas', McpToolSchemaCommand],
     ['sdk-boundary', SdkBoundaryCommand],
     ['src-artifacts', SrcArtifactsCommand],

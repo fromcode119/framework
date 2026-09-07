@@ -221,6 +221,11 @@ export class SystemRouter extends BaseRouter {
       this.controller.deleteUser);
     this.post(RouteConstants.SEGMENTS.ADMIN_USERS_ROLES, this.auth.requirePermission('users:manage'),
       this.controller.saveUserRoles);
+    // Deliberately NOT behind PlatformAdminGuard: that guard passes every admin on a single-tenant
+    // install, and this must be exact in both modes. PlatformOwnershipService re-checks inside the
+    // transaction that the caller still holds the seat, which is the real authority.
+    this.post(RouteConstants.SEGMENTS.ADMIN_USERS_OWNERSHIP, this.auth.requirePermission('users:manage'),
+      this.controller.transferOwnership);
 
     // People management (unified identity model): list people, promote a person to a login account.
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE, this.auth.requirePermission('users:view'),

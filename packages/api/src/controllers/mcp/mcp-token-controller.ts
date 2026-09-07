@@ -27,7 +27,7 @@ export class McpTokenController {
   }
 
   async createToken(req: any, res: any): Promise<void> {
-    const label = CoercionUtils.toString(req?.body?.label).trim();
+    const label = CoercionUtils.toString(req?.body?.label);
     if (!label) {
       res.status(400).json({ error: 'A label is required so a token can be recognised later.' });
       return;
@@ -43,7 +43,7 @@ export class McpTokenController {
 
     const view = await McpTokenView.for(req, this.memberships);
     let tenantId = view.tenantId;
-    if (CoercionUtils.toString(req?.body?.site).trim() === McpTokenController.ALL_SITES) {
+    if (CoercionUtils.toString(req?.body?.site) === McpTokenController.ALL_SITES) {
       if (!view.platformAdmin) {
         res.status(403).json({ error: 'Only the platform admin can issue a token for all sites.' });
         return;

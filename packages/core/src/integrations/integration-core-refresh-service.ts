@@ -5,6 +5,7 @@ import type { IEmailDriver } from '@fromcode119/email';
 import { MediaManager, StorageFactory } from '@fromcode119/media';
 import { PrivateStorageDriverFactory } from '@core/integrations/providers/private-storage-driver-factory';
 import { CacheManager, CacheFactory } from '@fromcode119/cache';
+import { QueueManager, LocalQueueAdapter } from '@fromcode119/queue';
 import { Logger } from '@core/logging';
 import { IntegrationRegistry } from '@core/integrations/integration-registry';
 import { MultiProviderEmailSender } from '@core/integrations/multi-provider-email-sender';
@@ -73,6 +74,28 @@ export class IntegrationCoreRefreshService {
         }),
         resolved: null,
       };
+    }
+  }
+
+  /**
+   * The queue falls back to the in-process adapter rather than throwing: a broker that cannot be reached
+   * must not stop the server booting, and running jobs in memory is degraded, not broken. The log line
+   * is the only thing that says so, which is why it is an error and names the driver.
+   */
+  async refreshQueue(preferStored: boolean): Promise<{ queue: QueueManager; resolved: any }> {
+    try {
+      const { instance, resolved } = await this.registry.instantiate<QueueManager>('queue', {
+        preferStored,
+        context: { projectRoot: this.projectRoot, logger: this.logger }
+      });
+      this.logger.info(`Queue integration active: ${resolved.providerKey} (${resolved.source})`);
+      return { queue: instance, resolved };
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to initialize queue integration: ${error.message}. Falling back to the in-process adapter: `
+        + 'jobs will not survive a restart and are not shared between instances.',
+      );
+      return { queue: new QueueManager(new LocalQueueAdapter()), resolved: null };
     }
   }
 

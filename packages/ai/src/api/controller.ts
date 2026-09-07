@@ -23,6 +23,7 @@ import { SessionManagementHandlers } from '@ai/api/helpers/session-management-ha
 import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
 import { CheckpointReason } from '@ai/admin-assistant-runtime/enums/checkpoint-reason.enum';
 import { RuntimeStage } from '@ai/admin-assistant-runtime/runtime/enums/runtime-stage.enum';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class AssistantController {
   private static readonly ASSISTANT_PROMPT_BASIC_KEY = 'assistant.prompt.basic';
@@ -182,7 +183,7 @@ export class AssistantController {
   }
 
   private async resolveAssistantClientFromRequest(req: Request): Promise<{ client: any; provider: string }> {
-    const requestedProvider = String(req.body?.provider || '').trim().toLowerCase();
+    const requestedProvider = CoercionUtils.toKey(req.body?.provider);
     const requestConfig = req.body?.config && typeof req.body.config === 'object' ? req.body.config : {};
     if (requestedProvider) {
       try {

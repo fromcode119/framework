@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
+import { RequestParamUtils } from '@api/utils/request-param-utils';
 import { CoreServices } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { CoercionUtils } from '@fromcode119/core';
 
 /** Admin endpoints for the unified `people` model: list people and promote a person to a login account. */
 export class SystemPeopleController {
@@ -12,7 +14,7 @@ export class SystemPeopleController {
    */
   async suggestRecipients(req: Request, res: Response) {
     try {
-      res.json({ docs: await this.runtime.people.suggestRecipients({ q: String(req.query.q || ''), limit: Number(req.query.limit) || undefined }) });
+      res.json({ docs: await this.runtime.people.suggestRecipients({ q: CoercionUtils.toString(req.query?.q), limit: Number(req.query.limit) || undefined }) });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -20,7 +22,7 @@ export class SystemPeopleController {
 
   async getPeople(req: Request, res: Response) {
     try {
-      res.json({ docs: await this.runtime.people.getPeople({ q: String(req.query.q || ''), limit: Number(req.query.limit) || undefined }) });
+      res.json({ docs: await this.runtime.people.getPeople({ q: CoercionUtils.toString(req.query?.q), limit: Number(req.query.limit) || undefined }) });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -28,10 +30,8 @@ export class SystemPeopleController {
 
   async getPerson(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (Number.isNaN(id)) {
-        return res.status(400).json({ error: 'Invalid person id' });
-      }
+      const id = RequestParamUtils.relationId(req, res, 'person');
+      if (id === null) return;
       const person = await this.runtime.people.getPerson(id);
       if (!person) return res.status(404).json({ error: 'Person not found' });
       res.json({ person });
@@ -48,10 +48,8 @@ export class SystemPeopleController {
    */
   async getPersonRecords(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (Number.isNaN(id)) {
-        return res.status(400).json({ error: 'Invalid person id' });
-      }
+      const id = RequestParamUtils.relationId(req, res, 'person');
+      if (id === null) return;
       const person = await this.runtime.people.getPerson(id);
       if (!person) return res.status(404).json({ error: 'Person not found' });
 
@@ -74,9 +72,9 @@ export class SystemPeopleController {
    */
   async getRecordsByRef(req: Request, res: Response) {
     try {
-      const userId = req.query.userId != null && req.query.userId !== '' ? String(req.query.userId) : null;
-      const email = req.query.email != null && req.query.email !== '' ? String(req.query.email) : null;
-      const personId = req.query.personId != null && req.query.personId !== '' ? String(req.query.personId) : null;
+      const userId = CoercionUtils.toString(req.query?.userId) || null;
+      const email = CoercionUtils.toString(req.query?.email) || null;
+      const personId = CoercionUtils.toString(req.query?.personId) || null;
       if (userId == null && !email && personId == null) {
         return res.status(400).json({ error: 'userId, email or personId is required' });
       }
@@ -89,10 +87,8 @@ export class SystemPeopleController {
 
   async savePerson(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (Number.isNaN(id)) {
-        return res.status(400).json({ error: 'Invalid person id' });
-      }
+      const id = RequestParamUtils.relationId(req, res, 'person');
+      if (id === null) return;
       const person = await this.runtime.people.savePerson(id, req.body || {});
       res.json({ success: true, person });
     } catch (error: any) {
@@ -102,10 +98,8 @@ export class SystemPeopleController {
 
   async createUserFromPerson(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (Number.isNaN(id)) {
-        return res.status(400).json({ error: 'Invalid person id' });
-      }
+      const id = RequestParamUtils.relationId(req, res, 'person');
+      if (id === null) return;
       const result = await this.runtime.people.createUserFromPerson(id, req.body || {});
       res.json({ success: true, ...result });
     } catch (error: any) {
@@ -115,10 +109,8 @@ export class SystemPeopleController {
 
   async deletePerson(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (Number.isNaN(id)) {
-        return res.status(400).json({ error: 'Invalid person id' });
-      }
+      const id = RequestParamUtils.relationId(req, res, 'person');
+      if (id === null) return;
       await this.runtime.people.deletePerson(id);
       res.json({ success: true });
     } catch (error: any) {
@@ -128,10 +120,8 @@ export class SystemPeopleController {
 
   async linkUser(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (Number.isNaN(id)) {
-        return res.status(400).json({ error: 'Invalid person id' });
-      }
+      const id = RequestParamUtils.relationId(req, res, 'person');
+      if (id === null) return;
       const rawUserId = (req.body || {}).userId;
       const userId = rawUserId == null || rawUserId === '' ? null : parseInt(String(rawUserId), 10);
       const person = await this.runtime.people.linkUser(id, userId);

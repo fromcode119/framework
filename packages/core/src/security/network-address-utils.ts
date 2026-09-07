@@ -1,4 +1,5 @@
 import { CoercionUtils } from '@core/coercion-utils';
+import { BlockList, isIP } from 'net';
 
 /**
  * Address matching for the network allowlists the platform declares.
@@ -13,6 +14,7 @@ import { CoercionUtils } from '@core/coercion-utils';
  * (`::ffff:10.0.0.5`) is unwrapped first so an IPv4 rule still matches it.
  */
 export class NetworkAddressUtils {
+  private static readonly NON_PUBLIC_ADDRESSES = NetworkAddressUtils.buildNonPublicBlockList();
   /**
    * Loopback plus the RFC1918 private ranges — the addresses a container network hands out. This is
    * the seed for the operator's declared internal-clients setting, not a hidden default: the value is
@@ -33,7 +35,7 @@ export class NetworkAddressUtils {
 
   /** Strip the IPv6 brackets, the IPv4-mapped prefix and any `:port` suffix Node may attach. */
   static normalize(value: unknown): string {
-    let address = CoercionUtils.toString(value).trim().toLowerCase();
+    let address = CoercionUtils.toKey(value);
     if (!address) return '';
 
     const closingBracket = address.indexOf(']');
@@ -56,7 +58,7 @@ export class NetworkAddressUtils {
   /** True when `address` is the exact address `pattern`, or falls inside its IPv4 CIDR block. */
   static matches(address: unknown, pattern: unknown): boolean {
     const normalizedAddress = NetworkAddressUtils.normalize(address);
-    const rawPattern = CoercionUtils.toString(pattern).trim().toLowerCase();
+    const rawPattern = CoercionUtils.toKey(pattern);
     if (!normalizedAddress || !rawPattern) return false;
 
     const separatorIndex = rawPattern.indexOf('/');
@@ -87,6 +89,14 @@ export class NetworkAddressUtils {
     return NetworkAddressUtils.matchesAny(address, NetworkAddressUtils.PRIVATE_RANGES);
   }
 
+  /** True only for a syntactically valid, globally routable IP address. */
+  static isPublic(address: unknown): boolean {
+    const normalized = NetworkAddressUtils.normalize(address);
+    const family = isIP(normalized);
+    if (!family) return false;
+    return !NetworkAddressUtils.NON_PUBLIC_ADDRESSES.check(normalized, family === 4 ? 'ipv4' : 'ipv6');
+  }
+
   /** Split an operator-entered list (commas, whitespace or newlines) into patterns. */
   static parseList(value: unknown): string[] {
     return CoercionUtils.toString(value)
@@ -107,5 +117,22 @@ export class NetworkAddressUtils {
       value = (value * 256) + parsed;
     }
     return value;
+  }
+
+  private static buildNonPublicBlockList(): BlockList {
+    const list = new BlockList();
+    for (const [address, prefix] of [
+      ['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8],
+      ['169.254.0.0', 16], ['172.16.0.0', 12], ['192.0.0.0', 24], ['192.168.0.0', 16],
+      ['198.18.0.0', 15], ['224.0.0.0', 4], ['240.0.0.0', 4],
+    ] as Array<[string, number]>) {
+      list.addSubnet(address, prefix, 'ipv4');
+    }
+    for (const [address, prefix] of [
+      ['::', 128], ['::1', 128], ['fc00::', 7], ['fe80::', 10], ['ff00::', 8],
+    ] as Array<[string, number]>) {
+      list.addSubnet(address, prefix, 'ipv6');
+    }
+    return list;
   }
 }

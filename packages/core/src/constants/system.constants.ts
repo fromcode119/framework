@@ -87,6 +87,19 @@ export class SystemConstants {
    * ceiling and this per-render deadline. Placeholders on the Infrastructure page mirror these.
    */
   static readonly SSR_RENDER_MEMORY_MB_DEFAULT = 512;
+
+  /**
+   * Background-job defaults. A job that throws used to be gone: nothing set `attempts`, so BullMQ's
+   * default of one applied, nobody was told, and completed jobs stayed in Redis for ever.
+   */
+  static readonly QUEUE_JOB_ATTEMPTS_DEFAULT = 3;
+  /** First retry delay; BullMQ doubles it per attempt under an exponential backoff. */
+  static readonly QUEUE_JOB_BACKOFF_MS_DEFAULT = 5_000;
+  /** How many finished jobs to keep for inspection before Redis starts discarding the oldest. */
+  static readonly QUEUE_KEEP_COMPLETED_DEFAULT = 100;
+  /** Failures are kept longer than successes: they are the ones somebody needs to read. */
+  static readonly QUEUE_KEEP_FAILED_DEFAULT = 500;
+  static readonly QUEUE_CONCURRENCY_DEFAULT = 1;
   static readonly SSR_RENDER_TIMEOUT_MS_DEFAULT = 10_000;
 
   /**
@@ -110,6 +123,8 @@ export class SystemConstants {
   MAINTENANCE_MODE: 'maintenance_mode',
   /** Hosted MCP transport (Streamable HTTP at POST /mcp). Off unless the operator enables it — Settings → Integrations → MCP. */
   MCP_REMOTE_ENABLED: 'mcp_remote_enabled',
+  /** Maximum media payload accepted by MCP upload/replace tools, edited beside the hosted MCP toggle. */
+  MCP_REMOTE_MEDIA_MAX_MB: 'mcp_remote_media_max_mb',
   SETUP_COMPLETED: 'setup_completed',
   SITE_NAME: 'site_name',
   SITE_URL: 'site_url',
@@ -153,6 +168,11 @@ export class SystemConstants {
   PLUGIN_ISOLATION_TIMEOUT_MS: 'plugin_isolation_timeout_ms',
   /** Heap ceiling (MB) and per-render deadline (ms) of one theme render host process. */
   SSR_RENDER_MEMORY_MB: 'ssr_render_memory_mb',
+  QUEUE_JOB_ATTEMPTS: 'queue_job_attempts',
+  QUEUE_JOB_BACKOFF_MS: 'queue_job_backoff_ms',
+  QUEUE_KEEP_COMPLETED: 'queue_keep_completed',
+  QUEUE_KEEP_FAILED: 'queue_keep_failed',
+  QUEUE_CONCURRENCY: 'queue_concurrency',
   SSR_RENDER_TIMEOUT_MS: 'ssr_render_timeout_ms',
   AUTH_PASSWORD_MIN_LENGTH: 'auth_password_min_length',
   AUTH_PASSWORD_REQUIRE_UPPERCASE: 'auth_password_require_uppercase',
@@ -284,6 +304,9 @@ export class SystemConstants {
     ADMIN_TENANTS_IMPORT_PREVIEW: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_IMPORT_PREVIEW}`),
     ADMIN_TENANTS_IMPORT_EXECUTE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_IMPORT_EXECUTE}`),
     ADMIN_TENANTS_ADOPT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ADOPT}`),
+    ADMIN_SETTINGS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_SETTINGS),
+    ADMIN_REDIRECTS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_REDIRECTS),
+    ADMIN_REDIRECT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_REDIRECTS_ID),
     ADMIN_BACKUPS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_BACKUPS),
     ADMIN_BACKUP: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_BACKUPS_ID),
     ADMIN_BACKUP_CREATE_SYSTEM: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_BACKUPS_CREATE_SYSTEM),

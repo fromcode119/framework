@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "sync:versions": "npm run fromcode -- system sync-versions",
-    "build": "npm run check:workspace-typecheck && npm run check:src-artifacts && npm run sync:versions && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:mcp-tool-schemas && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && node packages/typor/dist/typor-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run build:frontend-icons && npm run check:app-typecheck && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend-runtime",
+    "build": "npm run check:workspace-typecheck && npm run check:src-artifacts && npm run sync:versions && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:dependency-overrides && npm run check:mcp-tool-schemas && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && node packages/typor/dist/typor-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run build:frontend-icons && npm run check:app-typecheck && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend-runtime",
     "build:api": "npm run sync:versions && npm run build --workspace=@fromcode119/api",
     "build:admin": "npm run sync:versions && npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run sync:versions && npm run build --workspace=@fromcode119/frontend",
@@ -24,6 +24,8 @@
     "check:plugin-ui-hookfree": "node packages/archor/dist/archor-cli.cjs plugin-ui-hookfree",
     "check:framework-domain": "node packages/archor/dist/archor-cli.cjs framework-domain",
     "check:db-find-where": "node packages/archor/dist/archor-cli.cjs db-find-where",
+    "check:dependency-overrides": "node packages/archor/dist/archor-cli.cjs dependency-overrides",
+    "check:request-coercion": "node packages/archor/dist/archor-cli.cjs request-coercion",
     "check:block-field-conformance": "node packages/archor/dist/archor-cli.cjs block-field-conformance",
     "check:block-field-conformance:error": "BLOCK_CONFORMANCE_MODE=error node packages/archor/dist/archor-cli.cjs block-field-conformance",
     "check:appearance-boundary": "node packages/archor/dist/archor-cli.cjs appearance-boundary",
@@ -86,11 +88,12 @@
     "rollup-plugin-external-globals": "^0.13.0",
     "terser": "^5.51.2",
     "tsx": "^4.21.0",
-    "vite": "^7.3.1"
+    "vite": "^7.3.6"
   },
   "overrides": {
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "drizzle-orm": "^0.45.1"
+    "drizzle-orm": "^0.45.1",
+    "dompurify": "3.4.15"
   }
 }

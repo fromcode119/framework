@@ -251,6 +251,10 @@ export class SystemController extends BaseController {
     return this.userController.saveUserRoles(req, res);
   }
 
+  async transferOwnership(req: Request, res: Response) {
+    return this.userController.transferOwnership(req, res);
+  }
+
   async checkUpdate(req: Request, res: Response) {
     return this.runtimeController.checkUpdate(req, res);
   }

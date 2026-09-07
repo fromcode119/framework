@@ -2,6 +2,7 @@ import { BackupSectionKey } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { BaseController } from '@fromcode119/core';
 import { SystemBackupService } from '@api/services/system-backup-service';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class SystemBackupController extends BaseController {
   constructor(private readonly service: SystemBackupService) {
@@ -53,7 +54,7 @@ export class SystemBackupController extends BaseController {
 
   async completeImport(req: Request, res: Response): Promise<void> {
     try {
-      const uploadId = String(req.body?.uploadId || '').trim();
+      const uploadId = CoercionUtils.toString(req.body?.uploadId);
       if (!uploadId) {
         throw new Error('uploadId is required.');
       }
@@ -65,7 +66,7 @@ export class SystemBackupController extends BaseController {
 
   async downloadBackup(req: Request, res: Response): Promise<void> {
     try {
-      const result = await this.service.resolveDownload(String(req.params.id || ''), this.resolveActor(req));
+      const result = await this.service.resolveDownload(CoercionUtils.toString(req.params.id), this.resolveActor(req));
       res.download(result.filePath, result.filename);
     } catch (error) {
       this.handleError(res, error);
@@ -74,7 +75,7 @@ export class SystemBackupController extends BaseController {
 
   async deleteBackup(req: Request, res: Response): Promise<void> {
     try {
-      res.json(await this.service.deleteBackup(String(req.params.id || ''), this.resolveActor(req)));
+      res.json(await this.service.deleteBackup(CoercionUtils.toString(req.params.id), this.resolveActor(req)));
     } catch (error) {
       this.handleError(res, error);
     }
@@ -83,7 +84,7 @@ export class SystemBackupController extends BaseController {
   async previewRestore(req: Request, res: Response): Promise<void> {
     try {
       const targetKind = this.readTargetKind(req.body?.targetKind);
-      res.json(await this.service.previewRestore(String(req.params.id || ''), targetKind, this.resolveActor(req)));
+      res.json(await this.service.previewRestore(CoercionUtils.toString(req.params.id), targetKind, this.resolveActor(req)));
     } catch (error) {
       this.handleError(res, error);
     }
@@ -92,11 +93,11 @@ export class SystemBackupController extends BaseController {
   async executeRestore(req: Request, res: Response): Promise<void> {
     try {
       const targetKind = this.readTargetKind(req.body?.targetKind);
-      const previewToken = String(req.body?.previewToken || '').trim();
-      const confirmationText = String(req.body?.confirmationText || '').trim();
+      const previewToken = CoercionUtils.toString(req.body?.previewToken);
+      const confirmationText = CoercionUtils.toString(req.body?.confirmationText);
       res.json(
         await this.service.executeRestore(
-          String(req.params.id || ''),
+          CoercionUtils.toString(req.params.id),
           targetKind,
           previewToken,
           confirmationText,

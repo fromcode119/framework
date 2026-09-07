@@ -8,6 +8,12 @@ export class PluginPermission extends Enum {
   static readonly DATABASE_READ = new PluginPermission('database:read');
   static readonly DATABASE_WRITE = new PluginPermission('database:write');
   static readonly DATABASE_ALL = new PluginPermission('database:*');
+  /** Owner-connection schema helpers. This is never implied by the legacy `database` capability. */
+  static readonly DATABASE_SCHEMA = new PluginPermission('database:schema');
+  /** Arbitrary SQL execution. Explicitly high-risk and never implied by the legacy `database` capability. */
+  static readonly DATABASE_RAW = new PluginPermission('database:raw');
+  /** Schema changes to tables owned by another plugin. */
+  static readonly DATABASE_SCHEMA_CROSS_PLUGIN = new PluginPermission('database:schema:cross-plugin');
   static readonly API_ROUTES = new PluginPermission('api:routes');
   static readonly NAVIGATION = new PluginPermission('navigation');
   static readonly HOOKS = new PluginPermission('hooks');

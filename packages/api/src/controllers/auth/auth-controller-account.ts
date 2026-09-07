@@ -2,13 +2,14 @@ import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason
 import { Request, Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerSession } from '@api/controllers/auth/auth-controller-session';
+import { CoercionUtils } from '@fromcode119/core';
 
 export class AuthControllerAccount extends AuthControllerSession {
   async verifyPassword(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const password = String(req.body?.password || '');
+    const password = CoercionUtils.toString(req.body?.password);
     if (!password) return res.status(400).json({ error: 'Password is required' });
 
     const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
@@ -43,7 +44,7 @@ export class AuthControllerAccount extends AuthControllerSession {
   async deleteMyAccount(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const password = String(req.body?.password || '');
+    const password = CoercionUtils.toString(req.body?.password);
     if (!password) return res.status(400).json({ error: 'Password is required' });
     const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -120,7 +121,7 @@ export class AuthControllerAccount extends AuthControllerSession {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const newEmail = this.normalizeEmail(req.body?.newEmail);
-    const currentPassword = String(req.body?.currentPassword || '');
+    const currentPassword = CoercionUtils.toString(req.body?.currentPassword);
 
     if (!newEmail || !this.isValidEmail(newEmail)) {
       return res.status(400).json({ error: 'A valid new email is required' });
@@ -190,7 +191,7 @@ export class AuthControllerAccount extends AuthControllerSession {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    const token = String(req.body?.token || req.query?.token || '').trim();
+    const token = CoercionUtils.toString(req.body?.token) || CoercionUtils.toString(req.query?.token);
     if (!token) return res.status(400).json({ error: 'Email change token is required' });
 
     const result = await this.consumeEmailChangeToken(token);

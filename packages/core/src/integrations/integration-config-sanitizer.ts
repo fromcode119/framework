@@ -66,7 +66,7 @@ export class IntegrationConfigSanitizer {
   }
 
   private static isSecretField(field: IIntegrationConfigField): boolean {
-    const declaredType = CoercionUtils.toString(field?.type).toLowerCase();
+    const declaredType = CoercionUtils.toKey(field?.type);
     if (!IntegrationConfigFieldType.has(declaredType)) return true;
     return declaredType === String(IntegrationConfigFieldType.PASSWORD);
   }

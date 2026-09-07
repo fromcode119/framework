@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
 import { randomBytes } from 'crypto';
 import { AuthControllerRegistration } from '@api/controllers/auth/auth-controller-registration';
+import { CoercionUtils } from '@fromcode119/core';
 
 /**
  * Password-reset (forgot/reset) and SSO login handlers. Extracted from
@@ -91,7 +92,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
    * partner/customer their set-password link when the original was missed/delayed.
    */
   async adminSendPasswordReset(req: Request, res: Response) {
-    const userId = req.body?.userId != null && String(req.body.userId).trim() !== '' ? req.body.userId : null;
+    const userId = req.body?.userId != null && CoercionUtils.toString(req.body.userId) !== '' ? req.body.userId : null;
     const email = this.normalizeEmail(req.body?.email);
     try {
       const user = userId != null
@@ -129,8 +130,8 @@ export class AuthControllerSso extends AuthControllerRegistration {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    const token = String(req.body?.token || '').trim();
-    const newPassword = String(req.body?.newPassword || req.body?.password || '').trim();
+    const token = CoercionUtils.toString(req.body?.token);
+    const newPassword = CoercionUtils.toString(req.body?.newPassword) || CoercionUtils.toString(req.body?.password);
     if (!token || !newPassword) {
       return res.status(400).json({ error: 'Token and new password are required' });
     }
@@ -189,9 +190,9 @@ export class AuthControllerSso extends AuthControllerRegistration {
   }
 
   async ssoLogin(req: Request, res: Response) {
-    const provider = String(req.body?.provider || '').trim().toLowerCase();
-    const idToken = String(req.body?.idToken || '').trim();
-    const accessToken = String(req.body?.accessToken || '').trim();
+    const provider = CoercionUtils.toKey(req.body?.provider);
+    const idToken = CoercionUtils.toString(req.body?.idToken);
+    const accessToken = CoercionUtils.toString(req.body?.accessToken);
 
     if (!provider) return res.status(400).json({ error: 'SSO provider is required' });
     if (!idToken && !accessToken) return res.status(400).json({ error: 'idToken or accessToken is required' });

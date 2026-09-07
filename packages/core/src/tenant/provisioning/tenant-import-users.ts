@@ -23,7 +23,7 @@ export class TenantImportUsers {
     let created = 0;
     remap.markRemapped(SystemConstants.TABLE.USERS);
     for await (const user of reader.users()) {
-      const email = CoercionUtils.toString(user.email).trim().toLowerCase();
+      const email = CoercionUtils.toKey(user.email);
       if (!email) {
         warnings.push(`A user row without an email (archived id ${CoercionUtils.toString(user.id)}) was skipped.`);
         continue;
@@ -43,7 +43,7 @@ export class TenantImportUsers {
         + 'VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING id',
         [
           email,
-          CoercionUtils.toString(user.username).trim() || email,
+          CoercionUtils.toString(user.username) || email,
           CoercionUtils.toString(user.password),
           JSON.stringify(Array.isArray(user.roles) ? user.roles : []),
           JSON.stringify(Array.isArray(user.permissions) ? user.permissions : TenantImportUsers.parseList(user.permissions)),

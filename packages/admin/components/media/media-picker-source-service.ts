@@ -53,11 +53,11 @@ export class MediaPickerSourceService {
 
   /** Filename/path substring match, so the picker's search box works on the theme tab too. */
   static search(items: IMediaItem[], query: string): IMediaItem[] {
-    const needle = CoercionUtils.toString(query).toLowerCase();
+    const needle = CoercionUtils.toKey(query);
     if (!needle) return items;
     return items.filter((item) => (
       item.filename.toLowerCase().includes(needle) ||
-      CoercionUtils.toString(item.relativePath).toLowerCase().includes(needle)
+      CoercionUtils.toKey(item.relativePath).includes(needle)
     ));
   }
 

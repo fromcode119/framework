@@ -97,6 +97,7 @@ export class PluginGuestContextFactory {
     return new Proxy({}, {
       get(_target, prop) {
         if (prop === 'guard') return (roles: string[] = []) => PluginGuestHttp.guard(roles);
+        if (prop === 'platformGuard') return () => PluginGuestHttp.platformGuard();
         if (prop === 'requirePermission') return (permission: string | string[]) => http.requirePermission(permission);
         if (prop === 'isAuthenticated') return (request: any) => !!request?.user;
         if (typeof prop !== 'string') return undefined;

@@ -25,6 +25,18 @@ case "${DEPLOYMENT_MODE:-}" in
     for dir in /app/data /app/backups /app/public/uploads /app/storage/private /app/plugins /app/themes /app/appearance; do
       own_if_needed "$dir"
     done
+    # Database logins, before anything connects. This replaces an init script that was mounted into the
+    # database image: that ran ONLY when the data volume was first created, so it could never repair an
+    # existing deployment, and it never ran at all against a managed database. Here it runs every boot,
+    # against whatever database the URLs point at.
+    #
+    # DATABASE_BOOTSTRAP_URL is a PRIVILEGED connection and is unset below, before the app is exec'd, so
+    # it is absent from the long-lived process and from every plugin guest forked out of it. Unset means
+    # skip — the correct behaviour wherever the operator owns role creation.
+    if [ -n "${DATABASE_BOOTSTRAP_URL:-}" ]; then
+      runuser -u "$APP_USER" -- env HOME=/home/node DATABASE_BOOTSTRAP_URL="$DATABASE_BOOTSTRAP_URL" \
+        npm run fromcode -- db bootstrap-roles
+    fi
     # Plugin dependencies are installed as the app user, so the api (running as `node`) can update and
     # remove them later; root-owned node_modules in a mounted plugin dir would be undeletable by it.
     runuser -u "$APP_USER" -- env HOME=/home/node npm run fromcode -- plugin deps-install-all
@@ -60,6 +72,10 @@ esac
 # The apps start as root and drop privileges themselves (api: ApiEntry; admin/frontend: app-launcher).
 # The command is whatever the image target or compose `command:` says; `deps-install-all` was already
 # done above for the api targets, so their command is only the start.
+# The privileged bootstrap credential does not outlive this script: the app, and every plugin guest it
+# forks, start without it in their environment.
+unset DATABASE_BOOTSTRAP_URL
+
 case "$1" in
   npm|node|sh|./node_modules/.bin/tsx) exec "$@" ;;
   *) exec sh -lc "$*" ;;

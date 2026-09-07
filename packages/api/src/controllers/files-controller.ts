@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { BaseController, PluginManager, Logger, GrantOutcome, FileGrantRepository, FileShareAccessService, MediaVisibility, SystemConstants } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { FileShareRateLimiter } from '@api/services/file-share-rate-limiter';
+import { CoercionUtils } from '@fromcode119/core';
 
 /**
  * Recipient-facing delivery of privately stored files, plus the operator's side of it.
@@ -57,7 +58,7 @@ export class FilesController extends BaseController {
     }
     FileShareRateLimiter.record(ip);
 
-    const resolution = await this.access.resolveForView(String(req.params.token || ''), this.signedInEmail(req));
+    const resolution = await this.access.resolveForView(CoercionUtils.toString(req.params.token), this.signedInEmail(req));
 
     await this.grants.logAccess({
       grantId: resolution.grant?.id ?? null,
@@ -199,7 +200,7 @@ export class FilesController extends BaseController {
     FileShareRateLimiter.record(ip);
 
     const mediaId = Number(req.params.mediaId);
-    const resolution = await this.access.resolveForDownload(String(req.params.token || ''), mediaId, this.signedInEmail(req));
+    const resolution = await this.access.resolveForDownload(CoercionUtils.toString(req.params.token), mediaId, this.signedInEmail(req));
     const file = resolution.files[0];
 
     const logAndRefuse = async (outcome: GrantOutcome) => {

@@ -141,6 +141,7 @@ export class AdminConstants {
     USER_2FA_VERIFY: (id: string | number) => AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_USERS_2FA_VERIFY, { id }),
     USER_2FA_RECOVERY_REGENERATE: (id: string | number) => AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_USERS_2FA_RECOVERY, { id }),
     USER_ROLES: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_USERS_ROLES),
+    USER_OWNERSHIP: (id: string | number) => AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_USERS_OWNERSHIP, { id }),
     PEOPLE: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE),
     PERSON: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID, { id })),
     PERSON_SAVE: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID, { id })),

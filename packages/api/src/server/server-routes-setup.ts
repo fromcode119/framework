@@ -163,7 +163,7 @@ export class ServerRoutesSetup {
     // the ONE shared registry so the stdio transport, the hosted transport and the in-process Admin
     // Assistant can never disagree about which tools exist.
     vApi.use(McpRouter.create({
-      registry: McpFrameworkToolsRegistrar.ensure({ db: (this.manager as any).db, mediaManager: this.mediaManager, hooks: this.manager.hooks, logger: this.logger }),
+      registry: McpFrameworkToolsRegistrar.ensure({ db: (this.manager as any).db, mediaManager: this.mediaManager, settingsCache: this.settingsCache, hooks: this.manager.hooks, logger: this.logger }),
       // The platform's OWN checker, not a hand-rolled match. An earlier version compared
       // `getUserPermissions().includes(permission)`, which cannot understand the wildcard grants the
       // roles table actually stores — the admin role holds `*`, so a full admin was refused every

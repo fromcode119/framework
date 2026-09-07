@@ -1,9 +1,14 @@
 import { SystemConstants } from '@fromcode119/core';
 import { RateLimitBucketUtils } from '@api/utils/rate-limit-bucket-utils';
 import { RateLimitSettingsUtils } from '@api/utils/rate-limit-settings-utils';
+import { createHmac } from 'crypto';
 
-/** A JWT-shaped token — the structural gate the bucket rules use, not a real credential. */
-const TOKEN = 'aaaaaaaaaa.bbbbbbbbbb.cccccccccc';
+const JWT_SECRET = 'rate-limit-test-secret';
+process.env.JWT_SECRET = JWT_SECRET;
+const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+const payload = Buffer.from(JSON.stringify({ sub: '1', exp: 4_102_444_800 })).toString('base64url');
+const signature = createHmac('sha256', JWT_SECRET).update(`${header}.${payload}`).digest('base64url');
+const TOKEN = `${header}.${payload}.${signature}`;
 
 /** The storefront renderer: a container on the docker network, calling the API with no identity. */
 const renderRequest = (overrides: Record<string, unknown> = {}) => ({
@@ -55,6 +60,13 @@ describe('RateLimitBucketUtils — internal service bucket', () => {
     expect(RateLimitBucketUtils.resolveKey(signedIn)).toMatch(/^tok:172\.18\.0\.7:/);
     expect(RateLimitBucketUtils.resolveLimit(signedIn))
       .toBe(Number(RateLimitSettingsUtils.DEFAULT_MAX_REQUESTS_AUTHENTICATED));
+  });
+
+  it('does not grant fresh buckets to forged JWT-shaped strings', () => {
+    const forged = visitorRequest({ headers: { authorization: 'Bearer aaaaaaaa.bbbbbbbb.cccccccc' } });
+    expect(RateLimitBucketUtils.resolveKey(forged)).toBe('ip:203.0.113.9');
+    expect(RateLimitBucketUtils.resolveLimit(forged))
+      .toBe(Number(RateLimitSettingsUtils.DEFAULT_MAX_REQUESTS));
   });
 
   it('leaves the admin bootstrap groups untouched', () => {

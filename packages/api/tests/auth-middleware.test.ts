@@ -131,6 +131,48 @@ describe('AuthManager Middleware Conflict Fix', () => {
         expect(req.user.email).toBe('frontend@example.com');
     });
 
+    it('refuses a valid Bearer token when the request is bound to another tenant', async () => {
+        const token = jwt.sign(
+            { id: '1', email: 'admin-a@example.com', roles: ['admin'], tenantId: 'tenant-a' },
+            secret,
+        );
+        const req: any = {
+            tenantId: 'tenant-b',
+            headers: {
+                authorization: `Bearer ${token}`,
+                'x-framework-client': 'frontend-ui',
+            },
+            url: '/api/v1/plugins/example/settings',
+        };
+        const next = vi.fn();
+
+        await authManager.middleware()(req, {}, next);
+
+        expect(next).toHaveBeenCalledOnce();
+        expect(req.user).toBeUndefined();
+    });
+
+    it('authenticates a session whose signed tenant matches the bound request tenant', async () => {
+        const token = jwt.sign(
+            { id: '1', email: 'admin-a@example.com', roles: ['admin'], tenantId: 'tenant-a' },
+            secret,
+        );
+        const req: any = {
+            tenantId: 'tenant-a',
+            headers: {
+                authorization: `Bearer ${token}`,
+                'x-framework-client': 'frontend-ui',
+            },
+            url: '/api/v1/plugins/example/settings',
+        };
+        const next = vi.fn();
+
+        await authManager.middleware()(req, {}, next);
+
+        expect(next).toHaveBeenCalledOnce();
+        expect(req.user?.email).toBe('admin-a@example.com');
+    });
+
     it('should ignore the client auth cookie for admin requests', async () => {
         const validUser = { id: '1', email: 'frontend@example.com', roles: ['customer'] };
         const validToken = jwt.sign(validUser, secret);

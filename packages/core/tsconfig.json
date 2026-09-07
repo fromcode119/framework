@@ -14,6 +14,7 @@
     { "path": "../media" },
     { "path": "../email" },
     { "path": "../cache" },
+    { "path": "../queue" },
     { "path": "../scheduler" },
     { "path": "../plugins" },
     { "path": "../mcp" },

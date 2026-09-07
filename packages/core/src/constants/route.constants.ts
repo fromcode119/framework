@@ -154,6 +154,7 @@ export class RouteConstants {
   ADMIN_PERMISSIONS: '/admin/permissions',
   ADMIN_USERS: '/admin/users',
   ADMIN_USERS_ID: '/admin/users/:id',
+  ADMIN_USERS_OWNERSHIP: '/admin/users/:id/ownership',
   ADMIN_PEOPLE: '/admin/people',
   ADMIN_PEOPLE_RECORDS: '/admin/people/records',
   /** Recipient suggestions. Literal path — must be registered before ADMIN_PEOPLE_ID. */
@@ -208,7 +209,7 @@ export class RouteConstants {
   PLUGINS_SLUG_SETTINGS_RESET: '/:slug/settings/reset',
   PLUGINS_SLUG_SETTINGS_EXPORT: '/:slug/settings/export',
   PLUGINS_SLUG_SETTINGS_IMPORT: '/:slug/settings/import',
-  PLUGINS_SLUG_UI_WILDCARD: '/:slug/ui/*',
+  PLUGINS_SLUG_UI_WILDCARD: '/:slug/ui/*assetPath',
   PLUGINS_SLUG: '/:slug',
 
   // ── Collections ──────────────────────────────────────────────────────────
@@ -246,8 +247,8 @@ export class RouteConstants {
   THEMES_SLUG_INSTALL: '/:slug/install',
   THEMES_SLUG_CONFIG: '/:slug/config',
   THEMES_SLUG_CHECK_UPDATE: '/:slug/check-update',
-  THEMES_SLUG_PUBLIC_WILDCARD: '/:slug/public/*',
-  THEMES_SLUG_UI_WILDCARD: '/:slug/ui/*',
+  THEMES_SLUG_PUBLIC_WILDCARD: '/:slug/public/*assetPath',
+  THEMES_SLUG_UI_WILDCARD: '/:slug/ui/*assetPath',
   THEMES_ACTIVE_ASSETS: '/active/assets',
   THEMES_SLUG: '/:slug',
 

@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, Logger, PluginState, StringUtils } from '@fromcode119/core';
+import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
@@ -238,6 +238,16 @@ export class UserManagementService {
   }
 
   async deleteUser(id: number) {
+    // The owner seat is the one account that cannot be removed: it grants every tenant and gates plugin
+    // installation, so deleting it would leave the platform with no one able to administer it and no way
+    // to appoint anyone. Ownership is not stuck on that account either — it can be transferred, and the
+    // previous owner becomes an ordinary admin who CAN then be deleted.
+    if (await new PlatformOwnershipService(this.db).isOwner(id)) {
+      // 409, not 403: the caller may well have every permission — the account is protected by the
+      // state it is in, and transferring the seat is what resolves it.
+      throw new PlatformOwnershipError(409, 'The platform owner cannot be deleted. Transfer ownership first, then delete the account.');
+    }
+
     // Unlink any unified `people` row from this user BEFORE deleting it, so the person record does not
     // dangle on a now-deleted user id. A stale link is what blocks recreating the same person/partner
     // later (the new affiliate re-matches the old person, which still points at the deleted account) and

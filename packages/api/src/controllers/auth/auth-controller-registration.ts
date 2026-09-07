@@ -11,6 +11,7 @@ import { RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerTokenSupport } from '@api/controllers/auth/auth-controller-token-support';
 import type { ILoginThrottleSettings } from '@api/controllers/auth/interfaces/login-throttle-settings.interface';
 import type { ILoginThrottleState } from '@api/controllers/auth/interfaces/login-throttle-state.interface';
+import { CoercionUtils } from '@fromcode119/core';
 
 export abstract class AuthControllerRegistration extends AuthControllerTokenSupport {
   protected sanitizeAuthFlowContext(raw: any): Record<string, any> | undefined {
@@ -68,7 +69,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
 
   async verifyEmail(req: Request, res: Response) {
     if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
-    const token = String(req.body?.token || req.query?.token || '').trim();
+    const token = CoercionUtils.toString(req.body?.token) || CoercionUtils.toString(req.query?.token);
     if (!token) return res.status(400).json({ error: 'Verification token is required' });
     const result = await this.consumeEmailVerificationToken(token);
     if (!result.ok) return res.status(400).json({ error: result.reason === TokenErrorReason.EXPIRED ? 'Verification link has expired. Please request a new one.' : 'Invalid verification token' });

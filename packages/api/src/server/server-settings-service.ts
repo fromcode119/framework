@@ -126,6 +126,7 @@ export class ServerSettingsService {
         { key: SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED, value: 'true', description: 'Allow new customer self-registration.', group: 'security' },
         { key: SystemConstants.META_KEY.EMAIL_NOTIFICATIONS, value: 'true', description: 'Receive system alerts via email.', group: 'Engagement' },
         { key: SystemConstants.META_KEY.MCP_REMOTE_ENABLED, value: 'false', description: 'Allow remote MCP clients (Claude web/desktop) to connect over Streamable HTTP with an API token. Off by default.', group: 'Integrations' },
+        { key: SystemConstants.META_KEY.MCP_REMOTE_MEDIA_MAX_MB, value: '25', description: 'Maximum media payload accepted by MCP upload and replace tools, in megabytes.', group: 'Integrations' },
       ];
 
       for (const d of defaults) {

@@ -52,8 +52,6 @@ export { SystemLogRetentionService } from '@core/database/system-log-retention-s
 export { Seeder } from '@core/database/seeder';
 export { HookManager } from '@core/hooks/hook-manager';
 export { HookAdapterFactory } from '@core/hooks/hook-adapter-factory';
-export { QueueManager } from '@core/queue/queue-manager';
-export { QueueAdapterFactory } from '@core/queue/queue-adapter-factory';
 export { I18nManager } from '@core/i18n/i18n-manager';
 export { WebSocketManager } from '@core/realtime/web-socket-manager';
 
@@ -159,6 +157,7 @@ export { SafeArchive } from '@core/security/safe-archive';
 export { MediaPathUtils } from '@core/security/media-path-utils';
 export { SystemSettingsExposureUtils } from '@core/security/system-settings-exposure-utils';
 export { NetworkAddressUtils } from '@core/security/network-address-utils';
+export { OutboundUrlSecurityPolicy } from '@core/security/outbound-url-security-policy';
 export { ProjectPaths } from '@core/config/paths';
 
 // Integrations
@@ -193,6 +192,9 @@ export { TenantMembership } from '@core/tenant/tenant-membership';
 export { TenantAccess } from '@core/tenant/tenant-access';
 export { TenantMembershipService } from '@core/tenant/tenant-membership-service';
 export { DatabaseRoleGuard } from '@core/tenant/database-role-guard';
+export { DatabaseRoleBootstrapService } from '@core/database/database-role-bootstrap-service';
+export { PlatformOwnershipService } from '@core/tenant/platform-ownership-service';
+export { PlatformOwnershipError } from '@core/tenant/platform-ownership-error';
 export { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 export { TenantMode } from '@core/tenant/tenant-mode';
 export { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';

@@ -20,8 +20,9 @@ export class PluginSignatureService {
       // Create a copy without internal fields if any
       const { signature: _, ...dataToVerify } = manifest;
       
-      // Canonicalize data (stable key ordering)
-      const data = JSON.stringify(dataToVerify, Object.keys(dataToVerify).sort());
+      // Canonicalize every object level. JSON.stringify's array replacer applies as an allowlist
+      // at every level, so the previous root-key list silently omitted nested manifest fields.
+      const data = this.canonicalize(dataToVerify);
       
       const verifier = crypto.createVerify('sha256');
       verifier.update(data);
@@ -45,5 +46,16 @@ export class PluginSignatureService {
   /** Sign a payload using HMAC-SHA256. */
   static sign(payload: string, secret: string): string {
     return crypto.createHmac('sha256', secret).update(payload).digest('hex');
+  }
+
+  private static canonicalize(value: unknown): string {
+    if (value === null || typeof value !== 'object') return JSON.stringify(value);
+    if (Array.isArray(value)) return `[${value.map((entry) => this.canonicalize(entry)).join(',')}]`;
+
+    const record = value as Record<string, unknown>;
+    const entries = Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${this.canonicalize(record[key])}`);
+    return `{${entries.join(',')}}`;
   }
 }

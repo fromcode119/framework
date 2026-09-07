@@ -1,3 +1,5 @@
+import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
+import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import { JoinType } from '@database/enums/join-type.enum';
 import { sql, eq, ne, gt, gte, lt, lte, isNull, isNotNull } from 'drizzle-orm';
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
@@ -60,6 +62,35 @@ export abstract class BaseDialect {
   /** No row-level security here, so there is nothing to lift: `fn` runs as is. */
   async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> {
     return fn();
+  }
+
+  /**
+   * A driver that cannot serialise callers REFUSES, exactly as `withTenant` does.
+   *
+   * Running `fn` anyway would look like it worked and quietly permit the race the caller asked to be
+   * protected from — and the first caller of this is first-administrator creation, where losing that
+   * race means two administrators nobody intended.
+   */
+  async withExclusiveLock<T>(name: string, _fn: () => Promise<T>): Promise<T> {
+    throw new Error(
+      `${this.constructor.name}: this driver has no exclusive-lock strategy, so "${name}" cannot be `
+      + 'serialised. Refusing rather than running it unprotected.',
+    );
+  }
+
+  /**
+   * A driver with no login system reports that, rather than throwing.
+   *
+   * Unlike `withExclusiveLock` above — where carrying on unprotected would permit the race the caller
+   * asked to be prevented — there is nothing unsafe about a database that has no roles to create. SQLite
+   * is the case: its access boundary is the database file's permissions, and it also cannot isolate
+   * tenants, so a deployment that needs a least-privilege runtime role is already refused elsewhere.
+   */
+  async provisionRoles(_plan: DatabaseRolePlan): Promise<DatabaseRoleOutcome> {
+    return DatabaseRoleOutcome.unsupported(
+      `${this.constructor.name}: this driver has no login system, so there are no roles to provision. `
+      + 'Access is controlled outside the database.',
+    );
   }
 
   /**

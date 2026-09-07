@@ -17,6 +17,21 @@ export class CoercionUtils {
     return coerced.includes('[object Object]') ? '' : coerced;
   }
 
+  /**
+   * The COMPARISON form of a value: trimmed and lower-cased.
+   *
+   * `toString(x).trim().toLowerCase()` appears in the hundreds across this codebase, and the `.trim()`
+   * in it is always dead because `toString` already trims — so the idiom is both repeated and slightly
+   * wrong every time it is written out. Matching a provider key, a slug, a status or a header against a
+   * known set is one intent, and it reads as one call.
+   *
+   * Not a slug: nothing is stripped or replaced, so spaces inside the value survive. Use
+   * `StringUtils.slugify` when the result has to be URL-safe.
+   */
+  static toKey(value: unknown): string {
+    return CoercionUtils.toString(value).toLowerCase();
+  }
+
   static toNumber(value: unknown, fallback = 0): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
@@ -25,7 +40,7 @@ export class CoercionUtils {
   static toBoolean(value: unknown, fallback: boolean | undefined = false): boolean | undefined {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'number' && Number.isFinite(value)) return value > 0;
-    const normalized = CoercionUtils.toString(value).toLowerCase();
+    const normalized = CoercionUtils.toKey(value);
     if (['true', '1', '1.0', 'yes', 'on', 'enabled', 'active'].includes(normalized)) return true;
     if (['false', '0', '0.0', 'no', 'off', 'disabled', 'inactive'].includes(normalized)) return false;
     return fallback;

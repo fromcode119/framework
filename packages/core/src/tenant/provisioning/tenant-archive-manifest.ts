@@ -57,7 +57,7 @@ export class TenantArchiveManifest {
       throw new Error(`Tenant archive format ${formatVersion || 'unknown'} is not supported (this platform reads format ${TenantArchiveManifest.FORMAT_VERSION}).`);
     }
     const tenant = input.tenant ?? {};
-    const slug = CoercionUtils.toString(tenant.slug).trim();
+    const slug = CoercionUtils.toString(tenant.slug);
     if (!slug) throw new Error('Tenant archive manifest names no tenant slug.');
     const source = input.source === 'single-tenant' ? 'single-tenant' : 'tenant';
     return new TenantArchiveManifest(
@@ -66,14 +66,14 @@ export class TenantArchiveManifest {
       CoercionUtils.toString(input.frameworkVersion),
       source,
       {
-        id: CoercionUtils.toString(tenant.id).trim(),
+        id: CoercionUtils.toString(tenant.id),
         slug,
-        primaryHost: CoercionUtils.toString(tenant.primaryHost).trim(),
+        primaryHost: CoercionUtils.toString(tenant.primaryHost),
         hostAliases: Array.isArray(tenant.hostAliases) ? tenant.hostAliases.map((h: unknown) => CoercionUtils.toString(h)) : [],
-        state: CoercionUtils.toString(tenant.state).trim() || 'active',
+        state: CoercionUtils.toString(tenant.state) || 'active',
         // Archives written before T6 name no kind: they were exported from storefront sites.
-        kind: CoercionUtils.toString(tenant.kind).trim() || 'site',
-        appearance: CoercionUtils.toString(tenant.appearance).trim(),
+        kind: CoercionUtils.toString(tenant.kind) || 'site',
+        appearance: CoercionUtils.toString(tenant.appearance),
       },
       Array.isArray(input.plugins) ? input.plugins.map((p: any) => ({ slug: CoercionUtils.toString(p?.slug), version: CoercionUtils.toString(p?.version) })) : [],
       input.theme && typeof input.theme === 'object'

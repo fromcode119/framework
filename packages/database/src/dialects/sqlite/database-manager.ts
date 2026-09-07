@@ -63,6 +63,24 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     return this.drizzle.run(query);
   }
 
+  /**
+   * `BEGIN IMMEDIATE` takes SQLite's write lock at once rather than on the first write, so a second
+   * caller blocks here instead of getting as far as reading, deciding, and then colliding. SQLite has
+   * exactly one writer, which is what makes that sufficient — there is no advisory lock to name, and
+   * the name is kept only so the failure message can say what was being guarded.
+   */
+  async withExclusiveLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    await this.queryRaw('BEGIN IMMEDIATE');
+    try {
+      const result = await fn();
+      await this.queryRaw('COMMIT');
+      return result;
+    } catch (error) {
+      await this.queryRaw('ROLLBACK').catch(() => undefined);
+      throw new Error(`Exclusive section "${name}" failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+    }
+  }
+
   async queryRaw(sqlText: string, values: unknown[] = []): Promise<Array<Record<string, unknown>>> {
     const statement = this.sqlite.prepare(sqlText);
     if (!statement.reader) {

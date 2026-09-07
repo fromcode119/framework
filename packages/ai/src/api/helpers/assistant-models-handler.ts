@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
+import { CoercionUtils } from '@fromcode119/core';
 
 /** Handles the assistantModels endpoint logic. */
 export class AssistantModelsHandler {
   static async handle(req: Request, res: Response, deps: IControllerDeps): Promise<Response> {
     const startedAt = Date.now();
     try {
-      const provider = String(req.body?.provider || req.query?.provider || '').trim().toLowerCase() || 'openai';
+      const provider = (CoercionUtils.toString(req.body?.provider) || CoercionUtils.toString(req.query?.provider)).toLowerCase() || 'openai';
       const requestConfig = req.body?.config && typeof req.body.config === 'object' ? req.body.config : {};
       const storedConfig = await deps.getStoredAiProviderConfig(provider);
       const mergedConfig = { ...storedConfig, ...requestConfig };
@@ -86,7 +87,7 @@ export class AssistantModelsHandler {
       await deps.emitAssistantTelemetry('models.list.failed', { provider, error: `Unsupported provider "${provider}"`, durationMs: Date.now() - startedAt });
       return res.status(400).json({ error: `Unsupported provider "${provider}"` });
     } catch (e: any) {
-      await deps.emitAssistantTelemetry('models.list.failed', { provider: String(req.body?.provider || req.query?.provider || '').trim().toLowerCase() || 'openai', error: String(e?.message || 'Failed to fetch provider models'), durationMs: Date.now() - startedAt });
+      await deps.emitAssistantTelemetry('models.list.failed', { provider: (CoercionUtils.toString(req.body?.provider) || CoercionUtils.toString(req.query?.provider)).toLowerCase() || 'openai', error: String(e?.message || 'Failed to fetch provider models'), durationMs: Date.now() - startedAt });
       return res.status(500).json({ error: e?.message || 'Failed to fetch provider models' });
     }
   }

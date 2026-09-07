@@ -11,7 +11,8 @@ import Link from 'next/link';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { UserProfileHeader } from '@/app/users/[id]/components/view/user-profile-header.client';
 import { UserProfileSidebar } from '@/app/users/[id]/components/view/user-profile-sidebar.client';
-import { prop, state } from '@fromcode119/reactor';
+import { UserOwnershipCard } from '@/app/users/[id]/components/view/user-ownership-card.client';
+import { prop, state, bound } from '@fromcode119/reactor';
 
 export class UserProfilePage extends AdminComponent {
   @prop declare params: Promise<{ id: string }>;
@@ -32,6 +33,11 @@ export class UserProfilePage extends AdminComponent {
 
   componentWillUnmount(): void {
     this.mounted = false;
+  }
+
+  /** After a transfer both accounts changed, so the page re-reads rather than guessing the new state. */
+  @bound private reload(): void {
+    void this.fetchUser();
   }
 
   private async fetchUser(): Promise<void> {
@@ -128,6 +134,7 @@ export class UserProfilePage extends AdminComponent {
                     </Link>
                  </div>
               </Card>
+              <UserOwnershipCard user={user} onTransferred={this.reload} />
             </div>
 
             <UserProfileSidebar user={user} theme={theme} />

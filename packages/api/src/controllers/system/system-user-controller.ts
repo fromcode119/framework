@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import { RequestParamUtils } from '@api/utils/request-param-utils';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { CoercionUtils, PlatformOwnershipService } from '@fromcode119/core';
 
 export class SystemUserController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
@@ -23,7 +25,7 @@ export class SystemUserController {
 
   async getRole(req: Request, res: Response) {
     try {
-      const role = await this.runtime.users.getRole(req.params.slug);
+      const role = await this.runtime.users.getRole(CoercionUtils.toString(req.params.slug));
       if (!role) {
         return res.status(404).json({ error: 'Role not found' });
       }
@@ -35,7 +37,7 @@ export class SystemUserController {
 
   async deleteRole(req: Request, res: Response) {
     try {
-      await this.runtime.users.deleteRole(req.params.slug);
+      await this.runtime.users.deleteRole(CoercionUtils.toString(req.params.slug));
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -69,7 +71,7 @@ export class SystemUserController {
 
   async saveUser(req: Request, res: Response) {
     try {
-      const id = await this.runtime.users.saveUser(req.params.id ? parseInt(req.params.id, 10) : null, req.body);
+      const id = await this.runtime.users.saveUser(req.params.id ? CoercionUtils.toRelationId(req.params?.id) : null, req.body);
       res.json({ success: true, id });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -78,10 +80,8 @@ export class SystemUserController {
 
   async getUser(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (Number.isNaN(id)) {
-        return res.status(400).json({ error: 'Invalid user id' });
-      }
+      const id = RequestParamUtils.relationId(req, res, 'user');
+      if (id === null) return;
       const user = await this.runtime.users.getUser(id);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
@@ -92,23 +92,45 @@ export class SystemUserController {
     }
   }
 
+  /**
+   * Hands the platform owner seat to another account. The caller must BE the current owner — the
+   * service re-checks that inside the transaction, so a stale session cannot transfer a seat it no
+   * longer holds — and the previous owner stays on as an ordinary admin.
+   */
+  async transferOwnership(req: Request, res: Response) {
+    try {
+      const id = RequestParamUtils.relationId(req, res, 'user');
+      if (id === null) return;
+
+      const callerId = CoercionUtils.toRelationId((req as any).user?.id);
+      if (callerId === null) {
+        return res.status(401).json({ error: 'Authentication is required to transfer ownership' });
+      }
+
+      await new PlatformOwnershipService(this.runtime.db).transfer(callerId, id);
+      res.json({ success: true, ownerId: id });
+    } catch (error: any) {
+      // Every refusal the service raises names its own status; anything without one is a genuine fault.
+      res.status(CoercionUtils.toNumber(error?.statusCode) || 500).json({ error: error.message });
+    }
+  }
+
   async deleteUser(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (Number.isNaN(id)) {
-        return res.status(400).json({ error: 'Invalid user id' });
-      }
+      const id = RequestParamUtils.relationId(req, res, 'user');
+      if (id === null) return;
       await this.runtime.users.deleteUser(id);
       res.json({ success: true });
     } catch (error: any) {
-      res.status(500).json({ error: error.message });
+      // A refusal names its own status (the owner seat cannot be deleted); anything else is a fault.
+      res.status(CoercionUtils.toNumber(error?.statusCode) || 500).json({ error: error.message });
     }
   }
 
   async saveUserRoles(req: Request, res: Response) {
     try {
-      const userId = parseInt(String(req.body?.userId || req.params?.id || ''), 10);
-      if (Number.isNaN(userId)) {
+      const userId = CoercionUtils.toRelationId(req.body?.userId) ?? CoercionUtils.toRelationId(req.params?.id);
+      if (userId === null) {
         return res.status(400).json({ error: 'Invalid user id' });
       }
       const roles = Array.isArray(req.body?.roles) ? req.body.roles : [];

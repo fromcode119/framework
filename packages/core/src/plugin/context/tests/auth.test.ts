@@ -1,4 +1,5 @@
 import { AuthContextProxy } from '@core/plugin/context/auth';
+import { TenantMode } from '@core/tenant/tenant-mode';
 
 /** The guard a plugin author writes without reading the implementation. */
 class NaiveTokenGuard {
@@ -64,6 +65,31 @@ describe('AuthContextProxy.isAuthenticated', () => {
 
   it('is true only once the framework middleware attached a verified user', () => {
     expect(AuthContextProxy.isAuthenticated({ user: { id: 1 } })).toBe(true);
+  });
+});
+
+describe('AuthContextProxy.platformGuard', () => {
+  afterEach(() => TenantMode.reset());
+
+  it('allows an admin in single-tenant mode', () => {
+    const next = vi.fn();
+    const res: any = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+    AuthContextProxy.platformGuard()({ user: { roles: ['admin'] } }, res, next);
+    expect(next).toHaveBeenCalledOnce();
+  });
+
+  it('refuses a tenant admin and allows a platform admin in multi-tenant mode', () => {
+    TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
+    const next = vi.fn();
+    const res: any = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+    const guard = AuthContextProxy.platformGuard();
+
+    guard({ user: { roles: ['admin'], platformAdmin: false } }, res, next);
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(next).not.toHaveBeenCalled();
+
+    guard({ user: { roles: ['admin'], platformAdmin: true } }, res, next);
+    expect(next).toHaveBeenCalledOnce();
   });
 });
 
