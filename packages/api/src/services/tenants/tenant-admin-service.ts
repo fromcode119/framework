@@ -366,6 +366,10 @@ export class TenantAdminService {
           state: String(plugin.state ?? ''),
           heldReason: String((plugin as { heldReason?: unknown }).heldReason ?? ''),
           runnable: plugin.state === PluginState.ACTIVE,
+          // What the row shows beside the name — the same description and icon the Plugins page uses,
+          // so the two lists read as the same kind of thing rather than one being a stripped copy.
+          description: String(plugin.manifest.description || ''),
+          icon: String((plugin.manifest as { admin?: { icon?: unknown } }).admin?.icon || 'Box'),
         })),
       themes: this.themeManager.getThemes().map((theme) => ({ slug: theme.slug, version: String(theme.version || ''), name: String(theme.name || theme.slug) })),
       appearances: this.appearances.list().map((entry) => ({ slug: entry.slug, version: String(entry.version || ''), name: String(entry.name || entry.slug) })),

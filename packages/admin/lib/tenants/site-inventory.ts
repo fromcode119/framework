@@ -6,7 +6,7 @@ import { CoercionUtils } from '@fromcode119/core/client';
  */
 export class SiteInventory {
   private constructor(
-    readonly plugins: Array<{ slug: string; version: string; name: string; state?: string; heldReason?: string; runnable?: boolean }>,
+    readonly plugins: Array<{ slug: string; version: string; name: string; state?: string; heldReason?: string; runnable?: boolean; description?: string; icon?: string }>,
     readonly themes: Array<{ slug: string; version: string; name: string }>,
     readonly appearances: Array<{ slug: string; version: string; name: string }>,
     readonly presets: Array<{ id: string; label: string; description: string; plugins: string[]; appearance: string }>,
@@ -26,6 +26,8 @@ export class SiteInventory {
       heldReason: CoercionUtils.toString(entry?.heldReason),
       // Absent means runnable: themes and appearances carry no state, and an older api sends none.
       runnable: entry?.runnable !== false,
+      description: CoercionUtils.toString(entry?.description),
+      icon: CoercionUtils.toString(entry?.icon) || 'Box',
     }));
     const presets = (Array.isArray(input.presets) ? input.presets : []).map((entry: any) => ({
       id: CoercionUtils.toString(entry?.id),

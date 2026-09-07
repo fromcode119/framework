@@ -69,10 +69,11 @@ export class SiteFormValues {
       primaryHost: this.primaryHost.trim(),
       hostAliases: this.aliasList,
       state: this.state,
-      // Plugins and the theme are NOT sent from an edit: they are managed on their own pages with this
-      // site selected. The api still accepts them (TenantAdminService.update) so an integration can set
-      // them, but the site form is not a second place to edit the same thing.
-      ...(this.isWorkspace ? { appearance: this.appearance } : {}),
+      // ENTITLEMENT — what this site may run — is edited on the Access tab and saved here. Their
+      // SETTINGS are not: those live on each plugin's and the theme's own page, with this site
+      // selected. Carrying both was what made this page a worse copy of pages that already exist.
+      plugins: this.plugins,
+      ...(this.isWorkspace ? { appearance: this.appearance } : { theme: this.theme }),
     };
   }
 

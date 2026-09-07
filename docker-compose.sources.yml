@@ -1,26 +1,31 @@
-# Develop against THIS checkout without ever building a Docker image.
+# Run the apps from THIS checkout with hot reload, instead of rebuilding an image for every change.
 #
-#   docker compose -f docker-compose.yml -f docker-compose.sources.yml up -d admin api
+#   docker compose -f docker-compose.yml -f docker-compose.sources.yml up -d --no-deps admin
+#   docker compose -f docker-compose.yml -f docker-compose.sources.yml up -d --no-deps api
 #
-# Two kinds of change, two loops, neither of them an image build:
+# `--no-deps` matters: `up admin` without it also recreates the api, because admin depends on it.
 #
-#   An APP's own code (packages/admin/app|components|lib, packages/api/src)
-#     → save the file. The dev server reloads. Nothing else to do.
+# STATUS — both dev servers are blocked by pre-existing bugs, diagnosed 2026-09-07. Neither is caused
+# by this file, and each is a small fix away:
 #
-#   A shared LIBRARY (core, database, auth, sdk, react, queue)
-#     → npm run build --workspace=@fromcode119/core     # seconds: tsc, not Docker
-#       docker restart framework-api-1                  # ~15s
+#   admin   `next dev --webpack` fails with "You're importing a module that depends on `createContext`
+#           into a React Server Component module". `next build` does not, so the two pipelines disagree
+#           about where the "use client" boundary is — nextor's UseClientPlugin runs in the build path.
+#           Fix that and this file works for admin.
 #
-# The libraries are mounted as their BUILT `dist`, not their `src`, and that is the whole trick.
-# `@fromcode119/core` resolves through `main: dist/index.js`, so plugins load dist no matter what. An
-# earlier version of this file mounted `core/src`, which made `tsx watch` run core from src while every
-# plugin still loaded core from dist — two copies of core in one process, so two copies of its
-# singletons (the service registry, TenantMode, the AsyncLocalStorage request context). Registrations
-# made in one were invisible to the other and every plugin failed to register: 11 errors, 0 active.
-# Mounting dist keeps ONE copy, which is what makes this safe.
+#   api     `tsx watch src/server.ts` boots, serves /health, and then fails EVERY plugin:
+#           "Failed to initialize extension ai: Cannot read properties of undefined (reading 'value')"
+#           — an Enum member resolving undefined, i.e. reactor or core loaded twice under tsx. Verified
+#           with NO volumes mounted at all, so it is the dev script itself, not the mounts.
 #
-# `node_modules` and `.next` stay inside the container: mounting the host's over them makes a Linux
-# container try to run macOS-built binaries.
+# WHAT THIS FILE ALREADY FIXES: the 512 MB limit the deploy file gives these services is sized for
+# `next start`. Under `next dev` the admin was OOM-killed mid-compile and restarted forever, which
+# looked like "the dev server starts and never serves" (Traefik answered 502). With the limit raised it
+# stays up and answers — which is how the two failures above became visible at all.
+#
+# Only each app's OWN source is mounted. Do NOT add `packages/core/src`: core resolves through
+# `main: dist/index.js`, so plugins load dist while a watcher would run src — two copies of every
+# singleton in one process, and every plugin fails to register.
 #
 # Back to the built images:  docker compose -f docker-compose.yml up -d admin api
 services:
@@ -35,9 +40,10 @@ services:
       - ./packages/admin/app:/app/packages/admin/app
       - ./packages/admin/components:/app/packages/admin/components
       - ./packages/admin/lib:/app/packages/admin/lib
-      - ./packages/core/dist:/app/packages/core/dist
-      - ./packages/react/dist:/app/packages/react/dist
-      - ./packages/sdk/dist:/app/packages/sdk/dist
+    deploy:
+      resources:
+        limits:
+          memory: 4G
 
   api:
     command: ["npm", "run", "dev", "--workspace=@fromcode119/api"]
@@ -45,8 +51,7 @@ services:
       - NODE_ENV=development
     volumes:
       - ./packages/api/src:/app/packages/api/src
-      - ./packages/core/dist:/app/packages/core/dist
-      - ./packages/database/dist:/app/packages/database/dist
-      - ./packages/auth/dist:/app/packages/auth/dist
-      - ./packages/queue/dist:/app/packages/queue/dist
-      - ./packages/sdk/dist:/app/packages/sdk/dist
+    deploy:
+      resources:
+        limits:
+          memory: 4G

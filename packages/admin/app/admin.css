@@ -342,7 +342,7 @@ html.dark {
 .fc-sites__blockers { color: #b91c1c; font-weight: 600; }
 .fc-sites__warnings { color: #92400e; }
 .fc-site-form { display: flex; flex-direction: column; gap: 12px; }
-.fc-site-form__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.fc-site-form__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 16px; }
 .fc-site-form__hint { font-size: 12px; opacity: 0.7; margin: 0; }
 .fc-site-form__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .fc-site-form__block { display: flex; flex-direction: column; gap: 8px; }
@@ -356,11 +356,20 @@ html.dark {
 .fc-site-form__meta { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; }
 .fc-site-form__meta code { font-family: var(--font-mono, monospace); }
 /* Paging for an unbounded roster — see SiteMembersCard. */
+.fc-sites__overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 16px; align-items: start; }
+.fc-sites__tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.fc-sites__tab { appearance: none; background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 14px; font-size: 12px; font-weight: 600; color: var(--muted-foreground); cursor: pointer; }
+.fc-sites__tab:hover { color: var(--foreground); }
+.fc-sites__tab--active { color: var(--primary); border-bottom-color: var(--primary); }
 .fc-sites__exports { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .fc-sites__export { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .fc-sites__export-meta { font-size: 11px; color: var(--muted-foreground); white-space: nowrap; }
-.fc-sites__paging { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
-.fc-sites__paging-label { font-size: 11px; color: var(--muted-foreground); }
+.fc-sites__paging { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.fc-sites__paging-label { font-size: 11px; color: var(--muted-foreground); margin-right: 4px; }
+.fc-sites__card-action { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+.fc-sites__grant-label { display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground); margin-bottom: 8px; }
+.fc-sites__grant-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.fc-sites__grant-row > *:first-child { flex: 1 1 260px; max-width: 360px; }
 .fc-import-plan { display: flex; flex-direction: column; gap: 12px; }
 .fc-import-plan__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .fc-import-plan__item { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 4px; }

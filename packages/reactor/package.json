@@ -1,7 +1,7 @@
 {
   "name": "@fromcode119/reactor",
   "version": "0.1.88",
-  "description": "Class-based OOP primitives for React apps — a typed Reactor base component, @bound / @watch / @state decorators, and a method-bearing Enum base. React-only, zero framework dependencies, reusable in any project.",
+  "description": "Class-based OOP primitives for React apps - a typed Reactor base component, @bound / @watch / @state decorators, and a method-bearing Enum base. React-only, zero framework dependencies, reusable in any project.",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",

@@ -13,6 +13,11 @@ import { AdminApi } from '@/lib/api';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { SiteRecord } from '@/lib/tenants/site-record';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
+import { SiteTab } from '@/app/sites/[id]/site-tab.enum';
+import { SiteTabBar } from '@/app/sites/[id]/site-tab-bar.client';
+import { SiteAccessCard } from '@/app/sites/[id]/site-access-card.client';
+import { SiteExportsCard } from '@/app/sites/[id]/site-exports-card.client';
+import { SiteStatStrip } from '@/app/sites/[id]/site-stat-strip.client';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
@@ -29,6 +34,16 @@ export class SiteDetailPageClient extends AdminComponent {
   @state exporting = false;
   @state seeding = false;
   @state entering = false;
+  @state tab: SiteTab = SiteTab.OVERVIEW;
+
+  @bound selectTab(tab: SiteTab): void {
+    this.tab = tab;
+  }
+
+  /** Opens the storefront itself — the site's own domain, not the admin for it. */
+  @bound visitSite(): void {
+    window.open(this.site?.storefrontUrl ?? '/', '_blank', 'noopener');
+  }
   /**
    * Loaded for the site's own appearance choice only — NOT to offer plugins and themes here.
    *
@@ -148,21 +163,40 @@ export class SiteDetailPageClient extends AdminComponent {
     this.router.push(AdminConstants.ROUTES.SITES.ROOT);
   }
 
-  /** A size an operator reads, rather than a byte count. */
-  private static megabytes(bytes: number): string {
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
 
-  /** What this site is, at a glance: where it answers, and what is actually attached to it. */
-  private summaryLine(site: SiteRecord): string {
-    const parts = [
-      site.primaryHost,
-      `${site.memberCount} member${site.memberCount === 1 ? '' : 's'}`,
-      `${site.plugins.length} plugin${site.plugins.length === 1 ? '' : 's'}`,
-    ];
-    if (site.isWorkspace) parts.push(site.appearance ? `appearance ${site.appearance}` : 'no appearance');
-    else parts.push(site.theme ?? 'no theme', `${site.pageCount} page${site.pageCount === 1 ? '' : 's'}`);
-    return parts.join(' · ');
+
+  /**
+   * Identity, addressing and what the site amounts to — short enough to read without scrolling.
+   *
+   * The member roster, the entitlement toggles and the archives all used to sit below this, so the
+   * things you glance at were separated from each other by twenty-five rows of other people's e-mail
+   * addresses.
+   */
+  private renderOverview(site: SiteRecord): ReactNode {
+    return (
+      <>
+        <SiteStatStrip site={site} theme={this.theme} />
+        <div className="fc-sites__overview">
+        <Card title="Identity and hosts">
+          <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} isNew={false} />
+        </Card>
+        {site.isWorkspace ? null : (
+          <Card title="Pages">
+            <p className="fc-sites__text">
+              {site.pageCount
+                ? <>This site has <strong>{site.pageCount}</strong> page{site.pageCount === 1 ? '' : 's'}. </>
+                : <>This site has <strong>no pages</strong>, so every storefront route but the home page answers 404. </>}
+              Rebuilding runs the theme&apos;s initial content and the default pages its plugins declare. Existing
+              pages are matched, never duplicated, so it is safe to run again after adding a plugin or changing theme.
+            </p>
+            <div className="fc-sites__actions">
+              <Button onClick={this.seed} isLoading={this.seeding} icon={<FrameworkIcons.Refresh size={14} />}>Rebuild pages</Button>
+            </div>
+          </Card>
+        )}
+        </div>
+      </>
+    );
   }
 
   render(): ReactNode {
@@ -173,11 +207,14 @@ export class SiteDetailPageClient extends AdminComponent {
           theme={this.theme}
           icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
           title={site ? site.slug : 'Site'}
-          subtitle={site ? this.summaryLine(site) : ''}
+          subtitle={site ? site.primaryHost : ''}
           backHref={AdminConstants.ROUTES.SITES.ROOT}
           actions={site ? (
             <div className="fc-sites__actions">
               <Button onClick={this.enterSite} isLoading={this.entering} icon={<FrameworkIcons.ArrowRight size={14} />}>Open this site</Button>
+              {site.isWorkspace ? null : (
+                <Button variant={ButtonVariant.OUTLINE} onClick={this.visitSite} icon={<FrameworkIcons.ExternalLink size={14} />}>Visit</Button>
+              )}
               <Button variant={ButtonVariant.OUTLINE} onClick={this.exportSite} isLoading={this.exporting} icon={<FrameworkIcons.Download size={14} />}>Export</Button>
               <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={14} />}>Save</Button>
             </div>
@@ -188,45 +225,14 @@ export class SiteDetailPageClient extends AdminComponent {
         {!this.loading && this.error ? <LoadErrorPanel title="Site unavailable" message={this.error} onRetry={this.load} /> : null}
         {site && !this.loading ? (
           <div className="fc-sites__stack">
-            <Card title="Identity and hosts">
-              <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} isNew={false} />
-            </Card>
-            {site.isWorkspace ? null : (
-              <Card title="Pages">
-                <p className="fc-sites__text">
-                  {site.pageCount
-                    ? <>This site has <strong>{site.pageCount}</strong> page{site.pageCount === 1 ? '' : 's'}. </>
-                    : <>This site has <strong>no pages</strong>, so every storefront route but the home page answers 404. </>}
-                  Rebuilding runs the theme&apos;s initial content and the default pages its plugins declare. Existing
-                  pages are matched, never duplicated, so it is safe to run again after adding a plugin or changing theme.
-                </p>
-                <div className="fc-sites__actions">
-                  <Button onClick={this.seed} isLoading={this.seeding} icon={<FrameworkIcons.Refresh size={14} />}>Rebuild pages</Button>
-                </div>
-              </Card>
-            )}
-            <SiteMembersCard site={site} onChanged={this.apply} />
-            <Card title={`Exports${site.exports.length ? ` (${site.exports.length})` : ''}`}>
-              <p className="fc-sites__text">
-                A portable archive of this site — rows, files, members, plugin and theme choices. Use it to move
-                the site to another installation, or to keep a point-in-time copy.
-              </p>
-              {site.exports.length === 0 ? <p className="fc-sites__none">Never exported.</p> : (
-                <ul className="fc-sites__exports">
-                  {site.exports.map((entry) => (
-                    <li key={entry.id} className="fc-sites__export">
-                      <a href={AdminConstants.ENDPOINTS.SYSTEM.BACKUP_DOWNLOAD(entry.id)} download>
-                        <code>{entry.filename}</code>
-                      </a>
-                      <span className="fc-sites__export-meta">
-                        {SiteDetailPageClient.megabytes(entry.sizeBytes)} · {new Date(entry.modifiedAt).toLocaleString()}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
-            <SiteDangerCard site={site} onDeleted={this.onDeleted} />
+            <SiteTabBar current={this.tab} onSelect={this.selectTab} />
+            {this.tab.value === SiteTab.OVERVIEW.value ? this.renderOverview(site) : null}
+            {this.tab.value === SiteTab.ACCESS.value
+              ? <SiteAccessCard values={this.values} inventory={this.inventory} onChange={this.onChange} onActivated={this.load} />
+              : null}
+            {this.tab.value === SiteTab.MEMBERS.value ? <SiteMembersCard site={site} onChanged={this.apply} /> : null}
+            {this.tab.value === SiteTab.EXPORTS.value ? <SiteExportsCard site={site} theme={this.theme} /> : null}
+            {this.tab.value === SiteTab.DANGER.value ? <SiteDangerCard site={site} onDeleted={this.onDeleted} /> : null}
           </div>
         ) : null}
         </div>
