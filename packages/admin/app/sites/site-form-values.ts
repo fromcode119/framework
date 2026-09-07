@@ -69,10 +69,10 @@ export class SiteFormValues {
       primaryHost: this.primaryHost.trim(),
       hostAliases: this.aliasList,
       state: this.state,
-      // Theme and plugins are part of an EDIT now, not only of creation. A workspace has no storefront,
-      // so it sends no theme rather than sending an empty one, which would read as "clear the theme".
-      plugins: this.plugins,
-      ...(this.isWorkspace ? { appearance: this.appearance } : { theme: this.theme }),
+      // Plugins and the theme are NOT sent from an edit: they are managed on their own pages with this
+      // site selected. The api still accepts them (TenantAdminService.update) so an integration can set
+      // them, but the site form is not a second place to edit the same thing.
+      ...(this.isWorkspace ? { appearance: this.appearance } : {}),
     };
   }
 

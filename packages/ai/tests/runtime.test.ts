@@ -148,7 +148,7 @@ describe('assistant-runtime behavior baseline', () => {
   it('keeps safety approvals for staged writes', async () => {
     const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
-      shortSlug: 'pages',
+      shortSlug: 'pages', storefrontPages: true,
       label: 'Pages',
       pluginSlug: 'cms',
       raw: { primaryKey: 'id', fields: [{ name: 'id' }, { name: 'title' }, { name: 'content' }] },
@@ -191,7 +191,7 @@ describe('assistant-runtime behavior baseline', () => {
   it('drops staged content.update payload keys not defined in collection fields', async () => {
     const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
-      shortSlug: 'pages',
+      shortSlug: 'pages', storefrontPages: true,
       label: 'Pages',
       pluginSlug: 'cms',
       raw: { primaryKey: 'id', fields: [{ name: 'id' }, { name: 'title' }, { name: 'content' }] },
@@ -267,7 +267,7 @@ describe('assistant-runtime behavior baseline', () => {
   it('returns homepage draft fast-path without model call in basic mode', async () => {
     const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
-      shortSlug: 'pages',
+      shortSlug: 'pages', storefrontPages: true,
       label: 'Pages',
       pluginSlug: 'cms',
       raw: { primaryKey: 'id', fields: [{ name: 'id' }, { name: 'title' }, { name: 'content' }] },
@@ -293,7 +293,7 @@ describe('assistant-runtime behavior baseline', () => {
   it('uses content.update for homepage draft only when target record is explicit', async () => {
     const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
-      shortSlug: 'pages',
+      shortSlug: 'pages', storefrontPages: true,
       label: 'Pages',
       pluginSlug: 'cms',
       raw: { primaryKey: 'id', fields: [{ name: 'id' }, { name: 'title' }, { name: 'content' }] },
@@ -319,7 +319,7 @@ describe('assistant-runtime behavior baseline', () => {
   it('parses conversational replace phrasing and avoids freeform model staging', async () => {
     const collection: IAssistantCollectionContext = {
       slug: '@cms/pages',
-      shortSlug: 'pages',
+      shortSlug: 'pages', storefrontPages: true,
       label: 'Pages',
       pluginSlug: 'cms',
       raw: { primaryKey: 'id', fields: [{ name: 'id' }, { name: 'title' }, { name: 'content' }] },

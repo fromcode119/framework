@@ -192,6 +192,7 @@ export { TenantMembership } from '@core/tenant/tenant-membership';
 export { TenantAccess } from '@core/tenant/tenant-access';
 export { TenantMembershipService } from '@core/tenant/tenant-membership-service';
 export { DatabaseRoleGuard } from '@core/tenant/database-role-guard';
+export { StorefrontPagesCollection } from '@core/services/default-page-contract/storefront-pages-collection';
 export { DatabaseRoleBootstrapService } from '@core/database/database-role-bootstrap-service';
 export { PlatformOwnershipService } from '@core/tenant/platform-ownership-service';
 export { PlatformOwnershipError } from '@core/tenant/platform-ownership-error';

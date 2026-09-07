@@ -380,7 +380,7 @@ function createManager(pages: any[], getMetaValue: () => string, setMetaValue: (
         pluginSlug: 'alpha',
         collection: {
           slug: 'alpha_pages',
-          shortSlug: 'pages',
+          shortSlug: 'pages', storefrontPages: true,
           pluginSlug: 'alpha',
           workflow: true,
           fields: [

@@ -7,6 +7,7 @@ import type { IResolvedPluginDefaultPageContract } from '@core/default-page-cont
 import type { IThemeDefaultPageContractOverride } from '@core/default-page-contract/interfaces/theme-default-page-contract-override.interface';
 import { BaseService } from '@core/services/base-service';
 import { CoreServices } from '@core/services/core-services';
+import { StorefrontPagesCollection } from '@core/services/default-page-contract/storefront-pages-collection';
 import { RequestContextUtils } from '@core/context/request-context';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SeedPageService } from '@core/services/seed-page-service';
@@ -123,14 +124,9 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     return await this.overridesProvider();
   }
 
+  /** The collection its OWNER marked as the storefront's pages — never a name chosen here. */
   private findPagesCollectionEntry(): { collection: ICollection; pluginSlug: string } | null {
-    for (const entry of this.manager.registeredCollections.values()) {
-      if ((entry.collection.shortSlug || entry.collection.slug) === 'pages') {
-        return entry;
-      }
-    }
-
-    return null;
+    return StorefrontPagesCollection.find(this.manager.registeredCollections);
   }
 
   private async loadExistingPages(collection: ICollection): Promise<IPluginDefaultPageContractPageSnapshot[]> {

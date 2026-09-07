@@ -1,5 +1,7 @@
 import { IDatabaseManager } from '@fromcode119/database';
 import { Logger } from '@core/logging';
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '@core/constants/system.constants';
 import { PluginConfigValueService } from '@core/plugin/services/plugin-config-value-service';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
@@ -201,7 +203,22 @@ export class PluginStateService {
     }
   }
 
+  /**
+   * Stores a plugin's settings for the site in scope.
+   *
+   * `_system_plugin_settings` is tenant-scoped — settings are PER SITE — so a plugin writing defaults
+   * during `onInit` is writing for a site that boot does not have. Row-level security refused it, the
+   * plugin reported a failure every restart, and nothing was stored for anyone. Skipped here instead,
+   * with the reason: the operator's own save from the admin runs inside a request, which has a site.
+   */
   async savePluginConfig(slug: string, config: any): Promise<void> {
+    if (TenantMode.isEnabled() && !RequestContextUtils.getTenantId()) {
+      this.logger.info(
+        `Skipping settings write for plugin "${slug}": this deployment is multi-tenant and boot has no `
+        + 'site. Plugin settings are per site — save them from the plugin\'s settings page.',
+      );
+      return;
+    }
     try {
       const existing = await this.db.findOne(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: slug });
       if (existing) {

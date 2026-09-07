@@ -9,6 +9,8 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminApi } from '@/lib/api';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { SiteRecord } from '@/lib/tenants/site-record';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SitesClient } from '@/lib/tenants/sites-client';
@@ -26,12 +28,12 @@ export class SiteDetailPageClient extends AdminComponent {
   @state saving = false;
   @state exporting = false;
   @state seeding = false;
+  @state entering = false;
   /**
-   * The themes, appearances, plugins and presets available to choose from.
+   * Loaded for the site's own appearance choice only — NOT to offer plugins and themes here.
    *
-   * SiteForm renders its theme, appearance, preset and plugin controls only when it HAS this, and the
-   * edit page never loaded it — so every one of those controls silently rendered as nothing once a site
-   * existed, which is why a created site looked unchangeable.
+   * Those are edited on the Plugins and Themes pages with this site selected, which is a better place
+   * than a second, thinner copy: the same controls in two places is the limitation, not the fix.
    */
   @state inventory: SiteInventory | null = null;
 
@@ -120,8 +122,35 @@ export class SiteDetailPageClient extends AdminComponent {
     }
   }
 
+  /**
+   * Enters the site: the admin switches to it, and every ordinary page — Plugins, Themes, Content —
+   * then acts on THIS site.
+   *
+   * The one thing this page could offer that nothing else does. Everything a site's own pages already
+   * do well is done there, with this as the way in, rather than rebuilt here as a thinner copy.
+   *
+   * Selects through the same endpoint the header switcher uses, and reloads for the same reason it
+   * does: the previous site's data must not linger in memory.
+   */
+  @bound
+  async enterSite(): Promise<void> {
+    this.entering = true;
+    try {
+      await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_SELECT, { tenantId: this.id });
+      window.location.assign(AdminConstants.ROUTES.ROOT);
+    } catch (err: any) {
+      this.entering = false;
+      this.runtime.notify.addNotification({ title: 'Could not open the site', message: err?.message || 'The site could not be selected.', type: NotificationType.ERROR });
+    }
+  }
+
   @bound onDeleted(): void {
     this.router.push(AdminConstants.ROUTES.SITES.ROOT);
+  }
+
+  /** A size an operator reads, rather than a byte count. */
+  private static megabytes(bytes: number): string {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
   /** What this site is, at a glance: where it answers, and what is actually attached to it. */
@@ -148,7 +177,8 @@ export class SiteDetailPageClient extends AdminComponent {
           backHref={AdminConstants.ROUTES.SITES.ROOT}
           actions={site ? (
             <div className="fc-sites__actions">
-              <Button onClick={this.exportSite} isLoading={this.exporting} icon={<FrameworkIcons.Download size={14} />}>Export</Button>
+              <Button onClick={this.enterSite} isLoading={this.entering} icon={<FrameworkIcons.ArrowRight size={14} />}>Open this site</Button>
+              <Button variant={ButtonVariant.OUTLINE} onClick={this.exportSite} isLoading={this.exporting} icon={<FrameworkIcons.Download size={14} />}>Export</Button>
               <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={14} />}>Save</Button>
             </div>
           ) : null}
@@ -159,7 +189,7 @@ export class SiteDetailPageClient extends AdminComponent {
         {site && !this.loading ? (
           <div className="fc-sites__stack">
             <Card title="Identity and hosts">
-              <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} inventory={this.inventory ?? undefined} isNew={false} />
+              <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} isNew={false} />
             </Card>
             {site.isWorkspace ? null : (
               <Card title="Pages">
@@ -176,11 +206,25 @@ export class SiteDetailPageClient extends AdminComponent {
               </Card>
             )}
             <SiteMembersCard site={site} onChanged={this.apply} />
-            <Card title="Exports">
+            <Card title={`Exports${site.exports.length ? ` (${site.exports.length})` : ''}`}>
               <p className="fc-sites__text">
-                {site.lastExport ? <>Last export: <code>{site.lastExport}</code>. </> : 'Never exported. '}
-                Exports are portable archives (rows, files, members, plugin and theme choices) and appear under Settings → Backups → Sites, where they can be downloaded.
+                A portable archive of this site — rows, files, members, plugin and theme choices. Use it to move
+                the site to another installation, or to keep a point-in-time copy.
               </p>
+              {site.exports.length === 0 ? <p className="fc-sites__none">Never exported.</p> : (
+                <ul className="fc-sites__exports">
+                  {site.exports.map((entry) => (
+                    <li key={entry.id} className="fc-sites__export">
+                      <a href={AdminConstants.ENDPOINTS.SYSTEM.BACKUP_DOWNLOAD(entry.id)} download>
+                        <code>{entry.filename}</code>
+                      </a>
+                      <span className="fc-sites__export-meta">
+                        {SiteDetailPageClient.megabytes(entry.sizeBytes)} · {new Date(entry.modifiedAt).toLocaleString()}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </Card>
             <SiteDangerCard site={site} onDeleted={this.onDeleted} />
           </div>

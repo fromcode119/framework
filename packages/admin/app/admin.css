@@ -356,6 +356,9 @@ html.dark {
 .fc-site-form__meta { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; }
 .fc-site-form__meta code { font-family: var(--font-mono, monospace); }
 /* Paging for an unbounded roster — see SiteMembersCard. */
+.fc-sites__exports { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.fc-sites__export { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fc-sites__export-meta { font-size: 11px; color: var(--muted-foreground); white-space: nowrap; }
 .fc-sites__paging { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
 .fc-sites__paging-label { font-size: 11px; color: var(--muted-foreground); }
 .fc-import-plan { display: flex; flex-direction: column; gap: 12px; }

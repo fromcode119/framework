@@ -121,7 +121,13 @@ export class SiteMembersCard extends AdminComponent {
             : null}
           {this.members.map((member) => (
             <li key={member.userId} className="fc-sites__member">
-              <span className="fc-sites__member-email">{member.email || `user ${member.userId}`}</span>
+              {/* An empty email means the membership points at an account that no longer exists — the
+                  join found no user row. `user 6` read like a name; this says what it is, and leaves
+                  Revoke as the way to clear it, because deleting rows nobody asked to delete is not
+                  this page's business. */}
+              <span className="fc-sites__member-email">
+                {member.email || <em>deleted account (id {member.userId})</em>}
+              </span>
               <span className="fc-sites__member-roles">
                 {member.roles.length ? member.roles.map((role) => <Badge key={role} variant={role === 'admin' ? BadgeVariant.INFO : BadgeVariant.GRAY}>{role}</Badge>) : <Badge variant={BadgeVariant.GRAY}>member</Badge>}
               </span>

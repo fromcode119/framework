@@ -1,21 +1,28 @@
-# Run the apps from THIS checkout's source, with hot reload, instead of from the baked image.
+# Develop against THIS checkout without ever building a Docker image.
 #
 #   docker compose -f docker-compose.yml -f docker-compose.sources.yml up -d admin api
 #
-# Why this exists: admin and api are baked images, so seeing a one-line change meant a full
-# `docker compose build` — minutes per iteration, and the reason changes appeared not to land at all.
-# Here the container keeps its own node_modules and its place on the network (so the *.framework.local
-# hostnames, host-based tenancy and Traefik routing all behave exactly as they do in production) while
-# the SOURCE comes from the host. Save a file, the dev server reloads.
+# Two kinds of change, two loops, neither of them an image build:
 #
-# Deliberately a SEPARATE file rather than part of the dev delta: a dev server is slower to start and
-# uses more memory than the built app, so it is something you opt into for an editing session.
+#   An APP's own code (packages/admin/app|components|lib, packages/api/src)
+#     → save the file. The dev server reloads. Nothing else to do.
 #
-# Return to the built images with:
-#   docker compose -f docker-compose.yml up -d admin api
+#   A shared LIBRARY (core, database, auth, sdk, react, queue)
+#     → npm run build --workspace=@fromcode119/core     # seconds: tsc, not Docker
+#       docker restart framework-api-1                  # ~15s
 #
-# Only source directories are mounted. `node_modules`, `.next` and `dist` stay INSIDE the container —
-# mounting the host's over them is what makes a Linux container try to run macOS-built binaries.
+# The libraries are mounted as their BUILT `dist`, not their `src`, and that is the whole trick.
+# `@fromcode119/core` resolves through `main: dist/index.js`, so plugins load dist no matter what. An
+# earlier version of this file mounted `core/src`, which made `tsx watch` run core from src while every
+# plugin still loaded core from dist — two copies of core in one process, so two copies of its
+# singletons (the service registry, TenantMode, the AsyncLocalStorage request context). Registrations
+# made in one were invisible to the other and every plugin failed to register: 11 errors, 0 active.
+# Mounting dist keeps ONE copy, which is what makes this safe.
+#
+# `node_modules` and `.next` stay inside the container: mounting the host's over them makes a Linux
+# container try to run macOS-built binaries.
+#
+# Back to the built images:  docker compose -f docker-compose.yml up -d admin api
 services:
   admin:
     command: ["npm", "run", "dev", "--workspace=@fromcode119/admin"]
@@ -28,9 +35,9 @@ services:
       - ./packages/admin/app:/app/packages/admin/app
       - ./packages/admin/components:/app/packages/admin/components
       - ./packages/admin/lib:/app/packages/admin/lib
-      - ./packages/core/src:/app/packages/core/src
-      - ./packages/react/src:/app/packages/react/src
-      - ./packages/sdk/src:/app/packages/sdk/src
+      - ./packages/core/dist:/app/packages/core/dist
+      - ./packages/react/dist:/app/packages/react/dist
+      - ./packages/sdk/dist:/app/packages/sdk/dist
 
   api:
     command: ["npm", "run", "dev", "--workspace=@fromcode119/api"]
@@ -38,7 +45,8 @@ services:
       - NODE_ENV=development
     volumes:
       - ./packages/api/src:/app/packages/api/src
-      - ./packages/core/src:/app/packages/core/src
-      - ./packages/database/src:/app/packages/database/src
-      - ./packages/auth/src:/app/packages/auth/src
-      - ./packages/queue/src:/app/packages/queue/src
+      - ./packages/core/dist:/app/packages/core/dist
+      - ./packages/database/dist:/app/packages/database/dist
+      - ./packages/auth/dist:/app/packages/auth/dist
+      - ./packages/queue/dist:/app/packages/queue/dist
+      - ./packages/sdk/dist:/app/packages/sdk/dist

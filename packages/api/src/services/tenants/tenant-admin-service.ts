@@ -6,7 +6,7 @@ import {
   TenantAdoptionService, TenantArchiveLayout, TenantArchiveManifest, TenantArchiveReader, TenantArchiveSource, TenantArchiveWriter, TenantEraser, TenantIdentity,
   TenantImportExecutor, TenantImportPlan, TenantImportPlanner, TenantImportResult, TenantMembershipService, TenantMode, TenantRecord,
   TenantRegistryService, TenantResolverService, TenantTableCatalog, TenantTableDescriptor, TenantThemeAccess, TenantThemeStateService, ThemeManager,
-  PluginTenantAccess, RequestContextUtils, AppearanceManager, Logger, TenantKindPreset, TenantKindPresets, StringUtils } from '@fromcode119/core';
+  PluginTenantAccess, RequestContextUtils, AppearanceManager, Logger, TenantKindPreset, TenantKindPresets, StringUtils, StorefrontPagesCollection } from '@fromcode119/core';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { TenantSummary } from '@api/services/tenants/tenant-summary';
@@ -108,14 +108,36 @@ export class TenantAdminService {
   }
 
   /** How many pages the site holds, through the registered pages collection — never a plugin's table name. */
+  /**
+   * A site's page count, on the connection the query actually runs on.
+   *
+   * Both halves matter and the first version had neither right: `countPages` reads through
+   * `manager.db` (the RUNTIME connection) while this scoped `this.db` — the schema OWNER connection —
+   * so the scope was applied to a connection the query never used. And row-level security is not the
+   * only gate: the request context carries the tenant too. A site with 44 pages reported 0, and the
+   * page then told the operator its storefront was empty.
+   */
+  private async countPagesFor(tenantId: string): Promise<number> {
+    return RequestContextUtils.storage.run({ locale: '', tenantId }, () =>
+      this.manager.db.withTenant(tenantId, () => this.countPages()));
+  }
+
+  /**
+   * How many pages the site in scope has.
+   *
+   * The collection is the one its OWNER marked as the storefront's pages, not a literal `'pages'`
+   * matched here — framework code naming a plugin's collection is the coupling that rule forbids. No
+   * marked collection means no pages plugin is installed, and the answer is zero rather than a guess.
+   */
   private async countPages(): Promise<number> {
-    for (const entry of this.manager.registeredCollections.values()) {
-      const collection: any = entry.collection;
-      if ((collection.shortSlug || collection.slug) !== 'pages') continue;
-      const rows = await this.manager.db.find(`@${entry.pluginSlug}/${collection.shortSlug || collection.slug}`, { limit: 5000 });
-      return Array.isArray(rows) ? rows.length : 0;
-    }
-    return 0;
+    const owner = StorefrontPagesCollection.find(this.manager.registeredCollections);
+    if (!owner) return 0;
+
+    // COUNT, not a capped find: the old form loaded up to 5000 rows and reported their length, so a
+    // site with more pages than that under-reported.
+    return CoercionUtils.toNumber(
+      await this.manager.db.count(`@${owner.pluginSlug}/${owner.shortSlug}`, { where: {} }),
+    );
   }
 
   /**
@@ -391,8 +413,29 @@ export class TenantAdminService {
     // sites and a hundred thousand members each rendered the Sites page with hundreds of thousands of
     // queries. The count is a single COUNT; the roster is paged on demand (`members()` below).
     // A workspace serves a console, not a storefront, so counting pages for one would be noise.
-    const pageCount = tenant.isWorkspace ? 0 : await this.db.withTenant(tenant.id, () => this.countPages());
-    return new TenantSummary(tenant, members, plugins, choice.activeSlug, this.lastExport(tenant.slug), pageCount);
+    const pageCount = tenant.isWorkspace ? 0 : await this.countPagesFor(tenant.id);
+    return new TenantSummary(tenant, members, plugins, choice.activeSlug, this.lastExport(tenant.slug), pageCount, this.exports(tenant.slug));
+  }
+
+  /**
+   * This site's export archives, newest first, as the catalog entries the download route accepts.
+   *
+   * A filename alone was useless: the card printed it and told the operator to find it on another page.
+   * The catalog already assigns each archive an id, which is what `/system/admin/backups/:id/download`
+   * takes — so the same list can be downloaded from where it is shown.
+   */
+  private exports(slug: string): Array<{ id: string; filename: string; sizeBytes: number; modifiedAt: string }> {
+    const dir = BackupService.getBackupsDirectory(SystemConstants.BACKUPS.TENANTS_SUBDIR);
+    if (!fs.existsSync(dir)) return [];
+    const own = new RegExp(`^tenant-${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-\\d{4}-\\d{2}-\\d{2}T`);
+    return fs.readdirSync(dir)
+      .filter((name) => own.test(name) && name.endsWith(TenantArchiveLayout.EXTENSION))
+      .sort()
+      .reverse()
+      .map((name) => {
+        const item = this.catalog.resolveByPath(path.join(dir, name));
+        return { id: item.id, filename: item.filename, sizeBytes: item.sizeBytes, modifiedAt: item.modifiedAt };
+      });
   }
 
   private lastExport(slug: string): string | null {

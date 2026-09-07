@@ -435,7 +435,7 @@ describe('LifecycleService — collections auto-discovery', () => {
       pluginSlug: 'alpha',
       collection: {
         slug: 'alpha_pages',
-        shortSlug: 'pages',
+        shortSlug: 'pages', storefrontPages: true,
         pluginSlug: 'alpha',
         workflow: true,
         fields: [

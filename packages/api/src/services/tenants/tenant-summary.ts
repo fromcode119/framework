@@ -16,6 +16,8 @@ export class TenantSummary {
      * to a control. Zero pages on a storefront site is the visible symptom of a seed that never ran.
      */
     readonly pageCount: number,
+    /** Every export archive this site has, with the id the download route takes. */
+    readonly exports: Array<{ id: string; filename: string; sizeBytes: number; modifiedAt: string }> = [],
   ) {}
 
   toJSON(): Record<string, unknown> {
@@ -23,6 +25,7 @@ export class TenantSummary {
       ...TenantSummary.tenantJson(this.tenant),
       memberCount: this.memberCount,
       pageCount: this.pageCount,
+      exports: this.exports,
       plugins: this.plugins,
       theme: this.theme,
       lastExport: this.lastExport,

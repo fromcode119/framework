@@ -19,6 +19,8 @@ export class SiteRecord {
     readonly appearance: string,
     /** Storefront pages this site actually has. Zero on a storefront site means its seed never ran. */
     readonly pageCount: number,
+    /** Export archives for this site, newest first, each with the id the download route takes. */
+    readonly exports: Array<{ id: string; filename: string; sizeBytes: number; modifiedAt: string }>,
   ) {}
 
   get isWorkspace(): boolean {
@@ -53,6 +55,12 @@ export class SiteRecord {
       CoercionUtils.toString(input.kind) || 'site',
       CoercionUtils.toString(input.appearance),
       CoercionUtils.toNumber(input.pageCount),
+      Array.isArray(input.exports) ? input.exports.map((e: any) => ({
+        id: CoercionUtils.toString(e?.id),
+        filename: CoercionUtils.toString(e?.filename),
+        sizeBytes: CoercionUtils.toNumber(e?.sizeBytes),
+        modifiedAt: CoercionUtils.toString(e?.modifiedAt),
+      })) : [],
     );
   }
 
