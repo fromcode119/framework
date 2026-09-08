@@ -15,7 +15,7 @@ export class ScimController {
   private readonly scim: ScimService;
 
   constructor(manager: PluginManager, auth: AuthManager) {
-    this.scim = new ScimService(new UserManagementService((manager as any).db, auth, manager));
+    this.scim = new ScimService(new UserManagementService((manager as any).db, auth, manager), (manager as any).db);
     this.list = this.list.bind(this);
     this.get = this.get.bind(this);
     this.create = this.create.bind(this);

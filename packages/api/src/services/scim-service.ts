@@ -1,3 +1,4 @@
+import { RequestContextUtils, SystemConstants } from '@fromcode119/core';
 import { UserManagementService } from '@api/services/user-management-service';
 import type { IScimListResponse } from '@api/services/interfaces/scim-list-response.interface';
 import type { IScimUser } from '@api/services/interfaces/scim-user.interface';
@@ -13,10 +14,36 @@ export class ScimService {
   private static readonly USER_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
   private static readonly LIST_SCHEMA = 'urn:ietf:params:scim:api:messages:2.0:ListResponse';
 
-  constructor(private readonly users: UserManagementService) {}
+  constructor(private readonly users: UserManagementService, private readonly db: any) {}
+
+  /**
+   * The accounts of the SITE whose IdP is asking — never the platform's.
+   *
+   * `null` means unrestricted, which is only ever a single-tenant deployment. On a multi-site platform
+   * a directory that provisions one customer must not be able to read, rename or deactivate another's
+   * people, and the token it authenticated with names exactly one site.
+   */
+  private async memberIds(): Promise<number[] | null> {
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    if (!tenantId) return null;
+    const rows = await this.db
+      .find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenantId } })
+      .catch(() => [] as any[]);
+    return (Array.isArray(rows) ? rows : [])
+      .filter((row: any) => String(row?.state ?? '').trim() === 'active')
+      .map((row: any) => Number(row?.user_id))
+      .filter((id: number) => Number.isFinite(id) && id > 0);
+  }
+
+  /** The account, but only when it belongs to the asking site. Anything else is NOT FOUND. */
+  private async scopedUser(id: number): Promise<any | null> {
+    const ids = await this.memberIds();
+    if (ids && !ids.includes(Number(id))) return null;
+    return this.users.getUser(Number(id));
+  }
 
   async list(filter?: string): Promise<IScimListResponse> {
-    const all = await this.users.getUsers();
+    const all = await this.users.getUsers(await this.memberIds());
     const wanted = this.parseUserNameFilter(filter);
     const matched = wanted
       ? all.filter((u: any) => String(u.email || '').toLowerCase() === wanted)
@@ -31,18 +58,42 @@ export class ScimService {
   }
 
   async get(id: string): Promise<IScimUser | null> {
-    const user = await this.users.getUser(Number(id));
+    const user = await this.scopedUser(Number(id));
     return user ? this.toScim(user) : null;
   }
 
   async create(body: any): Promise<IScimUser> {
     const id = await this.users.saveUser(null, this.fromScim(body, null));
+    await this.joinProvisioningSite(Number(id));
     const created = await this.users.getUser(Number(id));
     return this.toScim(created);
   }
 
+  /**
+   * A provisioned account BELONGS to the site whose IdP provisioned it.
+   *
+   * Without the membership the account would exist and be reachable by nobody: a site's people are its
+   * members, so the admin who asked their IdP to create the user would not see it, and the user would
+   * hold no site at all. The membership records exactly that one fact — this person belongs here — and
+   * carries NO roles: what they may do is granted in the admin, deliberately, by a person. Inventing a
+   * role here would hand an external directory the power to decide privileges.
+   *
+   * Untenanted (single-tenant deployment) there is no membership to write, and none is needed.
+   */
+  private async joinProvisioningSite(userId: number): Promise<void> {
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    if (!tenantId || !Number.isFinite(userId) || userId <= 0) return;
+    const existing = await this.db
+      .findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(userId), tenant_id: tenantId })
+      .catch(() => null);
+    if (existing) return;
+    await this.db.insert(SystemConstants.TABLE.TENANT_MEMBERSHIPS, {
+      userId: String(userId), tenantId, roles: [], state: 'active',
+    }).catch(() => undefined);
+  }
+
   async replace(id: string, body: any): Promise<IScimUser | null> {
-    const existing = await this.users.getUser(Number(id));
+    const existing = await this.scopedUser(Number(id));
     if (!existing) return null;
     await this.users.saveUser(Number(id), this.fromScim(body, existing));
     return this.toScim(await this.users.getUser(Number(id)));
@@ -50,7 +101,7 @@ export class ScimService {
 
   /** SCIM PATCH — the deprovision path. Applies each Operation (active / name / userName). */
   async patch(id: string, body: any): Promise<IScimUser | null> {
-    const existing = await this.users.getUser(Number(id));
+    const existing = await this.scopedUser(Number(id));
     if (!existing) return null;
     const patch: any = {
       email: existing.email,
@@ -80,7 +131,7 @@ export class ScimService {
   }
 
   async remove(id: string): Promise<boolean> {
-    const existing = await this.users.getUser(Number(id));
+    const existing = await this.scopedUser(Number(id));
     if (!existing) return false;
     await this.users.deleteUser(Number(id));
     return true;

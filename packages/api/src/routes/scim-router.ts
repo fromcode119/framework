@@ -1,5 +1,6 @@
 import express from 'express';
 import { BaseRouter } from '@fromcode119/core';
+import { RequestContextUtils } from '@fromcode119/core';
 import { AccessLevel, PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { ScimController } from '@api/controllers/scim/scim-controller';
@@ -16,18 +17,41 @@ export class ScimRouter extends BaseRouter {
 
   private readonly controller: ScimController;
   private readonly tokens: ScimTokenService;
+  private readonly db: any;
 
   constructor(manager: PluginManager, auth: AuthManager) {
     super();
     this.controller = new ScimController(manager, auth);
-    this.tokens = new ScimTokenService((manager as any).db);
+    this.db = (manager as any).db;
+    this.tokens = new ScimTokenService(this.db);
   }
 
+  /**
+   * Authenticates the IdP AND binds the request to the site whose token it presented.
+   *
+   * An IdP has no session and no site in the URL, so without this the whole surface ran untenanted:
+   * the token lookup saw only the platform row, and any account it provisioned would have belonged to
+   * no site — invisible to the very admin who asked for it. The token names the site (see
+   * `ScimTokenService.resolveTenant`), so authentication and tenancy are one step, and every statement
+   * the request makes afterwards runs under that site's row-level security.
+   */
   private guard = async (req: any, res: any, next: any): Promise<void> => {
     const header = String(req.headers?.authorization || '');
     const token = header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
-    if (await this.tokens.matches(token)) { next(); return; }
-    res.status(401).type('application/scim+json').json({ schemas: [ScimRouter.ERROR_SCHEMA], status: '401', detail: 'Invalid or missing SCIM bearer token' });
+    const tenantId = await this.tokens.resolveTenant(token);
+    if (tenantId === null) {
+      res.status(401).type('application/scim+json').json({ schemas: [ScimRouter.ERROR_SCHEMA], status: '401', detail: 'Invalid or missing SCIM bearer token' });
+      return;
+    }
+    if (!tenantId) { next(); return; }
+    req.tenantId = tenantId;
+    RequestContextUtils.storage.run({ locale: '', tenantId }, () => {
+      this.db.withTenant(tenantId, () => new Promise<void>((resolve) => {
+        res.on('finish', resolve);
+        res.on('close', resolve);
+        next();
+      })).catch(() => undefined);
+    });
   };
 
   protected registerRoutes(): void {

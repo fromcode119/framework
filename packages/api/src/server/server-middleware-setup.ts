@@ -10,6 +10,7 @@ import { ApiPathUtils } from '@fromcode119/core';
 import { RequestTenantService } from '@api/services/request/request-tenant-service';
 import { AdminTenantResolver } from '@api/services/request/admin-tenant-resolver';
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
+import { ScimRouteUtils } from '@api/utils/scim-route-utils';
 import { InternalRouteUtils } from '@api/utils/internal-route-utils';
 import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resolver';
 import { ApiKeyTenantGate } from '@api/server/api-key-tenant-gate';
@@ -138,6 +139,16 @@ export class ServerMiddlewareSetup {
     // to isolate. Behaves exactly as it did before tenancy existed. Every EXISTING installation is
     // in this state, which is why this is a required path and not an optimisation.
     if (!TenantMode.isEnabled()) {
+      RequestContextUtils.storage.run({ locale }, () => next());
+      return;
+    }
+
+    // SCIM is the same shape as an api key: an external IdP with no browser Origin, no session and no
+    // site in the URL — its BEARER TOKEN names the site, and `ScimRouter`'s guard resolves it and binds
+    // the request. Resolving by Host here instead refused every call with `unknown_host` before the
+    // guard ever ran. Nothing is granted by this exemption: an unmatched token is still a 401, and the
+    // router binds the tenant before any route sees the request.
+    if (ScimRouteUtils.isScimPath(req)) {
       RequestContextUtils.storage.run({ locale }, () => next());
       return;
     }
