@@ -60,7 +60,7 @@ describe('PeopleDirectoryService.mergeFillEmpty', () => {
   it('fills only EMPTY existing fields and never overwrites a non-empty one', () => {
     const merged = PeopleDirectoryService.mergeFillEmpty(
       { id: 2, userId: null, firstName: 'К', lastName: '', source: 'delta' },
-      { userId: 1, firstName: 'Ignored', lastName: 'Д', source: 'finance' },
+      { userId: 1, firstName: 'Ignored', lastName: 'Д', source: 'gamma' },
     );
     expect(merged.userId).toBe(1);
     expect(merged.firstName).toBe('К');
@@ -112,7 +112,7 @@ describe('PeopleDirectoryService.ingest', () => {
     const { service, people } = makeHarness([], [
       { id: 2, userId: null, email: 'k@x.com', firstName: 'Кристиян', lastName: '', source: 'delta' },
     ]);
-    const person = await service.ingest({ userId: 1, email: 'k@x.com', firstName: 'Ignored', lastName: 'Димитров', source: 'finance' });
+    const person = await service.ingest({ userId: 1, email: 'k@x.com', firstName: 'Ignored', lastName: 'Димитров', source: 'gamma' });
     expect(people).toHaveLength(1);
     expect(person!.id).toBe(2);
     expect(people[0].userId).toBe(1);

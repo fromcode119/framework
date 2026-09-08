@@ -25,7 +25,7 @@ describe('PostgresColumnNormalizer inside a tenant scope', () => {
     const normalizer = new PostgresColumnNormalizer(pool as any);
     await TenantConnectionScope.run(pool as any, 't1', async () => {
       await TenantConnectionScope.currentClient()!.query('select 1');
-      const where = await normalizer.normalizeWhereForTable('fcp_ecommerce_inventory', { payload: { a: 1 } });
+      const where = await normalizer.normalizeWhereForTable('fcp_beta_inventory', { payload: { a: 1 } });
       expect(where.payload).toBe('{"a":1}');
     });
     expect(pool.clients).toHaveLength(1);

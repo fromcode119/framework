@@ -3,9 +3,9 @@ import { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
 
 describe('ThemeSsrMarkup image preloads', () => {
   it('decodes the attribute-escaped href so the head does not re-escape an optimizer URL into a third URL', () => {
-    const html = '<link rel="preload" as="image" href="/api/v1/plugins/cms/img?src=%2Fx.jpg&amp;w=1400&amp;q=80"/><main>body</main>';
+    const html = '<link rel="preload" as="image" href="/api/v1/plugins/zeta/img?src=%2Fx.jpg&amp;w=1400&amp;q=80"/><main>body</main>';
     const markup = ThemeSsrMarkup.from(html);
-    expect(markup.imagePreloads).toEqual(['/api/v1/plugins/cms/img?src=%2Fx.jpg&w=1400&q=80']);
+    expect(markup.imagePreloads).toEqual(['/api/v1/plugins/zeta/img?src=%2Fx.jpg&w=1400&q=80']);
     expect(markup.bodyHtml).toBe('<main>body</main>');
   });
 

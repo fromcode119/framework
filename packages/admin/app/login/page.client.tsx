@@ -10,6 +10,11 @@ import { LoginForm } from '@/app/login/login-form';
 import { LoginPageHeader } from '@/app/login/login-page-header';
 import { prop, state } from '@fromcode119/reactor';
 import type { ILoginFieldErrors } from '@/app/login/interfaces/login-field-errors.interface';
+import type { ILoginController } from '@/lib/appearance/interfaces/login-controller.interface';
+import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
+import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
+import { HostInfoClient } from '@/lib/tenants/host-info-client';
+import { AppEnv } from '@/lib/env';
 
 export class LoginPage extends AdminComponent {
   @prop declare searchParams?: Promise<Record<string, string | string[]>>;
@@ -24,11 +29,14 @@ export class LoginPage extends AdminComponent {
   @state requiresTwoFactor = false;
   @state error = '';
   @state fieldErrors: ILoginFieldErrors = {};
+  /** Whose console this domain is, asked publicly so a custom sign-in can name it before anyone signs in. */
+  @state workspace: { slug: string; appearance: string } | null = null;
 
   private mounted = false;
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    void HostInfoClient.workspace().then((workspace) => { if (this.mounted) this.workspace = workspace; });
     const searchParams = this.searchParams ? await this.searchParams : undefined;
     if (!this.mounted) return;
 
@@ -125,6 +133,35 @@ export class LoginPage extends AdminComponent {
     }
   }
 
+  /** The sign-in, as an appearance sees it. See `ILoginController` for what is deliberately absent. */
+  private get controller(): ILoginController {
+    const workspace = this.workspace;
+    return {
+      email: this.email,
+      password: this.password,
+      setEmail: (value: string) => { this.email = value; this.resetTwoFactor(); },
+      setPassword: (value: string) => { this.password = value; this.resetTwoFactor(); },
+      submit: (event?: FormEvent) => { event?.preventDefault(); void this.handleSubmit(event ?? ({ preventDefault() {} } as unknown as FormEvent)); },
+      forgotPassword: () => { this.router.push(AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD); },
+      contactSupport: () => { this.runtime.notify.notify(NotificationType.INFO, 'Support Offline', 'Support portal is temporarily unavailable. Please try again later.'); },
+      isLoading: this.isLoading,
+      error: this.error,
+      fieldErrors: this.fieldErrors,
+      requiresTwoFactor: this.requiresTwoFactor,
+      twoFactorMethod: this.twoFactorMethod,
+      totpToken: this.totpToken,
+      recoveryCode: this.recoveryCode,
+      setTwoFactorMethod: (method) => { this.twoFactorMethod = method; },
+      setTotpToken: (value: string) => { this.totpToken = value; },
+      setRecoveryCode: (value: string) => { this.recoveryCode = value; },
+      workspace: workspace?.slug || '',
+      title: workspace ? `Sign in to ${workspace.slug}` : `Welcome to ${AppEnv.APP_NAME}`,
+      subtitle: workspace
+        ? `${workspace.slug} runs the ${workspace.appearance || 'default'} console on this domain.`
+        : `Sign in to manage your ${AppEnv.APP_NAME} workspace powered by ${AppEnv.COMPANY_NAME}.`,
+    };
+  }
+
   render(): ReactElement {
     const {
       isLoading,
@@ -152,9 +189,17 @@ export class LoginPage extends AdminComponent {
       );
     }
 
+    // An appearance may render the WHOLE sign-in from the controller — its own layout, panel, inputs
+    // and button — because no arrangement of slots reaches the designs people actually ask for. What
+    // it cannot do is authenticate: `submit` is this page's own post to `/auth/login`, the 2FA
+    // challenge and the redirect stay here, and the gate renders this only for a visitor with no
+    // session. See `ILoginController`.
+    const CustomLogin = AdminPageRegistry.shared.resolve(this.workspace?.appearance || '', AdminPageKeys.LOGIN_FRAME);
+    if (CustomLogin) return <CustomLogin login={this.controller} />;
+
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-[#020617]">
-        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="fc-login min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-[#020617]">
+        <div className="fc-login__panel w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
           <LoginPageHeader />
 
           <LoginForm
@@ -176,7 +221,7 @@ export class LoginPage extends AdminComponent {
             onRecoveryCodeChange={(value) => { this.recoveryCode = value; }}
           />
 
-          <p className="text-center mt-8 text-sm text-slate-500">
+          <p className="fc-login__foot text-center mt-8 text-sm text-slate-500">
             Not part of the organization? <button onClick={(e) => this.handleContactSupport(e)} className="font-semibold text-indigo-500 hover:text-indigo-400 underline decoration-indigo-500/30 underline-offset-4">Contact Support</button>
           </p>
         </div>

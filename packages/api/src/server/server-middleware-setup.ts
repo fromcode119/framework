@@ -6,7 +6,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { ApiConfig } from '@api/config/api-config';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
 import { RequestLocaleService } from '@api/services/request/request-locale-service';
-import { ApiPathUtils } from '@fromcode119/core';
+import { ApiPathUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
 import { RequestTenantService } from '@api/services/request/request-tenant-service';
 import { AdminTenantResolver } from '@api/services/request/admin-tenant-resolver';
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
@@ -227,6 +227,20 @@ export class ServerMiddlewareSetup {
    * would have been outside every tenant's policy. Found while verifying T2, on the first plugin
    * route that happened to be called `/health`.
    */
+  /**
+   * One of the guardless auth routes (`RouteConstants.AUTH_PUBLIC_SEGMENTS`) — matched EXACTLY on the
+   * versioned and unversioned auth path, never by suffix, for the reason `isProbeRoute` documents:
+   * a suffix match once exempted every plugin's own `/health` from tenancy.
+   */
+  private isPublicAuthRoute(req: any): boolean {
+    const path = String(req?.path || '').replace(/\/+$/, '');
+    const paths = RouteConstants.AUTH_PUBLIC_SEGMENTS.flatMap((segment) => {
+      const full = `${SystemConstants.API_PATH.AUTH.BASE}${segment}`;
+      return [full, ApiPathUtils.versioned(full)];
+    });
+    return paths.includes(path);
+  }
+
   private isProbeRoute(req: any): boolean {
     const path = String(req?.path || '').replace(/\/+$/, '');
     const probes = ApiConfig.getInstance().probeRoutes;
@@ -247,11 +261,23 @@ export class ServerMiddlewareSetup {
           // Unauthenticated admin traffic still has to reach the auth middleware and the login
           // route, so it continues WITHOUT a tenant rather than being refused here. Every
           // tenant-scoped query remains fail-closed on its own.
-          if (reason === 'unauthenticated' || reason === 'no_tenant_selected') {
+          if (reason?.allowsUnauthenticatedSurface) {
             RequestContextUtils.storage.run({ locale }, () => next());
             return;
           }
-          res.status(403).json({ error: reason });
+          // A tenancy verdict must never take away the routes that EXIST to fix a bad session. On a
+          // workspace domain the host names the tenant and membership decides, so an account with a
+          // valid session and no membership there was answered `tenant_access_revoked` for every
+          // admin-client request — `/auth/login` included, leaving no way to sign in as someone who
+          // does have access, and `/auth/host` too, so the console could not even name the workspace
+          // that had refused it. These routes are guardless and read no tenant rows, so they continue
+          // WITHOUT a tenant bound: every tenant-scoped query behind them stays fail-closed.
+          if (reason?.isAccessRevoked
+            && (this.isPublicAuthRoute(req) || PublicSystemRouteUtils.isTenancyOptionalPath(String(req.path || '')))) {
+            RequestContextUtils.storage.run({ locale }, () => next());
+            return;
+          }
+          res.status(403).json({ error: reason?.value });
           return;
         }
         if (!tenant.isActive) {

@@ -1,6 +1,7 @@
 import { Loader } from '@/components/ui/view/loader.client';
 import { ClientLayoutAuthStateHooks } from '@/app/services/client-layout-auth-state-hooks';
 import { PluginLoader } from '@/app/components/view/plugin-loader.client';
+import { WorkspaceAccessDenied } from '@/app/components/view/workspace-access-denied.client';
 import type { ReactNode } from 'react';
 import { Bridge } from '@fromcode119/reactor';
 import type { IAppearanceSecurityGateProps } from '@/lib/appearance/interfaces/appearance-security-gate-props.interface';
@@ -25,10 +26,22 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
       return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label="Initializing Secure Session" /></div>;
     }
 
+    // A WORKSPACE domain reaches the console through THIS gate, not `ClientLayoutShell` — its tenant
+    // declares an appearance, so the appearance shell renders instead of the default one. The
+    // "this domain refuses your account" answer therefore has to exist in both places or it exists in
+    // neither: put on the default shell alone, it never ran on the one surface that needs it most.
+    if (authState.workspaceDenied && !authState.isAuthPage) {
+      return <WorkspaceAccessDenied />;
+    }
+
     if (!authState.user && !authState.isAuthPage) {
       return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label="Forwarding to Authentication..." /></div>;
     }
 
+    // Reached only after every branch above, so a visitor with a session, one this workspace refuses,
+    // or one still being checked never gets here. That is what keeps an appearance's custom sign-in
+    // (rendered by the login PAGE from `ILoginController`) unable to stand in for the authenticated
+    // shell: it exists only on a route that only a session-less visitor is shown.
     if (authState.isAuthPage) {
       return <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-300 dark:bg-[#020617]">{children}</div>;
     }

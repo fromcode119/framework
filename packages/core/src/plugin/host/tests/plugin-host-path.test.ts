@@ -10,6 +10,6 @@ describe('PluginHost.pluginPath', () => {
 
   it('does not mistake a longer slug for a shorter one', () => {
     expect(PluginHost.pluginPath('alpha', '/api/v1/plugins/alpha-extra/x')).toBeNull();
-    expect(PluginHost.pluginPath('logistics', '/api/v1/plugins/logistics-econt/x')).toBeNull();
+    expect(PluginHost.pluginPath('delta', '/api/v1/plugins/delta-econt/x')).toBeNull();
   });
 });

@@ -17,7 +17,7 @@ describe('TenantScopedIntegration', () => {
     const shop = new SenderFixture('shop');
     const wrapped = TenantScopedIntegration.wrap<SenderFixture>(() => platform, async () => shop);
 
-    const result = await RequestContextUtils.storage.run({ tenantId: 'vselenskiportal' } as any, () =>
+    const result = await RequestContextUtils.storage.run({ tenantId: 'tenant-a' } as any, () =>
       wrapped.send('Order received'));
 
     expect(result).toBe('shop');

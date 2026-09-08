@@ -11,7 +11,7 @@ import { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
  * Lifting the tag out of the body is what puts it back in front of the theme's stylesheet.
  */
 describe('ThemeSsrMarkup plugin default styles', () => {
-  const STYLE = '<style data-fc-plugin-default="ecommerce-collection">.fc-collection{padding:0}</style>';
+  const STYLE = '<style data-fc-plugin-default="beta-collection">.fc-collection{padding:0}</style>';
 
   it('lifts a plugin default sheet out of the body', () => {
     const markup = ThemeSsrMarkup.from(`<main>${STYLE}<div>cards</div></main>`);
@@ -19,7 +19,7 @@ describe('ThemeSsrMarkup plugin default styles', () => {
     expect(markup.bodyHtml).not.toContain('<style');
     expect(markup.bodyHtml).toContain('<div>cards</div>');
     expect(markup.pluginStyles).toHaveLength(1);
-    expect(markup.pluginStyles[0].key).toBe('ecommerce-collection');
+    expect(markup.pluginStyles[0].key).toBe('beta-collection');
     expect(markup.pluginStyles[0].css).toBe('.fc-collection{padding:0}');
   });
 
@@ -30,13 +30,13 @@ describe('ThemeSsrMarkup plugin default styles', () => {
   });
 
   it('gives each plugin sheet its own hoist identity', () => {
-    const other = '<style data-fc-plugin-default="forms-form">.fc-form{gap:0}</style>';
+    const other = '<style data-fc-plugin-default="theta-form">.fc-form{gap:0}</style>';
 
     const markup = ThemeSsrMarkup.from(`<main>${STYLE}${other}</main>`);
 
     expect(markup.pluginStyles.map((style) => style.href)).toEqual([
-      'fc-plugin-default-ecommerce-collection',
-      'fc-plugin-default-forms-form',
+      'fc-plugin-default-beta-collection',
+      'fc-plugin-default-theta-form',
     ]);
   });
 

@@ -17,6 +17,7 @@ import { ClientLayoutAuthStateHooks } from '@/app/services/client-layout-auth-st
 import { ClientLayoutNavigationStateHooks } from '@/app/services/client-layout-navigation-state-hooks';
 import { ClientLayoutSiteStateHooks } from '@/app/services/client-layout-site-state-hooks';
 import { SiteChooser } from '@/app/components/view/site-chooser.client';
+import { WorkspaceAccessDenied } from '@/app/components/view/workspace-access-denied.client';
 
 export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientLayoutChildrenProps> {
   @prop declare children: ReactNode;
@@ -92,6 +93,13 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
 
     if (authState.isInitialized === null || (authState.isAuthLoading && !authState.isAuthPage)) {
       return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label="Initializing Secure Session" /></div>;
+    }
+
+    // Signed in, but this workspace domain refuses the account — say so. Ahead of the login forward
+    // below, which would otherwise offer a form that changes nothing: the account can sign in and
+    // still not be a member. See `WorkspaceAccessDenied`.
+    if (authState.workspaceDenied && !authState.isAuthPage) {
+      return <WorkspaceAccessDenied />;
     }
 
     if (!authState.user && !authState.isAuthPage) {

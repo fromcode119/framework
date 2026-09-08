@@ -8,10 +8,10 @@ describe('PluginHealthResponseBuilder', () => {
     vi.setSystemTime(new Date('2026-04-17T12:00:00.000Z'));
 
     expect(
-      PluginHealthResponseBuilder.build({ slug: 'forms', version: '1.2.3' }),
+      PluginHealthResponseBuilder.build({ slug: 'theta', version: '1.2.3' }),
     ).toEqual({
       status: PluginHealthStatus.OK,
-      plugin: 'forms',
+      plugin: 'theta',
       version: '1.2.3',
       timestamp: '2026-04-17T12:00:00.000Z',
     });
@@ -22,12 +22,12 @@ describe('PluginHealthResponseBuilder', () => {
   it('accepts non-ok statuses and details', () => {
     expect(
       PluginHealthResponseBuilder.build(
-        { slug: 'forms', version: '1.2.3' },
+        { slug: 'theta', version: '1.2.3' },
         { status: 'degraded', message: 'Slow database', details: { latencyMs: 1200 }, timestamp: '2026-04-17T12:00:00.000Z' },
       ),
     ).toEqual({
       status: PluginHealthStatus.DEGRADED,
-      plugin: 'forms',
+      plugin: 'theta',
       version: '1.2.3',
       timestamp: '2026-04-17T12:00:00.000Z',
       message: 'Slow database',

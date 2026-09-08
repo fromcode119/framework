@@ -410,7 +410,7 @@ describe('assistant-controller modernization', () => {
 
     const req: MockReq = {
       body: {
-        message: 'Use @cms/pages id 1.',
+        message: 'Use @zeta/pages id 1.',
         sessionId: 'session-checkpoint',
         history: [],
         agentMode: 'advanced',

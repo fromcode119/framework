@@ -75,21 +75,21 @@ function createDeps(options?: Partial<IAdminAssistantRuntimeOptions>) {
 
 describe('runtime classifier and fallback behavior', () => {
   // The framework owns the vocabulary mechanism and none of the words — domain terms arrive from
-  // installed plugins at boot. These scenarios exercise a finance-shaped tool (`finance.summary.get`),
+  // installed plugins at boot. These scenarios exercise a gamma-shaped tool (`gamma.summary.get`),
   // so the fixture registers what that plugin registers; without it "what is the total?" ties
   // totalRevenue with totalRefunds and the alphabetical tie-break answers with refunds.
   beforeAll(() => {
     const vocabulary = CoreServices.getInstance().assistantVocabulary;
-    vocabulary.register('finance', AssistantVocabularyRole.MEASURE, ['revenue', 'sales', 'earnings', 'income', 'profit', 'refund', 'refunds', 'wallet', 'balance']);
-    vocabulary.register('finance', AssistantVocabularyRole.REVENUE, ['revenue', 'sales', 'earnings', 'income', 'profit']);
-    vocabulary.register('finance', AssistantVocabularyRole.COUNTABLE, ['transaction', 'transactions']);
-    vocabulary.register('finance', AssistantVocabularyRole.ENTITY, ['transaction', 'transactions', 'payment', 'payments', 'invoice', 'invoices']);
-    vocabulary.register('finance', AssistantVocabularyRole.SUBJECT, ['payment']);
-    vocabulary.register('finance', AssistantVocabularyRole.DEMOTE_WHEN_ABSENT, ['refund']);
+    vocabulary.register('gamma', AssistantVocabularyRole.MEASURE, ['revenue', 'sales', 'earnings', 'income', 'profit', 'refund', 'refunds', 'wallet', 'balance']);
+    vocabulary.register('gamma', AssistantVocabularyRole.REVENUE, ['revenue', 'sales', 'earnings', 'income', 'profit']);
+    vocabulary.register('gamma', AssistantVocabularyRole.COUNTABLE, ['transaction', 'transactions']);
+    vocabulary.register('gamma', AssistantVocabularyRole.ENTITY, ['transaction', 'transactions', 'payment', 'payments', 'invoice', 'invoices']);
+    vocabulary.register('gamma', AssistantVocabularyRole.SUBJECT, ['payment']);
+    vocabulary.register('gamma', AssistantVocabularyRole.DEMOTE_WHEN_ABSENT, ['refund']);
   });
 
   afterAll(() => {
-    CoreServices.getInstance().assistantVocabulary.unregister('finance');
+    CoreServices.getInstance().assistantVocabulary.unregister('gamma');
   });
 
   it('classifies greetings as smalltalk', () => {
@@ -628,7 +628,7 @@ describe('runtime classifier and fallback behavior', () => {
         { slug: 'alpha', name: 'Alpha Content Plugin', version: '1.5.9', state: 'active' },
       ] as any,
       getThemes: () => [
-        { slug: 'snapbilt', name: 'SnapBilt Industrial', version: '1.0.0', state: 'active' },
+        { slug: 'theme-a', name: 'Theme A Industrial', version: '1.0.0', state: 'active' },
       ] as any,
     });
     const result = await OrchestratorRunner.runOrchestrator(
@@ -705,7 +705,7 @@ describe('runtime classifier and fallback behavior', () => {
           resumePrompt: 'Continue the conversation naturally.',
           memory: {
             factual: {
-              tool: 'finance.summary.get',
+              tool: 'gamma.summary.get',
               input: { period: 'last_month' },
               rangeLabel: 'last month',
               rangeFrom: '2026-03-01',

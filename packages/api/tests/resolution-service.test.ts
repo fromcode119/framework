@@ -46,7 +46,7 @@ describe('ResolutionService default page contract routing', () => {
   it('resolves singleton aliases through the contract canonical page slug', async () => {
     const restController = {
       find: vi.fn().mockImplementation((_collection: any, options: any) => {
-        if (options?.query?.slug === 'numerology') {
+        if (options?.query?.slug === 'epsilon') {
           return Promise.resolve({ docs: [] });
         }
 
@@ -59,7 +59,7 @@ describe('ResolutionService default page contract routing', () => {
     };
     const manager: any = {
       db: { find: vi.fn().mockResolvedValue([]) },
-      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'ecommerce' } }]),
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'beta' } }]),
       registeredCollections: new Map([
         [
           'pages',
@@ -89,14 +89,14 @@ describe('ResolutionService default page contract routing', () => {
             status: PluginDefaultPageContractResolutionStatus.READY,
             materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             effectiveSlug: '/shop',
-            effectiveAliases: ['/numerology'],
+            effectiveAliases: ['/epsilon'],
           },
         ]),
       },
     } as any);
 
     const service = new ResolutionService(manager, themeManager, restController as any);
-    const result = await service.resolveSlug('/numerology', {});
+    const result = await service.resolveSlug('/epsilon', {});
 
     expect(result).toEqual({
       type: 'pages',
@@ -165,7 +165,7 @@ describe('ResolutionService default page contract routing', () => {
   it('resolves parameterized detail families through the contract record collection', async () => {
     const restController = {
       find: vi.fn().mockImplementation((collection: any, options: any) => {
-        if (collection.slug === 'ecommerce-products') {
+        if (collection.slug === 'beta-products') {
           return Promise.resolve({ docs: [{ id: 7, slug: 'lyubov', name: 'Love Box' }] });
         }
 
@@ -174,14 +174,14 @@ describe('ResolutionService default page contract routing', () => {
     };
     const manager: any = {
       db: { find: vi.fn().mockResolvedValue([]) },
-      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'ecommerce' } }]),
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'beta' } }]),
       registeredCollections: new Map([
         [
           'catalog',
           {
-            pluginSlug: 'ecommerce',
+            pluginSlug: 'beta',
             collection: {
-              slug: 'ecommerce-products',
+              slug: 'beta-products',
               shortSlug: 'catalog',
               fields: [{ name: 'slug' }],
             },
@@ -206,7 +206,7 @@ describe('ResolutionService default page contract routing', () => {
             effectiveSlug: '/shop/:slug',
             effectiveAliases: ['/cosmic-box/:slug'],
             recordCollection: 'catalog',
-            pluginSlug: 'ecommerce',
+            pluginSlug: 'beta',
           },
         ]),
       },
@@ -217,7 +217,7 @@ describe('ResolutionService default page contract routing', () => {
 
     expect(result).toEqual({
       type: 'catalog',
-      plugin: 'ecommerce',
+      plugin: 'beta',
       doc: { id: 7, slug: 'lyubov', name: 'Love Box' },
     });
   });
@@ -231,7 +231,7 @@ describe('ResolutionService default page contract routing', () => {
           }
         }
 
-        if (collection.slug === 'ecommerce-products') {
+        if (collection.slug === 'beta-products') {
           return Promise.resolve({ docs: [{ id: 7, slug: 'lyubov', name: 'Love Box' }] });
         }
 
@@ -240,7 +240,7 @@ describe('ResolutionService default page contract routing', () => {
     };
     const manager: any = {
       db: { find: vi.fn().mockResolvedValue([]) },
-      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'ecommerce' } }]),
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'beta' } }]),
       registeredCollections: new Map([
         [
           'pages',
@@ -256,9 +256,9 @@ describe('ResolutionService default page contract routing', () => {
         [
           'catalog',
           {
-            pluginSlug: 'ecommerce',
+            pluginSlug: 'beta',
             collection: {
-              slug: 'ecommerce-products',
+              slug: 'beta-products',
               shortSlug: 'catalog',
               fields: [{ name: 'slug' }, { name: 'page' }],
             },
@@ -283,7 +283,7 @@ describe('ResolutionService default page contract routing', () => {
             effectiveSlug: '/shop/:slug',
             effectiveAliases: ['/cosmic-box/:slug'],
             recordCollection: 'catalog',
-            pluginSlug: 'ecommerce',
+            pluginSlug: 'beta',
           },
         ]),
       },
@@ -299,7 +299,7 @@ describe('ResolutionService default page contract routing', () => {
     });
   });
 
-  it('returns the CMS page for /shop when an exact page permalink exists and preserves safe contract presentation', async () => {
+  it('returns the ZETA page for /shop when an exact page permalink exists and preserves safe contract presentation', async () => {
     const restController = {
       find: vi.fn().mockImplementation((collection: any, options: any) => {
         if (collection.slug === 'pages' && options?.query?.customPermalink === '/shop') {
@@ -382,7 +382,7 @@ describe('ResolutionService default page contract routing', () => {
     });
   });
 
-  it('falls back to the enabled contract for /shop when no exact CMS page exists', async () => {
+  it('falls back to the enabled contract for /shop when no exact ZETA page exists', async () => {
     const restController = {
       find: vi.fn().mockImplementation((collection: any, options: any) => {
         if (collection.slug === 'pages' && options?.query?.customPermalink === '/shop') {
@@ -511,7 +511,7 @@ describe('ResolutionService default page contract routing', () => {
   it('does not resolve detail contracts for records with disabled permalinks', async () => {
     const restController = {
       find: vi.fn().mockImplementation((collection: any) => {
-        if (collection.slug === 'ecommerce-products') {
+        if (collection.slug === 'beta-products') {
           return Promise.resolve({ docs: [{ id: 7, slug: 'lyubov', disablePermalink: '1.0' }] });
         }
 
@@ -523,14 +523,14 @@ describe('ResolutionService default page contract routing', () => {
         find: vi.fn().mockResolvedValue([]),
         findOne: vi.fn().mockResolvedValue({ id: 7, disablePermalink: '1.0' }),
       },
-      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'ecommerce' } }]),
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'beta' } }]),
       registeredCollections: new Map([
         [
           'catalog',
           {
-            pluginSlug: 'ecommerce',
+            pluginSlug: 'beta',
             collection: {
-              slug: 'ecommerce-products',
+              slug: 'beta-products',
               shortSlug: 'catalog',
               fields: [{ name: 'slug' }],
             },
@@ -555,7 +555,7 @@ describe('ResolutionService default page contract routing', () => {
             effectiveSlug: '/shop/:slug',
             effectiveAliases: [],
             recordCollection: 'catalog',
-            pluginSlug: 'ecommerce',
+            pluginSlug: 'beta',
           },
         ]),
       },
@@ -574,7 +574,7 @@ describe('ResolutionService default page contract routing', () => {
           return Promise.resolve({ docs: [] });
         }
 
-        if (collection.slug === 'lms-courses' && options?.query?.slug === '21-dni-kurs-za-finansovo-izobilie') {
+        if (collection.slug === 'upsilon-courses' && options?.query?.slug === '21-dni-kurs-za-finansovo-izobilie') {
           return Promise.resolve({ docs: [{ id: 21, slug: '21-dni-kurs-za-finansovo-izobilie', title: '21-дневен курс' }] });
         }
 
@@ -585,7 +585,7 @@ describe('ResolutionService default page contract routing', () => {
       db: { find: vi.fn().mockResolvedValue([]) },
       getPlugins: vi.fn().mockReturnValue([
         { state: PluginState.ACTIVE, manifest: { slug: 'analytics' } },
-        { state: PluginState.ACTIVE, manifest: { slug: 'lms' } },
+        { state: PluginState.ACTIVE, manifest: { slug: 'upsilon' } },
       ]),
       registeredCollections: new Map([
         [
@@ -602,9 +602,9 @@ describe('ResolutionService default page contract routing', () => {
         [
           'courses',
           {
-            pluginSlug: 'lms',
+            pluginSlug: 'upsilon',
             collection: {
-              slug: 'lms-courses',
+              slug: 'upsilon-courses',
               shortSlug: 'courses',
               fields: [{ name: 'slug' }],
             },
@@ -629,7 +629,7 @@ describe('ResolutionService default page contract routing', () => {
             effectiveSlug: '/courses/:slug',
             effectiveAliases: [],
             recordCollection: 'courses',
-            pluginSlug: 'lms',
+            pluginSlug: 'upsilon',
           },
         ]),
       },
@@ -640,7 +640,7 @@ describe('ResolutionService default page contract routing', () => {
 
     expect(result).toEqual({
       type: 'courses',
-      plugin: 'lms',
+      plugin: 'upsilon',
       doc: { id: 21, slug: '21-dni-kurs-za-finansovo-izobilie', title: '21-дневен курс' },
     });
     expect(restController.find).not.toHaveBeenCalledWith(

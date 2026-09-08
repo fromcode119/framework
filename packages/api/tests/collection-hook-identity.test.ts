@@ -7,26 +7,26 @@ import type { IDatabaseManager } from '@fromcode119/database';
 /**
  * A plugin collection carries FOUR names. `slug` is overwritten at registration with the physical
  * table name; `unprefixedSlug` keeps the slug the plugin actually declared. The REST controller emitted
- * under `slug`, so `collection:fcp_ecommerce_orders:afterSave` went out while ecommerce listened on
- * `collection:ecommerce-orders:afterSave`. Neither side matched, and the save still reported success —
- * an admin order save minted no licence key and wrote no finance transaction, silently.
+ * under `slug`, so `collection:fcp_beta_orders:afterSave` went out while beta listened on
+ * `collection:beta-orders:afterSave`. Neither side matched, and the save still reported success —
+ * an admin order save minted no licence key and wrote no gamma transaction, silently.
  */
 const orders = (): ICollection =>
   ({
-    slug: 'fcp_ecommerce_orders',
-    unprefixedSlug: 'ecommerce-orders',
+    slug: 'fcp_beta_orders',
+    unprefixedSlug: 'beta-orders',
     shortSlug: 'orders',
-    pluginSlug: 'ecommerce',
+    pluginSlug: 'beta',
     fields: [],
   } as unknown as ICollection);
 
-/** A collection whose shortSlug deliberately differs from both other names (ecommerce `products`). */
+/** A collection whose shortSlug deliberately differs from both other names (beta `products`). */
 const products = (): ICollection =>
   ({
-    slug: 'fcp_ecommerce_products',
-    unprefixedSlug: 'ecommerce-products',
+    slug: 'fcp_beta_products',
+    unprefixedSlug: 'beta-products',
     shortSlug: 'catalog',
-    pluginSlug: 'ecommerce',
+    pluginSlug: 'beta',
     fields: [],
   } as unknown as ICollection);
 
@@ -35,16 +35,16 @@ const users = (): ICollection => ({ slug: 'users', fields: [] } as unknown as IC
 
 describe('HookEventUtils collection identity', () => {
   it('uses the DECLARED slug, not the physical table name', () => {
-    expect(HookEventUtils.collectionIdentity(orders())).toBe('ecommerce-orders');
+    expect(HookEventUtils.collectionIdentity(orders())).toBe('beta-orders');
     expect(HookEventUtils.collectionEvent(orders(), CollectionHookPhase.AFTER_SAVE)).toBe(
-      'collection:ecommerce-orders:afterSave'
+      'collection:beta-orders:afterSave'
     );
   });
 
   it('ignores shortSlug, which is overridable and not unique across plugins', () => {
     // `products` registers with shortSlug `catalog`; keying on it is the exact mistake that once
     // dropped collection extensions silently.
-    expect(HookEventUtils.collectionIdentity(products())).toBe('ecommerce-products');
+    expect(HookEventUtils.collectionIdentity(products())).toBe('beta-products');
   });
 
   it('falls back to slug for core collections, which have no declared slug', () => {
@@ -60,10 +60,10 @@ describe('HookEventUtils collection identity', () => {
       HookEventUtils.collectionNotification(orders(), action)
     );
     expect(events).toEqual([
-      'collection:ecommerce-orders:created',
-      'collection:ecommerce-orders:updated',
-      'collection:ecommerce-orders:saved',
-      'collection:ecommerce-orders:deleted',
+      'collection:beta-orders:created',
+      'collection:beta-orders:updated',
+      'collection:beta-orders:saved',
+      'collection:beta-orders:deleted',
     ]);
     expect(new Set(events).size).toBe(4);
   });
@@ -76,7 +76,7 @@ describe('RestControllerRuntime collection hooks', () => {
   it('fires an afterSave listener registered with the LOGICAL collection name', async () => {
     const hooks = new HookManager();
     const seen: unknown[] = [];
-    hooks.on('collection:ecommerce-orders:afterSave', (payload: unknown) => {
+    hooks.on('collection:beta-orders:afterSave', (payload: unknown) => {
       seen.push(payload);
       return payload;
     });
@@ -94,7 +94,7 @@ describe('RestControllerRuntime collection hooks', () => {
   it('does NOT fire a listener registered with the physical table name', async () => {
     const hooks = new HookManager();
     const seen: unknown[] = [];
-    hooks.on('collection:fcp_ecommerce_orders:afterSave', (payload: unknown) => {
+    hooks.on('collection:fcp_beta_orders:afterSave', (payload: unknown) => {
       seen.push(payload);
       return payload;
     });
@@ -106,7 +106,7 @@ describe('RestControllerRuntime collection hooks', () => {
 
   it('lets a beforeSave listener transform the payload the write will persist', async () => {
     const hooks = new HookManager();
-    hooks.on('collection:ecommerce-orders:beforeSave', (payload: Record<string, unknown>) => ({
+    hooks.on('collection:beta-orders:beforeSave', (payload: Record<string, unknown>) => ({
       ...payload,
       licenceKey: 'LIC-1',
     }));
@@ -122,7 +122,7 @@ describe('RestControllerRuntime collection hooks', () => {
 
   it('surfaces a throwing hook handler instead of silently continuing the write', async () => {
     const hooks = new HookManager();
-    hooks.on('collection:ecommerce-orders:beforeSave', () => {
+    hooks.on('collection:beta-orders:beforeSave', () => {
       throw new Error('licence quota exhausted');
     });
 
@@ -134,12 +134,12 @@ describe('RestControllerRuntime collection hooks', () => {
   it('emits the past-tense notification under the logical name too', () => {
     const hooks = new HookManager();
     const seen: string[] = [];
-    hooks.on('collection:ecommerce-orders:saved', (_payload: unknown, event: string) => {
+    hooks.on('collection:beta-orders:saved', (_payload: unknown, event: string) => {
       seen.push(event);
     });
 
     runtimeWith(hooks).emitCollectionEvent(orders(), 'saved', { id: 7 });
 
-    expect(seen).toEqual(['collection:ecommerce-orders:saved']);
+    expect(seen).toEqual(['collection:beta-orders:saved']);
   });
 });

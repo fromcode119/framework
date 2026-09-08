@@ -21,8 +21,8 @@ describe('ServerMiddlewareSetup.isProbeRoute', () => {
     // `context.api.health(...)` is a first-class part of the plugin API, so the old suffix match
     // exempted EVERY plugin health probe from tenancy: it ran with no tenant bound, and the tenant
     // gate then refused it. Found while verifying T2, on the first such route that was tried.
-    expect(isProbe('/api/v1/plugins/seo/health')).toBe(false);
-    expect(isProbe('/api/v1/plugins/ecommerce/health')).toBe(false);
+    expect(isProbe('/api/v1/plugins/eta/health')).toBe(false);
+    expect(isProbe('/api/v1/plugins/beta/health')).toBe(false);
     expect(isProbe('/api/v1/plugins/anything/ready')).toBe(false);
   });
 

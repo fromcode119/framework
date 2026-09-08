@@ -1,4 +1,4 @@
-import { CookieConstants, TenantMembershipService, TenantRecord, TenantResolverService } from '@fromcode119/core';
+import { CookieConstants, TenantMembershipService, TenantRecord, TenantResolutionRefusal, TenantResolverService } from '@fromcode119/core';
 import type { AuthManager } from '@fromcode119/auth';
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
 
@@ -30,20 +30,20 @@ export class AdminTenantResolver {
    * purpose: "you have not chosen a tenant yet" is a prompt, not a 404, and the client must be able
    * to tell them apart.
    */
-  async resolve(req: any): Promise<{ tenant: TenantRecord | null; reason?: string }> {
+  async resolve(req: any): Promise<{ tenant: TenantRecord | null; reason?: TenantResolutionRefusal }> {
     // A WORKSPACE host names its tenant (T6): published on the request even for the login page,
     // which needs to know whose console it is before anyone is signed in.
     const workspace = await this.workspaceHosts.resolve(req);
     req.workspaceTenant = workspace;
 
     const token = AdminTenantResolver.tokenFrom(req);
-    if (!token) return { tenant: null, reason: 'unauthenticated' };
+    if (!token) return { tenant: null, reason: TenantResolutionRefusal.UNAUTHENTICATED };
 
     let claim: any;
     try {
       claim = await this.auth.verifyToken(token);
     } catch {
-      return { tenant: null, reason: 'unauthenticated' };
+      return { tenant: null, reason: TenantResolutionRefusal.UNAUTHENTICATED };
     }
 
     const userId = String(claim?.id || '').trim();
@@ -51,20 +51,20 @@ export class AdminTenantResolver {
       // The host decides; the session's claim cannot move this request to another tenant. Membership
       // is still checked on every request, exactly as for the shared host.
       if (!(await this.memberships.hasAccess(userId, workspace.id))) {
-        return { tenant: null, reason: 'tenant_access_revoked' };
+        return { tenant: null, reason: TenantResolutionRefusal.TENANT_ACCESS_REVOKED };
       }
       return { tenant: workspace };
     }
 
     const tenantId = String(claim?.tenantId || '').trim();
-    if (!tenantId) return { tenant: null, reason: 'no_tenant_selected' };
+    if (!tenantId) return { tenant: null, reason: TenantResolutionRefusal.NO_TENANT_SELECTED };
 
     if (!(await this.memberships.hasAccess(userId, tenantId))) {
-      return { tenant: null, reason: 'tenant_access_revoked' };
+      return { tenant: null, reason: TenantResolutionRefusal.TENANT_ACCESS_REVOKED };
     }
 
     const tenant = await this.tenants.resolveById(tenantId);
-    if (!tenant) return { tenant: null, reason: 'unknown_tenant' };
+    if (!tenant) return { tenant: null, reason: TenantResolutionRefusal.UNKNOWN_TENANT };
     return { tenant };
   }
 

@@ -3,7 +3,7 @@ import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
 
 describe('TenantScopedTableDdl.isTenantScoped', () => {
   it('scopes plugin tables', () => {
-    expect(TenantScopedTableDdl.isTenantScoped('fcp_ecommerce_orders')).toBe(true);
+    expect(TenantScopedTableDdl.isTenantScoped('fcp_beta_orders')).toBe(true);
   });
 
   it('scopes content tables', () => {
@@ -41,7 +41,7 @@ describe('TenantScopedTableDdl.isTenantScoped', () => {
   });
 
   it('emits FORCE RLS for a scoped table', () => {
-    const stmts = TenantScopedTableDdl.statementsFor('fcp_ecommerce_orders');
+    const stmts = TenantScopedTableDdl.statementsFor('fcp_beta_orders');
     expect(stmts.some((statement) => statement.includes('FORCE ROW LEVEL SECURITY'))).toBe(true);
   });
 

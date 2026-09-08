@@ -43,17 +43,17 @@ describe('ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment', () => {
    * The api+admin deployment. `site_url` is set on essentially every install and backfills the
    * frontend through the DB-backed reader, so before this boundary existed the admin showed a live
    * "Restart frontend" button on a deployment with no frontend — and pressing it POSTed the internal
-   * secret to whatever host that CMS setting named.
+   * secret to whatever host that ZETA setting named.
    */
   it('ignores the DB-backed app URL settings, which decide links but not where a secret is sent', () => {
     delete process.env.FRONTEND_URL;
     delete process.env.INTERNAL_FRONTEND_URL;
     ApplicationUrlUtils.registerAppUrlSettingsReader((app) => (
-      app === ApplicationUrlUtils.FRONTEND_APP ? 'https://from-the-cms.example.com' : null
+      app === ApplicationUrlUtils.FRONTEND_APP ? 'https://from-the-zeta.example.com' : null
     ));
     try {
       // The public read still honours the setting — links and emails depend on it.
-      expect(ApplicationUrlUtils.readAppBaseUrlFromEnvironment('frontend')).toBe('https://from-the-cms.example.com');
+      expect(ApplicationUrlUtils.readAppBaseUrlFromEnvironment('frontend')).toBe('https://from-the-zeta.example.com');
       // The credential-bearing read does not.
       expect(ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment('frontend')).toBe('');
     } finally {

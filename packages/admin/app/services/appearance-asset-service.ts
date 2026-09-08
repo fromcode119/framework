@@ -7,10 +7,33 @@ import path from 'node:path';
  * appearance asset route so the browser can dynamically import an appearance bundle at runtime.
  */
 export class AppearanceAssetService {
+  /**
+   * An appearance ships its own brand (see `build-appearances.sh`, which copies `assets/` into
+   * `dist/`), so this route serves images too — not just the bundle and its stylesheet. Everything
+   * unrecognised stays JavaScript, which is what the bundle and its chunks are. Getting this wrong is
+   * not cosmetic: a PNG served as `application/javascript` renders today only because browsers sniff
+   * `<img>` content, and stops the moment anything sets `nosniff`.
+   */
+  private static readonly TYPES: Readonly<Record<string, string>> = {
+    '.css': 'text/css; charset=utf-8',
+    '.map': 'application/json; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.webp': 'image/webp',
+    '.avif': 'image/avif',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.woff2': 'font/woff2',
+    '.woff': 'font/woff',
+  };
+
   private static contentType(rel: string): string {
-    if (rel.endsWith('.css')) return 'text/css; charset=utf-8';
-    if (rel.endsWith('.map')) return 'application/json; charset=utf-8';
-    return 'application/javascript; charset=utf-8';
+    const dot = rel.lastIndexOf('.');
+    const ext = dot < 0 ? '' : rel.slice(dot).toLowerCase();
+    return AppearanceAssetService.TYPES[ext] ?? 'application/javascript; charset=utf-8';
   }
 
   static serve(slug: string, parts: string[]): Response {

@@ -83,18 +83,18 @@ class Fixture {
       }] },
       { type: 'translations', args: [{ en: { theme: { hello: 'Hello' } }, bg: { theme: { hello: 'Здравей' } } }, 'theme'] },
       // A plugin's slot, with a module-namespace payload (`default`) and an explicit priority.
-      { type: 'slot', args: ['frontend.content.display', { default: Fixture.Blocks }, 'cms', 1] },
-      { type: 'slot', args: ['frontend.content.footer', Fixture.Footer, 'cms', 5] },
+      { type: 'slot', args: ['frontend.content.display', { default: Fixture.Blocks }, 'zeta', 1] },
+      { type: 'slot', args: ['frontend.content.footer', Fixture.Footer, 'zeta', 5] },
       // Registering the same component twice must not duplicate it.
-      { type: 'slot', args: ['frontend.content.display', Fixture.Blocks, 'cms', 1] },
+      { type: 'slot', args: ['frontend.content.display', Fixture.Blocks, 'zeta', 1] },
       // A lower-priority override of a name the theme already owns is ignored.
-      { type: 'override', args: ['frontend.layout.navbar', Fixture.LateNavbar, 'cms', 1] },
-      { type: 'translations', args: [{ en: { cms: { read: 'Read more' } } }] },
+      { type: 'override', args: ['frontend.layout.navbar', Fixture.LateNavbar, 'zeta', 1] },
+      { type: 'translations', args: [{ en: { zeta: { read: 'Read more' } } }] },
       { type: 'translations', args: [{ legacy: { flat: 'yes' } }] },
       { type: 'contentTransformer', args: ['pre-boot-seed-test', Fixture.transform, 3] },
       // Not seedable — must survive in the residual queue.
       { type: 'field', args: ['ColorField', Fixture.Field] },
-      { type: 'menuItem', args: [{ pluginSlug: 'cms', path: '/x', priority: 1 }] },
+      { type: 'menuItem', args: [{ pluginSlug: 'zeta', path: '/x', priority: 1 }] },
     ];
   }
 }
@@ -121,8 +121,8 @@ describe('PreBootRegistrationSeed', () => {
 
     // The concrete shape, so the equality above is not two empty objects agreeing.
     expect(Object.keys(seed.themeLayouts)).toEqual(['DefaultLayout', 'OtherLayout']);
-    expect(seed.slots['frontend.content.display']).toEqual([{ component: Fixture.Blocks, pluginSlug: 'cms', priority: 1 }]);
-    expect(seed.slots['frontend.content.footer']).toEqual([{ component: Fixture.Footer, pluginSlug: 'cms', priority: 5 }]);
+    expect(seed.slots['frontend.content.display']).toEqual([{ component: Fixture.Blocks, pluginSlug: 'zeta', priority: 1 }]);
+    expect(seed.slots['frontend.content.footer']).toEqual([{ component: Fixture.Footer, pluginSlug: 'zeta', priority: 5 }]);
     expect(seed.overrides['frontend.layout.navbar']).toEqual({ component: Fixture.Navbar, pluginSlug: 'demo', priority: 10 });
     unmount();
   });
@@ -130,7 +130,7 @@ describe('PreBootRegistrationSeed', () => {
   it('folds translations per layer exactly as the live registration does', () => {
     const { seed } = PreBootRegistrationSeed.fold(Fixture.queue());
     let plugin: Record<string, Record<string, any>> = {};
-    plugin = FrontendI18nService.foldRegistration(plugin, { en: { cms: { read: 'Read more' } } });
+    plugin = FrontendI18nService.foldRegistration(plugin, { en: { zeta: { read: 'Read more' } } });
     plugin = FrontendI18nService.foldRegistration(plugin, { legacy: { flat: 'yes' } });
     const theme = FrontendI18nService.foldRegistration({}, { en: { theme: { hello: 'Hello' } }, bg: { theme: { hello: 'Здравей' } } });
     expect(seed.registeredTranslations).toEqual(plugin);

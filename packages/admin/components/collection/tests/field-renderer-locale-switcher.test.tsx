@@ -46,7 +46,7 @@ function renderLocalizedField(globalSettings: Record<string, any>) {
       field={{ name: 'siteName', label: 'Site name', type: 'text', localized: true } as any}
       value={{ en: 'Universe Portal', bg: 'Вселенски портал' }}
       onChange={vi.fn()}
-      collectionSlug="settings-broadcasts"
+      collectionSlug="settings-kappa"
       plugins={{ collections: [], fieldComponents: {} } as any}
       globalSettings={globalSettings}
     />,

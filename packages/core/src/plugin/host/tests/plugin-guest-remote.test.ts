@@ -34,7 +34,7 @@ describe('PluginGuestRemote', () => {
     const { remote, calls } = remoteWithRecorder();
     const api = remote.ref('context').plugins.namespace('org.x');
     expect(calls).toHaveLength(0);
-    await api.mlm.record(1);
+    await api.alpha.record(1);
     expect(calls).toHaveLength(1);
   });
 
@@ -52,9 +52,9 @@ describe('PluginGuestRemote', () => {
   });
 
   it('carries a data CLASS (static fields) as the object of its statics — the repo writes collections that way', () => {
-    class Currencies { static readonly slug = 'finance-currencies'; static readonly fields = [{ name: 'code' }]; static helper() { return 1; } }
+    class Currencies { static readonly slug = 'gamma-currencies'; static readonly fields = [{ name: 'code' }]; static helper() { return 1; } }
     const dropped: string[] = [];
-    expect(PluginGuestRemote.portable([Currencies], dropped)).toEqual([{ slug: 'finance-currencies', fields: [{ name: 'code' }] }]);
+    expect(PluginGuestRemote.portable([Currencies], dropped)).toEqual([{ slug: 'gamma-currencies', fields: [{ name: 'code' }] }]);
     expect(dropped).toEqual(['arg0.helper']);
   });
 

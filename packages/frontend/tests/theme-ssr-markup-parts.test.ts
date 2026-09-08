@@ -11,7 +11,7 @@ describe('ThemeSsrMarkup parts', () => {
       + '<style data-emotion="css 3c4d">.css-3c4d{margin:0}</style>'
       + '<style data-fc-plugin-default="demo-surface">.fc-demo{padding:0}</style>'
       + '<link rel="preload" as="image" href="/img?src=%2Fx.jpg&amp;w=1400"/><p>Hello <!-- -->world</p></main>';
-    const original = ThemeSsrMarkup.from(html, true, ['ecommerce', 'cms']);
+    const original = ThemeSsrMarkup.from(html, true, ['beta', 'zeta']);
     const parts = original.toParts();
     const rebuilt = ThemeSsrMarkup.fromParts(JSON.parse(JSON.stringify(parts)));
 
@@ -20,7 +20,7 @@ describe('ThemeSsrMarkup parts', () => {
     expect(rebuilt.pluginStyles.map((s) => [s.key, s.css, s.href])).toEqual(original.pluginStyles.map((s) => [s.key, s.css, s.href]));
     expect(rebuilt.imagePreloads).toEqual(['/img?src=%2Fx.jpg&w=1400']);
     expect(rebuilt.rendersContentSlot).toBe(true);
-    expect(rebuilt.usedPlugins).toEqual(['ecommerce', 'cms']);
+    expect(rebuilt.usedPlugins).toEqual(['beta', 'zeta']);
     expect(rebuilt.hasBody).toBe(true);
   });
 });

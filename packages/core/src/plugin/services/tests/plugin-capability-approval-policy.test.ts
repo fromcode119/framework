@@ -19,15 +19,15 @@ describe('PluginCapabilityApprovalPolicy', () => {
     process.env.AUTO_APPROVE_TRUSTED_SLUGS = ' Alpha , beta ';
     expect(PluginCapabilityApprovalPolicy.isTrusted('alpha', false)).toBe(true);
     expect(PluginCapabilityApprovalPolicy.isTrusted('beta', false)).toBe(true);
-    expect(PluginCapabilityApprovalPolicy.isTrusted('forms', false)).toBe(false);
+    expect(PluginCapabilityApprovalPolicy.isTrusted('theta', false)).toBe(false);
   });
   it('does NOT trust an unsigned, non-allowlisted plugin', () => {
-    expect(PluginCapabilityApprovalPolicy.isTrusted('forms', false)).toBe(false);
+    expect(PluginCapabilityApprovalPolicy.isTrusted('theta', false)).toBe(false);
   });
   it('shouldAutoApprove requires BOTH enabled AND trusted', () => {
     expect(PluginCapabilityApprovalPolicy.shouldAutoApprove('alpha', true)).toBe(false);
     process.env.AUTO_APPROVE_PLUGIN_CAPABILITIES = 'true';
     expect(PluginCapabilityApprovalPolicy.shouldAutoApprove('alpha', true)).toBe(true);
-    expect(PluginCapabilityApprovalPolicy.shouldAutoApprove('forms', false)).toBe(false);
+    expect(PluginCapabilityApprovalPolicy.shouldAutoApprove('theta', false)).toBe(false);
   });
 });

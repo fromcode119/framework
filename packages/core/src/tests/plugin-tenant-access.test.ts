@@ -33,28 +33,28 @@ describe('PluginTenantAccess', () => {
   it('serves the tenant its own enabled set', async () => {
     multiTenant();
     PluginTenantAccess.configure(fakeDb({
-      t1: [{ plugin_slug: 'seo', state: 'active' }, { plugin_slug: 'forms', state: 'active' }],
-      t2: [{ plugin_slug: 'seo', state: 'active' }],
+      t1: [{ plugin_slug: 'eta', state: 'active' }, { plugin_slug: 'theta', state: 'active' }],
+      t2: [{ plugin_slug: 'eta', state: 'active' }],
     }));
 
     await PluginTenantAccess.warm('t1');
     await PluginTenantAccess.warm('t2');
 
     RequestContextUtils.storage.run({ tenantId: 't1' } as any, () => {
-      expect(PluginTenantAccess.isEnabledForCurrentTenant('forms')).toBe(true);
+      expect(PluginTenantAccess.isEnabledForCurrentTenant('theta')).toBe(true);
     });
     RequestContextUtils.storage.run({ tenantId: 't2' } as any, () => {
-      expect(PluginTenantAccess.isEnabledForCurrentTenant('forms')).toBe(false);
-      expect(PluginTenantAccess.isEnabledForCurrentTenant('seo')).toBe(true);
+      expect(PluginTenantAccess.isEnabledForCurrentTenant('theta')).toBe(false);
+      expect(PluginTenantAccess.isEnabledForCurrentTenant('eta')).toBe(true);
     });
   });
 
   it('treats an INACTIVE row as not enabled, not as merely present', async () => {
     multiTenant();
-    PluginTenantAccess.configure(fakeDb({ t1: [{ plugin_slug: 'seo', state: 'inactive' }] }));
+    PluginTenantAccess.configure(fakeDb({ t1: [{ plugin_slug: 'eta', state: 'inactive' }] }));
     await PluginTenantAccess.warm('t1');
     RequestContextUtils.storage.run({ tenantId: 't1' } as any, () => {
-      expect(PluginTenantAccess.isEnabledForCurrentTenant('seo')).toBe(false);
+      expect(PluginTenantAccess.isEnabledForCurrentTenant('eta')).toBe(false);
     });
   });
 
@@ -62,15 +62,15 @@ describe('PluginTenantAccess', () => {
     // "No tenant" must not mean "every tenant". That fail-open shape already had to be closed once
     // in BaseDialect.withTenant, where it silently unisolated MySQL.
     multiTenant();
-    PluginTenantAccess.configure(fakeDb({ t1: [{ plugin_slug: 'seo', state: 'active' }] }));
-    expect(PluginTenantAccess.isEnabledForCurrentTenant('seo')).toBe(false);
+    PluginTenantAccess.configure(fakeDb({ t1: [{ plugin_slug: 'eta', state: 'active' }] }));
+    expect(PluginTenantAccess.isEnabledForCurrentTenant('eta')).toBe(false);
   });
 
   it('refuses for a tenant that was never loaded — "we do not know" renders as no', async () => {
     multiTenant();
-    PluginTenantAccess.configure(fakeDb({ t1: [{ plugin_slug: 'seo', state: 'active' }] }));
+    PluginTenantAccess.configure(fakeDb({ t1: [{ plugin_slug: 'eta', state: 'active' }] }));
     RequestContextUtils.storage.run({ tenantId: 't1' } as any, () => {
-      expect(PluginTenantAccess.isEnabledForCurrentTenant('seo')).toBe(false);
+      expect(PluginTenantAccess.isEnabledForCurrentTenant('eta')).toBe(false);
     });
   });
 
@@ -80,16 +80,16 @@ describe('PluginTenantAccess', () => {
     PluginTenantAccess.configure(failing);
     await PluginTenantAccess.warm('t1');
 
-    PluginTenantAccess.configure(fakeDb({ t1: [{ plugin_slug: 'seo', state: 'active' }] }));
+    PluginTenantAccess.configure(fakeDb({ t1: [{ plugin_slug: 'eta', state: 'active' }] }));
     await PluginTenantAccess.warm('t1');
     RequestContextUtils.storage.run({ tenantId: 't1' } as any, () => {
-      expect(PluginTenantAccess.isEnabledForCurrentTenant('seo')).toBe(true);
+      expect(PluginTenantAccess.isEnabledForCurrentTenant('eta')).toBe(true);
     });
   });
 
   it('reads the table ONCE per tenant, then serves from memory', async () => {
     multiTenant();
-    const db = fakeDb({ t1: [{ plugin_slug: 'seo', state: 'active' }] });
+    const db = fakeDb({ t1: [{ plugin_slug: 'eta', state: 'active' }] });
     PluginTenantAccess.configure(db);
     await PluginTenantAccess.warm('t1');
     await PluginTenantAccess.warm('t1');
@@ -105,21 +105,21 @@ describe('PluginTenantAccess', () => {
     await PluginTenantAccess.warm('t1');
 
     RequestContextUtils.storage.run({ tenantId: 't1' } as any, () => {
-      expect(PluginTenantAccess.isEnabledForCurrentTenant('seo')).toBe(false);
+      expect(PluginTenantAccess.isEnabledForCurrentTenant('eta')).toBe(false);
     });
 
-    rows.t1 = [{ plugin_slug: 'seo', state: 'active' }];
+    rows.t1 = [{ plugin_slug: 'eta', state: 'active' }];
     PluginTenantAccess.invalidate('t1');
     await PluginTenantAccess.warm('t1');
 
     RequestContextUtils.storage.run({ tenantId: 't1' } as any, () => {
-      expect(PluginTenantAccess.isEnabledForCurrentTenant('seo')).toBe(true);
+      expect(PluginTenantAccess.isEnabledForCurrentTenant('eta')).toBe(true);
     });
   });
 
   it('invalidates ONLY the named tenant, so one write does not re-query every tenant', async () => {
     multiTenant();
-    const db = fakeDb({ t1: [{ plugin_slug: 'seo', state: 'active' }], t2: [] });
+    const db = fakeDb({ t1: [{ plugin_slug: 'eta', state: 'active' }], t2: [] });
     PluginTenantAccess.configure(db);
     await PluginTenantAccess.warm('t1');
     await PluginTenantAccess.warm('t2');

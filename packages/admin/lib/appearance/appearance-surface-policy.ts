@@ -1,4 +1,5 @@
 import { AppPathConstants } from '@fromcode119/core/client';
+import { AdminRouteUtils } from '@/lib/admin-route-utils';
 import type { IAppearanceSurfaces } from '@/lib/appearance/interfaces/appearance-surfaces.interface';
 /**
  * Decides whether a given admin path is exposed by an appearance's surface allowlist.
@@ -20,10 +21,24 @@ export class AppearanceSurfacePolicy {
     if (!surfaces) return true;
     const p = AppearanceSurfacePolicy.normalize(path);
     if (p === '/') return true;
+    // The unauthenticated auth routes are not a "surface" an appearance opts into — they are how a
+    // visitor gets in at all. No allowlist mentioned them, so on a workspace domain `/login` counted as
+    // outside the appearance and `AppearanceShellHost` passed `null` for the page: a blank sign-in with
+    // nothing in the console to explain it. Containment is about which of the ADMIN's areas a skin
+    // presents; it has no business deciding whether the login exists.
+    if (AdminRouteUtils.isUnauthenticatedAuthRoute(p)) return true;
     if (AppearanceSurfacePolicy.ALWAYS_ALLOWED.some((a) => AppearanceSurfacePolicy.underPrefix(p, a))) return true;
-    const firstSegment = p.split('/').filter(Boolean)[0] || '';
+    // A plugin's admin pages are NOT required to live under `/<slug>/…`. The hub plugin registers
+    // `/hub-clients`, `/hub-projects`, … — so matching the first segment only for equality blocked
+    // every page of a plugin the appearance had explicitly allowed, and the operator was told they
+    // were "not part of the workspace" on a console built for exactly that plugin. A first segment
+    // that IS the slug, or that begins `<slug>-`, belongs to it.
+    const firstSegment = (p.split('/').filter(Boolean)[0] || '').toLowerCase();
     const plugins = surfaces.plugins || [];
-    if (plugins.some((slug) => String(slug).toLowerCase() === firstSegment.toLowerCase())) return true;
+    if (plugins.some((raw) => {
+      const slug = String(raw).toLowerCase();
+      return firstSegment === slug || firstSegment.startsWith(`${slug}-`);
+    })) return true;
     const paths = surfaces.paths || [];
     if (paths.some((prefix) => AppearanceSurfacePolicy.underPrefix(p, prefix))) return true;
     return false;

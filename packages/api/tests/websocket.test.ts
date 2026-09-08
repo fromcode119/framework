@@ -70,14 +70,14 @@ describe('web-socket-manager', () => {
     expect(msg.type).toBe('system:ready');
   });
 
-  it('broadcasts messages to all clients', async () => {
+  it('kappa messages to all clients', async () => {
     const ws = new WebSocket(`ws://localhost:${port}`);
     const msg = await awaitMessage(ws, 'test:event', () => manager.broadcast('test:event', { foo: 'bar' }));
 
     expect(msg.payload.foo).toBe('bar');
   });
 
-  it('broadcasts collection events automatically', async () => {
+  it('kappa collection events automatically', async () => {
     const ws = new WebSocket(`ws://localhost:${port}`);
     const msg = await awaitMessage(ws, 'collection:posts:created', () =>
       hooks.emit('collection:posts:afterCreate', { id: 1, title: 'Test' }),

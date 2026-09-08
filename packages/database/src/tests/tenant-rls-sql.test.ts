@@ -89,11 +89,11 @@ describe('TenantRlsSql — taking a tenant-less deployment back out of isolation
   });
 
   it('rewrites a tenant-blind UNIQUE constraint as (cols…, tenant_id), keeping default NULL semantics', () => {
-    expect(TenantRlsSql.scopeUniqueConstraintStatement('fcp_cms_pages', 'fcp_cms_pages_slug_key', ['slug']))
-      .toBe('ALTER TABLE "fcp_cms_pages" DROP CONSTRAINT "fcp_cms_pages_slug_key", ADD CONSTRAINT "fcp_cms_pages_slug_key" UNIQUE ("slug", "tenant_id")');
-    expect(TenantRlsSql.scopeUniqueIndexStatements('fcp_seo_meta', 'idx_fcp_seo_meta_content_unique', ['content_type', 'content_id'])).toEqual([
-      'DROP INDEX IF EXISTS "idx_fcp_seo_meta_content_unique"',
-      'CREATE UNIQUE INDEX "idx_fcp_seo_meta_content_unique" ON "fcp_seo_meta" ("content_type", "content_id", "tenant_id")',
+    expect(TenantRlsSql.scopeUniqueConstraintStatement('fcp_zeta_pages', 'fcp_zeta_pages_slug_key', ['slug']))
+      .toBe('ALTER TABLE "fcp_zeta_pages" DROP CONSTRAINT "fcp_zeta_pages_slug_key", ADD CONSTRAINT "fcp_zeta_pages_slug_key" UNIQUE ("slug", "tenant_id")');
+    expect(TenantRlsSql.scopeUniqueIndexStatements('fcp_eta_meta', 'idx_fcp_eta_meta_content_unique', ['content_type', 'content_id'])).toEqual([
+      'DROP INDEX IF EXISTS "idx_fcp_eta_meta_content_unique"',
+      'CREATE UNIQUE INDEX "idx_fcp_eta_meta_content_unique" ON "fcp_eta_meta" ("content_type", "content_id", "tenant_id")',
     ]);
   });
 

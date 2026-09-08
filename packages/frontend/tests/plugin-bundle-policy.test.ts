@@ -7,13 +7,13 @@ const plugin = (slug: string, loadStrategy?: string) => ({ slug, capabilities: [
 describe('PluginBundlePolicy', () => {
   it('skips only idle plugins with a server bundle that the render never used and the theme does not depend on', () => {
     const skip = PluginBundlePolicy.skippable({
-      plugins: [plugin('cms'), plugin('ecommerce'), plugin('forms', 'idle'), plugin('mlm', 'idle'), plugin('privacy', 'idle'), plugin('analytics', 'idle'), plugin('search', 'idle')],
-      usedPlugins: ['cms', 'privacy'],
-      withServerBundle: ['cms', 'ecommerce', 'forms', 'mlm', 'privacy', 'search'],
-      themeDependencies: ['forms'],
+      plugins: [plugin('zeta'), plugin('beta'), plugin('theta', 'idle'), plugin('alpha', 'idle'), plugin('privacy', 'idle'), plugin('analytics', 'idle'), plugin('search', 'idle')],
+      usedPlugins: ['zeta', 'privacy'],
+      withServerBundle: ['zeta', 'beta', 'theta', 'alpha', 'privacy', 'search'],
+      themeDependencies: ['theta'],
     });
-    // eager (cms, ecommerce) never; used (privacy) never; theme dependency (forms) never; no server bundle (analytics) never.
-    expect(skip).toEqual(['mlm', 'search']);
+    // eager (zeta, beta) never; used (privacy) never; theme dependency (forms) never; no server bundle (analytics) never.
+    expect(skip).toEqual(['alpha', 'search']);
   });
 
   it('never skips a plugin that loads no storefront runtime of its own', () => {
@@ -24,8 +24,8 @@ describe('PluginBundlePolicy', () => {
 describe('PluginUsageTracker', () => {
   it('records slugs, drains sorted, and resets', () => {
     PluginUsageTracker.reset();
-    PluginUsageTracker.record('forms'); PluginUsageTracker.record('cms'); PluginUsageTracker.record(''); PluginUsageTracker.record('cms');
-    expect(PluginUsageTracker.drain()).toEqual(['cms', 'forms']);
+    PluginUsageTracker.record('theta'); PluginUsageTracker.record('zeta'); PluginUsageTracker.record(''); PluginUsageTracker.record('zeta');
+    expect(PluginUsageTracker.drain()).toEqual(['theta', 'zeta']);
     expect(PluginUsageTracker.drain()).toEqual([]);
   });
 });

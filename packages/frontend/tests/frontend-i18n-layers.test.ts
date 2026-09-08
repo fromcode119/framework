@@ -17,38 +17,38 @@ import { ThemeServerRegistry } from '@/lib/ssr/theme-server-registry';
  * service; a drift between the two shows as text changing between the server paint and hydration.
  */
 describe('FrontendI18nService layering', () => {
-  const server = { lms: { shared: 'server' } };
+  const server = { upsilon: { shared: 'server' } };
   const pluginLayer = FrontendI18nService.foldRegistration({}, {
-    bg: { lms: { shared: 'plugin', reviews: { title: 'Отзиви за курсове' }, onlyPlugin: 'plugin-only' } },
+    bg: { upsilon: { shared: 'plugin', reviews: { title: 'Отзиви за курсове' }, onlyPlugin: 'plugin-only' } },
   });
   const themeLayer = FrontendI18nService.foldRegistration({}, {
-    bg: { lms: { shared: 'theme', reviews: { title: 'Отзиви' } } },
+    bg: { upsilon: { shared: 'theme', reviews: { title: 'Отзиви' } } },
   });
 
   it('resolves the theme value over the plugin default for the same key', () => {
     const dict = FrontendI18nService.resolveEffective(server, pluginLayer, 'bg', themeLayer);
-    expect(FrontendI18nService.translate(dict, 'lms.reviews.title')).toBe('Отзиви');
-    expect(FrontendI18nService.translate(dict, 'lms.shared')).toBe('theme');
+    expect(FrontendI18nService.translate(dict, 'upsilon.reviews.title')).toBe('Отзиви');
+    expect(FrontendI18nService.translate(dict, 'upsilon.shared')).toBe('theme');
   });
 
   it('keeps the plugin default for keys the theme does not override', () => {
     const dict = FrontendI18nService.resolveEffective(server, pluginLayer, 'bg', themeLayer);
-    expect(FrontendI18nService.translate(dict, 'lms.onlyPlugin')).toBe('plugin-only');
+    expect(FrontendI18nService.translate(dict, 'upsilon.onlyPlugin')).toBe('plugin-only');
   });
 
   it('is independent of the order the two layers were folded in', () => {
     // The regression: swapping which bucket was written first used to swap the winner.
     const themeFirst = FrontendI18nService.resolveEffective(server, pluginLayer, 'bg', themeLayer);
-    const pluginRefolded = FrontendI18nService.foldRegistration(pluginLayer, { bg: { lms: { late: 'plugin' } } });
+    const pluginRefolded = FrontendI18nService.foldRegistration(pluginLayer, { bg: { upsilon: { late: 'plugin' } } });
     const pluginLast = FrontendI18nService.resolveEffective(server, pluginRefolded, 'bg', themeLayer);
-    expect(pluginLast.lms).toMatchObject({ ...(themeFirst.lms as object), late: 'plugin' });
-    expect(FrontendI18nService.translate(pluginLast, 'lms.reviews.title')).toBe('Отзиви');
+    expect(pluginLast.upsilon).toMatchObject({ ...(themeFirst.upsilon as object), late: 'plugin' });
+    expect(FrontendI18nService.translate(pluginLast, 'upsilon.reviews.title')).toBe('Отзиви');
   });
 
   it('lets a theme wildcard (legacy flat) registration beat a locale-specific plugin value', () => {
-    const flatTheme = FrontendI18nService.foldRegistration({}, { lms: { shared: 'theme-flat' } });
+    const flatTheme = FrontendI18nService.foldRegistration({}, { upsilon: { shared: 'theme-flat' } });
     const dict = FrontendI18nService.resolveEffective(server, pluginLayer, 'bg', flatTheme);
-    expect(FrontendI18nService.translate(dict, 'lms.shared')).toBe('theme-flat');
+    expect(FrontendI18nService.translate(dict, 'upsilon.shared')).toBe('theme-flat');
   });
 
   it('falls back to the server dictionary when neither layer supplies the key', () => {
@@ -58,13 +58,13 @@ describe('FrontendI18nService layering', () => {
 
   it('resolves the same way with no theme layer at all (plugin-only install)', () => {
     const dict = FrontendI18nService.resolveEffective(server, pluginLayer, 'bg');
-    expect(FrontendI18nService.translate(dict, 'lms.reviews.title')).toBe('Отзиви за курсове');
+    expect(FrontendI18nService.translate(dict, 'upsilon.reviews.title')).toBe('Отзиви за курсове');
   });
 
   it('gives ServerTranslator the same precedence as the browser resolution', () => {
     const translator = new ServerTranslator(server, pluginLayer, 'bg', themeLayer);
-    expect(translator.translate('lms.reviews.title')).toBe('Отзиви');
-    expect(translator.translate('lms.onlyPlugin')).toBe('plugin-only');
+    expect(translator.translate('upsilon.reviews.title')).toBe('Отзиви');
+    expect(translator.translate('upsilon.onlyPlugin')).toBe('plugin-only');
     expect(translator.effective).toEqual(
       FrontendI18nService.resolveEffective(server, pluginLayer, 'bg', themeLayer),
     );

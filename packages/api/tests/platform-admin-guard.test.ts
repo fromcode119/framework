@@ -91,29 +91,29 @@ describe('TenantPluginGuard', () => {
   it('passes everything on a single-tenant deployment', async () => {
     const guard = new TenantPluginGuard(new PlatformAccessResolver(dbWithPlatformAdmins([])));
     const next = vi.fn();
-    await guard.handle({ params: { slug: 'seo' }, user: { id: '7' } } as any, response() as any, next);
+    await guard.handle({ params: { slug: 'eta' }, user: { id: '7' } } as any, response() as any, next);
     expect(next).toHaveBeenCalledTimes(1);
   });
 
   it('lets a tenant admin reach the settings of a plugin its site RUNS', async () => {
     multiTenant();
-    PluginTenantAccess.configure({ find: vi.fn(async () => [{ plugin_slug: 'seo', state: 'active' }]) } as any);
+    PluginTenantAccess.configure({ find: vi.fn(async () => [{ plugin_slug: 'eta', state: 'active' }]) } as any);
     await PluginTenantAccess.warm('t1');
     const guard = new TenantPluginGuard(new PlatformAccessResolver(dbWithPlatformAdmins([])));
     const next = vi.fn();
     await RequestContextUtils.storage.run({ tenantId: 't1' } as any, () =>
-      guard.handle({ params: { slug: 'seo' }, user: { id: '7' } } as any, response() as any, next));
+      guard.handle({ params: { slug: 'eta' }, user: { id: '7' } } as any, response() as any, next));
     expect(next).toHaveBeenCalledTimes(1);
   });
 
   it("refuses a tenant admin the settings of a plugin its site does NOT run — the catalogue's side door", async () => {
     multiTenant();
-    PluginTenantAccess.configure({ find: vi.fn(async () => [{ plugin_slug: 'seo', state: 'active' }]) } as any);
+    PluginTenantAccess.configure({ find: vi.fn(async () => [{ plugin_slug: 'eta', state: 'active' }]) } as any);
     await PluginTenantAccess.warm('t1');
     const guard = new TenantPluginGuard(new PlatformAccessResolver(dbWithPlatformAdmins([])));
     const res = response(); const next = vi.fn();
     await RequestContextUtils.storage.run({ tenantId: 't1' } as any, () =>
-      guard.handle({ params: { slug: 'finance' }, user: { id: '7' } } as any, res as any, next));
+      guard.handle({ params: { slug: 'gamma' }, user: { id: '7' } } as any, res as any, next));
     expect(next).not.toHaveBeenCalled();
     expect(res.statusCode).toBe(403);
     expect(res.body.error).toBe('plugin_not_enabled_for_tenant');
@@ -126,7 +126,7 @@ describe('TenantPluginGuard', () => {
     const guard = new TenantPluginGuard(new PlatformAccessResolver(dbWithPlatformAdmins(['1'])));
     const next = vi.fn();
     await RequestContextUtils.storage.run({ tenantId: 't1' } as any, () =>
-      guard.handle({ params: { slug: 'finance' }, user: { id: '1' } } as any, response() as any, next));
+      guard.handle({ params: { slug: 'gamma' }, user: { id: '1' } } as any, response() as any, next));
     expect(next).toHaveBeenCalledTimes(1);
   });
 });

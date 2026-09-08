@@ -19,45 +19,45 @@ describe('NamespacedPluginsFacade', () => {
   };
   const resolver = {
     has(targetNamespace: string, slug: string) {
-      return targetNamespace === namespace && slug === 'finance';
+      return targetNamespace === namespace && slug === 'gamma';
     },
     resolve(targetNamespace: string, slug: string) {
-      return targetNamespace === namespace && slug === 'finance' ? financeApi : null;
+      return targetNamespace === namespace && slug === 'gamma' ? financeApi : null;
     },
   };
 
   it('returns null from call when the plugin method is unavailable', async () => {
     const facade = new NamespacedPluginsFacade(resolver, namespace);
 
-    await expect(facade.call('finance', 'missingMethod')).resolves.toBeNull();
+    await expect(facade.call('gamma', 'missingMethod')).resolves.toBeNull();
   });
 
   it('calls plugin methods without requiring an inline api shape', async () => {
     const facade = new NamespacedPluginsFacade(resolver, namespace);
 
-    await expect(facade.call<{ walletsEnabled: boolean }>('finance', 'getCapabilities')).resolves.toEqual({
+    await expect(facade.call<{ walletsEnabled: boolean }>('gamma', 'getCapabilities')).resolves.toEqual({
       walletsEnabled: true,
       operations: { resolveCheckoutAdjustments: true },
     });
-    await expect(facade.getCapabilities('finance')).resolves.toEqual({
+    await expect(facade.getCapabilities('gamma')).resolves.toEqual({
       walletsEnabled: true,
       operations: { resolveCheckoutAdjustments: true },
     });
-    expect(facade.hasMethod('finance', 'getCapabilities')).toBe(true);
+    expect(facade.hasMethod('gamma', 'getCapabilities')).toBe(true);
   });
 
   it('uses advertised operations instead of raw method probing', async () => {
     const facade = new NamespacedPluginsFacade(resolver, namespace);
 
-    await expect(facade.getOperations('finance')).resolves.toEqual({ resolveCheckoutAdjustments: true });
-    await expect(facade.supportsOperation('finance', 'resolveCheckoutAdjustments')).resolves.toBe(true);
-    await expect(facade.callOperation('finance', 'resolveCheckoutAdjustments')).resolves.toEqual({ success: true, payableAmount: 10 });
-    await expect(facade.callOperation('finance', 'missingOperation')).resolves.toBeNull();
+    await expect(facade.getOperations('gamma')).resolves.toEqual({ resolveCheckoutAdjustments: true });
+    await expect(facade.supportsOperation('gamma', 'resolveCheckoutAdjustments')).resolves.toBe(true);
+    await expect(facade.callOperation('gamma', 'resolveCheckoutAdjustments')).resolves.toEqual({ success: true, payableAmount: 10 });
+    await expect(facade.callOperation('gamma', 'missingOperation')).resolves.toBeNull();
   });
 
   it('throws when a required plugin method is missing', () => {
     const facade = new NamespacedPluginsFacade(resolver, namespace);
 
-    expect(() => facade.requireMethod('finance', 'missingMethod')).toThrow('does not expose method');
+    expect(() => facade.requireMethod('gamma', 'missingMethod')).toThrow('does not expose method');
   });
 });

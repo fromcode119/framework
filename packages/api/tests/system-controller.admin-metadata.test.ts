@@ -25,7 +25,7 @@ describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
       menu: [],
       secondaryPanel: {
         version: 1,
-        contexts: { 'org.fromcode:finance': { id: 'org.fromcode:finance' } },
+        contexts: { 'org.fromcode:gamma': { id: 'org.fromcode:gamma' } },
         itemsByContext: {},
         globalItems: [],
         policy: { allowlistKey: 'admin.secondaryPanel.allowlist.v1', allowlistEntries: 1, evaluatedAt: '2026-04-02T00:00:00.000Z' },

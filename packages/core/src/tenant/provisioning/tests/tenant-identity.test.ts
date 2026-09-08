@@ -39,10 +39,10 @@ describe('TenantIdentity', () => {
   });
 
   it('a workspace names its appearance (default console = empty); a site has none', () => {
-    expect(TenantIdentity.from({ slug: 'a', primaryHost: 'a.test', kind: 'workspace', appearance: 'Nexora' }).appearance).toBe('nexora');
+    expect(TenantIdentity.from({ slug: 'a', primaryHost: 'a.test', kind: 'workspace', appearance: 'Appearance-A' }).appearance).toBe('appearance-a');
     expect(TenantIdentity.from({ slug: 'a', primaryHost: 'a.test', kind: 'workspace', appearance: 'default' }).appearance).toBe('');
     expect(TenantIdentity.from({ slug: 'a', primaryHost: 'a.test', kind: 'workspace' }).appearance).toBe('');
     expect(() => TenantIdentity.from({ slug: 'a', primaryHost: 'a.test', kind: 'workspace', appearance: 'Bad Name' })).toThrow(/lowercase letters/);
-    expect(() => TenantIdentity.from({ slug: 'a', primaryHost: 'a.test', kind: 'site', appearance: 'nexora' })).toThrow(/Only a workspace/);
+    expect(() => TenantIdentity.from({ slug: 'a', primaryHost: 'a.test', kind: 'site', appearance: 'appearance-a' })).toThrow(/Only a workspace/);
   });
 });

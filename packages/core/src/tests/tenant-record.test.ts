@@ -50,9 +50,9 @@ describe('TenantRecord', () => {
 
 describe('TenantRecord kind', () => {
   it('reads the kind and appearance, and treats a row from before migration 027 as the site it always was', () => {
-    const workspace = TenantRecord.from({ id: 'n', slug: 'n', primary_host: 'n.test', host_aliases: '[]', state: 'active', kind: 'workspace', appearance: 'nexora' });
+    const workspace = TenantRecord.from({ id: 'n', slug: 'n', primary_host: 'n.test', host_aliases: '[]', state: 'active', kind: 'workspace', appearance: 'appearance-a' });
     expect(workspace.isWorkspace).toBe(true);
-    expect(workspace.appearance).toBe('nexora');
+    expect(workspace.appearance).toBe('appearance-a');
     const legacy = TenantRecord.from({ id: 'a', slug: 'a', primary_host: 'a.test', host_aliases: '[]', state: 'active' });
     expect(legacy.isWorkspace).toBe(false);
     expect(legacy.appearance).toBe('');

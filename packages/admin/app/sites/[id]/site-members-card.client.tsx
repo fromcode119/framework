@@ -13,7 +13,6 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SiteRecord } from '@/lib/tenants/site-record';
 import { SiteMember } from '@/lib/tenants/site-member';
 import { SiteGrantDialog } from '@/app/sites/[id]/site-grant-dialog.client';
-import { AdminClass } from '@/lib/admin-class';
 import { ThemeMode } from '@fromcode119/core/client';
 import { SitesClient } from '@/lib/tenants/sites-client';
 
@@ -129,8 +128,12 @@ export class SiteMembersCard extends AdminComponent {
           <Input value={this.search} onChange={this.onSearch} placeholder="search by email" />
         ) : null}
         {/* Same row shape as the Access list and the Installed Plugins page: an avatar, the person,
-            then their roles and the action. Bare lines of text with no divider read as a data dump. */}
-        <div className={`${AdminClass.SURFACE} overflow-hidden divide-y mt-3 ${this.isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
+            then their roles and the action. Bare lines of text with no divider read as a data dump.
+            Dividers only — NOT a second `.fc-surface`. Nested, a surface keeps the card border and the
+            same `--card` background as the card it sits in, so in light theme one member rendered as an
+            empty white rectangle framed inside another white rectangle. A list inside a card needs
+            separators, not a frame of its own. */}
+        <div className={`overflow-hidden divide-y mt-3 ${this.isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
           {this.loading ? <p className="fc-sites__none px-3 py-4">Loading members…</p> : null}
           {!this.loading && this.members.length === 0
             ? <p className="fc-sites__none px-3 py-4">{this.search ? 'No member matches that email.' : 'Nobody can enter this site yet.'}</p>

@@ -11,6 +11,7 @@ import { RuntimeConstants } from '@fromcode119/core/client';
 import { AdminServices } from '@/lib/admin-services';
 import { InitializationStatusCache } from '@/app/services/initialization-status-cache';
 import { AppEnv } from '@/lib/env';
+import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
 
 export class ClientLayoutAuthStateHooks {
   private static readonly adminServices = AdminServices.getInstance();
@@ -18,7 +19,7 @@ export class ClientLayoutAuthStateHooks {
   static useState() {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, isLoading: isAuthLoading } = AuthHooks.useAuth();
+    const { user, isLoading: isAuthLoading, sessionRejected } = AuthHooks.useAuth();
     const normalizedPathname = React.useMemo(() => AdminPathUtils.stripBase(pathname || '/'), [pathname]);
     const isMinimalPath = normalizedPathname?.startsWith(AdminConstants.ROUTES.MINIMAL) || normalizedPathname?.startsWith('/minimal');
     const isAuthPage = React.useMemo(
@@ -85,11 +86,22 @@ export class ClientLayoutAuthStateHooks {
       checkInitialization();
     }, [isSetupPath, router]);
 
+    /**
+     * On a WORKSPACE domain the host names the tenant and membership decides, so a signed-in account
+     * that is not a member is refused by the server on every request. Sending it to login would be a
+     * form it can pass and still be refused by — the shell shows what actually happened instead, and
+     * this redirect must not pull the page out from under that screen.
+     *
+     * The lock is set from the PUBLIC host lookup by `AppearanceRuntimeLoader`, which gates this tree
+     * on its own `resolved` flag — so by the time any of this renders the answer is already in.
+     */
+    const workspaceDenied = sessionRejected && WorkspaceAppearanceLock.locked;
+
     React.useEffect(() => {
-      if (isInitialized === true && !user && !isAuthPage && !isAuthLoading) {
+      if (isInitialized === true && !user && !isAuthPage && !isAuthLoading && !workspaceDenied) {
         router.push(AdminConstants.ROUTES.AUTH.LOGIN);
       }
-    }, [user, isInitialized, isAuthPage, isAuthLoading, router]);
+    }, [user, isInitialized, isAuthPage, isAuthLoading, workspaceDenied, router]);
 
     React.useEffect(() => {
       if (isAuthPage || !user || isInitialized !== true || !AppEnv.AI_ENABLED || isAdvancedMode) {
@@ -103,6 +115,7 @@ export class ClientLayoutAuthStateHooks {
 
     return {
       user,
+      workspaceDenied,
       isAuthLoading,
       normalizedPathname,
       isMinimalPath,

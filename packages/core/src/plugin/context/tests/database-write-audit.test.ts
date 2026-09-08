@@ -83,13 +83,13 @@ describe('plugin context.db write audit', () => {
 
   tenantIt('audits an update as table/id when the where carries a scalar id', async () => {
     const manager = buildManager();
-    const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('ecommerce'), manager, security);
+    const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('beta'), manager, security);
 
-    await db.update('fcp_ecommerce_products', { id: 8 }, { price: 12 });
+    await db.update('fcp_beta_products', { id: 8 }, { price: 12 });
     await flushAudit();
 
     expect(writeAuditCalls(manager)).toEqual([
-      ['ecommerce', 'Database Write', 'fcp_ecommerce_products/8', 'allowed', { method: 'update' }],
+      ['beta', 'Database Write', 'fcp_beta_products/8', 'allowed', { method: 'update' }],
     ]);
   });
 

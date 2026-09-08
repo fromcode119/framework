@@ -3,7 +3,6 @@ import { PureReactor, prop } from '@fromcode119/reactor';
 import { Card } from '@/components/ui/view/card.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { SiteRecord } from '@/lib/tenants/site-record';
-import { AdminClass } from '@/lib/admin-class';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
@@ -45,7 +44,7 @@ export class SiteExportsCard extends PureReactor {
         ) : (
           /* A row per archive, with the download as a real button rather than the filename being the
              only clickable thing. It was one naked line of monospace text under a paragraph. */
-          <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${this.isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'} mt-3`}>
+          <div className={`overflow-hidden divide-y mt-3 ${this.isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
             {exports.map((entry) => (
               <div key={entry.id} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${this.isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                 <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>

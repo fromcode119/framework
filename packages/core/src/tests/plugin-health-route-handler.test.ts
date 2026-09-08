@@ -8,7 +8,7 @@ describe('PluginHealthRouteHandler', () => {
     const status = vi.fn(() => ({ json }));
     const next = vi.fn();
     const handler = PluginHealthRouteHandler.create({
-      getPlugin: () => ({ slug: 'forms', version: '1.0.0' }),
+      getPlugin: () => ({ slug: 'theta', version: '1.0.0' }),
       probe: () => ({ status: 'error', message: 'Database unreachable' }),
     });
 
@@ -19,7 +19,7 @@ describe('PluginHealthRouteHandler', () => {
       // The builder hydrates the probe's RAW status string into the enum (Enum.toJSON keeps the wire
       // shape as 'error'), so assert against the member, not the string.
       status: PluginHealthStatus.ERROR,
-      plugin: 'forms',
+      plugin: 'theta',
       version: '1.0.0',
       message: 'Database unreachable',
     }));

@@ -6,7 +6,7 @@ import { PostgresDatabaseManager } from '@database/dialects/postgres/database-ma
  * Dates, which carry only MILLISECONDS (sub-millisecond digits are TRUNCATED — verified live).
  * Binding such a read-back Date into a plain `col = $n` equality can never match the row again,
  * which made the optimistic-lock pattern `update(table, { id, updatedAt }, …)` report a concurrent
- * modification on EVERY write (the cms visual editor 409'd on every block edit in production).
+ * modification on EVERY write (the zeta visual editor 409'd on every block edit in production).
  * Equality against a Date operand must therefore compare the column truncated to milliseconds.
  */
 describe('Postgres Date equality round-trip', () => {
@@ -34,7 +34,7 @@ describe('Postgres Date equality round-trip', () => {
     const { db, calls } = managerWithCapturedQueries();
     const readBack = new Date('2026-08-18T09:00:00.123Z');
 
-    await db.update('fcp_cms_pages', { id: 1, updatedAt: readBack }, { content: '[]' });
+    await db.update('fcp_zeta_pages', { id: 1, updatedAt: readBack }, { content: '[]' });
 
     const update = calls.find((call) => call.text.startsWith('UPDATE'));
     expect(update).toBeDefined();
@@ -47,7 +47,7 @@ describe('Postgres Date equality round-trip', () => {
   it('leaves non-Date equality untouched', async () => {
     const { db, calls } = managerWithCapturedQueries();
 
-    await db.update('fcp_cms_pages', { id: 7 }, { content: 'x' });
+    await db.update('fcp_zeta_pages', { id: 7 }, { content: 'x' });
 
     const update = calls.find((call) => call.text.startsWith('UPDATE'));
     expect(update!.text).not.toContain('date_trunc');

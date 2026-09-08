@@ -46,7 +46,7 @@ class ParityFixture {
 
   static readonly blocksContent = { title: 'Home', slug: 'home', content: [{ type: 'hero', data: { title: 'Hi' } }] };
 
-  static readonly recipeContent = { title: 'Shop', slug: 'shop', recipe: 'ecommerce.store-index', content: [] };
+  static readonly recipeContent = { title: 'Shop', slug: 'shop', recipe: 'beta.store-index', content: [] };
 
   static readonly emptyContent = { title: 'Blank', slug: 'blank', content: '' };
 
@@ -66,7 +66,7 @@ class ParityFixture {
     return renderToString(createElement(StorefrontPageTree, { content, className: ParityFixture.className, style }));
   }
 
-  private static readonly slots = { [StorefrontContentContract.DISPLAY_SLOT]: [{ component: ParityFixture.BlockFlow, pluginSlug: 'cms', priority: 1 }] };
+  private static readonly slots = { [StorefrontContentContract.DISPLAY_SLOT]: [{ component: ParityFixture.BlockFlow, pluginSlug: 'zeta', priority: 1 }] };
 
   /** Both sides with the content slot filled — each through ITS OWN `SlotsContext` (the one its `Slot` reads). */
   static serverWithSlot(content: unknown): string {

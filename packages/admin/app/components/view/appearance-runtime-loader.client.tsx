@@ -49,12 +49,10 @@ export class AppearanceRuntimeLoader extends Reactor {
 
   private async resolveAppearance(): Promise<void> {
 
-      // The unauthenticated auth routes (login / forgot / reset) are appearance-AGNOSTIC. Loading the
-      // workspace appearance bundle there is both unnecessary and harmful: `admin_appearance` comes from the
-      // auth-guarded `/system/admin/settings` (a 401 the browser logs on the login screen), and the bundle
-      // load waits on `GlobalReadinessService.waitForReady()` + a guarded bundle URL that never resolves for
-      // a logged-out visitor → `resolved` never flips → a BLANK login. Render the (public-token-styled) auth
-      // route immediately and defer the appearance to the authenticated workspace.
+      // The auth routes (login / forgot / reset) on the SHARED admin host are appearance-agnostic:
+      // `admin_appearance` comes from the auth-guarded `/system/admin/settings` (a 401 the browser logs
+      // on the login screen), so there is nothing to resolve before anyone signs in. A WORKSPACE domain
+      // is different — see the `isAuthRoute` early return below.
       const isAuthRoute = AdminRouteUtils.isUnauthenticatedAuthRoute(
         !Platform.isBrowser ? '' : (window.location.pathname || ''),
       );
@@ -92,8 +90,14 @@ export class AppearanceRuntimeLoader extends Reactor {
         /* The default token contract remains available when public theme metadata is unreachable. */
       }
       if (!this.active) return;
-      if (isAuthRoute) {
-        // Skip the (hang-prone, auth-gated) appearance bundle load on the login screen — render it now.
+      // A WORKSPACE domain is the exception: its appearance comes from the PUBLIC `/auth/host` route,
+      // and the bundle + stylesheet the admin serves for it need no session either — so its login can
+      // wear the workspace's own appearance, which is much of the point of giving it its own domain.
+      // (This blanked the login once: the surface allowlist mentioned no auth route, so
+      // `AppearanceShellHost` passed `null` for the page. `AppearanceSurfacePolicy` now always allows
+      // them.) The skip below stays for the SHARED admin host, where the appearance comes from the
+      // auth-gated settings endpoint and there is nothing to resolve before anyone signs in.
+      if (isAuthRoute && !workspace) {
         this.resolved = true;
         return;
       }
@@ -101,12 +105,20 @@ export class AppearanceRuntimeLoader extends Reactor {
       // Load the appearance bundle (with retry). If a NON-default appearance can't load, fail CLOSED — a
       // contained "workspace unavailable" screen — rather than falling through to the full default admin,
       // which would silently defeat the appearance's surface containment.
+      //
+      // `.catch` is load-bearing, not defensive: `ensureLoaded` awaits `GlobalReadinessService.waitForReady()`
+      // OUTSIDE its own try, and that REJECTS after ~5s. An unhandled rejection here leaves `resolved`
+      // false for the life of the page — the shell then renders its neutral placeholder forever, which
+      // is an empty full-height div, i.e. a white screen with nothing in the console to explain it.
       let loaded = true;
       if (AppearanceBundleLoaderService.needsLoad(desired)) {
-        loaded = await AppearanceBundleLoaderService.ensureLoaded(desired);
+        loaded = await AppearanceBundleLoaderService.ensureLoaded(desired).catch(() => false);
       }
       if (!this.active) return;
-      this.loadFailed = desired !== 'default' && !loaded;
+      // The LOGIN must render whatever happened to the appearance. Failing closed here would put a
+      // "workspace unavailable" screen in front of the one page that can fix a broken session, and an
+      // unstyled sign-in still signs you in.
+      this.loadFailed = !isAuthRoute && desired !== 'default' && !loaded;
       this.resolved = true;
   }
 

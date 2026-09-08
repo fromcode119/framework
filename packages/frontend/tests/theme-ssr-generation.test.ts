@@ -25,13 +25,13 @@ describe('ThemeSsrGeneration', () => {
   });
 
   it('changes when any active plugin version changes', () => {
-    const before = ThemeSsrGeneration.from(config('1.0.434', [{ slug: 'cms', version: '2.0.0' }]));
-    const after = ThemeSsrGeneration.from(config('1.0.434', [{ slug: 'cms', version: '2.0.1' }]));
+    const before = ThemeSsrGeneration.from(config('1.0.434', [{ slug: 'zeta', version: '2.0.0' }]));
+    const after = ThemeSsrGeneration.from(config('1.0.434', [{ slug: 'zeta', version: '2.0.1' }]));
     expect(after.matches(before)).toBe(false);
   });
 
   it('is stable across two reads of an unchanged install', () => {
-    const plugins = [{ slug: 'cms', version: '2.0.0' }, { slug: 'ecommerce', version: '3.1.0' }];
+    const plugins = [{ slug: 'zeta', version: '2.0.0' }, { slug: 'beta', version: '3.1.0' }];
     const first = ThemeSsrGeneration.from(config('1.0.434', plugins));
     const second = ThemeSsrGeneration.from(config('1.0.434', plugins));
     expect(second.matches(first)).toBe(true);
@@ -40,12 +40,12 @@ describe('ThemeSsrGeneration', () => {
 
   it('ignores the order the api happened to list plugins in', () => {
     const ascending = ThemeSsrGeneration.from(config('1.0.434', [
-      { slug: 'cms', version: '2.0.0' },
-      { slug: 'ecommerce', version: '3.1.0' },
+      { slug: 'zeta', version: '2.0.0' },
+      { slug: 'beta', version: '3.1.0' },
     ]));
     const reversed = ThemeSsrGeneration.from(config('1.0.434', [
-      { slug: 'ecommerce', version: '3.1.0' },
-      { slug: 'cms', version: '2.0.0' },
+      { slug: 'beta', version: '3.1.0' },
+      { slug: 'zeta', version: '2.0.0' },
     ]));
     // Re-importing every bundle because the load order shifted would be pure churn.
     expect(reversed.matches(ascending)).toBe(true);
@@ -134,19 +134,19 @@ describe('ThemeServerRegistry generations', () => {
   it('lets a new generation replace an override of equal priority', () => {
     const first = () => null;
     const generationOne = ThemeServerRegistry.beginGeneration();
-    bridge.registerSlotComponent('frontend.content.display', first, 'cms', 10);
+    bridge.registerSlotComponent('frontend.content.display', first, 'zeta', 10);
     ThemeServerRegistry.publishGeneration('theme:slots@1', generationOne);
 
     const second = () => null;
     const generationTwo = ThemeServerRegistry.beginGeneration();
-    bridge.registerSlotComponent('frontend.content.display', second, 'cms', 10);
+    bridge.registerSlotComponent('frontend.content.display', second, 'zeta', 10);
     ThemeServerRegistry.publishGeneration('theme:slots@2', generationTwo);
 
     // An empty generation is what makes the NEW component the only one registered in ITS world;
     // re-registering into the old maps appended a duplicate instead. The old world keeps its own.
     const slot = ThemeServerRegistry.slotMap('theme:slots@2')['frontend.content.display'];
     expect(slot).toHaveLength(1);
-    expect(slot[0]).toEqual({ component: second, pluginSlug: 'cms', priority: 10 });
-    expect(ThemeServerRegistry.slotMap('theme:slots@1')['frontend.content.display'][0]).toEqual({ component: first, pluginSlug: 'cms', priority: 10 });
+    expect(slot[0]).toEqual({ component: second, pluginSlug: 'zeta', priority: 10 });
+    expect(ThemeServerRegistry.slotMap('theme:slots@1')['frontend.content.display'][0]).toEqual({ component: first, pluginSlug: 'zeta', priority: 10 });
   });
 });

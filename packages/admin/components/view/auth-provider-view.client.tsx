@@ -4,6 +4,7 @@ import { BrowserStateClient, CookieConstants } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AuthUtils } from '@/lib/auth-utils';
+import type { IAuthContextType } from '@/components/interfaces/auth-context-type.interface';
 import type { IUser } from '@/components/interfaces/user.interface';
 import { AuthStore } from '@/components/view/auth-store.client';
 
@@ -22,6 +23,9 @@ export class AuthProviderView extends Reactor {
   @prop declare children: ReactNode;
 
   @state private user: IUser | null = null;
+
+  /** See `IAuthContextType.sessionRejected`. Cleared by a successful login. */
+  @state private sessionRejected = false;
 
   @state private isLoading = true;
 
@@ -83,7 +87,22 @@ export class AuthProviderView extends Reactor {
         if (this.alive) this.user = securityUser;
       }
     } catch (error: any) {
-      if (error?.status && error.status !== 401) {
+      const status = Number(error?.status || 0);
+      // 401/403 is the server saying this session is not valid HERE. The cookie it was painted from
+      // is readable and scoped to the whole cookie domain, so it rides along to every tenant host —
+      // which is how a workspace domain the account has no membership on rendered a full console,
+      // named the operator in the header, and had every request behind it refused. Swallowing the
+      // 401 was what kept that on screen. Drop the identity and record WHY, so the shell can tell a
+      // stale session (→ login) from a workspace this account may not enter (→ say so).
+      //
+      // Anything else — a network failure, a 5xx — is not an answer about this session, so the
+      // cached user stands rather than logging the operator out of a working console.
+      if (status === 401 || status === 403) {
+        if (this.alive) {
+          this.user = null;
+          this.sessionRejected = true;
+        }
+      } else {
         console.error('[AuthProvider] Failed to restore authenticated user:', error);
       }
     } finally {
@@ -107,6 +126,7 @@ export class AuthProviderView extends Reactor {
       maxAgeSeconds: AuthProviderView.USER_COOKIE_MAX_AGE_SECONDS,
     });
     this.user = userData;
+    this.sessionRejected = false;
     this.router.push(AdminConstants.ROUTES.ROOT);
   }
 
@@ -123,8 +143,14 @@ export class AuthProviderView extends Reactor {
     this.router.push(AdminConstants.ROUTES.AUTH.LOGIN);
   }
 
-  private get value(): { user: IUser | null; isLoading: boolean; login: AuthProviderView['login']; logout: AuthProviderView['logout'] } {
-    return { user: this.user, isLoading: this.isLoading, login: this.login, logout: this.logout };
+  private get value(): IAuthContextType {
+    return {
+      user: this.user,
+      isLoading: this.isLoading,
+      sessionRejected: this.sessionRejected,
+      login: this.login,
+      logout: this.logout,
+    };
   }
 
   render(): ReactElement {

@@ -22,7 +22,7 @@ class RenderToStringFixture {
         createElement('p', null, 'Hello ', 'world'),
         // Emotion's server output and a plugin's default sheet, in the body where React puts them.
         createElement('style', { 'data-emotion': 'css 1a2b' }, '.css-1a2b{color:red}'),
-        createElement('style', { 'data-fc-plugin-default': 'ecommerce-collection' }, '.fc-collection{padding:0}'),
+        createElement('style', { 'data-fc-plugin-default': 'beta-collection' }, '.fc-collection{padding:0}'),
         // A theme preloading its LCP image — attribute-escaped `&amp;` in the href.
         createElement('link', { rel: 'preload', as: 'image', href: '/img?src=%2Fx.jpg&w=1400' }),
         // A resolved Suspense boundary, as a warmed override renders.
@@ -40,7 +40,7 @@ describe('ThemeSsrMarkup on renderToString output', () => {
     expect(markup.styleGroups).toHaveLength(1);
     expect(markup.styleGroups[0].emotionKey).toBe('css');
     expect(markup.pluginStyles).toHaveLength(1);
-    expect(markup.pluginStyles[0].key).toBe('ecommerce-collection');
+    expect(markup.pluginStyles[0].key).toBe('beta-collection');
     expect(markup.pluginStyles[0].css).toBe('.fc-collection{padding:0}');
     expect(markup.imagePreloads).toEqual(['/img?src=%2Fx.jpg&w=1400']);
 

@@ -37,7 +37,7 @@ describe('TenantTableCatalog.inDependencyOrder', () => {
 
 describe('TenantTableDescriptor', () => {
   it('knows its JSON and boolean columns from the catalog types', () => {
-    const d = table('fcp_cms_pages', [], { id: 'integer', content: 'jsonb', meta: 'json', published: 'boolean', title: 'text', tenant_id: 'text' });
+    const d = table('fcp_zeta_pages', [], { id: 'integer', content: 'jsonb', meta: 'json', published: 'boolean', title: 'text', tenant_id: 'text' });
     expect(d.jsonColumns).toEqual(['content', 'meta']);
     expect(d.booleanColumns).toEqual(['published']);
     expect(d.hasTenantColumn).toBe(true);

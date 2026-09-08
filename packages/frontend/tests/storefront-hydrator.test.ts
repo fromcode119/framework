@@ -31,11 +31,11 @@ class HydratorFixture {
     });
   }
 
-  /** Registrations as the theme (+ optionally the cms plugin) would have queued them. */
+  /** Registrations as the theme (+ optionally the zeta plugin) would have queued them. */
   static registrations(args: { layout?: boolean; slot?: boolean } = { layout: true }): PreBootRegistrationSeed {
     const queue: Array<{ type: string; args: unknown[] }> = [];
     if (args.layout) queue.push({ type: 'theme', args: ['demo', { layouts: { DefaultLayout: HydratorFixture.Layout } }] });
-    if (args.slot) queue.push({ type: 'slot', args: [StorefrontContentContract.DISPLAY_SLOT, HydratorFixture.Blocks, 'cms', 1] });
+    if (args.slot) queue.push({ type: 'slot', args: [StorefrontContentContract.DISPLAY_SLOT, HydratorFixture.Blocks, 'zeta', 1] });
     return PreBootRegistrationSeed.fold(queue).seed;
   }
 
@@ -88,7 +88,7 @@ describe('StorefrontHydrator.decide — the decision table', () => {
   });
 
   it('a recipe page → fallback', () => {
-    const config = HydratorFixture.config({ content: { title: 'Shop', slug: 'shop', recipe: 'ecommerce.store-index' } });
+    const config = HydratorFixture.config({ content: { title: 'Shop', slug: 'shop', recipe: 'beta.store-index' } });
     expect(HydratorFixture.decide({ config })).toBe(StorefrontHydrationReason.RECIPE);
   });
 
@@ -97,14 +97,14 @@ describe('StorefrontHydrator.decide — the decision table', () => {
     expect(EditorSessionParams.ownerOf('edit')).toBeNull();
     expect(HydratorFixture.decide({ search: `?${EditorSessionParams.PREVIEW}=1` })).toBe(StorefrontHydrationReason.EDITOR_SESSION);
     expect(HydratorFixture.decide({ search: '?edit=1' })).toBe(StorefrontHydrationReason.READY);
-    // …and a plugin's registration (what the cms storefront bundle does at evaluation) is what adds the rest.
+    // …and a plugin's registration (what the zeta storefront bundle does at evaluation) is what adds the rest.
     EditorSessionParams.register('test-editor', ['edit', 'draft']);
     for (const name of EditorSessionParams.names()) {
       expect(HydratorFixture.decide({ search: `?${name}=1` })).toBe(StorefrontHydrationReason.EDITOR_SESSION);
     }
     expect(EditorSessionParams.names()).toEqual([EditorSessionParams.PREVIEW, 'edit', 'draft']);
     expect(HydratorFixture.decide({ search: '?utm_source=x&edit=' })).toBe(StorefrontHydrationReason.READY);
-    expect(HydratorFixture.decide({ search: '?cms=1' })).toBe(StorefrontHydrationReason.READY);
+    expect(HydratorFixture.decide({ search: '?zeta=1' })).toBe(StorefrontHydrationReason.READY);
   });
 
   it('the layout the server rendered with is not registered → fallback', () => {

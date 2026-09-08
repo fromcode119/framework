@@ -316,7 +316,7 @@ describe('PluginDefaultPageMaterializationService', () => {
    * Taking only the last segment made the slug a function of one word, so any two contracts ending in
    * the same word claimed the same page: `/reviews/unsubscribe` and `/newsletter/unsubscribe` both
    * produced `unsubscribe`, and the second plugin to register latched onto the first one's page. The
-   * reconciliation failure that caused hard-failed alpha and finance and cascaded to everything that
+   * reconciliation failure that caused hard-failed alpha and gamma and cascaded to everything that
    * depends on them — from two plugins doing nothing more exotic than owning an unsubscribe page.
    *
    * It was already latent for beta, whose `/partners/privacy` claimed the bare slug `privacy`.

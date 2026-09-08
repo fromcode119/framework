@@ -32,7 +32,7 @@ describe('SystemEmailPreferencesTokenController', () => {
       emailCategories: {
         list: () => [
           { key: 'review-invitation', labelKey: 'sp.review', descriptionKey: 'sp.reviewHelp', pluginSlug: 'social-proof' },
-          { key: 'broadcast', labelKey: 'bc.broadcast', descriptionKey: 'bc.broadcastHelp', pluginSlug: 'broadcasts' },
+          { key: 'broadcast', labelKey: 'bc.broadcast', descriptionKey: 'bc.broadcastHelp', pluginSlug: 'kappa' },
         ],
         has: (key: string) => ['review-invitation', 'broadcast'].includes(key),
       },

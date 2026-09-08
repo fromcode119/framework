@@ -181,6 +181,7 @@ export type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.in
 export { RequestContextUtils } from '@core/context/request-context';
 export { TenantRecord } from '@core/tenant/tenant-record';
 export { TenantKind } from '@core/tenant/tenant-kind';
+export { TenantResolutionRefusal } from '@core/tenant/tenant-resolution-refusal';
 export { TenantKindPreset } from '@core/tenant/provisioning/tenant-kind-preset';
 export { TenantKindPresets } from '@core/tenant/provisioning/tenant-kind-presets';
 export { AppearanceWorkspaceDeclarationReader } from '@core/appearance/appearance-workspace-declaration-reader';

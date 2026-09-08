@@ -24,23 +24,23 @@ describe('search column resolution', () => {
     }
   });
 
-  /** Mirrors the real `fcp_mlm_referrals`: canonical camelCase fields, snake_case physical columns. */
+  /** Mirrors the real `fcp_alpha_referrals`: canonical camelCase fields, snake_case physical columns. */
   async function seedManager(): Promise<{ manager: SqliteDatabaseManager; statements: string[] }> {
     const dbPath = path.join(os.tmpdir(), `fromcode-search-resolution-${Date.now()}-${Math.random()}.db`);
     dbPaths.push(dbPath);
 
     const manager = new SqliteDatabaseManager(dbPath);
     await manager.execute(
-      'CREATE TABLE "fcp_mlm_referrals" (' +
+      'CREATE TABLE "fcp_alpha_referrals" (' +
         '"id" INTEGER PRIMARY KEY AUTOINCREMENT, ' +
         '"affiliate_code" TEXT, ' +
         '"order_number" TEXT, ' +
         '"customer_email" TEXT, ' +
         '"status" TEXT)'
     );
-    await manager.insert('fcp_mlm_referrals', { affiliateCode: 'AFF-ALPHA', orderNumber: 'ORD-1', customerEmail: 'ann@example.com', status: 'paid' });
-    await manager.insert('fcp_mlm_referrals', { affiliateCode: 'AFF-BETA', orderNumber: 'ORD-2', customerEmail: 'ben@example.com', status: 'paid' });
-    await manager.insert('fcp_mlm_referrals', { affiliateCode: 'AFF-GAMMA', orderNumber: 'ORD-3', customerEmail: 'gil@example.com', status: 'pending' });
+    await manager.insert('fcp_alpha_referrals', { affiliateCode: 'AFF-ALPHA', orderNumber: 'ORD-1', customerEmail: 'ann@example.com', status: 'paid' });
+    await manager.insert('fcp_alpha_referrals', { affiliateCode: 'AFF-BETA', orderNumber: 'ORD-2', customerEmail: 'ben@example.com', status: 'paid' });
+    await manager.insert('fcp_alpha_referrals', { affiliateCode: 'AFF-GAMMA', orderNumber: 'ORD-3', customerEmail: 'gil@example.com', status: 'pending' });
 
     // Record every statement the read path prepares, so the emitted identifier can be asserted.
     const statements: string[] = [];
@@ -61,7 +61,7 @@ describe('search column resolution', () => {
     it('emits the physical column, never the canonical camelCase name', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_mlm_referrals', {
+      const rows = await manager.find('fcp_alpha_referrals', {
         search: { columns: ['affiliateCode'], value: 'ALPHA' },
       });
 
@@ -73,7 +73,7 @@ describe('search column resolution', () => {
     it('resolves every column of a multi-column search', async () => {
       const { manager, statements } = await seedManager();
 
-      await manager.find('fcp_mlm_referrals', {
+      await manager.find('fcp_alpha_referrals', {
         search: { columns: ['affiliateCode', 'orderNumber', 'customerEmail'], value: 'ben@' },
       });
 
@@ -85,7 +85,7 @@ describe('search column resolution', () => {
     it('leaves a column already given in snake_case alone', async () => {
       const { manager, statements } = await seedManager();
 
-      await manager.find('fcp_mlm_referrals', {
+      await manager.find('fcp_alpha_referrals', {
         search: { columns: ['affiliate_code'], value: 'BETA' },
       });
 
@@ -112,7 +112,7 @@ describe('search column resolution', () => {
       const sqlite: any = (manager as any).sqlite;
 
       expect(() =>
-        sqlite.prepare(`SELECT COUNT(*) AS total FROM "fcp_mlm_referrals" WHERE "affiliateCode" LIKE '%ffil%'`)
+        sqlite.prepare(`SELECT COUNT(*) AS total FROM "fcp_alpha_referrals" WHERE "affiliateCode" LIKE '%ffil%'`)
       ).toThrow(/no such column/);
     });
 
@@ -122,18 +122,18 @@ describe('search column resolution', () => {
 
       // Single quotes make the literal semantics explicit — this is exactly what a DQS build silently
       // does with the double-quoted identifier the dialect used to emit.
-      const degraded = sqlite.prepare(`SELECT COUNT(*) AS total FROM "fcp_mlm_referrals" WHERE 'affiliateCode' LIKE '%ffil%'`).get();
+      const degraded = sqlite.prepare(`SELECT COUNT(*) AS total FROM "fcp_alpha_referrals" WHERE 'affiliateCode' LIKE '%ffil%'`).get();
       expect(degraded.total).toBe(3);
 
       // The real column matches nothing for that term — proving the 3 above are a naming artifact.
-      const correct = sqlite.prepare(`SELECT COUNT(*) AS total FROM "fcp_mlm_referrals" WHERE "affiliate_code" LIKE '%ffil%'`).get();
+      const correct = sqlite.prepare(`SELECT COUNT(*) AS total FROM "fcp_alpha_referrals" WHERE "affiliate_code" LIKE '%ffil%'`).get();
       expect(correct.total).toBe(0);
     });
 
     it('never emits the unresolved identifier in the first place', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_mlm_referrals', {
+      const rows = await manager.find('fcp_alpha_referrals', {
         search: { columns: ['affiliateCode'], value: 'ffil' },
       });
 
@@ -148,7 +148,7 @@ describe('search column resolution', () => {
       const { manager } = await seedManager();
 
       await expect(
-        manager.find('fcp_mlm_referrals', { search: 'AFF' } as any)
+        manager.find('fcp_alpha_referrals', { search: 'AFF' } as any)
       ).rejects.toThrow(/search option/i);
     });
 
@@ -156,14 +156,14 @@ describe('search column resolution', () => {
       const { manager } = await seedManager();
 
       await expect(
-        manager.find('fcp_mlm_referrals', { search: { columns: [], value: 'AFF' } })
+        manager.find('fcp_alpha_referrals', { search: { columns: [], value: 'AFF' } })
       ).rejects.toThrow(/search option/i);
     });
 
     it('treats an empty term as "no search", which is how callers omit it', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_mlm_referrals', {
+      const rows = await manager.find('fcp_alpha_referrals', {
         search: { columns: ['affiliateCode'], value: '' },
       });
 
@@ -177,7 +177,7 @@ describe('search column resolution', () => {
       const { manager } = await seedManager();
 
       await expect(
-        manager.find('fcp_mlm_referrals', { search: { columns: ['totallyBogus'], value: 'ogus' } })
+        manager.find('fcp_alpha_referrals', { search: { columns: ['totallyBogus'], value: 'ogus' } })
       ).rejects.toThrow(UnknownColumnError);
     });
 
@@ -185,15 +185,15 @@ describe('search column resolution', () => {
       const { manager } = await seedManager();
 
       await expect(
-        manager.find('fcp_mlm_referrals', { search: { columns: ['totallyBogus'], value: 'x' } })
-      ).rejects.toThrow(/Unknown column "totallyBogus" on table "fcp_mlm_referrals"/);
+        manager.find('fcp_alpha_referrals', { search: { columns: ['totallyBogus'], value: 'x' } })
+      ).rejects.toThrow(/Unknown column "totallyBogus" on table "fcp_alpha_referrals"/);
     });
 
     it('never executes a LIKE against the unresolved name', async () => {
       const { manager, statements } = await seedManager();
 
       await manager
-        .find('fcp_mlm_referrals', { search: { columns: ['totallyBogus'], value: 'ogus' } })
+        .find('fcp_alpha_referrals', { search: { columns: ['totallyBogus'], value: 'ogus' } })
         .catch(() => undefined);
 
       expect(searchSql(statements)).toBe('');
@@ -203,7 +203,7 @@ describe('search column resolution', () => {
       const { manager } = await seedManager();
 
       await expect(
-        manager.find('fcp_mlm_referrals', {
+        manager.find('fcp_alpha_referrals', {
           search: { columns: ['affiliateCode', 'notAColumn'], value: 'AFF' },
         })
       ).rejects.toThrow(UnknownColumnError);
@@ -215,7 +215,7 @@ describe('search column resolution', () => {
       const { manager } = await seedManager();
 
       await expect(
-        manager.find('fcp_mlm_referrals', {
+        manager.find('fcp_alpha_referrals', {
           search: { columns: ['affiliate_code" OR "1"="1'], value: 'x' },
         })
       ).rejects.toThrow(UnknownColumnError);
@@ -225,14 +225,14 @@ describe('search column resolution', () => {
       const { manager } = await seedManager();
 
       await expect(
-        manager.find('fcp_mlm_referrals', { orderBy: { 'id" --': 'desc' } })
+        manager.find('fcp_alpha_referrals', { orderBy: { 'id" --': 'desc' } })
       ).rejects.toThrow(/Invalid column identifier/);
     });
 
     it('still orders by a normal camelCase key', async () => {
       const { manager, statements } = await seedManager();
 
-      await manager.find('fcp_mlm_referrals', { orderBy: { orderNumber: 'desc' } });
+      await manager.find('fcp_alpha_referrals', { orderBy: { orderNumber: 'desc' } });
 
       expect(statements.some((statement) => statement.includes('ORDER BY "order_number" DESC'))).toBe(true);
     });
@@ -242,7 +242,7 @@ describe('search column resolution', () => {
     it('emits the physical column for a camelCase where key', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_mlm_referrals', { where: { customerEmail: 'gil@example.com' } });
+      const rows = await manager.find('fcp_alpha_referrals', { where: { customerEmail: 'gil@example.com' } });
 
       expect(statements.some((statement) => statement.includes('"customer_email" = ?'))).toBe(true);
       expect(rows).toHaveLength(1);
@@ -251,7 +251,7 @@ describe('search column resolution', () => {
     it('ANDs a resolved search with a resolved where', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_mlm_referrals', {
+      const rows = await manager.find('fcp_alpha_referrals', {
         where: { status: 'pending' },
         search: { columns: ['affiliateCode'], value: 'AFF' },
       });

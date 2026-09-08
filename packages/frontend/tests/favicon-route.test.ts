@@ -41,7 +41,7 @@ describe('favicon route', () => {
   it('falls back to the framework favicon when the active theme has no favicon asset', async () => {
     vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
-      activeTheme: { slug: 'snapbilt-theme' },
+      activeTheme: { slug: 'theme-a-theme' },
     });
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(createResponse('', 'text/plain', 404));
     vi.stubGlobal('fetch', vi.fn(async (input) => {
@@ -60,7 +60,7 @@ describe('favicon route', () => {
   it('returns 204 when no theme or framework favicon is available', async () => {
     vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
-      activeTheme: { slug: 'snapbilt-theme' },
+      activeTheme: { slug: 'theme-a-theme' },
     });
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(createResponse('', 'text/plain', 404));
     vi.stubGlobal('fetch', vi.fn(async () => createResponse('', 'text/plain', 404)));

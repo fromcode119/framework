@@ -8,21 +8,21 @@ import { McpVersionTools } from '@ai/admin-assistant-runtime/helpers/mcp-version
  * the MCP token) could not inspect or restore it. These tools close that gap.
  */
 describe('McpVersionTools', () => {
-  const collection = { slug: 'fcp_ecommerce_products', shortSlug: 'catalog', label: 'Products', pluginSlug: 'ecommerce', raw: { primaryKey: 'id' } } as any;
+  const collection = { slug: 'fcp_beta_products', shortSlug: 'catalog', label: 'Products', pluginSlug: 'beta', raw: { primaryKey: 'id' } } as any;
 
   const buildOptions = (overrides?: Record<string, any>) => ({
-    findCollectionBySlug: (source: string) => (source === 'fcp_ecommerce_products' || source === 'catalog' ? collection : null),
+    findCollectionBySlug: (source: string) => (source === 'fcp_beta_products' || source === 'catalog' ? collection : null),
     listRecordVersions: vi.fn().mockResolvedValue({
       docs: [
-        { id: 3, ref_id: '8', ref_collection: 'fcp_ecommerce_products', version: 3, created_at: '2026-08-18 11:28:00', updated_by: 'kristian.dimitrov@fromcode.com', change_summary: 'Update fcp_ecommerce_products record', version_data: '{"name":"x"}' },
-        { id: 1, ref_id: '8', ref_collection: 'fcp_ecommerce_products', version: 1, created_at: '2026-04-18 09:06:00', updated_by: 'kristian.dimitrov@fromcode.com', change_summary: 'Update fcp_ecommerce_products record', version_data: '{"name":"y"}' },
+        { id: 3, ref_id: '8', ref_collection: 'fcp_beta_products', version: 3, created_at: '2026-08-18 11:28:00', updated_by: 'kristian.dimitrov@fromcode.com', change_summary: 'Update fcp_beta_products record', version_data: '{"name":"x"}' },
+        { id: 1, ref_id: '8', ref_collection: 'fcp_beta_products', version: 1, created_at: '2026-04-18 09:06:00', updated_by: 'kristian.dimitrov@fromcode.com', change_summary: 'Update fcp_beta_products record', version_data: '{"name":"y"}' },
       ],
       totalDocs: 2, limit: 20, offset: 0,
     }),
     getRecordVersion: vi.fn().mockResolvedValue({
-      id: 1, ref_id: '8', ref_collection: 'fcp_ecommerce_products', version: 1,
+      id: 1, ref_id: '8', ref_collection: 'fcp_beta_products', version: 1,
       created_at: '2026-04-18 09:06:00', updated_by: 'kristian.dimitrov@fromcode.com',
-      change_summary: 'Update fcp_ecommerce_products record',
+      change_summary: 'Update fcp_beta_products record',
       version_data: '{"short_description":"Кратко описание","name":"Годишен Нумерологичен Анализ"}',
     }),
     restoreRecordVersion: vi.fn().mockResolvedValue({ id: 8, name: 'Годишен Нумерологичен Анализ' }),
@@ -48,14 +48,14 @@ describe('McpVersionTools', () => {
     expect(options.listRecordVersions).toHaveBeenCalledWith(collection, '8', { limit: 20, offset: 0 });
     expect(result.totalDocs).toBe(2);
     expect(result.versions).toEqual([
-      { version: 3, createdAt: '2026-08-18 11:28:00', updatedBy: 'kristian.dimitrov@fromcode.com', changeSummary: 'Update fcp_ecommerce_products record' },
-      { version: 1, createdAt: '2026-04-18 09:06:00', updatedBy: 'kristian.dimitrov@fromcode.com', changeSummary: 'Update fcp_ecommerce_products record' },
+      { version: 3, createdAt: '2026-08-18 11:28:00', updatedBy: 'kristian.dimitrov@fromcode.com', changeSummary: 'Update fcp_beta_products record' },
+      { version: 1, createdAt: '2026-04-18 09:06:00', updatedBy: 'kristian.dimitrov@fromcode.com', changeSummary: 'Update fcp_beta_products record' },
     ]);
     expect(JSON.stringify(result)).not.toContain('version_data');
   });
 
   it('returns one version with its snapshot parsed from JSON text', async () => {
-    const result = await toolByName(buildOptions(), 'content.version_get').handler({ collectionSlug: 'fcp_ecommerce_products', id: '8', version: 1 }, {});
+    const result = await toolByName(buildOptions(), 'content.version_get').handler({ collectionSlug: 'fcp_beta_products', id: '8', version: 1 }, {});
 
     expect(result.found).toBe(true);
     expect(result.version).toBe(1);

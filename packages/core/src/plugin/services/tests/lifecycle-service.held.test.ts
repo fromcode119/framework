@@ -34,6 +34,6 @@ describe('capability gate auto-approve decision', () => {
   });
   it('returns "hold" when enabled but untrusted', () => {
     process.env.AUTO_APPROVE_PLUGIN_CAPABILITIES = 'true';
-    expect(LifecycleService.resolveDriftAction('forms', false)).toBe(PluginApprovalMode.HOLD);
+    expect(LifecycleService.resolveDriftAction('theta', false)).toBe(PluginApprovalMode.HOLD);
   });
 });

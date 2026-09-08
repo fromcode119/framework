@@ -26,7 +26,7 @@ class BridgeFixture {
 
   static readonly frontendConfig = {
     activeTheme: { slug: 'demo', defaultLayout: 'DefaultLayout', variables: { accent: '#123456' } },
-    plugins: [{ slug: 'cms', namespace: 'org.fromcode', admin: { collections: [{ slug: 'pages' }] } }],
+    plugins: [{ slug: 'zeta', namespace: 'org.fromcode', admin: { collections: [{ slug: 'pages' }] } }],
     settings: { siteName: 'Demo' },
     menu: [{ id: 1, label: 'Home', path: '/' }],
     runtimeModules: { 'lucide-react': 'icon' },
@@ -37,7 +37,7 @@ class BridgeFixture {
     return [
       { type: 'theme', args: ['demo', { layouts: { DefaultLayout: BridgeFixture.Layout }, variables: { accent: '#abcdef' } }] },
       { type: 'translations', args: [{ en: { nav: { home: 'Start' } } }, 'theme'] },
-      { type: 'translations', args: [{ en: { cms: { read: 'Read more' } } }] },
+      { type: 'translations', args: [{ en: { zeta: { read: 'Read more' } } }] },
     ];
   }
 
@@ -71,7 +71,7 @@ class BridgeFixture {
       greeting: ContextBridge.t('greeting', { name: 'Ann' }),
       themeOverServer: ContextBridge.t('nav.home'),
       serverOnly: ContextBridge.t('nav.shop'),
-      pluginLayer: ContextBridge.t('cms.read'),
+      pluginLayer: ContextBridge.t('zeta.read'),
       missing: ContextBridge.t('missing.key', {}, 'fallback copy'),
       locale: ContextBridge.locale(),
       layouts: Object.keys(state.themeLayouts),
@@ -142,7 +142,7 @@ describe('PreBootBridgeArgs — the pre-boot bridge answers from the inlined dat
     expect(preBoot.greeting).toBe('Hello Ann');
     expect(preBoot.layouts).toEqual(['DefaultLayout']);
     expect(preBoot.themeVariables).toEqual({ accent: '#abcdef' }); // registered over the theme's own
-    expect(preBoot.collections).toEqual([{ slug: 'pages', pluginSlug: 'cms' }]);
+    expect(preBoot.collections).toEqual([{ slug: 'pages', pluginSlug: 'zeta' }]);
 
     // Now the live provider mounts with that seed and installs the real bridge from its effect.
     const installed = vi.spyOn(ContextRuntimeBridge, 'installRuntimeBridge');

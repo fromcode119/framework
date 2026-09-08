@@ -10,16 +10,16 @@ import { ActivityMode } from '@/app/activity/enums/activity-mode.enum';
  *
  * Both endpoints return camelCase keys (`pluginSlug`), and a security-audit row has no `level` —
  * the modal must not crash on it, and the plugin column must not label every plugin row "System".
- * Audit resources are `table` or `table/id` (e.g. `fcp_ecommerce_products/8`) with the method in
+ * Audit resources are `table` or `table/id` (e.g. `fcp_beta_products/8`) with the method in
  * metadata; the detail view has to surface both.
  */
 
 /** A security-audit row exactly as GET /system/admin/audit serves it. */
 const auditRow = {
   id: 41,
-  pluginSlug: 'ecommerce',
+  pluginSlug: 'beta',
   action: 'Database Write',
-  resource: 'fcp_ecommerce_products/8',
+  resource: 'fcp_beta_products/8',
   status: 'allowed',
   metadata: '{"method":"update"}',
   createdAt: '2026-08-18T12:00:00.000Z',
@@ -28,7 +28,7 @@ const auditRow = {
 /** A system-log row exactly as GET /system/admin/logs serves it. */
 const logRow = {
   id: 7,
-  pluginSlug: 'forms',
+  pluginSlug: 'theta',
   level: 'INFO',
   message: 'submission stored',
   context: null,
@@ -47,7 +47,7 @@ describe('Activity screen renders API rows', () => {
       />,
     );
 
-    expect(screen.getByText('fcp_ecommerce_products/8')).toBeTruthy();
+    expect(screen.getByText('fcp_beta_products/8')).toBeTruthy();
     expect(screen.getByText('Database Write')).toBeTruthy();
   });
 
@@ -76,7 +76,7 @@ describe('Activity screen renders API rows', () => {
       />,
     );
 
-    expect(screen.getByText('Ecommerce')).toBeTruthy();
+    expect(screen.getByText('Beta')).toBeTruthy();
   });
 
   it('the security columns name the plugin that acted, not "System"', () => {
@@ -85,7 +85,7 @@ describe('Activity screen renders API rows', () => {
 
     render(<>{pluginColumn.accessor(auditRow)}</>);
 
-    expect(screen.getByText('Ecommerce')).toBeTruthy();
+    expect(screen.getByText('Beta')).toBeTruthy();
     expect(screen.queryByText('System')).toBeNull();
   });
 
@@ -95,7 +95,7 @@ describe('Activity screen renders API rows', () => {
 
     render(<>{resourceColumn.accessor(logRow)}</>);
 
-    expect(screen.getByText('Forms')).toBeTruthy();
+    expect(screen.getByText('Theta')).toBeTruthy();
     expect(screen.queryByText('System')).toBeNull();
   });
 });

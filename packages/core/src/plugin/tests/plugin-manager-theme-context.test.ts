@@ -14,7 +14,7 @@ describe('PluginManager theme context', () => {
   const activeConfig = {
     variables: { siteName: 'Starter Site', contactEmail: 'hello@example.com' },
     settings: {
-      forms: {
+      theta: {
         contactFormDefaults: {
           title: 'Contact',
           fields: [
@@ -51,7 +51,7 @@ describe('PluginManager theme context', () => {
     };
   }
 
-  const plugin: any = { manifest: { slug: 'forms', namespace: 'org.fromcode', capabilities: [] }, state: 'active' };
+  const plugin: any = { manifest: { slug: 'theta', namespace: 'org.fromcode', capabilities: [] }, state: 'active' };
 
   it('exposes the active theme slug, config and plugin settings to a plugin context once the theme manager is set', async () => {
     const manager = managerWithoutConstructor();
@@ -61,7 +61,7 @@ describe('PluginManager theme context', () => {
 
     await expect(context.theme.getActiveSlug()).resolves.toBe('starter');
     await expect(context.theme.getActiveConfig()).resolves.toEqual(activeConfig);
-    await expect(context.theme.getCurrentPluginSettings()).resolves.toEqual(activeConfig.settings.forms);
+    await expect(context.theme.getCurrentPluginSettings()).resolves.toEqual(activeConfig.settings.theta);
   });
 
   it('starts with no theme manager, so an unwired context resolves to nothing rather than a made-up theme', async () => {

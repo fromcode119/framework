@@ -68,6 +68,8 @@ export * from '@/lib/appearance/admin-shell-registry';
 export * from '@/lib/appearance/admin-component-registry';
 export * from '@/lib/appearance/admin-page-registry';
 export type { IAppearanceShellProps } from '@/lib/appearance/interfaces/appearance-shell-props.interface';
+/** What an appearance's own sign-in is given: values, setters and `submit` — never a way to mint a session. */
+export type { ILoginController } from '@/lib/appearance/interfaces/login-controller.interface';
 export type { IAdminAppearanceManifest } from '@/lib/appearance/interfaces/admin-appearance-manifest.interface';
 export type { IAppearanceSurfaces } from '@/lib/appearance/interfaces/appearance-surfaces.interface';
 export * from '@/lib/appearance/appearance-surface-policy';

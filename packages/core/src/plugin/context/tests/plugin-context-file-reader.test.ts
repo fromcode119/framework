@@ -30,7 +30,7 @@ describe('PluginContextFileReader', () => {
     const pluginRoot = PluginContextFileReaderTestHelpers.createTempDirectory();
     const themeRoot = PluginContextFileReaderTestHelpers.createTempDirectory();
     const pluginTemplatePath = path.join(pluginRoot, 'templates', 'emails', 'message.txt');
-    const themeTemplatePath = path.join(themeRoot, 'templates', 'plugins', 'forms', 'emails', 'message.txt');
+    const themeTemplatePath = path.join(themeRoot, 'templates', 'plugins', 'theta', 'emails', 'message.txt');
 
     fs.mkdirSync(path.dirname(pluginTemplatePath), { recursive: true });
     fs.mkdirSync(path.dirname(themeTemplatePath), { recursive: true });
@@ -44,7 +44,7 @@ describe('PluginContextFileReader', () => {
 
     await expect(reader.readText('emails/message.txt', {
       pluginDirectory: 'templates',
-      themeDirectory: 'templates/plugins/forms',
+      themeDirectory: 'templates/plugins/theta',
     })).resolves.toBe('theme message');
   });
 

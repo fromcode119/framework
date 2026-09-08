@@ -11,7 +11,7 @@ describe('ThemeOverrideRegistrar cached loaders + OverrideLoaderWarmup', () => {
   it('a registered loader resolves asynchronously first, then SYNCHRONOUSLY once its module is cached', async () => {
     const captured: Array<() => Promise<{ default: unknown }>> = [];
     vi.spyOn(ContextBridge, 'registerOverride').mockImplementation((...args: any[]) => { captured.push(args[4]); return undefined; });
-    ThemeOverrideRegistrar.registerThemeBlockRenderers('demo', { './blocks/hero.tsx': () => Promise.resolve({ HeroRenderer: Renderer }) }, 'cms.block.');
+    ThemeOverrideRegistrar.registerThemeBlockRenderers('demo', { './blocks/hero.tsx': () => Promise.resolve({ HeroRenderer: Renderer }) }, 'zeta.block.');
     expect(captured).toHaveLength(1);
     const loader = captured[0];
     let syncValue: unknown = null;

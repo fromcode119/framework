@@ -73,6 +73,27 @@ export class PublicSystemRouteUtils {
     );
   }
 
+  /**
+   * The routes a browser must still reach when admin tenancy has REFUSED its session — the login
+   * screen's own bootstrap. Health (is the API there), i18n (what language to speak) and the frontend
+   * config (brand tokens) are asked before anyone is signed in, and on a workspace domain an account
+   * without a membership was answered `tenant_access_revoked` for all three: the console then sat on
+   * "Initializing Secure Session" forever, in English, with no way to reach its own login.
+   *
+   * They continue with NO tenant bound, so every tenant-scoped query behind them is fail-closed and
+   * returns nothing — which is why the loose `includes` matching these predicates use is safe HERE
+   * even though it would not be as a general exemption: the worst a stray match can do is answer a
+   * refused session with no rows.
+   */
+  static isTenancyOptionalPath(path: string): boolean {
+    return (
+      PublicSystemRouteUtils.isHealthPath(path) ||
+      PublicSystemRouteUtils.isI18nPath(path) ||
+      PublicSystemRouteUtils.isFrontendConfigPath(path) ||
+      PublicSystemRouteUtils.isUiAssetPath(path)
+    );
+  }
+
   static isAccountSelfServicePath(path: string): boolean {
     return PublicSystemRouteUtils.ACCOUNT_SELF_SERVICE_SUFFIXES.some((suffix) => path.endsWith(suffix));
   }

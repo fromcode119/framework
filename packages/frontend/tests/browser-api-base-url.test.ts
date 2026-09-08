@@ -15,7 +15,7 @@ describe('FrontendApiBaseUrl', () => {
   beforeEach(() => {
     Object.defineProperty(window, 'location', {
       configurable: true,
-      value: { origin: 'https://vselenskiportal.example', href: 'https://vselenskiportal.example/shop' },
+      value: { origin: 'https://tenant-a.example', href: 'https://tenant-a.example/shop' },
     });
   });
   afterEach(() => {
@@ -23,10 +23,10 @@ describe('FrontendApiBaseUrl', () => {
   });
 
   it("uses the page's own origin in the browser", () => {
-    expect(FrontendApiBaseUrl.resolveFrontendApiBaseUrl()).toBe('https://vselenskiportal.example');
+    expect(FrontendApiBaseUrl.resolveFrontendApiBaseUrl()).toBe('https://tenant-a.example');
   });
 
   it('ignores a configured API host rather than sending the call to a site-less one', () => {
-    expect(FrontendApiBaseUrl.resolveFrontendApiBaseUrl('https://api.example.com')).toBe('https://vselenskiportal.example');
+    expect(FrontendApiBaseUrl.resolveFrontendApiBaseUrl('https://api.example.com')).toBe('https://tenant-a.example');
   });
 });

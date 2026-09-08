@@ -4,13 +4,13 @@ import { ThemeContextProxy } from '@core/plugin/context/theme';
 describe('ThemeContextProxy', () => {
   it('returns current plugin settings from active theme config', async () => {
     const proxy = ThemeContextProxy.createThemeProxy(
-      { manifest: { slug: 'forms' } } as any,
+      { manifest: { slug: 'theta' } } as any,
       {
         themeManager: {
           getActiveThemeManifest: () => ({ slug: 'starter' }),
           getThemeConfig: async () => ({
             settings: {
-              forms: {
+              theta: {
                 contactFormDefaults: {
                   title: 'Contact',
                 },
@@ -30,13 +30,13 @@ describe('ThemeContextProxy', () => {
 
   it('parses serialized theme config objects', async () => {
     const proxy = ThemeContextProxy.createThemeProxy(
-      { manifest: { slug: 'forms' } } as any,
+      { manifest: { slug: 'theta' } } as any,
       {
         themeManager: {
           getActiveThemeManifest: () => ({ slug: 'starter' }),
           getThemeConfig: async () => JSON.stringify({
             settings: {
-              forms: {
+              theta: {
                 notificationEmail: 'hello@example.com',
               },
             },

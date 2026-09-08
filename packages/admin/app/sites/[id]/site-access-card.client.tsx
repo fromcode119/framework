@@ -8,7 +8,6 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Icon } from '@/components/view/icon.client';
-import { AdminClass } from '@/lib/admin-class';
 import { ThemeMode } from '@fromcode119/core/client';
 import { Select } from '@/components/ui/view/select.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -153,7 +152,7 @@ export class SiteAccessCard extends AdminComponent {
               right-hand group of metadata, state and the switch. The earlier version put the switch
               immediately after the name, so it landed at a different x on every row depending on how
               long the name was, and the list read as broken. */}
-          <div className={`${AdminClass.SURFACE} overflow-hidden divide-y mt-3 ${this.isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
+          <div className={`overflow-hidden divide-y mt-3 ${this.isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
             {this.visiblePlugins.map((plugin) => {
               const enabled = this.values.plugins.includes(plugin.slug);
               // Held or errored: a judgement or a fix is needed, so the switch cannot help.

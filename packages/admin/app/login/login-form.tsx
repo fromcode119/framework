@@ -10,6 +10,13 @@ import { LoginPageConstants } from '@/app/login/constants/login-page.constants';
 import type { ILoginFieldErrors } from '@/app/login/interfaces/login-field-errors.interface';
 import { AdminClass } from '@/lib/admin-class';
 
+/**
+ * The sign-in form. Every element carries a stable `fc-login__*` hook ALONGSIDE its utility classes:
+ * an appearance's stylesheet is loaded on this page but had nothing to select, so a workspace console
+ * could brand the words around the form and not the form itself. The hooks are the styling contract —
+ * the markup, the fields and the submit stay the framework's, so restyling a login can never become
+ * owning one.
+ */
 export class LoginForm extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
   declare props: Pick<LoginForm, 'email' | 'password' | 'totpToken' | 'recoveryCode' | 'twoFactorMethod' | 'requiresTwoFactor' | 'isLoading' | 'error' | 'fieldErrors' | 'onSubmit' | 'onEmailChange' | 'onPasswordChange' | 'onForgotPassword' | 'onSelectTwoFactorMethod' | 'onTotpTokenChange' | 'onRecoveryCodeChange'>;
@@ -33,13 +40,13 @@ export class LoginForm extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className={`p-8 ${AdminClass.SURFACE}`}>
+      <div className={`fc-login__card p-8 ${AdminClass.SURFACE}`}>
         {this.error && (
-          <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-semibold animate-in fade-in zoom-in duration-300">
+          <div className="fc-login__error mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-semibold animate-in fade-in zoom-in duration-300">
             {this.error}
           </div>
         )}
-        <form onSubmit={this.onSubmit} className="space-y-6" noValidate>
+        <form onSubmit={this.onSubmit} className="fc-login__form space-y-6" noValidate>
           <Input
             label="Email Address"
             placeholder="name@company.com"
@@ -55,8 +62,8 @@ export class LoginForm extends PureReactor {
 
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">Password</label>
-              <button type="button" onClick={this.onForgotPassword} className="text-xs font-semibold text-indigo-500 hover:text-indigo-400">Forgot?</button>
+              <label className="fc-login__label text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">Password</label>
+              <button type="button" onClick={this.onForgotPassword} className="fc-login__forgot text-xs font-semibold text-indigo-500 hover:text-indigo-400">Forgot?</button>
             </div>
             <Input
               placeholder="••••••••"
@@ -82,7 +89,7 @@ export class LoginForm extends PureReactor {
             />
           ) : null}
 
-          <div className="flex items-center justify-between py-2">
+          <div className="fc-login__assurance flex items-center justify-between py-2">
             <div className="flex items-center gap-2">
               <div className="p-1 rounded bg-indigo-500/10 text-indigo-500">
                 <FrameworkIcons.Shield size={14} />
@@ -93,7 +100,7 @@ export class LoginForm extends PureReactor {
 
           <Button
             type="submit"
-            className="w-full py-4 text-base transform hover:scale-[1.02] active:scale-[0.98]"
+            className="fc-login__submit w-full py-4 text-base transform hover:scale-[1.02] active:scale-[0.98]"
             isLoading={this.isLoading}
           >
             {this.requiresTwoFactor

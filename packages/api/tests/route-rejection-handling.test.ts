@@ -53,7 +53,7 @@ describe('rejected plugin route handlers', () => {
     });
 
     app = express();
-    app.use('/api/v1/plugins/cms', new RejectingPluginRouter().router);
+    app.use('/api/v1/plugins/zeta', new RejectingPluginRouter().router);
     app.use(new ErrorResponseMiddleware(logger).middleware());
   });
 
@@ -69,7 +69,7 @@ describe('rejected plugin route handlers', () => {
   it('answers with an HTTP error instead of leaving an unhandled rejection (the crash)', async () => {
     // Before the guard this request produced NO response and an unobserved rejection, which under
     // Node 22 terminates the process — a denial of service reachable by an anonymous 404-shaped GET.
-    const res = await request(app).get('/api/v1/plugins/cms/navigation/no-such-menu');
+    const res = await request(app).get('/api/v1/plugins/zeta/navigation/no-such-menu');
     await settle();
 
     expect(res.status).toBe(404);
@@ -77,14 +77,14 @@ describe('rejected plugin route handlers', () => {
   });
 
   it('maps a status-carrying domain error to its own status and message', async () => {
-    const res = await request(app).get('/api/v1/plugins/cms/navigation/no-such-menu');
+    const res = await request(app).get('/api/v1/plugins/zeta/navigation/no-such-menu');
 
     expect(res.status).toBe(404);
     expect(res.body.message).toBe('Navigation not found');
   });
 
   it('turns an unrecognised error into a 500 that leaks no internal detail', async () => {
-    const res = await request(app).get('/api/v1/plugins/cms/exploding');
+    const res = await request(app).get('/api/v1/plugins/zeta/exploding');
 
     expect(res.status).toBe(500);
     expect(JSON.stringify(res.body)).not.toContain('hunter2');
@@ -93,21 +93,21 @@ describe('rejected plugin route handlers', () => {
   });
 
   it('collapses a 5xx-carrying error to a generic 500 — a plugin cannot publish an internal failure code', async () => {
-    const res = await request(app).get('/api/v1/plugins/cms/server-status-error');
+    const res = await request(app).get('/api/v1/plugins/zeta/server-status-error');
 
     expect(res.status).toBe(500);
     expect(JSON.stringify(res.body)).not.toContain('10.0.0.4');
   });
 
   it('logs the failing route server-side so an operator can find the offending plugin', async () => {
-    await request(app).get('/api/v1/plugins/cms/exploding');
+    await request(app).get('/api/v1/plugins/zeta/exploding');
 
-    expect(logged.join('\n')).toContain('/api/v1/plugins/cms/exploding');
+    expect(logged.join('\n')).toContain('/api/v1/plugins/zeta/exploding');
     expect(logged.join('\n')).toContain('RejectingPluginRouter');
   });
 
   it('leaves a successful route untouched', async () => {
-    const res = await request(app).get('/api/v1/plugins/cms/fine');
+    const res = await request(app).get('/api/v1/plugins/zeta/fine');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true });
@@ -136,7 +136,7 @@ describe('ErrorResponseMiddleware control-flow passthrough', () => {
 
   it('a raw router handed to context.api.use is protected too', async () => {
     // Plugins are not obliged to extend BaseRouter; wrapping happens at the context.api boundary as
-    // well, which is what makes the fix generic rather than cms-specific.
+    // well, which is what makes the fix generic rather than zeta-specific.
     const raw = express.Router();
     raw.get('/raw', async () => {
       throw new DomainError(422, 'raw router rejected');

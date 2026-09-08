@@ -7,5 +7,7 @@ describe('AdminPageKeys', () => {
     expect(AdminPageKeys.COLLECTION_LIST).toBe('collection-list');
     expect(AdminPageKeys.COLLECTION_EDIT).toBe('collection-edit');
     expect(AdminPageKeys.SETTINGS).toBe('settings');
+    // A FRAME, not the login page — see the key's own note and appearance-login-frame.test.tsx.
+    expect(AdminPageKeys.LOGIN_FRAME).toBe('login-frame');
   });
 });

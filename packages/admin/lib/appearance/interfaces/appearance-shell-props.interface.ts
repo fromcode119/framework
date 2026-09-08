@@ -6,7 +6,7 @@ import type { IAppearanceShellUser } from '@/lib/appearance/interfaces/appearanc
  * Props passed to an appearance shell — it wraps the routed admin page as `children`.
  *
  * `nav` and `user` are OPTIONAL and ADDITIVE. The default `ClientLayoutShell` ignores them and stays
- * byte-for-byte unchanged; a custom appearance shell (e.g. Nexora) consumes them to render real
+ * byte-for-byte unchanged; a custom appearance shell consumes them to render real
  * navigation + account chrome WITHOUT reimplementing the framework's auth or navigation logic.
  */
 export interface IAppearanceShellProps {
