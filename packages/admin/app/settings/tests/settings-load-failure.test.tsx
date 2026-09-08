@@ -66,6 +66,11 @@ describe('settings pages: a failed load is visible and blocks Save', () => {
     apiPut.mockReset();
     settingsGetAll.mockReset();
     settingsUpdate.mockReset();
+    // A bare `mockReset` leaves the mock returning `undefined`, so any request a page makes that a
+    // single test did not stub — General never stubs this one; it asks for the platform-owned setting
+    // keys on mount — came back as a non-promise and threw an UNHANDLED rejection outside the test.
+    // These are failed-load tests, so a rejection is the right default and every page still sees one.
+    apiGet.mockRejectedValue(new Error('Network request failed'));
   });
 
   describe('Security', () => {

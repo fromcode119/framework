@@ -57,6 +57,11 @@ export class ThemeAssetsListController {
     }
   };
 
+  /** The file's size in bytes, or 0 when it cannot be read — a listing must not fail over one file. */
+  private static sizeOf(absolutePath: string): number {
+    try { return fs.statSync(absolutePath).size; } catch { return 0; }
+  }
+
   /** One directory level, files only — the non-recursive sibling of {@link walk} for the ui/ root. */
   private collectFiles(
     absoluteDir: string,
@@ -76,7 +81,7 @@ export class ThemeAssetsListController {
       if (!mimeType) continue;
       const relativeChild = relativeDir ? path.posix.join(relativeDir, entry.name) : entry.name;
       const url = ApiUrlUtils.resolvePublicUrl(req, ApiPathUtils.themeUiAssetPath(themeSlug, relativeChild));
-      out.push({ filename: entry.name, relativePath: relativeChild, mimeType, url });
+      out.push({ filename: entry.name, relativePath: relativeChild, mimeType, url, sizeBytes: ThemeAssetsListController.sizeOf(path.join(absoluteDir, entry.name)) });
     }
   }
 
@@ -104,7 +109,7 @@ export class ThemeAssetsListController {
       const mimeType = ThemeAssetsListController.IMAGE_MIME[ext] || ThemeAssetsListController.VIDEO_MIME[ext];
       if (!mimeType) continue;
       const url = ApiUrlUtils.resolvePublicUrl(req, ApiPathUtils.themeUiAssetPath(themeSlug, relativeChild));
-      out.push({ filename: entry.name, relativePath: relativeChild, mimeType, url });
+      out.push({ filename: entry.name, relativePath: relativeChild, mimeType, url, sizeBytes: ThemeAssetsListController.sizeOf(path.join(absoluteDir, entry.name)) });
     }
   }
 

@@ -57,6 +57,11 @@ services:
       # for a config or subpath change to take effect without rebuilding the image.
       - ./packages/reactor/package.json:/app/packages/reactor/package.json
       - ./packages/admin/next.config.js:/app/packages/admin/next.config.js
+      # next.config.js is only half the config: every shared decision it makes (dev origins, aliases,
+      # base path) lives in config/next-config-env.js. Mounting the one without the other means a change
+      # to the shared half silently runs against the image's baked copy — which is how the workspace
+      # hosts stayed blocked after their fix was written.
+      - ./config:/app/config
       - ./packages/admin/app:/app/packages/admin/app
       - ./packages/admin/components:/app/packages/admin/components
       - ./packages/admin/lib:/app/packages/admin/lib

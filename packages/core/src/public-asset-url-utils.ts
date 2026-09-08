@@ -239,6 +239,11 @@ export class PublicAssetUrlUtils {
       normalizedValue.startsWith(`${uploadPrefixWithoutLeadingSlash}/`);
   }
 
+  /** `hero.jpg` yes, `1` and `hero` no — a trailing `.` or a leading dotfile name is not an extension. */
+  private static hasFileExtension(filename: string): boolean {
+    return /[^./]\.[A-Za-z0-9]{1,10}$/.test(filename);
+  }
+
   private static normalizeUploadPath(value: any): string {
     const normalizedPath = PublicAssetUrlUtils.normalizePath(value);
     if (!normalizedPath) return '';
@@ -248,8 +253,14 @@ export class PublicAssetUrlUtils {
       return unversionedPath.startsWith('/') ? unversionedPath : `/${unversionedPath}`;
     }
 
+    // A bare token with no directory is treated as a filename in the uploads root — that is how media
+    // rows store `path`/`filename`. It must actually LOOK like a file: without the extension test, any
+    // leftover scalar became a URL to a file that cannot exist. A product whose `images` still held the
+    // pre-migration media id `1` (no such row, so nothing resolved it) rendered `/uploads/1`, and the
+    // storefront asked the image optimizer for it on every product page — a 404 the operator could not
+    // trace to any value they had set. Nothing resolved it, so the honest answer is no URL at all.
     const filename = unversionedPath.replace(/^\/+/, '');
-    if (!filename || filename.includes('/')) {
+    if (!filename || filename.includes('/') || !PublicAssetUrlUtils.hasFileExtension(filename)) {
       return '';
     }
 

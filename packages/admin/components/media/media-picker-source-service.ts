@@ -68,12 +68,15 @@ export class MediaPickerSourceService {
     const mimeType = CoercionUtils.toString(record?.mimeType);
     if (!relativePath || !url || !mimeType) return null;
 
+    // The listing reports the file's real size on disk; absent (older api) it stays undefined, never 0.
+    const sizeBytes = Number(record?.sizeBytes);
     return {
       id: `${MediaPickerSourceService.THEME_ID_PREFIX}${relativePath}`,
       filename: CoercionUtils.toString(record?.filename) || relativePath,
       url,
       mimeType,
       relativePath,
+      ...(Number.isFinite(sizeBytes) && sizeBytes > 0 ? { filesize: sizeBytes } : {}),
     };
   }
 

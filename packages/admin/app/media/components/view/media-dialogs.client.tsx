@@ -6,6 +6,7 @@ import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { PromptDialog } from '@/components/ui/view/prompt-dialog.client';
 import { MoveDialog } from '@/components/ui/view/move-dialog.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { MediaAssetInfoDialog } from '@/app/media/components/view/media-asset-info-dialog.client';
 import { MediaDetailsDialog } from '@/app/media/components/view/media-details-dialog.client';
 import { MediaShareDialog } from '@/app/media/components/view/media-share-dialog.client';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
@@ -85,12 +86,19 @@ export class MediaDialogs extends PureReactor {
   render(): ReactNode {
     return (
       <>
-        <MediaDetailsDialog
-          item={this.editingItem}
-          isLoading={this.isActionLoading}
-          onClose={this.closeDetails}
-          onConfirm={this.handleUpdateDetails}
-        />
+        {/* Two answers to one click, chosen by whether there is a record to write. An upload opens the
+            edit form; a theme asset has no row behind it, so it opens its facts instead of a form whose
+            Save could only fail. */}
+        {this.editingItem?.readOnly ? (
+          <MediaAssetInfoDialog item={this.editingItem} onClose={this.closeDetails} />
+        ) : (
+          <MediaDetailsDialog
+            item={this.editingItem}
+            isLoading={this.isActionLoading}
+            onClose={this.closeDetails}
+            onConfirm={this.handleUpdateDetails}
+          />
+        )}
 
         {/* Keyed on the selection so the dialog remounts when it changes — otherwise its recipient box
             and loaded grants would carry over from the previous set of files. */}

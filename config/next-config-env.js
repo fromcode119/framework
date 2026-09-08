@@ -34,6 +34,21 @@ class NextConfigEnv {
     NextConfigEnv.environmentInitialized = true;
   }
 
+  /**
+   * The hosts the DEV server will serve `/_next/*` to. Next blocks every other Host outright, and the
+   * failure is silent from the browser's side: the document still streams, so the page paints its
+   * server-rendered shell and then never hydrates — no console error, no failed request, just a screen
+   * that never becomes interactive. On the admin that shell is an empty full-height div, i.e. a white
+   * page, which is exactly what a workspace domain (`app.<site>`) showed.
+   *
+   * Under multi-tenancy the three app URLs below cannot be the whole list: every SITE gets its own host
+   * and they are created in the admin, long after this file is read. So the deployment's SITE DOMAIN is
+   * a source too — `COOKIE_DOMAIN` is where the platform already declares it, being the domain whose
+   * subdomains share one admin session. Everything under it is by definition one of ours, and it
+   * expands to a wildcard so a site added at 3pm works without editing a config.
+   *
+   * `ALLOWED_DEV_ORIGINS` remains the explicit override for anything neither rule covers.
+   */
   static getAllowedDevOrigins() {
     NextConfigEnv.initializeEnvironment();
 
@@ -50,7 +65,24 @@ class NextConfigEnv {
     return NextConfigEnv.unique([
       ...explicitOrigins.flatMap((value) => NextConfigEnv.expandOriginCandidates(value)),
       ...inferredOrigins.flatMap((value) => NextConfigEnv.expandOriginCandidates(value)),
+      ...NextConfigEnv.expandSiteDomainCandidates(process.env.COOKIE_DOMAIN),
     ]);
+  }
+
+  /**
+   * `.framework.local` -> `['framework.local', '**.framework.local']`. The double star is deliberate:
+   * Next's matcher gives `*` exactly ONE label, so `*.framework.local` would allow
+   * `tagiqx.framework.local` and still block the workspace host `app.tagiqx.framework.local`. `**` is
+   * the recursive form (it is what Next's own built-in `**.localhost` entry uses), and the apex is
+   * listed separately because a wildcard there is rejected by design.
+   *
+   * A single-host deployment sets no cookie domain, or sets one that is a bare hostname rather than a
+   * suffix; then there are no extra sites to allow and this contributes nothing.
+   */
+  static expandSiteDomainCandidates(value) {
+    const domain = String(value || '').trim().replace(/^\.+/, '').replace(/\.+$/, '').toLowerCase();
+    if (!domain || !domain.includes('.')) return [];
+    return [domain, `**.${domain}`];
   }
 
   static getRemoteImagePatterns() {

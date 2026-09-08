@@ -4,8 +4,9 @@ export interface IMediaItem {
   url: string;
   mimeType: string;
   /**
-   * Absent for assets that ship inside the theme — the theme asset listing carries no size, and a
-   * stand-in number would read as a measurement nobody took.
+   * Optional because it can genuinely be unknown (an older api that did not report it). It is never
+   * defaulted to 0: a stand-in number reads as a measurement nobody took, and "0 B" is indistinguishable
+   * from a genuinely empty file. Unknown size renders as nothing at all.
    */
   filesize?: number;
   width?: number;
