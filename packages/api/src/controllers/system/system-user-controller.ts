@@ -2,9 +2,25 @@ import { Request, Response } from 'express';
 import { RequestParamUtils } from '@api/utils/request-param-utils';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { CoercionUtils, PlatformOwnershipService } from '@fromcode119/core';
+import { TenantUserScope } from '@api/services/request/tenant-user-scope';
 
 export class SystemUserController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
+
+  /** The accounts this request may see and act on — its site's members. See {@link TenantUserScope}. */
+  private scope(req: Request): Promise<TenantUserScope> {
+    return TenantUserScope.of(req, this.runtime.db);
+  }
+
+  /**
+   * Refuses an account outside the caller's site — as NOT FOUND, not as forbidden: "you may not touch
+   * user 41" still confirms that user 41 exists, which is the fact being protected.
+   */
+  private async denyOutsideScope(req: Request, res: Response, userId: number): Promise<boolean> {
+    if ((await this.scope(req)).allows(userId)) return false;
+    res.status(404).json({ error: 'User not found' });
+    return true;
+  }
 
   async getRoles(req: Request, res: Response) {
     try {
@@ -63,7 +79,7 @@ export class SystemUserController {
 
   async getUsers(req: Request, res: Response) {
     try {
-      res.json({ docs: await this.runtime.users.getUsers() });
+      res.json({ docs: await this.runtime.users.getUsers((await this.scope(req)).ids) });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -71,8 +87,11 @@ export class SystemUserController {
 
   async saveUser(req: Request, res: Response) {
     try {
-      const id = await this.runtime.users.saveUser(req.params.id ? CoercionUtils.toRelationId(req.params?.id) : null, req.body);
-      res.json({ success: true, id });
+      const id = req.params.id ? CoercionUtils.toRelationId(req.params?.id) : null;
+      // Creating is unrestricted (a new account belongs to no site yet); EDITING an existing one is not.
+      if (id !== null && await this.denyOutsideScope(req, res, id)) return;
+      const saved = await this.runtime.users.saveUser(id, req.body);
+      res.json({ success: true, id: saved });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -82,6 +101,7 @@ export class SystemUserController {
     try {
       const id = RequestParamUtils.relationId(req, res, 'user');
       if (id === null) return;
+      if (await this.denyOutsideScope(req, res, id)) return;
       const user = await this.runtime.users.getUser(id);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
@@ -119,6 +139,7 @@ export class SystemUserController {
     try {
       const id = RequestParamUtils.relationId(req, res, 'user');
       if (id === null) return;
+      if (await this.denyOutsideScope(req, res, id)) return;
       await this.runtime.users.deleteUser(id);
       res.json({ success: true });
     } catch (error: any) {
@@ -133,6 +154,7 @@ export class SystemUserController {
       if (userId === null) {
         return res.status(400).json({ error: 'Invalid user id' });
       }
+      if (await this.denyOutsideScope(req, res, userId)) return;
       const roles = Array.isArray(req.body?.roles) ? req.body.roles : [];
       await this.runtime.users.saveUserRoles(userId, roles);
       res.json({ success: true });

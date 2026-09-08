@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { McpHttpClient } from '../src/mcp-http-client';
+import { McpHttpClient } from '@mcp-server/mcp-http-client';
 
 describe('McpHttpClient', () => {
   it('sends the key in x-api-key, never as a bearer token', async () => {

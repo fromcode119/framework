@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { McpDeployTools } from '../src/controllers/mcp/tools/mcp-deploy-tools';
+import { McpDeployTools } from '@api/controllers/mcp/tools/mcp-deploy-tools';
 
 const buildDeps = () => ({
   db: {},

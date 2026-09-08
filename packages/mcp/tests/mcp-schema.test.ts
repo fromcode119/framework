@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { McpSchema } from '../src/mcp-schema';
+import { McpSchema } from '@mcp/mcp-schema';
 
 describe('McpSchema', () => {
   it('builds a scalar with a description', () => {

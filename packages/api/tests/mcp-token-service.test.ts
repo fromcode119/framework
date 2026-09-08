@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createHash } from 'crypto';
 import { TenantMode } from '@fromcode119/core';
-import { McpTokenService } from '../src/controllers/mcp/mcp-token-service';
-import { McpTokenStore } from '../src/controllers/mcp/mcp-token-store';
-import { McpTokenView } from '../src/controllers/mcp/mcp-token-view';
-import { McpTokenLookupService } from '../src/controllers/mcp/mcp-token-lookup-service';
+import { McpTokenService } from '@api/controllers/mcp/mcp-token-service';
+import { McpTokenStore } from '@api/controllers/mcp/mcp-token-store';
+import { McpTokenView } from '@api/controllers/mcp/mcp-token-view';
+import { McpTokenLookupService } from '@api/controllers/mcp/mcp-token-lookup-service';
 
 /**
  * A `_system_meta` stand-in with PARTITIONS: the platform partition (rows written under the

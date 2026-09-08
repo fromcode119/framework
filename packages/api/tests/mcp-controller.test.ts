@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { McpController } from '../src/controllers/mcp/mcp-controller';
-import { McpToolCallService } from '../src/controllers/mcp/mcp-tool-call-service';
-import { McpToolRegistry, McpSchema } from '../../mcp/src/index';
+import { McpController } from '@api/controllers/mcp/mcp-controller';
+import { McpToolCallService } from '@api/controllers/mcp/mcp-tool-call-service';
+import { McpToolRegistry, McpSchema } from '@mcp/index';
 
 const buildRegistry = () => {
   const registry = new McpToolRegistry();

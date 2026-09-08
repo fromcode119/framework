@@ -148,7 +148,7 @@ export class ServerRoutesSetup {
     vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth, platformAdmin).router);
     vApi.use(APPEARANCES, new AppearanceRouter(this.auth, platformAdmin, platformAccess, (this.manager as any).schemaDb ?? this.manager.db).router);
     this.registerCoreExtensionRoutes(vApi);
-    vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController).router);
+    vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController, platformAdmin).router);
     // Tenant provisioning (T4): platform admins only, on the owner connection. Mounted under SYSTEM
     // at its own prefix so its `/:id` never shadows a system route.
     const uploadsDir = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), this.mediaManager ?? undefined).uploadDir;

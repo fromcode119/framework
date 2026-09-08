@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { McpHttpClient } from '../src/mcp-http-client';
-import { McpSiteTools } from '../src/mcp-site-tools';
+import { McpHttpClient } from '@mcp-server/mcp-http-client';
+import { McpSiteTools } from '@mcp-server/mcp-site-tools';
 
 const sites = [{ id: 'acme', slug: 'acme', host: 'acme.test' }, { id: 'globex', slug: 'globex', host: 'globex.test' }];
 const fetchSites = vi.fn(async () => ({ ok: true, json: async () => ({ multiTenant: true, allSites: true, current: null, sites }) }));

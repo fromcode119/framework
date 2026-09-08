@@ -1,5 +1,8 @@
 import { NamingStrategy } from '@fromcode119/database';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { RequestContextUtils } from '@core/context/request-context';
+import { TenantMembership } from '@core/tenant/tenant-membership';
+import { TenantMode } from '@core/tenant/tenant-mode';
 import { SystemConstants } from '@core/constants/system.constants';
 import { StringUtils } from '@core/string-utils';
 
@@ -11,9 +14,39 @@ export class RolesContextProxy {
    * written via assignRole). Static so both the id and email proxy methods share it without relying
    * on `this` (proxy methods may be detached by callers).
    */
+  /**
+   * The user ids holding a role FOR THE SITE this call is acting in.
+   *
+   * A plugin asking "who are the admins?" means the admins of the site whose request it is serving —
+   * `context.notifications.notifyAdmins` is the everyday caller. Resolved globally, as it was, a shop
+   * on one site emailed its order notifications to every other customer's administrators, and wrote an
+   * in-app notification into each of their inboxes: someone else's order totals, in someone else's
+   * console. On a multi-site platform a role is only ever meaningful WITH a site.
+   *
+   * Membership roles are authoritative here, exactly as they are for request guards — the account's
+   * global roles say what it is elsewhere, not here. Untenanted callers (boot, platform work, a
+   * single-tenant deployment) keep the global answer, which is the right one when there is no site.
+   */
   private static async resolveUserIdsWithRole(manager: IPluginManagerInterface, slug: string): Promise<number[]> {
     const roleSlug = String(slug).trim().toLowerCase();
     if (!roleSlug) return [];
+
+    const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() : '';
+    if (tenantId) {
+      const memberships = await manager.db
+        .find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenantId } })
+        .catch(() => [] as any[]);
+      const scoped = new Set<number>();
+      for (const row of (Array.isArray(memberships) ? memberships : [])) {
+        const membership = TenantMembership.from(row);
+        if (!membership.isActive) continue;
+        if (!StringUtils.normalizeSlugList(membership.roles).includes(roleSlug)) continue;
+        const id = Number(membership.userId);
+        if (Number.isFinite(id) && id > 0) scoped.add(id);
+      }
+      return Array.from(scoped);
+    }
+
     const ids = new Set<number>();
     const rows = await manager.db.find(SystemConstants.TABLE.USERS_ROLES, { where: { roleSlug } }).catch(() => []);
     for (const row of (Array.isArray(rows) ? rows : [])) {

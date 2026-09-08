@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { McpToolRegistry } from '../src/mcp-tool-registry';
-import { McpSchema } from '../src/mcp-schema';
-import type { IMcpToolDefinition } from '../src/interfaces/mcp-tool-definition.interface';
+import { McpToolRegistry } from '@mcp/mcp-tool-registry';
+import { McpSchema } from '@mcp/mcp-schema';
+import type { IMcpToolDefinition } from '@mcp/interfaces/mcp-tool-definition.interface';
 
 const tool = (name: string, extra: Partial<IMcpToolDefinition> = {}): IMcpToolDefinition => ({
   tool: name,

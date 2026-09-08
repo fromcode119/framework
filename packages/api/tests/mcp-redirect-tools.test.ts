@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { McpRedirectTools } from '../src/controllers/mcp/tools/mcp-redirect-tools';
+import { McpRedirectTools } from '@api/controllers/mcp/tools/mcp-redirect-tools';
 
 const buildDeps = (existing: any = null) => ({
   db: {

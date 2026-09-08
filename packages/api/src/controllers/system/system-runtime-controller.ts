@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { TenantConnectionScope } from '@fromcode119/database';
 import { ContentPreviewAccessUtils, PluginState, SystemUpdateService } from '@fromcode119/core';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
@@ -31,11 +32,17 @@ export class SystemRuntimeController {
 
   async getLogs(req: Request, res: Response) {
     try {
-      res.json(await this.runtime.system.getLogs({
+      const query = {
         page: parseInt(req.query.page as string, 10),
         limit: parseInt(req.query.limit as string, 10),
         search: req.query.search as string,
-      }));
+      };
+      // Same rule as the audit trail below: the journal is tenant-scoped by policy, and only a
+      // PLATFORM admin asks to read across every site.
+      const platformAdmin = await new PlatformAccessResolver(this.runtime.db).isPlatformAdmin(req);
+      res.json(platformAdmin
+        ? await this.runtime.db.withPlatformAdmin(() => this.runtime.system.getLogs(query))
+        : await this.runtime.system.getLogs(query));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -43,12 +50,20 @@ export class SystemRuntimeController {
 
   async getAuditLogs(req: Request, res: Response) {
     try {
-      res.json(await this.runtime.system.getAuditLogs({
+      const query = {
         page: parseInt(req.query.page as string, 10),
         limit: parseInt(req.query.limit as string, 10),
         search: req.query.search as string,
         status: req.query.status as string,
-      }));
+      };
+      // The trail is tenant-scoped by policy, so this request already sees only the site it is acting
+      // in. A PLATFORM admin is the exception and asks for it explicitly: this is the security log of
+      // the whole container, and an operator investigating an incident cannot be made to enter each
+      // site in turn. The marker lives on the connection for this read alone.
+      const platformAdmin = await new PlatformAccessResolver(this.runtime.db).isPlatformAdmin(req);
+      res.json(platformAdmin
+        ? await this.runtime.db.withPlatformAdmin(() => this.runtime.system.getAuditLogs(query))
+        : await this.runtime.system.getAuditLogs(query));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { McpWirePaths } from '../../mcp/src/mcp-wire-paths';
-import { McpRouteUtils } from '../src/utils/mcp-route-utils';
+import { McpWirePaths } from '@mcp/mcp-wire-paths';
+import { McpRouteUtils } from '@api/utils/mcp-route-utils';
 
 /** The api mount and the client composition read the same constants — pinned here. */
 describe('MCP wire path parity', () => {

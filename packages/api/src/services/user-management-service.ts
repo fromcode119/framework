@@ -34,8 +34,16 @@ export class UserManagementService {
     return [...new Set([...col, ...rbacRoles])];
   }
 
-  async getUsers() {
-    const allUsers = await this.db.find(Schema.users);
+  /**
+   * `ids` restricts the listing to those accounts — the caller's site's members. `null` is
+   * unrestricted (platform admin, or a single-tenant deployment); an EMPTY array is a real answer and
+   * returns nothing, so a request acting for no site cannot fall through to everyone.
+   */
+  async getUsers(ids: number[] | null = null) {
+    if (Array.isArray(ids) && ids.length === 0) return [];
+    const allUsers = await this.db.find(Schema.users, ids
+      ? { where: this.db.inArray(Schema.users.id, ids) }
+      : undefined);
     return Promise.all(allUsers.map(async (user: any) => {
       const userRoles = await this.db.find(Schema.systemUsersToRoles, {
         columns: { roleSlug: true },

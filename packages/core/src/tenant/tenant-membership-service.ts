@@ -81,6 +81,23 @@ export class TenantMembershipService {
       .map((tenant: TenantRecord) => TenantAccess.member(tenant));
   }
 
+  /**
+   * The user ids holding an ACTIVE membership of this tenant — a site's people.
+   *
+   * `users` cannot be tenant-scoped by policy (login must find an account before a tenant exists), so
+   * this is what the admin's user surfaces filter by instead.
+   */
+  async listUserIdsForTenant(tenantId: string): Promise<number[]> {
+    const tenant = CoercionUtils.toString(tenantId);
+    if (!tenant) return [];
+    const rows = await this.db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenant } });
+    return (rows ?? [])
+      .map((row: any) => TenantMembership.from(row))
+      .filter((membership: TenantMembership) => membership.isActive)
+      .map((membership: TenantMembership) => Number(membership.userId))
+      .filter((id: number) => Number.isFinite(id));
+  }
+
   /** Tenant ids this account holds an ACTIVE membership row for. */
   private async activeMembershipTenantIds(userId: string): Promise<string[]> {
     const memberships = await this.db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, {

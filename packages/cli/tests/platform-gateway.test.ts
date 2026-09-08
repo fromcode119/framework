@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TenantRecord, TenantRouteMap } from '@fromcode119/core';
-import { PlatformGateway } from '../src/services/platform-gateway';
+import { PlatformGateway } from '@cli/services/platform-gateway';
 
 const targets = { api: 'http://api:3000', admin: 'http://admin:3000', frontend: 'http://frontend:3000' };
 const site = TenantRecord.from({ id: 'acme', slug: 'acme', primary_host: 'acme.test', host_aliases: '["api.acme.test"]', state: 'active', kind: 'site' });

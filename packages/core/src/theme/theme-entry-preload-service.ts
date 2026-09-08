@@ -13,9 +13,9 @@ import path from 'path';
  *
  * Resolution is filesystem-only and server-derived from the active theme's own
  * `ui/` directory — request input never reaches the returned filenames:
- *  1. If the declared entry is a tiny shim (`import "./index-<hash>.js";`), the
+ *  1. If the declared entry is a tiny shim (`import "@core/theme/index-<hash>.js";`), the
  *     shim's target is the real entry.
- *  2. The real entry's top-level static `import ... from "./<file>.js"` specifiers
+ *  2. The real entry's top-level static `import ... from "@core/theme/<file>.js"` specifiers
  *     (same-directory only) are its hard dependencies (e.g. vendor chunks).
  * Only files that actually exist inside the `ui/` directory are returned.
  * Results are memoized per (directory, entry, mtime) so repeated

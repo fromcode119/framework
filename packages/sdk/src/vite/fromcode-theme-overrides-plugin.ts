@@ -1,8 +1,8 @@
-import type { IDiscoveredSlot } from './interfaces/discovered-slot.interface';
+import type { IDiscoveredSlot } from '@sdk/vite/interfaces/discovered-slot.interface';
 import type { Plugin } from 'vite';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import type { IFromcodeThemeOverridesOptions } from './interfaces/fromcode-theme-overrides-options.interface';
+import type { IFromcodeThemeOverridesOptions } from '@sdk/vite/interfaces/fromcode-theme-overrides-options.interface';
 
 /**
  * Discovers active-theme renderer overrides without reading outside the theme.

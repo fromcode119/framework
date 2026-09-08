@@ -4,7 +4,7 @@ import type { Alias, UserConfig } from 'vite';
 import { NextConfigEnv } from '../../../config/next-config-env';
 // Relative on purpose, like the line above: Vite loads this config with its own bundler, before any
 // alias applies, and the constants file carries no imports of its own.
-import { RuntimeAssetConstants } from '../../core/src/constants/runtime-asset.constants';
+import { RuntimeAssetConstants } from '@core/constants/runtime-asset.constants';
 
 /**
  * Vite config for the storefront RUNTIME bundle: one classic (IIFE) script holding React 19 +

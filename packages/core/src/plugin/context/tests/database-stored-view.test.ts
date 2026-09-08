@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DatabaseContextProxy } from '../database';
+import { DatabaseContextProxy } from '@core/plugin/context/database';
 import { RequestContextUtils } from '@core/context/request-context';
 
 /**

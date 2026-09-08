@@ -4,8 +4,8 @@ import externalGlobals from 'rollup-plugin-external-globals';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { UserConfig } from 'vite';
-import { FromcodeThemeOverridesPlugin } from './fromcode-theme-overrides-plugin';
-import { ThemeEntryGenerator } from './theme-entry-generator';
+import { FromcodeThemeOverridesPlugin } from '@sdk/vite/fromcode-theme-overrides-plugin';
+import { ThemeEntryGenerator } from '@sdk/vite/theme-entry-generator';
 
 /**
  * Shared, framework-owned Vite config for building ANY theme's client bundle. One config for every theme —

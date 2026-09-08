@@ -39,7 +39,7 @@ export class ThemeScaffoldService {
     };
 
     const uiEntry = [
-      "import './theme.css';", '',
+      "import '@core/theme/theme.css';", '',
       'export const init = () => {',
       `  console.info('[theme:${slug}] initialized.');`,
       '};', '',

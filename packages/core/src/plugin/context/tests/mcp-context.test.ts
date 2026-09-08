@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { McpContextProxy } from '../mcp';
-import { McpRegistryProvider } from '../../../mcp/mcp-registry-provider';
-import { McpSchema } from '../../../../../mcp/src/mcp-schema';
+import { McpContextProxy } from '@core/plugin/context/mcp';
+import { McpRegistryProvider } from '@core/mcp/mcp-registry-provider';
+import { McpSchema } from '@mcp/mcp-schema';
 
 const plugin = (slug: string) => ({ manifest: { slug, name: slug, version: '1.0.0' } }) as any;
 

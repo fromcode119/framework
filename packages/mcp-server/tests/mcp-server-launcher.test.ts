@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { McpServerLauncher } from '../src/mcp-server-launcher';
-import { McpStdioServer } from '../src/mcp-stdio-server';
+import { McpServerLauncher } from '@mcp-server/mcp-server-launcher';
+import { McpStdioServer } from '@mcp-server/mcp-stdio-server';
 
 describe('McpServerLauncher.create', () => {
   it('throws the usage message when the URL is missing', () => {

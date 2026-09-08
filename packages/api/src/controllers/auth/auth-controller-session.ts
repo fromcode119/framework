@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { TenantUserScope } from '@api/services/request/tenant-user-scope';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerLifecycle } from '@api/controllers/auth/auth-controller-lifecycle';
 import { AuthSessionRecordService } from '@api/controllers/auth/auth-session-record-service';
@@ -29,8 +30,20 @@ export class AuthControllerSession extends AuthControllerLifecycle {
     res.json({ success: true });
   }
 
+  /**
+   * Every active session — of THIS SITE's people.
+   *
+   * It used to be every active session on the platform, joined to `users` for the address: a site
+   * administrator could read who was signed in across every other customer, from where, on what. The
+   * account is what ties a session to a site, so the same membership scope that governs Users governs
+   * this. A platform admin still sees the whole box, which is the point of the role.
+   */
   async getSessions(req: Request, res: Response) {
     try {
+      const scope = await TenantUserScope.of(req, this.db);
+      // Filtered after the read, not in the WHERE: this query goes through the string-table path, whose
+      // operator set is eq/ne/gt/gte/lt/lte — there is no `in`, and inventing one here would throw.
+      // The read is the same one this endpoint always made, so nothing grew.
       const sessions = await this.db.find(SystemConstants.TABLE.SESSIONS, {
         where: { isRevoked: false },
         orderBy: { createdAt: 'desc' },
@@ -45,6 +58,7 @@ export class AuthControllerSession extends AuthControllerLifecycle {
       res.json(
         AuthSessionRecordService
           .sortByCreatedAtDesc(sessions)
+          .filter((session: any) => scope.allows(Number(session?.userId)))
           .map((session: any) => AuthSessionRecordService.normalize(session))
           .filter((session: any) => AuthSessionRecordService.isActive(session, now)),
       );
@@ -53,9 +67,22 @@ export class AuthControllerSession extends AuthControllerLifecycle {
     }
   }
 
+  /**
+   * Ends one session — but only one belonging to this site's people.
+   *
+   * The id was taken on trust and revoked with no ownership check at all, so an administrator of any
+   * site could sign out every user of every other site by walking session ids. Refused as NOT FOUND:
+   * "you may not kill session X" still confirms session X exists.
+   */
   async killSession(req: Request, res: Response) {
     const { id } = req.params;
     try {
+      const scope = await TenantUserScope.of(req, this.db);
+      const match = await this.db.find(SystemConstants.TABLE.SESSIONS, { where: { id }, limit: 1 });
+      const session = match?.[0];
+      if (!session || !scope.allows(Number((session as any).userId))) {
+        return res.status(404).json({ error: 'Session not found' });
+      }
       await this.db.update(SystemConstants.TABLE.SESSIONS, { id }, { isRevoked: true, updatedAt: new Date() });
       res.json({ success: true });
     } catch {

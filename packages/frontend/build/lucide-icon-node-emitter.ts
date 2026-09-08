@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 // Relative on purpose (same as the sibling Vite config): this file runs under `tsx` outside every app
 // alias, and the constants file carries no imports of its own.
-import { RuntimeAssetConstants } from '../../core/src/constants/runtime-asset.constants';
+import { RuntimeAssetConstants } from '@core/constants/runtime-asset.constants';
 
 /**
  * Emits the Lucide icon set as per-icon DATA modules — one tiny ES module per icon holding nothing but

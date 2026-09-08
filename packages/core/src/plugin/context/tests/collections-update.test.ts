@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CollectionsContextProxy } from '../collections';
-import { CollectionWriteBridge } from '../../collection-write-bridge';
-import { Logger } from '../../../logging';
+import { CollectionsContextProxy } from '@core/plugin/context/collections';
+import { CollectionWriteBridge } from '@core/plugin/collection-write-bridge';
+import { Logger } from '@core/logging';
 
 const plugin = { manifest: { slug: 'alpha', name: 'alpha', version: '1.0.0' } } as any;
 const security = { hasCapability: () => true, handleViolation: vi.fn(), handleRateLimit: vi.fn() } as any;

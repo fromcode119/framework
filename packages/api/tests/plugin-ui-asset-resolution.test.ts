@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { PluginArchiveSupport } from '../src/controllers/plugins/plugin-archive-support';
+import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 
 /**
  * A plugin's built UI assets live in its `ui/` DIST directory. The build used to emit them into the

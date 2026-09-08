@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BaseDialect } from '../base-dialect';
+import { BaseDialect } from '@database/dialects/base-dialect';
 
 class DriverWithoutStrategy extends BaseDialect {}
 

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
-import { RenderableContentTransformerRegistry } from '../../react/src/renderable-content-transformer-registry';
+import { RenderableContentTransformerRegistry } from '@react/renderable-content-transformer-registry';
 
 describe('ContentRenderingUtils', () => {
   afterEach(() => {

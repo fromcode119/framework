@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { McpTokenScopeMatcher } from '../src/server/mcp-token-scope-matcher';
+import { McpTokenScopeMatcher } from '@api/server/mcp-token-scope-matcher';
 
 describe('McpTokenScopeMatcher.allows', () => {
   it('allows everything when the token declares no scopes', () => {

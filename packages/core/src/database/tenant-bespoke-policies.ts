@@ -43,7 +43,8 @@ export class TenantBespokePolicies {
 
   /** Every table this class owns the policy for. The generic sweep must skip exactly these. */
   static tables(): string[] {
-    return ['media', '_system_meta', '_system_plugin_settings'];
+    return ['media', '_system_meta', '_system_plugin_settings', '_system_audit_logs', '_system_logs',
+            '_system_record_versions'];
   }
 
   /** Every statement needed to bring all three under their own policies. Idempotent. */
@@ -52,6 +53,12 @@ export class TenantBespokePolicies {
       ...TenantBespokePolicies.mediaStatements(),
       ...TenantBespokePolicies.settingsStatements(),
       ...TenantBespokePolicies.pluginSettingsStatements(),
+      ...TenantBespokePolicies.journalStatements('_system_audit_logs'),
+      ...TenantBespokePolicies.journalStatements('_system_logs'),
+      // A version is a SNAPSHOT of a record's data. The rows were reachable by collection + id with an
+      // `admin` guard and no tenant filter, so another site's content could be read back out of its
+      // history even though the record itself is isolated.
+      ...TenantBespokePolicies.journalStatements('_system_record_versions'),
     ];
   }
 
@@ -111,6 +118,47 @@ export class TenantBespokePolicies {
            ${own}
            OR ("tenant_id" IS NULL AND current_setting('app.platform_admin', true) = 'on')
          )`,
+    ];
+  }
+
+  /**
+   * A JOURNAL of what happened on a site — the audit trail (`_system_audit_logs`) and the system event
+   * log (`_system_logs`). Both were GLOBAL.
+   *
+   * Neither table had a tenant column, so Activity showed a site administrator every action and every
+   * log line from every other customer's site: their plugin slugs, their resources, their failures.
+   * That is the plainest cross-tenant leak in the system, and what kept both out of the generic sweep
+   * is only their `_system_` prefix, which that sweep reads as "platform configuration". These two are
+   * not configuration; they are a tenant's own record.
+   *
+   * Two things the generic policy cannot express, hence a bespoke one:
+   *
+   *   READ — a PLATFORM admin sees everything. This is the record of the whole container, and an
+   *   operator investigating an incident cannot be asked to enter each site in turn. The marker is set
+   *   deliberately for that read (`db.withPlatformAdmin`), never merely by being untenanted.
+   *
+   *   WRITE — an UNTENANTED connection must be able to write, with no marker. Boot, migrations and
+   *   platform actions all log before any tenant is bound, and requiring the marker there would refuse
+   *   those rows outright ("new row violates row-level security policy") — silently losing exactly the
+   *   entries a journal exists to keep.
+   *
+   * Rows written before this policy carry NULL and stay visible only to the platform: fail-closed, and
+   * an honest signal that their owner is unknown rather than a quiet leak.
+   */
+  private static journalStatements(table: string): string[] {
+    const current = TenantBespokePolicies.CURRENT;
+    const own = `"tenant_id" = ${current}`;
+    const platform = "current_setting('app.platform_admin', true) = 'on'";
+    return [
+      `ALTER TABLE "${table}" ADD COLUMN IF NOT EXISTS "tenant_id" TEXT DEFAULT ${current}`,
+      `ALTER TABLE "${table}" ALTER COLUMN "tenant_id" SET DEFAULT ${current}`,
+      `CREATE INDEX IF NOT EXISTS "${table}_tenant_idx" ON "${table}" ("tenant_id")`,
+      `ALTER TABLE "${table}" ENABLE ROW LEVEL SECURITY`,
+      `ALTER TABLE "${table}" FORCE ROW LEVEL SECURITY`,
+      `DROP POLICY IF EXISTS "${table}_tenant_isolation" ON "${table}"`,
+      `CREATE POLICY "${table}_tenant_isolation" ON "${table}"
+         USING (${own} OR ${platform} OR ("tenant_id" IS NULL AND ${current} IS NULL))
+         WITH CHECK (${own} OR ("tenant_id" IS NULL AND ${current} IS NULL))`,
     ];
   }
 

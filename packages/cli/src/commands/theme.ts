@@ -68,7 +68,7 @@ export class ThemeCommands {
 `.trim() + '\n');
 
           await fs.writeFile(path.join(themePath, 'ui/index.ts'), `
-import './theme.css';
+import '@cli/commands/theme.css';
 
 export const init = () => {
   console.log('[Theme: ${slug}] Initialized');

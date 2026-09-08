@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BridgeObjectBuilder } from '../../react/src/helpers/bridge-object-builder';
+import { BridgeObjectBuilder } from '@react/helpers/bridge-object-builder';
 
 describe('BridgeObjectBuilder', () => {
   it('includes client-safe SDK exports that plugin UI bundles instantiate at runtime', () => {

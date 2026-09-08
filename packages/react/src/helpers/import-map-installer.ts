@@ -39,10 +39,21 @@ export class ImportMapInstaller {
         `data:application/javascript,const __fcReact = ${reactExpr}; export default __fcReact; export const { useState, useEffect, useMemo, useCallback, useRef, createRef, createContext, useContext, useReducer, useLayoutEffect, useInsertionEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, useSyncExternalStore, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = __fcReact;`,
       'react-dom':
         `data:application/javascript,const __fcReactDom = ${reactDomExpr}; export default __fcReactDom; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot, hydrateRoot } = __fcReactDom;`,
+      // `jsx` and `jsxs` are NOT the same function, and mapping both onto `createElement(type, props)`
+      // is what produced "Each child in a list should have a unique key prop" all over the admin for
+      // markup that has no list in it. `jsxs` is the automatic runtime's way of saying "this child
+      // array was written out statically" — React trusts it and asks for no keys. Passed through
+      // `createElement` as a single `children` ARRAY instead, that promise is lost and every
+      // statically-written multi-child element looks like a dynamic list. Spreading the children as
+      // VARARGS restores it: `createElement(type, props, a, b, c)` is static by construction.
+      //
+      // `jsx` keeps passing children untouched, deliberately: there the array IS dynamic (a `.map`),
+      // and the warning it raises is a real missing key that must not be silenced.
       'react/jsx-runtime':
-        `data:application/javascript,const __fcR = ${reactExpr}; const __fcJsx = (type, props, key) => __fcR.createElement(type, key === undefined ? props : { ...(props || {}), key }); export const jsx = __fcJsx; export const jsxs = __fcJsx; export const Fragment = __fcR.Fragment; export default { jsx, jsxs, Fragment };`,
+        `data:application/javascript,const __fcR = ${reactExpr}; const __fcProps = (props, key) => key === undefined ? props : { ...(props || {}), key }; const __fcJsx = (type, props, key) => __fcR.createElement(type, __fcProps(props, key)); const __fcJsxs = (type, props, key) => { const p = __fcProps(props, key); if (!p || !Array.isArray(p.children)) return __fcR.createElement(type, p); const { children, ...rest } = p; return __fcR.createElement(type, rest, ...children); }; export const jsx = __fcJsx; export const jsxs = __fcJsxs; export const Fragment = __fcR.Fragment; export default { jsx, jsxs, Fragment };`,
+      // The dev runtime carries the same distinction in its FOURTH argument (`isStaticChildren`).
       'react/jsx-dev-runtime':
-        `data:application/javascript,const __fcR = ${reactExpr}; const __fcJsxDEV = (type, props, key) => __fcR.createElement(type, key === undefined ? props : { ...(props || {}), key }); export const jsxDEV = __fcJsxDEV; export const Fragment = __fcR.Fragment; export default { jsxDEV, Fragment };`,
+        `data:application/javascript,const __fcR = ${reactExpr}; const __fcJsxDEV = (type, props, key, isStaticChildren) => { const p = key === undefined ? props : { ...(props || {}), key }; if (!isStaticChildren || !p || !Array.isArray(p.children)) return __fcR.createElement(type, p); const { children, ...rest } = p; return __fcR.createElement(type, rest, ...children); }; export const jsxDEV = __fcJsxDEV; export const Fragment = __fcR.Fragment; export default { jsxDEV, Fragment };`,
       'lucide-react':
         'data:application/javascript,' +
         encodeURIComponent(

@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import type { UserConfig } from 'vite';
-import { PluginUiCssAsTextPlugin } from './plugin-ui-css-as-text-plugin';
+import { PluginUiCssAsTextPlugin } from '@sdk/vite/plugin-ui-css-as-text-plugin';
 
 /**
  * Shared, framework-owned Vite config for building a plugin's UI bundle from the static glob entry

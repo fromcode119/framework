@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { McpCacheTools } from '../src/controllers/mcp/tools/mcp-cache-tools';
+import { McpCacheTools } from '@api/controllers/mcp/tools/mcp-cache-tools';
 
 const buildDeps = () => ({
   db: {},

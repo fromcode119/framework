@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SdkExportSourceBuilder } from '../../react/src/helpers/sdk-export-source-builder';
+import { SdkExportSourceBuilder } from '@react/helpers/sdk-export-source-builder';
 
 describe('SdkExportSourceBuilder', () => {
   it('includes runtime SDK exports used by plugin UI bundles', () => {

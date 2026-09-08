@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TenantRecord } from '@fromcode119/core';
-import { ApiKeyTenantResolver } from '../src/services/request/api-key-tenant-resolver';
-import { McpTokenRecord } from '../src/controllers/mcp/mcp-token-record';
+import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resolver';
+import { McpTokenRecord } from '@api/controllers/mcp/mcp-token-record';
 
 const acme = TenantRecord.from({ id: 'acme', slug: 'acme', primary_host: 'acme.test', host_aliases: '["www.acme.test"]', state: 'active' });
 const globex = TenantRecord.from({ id: 'globex', slug: 'globex', primary_host: 'globex.test', host_aliases: '[]', state: 'active' });

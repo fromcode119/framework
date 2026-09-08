@@ -5,8 +5,8 @@ export class LazyComponentLoaderService {
    * Creates a suspended component from a module loader.
    *
    * @example
-   * const Footer = LazyComponentLoaderService.component(() => import('./footer'));
-   * const Banner = LazyComponentLoaderService.component(() => import('./banner'), {
+   * const Footer = LazyComponentLoaderService.component(() => import('@react/footer'));
+   * const Banner = LazyComponentLoaderService.component(() => import('@react/banner'), {
    *   exportName: 'Banner',
    * });
    */
@@ -46,7 +46,7 @@ export class LazyComponentLoaderService {
    * @example
    * const pages = LazyComponentLoaderService.createNamedRegistry({
    *   about: {
-   *     loadModule: () => import('./about-page'),
+   *     loadModule: () => import('@react/about-page'),
    *     exportName: 'AboutPage',
    *   },
    * });
@@ -84,7 +84,7 @@ export class LazyComponentLoaderService {
    * Lazily resolves a module's default export as a React component.
    *
    * @example
-   * const Footer = LazyComponentLoaderService.loadDefault(() => import('./footer'));
+   * const Footer = LazyComponentLoaderService.loadDefault(() => import('@react/footer'));
    */
   static loadDefault(
     loadModule: () => Promise<{ default: React.ComponentType<any> }>,
@@ -96,7 +96,7 @@ export class LazyComponentLoaderService {
    * Lazily resolves a named module export as a React component.
    *
    * @example
-   * const Dialog = LazyComponentLoaderService.loadNamed(() => import('./dialog'), 'Dialog');
+   * const Dialog = LazyComponentLoaderService.loadNamed(() => import('@react/dialog'), 'Dialog');
    */
   static loadNamed(
     loadModule: () => Promise<Record<string, any>>,
@@ -112,7 +112,7 @@ export class LazyComponentLoaderService {
    * Creates a suspense-wrapped component from a default export module.
    *
    * @example
-   * const Footer = LazyComponentLoaderService.createSuspendedDefault(() => import('./footer'));
+   * const Footer = LazyComponentLoaderService.createSuspendedDefault(() => import('@react/footer'));
    */
   static createSuspendedDefault(
     loadModule: () => Promise<{ default: React.ComponentType<any> }>,
@@ -130,7 +130,7 @@ export class LazyComponentLoaderService {
    * Creates a suspense-wrapped component from a named export module.
    *
    * @example
-   * const MediaPicker = LazyComponentLoaderService.createSuspendedNamed(() => import('./picker'), 'MediaPicker');
+   * const MediaPicker = LazyComponentLoaderService.createSuspendedNamed(() => import('@react/picker'), 'MediaPicker');
    */
   static createSuspendedNamed(
     loadModule: () => Promise<Record<string, any>>,

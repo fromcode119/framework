@@ -100,7 +100,7 @@ export class ApiPathUtils {
   }
 
   static pluginUiAssetPath(slug: string, asset = ''): string {
-    const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug }).replace(/\/\*$/, '');
+    const basePath = ApiPathUtils.withoutWildcard(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug }));
     return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
   }
 
@@ -118,7 +118,7 @@ export class ApiPathUtils {
       const pattern = String(SystemConstants.API_PATH.THEMES.UI || '')
         .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
         .replace(':slug', '([^/]+)')
-        .replace(/\*$/, '(.+)');
+        .replace(/\*[A-Za-z0-9_]*$/, '(.+)');
       ApiPathUtils.themeUiAssetRegex = new RegExp(`${pattern}$`);
     }
     return ApiPathUtils.themeUiAssetRegex;
@@ -126,13 +126,24 @@ export class ApiPathUtils {
 
   private static themeUiAssetRegex: RegExp | null = null;
 
+  /**
+   * The route's path WITHOUT its trailing wildcard segment.
+   *
+   * The wildcard is NAMED (`/:slug/ui/*assetPath`), and a strip that only matched a bare `/*` left the
+   * placeholder in every URL the api handed out: `/themes/fromcode/ui/*assetPath/images/hero.webp`,
+   * which 404s. Every theme and plugin asset the media picker offered was a broken thumbnail.
+   */
+  private static withoutWildcard(pattern: string): string {
+    return String(pattern ?? '').replace(/\/\*[A-Za-z0-9_]*$/, '');
+  }
+
   static themeUiAssetPath(slug: string, asset = ''): string {
-    const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.THEMES.UI, { slug }).replace(/\/\*$/, '');
+    const basePath = ApiPathUtils.withoutWildcard(ApiPathUtils.fillPath(SystemConstants.API_PATH.THEMES.UI, { slug }));
     return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
   }
 
   static themePublicAssetPath(slug: string, asset = ''): string {
-    const basePath = ApiPathUtils.fillPath(SystemConstants.API_PATH.THEMES.PUBLIC, { slug }).replace(/\/\*$/, '');
+    const basePath = ApiPathUtils.withoutWildcard(ApiPathUtils.fillPath(SystemConstants.API_PATH.THEMES.PUBLIC, { slug }));
     return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
   }
 

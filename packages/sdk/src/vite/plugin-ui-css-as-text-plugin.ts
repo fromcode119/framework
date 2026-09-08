@@ -1,7 +1,7 @@
 import type { Plugin } from 'vite';
 
 /**
- * A plugin's `import styles from './x.css'` yields the CSS as a STRING, which the plugin injects itself
+ * A plugin's `import styles from '@sdk/vite/x.css'` yields the CSS as a STRING, which the plugin injects itself
  * — the convention inherited from the old esbuild `--loader:.css=text`. Rewrites `.css` imports to
  * Vite's built-in `?raw` instead of letting Vite treat them as CSS modules.
  *

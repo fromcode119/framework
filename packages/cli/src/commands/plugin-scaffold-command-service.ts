@@ -148,7 +148,7 @@ export default Banner;
 
     // 5. ui/index.ts
     const uiIndex = `
-import Banner from './banner';
+import Banner from '@cli/commands/banner';
 
 export const slots = {
   'frontend.home.hero': {

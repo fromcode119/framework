@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DatabaseContextProxy } from '../database';
+import { DatabaseContextProxy } from '@core/plugin/context/database';
 import { RequestContextUtils } from '@core/context/request-context';
-import { SystemConstants } from '../../../constants/system.constants';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * Plugin `context.db` is tenant-scoped: an untenanted query THROWS rather than silently returning

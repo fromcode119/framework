@@ -1,3 +1,4 @@
+import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { BaseRouter } from '@fromcode119/core';
 import multer from 'multer';
 import fs from 'fs';
@@ -42,7 +43,8 @@ export class SystemRouter extends BaseRouter {
     manager: PluginManager,
     themeManager: ThemeManager,
     auth: AuthManager,
-    restController: RESTController
+    restController: RESTController,
+    private readonly platformAdmin: PlatformAdminGuard,
   ) {
     super();
     this.auth = auth;
@@ -153,25 +155,31 @@ export class SystemRouter extends BaseRouter {
       this.controller.getAuditLogs);
 
     // Backup management
-    this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS, this.auth.requirePermission('system:backup:view'),
+    // A system BACKUP is the whole database — every site on the box — and restore overwrites all of
+    // them; a system UPDATE replaces the platform's own code. Both were gated on a PERMISSION alone,
+    // and a site administrator's `admin` role carries `*`, so any customer's admin could take a copy
+    // of every other customer's data, or roll the platform back under them. Permission answers "may
+    // this operator do backups"; the guard answers "for whom", and that was the half missing.
+    const platform = this.platformAdmin.middleware();
+    this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS, this.auth.requirePermission('system:backup:view'), platform,
       this.backupController.listBackups);
-    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_CREATE_SYSTEM, this.auth.requirePermission('system:backup:manage'),
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_CREATE_SYSTEM, this.auth.requirePermission('system:backup:manage'), platform,
       this.backupController.createSystemBackup);
-    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_SESSION, this.auth.requirePermission('system:backup:manage'),
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_SESSION, this.auth.requirePermission('system:backup:manage'), platform,
       this.backupController.startImportSession);
-    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_CHUNK, this.auth.requirePermission('system:backup:manage'), this.chunkUpload.single('chunk'),
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_CHUNK, this.auth.requirePermission('system:backup:manage'), platform, this.chunkUpload.single('chunk'),
       this.backupController.uploadImportChunk);
-    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_COMPLETE, this.auth.requirePermission('system:backup:manage'),
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT_COMPLETE, this.auth.requirePermission('system:backup:manage'), platform,
       this.backupController.completeImport);
-    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT, this.auth.requirePermission('system:backup:manage'), this.upload.single('backup'),
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_IMPORT, this.auth.requirePermission('system:backup:manage'), platform, this.upload.single('backup'),
       this.backupController.importBackup);
-    this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_DOWNLOAD, this.auth.requirePermission('system:backup:view'),
+    this.get(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_DOWNLOAD, this.auth.requirePermission('system:backup:view'), platform,
       this.backupController.downloadBackup);
-    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_PREVIEW, this.auth.requirePermission('system:backup:restore'),
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_PREVIEW, this.auth.requirePermission('system:backup:restore'), platform,
       this.backupController.previewRestore);
-    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_EXECUTE, this.auth.requirePermission('system:backup:restore'),
+    this.post(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_EXECUTE, this.auth.requirePermission('system:backup:restore'), platform,
       this.backupController.executeRestore);
-    this.delete(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID, this.auth.requirePermission('system:backup:manage'),
+    this.delete(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID, this.auth.requirePermission('system:backup:manage'), platform,
       this.backupController.deleteBackup);
     
     // URL redirect rules (framework-owned store — Settings → Redirects)
@@ -266,9 +274,9 @@ export class SystemRouter extends BaseRouter {
       this.controller.disable2FA);
     
     // System updates
-    this.get(RouteConstants.SEGMENTS.UPDATE_CHECK, this.auth.requirePermission('system:update'), 
+    this.get(RouteConstants.SEGMENTS.UPDATE_CHECK, this.auth.requirePermission('system:update'), platform, 
       this.controller.checkUpdate);
-    this.post(RouteConstants.SEGMENTS.UPDATE_APPLY, this.auth.requirePermission('system:update'),
+    this.post(RouteConstants.SEGMENTS.UPDATE_APPLY, this.auth.requirePermission('system:update'), platform,
       this.controller.applyUpdate);
 
     // Operator-triggered restarts. Same permission as the `deploy.restart` MCP tool — one authority

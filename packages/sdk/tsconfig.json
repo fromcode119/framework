@@ -26,6 +26,13 @@
       "@/*": [
         "../admin/*"
       ],
+      // `@/*` above pulls admin sources into this compile, and the admin's middleware graph imports
+      // reactor's React-FREE subpath. Mapped to the BUILT declaration, not to reactor's src: this
+      // workspace compiles with `moduleResolution: node`, which ignores a package's `exports` map, and
+      // mapping the source would drag reactor's files under this project's rootDir.
+      "@fromcode119/reactor/lang": [
+        "../reactor/dist/lang.d.ts"
+      ],
       "@fromcode119/core": [
         "../core/src"
       ],
