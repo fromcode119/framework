@@ -10,6 +10,12 @@ import { AdminClass } from '@/lib/admin-class';
 
 export class PluginDetailSidebar extends PureReactor {
   @prop declare activeTab: PluginDetailTab;
+  /**
+   * May this account act on the PLATFORM? Uninstalling removes the plugin from the one container every
+   * site runs on, so the API refuses it for a site administrator — and a control that cannot act is a
+   * bug, not a hint. The plugin's SETTINGS above it stay editable: those are this site's own.
+   */
+  @prop declare canManage: boolean;
   @prop declare onOpenDefinition: () => void;
   @prop declare onOpenDeleteConfirm: () => void;
   @prop declare onTabChange: (tabId: PluginDetailTab) => void;
@@ -80,6 +86,7 @@ export class PluginDetailSidebar extends PureReactor {
             </button>
           </div>
         </Card>
+{this.canManage ? (
         <Card className={`border-0 p-4 rounded-xl ${theme === ThemeMode.DARK ? 'bg-red-500/10' : 'bg-red-50'} ring-1 ring-red-500/20`}>
           <h3 className="text-[11px] font-semibold text-red-600 uppercase tracking-wider mb-3">System Removal</h3>
           <p className="text-xs font-medium text-red-500/80 leading-relaxed mb-4">
@@ -89,6 +96,7 @@ export class PluginDetailSidebar extends PureReactor {
             Uninstall Plugin
           </button>
         </Card>
+        ) : null}
       </div>
     );
   }

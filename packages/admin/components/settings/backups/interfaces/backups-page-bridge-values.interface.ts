@@ -5,4 +5,6 @@ import type { BackupsPageControllerHooks } from '@/components/settings/backups/v
 export interface IBackupsPageBridgeValues {
   theme: ReturnType<typeof ThemeHooks.useTheme>['theme'];
   controller: ReturnType<typeof BackupsPageControllerHooks.useController>;
+  /** May this account act on the PLATFORM — see the panel in BackupsPageClient. */
+  canManagePlatform: boolean;
 }

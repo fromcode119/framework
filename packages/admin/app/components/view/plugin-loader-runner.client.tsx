@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Platform, Reactor, prop } from '@fromcode119/reactor';
+import { Platform, Reactor, bound, prop } from '@fromcode119/reactor';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { GlobalReadinessService } from '@/lib/global-readiness-service';
@@ -101,6 +101,20 @@ export class PluginLoaderRunner extends Reactor {
       console.warn('[HMR] EventSource connection lost. Closing dev stream until the next page refresh.');
       eventSource.close();
     };
+
+    // Close the stream when the PAGE goes away, not only when this component unmounts.
+    //
+    // A full navigation never unmounts anything — the document is frozen for the back/forward cache
+    // with its connections intact — so each page load added a stream while the previous one lived on.
+    // At six the browser's per-host connection limit was gone and every api call from the new page
+    // queued behind streams belonging to pages nobody was looking at: the admin rendered white.
+    // `pagehide` is the event that fires for both a real teardown and a freeze.
+    this.listen(window, 'pagehide', this.closeStream);
+  }
+
+  @bound
+  private closeStream(): void {
+    this.closeHotReloadStream();
   }
 
   private closeHotReloadStream(): void {

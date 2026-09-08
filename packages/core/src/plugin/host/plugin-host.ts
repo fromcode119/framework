@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { TenantConnectionScope } from '@fromcode119/database';
 import type { Request, Response, NextFunction } from 'express';
@@ -98,6 +99,21 @@ export class PluginHost {
     return this.guest?.pid ?? null;
   }
 
+  /**
+   * The guest's entry file — always core's BUILT output.
+   *
+   * A guest is a plain `node` process spawned as another user with an empty environment: it can run
+   * neither TypeScript nor the host's loader. In production `__dirname` is already `dist/plugin/host`
+   * and the sibling `.js` is right there. Under the api's `tsx watch` dev server core is loaded from
+   * `src`, where only `plugin-guest-main.ts` exists — node exited (1) on every plugin before it could
+   * connect — so fall back to the same file under `dist`.
+   */
+  private static guestMainPath(): string {
+    const sibling = path.join(__dirname, 'plugin-guest-main.js');
+    if (fs.existsSync(sibling)) return sibling;
+    return path.resolve(__dirname, '..', '..', '..', 'dist', 'plugin', 'host', 'plugin-guest-main.js');
+  }
+
   /** Forks the guest, boots it, and learns which lifecycle hooks and public-API functions it has. */
   async start(): Promise<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }> {
     if (this.channel && !this.channel.isClosed && this.describeResult) return this.describeResult;
@@ -105,7 +121,7 @@ export class PluginHost {
     const launcher = GuestProcessLaunchers.current();
     const guest = await launcher.launch({
       id: `plugin-${this.slug}`,
-      entryPath: path.join(__dirname, 'plugin-guest-main.js'),
+      entryPath: PluginHost.guestMainPath(),
       args: [],
       cwd: this.projectRoot,
       execArgv: [`--max-old-space-size=${this.limits.memoryMb}`],

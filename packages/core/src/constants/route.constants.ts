@@ -148,6 +148,8 @@ export class RouteConstants {
   ADMIN_BACKUPS_ID_RESTORE_PREVIEW: '/admin/backups/:id/restore/preview',
   ADMIN_BACKUPS_ID_RESTORE_EXECUTE: '/admin/backups/:id/restore/execute',
   ADMIN_SETTINGS: '/admin/settings',
+  /** Which settings belong to the PLATFORM, and whether this account may change them. */
+  ADMIN_SETTINGS_PLATFORM_KEYS: '/admin/settings/platform-keys',
   ADMIN_REDIRECTS: '/admin/redirects',
   ADMIN_REDIRECTS_ID: '/admin/redirects/:id',
   ADMIN_ROLES: '/admin/roles',

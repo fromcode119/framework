@@ -1,4 +1,4 @@
-import { Platform, ReactPrimitives } from '@fromcode119/reactor';
+import { Platform, ReactDomRoots } from '@fromcode119/reactor';
 import { RuntimeRegistryAccess } from '@fromcode119/core/client';
 import type { IGlobalStubSetupArgs } from '@react/interfaces/global-stub-setup-args.interface';
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
@@ -202,6 +202,6 @@ export class ContextRuntimeBridge {
    * The one bundled react-dom supplies them, through reactor's single door to raw React values.
    */
   private static reactDomEntry(reactDom: any): any {
-    return { ...reactDom, createRoot: ReactPrimitives.createRoot, hydrateRoot: ReactPrimitives.hydrateRoot };
+    return { ...reactDom, createRoot: ReactDomRoots.createRoot, hydrateRoot: ReactDomRoots.hydrateRoot };
   }
 }

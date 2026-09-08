@@ -1,3 +1,5 @@
+import { AuthHooks } from '@/components/view/use-auth.client';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PluginSettingsForm } from '@/components/plugins/view/plugin-settings-form.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { useEffect, useRef, useState } from 'react';
@@ -24,6 +26,10 @@ export class PluginDetailPageController {
     const pathname = usePathname();
     const { notify } = NotificationHooks.useNotify();
     const { triggerRefresh, refreshVersion } = ContextHooks.usePlugins();
+    // The marketplace listing and a plugin's process logs describe the PLATFORM — what may be installed
+    // on the shared container, and what its processes printed. The API answers `platform_admin_required`
+    // to a site administrator, so asking anyway just logged a failure on every visit to this page.
+    const canManagePlatform = PlatformAccess.canManagePlatform(AuthHooks.useAuth().user);
     const searchParams = useSearchParams();
     const [plugin, setPlugin] = useState<ILoadedPlugin | null>(null);
     const [loading, setLoading] = useState(true);
@@ -65,6 +71,7 @@ export class PluginDetailPageController {
 
     useEffect(() => {
       const checkUpdates = async () => {
+        if (!canManagePlatform) return;
         try {
           const item = await PluginDetailPageService.fetchMarketplaceItem(slug);
           if (item) setMarketplaceItem(item);
@@ -72,14 +79,14 @@ export class PluginDetailPageController {
       };
 
       checkUpdates();
-    }, [slug, refreshVersion]);
+    }, [slug, refreshVersion, canManagePlatform]);
 
     useEffect(() => {
       setActiveTab(PluginDetailPageService.parseTab(searchParams.get('tab')));
     }, [searchParams]);
 
     const fetchLogs = async () => {
-      if (activeTab !== PluginDetailTab.OVERVIEW || !slug) return;
+      if (activeTab !== PluginDetailTab.OVERVIEW || !slug || !canManagePlatform) return;
       setLoadingLogs(true);
       try {
         setLogs(await PluginDetailPageService.fetchLogs(slug));
@@ -92,7 +99,7 @@ export class PluginDetailPageController {
 
     useEffect(() => {
       fetchLogs();
-    }, [slug, activeTab, refreshVersion]);
+    }, [slug, activeTab, refreshVersion, canManagePlatform]);
 
     const handleUpdate = async () => {
       if (!plugin) return;

@@ -1,0 +1,19 @@
+{
+  // `tsx watch` for the api dev server.
+  //
+  // tsx resolves ONE tsconfig and applies its compilerOptions only to files matching that config's
+  // `include`. With `tsconfig.json` that is `packages/api/src/**` alone, so every OTHER workspace source
+  // the dev server loads — core, auth, database — was transformed with esbuild's DEFAULTS: standard
+  // (2022-03) decorators instead of the legacy ones reactor's `@bound`/`@prop`/`@state` are written for.
+  // The decorator then received no property descriptor and every boot died with
+  // "Failed to initialize extension ai: Cannot read properties of undefined (reading 'value')".
+  //
+  // So this config exists to widen `include` to every package's source, and to carry the
+  // `useDefineForClassFields: false` reactor requires (the root config leaves it at the ESNext default).
+  // Type-checking still belongs to each package's own tsconfig; nothing is compiled from here.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "useDefineForClassFields": false
+  },
+  "include": ["../*/src/**/*"]
+}

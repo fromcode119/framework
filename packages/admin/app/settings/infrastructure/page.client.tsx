@@ -3,6 +3,9 @@ import { SystemConstants } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { state, bound } from '@fromcode119/reactor';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
+import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Switch } from '@/components/ui/view/switch.client';
@@ -39,7 +42,21 @@ export class InfrastructureSettingsPage extends AdminComponent {
   @state isSavingRetention = false;
   @state isSavingSsrCap = false;
 
+  /**
+   * Every control on this screen writes a PLATFORM setting — maintenance mode, the render worlds the
+   * storefront keeps resident, the plugin isolation limits. They apply to every site on the box, the
+   * API refuses them for anyone but a platform admin, and a site administrator reading its own site's
+   * settings has no business being shown them at all. Say so instead of loading a form that cannot save.
+   */
+  private get canManagePlatform(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user);
+  }
+
   async componentDidMount() {
+    if (!this.canManagePlatform) {
+      this.isLoading = false;
+      return;
+    }
     await this.loadMaintenance();
   }
 
@@ -168,6 +185,12 @@ export class InfrastructureSettingsPage extends AdminComponent {
     const theme = this.theme;
 
     if (this.isLoading) return <div className="p-12"><Loader label="Loading infrastructure settings..." /></div>;
+
+    if (!this.canManagePlatform) {
+      return (
+        <PlatformOnlyPanel detail="Maintenance mode, render capacity and plugin isolation are properties of the server every site on this platform runs on, so only a platform admin can change them. Your own site's settings are under Settings — General, Localization and each plugin's own configuration." />
+      );
+    }
 
     return (
       <div className="p-6 animate-in fade-in duration-500 w-full">

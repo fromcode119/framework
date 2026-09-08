@@ -15,6 +15,9 @@ import { CoercionUtils } from '@core/coercion-utils';
  * platform-admin action is audited with the tenant it touched.
  */
 export class TenantMembershipService {
+  /** The membership role that makes an account staff for that site. */
+  private static readonly ADMIN_ROLE = 'admin';
+
   constructor(private readonly db: any) {}
 
   /**
@@ -46,6 +49,35 @@ export class TenantMembershipService {
     return (tenants ?? [])
       .map((row: any) => TenantRecord.from(row))
       .filter((tenant: TenantRecord) => tenant.isActive && memberTenantIds.includes(tenant.id))
+      .map((tenant: TenantRecord) => TenantAccess.member(tenant));
+  }
+
+  /**
+   * The sites this account may ADMINISTER — what the admin console offers in its switcher.
+   *
+   * Not the same question as `listForUser`, which is every site the account belongs to. Someone can be
+   * an administrator of one site and a customer of another; offering the second in an admin console is
+   * a dead end, because being a customer there grants nothing to administer. Their relationship with
+   * that site is a storefront one and belongs on its account page.
+   *
+   * A platform admin still gets every active site: that reach is the point of the role.
+   */
+  async listAdministeredByUser(userId: string): Promise<TenantAccess[]> {
+    const id = CoercionUtils.toString(userId);
+    if (!id) return [];
+    if (await this.isPlatformAdmin(id)) return this.listForUser(id);
+
+    const rows = await this.db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { user_id: id } });
+    const administered = (rows ?? [])
+      .map((row: any) => TenantMembership.from(row))
+      .filter((membership) => membership.isActive && membership.roles.includes(TenantMembershipService.ADMIN_ROLE))
+      .map((membership) => membership.tenantId);
+    if (administered.length === 0) return [];
+
+    const tenants = await this.db.find(SystemConstants.TABLE.TENANTS, {});
+    return (tenants ?? [])
+      .map((row: any) => TenantRecord.from(row))
+      .filter((tenant: TenantRecord) => tenant.isActive && administered.includes(tenant.id))
       .map((tenant: TenantRecord) => TenantAccess.member(tenant));
   }
 
@@ -133,6 +165,29 @@ export class TenantMembershipService {
     const membership = TenantMembership.from(row);
     if (!membership.isActive) return null;
     return membership.roles;
+  }
+
+  /**
+   * Does this account administer ANY site?
+   *
+   * The admin app's own gate is a chicken-and-egg otherwise: it admits staff by GLOBAL role, but a site
+   * administrator's `admin` role lives on the membership, and no site is in scope until you are already
+   * inside and have picked one. So an account that is a customer globally and an administrator of one
+   * site was refused at the door — correctly, by a rule that could not see the membership.
+   *
+   * This answers the entry question only. What the account may actually DO once inside is still decided
+   * per site by `rolesForTenant`, so an admin of one site is not an admin of another.
+   */
+  async administersAnyTenant(userId: string): Promise<boolean> {
+    const id = CoercionUtils.toString(userId);
+    if (!id) return false;
+    if (await this.isPlatformAdmin(id)) return true;
+
+    const rows = await this.db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { user_id: id } });
+    return (rows ?? []).some((row: any) => {
+      const membership = TenantMembership.from(row);
+      return membership.isActive && membership.roles.includes(TenantMembershipService.ADMIN_ROLE);
+    });
   }
 
   async isPlatformAdminAccount(userId: string): Promise<boolean> {

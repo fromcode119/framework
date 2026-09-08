@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { prop, state, Ref } from '@fromcode119/reactor';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { Loader } from '@/components/ui/view/loader.client';
@@ -120,7 +121,7 @@ export class PluginDetailView extends AdminComponent {
             {activeTab === PluginDetailTab.PERMISSIONS && <PluginDetailPermissions plugin={plugin} theme={theme} />}
             {activeTab === PluginDetailTab.RESOURCES && <PluginDetailResources onSandboxSettingsChange={this.onSandboxSettingsChange} sandboxSettings={this.sandboxSettings} theme={theme} />}
           </div>
-          <PluginDetailSidebar activeTab={activeTab} onOpenDefinition={this.onOpenDefinition} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onTabChange={this.onTabChange} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
+          <PluginDetailSidebar activeTab={activeTab} canManage={PlatformAccess.canManagePlatform(this.auth.user)} onOpenDefinition={this.onOpenDefinition} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onTabChange={this.onTabChange} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
         </div>
         <ConfirmDialog isOpen={this.showDeleteConfirm} onClose={this.onCloseDeleteConfirm} onConfirm={this.onDelete} isLoading={this.isDeleting} title="Confirm Uninstallation" description={`Are you sure you want to delete ${plugin.manifest.name}? This will remove all associated files and data from the system. This action cannot be undone.`} confirmLabel="Uninstall Plugin" />
         <PluginManifestModal isOpen={this.showDefinition} onClose={this.onCloseDefinition} plugin={plugin} theme={theme} />

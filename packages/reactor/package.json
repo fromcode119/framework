@@ -13,6 +13,12 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "default": "./dist/index.cjs"
+    },
+    "./lang": {
+      "types": "./dist/lang.d.ts",
+      "import": "./dist/lang.js",
+      "require": "./dist/lang.cjs",
+      "default": "./dist/lang.cjs"
     }
   },
   "files": [
@@ -20,7 +26,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --format=cjs --platform=node --external:react --external:react-dom --external:htm --outfile=dist/index.cjs"
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --format=cjs --platform=node --external:react --external:react-dom --external:htm --outfile=dist/index.cjs && esbuild src/lang.ts --bundle --format=cjs --platform=node --outfile=dist/lang.cjs"
   },
   "dependencies": {
     "htm": "3.1.1"

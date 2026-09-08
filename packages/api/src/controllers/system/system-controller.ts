@@ -123,6 +123,10 @@ export class SystemController extends BaseController {
     return this.adminController.getSettings(req, res);
   }
 
+  async platformSettingKeys(req: Request, res: Response) {
+    return this.adminController.platformSettingKeys(req, res);
+  }
+
   async updateSettings(req: Request, res: Response) {
     return this.adminController.updateSettings(req, res);
   }

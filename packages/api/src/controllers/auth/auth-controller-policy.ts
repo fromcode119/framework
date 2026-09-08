@@ -25,9 +25,11 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     // may act on the PLATFORM (install code, delete a plugin, switch the theme) or only on its site.
     // On a single-tenant deployment every admin is the platform, exactly as before tenancy existed.
     const multiTenant = TenantMode.isEnabled();
-    const platformAdmin = multiTenant
-      ? await new TenantMembershipService(this.db).isPlatformAdminAccount(String(user.id))
-      : true;
+    const memberships = new TenantMembershipService(this.db);
+    const platformAdmin = multiTenant ? await memberships.isPlatformAdminAccount(String(user.id)) : true;
+    // Whether this account administers ANY site — what the admin's own door checks. Without it a site
+    // administrator whose global role is `customer` is turned away before it can pick a site.
+    const siteAdmin = multiTenant ? await memberships.administersAnyTenant(String(user.id)) : true;
     const userResponse = {
       id: String(user.id),
       email: this.normalizeEmail(user.email),
@@ -37,6 +39,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
       permissions,
       jti,
       platformAdmin,
+      siteAdmin,
       multiTenant,
     };
     const sessionDurationMinutes = await this.getSessionDurationMinutes();
@@ -56,6 +59,10 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     }
     const selectedTenantId = workspace ? workspace.id : (availableTenants.length === 1 ? availableTenants[0].id : undefined);
 
+    // Entering a site at login is entering it scoped — same rule as switching site later.
+    const scoped = await this.scopeSessionToTenant(String(user.id), selectedTenantId, { roles, permissions });
+    userResponse.roles = scoped.roles;
+    userResponse.permissions = scoped.permissions;
     const token = await this.auth.generateToken(userResponse, {
       expiresIn: `${sessionDurationMinutes}m`,
       tenantId: selectedTenantId,
@@ -312,7 +319,9 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
   protected async resolveAvailableTenants(userId: string): Promise<Array<{ id: string; slug: string; primaryHost: string; platformAccess: boolean; kind: string; appearance: string }>> {
     if (!TenantMode.isEnabled()) return [];
     const memberships = new TenantMembershipService(this.db);
-    const access = await memberships.listForUser(userId);
+    // The sites this account may ADMINISTER, not every site it belongs to: a customer membership
+    // offers nothing to do in an admin console, and listing it there is a dead end.
+    const access = await memberships.listAdministeredByUser(userId);
     // `platformAccess` travels with every entry so the admin can mark the tenants this account
     // reaches only through the platform role — i.e. someone else's customer data.
     return access.map((entry) => ({
@@ -333,6 +342,26 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
    * nothing the browser can set decides which customer's data it sees. The caller has already
    * checked membership; this only issues.
    */
+  /**
+   * The roles and permissions a session carries INSIDE a site.
+   *
+   * A membership's roles are what the account may do THERE, so the session that enters a site must
+   * say so: the admin decides what to render from the session, and a token still carrying the
+   * account's global `customer` showed a site's administrator an admin with nothing in it. Falls back
+   * to the global pair when the account has no membership to narrow by — a platform admin, or a
+   * single-tenant deployment — which is exactly what `rolesForTenant` answers `null` for.
+   */
+  protected async scopeSessionToTenant(
+    userId: string,
+    tenantId: string | undefined,
+    global: { roles: string[]; permissions: string[] },
+  ): Promise<{ roles: string[]; permissions: string[] }> {
+    if (!tenantId) return global;
+    const roles = await new TenantMembershipService(this.db).rolesForTenant(userId, tenantId).catch(() => null);
+    if (!roles) return global;
+    return { roles, permissions: await this.auth.getPermissionsForRoles(roles) };
+  }
+
   protected async reissueSessionForTenant(req: Request, res: Response, user: any, tenantId: string, workspaceMode?: string): Promise<string> {
     const sessionDurationMinutes = await this.getSessionDurationMinutes();
     const maxAgeMs = sessionDurationMinutes * 60 * 1000;
@@ -341,6 +370,16 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     // ("the payload already has an exp property"), so they are dropped and re-issued fresh.
     const { exp, iat, nbf, workspaceMode: previousMode, ...identity } = user as Record<string, unknown>;
     void exp; void iat; void nbf; void previousMode;
+    // Re-resolve from the ACCOUNT, never from the token being replaced: that token's roles are already
+    // scoped to whichever site the session was in, and narrowing a narrowed set would let one site's
+    // roles decide what the next site grants.
+    const account = await this.db.findOne(SystemConstants.TABLE.USERS, { id: user.id }).catch(() => null);
+    const scoped = await this.scopeSessionToTenant(String(user.id), tenantId, {
+      roles: await this.resolveEffectiveRoles(account ?? user),
+      permissions: await this.auth.getUserPermissions(Number(user.id)).catch(() => [] as string[]),
+    });
+    (identity as Record<string, unknown>).roles = scoped.roles;
+    (identity as Record<string, unknown>).permissions = scoped.permissions;
     // How the PLATFORM admin opens a workspace from the shared host — as its appearance, or in the
     // default console to configure it. A per-session claim, never a tenant setting: the workspace's
     // own admins can never obtain it, because on their host the appearance is locked (T6 §3.3).

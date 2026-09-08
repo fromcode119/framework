@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { DashboardDataService } from '@/app/services/dashboard-data-service';
 import { PlatformBrandingService } from '@/lib/platform-branding-service';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { DashboardPageHeader } from '@/app/dashboard-page-header';
 import { DashboardStatsGrid } from '@/app/dashboard-stats-grid';
@@ -114,8 +115,14 @@ export class AdminPage extends AdminComponent {
   /**
    * Plugin registry health for the header status line. On failure `health` stays null and the header
    * states nothing — it must never fall back to a cheerful default.
+   *
+   * Not asked for at all unless this account may act on the PLATFORM: the registry is the state of the
+   * one container every site runs on, so the endpoint answers `platform_admin_required` to a site
+   * administrator. Calling it anyway logged a failure on every dashboard load for a question that was
+   * never this account's to ask.
    */
   private async fetchHealth(): Promise<void> {
+    if (!PlatformAccess.canManagePlatform(this.auth.user)) return;
     const counts = await DashboardDataService.fetchPluginHealthCounts();
     if (this.mounted) this.health = counts;
   }

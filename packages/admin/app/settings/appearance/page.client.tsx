@@ -7,6 +7,7 @@ import { RouteConstants, ApiVersionUtils, SystemConstants } from '@fromcode119/c
 import { AdminApi } from '@/lib/api';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { ActiveAdminAppearanceService } from '@/lib/appearance/active-admin-appearance-service';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -21,6 +22,16 @@ import { AppearanceItem } from '@/app/settings/appearance/appearance-item';
 import { AppearanceCatalogItem } from '@/app/settings/appearance/appearance-catalog-item';
 
 export class AppearanceSettingsPage extends AdminComponent {
+  /**
+   * Installing and removing an appearance PACKAGE is a platform action — the package is code on the
+   * container every site runs on, and removing one takes another customer's console with it. Choosing
+   * WHICH installed appearance this site wears is not: `admin_appearance` is a per-site setting, so the
+   * picker above stays. The API refuses the package verbs either way; these controls are not offered.
+   */
+  private get canManagePlatform(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user);
+  }
+
   private static readonly APPEARANCES_BASE = ApiVersionUtils.withVersion(RouteConstants.SEGMENTS.APPEARANCES);
   private static readonly CATALOG_PATH = `${AppearanceSettingsPage.APPEARANCES_BASE}${RouteConstants.SEGMENTS.APPEARANCES_CATALOG}`;
   private static readonly INSTALL_PATH = `${AppearanceSettingsPage.APPEARANCES_BASE}${RouteConstants.SEGMENTS.APPEARANCES_INSTALL}`;
@@ -192,21 +203,26 @@ export class AppearanceSettingsPage extends AdminComponent {
             onSwitch={this.switchTo}
             onUpdate={this.updateInstalled}
             onRemove={this.remove}
+            canManagePackages={this.canManagePlatform}
           />
 
-          <AppearanceMarketplaceCard
-            entries={this.notInstalled}
-            busy={this.busy}
-            dark={this.dark}
-            onInstall={this.installFromCatalog}
-          />
+          {this.canManagePlatform && (
+            <AppearanceMarketplaceCard
+              entries={this.notInstalled}
+              busy={this.busy}
+              dark={this.dark}
+              onInstall={this.installFromCatalog}
+            />
+          )}
 
-          <AppearanceInstallUrlCard
-            url={this.url}
-            busy={this.busy}
-            onChange={this.changeUrl}
-            onInstall={this.installFromUrl}
-          />
+          {this.canManagePlatform && (
+            <AppearanceInstallUrlCard
+              url={this.url}
+              busy={this.busy}
+              onChange={this.changeUrl}
+              onInstall={this.installFromUrl}
+            />
+          )}
         </div>
       </div>
     );

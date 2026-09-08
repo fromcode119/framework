@@ -38,7 +38,16 @@ import { AdminRuntimeContext } from '@/components/view/admin-runtime-context.cli
 const withRuntime = (ui: ReactElement) =>
   render(
     <AdminRuntimeContext.context.Provider
-      value={{ plugins: { collections: [] }, notify: { addNotification: vi.fn(), notify: vi.fn() }, globalSettings: {}, collections: [] } as any}
+      value={{
+        plugins: { collections: [] },
+        notify: { addNotification: vi.fn(), notify: vi.fn() },
+        globalSettings: {},
+        collections: [],
+        // Security's Dashboard tab reports the runtime isolation of the whole container, so the page
+        // asks who the operator is. These tests are about a FAILED LOAD on the settings the page owns,
+        // so the fixture is the account that sees all of them.
+        auth: { user: { email: 'platform@example.test', platformAdmin: true, multiTenant: true } },
+      } as any}
     >
       {ui}
     </AdminRuntimeContext.context.Provider>

@@ -39,6 +39,17 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
     const changedAt = await this.getMetaValue(this.getPasswordChangedAtKey(userId));
     const profile = await this.readProfile(userId);
     const twoFactor = await this.getTwoFactorService().getStatusForUser(userId);
+    // Scoped to the site this request is acting in — the same narrowing login and site-switching apply.
+    //
+    // The admin REPLACES its stored user with this response on every load, and the navigation is built
+    // from `roles`/`permissions`. Answering with the account's global pair therefore emptied the whole
+    // sidebar for a site administrator on the first reload after signing in: the server was granting it
+    // every screen (the guards narrow per request), while the client was told it was a plain customer
+    // and rendered no Pages, no Media, nothing.
+    const scoped = await this.scopeSessionToTenant(String(userId), String(req?.tenantId || '') || undefined, {
+      roles: await this.resolveEffectiveRoles({ ...user, id: userId }),
+      permissions: await this.auth.getUserPermissions(userId).catch(() => [] as string[]),
+    });
 
     return res.json({
       user: {
@@ -46,11 +57,11 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
         email: this.normalizeEmail(user.email),
         firstName: this.readUserFirstName(user),
         lastName: this.readUserLastName(user),
-        roles: await this.resolveEffectiveRoles({ ...user, id: userId }),
+        roles: scoped.roles,
         // Must mirror the LOGIN payload: the admin client stores this response in the AUTH_USER cookie,
         // so omitting permissions here silently stripped them on every security refresh and broke
         // permission-scoped nav (`requiredCapabilities`) until the next full login.
-        permissions: await this.auth.getUserPermissions(userId).catch(() => [] as string[]),
+        permissions: scoped.permissions,
         // Same rule, same reason, for the two tenancy flags: the admin hides platform controls
         // (install, delete, activate) from `platformAdmin`/`multiTenant`. Present at login and absent
         // here would show them on sign-in and hide them after the first reload — or the reverse.
@@ -58,6 +69,12 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
         // shadowed, so the flags have to live HERE or nothing reads them.
         platformAdmin: TenantMode.isEnabled()
           ? await new TenantMembershipService(this.db).isPlatformAdminAccount(String(userId))
+          : true,
+        // Mirrors the login payload: the admin's door admits a site administrator whose global role is
+        // not `admin`. Absent here and present at login would let them in once and lock them out on the
+        // next refresh.
+        siteAdmin: TenantMode.isEnabled()
+          ? await new TenantMembershipService(this.db).administersAnyTenant(String(userId))
           : true,
         multiTenant: TenantMode.isEnabled(),
       },

@@ -59,6 +59,12 @@
       "@fromcode119/database/*": [
         "../database/src/*"
       ],
+      "@fromcode119/reactor": [
+        "../reactor/src"
+      ],
+      "@fromcode119/reactor/*": [
+        "../reactor/src/*"
+      ],
       "@fromcode119/react": [
         "../react/src"
       ],

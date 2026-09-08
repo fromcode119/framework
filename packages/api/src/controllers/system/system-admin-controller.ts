@@ -281,6 +281,23 @@ export class SystemAdminController {
     }
   }
 
+  /**
+   * Which settings belong to the PLATFORM, and whether this account may change them.
+   *
+   * `updateSettings` already refuses a platform key from a site administrator, but the admin cannot
+   * render an honest form from a refusal it only learns about after pressing Save — a control that
+   * cannot act is a bug. The list comes from `TenantBespokePolicies`, the same definition the RLS
+   * policy and the tenant importer read, so the admin never carries a second copy to drift from.
+   */
+  async platformSettingKeys(req: Request, res: Response) {
+    try {
+      const editable = !TenantMode.isEnabled() || await this.isPlatformAdmin(req);
+      res.json({ keys: TenantBespokePolicies.platformKeys(), editable });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   async updateSettings(req: Request, res: Response) {
     try {
       const payload = req.body;

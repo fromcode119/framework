@@ -21,6 +21,36 @@ export class PluginGuestHttp {
   static readonly HEADER_TENANT = 'x-fc-tenant';
   static readonly HEADER_LOCALE = 'x-fc-locale';
   static readonly HEADER_USER = 'x-fc-user';
+
+  /**
+   * The forwarded user, base64 as written by the host — see {@link encodeUser}. A value that is not
+   * base64 is read as plain JSON, so a guest started before the host still understands it.
+   */
+  static decodeUser(raw: string): unknown {
+    const attempts = [
+      () => JSON.parse(Buffer.from(raw, 'base64').toString('utf8')),
+      () => JSON.parse(raw),
+    ];
+    for (const attempt of attempts) {
+      try { return attempt(); } catch { /* try the next shape */ }
+    }
+    return undefined;
+  }
+
+  /**
+   * The user, as an HTTP header value.
+   *
+   * A header carries ISO-8859-1: Node REFUSES to write a value with any character outside it, and the
+   * whole request dies with "Invalid character in header content". The user object carries a person's
+   * NAME, so every plugin route proxied to an isolated guest answered 500 for anyone called Кристиян —
+   * a platform whose first market writes Cyrillic, where that is most accounts. Base64 of the UTF-8
+   * JSON is always header-safe.
+   */
+  static encodeUser(user: unknown): string {
+    if (!user) return '';
+    return Buffer.from(JSON.stringify(user), 'utf8').toString('base64');
+  }
+
   static readonly HEADER_ORIGINAL_URL = 'x-fc-original-url';
   static readonly HEADER_NEXT = 'x-fc-next';
   /** Set by the host when it forwarded the request's ORIGINAL bytes (a webhook): the guest keeps them as `req.rawBody`. */
@@ -142,7 +172,7 @@ export class PluginGuestHttp {
     const locale = String(req.headers[PluginGuestHttp.HEADER_LOCALE] ?? '');
     const rawUser = req.headers[PluginGuestHttp.HEADER_USER];
     if (typeof rawUser === 'string' && rawUser) {
-      try { (req as any).user = JSON.parse(rawUser); } catch { (req as any).user = undefined; }
+      (req as any).user = PluginGuestHttp.decodeUser(rawUser);
     }
     for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY]) {
       delete req.headers[header];

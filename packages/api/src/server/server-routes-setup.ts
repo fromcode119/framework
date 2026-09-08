@@ -146,7 +146,7 @@ export class ServerRoutesSetup {
     vApi.use(MARKETPLACE, new MarketplaceRouter(this.manager, this.auth, platformAdmin).router);
     vApi.use(THEMES, themeAssetRouter);
     vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth, platformAdmin).router);
-    vApi.use(APPEARANCES, new AppearanceRouter(this.auth).router);
+    vApi.use(APPEARANCES, new AppearanceRouter(this.auth, platformAdmin, platformAccess, (this.manager as any).schemaDb ?? this.manager.db).router);
     this.registerCoreExtensionRoutes(vApi);
     vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController).router);
     // Tenant provisioning (T4): platform admins only, on the owner connection. Mounted under SYSTEM

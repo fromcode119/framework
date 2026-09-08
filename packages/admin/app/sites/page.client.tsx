@@ -16,6 +16,8 @@ import { SitesClient } from '@/lib/tenants/sites-client';
 import { AdoptSiteCard } from '@/app/sites/components/view/adopt-site-card.client';
 import { SitesTable } from '@/app/sites/components/view/sites-table.client';
 import { AdminClass } from '@/lib/admin-class';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
+import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 
 /**
  * Every site on this platform, and the actions that create, move and remove one.
@@ -32,7 +34,22 @@ export class SitesPageClient extends AdminComponent {
   @state busyId: string | null = null;
   @state deleting: SiteRecord | null = null;
 
+  /**
+   * Managing the list of sites is the PLATFORM's job, not a site's.
+   *
+   * Every route behind this page carries `PlatformAdminGuard`, so for a site administrator the page
+   * could only ever load, fail, and report `platform_admin_required` in a panel headed "Sites
+   * unavailable" — which reads like an outage rather than the boundary it is. Answer before asking.
+   */
+  private get canManagePlatform(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user);
+  }
+
   componentDidMount(): void {
+    if (!this.canManagePlatform) {
+      this.loading = false;
+      return;
+    }
     this.load();
   }
 
@@ -129,7 +146,7 @@ export class SitesPageClient extends AdminComponent {
           icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
           title="Sites"
           subtitle="Every customer site this platform serves — its hosts, its plugins, its theme, its people."
-          actions={this.multiTenant ? (
+          actions={this.multiTenant && this.canManagePlatform ? (
             <div className="fc-sites__actions">
               <Button variant={ButtonVariant.OUTLINE} href={AdminConstants.ROUTES.SITES.IMPORT} icon={<FrameworkIcons.Upload size={14} />}>Import</Button>
               <Button href={AdminConstants.ROUTES.SITES.NEW} icon={<FrameworkIcons.Plus size={14} />}>New site</Button>
@@ -138,12 +155,16 @@ export class SitesPageClient extends AdminComponent {
         />
 
         <div className="fc-sites__body">
-        {this.loading ? <Loader label="Loading sites…" /> : null}
-        {!this.loading && this.error ? <LoadErrorPanel title="Sites unavailable" message={this.error} onRetry={this.load} /> : null}
+        {!this.canManagePlatform ? (
+          <PlatformOnlyPanel detail="Sites lists every customer site running on this platform, and only a platform admin may create, move or remove one. You administer your own site from the rest of the admin — the header shows which site you are in, and switching there changes what you are administering." />
+        ) : null}
 
-        {!this.loading && !this.error && !this.multiTenant ? <AdoptSiteCard onAdopted={this.load} /> : null}
+        {this.canManagePlatform && this.loading ? <Loader label="Loading sites…" /> : null}
+        {this.canManagePlatform && !this.loading && this.error ? <LoadErrorPanel title="Sites unavailable" message={this.error} onRetry={this.load} /> : null}
 
-        {!this.loading && !this.error && this.multiTenant ? (
+        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <AdoptSiteCard onAdopted={this.load} /> : null}
+
+        {this.canManagePlatform && !this.loading && !this.error && this.multiTenant ? (
           <div className={`${AdminClass.SURFACE} overflow-hidden`}>
             <SitesTable
               theme={theme}

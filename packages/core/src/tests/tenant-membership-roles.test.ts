@@ -7,7 +7,19 @@ import { TenantMembershipService } from '@core/tenant/tenant-membership-service'
  * roles were stored and never consulted — one answer everywhere.
  */
 class FakeDb {
-  constructor(private readonly users: any[], private readonly memberships: any[]) {}
+  constructor(
+    private readonly users: any[],
+    private readonly memberships: any[],
+    private readonly tenants: any[] = [],
+  ) {}
+
+  async find(table: string, options: any = {}) {
+    if (table.includes('memberships')) {
+      const userId = options?.where?.user_id;
+      return this.memberships.filter((m) => !userId || m.user_id === userId);
+    }
+    return this.tenants;
+  }
 
   async findOne(table: string, where: any) {
     if (table.includes('memberships')) {
@@ -50,5 +62,48 @@ describe('TenantMembershipService.rolesForTenant', () => {
   it('answers null rather than guessing when either id is missing', async () => {
     expect(await service().rolesForTenant('', 'shop')).toBeNull();
     expect(await service().rolesForTenant('10', '')).toBeNull();
+  });
+});
+
+/**
+ * The console must offer only sites the account can actually administer.
+ *
+ * Administrator of one site and customer of another is the ordinary case, and listing the second in an
+ * admin console is a dead end: there is nothing there the account may do. Its relationship with that
+ * site is a storefront one.
+ */
+describe('TenantMembershipService — which sites the console offers', () => {
+  const build = () => new TenantMembershipService(new FakeDb(
+    [
+      { id: '10', is_platform_admin: false },
+      { id: '11', is_platform_admin: true },
+    ],
+    [
+      { user_id: '10', tenant_id: 'google', roles: ['admin'], state: 'active' },
+      { user_id: '10', tenant_id: 'facebook', roles: ['customer'], state: 'active' },
+    ],
+    [
+      { id: 'google', slug: 'google', primary_host: 'google.test', state: 'active', kind: 'site' },
+      { id: 'facebook', slug: 'facebook', primary_host: 'facebook.test', state: 'active', kind: 'site' },
+    ],
+  ));
+
+  it('offers the site it administers and not the one it is a customer of', async () => {
+    const listed = await build().listAdministeredByUser('10');
+    expect(listed.map((entry) => entry.tenant.id)).toEqual(['google']);
+  });
+
+  it('still admits it at the door, because it administers something', async () => {
+    expect(await build().administersAnyTenant('10')).toBe(true);
+  });
+
+  it('refuses an account that administers nothing', async () => {
+    const service = new TenantMembershipService(new FakeDb(
+      [{ id: '12', is_platform_admin: false }],
+      [{ user_id: '12', tenant_id: 'facebook', roles: ['customer'], state: 'active' }],
+      [{ id: 'facebook', slug: 'facebook', primary_host: 'facebook.test', state: 'active', kind: 'site' }],
+    ));
+    expect(await service.administersAnyTenant('12')).toBe(false);
+    expect(await service.listAdministeredByUser('12')).toEqual([]);
   });
 });

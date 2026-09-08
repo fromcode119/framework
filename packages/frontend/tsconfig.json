@@ -79,6 +79,11 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    // Same as the admin. Next generates `.next/types/validator.ts`, which asserts every page module has
+    // a `default` export — the one thing nextor's loader adds at BUILD time, so it can never be present
+    // in the source tsc reads. Without this, a stale `.next` from any earlier dev run reports errors
+    // that no source change can fix.
+    ".next"
   ]
 }

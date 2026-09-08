@@ -1,4 +1,11 @@
-import { ApiPathUtils, ApiVersionUtils, AppPathConstants, RouteConstants, RuntimeBridge, SystemConstants } from '@fromcode119/core/client';
+// Deep imports, not core's `client` barrel — this module is reachable from the MIDDLEWARE graph and
+// the barrel re-exports enums that import reactor's `Reactor` class component. See admin-proxy.ts.
+import { ApiPathUtils } from '@fromcode119/core/api/api-path-utils';
+import { ApiVersionUtils } from '@fromcode119/core/api-version';
+import { AppPathConstants } from '@fromcode119/core/constants/app-path.constants';
+import { RouteConstants } from '@fromcode119/core/constants/route.constants';
+import { RuntimeBridge } from '@fromcode119/core/runtime-bridge';
+import { SystemConstants } from '@fromcode119/core/constants/system.constants';
 import { AdminPathUtils } from '@/lib/admin-path';
 
 export class AdminConstants {
@@ -102,6 +109,7 @@ export class AdminConstants {
   SYSTEM: {
     HEALTH: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.HEALTH),
     SETTINGS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS),
+    SETTINGS_PLATFORM_KEYS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS_PLATFORM_KEYS),
     BACKUPS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUPS),
     BACKUP: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP, { id })),
     BACKUP_CREATE_SYSTEM: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_CREATE_SYSTEM),

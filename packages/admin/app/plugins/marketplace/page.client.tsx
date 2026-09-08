@@ -9,6 +9,8 @@ import { PluginBatchUpdateWaitService } from '@/lib/plugin-batch-update-wait-ser
 import type { IPluginBatchSettleHost } from '@/lib/interfaces/plugin-batch-settle-host.interface';
 import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
 import { VersionComparisonService } from '@fromcode119/core/client';
+import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { MarketplaceSearchBar } from '@/app/plugins/marketplace/components/view/marketplace-search-bar.client';
 import { MarketplacePluginCard } from '@/app/plugins/marketplace/components/view/marketplace-plugin-card.client';
@@ -29,12 +31,22 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
   @state searchQuery = '';
   @state imageErrors: Record<string, boolean> = {};
 
+  /** Installing code onto the shared container is the platform's act, never a site's. */
+  private get canManagePlatform(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user);
+  }
+
   componentDidMount(): void {
     this.mounted = true;
+    if (!this.canManagePlatform) {
+      this.loading = false;
+      return;
+    }
     void this.fetchData();
   }
 
   componentDidUpdate(): void {
+    if (!this.canManagePlatform) return;
     // During a batch update the settle loop owns all fetching — reacting to the refreshVersion bump
     // here would flip the grid into loading skeletons (and hit a restarting api) mid-batch.
     if (this.updatingAll) return;
@@ -181,6 +193,12 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
   }
 
   render(): ReactElement {
+    if (!this.canManagePlatform) {
+      return (
+        <PlatformOnlyPanel detail="The marketplace installs plugins and themes onto the container every site runs on, so only a platform admin can browse or install from it. The plugins your site already runs are under Plugins, with each one's own settings." />
+      );
+    }
+
     const theme = this.theme;
     const { loading, installing, searchQuery, installedPlugins, imageErrors } = this;
     const filtered = this.filtered;

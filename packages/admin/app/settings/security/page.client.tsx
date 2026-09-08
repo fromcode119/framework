@@ -2,6 +2,7 @@ import { SecurityTab } from '@/app/settings/security/enums/security-tab.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode, SetStateAction } from 'react';
 import { state, bound, watch } from '@fromcode119/reactor';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -32,7 +33,18 @@ export class SecuritySettingsPage extends AdminComponent {
   @state settings: Record<string, string> | null = null;
   @state loadError: string | null = null;
 
+  /**
+   * The DASHBOARD tab reports the runtime isolation of the box every site runs on — plugin processes,
+   * their limits, policy violations. That is the platform's business, and the endpoint behind it says
+   * so. The SETTINGS tab is not: password policy, login protection and the audit trail are stored per
+   * site, so a site administrator configures its own.
+   */
+  private get canManagePlatform(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user);
+  }
+
   async componentDidMount(): Promise<void> {
+    if (!this.canManagePlatform) this.activeTab = SecurityTab.SETTINGS;
     await this.loadPageData();
   }
 
@@ -135,12 +147,12 @@ export class SecuritySettingsPage extends AdminComponent {
           actions={
             <>
               <div className={`flex gap-1 p-1 ${AdminClass.SURFACE} bg-slate-100 dark:bg-slate-900`}>
-                <button
+                {this.canManagePlatform && <button
                   onClick={this.showDashboardTab}
                   className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === SecurityTab.DASHBOARD ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
                 >
                   Dashboard
-                </button>
+                </button>}
                 <button
                   onClick={this.showSettingsTab}
                   className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === SecurityTab.SETTINGS ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}

@@ -307,6 +307,7 @@ export class SystemConstants {
     ADMIN_TENANTS_IMPORT_EXECUTE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_IMPORT_EXECUTE}`),
     ADMIN_TENANTS_ADOPT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ADOPT}`),
     ADMIN_SETTINGS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_SETTINGS),
+    ADMIN_SETTINGS_PLATFORM_KEYS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_SETTINGS_PLATFORM_KEYS),
     ADMIN_REDIRECTS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_REDIRECTS),
     ADMIN_REDIRECT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_REDIRECTS_ID),
     ADMIN_BACKUPS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_BACKUPS),

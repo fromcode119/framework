@@ -62,6 +62,14 @@ vi.mock('@/components/view/use-theme.client', () => ({
   },
 }));
 
+// The screen is platform-only now (a system backup spans every site), so these behaviour tests act as
+// the account that may actually use it. The gate itself is covered by its own test below.
+vi.mock('@/components/view/use-auth.client', () => ({
+  AuthHooks: {
+    useAuth: () => ({ user: { email: 'platform@example.test', platformAdmin: true, multiTenant: true } }),
+  },
+}));
+
 vi.mock('@/components/view/use-notification.client', () => ({
   NotificationHooks: {
     useNotification: () => ({ addNotification }),

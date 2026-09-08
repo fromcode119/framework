@@ -1,5 +1,4 @@
 import { Children, Fragment, Suspense, cloneElement, createElement, forwardRef, isValidElement, lazy, memo } from 'react';
-import { createRoot, hydrateRoot } from 'react-dom/client';
 
 /**
  * The React values that have no OOP form, surfaced from ONE place.
@@ -18,10 +17,8 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
  * Prefer a real reactor class where one exists — `PureReactor` instead of `memo`, `this.ref()` instead of
  * `forwardRef`, JSX instead of `createElement`. These are for the cases with no such equivalent.
  *
- * `createRoot` / `hydrateRoot` are react-dom's root factories — the one thing an application ENTRY must
- * call and that no component can wrap (a root exists before any component renders). They live here for
- * the same reason `createPortal` lives in `Reactor.portal()`: so an entry file never imports react-dom
- * itself.
+ * The react-dom root factories are NOT here — `react-dom/client` is browser-only and this module is
+ * reachable from a server graph. They live in `ReactDomRoots`.
  */
 export class ReactPrimitives {
   static readonly Fragment = Fragment;
@@ -33,6 +30,4 @@ export class ReactPrimitives {
   static readonly isValidElement = isValidElement;
   static readonly memo = memo;
   static readonly forwardRef = forwardRef;
-  static readonly createRoot = createRoot;
-  static readonly hydrateRoot = hydrateRoot;
 }

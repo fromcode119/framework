@@ -15,6 +15,8 @@ import type { IClientLayoutChildrenProps } from '@/app/interfaces/client-layout-
 import type { IClientLayoutShellValues } from '@/app/interfaces/client-layout-shell-values.interface';
 import { ClientLayoutAuthStateHooks } from '@/app/services/client-layout-auth-state-hooks';
 import { ClientLayoutNavigationStateHooks } from '@/app/services/client-layout-navigation-state-hooks';
+import { ClientLayoutSiteStateHooks } from '@/app/services/client-layout-site-state-hooks';
+import { SiteChooser } from '@/app/components/view/site-chooser.client';
 
 export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientLayoutChildrenProps> {
   @prop declare children: ReactNode;
@@ -27,10 +29,11 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
       isAuthPage: authState.isAuthPage,
       user: authState.user,
     });
-    return { authState, navigationState };
+    const siteState = ClientLayoutSiteStateHooks.useState(authState.user, authState.isAuthPage);
+    return { authState, navigationState, siteState };
   }
 
-  protected present({ authState, navigationState }: IClientLayoutShellValues): ReactNode {
+  protected present({ authState, navigationState, siteState }: IClientLayoutShellValues): ReactNode {
 
     // Admit admins AND scoped-staff users (anyone holding at least one admin-area permission). Users with
     // NO admin permissions (e.g. plain customers/partners) fall through to the self-service account view.
@@ -39,7 +42,12 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
     const userPermissions = Array.isArray((authState.user as { permissions?: unknown } | null)?.permissions)
       ? ((authState.user as { permissions?: string[] }).permissions as string[])
       : [];
-    const canAccessAdmin = !!authState.user?.roles?.includes('admin') || userPermissions.length > 0;
+    // `siteAdmin` is the multi-tenant case the other two cannot see: an account whose GLOBAL role is
+    // `customer` but which administers a site. Its admin role lives on the membership, and no site is in
+    // scope at the door — so without this it was turned away before it could pick one. What it may do
+    // once inside is still decided per site.
+    const siteAdmin = authState.user?.siteAdmin === true;
+    const canAccessAdmin = !!authState.user?.roles?.includes('admin') || userPermissions.length > 0 || siteAdmin;
 
     if (authState.user && !authState.isAuthPage && !canAccessAdmin) {
       // No admin permissions — this account isn't staff, but it can still manage its own profile,
@@ -92,6 +100,14 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
 
     if (authState.isAuthPage) {
       return <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-300 dark:bg-[#020617]">{this.children}</div>;
+    }
+
+    // An admin role can live on a MEMBERSHIP, and a membership only applies while its site is in
+    // scope. Reaching more than one site, login cannot pick for you, and a site-less session is
+    // judged by the account's GLOBAL roles — so a site administrator saw every screen refuse it in
+    // turn. Ask the one question that decides all of them, before rendering any of them.
+    if (siteState.mustChooseSite) {
+      return <SiteChooser sites={siteState.tenants} />;
     }
 
     if (authState.isMinimalPath) {

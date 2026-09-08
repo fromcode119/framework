@@ -5,15 +5,24 @@ import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
 import { prop } from '@fromcode119/reactor';
 import { FrameworkIcons } from '@fromcode119/react';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 
 export class PluginsLayout extends AdminComponent {
   @prop declare children: ReactNode;
 
+  /**
+   * Health and Marketplace describe the PLATFORM — the plugin registry of the shared container, and
+   * what may be installed onto it. Both endpoints answer `platform_admin_required` to a site
+   * administrator, so the tabs are not offered to one. Installed stays: a site's own plugin list and
+   * each plugin's per-site settings are its business.
+   */
   private get tabs(): { label: string; href: string; icon: ReactNode }[] {
+    const installed = { label: 'Installed', href: AdminConstants.ROUTES.PLUGINS.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> };
+    if (!PlatformAccess.canManagePlatform(this.auth.user)) return [installed];
     return [
-      { label: 'Installed', href: AdminConstants.ROUTES.PLUGINS.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
+      installed,
       { label: 'Health', href: AdminConstants.ROUTES.PLUGINS.HEALTH, icon: <FrameworkIcons.Activity size={16} /> },
       { label: 'Marketplace', href: AdminConstants.ROUTES.PLUGINS.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
     ];
@@ -45,7 +54,8 @@ export class PluginsLayout extends AdminComponent {
   }
 
   private get activeTab(): { label: string; href: string; icon: ReactNode } {
-    return this.isMarketplace ? this.tabs[2] : this.isHealth ? this.tabs[1] : this.tabs[0];
+    const tabs = this.tabs;
+    return (this.isMarketplace ? tabs[2] : this.isHealth ? tabs[1] : tabs[0]) ?? tabs[0];
   }
 
   render(): ReactNode {

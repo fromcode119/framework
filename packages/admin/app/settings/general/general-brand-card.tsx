@@ -8,12 +8,38 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { DomainAliasesInput } from '@/app/settings/general/components/view/domain-aliases-input.client';
 import { AdminClass } from '@/lib/admin-class';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 
 export class GeneralBrandCard extends PureReactor {
+  /**
+   * The settings on this card that belong to the PLATFORM, not to the site being administered.
+   *
+   * A site administrator may READ a deployment truth like the admin or marketplace URL — several
+   * screens need it — but a save is refused by the API, so it is rendered as a value with its owner
+   * named rather than as an input that fails when pressed.
+   */
+  @prop declare platformLocks: PlatformSettingLocks;
   @prop declare settings: Record<string, any>;
   @prop declare setSettings: Dispatch<SetStateAction<Record<string, any>>>;
   @prop declare theme: ThemeMode;
   @prop declare toggleTheme: () => void;
+
+  private locked(key: string): boolean {
+    return this.platformLocks.locks(key);
+  }
+
+  /** The field's own description, plus who owns the value when this account cannot change it. */
+  private describe(key: string, description: string): ReactNode {
+    if (!this.locked(key)) return description;
+    return (
+      <>
+        {description}
+        <span className="mt-1 block text-[12px] font-semibold text-slate-400">
+          Platform setting — the same for every site, and only a platform admin can change it.
+        </span>
+      </>
+    );
+  }
 
   private patchSetting(key: string, value: unknown): void {
     this.setSettings(prev => ({ ...prev, [key]: value }));
@@ -86,11 +112,12 @@ export class GeneralBrandCard extends PureReactor {
           theme={theme}
           icon={FrameworkIcons.Globe}
           title="Frontend URL"
-          description="The base URL where your website is hosted. Used for previews and sitemaps."
+          description={this.describe('frontend_url', "The base URL where your website is hosted. Used for previews and sitemaps.")}
         >
           <Input
             value={settings.frontend_url}
             onChange={this.onFrontendUrlChange}
+            disabled={this.locked('frontend_url')}
             className="w-full md:w-64 font-bold"
             placeholder="https://example.com"
           />
@@ -100,11 +127,12 @@ export class GeneralBrandCard extends PureReactor {
           theme={theme}
           icon={FrameworkIcons.Globe}
           title="Admin URL"
-          description="The web address of your admin panel (e.g. https://admin.yoursite.com). Used for admin links and sign-in redirects. Leave blank to use the server's configured default."
+          description={this.describe('admin_url', "The web address of your admin panel (e.g. https://admin.yoursite.com). Used for admin links and sign-in redirects. Leave blank to use the server's configured default.")}
         >
           <Input
             value={settings.admin_url}
             onChange={this.onAdminUrlChange}
+            disabled={this.locked('admin_url')}
             className="w-full md:w-64 font-bold"
             placeholder="https://admin.example.com"
           />
@@ -114,11 +142,12 @@ export class GeneralBrandCard extends PureReactor {
           theme={theme}
           icon={FrameworkIcons.Globe}
           title="Site URL"
-          description="Your main public website address. Used as a fallback for links in emails, sitemaps, and feeds. Leave blank to use the server's configured default."
+          description={this.describe('site_url', "Your main public website address. Used as a fallback for links in emails, sitemaps, and feeds. Leave blank to use the server's configured default.")}
         >
           <Input
             value={settings.site_url}
             onChange={this.onSiteUrlChange}
+            disabled={this.locked('site_url')}
             className="w-full md:w-64 font-bold"
             placeholder="https://example.com"
           />
@@ -128,11 +157,12 @@ export class GeneralBrandCard extends PureReactor {
           theme={theme}
           icon={FrameworkIcons.Globe}
           title="Marketplace URL"
-          description="Where the platform downloads plugin, theme, and core updates from. Leave blank to use the default marketplace, or type 'off' to turn the marketplace off."
+          description={this.describe('marketplace_url', "Where the platform downloads plugin, theme, and core updates from. Leave blank to use the default marketplace, or type 'off' to turn the marketplace off.")}
         >
           <Input
             value={settings.marketplace_url}
             onChange={this.onMarketplaceUrlChange}
+            disabled={this.locked('marketplace_url')}
             className="w-full md:w-64 font-bold"
             placeholder="https://marketplace.example.com"
           />

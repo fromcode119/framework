@@ -5,27 +5,31 @@
 #
 # `--no-deps` matters: `up admin` without it also recreates the api, because admin depends on it.
 #
-# STATUS — both dev servers are blocked by pre-existing bugs, diagnosed 2026-09-07. Neither is caused
-# by this file, and each is a small fix away:
+# Both dev servers work. Four bugs stood between this file and a working dev loop, all fixed 2026-09-07:
 #
-#   admin   `next dev --webpack` fails with "You're importing a module that depends on `createContext`
-#           into a React Server Component module". `next build` does not, so the two pipelines disagree
-#           about where the "use client" boundary is — nextor's UseClientPlugin runs in the build path.
-#           Fix that and this file works for admin.
+#   admin   1. reactor's barrel exported `Reactor` (a React class component), `Context` and
+#              `react-dom/client`, so any server module importing `Enum` from it hit React's server-
+#              component check. The React-free pieces now live behind `@fromcode119/reactor/lang`, the
+#              DOM root factories behind `ReactDomRoots`, and the middleware imports its two core
+#              utilities directly instead of through core's `client` barrel.
+#           2. nextor's source-contract loader was a normal rule sitting first in the list, so it ran
+#              LAST — after Next had already read an unstamped `.client.tsx`. It is a `pre` loader now.
 #
-#   api     `tsx watch src/server.ts` boots, serves /health, and then fails EVERY plugin:
-#           "Failed to initialize extension ai: Cannot read properties of undefined (reading 'value')"
-#           — an Enum member resolving undefined, i.e. reactor or core loaded twice under tsx. Verified
-#           with NO volumes mounted at all, so it is the dev script itself, not the mounts.
+#   api     3. `tsx` applies its tsconfig only to files matching that config's `include`, so every
+#              package outside `api/src` compiled with esbuild's DEFAULT standard decorators and every
+#              reactor decorator got no descriptor. `tsconfig.dev.json` widens `include`.
+#           4. A guest is a plain `node` process: it needs core's BUILT entry even when the host runs
+#              from `src` (`PluginHost.guestMainPath()`), and an in-process plugin must load its packed
+#              `index.js` rather than the `.ts` tsx re-points it to (`PluginEntryModuleLoader`).
 #
 # WHAT THIS FILE ALREADY FIXES: the 512 MB limit the deploy file gives these services is sized for
 # `next start`. Under `next dev` the admin was OOM-killed mid-compile and restarted forever, which
 # looked like "the dev server starts and never serves" (Traefik answered 502). With the limit raised it
-# stays up and answers — which is how the two failures above became visible at all.
+# stays up and answers — which is how the four failures above became visible at all.
 #
-# Only each app's OWN source is mounted. Do NOT add `packages/core/src`: core resolves through
-# `main: dist/index.js`, so plugins load dist while a watcher would run src — two copies of every
-# singleton in one process, and every plugin fails to register.
+# Plugin guests always run core's BUILT dist (they are separate `node` processes); after changing core
+# code a guest depends on, run `npm run build --workspace=@fromcode119/core`. Everything the api itself
+# runs comes from the mounted source.
 #
 # Back to the built images:  docker compose -f docker-compose.yml up -d admin api
 services:
@@ -37,6 +41,22 @@ services:
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
     volumes:
+      # The admin aliases `@fromcode119/reactor` to reactor's SRC, so the dev server compiles these
+      # files directly — mount them and a reactor change needs no build at all. (Unlike core: core
+      # resolves through dist, so mounting core/src would give plugins one copy and the watcher another.)
+      - ./packages/reactor/src:/app/packages/reactor/src
+      # The admin compiles core from SRC as well (next.config aliases `@fromcode119/core` to it), so a
+      # new constant or client util is invisible here until this is mounted — the admin silently built
+      # a URL from `undefined`.
+      - ./packages/core/src:/app/packages/core/src
+      # ...and @fromcode119/react, which the admin also aliases to SRC. Without it a change to the
+      # runtime bridge or the plugin JSX shim is invisible here until the image is rebuilt.
+      - ./packages/react/src:/app/packages/react/src
+      # reactor's package.json carries the `./lang` subpath export the middleware graph imports; the
+      # next.config resolves reactor from that src. Both are read at startup, so they must be mounted
+      # for a config or subpath change to take effect without rebuilding the image.
+      - ./packages/reactor/package.json:/app/packages/reactor/package.json
+      - ./packages/admin/next.config.js:/app/packages/admin/next.config.js
       - ./packages/admin/app:/app/packages/admin/app
       - ./packages/admin/components:/app/packages/admin/components
       - ./packages/admin/lib:/app/packages/admin/lib
@@ -51,6 +71,31 @@ services:
       - NODE_ENV=development
     volumes:
       - ./packages/api/src:/app/packages/api/src
+      # The api's `tsx watch` resolves `@core/*` to core's SOURCE, so mount it and a core change needs no
+      # build. Plugin GUESTS are separate `node` processes and still load core's built `dist` — that split
+      # is inherent to the isolation, not caused by this mount, and it is why `PluginHost.guestMainPath()`
+      # points the guest at `dist` even when the host itself is running from `src`.
+      - ./packages/core/src:/app/packages/core/src
+      # ...and core's BUILT output, because a plugin guest is a separate `node` process that loads core
+      # from `dist`. Without this the host runs your edited `src` while every guest runs the image's
+      # baked `dist` — two different versions of the same protocol in one request. That is not
+      # hypothetical: it silently 401'd every guarded plugin route the moment the host started writing
+      # the forwarded user in a new encoding the stale guests could not read.
+      # So core's dist must stay fresh: after changing core, run
+      #   npm run build --workspace=@fromcode119/core
+      #
+      # Do NOT try to automate that with `typor build -w`. `typor build` REWRITES the sources in place
+      # (alias specifiers → relative paths), runs tsc, and restores them in a `finally`. With `-w` tsc
+      # never returns, so the restore never runs — and killing the watcher leaves every source file in
+      # its rewritten state. It cost this repo ~5,200 import lines of its alias style, silently.
+      - ./packages/core/dist:/app/packages/core/dist
+      # Same reason as core: the root tsconfig maps `@fromcode119/auth` to its SRC, so this is the copy
+      # the dev server actually runs. Without it an auth change is invisible until the image is rebuilt.
+      - ./packages/auth/src:/app/packages/auth/src
+      # `tsx watch` reads both at startup: the dev script and the wide-`include` tsconfig that makes
+      # tsx apply legacy decorators to EVERY package's source, not just the api's own.
+      - ./packages/api/package.json:/app/packages/api/package.json
+      - ./packages/api/tsconfig.dev.json:/app/packages/api/tsconfig.dev.json
     deploy:
       resources:
         limits:

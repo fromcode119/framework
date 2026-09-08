@@ -14,6 +14,7 @@ import { TimezoneUtils } from '@/lib/timezone';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { GeneralBrandCard } from '@/app/settings/general/general-brand-card';
 import { GeneralSystemCards } from '@/app/settings/general/general-system-cards';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 
 export class GeneralSettingsPage extends AdminComponent {
   /** The keys this screen owns. Was the key set of a seeded `@state settings` object — see `settings`. */
@@ -48,10 +49,16 @@ export class GeneralSettingsPage extends AdminComponent {
    * the Save control is not rendered.
    */
   @state settings: Record<string, any> | null = null;
+  /**
+   * Which of these settings belong to the PLATFORM and are out of this account's reach. Asked of the
+   * server, never listed here — see {@link PlatformSettingLocks}. Nothing is locked until it answers.
+   */
+  @state platformLocks: PlatformSettingLocks = PlatformSettingLocks.none();
   @state loadError: string | null = null;
 
   async componentDidMount(): Promise<void> {
     await this.loadSettings();
+    this.platformLocks = await PlatformSettingLocks.load();
   }
 
   @bound
@@ -222,6 +229,7 @@ export class GeneralSettingsPage extends AdminComponent {
         {settings && (
           <div className="p-6 w-full space-y-8">
             <GeneralBrandCard
+              platformLocks={this.platformLocks}
               settings={settings}
               setSettings={this.setSettings}
               theme={theme}

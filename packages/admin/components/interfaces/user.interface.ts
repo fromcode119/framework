@@ -28,6 +28,8 @@ export interface IUser {
    * whether install/delete/activate controls are rendered at all (see `PlatformAccess`).
    */
   platformAdmin?: boolean;
+  /** Administers at least one site. What the admin's door checks when the global role is not `admin`. */
+  siteAdmin?: boolean;
   /** Is this a multi-tenant deployment? When false, `admin` IS the platform and nothing is hidden. */
   multiTenant?: boolean;
 }

@@ -1,7 +1,7 @@
 import type { Root } from 'react-dom/client';
 import { EditorSessionParams } from '@fromcode119/core/client';
 import { StorefrontDocumentContract } from '@/lib/document/storefront-document-contract';
-import { ReactPrimitives, bound } from '@fromcode119/reactor';
+import { ReactDomRoots, bound } from '@fromcode119/reactor';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 import { StorefrontHydrationReason } from '@/runtime/storefront-hydration-reason';
 import type { IStorefrontHydratorArgs } from '@/runtime/interfaces/storefront-hydrator-args.interface';
@@ -75,7 +75,7 @@ export class StorefrontHydrator {
   private hydrate(): void {
     const host = this.args.host as HTMLElement;
     console.info(`${StorefrontHydrator.LOG_PREFIX} mode=hydrate`);
-    this.root = ReactPrimitives.hydrateRoot(host, this.args.hydrateTree, { onRecoverableError: this.onRecoverableError });
+    this.root = ReactDomRoots.hydrateRoot(host, this.args.hydrateTree, { onRecoverableError: this.onRecoverableError });
   }
 
   /**
@@ -110,7 +110,7 @@ export class StorefrontHydrator {
   }
 
   private renderFallback(host: HTMLElement): void {
-    this.root = ReactPrimitives.createRoot(host);
+    this.root = ReactDomRoots.createRoot(host);
     this.root.render(this.args.fallbackTree(this.serverHtml));
   }
 

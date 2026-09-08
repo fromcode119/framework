@@ -187,6 +187,8 @@ export class SystemRouter extends BaseRouter {
     // System settings
     this.get(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'),
       this.controller.getSettings);
+    this.get(RouteConstants.SEGMENTS.ADMIN_SETTINGS_PLATFORM_KEYS, this.auth.requirePermission('system:manage'),
+      this.controller.platformSettingKeys);
     this.post(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
       this.controller.updateSettings);
     this.put(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 

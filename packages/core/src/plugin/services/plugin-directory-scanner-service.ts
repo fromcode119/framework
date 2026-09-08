@@ -10,6 +10,7 @@ import { PluginDependencyInstallerService } from '@core/plugin/services/plugin-d
 import { PluginModuleResolverService } from '@core/plugin/services/plugin-module-resolver-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
+import { PluginEntryModuleLoader } from '@core/plugin/services/plugin-entry-module-loader';
 
 /**
  * PluginDirectoryScannerService
@@ -88,7 +89,7 @@ export class PluginDirectoryScannerService {
 
   private async loadPluginModule(indexPath: string): Promise<any> {
     try {
-      return require(indexPath);
+      return PluginEntryModuleLoader.load(indexPath);
     } catch (error: any) {
       if (!this.shouldUseNativeImport(error)) {
         throw error;

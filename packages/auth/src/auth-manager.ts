@@ -81,6 +81,19 @@ export class AuthManager {
     }
   }
 
+  /**
+   * The permissions a given set of ROLES carries — for baking a session that is scoped to one site,
+   * where the roles come from the membership rather than the account.
+   */
+  async getPermissionsForRoles(roles: string[]): Promise<string[]> {
+    if (!this.permissionChecker) return [];
+    try {
+      return await this.permissionChecker.permissionsForRoles(roles);
+    } catch {
+      return [];
+    }
+  }
+
   async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 12);
   }
@@ -381,11 +394,20 @@ export class AuthManager {
       }
 
       const permissions = Array.isArray(permission) ? permission : [permission];
+      // Against the roles IN EFFECT for this request — which on a multi-tenant deployment are the
+      // account's roles on the site it is acting in (narrowed by `applyTenantRoles` above), not the
+      // account's global ones. Resolving globally here is what made a site administrator's `admin`
+      // role decorative: `guard(['admin'])` let it through and every permission-gated screen behind
+      // that guard refused it, because the account is a plain customer everywhere else.
+      const effectiveRoles: string[] = Array.isArray(req.user.roles) ? req.user.roles : [];
       const userId = parseInt(req.user.id);
 
       let hasPermission = false;
       for (const perm of permissions) {
-        if (await this.permissionChecker.hasPermission(userId, perm)) {
+        const granted = effectiveRoles.length > 0
+          ? await this.permissionChecker.hasPermissionForRoles(effectiveRoles, perm)
+          : await this.permissionChecker.hasPermission(userId, perm);
+        if (granted) {
           hasPermission = true;
           break;
         }

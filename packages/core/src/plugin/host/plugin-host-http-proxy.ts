@@ -35,7 +35,7 @@ export class PluginHostHttpProxy {
       headers[PluginGuestHttp.HEADER_TOKEN] = envelope.token;
       headers[PluginGuestHttp.HEADER_TENANT] = envelope.tenantId ?? '';
       headers[PluginGuestHttp.HEADER_LOCALE] = envelope.locale;
-      headers[PluginGuestHttp.HEADER_USER] = (req as any).user ? JSON.stringify((req as any).user) : '';
+      headers[PluginGuestHttp.HEADER_USER] = PluginGuestHttp.encodeUser((req as any).user);
       if (envelope.originalUrl) headers[PluginGuestHttp.HEADER_ORIGINAL_URL] = envelope.originalUrl;
 
       // A webhook keeps its ORIGINAL bytes (the host captured `req.rawBody` for webhook paths): re-serialising

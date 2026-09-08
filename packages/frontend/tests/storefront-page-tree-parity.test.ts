@@ -163,6 +163,9 @@ class LazyBlockFixture {
     return Promise.resolve({ default: LazyBlockFixture.HeroRenderer });
   }
 
+  /** The signature this fixture publishes its generation under — the registry is keyed per theme build. */
+  static readonly SIGNATURE = 'parity-fixture';
+
   /** The server world: registered through the runtime's own registrar and bridge, warmed, published. */
   static async serverOverrides(): Promise<Record<string, unknown>> {
     const runtime = ParityFixture.runtime;
@@ -170,8 +173,8 @@ class LazyBlockFixture {
     const state = ThemeServerRegistry.beginGeneration();
     runtime.frameworkReact.ThemeOverrideRegistrar.register({ [LazyBlockFixture.KEY]: LazyBlockFixture.loader }, LazyBlockFixture.THEME);
     await state.warmOverrides((component) => runtime.wrapOverride(component));
-    ThemeServerRegistry.publishGeneration(state);
-    return ThemeServerRegistry.overrideMap();
+    ThemeServerRegistry.publishGeneration(LazyBlockFixture.SIGNATURE, state);
+    return ThemeServerRegistry.overrideMap(LazyBlockFixture.SIGNATURE);
   }
 
   /** The browser world: what the registrar hands the reducer — the boundary around a `React.lazy`. */

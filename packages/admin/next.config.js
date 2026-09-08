@@ -150,6 +150,13 @@ const nextConfig = {
     // with --webpack, so without this the dev server would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
     config.module.rules.unshift({
+      // PRE loader: webpack runs pre-loaders before every normal loader whatever the rule order, so the
+      // generated route exports and `'use client'` directive are in the source BEFORE Next's own
+      // transform reads it. Without `enforce`, our rule sits first in the list and therefore runs LAST
+      // (loaders execute right-to-left), so Next's React Server Component check saw an unstamped
+      // `.client.tsx` and 500'd every dev page with "you're importing a module that depends on
+      // usePathname into a React Server Component module".
+      enforce: 'pre',
       test: /[\\/](app|components|lib|hooks|src)[\\/].*\.(ts|tsx)$/,
       exclude: /[\\/]node_modules[\\/]/,
       use: [
@@ -180,6 +187,12 @@ const nextConfig = {
     config.resolve.alias['@fromcode119/database/physical-table-name-utils$'] = path.resolve(__dirname, '../database/src/physical-table-name-utils.ts');
     config.resolve.alias['@fromcode119/database/naming-strategy$'] = path.resolve(__dirname, '../database/src/naming-strategy.ts');
 
+    // reactor's React-FREE subpath, resolved from SOURCE. An EXACT (`$`) alias is required: a
+    // trailing-slash alias key never matches — enhanced-resolve tests `request.startsWith(key + '/')`,
+    // so `'@fromcode119/reactor/'` would have to be followed by a second slash. Without this the
+    // request falls through to node_modules and the package's `exports` map, i.e. built `dist` — which
+    // is exactly what this dev setup exists to avoid.
+    config.resolve.alias['@fromcode119/reactor/lang$'] = path.resolve(__dirname, '../reactor/src/lang.ts');
     config.resolve.alias['@fromcode119/react/'] = path.resolve(__dirname, '../react/src/');
     config.resolve.alias['@fromcode119/core/'] = path.resolve(__dirname, '../core/src/');
     config.resolve.alias['@fromcode119/sdk/'] = path.resolve(__dirname, '../sdk/src/');

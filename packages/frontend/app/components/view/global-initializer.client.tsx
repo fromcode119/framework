@@ -1,7 +1,7 @@
 import React from 'react';
 
 import ReactDOM from 'react-dom';
-import { ReactPrimitives, Reactor } from '@fromcode119/reactor';
+import { ReactDomRoots, Reactor } from '@fromcode119/reactor';
 import { FrameworkIcons } from '@fromcode119/react/icons/view/framework-icons.client';
 import { StorefrontRuntimeGlobals } from '@/runtime/storefront-runtime-globals';
 import { ContextHooks } from '@fromcode119/react';
@@ -23,8 +23,8 @@ export class GlobalInitializer extends Reactor {
             // entry — so a bundle that mounts its own root gets them from the one bundled react-dom.
             registry[RuntimeRegistryAccess.KEYS.REACT_DOM] = {
                 ...ReactDOM,
-                createRoot: ReactPrimitives.createRoot,
-                hydrateRoot: ReactPrimitives.hydrateRoot,
+                createRoot: ReactDomRoots.createRoot,
+                hydrateRoot: ReactDomRoots.hydrateRoot,
             };
             registry[RuntimeRegistryAccess.KEYS.JSX_RUNTIME] = RuntimeRegistryAccess.jsxRuntimeFor(React);
             registry[RuntimeRegistryAccess.KEYS.LUCIDE] = FrameworkIcons;

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { TenantConnectionScope } from '@fromcode119/database';
 import { ContentPreviewAccessUtils, PluginState, SystemUpdateService } from '@fromcode119/core';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
@@ -159,6 +160,19 @@ export class SystemRuntimeController {
       'Cache-Control': 'no-cache',
       Connection: 'keep-alive',
     });
+    // Give the request's pooled connection back BEFORE the stream starts.
+    //
+    // A tenant-bound request holds one client for as long as the response is open, and this response
+    // never closes — it is the admin's event stream. Every page load opens another, so a handful of
+    // navigations checked out the whole pool and every later request waited for a client that could
+    // only come back when the operator closed the tab. The api answered untenanted routes and nothing
+    // else, which reads as "the admin went white".
+    //
+    // It stayed invisible until admin sessions actually carried a site: with no tenant there was no
+    // scope, and the scope's client is taken LAZILY on the first statement, so a stream that queries
+    // nothing held nothing. The scope stays open here — a later statement would take a fresh client
+    // and set the tenant again — this only gives back the one nothing is using.
+    await TenantConnectionScope.releaseCurrent();
     // Writing to a destroyed socket THROWS, and a throw inside a hook callback or a timer has no
     // caller to catch it — it becomes an uncaughtException and takes the process down. `close` does not
     // fire for every abrupt teardown, so the write itself has to be the thing that gives up.
@@ -176,7 +190,13 @@ export class SystemRuntimeController {
     const handler = (data: any) => write(`data: ${JSON.stringify(data)}\n\n`);
     this.runtime.manager.hooks.on('system:hmr:reload', handler);
     const heartbeat = setInterval(() => write(': heartbeat\n\n'), 15000);
+    // Reap the stream from BOTH ends. `req`'s close is the documented client-abort signal, but behind a
+    // reverse proxy the api often never sees it — six streams were opened during one burst of admin
+    // navigation and not one closed, until the browser hit its per-host connection limit and every
+    // other api call queued behind them. `res`'s close fires when the underlying connection goes, and
+    // the heartbeat below is the backstop: a write to a socket nobody is reading eventually fails.
     req.on('close', stop);
+    res.on('close', stop);
   }
 
   async sendTestTelemetryEmail(req: Request, res: Response) {

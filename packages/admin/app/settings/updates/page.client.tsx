@@ -2,6 +2,8 @@ import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
 import { state, bound } from '@fromcode119/reactor';
+import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Loader } from '@/components/ui/view/loader.client';
@@ -28,7 +30,16 @@ export class UpdatesPage extends AdminComponent {
    */
   @state checkError: string | null = null;
 
+  /** Updating replaces the platform's own code, under every site at once. */
+  private get canManagePlatform(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user);
+  }
+
   async componentDidMount(): Promise<void> {
+    if (!this.canManagePlatform) {
+      this.loading = false;
+      return;
+    }
     await this.fetchStatus();
   }
 
@@ -102,6 +113,12 @@ export class UpdatesPage extends AdminComponent {
   }
 
   render(): ReactNode {
+    if (!this.canManagePlatform) {
+      return (
+        <PlatformOnlyPanel detail="A system update replaces the framework every site on this platform runs on, so only a platform admin can check for or apply one. Nothing here is specific to your site." />
+      );
+    }
+
     const theme = this.theme;
     const loading = this.loading;
     const updating = this.updating;

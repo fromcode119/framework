@@ -18,6 +18,7 @@ export type { Ref } from './ref.decorator';
 export { template } from './template.decorator';
 export { Platform } from './platform';
 export { ReactPrimitives } from './react-primitives';
+export { ReactDomRoots } from './react-dom-roots';
 export { ReactiveMetadata } from './reactive-metadata';
 export { ReservedMember } from './reserved-member';
 export { WatcherDescriptor } from './watcher-descriptor';

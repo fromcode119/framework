@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createElement } from 'react';
 import { EditorSessionParams } from '@fromcode119/core/client';
-import { ReactPrimitives } from '@fromcode119/reactor';
+import { ReactDomRoots } from '@fromcode119/reactor';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PreBootRegistrationSeed } from '@fromcode119/react/context/pre-boot-registration-seed';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';
@@ -124,8 +124,8 @@ describe('StorefrontHydrator.decide — the decision table', () => {
 
 describe('StorefrontHydrator.mount', () => {
   it('hydrates a matching tree in place (hydrateRoot, never createRoot)', async () => {
-    const hydrateRoot = vi.spyOn(ReactPrimitives, 'hydrateRoot');
-    const createRoot = vi.spyOn(ReactPrimitives, 'createRoot');
+    const hydrateRoot = vi.spyOn(ReactDomRoots, 'hydrateRoot');
+    const createRoot = vi.spyOn(ReactDomRoots, 'createRoot');
     const info = vi.spyOn(console, 'info').mockImplementation(() => undefined);
     const host = HydratorFixture.host();
     const fallbackTree = vi.fn();
@@ -146,7 +146,7 @@ describe('StorefrontHydrator.mount', () => {
   });
 
   it('takes the fallback path straight away when the decision says so, with the markup as served', () => {
-    const hydrateRoot = vi.spyOn(ReactPrimitives, 'hydrateRoot');
+    const hydrateRoot = vi.spyOn(ReactDomRoots, 'hydrateRoot');
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const host = HydratorFixture.host('<div class="a">served</div>');
     const fallbackTree = vi.fn((html: string) => createElement('div', { className: 'fallback' }, html));
@@ -164,13 +164,13 @@ describe('StorefrontHydrator.mount', () => {
   });
 
   it('a recoverable hydration error → the fallback path ONCE, from the served markup; a second error is only logged', async () => {
-    const realHydrateRoot = ReactPrimitives.hydrateRoot;
+    const realHydrateRoot = ReactDomRoots.hydrateRoot;
     let onRecoverableError: ((error: unknown) => void) | undefined;
-    vi.spyOn(ReactPrimitives, 'hydrateRoot').mockImplementation((container, tree, options) => {
+    vi.spyOn(ReactDomRoots, 'hydrateRoot').mockImplementation((container, tree, options) => {
       onRecoverableError = options?.onRecoverableError as (error: unknown) => void;
       return realHydrateRoot(container, tree, options);
     });
-    const createRoot = vi.spyOn(ReactPrimitives, 'createRoot');
+    const createRoot = vi.spyOn(ReactDomRoots, 'createRoot');
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     vi.spyOn(console, 'info').mockImplementation(() => undefined);
     vi.spyOn(console, 'error').mockImplementation(() => undefined);

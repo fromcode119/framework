@@ -18,6 +18,8 @@ export class AppearanceActiveCard extends PureReactor {
   @prop declare onSwitch: (slug: string) => void;
   @prop declare onUpdate: (item: AppearanceItem) => void;
   @prop declare onRemove: (slug: string) => void;
+  /** Installing/removing the PACKAGE is the platform's; picking which one this site wears is not. */
+  @prop declare canManagePackages: boolean;
 
   private subtitle(item: AppearanceItem): string {
     if (item.builtIn) return 'Built-in';
@@ -25,7 +27,7 @@ export class AppearanceActiveCard extends PureReactor {
   }
 
   render(): ReactNode {
-    const { items, catalogBySlug, active, busy, dark, onSwitch, onUpdate, onRemove } = this;
+    const { items, catalogBySlug, active, busy, dark, onSwitch, onUpdate, onRemove, canManagePackages } = this;
     return (
       <Card title="Active appearance">
         {items.map((it) => {
@@ -50,7 +52,7 @@ export class AppearanceActiveCard extends PureReactor {
                   </span>
                 </span>
               </label>
-              {!it.builtIn && (
+              {!it.builtIn && canManagePackages && (
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {canUpdate && (
                     <Button variant={catalog?.updateAvailable ? ButtonVariant.PRIMARY : ButtonVariant.GHOST} icon={<FrameworkIcons.Refresh size={14} />} onClick={() => onUpdate(it)} disabled={busy}>

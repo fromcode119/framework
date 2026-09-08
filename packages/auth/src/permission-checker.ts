@@ -11,6 +11,10 @@ export class UserPermissionChecker {
    * `_system_users_roles` junction (managed by the admin Roles UI and by plugins). Without this
    * union, roles granted only through the junction would never reach permission checks — a silent
    * no-op. Junction rows are snake_case (`role_slug`), the framework-internal raw-manager convention.
+   *
+   * These are the account's GLOBAL roles. On a multi-tenant deployment what an account may do is
+   * decided per SITE, and the roles in effect for a request come from its membership — so a request
+   * asks with `permissionsForRoles` / `hasPermissionForRoles` instead of going through here.
    */
   private async resolveUserRoleSlugs(userId: number, user: any): Promise<string[]> {
     let assigned: unknown[] = [];
@@ -24,101 +28,73 @@ export class UserPermissionChecker {
     return StringUtils.normalizeSlugList(user?.roles, assigned);
   }
 
-  async hasPermission(userId: number, permission: string): Promise<boolean> {
-    this.logger.debug(`Checking permission "${permission}" for userId ${userId}`);
+  /** The permissions these role slugs carry, from `_system_roles`. */
+  async permissionsForRoles(roleSlugs: string[]): Promise<string[]> {
+    const slugs = StringUtils.normalizeSlugList(roleSlugs, []);
+    if (slugs.length === 0) return [];
 
-    // 1. Get user and their roles using database SDK (table prefix added automatically)
-    const user = await this.db.findOne('users', { id: userId });
-
-    if (!user) {
-      this.logger.debug(`User ${userId} not found`);
-      return false;
-    }
-
-    // Effective roles = users.roles JSON ∪ _system_users_roles junction
-    const userRoles = await this.resolveUserRoleSlugs(userId, user);
-
-    this.logger.debug(`User ${userId} has ${userRoles.length} role(s)`);
-
-    if (userRoles.length === 0) return false;
-    
-    // 2. Get all permissions for those roles from systemRoles table
     const allRoles = await this.db.find('_system_roles', { limit: 100 });
-    
-    const userRoleData = allRoles.filter(role => userRoles.includes(role.slug));
-    
-    this.logger.debug(`Found ${userRoleData.length} matching role(s) in systemRoles table`);
-    
-    // Collect all permissions from all roles
-    const allPermissions: string[] = [];
-    for (const role of userRoleData) {
+    const matched = (allRoles ?? []).filter((role: any) => slugs.includes(role.slug));
+
+    const permissions: string[] = [];
+    for (const role of matched) {
       try {
-        const perms = typeof role.permissions === 'string' 
-          ? JSON.parse(role.permissions) 
+        const perms = typeof role.permissions === 'string'
+          ? JSON.parse(role.permissions)
           : (role.permissions || []);
-        if (Array.isArray(perms)) {
-          allPermissions.push(...perms);
-        }
+        if (Array.isArray(perms)) permissions.push(...perms);
       } catch (err) {
         this.logger.warn(`Failed to parse permissions for role ${role.slug}: ${String((err as any)?.message || err)}`);
       }
     }
-    
-    this.logger.debug(`Resolved ${allPermissions.length} permission entries for user ${userId}`);
-    
-    // 3. Check wildcards
-    if (allPermissions.includes('*')) {
-      this.logger.debug(`Permission granted via wildcard '*'`);
-      return true;
-    }
-    if (allPermissions.includes(permission)) {
-      this.logger.debug(`Permission granted via exact match "${permission}"`);
-      return true;
-    }
-    
-    // 4. Check hierarchical wildcards (e.g., 'database:*' covers 'database:read')
-    for (const perm of allPermissions) {
-      if (perm.endsWith(':*')) {
-        const permPrefix = perm.slice(0, -1);
-        if (permission.startsWith(permPrefix)) {
-          this.logger.debug(`Permission granted via hierarchical wildcard "${perm}"`);
-          return true;
-        }
-      }
-    }
-    
-    this.logger.debug(`Permission denied for "${permission}"`);
-    return false;
+    return [...new Set(permissions)];
   }
-  
+
+  /**
+   * Does this permission set satisfy the requirement? `*` covers everything, an exact match covers
+   * itself, and a `database:*` entry covers `database:read`.
+   */
+  static grants(permissions: string[], permission: string): boolean {
+    if (permissions.includes('*') || permissions.includes(permission)) return true;
+    return permissions.some((perm) => perm.endsWith(':*') && permission.startsWith(perm.slice(0, -1)));
+  }
+
+  /**
+   * The check a REQUEST makes: against the roles in effect for it.
+   *
+   * On a multi-tenant deployment those are the account's roles on the site the request is acting in
+   * (`AuthManager.useTenantRoles` narrows them from the membership), so an administrator of one site
+   * gets that site's permissions and nothing on any other. Resolving from the account's global roles
+   * here instead made membership roles decorative: they named the account an admin and every
+   * permission-gated screen still refused it.
+   */
+  async hasPermissionForRoles(roleSlugs: string[], permission: string): Promise<boolean> {
+    const permissions = await this.permissionsForRoles(roleSlugs);
+    const granted = UserPermissionChecker.grants(permissions, permission);
+    this.logger.debug(`Permission "${permission}" ${granted ? 'granted' : 'denied'} for roles [${roleSlugs.join(', ')}]`);
+    return granted;
+  }
+
+  /** The account's GLOBAL answer — for callers outside a request (jobs, CLI, seeding). */
+  async hasPermission(userId: number, permission: string): Promise<boolean> {
+    const roles = await this.globalRolesOf(userId);
+    if (roles.length === 0) return false;
+    return this.hasPermissionForRoles(roles, permission);
+  }
+
+  /** The account's GLOBAL permissions — see `hasPermission`. */
   async getUserPermissions(userId: number): Promise<string[]> {
-    // Get user and their roles
+    const roles = await this.globalRolesOf(userId);
+    if (roles.length === 0) return [];
+    return this.permissionsForRoles(roles);
+  }
+
+  private async globalRolesOf(userId: number): Promise<string[]> {
     const user = await this.db.findOne('users', { id: userId });
-
-    if (!user) return [];
-
-    const userRoles = await this.resolveUserRoleSlugs(userId, user);
-
-    if (userRoles.length === 0) return [];
-    
-    // Get all roles and filter by user's roles
-    const allRoles = await this.db.find('_system_roles', { limit: 100 });
-    const userRoleData = allRoles.filter(role => userRoles.includes(role.slug));
-    
-    const allPermissions: string[] = [];
-    for (const role of userRoleData) {
-      try {
-        const perms = typeof role.permissions === 'string' 
-          ? JSON.parse(role.permissions) 
-          : (role.permissions || []);
-        if (Array.isArray(perms)) {
-          allPermissions.push(...perms);
-        }
-      } catch {
-        // Skip invalid JSON
-      }
+    if (!user) {
+      this.logger.debug(`User ${userId} not found`);
+      return [];
     }
-    
-    return [...new Set(allPermissions)]; // Remove duplicates
+    return this.resolveUserRoleSlugs(userId, user);
   }
 }
