@@ -1,9 +1,15 @@
+// NOTE: the imports below are RELATIVE on purpose, and must stay that way.
+// Vite loads this config through Node, which knows nothing about the `@sdk/*` tsconfig path — a bare
+// `@sdk/...` specifier is resolved as a package, is not found, and the config fails to load with
+// "Cannot find module", taking every plugin/theme UI build with it. (That is exactly what happened
+// when these four configs were swept to absolute imports on 2026-09-08.) Alias imports are the rule
+// everywhere the TypeScript path map applies; a Node-loaded build config is not one of those places.
 import react from '@vitejs/plugin-react';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { UserConfig } from 'vite';
-import { FromcodeThemeOverridesPlugin } from '@sdk/vite/fromcode-theme-overrides-plugin';
-import { ThemeEntryGenerator } from '@sdk/vite/theme-entry-generator';
+import { FromcodeThemeOverridesPlugin } from './fromcode-theme-overrides-plugin';
+import { ThemeEntryGenerator } from './theme-entry-generator';
 
 /**
  * Shared, framework-owned Vite config for building ANY theme's SERVER (SSR) bundle — the twin of

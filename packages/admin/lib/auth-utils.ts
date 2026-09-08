@@ -50,16 +50,15 @@ export class AuthUtils {
    * Calculates the current domain scope for cookie setting.
    * Returns the apex domain (e.g. `.example.com`) or undefined for localhost/IP.
    */
-  static getCookieDomain(): string | undefined {
-    if (!Platform.isBrowser) return undefined;
-    const hostname = window.location.hostname;
-
-    if (hostname.includes('.') && !hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
-      const parts = hostname.split('.');
-      if (parts.length >= 2) {
-        return '.' + parts.slice(-2).join('.');
-      }
-    }
+  static getCookieDomain(): undefined {
+    // ALWAYS host-scoped, never the apex.
+    //
+    // This wrote the readable user cookie to `.example.com`, so it travelled to every console on the
+    // domain. Two things followed: a workspace domain the account had no membership on painted a
+    // complete signed-in admin from it, and it sat beside a session cookie that is now host-scoped —
+    // an identity in a wider scope than the session it describes is exactly the mismatch that produced
+    // both bugs. The browser binds a cookie with no domain to the host that set it, which is what the
+    // admin wants: one console, one session.
     return undefined;
   }
 }

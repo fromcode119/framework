@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { CookieConstants, Logger } from '@fromcode119/core';
+import { CookieConstants, Logger, RequestSurfaceUtils } from '@fromcode119/core';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
 import { ApiUrlUtils } from '@api/utils/url';
 import { McpRouteUtils } from '@api/utils/mcp-route-utils';
@@ -13,7 +13,11 @@ export class CSRFMiddleware extends BaseMiddleware {
 
   async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
     // Determine the root domain for cross-subdomain cookies
-    const domain = process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req);
+    // Host-scoped alongside the admin session it protects (see AuthControllerCookieInfrastructure).
+    // A domain-wide CSRF token beside a host-scoped session is the pair split across two scopes.
+    const domain = RequestSurfaceUtils.isAdminRequestContext(req)
+      ? undefined
+      : (process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req));
 
     // 1. Generate CSRF token if not present in cookies OR if we need to ensure domain-scoping
     // We explicitly ensure it's on the root domain on health/status checks or if missing
