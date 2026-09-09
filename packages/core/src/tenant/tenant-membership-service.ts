@@ -2,7 +2,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { TenantMembership } from '@core/tenant/tenant-membership';
 import { TenantRecord } from '@core/tenant/tenant-record';
 import { TenantAccess } from '@core/tenant/tenant-access';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 
 /**
  * Which tenants an account may enter.

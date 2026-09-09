@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { StringUtils } from '@core/string-utils';
+import { StringUtils } from '@core/utils/string-utils';
 
 describe('StringUtils', () => {
   it('recursively normalizes object keys to camelCase', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ApplicationDomainSettingsUtils } from '@core/application-domain-settings-utils';
+import { ApplicationDomainSettingsUtils } from '@core/utils/application-domain-settings-utils';
 
 describe('ApplicationDomainSettingsUtils', () => {
   it('collects allowed domains from env urls, saved urls, and aliases', () => {

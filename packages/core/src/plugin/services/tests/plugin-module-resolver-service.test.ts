@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PluginModuleResolverService } from '@core/plugin/services/plugin-module-resolver-service';
+import { PluginModuleResolverService } from '@core/plugin/services/installation/plugin-module-resolver-service';
 
 class DemoPluginLifecycle {
   static async onInit(ctx: any): Promise<void> { ctx.calls.push('onInit'); }

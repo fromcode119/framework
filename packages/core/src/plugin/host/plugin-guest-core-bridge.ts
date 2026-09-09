@@ -1,5 +1,5 @@
 import { CoreServices } from '@core/services/core-services';
-import { Plugins } from '@core/plugins';
+import { Plugins } from '@core/plugin/plugins';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginGuestHandlers } from '@core/plugin/host/plugin-guest-handlers';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';

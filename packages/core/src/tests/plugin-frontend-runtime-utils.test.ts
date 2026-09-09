@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PluginFrontendRuntimeUtils } from '@core/plugin-frontend-runtime-utils';
+import { PluginFrontendRuntimeUtils } from '@core/utils/plugin-frontend-runtime-utils';
 
 describe('PluginFrontendRuntimeUtils.loadsOwnFrontendRuntime', () => {
   it('is true for a plugin shipping a frontend entry (alpha) — it registers its own client', () => {

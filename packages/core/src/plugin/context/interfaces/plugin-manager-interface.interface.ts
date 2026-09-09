@@ -1,6 +1,6 @@
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
-import type { PluginContext } from '@core/plugin-context';
+import type { PluginContext } from '@core/plugin/plugin-context';
 
 export interface IPluginManagerInterface {
   hooks: any;

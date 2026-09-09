@@ -1,6 +1,6 @@
 import { SystemConstants } from '@core/constants/system.constants';
-import { CoercionUtils } from '@core/coercion-utils';
-import { StringUtils } from '@core/string-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
+import { StringUtils } from '@core/utils/string-utils';
 import { PlatformOwnershipError } from '@core/tenant/platform-ownership-error';
 
 /**

@@ -1,5 +1,5 @@
-import { CoercionUtils } from '@core/coercion-utils';
-import { NumberUtils } from '@core/number-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
+import { NumberUtils } from '@core/utils/number-utils';
 import { EntityEnumResolverService } from '@core/services/entity-enum-resolver-service';
 import type { IEntityFieldConfig } from '@core/interfaces/entity-field-config.interface';
 import type { IEntityFieldsConfig } from '@core/interfaces/entity-fields-config.interface';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { NamespacedPluginsFacade } from '@core/namespaced-plugins-facade';
+import { NamespacedPluginsFacade } from '@core/plugin/namespaced-plugins-facade';
 
 describe('NamespacedPluginsFacade', () => {
   const namespace = 'org.fromcode';

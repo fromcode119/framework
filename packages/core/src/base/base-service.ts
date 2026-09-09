@@ -1,4 +1,4 @@
-import type { PluginContext } from '@core/plugin-context';
+import type { PluginContext } from '@core/plugin/plugin-context';
 
 /**
  * Abstract base class for all plugin services.

@@ -1,6 +1,6 @@
 import { RuntimeModuleKind } from '@core/plugin/services/enums/runtime-module-kind.enum';
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
-import { PluginContext } from '@core/plugin-context';
+import { PluginContext } from '@core/plugin/plugin-context';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { Logger } from '@core/logging';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
@@ -27,8 +27,8 @@ import { RecordVersionsContextProxy } from '@core/plugin/context/record-versions
 import { RolesContextProxy } from '@core/plugin/context/roles';
 import { NotificationsContextProxy } from '@core/plugin/context/notifications';
 import { ThemeContextProxy } from '@core/plugin/context/theme';
-import { PluginsFacade } from '@core/plugins-facade';
-import { PluginsManagerResolver } from '@core/plugins-manager-resolver';
+import { PluginsFacade } from '@core/plugin/plugins-facade';
+import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
 import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';

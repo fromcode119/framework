@@ -1,5 +1,6 @@
 import { ApiVersionUtils, LocalizationUtils, RuntimeConstants } from '@fromcode119/core/client';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 import type { ThemePrefetchApiEntry } from '@/lib/theme/theme-prefetch-api-entry';
 import type { ThemePrefetchFromPageConfig } from '@/lib/theme/theme-prefetch-from-page-config';
@@ -33,7 +34,7 @@ export class PageDocPrefetcher {
     const pageEntries = apis.filter((entry) => entry?.fromPage && entry.key && entry.pluginSlug);
     if (!pageEntries.length) return {};
 
-    const internalBase = ServerApiUtils.buildInternalApiBaseUrl();
+    const internalBase = ServerApiPaths.buildInternalApiBaseUrl();
     const results: Record<string, unknown> = {};
 
     await Promise.allSettled(
@@ -45,7 +46,7 @@ export class PageDocPrefetcher {
           typeof entry.query === 'object' && entry.query !== null ? entry.query : {},
         );
         query.set(String(entry.fromPage?.queryParam || '').trim(), values.join(','));
-        const apiPath = ServerApiUtils.buildPluginPath(entry.pluginSlug, entry.path || '', query);
+        const apiPath = ServerApiPaths.buildPluginPath(entry.pluginSlug, entry.path || '', query);
         const url = `${internalBase}${ApiVersionUtils.prefix()}${apiPath}`;
         try {
           const response = await fetch(url, {
@@ -104,7 +105,7 @@ export class PageDocPrefetcher {
       const sort = String(data?.sort || '').trim();
       if (sort) query.set('sort', sort);
 
-      const apiPath = ServerApiUtils.buildPluginPath(pluginSlug, datasourceKey, query);
+      const apiPath = ServerApiPaths.buildPluginPath(pluginSlug, datasourceKey, query);
       try {
         const response = await fetch(`${internalBase}${ApiVersionUtils.prefix()}${apiPath}`, {
           next: { revalidate: PageDocPrefetcher.CACHE_REVALIDATE_SECONDS },

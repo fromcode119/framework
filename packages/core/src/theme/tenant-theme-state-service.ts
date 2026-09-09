@@ -1,4 +1,5 @@
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
+import { TenantState } from '@core/enums/tenant-state.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantThemeAccess } from '@core/theme/tenant-theme-access';
 
@@ -15,8 +16,6 @@ import { TenantThemeAccess } from '@core/theme/tenant-theme-access';
  * tenant's next request carries a new render signature.
  */
 export class TenantThemeStateService {
-  private static readonly ACTIVE = 'active';
-  private static readonly INACTIVE = 'inactive';
 
   constructor(private readonly db: any) {}
 
@@ -27,22 +26,22 @@ export class TenantThemeStateService {
 
     for (const row of rows ?? []) {
       const other = String(row?.theme_slug ?? '').trim();
-      if (other && other !== name && String(row?.state ?? '') === TenantThemeStateService.ACTIVE) {
+      if (other && other !== name && String(row?.state ?? '') === TenantState.ACTIVE.value) {
         await this.db.update(
           SystemConstants.TABLE.TENANT_THEMES,
           { tenant_id: tenant, theme_slug: other },
-          { state: TenantThemeStateService.INACTIVE, updated_at: new Date() },
+          { state: TenantState.INACTIVE.value, updated_at: new Date() },
         );
       }
     }
 
-    await this.write(tenant, name, TenantThemeStateService.ACTIVE, rows);
+    await this.write(tenant, name, TenantState.ACTIVE.value, rows);
   }
 
   async disable(tenantId: string, slug: string): Promise<void> {
     const { tenant, name } = this.identify(tenantId, slug);
     const rows: any[] = await this.db.find(SystemConstants.TABLE.TENANT_THEMES, { where: { tenant_id: tenant } });
-    await this.write(tenant, name, TenantThemeStateService.INACTIVE, rows);
+    await this.write(tenant, name, TenantState.INACTIVE.value, rows);
   }
 
   /** The tenant's variable overrides for `slug`. Stored on the tenant's row; NULL means the theme's defaults. */
@@ -62,7 +61,7 @@ export class TenantThemeStateService {
       // Configuring a theme the tenant has not activated is allowed — an operator may prepare it
       // before switching — so the row is created inactive with the config attached.
       await this.db.insert(SystemConstants.TABLE.TENANT_THEMES, {
-        tenant_id: tenant, theme_slug: name, state: TenantThemeStateService.INACTIVE, config: serialized,
+        tenant_id: tenant, theme_slug: name, state: TenantState.INACTIVE.value, config: serialized,
       });
     }
     TenantThemeAccess.invalidate(tenant);
@@ -81,7 +80,7 @@ export class TenantThemeStateService {
     for (const row of rows ?? []) {
       const tenant = String(row?.tenant_id ?? '').trim();
       if (!tenant) continue;
-      if (String(row?.state ?? '') === TenantThemeStateService.ACTIVE) orphaned.push(tenant);
+      if (String(row?.state ?? '') === TenantState.ACTIVE.value) orphaned.push(tenant);
       await this.db.delete(SystemConstants.TABLE.TENANT_THEMES, { tenant_id: tenant, theme_slug: name });
       TenantThemeAccess.invalidate(tenant);
     }

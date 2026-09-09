@@ -1,9 +1,10 @@
 import { cache } from 'react';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
 import { LocalizationUtils } from '@fromcode119/core/client';
 import { FrontendPublicSettings } from '@/lib/frontend-public-settings';
 import { FrontendLocaleService } from '@/lib/frontend-locale-service';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { LocaleUrlStrategy } from '@fromcode119/core/client';
@@ -26,7 +27,7 @@ export class DynamicPageResolver {
    * unreachable API must surface as a 5xx, which is honest and retryable.
    */
   private static readonly resolveFetchCache = cache(async (queryString: string): Promise<Record<string, any> | null> => {
-    const path = ServerApiUtils.buildSystemResolvePath(queryString);
+    const path = ServerApiPaths.buildSystemResolvePath(queryString);
     // A preview navigation is the operator asking to see their own draft, so this one fetch also
     // presents their admin session — the API decides from that identity whether unpublished content
     // is readable. The `preview=1` in this query string is the FRONTEND's own marker (it drives the
@@ -240,7 +241,7 @@ export class DynamicPageResolver {
       const collectionSlug = parts[1];
       const recordId = parts.slice(2).join(':');
       if (collectionSlug && recordId) {
-        const result = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildCollectionLookupPath(collectionSlug, { id: recordId, limit: 1 }));
+        const result = await ServerApiUtils.serverFetchJson(ServerApiPaths.buildCollectionLookupPath(collectionSlug, { id: recordId, limit: 1 }));
         const doc = ServerApiUtils.extractFirstDoc(result);
         if (doc) {
           const normalized = ResolvedContentShape.normalize(doc as Record<string, unknown>);

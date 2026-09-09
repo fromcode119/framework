@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PluginPublicSettingsService } from '@core/plugin/services/plugin-public-settings-service';
+import { PluginPublicSettingsService } from '@core/plugin/services/settings/plugin-public-settings-service';
 
 const PLUGIN = { manifest: { slug: 'alpha', namespace: 'org.fromcode' } };
 

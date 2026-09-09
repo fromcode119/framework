@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { LifecycleService } from '@core/plugin/services/lifecycle-service';
-import { PluginHealthNotificationTemplateService } from '@core/plugin/services/plugin-health-notification-template-service';
+import { LifecycleService } from '@core/plugin/services/runtime/lifecycle-service';
+import { PluginHealthNotificationTemplateService } from '@core/plugin/services/health/plugin-health-notification-template-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';

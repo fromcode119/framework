@@ -1,4 +1,5 @@
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { ThemePrefetchRequestCache } from '@/lib/theme/theme-prefetch-request-cache';
 import { PageDocPrefetchRequestCache } from '@/lib/theme/page-doc-prefetch-request-cache';
@@ -75,7 +76,7 @@ export class ThemeServerRenderer {
     const generation = ThemeSsrGeneration.from(config);
     if (!generation.themeSlug) return null;
     const settings = ThemeRenderSettings.from(config);
-    const publicApiBaseUrl = ServerApiUtils.buildPublicApiBaseUrl();
+    const publicApiBaseUrl = ServerApiPaths.buildPublicApiBaseUrl();
     const [serverTranslations, prefetched] = await Promise.all([translationsRequest, prefetchRequest]);
     const request: IThemeRenderRequest = { content, locale, contentClassName, contentStyle, notFoundPath, config, serverTranslations, prefetched };
 

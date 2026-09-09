@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PeopleAddressService } from '@core/plugin/services/people-address-service';
+import { PeopleAddressService } from '@core/plugin/services/people/people-address-service';
 
 function makeDb(seed: { people?: any[]; addresses?: any[] } = {}) {
   const people = [...(seed.people ?? [])];

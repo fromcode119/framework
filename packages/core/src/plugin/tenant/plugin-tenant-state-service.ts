@@ -1,4 +1,5 @@
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
+import { TenantState } from '@core/enums/tenant-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SystemConstants } from '@core/constants/system.constants';
 
@@ -21,8 +22,6 @@ import { SystemConstants } from '@core/constants/system.constants';
  *  - it does not touch `_system_plugins`. Installation is platform-wide and stays there.
  */
 export class PluginTenantStateService {
-  private static readonly ACTIVE = 'active';
-  private static readonly INACTIVE = 'inactive';
 
   constructor(private readonly db: any) {}
 
@@ -35,17 +34,17 @@ export class PluginTenantStateService {
       where: { tenant_id: tenant },
     });
     return (rows ?? [])
-      .filter((row: any) => String(row?.state ?? '') === PluginTenantStateService.ACTIVE)
+      .filter((row: any) => String(row?.state ?? '') === TenantState.ACTIVE.value)
       .map((row: any) => String(row?.plugin_slug ?? '').trim())
       .filter((slug: string) => slug.length > 0);
   }
 
   async enable(tenantId: string, slug: string): Promise<void> {
-    await this.write(tenantId, slug, PluginTenantStateService.ACTIVE);
+    await this.write(tenantId, slug, TenantState.ACTIVE.value);
   }
 
   async disable(tenantId: string, slug: string): Promise<void> {
-    await this.write(tenantId, slug, PluginTenantStateService.INACTIVE);
+    await this.write(tenantId, slug, TenantState.INACTIVE.value);
   }
 
   /**
@@ -74,7 +73,7 @@ export class PluginTenantStateService {
         tenant_id: tenant,
         plugin_slug: name,
         state,
-        enabled_at: state === PluginTenantStateService.ACTIVE ? new Date() : null,
+        enabled_at: state === TenantState.ACTIVE.value ? new Date() : null,
       });
     }
 

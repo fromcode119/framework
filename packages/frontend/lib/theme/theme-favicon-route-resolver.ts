@@ -1,5 +1,6 @@
 import { ApiPathUtils } from '@fromcode119/core/client';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 
 export class ThemeFaviconRouteResolver {
   private static readonly THEME_FAVICON_CANDIDATES = [
@@ -48,7 +49,7 @@ export class ThemeFaviconRouteResolver {
   }
 
   private static async resolveActiveThemeSlug(): Promise<string> {
-    const config = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemFrontendPath()) as Record<string, unknown> | null;
+    const config = await ServerApiUtils.serverFetchJson(ServerApiPaths.buildSystemFrontendPath()) as Record<string, unknown> | null;
     const activeTheme = config?.activeTheme as Record<string, unknown> | undefined;
     return String(activeTheme?.slug || '').trim();
   }

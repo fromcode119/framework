@@ -1,4 +1,4 @@
-import type { NamespacedPluginsFacade } from '@core/namespaced-plugins-facade';
+import type { NamespacedPluginsFacade } from '@core/plugin/namespaced-plugins-facade';
 
 /**
  * The `context.plugins` surface of {@link PluginContext}.

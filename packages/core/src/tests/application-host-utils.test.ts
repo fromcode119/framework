@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ApplicationHostUtils } from '@core/application-host-utils';
+import { ApplicationHostUtils } from '@core/utils/application-host-utils';
 
 describe('ApplicationHostUtils', () => {
   it('detects local development hostnames from urls and host headers', () => {

@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginGuestHandlers } from '@core/plugin/host/plugin-guest-handlers';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
-import { PluginHealthRouteHandler } from '@core/plugin-health-route-handler';
+import { PluginHealthRouteHandler } from '@core/plugin/plugin-health-route-handler';
 import { RouteConstants } from '@core/constants/route.constants';
 import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
 import { ApiAccessGate } from '@core/plugin/context/api-access-gate';

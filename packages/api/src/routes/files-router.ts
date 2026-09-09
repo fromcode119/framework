@@ -1,8 +1,11 @@
 import { BaseRouter, PluginManager, RouteConstants } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
-import { FilesController } from '@api/controllers/files-controller';
-import { FileShareAdminController } from '@api/controllers/file-share-admin-controller';
+import { FilesController } from '@api/controllers/file-sharing/files-controller';
+import { FileActivityService, FileGrantRepository } from '@fromcode119/core';
+import { FileShareAdminController } from '@api/controllers/file-sharing/file-share-admin-controller';
+import { FileGrantAdminController } from '@api/controllers/file-sharing/file-grant-admin-controller';
+import { FileShareActivityController } from '@api/controllers/file-sharing/file-share-activity-controller';
 
 /**
  * Private-file delivery.
@@ -15,6 +18,8 @@ import { FileShareAdminController } from '@api/controllers/file-share-admin-cont
 export class FilesRouter extends BaseRouter {
   private readonly controller: FilesController;
   private readonly adminController: FileShareAdminController;
+  private readonly grantController: FileGrantAdminController;
+  private readonly activityController: FileShareActivityController;
 
   constructor(
     private manager: PluginManager,
@@ -25,6 +30,10 @@ export class FilesRouter extends BaseRouter {
     super();
     this.controller = new FilesController(manager, mediaManager, settingsCache);
     this.adminController = new FileShareAdminController(manager, settingsCache);
+    const db = (manager as any).db;
+    const grants = new FileGrantRepository(db);
+    this.grantController = new FileGrantAdminController(db, grants);
+    this.activityController = new FileShareActivityController(new FileActivityService(db), grants);
   }
 
   protected registerRoutes(): void {
@@ -36,15 +45,15 @@ export class FilesRouter extends BaseRouter {
 
     this.post(FILES_SHARES, adminGuard, this.adminController.createShare);
     this.get(FILES_SHARES, adminGuard, this.adminController.listShares);
-    this.get(FILES_SHARE_GRANTS, adminGuard, this.adminController.listGrants);
+    this.get(FILES_SHARE_GRANTS, adminGuard, this.grantController.listGrants);
     this.post(FILES_SHARE_GRANTS, adminGuard, this.adminController.addRecipients);
-    this.get(FILES_SHARE_ACTIVITY, adminGuard, this.adminController.shareActivity);
-    this.get(FILES_ACTIVITY, adminGuard, this.adminController.activityOverview);
+    this.get(FILES_SHARE_ACTIVITY, adminGuard, this.activityController.shareActivity);
+    this.get(FILES_ACTIVITY, adminGuard, this.activityController.activityOverview);
     this.patch(FILES_SHARE_ID, adminGuard, this.adminController.updateShare);
-    this.patch(FILES_GRANT_ID, adminGuard, this.adminController.updateGrant);
+    this.patch(FILES_GRANT_ID, adminGuard, this.grantController.updateGrant);
     this.delete(FILES_SHARE_ID, adminGuard, this.adminController.revokeShare);
-    this.delete(FILES_GRANT_ID, adminGuard, this.adminController.revokeGrant);
-    this.get(FILES_MEDIA_GRANTS, adminGuard, this.adminController.listGrantsForMedia);
+    this.delete(FILES_GRANT_ID, adminGuard, this.grantController.revokeGrant);
+    this.get(FILES_MEDIA_GRANTS, adminGuard, this.grantController.listGrantsForMedia);
 
     // Signed-in recipients' own files, for the account area. Also literal paths, so they must precede
     // `/:token` for the same reason.

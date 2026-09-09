@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 
 describe('CoercionUtils.toKey', () => {
   it('gives the comparison form: trimmed and lower-cased', () => {

@@ -1,6 +1,6 @@
 import { SortOrder } from '@core/enums/sort-order.enum';
-import type { PluginContext } from '@core/plugin-context';
-import { NumberUtils } from '@core/number-utils';
+import type { PluginContext } from '@core/plugin/plugin-context';
+import { NumberUtils } from '@core/utils/number-utils';
 
 /**
  * Abstract base class for all plugin data repositories.

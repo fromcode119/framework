@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Module } from 'module';
 import path from 'path';
 import { RequestContextUtils } from '@core/context/request-context';
-import { PluginModuleResolverService } from '@core/plugin/services/plugin-module-resolver-service';
+import { PluginModuleResolverService } from '@core/plugin/services/installation/plugin-module-resolver-service';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginGuestContextFactory } from '@core/plugin/host/plugin-guest-context-factory';
 import { PluginGuestCoreBridge } from '@core/plugin/host/plugin-guest-core-bridge';
@@ -12,7 +12,7 @@ import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import { PluginGuestState } from '@core/plugin/host/plugin-guest-state';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { IPluginInvocation } from '@core/plugin/host/interfaces/plugin-invocation.interface';
-import type { PluginContext } from '@core/plugin-context';
+import type { PluginContext } from '@core/plugin/plugin-context';
 
 /**
  * The plugin's process. Loads the plugin exactly as the scanner would in-process, gives it a context

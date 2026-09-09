@@ -1,7 +1,7 @@
 import type { IDatabaseManager } from '@fromcode119/database';
 import { TenantRlsSql } from '@fromcode119/database';
 import { Logger } from '@core/logging';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { TenantMembershipService } from '@core/tenant/tenant-membership-service';

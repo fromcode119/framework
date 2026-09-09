@@ -4,7 +4,7 @@ import path from 'path';
 import { describe, expect, it } from 'vitest';
 import { AppPathConstants } from '@core/constants/app-path.constants';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
-import { AdminMetadataService } from '@core/plugin/services/admin-metadata-service';
+import { AdminMetadataService } from '@core/plugin/services/admin/admin-metadata-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';

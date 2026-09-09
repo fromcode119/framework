@@ -1,5 +1,5 @@
-import { OopGuard } from '../oop-guard';
-import { OopGuardBaselines } from '../oop-guard-baselines';
+import { OopGuard } from '../oop-guard-rules/oop-guard';
+import { OopGuardBaselines } from '../oop-guard-rules/oop-guard-baselines';
 import { ArchorCommand } from './archor-command';
 
 /**

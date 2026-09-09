@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PersonCatalogService } from '@core/plugin/services/person-catalog-service';
+import { PersonCatalogService } from '@core/plugin/services/people/person-catalog-service';
 
 function makeDb(existing: any[] = []) {
   const rows = [...existing];

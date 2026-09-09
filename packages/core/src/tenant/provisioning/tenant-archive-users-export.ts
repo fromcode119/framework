@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantArchiveSource } from '@core/tenant/provisioning/tenant-archive-source';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';

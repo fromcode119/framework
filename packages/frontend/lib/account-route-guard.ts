@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { AccountRouteUtils, RouteConstants } from '@fromcode119/core/client';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 
 /**
  * Server-side authentication gate for the account area.

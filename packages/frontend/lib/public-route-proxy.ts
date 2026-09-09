@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { unstable_noStore as noStore } from 'next/cache';
 import { headers } from 'next/headers';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { PublicRouteDefinition } from '@/lib/public-route-definition';
 import { ServerApiUnreachableError } from '@/lib/server-api-unreachable-error';
 
@@ -46,7 +47,7 @@ export class PublicRouteProxy {
     }
 
     const response = await ServerApiUtils.serverFetchResponse(
-      ServerApiUtils.buildPluginPath(route.pluginSlug, route.targetPath),
+      ServerApiPaths.buildPluginPath(route.pluginSlug, route.targetPath),
       { headers: await PublicRouteProxy.createUpstreamRequestHeaders() },
     );
 
@@ -72,7 +73,7 @@ export class PublicRouteProxy {
       return null;
     }
 
-    const metadataPath = ServerApiUtils.buildSystemFrontendPath();
+    const metadataPath = ServerApiPaths.buildSystemFrontendPath();
     const metadata = (await ServerApiUtils.serverFetchJsonOutcome(metadataPath)).valueOrThrow(metadataPath) as Record<string, unknown> | null;
     const plugins = Array.isArray(metadata?.plugins) ? metadata.plugins as Array<Record<string, unknown>> : [];
 

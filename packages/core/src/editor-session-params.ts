@@ -1,4 +1,4 @@
-import { StringUtils } from '@core/string-utils';
+import { StringUtils } from '@core/utils/string-utils';
 
 /**
  * The query parameters that mark a page load as an EDITOR SESSION — a request on which something other

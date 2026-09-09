@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { LifecycleService } from '@core/plugin/services/lifecycle-service';
+import { LifecycleService } from '@core/plugin/services/runtime/lifecycle-service';
 import { PluginApprovalMode } from '@core/plugin/services/enums/plugin-approval-mode.enum';
 
 describe('LifecycleService.computeCapabilityDiff', () => {

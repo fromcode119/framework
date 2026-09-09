@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PluginHealthResponseBuilder } from '@core/plugin-health-response-builder';
+import { PluginHealthResponseBuilder } from '@core/plugin/plugin-health-response-builder';
 import { PluginHealthStatus } from '@core/enums/plugin-health-status.enum';
 
 describe('PluginHealthResponseBuilder', () => {

@@ -1,4 +1,5 @@
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
+import { TenantState } from '@core/enums/tenant-state.enum';
 
 /**
  * One account's access to one tenant.
@@ -11,7 +12,6 @@ import { CoercionUtils } from '@core/coercion-utils';
  * only while an ACTIVE membership exists for it.
  */
 export class TenantMembership {
-  private static readonly ACTIVE = 'active';
 
   readonly userId: string;
   readonly tenantId: string;
@@ -26,7 +26,7 @@ export class TenantMembership {
   }
 
   get isActive(): boolean {
-    return this.state === TenantMembership.ACTIVE;
+    return this.state === TenantState.ACTIVE.value;
   }
 
   /**

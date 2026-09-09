@@ -4,7 +4,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMembership } from '@core/tenant/tenant-membership';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { SystemConstants } from '@core/constants/system.constants';
-import { StringUtils } from '@core/string-utils';
+import { StringUtils } from '@core/utils/string-utils';
 
 export class RolesContextProxy {
 

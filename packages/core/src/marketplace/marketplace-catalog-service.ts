@@ -1,6 +1,6 @@
 import { Logger } from '@core/logging';
 import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
-import { DiscoveryService } from '@core/plugin/services/discovery-service';
+import { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
 import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-client';
 import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';

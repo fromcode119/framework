@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { ComponentDecoratorMigration } from '../component-decorator-migration';
+import { ComponentDecoratorMigration } from '../component-migration/component-decorator-migration';
 import { ArchorCommand } from './archor-command';
 import { FrameworkRoot } from './framework-root';
 

@@ -1,5 +1,5 @@
 import { QueueSettings } from '@fromcode119/queue';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 
 /**

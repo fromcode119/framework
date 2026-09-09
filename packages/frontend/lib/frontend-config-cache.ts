@@ -1,6 +1,7 @@
 import { cache } from 'react';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
 
 /**
@@ -17,13 +18,13 @@ import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
  */
 export class FrontendConfigCache {
   private static readonly configCache = cache(async (): Promise<ServerFetchOutcome<Record<string, unknown>>> => {
-    const internalOutcome = await ServerApiUtils.serverFetchInternalResponseOutcome(ServerApiUtils.buildSystemFrontendPath());
+    const internalOutcome = await ServerApiUtils.serverFetchInternalResponseOutcome(ServerApiPaths.buildSystemFrontendPath());
     const internalResponse = internalOutcome.value;
     if (internalResponse?.ok) {
       return ServerFetchOutcome.resolved(await internalResponse.json() as Record<string, unknown>);
     }
 
-    const publicOutcome = await ServerApiUtils.serverFetchJsonOutcome(ServerApiUtils.buildSystemFrontendPath());
+    const publicOutcome = await ServerApiUtils.serverFetchJsonOutcome(ServerApiPaths.buildSystemFrontendPath());
     // Only claim "unreachable" when BOTH paths failed to reach the API. If either answered,
     // an empty config is a real answer.
     if (publicOutcome.isUnreachable && internalOutcome.isUnreachable) {

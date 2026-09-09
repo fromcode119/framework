@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import * as tar from 'tar';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { ProjectPaths } from '@core/config/paths';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantArchiveLayout } from '@core/tenant/provisioning/tenant-archive-layout';

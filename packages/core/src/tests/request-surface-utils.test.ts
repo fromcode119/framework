@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RequestSurfaceUtils } from '@core/request-surface-utils';
+import { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
 
 describe('RequestSurfaceUtils', () => {
   it('tells extension assets from admin pages under the same root', () => {

@@ -9,7 +9,7 @@ export { ImportGuard } from './import-guard';
 
 // Convention guards and codemods that encode THIS project — moved out of typor, which is standalone.
 // They belong here because archor already owns the framework's boundary guards.
-export { OopGuard } from './oop-guard';
+export { OopGuard } from './oop-guard-rules/oop-guard';
 export { WorkspaceTypecheck } from './workspace-typecheck';
 export type { IWorkspaceAreaResult } from './interfaces/workspace-area-result.interface';
 export type { IWorkspaceSlugResult } from './interfaces/workspace-slug-result.interface';
@@ -17,6 +17,6 @@ export { AppTypecheck } from './app-typecheck';
 export { SrcArtifactGuard } from './src-artifact-guard';
 export { PluginUiHookGuard } from './plugin-ui-hook-guard';
 export { ClientViewMove } from './client-view-move';
-export { ComponentDecoratorMigration } from './component-decorator-migration';
+export { ComponentDecoratorMigration } from './component-migration/component-decorator-migration';
 export { InterfacePrefixMigration } from './interface-prefix-migration';
 export { McpToolSchemaGuard } from './mcp-tool-schema-guard';

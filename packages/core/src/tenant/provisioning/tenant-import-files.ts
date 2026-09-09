@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 
 /**

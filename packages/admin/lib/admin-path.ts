@@ -3,7 +3,7 @@
 // re-exports enums that import it — React refuses either in a server graph.
 import { Platform } from '@fromcode119/reactor/lang';
 import { RouteConstants } from '@fromcode119/core/constants/route.constants';
-import { ApplicationUrlUtils } from '@fromcode119/core/application-url-utils';
+import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
 
 /**
  * Admin path resolution utilities.

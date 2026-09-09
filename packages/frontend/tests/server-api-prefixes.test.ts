@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
 import { ServerApiUnreachableError } from '@/lib/server-api-unreachable-error';
 
@@ -10,7 +11,7 @@ import { ServerApiUnreachableError } from '@/lib/server-api-unreachable-error';
  * container resolver — after which the healthy server-side base failed to resolve too, the page
  * resolver returned null, and the route answered 404 for a page that exists.
  */
-describe('ServerApiUtils.getServerApiPrefixes', () => {
+describe('ServerApiPaths.getServerApiPrefixes', () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
@@ -28,7 +29,7 @@ describe('ServerApiUtils.getServerApiPrefixes', () => {
     process.env.API_URL = 'http://api:3000';
     process.env.NEXT_PUBLIC_API_URL = 'http://api.framework.local';
 
-    const prefixes = ServerApiUtils.getServerApiPrefixes();
+    const prefixes = ServerApiPaths.getServerApiPrefixes();
 
     expect(prefixes.some((prefix) => prefix.startsWith('http://api:3000'))).toBe(true);
     expect(prefixes.some((prefix) => prefix.includes('api.framework.local'))).toBe(false);
@@ -38,7 +39,7 @@ describe('ServerApiUtils.getServerApiPrefixes', () => {
     process.env.INTERNAL_API_URL = 'http://api-internal:3000';
     process.env.API_URL = 'http://api:3000';
 
-    const prefixes = ServerApiUtils.getServerApiPrefixes();
+    const prefixes = ServerApiPaths.getServerApiPrefixes();
 
     expect(prefixes[0].startsWith('http://api-internal:3000')).toBe(true);
   });
@@ -46,7 +47,7 @@ describe('ServerApiUtils.getServerApiPrefixes', () => {
   it('still falls back to the public URL when nothing server-side is configured', () => {
     process.env.NEXT_PUBLIC_API_URL = 'http://api.framework.local';
 
-    const prefixes = ServerApiUtils.getServerApiPrefixes();
+    const prefixes = ServerApiPaths.getServerApiPrefixes();
 
     expect(prefixes.some((prefix) => prefix.includes('api.framework.local'))).toBe(true);
   });

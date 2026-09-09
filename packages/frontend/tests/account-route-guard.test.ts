@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AccountRouteGuard } from '@/lib/account-route-guard';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
 
 /**

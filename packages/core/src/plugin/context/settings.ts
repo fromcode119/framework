@@ -1,9 +1,9 @@
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
-import { PluginConfigValueService } from '@core/plugin/services/plugin-config-value-service';
+import { PluginConfigValueService } from '@core/plugin/services/settings/plugin-config-value-service';
 import { SecretService } from '@core/security/secret-service';
-import { PluginSettingsKeyMigrationService } from '@core/plugin/services/plugin-settings-key-migration-service';
+import { PluginSettingsKeyMigrationService } from '@core/plugin/services/settings/plugin-settings-key-migration-service';
 
 export class SettingsContextProxy {
   static createSettingsProxy(

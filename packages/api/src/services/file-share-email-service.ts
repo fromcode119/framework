@@ -1,6 +1,6 @@
 import { PluginManager, Logger, SystemConstants } from '@fromcode119/core';
 import { FileShareEmailTemplate } from '@api/controllers/auth/email-templates/file-share-email-template';
-import { FileShareAdminController } from '@api/controllers/file-share-admin-controller';
+import { FileShareAdminController } from '@api/controllers/file-sharing/file-share-admin-controller';
 
 /**
  * Sends the one email that carries a share link.

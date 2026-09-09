@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { RequestSurfaceUtils } from '@core/request-surface-utils';
+import { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
 
 /**
  * An admin console's session cookie must be HOST-scoped, and a storefront's must not be.

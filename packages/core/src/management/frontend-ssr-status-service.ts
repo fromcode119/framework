@@ -1,4 +1,4 @@
-import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import { InternalServiceAuth } from '@core/security/internal-service-auth';
 

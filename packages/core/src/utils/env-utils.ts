@@ -1,4 +1,4 @@
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 
 /**
  * Environment-variable helpers. Centralizes reading process.env so feature flags aren't parsed with

@@ -1,5 +1,5 @@
 import { ApiVersionUtils } from '@core/api-version';
-import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import { RouteConstants } from '@core/constants/route.constants';
 

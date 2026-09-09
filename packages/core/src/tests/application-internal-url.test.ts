@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 
 /**
  * Three properties, each load-bearing.

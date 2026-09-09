@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { LocaleUrlStrategy, LocalizationUtils } from '@fromcode119/core/client';
 import { HomePageResolver } from '@/app/home-page-resolver';
@@ -19,7 +20,7 @@ import { FrontendTranslationsCache } from '@/lib/frontend-translations-cache';
 import { PluginInjectionRenderer } from '@/lib/plugin-injection-renderer';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
 import { RouteSegmentUtils } from '@/lib/route-segment-utils';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { PageDocPrefetchRequestCache } from '@/lib/theme/page-doc-prefetch-request-cache';
 import { ThemeServerRenderer } from '@/lib/ssr/theme-server-renderer';
 import { StorefrontPageKind } from '@/runtime/storefront-page-kind';
@@ -117,7 +118,7 @@ export class StorefrontDocumentRenderer {
       themeDependencies: Object.keys((activeTheme?.dependencies as Record<string, unknown> | undefined) || {}),
     });
     const runtimeConfig = {
-      apiUrl: ServerApiUtils.buildPublicApiBaseUrl(),
+      apiUrl: ServerApiPaths.buildPublicApiBaseUrl(),
       skipPlugins,
       locale,
       content,

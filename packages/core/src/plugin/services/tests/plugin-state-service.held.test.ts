@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { PluginStateService } from '@core/plugin/services/plugin-state-service';
+import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';

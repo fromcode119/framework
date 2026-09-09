@@ -16,14 +16,14 @@ vi.mock('@core/database/seeder', () => ({
     seed = vi.fn();
   }),
 }));
-vi.mock('@core/plugin/services/plugin-failure-isolation-service', () => ({
+vi.mock('@core/plugin/services/runtime/plugin-failure-isolation-service', () => ({
   PluginFailureIsolationService: vi.fn(class PluginFailureIsolationService {
     rollbackPartialRegistration = vi.fn();
     markPluginError = vi.fn().mockResolvedValue(undefined);
   }),
 }));
 
-import { LifecycleService } from '@core/plugin/services/lifecycle-service';
+import { LifecycleService } from '@core/plugin/services/runtime/lifecycle-service';
 import { CoreServices } from '@core/services/core-services';
 import { ServerCoreServices } from '@core/services/server-core-services';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 
 /**
  * Serves a site icon (favicon, apple-touch-icon) from the active theme's public assets, then the

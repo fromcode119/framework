@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { RuntimeService } from '@core/plugin/services/runtime-service';
+import { RuntimeService } from '@core/plugin/services/runtime/runtime-service';
 
 // framework/Source root, derived from this file — stable regardless of the suite's cwd. RuntimeService
 // uses it only to anchor `require.resolve` during key discovery; the bridge SOURCES are compiled

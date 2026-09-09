@@ -1,8 +1,9 @@
 import type { IHeadData } from '@/lib/interfaces/head-data.interface';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { cache } from 'react';
 
 import type { Metadata } from 'next';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 
 export class ResolvedContentMetadata {
@@ -131,7 +132,7 @@ export class ResolvedContentMetadata {
   private static readonly headDataCache = cache(async (queryString: string): Promise<IHeadData | null> => {
     const provider = await ResolvedContentMetadata.resolveHeadDataProvider();
     if (!provider) return null;
-    const path = ServerApiUtils.buildPluginPath(provider.pluginSlug, provider.headDataPath, queryString);
+    const path = ServerApiPaths.buildPluginPath(provider.pluginSlug, provider.headDataPath, queryString);
     // Strict: an unreachable API must NOT be read as "the provider has no head data". Doing so
     // publishes canonical/robots tags the operator never configured — a page that should be
     // noindex would quietly get indexed. Throwing turns the request into an honest 5xx instead.

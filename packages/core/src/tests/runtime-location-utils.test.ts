@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { RuntimeLocationUtils } from '@core/runtime-location-utils';
+import { RuntimeLocationUtils } from '@core/utils/runtime-location-utils';
 
 describe('RuntimeLocationUtils', () => {
   afterEach(() => {

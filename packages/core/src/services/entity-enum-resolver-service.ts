@@ -1,4 +1,4 @@
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import type { IEntityEnumOptions } from '@core/interfaces/entity-enum-options.interface';
 
 export class EntityEnumResolverService {

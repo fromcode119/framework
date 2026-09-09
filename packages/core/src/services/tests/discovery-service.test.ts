@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { DiscoveryService } from '@core/plugin/services/discovery-service';
+import { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
 
 describe('DiscoveryService', () => {
   const projectRoots: string[] = [];

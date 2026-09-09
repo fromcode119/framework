@@ -1,5 +1,5 @@
 import { ApplicationRestartService } from '@core/management/application-restart-service';
-import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 
 /**
  * Restarts the storefront renderer after the extensions it renders from change on disk.

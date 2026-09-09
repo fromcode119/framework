@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 // which import reactor's barrel, which exports the `Reactor` class component and react-dom — and React
 // refuses a class component in a server graph, so one barrel import 500s every admin request. Both
 // modules below are React-free.
-import { ApplicationUrlUtils } from '@fromcode119/core/application-url-utils';
+import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
 import { CookieConstants } from '@fromcode119/core/constants/cookie.constants';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 

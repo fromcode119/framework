@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PluginHealthReportService } from '@core/plugin/services/plugin-health-report-service';
+import { PluginHealthReportService } from '@core/plugin/services/health/plugin-health-report-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';

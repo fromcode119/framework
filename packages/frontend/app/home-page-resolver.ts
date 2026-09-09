@@ -1,8 +1,9 @@
 import { LocalizationUtils } from '@fromcode119/core/client';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { FrontendPublicSettings } from '@/lib/frontend-public-settings';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { IResolvedDocResult } from '@/lib/interfaces/resolved-doc-result.interface';
 import { IHomeTargetResolution } from '@/app/interfaces/home-target-resolution.interface';
@@ -47,7 +48,7 @@ export class HomePageResolver {
     }
 
     // Strict: an unreachable API must not be rendered as "the home page does not exist".
-    const path = ServerApiUtils.buildSystemResolvePath(query);
+    const path = ServerApiPaths.buildSystemResolvePath(query);
     const result = (await ServerApiUtils.serverFetchJsonOutcome(path)).valueOrThrow(path) as Record<string, unknown>;
     return {
       type: String(result?.type || '').trim(),
@@ -87,7 +88,7 @@ export class HomePageResolver {
 
       if (collectionSlug && recordId) {
         const result = await ServerApiUtils.serverFetchJson(
-          ServerApiUtils.buildCollectionLookupPath(collectionSlug, { id: recordId, limit: 1 })
+          ServerApiPaths.buildCollectionLookupPath(collectionSlug, { id: recordId, limit: 1 })
         );
         const doc = ServerApiUtils.extractFirstDoc(result);
         if (doc) {

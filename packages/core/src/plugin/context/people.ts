@@ -2,9 +2,9 @@ import { NamingStrategy } from '@fromcode119/database';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
-import { PersonCatalogService } from '@core/plugin/services/person-catalog-service';
-import { PeopleAddressService } from '@core/plugin/services/people-address-service';
-import { PeopleDirectoryService } from '@core/plugin/services/people-directory-service';
+import { PersonCatalogService } from '@core/plugin/services/people/person-catalog-service';
+import { PeopleAddressService } from '@core/plugin/services/people/people-address-service';
+import { PeopleDirectoryService } from '@core/plugin/services/people/people-directory-service';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import type { IPeopleAddressRef } from '@core/plugin/services/interfaces/people-address-ref.interface';
 

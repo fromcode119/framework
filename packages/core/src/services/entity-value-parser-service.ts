@@ -1,5 +1,5 @@
 import { EntityParseMode } from '@core/enums/entity-parse-mode.enum';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import type { ICollection } from '@core/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { IEntityField } from '@core/interfaces/entity-field.interface';

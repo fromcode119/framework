@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { ApiPathUtils } from '@fromcode119/core/client';
 
 // Route files export only the class — see RouteExportPlugin.
 import { FaviconRoute } from '@/app/favicon.ico/route';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 
 describe('favicon route', () => {
   afterEach(() => {
@@ -21,7 +22,7 @@ describe('favicon route', () => {
   }
 
   it('serves the active theme favicon from theme public assets', async () => {
-    vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
       activeTheme: { slug: 'vselenskiportal88' },
     });
@@ -39,7 +40,7 @@ describe('favicon route', () => {
   });
 
   it('falls back to the framework favicon when the active theme has no favicon asset', async () => {
-    vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
       activeTheme: { slug: 'theme-a-theme' },
     });
@@ -58,7 +59,7 @@ describe('favicon route', () => {
   });
 
   it('returns 204 when no theme or framework favicon is available', async () => {
-    vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
       activeTheme: { slug: 'theme-a-theme' },
     });
@@ -71,7 +72,7 @@ describe('favicon route', () => {
   });
 
   it('falls back to the framework favicon when theme resolution throws', async () => {
-    vi.spyOn(ServerApiUtils, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockRejectedValue(new Error('metadata unavailable'));
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(createResponse('', 'text/plain', 404));
     vi.stubGlobal('fetch', vi.fn(async () => createResponse('fallback', 'image/png')));

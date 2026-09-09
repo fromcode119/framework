@@ -5,7 +5,7 @@ import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
 import { PluginInvocationTokens } from '@core/plugin/host/plugin-invocation-tokens';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
 import { PluginHostPortableView } from '@core/plugin/host/plugin-host-portable-view';
-import type { PluginContext } from '@core/plugin-context';
+import type { PluginContext } from '@core/plugin/plugin-context';
 
 /**
  * Runs one guest call against the REAL context, under the tenant the call's token was minted for.

@@ -1,4 +1,5 @@
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
+import { TenantState } from '@core/enums/tenant-state.enum';
 import { TenantKind } from '@core/tenant/tenant-kind';
 
 /**
@@ -8,7 +9,6 @@ import { TenantKind } from '@core/tenant/tenant-kind';
  * behaviour that belongs with the data instead of being repeated at every call site.
  */
 export class TenantRecord {
-  private static readonly ACTIVE = 'active';
 
   readonly id: string;
   readonly slug: string;
@@ -41,7 +41,7 @@ export class TenantRecord {
   }
 
   get isActive(): boolean {
-    return this.state === TenantRecord.ACTIVE;
+    return this.state === TenantState.ACTIVE.value;
   }
 
   /** Every host that resolves to this tenant: lowercased, deduped, primary first. */

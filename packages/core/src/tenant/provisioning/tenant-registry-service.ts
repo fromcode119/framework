@@ -1,4 +1,4 @@
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { TenantThemeAccess } from '@core/theme/tenant-theme-access';

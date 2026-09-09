@@ -9,7 +9,7 @@ import { PluginGuestApiFactory } from '@core/plugin/host/plugin-guest-api-factor
 import { PluginGuestLocals } from '@core/plugin/host/plugin-guest-locals';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
-import type { PluginContext } from '@core/plugin-context';
+import type { PluginContext } from '@core/plugin/plugin-context';
 
 /**
  * The `PluginContext` an isolated plugin receives: the same shape as in-process, every namespace an

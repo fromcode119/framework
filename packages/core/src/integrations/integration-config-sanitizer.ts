@@ -1,4 +1,4 @@
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 import { SecretService } from '@core/security/secret-service';
 import type { IIntegrationConfigField } from '@core/integrations/interfaces/integration-config-field.interface';

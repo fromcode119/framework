@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 // The component file exports only the class; render its static.
 import { ThemeAssetsView } from '@/components/theme-assets';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
 
 const preloadSpy = vi.hoisted(() => vi.fn());
@@ -40,7 +41,7 @@ describe('ThemeAssets', () => {
         },
       },
     }));
-    vi.spyOn(ServerApiUtils, 'buildPublicApiBaseUrl').mockReturnValue('');
+    vi.spyOn(ServerApiPaths, 'buildPublicApiBaseUrl').mockReturnValue('');
 
     renderToStaticMarkup(await ThemeAssetsView.render());
 

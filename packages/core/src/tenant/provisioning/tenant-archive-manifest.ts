@@ -1,4 +1,4 @@
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 
 /**
  * `manifest.json` of a tenant archive — what the archive claims to contain, written by the exporter

@@ -1,6 +1,7 @@
 import { cache } from 'react';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 
 /**
  * Per-request memoized `/system/i18n?locale=…` payload (React `cache()`), keyed by locale — the same
@@ -12,7 +13,7 @@ import { ServerApiUtils } from '@/lib/server-api';
  */
 export class FrontendTranslationsCache {
   private static readonly translationsCache = cache(async (locale: string): Promise<Record<string, unknown>> => {
-    const payload = await ServerApiUtils.serverFetchJson(ServerApiUtils.buildSystemI18nPath(locale));
+    const payload = await ServerApiUtils.serverFetchJson(ServerApiPaths.buildSystemI18nPath(locale));
     return payload && typeof payload === 'object' ? payload as Record<string, unknown> : {};
   });
 

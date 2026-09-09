@@ -1,4 +1,4 @@
-import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { ApiVersionDefaults } from '@core/constants/api-version-defaults.constants';
 
 /**

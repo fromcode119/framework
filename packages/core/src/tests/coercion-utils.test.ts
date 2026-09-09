@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 
 /**
  * These tests exist because a product row on production carried `shortDescription: {}` — an object in a

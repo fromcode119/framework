@@ -9,7 +9,7 @@ import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
 import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { IRequestStore } from '@core/context/interfaces/request-store.interface';
-import type { PluginContext } from '@core/plugin-context';
+import type { PluginContext } from '@core/plugin/plugin-context';
 
 /**
  * The host's stand-ins for what the guest registered: each one is registered on the REAL context

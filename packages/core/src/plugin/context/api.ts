@@ -2,7 +2,7 @@ import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IMiddlewareConfig } from '@core/interfaces/middleware-config.interface';
 import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
-import { PluginHealthRouteHandler } from '@core/plugin-health-route-handler';
+import { PluginHealthRouteHandler } from '@core/plugin/plugin-health-route-handler';
 import { RouteConstants } from '@core/constants/route.constants';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import type { IPluginHealthProbeResult } from '@core/interfaces/plugin-health-probe-result.interface';

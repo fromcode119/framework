@@ -1,5 +1,6 @@
 import { ApiVersionUtils, RuntimeConstants } from '@fromcode119/core/client';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import type { ThemePrefetchApiEntry } from '@/lib/theme/theme-prefetch-api-entry';
 import type { ILcpImagePreload } from '@/lib/theme/interfaces/lcp-image-preload.interface';
 
@@ -74,7 +75,7 @@ export class ThemeDataPrefetcher {
       : [];
     if (!apis.length) return {};
 
-    const internalBase = ServerApiUtils.buildInternalApiBaseUrl();
+    const internalBase = ServerApiPaths.buildInternalApiBaseUrl();
     const results: Record<string, unknown> = {};
 
     await Promise.allSettled(
@@ -88,7 +89,7 @@ export class ThemeDataPrefetcher {
         const query = new URLSearchParams(
           typeof entry.query === 'object' && entry.query !== null ? entry.query : {},
         );
-        const apiPath = ServerApiUtils.buildPluginPath(pluginSlug, entry.path || '', query);
+        const apiPath = ServerApiPaths.buildPluginPath(pluginSlug, entry.path || '', query);
         const url = `${internalBase}${ApiVersionUtils.prefix()}${apiPath}`;
         const payload = await ThemeDataPrefetcher.fetchEntry(url);
         if (payload !== undefined) results[key] = payload;

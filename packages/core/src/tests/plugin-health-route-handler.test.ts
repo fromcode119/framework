@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PluginHealthRouteHandler } from '@core/plugin-health-route-handler';
+import { PluginHealthRouteHandler } from '@core/plugin/plugin-health-route-handler';
 import { PluginHealthStatus } from '@core/enums/plugin-health-status.enum';
 
 describe('PluginHealthRouteHandler', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PublicAssetUrlUtils } from '@core/public-asset-url-utils';
+import { PublicAssetUrlUtils } from '@core/utils/public-asset-url-utils';
 
 describe('PublicAssetUrlUtils', () => {
   it('normalizes versioned upload paths to the public uploads path', () => {

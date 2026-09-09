@@ -8,7 +8,7 @@ import crypto from 'crypto';
 import { ProjectPaths } from '@core/config/paths';
 import { SafeArchive } from '@core/security/safe-archive';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
-import { PluginRuntimeRestartService } from '@core/plugin/services/plugin-runtime-restart-service';
+import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });

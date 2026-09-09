@@ -1,6 +1,6 @@
 import { Logger } from '@core/logging';
 import { SystemConstants } from '@core/constants/system.constants';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 
 /**
  * Decides whether a site may send through the PLATFORM's mail server.

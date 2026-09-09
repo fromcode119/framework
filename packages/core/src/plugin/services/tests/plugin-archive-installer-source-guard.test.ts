@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
-import { PluginArchiveInstallerService } from '@core/plugin/services/plugin-archive-installer-service';
+import { PluginArchiveInstallerService } from '@core/plugin/services/installation/plugin-archive-installer-service';
 
 /**
  * A mounted plugin directory that is a git checkout is SOURCE. An archive install replaced one with

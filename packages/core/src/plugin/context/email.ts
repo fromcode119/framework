@@ -1,7 +1,7 @@
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import type { IEmailCategory } from '@core/email/interfaces/email-category.interface';
-import { ApplicationUrlUtils } from '@core/application-url-utils';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { EmailPreferencesTokenService } from '@core/email/email-preferences-token-service';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import { SigningSecretService } from '@core/security/signing-secret-service';

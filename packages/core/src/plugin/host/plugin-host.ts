@@ -24,7 +24,7 @@ import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remo
 import type { IRequestStore } from '@core/context/interfaces/request-store.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
-import type { PluginContext } from '@core/plugin-context';
+import type { PluginContext } from '@core/plugin/plugin-context';
 
 /**
  * One isolated plugin, from the host's side: its process, its channel, its tokens, its stand-ins.

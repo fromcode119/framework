@@ -1,5 +1,5 @@
 import type { IDatabaseManager } from '@fromcode119/database';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdRemap } from '@core/tenant/provisioning/tenant-id-remap';

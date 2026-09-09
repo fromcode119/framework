@@ -1,7 +1,8 @@
 import { ApiPathUtils, PublicAssetUrlUtils, RuntimeConstants } from '@fromcode119/core/client';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
-import { ServerApiUtils } from '@/lib/server-api';
+import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { ThemeCssUrlRewriter } from '@/lib/theme/theme-css-url-rewriter';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 import { ThemePrefetchRequestCache } from '@/lib/theme/theme-prefetch-request-cache';
@@ -60,7 +61,7 @@ export class ThemeHeadModel {
     const cssVariables = typeof config?.cssVariables === 'string' ? config.cssVariables : '';
     const rawEntryUrl = String(theme.ui?.entry || '').trim();
     const absoluteEntryUrl = rawEntryUrl.startsWith('http') ? rawEntryUrl : '';
-    const apiUrl = (absoluteEntryUrl ? new URL(absoluteEntryUrl).origin : '') || ServerApiUtils.buildPublicApiBaseUrl();
+    const apiUrl = (absoluteEntryUrl ? new URL(absoluteEntryUrl).origin : '') || ServerApiPaths.buildPublicApiBaseUrl();
     const entryUrl = rawEntryUrl ? (absoluteEntryUrl || ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, rawEntryUrl)) : '';
     // `assetVersion` is a digest of the theme's built files; `version` is a number someone edits. Prefer
     // the one that actually moves when the theme is rebuilt (see PublicAssetUrlUtils.themeAssetStamp).
@@ -104,7 +105,7 @@ export class ThemeHeadModel {
     if (!cssPaths.length) return { inlinedCss: '', fallbackCssHrefs: [] };
     const publicHrefs = cssPaths.map((cssPath) => (cssPath.startsWith('http') ? cssPath : ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, cssPath)));
     try {
-      const internalBase = ServerApiUtils.buildInternalApiBaseUrl();
+      const internalBase = ServerApiPaths.buildInternalApiBaseUrl();
       const cssResults = await Promise.all(publicHrefs.map(async (publicHref) => {
         const versionedPublicHref = FrontendAssetVersionUrlService.appendVersion(publicHref, assetStamp);
         const response = await fetch(versionedPublicHref.replace(apiUrl, internalBase), { next: { revalidate: 3600 } });

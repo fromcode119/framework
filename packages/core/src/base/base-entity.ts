@@ -1,6 +1,6 @@
 import { EntityObjectMapperService } from '@core/services/entity-object-mapper-service';
 import { EntityMetadataService } from '@core/services/entity-metadata-service';
-import { CoercionUtils } from '@core/coercion-utils';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import type { IEntityFieldsConfig } from '@core/interfaces/entity-fields-config.interface';
 
 export abstract class BaseEntity<TRecord extends object> {

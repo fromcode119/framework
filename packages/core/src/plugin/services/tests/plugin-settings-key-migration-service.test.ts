@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PluginSettingsKeyMigrationService } from '@core/plugin/services/plugin-settings-key-migration-service';
+import { PluginSettingsKeyMigrationService } from '@core/plugin/services/settings/plugin-settings-key-migration-service';
 
 /**
  * This replaced eleven near-identical per-plugin migration classes. The behaviour that matters is

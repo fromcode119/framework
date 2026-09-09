@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PeopleDirectoryService } from '@core/plugin/services/people-directory-service';
+import { PeopleDirectoryService } from '@core/plugin/services/people/people-directory-service';
 
 /**
  * Harness mirroring the real wiring: a plugin-scoped `find` over one table, a `_system_meta` cursor

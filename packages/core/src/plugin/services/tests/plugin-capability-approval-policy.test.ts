@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { PluginCapabilityApprovalPolicy } from '@core/plugin/services/plugin-capability-approval-policy';
+import { PluginCapabilityApprovalPolicy } from '@core/plugin/services/security/plugin-capability-approval-policy';
 
 const ENV_KEYS = ['AUTO_APPROVE_PLUGIN_CAPABILITIES', 'AUTO_APPROVE_TRUSTED_SLUGS'];
 afterEach(() => { for (const k of ENV_KEYS) delete process.env[k]; });
