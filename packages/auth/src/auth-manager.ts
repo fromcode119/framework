@@ -8,6 +8,8 @@ import type { IUser } from '@auth/interfaces/user.interface';
 import type { ISessionValidator } from '@auth/interfaces/session-validator.interface';
 import type { IApiKeyValidator } from '@auth/interfaces/api-key-validator.interface';
 
+import { AuthTokenService } from '@auth/auth-token-service';
+
 export class AuthManager {
   private secret: string;
   private tenantRoleResolver?: (userId: string, tenantId: string) => Promise<string[] | null>;
@@ -15,12 +17,14 @@ export class AuthManager {
   private apiKeyValidator?: IApiKeyValidator;
   private permissionChecker?: UserPermissionChecker;
   private logger = new Logger({ namespace: 'auth-manager' });
+  private readonly tokens: AuthTokenService;
 
   constructor(secret: string = process.env.JWT_SECRET || '') {
     if (!secret) {
       throw new Error('AuthManager: JWT_SECRET must be set in environment variables. No default is allowed for security.');
     }
     this.secret = secret;
+    this.tokens = new AuthTokenService(this.secret, () => this.sessionValidator);
   }
 
   /**
@@ -94,83 +98,34 @@ export class AuthManager {
     }
   }
 
+  /** @inheritdoc — delegated to AuthTokenService. */
   async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 12);
+    return this.tokens.hashPassword(password);
   }
 
+  /** @inheritdoc — delegated to AuthTokenService. */
   async comparePassword(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash);
+    return this.tokens.comparePassword(password, hash);
   }
 
-  /**
-   * `tenantId` is stated explicitly rather than left to ride along on the user object, so a token
-   * is never silently minted without the tenant it belongs to.
-   */
-  async generateToken(
-    user: IUser,
-    options: { expiresIn?: SignOptions['expiresIn']; tenantId?: string } = {},
-  ): Promise<string> {
-    const payload: Record<string, unknown> = {
-      ...user,
-      jti: user.jti || randomUUID(),
-    };
-    if (options.tenantId) payload.tenantId = options.tenantId;
-    return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: options.expiresIn ?? '15m' });
+  /** @inheritdoc — delegated to AuthTokenService. */
+  async generateToken(...args: Parameters<AuthTokenService['generateToken']>): Promise<string> {
+    return this.tokens.generateToken(...args);
   }
 
+  /** @inheritdoc — delegated to AuthTokenService. */
   async generateRefreshToken(user: IUser): Promise<string> {
-    const payload = {
-      id: user.id,
-      jti: user.jti || randomUUID(),
-      type: 'refresh'
-    };
-    return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: '7d' });
+    return this.tokens.generateRefreshToken(user);
   }
 
-  /**
-   * `expected.tenantId` is supplied by the caller — this package stays framework-agnostic and does
-   * not decide whether the deployment is multi-tenant. When it IS supplied, the token's own claim
-   * must match: a token minted for one tenant is refused against another, never re-scoped to
-   * whatever tenant the request happened to resolve to.
-   *
-   * When no tenant is expected (a single-tenant deployment) a token without the claim verifies
-   * exactly as before, which is what keeps existing installations working.
-   */
+  /** @inheritdoc — delegated to AuthTokenService. */
   async verifyToken(token: string, expected: { tenantId?: string } = {}): Promise<IUser> {
-    try {
-      const decoded = jwt.verify(token, this.secret, { algorithms: ['HS256'] }) as any;
-
-      if (decoded.type === 'refresh') {
-        throw new Error('Cannot use refresh token as access token');
-      }
-
-      if (expected.tenantId && decoded.tenantId !== expected.tenantId) {
-        throw new Error(
-          `Token tenant mismatch: minted for "${decoded.tenantId ?? 'no tenant'}", presented to `
-          + `"${expected.tenantId}".`,
-        );
-      }
-
-      if (this.sessionValidator && !decoded.isApiKey) {
-        if (!decoded.jti) throw new Error('Access token has no session identifier');
-        const isValid = await this.sessionValidator(decoded.jti);
-        if (!isValid) throw new Error('Session revoked or expired');
-      }
-
-      return decoded as IUser;
-    } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Invalid or expired token');
-    }
+    return this.tokens.verifyToken(token, expected);
   }
 
+  /** @inheritdoc — delegated to AuthTokenService. */
   async verifyRefreshToken(token: string): Promise<{ id: string, jti: string }> {
-    try {
-      const decoded = jwt.verify(token, this.secret, { algorithms: ['HS256'] }) as any;
-      if (decoded.type !== 'refresh') throw new Error('Invalid refresh token');
-      return { id: decoded.id, jti: decoded.jti };
-    } catch {
-      throw new Error('Invalid refresh token');
-    }
+    return this.tokens.verifyRefreshToken(token);
   }
 
   middleware() {
