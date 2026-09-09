@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { ClientType } from '@fromcode119/core/client';
 import { Reactor, prop } from '@fromcode119/reactor';
 import * as ReactorRuntime from '@fromcode119/reactor';
-import { PluginsProvider, PluginRuntimeProvider } from '@fromcode119/react';
+import { PluginsProvider } from '@fromcode119/react';
 import { AdminLocaleSync } from '@/app/components/view/admin-locale-sync.client';
 import { ThemeProvider } from '@/components/view/theme-context.client';
 import { AdminRuntimeProvider } from '@/components/view/admin-runtime-provider.client';
@@ -10,6 +10,7 @@ import * as SharedComponents from '@/components';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 
+import { AdminPluginRuntimeProvider } from '@/app/components/view/admin-plugin-runtime-provider.client';
 import { AppearanceShellHostShim } from '@/app/components/view/appearance-shell-host-shim.client';
 import { AppearanceRuntimeLoader } from '@/app/components/view/appearance-runtime-loader.client';
 import { AdminIconRegistryBootstrapService } from '@/app/services/admin-icon-registry-bootstrap-service';
@@ -62,9 +63,9 @@ export class ClientLayout extends Reactor {
         <AppearanceRuntimeLoader>
           <ThemeProvider>
             <AdminRuntimeProvider>
-              <PluginRuntimeProvider>
+              <AdminPluginRuntimeProvider>
                 <AppearanceShellHostShim>{this.children}</AppearanceShellHostShim>
-              </PluginRuntimeProvider>
+              </AdminPluginRuntimeProvider>
             </AdminRuntimeProvider>
           </ThemeProvider>
         </AppearanceRuntimeLoader>

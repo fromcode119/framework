@@ -56,6 +56,13 @@ export class ApiRouteProxy {
     forwarded.delete('connection');
     forwarded.delete('keep-alive');
     forwarded.delete('transfer-encoding');
+    // `fetch` DECODES the upstream body, so the `arrayBuffer()` above holds plain bytes. Forwarding the
+    // upstream's `Content-Encoding: gzip` alongside them tells the browser to gunzip text that is not
+    // gzipped: every theme and plugin bundle failed with ERR_CONTENT_DECODING_FAILED and the storefront
+    // ran server-rendered only, with no client runtime at all. The compressed `Content-Length` goes with
+    // it — it describes bytes that are no longer being sent, and the platform sets the real one.
+    forwarded.delete('content-encoding');
+    forwarded.delete('content-length');
     return forwarded;
   }
 }

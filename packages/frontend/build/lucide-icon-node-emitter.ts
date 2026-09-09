@@ -3,7 +3,14 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 // Relative on purpose (same as the sibling Vite config): this file runs under `tsx` outside every app
 // alias, and the constants file carries no imports of its own.
-import { RuntimeAssetConstants } from '@core/constants/runtime-asset.constants';
+// `@fromcode119/core/constants/*` — core's own narrow public export, NOT its private `@core/*` alias
+// and NOT the `/client` barrel. This file is loaded by plain Node
+// (vite reads the config through a CJS require), which has no TypeScript path mapping — the private
+// alias resolves locally and then fails inside the Docker build with
+// `Cannot find module '@core/constants/runtime-asset.constants'`. The `/client` barrel is the wrong fix
+// too: it drags reactor's decorators into a tsx-run CLI and throws on an undefined descriptor. This
+// path reaches ONE import-free file, which is what the constants module was written to be.
+import { RuntimeAssetConstants } from '@fromcode119/core/constants/runtime-asset.constants';
 
 /**
  * Emits the Lucide icon set as per-icon DATA modules — one tiny ES module per icon holding nothing but

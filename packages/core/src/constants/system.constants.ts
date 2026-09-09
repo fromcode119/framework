@@ -119,6 +119,16 @@ export class SystemConstants {
   static readonly META_KEY = {
   EMAIL_PROFILES: 'integration_email_profiles',
   EMAIL_PROVIDER: 'integration_email_provider',
+  /**
+   * May THIS SITE send through the PLATFORM's mail server when it has configured none of its own?
+   * Tenant-scoped like every other row in `_system_meta`, and OFF unless the operator turns it on.
+   *
+   * Off is the safe default because the alternative is silent: a site with no mail configuration
+   * quietly borrowed the platform's SMTP credentials, so one customer's mail left on another's server,
+   * under the platform's SPF and DKIM and against the platform's sending reputation — with nothing in
+   * any interface saying so. A site that genuinely should use platform mail says so here, once.
+   */
+  EMAIL_PLATFORM_FALLBACK: 'email_platform_fallback',
 
   MAINTENANCE_MODE: 'maintenance_mode',
   /** Hosted MCP transport (Streamable HTTP at POST /mcp). Off unless the operator enables it — Settings → Integrations → MCP. */

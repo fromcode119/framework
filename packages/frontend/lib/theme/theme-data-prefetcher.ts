@@ -21,8 +21,6 @@ import type { ILcpImagePreload } from '@/lib/theme/interfaces/lcp-image-preload.
  * ```
  */
 export class ThemeDataPrefetcher {
-  private static readonly CACHE_REVALIDATE_SECONDS = 30;
-
   /**
    * How long to wait before the single retry below. Short on purpose: this is a startup race, not a
    * backoff strategy — the API is either seconds from ready or genuinely down.
@@ -41,10 +39,23 @@ export class ThemeDataPrefetcher {
    * matters. A genuinely absent API still degrades to no prefetch, exactly as before.
    */
   private static async fetchEntry(url: string): Promise<unknown | undefined> {
+    // THE TENANT, and the reason this whole mechanism was dead. A server-to-server fetch reaches the
+    // API as `Host: api:3000`, and on a multi-tenant deployment the API routes by host — so every
+    // prefetch resolved no site and was refused. Nothing failed loudly: the payload came back empty,
+    // no `__FROMCODE_PAGE_PREFETCH__` script was emitted, and every consumer quietly fell through to
+    // its client fetch. The navigation menus have been arriving one round trip late ever since, and
+    // any consumer WITHOUT a fallback would simply have rendered nothing.
+    const forwardedHeaders = await ServerApiUtils.buildForwardedAuthHeaders();
     for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
+        // `no-store`, NOT the revalidating cache this used to ask for. Next keys its fetch cache on
+        // the URL and the options and NOT on the headers, so the moment this became tenant-aware a
+        // shared cache entry would serve one customer's navigation and content to another. The call
+        // is already memoised per request by `ThemePrefetchRequestCache`, so the cache bought little
+        // and could not be kept safely.
         const response = await fetch(url, {
-          next: { revalidate: ThemeDataPrefetcher.CACHE_REVALIDATE_SECONDS },
+          cache: 'no-store',
+          headers: forwardedHeaders,
         } as RequestInit);
         if (response.ok) return await response.json();
       } catch {

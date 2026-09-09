@@ -46,5 +46,10 @@ describe('admin session cookie scope', () => {
     expect(options(req({ 'x-framework-client': 'admin-ui' })).domain).toBeUndefined();
     expect(options(req({ 'x-framework-client': 'frontend-ui' })).domain).toBe('.example.test');
     vi.unstubAllEnvs();
-  });
+    // The dynamic import pulls the whole `@fromcode119/core` barrel — around 1,400 modules — which
+    // takes 13-14 seconds to transform from cold and cannot fit the 5s default. It passed for a long
+    // time only because some earlier file in the same worker had already imported the barrel, so this
+    // was a cache hit; the moment file order changed it began timing out, which is a property of the
+    // suite and not of the code under test.
+  }, 60_000);
 });

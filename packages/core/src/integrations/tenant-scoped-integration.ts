@@ -13,18 +13,45 @@ import { RequestContextUtils } from '@core/context/request-context';
  * the current tenant's instance first and delegates, and with no tenant in scope the platform's own
  * instance answers, which is what framework work (auth mail, admin notifications) needs.
  *
- * CONTRACT: every method on the wrapped surface must be async. A wrapper cannot make a synchronous
- * method wait for a lookup, so a surface with sync methods (`MediaManager.publicUrl`) must NOT be wrapped
- * — resolving those per tenant needs the callers to await, which is a larger change.
+ * SYNCHRONOUS methods are supported by NAMING them. A wrapper cannot make a synchronous method wait for
+ * a lookup, so those are answered from an instance resolved earlier — `IntegrationTenantAccess`, warmed
+ * when the tenancy middleware binds the request, exactly as `PluginTenantAccess` warms the plugin gates
+ * for the same reason. `MediaManager.publicUrl` and `QueueManager.applySettings` are the cases.
  */
 export class TenantScopedIntegration {
-  static wrap<T extends object>(platform: () => T, forTenant: (tenantId: string) => Promise<T>): T {
+  /**
+   * @param platform   the platform's own instance, used with no tenant bound and as the fallback.
+   * @param forTenant  resolves a tenant's instance; used for every ASYNC method.
+   * @param syncMethods method names that must NOT become promises — `MediaManager.publicUrl`,
+   *   `QueueManager.applySettings`. They are NAMED rather than detected, because whether a function
+   *   returns a promise cannot be read off it, and guessing wrong turns a string into a `Promise<string>`
+   *   that renders as `[object Promise]` in a page.
+   * @param syncFor    the synchronous lookup for those methods, warmed when the request was bound.
+   */
+  static wrap<T extends object>(
+    platform: () => T,
+    forTenant: (tenantId: string) => Promise<T>,
+    syncMethods: readonly string[] = [],
+    syncFor: (() => T | undefined) = () => undefined,
+  ): T {
+    const named = new Set(syncMethods);
     return new Proxy({} as T, {
       get(_target, prop) {
         const current = platform() as Record<string | symbol, unknown>;
         const value = current?.[prop];
         // Data and accessors read from the platform instance: only calls can wait for a lookup.
         if (typeof value !== 'function') return value;
+
+        // A named synchronous method answers from the warmed instance, or from the platform when this
+        // is framework work with no tenant bound. It never returns a promise.
+        if (typeof prop === 'string' && named.has(prop)) {
+          return (...args: unknown[]) => {
+            const instance = syncFor() as Record<string | symbol, unknown> | undefined;
+            const target = instance?.[prop] instanceof Function ? instance : current;
+            return (target[prop] as (...a: unknown[]) => unknown).apply(target, args);
+          };
+        }
+
         return (...args: unknown[]) => {
           const tenantId = RequestContextUtils.getTenantId();
           if (!tenantId) return (value as (...a: unknown[]) => unknown).apply(current, args);

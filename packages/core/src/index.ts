@@ -199,6 +199,7 @@ export { PlatformOwnershipService } from '@core/tenant/platform-ownership-servic
 export { PlatformOwnershipError } from '@core/tenant/platform-ownership-error';
 export { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 export { TenantMode } from '@core/tenant/tenant-mode';
+export { IntegrationTenantAccess } from '@core/integrations/integration-tenant-access';
 export { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 export { PluginTenantStateService } from '@core/plugin/tenant/plugin-tenant-state-service';
 export { TenantThemeAccess } from '@core/theme/tenant-theme-access';

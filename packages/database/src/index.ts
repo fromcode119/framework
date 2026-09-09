@@ -21,6 +21,7 @@ export type { ITableNameResolver } from '@database/interfaces/table-name-resolve
 export * from '@database/table-resolver';
 export { PhysicalTableNameUtils } from '@database/physical-table-name-utils';
 export { NamingStrategy } from '@database/naming-strategy';
+export { TableArgMethods } from '@database/table-arg-methods';
 export { TableResolver } from '@database/table-resolver';
 export type { IPhysicalTableReference } from '@database/interfaces/physical-table-reference.interface';
 export { BaseMigration } from '@database/base-migration';

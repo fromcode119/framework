@@ -14,6 +14,16 @@ export class ClientRuntimeConstants {
   } as const;
 
   /**
+   * The header a browser client uses to declare WHICH app it is.
+   *
+   * It lives here, on the client side, because the api's surface classification depends on it: a
+   * cookie-bearing request that does not send it is treated as a storefront visitor, and an admin
+   * session is then refused. `RequestSurfaceUtils.CLIENT_HEADER` re-exports this so the server and
+   * the browser cannot drift on the spelling.
+   */
+  static readonly CLIENT_HEADER = 'x-framework-client' as const;
+
+  /**
    * Which app a `PluginsProvider` is running as. The two apps differ in what they load: only the
    * storefront mounts plugin frontend runtime modules (see `PluginFrontendRuntimeUtils`), so code
    * that depends on that difference keys off these instead of a bare string literal.

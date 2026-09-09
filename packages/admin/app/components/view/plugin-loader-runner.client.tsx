@@ -6,6 +6,7 @@ import { GlobalReadinessService } from '@/lib/global-readiness-service';
 import { PluginMetadataBootstrapService } from '@/app/services/plugin-metadata-bootstrap-service';
 import { PluginAssetLoaderService } from '@/app/services/plugin-asset-loader-service';
 import { IAdminPluginMetadata } from '@/app/interfaces/admin-plugin-metadata.interface';
+import { HotReloadStreamService } from '@/app/services/hot-reload-stream-service';
 import type { IPluginLoaderValues } from '@/app/interfaces/plugin-loader-values.interface';
 
 // Prevents multiple concurrent "globals not ready" retry timers from accumulating.
@@ -27,13 +28,17 @@ export class PluginLoaderRunner extends Reactor {
   @prop declare user: IPluginLoaderValues['user'];
   @prop declare isAuthLoading: boolean;
 
-  private eventSource: EventSource | null = null;
+  private readonly hotReloadStream = new HotReloadStreamService();
   private loadCancelled = false;
   private abortController: AbortController | null = null;
 
   componentDidMount(): void {
-    this.syncHotReloadStream();
+    // Plugins FIRST. The hot-reload stream is a development convenience; loading the plugins is the
+    // whole reason this component exists. They used to run the other way round, so anything the stream
+    // threw took `startLoad()` with it and the console mounted its shell around an empty page — no
+    // error visible, because the throw happened inside a lifecycle React had already committed.
     this.startLoad();
+    this.syncHotReloadStream();
   }
 
   componentDidUpdate(prev: this['props']): void {
@@ -67,40 +72,45 @@ export class PluginLoaderRunner extends Reactor {
       || a.refreshVersion !== b.refreshVersion;
   }
 
+  /**
+   * Opens the development plugin-reload stream. NEVER lets a failure escape: this is a convenience,
+   * and the cost of it not working is one manual refresh — it must not be able to take the console
+   * down with it.
+   */
   private syncHotReloadStream(): void {
+    try {
+      this.openHotReloadStream();
+    } catch (error) {
+      console.warn('[HMR] Could not open the plugin reload stream; plugin changes need a manual refresh.', error);
+    }
+  }
+
+  private openHotReloadStream(): void {
     if (!Platform.isBrowser || !this.user || process.env.NODE_ENV !== 'development') return;
+    // OFF unless asked for. The stream authenticates correctly now (it never could before — see
+    // HotReloadStreamService), but a stream that SUCCEEDS stays open, and one is opened per page load.
+    // While it was enabled the api's plugin host stopped answering and the console went blank on every
+    // host, because auth hydration failed with "is the target process running?". Whether the streams
+    // cause that or merely coincide with it is NOT yet established, and a developer convenience must
+    // not be able to take the console down. Set ADMIN_PLUGIN_HOT_RELOAD=true to turn it back on.
+    if (process.env.NEXT_PUBLIC_ADMIN_PLUGIN_HOT_RELOAD !== 'true') return;
 
     const eventsUrl = new URL(AdminConstants.ENDPOINTS.SYSTEM.EVENTS, AdminConstants.API_BASE_URL || window.location.origin);
-    const eventSourceUrl = eventsUrl.origin === window.location.origin
+    const streamUrl = eventsUrl.origin === window.location.origin
       ? eventsUrl.pathname + eventsUrl.search
       : eventsUrl.toString();
 
     if (eventsUrl.origin !== window.location.origin && !PluginLoaderRunner.crossOriginEventsWarningLogged) {
       PluginLoaderRunner.crossOriginEventsWarningLogged = true;
-      console.info(`[HMR] Using cross-origin EventSource bridge in development from ${window.location.origin} to ${eventsUrl.origin}.`);
+      console.info(`[HMR] Using cross-origin plugin reload stream from ${window.location.origin} to ${eventsUrl.origin}.`);
     }
 
-    const eventSource = new EventSource(eventSourceUrl, { withCredentials: true });
-    this.eventSource = eventSource;
-
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'plugin:ui:reload') {
-          console.log(`[HMR] Changes detected in ${data.slug}. Triggering UI refresh...`);
-          // triggerRefresh clears existing slots/menu items and increments refreshVersion,
-          // which makes the load run again.
-          this.pluginsContext.triggerRefresh();
-        }
-      } catch (err) {
-        console.error('[HMR] Failed to parse event data:', err);
-      }
-    };
-
-    eventSource.onerror = () => {
-      console.warn('[HMR] EventSource connection lost. Closing dev stream until the next page refresh.');
-      eventSource.close();
-    };
+    this.hotReloadStream.start(streamUrl, (slug) => {
+      console.log(`[HMR] Changes detected in ${slug}. Triggering UI refresh...`);
+      // triggerRefresh clears existing slots/menu items and increments refreshVersion,
+      // which makes the load run again.
+      this.pluginsContext.triggerRefresh();
+    });
 
     // Close the stream when the PAGE goes away, not only when this component unmounts.
     //
@@ -118,8 +128,7 @@ export class PluginLoaderRunner extends Reactor {
   }
 
   private closeHotReloadStream(): void {
-    this.eventSource?.close();
-    this.eventSource = null;
+    this.hotReloadStream.stop();
   }
 
   private cancelLoad(): void {

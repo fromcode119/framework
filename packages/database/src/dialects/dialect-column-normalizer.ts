@@ -1,6 +1,7 @@
 import { NamingStrategy } from '@database/naming-strategy';
 import { UnknownColumnError } from '@database/dialects/unknown-column-error';
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
+import { WhereComparison } from '@database/dialects/where-comparison';
 
 /**
  * DialectColumnNormalizer - Shared per-table column metadata and value normalization.
@@ -104,7 +105,7 @@ export abstract class DialectColumnNormalizer {
       if (WhereClauseParser.isOperatorExpression(column, value)) {
         const operators: Record<string, any> = {};
         for (const [operator, operand] of Object.entries(value as Record<string, any>)) {
-          operators[operator] = await this.normalizeColumnValueForWrite(tableName, column, operand);
+          operators[operator] = await this.normalizeOperand(tableName, column, operator, operand);
         }
         normalized[column] = operators;
         continue;
@@ -112,6 +113,26 @@ export abstract class DialectColumnNormalizer {
       normalized[column] = await this.normalizeColumnValueForWrite(tableName, column, value);
     }
     return normalized;
+  }
+
+  /**
+   * Normalize ONE operand of an operator expression, according to what that operator's operand IS.
+   *
+   * Three shapes, and getting them confused is silent rather than loud:
+   *   - a set operator (`in`, `notIn`) takes a LIST. Normalizing the list as if it were one value
+   *     JSON-stringifies it, and `status IN ('["A","B"]')` matches no row while looking correct.
+   *   - a pattern operator takes a fragment of TEXT the user typed, which the dialect wraps in
+   *     wildcards and binds as a string. Coercing it to the column's declared type is meaningless
+   *     here and would mangle the search term.
+   *   - everything else is a single value compared against the column, so it normalizes as one.
+   */
+  private async normalizeOperand(tableName: string, column: string, operator: string, operand: any): Promise<any> {
+    if (Object.prototype.hasOwnProperty.call(WhereComparison.SET_OPERATORS, operator)) {
+      const operands = Array.isArray(operand) ? operand : [operand];
+      return Promise.all(operands.map((one) => this.normalizeColumnValueForWrite(tableName, column, one)));
+    }
+    if (Object.prototype.hasOwnProperty.call(WhereComparison.PATTERN_OPERATORS, operator)) return operand;
+    return this.normalizeColumnValueForWrite(tableName, column, operand);
   }
 
   /**

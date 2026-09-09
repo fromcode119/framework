@@ -4,7 +4,14 @@ import type { Alias, UserConfig } from 'vite';
 import { NextConfigEnv } from '../../../config/next-config-env';
 // Relative on purpose, like the line above: Vite loads this config with its own bundler, before any
 // alias applies, and the constants file carries no imports of its own.
-import { RuntimeAssetConstants } from '@core/constants/runtime-asset.constants';
+// `@fromcode119/core/constants/*` — core's own narrow public export, NOT its private `@core/*` alias
+// and NOT the `/client` barrel. This file is loaded by plain Node
+// (vite reads the config through a CJS require), which has no TypeScript path mapping — the private
+// alias resolves locally and then fails inside the Docker build with
+// `Cannot find module '@core/constants/runtime-asset.constants'`. The `/client` barrel is the wrong fix
+// too: it drags reactor's decorators into a tsx-run CLI and throws on an undefined descriptor. This
+// path reaches ONE import-free file, which is what the constants module was written to be.
+import { RuntimeAssetConstants } from '@fromcode119/core/constants/runtime-asset.constants';
 
 /**
  * Vite config for the storefront RUNTIME bundle: one classic (IIFE) script holding React 19 +

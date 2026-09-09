@@ -1,4 +1,5 @@
 import type { ITranslationContextValue } from '@react/context/interfaces/translation-context-value.interface';
+import type { PluginNavigation } from '@react/plugin-navigation';
 
 /**
  * Context-backed values plugin UI components need, read ONCE by {@link PluginRuntimeProvider}
@@ -18,4 +19,6 @@ export class PluginRuntimeValue {
   declare locale: string;
   /** Plugin API client surface, from ContextHooks.useAPI(). */
   declare api: any;
+  /** How a plugin page moves the user — see {@link PluginNavigation}. Always present. */
+  declare navigation: PluginNavigation;
 }

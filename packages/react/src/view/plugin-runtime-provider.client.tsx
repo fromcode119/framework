@@ -3,6 +3,7 @@ import { Bridge, prop } from '@fromcode119/reactor';
 import { ContextHooks } from '@react/context-hooks/context-hooks';
 import { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
 import type { PluginRuntimeValue } from '@react/plugin-runtime-value';
+import { PluginNavigation } from '@react/plugin-navigation';
 
 /**
  * The single plugin hook boundary — reads the context-backed hooks ONCE and republishes them
@@ -12,6 +13,12 @@ import type { PluginRuntimeValue } from '@react/plugin-runtime-value';
  */
 export class PluginRuntimeProvider extends Bridge<PluginRuntimeValue> {
   @prop declare children: React.ReactNode;
+
+  /**
+   * The host's navigator. Optional so an un-updated host still mounts, but a host that HAS a router
+   * should pass it — without one every plugin navigation is a full page reload of the whole console.
+   */
+  @prop declare navigate?: (path: string, options?: { replace?: boolean }) => void;
 
   protected read(): PluginRuntimeValue {
     const translation = ContextHooks.useTranslation();
@@ -23,6 +30,7 @@ export class PluginRuntimeProvider extends Bridge<PluginRuntimeValue> {
       // No standalone locale hook exists; the canonical active locale lives on the translation context.
       locale: translation?.locale ?? 'en',
       api: ContextHooks.useAPI?.() ?? null,
+      navigation: new PluginNavigation(this.navigate),
     };
   }
 

@@ -2,6 +2,7 @@ import { Reactor } from '@fromcode119/reactor';
 import { PluginsFacade } from '@fromcode119/core/client';
 import { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
 import type { PluginRuntimeValue } from '@react/plugin-runtime-value';
+import { PluginNavigation } from '@react/plugin-navigation';
 import type { ITranslationContextValue } from '@react/context/interfaces/translation-context-value.interface';
 
 /**
@@ -22,6 +23,17 @@ export abstract class PluginComponent<P = Record<string, unknown>, S = Record<st
 
   protected get plugins(): any {
     return this.context?.plugins;
+  }
+
+  /**
+   * Navigation for this page's own buttons.
+   *
+   * ALWAYS a real object, deliberately: a nullable one invites `this.navigation?.push(...)`, and an
+   * optional chain over a missing contract is what turned every Hub list button into a silent no-op.
+   * With no provider it still navigates, by full page load.
+   */
+  protected get navigation(): PluginNavigation {
+    return this.context?.navigation ?? new PluginNavigation();
   }
 
   /**

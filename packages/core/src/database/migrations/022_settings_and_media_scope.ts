@@ -1,4 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
@@ -33,8 +34,8 @@ export class SettingsAndMediaScopeMigration extends BaseMigration {
         await SettingsAndMediaScopeMigration.scopeMedia(db);
       },
       sqlite: async () => {
-        await db.execute(sql.raw('ALTER TABLE "_system_meta" ADD COLUMN IF NOT EXISTS "tenant_id" TEXT'));
-        await db.execute(sql.raw('ALTER TABLE "media" ADD COLUMN IF NOT EXISTS "shared" BOOLEAN NOT NULL DEFAULT FALSE'));
+        await ColumnGuard.addIfMissing(db, '_system_meta', 'tenant_id', 'TEXT');
+        await ColumnGuard.addIfMissing(db, 'media', 'shared', 'BOOLEAN NOT NULL DEFAULT FALSE');
         // No row-level security on SQLite; isolation there is file-per-tenant (see the S1 spec).
       },
     });

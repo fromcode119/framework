@@ -133,7 +133,7 @@ export class SqliteReadOperations extends BaseDialect {
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {
-    const { where, joins } = options;
+    const { where, joins, search } = options;
     const isString = typeof tableOrName === 'string';
     const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
     const normalizedWhere = isString ? await this.normalizer.normalizeWhereForTable(tableOrName, where) : where;
@@ -143,15 +143,17 @@ export class SqliteReadOperations extends BaseDialect {
     const hasJoins = joins && joins.length > 0;
 
     if (isString && !hasJoins) {
-      if (isPlainWhere && Object.keys(normalizedWhere).length > 0) {
-        const { sql: whereSql, values } = this.buildRawFilterSQL(normalizedWhere);
+      // Built by the SAME builder `find` uses, search included, so the total always describes the
+      // list beside it. `buildRawFilterSQL` returns an empty clause when there is nothing to filter
+      // by, which is the plain COUNT(*) this used to special-case.
+      const searchArg = await this.resolveSearchArg(this.normalizer, tableOrName, search);
+      const filter = isPlainWhere ? normalizedWhere : undefined;
+      const { sql: whereSql, values } = this.buildRawFilterSQL(filter, searchArg);
+      if (isPlainWhere || !normalizedWhere) {
         const rawSql = `SELECT COUNT(*) as total FROM "${tableOrName}"${whereSql}`;
         const result = this.sqlite.prepare(rawSql).get(...values) as any;
         return Number(result?.total || 0);
       }
-      const rawSql = `SELECT COUNT(*) as total FROM "${tableOrName}"`;
-      const result = this.sqlite.prepare(rawSql).get() as any;
-      return Number(result?.total || 0);
     }
 
     // Use Drizzle for complex counts

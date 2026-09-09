@@ -1,4 +1,5 @@
 import { OopGuard } from '../oop-guard';
+import { OopGuardBaselines } from '../oop-guard-baselines';
 import { ArchorCommand } from './archor-command';
 
 /**
@@ -21,7 +22,7 @@ export class OopGuardCommand extends ArchorCommand {
 
     OopGuardCommand.report(perPackage, sum);
     const overBaseline = OopGuardCommand.ratchets(perPackage);
-    const regressed = OopGuard.ZERO_BUCKETS.filter((b) => sum(b) > 0);
+    const regressed = OopGuardBaselines.ZERO_BUCKETS.filter((b) => sum(b) > 0);
 
     if (regressed.length) {
       console.error(`\nZeroed rules have REGRESSED: ${regressed.map((b) => `${b} (${sum(b)})`).join(', ')}`);
@@ -82,9 +83,9 @@ export class OopGuardCommand extends ArchorCommand {
    */
   private static ratchets(perPackage: Map<string, any>): string[] {
     const buckets: ReadonlyArray<readonly [string, string, Record<string, number>, string]> = [
-      ['violations', 'Violations per area', OopGuard.VIOLATION_BASELINE, ''],
-      ['moduleDecl', 'Module-level declarations per area', OopGuard.MODULE_DECL_BASELINE, ' moduleDecl'],
-      ['typesFile', '*.types.ts bags per area', OopGuard.TYPES_FILE_BASELINE, ' typesFile'],
+      ['violations', 'Violations per area', OopGuardBaselines.VIOLATION_BASELINE, ''],
+      ['moduleDecl', 'Module-level declarations per area', OopGuardBaselines.MODULE_DECL_BASELINE, ' moduleDecl'],
+      ['typesFile', '*.types.ts bags per area', OopGuardBaselines.TYPES_FILE_BASELINE, ' typesFile'],
     ];
     const overBaseline: string[] = [];
 

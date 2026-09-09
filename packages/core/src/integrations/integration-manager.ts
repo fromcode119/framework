@@ -1,5 +1,5 @@
-import { SuppressedEmailDriver } from '@core/email/suppressed-email-driver';
 import { IntegrationRegistry } from '@core/integrations/integration-registry';
+import { CoreIntegrationRegistration } from '@core/integrations/core-integration-registration';
 import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 import type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
 import type { IEmailDriver } from '@fromcode119/email';
@@ -7,21 +7,23 @@ import { MediaManager } from '@fromcode119/media';
 import { CacheManager } from '@fromcode119/cache';
 import type { QueueManager } from '@fromcode119/queue';
 import { Logger } from '@core/logging';
-import { EmailIntegrationDefinition } from '@core/integrations/providers/email-integration-definition';
-import { StorageIntegrationDefinition } from '@core/integrations/providers/storage-provider';
-import { CacheIntegrationDefinition } from '@core/integrations/providers/cache-provider';
-import { QueueIntegrationDefinition } from '@core/integrations/providers/queue-provider';
-import { McpIntegrationDefinition } from '@core/integrations/providers/mcp-integration-definition';
-import { SsoIntegrationDefinition } from '@core/integrations/providers/sso-provider';
+import { IntegrationTenantAccess } from '@core/integrations/integration-tenant-access';
+import { IntegrationTenantResolver } from '@core/integrations/integration-tenant-resolver';
+import { TenantScopedIntegrationFactory } from '@core/integrations/tenant-scoped-integration-factory';
 import { CoreServices } from '@core/services';
 import { IntegrationConfigReadService } from '@core/integrations/integration-config-read-service';
+import { IntegrationConfigWriteService } from '@core/integrations/integration-config-write-service';
 import { IntegrationCoreRefreshService } from '@core/integrations/integration-core-refresh-service';
 import { RequestContextUtils } from '@core/context/request-context';
-import { TenantScopedIntegration } from '@core/integrations/tenant-scoped-integration';
 
 export class IntegrationManager {
   private registry: IntegrationRegistry;
   private configReader: IntegrationConfigReadService;
+  private configWriter: IntegrationConfigWriteService;
+  /** Per-site resolution of the core integrations; shares this manager's own instance map. */
+  private tenantResolver!: IntegrationTenantResolver;
+  /** Builds the tenant-scoped wrappers; knows which method names must stay synchronous. */
+  private scopedFactory!: TenantScopedIntegrationFactory;
   private coreRefresh: IntegrationCoreRefreshService;
   private logger: Logger;
   private projectRoot: string;
@@ -47,29 +49,34 @@ export class IntegrationManager {
   public cache!: CacheManager;
   public queue!: QueueManager;
 
+  /** The instances resolved with no tenant in scope: framework work, and the fallback for each field. */
+  private platformStorage!: MediaManager;
+  private platformCache!: CacheManager;
+  private platformQueue!: QueueManager;
+
   constructor(db: any, projectRoot: string, logger?: Logger) {
     this.db = db;
     this.projectRoot = projectRoot;
     this.logger = logger || new Logger({ namespace: 'integration-manager' });
     this.registry = new IntegrationRegistry(db, this.logger);
     this.configReader = new IntegrationConfigReadService(this.registry, (type: string) => this.normalizeKey(type));
+    this.configWriter = new IntegrationConfigWriteService(
+      this.registry,
+      (type: string) => this.normalizeKey(type),
+      (normalizedType: string) => this.refreshType(normalizedType),
+      (normalizedType: string) => this.getConfig(normalizedType),
+    );
     this.coreRefresh = new IntegrationCoreRefreshService(this.registry, this.logger, this.projectRoot);
+    // After coreRefresh, which it resolves through.
+    this.tenantResolver = new IntegrationTenantResolver(this.db, this.coreRefresh, this.logger, this.instances);
+    this.scopedFactory = new TenantScopedIntegrationFactory(this.coreRefresh, this.tenantResolver);
 
-    this.registerCoreIntegrations();
-  }
+    CoreIntegrationRegistration.applyTo(this.registry);
 
-  /**
-   * Register all core integration types and their providers
-   */
-  private registerCoreIntegrations() {
-    this.registry.registerType(EmailIntegrationDefinition.definition);
-    this.registry.registerType(StorageIntegrationDefinition.definition);
-    this.registry.registerType(CacheIntegrationDefinition.definition);
-    this.registry.registerType(QueueIntegrationDefinition.definition);
-    this.registry.registerType(SsoIntegrationDefinition.definition);
-    this.registry.registerType(McpIntegrationDefinition.definition);
-    // AI integration is now registered by the AI core extension
-    // (see packages/ai/src/extension.ts)
+    // The tenancy middleware warms a site's integrations when it binds the request, the same way it
+    // warms the plugin and theme gates, so the SYNCHRONOUS methods above always have an answer. It
+    // reaches them through this static rather than through a manager reference it does not have.
+    IntegrationTenantAccess.configure((tenantId, type) => this.tenantResolver.warmOne(tenantId, type));
   }
 
   /**
@@ -174,56 +181,36 @@ export class IntegrationManager {
   }
 
   /**
-   * Refresh email integration
+   * The four refreshes each do the same two things: resolve the PLATFORM instance and keep it as the
+   * fallback, then replace the public field with a tenant-scoped wrapper around it. The wrapping
+   * itself, and the method names that must stay synchronous, live in
+   * `TenantScopedIntegrationFactory`.
    */
   async refreshEmail(preferStored: boolean = true) {
     const { email, resolved } = await this.coreRefresh.refreshEmail(preferStored);
     this.platformEmail = email;
-    // Wrapped here rather than at `context.email`, so framework-internal senders (admin notifications,
-    // auth mail) are covered too — everything that sends goes through this one driver. The tenant layer
-    // sits INSIDE the suppression layer, so a bounced or unsubscribed address is refused whichever
-    // site's mail server is about to be used.
-    this.email = SuppressedEmailDriver.wrap(
-      TenantScopedIntegration.wrap<IEmailDriver>(() => this.platformEmail, (tenantId) => this.emailForTenant(tenantId)),
-      this.db,
-    );
+    this.email = this.scopedFactory.email(() => this.platformEmail, this.db);
     return resolved;
   }
 
-  /** That tenant's own email driver, resolved on first send and kept beside its other integrations. */
-  private async emailForTenant(tenantId: string): Promise<IEmailDriver> {
-    const key = `${tenantId}::email`;
-    const cached = this.instances.get(key);
-    if (cached) return cached;
-    const { email } = await this.coreRefresh.refreshEmail(true);
-    this.instances.set(key, email);
-    return email;
-  }
-
-  /**
-   * Refresh storage integration
-   */
   async refreshStorage(preferStored: boolean = true) {
     const { storage, resolved } = await this.coreRefresh.refreshStorage(preferStored);
-    this.storage = storage;
+    this.platformStorage = storage;
+    this.storage = this.scopedFactory.storage(() => this.platformStorage);
     return resolved;
   }
 
-  /**
-   * Refresh queue integration
-   */
   async refreshQueue(preferStored: boolean = true) {
     const { queue, resolved } = await this.coreRefresh.refreshQueue(preferStored);
-    this.queue = queue;
+    this.platformQueue = queue;
+    this.queue = this.scopedFactory.queue(() => this.platformQueue);
     return resolved;
   }
 
-  /**
-   * Refresh cache integration
-   */
   async refreshCache(preferStored: boolean = true) {
     const { cache, resolved } = await this.coreRefresh.refreshCache(preferStored);
-    this.cache = cache;
+    this.platformCache = cache;
+    this.cache = this.scopedFactory.cache(() => this.platformCache);
     return resolved;
   }
 
@@ -242,7 +229,9 @@ export class IntegrationManager {
   }
 
   /**
-   * Update configuration for a specific integration type
+   * Configuration WRITES delegate to `IntegrationConfigWriteService`, the mirror of the read service
+   * above. Each one stores through the registry and then re-resolves the type, so what is running
+   * always matches what was just saved.
    */
   async updateConfig(
     type: string,
@@ -257,39 +246,27 @@ export class IntegrationManager {
       providerName?: string;
     } = {}
   ) {
-    const normalizedType = this.normalizeKey(type);
-    await this.registry.updateStoredConfig(normalizedType, provider, config || {}, options);
-    return this.refreshTypeAndGetConfig(normalizedType);
+    return this.configWriter.updateConfig(type, provider, config, options);
   }
 
   async setProviderEnabled(type: string, providerId: string, enabled: boolean) {
-    const normalizedType = this.normalizeKey(type);
-    await this.registry.setProviderEnabled(normalizedType, providerId, enabled);
-    return this.refreshTypeAndGetConfig(normalizedType);
+    return this.configWriter.setProviderEnabled(type, providerId, enabled);
   }
 
   async removeProvider(type: string, providerId: string) {
-    const normalizedType = this.normalizeKey(type);
-    await this.registry.removeProvider(normalizedType, providerId);
-    return this.refreshTypeAndGetConfig(normalizedType);
+    return this.configWriter.removeProvider(type, providerId);
   }
 
   async activateProfile(type: string, profileId: string) {
-    const normalizedType = this.normalizeKey(type);
-    await this.registry.setActiveProfile(normalizedType, profileId);
-    return this.refreshTypeAndGetConfig(normalizedType);
+    return this.configWriter.activateProfile(type, profileId);
   }
 
   async renameProfile(type: string, profileId: string, profileName: string) {
-    const normalizedType = this.normalizeKey(type);
-    await this.registry.renameProfile(normalizedType, profileId, profileName);
-    return this.refreshTypeAndGetConfig(normalizedType);
+    return this.configWriter.renameProfile(type, profileId, profileName);
   }
 
   async deleteProfile(type: string, profileId: string) {
-    const normalizedType = this.normalizeKey(type);
-    await this.registry.deleteProfile(normalizedType, profileId);
-    return this.refreshTypeAndGetConfig(normalizedType);
+    return this.configWriter.deleteProfile(type, profileId);
   }
 
   /**
@@ -297,11 +274,6 @@ export class IntegrationManager {
    */
   private normalizeKey(type: string) {
     return CoreServices.getInstance().content.sanitizeKey(type);
-  }
-
-  private async refreshTypeAndGetConfig(normalizedType: string) {
-    await this.refreshType(normalizedType);
-    return this.getConfig(normalizedType);
   }
 
   private async refreshType(normalizedType: string) {
@@ -320,4 +292,5 @@ export class IntegrationManager {
 
     this.forgetInstance(normalizedType);
   }
+
 }

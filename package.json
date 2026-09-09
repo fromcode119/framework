@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "sync:versions": "npm run fromcode -- system sync-versions",
-    "build": "npm run check:workspace-typecheck && npm run check:src-artifacts && npm run sync:versions && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:dependency-overrides && npm run check:mcp-tool-schemas && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && node packages/typor/dist/typor-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run build:frontend-icons && npm run check:app-typecheck && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend-runtime",
+    "build": "npm run check:workspace-typecheck && npm run check:src-artifacts && npm run sync:versions && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:dependency-overrides && npm run check:mcp-tool-schemas && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && npm run check:file-size && node packages/typor/dist/typor-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run build:frontend-icons && npm run check:app-typecheck && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend-runtime",
     "build:api": "npm run sync:versions && npm run build --workspace=@fromcode119/api",
     "build:admin": "npm run sync:versions && npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run sync:versions && npm run build --workspace=@fromcode119/frontend",
@@ -20,6 +20,8 @@
     "pack:packages": "rm -rf dist-packages && mkdir -p dist-packages && npm pack --workspaces --pack-destination dist-packages --loglevel error",
     "audit:core-boundary": "node packages/archor/dist/archor-cli.cjs core-boundary",
     "check:plugin-architecture": "node packages/archor/dist/archor-cli.cjs plugin-architecture",
+    "check:file-size": "node packages/archor/dist/archor-cli.cjs file-size",
+    "check:file-size:list": "node packages/archor/dist/archor-cli.cjs file-size --list",
     "check:sdk-boundary": "node packages/archor/dist/archor-cli.cjs sdk-boundary",
     "check:plugin-ui-hookfree": "node packages/archor/dist/archor-cli.cjs plugin-ui-hookfree",
     "check:framework-domain": "node packages/archor/dist/archor-cli.cjs framework-domain",

@@ -1,3 +1,4 @@
+import { PluginNavigation } from '@fromcode119/react';
 import { RuntimeConstants } from '@fromcode119/core/client';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { ServerPluginContext } from '@/lib/ssr/server-plugin-context';
@@ -51,6 +52,10 @@ export class ThemeWorldRenderer {
           collections: contextValue.collections,
           locale,
           api: null,
+          // A server render has nowhere to navigate TO — but the field must exist, because the value
+          // is typed as PluginRuntimeValue and a plugin reading `this.navigation` during SSR would
+          // otherwise get undefined. The no-host navigator is inert on the server by design.
+          navigation: new PluginNavigation(),
         },
       },
     );

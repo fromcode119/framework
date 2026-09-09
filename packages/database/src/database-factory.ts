@@ -1,5 +1,6 @@
 import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
 import type { IDatabaseDriverCreator } from '@database/interfaces/database-driver-creator.interface';
+import { TableArgMethods } from '@database/table-arg-methods';
 import { TableResolver } from '@database/table-resolver';
 import type { IDatabaseDialectDefinition } from '@database/dialects/interfaces/database-dialect-definition.interface';
 import type { IDatabaseDialectResolver } from '@database/dialects/interfaces/database-dialect-resolver.interface';
@@ -57,9 +58,11 @@ export class DatabaseFactory {
         const value = (target as any)[prop];
         if (typeof value === 'function') {
           return (...args: any[]) => {
-            // Intercept methods that take a table name as first argument
-            const tableMethods = ['find', 'findOne', 'insert', 'update', 'delete', 'count', 'syncCollection', 'tableExists', 'getColumns', 'addColumn'];
-            if (typeof prop === 'string' && tableMethods.includes(prop) && args.length > 0) {
+            // Intercept methods that take a table name as first argument. The list is shared with the
+            // plugin-facing proxy rather than restated here: the copy that used to live inline had gone
+            // stale, and a method missing from it silently passed the caller's `@plugin/entity` alias
+            // straight to SQL.
+            if (TableArgMethods.has(prop) && args.length > 0) {
               args[0] = TableResolver.resolve(args[0]);
             }
             return value.apply(target, args);

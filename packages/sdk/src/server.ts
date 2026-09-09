@@ -27,6 +27,12 @@ export { SigningSecretService } from '@fromcode119/core';
 export { GrantTokenService, GrantOutcome } from '@fromcode119/core';
 export type { IGrantEvaluable } from '@fromcode119/core';
 
+// URL redirects are FRAMEWORK-owned (`_system_redirects`, migration 019) — routing is framework
+// territory, and the capability used to be duplicated in the cms and seo plugins. A theme or plugin
+// that retires a path seeds its 301 through this service rather than reaching into the system table,
+// which the plugin/theme boundary forbids outright.
+export { SystemRedirectService } from '@fromcode119/core';
+
 export { PluginRegistry } from '@fromcode119/plugins';
 export { MediaImageOptimizer } from '@fromcode119/media';
 export type { IMediaImageOptimizationOptions, IMediaImageOptimizationResult } from '@fromcode119/media';

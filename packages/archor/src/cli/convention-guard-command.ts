@@ -4,6 +4,7 @@ import { HardcodedCopyGuard } from '../hardcoded-copy-guard';
 import { DeclarationPlacementGuard } from '../declaration-placement-guard';
 import { LeakedInterfaceCopyGuard } from '../leaked-interface-copy-guard';
 import { TypeofGuard } from '../typeof-guard';
+import { EnvCheckGuard } from '../env-check-guard';
 import { ArchorCommand } from './archor-command';
 
 /**
@@ -11,6 +12,7 @@ import { ArchorCommand } from './archor-command';
  *
  *  - hardcoded user-facing copy (non-ASCII string literals outside `i18n/` and `seeds/`)
  *  - hand-rolled `typeof x === '<primitive>'` type guards
+ *  - hand-rolled `typeof window|document|navigator === 'undefined'` env checks
  *
  * Both are rules the codebase already states; neither had a checker, so each was caught only in review —
  * repeatedly, and always after the code had shipped. Ratcheted per area: the count may fall, never rise.
@@ -35,7 +37,7 @@ export class ConventionGuardCommand extends ArchorCommand {
     const roots = this.roots(repoRoot);
 
     let failed = false;
-    for (const [name, guard] of [['hardcoded copy', HardcodedCopyGuard], ['typeof guards', TypeofGuard], ['leaked interface copy', LeakedInterfaceCopyGuard], ['declaration placement', DeclarationPlacementGuard]] as const) {
+    for (const [name, guard] of [['hardcoded copy', HardcodedCopyGuard], ['typeof guards', TypeofGuard], ['env checks (use Platform/EnvUtils)', EnvCheckGuard], ['leaked interface copy', LeakedInterfaceCopyGuard], ['declaration placement', DeclarationPlacementGuard]] as const) {
       const { counts, detail: hits } = guard.scan(roots);
       console.log(`\n${name}:`);
       for (const area of Object.keys(counts).sort()) {

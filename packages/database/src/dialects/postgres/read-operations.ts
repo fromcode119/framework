@@ -44,6 +44,19 @@ export class PostgresReadOperations extends BaseDialect {
     this.like = like;
   }
 
+  /**
+   * Postgres has no `jsonb LIKE text` operator, so a search over a JSON column (a tags array) raises
+   * rather than matching. The cast is a no-op relabel for text/varchar columns — index use included —
+   * and is what makes `contains` mean the same thing on every column type.
+   */
+  protected patternColumnExpression(quotedColumn: string): string {
+    return `${quotedColumn}::text`;
+  }
+
+  protected drizzlePatternColumn(column: any): any {
+    return sql`${column}::text`;
+  }
+
   protected getLikeOperator(): string {
     return 'ILIKE';
   }
@@ -175,7 +188,7 @@ export class PostgresReadOperations extends BaseDialect {
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {
-    const { where, joins } = options;
+    const { where, joins, search } = options;
     const isString = typeof tableOrName === 'string';
 
     // Guard: if given a string table name, skip the query entirely when the
@@ -205,6 +218,11 @@ export class PostgresReadOperations extends BaseDialect {
     const normalizedWhere = isString ? await this.normalizer.normalizeWhereForTable(tableOrName, where) : where;
     const isPlainWhere = !!normalizedWhere && typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype;
     const conditions = this.buildWhereConditions(normalizedWhere, isString ? undefined : tableOrName);
+    // The same search `find` applied, so the total describes the list the caller is showing.
+    const searchCondition = isString
+      ? this.drizzleSearchCondition(await this.resolveSearchArg(this.normalizer, tableOrName, search))
+      : null;
+    if (searchCondition) conditions.push(searchCondition);
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
     } else if (normalizedWhere && (!isPlainWhere || Object.keys(normalizedWhere).length > 0)) {

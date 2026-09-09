@@ -72,7 +72,16 @@ export class CollectionEditDerivations {
       showPreview: canPreviewCollection && !isNew, showPermalink, isFullWidth,
       hideFooter: (collection?.admin as any)?.hideFooter === true,
       isDirty: CollectionEditDirtyState.isDirty(formData, self.state.pristineFormData, isNew),
-      hasSidebarFields, renderSidebar: !isFullWidth,
+      hasSidebarFields,
+      /**
+       * The sidebar takes a THIRD of the page, so it is rendered only when it has something to put
+       * there. A collection with no sidebar fields, creating a new record, has no permalink, no record
+       * info and no version history — and the column rendered anyway, holding the placeholder "No
+       * sidebar fields are configured for this collection yet." So every create form in the admin was
+       * half a page of fields beside a third of a page explaining a developer's concern to an operator.
+       * Editing brings the column back, because record info and versions are real content.
+       */
+      renderSidebar: !isFullWidth && (showPermalink || hasSidebarFields || !isNew),
       hasBuiltInSidebarContent: showPermalink || hasSidebarFields || !isNew
     };
   }

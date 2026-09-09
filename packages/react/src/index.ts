@@ -90,6 +90,7 @@ export type { IPageStyleContextValue } from '@react/interfaces/page-style-contex
 export { ThemeOverrideRegistrar } from '@react/theme-override-registrar';
 // Plugin OOP runtime: hook-free plugin UI components via `static contextType`.
 export { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
+export { PluginNavigation } from '@react/plugin-navigation';
 export { PluginRuntimeProvider } from '@react/view/plugin-runtime-provider.client';
 export { PluginComponent } from '@react/view/plugin-component.client';
 export { PluginDefaultStyle } from '@react/view/plugin-default-style';

@@ -9,29 +9,8 @@
  * should consume the semantic names instead of baking a product brand into their own CSS.
  */
 :root {
-  /* shadcn-compatible semantic contract. Values are supplied by the active theme at runtime. */
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --primary: 243 75% 59%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222 47% 11%;
-  --destructive: 347 77% 50%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 243 75% 59%;
-  /* ONE surface radius, equal to Tailwind's `rounded-xl` — the class the whole admin was swept to.
-     A token that disagrees with the utility class is how every panel ended up a slightly different shape. */
-  --radius: 0.75rem;
+  /* The `--fc-*` palette this file defines below. Declared FIRST so the shadcn contract can be written
+     in terms of it — a token cannot reference one that has not been declared yet in the same rule. */
   --fc-brand: #4f46e5;
   --fc-brand-contrast: #ffffff;
   --fc-accent: #0f766e;
@@ -44,6 +23,37 @@
   --fc-success: #059669;
   --fc-warning: #d97706;
   --fc-danger: #e11d48;
+
+  /* shadcn-compatible semantic contract. Values are supplied by the active theme at runtime.
+   *
+   * COLOUR VALUES, not the bare `H S% L%` triplets shadcn ships with. Components consume these
+   * directly — `bg-[var(--primary)]`, `ring-[var(--ring)]`, `text-[var(--muted-foreground)]` — and
+   * nothing in this admin wraps them in `hsl(…)`. A triplet handed to `background-color` is an invalid
+   * value, so in LIGHT mode every primary button painted transparent (`rgba(0,0,0,0)`) with body text
+   * on it, and every focus ring was invisible. Dark mode always looked right because `html.dark` below
+   * maps the same tokens to `var(--fc-*)` colours — which is the mapping this now mirrors. */
+  --background: var(--fc-canvas);
+  --foreground: var(--fc-text);
+  --card: var(--fc-surface);
+  --card-foreground: var(--fc-text);
+  --popover: var(--fc-surface);
+  --popover-foreground: var(--fc-text);
+  --primary: var(--fc-brand);
+  --primary-foreground: var(--fc-brand-contrast);
+  --secondary: var(--fc-surface-muted);
+  --secondary-foreground: var(--fc-text);
+  --muted: var(--fc-surface-muted);
+  --muted-foreground: var(--fc-text-muted);
+  --accent: var(--fc-accent);
+  --accent-foreground: var(--fc-text);
+  --destructive: var(--fc-danger);
+  --destructive-foreground: var(--fc-brand-contrast);
+  --border: var(--fc-border);
+  --input: var(--fc-border);
+  --ring: var(--fc-brand);
+  /* ONE surface radius, equal to Tailwind's `rounded-xl` — the class the whole admin was swept to.
+     A token that disagrees with the utility class is how every panel ended up a slightly different shape. */
+  --radius: 0.75rem;
   /* Concrete value, NOT var(--radius): BrandTokenStyleService appends `--radius: var(--fc-radius)`
      at runtime, so a var() here creates a custom-property cycle whenever the active theme defines
      no --theme-radius — both variables go invalid and every rounded-[var(--radius)] corner renders

@@ -41,11 +41,20 @@ export class WhereClauseParser {
       throw new Error(
         `Invalid where clause for column "${column}": mixes operators (${operatorKeys.join(', ')}) ` +
         `with non-operator keys (${unknown.join(', ')}). Use either an operator object ` +
-        `({ ${Object.keys(WhereComparison.SQL_OPERATORS).join(' | ')} }) or a literal value, not both.`
+        `({ ${WhereClauseParser.operatorNames().join(' | ')} }) or a literal value, not both.`
       );
     }
 
     return true;
+  }
+
+  /** Every operator name a `where` object may use, for error messages that can be acted on. */
+  static operatorNames(): string[] {
+    return [
+      ...Object.keys(WhereComparison.SQL_OPERATORS),
+      ...Object.keys(WhereComparison.SET_OPERATORS),
+      ...Object.keys(WhereComparison.PATTERN_OPERATORS),
+    ];
   }
 
   /** Parse one column's `where` value into its comparisons. */

@@ -243,6 +243,19 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     return pgTable(tableName, tableColumns);
   }
 
+  /**
+   * Postgres has no `jsonb LIKE text` operator, so a search over a JSON column (a tags array) raises
+   * rather than matching. The cast is a no-op relabel for text/varchar columns — index use included —
+   * and is what makes `contains` mean the same thing on every column type.
+   */
+  protected patternColumnExpression(quotedColumn: string): string {
+    return `${quotedColumn}::text`;
+  }
+
+  protected drizzlePatternColumn(column: any): any {
+    return sql`${column}::text`;
+  }
+
   protected getLikeOperator(): string {
     return 'ILIKE';
   }

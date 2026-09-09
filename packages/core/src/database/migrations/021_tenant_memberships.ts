@@ -1,4 +1,5 @@
 import { BaseMigration, IDatabaseManager, TenantRlsSql, sql } from '@fromcode119/database';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
@@ -101,9 +102,9 @@ export class TenantMembershipsMigration extends BaseMigration {
    * system, so it defaults to FALSE and is granted deliberately.
    */
   private static async addPlatformAdminFlag(db: IDatabaseManager): Promise<void> {
-    await db.execute(sql.raw(
-      'ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_platform_admin" BOOLEAN NOT NULL DEFAULT FALSE',
-    ));
+    // Called from BOTH dialect branches, so it cannot use either dialect's exclusive syntax.
+    await ColumnGuard.addIfMissing(db, 'users', 'is_platform_admin', 'BOOLEAN NOT NULL DEFAULT FALSE');
   }
+
 
 }

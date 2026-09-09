@@ -97,7 +97,7 @@ describe('where operators', () => {
         search: { columns: ['eventType'], value: 'click' },
       });
 
-      expect(whereSql(statements)).toContain('"created_at" >= ? AND ("event_type" LIKE ?)');
+      expect(whereSql(statements)).toContain(`"created_at" >= ? AND ("event_type" LIKE ? ESCAPE '!')`);
     });
 
     it('still treats a JSON literal object as equality, not as operators', async () => {
@@ -147,7 +147,7 @@ describe('where operators', () => {
         { columns: ['event_type'], value: 'click' }
       );
 
-      expect(sql).toBe(' WHERE "created_at" >= $1 AND "created_at" <= $2 AND ("event_type" ILIKE $3)');
+      expect(sql).toBe(` WHERE "created_at" >= $1 AND "created_at" <= $2 AND ("event_type"::text ILIKE $3 ESCAPE '!')`);
       expect(values).toEqual(['2026-01-01', '2026-02-28', '%click%']);
     });
 

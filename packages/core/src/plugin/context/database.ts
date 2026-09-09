@@ -1,5 +1,5 @@
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
-import { NamingStrategy } from '@fromcode119/database';
+import { NamingStrategy, TableArgMethods } from '@fromcode119/database';
 import { sql, eq, and, or } from 'drizzle-orm';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
@@ -39,14 +39,19 @@ export class DatabaseContextProxy {
    * tenant injection below both have to agree about which calls these are, and when they disagreed —
    * the skip let `tableExists` through as harmless while the injection still demanded a tenant — every
    * plugin that checked for its own table in `onInit` died at boot with "No tenant in the request
-   * context", taking its dependants down with it.
+   * context", taking its dependants down with it. `syncCollection` is here for the same reason: it
+   * creates and alters COLUMNS, so it has no rows to scope and no tenant to demand.
    */
-  private static readonly ROW_FREE_METHODS = new Set(['addColumn', 'tableExists', 'getColumns']);
-  private static readonly TABLE_ARG_METHODS = new Set([
-    ...DatabaseContextProxy.READ_METHODS,
-    ...DatabaseContextProxy.WRITE_METHODS,
-    ...DatabaseContextProxy.SCHEMA_METHODS,
-  ]);
+  private static readonly ROW_FREE_METHODS = new Set(['addColumn', 'syncCollection', 'tableExists', 'getColumns']);
+  /**
+   * Every method whose first argument is a table name, from the ONE list the database package owns.
+   *
+   * It was a local union of the three sets above, which is the same list by a different route — and
+   * the factory's own copy of it had already gone stale, silently passing `@plugin/entity` aliases to
+   * SQL for the two methods it had missed. One source, so a new manager method cannot be guarded here
+   * and unresolved there.
+   */
+  private static readonly TABLE_ARG_METHODS = new Set<string>(TableArgMethods.ALL);
   /** Table-arg write methods audited per call via {@link DatabaseWriteAudit}. */
   private static readonly WRITE_AUDIT_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
   /** Write methods whose SECOND arg is the row payload — never mined for a record id in the audit resource. */

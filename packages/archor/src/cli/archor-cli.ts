@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { AppTypecheckCommand } from './app-typecheck-command';
+import { FileSizeCommand } from './file-size-command';
 import { AppearanceBoundaryCommand } from './appearance-boundary-command';
 import { ArchorCommand } from './archor-command';
 import { ClientViewMoveCommand } from './client-view-move-command';
@@ -41,6 +42,7 @@ export class ArchorCli {
     ['core-boundary', CoreBoundaryCommand],
     ['db-find-where', DbFindWhereCommand],
     ['dependency-overrides', DependencyOverridesCommand],
+    ['file-size', FileSizeCommand],
     ['framework-domain', FrameworkDomainCommand],
     ['block-field-conformance', BlockFieldConformanceCommand],
     ['imports', ImportsCommand],

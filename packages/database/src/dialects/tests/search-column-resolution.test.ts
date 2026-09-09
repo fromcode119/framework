@@ -78,7 +78,7 @@ describe('search column resolution', () => {
       });
 
       expect(searchSql(statements)).toContain(
-        '("affiliate_code" LIKE ? OR "order_number" LIKE ? OR "customer_email" LIKE ?)'
+        `("affiliate_code" LIKE ? ESCAPE '!' OR "order_number" LIKE ? ESCAPE '!' OR "customer_email" LIKE ? ESCAPE '!')`
       );
     });
 
@@ -256,7 +256,7 @@ describe('search column resolution', () => {
         search: { columns: ['affiliateCode'], value: 'AFF' },
       });
 
-      expect(searchSql(statements)).toContain('"status" = ? AND ("affiliate_code" LIKE ?)');
+      expect(searchSql(statements)).toContain(`"status" = ? AND ("affiliate_code" LIKE ? ESCAPE '!')`);
       expect(rows.map((row: any) => row.affiliate_code)).toEqual(['AFF-GAMMA']);
     });
   });

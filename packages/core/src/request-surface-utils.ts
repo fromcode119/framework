@@ -2,13 +2,15 @@ import { ApiPathUtils } from '@core/api/api-path-utils';
 import { ApplicationUrlUtils } from '@core/application-url-utils';
 import { ApiVersionUtils } from '@core/api-version';
 import { AppPathConstants } from '@core/constants/app-path.constants';
+import { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
 import { RequestSurfaceHelper } from '@core/request-surface-helper';
 import { RequestSurfaceOriginUtils } from '@core/request-surface-origin-utils';
 import { RouteConstants } from '@core/constants/route.constants';
 import { SystemConstants } from '@core/constants/system.constants';
 
 export class RequestSurfaceUtils {
-  static readonly CLIENT_HEADER = 'x-framework-client';
+  /** One spelling, declared with the client constants so the browser sends exactly what this reads. */
+  static readonly CLIENT_HEADER = ClientRuntimeConstants.CLIENT_HEADER;
 
   static readonly CLIENTS = {
     ADMIN_UI: 'admin-ui',
