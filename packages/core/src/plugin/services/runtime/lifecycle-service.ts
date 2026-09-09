@@ -1,5 +1,3 @@
-import { TenantMode } from '@core/tenant/tenant-mode';
-import { RequestContextUtils } from '@core/context/request-context';
 import { DependencyIssueKind } from '@core/plugin/services/enums/dependency-issue-kind.enum';
 import { PluginApprovalMode } from '@core/plugin/services/enums/plugin-approval-mode.enum';
 import { randomUUID } from 'crypto';
@@ -19,20 +17,21 @@ import { Seeder } from '@core/database/seeder';
 import { PluginFailureIsolationService } from '@core/plugin/services/runtime/plugin-failure-isolation-service';
 import { PluginCollectionActivationService } from '@core/plugin/services/plugin-collection-activation-service';
 import { PluginRegistrationSecurityService } from '@core/plugin/services/security/plugin-registration-security-service';
-import { PluginCapabilityApprovalPolicy } from '@core/plugin/services/security/plugin-capability-approval-policy';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
-import { PluginHealthNotificationTemplateService } from '@core/plugin/services/health/plugin-health-notification-template-service';
-import type { IPluginHealthNotificationData } from '@core/plugin/services/interfaces/plugin-health-notification-data.interface';
-import { PluginHealthReportService } from '@core/plugin/services/health/plugin-health-report-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
+
+import { PluginBootHealthReporter } from '@core/plugin/services/runtime/plugin-boot-health-reporter';
+import { PluginSeedRunner } from '@core/plugin/services/runtime/plugin-seed-runner';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
   private seeder: Seeder;
   private failureIsolation: PluginFailureIsolationService;
   private activation: PluginCollectionActivationService;
+  private bootHealth: PluginBootHealthReporter;
+  private seedRunner: PluginSeedRunner;
 
   constructor(
     private manager: IPluginManagerInterface,
@@ -43,100 +42,23 @@ export class LifecycleService {
     this.seeder = new Seeder(manager.db);
     this.failureIsolation = new PluginFailureIsolationService(manager, registry, this.logger);
     this.activation = new PluginCollectionActivationService(manager, schemaManager, this.seeder, this.logger);
+    this.bootHealth = new PluginBootHealthReporter(this.manager, this.logger);
+    this.seedRunner = new PluginSeedRunner(this.manager, this.activation);
   }
 
-  /** Pure set-diff of manifest vs approved capabilities. Order-independent; used by the held gate. */
-  static computeCapabilityDiff(current: string[], approved: string[]): { added: string[]; removed: string[]; changed: boolean } {
-    const cur = new Set(current || []);
-    const app = new Set(approved || []);
-    const added = [...cur].filter((c) => !app.has(c)).sort();
-    const removed = [...app].filter((c) => !cur.has(c)).sort();
-    return { added, removed, changed: added.length > 0 || removed.length > 0 };
-  }
-
-  /** Decide what to do when a plugin's capabilities drifted from approval: 'auto-approve' (trusted +
-   *  opt-in) or 'hold'. Pure wrapper over PluginCapabilityApprovalPolicy for testability. */
-  static resolveDriftAction(slug: string, signatureVerified: boolean): PluginApprovalMode {
-    return PluginCapabilityApprovalPolicy.shouldAutoApprove(slug, signatureVerified) ? PluginApprovalMode.AUTO_APPROVE : PluginApprovalMode.HOLD;
-  }
-
-  /**
-   * Collect the held/errored plugins as DATA for the admin alert, or null when everything is healthy.
-   * Deliberately returns no markup or copy — `PluginHealthNotificationTemplateService` owns those via
-   * Handlebars template files (repo rule: code computes data, template files own the rendering).
-   */
-  static summarizeHeldPlugins(plugins: Map<string, ILoadedPlugin>): IPluginHealthNotificationData | null {
-    const flagged = [...plugins.values()].filter(
-      (p) => p.healthStatus === PluginRegistryHealth.WARNING || p.healthStatus === PluginRegistryHealth.ERROR || p.state === PluginState.ERROR,
-    );
-    if (!flagged.length) return null;
-
-    return {
-      count: flagged.length,
-      plugins: flagged.map((p) => {
-        const isError = p.state === PluginState.ERROR || p.healthStatus === PluginRegistryHealth.ERROR;
-        // Pass raw values through — the fallback WORDING ("held", "failed to register") is copy and
-        // lives in the template, not here.
-        return {
-          slug: p.manifest?.slug,
-          held: !isError,
-          reason: p.heldReason,
-          error: p.error,
-        };
-      }),
-    };
-  }
-
-  /** After a discovery pass, alert admins ONCE if any plugin is held/errored. Best-effort, never throws. */
+  /** @inheritdoc — delegated to PluginBootHealthReporter. */
   async reportBootPluginHealth(): Promise<void> {
-    try {
-      const report = PluginHealthReportService.buildReport(
-        [...this.manager.plugins.values()].map((p) => ({
-          slug: p.manifest.slug, state: p.state, healthStatus: p.healthStatus, heldReason: p.heldReason,
-          error: p.error, manifestCapabilities: (p.manifest.capabilities as string[]) || [], approvedCapabilities: p.approvedCapabilities || [],
-        })),
-      );
-      this.logger.info(`[plugin-health] ${report.counts.active} active, ${report.counts.held} held, ${report.counts.error} error, ${report.counts.inactive} inactive`);
-      const summary = LifecycleService.summarizeHeldPlugins(this.manager.plugins);
-      if (!summary) return;
-      const message = PluginHealthNotificationTemplateService.render(summary);
-      const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
-      await notifications.notifyAdmins({ subject: message.subject, text: message.text, html: message.html });
-      this.logger.warn(message.subject);
-    } catch (err) {
-      this.logger.error('reportBootPluginHealth failed', err as any);
-    }
+    return this.bootHealth.reportBootPluginHealth();
   }
 
-  /**
-   * Final default-page materialization pass, run by the discovery coordinator once EVERY plugin in the boot
-   * set is registered. The per-plugin pass inside {@link register} can execute before the plugin that owns the
-   * `pages` collection is registered — it then skips ("no registered page collection available") and
-   * required contract pages never materialize. This pass guarantees the pages collection is present.
-   */
-  /**
-   * Runs every ACTIVE plugin's seed for the site currently in scope.
-   *
-   * Plugin seeds are skipped at boot on a multi-tenant platform because boot has no site (see
-   * `runSeeds`). This is the per-site pass: called inside a tenant scope, so the same writes that were
-   * refused by row-level security at boot succeed for the site that actually wants them.
-   */
-  public async runSeedsForCurrentSite(): Promise<string[]> {
-    const seeded: string[] = [];
-    for (const [slug, plugin] of this.manager.plugins) {
-      if (plugin.state !== PluginState.ACTIVE || !plugin.manifest?.seeds) continue;
-      await this.activation.runSeeds(slug);
-      seeded.push(slug);
-    }
-    return seeded;
+  /** @inheritdoc — delegated to PluginSeedRunner. */
+  async runSeedsForCurrentSite(): Promise<string[]> {
+    return this.seedRunner.runSeedsForCurrentSite();
   }
 
-  public async materializeDefaultPagesFinalPass(): Promise<void> {
-    // On a multi-site platform pages belong to a SITE: the untenanted boot pass could only ever be
-    // refused by row security (six "materialization failed" warnings per boot). Sites get their pages
-    // when created (`TenantAdminService.materializePages`), inside their own tenant scope.
-    if (TenantMode.isEnabled() && !RequestContextUtils.getTenantId()) return;
-    await this.activation.materializeDefaultPages();
+  /** @inheritdoc — delegated to PluginSeedRunner. */
+  async materializeDefaultPagesFinalPass(): Promise<void> {
+    return this.seedRunner.materializeDefaultPagesFinalPass();
   }
 
   async register(plugin: IFromcodePlugin, pluginPath?: string): Promise<void> {
@@ -182,12 +104,12 @@ export class LifecycleService {
     // non-active rows; enable()/clearPluginHeld nulls held_reason on re-approval so it won't re-apply.
     let heldReason: PluginHeldReason | undefined = state !== PluginState.ACTIVE ? saved?.heldReason : undefined;
     if (state === PluginState.ACTIVE) {
-      const diff = LifecycleService.computeCapabilityDiff(
+      const diff = PluginBootHealthReporter.computeCapabilityDiff(
         (plugin.manifest.capabilities as string[]) || [],
         saved?.approvedCapabilities || [],
       );
       if (diff.changed) {
-        const action = LifecycleService.resolveDriftAction(slug, Boolean(saved?.signatureVerified));
+        const action = PluginBootHealthReporter.resolveDriftAction(slug, Boolean(saved?.signatureVerified));
         if (action === PluginApprovalMode.AUTO_APPROVE) {
           const currentCaps = (plugin.manifest.capabilities as string[]) || [];
           this.logger.warn(

@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import path from 'path';
 import { TenantConnectionScope } from '@fromcode119/database';
 import type { Request, Response, NextFunction } from 'express';
@@ -322,7 +323,7 @@ export class PluginHost {
 
   private enabledPlugins(store: IRequestStore | undefined): string[] {
     const tenantId = String(store?.tenantId ?? '').trim();
-    const active = [...this.manager.plugins.values()].filter((p) => String(p.state) === 'active').map((p) => p.manifest.slug);
+    const active = [...this.manager.plugins.values()].filter((p) => PluginState.resolve(p.state) === PluginState.ACTIVE).map((p) => p.manifest.slug);
     if (!tenantId) return active;
     const enabled = PluginTenantAccess.enabledSlugsFor(tenantId);
     return active.filter((slug) => enabled.has(slug));
@@ -369,7 +370,7 @@ export class PluginHost {
       // provider, a search provider, a broadcasts content provider) is gone with the old one. Say
       // `plugins:ready` again — the same event peers already re-register on at boot — naming the
       // plugin that came back, so they register with it once more.
-      const active = [...this.manager.plugins.values()].filter((p) => String(p.state) === 'active').map((p) => p.manifest.slug);
+      const active = [...this.manager.plugins.values()].filter((p) => PluginState.resolve(p.state) === PluginState.ACTIVE).map((p) => p.manifest.slug);
       this.manager.hooks.emit(PluginHost.PLUGINS_READY_EVENT, { plugins: active, restarted: this.slug });
     }
   }

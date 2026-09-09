@@ -1,3 +1,5 @@
+import { TenantState } from '@core/enums/tenant-state.enum';
+
 /**
  * One tenant's answer to "which theme, with which variables" — read from `_system_tenant_themes`.
  *
@@ -24,7 +26,7 @@ export class TenantThemeChoice {
 
   /** From the tenant's rows. At most one is active; the writer keeps that invariant. */
   static fromRows(rows: unknown[]): TenantThemeChoice {
-    const active = (rows ?? []).find((row: any) => String(row?.state ?? '').trim() === 'active') as any;
+    const active = (rows ?? []).find((row: any) => String(row?.state ?? '').trim() === TenantState.ACTIVE.value) as any;
     if (!active) return TenantThemeChoice.none();
     const slug = String(active.theme_slug ?? '').trim();
     if (!slug) return TenantThemeChoice.none();

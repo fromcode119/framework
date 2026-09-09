@@ -1,4 +1,5 @@
 import { Logger } from '@core/logging';
+import { TenantState } from '@core/enums/tenant-state.enum';
 import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantMode } from '@core/tenant/tenant-mode';
@@ -55,7 +56,7 @@ export class PluginTenantAccess {
       });
       PluginTenantAccess.cache.set(tenant, new Set(
         (rows ?? [])
-          .filter((row: any) => String(row?.state ?? '').trim() === 'active')
+          .filter((row: any) => String(row?.state ?? '').trim() === TenantState.ACTIVE.value)
           .map((row: any) => String(row?.plugin_slug ?? '').trim())
           .filter((slug: string) => slug.length > 0),
       ));
