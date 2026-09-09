@@ -65,8 +65,14 @@ export class DocumentHeadView {
         {theme.fallbackCssHrefs.map((href) => <link key={href} rel="stylesheet" href={href} />)}
         {theme.cssVariables ? <style id="fc-theme-variables" dangerouslySetInnerHTML={{ __html: theme.cssVariables }} /> : null}
         {theme.inlinedCss ? <style data-theme={theme.slug} dangerouslySetInnerHTML={{ __html: theme.inlinedCss }} /> : null}
+        {/* The theme's boot script, inlined so it runs at FIRST PAINT rather than behind the bundle
+            chain — see `ThemeHeadModel.loadBootScript`. */}
+        {theme.inlinedBootScript ? <script dangerouslySetInnerHTML={{ __html: theme.inlinedBootScript }} /> : null}
         {theme.prefetchScript ? <script dangerouslySetInnerHTML={{ __html: theme.prefetchScript }} /> : null}
         {theme.versionedEntryUrl ? <meta name="fromcode:theme-entry" content={theme.versionedEntryUrl} /> : null}
+        {/* The theme entry and its chunks, hinted at PARSE time — see `ThemeHeadModel.modulePreloadLinks`
+            for why these are no longer created by a script after `load`. */}
+        {theme.modulePreloadLinks.map((href) => <link key={href} rel="modulepreload" href={href} crossOrigin="anonymous" />)}
         {theme.injectorScript ? <script dangerouslySetInnerHTML={{ __html: theme.injectorScript }} /> : null}
       </>
     );

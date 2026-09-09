@@ -58,14 +58,19 @@ export class FileSizeCommand extends ArchorCommand {
       const unreadable = oversized.filter((entry) => entry.lines >= FileSizeGuard.UNREADABLE_LINES);
       const count = oversized.length;
 
+      // Reported, never enforced: how many of the "unreadable" files hold 400+ lines of actual CODE.
+      // The rest are over the line on COMMENTS, which this codebase deliberately has a lot of.
+      const denseCount = unreadable.filter((entry) => entry.codeLines >= FileSizeGuard.UNREADABLE_LINES).length;
       console.log(`  ${name}: ${count} over target (baseline ${baseline})`
         + `, of which ${unreadable.length} unreadable ≥${FileSizeGuard.UNREADABLE_LINES} (baseline ${unreadableBaseline})`
+        + `${unreadable.length ? ` [${denseCount} by CODE lines]` : ''}`
         + `${count > baseline || unreadable.length > unreadableBaseline ? ' — ABOVE' : count < baseline || unreadable.length < unreadableBaseline ? ' — below, lower it' : ' — at baseline'}`);
 
       if (list) {
         for (const entry of (unreadable.length ? unreadable : oversized).slice(0, 20)) {
           const flag = entry.lines >= FileSizeGuard.UNREADABLE_LINES ? '!' : ' ';
-          console.log(`    ${flag} ${String(entry.lines).padStart(5)} (max ${entry.limit})  ${path.relative(framework, entry.file)}`);
+          const dense = entry.codeLines >= FileSizeGuard.UNREADABLE_LINES ? '*' : ' ';
+          console.log(`    ${flag} ${String(entry.lines).padStart(5)} raw ${String(entry.codeLines).padStart(5)} code${dense} (max ${entry.limit})  ${path.relative(framework, entry.file)}`);
         }
       }
       if (count > baseline || unreadable.length > unreadableBaseline) failed = true;

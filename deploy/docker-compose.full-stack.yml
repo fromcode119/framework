@@ -257,6 +257,14 @@ services:
       - PLUGINS_DIR=/app/plugins
       - NODE_ENV=production
       - PORT=3000
+      # The islands document rollout. OFF serves every page through the App Router, which renders the
+      # theme's server HTML and then REPLACES it with the live tree once the theme's bundles register
+      # (`DynamicContentClient` -> `ServerMarkupHandoff`). That swap is why anything a script did to the
+      # page is undone mid-load. ON rewrites content paths to `/fc-document`, which emits `#fc-root`
+      # and the runtime entry, and `StorefrontHydrator` adopts the server markup in place with
+      # `hydrateRoot` — one render, no swap. It logs `[frontend] hydration mode=...` on every boot, so
+      # a page that quietly falls back to the old path says so in the console.
+      - STOREFRONT_DOCUMENT_ISLANDS=${STOREFRONT_DOCUMENT_ISLANDS:-false}
       - GUEST_EGRESS_POLICY=${GUEST_EGRESS_POLICY:-deny}
     depends_on:
       - api

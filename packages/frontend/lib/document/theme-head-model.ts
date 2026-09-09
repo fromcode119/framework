@@ -23,6 +23,8 @@ export class ThemeHeadModel {
     readonly inlinedCss: string,
     readonly fallbackCssHrefs: string[],
     readonly headLinks: ThemeHeadLink[],
+    /** The theme's boot script, inlined — see `loadBootScript`. */
+    readonly inlinedBootScript: string,
     readonly externalStylesheets: string[],
     readonly versionedEntryUrl: string,
     readonly modulePreloadUrls: string[],
@@ -41,16 +43,35 @@ export class ThemeHeadModel {
   }
 
   /**
-   * The inline script that appends the entry's `modulepreload` links after `load` (idle slice) and the
-   * external stylesheets with the `media="print"` swap. Built here, verbatim from the App Router head,
-   * so both documents run the same bytes.
+   * The theme entry and its chunks, as `modulepreload` hints for the HEAD.
+   *
+   * These used to be created by the injector script below, after the `load` event AND an idle slice
+   * (`requestIdleCallback(..., {timeout: 1500})`). Measured on `/technologies/php`: `load` at 2,108 ms,
+   * so the entry did not begin downloading until 2,112 ms, its chunks queued behind it, and the theme
+   * did not finish mounting until about SIX SECONDS in. Everything the theme's own script does — the
+   * scroll reveals, the accent word — waited that long with it.
+   *
+   * `modulepreload` in the head is the right tool and does not need protecting from: the browser gives
+   * it a low priority by definition, so it does not compete with the LCP image or the stylesheet, and
+   * it starts the download at parse time instead of a second and a half after the page finishes
+   * loading. It is also NOT the `<link rel="preload" as="script">` that `ThemeAssetsView` warns about —
+   * that one React 19 rewrites without `crossOrigin`, so the bundle downloads twice.
+   */
+  get modulePreloadLinks(): string[] {
+    if (!this.versionedEntryUrl) return [];
+    return [this.versionedEntryUrl, ...this.modulePreloadUrls];
+  }
+
+  /**
+   * The inline script that swaps in the external stylesheets (`media="print"` then `all`). Built here,
+   * verbatim from the App Router head, so both documents run the same bytes. The module preloads it
+   * used to carry are now head links — see `modulePreloadLinks`.
    */
   get injectorScript(): string {
-    if (!this.versionedEntryUrl) return '';
-    const urls = JSON.stringify([this.versionedEntryUrl, ...this.modulePreloadUrls]);
+    if (!this.externalStylesheets.length) return '';
     const sheets = this.externalStylesheets.map((href) =>
       `var f=document.createElement('link');f.rel='stylesheet';f.href=${JSON.stringify(href)};f.media='print';f.onload=function(){f.media='all';f.onload=null;};document.head.appendChild(f);`).join('');
-    return `(function(){var u=${urls};var p=function(){for(var i=0;i<u.length;i++){var l=document.createElement('link');l.rel='modulepreload';l.href=u[i];document.head.appendChild(l);}};var d=function(){if(window.requestIdleCallback){window.requestIdleCallback(p,{timeout:1500});}else{setTimeout(p,1);}};if(document.readyState==='complete'){d();}else{addEventListener('load',d,{once:true});}${sheets}})();`;
+    return `(function(){${sheets}})();`;
   }
 
   static async load(): Promise<ThemeHeadModel | null> {
@@ -73,7 +94,10 @@ export class ThemeHeadModel {
       .filter((link: ThemeHeadLink | null): link is ThemeHeadLink => link !== null);
     const externalStylesheets = headLinks.filter((link: ThemeHeadLink) => link.isExternalStylesheet).map((link: ThemeHeadLink) => link.href);
 
-    const { inlinedCss, fallbackCssHrefs } = await ThemeHeadModel.loadCss(theme, apiUrl, assetStamp);
+    const [{ inlinedCss, fallbackCssHrefs }, inlinedBootScript] = await Promise.all([
+      ThemeHeadModel.loadCss(theme, apiUrl, assetStamp),
+      ThemeHeadModel.loadBootScript(theme, apiUrl, assetStamp),
+    ]);
 
     // Content-hashed chunks the api derived from the theme's ui/ directory — NOT `?v=`-versioned: bundle.js
     // imports them relatively and unversioned, and a modulepreload only pays off when its url is byte-identical.
@@ -90,7 +114,7 @@ export class ThemeHeadModel {
     const lcpPreload = ThemeDataPrefetcher.extractLcpImageUrl(prefetchData, prefetchApis, apiUrl);
 
     return new ThemeHeadModel(
-      String(theme.slug), apiUrl, cssVariables, inlinedCss, fallbackCssHrefs, headLinks, externalStylesheets,
+      String(theme.slug), apiUrl, cssVariables, inlinedCss, fallbackCssHrefs, headLinks, inlinedBootScript, externalStylesheets,
       versionedEntryUrl, modulePreloadUrls, prefetchScript, lcpPreload,
     );
   }
@@ -100,6 +124,39 @@ export class ThemeHeadModel {
    * fallbacks when the fetch fails. Relative `url()` references resolve against the stylesheet, as
    * they would when linked.
    */
+  /**
+   * The theme's own boot script, fetched server-side and INLINED in the head — the same treatment
+   * `ui.css` already gets, for the same reason.
+   *
+   * A theme's interactive chrome lives in its React bundle, and that bundle is the last thing to
+   * arrive: it is imported by the storefront runtime, which runs after `load`, behind a chain of
+   * module fetches. On a deployment that serves theme assets uncached — which every local one does by
+   * design — that put the theme's scroll reveals about SIX SECONDS after first paint. Anything a theme
+   * wants to happen AT first paint therefore cannot live in the bundle, and until now a theme had no
+   * way to say so: `ui.css` could be inlined, nothing else could.
+   *
+   * `theme.json` `ui.headScript` names one file in the theme's `ui/` directory. It is fetched over the
+   * internal API (never from request input), inlined verbatim, and runs where it sits — before the
+   * body, in milliseconds, with no bundle and no network of its own. It is plain JavaScript on
+   * purpose: no imports, no framework, nothing that could pull the chain back in.
+   */
+  private static async loadBootScript(theme: Record<string, any>, apiUrl: string, assetStamp: string): Promise<string> {
+    const bootFile = String(theme.ui?.headScript || '').trim();
+    if (!bootFile || bootFile.includes('/') || bootFile.includes('\\')) return '';
+    try {
+      const publicHref = ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, bootFile);
+      const internalBase = ServerApiPaths.buildInternalApiBaseUrl();
+      const versioned = FrontendAssetVersionUrlService.appendVersion(publicHref, assetStamp);
+      const response = await fetch(versioned.replace(apiUrl, internalBase), { next: { revalidate: 3600 } });
+      if (!response.ok) return '';
+      const source = await response.text();
+      // `</script>` inside the source would close the tag it is being written into.
+      return source.replace(/<\/script/gi, '<\\/script');
+    } catch {
+      return '';
+    }
+  }
+
   private static async loadCss(theme: Record<string, any>, apiUrl: string, assetStamp: string): Promise<{ inlinedCss: string; fallbackCssHrefs: string[] }> {
     const cssPaths: string[] = Array.isArray(theme.ui?.css) ? theme.ui.css : [];
     if (!cssPaths.length) return { inlinedCss: '', fallbackCssHrefs: [] };

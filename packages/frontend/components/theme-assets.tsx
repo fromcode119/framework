@@ -42,10 +42,15 @@ export class ThemeAssetsView {
           {model.fallbackCssHrefs.map((href) => <link key={href} rel="stylesheet" href={href} />)}
           {model.cssVariables ? <style id="fc-theme-variables" dangerouslySetInnerHTML={{ __html: model.cssVariables }} /> : null}
           {model.inlinedCss ? <style data-theme={model.slug} dangerouslySetInnerHTML={{ __html: model.inlinedCss }} /> : null}
+          {/* The theme's boot script, inlined so it runs at FIRST PAINT rather than behind the bundle
+            chain — see `ThemeHeadModel.loadBootScript`. */}
+          {model.inlinedBootScript ? <script dangerouslySetInnerHTML={{ __html: model.inlinedBootScript }} /> : null}
           {model.prefetchScript ? <script dangerouslySetInnerHTML={{ __html: model.prefetchScript }} /> : null}
           {model.versionedEntryUrl ? <meta name="fromcode:theme-entry" content={model.versionedEntryUrl} /> : null}
           {/* Inline script: modulepreload + non-blocking external stylesheets, so React 19's resource
               hoisting cannot interfere (see ThemeHeadModel.injectorScript). */}
+          {/* The theme entry and its chunks, hinted at PARSE time — see `ThemeHeadModel.modulePreloadLinks`. */}
+          {model.modulePreloadLinks.map((href) => <link key={href} rel="modulepreload" href={href} crossOrigin="anonymous" />)}
           {model.injectorScript ? <script dangerouslySetInnerHTML={{ __html: model.injectorScript }} /> : null}
         </>
       );
