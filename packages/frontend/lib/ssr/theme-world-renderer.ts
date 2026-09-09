@@ -1,4 +1,11 @@
-import { PluginNavigation } from '@fromcode119/react';
+// The SOURCE module, NOT the package barrel, and this is load-bearing rather than tidiness.
+// `@fromcode119/react`'s index re-exports `ShellBoundary`, which extends reactor's `Component`. This
+// file is reached from an App Route, so importing the barrel pulled a CLASS COMPONENT into the Server
+// Component graph and Next refused to build the frontend at all ("You're importing a class component.
+// It only works in a Client Component..."). Nothing here ever wanted the shells; the barrel simply
+// dragged them in. Importing the one module directly is also what the codebase's own rule asks for —
+// consumers import from the actual source file, never through a re-export barrel.
+import { PluginNavigation } from '@fromcode119/react/plugin-navigation';
 import { RuntimeConstants } from '@fromcode119/core/client';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { ServerPluginContext } from '@/lib/ssr/server-plugin-context';

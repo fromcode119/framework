@@ -19,6 +19,11 @@
       "import": "./dist/plugin-context.js",
       "require": "./dist/plugin-context.js"
     },
+    "./plugin-navigation": {
+      "types": "./dist/plugin-navigation.d.ts",
+      "import": "./dist/plugin-navigation.js",
+      "require": "./dist/plugin-navigation.js"
+    },
     "./renderable-content-transformer-registry": {
       "types": "./dist/renderable-content-transformer-registry.d.ts",
       "import": "./dist/renderable-content-transformer-registry.js",

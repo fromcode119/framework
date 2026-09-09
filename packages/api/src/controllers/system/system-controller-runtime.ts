@@ -1,5 +1,6 @@
+import { Request } from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, ThemeManager } from '@fromcode119/core';
+import { PluginManager, TenantMembershipService, TenantMode, ThemeManager } from '@fromcode119/core';
 import { IDatabaseManager } from '@fromcode119/database';
 import { PublicFrontendSettingsService } from '@api/services/public-frontend-settings-service';
 import { ResolutionService } from '@api/services/resolution-service';
@@ -52,6 +53,23 @@ export class SystemControllerRuntime {
         maxShortcodes: payload?.maxShortcodes,
       });
     });
+  }
+
+  /**
+   * Whether the request's user is a PLATFORM admin (not merely a tenant admin).
+   *
+   * Lives on the runtime because more than one system controller needs it — it was a private helper on
+   * SystemAdminController, which is why settings and metadata could not be split apart (2026-09-09).
+   * Single-tenant installs have no platform/tenant distinction, so everyone qualifies.
+   *
+   * NOTE: `platform-admin-guard`, `tenant-plugin-guard` and `plugin-controller` share a separate
+   * `access.isPlatformAdmin(req)` that does the same job. Consolidating the two is its own change.
+   */
+  async isPlatformAdmin(req: Request): Promise<boolean> {
+    if (!TenantMode.isEnabled()) return true;
+    const userId = String((req as any).user?.id ?? '').trim();
+    if (!userId) return false;
+    return new TenantMembershipService(this.db).isPlatformAdminAccount(userId);
   }
 
   buildDefaultSecondaryPanel(): Record<string, any> {

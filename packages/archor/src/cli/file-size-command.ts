@@ -26,7 +26,7 @@ export class FileSizeCommand extends ArchorCommand {
    * off; never raise to make a build pass — a raise is the rule being deleted one number at a time.
    */
   static readonly BASELINES: Readonly<Record<string, number>> = {
-    framework: 96,
+    framework: 94,
     plugins: 39,
     themes: 15,
     appearance: 4,
@@ -37,7 +37,7 @@ export class FileSizeCommand extends ArchorCommand {
    * target because they are different problems: 320 lines is untidy, 620 cannot be read at all.
    */
   static readonly UNREADABLE_BASELINES: Readonly<Record<string, number>> = {
-    framework: 17,
+    framework: 14,
     plugins: 6,
     themes: 4,
     appearance: 0,

@@ -9,6 +9,11 @@ import { SystemIntegrationController } from '@api/controllers/system/system-inte
 import { SystemRuntimeController } from '@api/controllers/system/system-runtime-controller';
 import { SystemUserController } from '@api/controllers/system/system-user-controller';
 import { SystemPeopleController } from '@api/controllers/system/system-people-controller';
+import { SystemSettingsController } from '@api/controllers/system/system-settings-controller';
+import { SystemMetadataController } from '@api/controllers/system/system-metadata-controller';
+import { SystemScimController } from '@api/controllers/system/system-scim-controller';
+import { SystemWebhooksController } from '@api/controllers/system/system-webhooks-controller';
+import { SystemNotificationsController } from '@api/controllers/system/system-notifications-controller';
 
 export class SystemController extends BaseController {
   private readonly adminController: SystemAdminController;
@@ -17,6 +22,11 @@ export class SystemController extends BaseController {
   private readonly userController: SystemUserController;
   private readonly peopleController: SystemPeopleController;
   private readonly deployController: SystemDeployController;
+  private readonly settingsController: SystemSettingsController;
+  private readonly metadataController: SystemMetadataController;
+  private readonly scimController: SystemScimController;
+  private readonly webhooksController: SystemWebhooksController;
+  private readonly notificationsController: SystemNotificationsController;
 
   constructor(
     manager: PluginManager,
@@ -32,6 +42,11 @@ export class SystemController extends BaseController {
     this.userController = new SystemUserController(runtime);
     this.peopleController = new SystemPeopleController(runtime);
     this.deployController = new SystemDeployController(runtime);
+    this.settingsController = new SystemSettingsController(runtime);
+    this.metadataController = new SystemMetadataController(runtime);
+    this.scimController = new SystemScimController(runtime);
+    this.webhooksController = new SystemWebhooksController(runtime);
+    this.notificationsController = new SystemNotificationsController(runtime);
   }
 
   /** Recipient suggestions for the share composer — the people directory, projected for a picker. */
@@ -72,7 +87,7 @@ export class SystemController extends BaseController {
   }
 
   async getAdminMetadata(req: Request, res: Response) {
-    return this.adminController.getAdminMetadata(req, res);
+    return this.metadataController.getAdminMetadata(req, res);
   }
 
   async search(req: Request, res: Response) {
@@ -80,55 +95,55 @@ export class SystemController extends BaseController {
   }
 
   async getNotifications(req: Request, res: Response) {
-    return this.adminController.getNotifications(req, res);
+    return this.notificationsController.getNotifications(req, res);
   }
 
   async getWebhooks(req: Request, res: Response) {
-    return this.adminController.getWebhooks(req, res);
+    return this.webhooksController.getWebhooks(req, res);
   }
 
   async testWebhook(req: Request, res: Response) {
-    return this.adminController.testWebhook(req, res);
+    return this.webhooksController.testWebhook(req, res);
   }
 
   async resendWebhookDelivery(req: Request, res: Response) {
-    return this.adminController.resendWebhookDelivery(req, res);
+    return this.webhooksController.resendWebhookDelivery(req, res);
   }
 
   async getScim(req: Request, res: Response) {
-    return this.adminController.getScim(req, res);
+    return this.scimController.getScim(req, res);
   }
 
   async rotateScimToken(req: Request, res: Response) {
-    return this.adminController.rotateScimToken(req, res);
+    return this.scimController.rotateScimToken(req, res);
   }
 
   async getPreference(req: Request, res: Response) {
-    return this.adminController.getPreference(req, res);
+    return this.notificationsController.getPreference(req, res);
   }
 
   async setPreference(req: Request, res: Response) {
-    return this.adminController.setPreference(req, res);
+    return this.notificationsController.setPreference(req, res);
   }
 
   async markNotificationRead(req: Request, res: Response) {
-    return this.adminController.markNotificationRead(req, res);
+    return this.notificationsController.markNotificationRead(req, res);
   }
 
   async markAllNotificationsRead(req: Request, res: Response) {
-    return this.adminController.markAllNotificationsRead(req, res);
+    return this.notificationsController.markAllNotificationsRead(req, res);
   }
 
   async getSettings(req: Request, res: Response) {
-    return this.adminController.getSettings(req, res);
+    return this.settingsController.getSettings(req, res);
   }
 
   async platformSettingKeys(req: Request, res: Response) {
-    return this.adminController.platformSettingKeys(req, res);
+    return this.settingsController.platformSettingKeys(req, res);
   }
 
   async updateSettings(req: Request, res: Response) {
-    return this.adminController.updateSettings(req, res);
+    return this.settingsController.updateSettings(req, res);
   }
 
   async getIntegrations(req: Request, res: Response) {
@@ -164,7 +179,7 @@ export class SystemController extends BaseController {
   }
 
   async getFrontendMetadata(req: Request, res: Response) {
-    return this.adminController.getFrontendMetadata(req, res);
+    return this.metadataController.getFrontendMetadata(req, res);
   }
 
   async listDeployApps(req: Request, res: Response) {

@@ -21,12 +21,11 @@ import { TenantSummary } from '@api/services/tenants/tenant-summary';
  *
  * Every operation that changes what exists is recorded in the backup audit table, with the actor.
  */
+import { TenantLookup } from '@api/services/tenants/tenant-lookup';
+import { TenantMembersService } from '@api/services/tenants/tenant-members-service';
+import { TenantPagesService } from '@api/services/tenants/tenant-pages-service';
+
 export class TenantAdminService {
-  /** Members returned per page, and the ceiling a caller may ask for. */
-  /** The role that lets an account load the admin; membership decides which sites it then sees. */
-  private static readonly ADMIN_ROLE = 'admin';
-  private static readonly MEMBER_PAGE = 25;
-  private static readonly MEMBER_PAGE_MAX = 200;
 
   private readonly db: IDatabaseManager;
   private readonly registry: TenantRegistryService;
@@ -35,6 +34,9 @@ export class TenantAdminService {
   private readonly audit: SystemBackupRepository;
   private readonly appearances: AppearanceManager;
   private readonly gateway = new GatewayReloadClient();
+  private readonly lookup: TenantLookup;
+  private readonly membersService: TenantMembersService;
+  private readonly pagesService: TenantPagesService;
 
   constructor(
     private readonly manager: PluginManager,
@@ -47,6 +49,9 @@ export class TenantAdminService {
     this.catalog = new BackupCatalogService();
     this.audit = new SystemBackupRepository(manager.db);
     this.appearances = new AppearanceManager(new Logger({ namespace: 'appearance' }));
+    this.lookup = new TenantLookup(this.registry);
+    this.membersService = new TenantMembersService(this.db, this.memberships, this.lookup);
+    this.pagesService = new TenantPagesService(this.db, manager, themeManager, this.lookup);
   }
 
   get multiTenant(): boolean {
@@ -107,77 +112,6 @@ export class TenantAdminService {
     if (missing.length) throw new Error(`Plugin(s) not installed on this platform: ${missing.join(', ')}.`);
   }
 
-  /** How many pages the site holds, through the registered pages collection — never a plugin's table name. */
-  /**
-   * A site's page count, on the connection the query actually runs on.
-   *
-   * Both halves matter and the first version had neither right: `countPages` reads through
-   * `manager.db` (the RUNTIME connection) while this scoped `this.db` — the schema OWNER connection —
-   * so the scope was applied to a connection the query never used. And row-level security is not the
-   * only gate: the request context carries the tenant too. A site with 44 pages reported 0, and the
-   * page then told the operator its storefront was empty.
-   */
-  private async countPagesFor(tenantId: string): Promise<number> {
-    return RequestContextUtils.storage.run({ locale: '', tenantId }, () =>
-      this.manager.db.withTenant(tenantId, () => this.countPages()));
-  }
-
-  /**
-   * How many pages the site in scope has.
-   *
-   * The collection is the one its OWNER marked as the storefront's pages, not a literal `'pages'`
-   * matched here — framework code naming a plugin's collection is the coupling that rule forbids. No
-   * marked collection means no pages plugin is installed, and the answer is zero rather than a guess.
-   */
-  private async countPages(): Promise<number> {
-    const owner = StorefrontPagesCollection.find(this.manager.registeredCollections);
-    if (!owner) return 0;
-
-    // COUNT, not a capped find: the old form loaded up to 5000 rows and reported their length, so a
-    // site with more pages than that under-reported.
-    return CoercionUtils.toNumber(
-      await this.manager.db.count(`@${owner.pluginSlug}/${owner.shortSlug}`, { where: {} }),
-    );
-  }
-
-  /**
-   * Create the default pages of the plugins this site runs (/shop, /login, /account, …) INSIDE the
-   * site's tenant scope. A site created without this had no pages at all: every storefront route but
-   * the home page was a 404. Runs at creation and on demand (`POST /:id/pages`), so a site that gained
-   * a plugin later can catch up; existing pages are matched, never duplicated.
-   */
-  async materializePages(tenantId: string): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
-    const tenant = await this.requireTenant(tenantId);
-    PluginTenantAccess.invalidate(tenant.id);
-    TenantThemeAccess.invalidate(tenant.id);
-    await Promise.all([PluginTenantAccess.warm(tenant.id), TenantThemeAccess.warm(tenant.id)]);
-    const warnings: string[] = [];
-    let themeSeeded = false;
-    await RequestContextUtils.storage.run({ locale: '', tenantId: tenant.id }, () =>
-      this.manager.db.withTenant(tenant.id, async () => {
-        // The theme's INITIAL content first (its pages and navigation), then the plugins' default
-        // pages, which match what the seed created rather than duplicating it.
-        const themeSlug = (await TenantThemeAccess.choiceForAsync(tenant.id)).activeSlug;
-        if (themeSlug && !tenant.isWorkspace) {
-          try {
-            themeSeeded = (await this.themeManager.seedThemeForCurrentSite(themeSlug)).seeded;
-          } catch (error: any) {
-            warnings.push(`Theme "${themeSlug}" seed failed: ${error?.message || error}`);
-          }
-        }
-        // Plugin seed data is per-site: skipped at boot (no site there), run here, inside this
-        // tenant's scope, which is what makes the write pass row-level security.
-        try {
-          await this.manager.runPluginSeedsForCurrentSite();
-        } catch (error: any) {
-          warnings.push(`Plugin seeds: ${error?.message || error}`);
-        }
-        await this.manager.materializeDefaultPages();
-      }));
-    const pages = await this.manager.db.withTenant(tenant.id, () => this.countPages());
-    return { pages, themeSeeded, warnings };
-  }
-
   /**
    * Changes a site. Theme and plugin choices are applied here, not only at creation.
    *
@@ -225,70 +159,6 @@ export class TenantAdminService {
     if (slug) await state.activate(tenantId, slug);
     else if (active) await state.disable(tenantId, active);
     TenantThemeAccess.invalidate(tenantId);
-  }
-
-  /**
-   * One page of a site's members, newest membership first, optionally narrowed by email.
-   *
-   * Paged because a site's membership is unbounded: rendering all of it was the reason loading the
-   * Sites page could issue a query per member. `limit` is clamped so a caller cannot ask for the whole
-   * table by passing a large number.
-   */
-  async members(tenantId: string, options: { q?: string; limit?: number; offset?: number } = {}): Promise<{
-    members: Array<{ userId: string; email: string; roles: string[]; state: string }>;
-    total: number;
-  }> {
-    const tenant = await this.requireTenant(tenantId);
-    const limit = Math.min(Math.max(CoercionUtils.toNumber(options.limit, TenantAdminService.MEMBER_PAGE), 1), TenantAdminService.MEMBER_PAGE_MAX);
-    const offset = Math.max(CoercionUtils.toNumber(options.offset, 0), 0);
-    const search = CoercionUtils.toKey(options.q);
-
-    // One join rather than a lookup per row — the N+1 this replaces is the whole point.
-    const rows = await this.db.queryRaw(
-      `SELECT m.user_id, m.roles, m.state, u.email
-         FROM ${SystemConstants.TABLE.TENANT_MEMBERSHIPS} m
-         LEFT JOIN ${SystemConstants.TABLE.USERS} u ON u.id::text = m.user_id::text
-        WHERE m.tenant_id = $1 ${search ? 'AND LOWER(u.email) LIKE $4' : ''}
-        ORDER BY m.user_id DESC
-        LIMIT $2 OFFSET $3`,
-      search ? [tenant.id, limit, offset, `%${search}%`] : [tenant.id, limit, offset],
-    );
-    const counted = await this.db.queryRaw(
-      `SELECT COUNT(*)::int AS total
-         FROM ${SystemConstants.TABLE.TENANT_MEMBERSHIPS} m
-         ${search ? `LEFT JOIN ${SystemConstants.TABLE.USERS} u ON u.id::text = m.user_id::text` : ''}
-        WHERE m.tenant_id = $1 ${search ? 'AND LOWER(u.email) LIKE $2' : ''}`,
-      search ? [tenant.id, `%${search}%`] : [tenant.id],
-    );
-
-    return {
-      members: (rows ?? []).map((row: any) => ({
-        userId: CoercionUtils.toString(row.user_id),
-        email: CoercionUtils.toString(row.email),
-        roles: TenantSummary.roles(row.roles),
-        state: CoercionUtils.toString(row.state),
-      })),
-      total: CoercionUtils.toNumber(counted?.[0]?.total),
-    };
-  }
-
-  /**
-   * Grants an existing account access to a site.
-   *
-   * The roles are the account's roles ON THIS SITE — `AuthManager.useTenantRoles` resolves them per
-   * request — so the same account can be a customer on one site and an administrator on another. The
-   * account's global roles are not touched.
-   */
-  async addMember(tenantId: string, email: string, roles: string[]): Promise<void> {
-    const user = await this.db.findOne(SystemConstants.TABLE.USERS, { email: CoercionUtils.toKey(email) });
-    if (!user) throw new Error(`No account with email "${email}" exists on this platform. Create the account first.`);
-    const userId = CoercionUtils.toString(user.id);
-    await this.memberships.grant(userId, tenantId, roles);
-  }
-
-
-  async removeMember(tenantId: string, userId: string): Promise<void> {
-    await this.memberships.revoke(userId, tenantId);
   }
 
   /** Writes `backups/tenants/tenant-<slug>-<ts>.tar.gz` and returns the catalog entry the Backups page shows. */
@@ -417,7 +287,7 @@ export class TenantAdminService {
     // sites and a hundred thousand members each rendered the Sites page with hundreds of thousands of
     // queries. The count is a single COUNT; the roster is paged on demand (`members()` below).
     // A workspace serves a console, not a storefront, so counting pages for one would be noise.
-    const pageCount = tenant.isWorkspace ? 0 : await this.countPagesFor(tenant.id);
+    const pageCount = tenant.isWorkspace ? 0 : await this.pagesService.countPagesFor(tenant.id);
     return new TenantSummary(tenant, members, plugins, choice.activeSlug, this.lastExport(tenant.slug), pageCount, this.exports(tenant.slug));
   }
 
@@ -449,6 +319,24 @@ export class TenantAdminService {
     const own = new RegExp(`^tenant-${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-\\d{4}-\\d{2}-\\d{2}T`);
     const files = fs.readdirSync(dir).filter((name) => own.test(name) && name.endsWith(TenantArchiveLayout.EXTENSION)).sort();
     return files.length ? files[files.length - 1] : null;
+  }
+
+  /** Members of a tenant, paged and searchable — delegated to TenantMembersService. */
+  async members(tenantId: string, options: { q?: string; limit?: number; offset?: number } = {}) {
+    return this.membersService.members(tenantId, options);
+  }
+
+  async addMember(tenantId: string, email: string, roles: string[]): Promise<void> {
+    return this.membersService.addMember(tenantId, email, roles);
+  }
+
+  async removeMember(tenantId: string, userId: string): Promise<void> {
+    return this.membersService.removeMember(tenantId, userId);
+  }
+
+  /** Create the tenant's pages from theme + plugin contracts — delegated to TenantPagesService. */
+  async materializePages(tenantId: string): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
+    return this.pagesService.materializePages(tenantId);
   }
 
   private async requireTenant(id: string): Promise<TenantRecord> {
