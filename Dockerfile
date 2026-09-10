@@ -4,8 +4,20 @@
 ARG NODE_BASE_IMAGE=public.ecr.aws/docker/library/node:22-bookworm-slim
 FROM ${NODE_BASE_IMAGE} AS base
 
-# Install dependencies for native modules (better-sqlite3) and postgres.
-# Support both Alpine and Debian-based Node images so builds can override the base tag.
+# System packages. `better-sqlite3` is the ONLY native module in the tree; everything else ships
+# prebuilt binaries.
+#
+# On Debian it needs NO compiler: better-sqlite3's install is `prebuild-install || node-gyp rebuild`,
+# and prebuilds are published for this ABI on linux x64 AND arm64, so the first half always wins.
+# `build-essential` and `python3` were ~300MB of C++ toolchain in every runtime image for a fallback
+# that never fires. If a prebuild is ever missing the install fails loudly at BUILD time, which is
+# the right place to find out.
+#
+# Alpine keeps its compilers: the published prebuilds are glibc, so a musl base really does build
+# from source.
+#
+# postgresql-client and iptables are RUNTIME: the entrypoint provisions roles with psql and applies
+# the guest egress rule with iptables.
 RUN if command -v apk >/dev/null 2>&1; then \
             apk add --no-cache \
                 postgresql-client \
@@ -17,8 +29,6 @@ RUN if command -v apk >/dev/null 2>&1; then \
         elif command -v apt-get >/dev/null 2>&1; then \
             apt-get update && apt-get install -y --no-install-recommends \
                 postgresql-client \
-                python3 \
-                build-essential \
                 iptables \
             && rm -rf /var/lib/apt/lists/*; \
         else \
