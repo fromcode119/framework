@@ -228,6 +228,8 @@ export type { IRequestStore } from '@core/context/interfaces/request-store.inter
 
 // Plugin Services (Server-only)
 export { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
+export { ExtensionBuildRegistry } from '@core/plugin/services/extension-build-registry';
+export type { IExtensionBuildService } from '@core/plugin/interfaces/extension-build-service.interface';
 export { IntegrityService } from '@core/security/integrity-service';
 export { DependencyInstaller } from '@core/plugin/services/installation/dependency-installer';
 export { PluginDependencyInstallerService } from '@core/plugin/services/installation/plugin-dependency-installer-service';
