@@ -16,6 +16,7 @@ import { PluginStyleCompiler } from '@extension-builder/assets/plugin-style-comp
 import { AssetMinifier } from '@extension-builder/assets/asset-minifier';
 import { AssetPrecompressor } from '@extension-builder/assets/asset-precompressor';
 import { PackCleaner } from '@extension-builder/pack/pack-cleaner';
+import { ThemeSsrDependencyCollector } from '@extension-builder/pack/theme-ssr-dependency-collector';
 import { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
 import { ArchiveWriter } from '@extension-builder/pack/archive-writer';
 
@@ -83,15 +84,34 @@ export class ExtensionBuildPipeline {
       fs.cpSync(workspace.sourceDir, packDir, { recursive: true });
     }
 
+    // BEFORE cleaning: the seed is copied in from dist and theme.json pointed at it, because
+    // PackCleaner deliberately spares `seed.mjs` and would otherwise have nothing to spare.
+    if (input.kind === ExtensionKind.THEME) {
+      results.push(ExtensionBuildPipeline.stageThemeSeed(packDir, ExtensionBuildPipeline.seedOutputPath(workspace, input.slug)));
+    }
+
     PackCleaner.clean(packDir);
     results.push(BuildStepResult.ok('pack-cleaner'));
+
+    // AFTER cleaning, and the order is not a detail: PackCleaner strips `node_modules`, which is
+    // precisely where the SSR closure is written. Collecting first would delete it again.
+    if (input.kind === ExtensionKind.THEME) {
+      const ssr = ThemeSsrDependencyCollector.collect(workspace.sourceDir, packDir);
+      results.push(ssr);
+      if (ssr.failed) return results;
+      // A publicDir misconfiguration once shipped the site's user uploads inside a theme tarball.
+      fs.rmSync(path.join(packDir, 'public', 'uploads'), { recursive: true, force: true });
+    }
     await IntegrityStamper.stampPackedDir(packDir);
     results.push(BuildStepResult.ok('integrity-stamper:packed'));
 
-    const version = ExtensionBuildPipeline.readVersion(packDir);
+    const version = ExtensionBuildPipeline.readVersion(packDir, input.kind);
+    // `theme-` prefix for themes, bare slug for plugins — build-plugins.sh's convention, and
+    // installers and the marketplace both match on these names.
+    const baseName = input.kind === ExtensionKind.THEME ? `theme-${input.slug}` : input.slug;
     const outputPath = path.join(
       ExtensionBuildPipeline.distRoot(workspace.sourceDir, input.kind),
-      `${input.slug}-${version}.tar.gz`,
+      `${baseName}-${version}.tar.gz`,
     );
     try {
       await new ArchiveWriter().writeTarGz(packDir, outputPath);
@@ -190,14 +210,35 @@ export class ExtensionBuildPipeline {
     return BuildStepResult.ok(step);
   }
 
+  /**
+   * Copies the built seed into the package and points `theme.json` at it. The theme's own
+   * directory never contains a `seed.mjs`; only the artifact does.
+   */
+  private static stageThemeSeed(packDir: string, builtSeed: string): BuildStepResult {
+    const step = 'theme-seed-staging';
+    if (!fs.existsSync(builtSeed)) return BuildStepResult.skipped(step, 'no built seed to stage');
+
+    fs.copyFileSync(builtSeed, path.join(packDir, 'seed.mjs'));
+    fs.rmSync(path.join(packDir, 'seed.cjs'), { force: true });
+
+    const manifestPath = path.join(packDir, 'theme.json');
+    if (!fs.existsSync(manifestPath)) return BuildStepResult.skipped(step, 'no theme.json to point at the seed');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    manifest.seeds = 'seed.mjs';
+    fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    return BuildStepResult.ok(step);
+  }
+
   private static seedOutputPath(workspace: ExtensionWorkspace, slug: string): string {
     const workspaceRoot = path.dirname(path.dirname(workspace.sourceDir));
     return path.join(workspaceRoot, 'dist', 'packages', 'build', 'themes', slug, 'seed.mjs');
   }
 
-  private static readVersion(dir: string): string {
+  /** A theme declares itself in `theme.json`; everything else in `manifest.json`. */
+  private static readVersion(dir: string, kind: ExtensionKind): string {
+    const manifestName = kind === ExtensionKind.THEME ? 'theme.json' : 'manifest.json';
     try {
-      return String(JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8')).version ?? '0.0.0');
+      return String(JSON.parse(fs.readFileSync(path.join(dir, manifestName), 'utf8')).version ?? '0.0.0');
     } catch {
       return '0.0.0';
     }
