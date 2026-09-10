@@ -6,3 +6,4 @@ export { PluginUiCompiler } from '@extension-builder/compile/plugin-ui-compiler'
 export { PluginMigrationsCompiler } from '@extension-builder/compile/plugin-migrations-compiler';
 export { ThemeBundleCompiler } from '@extension-builder/compile/theme-bundle-compiler';
 export { ArchiveWriter } from '@extension-builder/pack/archive-writer';
+export { ExtensionWorkspace } from '@extension-builder/extension-workspace';
