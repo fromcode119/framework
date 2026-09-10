@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/react-class-components",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Class-based OOP primitives for React apps - a typed Reactor base component, @bound / @watch / @state decorators, and a method-bearing Enum base. React-only, zero framework dependencies, reusable in any project.",
   "license": "MIT",
   "type": "module",

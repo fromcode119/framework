@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -77,7 +77,7 @@
     "@fromcode119/cache": "*",
     "@fromcode119/database": "*",
     "@fromcode119/email": "*",
-    "@fromcode119/marketplace-client": "^0.1.6",
+    "@fromcode119/marketplace-client": "*",
     "@fromcode119/mcp": "*",
     "@fromcode119/media": "*",
     "@fromcode119/plugins": "*",

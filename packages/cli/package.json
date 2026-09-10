@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "bin": {
     "fromcode": "dist/bin.js"
   },
@@ -12,7 +12,7 @@
   "dependencies": {
     "@fromcode119/core": "*",
     "@fromcode119/database": "*",
-    "@fromcode119/marketplace-client": "^0.1.6",
+    "@fromcode119/marketplace-client": "*",
     "archiver": "^8.0.0",
     "bcryptjs": "^3.0.3",
     "chalk": "^4.1.2",

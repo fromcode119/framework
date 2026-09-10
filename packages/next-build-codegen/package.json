@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/next-build-codegen",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Next.js + build integration for @fromcode119/react-class-components — `.client` directive injection and the Registry-resolved JSX template compiler. Keeps reactor pure React; all build/Next-specific machinery lives here.",
   "license": "MIT",
   "type": "module",
