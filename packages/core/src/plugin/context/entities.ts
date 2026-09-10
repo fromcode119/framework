@@ -1,5 +1,5 @@
 import { CoreServices } from '@core/services/core-services';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IEntityParseOptions } from '@core/entity/interfaces/entity-parse-options.interface';
 import type { IEntityParseResult } from '@core/entity/interfaces/entity-parse-result.interface';
 

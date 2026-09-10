@@ -1,4 +1,4 @@
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { FieldType } from '@core/enums/field-type.enum';
 

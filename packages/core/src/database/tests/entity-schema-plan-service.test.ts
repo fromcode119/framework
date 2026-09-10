@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EntitySchemaPlanService } from '@core/database/entity-schema-plan-service';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 
 describe('EntitySchemaPlanService', () => {
   const collection: ICollection = {

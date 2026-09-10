@@ -1,5 +1,5 @@
 import { BaseEntity } from '@core/base/base-entity';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { IEntityFieldConfig } from '@core/entity/interfaces/entity-field-config.interface';
 import { FieldType } from '@core/enums/field-type.enum';

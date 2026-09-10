@@ -1,4 +1,4 @@
-import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
+import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { ThemeState } from '@core/theme/enums/theme-state.enum';
 import { ThemeAssetFingerprintService } from '@core/theme/theme-asset-fingerprint-service';

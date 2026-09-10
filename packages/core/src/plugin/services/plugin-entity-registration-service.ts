@@ -1,9 +1,9 @@
 import { FieldPosition } from '@core/enums/field-position.enum';
 import { NamingStrategy } from '@fromcode119/database/naming-strategy';
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
-import type { ICollectionInput } from '@core/interfaces/collection-input.interface';
+import type { ICollectionInput } from '@core/collections/interfaces/collection-input.interface';
 import type { IFieldInput } from '@core/interfaces/field-input.interface';
 import type { IPluginEntityRegistrationResult } from '@core/plugin/services/interfaces/plugin-entity-registration-result.interface';
 import { FieldType } from '@core/enums/field-type.enum';

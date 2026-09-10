@@ -1,6 +1,6 @@
 import { Logger } from '@core/logging';
 import { SystemConstants } from '@core/constants/system.constants';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IAdminSecondaryPanelAllowlistEntry } from '@core/plugin/services/interfaces/admin-secondary-panel-allowlist-entry.interface';
 import { AdminMetadataService } from '@core/plugin/services/admin/admin-metadata-service';

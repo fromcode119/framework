@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { Logger } from '@core/logging';
 
 import { SystemConstants } from '@core/constants/system.constants';

@@ -1,5 +1,5 @@
-import type { ICollection } from '@core/interfaces/collection.interface';
-import type { ICollectionQueryInterface } from '@core/interfaces/collection-query-interface.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
+import type { ICollectionQueryInterface } from '@core/collections/interfaces/collection-query-interface.interface';
 import type { ICandidateLookupOptions } from '@core/interfaces/candidate-lookup-options.interface';
 import type { IUpsertByCandidatesOptions } from '@core/interfaces/upsert-by-candidates-options.interface';
 import { BaseService } from '@core/services/base-service';

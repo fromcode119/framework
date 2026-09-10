@@ -1,7 +1,7 @@
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IField } from '@core/interfaces/field.interface';
-import type { ICollectionInput } from '@core/interfaces/collection-input.interface';
+import type { ICollectionInput } from '@core/collections/interfaces/collection-input.interface';
 import { Logger } from '@core/logging';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';

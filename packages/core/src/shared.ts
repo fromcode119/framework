@@ -4,6 +4,6 @@ export * from '@core/default-page-contract';
 export * from '@core/layout';
 export * from '@core/plugin/plugin-context';
 export * from '@core/screenshot';
-export * from '@core/interfaces/collection-input.interface';
+export * from '@core/collections/interfaces/collection-input.interface';
 export * from '@core/interfaces/field-input.interface';
 export * from '@core/utils';

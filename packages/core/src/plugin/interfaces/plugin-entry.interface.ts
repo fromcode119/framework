@@ -1,4 +1,4 @@
-import { MarketplacePlugin } from '@core/interfaces/marketplace-plugin.interface';
+import { MarketplacePlugin } from '@core/marketplace/interfaces/marketplace-plugin.interface';
 
 /**
  * PluginEntry is used as a frontend representation of a Marketplace plugin.

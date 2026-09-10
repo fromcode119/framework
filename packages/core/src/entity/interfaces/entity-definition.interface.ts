@@ -1,4 +1,4 @@
-import { ICollection } from '@core/interfaces/collection.interface';
+import { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IEntityInputAlias } from '@core/entity/interfaces/entity-input-alias.interface';
 import type { IEntityIndex } from '@core/entity/interfaces/entity-index.interface';
 import type { IEntityDerivedField } from '@core/entity/interfaces/entity-derived-field.interface';

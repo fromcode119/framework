@@ -1,4 +1,4 @@
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { IDatabaseManager, sql } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import { SystemConstants } from '@core/constants/system.constants';

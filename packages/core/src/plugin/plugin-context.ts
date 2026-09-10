@@ -7,7 +7,7 @@ import type { IPluginContextDb } from '@core/plugin/interfaces/plugin-context-db
 import type { IMediaManager } from '@fromcode119/media';
 import type { IEmailDriver } from '@fromcode119/email';
 import type { ICacheManager } from '@fromcode119/cache';
-import { ICollection } from '@core/interfaces/collection.interface';
+import { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IPluginSettingsSchema } from '@core/plugin/interfaces/plugin-settings-schema.interface';
 import type { IEntityParseOptions } from '@core/entity/interfaces/entity-parse-options.interface';
 import type { IEntityParseResult } from '@core/entity/interfaces/entity-parse-result.interface';

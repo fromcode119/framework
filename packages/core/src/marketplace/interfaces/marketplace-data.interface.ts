@@ -1,5 +1,5 @@
-import type { MarketplacePlugin } from '@core/interfaces/marketplace-plugin.interface';
-import type { IMarketplaceTheme } from '@core/interfaces/marketplace-theme.interface';
+import type { MarketplacePlugin } from '@core/marketplace/interfaces/marketplace-plugin.interface';
+import type { IMarketplaceTheme } from '@core/marketplace/interfaces/marketplace-theme.interface';
 
 export interface IMarketplaceData {
   version?: string;

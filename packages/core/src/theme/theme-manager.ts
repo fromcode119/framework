@@ -1,4 +1,4 @@
-import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
+import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
 import { ManifestNormalizer } from '@core/manifest-normalizer';
 import { SystemConstants } from '@core/constants/system.constants';
 import path from 'path';

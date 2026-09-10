@@ -1,5 +1,5 @@
-import { ICollection } from '@core/interfaces/collection.interface';
-import type { ICollectionInput } from '@core/interfaces/collection-input.interface';
+import { ICollection } from '@core/collections/interfaces/collection.interface';
+import type { ICollectionInput } from '@core/collections/interfaces/collection-input.interface';
 
 /**
  * The `context.collections` surface of {@link PluginContext}.

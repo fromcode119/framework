@@ -1,7 +1,7 @@
 import { NavGroupStrategy } from '@core/enums/nav-group-strategy.enum';
 import { RuntimeModuleKind } from '@core/plugin/services/enums/runtime-module-kind.enum';
 import { FieldType } from '@core/enums/field-type.enum';
-import { ICollection } from '@core/interfaces/collection.interface';
+import { ICollection } from '@core/collections/interfaces/collection.interface';
 
 import type { IMenuItemManifest } from '@core/interfaces/menu-item-manifest.interface';
 import type { ISecondaryPanelManifest } from '@core/interfaces/secondary-panel-manifest.interface';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EntityValueParserService } from '@core/services/entity-value-parser-service';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { EntityParseMode } from '@core/enums/entity-parse-mode.enum';
 
 describe('EntityValueParserService', () => {

@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
-import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
+import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
 import type { IPluginManifestInput } from '@core/plugin/interfaces/plugin-manifest-input.interface';
-import type { IThemeManifestInput } from '@core/interfaces/theme-manifest-input.interface';
+import type { IThemeManifestInput } from '@core/theme/interfaces/theme-manifest-input.interface';
 
 export class ManifestNormalizer {
   static plugin(input: IPluginManifestInput, basePath?: string): IPluginManifest {

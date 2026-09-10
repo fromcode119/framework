@@ -1,5 +1,5 @@
-import type { ICollection } from '@core/interfaces/collection.interface';
-import type { ICollectionQueryInterface } from '@core/interfaces/collection-query-interface.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
+import type { ICollectionQueryInterface } from '@core/collections/interfaces/collection-query-interface.interface';
 import type { IPluginDefaultPageContractCreatePayload } from '@core/default-page-contract/interfaces/plugin-default-page-contract-create-payload.interface';
 import type { IPluginDefaultPageContractMaterializationExecutionReport } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-execution-report.interface';
 import type { IPluginDefaultPageContractPageSnapshot } from '@core/default-page-contract/interfaces/plugin-default-page-contract-page-snapshot.interface';

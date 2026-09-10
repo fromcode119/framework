@@ -1,4 +1,4 @@
-import type { IThemeManifest } from '@core/interfaces/theme-manifest.interface';
+import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
 import { Logger } from '@core/logging';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 

@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 

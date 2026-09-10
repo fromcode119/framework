@@ -1,6 +1,6 @@
 import { NavGroupStrategy } from '@core/enums/nav-group-strategy.enum';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { Logger } from '@core/logging';
 import { CoreServices } from '@core/services';
 import { AdminRouteUtils } from '@core/plugin/services/admin/admin-route-utils';

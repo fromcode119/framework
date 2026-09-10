@@ -1,5 +1,5 @@
 import { CollectionHookPhase } from '@core/enums/collection-hook-phase.enum';
-import type { ICollectionHookEvents } from '@core/interfaces/collection-hook-events.interface';
+import type { ICollectionHookEvents } from '@core/collections/interfaces/collection-hook-events.interface';
 
 /**
  * Collection hook event name utilities.

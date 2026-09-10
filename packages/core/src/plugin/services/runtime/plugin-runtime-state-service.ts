@@ -1,7 +1,7 @@
 import { SystemConstants } from '@core/constants/system.constants';
 import { Logger } from '@core/logging';
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 

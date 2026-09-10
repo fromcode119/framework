@@ -1,6 +1,6 @@
 import { ApiVersionUtils } from '@core/api-version';
 import { SystemConstants } from '@core/constants/system.constants';
-import type { ICollectionListPathOptions } from '@core/interfaces/collection-list-path-options.interface';
+import type { ICollectionListPathOptions } from '@core/collections/interfaces/collection-list-path-options.interface';
 
 /**
  * Collection path and data utilities.

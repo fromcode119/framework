@@ -21,7 +21,7 @@ export * from '@core/default-page-contract';
 export * from '@core/layout';
 export * from '@core/plugin/plugin-context';
 export * from '@core/screenshot';
-export * from '@core/interfaces/collection-input.interface';
+export * from '@core/collections/interfaces/collection-input.interface';
 export * from '@core/interfaces/field-input.interface';
 
 // ── Collections ───────────────────────────────────────────────────────────────
@@ -82,12 +82,12 @@ export { LocalizationUtils } from '@core/localization';
 export type { INormalizeLocaleOptions } from '@core/interfaces/normalize-locale-options.interface';
 export type { IResolveAnyStringOptions } from '@core/interfaces/resolve-any-string-options.interface';
 export { CollectionUtils } from '@core/utils/collection-utils';
-export type { ICollectionListPathOptions } from '@core/interfaces/collection-list-path-options.interface';
+export type { ICollectionListPathOptions } from '@core/collections/interfaces/collection-list-path-options.interface';
 export { HookEventUtils } from '@core/hook-events';
 // CollectionHookPhase is an Enum CLASS — a VALUE export, or plugins cannot reach `.BEFORE_CREATE` and
 // are forced back to raw strings. Only the events interface is type-only.
-export { CollectionHookPhase } from '@core/interfaces/collection-hook-events.interface';
-export type { ICollectionHookEvents } from '@core/interfaces/collection-hook-events.interface';
+export { CollectionHookPhase } from '@core/collections/interfaces/collection-hook-events.interface';
+export type { ICollectionHookEvents } from '@core/collections/interfaces/collection-hook-events.interface';
 export { PaginationUtils } from '@core/pagination';
 export type { IPaginationInput } from '@core/interfaces/pagination-input.interface';
 export type { IPaginationMeta } from '@core/interfaces/pagination-meta.interface';
@@ -100,7 +100,7 @@ export type { IShortcodeCatalogResponse } from '@core/interfaces/shortcode-catal
 export { RuntimeBridge } from '@core/runtime-bridge';
 export type { IFrontendRuntimeMetadata } from '@core/interfaces/frontend-runtime-metadata.interface';
 export type { IPluginManifestInput } from '@core/plugin/interfaces/plugin-manifest-input.interface';
-export type { IThemeManifestInput } from '@core/interfaces/theme-manifest-input.interface';
+export type { IThemeManifestInput } from '@core/theme/interfaces/theme-manifest-input.interface';
 export { PluginHealthResponseBuilder } from '@core/plugin/plugin-health-response-builder';
 export type { IPluginHealthBuildOptions } from '@core/plugin/interfaces/plugin-health-build-options.interface';
 export type { IPluginHealthIdentity } from '@core/plugin/interfaces/plugin-health-identity.interface';

@@ -1,6 +1,6 @@
 import type { IDatabaseManager } from '@fromcode119/database';
 import { StringUtils } from '@core/utils/string-utils';
-import type { ICollectionQueryInterface } from '@core/interfaces/collection-query-interface.interface';
+import type { ICollectionQueryInterface } from '@core/collections/interfaces/collection-query-interface.interface';
 import type { IUpsertByCandidatesOptions } from '@core/interfaces/upsert-by-candidates-options.interface';
 import { BaseService } from '@core/services/base-service';
 import { CollectionService } from '@core/services/collection-service';

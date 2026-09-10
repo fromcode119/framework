@@ -1,6 +1,6 @@
 import type { IDatabaseManager } from '@fromcode119/database';
 import { NamingStrategy, PhysicalTableNameUtils, TableResolver, TenantRlsSql } from '@fromcode119/database';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';

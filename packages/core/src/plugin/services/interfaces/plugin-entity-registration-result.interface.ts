@@ -1,4 +1,4 @@
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 
 export interface IPluginEntityRegistrationResult {
   collection: ICollection;

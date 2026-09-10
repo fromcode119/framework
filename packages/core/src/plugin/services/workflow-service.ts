@@ -1,4 +1,4 @@
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { IDatabaseManager } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import { HookManager } from '@core/hooks/hook-manager';

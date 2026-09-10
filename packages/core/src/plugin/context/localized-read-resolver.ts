@@ -1,7 +1,7 @@
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { LocalizationUtils } from '@core/localization';
 import { RequestContextUtils } from '@core/context/request-context';
-import type { ICollection } from '@core/interfaces/collection.interface';
+import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 
