@@ -4,6 +4,7 @@ import { BuildStepResult } from '@extension-builder/build-step-result';
 import { ExtensionKind } from '@extension-builder/extension-kind';
 import { ExtensionWorkspace } from '@extension-builder/extension-workspace';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
+import { ViteConfigGlue } from '@extension-builder/deps/vite-config-glue';
 import { PluginBackendCompiler } from '@extension-builder/compile/plugin-backend-compiler';
 import { PluginMigrationsCompiler } from '@extension-builder/compile/plugin-migrations-compiler';
 import { ThemeHeadScriptCompiler } from '@extension-builder/compile/theme-head-script-compiler';
@@ -25,6 +26,24 @@ import { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
  */
 export class ExtensionBuildPipeline {
   static async run(input: {
+    sourceDir: string;
+    kind: ExtensionKind;
+    slug: string;
+    pack: boolean;
+    packDir?: string;
+  }): Promise<BuildStepResult[]> {
+    // vite and tailwind load a generated module entry, because their configs are authored as
+    // classes. It is build OUTPUT: `check:vite-glue` fails the build if one is left behind, so the
+    // whole run is wrapped and `remove()` happens however it ends.
+    ViteConfigGlue.generate();
+    try {
+      return await ExtensionBuildPipeline.runSteps(input);
+    } finally {
+      ViteConfigGlue.remove();
+    }
+  }
+
+  private static async runSteps(input: {
     sourceDir: string;
     kind: ExtensionKind;
     slug: string;
@@ -80,7 +99,7 @@ export class ExtensionBuildPipeline {
     return [
       () => ExtensionBuildPipeline.compileBackend(workspace, slug),
       () => ExtensionBuildPipeline.compileMigrations(workspace, slug),
-      async () => PluginStyleCompiler.compile(workspace.uiSourceDir, workspace.uiDir, slug, workspace.toolchainRootFor('tailwindcss') ?? BuildToolchain.toolRootFor('tailwindcss')),
+      async () => PluginStyleCompiler.compile(workspace.uiSourceDir, workspace.uiDir, slug, ViteConfigGlue.frameworkRoot() ?? BuildToolchain.toolRootFor('tailwindcss')),
     ];
   }
 
