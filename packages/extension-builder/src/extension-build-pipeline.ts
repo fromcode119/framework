@@ -8,6 +8,7 @@ import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
 import { ViteConfigGlue } from '@extension-builder/deps/vite-config-glue';
 import { PluginBackendCompiler } from '@extension-builder/compile/plugin-backend-compiler';
 import { PluginMigrationsCompiler } from '@extension-builder/compile/plugin-migrations-compiler';
+import { PluginUiCompiler } from '@extension-builder/compile/plugin-ui-compiler';
 import { ThemeHeadScriptCompiler } from '@extension-builder/compile/theme-head-script-compiler';
 import { ThemeSeedCompiler } from '@extension-builder/compile/theme-seed-compiler';
 import { PluginStyleCompiler } from '@extension-builder/assets/plugin-style-compiler';
@@ -120,6 +121,7 @@ export class ExtensionBuildPipeline {
 
     return [
       () => ExtensionBuildPipeline.compileBackend(workspace, slug),
+      () => ExtensionBuildPipeline.compileUi(workspace, slug),
       () => ExtensionBuildPipeline.compileMigrations(workspace, slug),
       async () => PluginStyleCompiler.compile(workspace.uiSourceDir, workspace.uiDir, slug, ViteConfigGlue.frameworkRoot() ?? BuildToolchain.toolRootFor('tailwindcss')),
     ];
@@ -132,6 +134,19 @@ export class ExtensionBuildPipeline {
     }
     try {
       await new PluginBackendCompiler().compileBackend(workspace.sourceDir, slug);
+    } catch (error) {
+      return BuildStepResult.failure(step, String(error));
+    }
+    return BuildStepResult.ok(step);
+  }
+
+  private static async compileUi(workspace: ExtensionWorkspace, slug: string): Promise<BuildStepResult> {
+    const step = 'plugin-ui-compiler';
+    if (!fs.existsSync(workspace.uiSourceDir)) return BuildStepResult.skipped(step, 'no src/ui or ui directory');
+    try {
+      const manifestPath = path.join(workspace.sourceDir, 'manifest.json');
+      const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : {};
+      await new PluginUiCompiler().compileUI(workspace.sourceDir, slug, manifest);
     } catch (error) {
       return BuildStepResult.failure(step, String(error));
     }

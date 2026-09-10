@@ -2,10 +2,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { BuildStepResult } from '@extension-builder/build-step-result';
+import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
 
 /** Minifies the built JS in a served `ui/` dir with terser. */
 export class AssetMinifier {
   static readonly STEP = 'asset-minifier';
+
+  /** A fragment unique to the browser require shim, used to tell whether minification ate it. */
+  static readonly SHIM_MARKER = 'Dynamic require of ';
 
   static minify(dir: string, toolchainRoot: string | null): BuildStepResult {
     if (!fs.existsSync(dir)) return BuildStepResult.skipped(AssetMinifier.STEP, `no ${dir}`);
@@ -29,6 +33,7 @@ export class AssetMinifier {
     const kept: string[] = [];
     for (const file of files) {
       const temporary = `${file}.min.tmp`;
+      const hadShim = fs.readFileSync(file, 'utf8').includes(AssetMinifier.SHIM_MARKER);
       const result = spawnSync(binary, [
         file, '--module',
         '--compress', 'drop_console=true,drop_debugger=true',
@@ -39,7 +44,15 @@ export class AssetMinifier {
       // A file terser cannot parse is KEPT unminified. Losing it would be far worse than shipping
       // it large, and the temp file must never survive either outcome.
       if (result.status === 0 && fs.existsSync(temporary)) {
-        fs.renameSync(temporary, file);
+        // terser runs with `--module`, so a top-level `var require` is a module-scoped binding it
+        // considers unused and DROPS. That binding is the browser require shim, and without it the
+        // bundle throws "Dynamic require of react is not supported" and not one component
+        // registers. Put it back rather than weakening the minifier: the shim must survive by
+        // construction, not by hoping a flag combination happens to spare it.
+        const minified = fs.readFileSync(temporary, 'utf8');
+        const lostShim = hadShim && !minified.includes(AssetMinifier.SHIM_MARKER);
+        fs.writeFileSync(file, lostShim ? `${BuildToolchain.BROWSER_REQUIRE_SHIM}${minified}` : minified);
+        fs.rmSync(temporary, { force: true });
       } else {
         fs.rmSync(temporary, { force: true });
         kept.push(path.basename(file));

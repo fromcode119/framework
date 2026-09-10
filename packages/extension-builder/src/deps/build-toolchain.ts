@@ -28,6 +28,22 @@ export class BuildToolchain {
    * The `@fromcode119/*` entries are NOT optional — they are supplied by the host at runtime and
    * are not resolvable from a plugin's own node_modules.
    */
+  /**
+   * Prepended to EVERY browser bundle. Not cosmetic — without it the bundle is dead on arrival.
+   *
+   * esbuild cannot hoist a conditional/dynamic import to a real `import`, so it emits a `__require`
+   * shim that throws in the browser ("Dynamic require of react is not supported"), which kills the
+   * WHOLE plugin bundle: not one component registers. esbuild's `__require` uses a module-scope
+   * `require` when one exists, so this banner supplies one that resolves the externalised packages
+   * from the window globals the admin already exposes.
+   *
+   * `build-plugins.sh` passed this on bundle.js, frontend.js AND tracker.js. build-server passed it
+   * on none of them, so every browser bundle it built shipped without the shim — found by diffing
+   * the two builders' output for analytics, whose tracker.js began with a bare
+   * `import ... from "@fromcode119/sdk/react"`.
+   */
+  static readonly BROWSER_REQUIRE_SHIM = 'var require=(m)=>{if(m==="react")return window.React;if(m==="react-dom")return window.ReactDOM;if(m==="react/jsx-runtime"||m==="react/jsx-dev-runtime"){var c=(t,p,k)=>window.React.createElement(t,k===void 0?p:Object.assign({},p,{key:k}));return{jsx:c,jsxs:c,jsxDEV:c,Fragment:window.React.Fragment};}if(m==="lucide-react")return window.Lucide||window.FrameworkIcons;throw new Error("Dynamic require of "+m+" not supported");};';
+
   nodeExternals(): string[] {
     return [
       '@fromcode119/sdk',

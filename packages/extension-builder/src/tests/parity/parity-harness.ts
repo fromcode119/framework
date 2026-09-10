@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import * as zlib from 'zlib';
 
 /**
  * Compares what `build-plugins.sh` produces against what the extension builder produces.
@@ -17,6 +18,10 @@ export class ParityHarness {
    */
   static readonly ACCEPTED_DIFFERENCES: ReadonlyArray<{ file: string; reason: string }> = [
     {
+      file: 'ui/tracker.js',
+      reason: 'we minify it; build-plugins.sh missed it through step ordering (it mirrored after minifying). Both carry the browser require shim; ours is smaller',
+    },
+    {
       file: 'ui/style.css',
       reason: 'first line is the generator marker, which now names the builder instead of build-plugins.sh; the CSS below it is byte-identical',
     },
@@ -26,7 +31,21 @@ export class ParityHarness {
     },
   ];
 
-  /** Every file in a tree, relative path -> sha256 of its bytes. */
+  /**
+   * A `.gz` is hashed by its DECOMPRESSED payload.
+   *
+   * This is a normalisation, not an exemption: the `gzip` CLI writes the source filename and an
+   * mtime into the header, so two correct archives of identical content never match byte-for-byte.
+   * Comparing payloads still catches a genuinely different bundle — which is exactly how the
+   * missing require shim was found.
+   */
+  private static contentHash(file: string): string {
+    const raw = fs.readFileSync(file);
+    const bytes = file.endsWith('.gz') ? zlib.gunzipSync(raw) : raw;
+    return crypto.createHash('sha256').update(bytes).digest('hex');
+  }
+
+  /** Every file in a tree, relative path -> sha256 of its content. */
   static hashTree(root: string, skipDirs: ReadonlySet<string> = new Set(['node_modules', '.git'])): Map<string, string> {
     const out = new Map<string, string>();
     const walk = (dir: string): void => {
@@ -36,7 +55,7 @@ export class ParityHarness {
           continue;
         }
         const full = path.join(dir, entry.name);
-        out.set(path.relative(root, full), crypto.createHash('sha256').update(fs.readFileSync(full)).digest('hex'));
+        out.set(path.relative(root, full), ParityHarness.contentHash(full));
       }
     };
     walk(root);
@@ -49,7 +68,11 @@ export class ParityHarness {
     onlyRight: string[];
     differing: string[];
   } {
-    const accepted = new Set(ParityHarness.ACCEPTED_DIFFERENCES.map((d) => d.file));
+    // The precompressed twin of an accepted difference is accepted BY DERIVATION, never as its own
+    // entry: if `ui/style.css` legitimately differs, `ui/style.css.gz` cannot help but differ, and
+    // listing it separately would invite someone to accept a .gz whose source file is NOT accepted.
+    const named = ParityHarness.ACCEPTED_DIFFERENCES.map((d) => d.file);
+    const accepted = new Set([...named, ...named.map((f) => `${f}.gz`)]);
     const onlyLeft = [...left.keys()].filter((f) => !right.has(f)).sort();
     const onlyRight = [...right.keys()].filter((f) => !left.has(f)).sort();
     const differing = [...left.keys()]
