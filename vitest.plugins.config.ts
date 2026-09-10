@@ -43,6 +43,7 @@ const packageAlias = Object.fromEntries(
     ['api', '@api'], ['auth', '@auth'], ['cache', '@cache'], ['queue', '@queue'], ['marketplace-client', '@marketplace-client'],
     ['media', '@media'], ['email', '@email'], ['scheduler', '@scheduler'], ['plugins', '@plugins'],
     ['mcp', '@mcp'], ['mcp-server', '@mcp-server'], ['sdk', '@sdk'], ['next', '@nextjs'], ['cli', '@cli'],
+    ['extension-builder', '@extension-builder'],
   ] as ReadonlyArray<readonly [string, string]>)
     .map(([pkg, prefix]) => [`${prefix}/`, `${path.resolve(frameworkRoot, `packages/${pkg}/src`)}/`]),
 );
@@ -139,6 +140,9 @@ export default defineConfig({
             // `packages/ai` declared `jest -c jest.config.js` with no such config file, so its tests ran
             // under nothing while the jest toolchain still pulled a deprecated dependency chain in.
             glob('packages/ai/**/*.test.ts'),
+            // A new package is collected by NOTHING until it appears here — every comment above this
+            // line is a package that was green by default for exactly that reason.
+            glob('packages/extension-builder/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },
