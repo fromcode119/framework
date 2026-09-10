@@ -8,3 +8,4 @@ export { ThemeBundleCompiler } from '@extension-builder/compile/theme-bundle-com
 export { ArchiveWriter } from '@extension-builder/pack/archive-writer';
 export { ExtensionWorkspace } from '@extension-builder/extension-workspace';
 export { ThemeHeadScriptCompiler } from '@extension-builder/compile/theme-head-script-compiler';
+export { ThemeSeedCompiler } from '@extension-builder/compile/theme-seed-compiler';
