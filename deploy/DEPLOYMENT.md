@@ -21,7 +21,14 @@ docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up 
 Updating is the same two commands with a new `VERSION`. Rolling back is the same two commands with
 the previous one — no rebuild, so it takes seconds either way.
 
-Images are **public**, so the server needs no `docker login` and no registry credentials:
+Images are **public**, so the server needs no `docker login` and no registry credentials —
+verified by pulling on a host with no ghcr entry in its Docker config.
+
+Note for anyone republishing under a different org: GHCR packages are created **private by default,
+even when the source repository is public**, and an org policy can forbid making them public at all
+(`Settings → Packages → Package creation`). Both had to be changed here before an anonymous pull
+worked. A green build is not proof the images are reachable — check with an unauthenticated pull.
+
 
 | Image | Contents |
 |---|---|
