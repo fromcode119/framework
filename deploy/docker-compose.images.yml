@@ -1,0 +1,31 @@
+# Deploy from PREBUILT images instead of building from source.
+#
+# Use it as an override on top of the full-stack file:
+#
+#   cd deploy
+#   VERSION=v2.0.0 docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml pull
+#   VERSION=v2.0.0 docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up -d
+#
+# `build: !reset null` is doing the important work: without it Compose keeps the base file's build
+# section, and `up` would rebuild from source instead of using the image you just pulled — the exact
+# thing this file exists to avoid.
+#
+# The images are public, so no `docker login` is needed on the server.
+
+services:
+  api:
+    build: !reset null
+    image: ghcr.io/fromcode119/framework-api:${VERSION:-latest}
+
+  admin:
+    build: !reset null
+    image: ghcr.io/fromcode119/framework-admin:${VERSION:-latest}
+
+  frontend:
+    build: !reset null
+    image: ghcr.io/fromcode119/framework-frontend:${VERSION:-latest}
+
+  # Only runs under the `single-domain` profile. A host with its own proxy in front never starts it.
+  gateway:
+    build: !reset null
+    image: ghcr.io/fromcode119/framework-gateway:${VERSION:-latest}

@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      version: ${{ steps.pkg_version.outputs.VERSION }}
+      created: ${{ steps.check_tag.outputs.exists == 'false' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,3 +44,18 @@ jobs:
           TAG="v${{ steps.pkg_version.outputs.VERSION }}"
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
+
+  # Build and publish the images for the tag that was just created.
+  #
+  # This must be a `uses:` call rather than letting publish-images.yml watch for the tag push:
+  # the tag above is pushed with GITHUB_TOKEN, and GitHub does not raise workflow-triggering events
+  # for GITHUB_TOKEN actions. Without this job, tagging would succeed and nothing would ever build.
+  publish:
+    needs: tag
+    if: needs.tag.outputs.created == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/publish-images.yml
+    with:
+      version: v${{ needs.tag.outputs.version }}

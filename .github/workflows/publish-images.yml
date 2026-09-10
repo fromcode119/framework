@@ -1,0 +1,93 @@
+# Builds the framework's container images and publishes them to GHCR.
+#
+# WHY THIS EXISTS: without it, every deployment has to clone the source and build four Next.js
+# images on the production box — slow, memory-hungry, and it requires a full Node toolchain on a
+# machine that should only be running things. With it, a server's entire update procedure is:
+#
+#     docker compose pull && docker compose up -d
+#
+# COST: this repository is PUBLIC, and GitHub Actions minutes are free and unlimited for public
+# repositories. Public GHCR packages are also free to store and to pull. Keep the repo public and
+# this pipeline costs nothing. If it is ever made private, both start billing.
+name: Publish images
+
+on:
+  # Called by auto-tag.yml right after it creates a tag. This indirection is NOT decoration:
+  # GitHub deliberately does not start a workflow from an event raised by GITHUB_TOKEN, so a
+  # `push: tags` trigger would sit silent forever when auto-tag pushes the tag. An explicit call
+  # is the supported way to chain them without inventing a PAT to manage.
+  workflow_call:
+    inputs:
+      version:
+        description: 'Tag to build (e.g. v2.0.0)'
+        required: true
+        type: string
+
+  # A tag pushed by a HUMAN does trigger workflows, so this path still works for manual releases.
+  push:
+    tags: ['v*']
+
+  # And a manual button, for rebuilding an existing tag without moving it.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag to build (e.g. v2.0.0). Defaults to the current ref.'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write         # required to push to GHCR
+
+concurrency:
+  # One publish at a time per tag; a re-run cancels an in-flight build of the same thing.
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: v
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME}"
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building $VERSION"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}   # automatic; no PAT to create or rotate
+
+      # ONE bake call, not four builds. Every target forks from the same `builder` stage, so this
+      # resolves base + builder once and branches — four separate builds would repeat the npm
+      # install and compile four times.
+      - name: Build and push
+        uses: docker/bake-action@v5
+        with:
+          files: docker-bake.hcl
+          push: true
+        env:
+          VERSION: ${{ steps.v.outputs.VERSION }}
+
+      - name: Summary
+        run: |
+          {
+            echo "### Published \`${{ steps.v.outputs.VERSION }}\`"
+            echo
+            for i in api admin frontend gateway; do
+              echo "- \`ghcr.io/fromcode119/framework-$i:${{ steps.v.outputs.VERSION }}\`"
+            done
+            echo
+            echo "Deploy: \`VERSION=${{ steps.v.outputs.VERSION }} docker compose pull && docker compose up -d\`"
+          } >> "$GITHUB_STEP_SUMMARY"
