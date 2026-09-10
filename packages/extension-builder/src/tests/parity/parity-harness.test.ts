@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, writeFileSync } from 'fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { gzipSync } from 'zlib';
@@ -40,11 +40,33 @@ describe('ParityHarness', () => {
     expect(d.differing).toEqual(['ui/bundle.js.gz']);
   });
 
-  it('applies a slug-scoped exception ONLY to that extension', () => {
+  it('accepts a difference only while its CLAIM holds, and reports it once it does not', () => {
+    // The tracker claim: ours keeps the require shim and is not larger. Honour it...
+    const shim = 'Dynamic require of x';
+    const ok = tree({ 'ui/tracker.js': `${shim};aaaa` });
+    const okSmaller = tree({ 'ui/tracker.js': `${shim};a` });
+    expect(ParityHarness.compare(
+      ParityHarness.hashTree(ok), ParityHarness.hashTree(okSmaller), { left: ok, right: okSmaller },
+    ).differing).toEqual([]);
+
+    // ...drop the shim and it is a difference again, not an exemption.
+    const noShim = tree({ 'ui/tracker.js': 'a' });
+    expect(ParityHarness.compare(
+      ParityHarness.hashTree(ok), ParityHarness.hashTree(noShim), { left: ok, right: noShim },
+    ).differing).toEqual(['ui/tracker.js']);
+  });
+
+  it('refuses to accept anything when the caller cannot supply roots to verify against', () => {
     const left = ParityHarness.hashTree(tree({ 'ui/tracker.js': 'a' }));
     const right = ParityHarness.hashTree(tree({ 'ui/tracker.js': 'b' }));
-    expect(ParityHarness.compare(left, right, 'analytics').differing).toEqual([]);
-    expect(ParityHarness.compare(left, right, 'numerology').differing).toEqual(['ui/tracker.js']);
+    expect(ParityHarness.compare(left, right).differing).toEqual(['ui/tracker.js']);
+  });
+
+  it('names no extension anywhere — a framework package must not know a plugin slug', () => {
+    const source = readFileSync(join(__dirname, 'parity-harness.ts'), 'utf8');
+    for (const slug of ['analytics', 'numerology', 'ecommerce', 'tagiqx']) {
+      expect(source.includes(slug), `parity-harness.ts must not name "${slug}"`).toBe(false);
+    }
   });
 
   it('accepts the .gz of an accepted file by derivation, not as its own entry', () => {
@@ -52,9 +74,11 @@ describe('ParityHarness', () => {
     expect(named).toContain('ui/style.css');
     expect(named).not.toContain('ui/style.css.gz');
 
-    const left = ParityHarness.hashTree(tree({ 'ui/style.css.gz': gzipSync(Buffer.from('/*! a */.x{}')) }));
-    const right = ParityHarness.hashTree(tree({ 'ui/style.css.gz': gzipSync(Buffer.from('/*! b */.x{}')) }));
-    expect(ParityHarness.compare(left, right).differing).toEqual([]);
+    const body = '.x{color:red}';
+    const l = tree({ 'ui/style.css': `/*! a */\n${body}`, 'ui/style.css.gz': gzipSync(Buffer.from(`/*! a */\n${body}`)) });
+    const r = tree({ 'ui/style.css': `/*! b */\n${body}`, 'ui/style.css.gz': gzipSync(Buffer.from(`/*! b */\n${body}`)) });
+    const d = ParityHarness.compare(ParityHarness.hashTree(l), ParityHarness.hashTree(r), { left: l, right: r });
+    expect(d.differing).toEqual([]);
   });
 
   it('every accepted difference states a reason', () => {
