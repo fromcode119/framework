@@ -41,8 +41,8 @@ services:
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
     volumes:
-      # The admin aliases `@fromcode119/react-class-components` to reactor's SRC, so the dev server compiles these
-      # files directly — mount them and a reactor change needs no build at all. (Unlike core: core
+      # The admin aliases `@fromcode119/react-class-components` to that package's SRC, so the dev server
+      # compiles these files directly — mount them and a change there needs no build at all. (Unlike core: core
       # resolves through dist, so mounting core/src would give plugins one copy and the watcher another.)
       - ./packages/react-class-components/src:/app/packages/react-class-components/src
       # The admin compiles core from SRC as well (next.config aliases `@fromcode119/core` to it), so a
@@ -52,8 +52,8 @@ services:
       # ...and @fromcode119/react, which the admin also aliases to SRC. Without it a change to the
       # runtime bridge or the plugin JSX shim is invisible here until the image is rebuilt.
       - ./packages/react/src:/app/packages/react/src
-      # reactor's package.json carries the `./lang` subpath export the middleware graph imports; the
-      # next.config resolves reactor from that src. Both are read at startup, so they must be mounted
+      # react-class-components' package.json carries the `./lang` subpath export the middleware graph
+      # imports; the next.config resolves the package from that src. Both are read at startup, so they must be mounted
       # for a config or subpath change to take effect without rebuilding the image.
       - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
       - ./packages/admin/next.config.js:/app/packages/admin/next.config.js

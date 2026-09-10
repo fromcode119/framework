@@ -91,9 +91,16 @@ export class PluginDependencyInstallerService {
     // digest check in front of this proves WHICH bytes arrived, not that they are safe to execute.
     // A plugin that genuinely needs a lifecycle script must become a deliberate, separately approved
     // capability with an operator-visible control; it must never be the silent default.
+    // `--legacy-peer-deps` stops npm resolving peer graphs, and that is deliberate on both counts.
+    // Peers are HOST-PROVIDED here by design (see stripHostProvidedDependencies above), so resolving
+    // them is pointless — and it is not merely wasted work: `--omit=dev` still builds the ideal tree
+    // for devDependencies, so one plugin's `vitest` peer set crashed arborist outright
+    // ("Cannot read properties of null (reading 'edgesOut')", npm 10.9.8) and failed the whole
+    // plugin at boot. Note this can only surface when the fingerprint changes, so the trigger is
+    // whoever next edits a plugin's package.json — not whoever introduced the bad peer graph.
     const args = hasLockfile
-      ? ['ci', '--omit=dev', '--no-audit', '--ignore-scripts']
-      : ['install', '--omit=dev', '--no-audit', '--ignore-scripts'];
+      ? ['ci', '--omit=dev', '--no-audit', '--ignore-scripts', '--legacy-peer-deps']
+      : ['install', '--omit=dev', '--no-audit', '--ignore-scripts', '--legacy-peer-deps'];
 
     this.logger.info(`Installing plugin backend dependencies for ${pluginPath}`);
     const result = spawnSync(command, args, {
