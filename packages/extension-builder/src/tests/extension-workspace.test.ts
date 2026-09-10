@@ -25,24 +25,25 @@ describe('ExtensionWorkspace', () => {
     expect(ws.uiDir).toBe(join(dir, 'ui'));
   });
 
-  it('prefers the extension own node_modules as the toolchain root', () => {
-    const dir = join(scratch(), 'numerology');
-    mkdirSync(join(dir, 'node_modules', '.bin'), { recursive: true });
-    expect(ExtensionWorkspace.resolve(dir, ExtensionKind.PLUGIN).toolchainRoot).toBe(dir);
-  });
-
-  it('walks up to the nearest ancestor that has one', () => {
+  it('resolves each tool SEPARATELY: the plugin has its own node_modules, tailwind is hoisted', () => {
+    // Exactly the numerology case. One root for every tool found the plugin's own, declared
+    // tailwind "not installed", and silently skipped every stylesheet.
     const root = scratch();
     mkdirSync(join(root, 'node_modules', '.bin'), { recursive: true });
+    writeFileSync(join(root, 'node_modules', '.bin', 'tailwindcss'), '');
     const dir = join(root, 'plugins', 'numerology');
-    mkdirSync(dir, { recursive: true });
-    expect(ExtensionWorkspace.resolve(dir, ExtensionKind.PLUGIN).toolchainRoot).toBe(root);
+    mkdirSync(join(dir, 'node_modules', '.bin'), { recursive: true });
+    writeFileSync(join(dir, 'node_modules', '.bin', 'esbuild'), '');
+
+    const ws = ExtensionWorkspace.resolve(dir, ExtensionKind.PLUGIN);
+    expect(ws.toolchainRootFor('esbuild')).toBe(dir);
+    expect(ws.toolchainRootFor('tailwindcss')).toBe(root);
   });
 
-  it('falls back to the extension itself rather than reaching outside it', () => {
+  it('returns null for a tool nothing on the chain has, so the caller can say so', () => {
     const dir = join(scratch(), 'numerology');
     mkdirSync(dir, { recursive: true });
-    expect(ExtensionWorkspace.resolve(dir, ExtensionKind.PLUGIN).toolchainRoot).toBe(dir);
+    expect(ExtensionWorkspace.resolve(dir, ExtensionKind.PLUGIN).toolchainRootFor('terser')).toBeNull();
   });
 
   it('prefers src/ui as the UI SOURCE, falling back to the legacy ui/ layout', () => {

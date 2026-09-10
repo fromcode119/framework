@@ -37,6 +37,11 @@ export class BuildToolchain {
       'sweph',
       'speakeasy',
       'tar',
+      // A plugin's OWN heavyweight deps that must stay external: `playwright-core` reaches for
+      // `chromium-bidi` through a runtime require esbuild cannot resolve, so bundling it fails the
+      // build outright. Found by running the new CLI against numerology — build-plugins.sh had
+      // this external and this list did not, which is what "keep this in sync" always ends in.
+      'playwright-core',
     ];
   }
 
@@ -84,6 +89,32 @@ export class BuildToolchain {
 
   loadEsbuild(): typeof import('esbuild') {
     return BuildToolchain.runtimeRequire(this.getEsbuildModuleName()) as typeof import('esbuild');
+  }
+
+  /**
+   * The root holding `node_modules/.bin/<name>`, resolved from THIS PACKAGE outwards.
+   *
+   * Not from the extension: tailwind and terser live in the framework's own `node_modules`, which
+   * is a SIBLING of `plugins/<slug>`, not an ancestor — no upward walk from the extension can ever
+   * reach it. `build-plugins.sh` hardcoded that sibling path, which is precisely what stopped it
+   * working outside the monorepo.
+   *
+   * Walking out from the builder's own location is layout-free: wherever the builder is installed,
+   * the tools it depends on are hoisted somewhere above it. Returns null when the tool genuinely
+   * is not installed, so the caller can say so rather than guess.
+   */
+  static toolRootFor(binaryName: string): string | null {
+    let current = path.dirname(BuildToolchain.moduleDirectory());
+    for (;;) {
+      if (fs.existsSync(path.join(current, 'node_modules', '.bin', binaryName))) return current;
+      const parent = path.dirname(current);
+      if (parent === current) return null;
+      current = parent;
+    }
+  }
+
+  private static moduleDirectory(): string {
+    return __dirname;
   }
 
   private getEsbuildModuleName(): string {

@@ -3,6 +3,7 @@ import * as path from 'path';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { ExtensionKind } from '@extension-builder/extension-kind';
 import { ExtensionWorkspace } from '@extension-builder/extension-workspace';
+import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
 import { PluginBackendCompiler } from '@extension-builder/compile/plugin-backend-compiler';
 import { PluginMigrationsCompiler } from '@extension-builder/compile/plugin-migrations-compiler';
 import { ThemeHeadScriptCompiler } from '@extension-builder/compile/theme-head-script-compiler';
@@ -42,7 +43,7 @@ export class ExtensionBuildPipeline {
       if (!record(await step())) return results;
     }
 
-    if (!record(AssetMinifier.minify(workspace.uiDir, workspace.toolchainRoot))) return results;
+    if (!record(AssetMinifier.minify(workspace.uiDir, workspace.toolchainRootFor('terser') ?? BuildToolchain.toolRootFor('terser')))) return results;
     if (!record(AssetPrecompressor.compress(workspace.uiDir))) return results;
 
     await IntegrityStamper.stampSourceDir(workspace.sourceDir);
@@ -79,7 +80,7 @@ export class ExtensionBuildPipeline {
     return [
       () => ExtensionBuildPipeline.compileBackend(workspace, slug),
       () => ExtensionBuildPipeline.compileMigrations(workspace, slug),
-      async () => PluginStyleCompiler.compile(workspace.uiSourceDir, workspace.uiDir, slug, workspace.toolchainRoot),
+      async () => PluginStyleCompiler.compile(workspace.uiSourceDir, workspace.uiDir, slug, workspace.toolchainRootFor('tailwindcss') ?? BuildToolchain.toolRootFor('tailwindcss')),
     ];
   }
 

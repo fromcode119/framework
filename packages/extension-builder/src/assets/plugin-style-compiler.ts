@@ -20,7 +20,10 @@ export class PluginStyleCompiler {
   private static readonly CONFIG = 'packages/sdk/src/tailwind/plugin-ui.config.ts';
   private static readonly INPUT = 'packages/sdk/src/tailwind/plugin-ui.css';
 
-  static compile(uiSourceDir: string, outDir: string, slug: string, toolchainRoot: string): BuildStepResult {
+  static compile(uiSourceDir: string, outDir: string, slug: string, toolchainRoot: string | null): BuildStepResult {
+    if (!toolchainRoot) {
+      return BuildStepResult.skipped(PluginStyleCompiler.STEP, "tailwindcss is not installed on any root above this extension");
+    }
     const binary = path.join(toolchainRoot, 'node_modules', '.bin', 'tailwindcss');
     if (!fs.existsSync(binary)) {
       return BuildStepResult.skipped(PluginStyleCompiler.STEP, `tailwindcss is not installed under ${toolchainRoot}`);

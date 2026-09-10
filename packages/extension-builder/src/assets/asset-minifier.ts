@@ -7,11 +7,14 @@ import { BuildStepResult } from '@extension-builder/build-step-result';
 export class AssetMinifier {
   static readonly STEP = 'asset-minifier';
 
-  static minify(dir: string, toolchainRoot: string): BuildStepResult {
+  static minify(dir: string, toolchainRoot: string | null): BuildStepResult {
     if (!fs.existsSync(dir)) return BuildStepResult.skipped(AssetMinifier.STEP, `no ${dir}`);
 
     // Resolve terser ONCE. `npx --yes terser` per file cost ~1.4s of resolve overhead each — about
     // 2.5 silent minutes across a theme's ~100 chunks, which looked exactly like a hung build.
+    if (!toolchainRoot) {
+      return BuildStepResult.skipped(AssetMinifier.STEP, "terser is not installed on any root above this extension");
+    }
     const binary = path.join(toolchainRoot, 'node_modules', '.bin', 'terser');
     if (!fs.existsSync(binary)) {
       return BuildStepResult.skipped(AssetMinifier.STEP, `terser is not installed under ${toolchainRoot}; serving vite output as-is`);

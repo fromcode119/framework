@@ -39,13 +39,27 @@ export class ExtensionWorkspace {
   }
 
   /**
-   * The nearest directory holding `node_modules/.bin` — the extension's own first, then upwards.
+   * The nearest root holding a SPECIFIC binary — the extension's own first, then upwards.
    *
-   * Upwards is what makes a monorepo work without naming one: a plugin checked out beside the
-   * framework finds the hoisted binaries, and the same plugin cloned alone into `/tmp` finds its
-   * own. Falls back to the extension itself; it never returns a path outside the tree it was given,
-   * because "outside" is the assumption that made the bash unportable.
+   * Per-binary, not one root for everything, and that distinction is load-bearing: a plugin with
+   * its own `node_modules` is the nearest root, but tailwind and terser are hoisted to the
+   * workspace above it. Resolving one root for all tools found the plugin's, concluded tailwind
+   * "is not installed", and skipped every stylesheet. `build-plugins.sh` walked a fallback chain
+   * per tool for exactly this reason.
+   *
+   * Returns null when nothing on the chain has it, so the caller can SAY so instead of guessing.
    */
+  toolchainRootFor(binaryName: string): string | null {
+    let current = this.sourceDir;
+    for (;;) {
+      if (fs.existsSync(path.join(current, 'node_modules', '.bin', binaryName))) return current;
+      const parent = path.dirname(current);
+      if (parent === current) return null;
+      current = parent;
+    }
+  }
+
+  /** The nearest root with ANY `node_modules/.bin`, for callers that need a plausible cwd. */
   private static findToolchainRoot(startDir: string): string {
     let current = startDir;
     for (;;) {
