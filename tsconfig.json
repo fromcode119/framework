@@ -12,14 +12,14 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      // `@ai/*` is the ai package's PRIVATE alias for its own source. typor-build resolves it to a
+      // `@ai/*` is the ai package's PRIVATE alias for its own source. typescript-multiple-inheritance-build resolves it to a
       // relative path before tsc runs, so nothing reaches dist — see AliasEmitRewrite.
       "@ai/*": [
         "packages/ai/src/*"
       ],
-      // Every other typor-built package carries the same kind of PRIVATE alias for its own source,
+      // Every other typescript-multiple-inheritance-built package carries the same kind of PRIVATE alias for its own source,
       // resolved to a relative path by AliasEmitRewrite before tsc emits. NOT declared for arch-guard /
-      // reactor / nextor / typor: those build with raw `tsc` (no typor-build wrapper), so an alias
+      // reactor / next-build-codegen / typescript-multiple-inheritance: those build with raw `tsc` (no typescript-multiple-inheritance-build wrapper), so an alias
       // would survive verbatim into their dist and Node could not resolve it.
       "@core/*": ["packages/core/src/*"],
       "@database/*": ["packages/database/src/*"],

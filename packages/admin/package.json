@@ -24,11 +24,11 @@
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
-    "build:sw": "node ../typor/dist/typor-cli.cjs esbuild service-worker/service-worker.ts --bundle --format=iife --global-name=AdminServiceWorkerModule --target=es2020 --tsconfig=tsconfig.json \"--footer:js=AdminServiceWorkerModule.AdminServiceWorker.register();\" --outfile=public/sw.js",
+    "build:sw": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs esbuild service-worker/service-worker.ts --bundle --format=iife --global-name=AdminServiceWorkerModule --target=es2020 --tsconfig=tsconfig.json \"--footer:js=AdminServiceWorkerModule.AdminServiceWorker.register();\" --outfile=public/sw.js",
     "typecheck:sw": "tsc --noEmit -p service-worker/tsconfig.json",
-    "build": "npm run build:sw && node ../nextor/dist/nextor-cli.cjs with-middleware -- next build",
+    "build": "npm run build:sw && node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next build",
     "prepack": "npm run build:sw",
-    "dev": "node ../nextor/dist/nextor-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
+    "dev": "node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
     "start": "node ../core/dist/process/app-launcher-main.js --app admin --hostname 0.0.0.0",
     "test": "vitest run --config ../../vitest.plugins.config.ts --project admin --project admin-dom"
   },

@@ -17,7 +17,7 @@ import { PluginUiCssAsTextPlugin } from './plugin-ui-css-as-text-plugin';
  * @tremor) bundle.
  *
  * Vite requires the config module to DEFAULT-export its object. That single required export is generated
- * as build glue (see nextor's `ViteConfigEntryGenerator`) so the authored source stays a plain class.
+ * as build glue (see next-build-codegen's `ViteConfigEntryGenerator`) so the authored source stays a plain class.
  */
 export class PluginUiViteConfig {
   static create(): UserConfig {

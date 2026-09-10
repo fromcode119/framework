@@ -1,7 +1,7 @@
 {
   "name": "@fromcode119/arch-guard",
   "version": "0.1.88",
-  "description": "Architecture boundary enforcement — who may import what, which layer may call which, and the shape a plugin/theme/appearance must keep. Standalone like reactor/nextor/typor; Node-only build tooling, never imported by application code.",
+  "description": "Architecture boundary enforcement — who may import what, which layer may call which, and the shape a plugin/theme/appearance must keep. Standalone like reactor/next-build-codegen/typescript-multiple-inheritance; Node-only build tooling, never imported by application code.",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
@@ -30,6 +30,6 @@
     "typescript": "^5.5.0"
   },
   "dependencies": {
-    "@fromcode119/typor": "*"
+    "@fromcode119/typescript-multiple-inheritance": "*"
   }
 }

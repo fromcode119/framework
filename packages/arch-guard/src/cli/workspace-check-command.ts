@@ -8,7 +8,7 @@ import { FrameworkRoot } from './framework-root';
  * Framework packages are already checked by their own `tsc` build; esbuild/Vite/next check nothing.
  *
  *   arch-guard workspace-check                     # report (warn)
- *   TYPOR_WORKSPACE_MODE=error arch-guard …        # fail the build on any increase
+ *   TSMI_WORKSPACE_MODE=error arch-guard …        # fail the build on any increase
  */
 export class WorkspaceCheckCommand extends ArchorCommand {
   readonly summary = 'Type-check plugins, themes and appearances (ratcheted).';
@@ -35,7 +35,7 @@ export class WorkspaceCheckCommand extends ArchorCommand {
 
   run(argv: string[]): number {
     const framework = FrameworkRoot.find();
-    const mode = process.env.TYPOR_WORKSPACE_MODE === 'error' ? 'error' : 'warn';
+    const mode = process.env.TSMI_WORKSPACE_MODE === 'error' ? 'error' : 'warn';
     const detail = argv.includes('--detail');
     // `--only <slug>` narrows the report while fixing one extension; the TOTALS still cover everything,
     // so narrowing can never make a ratchet look green by leaving something out.

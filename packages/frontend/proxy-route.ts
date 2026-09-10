@@ -5,7 +5,7 @@ import { StorefrontDocumentProxy } from '@/lib/document/storefront-document-prox
  * Next.js middleware entry for the storefront — the authored source.
  *
  * All behaviour lives in `StorefrontDocumentProxy`. Next needs a `proxy` function and a `config` object
- * as module EXPORTS, neither of which a class can be; nextor's `MiddlewareGlueGenerator` writes
+ * as module EXPORTS, neither of which a class can be; next-build-codegen's `MiddlewareGlueGenerator` writes
  * `proxy.ts` from these statics before the build (same contract as the admin's `AdminProxyRoute`).
  *
  * The matcher excludes everything that is never a document: the api proxy, Next internals, the runtime

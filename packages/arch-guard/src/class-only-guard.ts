@@ -19,7 +19,7 @@ export class ClassOnlyGuard {
   ]);
 
   /** These packages ARE the layer that confines non-class JS mechanics (decorators, tags, build glue). */
-  private static readonly EXEMPT_PACKAGES = new Set(['reactor', 'nextor', 'typor', 'arch-guard']);
+  private static readonly EXEMPT_PACKAGES = new Set(['reactor', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
 
   /** Two or more quoted lowercase-ish members joined by `|` — an inline enum in all but name. */
   private static readonly INLINE_UNION = /'[a-z0-9_-]+'\s*\|\s*'[a-z0-9_-]+'/g;

@@ -8,7 +8,7 @@
  */
 export class OopGuardBaselines {
   // The reactor conventions live here; these packages ARE the exception (decorators + html + build magic).
-  static readonly EXEMPT_PACKAGES = new Set(['reactor', 'nextor']);
+  static readonly EXEMPT_PACKAGES = new Set(['reactor', 'next-build-codegen']);
 
   // The framework React bridge (@fromcode119/react) may import react for its providers UNTIL converted.
   // Its violations are always reported as warnings and never counted toward the fatal total, even in error mode.
@@ -26,7 +26,7 @@ export class OopGuardBaselines {
    * worked down stay advisory — add one here the moment it hits zero, never remove one to make a build pass.
    *
    *  - clientDebt   — `'use client'` literal in source (the `.client.` filename carries it)
-   *  - defaultClass — `export default class` (nextor generates Next's default export at build time)
+   *  - defaultClass — `export default class` (next-build-codegen generates Next's default export at build time)
    */
   /**
    * Per-area violation ceilings. The framework itself is at ZERO and stays there; the extension areas
@@ -79,7 +79,7 @@ export class OopGuardBaselines {
   /**
    * Files exempt from the `moduleDecl` bucket.
    *
-   *  - `reactor` / `nextor` / `typor` / `arch-guard` — these packages ARE the layer that confines the
+   *  - `reactor` / `next-build-codegen` / `typescript-multiple-inheritance` / `arch-guard` — these packages ARE the layer that confines the
    *    non-OOP parts of React and the build; decorators and tags must be functions by JS spec.
    *  - `bin.ts` / `server.ts` / `*-entry.ts(x)` / `*.entry.ts` — a process or bundle ENTRY POINT is a
    *    top-level call by definition.

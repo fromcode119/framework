@@ -9,7 +9,7 @@ module.exports = {
   // without it, runtime code reaching CoreServices (assistantVocabulary, …) hits the browser guard.
   setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.ts'],
   moduleNameMapper: {
-    // Every typor-built package's PRIVATE alias for its own `src`, exactly as `vitest.plugins.config.ts`
+    // Every typescript-multiple-inheritance-built package's PRIVATE alias for its own `src`, exactly as `vitest.plugins.config.ts`
     // repeats it. jest resolves modules itself and does NOT read tsconfig `paths`, so the root
     // tsconfig's mapping never reaches it and every `@ai/…` / `@core/…` import threw
     // `Cannot find module` — that took 4 of the 5 suites down before they ran a single test. The

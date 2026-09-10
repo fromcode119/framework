@@ -62,7 +62,7 @@ export class ClientViewMove {
   /**
    * Resolution settings for the rename, read from the framework's ROOT tsconfig.
    *
-   * It must be that file and not `WorkspaceTypecheck.compilerOptions`: every typor-built package
+   * It must be that file and not `WorkspaceTypecheck.compilerOptions`: every typescript-multiple-inheritance-built package
    * carries a PRIVATE `@core/`-style alias for its own source, and the whole map is declared there.
    * Without it the language service cannot resolve `@core/localized-field.client`, finds no importers,
    * and reports "0 files would be rewritten" — a move that silently breaks every referring import

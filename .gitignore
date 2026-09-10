@@ -92,8 +92,8 @@ storage/
 # by `npm run build:sw` (chained into admin's build/prepack). Never hand-edit or commit.
 packages/admin/public/sw.js
 
-# Generated Vite config entries (nextor vite-config). Vite REQUIRES a default export from a config
-# module; the real config is an authored CLASS (ThemeViteConfig, PluginUiViteConfig, …) and nextor emits
+# Generated Vite config entries (next-build-codegen vite-config). Vite REQUIRES a default export from a config
+# module; the real config is an authored CLASS (ThemeViteConfig, PluginUiViteConfig, …) and next-build-codegen emits
 # this throwaway entry that calls it. Build output — never authored, never committed.
 #
 # The root repo already ignores these, but THIS directory is its own git repo and a parent repo's

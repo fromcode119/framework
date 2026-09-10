@@ -81,7 +81,7 @@ npm run dev:local
 
 🔀 **Framework-owned Redirects** — Redirect rules and canonical paths live in the kernel (Settings → Redirects) with server-side 308s. Renaming a URL keeps every old link alive without an SEO plugin.
 
-🏛️ **Pure OOP Codebase** — Every layer is class-based. No standalone exported functions anywhere. Routers extend `BaseRouter`, middlewares extend `BaseMiddleware`, utilities live in service classes — and the UI layer runs on the standalone `reactor`/`nextor`/`typor` stack. Consistent, predictable, and fully tree-shakable.
+🏛️ **Pure OOP Codebase** — Every layer is class-based. No standalone exported functions anywhere. Routers extend `BaseRouter`, middlewares extend `BaseMiddleware`, utilities live in service classes — and the UI layer runs on the standalone `reactor`/`next-build-codegen`/`typescript-multiple-inheritance` stack. Consistent, predictable, and fully tree-shakable.
 
 ---
 
@@ -512,8 +512,8 @@ On the UI side the same philosophy is carried by three **standalone packages** (
 | Package | Role |
 |---------|------|
 | `@fromcode119/reactor` | Class components without hook ceremony — `Reactor`/`PureReactor` base classes, `@prop`/`@state`/`@bound`/`@watch` decorators, method-bearing `Enum`, `Provider` contexts |
-| `@fromcode119/nextor` | Build-time only — compiles separate `.view` JSX templates onto component classes and stamps `'use client'` directives; zero runtime cost |
-| `@fromcode119/typor` | TypeScript build tool adding real OOP (multiple inheritance for data classes) and package-alias rewriting; also the framework's actual typecheck gate |
+| `@fromcode119/next-build-codegen` | Build-time only — compiles separate `.view` JSX templates onto component classes and stamps `'use client'` directives; zero runtime cost |
+| `@fromcode119/typescript-multiple-inheritance` | TypeScript build tool adding real OOP (multiple inheritance for data classes) and package-alias rewriting; also the framework's actual typecheck gate |
 
 Data shapes are **classes**, not interface aliases — a `Person` or `Order` carries its own behavior and hydrates from API JSON via `static from(row)`. `interface` remains only for genuine behavioral contracts. See `REACTOR-DESIGN.md` for the full design.
 
@@ -925,8 +925,8 @@ Atlantis is built for teams who need a complete, extensible application platform
 │   ├── mcp-server/         # Standalone MCP server binary (stdio + Streamable HTTP client)
 │   │  # Standalone OOP stack (reusable outside Atlantis)
 │   ├── reactor/            # Class-based React primitives — Reactor/PureReactor, @prop/@state/@bound/@watch, Enum
-│   ├── nextor/             # Build-time companion — .view template compiler, 'use client' injection
-│   ├── typor/              # TypeScript build tool — multiple inheritance, package aliases, real typecheck
+│   ├── next-build-codegen/             # Build-time companion — .view template compiler, 'use client' injection
+│   ├── typescript-multiple-inheritance/              # TypeScript build tool — multiple inheritance, package aliases, real typecheck
 │   ├── arch-guard/             # Architecture boundary enforcement — who may import what
 │   │  # Distribution & tooling
 │   ├── marketplace-client/ # Client for plugin/theme marketplace installs and updates

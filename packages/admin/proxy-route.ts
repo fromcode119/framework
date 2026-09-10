@@ -5,7 +5,7 @@ import { AdminProxy } from '@/lib/admin-proxy';
  * Next.js middleware entry for admin authentication — the authored source.
  *
  * All behaviour lives in `AdminProxy` (lib/admin-proxy.ts). Next needs a `proxy` function and a `config`
- * object as module EXPORTS, neither of which a class can be; nextor's `MiddlewareGlueGenerator` writes
+ * object as module EXPORTS, neither of which a class can be; next-build-codegen's `MiddlewareGlueGenerator` writes
  * `proxy.ts` from these statics before the build. Nothing here is hand-written glue.
  */
 export class AdminProxyRoute {

@@ -29,7 +29,7 @@ import { PluginUiCssAsTextPlugin } from './plugin-ui-css-as-text-plugin';
  *    styles a storefront surface simply has no server bundle.
  *
  * Vite requires the config module to DEFAULT-export its object. That single required export is generated
- * as build glue (nextor's `ViteConfigEntryGenerator`) so the authored source stays a plain class.
+ * as build glue (next-build-codegen's `ViteConfigEntryGenerator`) so the authored source stays a plain class.
  */
 export class PluginUiSsrViteConfig {
   /**

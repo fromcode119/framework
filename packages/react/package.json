@@ -76,7 +76,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "node ../typor/dist/typor-cli.cjs build && npm run copy:styles",
+    "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build && npm run copy:styles",
     "dev": "tsc -w",
     "copy:styles": "mkdir -p dist/account && cp -r src/account/*.css dist/account/"
   },

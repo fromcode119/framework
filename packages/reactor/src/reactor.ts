@@ -122,7 +122,7 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
 
   /**
    * MVC: point at a separate markup file instead of writing `render()`. The `*.view.tsx` file holds
-   * ONLY bare markup that uses `this` (no class, no function, no imports); `@fromcode119/nextor`'s
+   * ONLY bare markup that uses `this` (no class, no function, no imports); `@fromcode119/next-build-codegen`'s
    * ViewPlugin compiles it to this template function. Set it and skip `render()` entirely:
    *
    *   // card.view.tsx  (markup only — <Box>{this.label}</Box>, tags resolved from the Registry)

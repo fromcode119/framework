@@ -40,7 +40,7 @@
     "src/vite"
   ],
   "scripts": {
-    "build": "node ../typor/dist/typor-cli.cjs build -b",
+    "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build -b",
     "dev": "tsc -w"
   },
   "dependencies": {

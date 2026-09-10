@@ -13,7 +13,7 @@
  *
  * A worker entry has to start itself, and that bootstrap is BUILD glue, not source: `build:sw` bundles
  * with `--global-name=AdminServiceWorkerModule` and appends the `register()` call as a footer — the same
- * rule nextor applies to Next's route exports, so the only hand-written export here is `export class`.
+ * rule next-build-codegen applies to Next's route exports, so the only hand-written export here is `export class`.
  */
 import { AdminServiceWorkerConstants } from '@/lib/pwa/constants/admin-service-worker.constants';
 

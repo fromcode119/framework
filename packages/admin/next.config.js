@@ -28,17 +28,17 @@ const nextConfig = {
     ...extensions.map(ext => `@fromcode119/${ext}`),
   ],
   turbopack: {
-    // [nextor] Source declares ONLY `export class`. This loader generates, at BUILD time, the two
+    // [next-build-codegen] Source declares ONLY `export class`. This loader generates, at BUILD time, the two
     // things Next needs but a class cannot express: the exports it resolves routes by (GET/POST,
     // default, generateMetadata, manifest) and the literal `'use client'` directive.
-    // See @fromcode119/nextor RouteExportPlugin + ClientDirectivePlugin.
+    // See @fromcode119/next-build-codegen RouteExportPlugin + ClientDirectivePlugin.
     rules: {
       '**/{app,components,lib,hooks,src}/**/*.{ts,tsx}': {
         loaders: [
-          require.resolve('@fromcode119/nextor/route-export-loader.cjs'),
-          // typor: multiple-inheritance `extends` -> Typor.mixin(...). Loaders run RIGHT-to-LEFT, so the
-          // syntax rewrite lands first and nextor then sees ordinary TypeScript.
-          require.resolve('@fromcode119/typor/typor-loader.cjs'),
+          require.resolve('@fromcode119/next-build-codegen/route-export-loader.cjs'),
+          // typescript-multiple-inheritance: multiple-inheritance `extends` -> Typor.mixin(...). Loaders run RIGHT-to-LEFT, so the
+          // syntax rewrite lands first and next-build-codegen then sees ordinary TypeScript.
+          require.resolve('@fromcode119/typescript-multiple-inheritance/tsmi-loader.cjs'),
         ],
       },
     },
@@ -146,7 +146,7 @@ const nextConfig = {
     ];
   },
   webpack: (config, { isServer, dev }) => {
-    // [nextor + typor] Same build-time source contracts as the turbopack rules above. `next dev` runs
+    // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above. `next dev` runs
     // with --webpack, so without this the dev server would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
     config.module.rules.unshift({
@@ -160,9 +160,9 @@ const nextConfig = {
       test: /[\\/](app|components|lib|hooks|src)[\\/].*\.(ts|tsx)$/,
       exclude: /[\\/]node_modules[\\/]/,
       use: [
-        { loader: require.resolve('@fromcode119/nextor/route-export-loader.cjs') },
-        // Loaders run RIGHT-to-LEFT: the typor syntax rewrite lands first.
-        { loader: require.resolve('@fromcode119/typor/typor-loader.cjs') },
+        { loader: require.resolve('@fromcode119/next-build-codegen/route-export-loader.cjs') },
+        // Loaders run RIGHT-to-LEFT: the typescript-multiple-inheritance syntax rewrite lands first.
+        { loader: require.resolve('@fromcode119/typescript-multiple-inheritance/tsmi-loader.cjs') },
       ],
     });
 
@@ -213,7 +213,7 @@ const nextConfig = {
     });
 
     // `ai` is consumed as BUILT output (dist), not src-transpiled, so its `.client.*` 'use client' stamp
-    // (injected at ai build time via nextor's UseClientPlugin) is honored — Next won't run custom transforms
+    // (injected at ai build time via next-build-codegen's UseClientPlugin) is honored — Next won't run custom transforms
     // on transpiled-package SOURCE, so the directive must already be present in the module Next reads.
     config.resolve.alias['@fromcode119/ai$'] = path.resolve(__dirname, '../ai/dist/index.js');
     config.resolve.alias['@fromcode119/ai/admin$'] = path.resolve(__dirname, '../ai/dist/admin-extension.js');

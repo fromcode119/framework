@@ -39,7 +39,7 @@ import { ThemeEntryGenerator } from './theme-entry-generator';
  *  - No minify — server code is never shipped over the wire, and readable frames make SSR errors legible.
  *
  * Vite requires the config module to DEFAULT-export its object. That single required export is generated
- * as build glue (nextor's `ViteConfigEntryGenerator`) so the authored source stays a plain class.
+ * as build glue (next-build-codegen's `ViteConfigEntryGenerator`) so the authored source stays a plain class.
  */
 export class ThemeSsrViteConfig {
   /**

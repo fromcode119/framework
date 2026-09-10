@@ -51,8 +51,8 @@ COPY packages/react/package.json ./packages/react/
 COPY packages/scheduler/package.json ./packages/scheduler/
 COPY packages/sdk/package.json ./packages/sdk/
 COPY packages/reactor/package.json ./packages/reactor/
-COPY packages/nextor/package.json ./packages/nextor/
-COPY packages/typor/package.json ./packages/typor/
+COPY packages/next-build-codegen/package.json ./packages/next-build-codegen/
+COPY packages/typescript-multiple-inheritance/package.json ./packages/typescript-multiple-inheritance/
 COPY packages/arch-guard/package.json ./packages/arch-guard/
 
 # Install dependencies
@@ -98,14 +98,14 @@ RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode1
 # The ORDER of these steps is defined ONCE, in the root package.json (build:tooling / build:runtime /
 # build:libs, composed as build:packages). Every consumer that builds this framework from source — this
 # Dockerfile, the marketplace image, CI — calls those scripts. Never inline the sequence again: the
-# marketplace carried a hand-copied `tsc -b <hardcoded list>` that silently went stale when reactor/typor/
-# nextor were added, and its deploys died with 939 "Cannot find module '@fromcode119/reactor'" errors.
+# marketplace carried a hand-copied `tsc -b <hardcoded list>` that silently went stale when reactor/typescript-multiple-inheritance/
+# next-build-codegen were added, and its deploys died with 939 "Cannot find module '@fromcode119/reactor'" errors.
 
-# Step 1: reactor → typor → nextor. reactor FIRST of all — core (LocaleSwitcher etc.), react
+# Step 1: reactor → typescript-multiple-inheritance → next-build-codegen. reactor FIRST of all — core (LocaleSwitcher etc.), react
 # (PluginComponent), the AI extension and admin (AdminComponent) all `extends Reactor`, so its built type
 # declarations must exist before ANY project (including the api graph, which compiles core) is compiled.
-# typor owns the package-private @alias build; nextor's esbuild plugins are consumed by the ai package's
-# post-build `nextor stamp-client` and by admin's `nextor with-middleware`.
+# typescript-multiple-inheritance owns the package-private @alias build; next-build-codegen's esbuild plugins are consumed by the ai package's
+# post-build `next-build-codegen stamp-client` and by admin's `next-build-codegen with-middleware`.
 RUN npm run build:tooling > /tmp/build-tooling.log 2>&1; ec=$?; \
     tail -80 /tmp/build-tooling.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:tooling FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \

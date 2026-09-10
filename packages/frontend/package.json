@@ -21,8 +21,8 @@
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
-    "dev": "node ../nextor/dist/nextor-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
-    "build": "node ../nextor/dist/nextor-cli.cjs with-middleware -- next build",
+    "dev": "node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
+    "build": "node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next build",
     "start": "node ../core/dist/process/app-launcher-main.js --app frontend --hostname 0.0.0.0",
     "lint": "next lint",
     "test": "vitest run --config ../../vitest.plugins.config.ts --project frontend"

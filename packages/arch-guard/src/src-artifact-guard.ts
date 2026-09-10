@@ -9,7 +9,7 @@ import path from 'node:path';
  * `foo.enum.js` shadows `foo.enum.ts` for some importers and not others. You then get TWO module instances
  * of the same class, `Enum` reference identity breaks, and the failures name enums rather than the build.
  *
- * Lives in typor because it guards tsc's own output contract.
+ * Lives in typescript-multiple-inheritance because it guards tsc's own output contract.
  */
 export class SrcArtifactGuard {
   private static readonly SKIP = new Set(['node_modules', 'dist', '.next', 'build', 'coverage']);
@@ -117,7 +117,7 @@ export class SrcArtifactGuard {
       '  # react/src/icons/lucide-dynamic-icon-imports.d.ts is AUTHORED and has no sibling — a blanket',
       "  # `-name '*.d.ts' -delete` removes it and the next typecheck fails on the missing module.",
       'Then find the command that emitted them — a positional path passed to tsc (e.g. `tsc packages/core`)',
-      'makes it ignore tsconfig.json, so outDir never applies. Build via `typor build` with flags only.',
+      'makes it ignore tsconfig.json, so outDir never applies. Build via `typescript-multiple-inheritance build` with flags only.',
     ].join('\n');
   }
 }

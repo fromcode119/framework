@@ -14,7 +14,7 @@ import path from 'node:path';
  * tarball, and the admin loads it at runtime via the manifest's `ui.adminCss`. Any instance then
  * styles whatever plugins it actually has, with no framework rebuild.
  *
- * Authored as a CLASS, like every other build config here: nextor's `ViteConfigEntryGenerator`
+ * Authored as a CLASS, like every other build config here: next-build-codegen's `ViteConfigEntryGenerator`
  * writes the entry the tool is actually pointed at, and that generated file is gitignored. Tailwind
  * loads it through jiti, so the entry stays TypeScript — no hand-written `.cjs` in the framework.
  */

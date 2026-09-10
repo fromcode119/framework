@@ -127,7 +127,7 @@ class NextConfigEnv {
 
   /**
    * Package -> SOURCE tree aliases, so every bundler compiles `@fromcode119/*` from `packages/<pkg>/src`
-   * (never a stale `dist`) and understands the typor package-private prefixes (`@core/x`) and the
+   * (never a stale `dist`) and understands the typescript-multiple-inheritance package-private prefixes (`@core/x`) and the
    * frontend's own `@/`.
    *
    * Shape: `{ specifier, dir, entry }` maps the bare specifier to `dir/entry` and `specifier/<sub>` to
@@ -369,7 +369,7 @@ class NextConfigEnv {
 NextConfigEnv.environmentInitialized = false;
 
 /**
- * Each typor-built package's PRIVATE alias for its own `src` (`@core/x` -> `packages/core/src/x`), as
+ * Each typescript-multiple-inheritance-built package's PRIVATE alias for its own `src` (`@core/x` -> `packages/core/src/x`), as
  * `[package, prefix]`. `next` is `@nextjs` because `@next` is a real npm scope in node_modules. This
  * mirrors the frontend tsconfig `paths` (which the TYPE-checker needs and cannot read from here); the
  * bundlers read this list.

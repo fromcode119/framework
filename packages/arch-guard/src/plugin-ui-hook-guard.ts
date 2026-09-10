@@ -5,7 +5,7 @@ import path from 'node:path';
 /**
  * Plugin UI components must be hook-free OOP classes.
  *
- * An OOP-shape rule, so it belongs to typor: a plugin's UI is a `PluginComponent` class with `@prop` /
+ * An OOP-shape rule, so it belongs to typescript-multiple-inheritance: a plugin's UI is a `PluginComponent` class with `@prop` /
  * `@state`, never a function component calling hooks. The one sanctioned hook site is reactor's `Bridge`.
  *
  * Ported verbatim from the previous script — same patterns, same counts.

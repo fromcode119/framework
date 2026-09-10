@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { TyporSyntaxPlugin } from '@fromcode119/typor/build';
+import { TyporSyntaxPlugin } from '@fromcode119/typescript-multiple-inheritance/build';
 
 /**
  * Real `tsc --noEmit` over the Next apps (admin, frontend).
@@ -10,7 +10,7 @@ import { TyporSyntaxPlugin } from '@fromcode119/typor/build';
  * resolves — it does not type-check. This is the gate that actually does, and it has caught shipped bugs
  * (an `Enum` compared to a raw string is always false; an `import type` of a runtime value throws).
  *
- * typor owns it because the source uses typor's extended syntax, which `tsc` cannot parse: the affected
+ * typescript-multiple-inheritance owns it because the source uses typescript-multiple-inheritance's extended syntax, which `tsc` cannot parse: the affected
  * files are rewritten in place for the duration of the check and always restored.
  */
 export class AppTypecheck {
@@ -29,7 +29,7 @@ export class AppTypecheck {
   }
 
   /**
-   * Rewrite typor's extended syntax in place across `packagesDir`, returning the restore function.
+   * Rewrite typescript-multiple-inheritance's extended syntax in place across `packagesDir`, returning the restore function.
    * The caller MUST invoke it in a `finally` (and on exit) so source is never left transformed.
    */
   static applyExtendedSyntax(packagesDir: string): () => void {

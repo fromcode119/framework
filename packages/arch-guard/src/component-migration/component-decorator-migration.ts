@@ -37,15 +37,15 @@ export class ComponentDecoratorMigration {
   /**
    * Component base classes this migration recognises.
    *
-   * The built-ins are REACTOR's own — typor may know its sibling toolchain package, the way nextor does.
+   * The built-ins are REACTOR's own — typescript-multiple-inheritance may know its sibling toolchain package, the way next-build-codegen does.
    * It must NOT know a consuming project's base classes: `PluginComponent`, `AdminComponent` and
    * `ThemeComponent` were hardcoded here and welded a standalone package to one framework. A project
-   * adds its own through `TYPOR_COMPONENT_BASES` (comma-separated), which its build script sets.
+   * adds its own through `TSMI_COMPONENT_BASES` (comma-separated), which its build script sets.
    */
   static readonly REACTOR_BASES: readonly string[] = ['Reactor', 'PureReactor', 'Provider'];
 
   static bases(): ReadonlySet<string> {
-    const extra = String(process.env.TYPOR_COMPONENT_BASES ?? '')
+    const extra = String(process.env.TSMI_COMPONENT_BASES ?? '')
       .split(',').map((name) => name.trim()).filter(Boolean);
     return new Set([...ComponentDecoratorMigration.REACTOR_BASES, ...extra]);
   }

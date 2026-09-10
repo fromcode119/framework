@@ -12,7 +12,7 @@
 #              component check. The React-free pieces now live behind `@fromcode119/reactor/lang`, the
 #              DOM root factories behind `ReactDomRoots`, and the middleware imports its two core
 #              utilities directly instead of through core's `client` barrel.
-#           2. nextor's source-contract loader was a normal rule sitting first in the list, so it ran
+#           2. next-build-codegen's source-contract loader was a normal rule sitting first in the list, so it ran
 #              LAST — after Next had already read an unstamped `.client.tsx`. It is a `pre` loader now.
 #
 #   api     3. `tsx` applies its tsconfig only to files matching that config's `include`, so every
@@ -89,7 +89,7 @@ services:
       # So core's dist must stay fresh: after changing core, run
       #   npm run build --workspace=@fromcode119/core
       #
-      # Do NOT try to automate that with `typor build -w`. `typor build` REWRITES the sources in place
+      # Do NOT try to automate that with `typescript-multiple-inheritance build -w`. `typescript-multiple-inheritance build` REWRITES the sources in place
       # (alias specifiers → relative paths), runs tsc, and restores them in a `finally`. With `-w` tsc
       # never returns, so the restore never runs — and killing the watcher leaves every source file in
       # its rewritten state. It cost this repo ~5,200 import lines of its alias style, silently.

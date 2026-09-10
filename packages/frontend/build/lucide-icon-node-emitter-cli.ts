@@ -4,7 +4,7 @@ import { LucideIconNodeEmitter } from './lucide-icon-node-emitter';
 /**
  * `tsx lucide-icon-node-emitter-cli.ts <namesFile> <publicDir…>` — the `build:frontend-icons` script.
  *
- * Argv parsing and the exit code only; `LucideIconNodeEmitter` owns the work (the nextor / arch-guard CLI
+ * Argv parsing and the exit code only; `LucideIconNodeEmitter` owns the work (the next-build-codegen / arch-guard CLI
  * shape). The names file and the target `public/` directories are ARGUMENTS so this file names no app:
  * the root package.json decides which apps serve the icon set.
  */

@@ -6,8 +6,8 @@ import type { IWorkspaceAreaResult } from './interfaces/workspace-area-result.in
 /**
  * Type-checks EVERY authored area of the workspace — plugins, themes, appearances.
  *
- * This belongs to typor because typor owns TypeScript itself: it already rewrites the extended syntax
- * (`typor-build`) and checks projects (`typor-typecheck`). Checking the extension areas is the same job.
+ * This belongs to typescript-multiple-inheritance because typescript-multiple-inheritance owns TypeScript itself: it already rewrites the extended syntax
+ * (`typescript-multiple-inheritance-build`) and checks projects (`typescript-multiple-inheritance-typecheck`). Checking the extension areas is the same job.
  *
  * Why it must exist: a type rule is only enforced where a checker runs. esbuild and Vite strip types
  * without checking them, and `next build` sets `ignoreBuildErrors`. Plugin UI (`src/ui/**`), themes and
@@ -26,7 +26,7 @@ export class WorkspaceTypecheck {
 
   /**
    * Resolution + compiler settings that mirror the framework's own build, so counts mean something.
-   * Public because every typor tool that builds a Program over workspace source must resolve modules the
+   * Public because every typescript-multiple-inheritance tool that builds a Program over workspace source must resolve modules the
    * SAME way — a tool with weaker `paths` silently fails to resolve `@fromcode119/*` and then reasons
    * from a type it could not see.
    */
@@ -75,7 +75,7 @@ export class WorkspaceTypecheck {
     const cfg = path.join(dir, 'tsconfig.__typor-check.json');
     // Style imports are resolved by the bundlers (Vite/esbuild), not by tsc. Without an ambient module
     // every `import './x.css'` in a plugin reads as a missing module and is blamed on the plugin.
-    const ambient = path.join(dir, 'typor-ambient.__typor-check.d.ts');
+    const ambient = path.join(dir, 'typescript-multiple-inheritance-ambient.__typor-check.d.ts');
     writeFileSync(ambient, [
       "declare module '*.css';",
       "declare module '*.less';",
@@ -101,7 +101,7 @@ export class WorkspaceTypecheck {
     };
     writeFileSync(cfg, JSON.stringify({
       compilerOptions: options,
-      include: [...include, 'typor-ambient.__typor-check.d.ts'],
+      include: [...include, 'typescript-multiple-inheritance-ambient.__typor-check.d.ts'],
       exclude: ['node_modules', '**/*.test.ts', '**/*.test.tsx'],
     }, null, 2));
     try {

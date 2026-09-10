@@ -27,7 +27,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "node ../typor/dist/typor-cli.cjs build && node ../nextor/dist/nextor-cli.cjs stamp-client dist",
+    "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build && node ../next-build-codegen/dist/next-build-codegen-cli.cjs stamp-client dist",
     "dev": "tsc -w",
     "test": "vitest run --config ../../vitest.plugins.config.ts packages/ai"
   },

@@ -1,6 +1,6 @@
 # @fromcode119/arch-guard
 
-Architecture boundary enforcement, standalone like `reactor` / `nextor` / `typor`.
+Architecture boundary enforcement, standalone like `reactor` / `next-build-codegen` / `typescript-multiple-inheritance`.
 
 Where the others own a technology — React, Next, TypeScript — arch-guard owns the **rules between the parts**:
 
@@ -10,7 +10,7 @@ Where the others own a technology — React, Next, TypeScript — arch-guard own
 - layer order: route → controller → service → repository, with file-size limits
 - a theme override may not reach outside the theme; an appearance may not reach into plugin internals
 
-These are policy, not types — which is why they are not typor's. Each rule is a class; the `arch-guard-*.mjs`
+These are policy, not types — which is why they are not typescript-multiple-inheritance's. Each rule is a class; the `arch-guard-*.mjs`
 files are thin CLIs over them.
 
 ## Note on `noImplicitAny`

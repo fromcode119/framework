@@ -15,7 +15,7 @@ type ViewFn = (this: unknown) => ReactNode;
  *  • On a CLASS — sets the component's `view` (the whole render), for a component that is only markup:
  *      @template('./card.view') export class Card extends Reactor { @prop declare title: string; }
  *
- * `@fromcode119/nextor`'s TemplateDecoratorPlugin rewrites the string path into an import, so this decorator
+ * `@fromcode119/next-build-codegen`'s TemplateDecoratorPlugin rewrites the string path into an import, so this decorator
  * receives the compiled template function. (Un-built, the string arg is inert.) Name view files anything.
  */
 export function template(

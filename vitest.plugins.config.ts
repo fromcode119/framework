@@ -1,14 +1,14 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
-import { TyporSyntaxPlugin } from './packages/typor/src/typor-syntax-plugin';
+import { TyporSyntaxPlugin } from './packages/typescript-multiple-inheritance/src/tsmi-syntax-plugin';
 
 /**
  * vitest is its own compiler path: it transpiles source with esbuild and never sees the Next loader or the
- * esbuild plugin, so `class X extends A, B` would be a parse error here. Apply typor's rewrite in a Vite
+ * esbuild plugin, so `class X extends A, B` would be a parse error here. Apply typescript-multiple-inheritance's rewrite in a Vite
  * transform so tests compile the same source everything else does.
  */
 const typorPlugin = {
-  name: 'typor-multiple-inheritance',
+  name: 'typescript-multiple-inheritance-multiple-inheritance',
   enforce: 'pre' as const,
   transform(code: string, id: string) {
     if (!/\.(t|j)sx?$/.test(id) || id.includes('node_modules')) return null;
@@ -31,7 +31,7 @@ const esbuild = {
 } as const;
 
 /**
- * Each typor-built package's PRIVATE alias for its own `src` (`@core/…`, `@react/…`, …).
+ * Each typescript-multiple-inheritance-built package's PRIVATE alias for its own `src` (`@core/…`, `@react/…`, …).
  *
  * vitest resolves through Vite, which does NOT read tsconfig `paths`, so the same map the compiler gets
  * from tsconfig has to be repeated here or every aliased import fails to resolve at test time.
@@ -71,7 +71,7 @@ const sharedAlias = {
   '@fromcode119/core/client': path.resolve(frameworkRoot, 'packages/core/src/client.ts'),
   '@fromcode119/core/': `${path.resolve(frameworkRoot, 'packages/core/src')}/`,
   '@fromcode119/core': path.resolve(frameworkRoot, 'packages/core/src/index.ts'),
-  '@fromcode119/typor/build': path.resolve(frameworkRoot, 'packages/typor/src/index.ts'),
+  '@fromcode119/typescript-multiple-inheritance/build': path.resolve(frameworkRoot, 'packages/typescript-multiple-inheritance/src/index.ts'),
   // Subpath BEFORE the bare specifier: a Vite string alias replaces by PREFIX, so the bare entry —
   // which points at a FILE — turned `@fromcode119/react/x` into `…/react/src/index.tsx`. That is why
   // `content-rendering-utils.test.ts` could not even be collected. The apps already alias

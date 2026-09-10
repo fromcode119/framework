@@ -14,7 +14,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "node ../typor/dist/typor-cli.cjs build",
+    "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build",
     "dev": "tsc -w"
   },
   "devDependencies": {

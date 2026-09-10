@@ -28,7 +28,7 @@ import { RuntimeAssetConstants } from '@fromcode119/core/constants/runtime-asset
  * runtime through the registry / import map, exactly as today.
  *
  * Vite requires the config module to DEFAULT-export its object. That single required export is
- * generated as build glue (nextor's `ViteConfigEntryGenerator`, see `build:frontend-runtime` in the
+ * generated as build glue (next-build-codegen's `ViteConfigEntryGenerator`, see `build:frontend-runtime` in the
  * root package.json) so this authored source stays a plain class.
  */
 export class FrontendRuntimeViteConfig {

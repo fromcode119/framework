@@ -25,10 +25,10 @@ export class EnvCheckGuard {
   ]);
 
   /**
-   * `reactor` / `nextor` / `typor` / `arch-guard` are the standalone layer that confines raw JS/TS mechanics —
+   * `reactor` / `next-build-codegen` / `typescript-multiple-inheritance` / `arch-guard` are the standalone layer that confines raw JS/TS mechanics —
    * a runtime type check is sometimes genuinely their job, and they cannot import the SDK to avoid it.
    */
-  private static readonly EXEMPT_PACKAGES = new Set(['reactor', 'nextor', 'typor', 'arch-guard']);
+  private static readonly EXEMPT_PACKAGES = new Set(['reactor', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
 
   /** Pre-existing debt, counted 2026-09-09. LOWER as it is paid off; never raise. */
   static readonly BASELINE: Readonly<Record<string, number>> = {
