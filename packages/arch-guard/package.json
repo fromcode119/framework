@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/arch-guard",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Architecture boundary enforcement — who may import what, which layer may call which, and the shape a plugin/theme/appearance must keep. Standalone like reactor/next-build-codegen/typescript-multiple-inheritance; Node-only build tooling, never imported by application code.",
   "license": "MIT",
   "type": "module",
