@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';

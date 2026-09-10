@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Which UI surface a plugin asset/registration targets. */
 export class UiScope extends Enum {

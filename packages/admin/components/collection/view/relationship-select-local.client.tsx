@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { prop, state, bound, watch } from '@fromcode119/reactor';
+import { prop, state, bound, watch } from '@fromcode119/react-class-components';
 import { Select } from '@/components/ui/view/select.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { CollectionKeyUtils } from '@/components/collection/collection-key-utils';

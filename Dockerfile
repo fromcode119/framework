@@ -50,7 +50,7 @@ COPY packages/plugins/package.json ./packages/plugins/
 COPY packages/react/package.json ./packages/react/
 COPY packages/scheduler/package.json ./packages/scheduler/
 COPY packages/sdk/package.json ./packages/sdk/
-COPY packages/reactor/package.json ./packages/reactor/
+COPY packages/react-class-components/package.json ./packages/react-class-components/
 COPY packages/next-build-codegen/package.json ./packages/next-build-codegen/
 COPY packages/typescript-multiple-inheritance/package.json ./packages/typescript-multiple-inheritance/
 COPY packages/arch-guard/package.json ./packages/arch-guard/
@@ -99,7 +99,7 @@ RUN echo "--- @fromcode119 workspace packages ---" && ls node_modules/@fromcode1
 # build:libs, composed as build:packages). Every consumer that builds this framework from source — this
 # Dockerfile, the marketplace image, CI — calls those scripts. Never inline the sequence again: the
 # marketplace carried a hand-copied `tsc -b <hardcoded list>` that silently went stale when reactor/typescript-multiple-inheritance/
-# next-build-codegen were added, and its deploys died with 939 "Cannot find module '@fromcode119/reactor'" errors.
+# next-build-codegen were added, and its deploys died with 939 "Cannot find module '@fromcode119/react-class-components'" errors.
 
 # Step 1: reactor → typescript-multiple-inheritance → next-build-codegen. reactor FIRST of all — core (LocaleSwitcher etc.), react
 # (PluginComponent), the AI extension and admin (AdminComponent) all `extends Reactor`, so its built type

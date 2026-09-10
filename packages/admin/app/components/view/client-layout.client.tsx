@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ClientType } from '@fromcode119/core/client';
-import { Reactor, prop } from '@fromcode119/reactor';
-import * as ReactorRuntime from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
+import * as ReactorRuntime from '@fromcode119/react-class-components';
 import { PluginsProvider } from '@fromcode119/react';
 import { AdminLocaleSync } from '@/app/components/view/admin-locale-sync.client';
 import { ThemeProvider } from '@/components/view/theme-context.client';
@@ -48,7 +48,7 @@ export class ClientLayout extends Reactor {
   private static buildRuntimeModules(): Record<string, Record<string, unknown>> {
     const source = { ...(SharedComponents as Record<string, unknown>), AdminServices };
     const modules = ClientLayoutRuntimeService.buildRuntimeModules(source, ReactorRuntime as Record<string, unknown>);
-    ClientLayoutRuntimeService.seedWindowRuntimeModules(modules['@fromcode119/admin'], modules['@fromcode119/reactor']);
+    ClientLayoutRuntimeService.seedWindowRuntimeModules(modules['@fromcode119/admin'], modules['@fromcode119/react-class-components']);
     return modules;
   }
 

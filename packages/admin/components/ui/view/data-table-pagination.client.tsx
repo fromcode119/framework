@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
 /** Pagination footer for {@link DataTable}. Renders nothing unless there is more than one page. */

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Whether a recovery attempt succeeded. */
 export class AttemptResult extends Enum {

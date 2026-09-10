@@ -12,7 +12,7 @@ import { CompactPageHeader } from '@/components/ui/view/compact-page-header.clie
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { AdminClass } from '@/lib/admin-class';
 

@@ -1,6 +1,6 @@
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactElement } from 'react';
-import { state, bound } from '@fromcode119/reactor';
+import { state, bound } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { FrameworkIcons } from '@fromcode119/react';

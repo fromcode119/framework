@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /**
  * Persisted runtime health of an INSTALLED plugin (the `_system_plugins.health_status` column).

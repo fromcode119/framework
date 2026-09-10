@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** A normalization applied to an entity field value before it is persisted. */
 export class EntityFieldTransform extends Enum {

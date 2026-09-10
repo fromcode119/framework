@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Sort direction for repository queries. */
 export class SortOrder extends Enum {

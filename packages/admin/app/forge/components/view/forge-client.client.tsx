@@ -1,5 +1,5 @@
 import type React from 'react';
-import { PureReactor } from '@fromcode119/reactor';
+import { PureReactor } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { AppEnv } from '@/lib/env';
 import { AdminClass } from '@/lib/admin-class';

@@ -1,7 +1,7 @@
 import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
 import type { IAppearanceShellProps } from '@/lib/appearance/interfaces/appearance-shell-props.interface';
 import type { ReactNode } from 'react';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 import { AppPathConstants } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';

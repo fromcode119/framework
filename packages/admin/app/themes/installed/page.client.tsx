@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor } from '@fromcode119/reactor';
+import { Reactor } from '@fromcode119/react-class-components';
 import { InstalledThemesPageClient } from '@/app/themes/installed/components/view/page-client.client';
 
 /** Installed themes route. */

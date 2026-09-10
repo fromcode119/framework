@@ -1,4 +1,4 @@
-import { Reactor } from '@fromcode119/reactor';
+import { Reactor } from '@fromcode119/react-class-components';
 import { PluginsFacade } from '@fromcode119/core/client';
 import { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
 import type { PluginRuntimeValue } from '@react/plugin-runtime-value';

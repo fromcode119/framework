@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { MouseEvent, ReactNode } from 'react';
-import { state, bound } from '@fromcode119/reactor';
+import { state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';

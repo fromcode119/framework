@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How the media library lays out items: a grid of thumbnails or a list. */
 export class ViewMode extends Enum {

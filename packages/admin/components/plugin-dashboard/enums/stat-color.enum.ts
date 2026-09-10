@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Accent colour of a plugin-dashboard stat row. */
 export class StatColor extends Enum {

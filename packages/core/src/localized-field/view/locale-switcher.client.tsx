@@ -1,5 +1,5 @@
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { Reactor, prop, state, bound, ref, Ref } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, ref, Ref } from '@fromcode119/react-class-components';
 import { GlobeIcon } from '@core/localized-field/view/globe-icon.client';
 import { ChevronIcon } from '@core/localized-field/view/chevron-icon.client';
 

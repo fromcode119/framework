@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 
 /**
  * How a plugin UI component navigates — the contract that did not exist.

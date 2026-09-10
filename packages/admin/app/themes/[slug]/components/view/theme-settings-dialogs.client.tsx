@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { ThemeState } from '@fromcode119/core/client';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';

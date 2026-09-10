@@ -3,7 +3,7 @@ import { ThemeHooks } from '@/components/view/use-theme.client';
 import { AuthHooks } from '@/components/view/use-auth.client';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
-import { Bridge } from '@fromcode119/reactor';
+import { Bridge } from '@fromcode119/react-class-components';
 import { BackupsPageControllerHooks } from '@/components/settings/backups/view/backups-page-controller.client';
 import { BackupsPageClientView } from '@/components/settings/backups/view/backups-page-client-view.client';
 import type { IBackupsPageBridgeValues } from '@/components/settings/backups/interfaces/backups-page-bridge-values.interface';

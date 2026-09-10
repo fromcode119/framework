@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
-import { Reactor, prop, state, bound } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { BrowserStateClient, CookieConstants } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';

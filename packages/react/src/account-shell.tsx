@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 import { ShellBoundary } from '@react/view/shell-boundary';
 import { ShellImplementation } from '@react/shell-implementation';
 import { AccountShellPlaceholder } from '@react/account/account-shell-placeholder';

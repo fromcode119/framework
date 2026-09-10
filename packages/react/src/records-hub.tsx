@@ -1,5 +1,5 @@
 import { ThemeMode } from '@fromcode119/core/client';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 import { ShellBoundary } from '@react/view/shell-boundary';
 import { ShellImplementation } from '@react/shell-implementation';
 import type { IRecordsHubItem } from '@react/interfaces/records-hub-item.interface';

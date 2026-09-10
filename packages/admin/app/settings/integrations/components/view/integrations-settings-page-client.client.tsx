@@ -17,7 +17,7 @@ import { IntegrationHeader } from '@/app/settings/integrations/integration-heade
 import { IntegrationEmptyState } from '@/app/settings/integrations/integration-empty-state';
 import { IntegrationSelectors } from '@/app/settings/integrations/integration-selectors';
 import { IntegrationStaleJsService } from '@/app/settings/integrations/integration-stale-js-service';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import type { IIntegrationConfigField } from '@/app/settings/integrations/interfaces/integration-config-field.interface';
 import type { IIntegrationProvider } from '@/app/settings/integrations/interfaces/integration-provider.interface';
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';

@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import Editor from '@monaco-editor/react';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 
 export class CodeEditor extends AdminComponent {

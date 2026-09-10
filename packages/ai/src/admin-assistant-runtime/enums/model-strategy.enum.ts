@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Model-routing strategy for a turn. */
 export class ModelStrategy extends Enum {

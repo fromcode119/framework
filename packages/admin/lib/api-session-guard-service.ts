@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AuthUtils } from '@/lib/auth-utils';
 import { AdminPathUtils } from '@/lib/admin-path';

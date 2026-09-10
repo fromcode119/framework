@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { ActivityMode } from '@/app/activity/enums/activity-mode.enum';
 import { Card } from '@/components/ui/view/card.client';
 import { Badge } from '@/components/ui/view/badge.client';

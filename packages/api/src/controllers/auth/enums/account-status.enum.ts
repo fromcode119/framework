@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Whether an account may authenticate. Persisted as its `.value`. */
 export class AccountStatus extends Enum {

@@ -1,4 +1,4 @@
-import { Platform, ReactDomRoots } from '@fromcode119/reactor';
+import { Platform, ReactDomRoots } from '@fromcode119/react-class-components';
 import { RuntimeRegistryAccess } from '@fromcode119/core/client';
 import type { IGlobalStubSetupArgs } from '@react/interfaces/global-stub-setup-args.interface';
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';

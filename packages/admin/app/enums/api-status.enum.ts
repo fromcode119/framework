@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Health of the API connection shown in the admin header. */
 export class ApiStatus extends Enum {

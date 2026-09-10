@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** The assistant's conversation mode discriminator (see also AssistantMode which carries UI metadata). */
 export class ConversationMode extends Enum {

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** What a restore targets: the whole system, a single plugin, or a single theme. */
 export class RestoreTargetScope extends Enum {

@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { FrameworkIcons } from '@fromcode119/react';

@@ -1,6 +1,6 @@
 import type { MouseEvent, ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
-import { Reactor, prop, state, bound } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminServices } from '@/lib/admin-services';

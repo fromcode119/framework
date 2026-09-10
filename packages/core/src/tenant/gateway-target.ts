@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Where the platform gateway sends a host: one of the three apps. */
 export class GatewayTarget extends Enum {

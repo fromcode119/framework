@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { Card } from '@/components/ui/view/card.client';

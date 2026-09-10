@@ -9,7 +9,7 @@
 #
 #   admin   1. reactor's barrel exported `Reactor` (a React class component), `Context` and
 #              `react-dom/client`, so any server module importing `Enum` from it hit React's server-
-#              component check. The React-free pieces now live behind `@fromcode119/reactor/lang`, the
+#              component check. The React-free pieces now live behind `@fromcode119/react-class-components/lang`, the
 #              DOM root factories behind `ReactDomRoots`, and the middleware imports its two core
 #              utilities directly instead of through core's `client` barrel.
 #           2. next-build-codegen's source-contract loader was a normal rule sitting first in the list, so it ran
@@ -41,10 +41,10 @@ services:
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
     volumes:
-      # The admin aliases `@fromcode119/reactor` to reactor's SRC, so the dev server compiles these
+      # The admin aliases `@fromcode119/react-class-components` to reactor's SRC, so the dev server compiles these
       # files directly — mount them and a reactor change needs no build at all. (Unlike core: core
       # resolves through dist, so mounting core/src would give plugins one copy and the watcher another.)
-      - ./packages/reactor/src:/app/packages/reactor/src
+      - ./packages/react-class-components/src:/app/packages/react-class-components/src
       # The admin compiles core from SRC as well (next.config aliases `@fromcode119/core` to it), so a
       # new constant or client util is invisible here until this is mounted — the admin silently built
       # a URL from `undefined`.
@@ -55,7 +55,7 @@ services:
       # reactor's package.json carries the `./lang` subpath export the middleware graph imports; the
       # next.config resolves reactor from that src. Both are read at startup, so they must be mounted
       # for a config or subpath change to take effect without rebuilding the image.
-      - ./packages/reactor/package.json:/app/packages/reactor/package.json
+      - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
       - ./packages/admin/next.config.js:/app/packages/admin/next.config.js
       # next.config.js is only half the config: every shared decision it makes (dev origins, aliases,
       # base path) lives in config/next-config-env.js. Mounting the one without the other means a change

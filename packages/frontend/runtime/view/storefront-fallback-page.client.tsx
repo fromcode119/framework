@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { DynamicContentClient } from '@/app/components/view/dynamic-content-client.client';
 import { HomeClient } from '@/app/components/view/home-client.client';
 import type { FrontendRuntimeConfig } from '@/runtime/frontend-runtime-config';

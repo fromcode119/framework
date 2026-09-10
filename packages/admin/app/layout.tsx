@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import '@/app/admin.css';
 import { ClientLayout } from '@/app/components/view/client-layout.client';
 import { PwaRegister } from '@/app/components/view/pwa-register.client';

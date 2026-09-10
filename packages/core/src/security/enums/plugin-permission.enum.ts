@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /**
  * A capability a plugin manifest may declare. Compared against manifest strings, so members are

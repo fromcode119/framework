@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Role of a sub-agent in the multi-agent forge pipeline. */
 export class AgentRole extends Enum {

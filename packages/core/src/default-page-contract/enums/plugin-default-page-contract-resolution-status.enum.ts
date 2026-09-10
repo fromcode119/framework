@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** PluginDefaultPageContractResolutionStatus — one of the 3 states this contract stage can be in. */
 export class PluginDefaultPageContractResolutionStatus extends Enum {

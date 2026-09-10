@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { prop, state, bound } from '@fromcode119/reactor';
+import { prop, state, bound } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';

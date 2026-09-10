@@ -1,8 +1,8 @@
 import { TimePart } from '@/components/ui/date-time-picker/enums/time-part.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode } from 'react';
-import { bound, prop, ref, state, watch } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { bound, prop, ref, state, watch } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { DateTimePickerPopover } from '@/components/ui/date-time-picker/view/popover.client';
 import { DateTimePickerTrigger } from '@/components/ui/date-time-picker/view/trigger.client';

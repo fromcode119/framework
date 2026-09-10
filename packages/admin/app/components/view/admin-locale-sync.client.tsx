@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import { Reactor } from '@fromcode119/reactor';
+import { Reactor } from '@fromcode119/react-class-components';
 import { TranslationContext } from '@fromcode119/react';
 import type { ITranslationContextValue } from '@fromcode119/react';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';

@@ -5,8 +5,8 @@ import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { DropdownDirection } from '@/components/ui/enums/dropdown-direction.enum';
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { RootFramework } from '@fromcode119/react';
 
 export class Dropdown extends Reactor {

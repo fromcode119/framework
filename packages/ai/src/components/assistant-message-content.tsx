@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
 import { AssistantIntentUtils } from '@ai/assistant-intent-utils';
 import { AssistantTextUtils } from '@ai/assistant-text-utils';

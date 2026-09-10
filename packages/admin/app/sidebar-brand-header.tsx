@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { FrameworkIcons } from '@fromcode119/react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
 import { AdminClass } from '@/lib/admin-class';

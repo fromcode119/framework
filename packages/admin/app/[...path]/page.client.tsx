@@ -2,10 +2,11 @@ import type { ReactElement } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import { AdminPathUtils } from '@/lib/admin-path';
 import Link from 'next/link';
 import { AdminComponent } from '@/components/view/admin-component.client';
+
 export class DynamicPluginPage extends AdminComponent {
   @prop declare params: Promise<{ path: string[] }>;
 

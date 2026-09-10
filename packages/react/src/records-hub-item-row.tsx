@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
-import { PureReactor, bound, prop } from '@fromcode119/reactor';
+import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@react/icons/view/framework-icons.client';
 import { LucideLazyLoader } from '@react/icons/lucide-lazy-loader';
 import type { IRecordsHubItem } from '@react/interfaces/records-hub-item.interface';

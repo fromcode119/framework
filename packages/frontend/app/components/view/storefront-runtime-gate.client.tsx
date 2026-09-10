@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
-import { Reactor, prop, state } from '@fromcode119/reactor';
+import { Reactor, prop, state } from '@fromcode119/react-class-components';
 import { FrontendRuntimeScheduler } from '@/app/frontend-runtime-scheduler';
 
 /**

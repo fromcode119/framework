@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor } from '@fromcode119/reactor';
+import { PureReactor } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
 export class AssistantConversationEmptyState extends PureReactor {

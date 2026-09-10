@@ -15,7 +15,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { PersonAccountPanel } from '@/app/users/people/[id]/components/view/person-account-panel.client';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import type { IPersonEditPageFields } from '@/app/users/people/[id]/interfaces/person-edit-page-fields.interface';
-import { bound, prop, state } from '@fromcode119/reactor';
+import { bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
 
 /** Dedicated edit page for a single person (route `/users/people/:id`). Replaces the modal dialog. */

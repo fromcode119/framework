@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import type { INotificationContextType } from '@/components/interfaces/notification-context-type.interface';

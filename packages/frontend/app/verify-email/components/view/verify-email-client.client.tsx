@@ -1,6 +1,6 @@
 import { VerificationStatus } from '@/app/verify-email/enums/verification-status.enum';
 import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import Link from 'next/link';
 import Script from 'next/script';
 import { SystemConstants } from '@fromcode119/core/client';

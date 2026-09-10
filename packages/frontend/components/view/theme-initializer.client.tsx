@@ -1,4 +1,4 @@
-import { Reactor } from '@fromcode119/reactor';
+import { Reactor } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import { AccountSlotRegistrar } from '@/components/account/account-slot-registrar';

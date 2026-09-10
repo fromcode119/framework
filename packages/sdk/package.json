@@ -44,7 +44,7 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@fromcode119/reactor": "*",
+    "@fromcode119/react-class-components": "*",
     "@fromcode119/api": "*",
     "@fromcode119/auth": "*",
     "@fromcode119/core": "*",

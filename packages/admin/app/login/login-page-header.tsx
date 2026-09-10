@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, state } from '@fromcode119/reactor';
+import { Reactor, state } from '@fromcode119/react-class-components';
 
 import { AppEnv } from '@/lib/env';
 import { LoginPageConstants } from '@/app/login/constants/login-page.constants';

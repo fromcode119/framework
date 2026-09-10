@@ -1,8 +1,8 @@
-import type { Ref } from '@fromcode119/reactor';
+import type { Ref } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
 export class FieldLocaleSwitcher extends PureReactor {

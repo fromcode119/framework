@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound, watch } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, watch } from '@fromcode119/react-class-components';
 import type { IThemeContextType } from '@/components/interfaces/theme-context-type.interface';
 import { ThemeContext } from '@/components/view/theme-context-store.client';
 import { ThemeMode } from '@fromcode119/core/client';

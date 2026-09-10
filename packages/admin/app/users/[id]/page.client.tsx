@@ -12,7 +12,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { UserProfileHeader } from '@/app/users/[id]/components/view/user-profile-header.client';
 import { UserProfileSidebar } from '@/app/users/[id]/components/view/user-profile-sidebar.client';
 import { UserOwnershipCard } from '@/app/users/[id]/components/view/user-ownership-card.client';
-import { prop, state, bound } from '@fromcode119/reactor';
+import { prop, state, bound } from '@fromcode119/react-class-components';
 
 export class UserProfilePage extends AdminComponent {
   @prop declare params: Promise<{ id: string }>;

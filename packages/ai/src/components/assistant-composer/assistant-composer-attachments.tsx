@@ -1,5 +1,5 @@
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AssistantFormatUtils } from '@ai/assistant-format-utils';
 import type { IUploadedAttachment } from '@ai/interfaces/uploaded-attachment.interface';

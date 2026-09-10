@@ -1,6 +1,6 @@
 import { ExecutionKind } from '@ai/enums/assistant-execution-kind.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AssistantPlanUtils } from '@ai/assistant-plan-utils';
 import { AssistantSurfaceUtils } from '@ai/assistant-surface-utils';
 import { AssistantExecutionResult } from '@ai/components/assistant-execution-result';

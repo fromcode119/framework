@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IRecordsHubGroup } from '@react/interfaces/records-hub-group.interface';
 import type { IRecordsHubItem } from '@react/interfaces/records-hub-item.interface';
 import { RecordsHubItemRow } from '@react/records-hub-item-row';

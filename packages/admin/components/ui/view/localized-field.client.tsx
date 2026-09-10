@@ -1,7 +1,7 @@
 import type { IResolvedLocaleContext } from '@/components/ui/interfaces/resolved-locale-context.interface';
 import { LocaleScope } from '@/components/ui/enums/locale-scope.enum';
 import type React from 'react';
-import { prop, state, bound } from '@fromcode119/reactor';
+import { prop, state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminServices } from '@/lib/admin-services';
 

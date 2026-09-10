@@ -1,6 +1,6 @@
 import type { FormEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { AuthMode } from '@react/auth/enums/auth-mode.enum';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 import { AuthFormBase } from '@react/auth/auth-form-base';
 import type { IAuthFormProps } from '@react/auth/interfaces/auth-form-props.interface';

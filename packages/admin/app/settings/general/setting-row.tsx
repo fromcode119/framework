@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ComponentType, ReactNode } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 export class SettingRow extends PureReactor {
   @prop declare icon: ComponentType<{ size?: number }> | undefined;

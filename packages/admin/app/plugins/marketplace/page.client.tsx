@@ -16,7 +16,7 @@ import { MarketplaceSearchBar } from '@/app/plugins/marketplace/components/view/
 import { MarketplacePluginCard } from '@/app/plugins/marketplace/components/view/marketplace-plugin-card.client';
 import { MarketplaceLoadingGrid } from '@/app/plugins/marketplace/components/view/marketplace-loading-grid.client';
 import { MarketplaceEmptyState } from '@/app/plugins/marketplace/components/view/marketplace-empty-state.client';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 
 export class MarketplacePage extends AdminComponent implements IPluginBatchSettleHost {
   private mounted = false;

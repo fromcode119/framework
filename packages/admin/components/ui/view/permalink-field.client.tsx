@@ -1,7 +1,7 @@
 import type { IPermalinkValue } from '@/components/ui/interfaces/permalink-value.interface';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 
 export class PermalinkField extends PureReactor {

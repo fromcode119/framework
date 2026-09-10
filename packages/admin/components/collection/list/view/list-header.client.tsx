@@ -3,7 +3,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';

@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { BrowserStateClient, CookieConstants, LocalizationUtils } from '@fromcode119/core/client';
 import type { IPreferredLocaleOptions } from '@react/interfaces/preferred-locale-options.interface';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import ReactDOM from 'react-dom';
-import { ReactDomRoots, Reactor } from '@fromcode119/reactor';
+import { ReactDomRoots, Reactor } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react/icons/view/framework-icons.client';
 import { StorefrontRuntimeGlobals } from '@/runtime/storefront-runtime-globals';
 import { ContextHooks } from '@fromcode119/react';

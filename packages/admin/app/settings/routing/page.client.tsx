@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import { state, bound } from '@fromcode119/reactor';
+import { state, bound } from '@fromcode119/react-class-components';
 import { ContextBridge } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /**
  * The scope-paired MCP tool names the assistant reads evidence from. Each member also carries the WRITE tool

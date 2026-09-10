@@ -19,7 +19,7 @@ import { DashboardActivityFeed } from '@/app/dashboard-activity-feed';
 import { DashboardSupportCard } from '@/app/dashboard-support-card';
 import { DashboardFooter } from '@/app/dashboard-footer';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import type { IPluginHealthCounts } from '@/app/plugins/health/interfaces/plugin-health-counts.interface';
 
 export class AdminPage extends AdminComponent {

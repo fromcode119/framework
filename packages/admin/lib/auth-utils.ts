@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { CookieConstants } from '@fromcode119/core/client';
 
 /**

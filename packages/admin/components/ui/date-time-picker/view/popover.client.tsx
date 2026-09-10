@@ -1,8 +1,8 @@
-import type { Ref } from '@fromcode119/reactor';
+import type { Ref } from '@fromcode119/react-class-components';
 import { TimePart } from '@/components/ui/date-time-picker/enums/time-part.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { DayPicker } from 'react-day-picker';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';

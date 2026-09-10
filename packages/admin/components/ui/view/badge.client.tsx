@@ -1,6 +1,6 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 export class Badge extends PureReactor {
   @prop declare children: ReactNode;

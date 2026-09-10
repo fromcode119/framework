@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /**
  * The lifecycle state of an action batch, as a method-bearing enum. Each member carries its gating rules as

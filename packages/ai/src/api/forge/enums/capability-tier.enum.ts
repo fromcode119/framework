@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Capability ceiling granted to a request. */
 export class CapabilityTier extends Enum {

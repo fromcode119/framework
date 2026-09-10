@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** PluginDefaultPageContractKind — one of the 5 states this contract stage can be in. */
 export class PluginDefaultPageContractKind extends Enum {

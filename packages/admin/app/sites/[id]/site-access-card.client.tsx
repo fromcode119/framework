@@ -1,6 +1,6 @@
 import type { ChangeEvent, ReactNode } from 'react';
 import Link from 'next/link';
-import { bound, prop, state } from '@fromcode119/reactor';
+import { bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';

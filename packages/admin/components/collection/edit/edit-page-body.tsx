@@ -2,7 +2,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { EditPageSectionNav } from '@/components/collection/edit/view/edit-page-section-nav.client';

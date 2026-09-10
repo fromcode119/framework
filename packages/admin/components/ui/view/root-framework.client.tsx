@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop, state } from '@fromcode119/reactor';
+import { Reactor, prop, state } from '@fromcode119/react-class-components';
 
 export class RootFramework extends Reactor {
   @prop declare children: ReactNode;

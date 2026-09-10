@@ -1,5 +1,5 @@
 import React, { forwardRef, createElement, useSyncExternalStore } from 'react';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 // NOTE: Circular import is intentional and safe — FrameworkIconRegistry is only
 // accessed at render-time (inside the returned component), never at module-init
 // time, so both modules are fully resolved before the value is consumed.

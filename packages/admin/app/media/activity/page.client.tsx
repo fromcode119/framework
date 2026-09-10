@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor } from '@fromcode119/reactor';
+import { PureReactor } from '@fromcode119/react-class-components';
 import { MediaPageClient } from '@/app/media/components/view/page-client.client';
 
 // The Activity view of the media area, as its own URL. The view used to live only in component state,

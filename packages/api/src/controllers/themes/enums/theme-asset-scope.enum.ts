@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Which theme asset directory a request targets. */
 export class ThemeAssetScope extends Enum {

@@ -1,4 +1,4 @@
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import type { IAccountProfilePanelState } from '@react/account/interfaces/account-profile-panel-state.interface';
 import type { ReactNode } from 'react';
 import { RouteConstants } from '@fromcode119/core/client';

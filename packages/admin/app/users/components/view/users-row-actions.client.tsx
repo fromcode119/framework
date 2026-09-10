@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/view/dropdown.client';

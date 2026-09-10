@@ -1,4 +1,4 @@
-import { bound } from '@fromcode119/reactor';
+import { bound } from '@fromcode119/react-class-components';
 
 /**
  * Server stand-in for `PluginApiRegistryStore`, the `useSyncExternalStore` SOURCE behind

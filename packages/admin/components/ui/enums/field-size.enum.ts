@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Size variant of an admin form control. Indexes the size lookups in `UiFieldUtils.FIELD.sizes`. */
 export class FieldSize extends Enum {

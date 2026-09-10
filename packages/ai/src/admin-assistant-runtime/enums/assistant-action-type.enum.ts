@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** What kind of action the assistant staged. */
 export class AssistantActionType extends Enum {

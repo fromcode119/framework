@@ -34,7 +34,7 @@ export { AccountShell } from '@react/account-shell';
 export { AccountShellImplementation } from '@react/account/account-shell-implementation';
 export { ShellImplementation } from '@react/shell-implementation';
 export { ShellBoundary } from '@react/view/shell-boundary';
-export { Platform } from '@fromcode119/reactor';
+export { Platform } from '@fromcode119/react-class-components';
 export { AccountShellDefault } from '@react/account/account-shell-default';
 export { AccountSectionRegistry } from '@react/account/account-section-registry';
 export { AccountSection } from '@react/account/account-section';
@@ -97,6 +97,6 @@ export { PluginDefaultStyle } from '@react/view/plugin-default-style';
 export type { PluginRuntimeValue } from '@react/plugin-runtime-value';
 
 // reactor's OOP surface, re-exported so plugins/themes reach it through the SDK boundary.
-export { Reactor, PureReactor, Provider, Bridge, Enum, Context, ReactPrimitives, prop, state, bound, watch, ref } from '@fromcode119/reactor';
+export { Reactor, PureReactor, Provider, Bridge, Enum, Context, ReactPrimitives, prop, state, bound, watch, ref } from '@fromcode119/react-class-components';
 // reactor's ref TYPE — type-only, so it needs no runtime shim entry, only a package export.
-export type { Ref } from '@fromcode119/reactor';
+export type { Ref } from '@fromcode119/react-class-components';

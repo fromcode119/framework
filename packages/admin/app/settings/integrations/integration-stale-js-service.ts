@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 
 /**
  * Clears cached admin assets (service workers + Cache Storage) and reloads the

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** State of an email-verification / resend action. */
 export class VerificationStatus extends Enum {

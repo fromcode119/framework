@@ -3,7 +3,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { PureReactor, prop, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, Ref } from '@fromcode119/react-class-components';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
 import { AdminClass } from '@/lib/admin-class';

@@ -10,7 +10,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import { UsersColumns } from '@/app/users/components/view/users-columns.client';
 import { UsersRowActions } from '@/app/users/components/view/users-row-actions.client';
 import { UsersPageHeader } from '@/app/users/components/view/users-page-header.client';

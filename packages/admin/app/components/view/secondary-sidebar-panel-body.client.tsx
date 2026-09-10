@@ -1,6 +1,6 @@
 import type { KeyboardEvent, ReactNode } from 'react';
 import Link from 'next/link';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Icon } from '@/components/view/icon.client';
 import { NavUtils } from '@/lib/nav-utils';
 import type { ISecondaryPanelItem } from '@fromcode119/react';

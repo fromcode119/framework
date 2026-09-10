@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createElement } from 'react';
 import { EditorSessionParams } from '@fromcode119/core/client';
-import { ReactDomRoots } from '@fromcode119/reactor';
+import { ReactDomRoots } from '@fromcode119/react-class-components';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PreBootRegistrationSeed } from '@fromcode119/react/context/pre-boot-registration-seed';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';

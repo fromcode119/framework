@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 /** The globe glyph on the locale chip. Inline SVG so it needs no icon-font or sprite. */
 export class GlobeIcon extends PureReactor {

@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { FrameworkIcons, FrameworkIconRegistry } from '@fromcode119/react';
 
 export class AdminIconRegistryBootstrapService {

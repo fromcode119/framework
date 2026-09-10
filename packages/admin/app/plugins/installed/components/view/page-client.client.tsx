@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ReactNode } from 'react';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';

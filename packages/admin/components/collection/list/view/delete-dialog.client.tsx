@@ -1,6 +1,6 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 

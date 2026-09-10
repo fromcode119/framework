@@ -1,7 +1,7 @@
 import { ConversationMode } from '@ai/enums/conversation-mode.enum';
 import { AssistantViewport } from '@ai/enums/assistant-viewport.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { HistoryPanel } from '@ai/panels/history-panel';
 import { ToolsOverlay } from '@ai/panels/tools-overlay';

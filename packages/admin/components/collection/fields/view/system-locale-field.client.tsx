@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { Reactor, prop, state } from '@fromcode119/reactor';
+import { Reactor, prop, state } from '@fromcode119/react-class-components';
 import { Select } from '@/components/ui/view/select.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { SystemLocaleOptionsService } from '@/components/collection/fields/system-locale-options-service';

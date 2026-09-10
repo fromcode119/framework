@@ -2,7 +2,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type React from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';

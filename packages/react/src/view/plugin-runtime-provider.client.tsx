@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bridge, prop } from '@fromcode119/reactor';
+import { Bridge, prop } from '@fromcode119/react-class-components';
 import { ContextHooks } from '@react/context-hooks/context-hooks';
 import { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
 import type { PluginRuntimeValue } from '@react/plugin-runtime-value';

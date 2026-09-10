@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** PluginDefaultPageContractBackfillStatus — one of the 6 states this contract stage can be in. */
 export class PluginDefaultPageContractBackfillStatus extends Enum {

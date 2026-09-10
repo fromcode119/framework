@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
-import { prop, state, bound, watch, ref } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { prop, state, bound, watch, ref } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { HexColorPicker } from 'react-colorful';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';

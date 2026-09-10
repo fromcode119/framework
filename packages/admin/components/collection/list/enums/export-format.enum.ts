@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Bulk-export file format. Sent to the API as its `.value`. */
 export class ExportFormat extends Enum {

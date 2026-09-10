@@ -9,7 +9,7 @@ import { ThemeMarketplaceHeader } from '@/app/themes/marketplace/[slug]/componen
 import { ThemeMarketplaceGallery } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-gallery.client';
 import { ThemeMarketplaceAbout } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-about.client';
 import { ThemeMarketplaceSidebar } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-sidebar.client';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
 import { Screenshot } from '@fromcode119/core/client';
 

@@ -35,7 +35,7 @@
   "dependencies": {
     "@fromcode119/core": "*",
     "@fromcode119/react": "*",
-    "@fromcode119/reactor": "*",
+    "@fromcode119/react-class-components": "*",
     "@fromcode119/sdk": "*",
     "@monaco-editor/react": "^4.7.0",
     "monaco-editor": "0.56.0",

@@ -1,5 +1,5 @@
 import type { Dispatch, MouseEvent as ReactMouseEvent, ReactNode, SetStateAction } from 'react';
-import { PureReactor, prop, bound, Platform, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, bound, Platform, Ref } from '@fromcode119/react-class-components';
 import type { IAssistantToolOption } from '@ai/interfaces/assistant-tool-option.interface';
 
 /**

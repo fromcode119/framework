@@ -2,7 +2,7 @@ import { FooterAccent } from '@/components/ui/enums/footer-accent.enum';
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 export class AdminPageFooter extends PureReactor {
   @prop declare label: string;

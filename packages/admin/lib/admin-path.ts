@@ -1,7 +1,7 @@
 // Deep imports, not the barrels: this module is reachable from the MIDDLEWARE graph, and reactor's
 // main barrel exports the `Reactor` class component (plus react-dom) while core's `client` barrel
 // re-exports enums that import it — React refuses either in a server graph.
-import { Platform } from '@fromcode119/reactor/lang';
+import { Platform } from '@fromcode119/react-class-components/lang';
 import { RouteConstants } from '@fromcode119/core/constants/route.constants';
 import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
 

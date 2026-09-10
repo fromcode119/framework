@@ -1,6 +1,6 @@
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
-import { Platform, state, prop, bound } from '@fromcode119/reactor';
+import { Platform, state, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';

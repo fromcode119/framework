@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How much context/capability a request is granted. */
 export class ContextLevel extends Enum {

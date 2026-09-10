@@ -1,4 +1,4 @@
-import { bound } from '@fromcode119/reactor';
+import { bound } from '@fromcode119/react-class-components';
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
 import type { IMenuItem } from '@react/interfaces/menu-item.interface';
 import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';

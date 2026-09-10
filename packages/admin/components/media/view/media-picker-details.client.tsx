@@ -1,6 +1,6 @@
 import type { IMediaItem } from '@/components/media/interfaces/media-item.interface';
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/view/button.client';
 import { UiFieldUtils } from '@/lib/ui';

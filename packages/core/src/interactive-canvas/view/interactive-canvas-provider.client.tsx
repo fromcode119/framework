@@ -1,4 +1,4 @@
-import { Provider, state, bound } from '@fromcode119/reactor';
+import { Provider, state, bound } from '@fromcode119/react-class-components';
 import { InteractiveCanvasChannel } from '@core/interactive-canvas/interactive-canvas-channel';
 import type { IInteractiveCanvasContextValue } from '@core/interactive-canvas/interfaces/interactive-canvas-context-value.interface';
 import type { IInteractiveCanvasState } from '@core/interactive-canvas/interfaces/interactive-canvas-state.interface';

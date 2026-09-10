@@ -1,7 +1,7 @@
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
 export class VisualMenuItem extends PureReactor {

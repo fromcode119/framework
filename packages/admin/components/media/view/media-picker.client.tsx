@@ -1,7 +1,7 @@
 import type { IMediaItem } from '@/components/media/interfaces/media-item.interface';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { Reactor, prop, state, bound, watch } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, watch } from '@fromcode119/react-class-components';
 import { CoercionUtils } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';

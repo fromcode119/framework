@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Icon } from '@/components/view/icon.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';

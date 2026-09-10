@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Direction a column is moved in the columns menu. */
 export class ReorderDirection extends Enum {

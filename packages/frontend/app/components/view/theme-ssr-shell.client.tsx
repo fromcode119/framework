@@ -1,4 +1,4 @@
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 /**
  * Holds the server-rendered theme markup until the theme's browser bundle has registered its layouts.

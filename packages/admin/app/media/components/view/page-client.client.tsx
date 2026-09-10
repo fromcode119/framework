@@ -2,7 +2,7 @@ import { ViewMode } from '@/app/media/enums/view-mode.enum';
 import React from 'react';
 
 import type { ChangeEvent, ReactNode } from 'react';
-import { prop, state, watch } from '@fromcode119/reactor';
+import { prop, state, watch } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { MediaPageView } from '@/app/media/components/view/media-page-view.client';

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 // reactor is the OOP base layer; plugins may only import @fromcode119/sdk, so its surface is
 // republished through this bridge. Imported statically — a require() here is interop-shimmed by
 // Turbopack in the browser bundle and broke module evaluation.
-import { Reactor, PureReactor, Provider, Bridge, Enum, Context, ReactPrimitives, Platform, prop, state, bound, watch, ref } from '@fromcode119/reactor';
+import { Reactor, PureReactor, Provider, Bridge, Enum, Context, ReactPrimitives, Platform, prop, state, bound, watch, ref } from '@fromcode119/react-class-components';
 import { ApiVersionUtils, CoercionUtils, CollectionUtils, FormatUtils, HookEventUtils, LocalizationUtils, NumberUtils, PaginationUtils, RelationUtils, RuntimeConstants, StringUtils } from '@fromcode119/core/client';
 import { AuthMode } from '@react/auth/enums/auth-mode.enum';
 import { BrowserLocalization } from '@react/browser-localization';

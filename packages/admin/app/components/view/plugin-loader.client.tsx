@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Bridge } from '@fromcode119/reactor';
+import { Bridge } from '@fromcode119/react-class-components';
 import { ContextHooks } from '@fromcode119/react';
 import { AuthHooks } from '@/components/view/use-auth.client';
 import { PluginLoaderRunner } from '@/app/components/view/plugin-loader-runner.client';

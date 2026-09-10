@@ -13,7 +13,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { NewRolePermissionsCard } from '@/app/users/roles/new/components/view/new-role-permissions-card.client';
 import { NewRoleSummarySidebar } from '@/app/users/roles/new/components/view/new-role-summary-sidebar.client';
 import type { INewRoleFormData } from '@/app/users/roles/new/interfaces/new-role-form-data.interface';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 
 export class NewRolePage extends AdminComponent {
   private mounted = false;

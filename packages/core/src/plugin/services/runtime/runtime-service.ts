@@ -16,7 +16,7 @@ import type { IRuntimeModuleConfig } from '@core/plugin/services/interfaces/runt
 // Plugin code uses class methods: CoercionUtils.toNumber(), StringUtils.slugify(), etc.
 
 // Every reactor export, so externalized appearance bundles get the SAME decorator/base instances as the admin
-// (discovery can't `require('@fromcode119/reactor')` — its dist barrel is bundler-only, extensionless).
+// (discovery can't `require('@fromcode119/react-class-components')` — its dist barrel is bundler-only, extensionless).
 
 export class RuntimeService {
   private static readonly REACT_RUNTIME_EXPORT_KEYS = [
@@ -132,7 +132,7 @@ export class RuntimeService {
     });
     // reactor — externalized appearance bundles resolve it from the ONE shared runtime instance, so the
     // `@state`/`@watch` decorators (and the Reactor base) are the SAME instances the baked admin uses.
-    this.registry.set('@fromcode119/reactor', {
+    this.registry.set('@fromcode119/react-class-components', {
       type: RuntimeModuleKind.LIB,
       keys: [...RuntimeService.REACTOR_RUNTIME_EXPORT_KEYS]
     });

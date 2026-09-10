@@ -3,7 +3,7 @@ import { TimePart } from '@/components/ui/date-time-picker/enums/time-part.enum'
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { NumberStepper } from '@/components/ui/number-stepper';

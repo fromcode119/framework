@@ -1,7 +1,7 @@
 import { SecurityTab } from '@/app/settings/security/enums/security-tab.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode, SetStateAction } from 'react';
-import { state, bound, watch } from '@fromcode119/reactor';
+import { state, bound, watch } from '@fromcode119/react-class-components';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';

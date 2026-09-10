@@ -7,7 +7,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AppEnv } from '@/lib/env';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
 
 export class ResetPasswordPage extends AdminComponent {

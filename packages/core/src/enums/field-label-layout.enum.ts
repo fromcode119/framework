@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How a field renders its label relative to the control. */
 export class FieldLabelLayout extends Enum {

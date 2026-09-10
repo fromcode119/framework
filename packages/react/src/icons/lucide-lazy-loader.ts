@@ -1,6 +1,6 @@
 import type React from 'react';
 import type { IconNode } from 'lucide-react';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { LucideIconAssetUrl } from '@react/icons/lucide-icon-asset-url';
 import lucideIconNames from '@react/icons/lucide-icon-names.generated.json';
 // Lucide's deep ESM entry ships no declaration file. Suppressed locally rather than papered over with

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor } from '@fromcode119/reactor';
+import { PureReactor } from '@fromcode119/react-class-components';
 import { Override } from '@react/view/override.client';
 import { AccountShellSkeleton } from '@react/account/account-shell-skeleton';
 

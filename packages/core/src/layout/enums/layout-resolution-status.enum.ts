@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Outcome of resolving a layout. */
 export class LayoutResolutionStatus extends Enum {

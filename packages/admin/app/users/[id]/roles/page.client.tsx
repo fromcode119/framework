@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactElement } from 'react';
-import { prop, state, bound } from '@fromcode119/reactor';
+import { prop, state, bound } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';

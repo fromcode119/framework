@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, bound, prop } from '@fromcode119/reactor';
+import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { PromptDialog } from '@/components/ui/view/prompt-dialog.client';
 import { MoveDialog } from '@/components/ui/view/move-dialog.client';

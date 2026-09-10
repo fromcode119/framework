@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { ConversationMode } from '@ai/enums/conversation-mode.enum';
 import type { PhaseStep } from '@ai/components/phase-step';
 import { AssistantMode } from '@ai/components/enums/assistant-mode.enum';

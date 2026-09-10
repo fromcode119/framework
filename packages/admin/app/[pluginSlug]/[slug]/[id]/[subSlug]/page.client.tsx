@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { Slot } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 
 /**
  * Nested entity page — e.g. /<plugin>/<collection>/3/<sub-collection>.

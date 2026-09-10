@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { PromptDialog } from '@/components/ui/view/prompt-dialog.client';
 import type { IOverrideTarget } from '@/components/collection/edit/interfaces/override-target.interface';

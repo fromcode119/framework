@@ -6,7 +6,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { EditUserHeader } from '@/app/users/[id]/edit/components/view/edit-user-header.client';
 import { EditUserFormFields } from '@/app/users/[id]/edit/components/view/edit-user-form-fields.client';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import type { IEditUserFormData } from '@/app/users/[id]/edit/interfaces/edit-user-form-data.interface';
 
 export class EditUserPage extends AdminComponent {

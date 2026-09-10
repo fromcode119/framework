@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop, state } from '@fromcode119/reactor';
+import { Reactor, prop, state } from '@fromcode119/react-class-components';
 import { ThemeSsrShell } from '@/app/components/view/theme-ssr-shell.client';
 
 /**

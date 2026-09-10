@@ -8,7 +8,7 @@ import path from 'node:path';
  * usually has no better form. These three are the exception — they ask "am I in a browser?", a question
  * the codebase already answers in one place:
  *
- *  - `Platform.isBrowser` / `Platform.hasWindow` (`@fromcode119/reactor`) for client React packages,
+ *  - `Platform.isBrowser` / `Platform.hasWindow` (`@fromcode119/react-class-components`) for client React packages,
  *    which cannot depend on core.
  *  - `EnvUtils.isBrowser()` / `EnvUtils.isServer()` (core) for server and isomorphic framework code.
  *
@@ -28,7 +28,7 @@ export class EnvCheckGuard {
    * `reactor` / `next-build-codegen` / `typescript-multiple-inheritance` / `arch-guard` are the standalone layer that confines raw JS/TS mechanics —
    * a runtime type check is sometimes genuinely their job, and they cannot import the SDK to avoid it.
    */
-  private static readonly EXEMPT_PACKAGES = new Set(['reactor', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
+  private static readonly EXEMPT_PACKAGES = new Set(['react-class-components', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
 
   /** Pre-existing debt, counted 2026-09-09. LOWER as it is paid off; never raise. */
   static readonly BASELINE: Readonly<Record<string, number>> = {

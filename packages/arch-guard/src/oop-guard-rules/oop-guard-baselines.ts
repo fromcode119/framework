@@ -8,7 +8,7 @@
  */
 export class OopGuardBaselines {
   // The reactor conventions live here; these packages ARE the exception (decorators + html + build magic).
-  static readonly EXEMPT_PACKAGES = new Set(['reactor', 'next-build-codegen']);
+  static readonly EXEMPT_PACKAGES = new Set(['react-class-components', 'next-build-codegen']);
 
   // The framework React bridge (@fromcode119/react) may import react for its providers UNTIL converted.
   // Its violations are always reported as warnings and never counted toward the fatal total, even in error mode.

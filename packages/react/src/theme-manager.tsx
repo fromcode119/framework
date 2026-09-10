@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { PluginsProvider } from '@react/context/view/plugins-provider.client';
 import type { IPluginContextValue } from '@react/interfaces/plugin-context-value.interface';
 

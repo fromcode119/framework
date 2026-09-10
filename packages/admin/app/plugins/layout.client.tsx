@@ -3,7 +3,7 @@ import React from 'react';
 
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';

@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { Reactor, prop, state, bound } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FieldLabelLayout } from '@core/enums/field-label-layout.enum';
 import { UiScope } from '@core/enums/ui-scope.enum';
 import { LocalizationUtils } from '@core/localization';

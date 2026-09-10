@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Comparison used by a field visibility condition. */
 export class ConditionOperator extends Enum {

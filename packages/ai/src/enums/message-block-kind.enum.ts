@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Whether a chunk of assistant message text is prose or a fenced code block. */
 export class MessageBlockKind extends Enum {

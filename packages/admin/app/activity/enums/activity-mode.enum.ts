@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Which activity log the page shows: framework system logs or the security audit trail. */
 export class ActivityMode extends Enum {

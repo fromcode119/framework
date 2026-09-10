@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
-import { Reactor, prop, watch } from '@fromcode119/reactor';
+import { Reactor, prop, watch } from '@fromcode119/react-class-components';
 import { AdminRuntimeContext } from '@/components/view/admin-runtime-context.client';
 import { AdminFieldComponentBootstrapService } from '@/app/services/admin-field-component-bootstrap-service';
 import type { IAdminRuntimeValue } from '@/components/interfaces/admin-runtime-value.interface';

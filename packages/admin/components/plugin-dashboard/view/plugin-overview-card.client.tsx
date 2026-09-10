@@ -1,6 +1,6 @@
 import type { IPluginOverviewCardTrend } from '@/components/plugin-dashboard/interfaces/plugin-overview-card-trend.interface';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
 
 export class PluginOverviewCard extends PureReactor {

@@ -1,7 +1,7 @@
 import { VerificationStatus } from '@/app/verify-email/enums/verification-status.enum';
 import type { ChangeEvent } from 'react';
 import Link from 'next/link';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 
 export class VerifyEmailVerificationCard extends PureReactor {
   @prop declare token: string;

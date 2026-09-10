@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
 import { AccountTranslations } from '@react/account/account-translations';

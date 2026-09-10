@@ -1,7 +1,7 @@
 import type { IAccountAuthGateState } from '@react/account/interfaces/account-auth-gate-state.interface';
 import { AuthGateState } from '@react/account/enums/auth-gate-state.enum';
 import type { ReactNode } from 'react';
-import { Platform, prop, state } from '@fromcode119/reactor';
+import { Platform, prop, state } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
 import { AccountAuthClient } from '@react/account/auth-client';

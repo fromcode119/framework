@@ -1,6 +1,6 @@
 import type { IRelationToken } from '@/components/collection/list/interfaces/relation-token.interface';
 import type { ReactNode } from 'react';
-import { prop, state, watch } from '@fromcode119/reactor';
+import { prop, state, watch } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 
 import { AdminApi } from '@/lib/api';

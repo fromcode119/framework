@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode, SetStateAction } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AccountDefenseCard } from '@/app/settings/security/account-defense-card';
 import { PasswordPolicyCard } from '@/app/settings/security/password-policy-card';
 import { LoginProtectionCard } from '@/app/settings/security/login-protection-card';

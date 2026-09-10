@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
-import { Bridge, prop } from '@fromcode119/reactor';
+import { Bridge, prop } from '@fromcode119/react-class-components';
 import { useRouter, usePathname, useParams } from 'next/navigation';
 import { ContextHooks } from '@fromcode119/react';
 import { ThemeHooks } from '@/components/view/use-theme.client';

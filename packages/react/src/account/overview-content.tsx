@@ -1,4 +1,4 @@
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import type { ReactNode, CSSProperties, MouseEvent as ReactMouseEvent } from 'react';
 import { RouteConstants, AccountRouteUtils } from '@fromcode119/core/client';
 import { SlotsContext } from '@react/context/slots-context';

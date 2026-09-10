@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How verbose an assistant response should be. */
 export class ResponseVerbosity extends Enum {

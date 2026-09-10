@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import { MediaPickerSourceService } from '@/components/media/media-picker-source-service';
 import type React from 'react';
-import { Reactor, prop, state, bound } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { MediaRelationFieldUtils } from '@/components/collection/media-relation-field-utils';

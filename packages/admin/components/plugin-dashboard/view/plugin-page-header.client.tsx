@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminClass } from '@/lib/admin-class';
 

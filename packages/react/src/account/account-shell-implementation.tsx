@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { Override } from '@react/view/override.client';
 import { AccountShell } from '@react/account-shell';
 import { AccountShellDefault } from '@react/account/account-shell-default';

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How a datasource renders its records. */
 export class DatasourceLayout extends Enum {

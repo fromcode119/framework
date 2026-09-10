@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop, state, bound } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 import { DateTimePickerConstants } from '@/components/ui/date-time-picker/constants/date-time-picker.constants';

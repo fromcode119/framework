@@ -1,6 +1,6 @@
 import { ThemeMode, ThemeSettingType } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Select } from '@/components/ui/view/select.client';
 import { ColorPicker } from '@/components/ui/view/color-picker.client';

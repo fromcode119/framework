@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 import { BulkActions } from '@/components/collection/list/view/bulk-actions.client';
 import { FilterBar } from '@/components/collection/list/view/filter-bar.client';

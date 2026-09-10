@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Exported symbol name a seeder module may expose. */
 export class SeederCallableSymbol extends Enum {

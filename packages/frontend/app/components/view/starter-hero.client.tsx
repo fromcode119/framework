@@ -1,4 +1,4 @@
-import { PureReactor } from '@fromcode119/reactor';
+import { PureReactor } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 import { StarterHeroStyles } from '@/app/components/view/starter-hero-styles.client';
 import { StarterHeroPillars } from '@/app/components/view/starter-hero-pillars.client';

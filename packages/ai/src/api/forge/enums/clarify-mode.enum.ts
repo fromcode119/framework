@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How the assistant handles ambiguous requests. */
 export class ClarifyMode extends Enum {

@@ -14,7 +14,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { EditRolePermissionsCard } from '@/app/users/roles/[slug]/edit/components/view/edit-role-permissions-card.client';
 import { EditRoleSummarySidebar } from '@/app/users/roles/[slug]/edit/components/view/edit-role-summary-sidebar.client';
 import type { IEditRoleFormData } from '@/app/users/roles/[slug]/edit/interfaces/edit-role-form-data.interface';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 
 export class EditRolePage extends AdminComponent {
   @prop declare params: Promise<{ slug: string }>;

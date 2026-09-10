@@ -2,7 +2,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';

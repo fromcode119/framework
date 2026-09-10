@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 import { AuthFormBase } from '@react/auth/auth-form-base';
 import { AuthLoginForm } from '@react/auth/auth-login-form';

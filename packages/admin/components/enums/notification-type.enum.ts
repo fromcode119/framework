@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Severity of an admin toast notification (UI-only, never persisted). */
 export class NotificationType extends Enum {

@@ -1,7 +1,7 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';

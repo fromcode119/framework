@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor } from '@fromcode119/reactor';
+import { PureReactor } from '@fromcode119/react-class-components';
 
 // Next.js App Router route loading UI — client component, so a class renders fine.
 export class GlobalLoading extends PureReactor {

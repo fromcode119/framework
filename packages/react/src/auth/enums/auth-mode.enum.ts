@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 
 /**

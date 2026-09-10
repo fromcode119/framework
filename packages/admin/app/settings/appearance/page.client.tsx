@@ -12,7 +12,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
-import { state, bound } from '@fromcode119/reactor';
+import { state, bound } from '@fromcode119/react-class-components';
 import { AppearanceActiveCard } from '@/app/settings/appearance/appearance-active-card';
 import { AppearanceElevationCard } from '@/app/settings/appearance/appearance-elevation-card';
 import { SurfaceElevationService } from '@/lib/theme/surface-elevation-service';

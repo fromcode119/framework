@@ -91,9 +91,9 @@ export class ComponentSourceRewriter {
   /**
    * Add the decorator import, from the RIGHT package for where the file lives.
    *
-   * Framework packages import `@fromcode119/reactor` directly. A PLUGIN, THEME or APPEARANCE bundle must
+   * Framework packages import `@fromcode119/react-class-components` directly. A PLUGIN, THEME or APPEARANCE bundle must
    * take them from `@fromcode119/sdk/react` instead — reactor is republished through the SDK bridge, and
-   * a bare `@fromcode119/reactor` specifier is not externalised for those builds: Rollup fails with
+   * a bare `@fromcode119/react-class-components` specifier is not externalised for those builds: Rollup fails with
    * "failed to resolve import" and the whole theme build dies.
    */
   static ensureDecoratorImport(source: string, file = ''): string {
@@ -109,7 +109,7 @@ export class ComponentSourceRewriter {
         + source.slice(existing.index + existing[0].length);
     }
     const outsideFramework = /[\\/](plugins|themes|appearance)[\\/]/.test(file);
-    const from = outsideFramework ? '@fromcode119/sdk/react' : '@fromcode119/reactor';
+    const from = outsideFramework ? '@fromcode119/sdk/react' : '@fromcode119/react-class-components';
     return `import { ${needed.join(', ')} } from '${from}';\n${source}`;
   }
 }

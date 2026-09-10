@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { FrameworkIconRegistry } from '@react/icons/framework-icon-registry';
 import { IconUtils } from '@react/icons/icon-utils';
 import { LucideLazyLoader } from '@react/icons/lucide-lazy-loader';

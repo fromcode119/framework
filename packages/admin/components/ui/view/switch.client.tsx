@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 
 export class Switch extends PureReactor {
   declare props: Pick<Switch, 'checked' | 'onChange' | 'label' | 'description' | 'disabled' | 'className'>;

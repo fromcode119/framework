@@ -1,4 +1,4 @@
-import { PureReactor } from '@fromcode119/reactor';
+import { PureReactor } from '@fromcode119/react-class-components';
 
 export class StarterHeroStyles extends PureReactor {
   render() {

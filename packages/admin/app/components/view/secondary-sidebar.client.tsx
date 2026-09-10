@@ -1,6 +1,6 @@
 import type { KeyboardEvent, ReactNode } from 'react';
-import { prop, ref, bound } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { prop, ref, bound } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { NavUtils } from '@/lib/nav-utils';
 import { SecondarySidebarDesktop } from '@/app/components/view/secondary-sidebar-desktop.client';

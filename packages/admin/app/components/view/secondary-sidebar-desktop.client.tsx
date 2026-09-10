@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react';
-import { PureReactor, prop, bound, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ISecondaryPanelItem } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';

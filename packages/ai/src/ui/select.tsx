@@ -1,6 +1,6 @@
 import { HandlePosition } from '@ai/enums/handle-position.enum';
 import type { ChangeEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { Reactor, prop, state, bound, watch, ref, Platform, Ref } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, watch, ref, Platform, Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
 

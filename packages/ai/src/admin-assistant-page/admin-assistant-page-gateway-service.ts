@@ -1,5 +1,5 @@
 import { ApiVersionUtils } from '@fromcode119/core/client';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { AssistantConstants } from '@ai/constants/assistant.constants';
 import { AdminAssistantPageUtils } from '@ai/admin-assistant-page/admin-assistant-page-utils';
 import type { IAssistantSkill } from '@ai/interfaces/assistant-skill.interface';

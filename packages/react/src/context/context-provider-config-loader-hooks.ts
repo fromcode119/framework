@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { ApplicationHostUtils, ApiPathUtils, PublicAssetUrlUtils } from '@fromcode119/core/client';
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
 import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';

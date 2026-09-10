@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** One-click section presets on the create-backup card. */
 export class BackupPreset extends Enum {

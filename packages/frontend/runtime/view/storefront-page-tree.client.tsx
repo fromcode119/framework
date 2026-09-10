@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react/slot';
 import { NotFoundBody } from '@fromcode119/react/view/not-found-body';
 import { Override } from '@fromcode119/react/view/override.client';

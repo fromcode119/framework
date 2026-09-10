@@ -1,6 +1,6 @@
 import { ClientType } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { PluginsProvider } from '@fromcode119/react/context/view/plugins-provider.client';
 import type { PluginsProviderSeed } from '@fromcode119/react/context/plugins-provider-seed';
 import { PluginRuntimeProvider } from '@fromcode119/react/view/plugin-runtime-provider.client';

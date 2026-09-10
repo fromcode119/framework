@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor } from '@fromcode119/reactor';
+import { Reactor } from '@fromcode119/react-class-components';
 import { BackupsPageClient } from '@/components/settings/backups/view/backups-page-client.client';
 
 /** Backups settings route. */

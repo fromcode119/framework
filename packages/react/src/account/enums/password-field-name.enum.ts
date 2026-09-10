@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Which password input the security panel is toggling. */
 export class PasswordFieldName extends Enum {

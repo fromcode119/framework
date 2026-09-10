@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 
 /**
  * The record as editable JSON — the "advanced" half of the form/JSON view switch.

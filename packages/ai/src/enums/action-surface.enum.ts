@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /**
  * Where an assistant action takes effect — a UI-ONLY badge classification derived at render time from tool

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** A mutating collection operation subject to access policy. */
 export class WriteOperation extends Enum {

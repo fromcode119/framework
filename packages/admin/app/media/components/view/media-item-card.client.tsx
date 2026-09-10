@@ -3,7 +3,7 @@ import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
 import type React from 'react';
-import { PureReactor, prop, state, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { Checkbox } from '@/components/ui/view/checkbox.client';

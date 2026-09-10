@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { bound } from '@fromcode119/reactor';
+import { bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { FrameworkIcons } from '@fromcode119/react';
 

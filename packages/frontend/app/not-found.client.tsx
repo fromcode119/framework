@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { Bridge } from '@fromcode119/reactor';
+import { Bridge } from '@fromcode119/react-class-components';
 import { Override } from '@fromcode119/react/view/override.client';
 import type { INotFoundValues } from '@/app/interfaces/not-found-values.interface';
 import { NotFoundFallback } from '@/app/components/view/not-found-fallback.client';

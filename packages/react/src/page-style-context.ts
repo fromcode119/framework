@@ -1,4 +1,4 @@
-import { Context as ReactorContext } from '@fromcode119/reactor';
+import { Context as ReactorContext } from '@fromcode119/react-class-components';
 import type { IPageStyleContextValue } from '@react/interfaces/page-style-context-value.interface';
 
 export class PageStyleContext {

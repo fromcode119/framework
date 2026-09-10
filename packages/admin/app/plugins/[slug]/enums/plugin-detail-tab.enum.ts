@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Active tab on the plugin detail page. Encoded as its `.value` in the `?tab=` URL param. */
 export class PluginDetailTab extends Enum {

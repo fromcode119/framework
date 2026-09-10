@@ -1,4 +1,4 @@
-import { Bridge } from '@fromcode119/reactor';
+import { Bridge } from '@fromcode119/react-class-components';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { RouterNavigationListener } from '@/app/components/view/router-navigation-listener.client';

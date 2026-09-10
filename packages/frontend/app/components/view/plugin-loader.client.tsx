@@ -1,4 +1,4 @@
-import { Reactor, bound, prop, state } from '@fromcode119/reactor';
+import { Reactor, bound, prop, state } from '@fromcode119/react-class-components';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import type { IPluginContextValue } from '@fromcode119/react';
 import { EnvUtils } from '@fromcode119/core/client';

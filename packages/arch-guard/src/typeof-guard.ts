@@ -29,7 +29,7 @@ export class TypeofGuard {
    * `reactor` / `next-build-codegen` / `typescript-multiple-inheritance` / `arch-guard` are the standalone layer that confines raw JS/TS mechanics —
    * a runtime type check is sometimes genuinely their job, and they cannot import the SDK to avoid it.
    */
-  private static readonly EXEMPT_PACKAGES = new Set(['reactor', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
+  private static readonly EXEMPT_PACKAGES = new Set(['react-class-components', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
 
   static readonly BASELINE: Readonly<Record<string, number>> = {
     plugins: 801,

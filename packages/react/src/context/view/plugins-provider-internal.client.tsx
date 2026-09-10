@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ReactNode } from 'react';
 import ReactDOM from 'react-dom';
-import { Bridge, prop } from '@fromcode119/reactor';
+import { Bridge, prop } from '@fromcode119/react-class-components';
 import { ClientType } from '@fromcode119/core/client';
 import { BrowserStateClient } from '@fromcode119/core/client';
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';

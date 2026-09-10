@@ -1,4 +1,4 @@
-import { Context as ReactorContext } from '@fromcode119/reactor';
+import { Context as ReactorContext } from '@fromcode119/react-class-components';
 import type { ITranslationContextValue } from '@react/context/interfaces/translation-context-value.interface';
 
 export class TranslationContext {

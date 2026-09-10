@@ -2,7 +2,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
 import type { ChangeEvent, ReactNode } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { Select } from '@/components/ui/view/select.client';

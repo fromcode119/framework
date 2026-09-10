@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Result recorded for an access-control decision in the audit log. */
 export class AuditOutcome extends Enum {

@@ -1,6 +1,6 @@
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 

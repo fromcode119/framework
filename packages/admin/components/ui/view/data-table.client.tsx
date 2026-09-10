@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import type { MouseEvent, ReactNode } from 'react';
-import { PureReactor, prop, state, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { DataTablePagination } from '@/components/ui/view/data-table-pagination.client';
 import { DataTableHead } from '@/components/ui/view/data-table-head.client';

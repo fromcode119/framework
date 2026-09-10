@@ -3,7 +3,7 @@ import { ViewMode } from '@/app/media/enums/view-mode.enum';
 import { Fragment } from 'react';
 import type { MouseEvent, ReactNode } from 'react';
 import type { DragEvent } from 'react';
-import { PureReactor, prop, bound, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';

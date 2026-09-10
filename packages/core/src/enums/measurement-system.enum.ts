@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Platform measurement system (admin Settings → Localization). */
 export class MeasurementSystem extends Enum {

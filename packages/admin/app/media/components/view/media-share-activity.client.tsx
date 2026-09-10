@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';

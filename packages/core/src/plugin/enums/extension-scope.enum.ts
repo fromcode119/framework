@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Which extension area an operation targets (plugin, theme, or the framework core). */
 export class ExtensionScope extends Enum {

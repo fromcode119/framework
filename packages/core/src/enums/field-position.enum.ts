@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Where a field renders in the admin edit layout. */
 export class FieldPosition extends Enum {

@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { ClientRuntimeConstants } from '@fromcode119/core/client';
 import { AppEnv } from '@/lib/env';
 import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';

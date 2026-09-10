@@ -2,7 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
 import type { ReactNode } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
-import { PureReactor, prop, bound, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { MediaToolbar } from '@/app/media/components/view/media-toolbar.client';
 import { MediaControls } from '@/app/media/components/view/media-controls.client';

@@ -1,8 +1,8 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';
 import { SelectUtils } from '@/components/ui/select-utils';

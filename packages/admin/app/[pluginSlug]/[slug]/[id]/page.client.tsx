@@ -3,7 +3,7 @@ import { Slot } from '@fromcode119/react';
 import { CollectionEditPage } from '@/components/collection/view/collection-edit-page.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 
 export class CollectionEditRoute extends AdminComponent {
   @prop declare params: Promise<{ pluginSlug: string; slug: string; id: string }>;

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { ClientType } from '@fromcode119/core/client';
 import { PluginContextRegistry } from '@react/plugin-context';
 import { PluginsProviderInternal } from '@react/context/view/plugins-provider-internal.client';

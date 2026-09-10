@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ConversationMode } from '@ai/enums/conversation-mode.enum';
 import { PhaseStep } from '@ai/components/phase-step';

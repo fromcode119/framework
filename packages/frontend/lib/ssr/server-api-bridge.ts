@@ -1,4 +1,4 @@
-import { bound } from '@fromcode119/reactor';
+import { bound } from '@fromcode119/react-class-components';
 
 /**
  * The `api` a plugin client is constructed with during a server render.

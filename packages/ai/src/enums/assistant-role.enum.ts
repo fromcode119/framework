@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** LLM message role. Serialized verbatim as its `.value` into provider payloads. */
 export class AssistantRole extends Enum {

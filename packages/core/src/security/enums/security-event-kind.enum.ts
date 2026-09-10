@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Kind of security event the monitor raises. */
 export class SecurityEventKind extends Enum {

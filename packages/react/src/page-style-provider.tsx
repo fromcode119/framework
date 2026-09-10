@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { PageStyleContext } from '@react/page-style-context';
 import type { IPageStyleContextValue } from '@react/interfaces/page-style-context-value.interface';
 

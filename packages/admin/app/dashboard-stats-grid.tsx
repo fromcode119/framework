@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { StatCard } from '@/components/ui/view/stat-card.client';
 import { FrameworkIcons } from '@fromcode119/react';

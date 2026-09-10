@@ -1,7 +1,7 @@
 import { ThemeSettingsTab } from '@/app/themes/[slug]/enums/theme-settings-tab.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
-import { Platform, prop, state } from '@fromcode119/reactor';
+import { Platform, prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { ThemeSettingsController } from '@/app/themes/[slug]/components/view/theme-settings-controller.client';

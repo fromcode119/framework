@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { SlotsContext } from '@react/context/slots-context';
 import { AccountOverviewContent } from '@react/account/overview-content';
 import type { AccountSection } from '@react/account/account-section';

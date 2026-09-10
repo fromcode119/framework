@@ -1,6 +1,6 @@
 import type { IStatItem } from '@/components/plugin-dashboard/interfaces/stat-item.interface';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { StatCard } from '@/components/plugin-dashboard/view/stat-card.client';
 
 export class PluginStatsList extends PureReactor {

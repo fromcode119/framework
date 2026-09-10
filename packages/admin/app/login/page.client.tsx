@@ -8,7 +8,7 @@ import { AuthUtils } from '@/lib/auth-utils';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { LoginForm } from '@/app/login/login-form';
 import { LoginPageHeader } from '@/app/login/login-page-header';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import type { ILoginFieldErrors } from '@/app/login/interfaces/login-field-errors.interface';
 import type { ILoginController } from '@/lib/appearance/interfaces/login-controller.interface';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';

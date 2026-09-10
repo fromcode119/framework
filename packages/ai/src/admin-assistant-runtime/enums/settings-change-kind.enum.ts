@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** What kind of change a turn requests. */
 export class SettingsChangeKind extends Enum {

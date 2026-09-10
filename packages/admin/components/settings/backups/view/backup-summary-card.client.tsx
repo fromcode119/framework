@@ -5,7 +5,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 import type { IBackupCatalogGroupView } from '@/components/settings/backups/interfaces/backup-catalog-group-view.interface';
 import type { ISystemBackupCapabilities } from '@/components/settings/backups/interfaces/system-backup-capabilities.interface';
 import { SystemBackupPageUtils } from '@/components/settings/backups/system-backup-page-utils';

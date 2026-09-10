@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { TagField } from '@/components/ui/tag-field/view/index.client';
 import { CollectionKeyUtils } from '@/components/collection/collection-key-utils';

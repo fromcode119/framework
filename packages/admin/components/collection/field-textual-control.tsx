@@ -1,6 +1,6 @@
 import { TextualFieldKind } from '@/components/collection/enums/textual-field-kind.enum';
 import type React from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { Input } from '@/components/ui/view/input.client';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';

@@ -3,7 +3,7 @@ import { ExportFormat } from '@/components/collection/list/enums/export-format.e
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons, Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 

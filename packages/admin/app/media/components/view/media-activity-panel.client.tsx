@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
-import { state, bound } from '@fromcode119/reactor';
+import { state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminClass } from '@/lib/admin-class';

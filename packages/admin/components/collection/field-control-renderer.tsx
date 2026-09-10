@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 import { BooleanToggleField } from '@/components/ui/view/boolean-toggle-field.client';
 import { DateTimePicker } from '@/components/ui/date-time-picker/view/index.client';

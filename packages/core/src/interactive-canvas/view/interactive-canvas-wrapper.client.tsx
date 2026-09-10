@@ -1,5 +1,5 @@
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { Reactor, prop, bound } from '@fromcode119/reactor';
+import { Reactor, prop, bound } from '@fromcode119/react-class-components';
 import { InteractiveCanvasChannel } from '@core/interactive-canvas/interactive-canvas-channel';
 import type { IInteractiveCanvasContextValue } from '@core/interactive-canvas/interfaces/interactive-canvas-context-value.interface';
 

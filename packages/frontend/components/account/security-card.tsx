@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 
 export class AccountSecurityCard extends Reactor {
   @prop declare onChangePassword?: () => void;

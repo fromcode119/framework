@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { RuntimeConstants } from '@fromcode119/core/client';
 
 export class ClientLayoutRuntimeService {
@@ -83,7 +83,7 @@ export class ClientLayoutRuntimeService {
       '@fromcode119/sdk/admin': adminRuntimeModule,
       // reactor as ONE shared runtime instance — externalized appearance bundles resolve their `@state`/
       // `@watch` decorators + `Reactor` base from here, so they register on the SAME `ReactiveMetadata`.
-      ...(reactorModule ? { '@fromcode119/reactor': reactorModule } : {}),
+      ...(reactorModule ? { '@fromcode119/react-class-components': reactorModule } : {}),
     };
   }
 
@@ -100,6 +100,6 @@ export class ClientLayoutRuntimeService {
     runtimeRegistry['@fromcode119/admin/services'] = runtimeModule;
     // Same reason as the map above: this is the key theme/plugin bundles actually look up.
     runtimeRegistry['@fromcode119/sdk/admin'] = runtimeModule;
-    if (reactorModule) runtimeRegistry['@fromcode119/reactor'] = reactorModule;
+    if (reactorModule) runtimeRegistry['@fromcode119/react-class-components'] = reactorModule;
   }
 }

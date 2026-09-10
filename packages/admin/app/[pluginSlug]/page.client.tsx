@@ -6,7 +6,7 @@ import { FulfilledThenable } from '@/lib/fulfilled-thenable';
 import { PluginNotFound } from '@/components/plugins/view/plugin-not-found.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 
 /**
  * Root route for a plugin.

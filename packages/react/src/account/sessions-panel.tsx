@@ -1,6 +1,6 @@
 import type { IAccountSessionsPanelState } from '@react/account/interfaces/account-sessions-panel-state.interface';
 import type { ReactNode } from 'react';
-import { Platform, state } from '@fromcode119/reactor';
+import { Platform, state } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
 import { AccountAuthClient } from '@react/account/auth-client';

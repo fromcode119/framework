@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, ReactPrimitives } from '@fromcode119/reactor';
+import { Reactor, ReactPrimitives } from '@fromcode119/react-class-components';
 import { ShellImplementation } from '@react/shell-implementation';
 
 /**

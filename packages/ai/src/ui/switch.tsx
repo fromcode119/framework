@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 
 /**
  * Accessible on/off switch. Presentational → `PureReactor` (skips re-renders on unchanged props); props via

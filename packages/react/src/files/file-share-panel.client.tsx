@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { state, bound } from '@fromcode119/reactor';
+import { state, bound } from '@fromcode119/react-class-components';
 import { ApiVersionUtils, ApplicationUrlUtils, FileRoutePaths } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
 import { FrameworkTranslations } from '@react/i18n/framework-translations';

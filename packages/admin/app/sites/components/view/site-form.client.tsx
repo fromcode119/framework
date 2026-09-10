@@ -2,7 +2,7 @@ import type { ChangeEvent, ReactNode } from 'react';
 import Link from 'next/link';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { ThemeMode } from '@fromcode119/core/client';
-import { PureReactor, bound, prop, state } from '@fromcode119/reactor';
+import { PureReactor, bound, prop, state } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';

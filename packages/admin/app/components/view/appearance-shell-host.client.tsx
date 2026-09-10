@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminShellRegistry } from '@/lib/appearance/admin-shell-registry';
 import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';

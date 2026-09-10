@@ -12,7 +12,7 @@ import { AssistantViewport } from '@ai/enums/assistant-viewport.enum';
 import { ChatMode } from '@ai/enums/chat-mode.enum';
 import { ModelLocation } from '@ai/api/forge/enums/model-location.enum';
 import type { ChangeEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode, SetStateAction } from 'react';
-import { Reactor, state, bound, watch, ref, Platform, Ref } from '@fromcode119/reactor';
+import { Reactor, state, bound, watch, ref, Platform, Ref } from '@fromcode119/react-class-components';
 import { PluginContextRegistry } from '@fromcode119/react';
 import { AssistantConstants } from '@ai/constants/assistant.constants';
 import { AssistantProviderUtils } from '@ai/assistant-provider-utils';

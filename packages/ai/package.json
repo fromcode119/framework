@@ -34,7 +34,7 @@
   "dependencies": {
     "@fromcode119/mcp": "*",
     "@fromcode119/react": "*",
-    "@fromcode119/reactor": "*",
+    "@fromcode119/react-class-components": "*",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "@fromcode119/sdk": "*"

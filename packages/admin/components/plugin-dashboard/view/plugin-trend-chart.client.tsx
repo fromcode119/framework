@@ -1,5 +1,5 @@
 import type React from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginTrendSeries } from '@/components/plugin-dashboard/interfaces/plugin-trend-series.interface';
 
 /**

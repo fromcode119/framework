@@ -1,5 +1,5 @@
 import type React from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { UiFieldUtils } from '@/lib/ui';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 import type { FieldProvenance } from '@/lib/collection/field-provenance';

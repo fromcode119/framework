@@ -67,7 +67,7 @@ export interface IRuntimeBridgeInstallArgs {
   AuthMode: any;
   AuthShell: any;
   RecordsHub: any;
-  // reactor's OOP surface, handed to plugin/theme bundles so they never import @fromcode119/reactor
+  // reactor's OOP surface, handed to plugin/theme bundles so they never import @fromcode119/react-class-components
   /** reactor's raw React namespace. Listed in SDK_REACT_EXPORT_KEYS, so it MUST be supplied here too. */
   ReactPrimitives: any;
   Reactor: any;

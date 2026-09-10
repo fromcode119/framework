@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react';
-import { Reactor, prop, state, bound, ref } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, ref } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { Button } from '@/components/ui/view/button.client';

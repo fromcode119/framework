@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { CoreServices } from '@fromcode119/core/client';
 import { Icon as DynamicIcon } from '@/components/view/icon.client';
 import { FrameworkIcons } from '@fromcode119/react';

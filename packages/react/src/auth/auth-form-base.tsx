@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { SdkClient, BrowserStateClient, RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
 

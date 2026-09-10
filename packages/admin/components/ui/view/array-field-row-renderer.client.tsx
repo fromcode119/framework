@@ -2,7 +2,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import React from 'react';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Select } from '@/components/ui/view/select.client';

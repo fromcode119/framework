@@ -1,4 +1,4 @@
-import { Context } from '@fromcode119/reactor';
+import { Context } from '@fromcode119/react-class-components';
 import type { IInteractiveCanvasContextValue } from '@core/interactive-canvas/interfaces/interactive-canvas-context-value.interface';
 
 /**

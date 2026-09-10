@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How risky skill invocations are gated. */
 export class AssistantSkillRiskPolicy extends Enum {

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Control type of a theme config field. */
 export class ThemeConfigFieldType extends Enum {

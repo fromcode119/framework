@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { OverridesContext } from '@react/context/overrides-context';
 import { PluginUsageTracker } from '@react/plugin-usage-tracker';
 

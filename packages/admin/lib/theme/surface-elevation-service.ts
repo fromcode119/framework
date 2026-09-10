@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 // core/client, NOT @fromcode119/sdk: the SDK root re-exports @fromcode119/database, which pulls `pg`
 // into the client bundle and fails the admin build with "Client Component Browser" module errors.
 import { CoercionUtils, SystemConstants } from '@fromcode119/core/client';

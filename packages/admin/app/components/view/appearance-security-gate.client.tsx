@@ -3,7 +3,7 @@ import { ClientLayoutAuthStateHooks } from '@/app/services/client-layout-auth-st
 import { PluginLoader } from '@/app/components/view/plugin-loader.client';
 import { WorkspaceAccessDenied } from '@/app/components/view/workspace-access-denied.client';
 import type { ReactNode } from 'react';
-import { Bridge } from '@fromcode119/reactor';
+import { Bridge } from '@fromcode119/react-class-components';
 import type { IAppearanceSecurityGateProps } from '@/lib/appearance/interfaces/appearance-security-gate-props.interface';
 import type { IAppearanceSecurityGateValues } from '@/lib/appearance/interfaces/appearance-security-gate-values.interface';
 

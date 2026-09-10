@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { Dispatch, MouseEvent, ReactNode, SetStateAction } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 
 import { CollectionQuickEditCard } from '@/components/collection/view/collection-quick-edit-card.client';

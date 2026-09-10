@@ -1,6 +1,6 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import Link from 'next/link';

@@ -1,5 +1,5 @@
 
-import { PureReactor } from '@fromcode119/reactor';
+import { PureReactor } from '@fromcode119/react-class-components';
 
 export class MaintenanceScreen extends PureReactor {
   render() {

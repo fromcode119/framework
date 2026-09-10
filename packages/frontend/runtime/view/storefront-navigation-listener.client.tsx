@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, bound } from '@fromcode119/reactor';
+import { Reactor, bound } from '@fromcode119/react-class-components';
 
 /**
  * Turns the theme-level `fromcode:navigate` DOM event into a navigation — the islands-runtime twin of

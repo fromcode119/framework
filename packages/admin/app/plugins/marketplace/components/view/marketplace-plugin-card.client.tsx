@@ -1,7 +1,7 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { MouseEvent, ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { Card } from '@/components/ui/view/card.client';
 import { Badge } from '@/components/ui/view/badge.client';

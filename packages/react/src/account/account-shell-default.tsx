@@ -1,5 +1,5 @@
 import type { ComponentType, ContextType, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { Platform, Reactor, bound, prop, state } from '@fromcode119/reactor';
+import { Platform, Reactor, bound, prop, state } from '@fromcode119/react-class-components';
 import { AccountRouteUtils } from '@fromcode119/core/client';
 import { SlotsContext } from '@react/context/slots-context';
 import { TranslationContext } from '@react/context/translation-context';

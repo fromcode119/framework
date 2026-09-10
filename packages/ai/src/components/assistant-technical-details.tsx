@@ -1,6 +1,6 @@
 import { AssistantRole } from '@ai/enums/assistant-role.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IAssistantTrace } from '@ai/interfaces/assistant-trace.interface';
 import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
 

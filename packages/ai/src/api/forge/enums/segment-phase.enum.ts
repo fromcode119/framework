@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Phase of a streamed thinking segment. */
 export class SegmentPhase extends Enum {

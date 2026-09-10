@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 
 /** Aggregates the recent activity log by source (plugin/system) into a compact share bar list. */

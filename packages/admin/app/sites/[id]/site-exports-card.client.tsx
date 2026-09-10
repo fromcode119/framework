@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { SiteRecord } from '@/lib/tenants/site-record';

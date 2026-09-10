@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { Bridge } from '@fromcode119/reactor';
+import { Bridge } from '@fromcode119/react-class-components';
 import { NavItemView } from '@/app/components/view/sidebar-nav-item-view.client';
 import type { INavItemProps } from '@/app/interfaces/nav-item-props.interface';
 import type { INavItemBridgeValues } from '@/app/interfaces/nav-item-bridge-values.interface';

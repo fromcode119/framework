@@ -1,6 +1,6 @@
 import { use } from 'react';
 import type { ReactNode } from 'react';
-import { Bridge, prop } from '@fromcode119/reactor';
+import { Bridge, prop } from '@fromcode119/react-class-components';
 import { Loader } from '@/components/ui/view/loader.client';
 import { PluginDetailView } from '@/app/plugins/[slug]/components/view/plugin-detail-view.client';
 import { PluginDetailPageController } from '@/app/plugins/[slug]/plugin-detail-page-controller';

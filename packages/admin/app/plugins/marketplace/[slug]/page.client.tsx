@@ -17,7 +17,7 @@ import { MarketplaceDetailHeader } from '@/app/plugins/marketplace/[slug]/compon
 import { MarketplaceScreenshots } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-screenshots.client';
 import { MarketplaceChangelog } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-changelog.client';
 import { MarketplaceDetailSidebar } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-detail-sidebar.client';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { Screenshot } from '@fromcode119/core/client';
 

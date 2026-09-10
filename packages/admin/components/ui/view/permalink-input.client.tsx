@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode } from 'react';
-import { prop, state, bound, watch } from '@fromcode119/reactor';
+import { prop, state, bound, watch } from '@fromcode119/react-class-components';
 import type { ICollection } from '@fromcode119/core/client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';

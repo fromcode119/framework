@@ -1,5 +1,5 @@
 import { DateLocaleMethod } from '@/lib/enums/date-locale-method.enum';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { RuntimeRegistryAccess } from '@fromcode119/core/client';
 import { IZonedDateParts } from '@/lib/interfaces/zoned-date-parts.interface';
 import { ITimezoneOption } from '@/lib/interfaces/timezone-option.interface';

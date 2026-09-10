@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
 
 export class ThemesMarketplacePage extends AdminComponent {

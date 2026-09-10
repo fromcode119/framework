@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** The primary action button the assistant offers. */
 export class PrimaryAction extends Enum {

@@ -1,5 +1,5 @@
 import type { CSSProperties, ComponentType, ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 /**
  * The framework's own 404 body — Next-free, so the SAME component renders in the App Router page

@@ -2,7 +2,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Badge } from '@/components/ui/view/badge.client';

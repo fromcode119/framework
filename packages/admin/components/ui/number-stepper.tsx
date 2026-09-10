@@ -1,7 +1,7 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ChangeEvent, ReactNode } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 

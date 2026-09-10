@@ -2,7 +2,7 @@ import { ReorderDirection } from '@/components/collection/list/enums/reorder-dir
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Select } from '@/components/ui/view/select.client';
 import { CollectionColumnsMenu } from '@/components/collection/list/view/columns-menu.client';

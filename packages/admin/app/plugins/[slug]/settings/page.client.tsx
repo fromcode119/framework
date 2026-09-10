@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 
 export class PluginSettingsRedirectPage extends AdminComponent {
   @prop declare params: Promise<{ slug: string }>;

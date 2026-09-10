@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Which way a dropdown/menu opens relative to its trigger. */
 export class DropdownDirection extends Enum {

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Whether a collection holds many records, one global, or a singleton. */
 export class CollectionKind extends Enum {

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Platform, Reactor, bound, prop } from '@fromcode119/reactor';
+import { Platform, Reactor, bound, prop } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { GlobalReadinessService } from '@/lib/global-readiness-service';

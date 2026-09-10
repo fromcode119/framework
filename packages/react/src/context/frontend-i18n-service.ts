@@ -12,7 +12,7 @@
  * theme, nothing (i.e. the plugin layer) from a plugin. {@link resolveEffective} then merges the layers
  * in a fixed order. See that method for why the layer cannot be inferred from load order.
  */
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 
 export class FrontendI18nService {
   static readonly WILDCARD = '*';

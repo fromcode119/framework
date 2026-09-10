@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
 import type { INewUserFormData } from '@/app/users/new/interfaces/new-user-form-data.interface';

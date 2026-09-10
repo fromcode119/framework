@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
-import { Platform, bound, prop, state } from '@fromcode119/reactor';
+import { Platform, bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';

@@ -1,8 +1,8 @@
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
-import { Reactor, prop, ref, state } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { Reactor, prop, ref, state } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 
 import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';

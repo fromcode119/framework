@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { ReactNode } from 'react';
-import { Reactor, prop, state } from '@fromcode119/reactor';
+import { Reactor, prop, state } from '@fromcode119/react-class-components';
 import { Override } from '@fromcode119/react/view/override.client';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';

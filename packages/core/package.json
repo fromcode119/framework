@@ -81,7 +81,7 @@
     "@fromcode119/mcp": "*",
     "@fromcode119/media": "*",
     "@fromcode119/plugins": "*",
-    "@fromcode119/reactor": "*",
+    "@fromcode119/react-class-components": "*",
     "@fromcode119/scheduler": "*",
     "@fromcode119/typescript-multiple-inheritance": "*",
     "@types/ws": "^8.18.1",

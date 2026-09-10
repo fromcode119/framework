@@ -1,8 +1,8 @@
-import type { Ref } from '@fromcode119/reactor';
+import type { Ref } from '@fromcode119/react-class-components';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { RootFramework } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';

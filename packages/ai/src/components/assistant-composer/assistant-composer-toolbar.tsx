@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ConversationMode } from '@ai/enums/conversation-mode.enum';
 import { Select } from '@ai/ui/select';

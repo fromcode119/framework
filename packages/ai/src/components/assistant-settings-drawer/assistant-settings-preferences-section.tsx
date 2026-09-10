@@ -1,5 +1,5 @@
 import type { ChangeEvent, ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
 
 export class AssistantSettingsPreferencesSection extends PureReactor {

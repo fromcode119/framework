@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 
 export class AssistantPreviewUtils {
   static normalizePath(value: any): string | undefined { return AssistantPreviewUtils.normalizePreviewPath(value); }

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How the active locale is encoded in URLs. Read from the `locale_url_strategy` setting string. */
 export class LocaleUrlStrategy extends Enum {

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Style variant of a dropdown menu item. */
 export class DropdownItemVariant extends Enum {

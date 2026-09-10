@@ -1,7 +1,7 @@
 import { ApiStatus } from '@/app/enums/api-status.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { FrameworkIcons } from '@fromcode119/react';

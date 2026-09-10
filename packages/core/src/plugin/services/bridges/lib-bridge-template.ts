@@ -1,6 +1,6 @@
 /**
  * Browser module source served for every plain library module the client does not already handle —
- * in practice `@fromcode119/reactor` plus whatever a plugin declares in its manifest.
+ * in practice `@fromcode119/react-class-components` plus whatever a plugin declares in its manifest.
  *
  * `{{EXPORTS}}` and `{{SCOPE}}` are substituted by {@link RuntimeService.generateBridgeSource}, which
  * builds one `export const` per registered key.

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Health of a plugin as reported by its probe. Serialized as its `.value`. */
 export class PluginHealthStatus extends Enum {

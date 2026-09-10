@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { ReactNode } from 'react';
-import { Reactor, prop, state } from '@fromcode119/reactor';
+import { Reactor, prop, state } from '@fromcode119/react-class-components';
 
 export class CustomFieldErrorBoundary extends Reactor {
   @prop declare componentName?: string;

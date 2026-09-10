@@ -1,5 +1,5 @@
 import type { ChangeEvent, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { PureReactor, prop, bound, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
 import { AssistantConstants } from '@ai/constants/assistant.constants';
 import type { IUploadedAttachment } from '@ai/interfaces/uploaded-attachment.interface';
 import { ConversationMode } from '@ai/enums/conversation-mode.enum';

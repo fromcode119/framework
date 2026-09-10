@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** What the user's message is asking the admin assistant to do. */
 export class RuntimeIntentKind extends Enum {

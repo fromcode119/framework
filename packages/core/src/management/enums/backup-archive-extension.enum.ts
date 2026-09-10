@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Supported backup archive file extensions. The `.value` is matched against real filenames. */
 export class BackupArchiveExtension extends Enum {

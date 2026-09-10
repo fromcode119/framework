@@ -1,7 +1,7 @@
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 

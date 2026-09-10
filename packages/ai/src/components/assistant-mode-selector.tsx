@@ -1,5 +1,5 @@
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import type { ConversationMode } from '@ai/enums/conversation-mode.enum';
 import { AssistantMode } from '@ai/components/enums/assistant-mode.enum';
 

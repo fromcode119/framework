@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 
 /**
  * Identity-stable no-op layout used while `themeLayouts` has no match (e.g. before the active

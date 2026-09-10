@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
-import { Reactor } from '@fromcode119/reactor';
+import { Reactor } from '@fromcode119/react-class-components';
 import { SlotsContext } from '@react/context/slots-context';
 import { PluginUsageTracker } from '@react/plugin-usage-tracker';
 import type { ISlotComponent } from '@react/interfaces/slot-component.interface';

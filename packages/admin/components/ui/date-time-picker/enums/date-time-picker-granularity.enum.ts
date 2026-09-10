@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /**
  * What a {@link DateTimePicker} lets the operator pick — and therefore what it emits:

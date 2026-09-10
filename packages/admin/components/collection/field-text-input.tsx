@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { FrameworkIcons } from '@fromcode119/react';

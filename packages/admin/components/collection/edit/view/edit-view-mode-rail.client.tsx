@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop, bound } from '@fromcode119/reactor';
+import { Reactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
 /**

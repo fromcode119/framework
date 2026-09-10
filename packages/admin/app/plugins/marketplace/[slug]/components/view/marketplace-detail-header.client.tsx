@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Icon } from '@/components/view/icon.client';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
 

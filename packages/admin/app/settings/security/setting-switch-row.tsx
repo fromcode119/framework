@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ComponentType, ReactNode, SetStateAction } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Switch } from '@/components/ui/view/switch.client';
 import { SettingRow } from '@/app/settings/security/setting-row';
 

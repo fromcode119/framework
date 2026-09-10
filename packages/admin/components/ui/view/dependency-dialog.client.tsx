@@ -2,7 +2,7 @@ import { DependencyIssueType } from '@/components/ui/enums/dependency-issue-type
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { prop, bound } from '@fromcode119/reactor';
+import { prop, bound } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@/components/ui/view/root-framework.client';

@@ -203,11 +203,11 @@ export default defineConfig({
         plugins: [typorPlugin],
         // reactor is standalone — no framework aliases, and its own sources import each other relatively.
         test: {
-          name: 'reactor',
+          name: 'react-class-components',
           root: frameworkRoot,
           environment: 'node',
           globals: true,
-          include: [glob('packages/reactor/tests/**/*.test.ts')],
+          include: [glob('packages/react-class-components/tests/**/*.test.ts')],
         },
       },
       {

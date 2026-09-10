@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ChangeEvent, ReactNode } from 'react';
-import { Reactor, prop, bound, ref } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { Reactor, prop, bound, ref } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { Search, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminTypography } from '@/lib/typography';

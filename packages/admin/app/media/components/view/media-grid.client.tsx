@@ -3,7 +3,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop, bound, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { MediaFolderCard } from '@/app/media/components/view/media-folder-card.client';

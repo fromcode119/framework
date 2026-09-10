@@ -1,6 +1,6 @@
 import type { IMediaItem } from '@/components/media/interfaces/media-item.interface';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import { AdminTypography } from '@/lib/typography';
 import { MediaPickerTile } from '@/components/media/view/media-picker-tile.client';

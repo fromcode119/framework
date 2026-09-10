@@ -3,7 +3,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
-import { prop, state, bound } from '@fromcode119/reactor';
+import { prop, state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminApi } from '@/lib/api';

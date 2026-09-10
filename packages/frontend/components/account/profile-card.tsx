@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 
 export class AccountProfileCard extends Reactor {
   @prop declare profile?: any;

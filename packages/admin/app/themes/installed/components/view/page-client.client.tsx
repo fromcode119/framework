@@ -1,6 +1,6 @@
 import type { ChangeEvent, DragEvent, ReactNode } from 'react';
-import { bound, ref, state } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { bound, ref, state } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import type { INotificationContextType } from '@/components/interfaces/notification-context-type.interface';

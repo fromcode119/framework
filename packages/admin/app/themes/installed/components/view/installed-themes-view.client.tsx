@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, DragEvent, ReactNode } from 'react';
-import { PureReactor, prop, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UploadPreviewDialog } from '@/components/ui/view/upload-preview-dialog.client';
 import { InstalledThemeCard } from '@/app/themes/installed/components/view/installed-theme-card.client';

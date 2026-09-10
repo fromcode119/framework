@@ -2,7 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
 
-import { prop, state, Ref } from '@fromcode119/reactor';
+import { prop, state, Ref } from '@fromcode119/react-class-components';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';

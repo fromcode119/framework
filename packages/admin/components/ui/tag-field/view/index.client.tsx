@@ -1,8 +1,8 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { Reactor, bound, prop, state, ref, watch } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { Reactor, bound, prop, state, ref, watch } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { TagFieldUtils } from '@/components/ui/tag-field/utils';
 import { TagFieldDataService } from '@/components/ui/tag-field/data-service';
 import { TagFieldChips } from '@/components/ui/tag-field/view/chips.client';

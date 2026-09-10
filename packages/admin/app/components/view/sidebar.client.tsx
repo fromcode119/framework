@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Platform, prop, state, watch } from '@fromcode119/reactor';
+import { Platform, prop, state, watch } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminConstants } from '@/lib/constants/admin.constants';

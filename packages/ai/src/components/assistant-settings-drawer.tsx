@@ -1,6 +1,6 @@
 import { DrawerPresentation } from '@ai/enums/drawer-presentation.enum';
 import type { FormEvent, ReactNode } from 'react';
-import { Reactor, prop, state, bound, watch } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, watch } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
 import type { SelectOption } from '@ai/ui/select-option';

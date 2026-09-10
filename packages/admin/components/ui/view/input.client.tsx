@@ -1,7 +1,7 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { InputHTMLAttributes, ReactNode } from 'react';
-import { PureReactor, prop, ref } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, ref } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { UiFieldUtils } from '@/lib/ui';
 
 export class Input extends PureReactor {

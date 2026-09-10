@@ -1,6 +1,6 @@
 import { LayoutResolutionStatus } from '@fromcode119/core/client';
 import type { ComponentType, ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { CoreServices } from '@fromcode119/core/client';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import { DefaultPageDesignRendererUtils } from '@/app/default-page-design-renderer-utils';

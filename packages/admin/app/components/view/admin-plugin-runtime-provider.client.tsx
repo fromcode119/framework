@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { PluginRuntimeProvider } from '@fromcode119/react';
 import { RuntimeLocationUtils } from '@fromcode119/core/client';
-import { Platform, bound, prop } from '@fromcode119/reactor';
+import { Platform, bound, prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 
 /**

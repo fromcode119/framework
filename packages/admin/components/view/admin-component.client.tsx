@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { Reactor } from '@fromcode119/reactor';
+import { Reactor } from '@fromcode119/react-class-components';
 // Value import, NOT `import type`: ThemeMode.LIGHT is dereferenced at runtime below.
 import { ThemeMode } from '@fromcode119/core/client';
 import { AdminRuntimeContext } from '@/components/view/admin-runtime-context.client';

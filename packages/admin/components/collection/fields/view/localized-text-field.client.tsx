@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { LocalizedField } from '@/components/ui/view/localized-field.client';
 import { Input } from '@/components/ui/view/input.client';
 import { TextArea } from '@/components/ui/view/text-area.client';

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { IntegrationsSettingsPageClient } from '@/app/settings/integrations/components/view/integrations-settings-page-client.client';
 
 /** Integrations settings route. */

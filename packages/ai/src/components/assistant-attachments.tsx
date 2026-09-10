@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AssistantFormatUtils } from '@ai/assistant-format-utils';
 import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';

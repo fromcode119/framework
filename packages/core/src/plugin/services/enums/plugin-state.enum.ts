@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /**
  * A plugin's activation state — the operator's INTENT for whether it runs. Orthogonal to

@@ -1,6 +1,6 @@
 import { DrawerPresentation } from '@ai/enums/drawer-presentation.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 export class AssistantSettingsDrawerFrame extends PureReactor {
   @prop declare isOpen: boolean;

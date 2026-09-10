@@ -1,6 +1,6 @@
 import type { IMediaItem } from '@/components/media/interfaces/media-item.interface';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { File as FileIcon } from 'lucide-react';
 
 /**

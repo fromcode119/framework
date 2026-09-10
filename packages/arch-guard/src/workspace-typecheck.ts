@@ -48,7 +48,7 @@ export class WorkspaceTypecheck {
       paths: {
         '@fromcode119/sdk': [pkg('sdk/dist/index.d.ts')],
         '@fromcode119/sdk/*': [pkg('sdk/dist/*')],
-        '@fromcode119/reactor': [pkg('reactor/dist/index.d.ts')],
+        '@fromcode119/react-class-components': [pkg('react-class-components/dist/index.d.ts')],
         '@fromcode119/core': [pkg('core/dist/index.d.ts')],
         '@fromcode119/core/*': [pkg('core/dist/*')],
         '@fromcode119/database': [pkg('database/dist/index.d.ts')],

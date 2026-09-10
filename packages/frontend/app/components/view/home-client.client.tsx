@@ -1,4 +1,4 @@
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react/slot';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import type { IPluginContextValue } from '@fromcode119/react';

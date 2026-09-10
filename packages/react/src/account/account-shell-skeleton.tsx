@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor } from '@fromcode119/reactor';
+import { PureReactor } from '@fromcode119/react-class-components';
 import { AccountClass } from '@react/account/account-class';
 
 /**

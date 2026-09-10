@@ -1,5 +1,5 @@
 import { VerificationStatus } from '@/app/verify-email/enums/verification-status.enum';
-import { Reactor, state, bound } from '@fromcode119/reactor';
+import { Reactor, state, bound } from '@fromcode119/react-class-components';
 import Link from 'next/link';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';

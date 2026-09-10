@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** The data a collection/settings field holds — drives which admin control is rendered. */
 export class FieldType extends Enum {

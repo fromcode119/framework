@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
-import { Platform, Reactor, prop, state, bound } from '@fromcode119/reactor';
+import { Platform, Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { AppEnv } from '@/lib/env';
 import { AppearanceBundleLoaderService } from '@/app/services/appearance-bundle-loader-service';
 import { ActiveAdminAppearanceService } from '@/lib/appearance/active-admin-appearance-service';

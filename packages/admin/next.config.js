@@ -189,10 +189,10 @@ const nextConfig = {
 
     // reactor's React-FREE subpath, resolved from SOURCE. An EXACT (`$`) alias is required: a
     // trailing-slash alias key never matches — enhanced-resolve tests `request.startsWith(key + '/')`,
-    // so `'@fromcode119/reactor/'` would have to be followed by a second slash. Without this the
+    // so `'@fromcode119/react-class-components/'` would have to be followed by a second slash. Without this the
     // request falls through to node_modules and the package's `exports` map, i.e. built `dist` — which
     // is exactly what this dev setup exists to avoid.
-    config.resolve.alias['@fromcode119/reactor/lang$'] = path.resolve(__dirname, '../reactor/src/lang.ts');
+    config.resolve.alias['@fromcode119/react-class-components/lang$'] = path.resolve(__dirname, '../react-class-components/src/lang.ts');
     config.resolve.alias['@fromcode119/react/'] = path.resolve(__dirname, '../react/src/');
     config.resolve.alias['@fromcode119/core/'] = path.resolve(__dirname, '../core/src/');
     config.resolve.alias['@fromcode119/sdk/'] = path.resolve(__dirname, '../sdk/src/');

@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, DragEvent, ReactNode } from 'react';
-import { Reactor, prop, Ref } from '@fromcode119/reactor';
+import { Reactor, prop, Ref } from '@fromcode119/react-class-components';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { DependencyDialog } from '@/components/ui/view/dependency-dialog.client';
 import { FrameworkIcons } from '@fromcode119/react';

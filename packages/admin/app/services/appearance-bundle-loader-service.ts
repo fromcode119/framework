@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { AppPathConstants } from '@fromcode119/core/client';
 import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';
 import { GlobalReadinessService } from '@/lib/global-readiness-service';

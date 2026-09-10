@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Which viewports a widget style applies to. */
 export class WidgetViewport extends Enum {

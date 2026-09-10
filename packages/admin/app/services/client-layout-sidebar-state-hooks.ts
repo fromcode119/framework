@@ -1,6 +1,6 @@
 import React, { useLayoutEffect } from 'react';
 
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { ContextHooks } from '@fromcode119/react';
 import { TimezoneUtils } from '@/lib/timezone';
 import { AdminServices } from '@/lib/admin-services';

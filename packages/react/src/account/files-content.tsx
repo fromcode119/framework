@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { state, prop } from '@fromcode119/reactor';
+import { state, prop } from '@fromcode119/react-class-components';
 import { PluginComponent } from '@react/view/plugin-component.client';
 import { AccountClass } from '@react/account/account-class';
 import { AccountFileSourceRegistry } from '@react/account/account-file-source-registry';

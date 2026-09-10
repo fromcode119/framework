@@ -1,7 +1,7 @@
 import type { Root } from 'react-dom/client';
 import { EditorSessionParams } from '@fromcode119/core/client';
 import { StorefrontDocumentContract } from '@/lib/document/storefront-document-contract';
-import { ReactDomRoots, bound } from '@fromcode119/reactor';
+import { ReactDomRoots, bound } from '@fromcode119/react-class-components';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 import { StorefrontHydrationReason } from '@/runtime/storefront-hydration-reason';
 import type { IStorefrontHydratorArgs } from '@/runtime/interfaces/storefront-hydrator-args.interface';

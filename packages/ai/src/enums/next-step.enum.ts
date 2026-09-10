@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Suggested next step surfaced in the assistant UI. */
 export class NextStep extends Enum {

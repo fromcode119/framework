@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { prop } from '@fromcode119/reactor';
+import { prop } from '@fromcode119/react-class-components';
 import type { IRestoreDialogState } from '@/components/settings/backups/interfaces/restore-dialog-state.interface';
 import { AdminClass } from '@/lib/admin-class';
 

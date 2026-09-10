@@ -1,5 +1,5 @@
 import { BrowserStateClient, RuntimeConstants } from '@fromcode119/core/client';
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { AssistantConstants } from '@ai/constants/assistant.constants';
 import type { IAdminAssistantUiPreferences } from '@ai/services/interfaces/admin-assistant-ui-preferences.interface';
 

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How a content record matched during resolution. */
 export class ResolutionMatchKind extends Enum {

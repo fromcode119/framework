@@ -1,7 +1,7 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 import type { MouseEvent, ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';
 import { TimezoneUtils } from '@/lib/timezone';

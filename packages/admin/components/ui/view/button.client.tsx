@@ -3,7 +3,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import Link from 'next/link';
 import type { ButtonHTMLAttributes } from 'react';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 export class Button extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */

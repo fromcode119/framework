@@ -2,7 +2,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { TwoFactorMethod } from '@fromcode119/core/client';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';

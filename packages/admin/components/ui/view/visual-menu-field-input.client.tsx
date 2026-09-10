@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { TagField } from '@/components/ui/tag-field/view/index.client';

@@ -1,4 +1,4 @@
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import type { IAccountSecurityPanelState } from '@react/account/interfaces/account-security-panel-state.interface';
 import { PasswordFieldName } from '@react/account/enums/password-field-name.enum';
 import type { ReactNode } from 'react';

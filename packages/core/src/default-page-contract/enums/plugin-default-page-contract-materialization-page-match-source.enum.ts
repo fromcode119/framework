@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** PluginDefaultPageContractMaterializationPageMatchSource — one of the 2 states this contract stage can be in. */
 export class PluginDefaultPageContractMaterializationPageMatchSource extends Enum {

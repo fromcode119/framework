@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import { ChatMode } from '@ai/enums/chat-mode.enum';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
 export class AssistantTopBar extends PureReactor {

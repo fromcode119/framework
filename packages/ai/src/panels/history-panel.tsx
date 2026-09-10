@@ -1,7 +1,7 @@
 import { DrawerPresentation } from '@ai/enums/drawer-presentation.enum';
 import { ModelLocation } from '@ai/api/forge/enums/model-location.enum';
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IForgeHistorySession } from '@ai/interfaces/forge-history-session.interface';
 import { GlassMorphism } from '@ai/ui/glass-morphism';

@@ -1,6 +1,6 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode, TextareaHTMLAttributes } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { UiFieldUtils } from '@/lib/ui';
 
 export class TextArea extends PureReactor {

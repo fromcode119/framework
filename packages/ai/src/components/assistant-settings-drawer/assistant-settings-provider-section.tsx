@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Select } from '@ai/ui/select';
 import type { SelectOption } from '@ai/ui/select-option';
 import { GlassMorphism } from '@ai/ui/glass-morphism';

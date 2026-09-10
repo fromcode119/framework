@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How far a declared plugin capability reaches. */
 export class CapabilityScope extends Enum {

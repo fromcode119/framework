@@ -1,6 +1,6 @@
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { INotification } from '@/components/interfaces/notification.interface';
 import type { INotificationPayload } from '@/components/interfaces/notification-payload.interface';

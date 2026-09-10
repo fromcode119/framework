@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { bound } from '@fromcode119/reactor';
+import { bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /**
  * A selectable section of a system backup. The `.value` is the on-disk directory name and the wire

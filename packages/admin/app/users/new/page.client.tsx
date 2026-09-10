@@ -1,5 +1,5 @@
 import type { FormEvent, ReactElement } from 'react';
-import { state, bound } from '@fromcode119/reactor';
+import { state, bound } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';

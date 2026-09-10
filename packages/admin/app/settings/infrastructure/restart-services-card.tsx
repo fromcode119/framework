@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { state, bound } from '@fromcode119/reactor';
+import { state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';

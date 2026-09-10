@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { X } from 'lucide-react';
 import { AdminTypography } from '@/lib/typography';
 

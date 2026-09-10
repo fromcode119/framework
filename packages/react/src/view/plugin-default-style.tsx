@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Platform, PureReactor, prop } from '@fromcode119/reactor';
+import { Platform, PureReactor, prop } from '@fromcode119/react-class-components';
 
 /**
  * A plugin's DEFAULT stylesheet (Plugin-Owns-Default-Design), delivered the same way on both sides of

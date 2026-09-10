@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, Platform, bound } from '@fromcode119/reactor';
+import { Reactor, Platform, bound } from '@fromcode119/react-class-components';
 import { AdminServiceWorkerConstants } from '@/lib/pwa/constants/admin-service-worker.constants';
 import { AdminPathUtils } from '@/lib/admin-path';
 

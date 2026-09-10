@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Style variant of an admin Button (also used by confirm dialogs). */
 export class ButtonVariant extends Enum {

@@ -1,8 +1,8 @@
 import type { ISectionNavItem } from '@/components/collection/edit/interfaces/section-nav-item.interface';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound, ref } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, ref } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
 export class EditPageSectionNav extends Reactor {

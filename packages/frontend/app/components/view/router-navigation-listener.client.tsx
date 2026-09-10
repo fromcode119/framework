@@ -1,4 +1,4 @@
-import { Reactor, bound, prop } from '@fromcode119/reactor';
+import { Reactor, bound, prop } from '@fromcode119/react-class-components';
 import type { ReactNode } from 'react';
 import type { useRouter } from 'next/navigation';
 

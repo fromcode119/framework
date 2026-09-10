@@ -1,5 +1,5 @@
 import type { ChangeEvent, CSSProperties, ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
 import { AssistantActionCardUtils } from '@ai/components/assistant-action-card-utils';

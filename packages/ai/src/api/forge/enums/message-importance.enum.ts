@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** How important a context message is when trimming to fit the window. */
 export class MessageImportance extends Enum {

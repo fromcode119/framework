@@ -1,7 +1,7 @@
 import { ConversationMode } from '@ai/enums/conversation-mode.enum';
 import { ChatMode } from '@ai/enums/chat-mode.enum';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
-import { PureReactor, prop, Ref } from '@fromcode119/reactor';
+import { PureReactor, prop, Ref } from '@fromcode119/react-class-components';
 import { AssistantLoadingState } from '@ai/components/assistant-loading-state';
 import { AssistantConversationEmptyState } from '@ai/components/assistant-conversation-empty-state';
 import { AssistantConversationMessage } from '@ai/components/assistant-conversation-message';

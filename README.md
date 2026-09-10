@@ -511,7 +511,7 @@ On the UI side the same philosophy is carried by three **standalone packages** (
 
 | Package | Role |
 |---------|------|
-| `@fromcode119/reactor` | Class components without hook ceremony — `Reactor`/`PureReactor` base classes, `@prop`/`@state`/`@bound`/`@watch` decorators, method-bearing `Enum`, `Provider` contexts |
+| `@fromcode119/react-class-components` | Class components without hook ceremony — `Reactor`/`PureReactor` base classes, `@prop`/`@state`/`@bound`/`@watch` decorators, method-bearing `Enum`, `Provider` contexts |
 | `@fromcode119/next-build-codegen` | Build-time only — compiles separate `.view` JSX templates onto component classes and stamps `'use client'` directives; zero runtime cost |
 | `@fromcode119/typescript-multiple-inheritance` | TypeScript build tool adding real OOP (multiple inheritance for data classes) and package-alias rewriting; also the framework's actual typecheck gate |
 

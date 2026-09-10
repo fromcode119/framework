@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Badge } from '@/components/ui/view/badge.client';

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Specific layout diagnostic conditions the registry reports. */
 export class LayoutDiagnosticCode extends Enum {

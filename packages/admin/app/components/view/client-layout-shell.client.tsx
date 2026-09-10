@@ -10,7 +10,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AuthUtils } from '@/lib/auth-utils';
 import { ApplicationUrlUtils, AppPathConstants } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { Bridge, prop } from '@fromcode119/reactor';
+import { Bridge, prop } from '@fromcode119/react-class-components';
 import type { IClientLayoutChildrenProps } from '@/app/interfaces/client-layout-children-props.interface';
 import type { IClientLayoutShellValues } from '@/app/interfaces/client-layout-shell-values.interface';
 import { ClientLayoutAuthStateHooks } from '@/app/services/client-layout-auth-state-hooks';

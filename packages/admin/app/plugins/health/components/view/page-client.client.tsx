@@ -1,6 +1,6 @@
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
-import { state } from '@fromcode119/reactor';
+import { state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';

@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 /** The open/closed caret on the locale chip; rotates 180° when the menu is open. */
 export class ChevronIcon extends PureReactor {

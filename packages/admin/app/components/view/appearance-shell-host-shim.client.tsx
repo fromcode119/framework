@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ContextHooks } from '@fromcode119/react';
 import { usePathname } from 'next/navigation';
-import { Bridge, prop } from '@fromcode119/reactor';
+import { Bridge, prop } from '@fromcode119/react-class-components';
 import { AppearanceShellHost } from '@/app/components/view/appearance-shell-host.client';
 import { AppearanceNavProjectionService } from '@/app/services/appearance-nav-projection-service';
 import type { IAppearanceShellHostBridgeValues } from '@/app/interfaces/appearance-shell-host-bridge-values.interface';

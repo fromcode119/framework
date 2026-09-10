@@ -8,7 +8,7 @@ import { PluginNotFound } from '@/components/plugins/view/plugin-not-found.clien
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { prop, state } from '@fromcode119/reactor';
+import { prop, state } from '@fromcode119/react-class-components';
 
 export class CollectionListRoute extends AdminComponent {
   @prop declare params: Promise<{ pluginSlug: string; slug: string }>;

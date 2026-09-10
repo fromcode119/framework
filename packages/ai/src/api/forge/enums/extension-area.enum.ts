@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Which extension directory a forge tool targets. */
 export class ExtensionArea extends Enum {

@@ -2,7 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import { SystemConstants } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import { state, bound } from '@fromcode119/reactor';
+import { state, bound } from '@fromcode119/react-class-components';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 import { AdminClass } from '@/lib/admin-class';

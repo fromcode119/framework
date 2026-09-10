@@ -1,4 +1,4 @@
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 
 /**
  * Installs the active frontend theme's semantic CSS variables into the admin document.

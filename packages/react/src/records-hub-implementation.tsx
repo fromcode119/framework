@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ComponentType, ReactNode } from 'react';
-import { Reactor, prop, state, watch } from '@fromcode119/reactor';
+import { Reactor, prop, state, watch } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@react/icons/view/framework-icons.client';
 import { LucideLazyLoader } from '@react/icons/lucide-lazy-loader';
 import type { IRecordsHubItem } from '@react/interfaces/records-hub-item.interface';

@@ -6,7 +6,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AppEnv } from '@/lib/env';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { bound, state } from '@fromcode119/reactor';
+import { bound, state } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
 
 export class SetupPage extends AdminComponent {

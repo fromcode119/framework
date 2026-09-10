@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/reactor';
+import { Enum } from '@fromcode119/react-class-components';
 
 /** Whether the item being moved in the media library is a file or a folder. */
 export class MovingItemType extends Enum {

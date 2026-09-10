@@ -3,7 +3,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';

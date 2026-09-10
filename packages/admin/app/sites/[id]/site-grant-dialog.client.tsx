@@ -1,5 +1,5 @@
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
-import { bound, prop, state } from '@fromcode119/reactor';
+import { bound, prop, state } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 

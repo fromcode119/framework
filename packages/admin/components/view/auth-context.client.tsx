@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bridge, prop } from '@fromcode119/reactor';
+import { Bridge, prop } from '@fromcode119/react-class-components';
 import { AuthProviderView } from '@/components/view/auth-provider-view.client';
 import type { IAuthContextBridgeValues } from '@/components/interfaces/auth-context-bridge-values.interface';
 

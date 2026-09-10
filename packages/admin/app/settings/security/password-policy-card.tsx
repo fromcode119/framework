@@ -1,7 +1,7 @@
 import { ThemeMode, SystemConstants } from '@fromcode119/core/client';
 import type { ReactNode, SetStateAction } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';

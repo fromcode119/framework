@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor } from '@fromcode119/reactor';
+import { Reactor } from '@fromcode119/react-class-components';
 import { AppPathConstants } from '@fromcode119/core/constants/app-path.constants';
 import { redirect } from 'next/navigation';
 import { ForgeClient } from '@/app/forge/components/view/forge-client.client';

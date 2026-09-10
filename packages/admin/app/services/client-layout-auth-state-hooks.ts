@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Platform } from '@fromcode119/reactor';
+import { Platform } from '@fromcode119/react-class-components';
 import { usePathname, useRouter } from 'next/navigation';
 import { AuthHooks } from '@/components/view/use-auth.client';
 

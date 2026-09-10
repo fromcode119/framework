@@ -2,7 +2,7 @@ import { use } from 'react';
 import type { ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ContextHooks } from '@fromcode119/react';
-import { Bridge, prop } from '@fromcode119/reactor';
+import { Bridge, prop } from '@fromcode119/react-class-components';
 
 import { ThemeHooks } from '@/components/view/use-theme.client';
 import { CollectionListPageView } from '@/components/collection/list/view/collection-list-page-view.client';

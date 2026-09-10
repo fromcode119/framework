@@ -2,7 +2,7 @@ import { MovingItemType } from '@/app/media/enums/moving-item-type.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
 import type { MouseEvent, ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';

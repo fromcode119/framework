@@ -1,5 +1,5 @@
 import type { ChangeEvent, ReactNode } from 'react';
-import { bound, prop, state } from '@fromcode119/reactor';
+import { bound, prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Badge } from '@/components/ui/view/badge.client';

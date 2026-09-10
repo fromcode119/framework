@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';

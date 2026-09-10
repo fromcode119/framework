@@ -1,4 +1,4 @@
-import { bound } from '@fromcode119/reactor';
+import { bound } from '@fromcode119/react-class-components';
 import { FrontendI18nService } from '@fromcode119/react/context/frontend-i18n-service';
 
 /**

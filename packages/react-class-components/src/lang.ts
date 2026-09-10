@@ -4,7 +4,7 @@
  *
  * The main barrel exports `Reactor` — a React class component — and through it react-dom. React's
  * server-component compiler REFUSES a class component (or `react-dom/client`) anywhere in a server
- * module graph, so a single `import { Enum } from '@fromcode119/reactor'` in a middleware, a route
+ * module graph, so a single `import { Enum } from '@fromcode119/react-class-components'` in a middleware, a route
  * handler or a Server Component 500s the whole request. Those consumers import from here instead:
  * same classes, no React in the graph.
  */

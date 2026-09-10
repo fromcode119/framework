@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 import { SecondarySidebarPanelBody } from '@/app/components/view/secondary-sidebar-panel-body.client';
 

@@ -11,7 +11,7 @@ type PluginLike = { name: string; setup(build: BuildLike): void };
  * JSX template compiler: a `*.view.tsx` file (suffix configurable) holds ONLY markup — bare JSX that uses
  * `this` and component tags, no class/function/imports. At build it is wrapped into a default-exported
  * template function whose Capitalized component tags (`<Box>`, `<Icons.Mail>`) are resolved from the
- * `@fromcode119/reactor` `Registry`. Native DOM tags pass through. The component wires it with
+ * `@fromcode119/react-class-components` `Registry`. Native DOM tags pass through. The component wires it with
  * `protected readonly view = <import>` (or, with ViewPairPlugin, nothing at all).
  *
  * Tag detection is AST-based (@babel/parser): it walks JSX opening elements, so `<` in strings, comments,
@@ -60,7 +60,7 @@ export class ViewPlugin {
   }
 
   /** Wrap bare markup into a default-exported render that resolves its component tags from the Registry. */
-  static wrap(source: string, registryModule = '@fromcode119/reactor'): string {
+  static wrap(source: string, registryModule = '@fromcode119/react-class-components'): string {
     const resolvers = ViewPlugin.collectComponentTags(source)
       .map((name) => `  const ${name} = Registry.get(${JSON.stringify(name)});`)
       .join('\n');
@@ -78,7 +78,7 @@ export class ViewPlugin {
 
   static esbuild(options: { suffix?: string; registryModule?: string } = {}): PluginLike {
     const suffix = options.suffix ?? 'view';
-    const registryModule = options.registryModule ?? '@fromcode119/reactor';
+    const registryModule = options.registryModule ?? '@fromcode119/react-class-components';
     const filter = new RegExp(`\\.${suffix}\\.(t|j)sx?$`);
     return {
       name: 'next-build-codegen-view-template',

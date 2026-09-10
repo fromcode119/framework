@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop } from '@fromcode119/reactor';
+import { Reactor, prop } from '@fromcode119/react-class-components';
 import { GlobalInitializer } from '@/app/components/view/global-initializer.client';
 import { RootProvider } from '@/app/components/view/root-provider.client';
 import { PluginLoader } from '@/app/components/view/plugin-loader.client';

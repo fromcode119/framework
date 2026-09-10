@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/reactor';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';

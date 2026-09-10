@@ -179,7 +179,7 @@ export type { ITranslateFn } from '@sdk/types/interfaces/translate-fn.interface'
 
 // Server-safe reactor primitives. `Enum` has no React dependency, so backend plugin code can
 // use it — unlike `@fromcode119/sdk/react`, which cannot load under Node (it requires CSS).
-export { Enum } from '@fromcode119/reactor';
+export { Enum } from '@fromcode119/react-class-components';
 
 // These are Enum CLASSES, not type aliases — a `export type` re-export makes the members
 // (`FieldType.TEXT`, `PluginDefaultPageContractKind.DETAIL`) unreachable from plugin code,

@@ -86,7 +86,7 @@
   },
   "dependencies": {
     "@fromcode119/core": "*",
-    "@fromcode119/reactor": "*",
+    "@fromcode119/react-class-components": "*",
     "@fromcode119/sdk": "*",
     "lucide-react": "^0.563.0"
   },

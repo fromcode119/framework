@@ -1,8 +1,8 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement, ReactNode, RefObject } from 'react';
 
-import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/reactor';
-import type { Ref } from '@fromcode119/reactor';
+import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { FieldProvenance } from '@/lib/collection/field-provenance';

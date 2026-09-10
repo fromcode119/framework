@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { FormEvent, ReactNode } from 'react';
-import { state, bound, watch } from '@fromcode119/reactor';
+import { state, bound, watch } from '@fromcode119/react-class-components';
 import { ActivityMode } from '@/app/activity/enums/activity-mode.enum';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { DataTable } from '@/components/ui/view/data-table.client';

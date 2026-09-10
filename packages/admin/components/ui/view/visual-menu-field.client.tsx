@@ -1,7 +1,7 @@
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/reactor';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';

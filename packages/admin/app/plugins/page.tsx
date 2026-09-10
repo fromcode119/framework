@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Reactor } from '@fromcode119/reactor';
+import { Reactor } from '@fromcode119/react-class-components';
 import { redirect } from 'next/navigation';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 
