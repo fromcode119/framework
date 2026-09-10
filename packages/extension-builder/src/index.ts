@@ -1,2 +1,8 @@
 export { ExtensionKind } from '@extension-builder/extension-kind';
 export { BuildStepResult } from '@extension-builder/build-step-result';
+export { BuildToolchain } from '@extension-builder/deps/build-toolchain';
+export { PluginBackendCompiler } from '@extension-builder/compile/plugin-backend-compiler';
+export { PluginUiCompiler } from '@extension-builder/compile/plugin-ui-compiler';
+export { PluginMigrationsCompiler } from '@extension-builder/compile/plugin-migrations-compiler';
+export { ThemeBundleCompiler } from '@extension-builder/compile/theme-bundle-compiler';
+export { ArchiveWriter } from '@extension-builder/pack/archive-writer';
