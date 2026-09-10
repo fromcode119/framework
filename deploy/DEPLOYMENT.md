@@ -104,7 +104,7 @@ without them:
 | `DATABASE_URL` | non-owner runtime login — what actually serves requests |
 | `JWT_SECRET` | 32+ characters, unique per deployment |
 | `INTEGRATION_SECRET_KEY` | 32+ characters, unique per deployment |
-| `PROXY_NETWORK` | the EXISTING external network your reverse proxy is on (e.g. `edge`). On Coolify, `${COOLIFY_RESOURCE_UUID}` |
+| `EXTERNAL_PROXY_NETWORK` | the EXISTING external network your reverse proxy is on (e.g. `edge`). On Coolify, `${COOLIFY_RESOURCE_UUID}` |
 
 Generate secrets with `openssl rand -base64 48 | tr -d '=+/' | cut -c1-48`. Keep `.env` at mode
 `600`; never commit it.
