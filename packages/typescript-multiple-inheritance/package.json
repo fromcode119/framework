@@ -1,7 +1,7 @@
 {
   "name": "@fromcode119/typescript-multiple-inheritance",
-  "version": "0.1.88",
-  "description": "Extends TypeScript's type system for real OOP \u2014 multiple inheritance for classes, so a data shape never has to stay an interface. Zero runtime dependencies; standalone like react-class-components/next-build-codegen.",
+  "version": "0.2.0",
+  "description": "Extends TypeScript's type system for real OOP — multiple inheritance for classes, so a data shape never has to stay an interface. Zero runtime dependencies; standalone like react-class-components/next-build-codegen.",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
