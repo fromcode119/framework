@@ -18,19 +18,29 @@ function scratch(withTerser: boolean) {
 }
 
 describe('AssetMinifier', () => {
-  it('keeps a file unminified rather than losing it when terser fails', () => {
+  it('keeps a file unminified rather than losing it when terser fails', async () => {
     const { root, dir } = scratch(true);
     writeFileSync(join(dir, 'broken.js'), 'function (){');
-    const result = AssetMinifier.minify(dir, root);
+    const result = await AssetMinifier.minify(dir, root);
     expect(readFileSync(join(dir, 'broken.js'), 'utf8')).toBe('function (){');
     expect(existsSync(join(dir, 'broken.js.min.tmp'))).toBe(false);
     expect(result.skippedReason).toContain('broken.js');
   });
 
-  it('says why it skipped when terser is not installed', () => {
+  it('says why it skipped when terser is not installed', async () => {
     const { root, dir } = scratch(false);
     writeFileSync(join(dir, 'a.js'), 'const a=1');
-    expect(AssetMinifier.minify(dir, root).skippedReason).toContain('terser');
+    expect((await AssetMinifier.minify(dir, root)).skippedReason).toContain('terser');
+  });
+
+  it('minifies many chunks concurrently and keeps every one of them', async () => {
+    const { root, dir } = scratch(true);
+    for (let i = 0; i < 12; i += 1) writeFileSync(join(dir, `chunk-${i}.js`), 'function (){');
+    await AssetMinifier.minify(dir, root);
+    for (let i = 0; i < 12; i += 1) {
+      expect(existsSync(join(dir, `chunk-${i}.js`)), `chunk-${i}.js must survive`).toBe(true);
+      expect(existsSync(join(dir, `chunk-${i}.js.min.tmp`)), 'no temp file may survive').toBe(false);
+    }
   });
 });
 

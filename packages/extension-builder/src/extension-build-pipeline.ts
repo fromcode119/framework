@@ -68,7 +68,7 @@ export class ExtensionBuildPipeline {
       if (!record(await step())) return results;
     }
 
-    if (!record(AssetMinifier.minify(workspace.uiDir, workspace.toolchainRootFor('terser') ?? BuildToolchain.toolRootFor('terser')))) return results;
+    if (!record(await AssetMinifier.minify(workspace.uiDir, workspace.toolchainRootFor('terser') ?? BuildToolchain.toolRootFor('terser')))) return results;
     if (!record(AssetPrecompressor.compress(workspace.uiDir))) return results;
 
     await IntegrityStamper.stampSourceDir(workspace.sourceDir);
