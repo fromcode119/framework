@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { promisify } from 'util';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
-import { PluginPackageLayout } from '@fromcode119/core/client';
+import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Compiles a plugin's backend entry: `index.ts` -> `index.js`.

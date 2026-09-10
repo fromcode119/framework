@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import archiver from 'archiver';
-import { ThemePackageLayout } from '@fromcode119/core/client';
+import { ThemePackageLayout } from '@fromcode119/core';
 
 /**
  * Creates the distributable ZIP archives for plugin/theme/core packages.

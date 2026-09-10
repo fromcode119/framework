@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { promisify } from 'util';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
 import { PluginUiViteCompiler } from '@extension-builder/compile/plugin-ui-vite-compiler';
-import { PluginPackageLayout } from '@fromcode119/core/client';
+import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Compiles a plugin's UI — the vite component build, any declared standalone scripts, and the

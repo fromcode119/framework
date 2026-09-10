@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ThemePackageLayout } from '@fromcode119/core/client';
+import { ThemePackageLayout } from '@fromcode119/core';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
 

@@ -19,7 +19,7 @@ import { PackCleaner } from '@extension-builder/pack/pack-cleaner';
 import { ThemeSsrDependencyCollector } from '@extension-builder/pack/theme-ssr-dependency-collector';
 import { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
 import { ArchiveWriter } from '@extension-builder/pack/archive-writer';
-import { PluginPackageLayout, ThemePackageLayout } from '@fromcode119/core/client';
+import { PluginPackageLayout, ThemePackageLayout } from '@fromcode119/core';
 
 /**
  * The only class that knows the ORDER of a build. Every other class does one step and reports.

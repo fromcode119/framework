@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ThemePackageLayout } from '@fromcode119/core/client';
+import { ThemePackageLayout } from '@fromcode119/core';
 
 /**
  * Removes from a staging directory everything that must not ship.

@@ -8,7 +8,7 @@ import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import type { UserConfig } from 'vite';
 import { PluginUiCssAsTextPlugin } from './plugin-ui-css-as-text-plugin';
-import { PluginPackageLayout } from '@fromcode119/core/client';
+import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Shared, framework-owned Vite config for building a plugin's STOREFRONT UI as a SERVER (SSR) bundle —

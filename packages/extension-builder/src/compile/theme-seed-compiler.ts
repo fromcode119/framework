@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
-import { ThemePackageLayout } from '@fromcode119/core/client';
+import { ThemePackageLayout } from '@fromcode119/core';
 
 /**
  * Bundles a theme's seed: `src/seed.ts` -> a `seed.mjs` under the build output.

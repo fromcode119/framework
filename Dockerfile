@@ -54,6 +54,7 @@ COPY packages/react-class-components/package.json ./packages/react-class-compone
 COPY packages/next-build-codegen/package.json ./packages/next-build-codegen/
 COPY packages/typescript-multiple-inheritance/package.json ./packages/typescript-multiple-inheritance/
 COPY packages/arch-guard/package.json ./packages/arch-guard/
+COPY packages/extension-builder/package.json ./packages/extension-builder/
 
 # Install dependencies
 RUN npm install --no-audit

@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import fs from 'node:fs';
-import { PluginPackageLayout } from '@fromcode119/core/client';
+import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Tailwind config for ONE plugin's admin UI. `PLUGIN_UI_DIR` selects which plugin.

@@ -3,7 +3,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { PluginStyleMarker } from '@extension-builder/assets/plugin-style-marker';
-import { PluginPackageLayout } from '@fromcode119/core/client';
+import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Compiles a plugin's admin utilities into `ui/style.css` with tailwind.

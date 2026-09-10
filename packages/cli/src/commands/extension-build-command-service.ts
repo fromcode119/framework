@@ -1,7 +1,8 @@
 import { Command } from 'commander';
+// TYPE-only: erased at compile time, so it does not reintroduce the eager load fixed below.
+import type { ExtensionKind } from '@fromcode119/extension-builder';
 import chalk from 'chalk';
 import * as path from 'path';
-import { ExtensionBuildPipeline, ExtensionKind, IntegrityStamper } from '@fromcode119/extension-builder';
 import { CliUtils } from '@cli/utils';
 
 /**
@@ -10,6 +11,12 @@ import { CliUtils } from '@cli/utils';
  * Thin by design: argument parsing, resolving where the extension lives, and an exit code. Every
  * decision about HOW to build belongs to ExtensionBuildPipeline, so the CLI, the api and the admin
  * cannot drift apart the way the three previous builders did.
+ *
+ * The builder is imported LAZILY, inside each action. A top-level import pulled its whole graph
+ * into every CLI invocation — including `system sync-versions`, which builds nothing — and that
+ * graph reaches React components whose decorators tsx cannot compile, so an unrelated command died
+ * with "Cannot read properties of undefined (reading 'value')". A command must not cost anything
+ * until it runs.
  */
 export class ExtensionBuildCommandService {
   static register(program: Command): void {
@@ -19,8 +26,8 @@ export class ExtensionBuildCommandService {
   }
 
   /** `plugins/<slug>`, `themes/<slug>` or `appearance/<slug>` under the workspace root. */
-  private static resolveDir(kind: ExtensionKind, slug: string): string {
-    return path.resolve(path.dirname(CliUtils.getPluginsDir()), kind.directoryName(), slug);
+  private static resolveDir(directoryName: string, slug: string): string {
+    return path.resolve(path.dirname(CliUtils.getPluginsDir()), directoryName, slug);
   }
 
   private static reportAndExit(steps: Array<{ step: string; failed: boolean; skippedReason?: string }>): void {
@@ -35,6 +42,8 @@ export class ExtensionBuildCommandService {
   }
 
   private static async run(kindValue: string, slug: string, pack: boolean): Promise<void> {
+    const { ExtensionBuildPipeline, ExtensionKind } = await import('@fromcode119/extension-builder');
+
     let kind: ExtensionKind;
     try {
       kind = ExtensionKind.require(kindValue);
@@ -44,7 +53,7 @@ export class ExtensionBuildCommandService {
       return;
     }
 
-    const sourceDir = ExtensionBuildCommandService.resolveDir(kind, slug);
+    const sourceDir = ExtensionBuildCommandService.resolveDir(kind.directoryName(), slug);
     console.log(chalk.blue(`${pack ? 'Packing' : 'Building'} ${kind.value} ${slug}`));
     console.log(chalk.gray(`  ${sourceDir}`));
 
@@ -71,6 +80,8 @@ export class ExtensionBuildCommandService {
       .command('checksum <kind> <slug>')
       .description('Re-stamp an extension integrity checksum after an in-place rebuild')
       .action(async (kindValue: string, slug: string) => {
+        const { ExtensionKind, IntegrityStamper } = await import('@fromcode119/extension-builder');
+
         let kind: ExtensionKind;
         try {
           kind = ExtensionKind.require(kindValue);
@@ -79,7 +90,7 @@ export class ExtensionBuildCommandService {
           process.exitCode = 1;
           return;
         }
-        const sum = await IntegrityStamper.stampSourceDir(ExtensionBuildCommandService.resolveDir(kind, slug));
+        const sum = await IntegrityStamper.stampSourceDir(ExtensionBuildCommandService.resolveDir(kind.directoryName(), slug));
         console.log(sum ? chalk.green(`Checksum ${slug}: ${sum}`) : chalk.yellow(`${slug} has no manifest.json to stamp`));
       });
   }

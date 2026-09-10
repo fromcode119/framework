@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { createRequire } from 'module';
 import { promisify } from 'util';
-import { PluginPackageLayout } from '@fromcode119/core/client';
+import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Builds a plugin's UI with the framework-owned Vite pipeline — the "plugins are just components"
