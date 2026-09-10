@@ -13,47 +13,18 @@ import * as zlib from 'zlib';
  */
 export class ParityHarness {
   /**
-   * Differences that are deliberate — each stated with its reason AND a check that must still pass.
+   * There is no accepted-differences list, and that is the finding, not an omission.
    *
-   * No entry may name an extension. A framework package that hardcodes a plugin slug is a bug by
-   * this repo's own rule, and scoping an exception to one named plugin was that same bug written more
-   * explicitly. Every entry here is a property of the BUILDER, true of any extension.
+   * One existed while `build-plugins.sh` was still the reference: its stylesheet marker named a
+   * different generator, and it left `ui/tracker.js` unminified through an ordering accident. Both
+   * entries described that script, and it is gone. Two builds of the same extension now produce
+   * byte-identical trees — measured, with nothing excused — so ANY difference this harness reports
+   * is a regression and there is nothing to exempt.
    *
-   * `verify` is what keeps this from being an ignore list. An exemption says "never look again"; a
-   * predicate says "this may differ, but only in the way I claim". If the claim stops holding, the
-   * difference is reported like any other.
+   * If a genuine exception ever appears, it must not be an ignore list. Make it state what may
+   * differ and assert that claim, and never name an extension: a framework package that knows a
+   * plugin slug is a bug by this repo's own rule.
    */
-  static readonly ACCEPTED_DIFFERENCES: ReadonlyArray<{
-    file: string;
-    reason: string;
-    verify?: (bashFile: string, builderFile: string) => boolean;
-  }> = [
-    {
-      file: 'ui/tracker.js',
-      reason: 'the builder minifies every ui/*.js; build-plugins.sh minified only what existed at its ordering point and mirrored the tracker in afterwards. Verified rather than waved through: both must keep the browser require shim, and ours must not be larger',
-      verify: (bashFile, builderFile) => {
-        const bash = fs.readFileSync(bashFile, 'utf8');
-        const builder = fs.readFileSync(builderFile, 'utf8');
-        const shim = 'Dynamic require of ';
-        if (bash.includes(shim) && !builder.includes(shim)) return false;
-        return builder.length <= bash.length;
-      },
-    },
-    {
-      file: 'ui/style.css',
-      reason: 'the first line is the generator marker, which names the builder rather than build-plugins.sh. Verified: everything below line one must be byte-identical',
-      verify: (bashFile, builderFile) =>
-        ParityHarness.styleSheetBodyHash(bashFile) === ParityHarness.styleSheetBodyHash(builderFile),
-    },
-    {
-      file: 'manifest.json',
-      reason: 'carries the integrity checksum, which is a hash OF the tree. Verified: both must be present and non-empty, and the tree hash is asserted by the caller',
-      verify: (bashFile, builderFile) =>
-        Boolean(JSON.parse(fs.readFileSync(bashFile, 'utf8')).checksum)
-        && Boolean(JSON.parse(fs.readFileSync(builderFile, 'utf8')).checksum),
-    },
-  ];
-
   /**
    * A `.gz` is hashed by its DECOMPRESSED payload.
    *
@@ -89,39 +60,13 @@ export class ParityHarness {
   static compare(
     left: Map<string, string>,
     right: Map<string, string>,
-    roots?: { left: string; right: string },
   ): { onlyLeft: string[]; onlyRight: string[]; differing: string[] } {
-    // The precompressed twin of an accepted difference is accepted BY DERIVATION, never as its own
-    // entry: if `ui/style.css` legitimately differs, `ui/style.css.gz` cannot help but differ, and
-    // listing it separately would invite someone to accept a .gz whose source file is NOT accepted.
-    // An entry is accepted only if its own claim still holds. Without roots there is nothing to
-    // check against, so nothing is accepted — a caller that cannot verify does not get to exempt.
-    const holds = (entry: (typeof ParityHarness.ACCEPTED_DIFFERENCES)[number]): boolean => {
-      if (!entry.verify) return true;
-      if (!roots) return false;
-      const bashFile = path.join(roots.left, entry.file);
-      const builderFile = path.join(roots.right, entry.file);
-      if (!fs.existsSync(bashFile) || !fs.existsSync(builderFile)) return false;
-      try {
-        return entry.verify(bashFile, builderFile);
-      } catch {
-        return false;
-      }
-    };
-    const named = ParityHarness.ACCEPTED_DIFFERENCES.filter(holds).map((d) => d.file);
-    const accepted = new Set([...named, ...named.map((f) => `${f}.gz`)]);
     const onlyLeft = [...left.keys()].filter((f) => !right.has(f)).sort();
     const onlyRight = [...right.keys()].filter((f) => !left.has(f)).sort();
     const differing = [...left.keys()]
-      .filter((f) => right.has(f) && right.get(f) !== left.get(f) && !accepted.has(f))
+      .filter((f) => right.has(f) && right.get(f) !== left.get(f))
       .sort();
     return { onlyLeft, onlyRight, differing };
   }
 
-  /** The CSS below the marker line, so the one accepted difference can still be verified. */
-  static styleSheetBodyHash(file: string): string {
-    if (!fs.existsSync(file)) return '';
-    const body = fs.readFileSync(file, 'utf8').split('\n').slice(1).join('\n');
-    return crypto.createHash('sha256').update(body).digest('hex');
-  }
 }
