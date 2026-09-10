@@ -11,3 +11,5 @@ export { ThemeHeadScriptCompiler } from '@extension-builder/compile/theme-head-s
 export { ThemeSeedCompiler } from '@extension-builder/compile/theme-seed-compiler';
 export { PluginStyleMarker } from '@extension-builder/assets/plugin-style-marker';
 export { PluginStyleCompiler } from '@extension-builder/assets/plugin-style-compiler';
+export { AssetMinifier } from '@extension-builder/assets/asset-minifier';
+export { AssetPrecompressor } from '@extension-builder/assets/asset-precompressor';
