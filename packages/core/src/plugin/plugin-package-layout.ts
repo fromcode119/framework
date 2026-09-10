@@ -28,6 +28,16 @@ export class PluginPackageLayout {
   /** The compiled server entry, relative to the package root. */
   static readonly SERVER_ENTRY = 'index.js';
 
+  /**
+   * The SOURCE the server entry is compiled from.
+   *
+   * Here for the same reason `ThemePackageLayout` owns the head script's source and artifact: a
+   * `.ts` -> `.js` hop that lives only inside a builder is a mapping with no owner, and reading the
+   * package you cannot tell which file produced which. That is the exact defect the layout classes
+   * were written to delete.
+   */
+  static readonly SERVER_ENTRY_SOURCE = 'index.ts';
+
   /** Directory holding the built UI bundles, relative to the package root. */
   static readonly UI_DIR = path.join('src', 'ui');
 
@@ -47,6 +57,37 @@ export class PluginPackageLayout {
    * only arrangement that holds for every instance rather than for one checkout.
    */
   static readonly UI_STYLESHEET = 'style.css';
+
+  /**
+   * The entry file the framework GENERATES inside a plugin's UI dir so Vite has something to point
+   * at — the plugin never writes it, and it is gitignored build glue.
+   *
+   * Owned here because it is the FRAMEWORK's name, unlike a plugin's own scripts: three separate
+   * build configs each had it as a literal, which is the same defect in three copies.
+   */
+  static readonly GENERATED_UI_ENTRY = '.plugin-entry.tsx';
+
+  /**
+   * Extra standalone browser scripts a plugin ships, DECLARED by the plugin in
+   * `manifest.ui.browserEntries` as bare names — `["tracker"]` compiles `<name>.ts` from the UI
+   * source dir to `<name>.js` in `UI_DIR`.
+   *
+   * Declared rather than named here, because what such a script is FOR is the plugin's business.
+   * An earlier version of this class had `TRACKER_ENTRY = 'tracker.js'`, which put one plugin's
+   * domain concept into the framework's package contract — the framework has no idea what tracking
+   * is, and must not.
+   *
+   * A plugin that declares nothing gets nothing built, and the builder says so.
+   */
+  static readonly BROWSER_ENTRIES_KEY = 'browserEntries';
+
+  /** The declared names, or [] — the one place the manifest shape is interpreted. */
+  static browserEntries(manifest: Record<string, unknown>): string[] {
+    const ui = manifest?.ui as Record<string, unknown> | undefined;
+    const declared = ui?.[PluginPackageLayout.BROWSER_ENTRIES_KEY];
+    if (!Array.isArray(declared)) return [];
+    return declared.map((name) => String(name).trim()).filter((name) => name !== '' && !name.includes('/') && !name.includes('.'));
+  }
 
   /** Directory holding compiled migrations, relative to the package root. */
   static readonly MIGRATIONS_DIR = path.join('dist', 'migrations');

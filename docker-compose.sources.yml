@@ -81,6 +81,11 @@ services:
       # is inherent to the isolation, not caused by this mount, and it is why `PluginHost.guestMainPath()`
       # points the guest at `dist` even when the host itself is running from `src`.
       - ./packages/core/src:/app/packages/core/src
+      # The api registers the extension builder at bootstrap, and runs from SOURCE via tsx — so the
+      # package has to be reachable inside the container. It is a WORKSPACE, absent from any image
+      # built before it existed: without this mount the api dies at boot with MODULE_NOT_FOUND for
+      # @fromcode119/extension-builder. `dist` is what the api imports, so mount the whole package.
+      - ./packages/extension-builder:/app/packages/extension-builder
       # ...and core's BUILT output, because a plugin guest is a separate `node` process that loads core
       # from `dist`. Without this the host runs your edited `src` while every guest runs the image's
       # baked `dist` — two different versions of the same protocol in one request. That is not

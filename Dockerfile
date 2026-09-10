@@ -4,8 +4,20 @@
 ARG NODE_BASE_IMAGE=public.ecr.aws/docker/library/node:22-bookworm-slim
 FROM ${NODE_BASE_IMAGE} AS base
 
-# Install dependencies for native modules (better-sqlite3) and postgres.
-# Support both Alpine and Debian-based Node images so builds can override the base tag.
+# System packages. `better-sqlite3` is the ONLY native module in the tree; everything else ships
+# prebuilt binaries.
+#
+# On Debian it needs NO compiler: better-sqlite3's install is `prebuild-install || node-gyp rebuild`,
+# and prebuilds are published for this ABI on linux x64 AND arm64, so the first half always wins.
+# `build-essential` and `python3` were ~300MB of C++ toolchain in every runtime image for a fallback
+# that never fires. If a prebuild is ever missing the install fails loudly at BUILD time, which is
+# the right place to find out.
+#
+# Alpine keeps its compilers: the published prebuilds are glibc, so a musl base really does build
+# from source.
+#
+# postgresql-client and iptables are RUNTIME: the entrypoint provisions roles with psql and applies
+# the guest egress rule with iptables.
 RUN if command -v apk >/dev/null 2>&1; then \
             apk add --no-cache \
                 postgresql-client \
@@ -17,8 +29,6 @@ RUN if command -v apk >/dev/null 2>&1; then \
         elif command -v apt-get >/dev/null 2>&1; then \
             apt-get update && apt-get install -y --no-install-recommends \
                 postgresql-client \
-                python3 \
-                build-essential \
                 iptables \
             && rm -rf /var/lib/apt/lists/*; \
         else \
@@ -54,9 +64,23 @@ COPY packages/react-class-components/package.json ./packages/react-class-compone
 COPY packages/next-build-codegen/package.json ./packages/next-build-codegen/
 COPY packages/typescript-multiple-inheritance/package.json ./packages/typescript-multiple-inheritance/
 COPY packages/arch-guard/package.json ./packages/arch-guard/
+COPY packages/extension-builder/package.json ./packages/extension-builder/
 
 # Install dependencies
-RUN npm install --no-audit
+# Install, then drop the platform binaries for the OTHER libc — in the SAME layer, because a
+# later `rm` reclaims nothing once the bytes are in the chain.
+#
+# npm installs optional platform packages for both glibc and musl, so a Debian image was carrying
+# @next/swc-linux-*-musl (84MB) and sharp's musl libvips (18MB) that can never be loaded here. Which
+# one is dead depends on the base image, and NODE_BASE_IMAGE is overridable, so it is detected
+# rather than hardcoded: delete gnu on Alpine, musl everywhere else.
+# `set -e` first, and the `|| true` scoped to the `find` ALONE. Chaining it after the whole
+# command swallowed a failing `npm install` and let the build continue with no node_modules —
+# precisely the failure mode that let a renamed package go unnoticed in build-plugins.sh for a week.
+RUN set -e; \
+    npm install --no-audit; \
+    if [ -f /etc/alpine-release ]; then DEAD='*-gnu'; else DEAD='*musl*'; fi; \
+    find node_modules/@next node_modules/@img -maxdepth 1 -name "$DEAD" -type d -prune -exec rm -rf {} + 2>/dev/null || true
 
 # Now copy the rest of the source
 COPY . .

@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { spawnSync } from 'child_process';
 import { Logger } from '@core/logging';
+import { DependencyInstaller } from '@core/plugin/services/installation/dependency-installer';
 
 export class PluginDependencyInstallerService {
   private logger = new Logger({ namespace: 'plugin-dependency-installer' });
@@ -23,7 +23,7 @@ export class PluginDependencyInstallerService {
     // install below 404 (`npm ci`/`install`), which would fail the whole plugin (and any plugin that
     // depends on it). Strip them + drop the lockfile so a plain `npm install` resolves the plugin's
     // REAL third-party deps only.
-    this.stripHostProvidedDependencies(pluginPath);
+    DependencyInstaller.stripHostProvidedDependencies(pluginPath);
 
     const fingerprint = this.createFingerprint(pluginPath);
     if (!this.shouldInstall(pluginPath, fingerprint)) {
@@ -32,45 +32,6 @@ export class PluginDependencyInstallerService {
 
     this.installDependencies(pluginPath);
     this.writeState(pluginPath, fingerprint);
-  }
-
-  private stripHostProvidedDependencies(pluginPath: string): void {
-    const packageJsonPath = this.getPackageJsonPath(pluginPath);
-    let pkg: any;
-    try {
-      pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-    } catch {
-      return;
-    }
-
-    let changed = false;
-    for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies', 'devDependencies']) {
-      const deps = pkg?.[field];
-      if (!deps || typeof deps !== 'object') continue;
-      for (const name of Object.keys(deps)) {
-        if (name.startsWith('@fromcode119/')) {
-          delete deps[name];
-          changed = true;
-        }
-      }
-    }
-
-    if (changed) {
-      try {
-        fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2));
-      } catch {
-        // Leave the manifest as-is; the install may still fail, but we never make things worse.
-      }
-    }
-
-    const lockPath = this.getPackageLockPath(pluginPath);
-    if (fs.existsSync(lockPath)) {
-      try {
-        fs.rmSync(lockPath);
-      } catch {
-        // Non-fatal: with the lockfile present npm would run strict `ci`; without it, `install`.
-      }
-    }
   }
 
   private shouldInstall(pluginPath: string, fingerprint: string): boolean {
@@ -83,39 +44,10 @@ export class PluginDependencyInstallerService {
   }
 
   private installDependencies(pluginPath: string): void {
-    const hasLockfile = fs.existsSync(this.getPackageLockPath(pluginPath));
-    const command = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    // `--ignore-scripts` is not optional here. Without it, installing a plugin runs the `preinstall`/
-    // `install`/`postinstall` hooks of that plugin AND of every transitive dependency — arbitrary code
-    // on the host, as the API process, as an ordinary consequence of installing a plugin. The archive
-    // digest check in front of this proves WHICH bytes arrived, not that they are safe to execute.
-    // A plugin that genuinely needs a lifecycle script must become a deliberate, separately approved
-    // capability with an operator-visible control; it must never be the silent default.
-    // `--legacy-peer-deps` stops npm resolving peer graphs, and that is deliberate on both counts.
-    // Peers are HOST-PROVIDED here by design (see stripHostProvidedDependencies above), so resolving
-    // them is pointless — and it is not merely wasted work: `--omit=dev` still builds the ideal tree
-    // for devDependencies, so one plugin's `vitest` peer set crashed arborist outright
-    // ("Cannot read properties of null (reading 'edgesOut')", npm 10.9.8) and failed the whole
-    // plugin at boot. Note this can only surface when the fingerprint changes, so the trigger is
-    // whoever next edits a plugin's package.json — not whoever introduced the bad peer graph.
-    const args = hasLockfile
-      ? ['ci', '--omit=dev', '--no-audit', '--ignore-scripts', '--legacy-peer-deps']
-      : ['install', '--omit=dev', '--no-audit', '--ignore-scripts', '--legacy-peer-deps'];
-
+    // The flags, and the reasoning behind each, live in ONE place now — this service owns only the
+    // fingerprint gate and the state file, which are core's concern and nobody else's.
     this.logger.info(`Installing plugin backend dependencies for ${pluginPath}`);
-    const result = spawnSync(command, args, {
-      cwd: pluginPath,
-      stdio: 'inherit',
-      env: {
-        ...process.env,
-        NODE_ENV: 'production',
-        FROMCODE_PROJECT_ROOT: this.projectRoot,
-      },
-    });
-
-    if (result.status !== 0) {
-      throw new Error(`Plugin dependency install failed for ${pluginPath}`);
-    }
+    DependencyInstaller.install(pluginPath, { omitDev: true });
   }
 
   private createFingerprint(pluginPath: string): string {

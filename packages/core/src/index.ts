@@ -228,6 +228,16 @@ export type { IRequestStore } from '@core/context/interfaces/request-store.inter
 
 // Plugin Services (Server-only)
 export { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
+export { ExtensionBuildRegistry } from '@core/plugin/services/extension-build-registry';
+export type { IExtensionBuildService } from '@core/plugin/interfaces/extension-build-service.interface';
+// Package LAYOUT is metadata about an extension's build output, not client code. Exported from the
+// SERVER barrel because the builder and the build configs need it in Node: reaching it through
+// `core/client` drags React components (and their decorators) into tsx-run tooling, which killed
+// `sync:versions` with "Cannot read properties of undefined (reading 'value')".
+export { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
+export { ThemePackageLayout } from '@core/theme/theme-package-layout';
+export { IntegrityService } from '@core/security/integrity-service';
+export { DependencyInstaller } from '@core/plugin/services/installation/dependency-installer';
 export { PluginDependencyInstallerService } from '@core/plugin/services/installation/plugin-dependency-installer-service';
 export { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
 export { MarketplaceCatalogService } from '@core/marketplace/marketplace-catalog-service';

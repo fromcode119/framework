@@ -6,6 +6,7 @@ import { DatabaseCommands } from '@cli/commands/database';
 import { SystemCommands } from '@cli/commands/system';
 import { QualityCommands } from '@cli/commands/quality';
 import { AuthCommands } from '@cli/commands/auth';
+import { ExtensionBuildCommandService } from '@cli/commands/extension-build-command-service';
 
 /**
  * The `fromcode` CLI.
@@ -37,6 +38,7 @@ export class FromcodeCli {
 
     // Called directly rather than through a table of detached method references: a detached static
     // loses its `this`, and the indirection buys nothing over six lines.
+    ExtensionBuildCommandService.register(program);
     PluginCommands.registerPluginCommands(program);
     ThemeCommands.registerThemeCommands(program);
     DatabaseCommands.registerDatabaseCommands(program);

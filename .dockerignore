@@ -16,3 +16,12 @@ README.md
 docs
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Runtime state that must NEVER enter an image. All of these are gitignored, so a CI build from a
+# fresh checkout never had them — but a build from a working checkout did, and `DEPLOYMENT.md`
+# documents building from source. `data/` alone was 563MB of a real client's SQLite database
+# (app.db plus its backups) copied into every locally-built image.
+data
+backups
+uploads
+storage

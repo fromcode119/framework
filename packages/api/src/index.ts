@@ -17,6 +17,8 @@ import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from '@api/services/graph-ql-service';
 import { ApiBootstrapService, ServerCorsSetup, ServerAuthSetup, ServerMaintenanceService, ServerMiddlewareSetup, ServerRoutesSetup, ServerSettingsService, ServerUploadsConfigService } from '@api/server/index';
 import { WebhookRouteUtils } from '@api/utils/webhook-route-utils';
+import { ExtensionBuildRegistry } from '@fromcode119/core';
+import { ExtensionBuildService } from '@api/services/extension-build-service';
 
 export class APIServer {
   public app = express();
@@ -282,6 +284,10 @@ export class APIServer {
   }
 
   static async bootstrap(): Promise<void> {
+    // Register the builder BEFORE plugins register, so the first plugin to read
+    // `context.extensions.isAvailable()` gets the truth rather than a race.
+    ExtensionBuildRegistry.register(new ExtensionBuildService());
+
     return new ApiBootstrapService().bootstrap(
       (manager, themeManager, auth) => new APIServer(manager, themeManager, auth),
     );

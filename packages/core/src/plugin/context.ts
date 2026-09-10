@@ -26,6 +26,7 @@ import { MediaContextProxy } from '@core/plugin/context/media';
 import { RecordVersionsContextProxy } from '@core/plugin/context/record-versions';
 import { RolesContextProxy } from '@core/plugin/context/roles';
 import { NotificationsContextProxy } from '@core/plugin/context/notifications';
+import { ExtensionBuildRegistry } from '@core/plugin/services/extension-build-registry';
 import { ThemeContextProxy } from '@core/plugin/context/theme';
 import { PluginsFacade } from '@core/plugin/plugins-facade';
 import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
@@ -211,7 +212,17 @@ export class PluginContextFactory {
               activate: input.activate,
               enable: input.enable,
             });
-          }
+          },
+          // Gated identically to installArchive: building runs a toolchain over arbitrary source,
+          // which is at least as privileged as installing a prebuilt archive.
+          build: async (input: { sourceDir: string; kind: string; slug: string; pack?: boolean }) => {
+            if (!security.hasCapability('extensions:manage')) {
+              security.handleViolation('extensions:manage');
+            }
+
+            return ExtensionBuildRegistry.resolve().build(input);
+          },
+          isAvailable: () => ExtensionBuildRegistry.isRegistered(),
         },
         users: UsersContextProxy.createUsersProxy(plugin, manager),
         people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb),
