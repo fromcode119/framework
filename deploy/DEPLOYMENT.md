@@ -110,3 +110,26 @@ Generate secrets with `openssl rand -base64 48 | tr -d '=+/' | cut -c1-48`. Keep
 
 `MARKETPLACE_URL` may be left **empty**, which disables marketplace lookups. Plugin and theme
 updates come from their own repositories.
+
+## Optional: the PDF renderer
+
+Plugins that print PDFs (today: the numerology booklet export) do it in a **separate browser
+service**, not inside the api. Chromium plus its system libraries was ~977MB baked into every
+API-bearing image, for a feature most installs never use.
+
+It lives in **one** file, `docker-compose.pdf.yml`, added as an overlay — adding the file is the
+opt-in, so there is no profile to remember and no copy of the service in each mode's compose file:
+
+```bash
+PDF_RENDERER_TOKEN=... docker compose -f docker-compose.full-stack.yml -f docker-compose.pdf.yml --project-directory . up -d
+```
+
+Then set the address in admin — **Numerology → Settings → PDF renderer URL**:
+
+```
+ws://pdf-renderer:3000/chromium/playwright?token=<PDF_RENDERER_TOKEN>
+```
+
+Nothing is discovered automatically: with that setting empty, booklet exports fall back to the
+plugin's built-in PDFKit layout instead. The service is deliberately not published and not on the
+proxy network — it renders arbitrary HTML, so only this stack may reach it.

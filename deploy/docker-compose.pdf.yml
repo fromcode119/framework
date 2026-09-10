@@ -1,0 +1,40 @@
+# Headless Chromium for server-side HTML->PDF — ONE definition, added as an overlay.
+#
+# Plugins that print PDFs (today only numerology's booklet export) render through a separate browser
+# service instead of a Chromium baked into the api image, where it was ~977MB that every install paid
+# for and almost none used.
+#
+# Adding this file IS the opt-in — there is no profile to remember, and no copy of this service in
+# the three base files to keep in sync:
+#
+#   docker compose -f docker-compose.full-stack.yml -f docker-compose.pdf.yml --project-directory . up -d
+#
+# Then point the plugin at it in admin (Numerology -> Settings -> PDF renderer URL). Nothing is
+# discovered automatically:
+#
+#   ws://pdf-renderer:3000/chromium/playwright?token=<PDF_RENDERER_TOKEN>
+#
+# Leave that setting empty and booklet exports fall back to the plugin's built-in PDFKit layout.
+#
+# Not published and not on the proxy network: it renders arbitrary HTML on request, so only the
+# services in this stack may reach it.
+
+services:
+  pdf-renderer:
+    image: ghcr.io/browserless/chromium:latest
+    environment:
+      # Required, and it can be: unlike a profile, this file is only read when you asked for the
+      # renderer, so a missing token fails the deployments that want one and no others.
+      - TOKEN=${PDF_RENDERER_TOKEN:?Set PDF_RENDERER_TOKEN — it also goes in the plugin's renderer URL}
+      - CONCURRENT=${PDF_RENDERER_CONCURRENT:-2}
+      - TIMEOUT=${PDF_RENDERER_TIMEOUT:-60000}
+    networks:
+      - framework
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+networks:
+  framework:

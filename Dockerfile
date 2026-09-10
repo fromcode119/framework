@@ -58,12 +58,6 @@ COPY packages/arch-guard/package.json ./packages/arch-guard/
 # Install dependencies
 RUN npm install --no-audit
 
-# Headless Chromium for server-side HTML→PDF rendering (plugin reading/report exports). Installed
-# right after npm install so the ~150MB browser layer caches until dependencies change, instead of
-# re-downloading on every source edit.
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-RUN npx playwright install --with-deps chromium
-
 # Now copy the rest of the source
 COPY . .
 
@@ -175,7 +169,19 @@ ENTRYPOINT ["/app/deploy/docker-entrypoint.sh"]
 # ===================================
 # MODE 1: API Only
 # ===================================
+# ===================================
+# NO browser in this image — HTML→PDF runs in a SIDECAR
+# ===================================
+# `npx playwright install --with-deps chromium` used to run here, for one plugin's booklet export
+# (numerology). With its system libraries that layer was ~977MB on every API-bearing image, and the
+# browser sat idle on every install that never exports a PDF.
+#
+# The plugin now speaks Playwright's wire protocol to a separate browser service and points at it
+# from its own settings (Numerology → PDF renderer URL); the only thing that ships is the ~13MB
+# `playwright-core` client, inside the plugin's own node_modules. `deploy/docker-compose.pdf.yml`
+# is that service — one definition, added as a compose overlay. Do not reintroduce a browser here.
 FROM builder AS api-only
+ENV NODE_ENV=production
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=api
 CMD ["npm", "run", "start", "--workspace=@fromcode119/api"]
@@ -184,6 +190,7 @@ CMD ["npm", "run", "start", "--workspace=@fromcode119/api"]
 # MODE 2: API + Admin
 # ===================================
 FROM builder AS api-admin
+ENV NODE_ENV=production
 EXPOSE 3000 3001
 ENV DEPLOYMENT_MODE=api-admin
 CMD ["npm", "run", "start:api-admin"]
@@ -192,6 +199,7 @@ CMD ["npm", "run", "start:api-admin"]
 # MODE 3: Full Stack (API + Admin + Frontend)
 # ===================================
 FROM builder AS full-stack
+ENV NODE_ENV=production
 EXPOSE 3000 3001 3002
 ENV DEPLOYMENT_MODE=full
 CMD ["npm", "run", "start:all"]
@@ -200,6 +208,7 @@ CMD ["npm", "run", "start:all"]
 # MODE 3B: Single-Domain Gateway
 # ===================================
 FROM builder AS gateway-only
+ENV NODE_ENV=production
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=gateway
 CMD ["./node_modules/.bin/tsx", "packages/cli/src/bin.ts", "system", "gateway"]
@@ -208,6 +217,7 @@ CMD ["./node_modules/.bin/tsx", "packages/cli/src/bin.ts", "system", "gateway"]
 # MODE 4: Frontend Only (Edge deployment)
 # ===================================
 FROM builder AS frontend-only
+ENV NODE_ENV=production
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=frontend
 ENV API_URL=https://api.example.com
@@ -217,6 +227,7 @@ CMD ["npm", "run", "start", "--workspace=@fromcode119/frontend"]
 # MODE 5: Admin Only
 # ===================================
 FROM builder AS admin-only
+ENV NODE_ENV=production
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=admin
 CMD ["npm", "run", "start", "--workspace=@fromcode119/admin"]

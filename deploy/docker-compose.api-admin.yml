@@ -21,6 +21,8 @@ services:
     depends_on:
       - api
       - admin
+    networks:
+      - framework
     restart: unless-stopped
 
   api:
@@ -57,6 +59,8 @@ services:
       - ../plugins:/app/plugins
       - ../themes:/app/themes
       - ../appearance:/app/appearance
+    networks:
+      - framework
     restart: unless-stopped
 
   admin:
@@ -80,6 +84,8 @@ services:
       - api
     volumes:
       - ../appearance:/app/appearance
+    networks:
+      - framework
     restart: unless-stopped
 
   db:
@@ -90,11 +96,18 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - framework
     restart: unless-stopped
 
   redis:
     image: redis:7-alpine
+    networks:
+      - framework
     restart: unless-stopped
+
+networks:
+  framework:
 
 volumes:
   postgres_data:
