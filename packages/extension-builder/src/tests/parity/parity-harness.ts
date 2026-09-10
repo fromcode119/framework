@@ -13,21 +13,27 @@ import * as zlib from 'zlib';
  */
 export class ParityHarness {
   /**
-   * Differences that are deliberate improvements, each stated with its reason. Anything not listed
-   * here is a regression until proven otherwise.
+   * Differences that are deliberate, each stated with its reason.
+   *
+   * `slug` is what stops an exception spreading. An entry WITHOUT one applies to every extension
+   * and must therefore be a property of the builder itself — the generator marker, the checksum
+   * field. An entry WITH one was observed in a single extension and stays there: accepting
+   * `ui/tracker.js` globally would bless a genuine tracker regression in every other plugin, which
+   * is the blanket-ignore this harness exists to avoid.
    */
-  static readonly ACCEPTED_DIFFERENCES: ReadonlyArray<{ file: string; reason: string }> = [
+  static readonly ACCEPTED_DIFFERENCES: ReadonlyArray<{ file: string; reason: string; slug?: string }> = [
     {
+      slug: 'analytics',
       file: 'ui/tracker.js',
-      reason: 'we minify it; build-plugins.sh missed it through step ordering (it mirrored after minifying). Both carry the browser require shim; ours is smaller',
+      reason: 'we minify it; build-plugins.sh missed it through step ordering (it mirrored after minifying). Both carry the browser require shim; ours is smaller. Scoped: only analytics ships a tracker today, and a differing tracker anywhere else is a regression',
     },
     {
       file: 'ui/style.css',
-      reason: 'first line is the generator marker, which now names the builder instead of build-plugins.sh; the CSS below it is byte-identical',
+      reason: 'first line is the generator marker, which names the builder instead of build-plugins.sh; the CSS below it is byte-identical, asserted separately by styleSheetBodyHash',
     },
     {
       file: 'manifest.json',
-      reason: 'holds the integrity checksum, which is a hash OF the tree — compared separately, and it must match',
+      reason: 'holds the integrity checksum, which is a hash OF the tree — it must match, and is asserted separately',
     },
   ];
 
@@ -63,7 +69,7 @@ export class ParityHarness {
   }
 
   /** Files present in one tree only, or present in both with different content. */
-  static compare(left: Map<string, string>, right: Map<string, string>): {
+  static compare(left: Map<string, string>, right: Map<string, string>, slug?: string): {
     onlyLeft: string[];
     onlyRight: string[];
     differing: string[];
@@ -71,7 +77,9 @@ export class ParityHarness {
     // The precompressed twin of an accepted difference is accepted BY DERIVATION, never as its own
     // entry: if `ui/style.css` legitimately differs, `ui/style.css.gz` cannot help but differ, and
     // listing it separately would invite someone to accept a .gz whose source file is NOT accepted.
-    const named = ParityHarness.ACCEPTED_DIFFERENCES.map((d) => d.file);
+    const named = ParityHarness.ACCEPTED_DIFFERENCES
+      .filter((d) => d.slug === undefined || d.slug === slug)
+      .map((d) => d.file);
     const accepted = new Set([...named, ...named.map((f) => `${f}.gz`)]);
     const onlyLeft = [...left.keys()].filter((f) => !right.has(f)).sort();
     const onlyRight = [...right.keys()].filter((f) => !left.has(f)).sort();
