@@ -13,3 +13,5 @@ export { PluginStyleMarker } from '@extension-builder/assets/plugin-style-marker
 export { PluginStyleCompiler } from '@extension-builder/assets/plugin-style-compiler';
 export { AssetMinifier } from '@extension-builder/assets/asset-minifier';
 export { AssetPrecompressor } from '@extension-builder/assets/asset-precompressor';
+export { PackCleaner } from '@extension-builder/pack/pack-cleaner';
+export { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
