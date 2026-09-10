@@ -9,3 +9,5 @@ export { ArchiveWriter } from '@extension-builder/pack/archive-writer';
 export { ExtensionWorkspace } from '@extension-builder/extension-workspace';
 export { ThemeHeadScriptCompiler } from '@extension-builder/compile/theme-head-script-compiler';
 export { ThemeSeedCompiler } from '@extension-builder/compile/theme-seed-compiler';
+export { PluginStyleMarker } from '@extension-builder/assets/plugin-style-marker';
+export { PluginStyleCompiler } from '@extension-builder/assets/plugin-style-compiler';
