@@ -67,7 +67,17 @@ COPY packages/arch-guard/package.json ./packages/arch-guard/
 COPY packages/extension-builder/package.json ./packages/extension-builder/
 
 # Install dependencies
-RUN npm install --no-audit
+# Install, then drop the platform binaries for the OTHER libc — in the SAME layer, because a
+# later `rm` reclaims nothing once the bytes are in the chain.
+#
+# npm installs optional platform packages for both glibc and musl, so a Debian image was carrying
+# @next/swc-linux-*-musl (84MB) and sharp's musl libvips (18MB) that can never be loaded here. Which
+# one is dead depends on the base image, and NODE_BASE_IMAGE is overridable, so it is detected
+# rather than hardcoded: delete gnu on Alpine, musl everywhere else.
+RUN npm install --no-audit \
+    && if [ -f /etc/alpine-release ]; then DEAD='*-gnu'; else DEAD='*musl*'; fi \
+    && find node_modules/@next node_modules/@img -maxdepth 1 -name "$DEAD" -type d -prune -exec rm -rf {} + 2>/dev/null \
+    || true
 
 # Now copy the rest of the source
 COPY . .
