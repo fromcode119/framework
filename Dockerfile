@@ -74,10 +74,13 @@ COPY packages/extension-builder/package.json ./packages/extension-builder/
 # @next/swc-linux-*-musl (84MB) and sharp's musl libvips (18MB) that can never be loaded here. Which
 # one is dead depends on the base image, and NODE_BASE_IMAGE is overridable, so it is detected
 # rather than hardcoded: delete gnu on Alpine, musl everywhere else.
-RUN npm install --no-audit \
-    && if [ -f /etc/alpine-release ]; then DEAD='*-gnu'; else DEAD='*musl*'; fi \
-    && find node_modules/@next node_modules/@img -maxdepth 1 -name "$DEAD" -type d -prune -exec rm -rf {} + 2>/dev/null \
-    || true
+# `set -e` first, and the `|| true` scoped to the `find` ALONE. Chaining it after the whole
+# command swallowed a failing `npm install` and let the build continue with no node_modules —
+# precisely the failure mode that let a renamed package go unnoticed in build-plugins.sh for a week.
+RUN set -e; \
+    npm install --no-audit; \
+    if [ -f /etc/alpine-release ]; then DEAD='*-gnu'; else DEAD='*musl*'; fi; \
+    find node_modules/@next node_modules/@img -maxdepth 1 -name "$DEAD" -type d -prune -exec rm -rf {} + 2>/dev/null || true
 
 # Now copy the rest of the source
 COPY . .
