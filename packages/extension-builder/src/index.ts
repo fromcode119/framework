@@ -7,3 +7,4 @@ export { PluginMigrationsCompiler } from '@extension-builder/compile/plugin-migr
 export { ThemeBundleCompiler } from '@extension-builder/compile/theme-bundle-compiler';
 export { ArchiveWriter } from '@extension-builder/pack/archive-writer';
 export { ExtensionWorkspace } from '@extension-builder/extension-workspace';
+export { ThemeHeadScriptCompiler } from '@extension-builder/compile/theme-head-script-compiler';
