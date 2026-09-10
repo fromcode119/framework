@@ -5,10 +5,11 @@ import { BuildStepResult } from '@extension-builder/build-step-result';
 /**
  * Copies into a theme package exactly the node_modules its SERVER bundle needs at runtime.
  *
- * A theme's `ui-ssr/entry.mjs` leaves its UI stack (Chakra, emotion, framer-motion) as bare imports
- * on purpose: bundling Chakra inlines its styled-system through Rollup's CJS interop and its style
- * props stop being processed, so the server emits literal `max-width:container.md` instead of real
- * CSS and the first paint is mis-styled. Left external the output is correct — but then Node has to
+ * A theme's `ui-ssr/entry.mjs` leaves its UI stack as bare imports ON PURPOSE, and the framework
+ * never needs to know which stack that is — the theme declares its own. Bundling a styled-system
+ * library inlines it through Rollup's CJS interop and its style props stop being processed, so the
+ * server emits a literal token like `max-width:container.md` instead of real CSS and the first
+ * paint is mis-styled. Left external the output is correct — but then Node has to
  * resolve those packages at runtime, and an installed theme ships no `node_modules` at all. That is
  * why production once served content-free pages: the server bundle could not be imported.
  *
@@ -66,10 +67,10 @@ export class ThemeSsrDependencyCollector {
       }
       resolved.set(name, location);
       const manifest = JSON.parse(fs.readFileSync(path.join(location, 'package.json'), 'utf8'));
-      // PEER dependencies count. Chakra declares framer-motion as a peer and imports it at runtime,
-      // so a closure built from `dependencies` alone loads and then throws "Cannot find package
-      // 'framer-motion'" — which disables server rendering entirely. Optional peers are skipped:
-      // they are optional precisely because the package works without them.
+      // PEER dependencies count. A UI library may declare a companion as a peer and still import it
+      // at runtime, so a closure built from `dependencies` alone loads and then throws "Cannot find
+      // package" — which disables server rendering entirely. Optional peers are skipped: they are
+      // optional precisely because the package works without them.
       const optionalPeers = manifest.peerDependenciesMeta || {};
       const required = [
         ...Object.keys(manifest.dependencies || {}),

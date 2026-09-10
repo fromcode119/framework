@@ -10,8 +10,8 @@ import { ThemePackageLayout } from '@fromcode119/core/client';
  */
 export class PackCleaner {
   /**
-   * `tests` and `scripts` are here because a tagiqx integration script carrying REAL credentials
-   * was published inside a plugin tarball: the file filter strips `*.ts`, so a `*.mjs` helper under
+   * `tests` and `scripts` are here because an integration script carrying REAL credentials was once
+   * published inside a plugin tarball: the file filter strips `*.ts`, so a `*.mjs` helper under
    * `tests/` slipped through untouched.
    */
   private static readonly STRIPPED_DIRS = new Set([

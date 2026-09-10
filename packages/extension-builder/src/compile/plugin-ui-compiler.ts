@@ -152,8 +152,7 @@ export class PluginUiCompiler {
 
   /**
    * A plugin may ship a standalone storefront script that is NOT a component and so is invisible to the
-   * Vite glob entry — analytics' `tracker.ts` is the case this exists for. Built with esbuild, mirroring
-   * the same step in build-plugins.sh.
+   * Vite glob entry. Built with esbuild instead, from the source the layout class names.
    */
   private async compileTracker(sourceDir: string, uiDir: string): Promise<void> {
     const trackerSource = path.join(uiDir, PluginPackageLayout.TRACKER_SOURCE);

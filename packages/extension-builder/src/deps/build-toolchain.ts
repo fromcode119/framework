@@ -20,8 +20,8 @@ export class BuildToolchain {
    * Aligned deliberately with what `build-plugins.sh` shipped, because that is what is actually
    * running. build-server's list was much longer — it externalised `pdfkit`, `express`, `knex`,
    * `pg`, `tar` and `speakeasy` as "host-provided" — and the two builders therefore produced
-   * different artifacts for the same plugin: numerology's index.js was 537KB from one and 3.0MB
-   * from the other, the difference being a bundled pdfkit. Two builders quietly disagreeing about
+   * different artifacts for the same plugin — one shipped an index.js of 537KB where the other
+   * shipped 3.0MB, the difference being a bundled pdfkit. Two builders quietly disagreeing about
    * what ships is the whole reason this package exists, so the conservative list wins: a
    * self-contained bundle cannot break because a host stopped providing something.
    *
@@ -37,10 +37,10 @@ export class BuildToolchain {
    * `require` when one exists, so this banner supplies one that resolves the externalised packages
    * from the window globals the admin already exposes.
    *
-   * `build-plugins.sh` passed this on bundle.js, frontend.js AND tracker.js. build-server passed it
-   * on none of them, so every browser bundle it built shipped without the shim — found by diffing
-   * the two builders' output for analytics, whose tracker.js began with a bare
-   * `import ... from "@fromcode119/sdk/react"`.
+   * `build-plugins.sh` passed this on every browser bundle it produced; build-server passed it on
+   * none, so everything it built shipped without the shim. Found by diffing the two builders'
+   * output: one bundle began with a bare `import ... from "@fromcode119/sdk/react"`, which cannot
+   * run in a browser.
    */
   static readonly BROWSER_REQUIRE_SHIM = 'var require=(m)=>{if(m==="react")return window.React;if(m==="react-dom")return window.ReactDOM;if(m==="react/jsx-runtime"||m==="react/jsx-dev-runtime"){var c=(t,p,k)=>window.React.createElement(t,k===void 0?p:Object.assign({},p,{key:k}));return{jsx:c,jsxs:c,jsxDEV:c,Fragment:window.React.Fragment};}if(m==="lucide-react")return window.Lucide||window.FrameworkIcons;throw new Error("Dynamic require of "+m+" not supported");};';
 

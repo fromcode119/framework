@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { gzipSync } from 'zlib';
@@ -41,16 +41,29 @@ describe('ParityHarness', () => {
   it('excuses nothing: any difference is a difference', () => {
     // There is deliberately no accepted-differences list. Two builds of the same extension produce
     // byte-identical trees, so anything reported here is a regression.
-    const left = tree({ 'ui/style.css': '/*! a */\n.x{}', 'ui/tracker.js': 'a', 'manifest.json': '{"checksum":"1"}' });
-    const right = tree({ 'ui/style.css': '/*! b */\n.x{}', 'ui/tracker.js': 'b', 'manifest.json': '{"checksum":"2"}' });
+    const left = tree({ 'ui/style.css': '/*! a */\n.x{}', 'ui/any-bundle.js': 'a', 'manifest.json': '{"checksum":"1"}' });
+    const right = tree({ 'ui/style.css': '/*! b */\n.x{}', 'ui/any-bundle.js': 'b', 'manifest.json': '{"checksum":"2"}' });
     expect(ParityHarness.compare(ParityHarness.hashTree(left), ParityHarness.hashTree(right)).differing)
-      .toEqual(['manifest.json', 'ui/style.css', 'ui/tracker.js']);
+      .toEqual(['manifest.json', 'ui/any-bundle.js', 'ui/style.css']);
   });
 
-  it('names no extension — a framework package must not know a plugin slug', () => {
-    const source = readFileSync(join(__dirname, 'parity-harness.ts'), 'utf8');
-    for (const slug of ['analytics', 'numerology', 'ecommerce', 'tagiqx', 'forms']) {
-      expect(source.includes(slug), `parity-harness.ts must not name "${slug}"`).toBe(false);
-    }
+  it('no builder source names a plugin or a UI library', () => {
+    // Both rules are CLAUDE.md's, and both were broken here by porting comments verbatim: the
+    // framework must not know a plugin slug, and must never name a theme's UI stack.
+    const root = join(__dirname, '..', '..');
+    const forbidden = ['analytics', 'numerology', 'ecommerce', 'tagiqx', 'chakra', 'Chakra', 'framer-motion', 'emotion'];
+    const offenders: string[] = [];
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.name === 'tests') continue;
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) { walk(full); continue; }
+        if (!entry.name.endsWith('.ts')) continue;
+        const body = readFileSync(full, 'utf8');
+        for (const word of forbidden) if (body.includes(word)) offenders.push(`${entry.name}: ${word}`);
+      }
+    };
+    walk(root);
+    expect(offenders).toEqual([]);
   });
 });

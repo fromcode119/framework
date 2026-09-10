@@ -93,7 +93,7 @@ export class ThemeBundleCompiler {
   }
 
   /**
-   * A theme's components import their runtime deps (Chakra, emotion, …) from the theme's OWN
+   * A theme's components import their runtime deps from the theme's OWN
    * node_modules, and a fresh clone has none — mirror of `ensure_build_dependencies` in
    * build-plugins.sh. Skipped when the theme declares no dependencies.
    */
