@@ -1,4 +1,4 @@
-import { ApiPathUtils, PublicAssetUrlUtils, RuntimeConstants } from '@fromcode119/core/client';
+import { ApiPathUtils, PublicAssetUrlUtils, RuntimeConstants, ThemePackageLayout } from '@fromcode119/core/client';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
@@ -135,13 +135,18 @@ export class ThemeHeadModel {
    * wants to happen AT first paint therefore cannot live in the bundle, and until now a theme had no
    * way to say so: `ui.css` could be inlined, nothing else could.
    *
-   * `theme.json` `ui.headScript` names one file in the theme's `ui/` directory. It is fetched over the
-   * internal API (never from request input), inlined verbatim, and runs where it sits — before the
-   * body, in milliseconds, with no bundle and no network of its own. It is plain JavaScript on
-   * purpose: no imports, no framework, nothing that could pull the chain back in.
+   * A theme writes `ThemePackageLayout.HEAD_SCRIPT_SOURCE` (`src/boot/head.ts`) and declares NOTHING:
+   * the build compiles it to `ThemePackageLayout.HEAD_SCRIPT_ARTIFACT` and this resolves that name.
+   * A theme naming its own `.js` artifact was the bug — the source is `.ts`, in a different
+   * directory, and the hop between them lived nowhere. See ThemePackageLayout.
+   *
+   * The artifact is fetched over the internal API (never from request input), inlined verbatim, and
+   * runs where it sits — before the body, in milliseconds, with no bundle and no network of its own.
+   * The SHIPPED file has no imports because the bundler collapsed the source into one script; that
+   * is the build's guarantee, not something the theme author writes around.
    */
   private static async loadBootScript(theme: Record<string, any>, apiUrl: string, assetStamp: string): Promise<string> {
-    const bootFile = String(theme.ui?.headScript || '').trim();
+    const bootFile = ThemePackageLayout.headScriptArtifact(theme);
     if (!bootFile || bootFile.includes('/') || bootFile.includes('\\')) return '';
     try {
       const publicHref = ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, bootFile);

@@ -8,6 +8,16 @@ export interface IPluginContextRoles {
   ensure(slug: string, data: { name: string; description?: string; type?: string; permissions?: any[] }): Promise<void>;
   /** Grant a role to a user (idempotent). */
   assignRole(userId: number | string, slug: string): Promise<void>;
+  /**
+   * Give a user access to THIS SITE (idempotent; reactivates a suspended membership).
+   *
+   * Without a membership the framework refuses the login with `workspace_access_denied`, so any plugin
+   * that provisions an account for a site must grant one — otherwise it hands over a login that fails
+   * at sign-in, far from the code that created it.
+   */
+  grantSiteMembership(userId: number | string, roles?: string[]): Promise<void>;
+  /** Withdraw a user's access to THIS SITE. Marks the membership inactive; the account survives. */
+  revokeSiteMembership(userId: number | string): Promise<void>;
   /** Revoke a role from a user (no-op if not assigned). */
   removeRole(userId: number | string, slug: string): Promise<void>;
   /** List the user ids that currently hold a given role. */

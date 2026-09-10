@@ -111,6 +111,7 @@ export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason
 export { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';
 export { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 export { ThemeState } from '@core/theme/enums/theme-state.enum';
+export { ThemePackageLayout } from '@core/theme/theme-package-layout';
 export { Plugins } from '@core/plugin/plugins';
 export { PluginsFacade } from '@core/plugin/plugins-facade';
 export { NamespacedPluginsFacade } from '@core/plugin/namespaced-plugins-facade';
