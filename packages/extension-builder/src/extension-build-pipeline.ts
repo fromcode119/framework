@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { ExtensionKind } from '@extension-builder/extension-kind';
@@ -14,6 +15,7 @@ import { AssetMinifier } from '@extension-builder/assets/asset-minifier';
 import { AssetPrecompressor } from '@extension-builder/assets/asset-precompressor';
 import { PackCleaner } from '@extension-builder/pack/pack-cleaner';
 import { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
+import { ArchiveWriter } from '@extension-builder/pack/archive-writer';
 
 /**
  * The only class that knows the ORDER of a build. Every other class does one step and reports.
@@ -70,11 +72,31 @@ export class ExtensionBuildPipeline {
 
     if (!input.pack) return results;
 
-    const packDir = input.packDir ?? workspace.sourceDir;
+    // Pack in a STAGING copy, never in place. Cleaning strips every `.ts` in the directory, so
+    // doing it to `sourceDir` deletes the developer's working tree — which is exactly what an
+    // earlier version of this method did, and what `build-plugins.sh` avoided by copying to a
+    // temp dir first.
+    const packDir = input.packDir ?? fs.mkdtempSync(path.join(os.tmpdir(), `pack-${input.slug}-`));
+    if (packDir !== workspace.sourceDir) {
+      fs.cpSync(workspace.sourceDir, packDir, { recursive: true });
+    }
+
     PackCleaner.clean(packDir);
     results.push(BuildStepResult.ok('pack-cleaner'));
     await IntegrityStamper.stampPackedDir(packDir);
     results.push(BuildStepResult.ok('integrity-stamper:packed'));
+
+    const version = ExtensionBuildPipeline.readVersion(packDir);
+    const outputPath = path.join(
+      ExtensionBuildPipeline.distRoot(workspace.sourceDir, input.kind),
+      `${input.slug}-${version}.tar.gz`,
+    );
+    try {
+      await new ArchiveWriter().writeTarGz(packDir, outputPath);
+      results.push(BuildStepResult.ok(`archive-writer -> ${outputPath}`));
+    } catch (error) {
+      results.push(BuildStepResult.failure('archive-writer', String(error)));
+    }
 
     return results;
   }
@@ -129,5 +151,19 @@ export class ExtensionBuildPipeline {
       return BuildStepResult.failure(step, String(error));
     }
     return BuildStepResult.ok(step);
+  }
+
+  private static readVersion(dir: string): string {
+    try {
+      return String(JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8')).version ?? '0.0.0');
+    } catch {
+      return '0.0.0';
+    }
+  }
+
+  /** `dist/packages/<kind>s/` beside the workspace, the same place build-plugins.sh wrote to. */
+  private static distRoot(sourceDir: string, kind: ExtensionKind): string {
+    const workspaceRoot = path.dirname(path.dirname(sourceDir));
+    return path.join(workspaceRoot, 'dist', 'packages', kind.directoryName());
   }
 }

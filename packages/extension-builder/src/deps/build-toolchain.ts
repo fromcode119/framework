@@ -14,6 +14,20 @@ export class BuildToolchain {
   private static readonly execFileAsync = promisify(execFile);
   private static readonly runtimeRequire = createRequire(__filename);
 
+  /**
+   * What a plugin's BACKEND bundle leaves unresolved.
+   *
+   * Aligned deliberately with what `build-plugins.sh` shipped, because that is what is actually
+   * running. build-server's list was much longer — it externalised `pdfkit`, `express`, `knex`,
+   * `pg`, `tar` and `speakeasy` as "host-provided" — and the two builders therefore produced
+   * different artifacts for the same plugin: numerology's index.js was 537KB from one and 3.0MB
+   * from the other, the difference being a bundled pdfkit. Two builders quietly disagreeing about
+   * what ships is the whole reason this package exists, so the conservative list wins: a
+   * self-contained bundle cannot break because a host stopped providing something.
+   *
+   * The `@fromcode119/*` entries are NOT optional — they are supplied by the host at runtime and
+   * are not resolvable from a plugin's own node_modules.
+   */
   nodeExternals(): string[] {
     return [
       '@fromcode119/sdk',
@@ -23,24 +37,10 @@ export class BuildToolchain {
       '@fromcode119/email',
       '@fromcode119/cache',
       '@fromcode119/scheduler',
-      'express',
-      'knex',
-      'drizzle-orm',
-      'pg',
-      // Host-provided runtime libs (declared in the framework's own package.json, present in the
-      // host node_modules). Plugins import them expecting the host to supply them — bundling would
-      // either fail to resolve (not a plugin dep) or break native addons. Keep this in sync with the
-      // framework's non-@fromcode119 runtime dependencies.
-      'pdfkit',
-      'pdfkit/*',
-      'handlebars',
+      // Native or otherwise unbundlable, and externalised by build-plugins.sh too.
       'sweph',
-      'speakeasy',
-      'tar',
-      // A plugin's OWN heavyweight deps that must stay external: `playwright-core` reaches for
-      // `chromium-bidi` through a runtime require esbuild cannot resolve, so bundling it fails the
-      // build outright. Found by running the new CLI against numerology — build-plugins.sh had
-      // this external and this list did not, which is what "keep this in sync" always ends in.
+      'handlebars',
+      // Reaches for chromium-bidi through a runtime require esbuild cannot resolve.
       'playwright-core',
     ];
   }

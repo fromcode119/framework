@@ -27,6 +27,11 @@ export class PluginBackendCompiler {
 
     await esbuild.build({
       entryPoints: [entryTs],
+      // esbuild embeds module paths RELATIVE TO CWD in the bundle's comments, so the same plugin
+      // built from the workspace root and from framework/Source produced byte-different output.
+      // Pinning the working directory to the workspace makes the artifact independent of where
+      // the builder happened to be invoked from.
+      absWorkingDir: path.resolve(path.dirname(path.dirname(sourceDir))),
       bundle: true,
       platform: 'node',
       format: 'cjs',

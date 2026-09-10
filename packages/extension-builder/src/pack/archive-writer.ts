@@ -146,4 +146,19 @@ export class ArchiveWriter {
       archive.finalize();
     });
   }
+
+  /**
+   * A `.tar.gz` of the directory's CONTENTS (no wrapping folder), matching what
+   * `build-plugins.sh` produced with `tar -czf <out> -C <dir> .` — installers unpack it flat, so a
+   * wrapping directory would put every file one level too deep.
+   */
+  async writeTarGz(sourceDir: string, outputPath: string): Promise<void> {
+    const tar = require('tar');
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.rmSync(outputPath, { force: true });
+    await tar.create(
+      { gzip: true, cwd: sourceDir, file: outputPath, portable: true },
+      fs.readdirSync(sourceDir),
+    );
+  }
 }
