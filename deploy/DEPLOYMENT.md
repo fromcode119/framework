@@ -94,7 +94,7 @@ is "Docker feels heavy", option 1 is lighter than this in every way that matters
 
 ## Configuration
 
-`deploy/.env` — see `.env.example`. Five values have **no defaults** and the stack refuses to start
+`deploy/.env` — see `.env.example`. These values have **no defaults** and the stack refuses to start
 without them:
 
 | Variable | Why |
@@ -104,6 +104,7 @@ without them:
 | `DATABASE_URL` | non-owner runtime login — what actually serves requests |
 | `JWT_SECRET` | 32+ characters, unique per deployment |
 | `INTEGRATION_SECRET_KEY` | 32+ characters, unique per deployment |
+| `PROXY_NETWORK` | the EXISTING external network your reverse proxy is on (e.g. `edge`). On Coolify, `${COOLIFY_RESOURCE_UUID}` |
 
 Generate secrets with `openssl rand -base64 48 | tr -d '=+/' | cut -c1-48`. Keep `.env` at mode
 `600`; never commit it.
