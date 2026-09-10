@@ -15,3 +15,4 @@ export { AssetMinifier } from '@extension-builder/assets/asset-minifier';
 export { AssetPrecompressor } from '@extension-builder/assets/asset-precompressor';
 export { PackCleaner } from '@extension-builder/pack/pack-cleaner';
 export { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
+export { ExtensionBuildPipeline } from '@extension-builder/extension-build-pipeline';
