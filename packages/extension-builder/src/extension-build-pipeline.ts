@@ -11,6 +11,7 @@ import { PluginMigrationsCompiler } from '@extension-builder/compile/plugin-migr
 import { PluginUiCompiler } from '@extension-builder/compile/plugin-ui-compiler';
 import { ThemeHeadScriptCompiler } from '@extension-builder/compile/theme-head-script-compiler';
 import { ThemeSeedCompiler } from '@extension-builder/compile/theme-seed-compiler';
+import { ThemeBundleCompiler } from '@extension-builder/compile/theme-bundle-compiler';
 import { PluginStyleCompiler } from '@extension-builder/assets/plugin-style-compiler';
 import { AssetMinifier } from '@extension-builder/assets/asset-minifier';
 import { AssetPrecompressor } from '@extension-builder/assets/asset-precompressor';
@@ -110,13 +111,14 @@ export class ExtensionBuildPipeline {
   ): Array<() => Promise<BuildStepResult>> {
     if (kind === ExtensionKind.THEME) {
       return [
+        () => ExtensionBuildPipeline.compileThemeBundle(workspace, slug),
         () => ThemeHeadScriptCompiler.compile(workspace.sourceDir),
         () => ThemeSeedCompiler.compile(workspace.sourceDir, path.join(workspace.sourceDir, 'build', 'seed.mjs')),
       ];
     }
 
     if (kind === ExtensionKind.APPEARANCE) {
-      return [async () => BuildStepResult.skipped('appearance-compiler', 'appearances build through their own vite config')];
+      return [async () => BuildStepResult.skipped('appearance-compiler', 'appearance building is not ported yet — use build-plugins.sh')];
     }
 
     return [
@@ -134,6 +136,23 @@ export class ExtensionBuildPipeline {
     }
     try {
       await new PluginBackendCompiler().compileBackend(workspace.sourceDir, slug);
+    } catch (error) {
+      return BuildStepResult.failure(step, String(error));
+    }
+    return BuildStepResult.ok(step);
+  }
+
+  private static async compileThemeBundle(workspace: ExtensionWorkspace, slug: string): Promise<BuildStepResult> {
+    const step = 'theme-bundle-compiler';
+    const compiler = new ThemeBundleCompiler();
+    // A theme repo commits NO build output (`ui/` and `ui-ssr/` are gitignored), so without this
+    // the archive ships a theme with no bundles at all — and never the ui-ssr/entry.mjs server
+    // bundle the frontend needs, which is how a prod page comes to serve an empty body.
+    if (!compiler.hasThemeSources(workspace.sourceDir)) {
+      return BuildStepResult.skipped(step, 'no theme sources');
+    }
+    try {
+      await compiler.build(workspace.sourceDir, slug);
     } catch (error) {
       return BuildStepResult.failure(step, String(error));
     }
