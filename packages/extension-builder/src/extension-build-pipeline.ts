@@ -113,7 +113,10 @@ export class ExtensionBuildPipeline {
       return [
         () => ExtensionBuildPipeline.compileThemeBundle(workspace, slug),
         () => ThemeHeadScriptCompiler.compile(workspace.sourceDir),
-        () => ThemeSeedCompiler.compile(workspace.sourceDir, path.join(workspace.sourceDir, 'build', 'seed.mjs')),
+        // The built seed goes to the DIST tree, never back inside the theme: build-plugins.sh
+        // writes it to dist/packages/build/themes/<slug>/ for the same reason, and the path matches so, and a `build/` directory
+        // left in the source tree would be picked up and packaged.
+        () => ThemeSeedCompiler.compile(workspace.sourceDir, ExtensionBuildPipeline.seedOutputPath(workspace, slug)),
       ];
     }
 
@@ -185,6 +188,11 @@ export class ExtensionBuildPipeline {
       return BuildStepResult.failure(step, String(error));
     }
     return BuildStepResult.ok(step);
+  }
+
+  private static seedOutputPath(workspace: ExtensionWorkspace, slug: string): string {
+    const workspaceRoot = path.dirname(path.dirname(workspace.sourceDir));
+    return path.join(workspaceRoot, 'dist', 'packages', 'build', 'themes', slug, 'seed.mjs');
   }
 
   private static readVersion(dir: string): string {
