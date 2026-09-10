@@ -26,11 +26,19 @@ export class PluginUiCompiler {
    */
   private static readonly FRONTEND_ENTRY = PluginPackageLayout.FRONTEND_ENTRY;
 
+  /** The always-present artifacts. Anything a plugin DECLARES is added per build, not listed here. */
   private static readonly MIRRORED_ARTIFACTS = [
     PluginPackageLayout.UI_ENTRY, `${PluginPackageLayout.UI_ENTRY}.map`, `${PluginPackageLayout.UI_ENTRY}.gz`,
     PluginPackageLayout.FRONTEND_ENTRY, `${PluginPackageLayout.FRONTEND_ENTRY}.map`, `${PluginPackageLayout.FRONTEND_ENTRY}.gz`,
-    PluginPackageLayout.TRACKER_ENTRY, `${PluginPackageLayout.TRACKER_ENTRY}.gz`, PluginPackageLayout.UI_STYLESHEET,
+    PluginPackageLayout.UI_STYLESHEET,
   ];
+
+  /** Everything to mirror for THIS plugin: the fixed set, plus whatever it declared. */
+  private static mirroredArtifacts(manifest: Record<string, any>): string[] {
+    const declared = PluginPackageLayout.browserEntries(manifest)
+      .flatMap((name) => [`${name}.js`, `${name}.js.gz`]);
+    return [...PluginUiCompiler.MIRRORED_ARTIFACTS, ...declared];
+  }
 
   private toolchain = new BuildToolchain();
 
@@ -84,7 +92,7 @@ export class PluginUiCompiler {
         String(manifest?.namespace || ''),
         path.join(sourceDir, 'ui-ssr'),
       );
-      await this.compileTracker(sourceDir, uiDir);
+      await this.compileDeclaredBrowserEntries(sourceDir, uiDir, manifest);
       await this.mirrorToServedDir(uiDir, servedUiDir, manifest);
       return;
     }
@@ -138,7 +146,7 @@ export class PluginUiCompiler {
   async mirrorToServedDir(uiDir: string, servedUiDir: string, manifest: Record<string, any>): Promise<void> {
     if (uiDir === servedUiDir) return;
     fs.mkdirSync(servedUiDir, { recursive: true });
-    const candidates = [...PluginUiCompiler.MIRRORED_ARTIFACTS];
+    const candidates = [...PluginUiCompiler.mirroredArtifacts(manifest)];
     // A third-party plugin with a non-standard layout may still declare its own entry name.
     const frontendEntry = String(manifest?.ui?.frontendEntry || '').trim();
     if (frontendEntry && !candidates.includes(frontendEntry)) candidates.push(frontendEntry);
@@ -151,32 +159,37 @@ export class PluginUiCompiler {
   }
 
   /**
-   * A plugin may ship a standalone storefront script that is NOT a component and so is invisible to the
-   * Vite glob entry. Built with esbuild instead, from the source the layout class names.
+   * Compiles the standalone browser scripts a plugin DECLARED in `manifest.ui.browserEntries`.
+   *
+   * These are scripts that are not components, so the Vite glob entry cannot see them. What they
+   * are for is the plugin's business — the framework compiles what is declared and knows nothing
+   * else about them. Naming one in the framework (an earlier `TRACKER_ENTRY` constant) put a
+   * plugin's domain concept into the package contract, which is the thing that must not happen.
    */
-  private async compileTracker(sourceDir: string, uiDir: string): Promise<void> {
-    const trackerSource = path.join(uiDir, PluginPackageLayout.TRACKER_SOURCE);
-    if (!fs.existsSync(trackerSource)) return;
-
+  private async compileDeclaredBrowserEntries(sourceDir: string, uiDir: string, manifest: Record<string, any>): Promise<void> {
     const esbuild = this.toolchain.loadEsbuild();
-    await esbuild.build({
-      entryPoints: [trackerSource],
-      bundle: true,
-      minify: true,
-      sourcemap: true,
-      format: 'esm',
-      platform: 'browser',
-      target: ['es2020'],
-      outfile: path.join(uiDir, PluginPackageLayout.TRACKER_ENTRY),
-      alias: this.toolchain.selfAlias(sourceDir),
-      loader: this.toolchain.browserLoader(),
-      jsx: 'transform',
-      jsxFactory: 'ReactPrimitives.createElement',
-      jsxFragment: 'ReactPrimitives.Fragment',
-      banner: { js: BuildToolchain.BROWSER_REQUIRE_SHIM },
-      external: this.toolchain.browserExternals([]),
-      logLevel: 'warning',
-    });
+    for (const name of PluginPackageLayout.browserEntries(manifest)) {
+      const source = path.join(uiDir, `${name}.ts`);
+      if (!fs.existsSync(source)) continue;
+      await esbuild.build({
+        entryPoints: [source],
+        bundle: true,
+        minify: true,
+        sourcemap: true,
+        format: 'esm',
+        platform: 'browser',
+        target: ['es2020'],
+        outfile: path.join(uiDir, `${name}.js`),
+        alias: this.toolchain.selfAlias(sourceDir),
+        loader: this.toolchain.browserLoader(),
+        jsx: 'transform',
+        jsxFactory: 'ReactPrimitives.createElement',
+        jsxFragment: 'ReactPrimitives.Fragment',
+        banner: { js: BuildToolchain.BROWSER_REQUIRE_SHIM },
+        external: this.toolchain.browserExternals([]),
+        logLevel: 'warning',
+      });
+    }
   }
 
   private async compileFrontendRuntime(

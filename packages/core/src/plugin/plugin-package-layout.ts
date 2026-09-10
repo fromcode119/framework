@@ -59,15 +59,26 @@ export class PluginPackageLayout {
   static readonly UI_STYLESHEET = 'style.css';
 
   /**
-   * The storefront TRACKER bundle, relative to `UI_DIR`, compiled from `TRACKER_SOURCE`.
+   * Extra standalone browser scripts a plugin ships, DECLARED by the plugin in
+   * `manifest.ui.browserEntries` as bare names — `["tracker"]` compiles `<name>.ts` from the UI
+   * source dir to `<name>.js` in `UI_DIR`.
    *
-   * A plugin ships one only if it has something to track; the builder skips the step and says so
-   * when the source is absent.
+   * Declared rather than named here, because what such a script is FOR is the plugin's business.
+   * An earlier version of this class had `TRACKER_ENTRY = 'tracker.js'`, which put one plugin's
+   * domain concept into the framework's package contract — the framework has no idea what tracking
+   * is, and must not.
+   *
+   * A plugin that declares nothing gets nothing built, and the builder says so.
    */
-  static readonly TRACKER_ENTRY = 'tracker.js';
+  static readonly BROWSER_ENTRIES_KEY = 'browserEntries';
 
-  /** The source the tracker bundle is compiled from, relative to `UI_DIR`. */
-  static readonly TRACKER_SOURCE = 'tracker.ts';
+  /** The declared names, or [] — the one place the manifest shape is interpreted. */
+  static browserEntries(manifest: Record<string, unknown>): string[] {
+    const ui = manifest?.ui as Record<string, unknown> | undefined;
+    const declared = ui?.[PluginPackageLayout.BROWSER_ENTRIES_KEY];
+    if (!Array.isArray(declared)) return [];
+    return declared.map((name) => String(name).trim()).filter((name) => name !== '' && !name.includes('/') && !name.includes('.'));
+  }
 
   /** Directory holding compiled migrations, relative to the package root. */
   static readonly MIGRATIONS_DIR = path.join('dist', 'migrations');
