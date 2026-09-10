@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import archiver from 'archiver';
+import { ThemePackageLayout } from '@fromcode119/core/client';
 
 /**
  * Creates the distributable ZIP archives for plugin/theme/core packages.
@@ -140,8 +141,8 @@ export class ArchiveWriter {
       // Re-add what the blanket `**/*.mjs` exclusion above would otherwise take with it. `ui-ssr`
       // holds the server render bundle the frontend imports; `seed.mjs` is a theme's seed data.
       archive.glob('ui-ssr/**/*.mjs', { cwd: sourceDir, dot: false });
-      const seed = path.join(sourceDir, 'seed.mjs');
-      if (fs.existsSync(seed)) archive.file(seed, { name: 'seed.mjs' });
+      const seed = path.join(sourceDir, ThemePackageLayout.SEED_ARTIFACT);
+      if (fs.existsSync(seed)) archive.file(seed, { name: ThemePackageLayout.SEED_ARTIFACT });
 
       archive.finalize();
     });

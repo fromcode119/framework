@@ -34,6 +34,19 @@ export class ThemePackageLayout {
   static readonly HEAD_SCRIPT_ARTIFACT = 'head.js';
 
   /**
+   * A theme's seed: `src/seed.ts` compiled to a `seed.mjs` that ships in the PACKAGE only — the
+   * theme's own directory never contains one.
+   *
+   * Same contract as the head script above, and owned here for the same reason: the `.ts` -> `.mjs`
+   * hop and the fact that the artifact is staged in at pack time were knowledge that lived in one
+   * bash function, so nothing in the theme said where its seed came from.
+   */
+  static readonly SEED_SOURCE = 'src/seed.ts';
+
+  /** The built seed's filename inside the package, and the value `theme.json` `seeds` points at. */
+  static readonly SEED_ARTIFACT = 'seed.mjs';
+
+  /**
    * The head-script artifact a theme serves, or `''` when it has none.
    *
    * An explicit `ui.headScript` still wins, exactly as an explicit manifest value wins in

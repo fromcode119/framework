@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { promisify } from 'util';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
 import { PluginUiViteCompiler } from '@extension-builder/compile/plugin-ui-vite-compiler';
+import { PluginPackageLayout } from '@fromcode119/core/client';
 
 /**
  * Compiles a plugin's UI — the vite component build, the storefront and tracker bundles, and the
@@ -23,12 +24,12 @@ export class PluginUiCompiler {
    * storefront bundle was never copied — Vite rebuilt `src/ui/frontend.js` while the build server shipped
    * whatever ancient `ui/frontend.js` sat on disk, beside a perfectly current admin bundle.
    */
-  private static readonly FRONTEND_ENTRY = 'frontend.js';
+  private static readonly FRONTEND_ENTRY = PluginPackageLayout.FRONTEND_ENTRY;
 
   private static readonly MIRRORED_ARTIFACTS = [
-    'bundle.js', 'bundle.js.map', 'bundle.js.gz',
-    'frontend.js', 'frontend.js.map', 'frontend.js.gz',
-    'tracker.js', 'tracker.js.gz', 'style.css',
+    PluginPackageLayout.UI_ENTRY, `${PluginPackageLayout.UI_ENTRY}.map`, `${PluginPackageLayout.UI_ENTRY}.gz`,
+    PluginPackageLayout.FRONTEND_ENTRY, `${PluginPackageLayout.FRONTEND_ENTRY}.map`, `${PluginPackageLayout.FRONTEND_ENTRY}.gz`,
+    PluginPackageLayout.TRACKER_ENTRY, `${PluginPackageLayout.TRACKER_ENTRY}.gz`, PluginPackageLayout.UI_STYLESHEET,
   ];
 
   private toolchain = new BuildToolchain();
@@ -68,7 +69,7 @@ export class PluginUiCompiler {
       return;
     }
 
-    const entryFile = ['index.ts', 'index.js', 'main.ts', 'main.js']
+    const entryFile = [PluginPackageLayout.SERVER_ENTRY_SOURCE, PluginPackageLayout.SERVER_ENTRY, 'main.ts', 'main.js']
       .map(f => path.join(uiDir, f))
       .find(p => fs.existsSync(p));
 
@@ -109,7 +110,7 @@ export class PluginUiCompiler {
       format: 'esm',
       platform: 'browser',
       target: ['es2020'],
-      outfile: path.join(uiDir, 'bundle.js'),
+      outfile: path.join(uiDir, PluginPackageLayout.UI_ENTRY),
       alias: this.toolchain.selfAlias(sourceDir),
       loader: this.toolchain.browserLoader(),
       jsx: 'transform',
@@ -155,7 +156,7 @@ export class PluginUiCompiler {
    * the same step in build-plugins.sh.
    */
   private async compileTracker(sourceDir: string, uiDir: string): Promise<void> {
-    const trackerSource = path.join(uiDir, 'tracker.ts');
+    const trackerSource = path.join(uiDir, PluginPackageLayout.TRACKER_SOURCE);
     if (!fs.existsSync(trackerSource)) return;
 
     const esbuild = this.toolchain.loadEsbuild();
@@ -167,7 +168,7 @@ export class PluginUiCompiler {
       format: 'esm',
       platform: 'browser',
       target: ['es2020'],
-      outfile: path.join(uiDir, 'tracker.js'),
+      outfile: path.join(uiDir, PluginPackageLayout.TRACKER_ENTRY),
       alias: this.toolchain.selfAlias(sourceDir),
       loader: this.toolchain.browserLoader(),
       jsx: 'transform',

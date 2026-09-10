@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { createRequire } from 'module';
 import { promisify } from 'util';
+import { PluginPackageLayout } from '@fromcode119/core/client';
 
 /**
  * Builds a plugin's UI with the framework-owned Vite pipeline — the "plugins are just components"
@@ -51,7 +52,7 @@ export class PluginUiViteCompiler {
         PLUGIN_NAMESPACE: namespace,
         PLUGIN_SLUG: slug,
         UI_BUNDLE: 'admin',
-        UI_OUT: 'bundle.js',
+        UI_OUT: PluginPackageLayout.UI_ENTRY,
       });
 
       if (!this.hasStorefrontSources(uiDir)) return;
@@ -62,7 +63,7 @@ export class PluginUiViteCompiler {
         PLUGIN_NAMESPACE: namespace,
         PLUGIN_SLUG: slug,
         UI_BUNDLE: 'frontend',
-        UI_OUT: 'frontend.js',
+        UI_OUT: PluginPackageLayout.FRONTEND_ENTRY,
       });
 
       await this.buildSsrBundle(viteDir, stagingDir, uiDir, slug, namespace, ssrOutDir);

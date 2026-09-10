@@ -19,6 +19,7 @@ import { PackCleaner } from '@extension-builder/pack/pack-cleaner';
 import { ThemeSsrDependencyCollector } from '@extension-builder/pack/theme-ssr-dependency-collector';
 import { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
 import { ArchiveWriter } from '@extension-builder/pack/archive-writer';
+import { PluginPackageLayout, ThemePackageLayout } from '@fromcode119/core/client';
 
 /**
  * The only class that knows the ORDER of a build. Every other class does one step and reports.
@@ -154,8 +155,8 @@ export class ExtensionBuildPipeline {
 
   private static async compileBackend(workspace: ExtensionWorkspace, slug: string): Promise<BuildStepResult> {
     const step = 'plugin-backend-compiler';
-    if (!fs.existsSync(path.join(workspace.sourceDir, 'index.ts'))) {
-      return BuildStepResult.skipped(step, 'no index.ts');
+    if (!fs.existsSync(path.join(workspace.sourceDir, PluginPackageLayout.SERVER_ENTRY_SOURCE))) {
+      return BuildStepResult.skipped(step, `no ${PluginPackageLayout.SERVER_ENTRY_SOURCE}`);
     }
     try {
       await new PluginBackendCompiler().compileBackend(workspace.sourceDir, slug);
@@ -218,20 +219,20 @@ export class ExtensionBuildPipeline {
     const step = 'theme-seed-staging';
     if (!fs.existsSync(builtSeed)) return BuildStepResult.skipped(step, 'no built seed to stage');
 
-    fs.copyFileSync(builtSeed, path.join(packDir, 'seed.mjs'));
+    fs.copyFileSync(builtSeed, path.join(packDir, ThemePackageLayout.SEED_ARTIFACT));
     fs.rmSync(path.join(packDir, 'seed.cjs'), { force: true });
 
     const manifestPath = path.join(packDir, 'theme.json');
     if (!fs.existsSync(manifestPath)) return BuildStepResult.skipped(step, 'no theme.json to point at the seed');
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-    manifest.seeds = 'seed.mjs';
+    manifest.seeds = ThemePackageLayout.SEED_ARTIFACT;
     fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
     return BuildStepResult.ok(step);
   }
 
   private static seedOutputPath(workspace: ExtensionWorkspace, slug: string): string {
     const workspaceRoot = path.dirname(path.dirname(workspace.sourceDir));
-    return path.join(workspaceRoot, 'dist', 'packages', 'build', 'themes', slug, 'seed.mjs');
+    return path.join(workspaceRoot, 'dist', 'packages', 'build', 'themes', slug, ThemePackageLayout.SEED_ARTIFACT);
   }
 
   /** A theme declares itself in `theme.json`; everything else in `manifest.json`. */

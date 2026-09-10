@@ -28,6 +28,16 @@ export class PluginPackageLayout {
   /** The compiled server entry, relative to the package root. */
   static readonly SERVER_ENTRY = 'index.js';
 
+  /**
+   * The SOURCE the server entry is compiled from.
+   *
+   * Here for the same reason `ThemePackageLayout` owns the head script's source and artifact: a
+   * `.ts` -> `.js` hop that lives only inside a builder is a mapping with no owner, and reading the
+   * package you cannot tell which file produced which. That is the exact defect the layout classes
+   * were written to delete.
+   */
+  static readonly SERVER_ENTRY_SOURCE = 'index.ts';
+
   /** Directory holding the built UI bundles, relative to the package root. */
   static readonly UI_DIR = path.join('src', 'ui');
 
@@ -47,6 +57,17 @@ export class PluginPackageLayout {
    * only arrangement that holds for every instance rather than for one checkout.
    */
   static readonly UI_STYLESHEET = 'style.css';
+
+  /**
+   * The storefront TRACKER bundle, relative to `UI_DIR`, compiled from `TRACKER_SOURCE`.
+   *
+   * A plugin ships one only if it has something to track; the builder skips the step and says so
+   * when the source is absent.
+   */
+  static readonly TRACKER_ENTRY = 'tracker.js';
+
+  /** The source the tracker bundle is compiled from, relative to `UI_DIR`. */
+  static readonly TRACKER_SOURCE = 'tracker.ts';
 
   /** Directory holding compiled migrations, relative to the package root. */
   static readonly MIGRATIONS_DIR = path.join('dist', 'migrations');

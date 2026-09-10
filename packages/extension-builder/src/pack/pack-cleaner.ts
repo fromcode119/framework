@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { ThemePackageLayout } from '@fromcode119/core/client';
 
 /**
  * Removes from a staging directory everything that must not ship.
@@ -78,7 +79,7 @@ export class PackCleaner {
     // theme without a seed.
     if (name.endsWith('.mjs')) {
       const inUiSsr = path.relative(root, full).split(path.sep).includes('ui-ssr');
-      return name !== 'seed.mjs' && !inUiSsr;
+      return name !== ThemePackageLayout.SEED_ARTIFACT && !inUiSsr;
     }
 
     return false;
