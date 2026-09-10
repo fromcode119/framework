@@ -16,3 +16,5 @@ export { AssetPrecompressor } from '@extension-builder/assets/asset-precompresso
 export { PackCleaner } from '@extension-builder/pack/pack-cleaner';
 export { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
 export { ExtensionBuildPipeline } from '@extension-builder/extension-build-pipeline';
+export type { ISourceProvider } from '@extension-builder/interfaces/source-provider.interfaces';
+export { ArchiveSourceProvider } from '@extension-builder/sources/archive-source-provider';
