@@ -118,18 +118,21 @@ RUN npm run build:runtime > /tmp/build-runtime.log 2>&1; ec=$?; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:runtime FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:runtime OK ==="
 
+# Step 3a: Per-icon data modules. This MUST run before build:libs, not after: it emits
+# `packages/react/src/icons/lucide-icon-names.generated.json`, which @fromcode119/react imports at
+# COMPILE time. The file is gitignored, so a fresh checkout does not have it and build:libs fails
+# with TS2307 — invisible on a developer machine where a previous run left one behind.
+# The Next bundles also bake the lucide version into the icon URL, so the files must exist for
+# exactly that version (the drift test guards it) or every icon 404s in the image.
+RUN npm run build:frontend-icons > /tmp/build-frontend-icons.log 2>&1; ec=$?; \
+    tail -n 40 /tmp/build-frontend-icons.log; exit $ec
+
 # Step 3: react → sdk → ai. The SDK (and the AI extension) consume react's built type declarations
 # (e.g. PluginContextRegistry), so react must be compiled before sdk.
 RUN npm run build:libs > /tmp/build-libs.log 2>&1; ec=$?; \
     tail -120 /tmp/build-libs.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:libs FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:libs OK ==="
-
-# Step 3b: Per-icon data modules for BOTH apps BEFORE the app builds — the Next bundles bake the lucide
-# version string into the icon URL, so the files must exist for exactly that version (the drift test
-# guards it) or every icon 404s in the image.
-RUN npm run build:frontend-icons > /tmp/build-frontend-icons.log 2>&1; ec=$?; \
-    tail -n 40 /tmp/build-frontend-icons.log; exit $ec
 
 # Step 4: Build admin UI
 RUN npm run build:admin > /tmp/build-admin.log 2>&1; ec=$?; \

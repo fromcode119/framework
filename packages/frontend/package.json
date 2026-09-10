@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/frontend",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "bin": {
     "fromcode-frontend": "scripts/frontend.js"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/framework",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -16,7 +16,7 @@
     "build:tooling": "npm run build --workspace=@fromcode119/react-class-components && npm run build --workspace=@fromcode119/typescript-multiple-inheritance && npm run build --workspace=@fromcode119/next-build-codegen",
     "build:runtime": "node packages/typescript-multiple-inheritance/dist/tsmi-cli.cjs build -b packages/api && npm run copy:templates --workspace=@fromcode119/api",
     "build:libs": "npm run build --workspace=@fromcode119/react && npm run build --workspace=@fromcode119/sdk && npm run build --workspace=@fromcode119/ai",
-    "build:packages": "npm run build:tooling && npm run build:runtime && npm run build:libs",
+    "build:packages": "npm run build:tooling && npm run build:runtime && npm run build:frontend-icons && npm run build:libs",
     "pack:packages": "rm -rf dist-packages && mkdir -p dist-packages && npm pack --workspaces --pack-destination dist-packages --loglevel error",
     "audit:core-boundary": "node packages/arch-guard/dist/arch-guard-cli.cjs core-boundary",
     "check:plugin-architecture": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
