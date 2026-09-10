@@ -150,7 +150,7 @@ export default defineConfig({
         test: {
           // `packages/mcp` and `packages/mcp-server` matched no project glob, so a test placed in
           // either was collected by nothing and green by default — the same dark-by-omission problem
-          // the api and scheduler projects were added to fix. `packages/archor` was dark too, and it
+          // the api and scheduler projects were added to fix. `packages/arch-guard` was dark too, and it
           // holds the build guards, so a broken guard would have reported nothing.
           name: 'mcp',
           root: frameworkRoot,
@@ -160,7 +160,7 @@ export default defineConfig({
             glob('packages/mcp/tests/**/*.test.ts'),
             glob('packages/mcp-server/tests/**/*.test.ts'),
             glob('packages/cli/tests/**/*.test.ts'),
-            glob('packages/archor/tests/**/*.test.ts'),
+            glob('packages/arch-guard/tests/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },

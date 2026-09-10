@@ -53,7 +53,7 @@ COPY packages/sdk/package.json ./packages/sdk/
 COPY packages/reactor/package.json ./packages/reactor/
 COPY packages/nextor/package.json ./packages/nextor/
 COPY packages/typor/package.json ./packages/typor/
-COPY packages/archor/package.json ./packages/archor/
+COPY packages/arch-guard/package.json ./packages/arch-guard/
 
 # Install dependencies
 RUN npm install --no-audit

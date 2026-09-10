@@ -927,7 +927,7 @@ Atlantis is built for teams who need a complete, extensible application platform
 │   ├── reactor/            # Class-based React primitives — Reactor/PureReactor, @prop/@state/@bound/@watch, Enum
 │   ├── nextor/             # Build-time companion — .view template compiler, 'use client' injection
 │   ├── typor/              # TypeScript build tool — multiple inheritance, package aliases, real typecheck
-│   ├── archor/             # Architecture boundary enforcement — who may import what
+│   ├── arch-guard/             # Architecture boundary enforcement — who may import what
 │   │  # Distribution & tooling
 │   ├── marketplace-client/ # Client for plugin/theme marketplace installs and updates
 │   ├── plugins/            # Plugin loading/packaging support
