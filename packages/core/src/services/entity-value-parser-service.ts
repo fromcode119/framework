@@ -2,10 +2,10 @@ import { EntityParseMode } from '@core/enums/entity-parse-mode.enum';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import type { ICollection } from '@core/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
-import type { IEntityField } from '@core/interfaces/entity-field.interface';
-import type { IEntityInputAlias } from '@core/interfaces/entity-input-alias.interface';
-import type { IEntityParseOptions } from '@core/interfaces/entity-parse-options.interface';
-import type { IEntityParseResult } from '@core/interfaces/entity-parse-result.interface';
+import type { IEntityField } from '@core/entity/interfaces/entity-field.interface';
+import type { IEntityInputAlias } from '@core/entity/interfaces/entity-input-alias.interface';
+import type { IEntityParseOptions } from '@core/entity/interfaces/entity-parse-options.interface';
+import type { IEntityParseResult } from '@core/entity/interfaces/entity-parse-result.interface';
 
 export class EntityValueParserService {
   parseCollectionInput(

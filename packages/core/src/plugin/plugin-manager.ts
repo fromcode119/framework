@@ -3,7 +3,7 @@ import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { PluginContext } from '@core/plugin/plugin-context';
-import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import type { ICollection } from '@core/interfaces/collection.interface';
 import { PluginHostRegistry } from '@core/plugin/host/plugin-host-registry';
 

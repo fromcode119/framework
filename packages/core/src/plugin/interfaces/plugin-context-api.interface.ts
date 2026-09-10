@@ -1,5 +1,5 @@
 import type { IMiddlewareConfig } from '@core/interfaces/middleware-config.interface';
-import type { IPluginHealthProbeResult } from '@core/interfaces/plugin-health-probe-result.interface';
+import type { IPluginHealthProbeResult } from '@core/plugin/interfaces/plugin-health-probe-result.interface';
 
 /**
  * The `context.api` surface of {@link PluginContext}.

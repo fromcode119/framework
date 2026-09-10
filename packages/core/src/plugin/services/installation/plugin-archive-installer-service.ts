@@ -2,7 +2,7 @@ import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import { BackupService } from '@core/management/backup-service';
 import { SafeArchive } from '@core/security/safe-archive';
 import { PluginPackageValidator } from '@core/plugin/services/installation/plugin-package-validator';

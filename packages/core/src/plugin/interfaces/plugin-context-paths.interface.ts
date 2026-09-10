@@ -1,4 +1,4 @@
-import type { IPluginPathReadOptions } from '@core/interfaces/plugin-path-read-options.interface';
+import type { IPluginPathReadOptions } from '@core/plugin/interfaces/plugin-path-read-options.interface';
 
 /**
  * The `context.paths` surface of {@link PluginContext}.

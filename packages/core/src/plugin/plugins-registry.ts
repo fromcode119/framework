@@ -1,4 +1,4 @@
-import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+import type { IPluginApiResolver } from '@core/plugin/interfaces/plugin-api-resolver.interface';
 
 export class PluginsRegistry implements IPluginApiResolver {
   private readonly entries = new Map<string, unknown>();

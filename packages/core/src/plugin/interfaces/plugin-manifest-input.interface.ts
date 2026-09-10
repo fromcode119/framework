@@ -1,4 +1,4 @@
-import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 
 /**
  * A plugin manifest as an AUTHOR writes it: `version` and `category` are filled in by the loader, so both

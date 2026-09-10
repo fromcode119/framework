@@ -5,7 +5,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 import { PluginHealthRouteHandler } from '@core/plugin/plugin-health-route-handler';
 import { RouteConstants } from '@core/constants/route.constants';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
-import type { IPluginHealthProbeResult } from '@core/interfaces/plugin-health-probe-result.interface';
+import type { IPluginHealthProbeResult } from '@core/plugin/interfaces/plugin-health-probe-result.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { RateLimiter } from '@core/security/rate-limiter';
 import { ApiAccessGate } from '@core/plugin/context/api-access-gate';

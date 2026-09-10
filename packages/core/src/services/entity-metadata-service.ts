@@ -1,6 +1,6 @@
-import type { IEntityFieldConfig } from '@core/interfaces/entity-field-config.interface';
-import type { IEntityFieldsConfig } from '@core/interfaces/entity-fields-config.interface';
-import type { IEntityColumnMetadata } from '@core/interfaces/entity-column-metadata.interface';
+import type { IEntityFieldConfig } from '@core/entity/interfaces/entity-field-config.interface';
+import type { IEntityFieldsConfig } from '@core/entity/interfaces/entity-fields-config.interface';
+import type { IEntityColumnMetadata } from '@core/entity/interfaces/entity-column-metadata.interface';
 
 export class EntityMetadataService {
   private static readonly registry = new WeakMap<Function, IEntityColumnMetadata[]>();

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 
 /**
  * PluginPackageLayout

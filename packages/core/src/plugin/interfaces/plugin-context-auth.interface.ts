@@ -1,4 +1,4 @@
-import type { IPluginRequestHandler } from '@core/interfaces/plugin-request-handler.interface';
+import type { IPluginRequestHandler } from '@core/plugin/interfaces/plugin-request-handler.interface';
 
 /**
  * Auth surface exposed on the plugin context. `guard(roles)` returns Express middleware. Per the

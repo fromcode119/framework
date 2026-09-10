@@ -1,5 +1,5 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
-import type { IEntityEnumOptions } from '@core/interfaces/entity-enum-options.interface';
+import type { IEntityEnumOptions } from '@core/entity/interfaces/entity-enum-options.interface';
 
 export class EntityEnumResolverService {
   static resolve(value: unknown, options: IEntityEnumOptions): string {

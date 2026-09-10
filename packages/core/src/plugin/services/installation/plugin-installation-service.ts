@@ -9,7 +9,7 @@ import { DiscoveryService } from '@core/plugin/services/installation/discovery-s
 import { MarketplaceCatalogService } from '@core/marketplace/marketplace-catalog-service';
 import { VersionComparisonService } from '@core/services/version-comparison-service';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
-import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';

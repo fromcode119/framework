@@ -1,4 +1,4 @@
-import type { IPluginContextAuth } from '@core/interfaces/plugin-context-auth.interface';
+import type { IPluginContextAuth } from '@core/plugin/interfaces/plugin-context-auth.interface';
 import { TenantMode } from '@core/tenant/tenant-mode';
 
 /**

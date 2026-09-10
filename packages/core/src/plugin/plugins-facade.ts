@@ -1,4 +1,4 @@
-import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+import type { IPluginApiResolver } from '@core/plugin/interfaces/plugin-api-resolver.interface';
 import { NamespacedPluginsFacade } from '@core/plugin/namespaced-plugins-facade';
 
 export class PluginsFacade {

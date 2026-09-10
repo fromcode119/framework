@@ -1,6 +1,6 @@
 import { IDatabaseManager } from '@fromcode119/database';
 import { Logger } from '@core/logging';
-import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 
 /**
  * Migration Coordinator

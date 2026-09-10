@@ -1,4 +1,4 @@
-import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+import type { IPluginApiResolver } from '@core/plugin/interfaces/plugin-api-resolver.interface';
 import { RuntimeBridge } from '@core/runtime-bridge';
 
 export class RuntimePluginsResolver implements IPluginApiResolver {

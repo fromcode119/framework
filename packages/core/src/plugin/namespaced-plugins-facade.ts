@@ -1,4 +1,4 @@
-import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+import type { IPluginApiResolver } from '@core/plugin/interfaces/plugin-api-resolver.interface';
 
 export class NamespacedPluginsFacade {
   // The facade is Proxy-backed: `namespace('org.fromcode').finance` resolves the `finance` plugin's public

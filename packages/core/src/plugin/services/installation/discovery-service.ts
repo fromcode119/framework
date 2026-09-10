@@ -5,7 +5,7 @@ import semver from 'semver';
 import { Logger } from '@core/logging';
 import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
-import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 
 import type { IDependencyIssue } from '@core/plugin/services/interfaces/dependency-issue.interface';
 import { PluginDependencyInstallerService } from '@core/plugin/services/installation/plugin-dependency-installer-service';

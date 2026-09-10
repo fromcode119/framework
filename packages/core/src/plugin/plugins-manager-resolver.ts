@@ -1,4 +1,4 @@
-import type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+import type { IPluginApiResolver } from '@core/plugin/interfaces/plugin-api-resolver.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { RequestContextUtils } from '@core/context/request-context';

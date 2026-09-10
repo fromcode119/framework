@@ -1,7 +1,7 @@
 import { EntityMetadataService } from '@core/services/entity-metadata-service';
-import type { IEntityFieldConfig } from '@core/interfaces/entity-field-config.interface';
-import type { IEntityColumnDecorator } from '@core/interfaces/entity-column-decorator.interface';
-import type { IEntityColumnOptions } from '@core/interfaces/entity-column-options.interface';
+import type { IEntityFieldConfig } from '@core/entity/interfaces/entity-field-config.interface';
+import type { IEntityColumnDecorator } from '@core/entity/interfaces/entity-column-decorator.interface';
+import type { IEntityColumnOptions } from '@core/entity/interfaces/entity-column-options.interface';
 
 export class EntityColumn {
   static field(config: IEntityFieldConfig): IEntityColumnDecorator {

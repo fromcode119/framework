@@ -1,4 +1,4 @@
-import type { IPluginSettingsSchema } from '@core/interfaces/plugin-settings-schema.interface';
+import type { IPluginSettingsSchema } from '@core/plugin/interfaces/plugin-settings-schema.interface';
 
 /**
  * The `context.settings` surface of {@link PluginContext}.

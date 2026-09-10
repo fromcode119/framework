@@ -1,6 +1,6 @@
 import express, { Router, RequestHandler, Request, Response, NextFunction } from 'express';
 import { PluginHealthRouteHandler } from '@core/plugin/plugin-health-route-handler';
-import type { IPluginHealthRouteHandlerOptions } from '@core/interfaces/plugin-health-route-handler-options.interface';
+import type { IPluginHealthRouteHandlerOptions } from '@core/plugin/interfaces/plugin-health-route-handler-options.interface';
 import { RouteConstants } from '@core/constants/route.constants';
 import { ApiAccessGate } from '@core/plugin/context/api-access-gate';
 import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';

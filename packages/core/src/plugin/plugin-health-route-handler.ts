@@ -1,9 +1,9 @@
 import { PluginHealthStatus } from '@core/enums/plugin-health-status.enum';
 import type { RequestHandler } from 'express';
 import { PluginHealthResponseBuilder } from '@core/plugin/plugin-health-response-builder';
-import type { IPluginHealthIdentity } from '@core/interfaces/plugin-health-identity.interface';
-import type { IPluginHealthProbeResult } from '@core/interfaces/plugin-health-probe-result.interface';
-import type { IPluginHealthRouteHandlerOptions } from '@core/interfaces/plugin-health-route-handler-options.interface';
+import type { IPluginHealthIdentity } from '@core/plugin/interfaces/plugin-health-identity.interface';
+import type { IPluginHealthProbeResult } from '@core/plugin/interfaces/plugin-health-probe-result.interface';
+import type { IPluginHealthRouteHandlerOptions } from '@core/plugin/interfaces/plugin-health-route-handler-options.interface';
 
 export class PluginHealthRouteHandler {
   static createForPlugin(plugin: IPluginHealthIdentity, probe?: () => IPluginHealthProbeResult | Promise<IPluginHealthProbeResult>): RequestHandler {

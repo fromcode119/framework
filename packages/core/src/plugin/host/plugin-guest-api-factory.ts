@@ -8,7 +8,7 @@ import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
 import { ApiAccessGate } from '@core/plugin/context/api-access-gate';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
-import type { IPluginContextApi } from '@core/interfaces/plugin-context-api.interface';
+import type { IPluginContextApi } from '@core/plugin/interfaces/plugin-context-api.interface';
 import type { IMiddlewareConfig } from '@core/interfaces/middleware-config.interface';
 
 /**

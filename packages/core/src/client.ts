@@ -99,12 +99,12 @@ export type { IShortcodeCatalogItem } from '@core/interfaces/shortcode-catalog-i
 export type { IShortcodeCatalogResponse } from '@core/interfaces/shortcode-catalog-response.interface';
 export { RuntimeBridge } from '@core/runtime-bridge';
 export type { IFrontendRuntimeMetadata } from '@core/interfaces/frontend-runtime-metadata.interface';
-export type { IPluginManifestInput } from '@core/interfaces/plugin-manifest-input.interface';
+export type { IPluginManifestInput } from '@core/plugin/interfaces/plugin-manifest-input.interface';
 export type { IThemeManifestInput } from '@core/interfaces/theme-manifest-input.interface';
 export { PluginHealthResponseBuilder } from '@core/plugin/plugin-health-response-builder';
-export type { IPluginHealthBuildOptions } from '@core/interfaces/plugin-health-build-options.interface';
-export type { IPluginHealthIdentity } from '@core/interfaces/plugin-health-identity.interface';
-export type { IPluginHealthResponse } from '@core/interfaces/plugin-health-response.interface';
+export type { IPluginHealthBuildOptions } from '@core/plugin/interfaces/plugin-health-build-options.interface';
+export type { IPluginHealthIdentity } from '@core/plugin/interfaces/plugin-health-identity.interface';
+export type { IPluginHealthResponse } from '@core/plugin/interfaces/plugin-health-response.interface';
 export { LoadedPluginHydration } from '@core/plugin/services/runtime/loaded-plugin-hydration';
 export { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
@@ -167,7 +167,7 @@ export { EntityColumn } from '@core/entity-column';
 export type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 export type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
 export type { IIntegrationConfigField } from '@core/integrations/interfaces/integration-config-field.interface';
-export type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+export type { IPluginApiResolver } from '@core/plugin/interfaces/plugin-api-resolver.interface';
 
 // ── Interactive Canvas (visual editor primitives) ─────────────────────────────
 export { InteractiveCanvas } from '@core/interactive-canvas/view/interactive-canvas-context.client';

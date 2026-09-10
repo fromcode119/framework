@@ -1,5 +1,5 @@
 import type { ISettingsTab } from '@core/interfaces/settings-tab.interface';
-import type { IPluginSettingsField } from '@core/interfaces/plugin-settings-field.interface';
+import type { IPluginSettingsField } from '@core/plugin/interfaces/plugin-settings-field.interface';
 
 export interface IPluginSettingsSchema {
   fields: IPluginSettingsField[];

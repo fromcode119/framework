@@ -1,5 +1,5 @@
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
-import type { IPluginContextMcp } from '@core/interfaces/plugin-context-mcp.interface';
+import type { IPluginContextMcp } from '@core/plugin/interfaces/plugin-context-mcp.interface';
 import type { IMcpToolDefinition } from '@fromcode119/mcp';
 import { McpRegistryProvider } from '@core/mcp/mcp-registry-provider';
 

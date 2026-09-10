@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { SecretService } from '@core/security/secret-service';
-import type { IPluginContextMeta } from '@core/interfaces/plugin-context-meta.interface';
+import type { IPluginContextMeta } from '@core/plugin/interfaces/plugin-context-meta.interface';
 
 /**
  * The platform's ONE signing secret, owned by the framework.

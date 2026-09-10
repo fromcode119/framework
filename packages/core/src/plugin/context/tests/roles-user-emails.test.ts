@@ -1,6 +1,6 @@
 import { RolesContextProxy } from '@core/plugin/context/roles';
 import { SystemConstants } from '@core/constants/system.constants';
-import type { IPluginContextRoles } from '@core/interfaces/plugin-context-roles.interface';
+import type { IPluginContextRoles } from '@core/plugin/interfaces/plugin-context-roles.interface';
 
 /**
  * A user set shaped like the real failure: the admins that matter are reachable ONLY through the

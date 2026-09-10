@@ -134,15 +134,15 @@ export type { IFrontendRuntimeMetadata } from '@core/interfaces/frontend-runtime
 export { BasePluginRouter } from '@core/base/base-plugin-router';
 export type { IBasePluginRouterOptions } from '@core/base/interfaces/base-plugin-router-options.interface';
 export { ManifestNormalizer } from '@core/manifest-normalizer';
-export type { IPluginManifestInput } from '@core/interfaces/plugin-manifest-input.interface';
+export type { IPluginManifestInput } from '@core/plugin/interfaces/plugin-manifest-input.interface';
 export type { IThemeManifestInput } from '@core/interfaces/theme-manifest-input.interface';
 export { PluginHealthResponseBuilder } from '@core/plugin/plugin-health-response-builder';
 export { PluginHealthRouteHandler } from '@core/plugin/plugin-health-route-handler';
-export type { IPluginHealthProbeResult } from '@core/interfaces/plugin-health-probe-result.interface';
-export type { IPluginHealthRouteHandlerOptions } from '@core/interfaces/plugin-health-route-handler-options.interface';
-export type { IPluginHealthBuildOptions } from '@core/interfaces/plugin-health-build-options.interface';
-export type { IPluginHealthIdentity } from '@core/interfaces/plugin-health-identity.interface';
-export type { IPluginHealthResponse } from '@core/interfaces/plugin-health-response.interface';
+export type { IPluginHealthProbeResult } from '@core/plugin/interfaces/plugin-health-probe-result.interface';
+export type { IPluginHealthRouteHandlerOptions } from '@core/plugin/interfaces/plugin-health-route-handler-options.interface';
+export type { IPluginHealthBuildOptions } from '@core/plugin/interfaces/plugin-health-build-options.interface';
+export type { IPluginHealthIdentity } from '@core/plugin/interfaces/plugin-health-identity.interface';
+export type { IPluginHealthResponse } from '@core/plugin/interfaces/plugin-health-response.interface';
 export type { PluginHealthStatus } from '@core/enums/plugin-health-status.enum';
 export { Plugins } from '@core/plugin/plugins';
 export { PluginsFacade } from '@core/plugin/plugins-facade';
@@ -175,7 +175,7 @@ export { MetaContextProxy } from '@core/plugin/context/meta';
 export type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 export type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
 export type { IIntegrationConfigField } from '@core/integrations/interfaces/integration-config-field.interface';
-export type { IPluginApiResolver } from '@core/interfaces/plugin-api-resolver.interface';
+export type { IPluginApiResolver } from '@core/plugin/interfaces/plugin-api-resolver.interface';
 
 // Context
 export { RequestContextUtils } from '@core/context/request-context';

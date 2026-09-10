@@ -1,4 +1,4 @@
-import type { IPluginManifest } from '@core/interfaces/plugin-manifest.interface';
+import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import { PluginContext } from '@core/plugin/plugin-context';
 
 export interface IFromcodePlugin {

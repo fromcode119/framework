@@ -1,7 +1,7 @@
 import { PluginHealthStatus } from '@core/enums/plugin-health-status.enum';
-import type { IPluginHealthBuildOptions } from '@core/interfaces/plugin-health-build-options.interface';
-import type { IPluginHealthIdentity } from '@core/interfaces/plugin-health-identity.interface';
-import type { IPluginHealthResponse } from '@core/interfaces/plugin-health-response.interface';
+import type { IPluginHealthBuildOptions } from '@core/plugin/interfaces/plugin-health-build-options.interface';
+import type { IPluginHealthIdentity } from '@core/plugin/interfaces/plugin-health-identity.interface';
+import type { IPluginHealthResponse } from '@core/plugin/interfaces/plugin-health-response.interface';
 
 export class PluginHealthResponseBuilder {
   /**
