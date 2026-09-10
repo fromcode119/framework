@@ -1,5 +1,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import fs from 'node:fs';
+import { PluginPackageLayout } from '@fromcode119/core/client';
 
 /**
  * Tailwind config for ONE plugin's admin UI. `PLUGIN_UI_DIR` selects which plugin.
@@ -22,8 +24,40 @@ export class PluginUiTailwindConfig {
   /** The admin's config, whose THEME this inherits so `bg-primary` means the same in both. */
   private static readonly ADMIN_CONFIG = path.join('..', '..', '..', 'admin', 'tailwind.config.js');
 
-  /** Build output that lives beside the sources; scanning it re-finds the same classes. */
-  private static readonly BUILD_OUTPUT = ['bundle.js', 'frontend.js', 'tracker.js', '.plugin-entry.tsx'];
+  /**
+   * Build output that lives beside the sources; scanning it re-finds the same classes.
+   *
+   * DERIVED, not listed. The literal list here named `tracker.js` — one plugin's domain concept,
+   * in a framework build config that has no idea what tracking is. The framework's own artifacts
+   * come from the layout class, and a plugin's extra scripts come from what that plugin DECLARED.
+   */
+  private static buildOutput(uiDir: string): string[] {
+    const declared = PluginPackageLayout.browserEntries(PluginUiTailwindConfig.readPluginManifest(uiDir));
+    return [
+      PluginPackageLayout.UI_ENTRY,
+      PluginPackageLayout.FRONTEND_ENTRY,
+      PluginPackageLayout.GENERATED_UI_ENTRY,
+      ...declared.map((name) => `${name}.js`),
+    ];
+  }
+
+  /**
+   * The plugin's manifest, found by walking up from the UI dir — `<plugin>/src/ui` and the legacy
+   * `<plugin>/ui` are both one or two levels down. Returns `{}` when there is none, so a missing
+   * manifest costs the plugin its declared exclusions and nothing else.
+   */
+  private static readPluginManifest(uiDir: string): Record<string, unknown> {
+    let dir = path.resolve(uiDir);
+    for (let depth = 0; depth < 3; depth += 1) {
+      const candidate = path.join(dir, 'manifest.json');
+      try {
+        return JSON.parse(fs.readFileSync(candidate, 'utf8'));
+      } catch {
+        dir = path.dirname(dir);
+      }
+    }
+    return {};
+  }
 
   static create(): Record<string, unknown> {
     const uiDir = String(process.env.PLUGIN_UI_DIR || '').trim();
@@ -46,7 +80,7 @@ export class PluginUiTailwindConfig {
         path.join(uiDir, '**/*.{ts,tsx,js,jsx,mdx}'),
         `!${path.join(uiDir, '**/*.d.ts')}`,
         `!${path.join(uiDir, '**/*.map')}`,
-        ...PluginUiTailwindConfig.BUILD_OUTPUT.map((file) => `!${path.join(uiDir, file)}`),
+        ...PluginUiTailwindConfig.buildOutput(uiDir).map((file) => `!${path.join(uiDir, file)}`),
       ],
     };
   }

@@ -42,7 +42,7 @@ export class PluginUiViteCompiler {
   async build(uiDir: string, slug: string, namespace: string, ssrOutDir: string): Promise<void> {
     const viteDir = this.resolveSdkViteDir();
     const stagingDir = this.createStagingDir(slug);
-    const entryTarget = path.join(uiDir, '.plugin-entry.tsx');
+    const entryTarget = path.join(uiDir, PluginPackageLayout.GENERATED_UI_ENTRY);
 
     try {
       const configFile = await this.stageConfig(viteDir, stagingDir, 'plugin-ui');

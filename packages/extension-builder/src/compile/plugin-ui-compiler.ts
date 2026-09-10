@@ -7,7 +7,7 @@ import { PluginUiViteCompiler } from '@extension-builder/compile/plugin-ui-vite-
 import { PluginPackageLayout } from '@fromcode119/core/client';
 
 /**
- * Compiles a plugin's UI — the vite component build, the storefront and tracker bundles, and the
+ * Compiles a plugin's UI — the vite component build, any declared standalone scripts, and the
  * mirroring of built artifacts into the served `ui/` dir.
  *
  * Split out of build-server's `PackageCompiler`, which had grown past the 300-line limit doing

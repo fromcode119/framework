@@ -59,6 +59,15 @@ export class PluginPackageLayout {
   static readonly UI_STYLESHEET = 'style.css';
 
   /**
+   * The entry file the framework GENERATES inside a plugin's UI dir so Vite has something to point
+   * at — the plugin never writes it, and it is gitignored build glue.
+   *
+   * Owned here because it is the FRAMEWORK's name, unlike a plugin's own scripts: three separate
+   * build configs each had it as a literal, which is the same defect in three copies.
+   */
+  static readonly GENERATED_UI_ENTRY = '.plugin-entry.tsx';
+
+  /**
    * Extra standalone browser scripts a plugin ships, DECLARED by the plugin in
    * `manifest.ui.browserEntries` as bare names — `["tracker"]` compiles `<name>.ts` from the UI
    * source dir to `<name>.js` in `UI_DIR`.
