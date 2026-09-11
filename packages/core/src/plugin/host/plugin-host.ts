@@ -187,11 +187,15 @@ export class PluginHost {
           if (key === 'onInit') { this.initDeferred = true; return undefined; }
           if (key === 'onDisable' || key === 'onUninstall') return undefined;
           await this.start();
-          if (this.initDeferred) { this.initDeferred = false; await this.invoke({ kind: 'lifecycle', name: 'onInit' }, undefined); }
+          if (this.initDeferred) { this.initDeferred = false; await this.invoke({ kind: 'lifecycle', name: 'onInit' }, RequestContextUtils.storage.getStore()); }
         }
         if (key === 'onEnable') this.wasEnabled = true;
         if (key === 'onDisable') this.wasEnabled = false;
-        return this.invoke({ kind: 'lifecycle', name: key, args: extra }, undefined);
+        // The store the host is in, NOT undefined. `publicAPI` has always forwarded it; lifecycle
+        // never did, so an isolated plugin's onInit ran untenanted even when the caller had entered a
+        // site's scope — which is exactly what the per-site replay does. Every write the guest made
+        // was refused, and the plugin was told nothing.
+        return this.invoke({ kind: 'lifecycle', name: key, args: extra }, RequestContextUtils.storage.getStore());
       };
     }
     stubs.publicAPI = this.lazyPublicApi();

@@ -16,9 +16,10 @@ import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
  * Several plugins already do exactly this for themselves — this makes it uniform rather than a
  * matter of which plugin author remembered to catch.
  *
- * Per-tenant boot work is now expressible: `context.tenants.forEach` runs a plugin's work once per
- * site, each in its own scope. This guard stays for the calls that did NOT ask for that — it skips
- * them rather than widening them, and the message names the alternative.
+ * Per-site boot work is now automatic: after the registration pass the framework replays `onInit`
+ * once per site that has the plugin, with every registration method inert (PluginSiteDataReplay), so
+ * the data half runs in each site's scope. This guard is what makes the FIRST pass harmless — it
+ * skips rather than widening, and says which pass the reader is looking at.
  */
 export class UntenantedBootAccess {
   private static readonly logger = new Logger({ namespace: 'plugin-tenancy' });
@@ -53,8 +54,8 @@ export class UntenantedBootAccess {
     UntenantedBootAccess.logger.warn(
       `[${pluginSlug}] skipped context.db.${method} on "${String(table)}" outside a request: this deployment `
       + 'serves several sites and this code path has no site, so the call would be ambiguous. '
-      + 'Wrap the work in `await context.tenants.forEach(async () => { ... })` — it runs once per '
-      + 'site, in that site\'s own scope. Left as it is, this work happens for NO site.',
+      + 'The framework runs this hook AGAIN, once per site that has the plugin, with registration '
+      + 'suppressed — so the work still happens; this pass is the registration one.',
     );
     return Promise.resolve(UntenantedBootAccess.EMPTY[method] ?? null);
   }

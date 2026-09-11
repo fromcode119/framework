@@ -1,4 +1,5 @@
 import { DependencyIssueKind } from '@core/plugin/services/enums/dependency-issue-kind.enum';
+import { PluginSiteDataReplay } from '@core/plugin/tenant/plugin-site-data-replay';
 import { PluginApprovalMode } from '@core/plugin/services/enums/plugin-approval-mode.enum';
 import { randomUUID } from 'crypto';
 import { Logger } from '@core/logging';
@@ -203,6 +204,14 @@ export class LifecycleService {
         await loadedPlugin.onUpdate(ctx, { oldVersion: savedVersion, newVersion: plugin.manifest.version });
       }
       if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
+      // ...and again, once per site, with every registration method inert.
+      //
+      // `onInit` does two jobs: it REGISTERS (global, exactly once — done by the call above) and it
+      // sets up DATA (per site). Boot has no site, so the second half was skipped or refused for all
+      // of them: seven plugins shipped defaults, backfills and normalisations that ran for nobody.
+      // That is a framework problem, not seven plugin problems, so the framework replays the hook
+      // rather than asking every plugin author to remember a tenancy call.
+      await PluginSiteDataReplay.run(loadedPlugin, ctx, this.manager.db, this.logger);
     } catch (err: any) {
       this.failureIsolation.rollbackPartialRegistration(loadedPlugin);
       await this.failureIsolation.markPluginError(loadedPlugin, err.message);
