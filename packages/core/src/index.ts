@@ -163,6 +163,7 @@ export { ProjectPaths } from '@core/config/paths';
 // Integrations
 export { IntegrationManager } from '@core/integrations/integration-manager';
 export { IntegrationRegistry } from '@core/integrations/integration-registry';
+export { NpmCacheDirectory } from '@core/plugin/services/installation/npm-cache-directory';
 export { SecretService } from '@core/security/secret-service';
 export { SecretService as IntegrationSecretService } from '@core/security/secret-service';
 export { SigningSecretService } from '@core/security/signing-secret-service';

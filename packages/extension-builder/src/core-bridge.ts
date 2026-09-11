@@ -28,6 +28,11 @@ export class Core {
     return Core.required.IntegrityService;
   }
 
+  /** The npm-cache rule, shared so the theme compiler and the plugin installer cannot drift. */
+  static get NpmCacheDirectory(): any {
+    return Core.required.NpmCacheDirectory;
+  }
+
   static get DependencyInstaller(): any {
     return Core.required.DependencyInstaller;
   }

@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import { createRequire } from 'module';
 import { promisify } from 'util';
 import { ViteStagingRoot } from '@extension-builder/compile/vite-staging-root';
+import { Core } from '@extension-builder/core-bridge';
 
 /**
  * Builds a theme's UI with the framework-owned Vite pipeline — the build-server twin of
@@ -105,7 +106,13 @@ export class ThemeBundleCompiler {
     const installArgs = fs.existsSync(path.join(themeDir, 'package-lock.json'))
       ? ['ci', '--no-audit', '--no-fund']
       : ['install', '--no-audit', '--no-fund'];
-    await ThemeBundleCompiler.execFileAsync('npm', installArgs, { cwd: themeDir, timeout: 600_000 });
+    // Same npm-cache rule as the plugin installer: HOME is not writable in a container, so npm
+    // cannot use its default cache and every theme build died with EACCES before fetching anything.
+    await ThemeBundleCompiler.execFileAsync('npm', installArgs, {
+      cwd: themeDir,
+      timeout: 600_000,
+      env: { ...process.env, ...Core.NpmCacheDirectory.environmentFor(themeDir) },
+    });
   }
 
   /**
