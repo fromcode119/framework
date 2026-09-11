@@ -1,8 +1,7 @@
 import { Logger } from '@core/logging';
-import { RequestContextUtils } from '@core/context/request-context';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { TenantMode } from '@core/tenant/tenant-mode';
-import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
+import { PerTenantRun } from '@core/tenant/per-tenant-run';
 
 /**
  * Runs a plugin's SCHEDULED task once per tenant, so a timer can reach tenant data at all.
@@ -54,47 +53,15 @@ export class PluginScheduledTenantRun {
     input: Parameters<typeof PluginScheduledTenantRun.wrap>[0],
     data: unknown,
   ): Promise<void> {
-    const label = `${input.pluginSlug}:${input.taskName}`;
-    const tenants = await TenantResolverService.shared(input.db).listActive();
-    let ran = 0;
-
-    for (const tenant of tenants) {
-      if (!(await PluginTenantAccess.isPresentFor(input.pluginSlug, tenant.id))) continue;
-      ran += (await PluginScheduledTenantRun.runForTenant(input, data, tenant.id, label)) ? 1 : 0;
-    }
-
-    PluginScheduledTenantRun.logger.debug(
-      `"${label}" ran for ${ran} of ${tenants.length} tenant(s).`,
-    );
+    await PerTenantRun.forEach({
+      label: `${input.pluginSlug}:${input.taskName}`,
+      db: input.db,
+      // "Has the plugin" means installed by them OR shipped by the framework: a bundled extension is
+      // in nobody's installed set, and gating on that alone ran the Sources task for zero tenants.
+      appliesTo: (tenantId) => PluginTenantAccess.isPresentFor(input.pluginSlug, tenantId),
+      before: (tenantId) => PluginTenantAccess.warm(tenantId),
+      work: async () => { await input.handler(data); },
+    });
   }
 
-  /**
-   * One tenant's turn.
-   *
-   * Both scopes are needed and they do different jobs: the request store is what stops the tenancy
-   * guard skipping the query, and `withTenant` is what binds the connection so row-level security
-   * answers for this tenant. With only the first, the query runs unbound and reads whatever the
-   * policy lets through; with only the second, it never runs at all.
-   */
-  private static async runForTenant(
-    input: Parameters<typeof PluginScheduledTenantRun.wrap>[0],
-    data: unknown,
-    tenantId: string,
-    label: string,
-  ): Promise<boolean> {
-    try {
-      await PluginTenantAccess.warm(tenantId);
-      await RequestContextUtils.storage.run(
-        { tenantId },
-        () => input.db.withTenant(tenantId, async () => { await input.handler(data); }),
-      );
-      return true;
-    } catch (error: unknown) {
-      PluginScheduledTenantRun.logger.error(
-        `Scheduled task "${label}" failed for tenant "${tenantId}"`,
-        error,
-      );
-      return false;
-    }
-  }
 }

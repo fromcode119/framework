@@ -1,5 +1,7 @@
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
+import { RequestContextUtils } from '@core/context/request-context';
+import { PerTenantRun } from '@core/tenant/per-tenant-run';
 
 export class MetaContextProxy {
   /**
@@ -21,12 +23,27 @@ export class MetaContextProxy {
       async set(key: string, value: unknown): Promise<void> {
         const normalizedKey = String(key);
         const normalizedValue = value == null ? '' : String(value);
-        const existing = await manager.db.findOne(SystemConstants.TABLE.META, { key: normalizedKey });
-        if (existing) {
-          await manager.db.update(SystemConstants.TABLE.META, { key: normalizedKey }, { value: normalizedValue });
-        } else {
-          await manager.db.insert(SystemConstants.TABLE.META, { key: normalizedKey, value: normalizedValue });
-        }
+        const write = async (): Promise<void> => {
+          const existing = await manager.db.findOne(SystemConstants.TABLE.META, { key: normalizedKey });
+          if (existing) {
+            await manager.db.update(SystemConstants.TABLE.META, { key: normalizedKey }, { value: normalizedValue });
+          } else {
+            await manager.db.insert(SystemConstants.TABLE.META, { key: normalizedKey, value: normalizedValue });
+          }
+        };
+
+        // Inside a request there is a tenant and this is one write. At BOOT there is none, and
+        // `_system_meta` is tenant-scoped: the row's `tenant_id` defaults to NULL and the policy
+        // checks `tenant_id = current_setting(...)`, so NULL = NULL is not TRUE and the write is
+        // refused. Plugins setting a default in `onInit` were failing on every boot, each reporting
+        // it separately, and the value then existed only for tenants that reached the code inside a
+        // request. A boot-time write applies to every tenant — this is a per-SITE store.
+        if (RequestContextUtils.storage.getStore()) return write();
+        await PerTenantRun.forEach({
+          label: `meta:set:${normalizedKey}`,
+          db: manager.db as any,
+          work: write,
+        });
       },
 
       /**

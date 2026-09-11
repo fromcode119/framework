@@ -1,3 +1,4 @@
+import { PerTenantRun } from '@core/tenant/per-tenant-run';
 import { AppRoleGrantService } from '@core/database/app-role-grant-service';
 import { Logger } from '@core/logging';
 import { IDatabaseManager } from '@fromcode119/database';
@@ -35,11 +36,6 @@ export class PluginManagerInitService {
     // Immediately after migrations, on the OWNER connection: whatever DDL just ran may have created
     // tables the runtime role has no rights to yet.
     await AppRoleGrantService.apply(this.manager.schemaDb);
-    try {
-      await new PersonCatalogService(this.db as any).seedDefaults();
-    } catch (error) {
-      this.logger.warn(`[people] Failed to seed default person catalogs: ${error instanceof Error ? error.message : String(error)}`);
-    }
     await this.coordinator.validateDatabaseState();
     await manager.integrations.initialize();
 
@@ -87,5 +83,29 @@ export class PluginManagerInitService {
     // Start background services after migrations and system collections are ready
     await manager.scheduler.start();
     manager.security.start();
+  }
+
+  /**
+   * Seeds the default person catalogs, once per tenant.
+   *
+   * Deliberately NOT part of `init()`: `init()` runs the migrations that create `_system_tenants`,
+   * and tenancy cannot be configured until they have. Seeding from inside it therefore ran while
+   * `TenantMode` was still off, took the single-tenant path, and was refused by row-level security on
+   * every boot — `person_catalogs` is tenant-scoped, a row written with no tenant gets a NULL
+   * `tenant_id`, and the policy's `tenant_id = current_setting(...)` is then NULL, not TRUE.
+   *
+   * The caller runs it after `configureTenantMode()`, which is the first moment the answer exists.
+   */
+  async seedPeopleCatalogs(): Promise<void> {
+    try {
+      const catalogs = new PersonCatalogService(this.db as any);
+      await PerTenantRun.forEach({
+        label: 'people:seed-default-catalogs',
+        db: this.db as any,
+        work: () => catalogs.seedDefaults(),
+      });
+    } catch (error) {
+      this.logger.warn(`[people] Failed to seed default person catalogs: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 }

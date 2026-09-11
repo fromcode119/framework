@@ -203,6 +203,9 @@ export class PluginManager implements IPluginManagerInterface {
   async init() {
     await this.bootstrap.init();
     await this.configureTenantMode();
+    // AFTER tenancy is known, never before: these rows are tenant-scoped, and seeding them while
+    // TenantMode was still off wrote them with no tenant, which row-level security refuses outright.
+    await this.bootstrap.seedPeopleCatalogs();
     // After migrations, so `_system_meta` exists: the queue's retry, backoff and retention policy is
     // the operator's, not a constant. Until this runs the declared defaults apply.
     this.scheduler.useQueue(this.jobs);

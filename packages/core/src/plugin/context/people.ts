@@ -1,4 +1,6 @@
 import { NamingStrategy } from '@fromcode119/database';
+import { PerTenantRun } from '@core/tenant/per-tenant-run';
+import { RequestContextUtils } from '@core/context/request-context';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -125,7 +127,28 @@ export class PeopleContextProxy {
       },
 
       catalogs: {
-        register: (kind: string, entry: { key: string; label: string; pluginSlug?: string }) => catalogs.register(kind, entry),
+        /**
+         * Registering a catalog value, from wherever the plugin calls it.
+         *
+         * Inside a request there is a tenant and this is one write. At BOOT — where every plugin
+         * declaring its own vocabulary calls it, in `onInit` — there is none, and `person_catalogs`
+         * is tenant-scoped: the row's `tenant_id` defaults to NULL and the policy checks
+         * `tenant_id = current_setting(...)`, so NULL = NULL is not TRUE and the write is refused.
+         * Three plugins and the framework's own seed failed that way on every boot, each reporting
+         * it as its own warning, and the values existed only for tenants that happened to reach this
+         * code inside a request.
+         *
+         * So a boot-time registration is applied to every tenant. The plugin says WHAT its
+         * vocabulary is; which tenants have it is not a question a plugin should have to ask.
+         */
+        register: async (kind: string, entry: { key: string; label: string; pluginSlug?: string }) => {
+          if (RequestContextUtils.storage.getStore()) return catalogs.register(kind, entry);
+          await PerTenantRun.forEach({
+            label: `people:catalog:${kind}:${entry?.key}`,
+            db: db as any,
+            work: async () => { await catalogs.register(kind, entry); },
+          });
+        },
         list: (kind: string) => catalogs.list(kind),
         unregister: (kind: string, key: string) => catalogs.remove(kind, key)
       },
