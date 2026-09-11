@@ -15,6 +15,7 @@ import { DashboardActivityChart } from '@/app/dashboard-activity-chart';
 import { DashboardSystemPanel } from '@/app/dashboard-system-panel.client';
 import { DashboardNeedsYou } from '@/app/dashboard-needs-you.client';
 import { DashboardSitesPanel } from '@/app/dashboard-sites-panel.client';
+import { DashboardRecentEdits } from '@/app/dashboard-recent-edits.client';
 import { DashboardActivityBreakdown } from '@/app/dashboard-activity-breakdown';
 import { DashboardUpdateAlert } from '@/app/dashboard-update-alert';
 import { DashboardCollectionsGrid } from '@/app/dashboard-collections-grid';
@@ -194,6 +195,9 @@ export class AdminPage extends AdminComponent {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <Slot name="admin.dashboard.top" />
+
+              {/* What you were working on, before what there is a lot of. */}
+              <DashboardRecentEdits />
 
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1">

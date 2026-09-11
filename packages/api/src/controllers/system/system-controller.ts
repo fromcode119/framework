@@ -218,6 +218,10 @@ export class SystemController extends BaseController {
     return this.adminController.getSiteStats(req, res);
   }
 
+  async getRecentEdits(req: Request, res: Response) {
+    return this.adminController.getRecentEdits(req, res);
+  }
+
   async getSecurityStats(req: Request, res: Response) {
     return this.adminController.getSecurityStats(req, res);
   }

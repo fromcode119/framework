@@ -110,6 +110,7 @@ export class RouteConstants {
   ADMIN_STATS_SCHEDULE: '/admin/stats/schedule',
   ADMIN_STATS_ATTENTION: '/admin/stats/attention',
   ADMIN_STATS_SITES: '/admin/stats/sites',
+  ADMIN_STATS_RECENT_EDITS: '/admin/stats/recent-edits',
   ADMIN_INTEGRATIONS: '/admin/integrations',
   ADMIN_INTEGRATIONS_TYPE: '/admin/integrations/:type',
   ADMIN_INTEGRATIONS_PROVIDER: '/admin/integrations/:type/providers/:providerId',

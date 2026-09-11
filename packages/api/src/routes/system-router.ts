@@ -128,6 +128,10 @@ export class SystemRouter extends BaseRouter {
       this.controller.getAttention);
     this.get(RouteConstants.SEGMENTS.ADMIN_STATS_SITES, this.auth.requirePermission('system:view'),
       this.controller.getSiteStats);
+    // Guarded by the session only: these are the CALLER's own edits, and a permission for reading
+    // your own recent work would be a permission to use the dashboard.
+    this.get(RouteConstants.SEGMENTS.ADMIN_STATS_RECENT_EDITS, this.auth.guard(),
+      this.controller.getRecentEdits);
     
     // Integration management
     this.get(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS, this.auth.requirePermission('integrations:view'), 

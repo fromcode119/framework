@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
-import { AttentionResolutionService, CoreServices, HostResourceService, SystemConstants } from '@fromcode119/core';
+import { AttentionResolutionService, CoreServices, HostResourceService, RecentEditsService, SystemConstants } from '@fromcode119/core';
 
 export class SystemAdminController {
 
@@ -156,6 +156,30 @@ export class SystemAdminController {
       });
     } catch {
       return null;
+    }
+  }
+
+  /** Enough to pick up where you left off; more is a history page, which exists elsewhere. */
+  private static readonly RECENT_EDITS_LIMIT = 5;
+
+  /**
+   * The documents THIS operator last edited, from the version history the framework already writes.
+   * Scoped to the caller: "recently changed by anyone" is the activity log's question, and merging
+   * the two buries your own work under a colleague's import.
+   */
+  async getRecentEdits(req: Request, res: Response) {
+    try {
+      const service = new RecentEditsService({
+        findVersions: (limit: number) => this.runtime.db.find(SystemConstants.TABLE.RECORD_VERSIONS, {
+          orderBy: { updated_at: 'desc' },
+          limit,
+        }),
+        listCollections: () => this.runtime.manager.getCollections() as any[],
+      });
+      const userId = String((req as any)?.user?.id ?? '');
+      res.json({ edits: await service.list(userId, SystemAdminController.RECENT_EDITS_LIMIT) });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   }
 
