@@ -1,6 +1,7 @@
 {
   "name": "@fromcode119/ai",
   "version": "0.2.3",
+  "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -45,9 +46,5 @@
     "@types/react-dom": "19.0.0",
     "typescript": "^5.3.3",
     "vitest": "^4.1.8"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://npm.pkg.github.com"
   }
 }
