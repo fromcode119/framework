@@ -118,6 +118,13 @@ export interface IPluginManifest {
 
   // Configuration
   config?: Record<string, any>;
+
+  /**
+   * Set by the framework, never by a manifest on disk: this extension was found in the BUNDLED
+   * root, so it ships inside the image. Bundled extensions are always active and can be neither
+   * disabled nor removed — they are product surface, not an operator's installation.
+   */
+  bundled?: boolean;
   /**
    * T5: `false` (or `{ enabled: false }`) keeps the plugin in the api process ("shared") — give a `reason`,
    * the admin shows it. `{ enabled: true }` isolates it even when the platform default is shared.

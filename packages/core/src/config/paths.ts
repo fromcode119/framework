@@ -43,6 +43,18 @@ export class ProjectPaths {
 
   }
 
+  /**
+   * Where the FRAMEWORK's own extensions live — shipped inside the image, not installed by anyone.
+   *
+   * Separate from the plugins root on purpose: that one is a mount an operator owns, and a bundled
+   * extension must survive whatever is (or is not) mounted there. Everything here is always present
+   * and always active; nothing installs or removes it.
+   */
+  static getBundledPluginsDir(): string {
+    const configured = String(process.env.BUNDLED_PLUGINS_DIR || '').trim();
+    return ProjectPaths.resolveFromRoot(ProjectPaths.getProjectRoot(), configured || 'bundled-plugins');
+  }
+
   static getPluginsDir(): string {
       const root = ProjectPaths.getProjectRoot();
       const isDev = ProjectPaths.isFrameworkRoot(root);

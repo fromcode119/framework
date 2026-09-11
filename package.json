@@ -69,7 +69,8 @@
     "check:conventions:detail": "node packages/arch-guard/dist/arch-guard-cli.cjs convention-guard --detail",
     "check:conventions:error": "FRAMEWORK_CONVENTION_MODE=error node packages/arch-guard/dist/arch-guard-cli.cjs convention-guard",
     "check:mcp-tool-schemas": "node packages/arch-guard/dist/arch-guard-cli.cjs mcp-tool-schemas",
-    "build:frontend-host": "esbuild packages/frontend/lib/ssr/host/theme-render-guest-main.ts --bundle --platform=node --format=cjs --target=node22 --alias:@=./packages/frontend --external:@fromcode119/* --external:react --external:react-dom --external:next --outfile=packages/frontend/dist-host/theme-render-guest-main.cjs --log-level=warning"
+    "build:frontend-host": "esbuild packages/frontend/lib/ssr/host/theme-render-guest-main.ts --bundle --platform=node --format=cjs --target=node22 --alias:@=./packages/frontend --external:@fromcode119/* --external:react --external:react-dom --external:next --outfile=packages/frontend/dist-host/theme-render-guest-main.cjs --log-level=warning",
+    "bundle:extensions": "node scripts/bundle-extensions.mjs"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",

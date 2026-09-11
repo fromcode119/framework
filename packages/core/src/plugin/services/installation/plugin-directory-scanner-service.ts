@@ -99,6 +99,17 @@ export class PluginDirectoryScannerService {
     }
   }
 
+  /** Directory names under a root, lowercased; an absent root is simply an empty set. */
+  private static listDirectoryNames(root: string): Set<string> {
+    try {
+      return new Set(fs.readdirSync(root)
+        .filter((name) => !name.startsWith('.'))
+        .map((name) => name.toLowerCase()));
+    } catch {
+      return new Set<string>();
+    }
+  }
+
   public async discoverPlugins(
     existingPlugins: Map<string, ILoadedPlugin>,
     installedState: Record<string, { sandboxConfig?: any; state?: unknown }> = {}
@@ -107,7 +118,13 @@ export class PluginDirectoryScannerService {
     errored: { manifest: any, path: string, error: string }[]
   }> {
     this.logger.info(`Scanning for plugins in ${this.pluginsRoot}...`);
-    const roots = [this.pluginsRoot];
+    // The framework's OWN extensions ship in the image under a second root. The MOUNTED root is
+    // scanned first so a developer editing the source tree still sees their changes — on a
+    // deployment that root is empty, so the bundled copy is what loads. Either way the slug is
+    // marked bundled, which is what makes it always-on and unremovable.
+    const bundledRoot = ProjectPaths.getBundledPluginsDir();
+    const bundledSlugs = PluginDirectoryScannerService.listDirectoryNames(bundledRoot);
+    const roots = [this.pluginsRoot, bundledRoot];
 
     const themesDir = ProjectPaths.getThemesDir();
     if (fs.existsSync(themesDir)) {
@@ -213,6 +230,12 @@ export class PluginDirectoryScannerService {
                 // against whichever manifest actually wins; resolve() only fills absent values, so
                 // running it again over the disk manifest is a no-op.
                 const effectiveManifest = PluginPackageLayout.resolve(pluginPath, pluginModule.manifest || manifest);
+                // Bundled extensions are part of the product: always on, never uninstallable, and
+                // not subject to the operator's saved state — the admin refuses to disable them.
+                if (bundledSlugs.has(String(effectiveManifest.slug || '').toLowerCase())) {
+                  effectiveManifest.bundled = true;
+                  effectiveManifest.sandbox = false;
+                }
 
                 if (shouldSandbox) {
                   this.logger.info(`Staging sandboxed plugin: ${manifest.slug}`);

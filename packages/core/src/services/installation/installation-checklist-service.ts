@@ -42,7 +42,20 @@ export class InstallationChecklistService {
     ]);
 
     return {
-      isFresh: themes === 0 && plugins === 0,
+      /**
+       * A theme is what makes this installation serve anything, so an install with no ACTIVE theme
+       * is one nobody has started using — whatever else happens to be installed.
+       *
+       * It used to also require zero plugins, which broke the moment the platform installed one of
+       * its own: a single inactive plugin made a completely empty installation claim it was in use,
+       * and the setup steps vanished from the operator's first screen.
+       */
+      /**
+       * No ACTIVE theme AND nothing the operator installed themselves. The theme alone was too
+       * eager — a working installation whose theme is momentarily deactivated is not a new one —
+       * and counting plugins alone broke the moment the framework bundled one of its own.
+       */
+      isFresh: !activeTheme && plugins === 0,
       counts: { themes, sites, plugins, users },
       /**
        * ONE site unless tenant rows exist — `TenantMode` enables multi-tenancy only when

@@ -1,0 +1,48 @@
+{
+  "slug": "build-server",
+  "sandbox": false,
+  "namespace": "org.fromcode",
+  "name": "Build Server",
+  "version": "0.1.34",
+  "category": "devops",
+  "description": "Automated marketplace build server. Clones plugin/theme repos from sources.json, compiles TypeScript via esbuild, packages ZIP archives, and updates the registry database.",
+  "author": "Fromcode",
+  "homepage": "https://fromcode.com",
+  "tags": [
+    "build",
+    "registry",
+    "automation",
+    "ci"
+  ],
+  "capabilities": [
+    "api",
+    "database",
+    "hooks",
+    "admin",
+    "i18n"
+  ],
+  "admin": {
+    "group": "Management",
+    "icon": "GitBranch",
+    "menu": [
+      {
+        "label": "Sources",
+        "path": "/build-server",
+        "icon": "GitBranch",
+        "priority": 1
+      }
+    ],
+    "slots": [
+      {
+        "slot": "admin.plugin.build-server.content",
+        "component": "admin.plugin.build-server.overview"
+      },
+      {
+        "slot": "admin.plugin.build-server.page.build-server",
+        "component": "admin.plugin.build-server.overview"
+      }
+    ],
+    "label": "Sources"
+  },
+  "checksum": "28cd645e25b4e2453a712189e42034416c8b25a07c0b8851f7fedd1b4a51328d"
+}

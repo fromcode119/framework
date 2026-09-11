@@ -79,6 +79,37 @@ export class PluginTenantAccess {
    *                                fail-open shape already closed once in `BaseDialect.withTenant`.
    *    An unloaded tenant lands here too, and false is the right rendering of "we do not know".
    */
+  /**
+   * Whether a LOADED plugin may show for the current tenant — the same question as
+   * `isEnabledForCurrentTenant`, except that a bundled extension is never a per-site choice.
+   *
+   * The framework's own screens (the build server's Sources page) are platform surface: nobody
+   * enables them for a site, so the per-tenant gate hid them completely on any multi-tenant
+   * deployment while the plugin itself sat healthy and active.
+   */
+  /** Slugs the framework itself ships, learned from the bundled root once per boot. */
+  private static bundledSlugCache: Set<string> | null = null;
+
+  static isBundledSlug(slug: string): boolean {
+    if (!PluginTenantAccess.bundledSlugCache) {
+      try {
+        PluginTenantAccess.bundledSlugCache = new Set(
+          require('fs').readdirSync(require('@core/config/paths').ProjectPaths.getBundledPluginsDir())
+            .filter((name: string) => !name.startsWith('.'))
+            .map((name: string) => name.toLowerCase()),
+        );
+      } catch {
+        PluginTenantAccess.bundledSlugCache = new Set<string>();
+      }
+    }
+    return PluginTenantAccess.bundledSlugCache.has(String(slug ?? '').trim().toLowerCase());
+  }
+
+  static isVisibleForCurrentTenant(plugin: { manifest?: { slug?: string; bundled?: boolean } }): boolean {
+    if (plugin?.manifest?.bundled === true) return true;
+    return PluginTenantAccess.isEnabledForCurrentTenant(String(plugin?.manifest?.slug ?? ''));
+  }
+
   static isEnabledForCurrentTenant(slug: string): boolean {
     if (!TenantMode.isEnabled()) return true;
 

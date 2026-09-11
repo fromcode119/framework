@@ -194,7 +194,10 @@ export class SystemAdminController {
         activeThemeName: () => String(this.runtime.themeManager.getActiveThemeManifest()?.name || ''),
         storefrontUrl: () => ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
         countSites: () => this.runtime.db.count(SystemConstants.TABLE.TENANTS),
-        countPlugins: () => (this.runtime.manager.getPlugins() || []).length,
+        // Bundled extensions ship with the framework, so they say nothing about whether anyone has
+        // started using this installation — counting them made a brand-new box claim it was in use.
+        countPlugins: () => (this.runtime.manager.getPlugins() || [])
+          .filter((plugin: any) => plugin?.manifest?.bundled !== true).length,
         countUsers: () => this.runtime.db.count(SystemConstants.TABLE.USERS),
         readMeta: async (key: string) => {
           const row = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });

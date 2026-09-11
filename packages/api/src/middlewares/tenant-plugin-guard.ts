@@ -27,7 +27,10 @@ export class TenantPluginGuard extends BaseMiddleware {
     }
 
     const slug = CoercionUtils.toString(req.params?.slug);
-    if (PluginTenantAccess.isEnabledForCurrentTenant(slug) || await this.access.isPlatformAdmin(req)) {
+    // Bundled extensions ship with the framework and belong to the platform, not to a site.
+    if (PluginTenantAccess.isBundledSlug(slug)
+      || PluginTenantAccess.isEnabledForCurrentTenant(slug)
+      || await this.access.isPlatformAdmin(req)) {
       next();
       return;
     }

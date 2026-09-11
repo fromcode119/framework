@@ -47,7 +47,7 @@ export class AdminMetadataService {
     // sees entries for plugins this customer does not run, and every one of them 403s on click.
     const pluginMetadata = allPlugins
       .filter(p => p.state === PluginState.ACTIVE && p.manifest.admin)
-      .filter(p => PluginTenantAccess.isEnabledForCurrentTenant(p.manifest.slug))
+      .filter(p => PluginTenantAccess.isVisibleForCurrentTenant(p))
       .map(p => {
         const collections = Array.from(registeredCollections.values())
           .filter(c => String(c.pluginSlug).toLowerCase() === String(p.manifest.slug).toLowerCase())
@@ -92,7 +92,7 @@ export class AdminMetadataService {
       ...this.systemNavigationMetadata.getSecondaryPanelInputs(),
       ...allPlugins
         .filter(plugin => plugin.state === PluginState.ACTIVE)
-        .filter(plugin => PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug))
+        .filter(plugin => PluginTenantAccess.isVisibleForCurrentTenant(plugin))
         .flatMap((plugin) => this.getSecondaryPanelInputs(plugin)),
     ]
       .map((input) => this.secondaryPanelNormalizer.normalize(input));

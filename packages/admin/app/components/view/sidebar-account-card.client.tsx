@@ -13,9 +13,8 @@ import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.int
  * Who you are signed in as, at the foot of the sidebar — and the only place the account menu lives.
  *
  * It used to sit in the top-right header. Down here it is beside the navigation it belongs to, it
- * survives the sidebar collapsing (the avatar stays, the menu is unchanged), and the header keeps
- * only what is about the SYSTEM rather than about you: which site you are editing, whether the api
- * is answering, and the theme toggle.
+ * survives the sidebar collapsing, and the header keeps only what is about the SYSTEM rather than
+ * about you: which site is being edited, whether the api answers, the theme toggle.
  */
 export class SidebarAccountCard extends AdminComponent {
   @prop declare isMini?: boolean;
@@ -50,6 +49,18 @@ export class SidebarAccountCard extends AdminComponent {
     if (ok) window.location.reload();
   }
 
+  private get initial(): string {
+    return this.auth.user?.email?.charAt(0).toUpperCase() || '?';
+  }
+
+  private get displayName(): string {
+    return this.auth.user?.email?.split('@')[0] || '';
+  }
+
+  private get role(): string {
+    return String(this.auth.user?.roles?.[0] ?? '');
+  }
+
   private get siteItems(): IDropdownItem[] {
     return this.sites.map((site, index) => ({
       label: String(site.name || site.slug || site.id),
@@ -58,14 +69,6 @@ export class SidebarAccountCard extends AdminComponent {
       selected: String(site.id) === this.currentSite,
       onClick: () => { void this.enter(String(site.id)); },
     }));
-  }
-
-  private get initial(): string {
-    return this.auth.user?.email?.charAt(0).toUpperCase() || '?';
-  }
-
-  private get displayName(): string {
-    return this.auth.user?.email?.split('@')[0] || '';
   }
 
   private get items(): IDropdownItem[] {
@@ -98,10 +101,30 @@ export class SidebarAccountCard extends AdminComponent {
     ];
   }
 
-  private get avatar(): ReactElement {
+  private avatar(size: 'sm' | 'md'): ReactElement {
+    const box = size === 'sm' ? 'h-7 w-7 text-[11px]' : 'h-9 w-9 text-[13px]';
     return (
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-500 text-[11px] font-bold text-white">
+      <span
+        className={`${box} flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 font-semibold text-white ring-1 ring-inset ring-white/15`}
+      >
         {this.initial}
+      </span>
+    );
+  }
+
+  /** The same identity the trigger shows, repeated at the top of the menu so the menu stands alone. */
+  private get menuHeader(): ReactElement {
+    return (
+      <div className="flex items-center gap-3">
+        {this.avatar('md')}
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-[13px] font-semibold leading-tight text-slate-900 dark:text-white">
+            {this.displayName}
+          </span>
+          <span className="truncate text-[11.5px] leading-tight text-slate-500 dark:text-slate-400">
+            {this.auth.user?.email}
+          </span>
+        </div>
       </div>
     );
   }
@@ -109,42 +132,34 @@ export class SidebarAccountCard extends AdminComponent {
   private get trigger(): ReactElement {
     if (this.isMini) {
       return (
-        <div className="flex justify-center py-1" title={this.auth.user?.email || 'Account'}>
-          {this.avatar}
-        </div>
+        <span className="flex justify-center py-1" title={this.auth.user?.email || 'Account'}>
+          {this.avatar('sm')}
+        </span>
       );
     }
 
     return (
-      <div className="flex w-full items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-left transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:border-slate-700 dark:hover:bg-slate-900">
-        {this.avatar}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-[12px] font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+      <span className="group/account flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/70">
+        {this.avatar('sm')}
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-[12.5px] font-semibold leading-tight text-slate-800 dark:text-slate-100">
             {this.displayName}
           </span>
-          <span className="truncate text-[10px] text-slate-500 dark:text-slate-400">{this.auth.user?.email}</span>
-        </div>
-        <FrameworkIcons.Down size={14} className="shrink-0 text-slate-400" />
-      </div>
-    );
-  }
-
-  /** The same identity the trigger shows, repeated at the top of the menu so the menu stands alone. */
-  private get menuHeader(): ReactElement {
-    return (
-      <div className="flex items-center gap-2.5">
-        {this.avatar}
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[12.5px] font-semibold text-slate-900 dark:text-slate-100">{this.displayName}</span>
-          <span className="truncate text-[11px] text-slate-500">{this.auth.user?.email}</span>
-        </div>
-      </div>
+          {this.role ? (
+            <span className="truncate text-[10.5px] leading-tight text-slate-400 capitalize">{this.role}</span>
+          ) : null}
+        </span>
+        <FrameworkIcons.Up
+          size={14}
+          className="shrink-0 text-slate-300 transition-colors group-hover/account:text-slate-500 dark:text-slate-600"
+        />
+      </span>
     );
   }
 
   render(): ReactElement {
     return (
-      <div className={`border-t border-slate-200 dark:border-slate-800 ${this.isMini ? 'px-2 py-2' : 'px-3 py-3'}`}>
+      <div className={`border-t border-slate-200/80 dark:border-slate-800/80 ${this.isMini ? 'p-2' : 'p-2'}`}>
         <Dropdown align={HorizontalAlign.LEFT} items={this.items} trigger={this.trigger} header={this.menuHeader} />
       </div>
     );

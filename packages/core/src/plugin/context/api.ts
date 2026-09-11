@@ -84,7 +84,11 @@ export class ApiContextProxy {
             // a customer needs no restart. The reason is reported separately from the platform one
             // above: "your site does not run this" and "this plugin is broken" are different
             // answers, and telling an operator the wrong one costs an afternoon.
-            if (!PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug)) {
+            // A BUNDLED extension is platform surface, not a per-site product: nobody enables the
+            // framework's own build-sources screen for a site, so this gate refused every one of its
+            // requests while the screen itself rendered — the page loaded and then said it was not
+            // enabled here.
+            if (!PluginTenantAccess.isVisibleForCurrentTenant(plugin)) {
               // Name the tenant. "Not enabled for this site" and "this request never got a site"
               // are different faults with different fixes, and a 403 that cannot tell them apart
               // sends an operator looking in the wrong place.

@@ -86,6 +86,13 @@ export class LifecycleService {
     const saved = registryData[normSlug];
     let state: PluginState = saved?.state || PluginState.INACTIVE;
 
+    // A BUNDLED extension is part of the product, not an operator's choice: it ships inside the
+    // image and runs from the first boot, whatever (if anything) the plugins table says about it.
+    // Without this, the framework's own screens would be one forgotten toggle away from missing.
+    if (plugin.manifest?.bundled === true) {
+      state = PluginState.ACTIVE;
+    }
+
     // Failures now only flip health_status to 'error' and PRESERVE the desired `state`
     // (see PluginStateService.markPluginHealthError), so saved.state is normally a real
     // 'active' | 'inactive' value and the plugin recovers to exactly where it was: an
@@ -103,7 +110,27 @@ export class LifecycleService {
     // the held signal (and its 'warning' health) would vanish until re-approved. Only rehydrate for
     // non-active rows; enable()/clearPluginHeld nulls held_reason on re-approval so it won't re-apply.
     let heldReason: PluginHeldReason | undefined = state !== PluginState.ACTIVE ? saved?.heldReason : undefined;
-    if (state === PluginState.ACTIVE) {
+
+    /**
+     * The capability gate exists because a plugin that quietly grows new powers between versions is
+     * how a supply-chain compromise looks. A BUNDLED extension has no such supply chain: it is built
+     * from this repository into this image, so its capabilities arrive with the upgrade an operator
+     * deliberately performed. Holding it would make the framework's own screens vanish on upgrade
+     * pending a re-approval nobody could have anticipated — which is exactly what happened when the
+     * build server gained `i18n`.
+     */
+    const isBundled = plugin.manifest?.bundled === true;
+    if (isBundled) {
+      heldReason = undefined;
+      await this.registry.savePluginState(
+        slug,
+        PluginState.ACTIVE,
+        (plugin.manifest.capabilities as string[]) || [],
+        plugin.manifest.version,
+      );
+    }
+
+    if (state === PluginState.ACTIVE && !isBundled) {
       const diff = PluginBootHealthReporter.computeCapabilityDiff(
         (plugin.manifest.capabilities as string[]) || [],
         saved?.approvedCapabilities || [],
@@ -302,6 +329,13 @@ export class LifecycleService {
       );
     }
 
+    if (plugin.manifest?.bundled === true) {
+      throw new Error(
+        `Cannot disable "${slug}": it is part of the framework, not an installed plugin. `
+        + 'Bundled extensions ship inside the image and are always available.',
+      );
+    }
+
     const ctx = (this.manager as any).createContext(plugin);
     try {
       if (plugin.onDisable) await plugin.onDisable(ctx);
@@ -318,6 +352,12 @@ export class LifecycleService {
 
   async delete(slug: string): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
+    if (plugin?.manifest?.bundled === true) {
+      throw new Error(
+        `Cannot remove "${slug}": it ships with the framework. Removing it would delete part of the `
+        + 'image, and the next container start would bring it back anyway.',
+      );
+    }
     if (plugin) {
       // Never `rm -rf` a developer's mounted source checkout from the admin (see PluginArchiveInstallerService).
       PluginArchiveInstallerService.refuseSourceCheckout(String(plugin.path || ''), slug, 'delete');
