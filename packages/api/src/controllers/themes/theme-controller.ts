@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { ArchiveUploadSessionService, BaseController, ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
 import { ThemeArchiveSupport } from '@api/controllers/themes/theme-archive-support';
-import { CoercionUtils } from '@fromcode119/core';
+import { CoercionUtils, CoreServices } from '@fromcode119/core';
 
 export class ThemeController extends BaseController {
   private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
@@ -72,12 +72,42 @@ export class ThemeController extends BaseController {
       );
       if (!pkg) return res.status(404).json({ error: `Theme ${slug} ${version ? 'v'+version : ''} not found in marketplace` });
 
+      // An offer from THIS installation is a file on disk, not a URL. Its catalogue row borrows the
+      // marketplace shape, whose only location is `downloadUrl` — so a locally built theme was
+      // installed by resolving its bare filename against the REMOTE marketplace, producing
+      // `https://marketplace.fromcode.com/.../fromcode-0.1.29.zip` for a file sitting in this
+      // installation's own workspace. The contributor that offered it is the one that knows where it is.
+      const localPath = await this.resolveLocalPackage(pkg, slug);
+      if (localPath) {
+        this.logger.info(`Installing theme "${slug}" from this installation: ${localPath}`);
+        await this.manager.installFromZip(localPath);
+        return res.json({ success: true, mode: 'local' });
+      }
+
       await this.manager.installTheme(pkg);
       res.json({ success: true, mode: 'marketplace' });
     } catch (err: any) {
       this.logger.error(`Failed to install theme ${slug}: ${err.message}`);
       res.status(500).json({ error: err.message });
     }
+  }
+
+  /**
+   * Where a locally built theme actually is, or null when the offer came from a remote catalogue.
+   *
+   * Asked of the catalogue-contribution registry rather than of any named producer: this controller
+   * must not know that something called Sources exists, only that whatever offered the package can
+   * say where it put it. The path is resolved server-side from the offer the server itself looked
+   * up, so nothing the caller sent chooses which file is opened.
+   */
+  private async resolveLocalPackage(pkg: unknown, slug: string): Promise<string | null> {
+    const offer = CoercionUtils.toObject(pkg);
+    if (CoercionUtils.toString(offer.source) !== 'local') return null;
+
+    return CoreServices.getInstance().catalogContributions.resolveArtifact(
+      slug,
+      CoercionUtils.toString(offer.kind) || 'theme',
+    );
   }
 
   async upload(req: any, res: Response) {

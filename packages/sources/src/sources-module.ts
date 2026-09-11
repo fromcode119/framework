@@ -4,6 +4,7 @@ import { Logger } from '@fromcode119/core';
 import { BuildService } from '@sources/packaging/build-service';
 import { BuildSourceSecretService } from '@sources/sources/build-source-secret-service';
 import { BuildSourceService } from '@sources/sources/build-source-service';
+import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 import { CatalogContributionService } from '@sources/catalog/catalog-contribution-service';
 import { SourceProviders } from '@sources/providers/source-providers';
 import { LegacyWorkspaceAdoption } from '@sources/settings/legacy-workspace-adoption';
@@ -63,7 +64,7 @@ export class SourcesModule {
     );
 
     SourcesModule.registerHooks(input, buildService);
-    SourcesModule.registerCatalogue(input, buildSourceService);
+    SourcesModule.registerCatalogue(input, buildSourceService, buildService);
     void SourcesModule.registerTimer(input, buildService);
 
     return new SourcesRouter(buildService, input.adminGuard);
@@ -100,12 +101,20 @@ export class SourcesModule {
    * This is what makes a new version visible on the Plugins screen without anyone opening Sources:
    * the counter, the badge and the update action all read that catalogue already.
    */
-  private static registerCatalogue(input: ISourcesModuleInput, buildSourceService: BuildSourceService): void {
+  private static registerCatalogue(
+    input: ISourcesModuleInput,
+    buildSourceService: BuildSourceService,
+    buildService: BuildService,
+  ): void {
     if (!input.catalog) return;
 
-    input.catalog.contribute(async () => CatalogContributionService.entriesFrom(
-      await buildSourceService.listSanitizedSources(),
-    ));
+    input.catalog.contribute(
+      async () => CatalogContributionService.entriesFrom(await buildSourceService.listSanitizedSources()),
+      // Where the offered file actually is. An offer from here is an archive this installation built,
+      // and its catalogue row carries only a filename — without this an installer resolved that name
+      // against the remote marketplace and fetched a package that had never been published there.
+      async (slug: string, kind: string) => buildService.resolvePackageDownloadPath(slug, BuildSourceType.resolve(kind)),
+    );
     SourcesModule.logger.info('Offering built versions to the admin catalogue.');
   }
 

@@ -23,7 +23,12 @@ export interface ISourcesModuleInput {
   /** Installs what auto-update just built. Absent means auto-update reports that it cannot run. */
   installer?: IExtensionInstaller;
   /** Publishes built versions to the admin catalogue, so the Plugins screen learns about them. */
-  catalog?: { contribute(provider: () => Promise<unknown[]>): void };
+  catalog?: {
+    contribute(
+      provider: () => Promise<unknown[]>,
+      resolveArtifact?: (slug: string, kind: string) => Promise<string | null>,
+    ): void;
+  };
   /** Runs the auto-build timer. */
   scheduler?: { register(name: string, schedule: string, handler: () => Promise<void>): Promise<void> };
 }

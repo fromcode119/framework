@@ -19,8 +19,24 @@ export class CatalogContextProxy {
     const pluginSlug = String(plugin?.manifest?.slug || '').trim();
 
     return {
-      contribute(list: () => Promise<Array<Record<string, unknown>>> | Array<Record<string, unknown>>) {
-        CoreServices.getInstance().catalogContributions.register({ namespace, pluginSlug, list });
+      /**
+       * Offers versions, and optionally says where one of them IS.
+       *
+       * `resolveArtifact` exists because a contributed offer is a file this installation produced,
+       * while the catalogue shape it borrows only carries `downloadUrl` — so an installer resolved
+       * a bare filename against the remote marketplace and fetched a package that was never there.
+       * A contributor that hosts nothing omits it; the installer then says so rather than guessing.
+       */
+      contribute(
+        list: () => Promise<Array<Record<string, unknown>>> | Array<Record<string, unknown>>,
+        resolveArtifact?: (slug: string, kind: string) => Promise<string | null> | string | null,
+      ) {
+        CoreServices.getInstance().catalogContributions.register({
+          namespace,
+          pluginSlug,
+          list,
+          resolveArtifact,
+        });
       },
 
       withdraw() {

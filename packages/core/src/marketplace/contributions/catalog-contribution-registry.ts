@@ -31,4 +31,27 @@ export class CatalogContributionRegistry {
   clear(): void {
     this.contributors.clear();
   }
+
+  /**
+   * The on-disk path of a contributed offer, or null when nobody here hosts it.
+   *
+   * Asked of every contributor in turn because the framework does not know which one produced a
+   * given slug — the same reason `list()` fans out. A contributor that throws is skipped: one
+   * broken contributor must not make an installable package unreachable, exactly as on the read side.
+   */
+  async resolveArtifact(slug: string, kind: string): Promise<string | null> {
+    const needle = String(slug || '').trim();
+    if (!needle) return null;
+
+    for (const contributor of this.list()) {
+      if (!contributor.resolveArtifact) continue;
+      try {
+        const path = String((await contributor.resolveArtifact(needle, String(kind || ''))) || '').trim();
+        if (path) return path;
+      } catch {
+        continue;
+      }
+    }
+    return null;
+  }
 }
