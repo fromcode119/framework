@@ -37,6 +37,22 @@ export class PackageBuilder {
   }
 
   /**
+   * The directory this builder writes a given kind into.
+   *
+   * Published because an installer has to find what was built, and the only other way to say where
+   * that is was to rebuild the path somewhere else — which is what happened: a caller joined the
+   * kind's name onto `process.cwd()` and produced `/app/themes/<file>` for an archive living in the
+   * workspace at `/app/data/sources/themes/<file>`. One owner of the layout, asked rather than
+   * guessed.
+   */
+  outputDirFor(type: BuildSourceType): string {
+    if (type === BuildSourceType.CORE) return this.coreOutputDir;
+    if (type === BuildSourceType.APPEARANCE) return this.appearancesOutputDir;
+    if (type === BuildSourceType.THEME) return this.themesOutputDir;
+    return this.pluginsOutputDir;
+  }
+
+  /**
    * Build and package a plugin or theme from its cloned source directory.
    */
   async build(sourceDir: string, type: BuildSourceType): Promise<IPackageResult> {

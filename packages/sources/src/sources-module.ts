@@ -113,7 +113,7 @@ export class SourcesModule {
       // Where the offered file actually is. An offer from here is an archive this installation built,
       // and its catalogue row carries only a filename — without this an installer resolved that name
       // against the remote marketplace and fetched a package that had never been published there.
-      async (slug: string, kind: string) => buildService.resolvePackageDownloadPath(slug, BuildSourceType.resolve(kind)),
+      async (slug: string, kind: string) => buildService.resolvePackageFilePath(slug, BuildSourceType.resolve(kind)),
     );
     SourcesModule.logger.info('Offering built versions to the admin catalogue.');
   }

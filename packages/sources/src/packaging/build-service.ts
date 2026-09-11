@@ -126,7 +126,7 @@ export class BuildService {
   private async installBuilt(slug: string, source: Record<string, any>): Promise<void> {
     try {
       const artifact = await this.resolvePackageArtifact(slug, source.type);
-      if (!artifact?.downloadPath) {
+      if (!artifact?.filePath) {
         this.logger.warn(`Auto-update skipped for ${slug}: the build produced no archive path.`);
         return;
       }
@@ -136,7 +136,7 @@ export class BuildService {
         return;
       }
 
-      await this.installer.installExtensionArchive(artifact.downloadPath, source.type, {
+      await this.installer.installExtensionArchive(artifact.filePath, source.type, {
         enable: true,
         activate: true,
       });
@@ -161,6 +161,18 @@ export class BuildService {
   async resolvePackageDownloadPath(slug: string, type?: BuildSourceType): Promise<string | null> {
     const artifact = await this.resolvePackageArtifact(slug, type);
     return artifact?.downloadPath || null;
+  }
+
+  /**
+   * Where a built package IS, for something about to open it.
+   *
+   * Deliberately separate from `resolvePackageDownloadPath`: that one answers with the route a
+   * browser would fetch, and the two were confused once already — an installer opened `/themes/x.zip`
+   * as a file and failed with EACCES on a directory it had no business writing to.
+   */
+  async resolvePackageFilePath(slug: string, type?: BuildSourceType): Promise<string | null> {
+    const artifact = await this.resolvePackageArtifact(slug, type);
+    return artifact?.filePath || null;
   }
 
   async resolvePackageArtifact(
@@ -195,7 +207,10 @@ export class BuildService {
       // and the installer is expected to refuse rather than assume.
       artifactSha256: CoercionUtils.toString(entry.artifactSha256),
       downloadPath,
-      filePath: path.resolve(process.cwd(), downloadPath.replace(/^\//, '')),
+      // Asked of the builder, not rebuilt from the kind's name: joining `/themes/<file>` onto the
+      // process's cwd named `/app/themes/<file>` for an archive that lives in the WORKSPACE, at
+      // `/app/data/sources/themes/<file>`. Everything that opens the artifact reads this field.
+      filePath: path.join(this.packageBuilder.outputDirFor(resolvedType), fileName),
       type: resolvedType,
       version: typeof entry.version === 'string' ? entry.version : undefined,
     };
