@@ -21,7 +21,7 @@ import { ThemeAssetRouter } from '@api/routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '@api/routes/marketplace';
 import { AppearanceRouter } from '@api/routes/appearances';
 import { SourcesModule } from '@fromcode119/sources';
-import { PlatformSettingsService } from '@fromcode119/core';
+import { PlatformSettingsService, SecretService } from '@fromcode119/core';
 import { CoreServices } from '@fromcode119/core';
 import { SystemRouter } from '@api/routes/system-router';
 import { TenantAdminRouter } from '@api/routes/tenant-admin-router';
@@ -144,6 +144,16 @@ export class ServerRoutesSetup {
         '',
       ),
       db: this.manager.db,
+      // The installation's own encryption, for the repository tokens Sources stores. As a plugin this
+      // arrived as `context.secrets`; wiring the module without it made every stored token
+      // undecryptable — the list still rendered (it strips secrets) while pressing Build answered 500
+      // with "no encryption key is configured", which reads as a build failure rather than a missing
+      // dependency.
+      secrets: {
+        isConfigured: () => SecretService.isEncryptionAvailable(),
+        encrypt: (value: string) => SecretService.encrypt(value),
+        decrypt: (value: unknown) => SecretService.decrypt(value),
+      },
       hooks: this.manager.hooks,
       adminGuard: this.auth.guard(['admin']),
       projectRoot: (this.manager as any).projectRoot,
