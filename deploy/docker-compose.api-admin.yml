@@ -59,6 +59,12 @@ services:
       - ../plugins:/app/plugins
       - ../themes:/app/themes
       - ../appearance:/app/appearance
+      # Installing a theme takes a safety copy of the one it replaces, into <projectRoot>/backups
+      # (ThemeInstallerService -> BackupService.create). The api runs as `node` against a root-owned
+      # /app, so with no mount here that copy failed with "EACCES: permission denied, mkdir
+      # /app/backups" and the install died before it started. Mounted, not made non-fatal: a silent
+      # install with no rollback copy is worse than a loud one that stops.
+      - ../backups:/app/backups
     networks:
       - framework
     restart: unless-stopped
