@@ -26024,8 +26024,16 @@ var GitSyncService = class _GitSyncService {
       return _GitSyncService.parseBranchRefs(stdout);
     } catch (err) {
       this.logger.error(`Branch listing failed for ${safeUrl}: ${String(err)}`);
+      if (_GitSyncService.isMissingGit(err)) throw new Error(_GitSyncService.MISSING_GIT_MESSAGE);
       return [];
     }
+  }
+  static {
+    /** The message the admin shows when the host has no git; stated once, used by both call paths. */
+    this.MISSING_GIT_MESSAGE = "git is not installed on this server, so repositories cannot be read.";
+  }
+  static isMissingGit(error) {
+    return String(error?.code || "") === "ENOENT" || String(error).includes("spawn git ENOENT");
   }
   /** `<sha>\trefs/heads/<name>` per line. Names are returned as the remote spells them. */
   static parseBranchRefs(stdout) {

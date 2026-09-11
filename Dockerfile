@@ -18,9 +18,16 @@ FROM ${NODE_BASE_IMAGE} AS base
 #
 # postgresql-client and iptables are RUNTIME: the entrypoint provisions roles with psql and applies
 # the guest egress rule with iptables.
+#
+# git is RUNTIME too, and its absence was invisible: the Sources screen ships with the framework and
+# is always on, and every remote call it makes — list branches, read a manifest, clone a source —
+# died on `spawn git ENOENT`. The screen rendered, the form accepted input, and the answer came back
+# empty, which reads as "this repository has no branches". A feature that cannot work without a
+# binary must ship the binary.
 RUN if command -v apk >/dev/null 2>&1; then \
             apk add --no-cache \
                 postgresql-client \
+                git \
                 python3 \
                 make \
                 g++ \
@@ -29,6 +36,7 @@ RUN if command -v apk >/dev/null 2>&1; then \
         elif command -v apt-get >/dev/null 2>&1; then \
             apt-get update && apt-get install -y --no-install-recommends \
                 postgresql-client \
+                git \
                 iptables \
             && rm -rf /var/lib/apt/lists/*; \
         else \
