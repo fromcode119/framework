@@ -19,6 +19,7 @@
     "database",
     "hooks",
     "extensions:manage",
+    "scheduler",
     "admin",
     "i18n"
   ],
@@ -45,5 +46,5 @@
     ],
     "label": "Sources"
   },
-  "checksum": "f7a191b95b4c266ad77d4cdc4ae11f08271dfb16737467b0d477e4dc45c7e594"
+  "checksum": "d37958801a361688c8976c54da5aa9fdbbea5bb7e29c876d1b7317e86915543a"
 }

@@ -27507,9 +27507,17 @@ var CatalogContributionService = class {
 };
 
 // plugins/build-server/src/bootstrap/build-server-bootstrap.ts
-var BuildServerBootstrap = class {
+var BuildServerBootstrap = class _BuildServerBootstrap {
   constructor(context) {
     this.context = context;
+  }
+  static {
+    /**
+     * Every fifteen minutes. Frequent enough that a merged change is built while it is still the thing
+     * someone is thinking about, rare enough that tracking a dozen repositories is a dozen `ls-remote`
+     * calls an hour. `AUTO_BUILD_SCHEDULE` overrides it for a deployment that wants another cadence.
+     */
+    this.DEFAULT_SCHEDULE = "*/15 * * * *";
   }
   /**
    * The configured workspace, or a writable default beside the platform's other data.
@@ -27579,35 +27587,28 @@ var BuildServerBootstrap = class {
   getErrorMessage(error) {
     return error instanceof Error ? error.message : String(error);
   }
+  /**
+   * Check the tracked sources on a schedule, and build the ones whose operator asked for it.
+   *
+   * A registered scheduler task, not `setInterval` behind `AUTO_BUILD_INTERVAL_MINUTES`. The
+   * environment variable was the whole feature's off switch and no admin screen mentioned it, so the
+   * per-source "Build automatically" toggle promised something that could not happen — a control
+   * that implies what it cannot do, which is the one thing this admin is not allowed to have.
+   *
+   * The task runs whether or not any source has the toggle on; `checkAndBuildUpdates` decides what
+   * to do, and with nothing opted in it costs one `ls-remote` per source and builds nothing. The
+   * scheduler is also the surface an operator can already SEE — its next run shows on the dashboard.
+   */
   startPolling(buildService) {
-    const intervalMinutes = parseInt(process.env.AUTO_BUILD_INTERVAL_MINUTES || "0", 10);
-    if (intervalMinutes <= 0) {
-      this.context.logger.info("Auto-build polling disabled (set AUTO_BUILD_INTERVAL_MINUTES to enable)");
-      return;
-    }
-    const intervalMs = intervalMinutes * 60 * 1e3;
-    this.context.logger.info(`Auto-build polling: checking every ${intervalMinutes} minutes`);
-    setTimeout(async () => {
-      try {
-        this.context.logger.info("Running initial auto-build check...");
-        const results = await buildService.checkAndBuildUpdates();
-        if (results.length > 0) {
-          this.context.logger.info(`Initial build: ${results.filter((r) => r.success).length}/${results.length} succeeded`);
-        }
-      } catch (err) {
-        this.context.logger.error(`Initial auto-build failed: ${err.message}`);
-      }
-    }, 1e4);
-    setInterval(async () => {
-      try {
-        const results = await buildService.checkAndBuildUpdates();
-        if (results.length > 0) {
-          this.context.logger.info(`Auto-build: ${results.filter((r) => r.success).length}/${results.length} succeeded`);
-        }
-      } catch (err) {
-        this.context.logger.error(`Auto-build polling failed: ${err.message}`);
-      }
-    }, intervalMs);
+    const schedule = String(process.env.AUTO_BUILD_SCHEDULE || "").trim() || _BuildServerBootstrap.DEFAULT_SCHEDULE;
+    void this.context.scheduler.register("auto-build", schedule, async () => {
+      const results = await buildService.checkAndBuildUpdates();
+      if (results.length === 0) return;
+      const built = results.filter((result) => result.success).length;
+      this.context.logger.info(`Auto-build: ${built}/${results.length} succeeded`);
+    }).then(() => this.context.logger.info(`Auto-build scheduled (${schedule}).`)).catch((error) => {
+      this.context.logger.warn(`Auto-build could not be scheduled: ${this.getErrorMessage(error)}`);
+    });
   }
 };
 
