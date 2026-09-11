@@ -56,8 +56,13 @@ export class DashboardMissingConfig extends AdminComponent {
               >
                 {String(item.detail)}
               </span>
+              {/*
+                * The action sizes to its content, not to a fixed 80px: "How to set it" wrapped onto
+                * a second line inside a single-line row, which is the one thing this list exists to
+                * avoid. `whitespace-nowrap` keeps every action on one line whatever it says.
+                */}
               {item.actionLabel ? (
-                <span className="flex w-20 shrink-0 items-center justify-end gap-1 text-[11px] font-medium text-slate-400 transition-colors group-hover/row:text-indigo-600 dark:group-hover/row:text-indigo-400">
+                <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-medium text-slate-400 transition-colors group-hover/row:text-indigo-600 dark:group-hover/row:text-indigo-400">
                   {String(item.actionLabel)}
                   <FrameworkIcons.ChevronRight size={13} />
                 </span>

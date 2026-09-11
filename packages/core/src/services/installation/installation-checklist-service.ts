@@ -130,7 +130,8 @@ export class InstallationChecklistService {
             ? 'Encrypted with this installation’s key'
             : 'No encryption key — integration credentials and tokens cannot be saved',
           done: this.deps.canStoreSecrets(),
-          actionLabel: 'How to set it',
+          // A configured row offers a look, not instructions for a problem it does not have.
+          actionLabel: this.deps.canStoreSecrets() ? 'Details' : 'How to fix',
           actionPath: AppPathConstants.ADMIN.SETTINGS.INFRASTRUCTURE,
         },
         {
