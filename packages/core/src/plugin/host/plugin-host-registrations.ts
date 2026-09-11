@@ -127,14 +127,21 @@ export class PluginHostRegistrations {
 
   private scheduler(context: PluginContext, registration: IPluginGuestRegistration): void {
     const id = String(registration.handlerId);
-    void context.scheduler.register(String(registration.name), String(registration.schedule), async (data: unknown) => { await this.invoke('scheduler', id, [data], undefined); }, (registration.options ?? {}) as any);
+    // The store is read WHEN THE TASK FIRES, not here. `PluginScheduledTenantRun` wraps this stub and
+    // runs it once per tenant inside that tenant's context; passing `undefined` threw that away, so an
+    // ISOLATED plugin's guest ran untenanted and every db call it made was skipped-and-warned. The task
+    // looked like it ran — "ran for 5 of 9 tenant(s)" — and read nothing for any of them.
+    void context.scheduler.register(String(registration.name), String(registration.schedule), async (data: unknown) => {
+      await this.invoke('scheduler', id, [data], RequestContextUtils.storage.getStore());
+    }, (registration.options ?? {}) as any);
   }
 
   private jobWorker(context: PluginContext, registration: IPluginGuestRegistration): void {
     if (this.jobWorkerRegistered) return;
     this.jobWorkerRegistered = true;
     const id = String(registration.handlerId);
-    (context.jobs as any).worker((job: any) => this.invoke('job', id, [{ id: job?.id, name: job?.name, data: job?.data }], undefined), registration.options);
+    // Same reason as the scheduler above: whatever tenant context the job runs under must reach the guest.
+    (context.jobs as any).worker((job: any) => this.invoke('job', id, [{ id: job?.id, name: job?.name, data: job?.data }], RequestContextUtils.storage.getStore()), registration.options);
   }
 
   private mcpTools(context: PluginContext, registration: IPluginGuestRegistration): void {

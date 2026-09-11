@@ -20,8 +20,9 @@ export class PluginUiHookGuard {
 
   static readonly PLUGINS_DIR = path.resolve(process.cwd(), '../../plugins');
 
-  // Dev/test fixtures excluded until Task 20 decides their fate.
-  static readonly IGNORE = new Set<string>(['build-server', 'test-feature']);
+  // Dev/test fixtures excluded until Task 20 decides their fate. `build-server` was here because it
+  // was never a plugin; it is now framework surface (`extensions/sources`) and out of this scan.
+  static readonly IGNORE = new Set<string>(['test-feature']);
 
   // No files currently require a hook-boundary exemption.
   // order-popup-connected.tsx was converted to a hook-free PluginComponent class (Task 3 complete).

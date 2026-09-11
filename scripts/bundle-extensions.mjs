@@ -8,22 +8,22 @@ import { fileURLToPath } from 'node:url';
  * Packs the framework's OWN extensions into `bundled-plugins/`, which ships inside the image.
  *
  * These are not plugins an operator installs — they are product surface that happens to be built the
- * same way (the build server is the platform's own git-source screen). They live in the image so a
- * fresh installation has them on first boot, with nothing mounted and nothing to enable.
+ * same way. They live in the image so a fresh installation has them on first boot, with nothing
+ * mounted and nothing to enable.
  *
- * Run it whenever one of them changes; the output is committed, because CI builds the image from
- * this repository alone and cannot reach the extension repositories.
+ * Their SOURCE lives in this repository under `extensions/<slug>`, so this runs during the image
+ * build. The output is NOT committed: it was, briefly, when the source still sat in a separate
+ * private repository the image build could not reach — which solved a build-input problem by putting
+ * minified bundles under version control.
  */
 class BundledExtensions {
-  static SOURCES = { 'build-server': 'plugins/build-server' };
+  /** slug -> source directory, relative to the framework root. */
+  static SOURCES = { sources: 'extensions/sources' };
 
   static get frameworkRoot() {
     return resolve(dirname(fileURLToPath(import.meta.url)), '..');
   }
 
-  static get monorepoRoot() {
-    return resolve(BundledExtensions.frameworkRoot, '..', '..');
-  }
 
   /**
    * A plugin's own `.gitignore` ignores its build output — that is correct in the plugin repository,
@@ -45,40 +45,13 @@ class BundledExtensions {
   }
 
   /**
-   * The two ways this bundle can be empty on a server while looking fine here: the build output was
-   * never produced, or git refuses to track it. Both were invisible until a container had already
-   * booted without the extension, so both are now failures of the bundling command itself.
+   * An empty bundle looked fine here and only surfaced once a container had already booted without
+   * the extension, so producing nothing is now a failure of the bundling command itself.
    */
   static assertShippable(slug, destination) {
     if (!existsSync(join(destination, 'index.js'))) {
-      throw new Error(`[bundle-extensions] ${slug}: no index.js in the packed output — the plugin was not built`);
+      throw new Error(`[bundle-extensions] ${slug}: no index.js in the packed output — it was not built`);
     }
-
-    const ignored = BundledExtensions.listIgnored(BundledExtensions.listFiles(destination));
-    if (ignored) {
-      throw new Error(`[bundle-extensions] ${slug}: git would not commit these files:\n${ignored}`);
-    }
-  }
-
-  /** `check-ignore` exits 1 when nothing matches — the healthy case, not a failure. */
-  static listIgnored(files) {
-    try {
-      return execFileSync('git', ['check-ignore', '--stdin'], {
-        cwd: BundledExtensions.frameworkRoot,
-        input: files.join('\n'),
-        encoding: 'utf8',
-      }).trim();
-    } catch (error) {
-      if (error.status === 1) return '';
-      throw error;
-    }
-  }
-
-  static listFiles(directory) {
-    return readdirSync(directory).flatMap((entry) => {
-      const path = join(directory, entry);
-      return statSync(path).isDirectory() ? BundledExtensions.listFiles(path) : [path];
-    });
   }
 
   static run() {
@@ -86,19 +59,21 @@ class BundledExtensions {
     mkdirSync(target, { recursive: true });
 
     for (const [slug, source] of Object.entries(BundledExtensions.SOURCES)) {
-      const sourceDir = join(BundledExtensions.monorepoRoot, source);
+      const sourceDir = join(BundledExtensions.frameworkRoot, source);
       if (!existsSync(sourceDir)) {
         console.error(`[bundle-extensions] ${slug}: ${sourceDir} not found — skipping`);
         continue;
       }
 
       console.log(`[bundle-extensions] packing ${slug}`);
-      execFileSync('npm', ['run', 'fromcode', '--', 'pack', 'plugin', slug], {
+      execFileSync('npm', ['run', 'fromcode', '--', 'pack', 'plugin', slug, '--dir', sourceDir], {
         cwd: BundledExtensions.frameworkRoot,
         stdio: 'inherit',
       });
 
-      const archiveDir = join(BundledExtensions.monorepoRoot, 'dist/packages/plugins');
+      // Beside the SOURCE, not at the monorepo root: the archive is written relative to the workspace
+      // the extension lives in, and these live inside the framework now.
+      const archiveDir = join(BundledExtensions.frameworkRoot, 'dist/packages/plugins');
       const archives = readdirSync(archiveDir)
         .filter((name) => name.startsWith(`${slug}-`) && name.endsWith('.tar.gz'))
         .sort();

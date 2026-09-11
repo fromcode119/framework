@@ -35,11 +35,6 @@ export class SdkBoundaryGuard {
       // the source lives in src/islands/. Same rationale as ui/ above — build artifacts, not source.
       /\/themes\/[^/]+\/ui-ssr\//,
       /\/frontend\.js$/,
-      // build-server is privileged build infrastructure: it packs OTHER plugins, so
-      // framework package names appear in its esbuild `external` arrays as data, and
-      // it resolves core's IntegrityService to stamp checksums. It is not a normal
-      // plugin and is exempt from the SDK boundary.
-      /\/plugins\/build-server\//,
     ];
 
     const IMPORT_PATTERN = /@fromcode119\/(?!sdk(?:\/|['"\s]|$))[A-Za-z0-9._/-]+/g;
