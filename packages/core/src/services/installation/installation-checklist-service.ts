@@ -20,6 +20,7 @@ export class InstallationChecklistService {
       countSites: () => Promise<number>;
       countPlugins: () => number;
       countUsers: () => Promise<number>;
+      canStoreSecrets: () => boolean;
       readMeta: (key: string) => Promise<string>;
       storefrontUrl: () => string;
     },
@@ -115,6 +116,22 @@ export class InstallationChecklistService {
           actionLabel: 'Change',
           // Timezone is a General setting; Localization owns languages and has no timezone field.
           actionPath: AppPathConstants.ADMIN.SETTINGS.GENERAL,
+        },
+        {
+          /**
+           * Without an encryption key this installation cannot store ANY third-party credential —
+           * no SMTP password, no payment key, no git token. Every one of those refuses at save time
+           * with a message about an environment variable, which is the first an operator hears of
+           * it. It belongs on the list of things that are quietly not configured.
+           */
+          key: 'secrets',
+          title: 'Credential storage',
+          detail: this.deps.canStoreSecrets()
+            ? 'Encrypted with this installation’s key'
+            : 'No encryption key — integration credentials and tokens cannot be saved',
+          done: this.deps.canStoreSecrets(),
+          actionLabel: 'How to set it',
+          actionPath: AppPathConstants.ADMIN.SETTINGS.INFRASTRUCTURE,
         },
         {
           key: 'team',

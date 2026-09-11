@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SystemConstants } from '@fromcode119/core';
+import { SecretService } from '@fromcode119/core';
 
 export class SystemAdminController {
 
@@ -199,6 +200,7 @@ export class SystemAdminController {
         countPlugins: () => (this.runtime.manager.getPlugins() || [])
           .filter((plugin: any) => plugin?.manifest?.bundled !== true).length,
         countUsers: () => this.runtime.db.count(SystemConstants.TABLE.USERS),
+        canStoreSecrets: () => SecretService.isEncryptionAvailable(),
         readMeta: async (key: string) => {
           const row = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });
           return String(row?.value ?? '').trim();
