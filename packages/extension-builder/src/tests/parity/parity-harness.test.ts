@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
@@ -50,7 +51,7 @@ describe('ParityHarness', () => {
   it('no builder source names a plugin or a UI library', () => {
     // Both rules are CLAUDE.md's, and both were broken here by porting comments verbatim: the
     // framework must not know a plugin slug, and must never name a theme's UI stack.
-    const root = join(__dirname, '..', '..');
+    const root = join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
     const forbidden = ['analytics', 'numerology', 'ecommerce', 'tagiqx', 'chakra', 'Chakra', 'framer-motion', 'emotion'];
     const offenders: string[] = [];
     const walk = (dir: string): void => {

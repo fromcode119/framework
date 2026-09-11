@@ -1,8 +1,8 @@
+import { Core } from '@extension-builder/core-bridge';
 import * as fs from 'fs';
 import * as path from 'path';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
-import { ThemePackageLayout } from '@fromcode119/core';
 
 /**
  * Bundles a theme's seed: `src/seed.ts` -> a `seed.mjs` under the build output.
@@ -20,12 +20,12 @@ export class ThemeSeedCompiler {
   static async compile(themeDir: string, outputPath: string): Promise<BuildStepResult> {
     // Sweep any copy an earlier build left in the SOURCE tree. `clean_pack_directory` deliberately
     // spares `seed.mjs`, so a stale one here would be packaged in preference to the fresh build.
-    for (const stale of [ThemePackageLayout.SEED_ARTIFACT, 'seed.cjs']) {
+    for (const stale of [Core.ThemePackageLayout.SEED_ARTIFACT, 'seed.cjs']) {
       fs.rmSync(path.join(themeDir, stale), { force: true });
     }
 
-    const entry = path.join(themeDir, ThemePackageLayout.SEED_SOURCE);
-    if (!fs.existsSync(entry)) return BuildStepResult.skipped(ThemeSeedCompiler.STEP, `no ${ThemePackageLayout.SEED_SOURCE}`);
+    const entry = path.join(themeDir, Core.ThemePackageLayout.SEED_SOURCE);
+    if (!fs.existsSync(entry)) return BuildStepResult.skipped(ThemeSeedCompiler.STEP, `no ${Core.ThemePackageLayout.SEED_SOURCE}`);
 
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.rmSync(outputPath, { force: true });

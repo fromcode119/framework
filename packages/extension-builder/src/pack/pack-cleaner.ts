@@ -1,6 +1,6 @@
+import { Core } from '@extension-builder/core-bridge';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ThemePackageLayout } from '@fromcode119/core';
 
 /**
  * Removes from a staging directory everything that must not ship.
@@ -79,7 +79,7 @@ export class PackCleaner {
     // theme without a seed.
     if (name.endsWith('.mjs')) {
       const inUiSsr = path.relative(root, full).split(path.sep).includes('ui-ssr');
-      return name !== ThemePackageLayout.SEED_ARTIFACT && !inUiSsr;
+      return name !== Core.ThemePackageLayout.SEED_ARTIFACT && !inUiSsr;
     }
 
     return false;

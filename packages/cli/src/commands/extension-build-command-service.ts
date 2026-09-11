@@ -29,9 +29,11 @@ export class ExtensionBuildCommandService {
     return path.resolve(path.dirname(CliUtils.getPluginsDir()), directoryName, slug);
   }
 
-  private static reportAndExit(steps: Array<{ step: string; failed: boolean; skippedReason?: string }>): void {
+  private static reportAndExit(steps: Array<{ step: string; failed: boolean; skippedReason?: string; message?: string }>): void {
     for (const step of steps) {
-      if (step.failed) console.log(chalk.red(`  ✗ ${step.step}`));
+      // The MESSAGE is the point of a failure: "✗ archive-writer" alone sends the reader to read
+      // the builder's source to find out what went wrong, which is what the old bash did.
+      if (step.failed) console.log(chalk.red(`  ✗ ${step.step}${step.message ? `: ${step.message}` : ''}`));
       // A skipped step is PRINTED with its reason. Not printing it is exactly how a build that
       // silently did nothing could exit 0 for a week.
       else if (step.skippedReason) console.log(chalk.gray(`  – ${step.step}: ${step.skippedReason}`));
@@ -57,7 +59,7 @@ export class ExtensionBuildCommandService {
     console.log(chalk.gray(`  ${sourceDir}`));
 
     const steps = await ExtensionBuildPipeline.run({ sourceDir, kind, slug, pack });
-    ExtensionBuildCommandService.reportAndExit(steps.map((s) => ({ step: s.step, failed: s.failed, skippedReason: s.skippedReason })));
+    ExtensionBuildCommandService.reportAndExit(steps.map((s) => ({ step: s.step, failed: s.failed, skippedReason: s.skippedReason, message: s.message })));
   }
 
   private static registerBuild(program: Command): void {

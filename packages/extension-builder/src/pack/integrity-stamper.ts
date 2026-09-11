@@ -1,6 +1,6 @@
+import { Core } from '@extension-builder/core-bridge';
 import * as fs from 'fs';
 import * as path from 'path';
-import { IntegrityService } from '@fromcode119/core';
 
 /**
  * Stamps an extension's integrity checksum into its `manifest.json`. TWICE, and the second time
@@ -32,6 +32,6 @@ export class IntegrityStamper {
 
   private static async stamp(dir: string): Promise<string> {
     if (!fs.existsSync(path.join(dir, 'manifest.json'))) return '';
-    return IntegrityService.restampPlugin(dir);
+    return Core.IntegrityService.restampPlugin(dir);
   }
 }

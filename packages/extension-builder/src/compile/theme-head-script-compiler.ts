@@ -1,6 +1,6 @@
+import { Core } from '@extension-builder/core-bridge';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ThemePackageLayout } from '@fromcode119/core';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
 
@@ -23,12 +23,12 @@ export class ThemeHeadScriptCompiler {
   static readonly STEP = 'theme-head-script-compiler';
 
   static async compile(themeDir: string): Promise<BuildStepResult> {
-    const source = path.join(themeDir, ThemePackageLayout.HEAD_SCRIPT_SOURCE);
+    const source = path.join(themeDir, Core.ThemePackageLayout.HEAD_SCRIPT_SOURCE);
     if (!fs.existsSync(source)) {
-      return BuildStepResult.skipped(ThemeHeadScriptCompiler.STEP, `no ${ThemePackageLayout.HEAD_SCRIPT_SOURCE}`);
+      return BuildStepResult.skipped(ThemeHeadScriptCompiler.STEP, `no ${Core.ThemePackageLayout.HEAD_SCRIPT_SOURCE}`);
     }
 
-    const outfile = path.join(themeDir, 'ui', ThemePackageLayout.HEAD_SCRIPT_ARTIFACT);
+    const outfile = path.join(themeDir, 'ui', Core.ThemePackageLayout.HEAD_SCRIPT_ARTIFACT);
     fs.mkdirSync(path.dirname(outfile), { recursive: true });
 
     try {

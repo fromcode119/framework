@@ -1,10 +1,10 @@
+import { Core } from '@extension-builder/core-bridge';
 import { execFile } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import { promisify } from 'util';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
 import { PluginUiViteCompiler } from '@extension-builder/compile/plugin-ui-vite-compiler';
-import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Compiles a plugin's UI — the vite component build, any declared standalone scripts, and the
@@ -24,18 +24,18 @@ export class PluginUiCompiler {
    * storefront bundle was never copied — Vite rebuilt `src/ui/frontend.js` while the build server shipped
    * whatever ancient `ui/frontend.js` sat on disk, beside a perfectly current admin bundle.
    */
-  private static readonly FRONTEND_ENTRY = PluginPackageLayout.FRONTEND_ENTRY;
+  private static readonly FRONTEND_ENTRY = Core.PluginPackageLayout.FRONTEND_ENTRY;
 
   /** The always-present artifacts. Anything a plugin DECLARES is added per build, not listed here. */
   private static readonly MIRRORED_ARTIFACTS = [
-    PluginPackageLayout.UI_ENTRY, `${PluginPackageLayout.UI_ENTRY}.map`, `${PluginPackageLayout.UI_ENTRY}.gz`,
-    PluginPackageLayout.FRONTEND_ENTRY, `${PluginPackageLayout.FRONTEND_ENTRY}.map`, `${PluginPackageLayout.FRONTEND_ENTRY}.gz`,
-    PluginPackageLayout.UI_STYLESHEET,
+    Core.PluginPackageLayout.UI_ENTRY, `${Core.PluginPackageLayout.UI_ENTRY}.map`, `${Core.PluginPackageLayout.UI_ENTRY}.gz`,
+    Core.PluginPackageLayout.FRONTEND_ENTRY, `${Core.PluginPackageLayout.FRONTEND_ENTRY}.map`, `${Core.PluginPackageLayout.FRONTEND_ENTRY}.gz`,
+    Core.PluginPackageLayout.UI_STYLESHEET,
   ];
 
   /** Everything to mirror for THIS plugin: the fixed set, plus whatever it declared. */
   private static mirroredArtifacts(manifest: Record<string, any>): string[] {
-    const declared = PluginPackageLayout.browserEntries(manifest)
+    const declared = Core.PluginPackageLayout.browserEntries(manifest)
       .flatMap((name) => [`${name}.js`, `${name}.js.gz`]);
     return [...PluginUiCompiler.MIRRORED_ARTIFACTS, ...declared];
   }
@@ -77,7 +77,7 @@ export class PluginUiCompiler {
       return;
     }
 
-    const entryFile = [PluginPackageLayout.SERVER_ENTRY_SOURCE, PluginPackageLayout.SERVER_ENTRY, 'main.ts', 'main.js']
+    const entryFile = [Core.PluginPackageLayout.SERVER_ENTRY_SOURCE, Core.PluginPackageLayout.SERVER_ENTRY, 'main.ts', 'main.js']
       .map(f => path.join(uiDir, f))
       .find(p => fs.existsSync(p));
 
@@ -118,7 +118,7 @@ export class PluginUiCompiler {
       format: 'esm',
       platform: 'browser',
       target: ['es2020'],
-      outfile: path.join(uiDir, PluginPackageLayout.UI_ENTRY),
+      outfile: path.join(uiDir, Core.PluginPackageLayout.UI_ENTRY),
       alias: this.toolchain.selfAlias(sourceDir),
       loader: this.toolchain.browserLoader(),
       jsx: 'transform',
@@ -168,7 +168,7 @@ export class PluginUiCompiler {
    */
   private async compileDeclaredBrowserEntries(sourceDir: string, uiDir: string, manifest: Record<string, any>): Promise<void> {
     const esbuild = this.toolchain.loadEsbuild();
-    for (const name of PluginPackageLayout.browserEntries(manifest)) {
+    for (const name of Core.PluginPackageLayout.browserEntries(manifest)) {
       const source = path.join(uiDir, `${name}.ts`);
       if (!fs.existsSync(source)) continue;
       await esbuild.build({

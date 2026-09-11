@@ -24,7 +24,7 @@ import { promisify } from 'util';
 export class ThemeBundleCompiler {
   private static readonly execFileAsync = promisify(execFile);
 
-  private static readonly runtimeRequire = createRequire(__filename);
+  private static readonly runtimeRequire = createRequire(import.meta.url);
 
   /** The authored config classes plus every local VALUE import they load at config time. */
   private static readonly STAGED_SOURCES = [

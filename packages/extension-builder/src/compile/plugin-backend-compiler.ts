@@ -1,9 +1,9 @@
+import { Core } from '@extension-builder/core-bridge';
 import { execFile } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import { promisify } from 'util';
 import { BuildToolchain } from '@extension-builder/deps/build-toolchain';
-import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Compiles a plugin's backend entry: `index.ts` -> `index.js`.
@@ -19,7 +19,7 @@ export class PluginBackendCompiler {
    * Mirrors: CLI plugin.ts lines 418-454
    */
   async compileBackend(sourceDir: string, _slug: string): Promise<void> {
-    const entryTs = path.join(sourceDir, PluginPackageLayout.SERVER_ENTRY_SOURCE);
+    const entryTs = path.join(sourceDir, Core.PluginPackageLayout.SERVER_ENTRY_SOURCE);
     if (!fs.existsSync(entryTs)) return;
 
     await this.toolchain.installDependencies(sourceDir);
@@ -42,7 +42,7 @@ export class PluginBackendCompiler {
           useDefineForClassFields: false,
         },
       },
-      outfile: path.join(sourceDir, PluginPackageLayout.SERVER_ENTRY),
+      outfile: path.join(sourceDir, Core.PluginPackageLayout.SERVER_ENTRY),
       alias: this.toolchain.selfAlias(sourceDir),
       external: this.toolchain.nodeExternals(),
       sourcemap: true,

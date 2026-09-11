@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
@@ -15,7 +16,7 @@ import { createRequire } from 'module';
  * tailwind config does not exist on disk and every plugin stylesheet fails to compile.
  */
 export class ViteConfigGlue {
-  private static readonly runtimeRequire = createRequire(__filename);
+  private static readonly runtimeRequire = createRequire(import.meta.url);
 
   /** source module, exported class, generated entry — all relative to the framework root. */
   private static readonly ENTRIES: ReadonlyArray<readonly [string, string, string]> = [
@@ -36,7 +37,7 @@ export class ViteConfigGlue {
       const sdkManifest = ViteConfigGlue.runtimeRequire.resolve('@fromcode119/sdk/package.json');
       return path.resolve(path.dirname(sdkManifest), '..', '..');
     } catch {
-      let current = __dirname;
+      let current = path.dirname(fileURLToPath(import.meta.url));
       for (;;) {
         if (fs.existsSync(path.join(current, 'packages', 'sdk', 'package.json'))) return current;
         const parent = path.dirname(current);

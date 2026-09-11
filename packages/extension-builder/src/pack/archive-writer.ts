@@ -1,7 +1,14 @@
+import { Core } from '@extension-builder/core-bridge';
 import * as path from 'path';
 import * as fs from 'fs';
-import archiver from 'archiver';
-import { ThemePackageLayout } from '@fromcode119/core';
+import { createRequire } from 'node:module';
+
+/**
+ * Required rather than imported, for the same reason as the core bridge: `archiver` is CommonJS,
+ * this package is ESM, and Node refused the default import with "does not provide an export named
+ * 'default'". `createRequire` asks for it as what it is.
+ */
+const archiver = createRequire(import.meta.url)('archiver') as typeof import('archiver');
 
 /**
  * Creates the distributable ZIP archives for plugin/theme/core packages.
@@ -141,8 +148,8 @@ export class ArchiveWriter {
       // Re-add what the blanket `**/*.mjs` exclusion above would otherwise take with it. `ui-ssr`
       // holds the server render bundle the frontend imports; `seed.mjs` is a theme's seed data.
       archive.glob('ui-ssr/**/*.mjs', { cwd: sourceDir, dot: false });
-      const seed = path.join(sourceDir, ThemePackageLayout.SEED_ARTIFACT);
-      if (fs.existsSync(seed)) archive.file(seed, { name: ThemePackageLayout.SEED_ARTIFACT });
+      const seed = path.join(sourceDir, Core.ThemePackageLayout.SEED_ARTIFACT);
+      if (fs.existsSync(seed)) archive.file(seed, { name: Core.ThemePackageLayout.SEED_ARTIFACT });
 
       archive.finalize();
     });
@@ -154,7 +161,7 @@ export class ArchiveWriter {
    * wrapping directory would put every file one level too deep.
    */
   async writeTarGz(sourceDir: string, outputPath: string): Promise<void> {
-    const tar = require('tar');
+    const tar = createRequire(import.meta.url)('tar');
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.rmSync(outputPath, { force: true });
     await tar.create(

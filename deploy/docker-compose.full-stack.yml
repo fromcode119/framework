@@ -151,6 +151,12 @@ services:
       - redis
     volumes:
       - ../public/uploads:/app/public/uploads
+      # Writable working space for anything that needs a scratch directory on disk rather than in the
+      # database — the build agent clones repositories here, backups are staged here. The image has no
+      # such directory and the app user cannot create one under /app, so a plugin that asked for it
+      # failed at registration with EACCES on `/app/data`. Mounted, not baked, because its contents
+      # are the deployment's and must survive an image upgrade.
+      - ../data:/app/data
       # ONE name per extension root: the container path declared above as PLUGINS_DIR / THEMES_DIR.
       # A SHARED_*_DIR override was a SECOND name for the same thing, which let the api and the
       # frontend end up pointed at different directories with nothing to say so.

@@ -1,9 +1,21 @@
+import { fileURLToPath } from 'node:url';
+import { Core } from '@extension-builder/core-bridge';
 import { execFile } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import { createRequire } from 'module';
 import { promisify } from 'util';
-import { DependencyInstaller } from '@fromcode119/core';
+/**
+ * Taken off the module object rather than named-imported.
+ *
+ * `@fromcode119/core` is CommonJS and this package is ESM, so Node resolves named imports through
+ * cjs-module-lexer — which stopped detecting THIS symbol as the barrel grew (it re-exports 300+
+ * names, and `DependencyInstaller` fell out of the set while its neighbours stayed). The import
+ * then failed at load with "does not provide an export named 'DependencyInstaller'", taking every
+ * CLI build command down with it. Reading it off the default export is the shape that cannot be
+ * mis-analysed.
+ */
+
 
 /**
  * Build-toolchain helpers shared by PackageCompiler: dependency installation,
@@ -12,7 +24,7 @@ import { DependencyInstaller } from '@fromcode119/core';
  */
 export class BuildToolchain {
   private static readonly execFileAsync = promisify(execFile);
-  private static readonly runtimeRequire = createRequire(__filename);
+  private static readonly runtimeRequire = createRequire(import.meta.url);
 
   /**
    * What a plugin's BACKEND bundle leaves unresolved.
@@ -130,7 +142,7 @@ export class BuildToolchain {
   }
 
   private static moduleDirectory(): string {
-    return __dirname;
+    return path.dirname(fileURLToPath(import.meta.url));
   }
 
   private getEsbuildModuleName(): string {
@@ -185,15 +197,15 @@ export class BuildToolchain {
    */
   installDependencies(directory: string): void {
     if (!BuildToolchain.needsInstall(directory)) return;
-    DependencyInstaller.stripHostProvidedDependencies(directory);
-    DependencyInstaller.install(directory, { omitDev: true });
+    Core.DependencyInstaller.stripHostProvidedDependencies(directory);
+    Core.DependencyInstaller.install(directory, { omitDev: true });
   }
 
   /** Same, but keeps devDependencies — a package's own `build` script usually needs them. */
   installBuildDependencies(directory: string): void {
     if (!BuildToolchain.needsInstall(directory)) return;
-    DependencyInstaller.stripHostProvidedDependencies(directory);
-    DependencyInstaller.install(directory, { omitDev: false });
+    Core.DependencyInstaller.stripHostProvidedDependencies(directory);
+    Core.DependencyInstaller.install(directory, { omitDev: false });
   }
 
   private static needsInstall(directory: string): boolean {

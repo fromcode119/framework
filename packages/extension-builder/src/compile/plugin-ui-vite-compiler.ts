@@ -1,9 +1,9 @@
+import { Core } from '@extension-builder/core-bridge';
 import { execFile } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import { createRequire } from 'module';
 import { promisify } from 'util';
-import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Builds a plugin's UI with the framework-owned Vite pipeline — the "plugins are just components"
@@ -18,7 +18,7 @@ import { PluginPackageLayout } from '@fromcode119/core';
  */
 export class PluginUiViteCompiler {
   private static readonly execFileAsync = promisify(execFile);
-  private static readonly runtimeRequire = createRequire(__filename);
+  private static readonly runtimeRequire = createRequire(import.meta.url);
 
   /** Static markers the SDK entry registers on. Mirrors the grep in build-plugins.sh. */
   private static readonly COMPONENT_MARKERS =
@@ -42,7 +42,7 @@ export class PluginUiViteCompiler {
   async build(uiDir: string, slug: string, namespace: string, ssrOutDir: string): Promise<void> {
     const viteDir = this.resolveSdkViteDir();
     const stagingDir = this.createStagingDir(slug);
-    const entryTarget = path.join(uiDir, PluginPackageLayout.GENERATED_UI_ENTRY);
+    const entryTarget = path.join(uiDir, Core.PluginPackageLayout.GENERATED_UI_ENTRY);
 
     try {
       const configFile = await this.stageConfig(viteDir, stagingDir, 'plugin-ui');
@@ -52,7 +52,7 @@ export class PluginUiViteCompiler {
         PLUGIN_NAMESPACE: namespace,
         PLUGIN_SLUG: slug,
         UI_BUNDLE: 'admin',
-        UI_OUT: PluginPackageLayout.UI_ENTRY,
+        UI_OUT: Core.PluginPackageLayout.UI_ENTRY,
       });
 
       if (!this.hasStorefrontSources(uiDir)) return;
@@ -63,7 +63,7 @@ export class PluginUiViteCompiler {
         PLUGIN_NAMESPACE: namespace,
         PLUGIN_SLUG: slug,
         UI_BUNDLE: 'frontend',
-        UI_OUT: PluginPackageLayout.FRONTEND_ENTRY,
+        UI_OUT: Core.PluginPackageLayout.FRONTEND_ENTRY,
       });
 
       await this.buildSsrBundle(viteDir, stagingDir, uiDir, slug, namespace, ssrOutDir);

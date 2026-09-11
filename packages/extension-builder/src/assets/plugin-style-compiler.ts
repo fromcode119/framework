@@ -1,9 +1,9 @@
+import { Core } from '@extension-builder/core-bridge';
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { PluginStyleMarker } from '@extension-builder/assets/plugin-style-marker';
-import { PluginPackageLayout } from '@fromcode119/core';
 
 /**
  * Compiles a plugin's admin utilities into `ui/style.css` with tailwind.
@@ -29,11 +29,11 @@ export class PluginStyleCompiler {
     if (!fs.existsSync(binary)) {
       return BuildStepResult.skipped(PluginStyleCompiler.STEP, `tailwindcss is not installed under ${toolchainRoot}`);
     }
-    if (!fs.existsSync(path.join(outDir, PluginPackageLayout.UI_ENTRY))) {
+    if (!fs.existsSync(path.join(outDir, Core.PluginPackageLayout.UI_ENTRY))) {
       return BuildStepResult.skipped(PluginStyleCompiler.STEP, 'no admin bundle.js — a storefront-only plugin styles itself');
     }
 
-    const out = path.join(outDir, PluginPackageLayout.UI_STYLESHEET);
+    const out = path.join(outDir, Core.PluginPackageLayout.UI_STYLESHEET);
     if (fs.existsSync(out) && !PluginStyleMarker.isGenerated(fs.readFileSync(out, 'utf8'))) {
       return BuildStepResult.failure(
         PluginStyleCompiler.STEP,
