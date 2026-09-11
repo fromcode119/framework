@@ -144,6 +144,7 @@ export class PluginDirectoryScannerService {
 
     for (const root of roots) {
       if (!fs.existsSync(root)) continue;
+      const isBundledRoot = root === bundledRoot;
       const pluginDirs = fs.readdirSync(root);
 
       for (const dir of pluginDirs) {
@@ -203,7 +204,14 @@ export class PluginDirectoryScannerService {
 
             if (fs.existsSync(indexPath)) {
               try {
-                await this.dependencyInstaller.ensureInstalled(pluginPath);
+                /**
+                 * A bundled extension arrives with its dependencies already inside the image, so
+                 * there is nothing to install and nowhere to install it: the image directory is not
+                 * writable by the runtime user, and npm's cache is not either. Attempting it failed
+                 * the extension outright — first `EACCES /root/.npm`, then `EACCES rmdir
+                 * node_modules/.bin` once the image carried them.
+                 */
+                if (!isBundledRoot) await this.dependencyInstaller.ensureInstalled(pluginPath);
                 const savedPluginState = existingPlugins.get(manifest.slug as string);
                 const persistedState = installedState[(manifest.slug as string).toLowerCase()];
                 const hasPersistedSandboxConfig = persistedState && Object.prototype.hasOwnProperty.call(persistedState, 'sandboxConfig') && persistedState.sandboxConfig !== undefined;

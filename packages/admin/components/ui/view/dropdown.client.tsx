@@ -3,6 +3,7 @@ import type { IDropdownCoords } from '@/components/ui/interfaces/dropdown-coords
 import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { DropdownDirection } from '@/components/ui/enums/dropdown-direction.enum';
+import { DropdownPlacement } from '@/components/ui/enums/dropdown-placement.enum';
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound, ref, watch } from '@fromcode119/react-class-components';
@@ -20,6 +21,7 @@ export class Dropdown extends Reactor {
    * inside it and sat visibly narrower than everything around it.
    */
   @prop declare block?: boolean;
+  @prop declare placement?: DropdownPlacement;
 
   @ref declare triggerRef: Ref<HTMLDivElement>;
   @ref declare menuRef: Ref<HTMLDivElement>;
@@ -41,6 +43,10 @@ export class Dropdown extends Reactor {
 
   @bound updatePosition(): void {
     if (!this.triggerRef.current) return;
+    if (this.placement === DropdownPlacement.BESIDE) {
+      this.positionBeside();
+      return;
+    }
 
     const gap = 12;
     const viewportPadding = 16;
@@ -63,6 +69,34 @@ export class Dropdown extends Reactor {
       width: rect.width,
       maxHeight,
       direction: shouldOpenUp ? DropdownDirection.UP : DropdownDirection.DOWN,
+    };
+  }
+
+  /**
+   * Alongside the trigger, its BOTTOM edges aligned.
+   *
+   * For a trigger at the foot of the sidebar, stacking upward covers the navigation the menu belongs
+   * to. Beside it, both stay readable. The panel is pulled up only as far as it must be to stay on
+   * screen, so a short menu still lines up with the row that opened it.
+   */
+  private positionBeside(): void {
+    const gap = 8;
+    const viewportPadding = 16;
+    const rect = this.triggerRef.current!.getBoundingClientRect();
+    const menuHeight = this.menuRef.current?.offsetHeight || 0;
+    const menuWidth = this.menuRef.current?.offsetWidth || this.measuredWidth || rect.width;
+    const available = window.innerHeight - viewportPadding * 2;
+    const height = Math.min(menuHeight || available, available);
+
+    const preferredLeft = rect.right + gap;
+    const fitsRight = preferredLeft + menuWidth + viewportPadding <= window.innerWidth;
+
+    this.coords = {
+      top: Math.max(viewportPadding, Math.min(rect.bottom - height, window.innerHeight - height - viewportPadding)),
+      left: fitsRight ? preferredLeft : Math.max(viewportPadding, rect.left - menuWidth - gap),
+      width: rect.width,
+      maxHeight: available,
+      direction: DropdownDirection.UP,
     };
   }
 

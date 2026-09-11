@@ -7,6 +7,7 @@ import { AdminApi } from '@/lib/api';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
+import { DropdownPlacement } from '@/components/ui/enums/dropdown-placement.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.interface';
 
@@ -200,7 +201,14 @@ export class SidebarAccountCard extends AdminComponent {
   render(): ReactElement {
     return (
       <div className={`border-t border-slate-200/80 dark:border-slate-800/80 ${this.isMini ? 'p-2' : 'p-2'}`}>
-        <Dropdown block align={HorizontalAlign.LEFT} items={this.items} trigger={this.trigger} header={this.menuHeader} />
+        <Dropdown
+          block
+          placement={DropdownPlacement.BESIDE}
+          align={HorizontalAlign.LEFT}
+          items={this.items}
+          trigger={this.trigger}
+          header={this.menuHeader}
+        />
       </div>
     );
   }
