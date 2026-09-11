@@ -1,3 +1,4 @@
+import semver from 'semver';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import { FrameworkReleaseDefaults } from '@core/management/framework-release-defaults';
 
@@ -15,8 +16,18 @@ import { FrameworkReleaseDefaults } from '@core/management/framework-release-def
  * configures itself that way.
  */
 export class FrameworkReleaseSource {
-  /** GitHub's releases API; `latest` excludes drafts and pre-releases by definition. */
-  private static readonly RELEASE_API = 'https://api.github.com/repos';
+  /**
+   * TAGS, not releases.
+   *
+   * The release pipeline tags each version and publishes images; it does not create GitHub Release
+   * objects, so `/releases/latest` answers 404 and a check built on it reports "unknown" forever —
+   * which is the exact failure this class exists to remove. Tags are what this project actually
+   * publishes, so tags are what it reads.
+   */
+  private static readonly TAGS_API = 'https://api.github.com/repos';
+
+  /** One page is a decade of releases at this cadence, and ordering is by semver, not by position. */
+  private static readonly PAGE_SIZE = 100;
 
   private static readonly TIMEOUT_MS = 8000;
 
@@ -42,18 +53,33 @@ export class FrameworkReleaseSource {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FrameworkReleaseSource.TIMEOUT_MS);
     try {
-      const response = await fetch(`${FrameworkReleaseSource.RELEASE_API}/${repository}/releases/latest`, {
+      const url = `${FrameworkReleaseSource.TAGS_API}/${repository}/tags?per_page=${FrameworkReleaseSource.PAGE_SIZE}`;
+      const response = await fetch(url, {
         headers: { Accept: 'application/vnd.github+json' },
         signal: controller.signal,
       });
       if (!response.ok) return '';
-      const release = await response.json() as Record<string, unknown>;
-      return FrameworkReleaseSource.normalize(String(release?.tag_name || ''));
+      const tags = await response.json() as Array<Record<string, unknown>>;
+      return FrameworkReleaseSource.highest(Array.isArray(tags) ? tags.map((tag) => String(tag?.name || '')) : []);
     } catch {
       return '';
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  /**
+   * The highest version among the tags, by SEMVER rather than by the order GitHub returned them.
+   *
+   * GitHub lists tags newest-commit-first, which is not the same as highest-version: a patch tagged
+   * on an older branch would otherwise be offered as an upgrade over a newer minor. Pre-releases are
+   * excluded — an installation is not offered a release candidate as its update.
+   */
+  static highest(tags: string[]): string {
+    const versions = tags
+      .map((tag) => FrameworkReleaseSource.normalize(tag))
+      .filter((version) => Boolean(semver.valid(version)) && semver.prerelease(version) === null);
+    return versions.sort(semver.rcompare)[0] || '';
   }
 
   /** `v0.2.13` and `0.2.13` are the same release; comparisons need the bare form. */
