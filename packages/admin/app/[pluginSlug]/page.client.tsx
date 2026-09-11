@@ -7,6 +7,7 @@ import { PluginNotFound } from '@/components/plugins/view/plugin-not-found.clien
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { prop, state } from '@fromcode119/react-class-components';
+import { PluginRouteResolver } from '@/lib/plugin-route-resolver';
 
 /**
  * Root route for a plugin.
@@ -45,7 +46,8 @@ export class PluginRootRoute extends AdminComponent {
 
   render(): ReactElement {
     const { collections, slots, plugins, isReady } = this.runtime.plugins;
-    const pluginSlug = this.pluginSlug;
+    // The URL segment is not necessarily the slug — a manifest may declare its own menu path.
+    const pluginSlug = PluginRouteResolver.resolveSlug(plugins as any, this.pluginSlug);
 
     // Check if plugin is active
     const isActive = plugins.some((p: any) => p.slug === pluginSlug);

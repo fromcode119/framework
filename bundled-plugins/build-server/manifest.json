@@ -38,7 +38,7 @@
         "component": "admin.plugin.build-server.overview"
       },
       {
-        "slot": "admin.plugin.build-server.page.sources",
+        "slot": "admin.plugin.build-server.page.build-server",
         "component": "admin.plugin.build-server.overview"
       }
     ],
