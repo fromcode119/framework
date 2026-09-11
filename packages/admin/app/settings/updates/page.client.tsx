@@ -15,6 +15,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AppEnv } from '@/lib/env';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminClass } from '@/lib/admin-class';
+import { PendingReleaseList } from '@/app/settings/updates/pending-release-list.client';
 
 export class UpdatesPage extends AdminComponent {
   @state status: any = null;
@@ -59,6 +60,14 @@ export class UpdatesPage extends AdminComponent {
   /** True only when the registry answered AND named a different version. */
   private get hasUpdate(): boolean {
     return Boolean(this.status?.hasUpdate && this.latestVersion && this.latestVersion !== this.installedVersion);
+  }
+
+  /**
+   * Whether this installation can rewrite its own files. The API says so; it is not inferred here,
+   * because the admin cannot see the filesystem the api runs on.
+   */
+  private get canApplyInPlace(): boolean {
+    return this.status?.canApplyInPlace !== false;
   }
 
   /** True when we do not know what the latest version is — distinct from "you are up to date". */
@@ -220,13 +229,29 @@ export class UpdatesPage extends AdminComponent {
                         notes exist anywhere in the payload, so the operator was making an
                         "should I update?" decision on invented changelog text. Removed. Re-add a
                         real paragraph only when the marketplace core payload carries release notes. */}
-                    <button
-                      onClick={this.openConfirm}
-                      disabled={updating}
-                      className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
-                    >
-                      {updating ? 'Applying Update...' : 'Install Core v' + latestVersion}
-                    </button>
+                    <PendingReleaseList releases={this.status?.releases || []} />
+
+                    {/*
+                      * An installation that runs from a published image cannot rewrite its own
+                      * files, so it is told what the upgrade IS rather than offered a button that
+                      * fails on `EACCES` — and would be undone by the next `compose up` even if the
+                      * permissions allowed it.
+                      */}
+                    {this.canApplyInPlace ? (
+                      <button
+                        onClick={this.openConfirm}
+                        disabled={updating}
+                        className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
+                      >
+                        {updating ? 'Applying Update...' : 'Install Core v' + latestVersion}
+                      </button>
+                    ) : (
+                      <p className="text-[11px] font-medium leading-relaxed text-slate-600 dark:text-slate-300">
+                        This installation runs from a published image, so it cannot update its own
+                        files — deploy <span className="font-mono font-semibold">v{latestVersion}</span> instead:
+                        <span className="mt-1 block font-mono text-[11px] text-slate-500">fromcode deploy v{latestVersion}</span>
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

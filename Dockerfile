@@ -109,6 +109,11 @@ RUN for extension in bundled-plugins/*/; do \
 # On a memory-constrained host (4 GB) parallel tsc processes
 # caused OOM → exit code 2.
 # ===================================
+# Declares how this installation was deployed. The in-place updater cannot work from an image — the
+# code is a read-only layer, and the next `compose up` would restore it anyway — so the admin says so
+# instead of offering a button that fails on a permissions error.
+ENV FROMCODE_DEPLOYMENT=image
+
 FROM base AS builder
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000
 ARG NEXT_PUBLIC_API_VERSION=v1

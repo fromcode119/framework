@@ -10,6 +10,7 @@ import { SafeArchive } from '@core/security/safe-archive';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
 import { FrameworkReleaseSource } from '@core/management/framework-release-source';
+import { DeploymentKind } from '@core/management/deployment-kind';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
@@ -89,7 +90,8 @@ export class SystemUpdateService {
           latest: marketplaceData.core.version,
           hasUpdate: semver.gt(marketplaceData.core.version, currentVersion),
           downloadUrl: marketplaceData.core.downloadUrl,
-          lastUpdated: marketplaceData.core.lastUpdated
+          lastUpdated: marketplaceData.core.lastUpdated,
+          canApplyInPlace: !DeploymentKind.isImage,
         };
       }
     } catch (err: any) {
@@ -122,10 +124,24 @@ export class SystemUpdateService {
       downloadUrl: '',
       lastUpdated: '',
       source: await FrameworkReleaseSource.repository(),
+      canApplyInPlace: !DeploymentKind.isImage,
+      // What each pending version actually changed, so the operator is not agreeing to a number.
+      releases: await FrameworkReleaseSource.pending(currentVersion),
     };
   }
 
   static async applyUpdate() {
+    /**
+     * Refused before anything is touched. The old failure was a half-done one: it created a backup
+     * directory, failed on permissions, and reported "Pre-update backup failed" — which reads as a
+     * transient problem to retry rather than as a thing this deployment cannot do at all.
+     */
+    if (DeploymentKind.isImage) {
+      throw new Error(
+        'This installation runs from a published image, so it cannot update its own files. Deploy the newer image instead.',
+      );
+    }
+
     const status = await this.checkUpdate();
     if (!status || !status.hasUpdate) {
       throw new Error('No update available');
