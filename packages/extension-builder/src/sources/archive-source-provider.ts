@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { ISourceProvider } from '@extension-builder/interfaces/source-provider.interfaces';
+import type { ISourceProvider } from '@extension-builder/interfaces/source-provider.interface';
 
 /**
  * A source that arrives as a `.zip` or `.tar.gz` — the "drag in a plugin, no repo" path.

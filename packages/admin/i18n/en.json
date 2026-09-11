@@ -1,0 +1,41 @@
+{
+  "setup": {
+    "title": "Set up your platform",
+    "subtitle": "Three short steps. Everything here can be changed later in Settings.",
+    "steps": {
+      "language": "Language",
+      "account": "Administrator",
+      "platform": "Platform"
+    },
+    "language": {
+      "title": "Choose your language",
+      "help": "This sets the language of the admin. Each site you create chooses its own language separately."
+    },
+    "account": {
+      "title": "Create the administrator account",
+      "email": "Email address",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "noticeTitle": "Full access",
+      "noticeBody": "This account can manage every site, plugin and setting on this installation. Use an address you control."
+    },
+    "platform": {
+      "title": "Name your platform",
+      "name": "Platform name",
+      "nameHelp": "Shown across the admin. Leave it empty to keep the console's own name.",
+      "timezone": "Timezone",
+      "timezoneHelp": "Used whenever the admin shows a date. Pre-filled from this browser — change it if the platform runs elsewhere."
+    },
+    "actions": {
+      "back": "Back",
+      "continue": "Continue",
+      "finish": "Create account and finish"
+    },
+    "errors": {
+      "required": "Required",
+      "passwordMismatch": "The two passwords do not match",
+      "failed": "Setup failed. Please try again."
+    },
+    "checking": "Checking this installation…"
+  }
+}
