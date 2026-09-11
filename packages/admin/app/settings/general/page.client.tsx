@@ -31,6 +31,7 @@ export class GeneralSettingsPage extends AdminComponent {
     'timezone',
   ] as const;
   private static readonly BOOLEAN_KEYS = [
+    'admin_search_indexing',
     'email_notifications',
     'frontend_auth_enabled',
     'frontend_registration_enabled',
@@ -134,6 +135,7 @@ export class GeneralSettingsPage extends AdminComponent {
     try {
       await AdminSystemSettingsClient.update({
         platform_name: String(settings.platform_name ?? '').trim(),
+        admin_search_indexing: Boolean(settings.admin_search_indexing),
         email_notifications: Boolean(settings.email_notifications),
         notification_email: String(settings.notification_email ?? '').trim(),
         notification_email_cc: String(settings.notification_email_cc ?? '').trim(),

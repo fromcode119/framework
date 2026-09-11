@@ -246,7 +246,9 @@ export class SystemConstants {
   FRONTEND_REGISTRATION_ENABLED: 'frontend_registration_enabled',
   EMAIL_NOTIFICATIONS: 'email_notifications',
   NOTIFICATION_EMAIL: 'notification_email',
-  NOTIFICATION_EMAIL_CC: 'notification_email_cc'
+  NOTIFICATION_EMAIL_CC: 'notification_email_cc',
+  /** Whether search engines may index the ADMIN console. Off unless an operator turns it on. */
+  ADMIN_SEARCH_INDEXING: 'admin_search_indexing'
   } as const;
 
   static readonly API_PATH = {

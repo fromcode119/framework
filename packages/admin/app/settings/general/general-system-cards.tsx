@@ -36,6 +36,11 @@ export class GeneralSystemCards extends PureReactor {
   }
 
   @bound
+  protected changeAdminSearchIndexing(val: boolean): void {
+    this.setSettings((prev) => ({ ...prev, admin_search_indexing: val }));
+  }
+
+  @bound
   protected changeEmailNotifications(val: boolean): void {
     this.setSettings((prev) => ({ ...prev, email_notifications: val }));
   }
@@ -128,6 +133,20 @@ export class GeneralSystemCards extends PureReactor {
                 Send Test
               </Button>
             </div>
+          </SettingRow>
+        </Card>
+
+        <Card title="Search Engines">
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Lock}
+            title="Index This Admin"
+            description="Let search engines crawl and index this console. Off by default: the login page names the platform and the customer, and the URLs describe the installation. Turn it on only if this host deliberately serves something public."
+          >
+            <Switch
+              checked={settings.admin_search_indexing}
+              onChange={this.changeAdminSearchIndexing}
+            />
           </SettingRow>
         </Card>
 

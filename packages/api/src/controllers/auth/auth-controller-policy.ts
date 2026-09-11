@@ -1,7 +1,7 @@
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
 import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-access-denied-error';
 import { Request, Response } from 'express';
-import { SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import { PlatformSettingsService, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { randomUUID } from 'crypto';
 import { AuthControllerInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-infrastructure';
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
@@ -424,6 +424,13 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     return res.json({
       multiTenant: TenantMode.isEnabled(),
       workspace: workspace ? { id: workspace.id, slug: workspace.slug, appearance: workspace.appearance } : null,
+      // Whether crawlers may index this console. Carried on the one response the admin already asks
+      // for before anyone signs in, because the answer is needed to serve `robots.txt` and the
+      // `X-Robots-Tag` on requests that have no session — a setting behind auth could not be read
+      // by the very requests that need it. It reveals nothing the robots.txt would not.
+      searchIndexing: await PlatformSettingsService.readFlag(
+        PlatformSettingsService.KEY.ADMIN_SEARCH_INDEXING,
+      ),
     });
   }
 

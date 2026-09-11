@@ -59,6 +59,18 @@ export class PlatformSettingsService {
   }
 
   /**
+   * A stored boolean, defaulting to FALSE when nothing has been saved.
+   *
+   * Deliberately not `resolve()`: that one is env-first for values an operator sets per deployment,
+   * and this is a choice made in the admin. An unset setting is not "unknown", it is "no" — which is
+   * what makes a default-closed switch safe to read before anyone has ever opened the screen.
+   */
+  public static async readFlag(settingKey: string): Promise<boolean> {
+    const value = (await this.getSetting(settingKey)) ?? '';
+    return value === 'true' || value === '1' || value === 'on' || value === 'yes';
+  }
+
+  /**
    * Canonical `_system_meta` keys for platform settings. These match the keys written by
    * the admin General Settings page, so a value saved there is read back here.
    */
@@ -75,5 +87,17 @@ export class PlatformSettingsService {
      * overwrite the very sources being packaged. Blank uses `<project root>/data/sources`.
      */
     SOURCES_WORKSPACE_ROOT: 'sources_workspace_root',
+    /**
+     * Whether search engines may index the ADMIN.
+     *
+     * Off unless an operator turns it on. The admin is an operations console: its login page names
+     * the platform and the customer, its URL structure describes the installation, and none of that
+     * is content anyone searched for. Nothing was stopping a crawler before this — no robots.txt, no
+     * `X-Robots-Tag`, no meta — so it was indexable by omission rather than by decision.
+     *
+     * A setting rather than a hardcoded refusal, because an installation that deliberately serves a
+     * public surface from the admin host must be able to say so.
+     */
+    ADMIN_SEARCH_INDEXING: 'admin_search_indexing',
   } as const;
 }
