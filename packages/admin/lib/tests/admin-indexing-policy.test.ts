@@ -63,6 +63,17 @@ describe('AdminIndexingPolicy', () => {
     expect(await AdminIndexingPolicy.allowed()).toBe(false);
   });
 
+  it('refuses synchronously while the cache is stale, even if the last answer was yes', async () => {
+    vi.stubGlobal('fetch', answering({ searchIndexing: true }));
+    await AdminIndexingPolicy.allowed();
+    expect(AdminIndexingPolicy.refusedSynchronously()).toBe(false);
+
+    // Age the cache past its TTL: the previous "yes" must not be repeated.
+    (AdminIndexingPolicy as any).cachedAt = Date.now() - 120_000;
+
+    expect(AdminIndexingPolicy.refusedSynchronously()).toBe(true);
+  });
+
   it('caches, so the header does not cost an api call per request', async () => {
     const fetcher = answering({ searchIndexing: true });
     vi.stubGlobal('fetch', fetcher);

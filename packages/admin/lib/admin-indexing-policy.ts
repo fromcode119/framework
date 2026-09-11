@@ -49,8 +49,12 @@ export class AdminIndexingPolicy {
    */
   static refusedSynchronously(): boolean {
     if (Date.now() - AdminIndexingPolicy.cachedAt >= AdminIndexingPolicy.TTL_MS) {
-      // Fire and forget: this request answers from what is known now, the next one is accurate.
+      // Fire and forget, so the NEXT request is accurate.
       void AdminIndexingPolicy.allowed().catch(() => undefined);
+      // A stale cache refuses rather than repeating its last answer. Repeating it is only safe in
+      // one direction: turning indexing OFF would otherwise leave a window where responses still
+      // carried no header, which is exactly the direction that cannot be taken back.
+      return true;
     }
     return !AdminIndexingPolicy.cached;
   }
