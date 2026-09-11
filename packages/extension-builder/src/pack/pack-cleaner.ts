@@ -15,7 +15,10 @@ export class PackCleaner {
    * `tests/` slipped through untouched.
    */
   private static readonly STRIPPED_DIRS = new Set([
-    'node_modules', '.git', '.next', '__MACOSX', 'tests', 'test', '__tests__', 'scripts', '.vscode',
+    // `.npm-cache` is written beside the source by the dependency installer, because npm's default
+    // cache lives under HOME and a container's HOME is not writable by the runtime user. It is build
+    // scratch, and shipping it would put a package registry's cache inside every archive.
+    'node_modules', '.git', '.next', '__MACOSX', 'tests', 'test', '__tests__', 'scripts', '.vscode', '.npm-cache',
     '.ssh', '.github', '.circleci',
   ]);
 

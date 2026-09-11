@@ -59,6 +59,10 @@ services:
     environment:
       # SQLite by default locally: no Postgres to run, and the file lives in the ./data mount below.
       - DATABASE_URL=${DATABASE_URL:-file:/app/data/app.db}
+      # Read by the build server when a source stores no token of its own. Without it forwarded,
+      # the documented "leave the token blank and GITHUB_TOKEN is used" fallback could never work in
+      # a container: the variable existed on the host and nowhere the plugin could see it.
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
       - DB_DIALECT=${DB_DIALECT:-sqlite}
       - DATABASE_MIGRATION_URL=${DATABASE_MIGRATION_URL:-}
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}

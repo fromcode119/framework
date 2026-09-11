@@ -92,9 +92,30 @@ export class DependencyInstaller {
     const result = spawnSync(command, DependencyInstaller.argsFor({ omitDev: options.omitDev, hasLockfile }), {
       cwd: directory,
       stdio: 'inherit',
-      env: { ...process.env, NODE_ENV: 'production' },
+      env: {
+        ...process.env,
+        NODE_ENV: 'production',
+        npm_config_cache: DependencyInstaller.cacheDirectory(directory),
+      },
     });
 
     if (result.status !== 0) throw new Error(`Dependency install failed for ${directory}`);
+  }
+
+  /**
+   * A cache npm can actually write.
+   *
+   * npm derives its cache from `HOME`, which in a container is `/root` — owned by root while the
+   * process runs as `node`. Every install therefore died with `EACCES mkdir '/root/.npm'`, and the
+   * only symptom upstream was "Dependency install failed for <dir>": the real message was in npm's
+   * own output, and the reason it could not even write its log was the same permission.
+   *
+   * Beside the directory being installed into, because that is writable by definition — the
+   * installer is about to write `node_modules` there.
+   */
+  private static cacheDirectory(directory: string): string {
+    const cache = path.join(directory, '.npm-cache');
+    fs.mkdirSync(cache, { recursive: true });
+    return cache;
   }
 }

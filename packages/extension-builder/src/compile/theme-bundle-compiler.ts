@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { createRequire } from 'module';
 import { promisify } from 'util';
+import { ViteStagingRoot } from '@extension-builder/compile/vite-staging-root';
 
 /**
  * Builds a theme's UI with the framework-owned Vite pipeline — the build-server twin of
@@ -134,7 +135,7 @@ export class ThemeBundleCompiler {
 
   /** Per-slug so parallel builds never collide on one staging dir. */
   private createStagingDir(slug: string): string {
-    const stagingDir = path.join(this.resolveViteHostDir(), `.fromcode-vite-build-theme-${slug}`);
+    const stagingDir = path.join(ViteStagingRoot.resolve(this.resolveViteHostDir()), `.fromcode-vite-build-theme-${slug}`);
     fs.rmSync(stagingDir, { recursive: true, force: true });
     fs.mkdirSync(stagingDir, { recursive: true });
     return stagingDir;

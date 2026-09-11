@@ -4,6 +4,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { PluginStyleMarker } from '@extension-builder/assets/plugin-style-marker';
+import { ViteConfigGlue } from '@extension-builder/deps/vite-config-glue';
 
 /**
  * Compiles a plugin's admin utilities into `ui/style.css` with tailwind.
@@ -17,6 +18,13 @@ import { PluginStyleMarker } from '@extension-builder/assets/plugin-style-marker
  */
 export class PluginStyleCompiler {
   static readonly STEP = 'plugin-style-compiler';
+
+  /** The last meaningful line of tailwind's output — the line that says what went wrong. */
+  private static reasonFrom(result: { stderr?: string; stdout?: string }): string {
+    const output = `${String(result?.stderr || '')}\n${String(result?.stdout || '')}`;
+    const line = output.split('\n').map((entry) => entry.trim()).filter((entry) => entry !== '').pop();
+    return line ? ` — ${line}` : '';
+  }
 
   private static readonly CONFIG = 'packages/sdk/src/tailwind/plugin-ui.config.ts';
   private static readonly INPUT = 'packages/sdk/src/tailwind/plugin-ui.css';
@@ -42,14 +50,24 @@ export class PluginStyleCompiler {
     }
 
     const temporary = path.join(outDir, '.style.css.building');
-    const result = spawnSync(binary, ['-c', PluginStyleCompiler.CONFIG, '-i', PluginStyleCompiler.INPUT, '-o', temporary, '--minify'], {
+    const config = ViteConfigGlue.generatedPath(PluginStyleCompiler.CONFIG);
+    const result = spawnSync(binary, ['-c', config, '-i', PluginStyleCompiler.INPUT, '-o', temporary, '--minify'], {
       cwd: toolchainRoot,
+      encoding: 'utf8',
       env: { ...process.env, PLUGIN_UI_DIR: uiSourceDir },
     });
 
     if (result.status !== 0) {
       fs.rmSync(temporary, { force: true });
-      return BuildStepResult.failure(PluginStyleCompiler.STEP, `${slug}: tailwind exited ${String(result.status)}`);
+      /**
+       * Tailwind's own words, not just its exit code. "tailwind exited 9" is a number nobody can act
+       * on: the reason — a config it cannot find, a path it cannot read — was captured by spawnSync
+       * and thrown away, so the one useful thing about the failure never reached the screen.
+       */
+      return BuildStepResult.failure(
+        PluginStyleCompiler.STEP,
+        `${slug}: tailwind exited ${String(result.status)}${PluginStyleCompiler.reasonFrom(result)}`,
+      );
     }
     if (!fs.existsSync(temporary) || fs.statSync(temporary).size === 0) {
       fs.rmSync(temporary, { force: true });

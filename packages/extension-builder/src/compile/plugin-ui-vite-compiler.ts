@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { createRequire } from 'module';
 import { promisify } from 'util';
+import { ViteStagingRoot } from '@extension-builder/compile/vite-staging-root';
 
 /**
  * Builds a plugin's UI with the framework-owned Vite pipeline — the "plugins are just components"
@@ -139,7 +140,7 @@ export class PluginUiViteCompiler {
 
   /** Per-slug so the parallel plugin builds the build server runs never collide on one staging dir. */
   private createStagingDir(slug: string): string {
-    const stagingDir = path.join(this.resolveViteHostDir(), `.fromcode-vite-build-${slug}`);
+    const stagingDir = path.join(ViteStagingRoot.resolve(this.resolveViteHostDir()), `.fromcode-vite-build-${slug}`);
     fs.rmSync(stagingDir, { recursive: true, force: true });
     fs.mkdirSync(stagingDir, { recursive: true });
     return stagingDir;

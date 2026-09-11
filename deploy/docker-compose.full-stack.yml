@@ -123,6 +123,10 @@ services:
       - APPEARANCE_DIR=/app/appearance
       - STORAGE_DRIVER=${STORAGE_DRIVER:-local}
       - INTEGRATION_SECRET_KEY=${INTEGRATION_SECRET_KEY:?Set a unique INTEGRATION_SECRET_KEY of at least 32 characters in your deployment environment}
+      # Read by the build server when a source stores no token of its own. Without it forwarded,
+      # the documented "leave the token blank and GITHUB_TOKEN is used" fallback could never work in
+      # a container: the variable existed on the host and nowhere the plugin could see it.
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
       - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
       # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
       # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in

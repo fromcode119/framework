@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { createRequire } from 'module';
+import { ViteStagingRoot } from '@extension-builder/compile/vite-staging-root';
 
 /**
  * Generates — and then removes — the vite/tailwind config entries the build tools load.
@@ -48,6 +49,26 @@ export class ViteConfigGlue {
     }
   }
 
+  /**
+   * Where generated entries are written.
+   *
+   * NOT beside the class they wrap. That directory is `packages/sdk/src`, which in a container is
+   * owned by root while the build runs as `node` — so every generation failed with EACCES, silently,
+   * and the tool that needed the entry reported its own version of the problem several steps later
+   * ("Specified config file does not exist"). The entry only has to resolve its own relative import
+   * and the framework's `node_modules`, both of which hold anywhere under the root.
+   */
+  private static outputDir(root: string): string {
+    return path.join(ViteStagingRoot.resolve(root), '.fromcode-config');
+  }
+
+  /** The absolute path of a generated entry, for the tool that is about to be pointed at it. */
+  static generatedPath(outFile: string): string {
+    const root = ViteConfigGlue.frameworkRoot();
+    if (!root) return outFile;
+    return path.join(ViteConfigGlue.outputDir(root), path.basename(outFile));
+  }
+
   private static cli(root: string): string {
     return path.join(root, 'packages', 'next-build-codegen', 'dist', 'next-build-codegen-cli.cjs');
   }
@@ -59,17 +80,43 @@ export class ViteConfigGlue {
 
     const written: string[] = [];
     for (const [source, className, outFile] of ViteConfigGlue.ENTRIES) {
-      const result = spawnSync('node', [ViteConfigGlue.cli(root), 'vite-config', source, className, outFile], { cwd: root });
-      if (result.status === 0) written.push(path.join(root, outFile));
+      const target = path.relative(root, path.join(ViteConfigGlue.outputDir(root), path.basename(outFile)));
+      fs.mkdirSync(ViteConfigGlue.outputDir(root), { recursive: true });
+      const result = spawnSync('node', [ViteConfigGlue.cli(root), 'vite-config', source, className, target], {
+        cwd: root,
+        encoding: 'utf8',
+      });
+      if (result.status === 0) {
+        written.push(path.join(root, target));
+        continue;
+      }
+
+      /**
+       * A generator failure used to be silent — the entry simply did not appear, and the tool that
+       * needed it reported its own confusing version of the problem several steps later ("Specified
+       * config file does not exist", "tailwind exited 9"). The cause belongs where it happened.
+       */
+      ViteConfigGlue.failures.push(
+        `${outFile}: ${String(result.stderr || result.stdout || `exit ${String(result.status)}`).trim().split('\n').pop()}`,
+      );
     }
     return written;
   }
+
+  /**
+   * Why a generated entry is missing, for the step that goes looking for one.
+   *
+   * Collected rather than thrown: one config failing to generate must not stop the others, and the
+   * build step that actually needs the missing file is the right place to report it.
+   */
+  static readonly failures: string[] = [];
 
   /** Always call this in a `finally`: a leftover generated file fails `check:vite-glue`. */
   static remove(): void {
     const root = ViteConfigGlue.frameworkRoot();
     if (!root || !fs.existsSync(ViteConfigGlue.cli(root))) return;
-    const outFiles = ViteConfigGlue.ENTRIES.map(([, , outFile]) => outFile);
+    const outFiles = ViteConfigGlue.ENTRIES.map(([, , outFile]) =>
+      path.relative(root, path.join(ViteConfigGlue.outputDir(root), path.basename(outFile))));
     spawnSync('node', [ViteConfigGlue.cli(root), 'verify-vite-config', '--clean', ...outFiles], { cwd: root });
   }
 }
