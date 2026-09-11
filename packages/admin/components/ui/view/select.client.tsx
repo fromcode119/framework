@@ -8,8 +8,18 @@ import { UiFieldUtils } from '@/lib/ui';
 import { SelectUtils } from '@/components/ui/select-utils';
 import { SelectMenu } from '@/components/ui/view/select-menu.client';
 import type { IOption } from '@/components/ui/interfaces/option.interface';
+import { ThemeContext } from '@/components/view/theme-context-store.client';
+import type { IThemeContextType } from '@/components/interfaces/theme-context-type.interface';
 
 export class Select extends Reactor {
+  /**
+   * The live light/dark mode, so a caller that does not pass `theme` still gets a menu that matches
+   * the page. It used to fall back to LIGHT, which is not a default so much as a wrong answer: the
+   * first-run setup wizard's timezone menu rendered white-on-white over a dark console. An explicit
+   * `theme` prop still wins, for the pages that already thread one through.
+   */
+  static contextType = ThemeContext.context;
+  declare context: IThemeContextType | undefined;
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
   declare props: Pick<Select, 'value' | 'onChange' | 'options' | 'placeholder' | 'disabled' | 'theme' | 'className' | 'triggerClassName' | 'label' | 'searchable' | 'size' | 'onSearchChange' | 'clearable' | 'onCreateOption' | 'createOptionLabel' | 'onDeleteOption'>;
 
@@ -130,7 +140,7 @@ export class Select extends Reactor {
     const { value, onChange, options, label, onSearchChange } = this;
     const placeholder = this.placeholder ?? 'Select an option...';
     const disabled = this.disabled ?? false;
-    const theme = this.theme ?? ThemeMode.LIGHT;
+    const theme = this.theme ?? this.context?.theme ?? ThemeMode.LIGHT;
     const className = this.className ?? '';
     const triggerClassName = this.triggerClassName ?? '';
     const searchable = this.searchable ?? true;

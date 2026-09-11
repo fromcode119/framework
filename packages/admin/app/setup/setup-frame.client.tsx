@@ -19,7 +19,10 @@ export class SetupFrame extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-50 dark:bg-[#020617]">
+      // Top-aligned, not vertically centred: the timezone step opens a 300px searchable menu, and a
+      // centred card leaves no room beneath it, so the menu flipped upward and covered the whole
+      // wizard — heading included.
+      <div className="min-h-screen flex items-start justify-center p-4 sm:p-6 sm:py-12 bg-slate-50 dark:bg-[#020617]">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
             <div className={`inline-flex items-center justify-center w-16 h-16 ${AdminClass.SURFACE} mb-4`}>
