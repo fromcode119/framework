@@ -49,6 +49,23 @@ export class BuildSourceListItem extends AdminComponent {
     }
   }
 
+  /**
+   * What this source has produced, in the terms the operator asked for it.
+   *
+   * It used to read the ARCHIVE's filename and say "waiting for first successful build" when there
+   * was none — which became a lie the moment a build stopped writing an archive: the build had
+   * succeeded, and the screen said it had not happened. The package is the thing; the zip is a
+   * download somebody may never ask for.
+   */
+  get packageLabel(): string {
+    if (this.build.fileName) return `Archive: ${this.build.fileName}`;
+    const version = String(this.build.version || '').trim();
+    if (version && this.build.lastBuildStatus === 'success') {
+      return `Package: ${this.build.slug} ${version} — built and ready`;
+    }
+    return 'Package: waiting for first successful build';
+  }
+
   render(): ReactNode {
     // Offered for any source that has built something. Gated on the VERSION, not on a filename:
     // a build stages a package directory and writes no archive, so gating on a file meant the
@@ -75,7 +92,7 @@ export class BuildSourceListItem extends AdminComponent {
                 {this.build.lastBuildAt ? ` • ${new Date(this.build.lastBuildAt).toLocaleString()}` : ''}
               </p>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                {this.build.fileName ? `Package: ${this.build.fileName}` : 'Package: waiting for first successful build'}
+                {this.packageLabel}
                 {' • '}
                 {tokenLabel}
               </p>
