@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BuildService } from '@sources/build/build-service';
+import { BuildService } from '@sources/packaging/build-service';
 
 /**
  * The comparison that decides whether a stored credential is released.

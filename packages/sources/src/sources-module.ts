@@ -1,13 +1,13 @@
 import * as path from 'path';
 import type { RequestHandler } from 'express';
 import { Logger } from '@fromcode119/core';
-import { BuildService } from '@sources/build/build-service';
+import { BuildService } from '@sources/packaging/build-service';
 import { BuildSourceSecretService } from '@sources/sources/build-source-secret-service';
 import { BuildSourceService } from '@sources/sources/build-source-service';
 import { CatalogContributionService } from '@sources/catalog/catalog-contribution-service';
 import { SourceProviders } from '@sources/providers/source-providers';
 import { LegacyWorkspaceAdoption } from '@sources/settings/legacy-workspace-adoption';
-import { PackageBuilder } from '@sources/build/package-builder';
+import { PackageBuilder } from '@sources/packaging/package-builder';
 import { SourcesEvents } from '@sources/events/sources-events';
 import { SourcesRouter } from '@sources/http/sources-router';
 import { BuildPackageArtifactHook } from '@sources/events/hooks/build-package-artifact-hook';

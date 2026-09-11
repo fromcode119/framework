@@ -6,8 +6,8 @@ import * as fs from 'fs';
 import { Logger } from '@fromcode119/core';
 import { GitBranchPolicy } from '@sources/providers/git/git-branch-policy';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
-import { BuildErrorRedactionService } from '@sources/build/build-error-redaction-service';
-import { ExtensionManifestReader } from '@sources/build/extension-manifest-reader';
+import { BuildErrorRedactionService } from '@sources/packaging/build-error-redaction-service';
+import { ExtensionManifestReader } from '@sources/packaging/extension-manifest-reader';
 
 /**
  * Handles git operations for marketplace source repositories.

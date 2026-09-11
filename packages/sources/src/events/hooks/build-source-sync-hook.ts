@@ -1,5 +1,5 @@
 import type { HookManager } from '@fromcode119/core';
-import { BuildService } from '@sources/build/build-service';
+import { BuildService } from '@sources/packaging/build-service';
 import type { IBuildSourceInput } from '@sources/sources/interfaces/build-source-input.interface';
 
 export class BuildSourceSyncHook {

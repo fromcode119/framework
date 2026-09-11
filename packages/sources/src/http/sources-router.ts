@@ -1,6 +1,6 @@
 import { AccessLevel, BaseRouter } from '@fromcode119/core';
 import type { Request, RequestHandler, Response } from 'express';
-import { BuildService } from '@sources/build/build-service';
+import { BuildService } from '@sources/packaging/build-service';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
 import { SourceProviders } from '@sources/providers/source-providers';
 

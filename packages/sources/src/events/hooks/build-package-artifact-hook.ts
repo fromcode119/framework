@@ -1,6 +1,6 @@
 import { CoercionUtils } from '@fromcode119/core';
 import type { HookManager } from '@fromcode119/core';
-import { BuildService } from '@sources/build/build-service';
+import { BuildService } from '@sources/packaging/build-service';
 import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 
 export class BuildPackageArtifactHook {

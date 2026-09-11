@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BuildErrorRedactionService } from '@sources/build/build-error-redaction-service';
+import { BuildErrorRedactionService } from '@sources/packaging/build-error-redaction-service';
 
 /**
  * A build failure message is persisted to `lastError` and rendered verbatim in the admin. git and

@@ -1,9 +1,9 @@
 export { SourcesModule } from '@sources/sources-module';
-export { BuildService } from '@sources/build/build-service';
+export { BuildService } from '@sources/packaging/build-service';
 export { BuildSourceService } from '@sources/sources/build-source-service';
 export { BuildSourceSecretService } from '@sources/sources/build-source-secret-service';
 export { GitSyncService } from '@sources/providers/git/git-sync-service';
-export { PackageBuilder } from '@sources/build/package-builder';
+export { PackageBuilder } from '@sources/packaging/package-builder';
 export { CatalogContributionService } from '@sources/catalog/catalog-contribution-service';
 export { SourcesEvents } from '@sources/events/sources-events';
 export { SourcesRouter } from '@sources/http/sources-router';
