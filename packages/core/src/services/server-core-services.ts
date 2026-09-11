@@ -8,6 +8,7 @@ import { PluginDefaultPageContractRegistryService } from '@core/services/default
 import { PluginDefaultPageContractResolutionService } from '@core/services/default-page-contract/plugin-default-page-contract-resolution-service';
 import { PluginDefaultPageDiagnosticService } from '@core/services/default-page-contract/plugin-default-page-diagnostic-service';
 import { PluginDefaultPageMaterializationService } from '@core/services/default-page-contract/plugin-default-page-materialization-service';
+import { PluginAttentionRegistryService } from '@core/services/attention/plugin-attention-registry-service';
 import { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
 import { RedirectResolverRegistryService } from '@core/services/redirect-resolver-registry-service';
 import { CanonicalPathResolverRegistryService } from '@core/services/canonical-path-resolver-registry-service';
@@ -82,6 +83,10 @@ export class ServerCoreServices {
     ServerServiceRegistry.register(
       ServerServiceKey.ENTITY_RECORDS,
       () => new PluginEntityRecordsRegistryService(),
+    );
+    ServerServiceRegistry.register(
+      ServerServiceKey.ATTENTION,
+      () => new PluginAttentionRegistryService(),
     );
     ServerServiceRegistry.register(
       ServerServiceKey.ENTITY_RECORDS_RESOLUTION,

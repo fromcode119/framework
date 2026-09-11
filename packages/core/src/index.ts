@@ -267,6 +267,10 @@ export { StorefrontRendererRefreshService } from '@core/management/storefront-re
 export { ApplicationRestartOutcome } from '@core/management/application-restart-outcome';
 export { BackupService } from '@core/management/backup-service';
 export { HostResourceService } from '@core/management/host-resource-service';
+export { AttentionItem } from '@core/services/attention/attention-item';
+export { AttentionSeverity } from '@core/services/attention/attention-severity.enum';
+export { AttentionResolutionService } from '@core/services/attention/attention-resolution-service';
+export { PluginAttentionRegistryService } from '@core/services/attention/plugin-attention-registry-service';
 export { BackupImportService } from '@core/management/backup-import-service';
 export { ArchiveUploadSessionService } from '@core/management/archive-upload-session-service';
 export type { ICreateSystemBackupOptions } from '@core/management/interfaces/create-system-backup-options.interface';

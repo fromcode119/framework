@@ -13,6 +13,8 @@ import { DashboardStatsGrid } from '@/app/dashboard-stats-grid';
 import { DashboardQuickActions } from '@/app/dashboard-quick-actions';
 import { DashboardActivityChart } from '@/app/dashboard-activity-chart';
 import { DashboardSystemPanel } from '@/app/dashboard-system-panel.client';
+import { DashboardNeedsYou } from '@/app/dashboard-needs-you.client';
+import { DashboardSitesPanel } from '@/app/dashboard-sites-panel.client';
 import { DashboardActivityBreakdown } from '@/app/dashboard-activity-breakdown';
 import { DashboardUpdateAlert } from '@/app/dashboard-update-alert';
 import { DashboardCollectionsGrid } from '@/app/dashboard-collections-grid';
@@ -160,6 +162,12 @@ export class AdminPage extends AdminComponent {
           )}
 
           {/* Stats Grid */}
+          {/* What needs the operator comes before anything that merely counts. Both render nothing
+              when there is nothing to say. */}
+          <DashboardNeedsYou />
+
+          <DashboardSitesPanel />
+
           <DashboardStatsGrid userCount={userCount} loadingStats={loadingStats} activePluginsCount={activePluginsCount} />
 
           {/* Quick Actions — each card is a role-protected resource; only show the ones this user is

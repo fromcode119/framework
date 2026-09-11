@@ -17,6 +17,7 @@ import type { AssistantVocabularyRegistryService } from '@core/services/assistan
 import type { ContentResolutionGateRegistryService } from '@core/services/content-resolution-gate-registry-service';
 import type { RedirectResolverRegistryService } from '@core/services/redirect-resolver-registry-service';
 import type { CanonicalPathResolverRegistryService } from '@core/services/canonical-path-resolver-registry-service';
+import type { PluginAttentionRegistryService } from '@core/services/attention/plugin-attention-registry-service';
 import type { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
 import type { EntityRecordsResolutionService } from '@core/services/entity-records/entity-records-resolution-service';
 import { ServerServiceRegistry } from '@core/services/server-service-registry';
@@ -246,6 +247,15 @@ export class CoreServices {
    * given person; the resolution service aggregates them into one grouped timeline.
    * Backbone of the Person 360 / partner-CRM view.
    */
+  /**
+   * Registry of "needs you" providers (lazy-loaded). A plugin registers what IT considers unfinished
+   * work — orders nobody fulfilled, submissions nobody answered — and the dashboard collects them
+   * beside the framework's own platform checks. Core never learns what an order is.
+   */
+  get attention(): PluginAttentionRegistryService {
+    return ServerServiceRegistry.require<PluginAttentionRegistryService>(ServerServiceKey.ATTENTION);
+  }
+
   get entityRecords(): PluginEntityRecordsRegistryService {
     return ServerServiceRegistry.require<PluginEntityRecordsRegistryService>(ServerServiceKey.ENTITY_RECORDS);
   }
