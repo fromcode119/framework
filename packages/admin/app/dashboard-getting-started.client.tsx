@@ -14,6 +14,8 @@ import { AdminPathUtils } from '@/lib/admin-path';
  */
 export class DashboardGettingStarted extends AdminComponent {
   @prop declare steps: Array<Record<string, any>>;
+  @prop declare mode?: string;
+  @prop declare storefront?: string;
 
   @bound
   private go(path: string): void {
@@ -51,9 +53,24 @@ export class DashboardGettingStarted extends AdminComponent {
           Finish setting up your platform
         </h2>
         <p className="mt-1 mb-4 max-w-xl text-[12px] leading-relaxed text-slate-500">
-          Three things stand between this installation and a site people can visit. Not in order — this is
-          simply what is missing.
+          What stands between this installation and a site people can visit. Not in order — this is simply
+          what is missing.
         </p>
+
+        {/* Said plainly, because the alternative is an operator creating a site record they do not
+            need: tenancy switches on only when `_system_tenants` has rows, and until then this
+            deployment serves the hosts in its own environment. */}
+        {this.storefront ? (
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-[11.5px] text-slate-600 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300">
+            <span className="font-semibold">{this.mode === 'multi-site' ? 'Multi-site' : 'Single site'}</span>
+            <span className="text-slate-400">·</span>
+            <span className="truncate">
+              {this.mode === 'multi-site'
+                ? 'Each site has its own hostname, theme and content.'
+                : <>Serving <span className="font-medium text-slate-700 dark:text-slate-200">{this.storefront}</span> — no site record needed until you host a second one.</>}
+            </span>
+          </div>
+        ) : null}
 
         <div className="divide-y divide-slate-200/70 dark:divide-slate-800/70">
           {this.steps.map((step, position) => (

@@ -16,14 +16,18 @@ export class InstallationChecklistService {
   constructor(
     private readonly deps: {
       countThemes: () => number;
+      activeThemeName: () => string;
       countSites: () => Promise<number>;
       countPlugins: () => number;
       countUsers: () => Promise<number>;
       readMeta: (key: string) => Promise<string>;
+      storefrontUrl: () => string;
     },
   ) {}
 
   async read(): Promise<Record<string, unknown>> {
+    const activeTheme = this.deps.activeThemeName();
+    const storefront = this.deps.storefrontUrl();
     const [themes, sites, plugins, users] = await Promise.all([
       Promise.resolve(this.deps.countThemes()),
       this.deps.countSites(),
@@ -40,26 +44,28 @@ export class InstallationChecklistService {
     return {
       isFresh: themes === 0 && plugins === 0,
       counts: { themes, sites, plugins, users },
+      /**
+       * ONE site unless tenant rows exist — `TenantMode` enables multi-tenancy only when
+       * `_system_tenants` is non-empty, and a single-site deployment serves the hosts in its
+       * environment with no site record at all. Telling an operator to "create your first site"
+       * would push them into multi-tenancy they never asked for.
+       */
+      mode: sites > 0 ? 'multi-site' : 'single-site',
+      storefront,
       steps: [
         {
           key: 'theme',
-          title: 'Install a theme',
-          detail: 'A theme renders every page a visitor sees. Without one, a site serves an empty document.',
-          done: themes > 0,
-          actionLabel: 'Browse themes',
+          title: activeTheme ? `Theme: ${activeTheme}` : (themes > 0 ? 'Activate a theme' : 'Install a theme'),
+          detail: themes > 0
+            ? 'Installed but not activated — until one is active the storefront serves an empty document.'
+            : 'A theme renders every page a visitor sees. Without one, the storefront serves an empty document.',
+          done: Boolean(activeTheme),
+          actionLabel: themes > 0 ? 'Activate' : 'Browse themes',
           actionPath: AppPathConstants.ADMIN.THEMES.ROOT,
         },
         {
-          key: 'site',
-          title: 'Create your first site',
-          detail: 'A site is a hostname and the content behind it. One installation can hold many.',
-          done: sites > 0,
-          actionLabel: 'New site',
-          actionPath: AppPathConstants.ADMIN.SITES.ROOT,
-        },
-        {
           key: 'plugins',
-          title: 'Install the plugins this platform needs',
+          title: plugins > 0 ? `${plugins} plugins installed` : 'Install the plugins this platform needs',
           detail: 'Commerce, forms, SEO — each adds its own screens. Install only what this installation will use.',
           done: plugins > 0,
           actionLabel: 'Browse plugins',

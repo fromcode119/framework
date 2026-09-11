@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
-import { AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SystemConstants } from '@fromcode119/core';
+import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SystemConstants } from '@fromcode119/core';
 
 export class SystemAdminController {
 
@@ -191,6 +191,8 @@ export class SystemAdminController {
     try {
       const service = new InstallationChecklistService({
         countThemes: () => (this.runtime.themeManager.getThemes() || []).length,
+        activeThemeName: () => String(this.runtime.themeManager.getActiveThemeManifest()?.name || ''),
+        storefrontUrl: () => ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
         countSites: () => this.runtime.db.count(SystemConstants.TABLE.TENANTS),
         countPlugins: () => (this.runtime.manager.getPlugins() || []).length,
         countUsers: () => this.runtime.db.count(SystemConstants.TABLE.USERS),
