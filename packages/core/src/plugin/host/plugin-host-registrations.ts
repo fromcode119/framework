@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { RequestContextUtils } from '@core/context/request-context';
+import { PerTenantRun } from '@core/tenant/per-tenant-run';
 import { CoreServices } from '@core/services/core-services';
 import { McpRegistryProvider } from '@core/mcp/mcp-registry-provider';
 import { MiddlewareStage } from '@core/enums/middleware-stage.enum';
@@ -32,9 +33,14 @@ export class PluginHostRegistrations {
     private readonly proxy: PluginHostHttpProxy,
     private readonly invoke: (kind: string, handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown>,
     private readonly forwardRequest: (req: Request, res: Response, next: NextFunction, targetPath?: string, originalUrl?: string) => Promise<void>,
+    private readonly db: { withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> },
   ) {}
 
-  apply(context: PluginContext, registration: IPluginGuestRegistration): void {
+  /**
+   * Applies one registration. Most answer nothing; `tenants-for-each` answers a count, which the
+   * host returns to the guest so `context.tenants.forEach` can report how many sites it ran for.
+   */
+  apply(context: PluginContext, registration: IPluginGuestRegistration): void | Promise<number> {
     switch (registration.kind) {
       case 'route': return this.route(context, registration);
       case 'use': return this.use(context, registration);
@@ -43,6 +49,7 @@ export class PluginHostRegistrations {
       case 'hook-off': return this.hookOff(context, registration);
       case 'plugins-on': return this.pluginsOn(context, registration);
       case 'scheduler': return this.scheduler(context, registration);
+      case 'tenants-for-each': return this.tenantsForEach(registration);
       case 'job-worker': return this.jobWorker(context, registration);
       case 'mcp-tools': return this.mcpTools(context, registration);
       case 'gate': return this.gate(registration);
@@ -116,6 +123,22 @@ export class PluginHostRegistrations {
     const handler = (payload: unknown, ev: string) => this.invoke('hook', id, [payload, ev], RequestContextUtils.storage.getStore());
     this.platformHooks.set(id, { event, handler });
     context.plugins.on(event, handler as any);
+  }
+
+  /**
+   * `context.tenants.forEach` for an ISOLATED plugin.
+   *
+   * The loop runs on the HOST: entering a site's scope means binding a database connection, and the
+   * guest has none of its own. Each turn invokes the guest's handler with the store this run is in,
+   * so the work the guest does lands in the right site — the same forwarding a scheduled task uses.
+   */
+  private async tenantsForEach(registration: IPluginGuestRegistration): Promise<number> {
+    const id = String(registration.handlerId);
+    return PerTenantRun.forEach({
+      label: `guest:${id}:tenants.forEach`,
+      db: this.db as never,
+      work: async () => { await this.invoke('tenants', id, [], RequestContextUtils.storage.getStore()); },
+    });
   }
 
   private hookOff(context: PluginContext, registration: IPluginGuestRegistration): void {

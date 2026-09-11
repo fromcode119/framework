@@ -89,6 +89,8 @@ export class PluginHost {
       this.proxy,
       (kind, handlerId, args, store) => this.invoke({ kind: kind as IPluginInvocation['kind'], handlerId, args }, store),
       (req, res, next, targetPath, originalUrl) => this.forwardRequest(req, res, next, targetPath, originalUrl),
+      // The RAW manager db: entering a site's scope binds a connection, and only this one can.
+      manager.db,
     );
   }
 
@@ -297,8 +299,11 @@ export class PluginHost {
     }
     if (type === 'register') {
       if (!this.context) throw new Error(`plugin "${this.slug}" registered before it had a context`);
-      this.registrations.apply(this.context, payload as IPluginGuestRegistration);
-      return true;
+      // Registrations are normally fire-and-forget, but one of them ANSWERS: `tenants.forEach` runs
+      // the guest's work once per site and reports how many it ran for. Returning what `apply` gave
+      // back is what lets the guest await its own count instead of a bare `true`.
+      const answer = await this.registrations.apply(this.context, payload as IPluginGuestRegistration);
+      return answer === undefined ? true : answer;
     }
     throw new Error(`host: unknown message "${type}"`);
   }

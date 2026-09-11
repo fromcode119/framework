@@ -7,7 +7,7 @@
  */
 export interface IPluginGuestRegistration {
   /** `plugins-on`: `context.plugins.on(event)` — the platform bus (`plugins:ready`), NOT the tenant-gated plugin hooks. */
-  kind: 'route' | 'use' | 'middleware' | 'hook' | 'hook-off' | 'plugins-on' | 'scheduler' | 'job-worker' | 'mcp-tools' | 'gate' | 'canonical-path';
+  kind: 'route' | 'use' | 'middleware' | 'hook' | 'hook-off' | 'plugins-on' | 'scheduler' | 'tenants-for-each' | 'job-worker' | 'mcp-tools' | 'gate' | 'canonical-path';
   handlerId?: string;
   /** route / use */
   method?: string;

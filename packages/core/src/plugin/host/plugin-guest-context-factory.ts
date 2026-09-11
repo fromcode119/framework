@@ -42,6 +42,15 @@ export class PluginGuestContextFactory {
       plugins: this.plugins(register),
       dependencies: { require: (key: string) => this.dependency(key, true), optional: (key: string) => this.dependency(key, false) },
       scheduler: this.scheduler(register),
+      // Work that belongs to every site. The handler stays in the guest and the HOST drives the loop,
+      // entering each site's scope before invoking it — the guest has no database connection of its
+      // own to bind, so it cannot do this itself. Same mechanism as a scheduled task.
+      tenants: {
+        forEach: (work: () => Promise<void>) =>
+          register({ kind: 'tenants-for-each', handlerId: this.handlers.keep('tenants', work) }) as Promise<number>,
+        current: () => remote.call('context', [{ name: 'tenants' }, { name: 'current', args: [] }]),
+        isMultiSite: () => remote.call('context', [{ name: 'tenants' }, { name: 'isMultiSite', args: [] }]),
+      },
       jobs: {
         add: (name: string, data: unknown, options?: unknown) => remote.call('context', [{ name: 'jobs' }, { name: 'add', args: PluginGuestRemote.portable([name, data, options]) }]),
         worker: (processor: (...args: any[]) => unknown, options?: Record<string, unknown>) => register({ kind: 'job-worker', handlerId: this.handlers.keep('job', processor), options: options ?? {} }),

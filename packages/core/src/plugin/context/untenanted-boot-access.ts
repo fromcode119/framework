@@ -16,7 +16,9 @@ import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
  * Several plugins already do exactly this for themselves — this makes it uniform rather than a
  * matter of which plugin author remembered to catch.
  *
- * Per-tenant boot work is T2 (per-tenant plugin lifecycle) and is deliberately not attempted here.
+ * Per-tenant boot work is now expressible: `context.tenants.forEach` runs a plugin's work once per
+ * site, each in its own scope. This guard stays for the calls that did NOT ask for that — it skips
+ * them rather than widening them, and the message names the alternative.
  */
 export class UntenantedBootAccess {
   private static readonly logger = new Logger({ namespace: 'plugin-tenancy' });
@@ -50,8 +52,9 @@ export class UntenantedBootAccess {
   static skip(pluginSlug: string, method: string, table: unknown): Promise<unknown> {
     UntenantedBootAccess.logger.warn(
       `[${pluginSlug}] skipped context.db.${method} on "${String(table)}" outside a request: this deployment `
-      + 'is multi-tenant and this code path has no tenant, so the call would be ambiguous. '
-      + 'Move per-tenant work out of onInit; it is not run for any tenant.',
+      + 'serves several sites and this code path has no site, so the call would be ambiguous. '
+      + 'Wrap the work in `await context.tenants.forEach(async () => { ... })` — it runs once per '
+      + 'site, in that site\'s own scope. Left as it is, this work happens for NO site.',
     );
     return Promise.resolve(UntenantedBootAccess.EMPTY[method] ?? null);
   }

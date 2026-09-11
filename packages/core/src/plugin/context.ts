@@ -22,6 +22,7 @@ import { PeopleContextProxy } from '@core/plugin/context/people';
 import { AttentionContextProxy } from '@core/plugin/context/attention';
 import { EntityRecordsContextProxy } from '@core/plugin/context/entity-records';
 import { MetaContextProxy } from '@core/plugin/context/meta';
+import { TenantsContextProxy } from '@core/plugin/context/tenants';
 import { MigrationsContextProxy } from '@core/plugin/context/migrations';
 import { MediaContextProxy } from '@core/plugin/context/media';
 import { RecordVersionsContextProxy } from '@core/plugin/context/record-versions';
@@ -221,6 +222,7 @@ export class PluginContextFactory {
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
         attention: AttentionContextProxy.createAttentionProxy(plugin),
         meta: MetaContextProxy.createMetaProxy(manager),
+        tenants: TenantsContextProxy.createTenantsProxy(manager, plugin.manifest.slug),
         // Schema migrations run on the framework's DDL connection, never the request role.
         migrations: MigrationsContextProxy.createMigrationsProxy(plugin, manager),
         media: MediaContextProxy.createMediaProxy(manager),

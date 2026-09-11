@@ -39,6 +39,7 @@ import type { IPluginContextNotifications } from '@core/plugin/interfaces/plugin
 import type { IPluginContextUsers } from '@core/plugin/interfaces/plugin-context-users.interface';
 import type { IPluginContextPeople } from '@core/plugin/interfaces/plugin-context-people.interface';
 import type { IPluginContextEntityRecords } from '@core/plugin/interfaces/plugin-context-entity-records.interface';
+import type { IPluginContextTenants } from '@core/plugin/interfaces/plugin-context-tenants.interface';
 import type { IPluginContextMeta } from '@core/plugin/interfaces/plugin-context-meta.interface';
 import type { IPluginContextMedia } from '@core/plugin/interfaces/plugin-context-media.interface';
 import type { IPluginContextRecordVersions } from '@core/plugin/interfaces/plugin-context-record-versions.interface';
@@ -150,6 +151,13 @@ export class PluginContext {
    * Use instead of querying SystemTable.META directly.
    */
   declare readonly meta: IPluginContextMeta;
+  /**
+   * Work that belongs to every site, for code that runs outside a request.
+   *
+   * See {@link IPluginContextTenants}. A plugin's `onInit` has no tenant, so a tenant-scoped query
+   * made there is skipped or refused — `context.tenants.forEach` is how that work is expressed.
+   */
+  declare readonly tenants: IPluginContextTenants;
   /**
    * Run this plugin's schema migrations on the FRAMEWORK's DDL connection.
    *
