@@ -1,14 +1,15 @@
 import { Logger } from '@fromcode119/core';
-import { SourcesCollectionRegistry } from '@sources/services/sources-collection-registry';
-import { BuildSourceSecretService } from '@sources/services/build-source-secret-service';
-import type { IBuildSourceInput } from '@sources/services/interfaces/build-source-input.interface';
-import type { IBuildSourceRecord } from '@sources/services/interfaces/build-source-record.interface';
-import type { IBuildSourceSummary } from '@sources/services/interfaces/build-source-summary.interface';
-import type { IBuildSourceUpdateInput } from '@sources/services/interfaces/build-source-update-input.interface';
-import { BuildSourceType } from '@sources/services/enums/build-source-type.enum';
-import { BuildSlugPolicy } from '@sources/services/build-slug-policy';
-import { GitBranchPolicy } from '@sources/services/git-branch-policy';
-import { GitUrlPolicy } from '@sources/services/git-url-policy';
+import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
+import { BuildSourceSecretService } from '@sources/sources/build-source-secret-service';
+import type { IBuildSourceInput } from '@sources/sources/interfaces/build-source-input.interface';
+import type { IBuildSourceRecord } from '@sources/sources/interfaces/build-source-record.interface';
+import type { IBuildSourceSummary } from '@sources/sources/interfaces/build-source-summary.interface';
+import type { IBuildSourceUpdateInput } from '@sources/sources/interfaces/build-source-update-input.interface';
+import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
+import { BuildSlugPolicy } from '@sources/sources/build-slug-policy';
+import { SourceProviders } from '@sources/providers/source-providers';
+import { GitBranchPolicy } from '@sources/providers/git/git-branch-policy';
+import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
 
 export class BuildSourceService {
   private readonly buildsSlug = SourcesCollectionRegistry.BUILDS;
@@ -35,6 +36,9 @@ export class BuildSourceService {
       git_secret: this.encryptSecret(input.gitSecret),
       git_url: this.normalizeGitUrl(input.gitUrl),
       last_build_status: 'pending',
+      // Recorded, never implied. A source that does not say how it is fetched is a source only one
+      // implementation can ever fetch.
+      provider: SourceProviders.normalize(input.provider),
       slug,
       type: this.normalizeType(input.type),
     };
@@ -303,6 +307,7 @@ export class BuildSourceService {
       autoBuild: BuildSourceService.readFlag(source.auto_build, source.autoBuild),
       autoUpdate: BuildSourceService.readFlag(source.auto_update, source.autoUpdate),
       branch: (source.branch || '').trim() || GitBranchPolicy.DEFAULT_BRANCH,
+      provider: SourceProviders.normalize(source.provider),
       changelog: typeof source.changelog === 'string' ? source.changelog : '',
       fileName,
       gitSecret: this.readStoredSecret(source),

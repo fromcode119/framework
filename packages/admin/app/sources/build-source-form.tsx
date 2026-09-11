@@ -41,6 +41,8 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
       autoBuild: Boolean(build?.autoBuild),
       autoUpdate: Boolean(build?.autoUpdate),
       branch: build?.branch || '',
+      provider: build?.provider || 'git',
+      providers: [],
       branches: [],
       branchesAttempted: false,
       branchesLoading: false,
@@ -62,7 +64,31 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
    * could be read" — a claim about the repository for a request that was never made.
    */
   componentDidMount(): void {
+    void this.loadProviders();
     if (this.state.gitUrl.trim()) void this.loadBranches();
+  }
+
+  /**
+   * What this installation can fetch source from.
+   *
+   * Asked rather than hardcoded: the provider list is the server's to state, and a field built from
+   * a literal here would drift the moment one is added.
+   */
+  private async loadProviders(): Promise<void> {
+    try {
+      const response: any = await SourcesApi.providers();
+      const providers = Array.isArray(response?.providers) ? response.providers : [];
+      this.setState({ providers });
+    } catch {
+      // The form still works: a source that names no provider is tracked with the default, and the
+      // field simply has nothing to offer rather than inventing an option.
+      this.setState({ providers: [] });
+    }
+  }
+
+  /** The chosen provider's definition, or null until the list arrives. */
+  private get providerDefinition(): IBuildSourceFormState['providers'][number] | null {
+    return this.state.providers.find((entry) => entry.key === this.state.provider) ?? null;
   }
 
   componentDidUpdate(prev: IBuildSourceFormProps): void {
@@ -212,17 +238,30 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
     return (
       <div>
         <div className="grid gap-4 md:grid-cols-2">
+          {/* One option today. Shown anyway: which provider fetches a source is a property of the
+              source, and a field that only appears once there are two would make the first one a
+              hidden assumption again. */}
+          <Select
+            label="Provider"
+            className="md:col-span-2"
+            value={this.state.provider}
+            options={this.state.providers.map((entry) => ({ label: entry.label, value: entry.key }))}
+            placeholder={this.state.providers.length === 0 ? 'Reading providers…' : 'Select a provider'}
+            disabled={this.isEdit || this.state.providers.length <= 1}
+            onChange={(value: string) => this.setState({ provider: value })}
+          />
+
           <Input
-            label="Git URL"
+            label={this.providerDefinition?.locationLabel || 'Location'}
             className="md:col-span-2"
             value={this.state.gitUrl}
             onChange={(event: any) => this.setState({ gitUrl: event.target.value })}
             onBlur={() => { void this.loadBranches(); }}
-            placeholder="https://github.com/org/repo.git"
+            placeholder={this.providerDefinition?.locationPlaceholder || ''}
           />
 
           <Select
-            label="Branch"
+            label={this.providerDefinition?.refLabel || 'Version'}
             value={this.state.branch}
             options={this.branchOptions}
             placeholder={this.branchPlaceholder}
@@ -306,6 +345,7 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
               branch: this.state.branch,
               gitSecret: this.state.gitSecret,
               gitUrl: this.state.gitUrl,
+              provider: this.state.provider,
               slug: this.state.slug,
               type: this.state.type,
             })}

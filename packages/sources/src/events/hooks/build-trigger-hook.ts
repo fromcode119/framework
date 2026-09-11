@@ -1,5 +1,5 @@
 import type { HookManager } from '@fromcode119/core';
-import { BuildService } from '@sources/services/build-service';
+import { BuildService } from '@sources/build/build-service';
 
 export class BuildTriggerHook {
   static readonly EVENT = 'sources:builds:trigger';

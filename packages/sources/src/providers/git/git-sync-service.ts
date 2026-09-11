@@ -4,10 +4,10 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Logger } from '@fromcode119/core';
-import { GitBranchPolicy } from '@sources/services/git-branch-policy';
-import { GitUrlPolicy } from '@sources/services/git-url-policy';
-import { BuildErrorRedactionService } from '@sources/services/build-error-redaction-service';
-import { ExtensionManifestReader } from '@sources/services/extension-manifest-reader';
+import { GitBranchPolicy } from '@sources/providers/git/git-branch-policy';
+import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
+import { BuildErrorRedactionService } from '@sources/build/build-error-redaction-service';
+import { ExtensionManifestReader } from '@sources/build/extension-manifest-reader';
 
 /**
  * Handles git operations for marketplace source repositories.

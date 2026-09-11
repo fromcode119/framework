@@ -1,4 +1,4 @@
-import { BuildSourceType } from '@sources/services/enums/build-source-type.enum';
+import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 
 /**
  * The API-safe projection of a build source: every field of the record EXCEPT the two secrets

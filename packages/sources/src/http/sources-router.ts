@@ -1,7 +1,8 @@
 import { AccessLevel, BaseRouter } from '@fromcode119/core';
 import type { Request, RequestHandler, Response } from 'express';
-import { BuildService } from '@sources/services/build-service';
-import { GitUrlPolicy } from '@sources/services/git-url-policy';
+import { BuildService } from '@sources/build/build-service';
+import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
+import { SourceProviders } from '@sources/providers/source-providers';
 
 /**
  * Express router for the Sources API endpoints.
@@ -22,6 +23,9 @@ export class SourcesRouter extends BaseRouter {
     //
     // ORDER IS LOAD-BEARING: every literal segment is declared before `/:slug`, or `/build` would be
     // matched as a source called "build".
+    // What this installation can fetch source FROM. The form builds its provider field from this,
+    // so adding a provider does not mean editing a dropdown in the admin.
+    this.get('/providers', this.adminGuard, this.listProviders);
     this.post('/build', this.adminGuard, this.triggerAll);
     this.post('/check-updates', this.adminGuard, this.checkUpdates);
     // POST, not GET: the request carries a repository URL and possibly a token, and neither belongs
@@ -35,6 +39,10 @@ export class SourcesRouter extends BaseRouter {
     this.patch('/:slug', this.adminGuard, this.updateSource);
     this.delete('/:slug', this.adminGuard, this.deleteSource);
     this.post('/:slug/build', this.adminGuard, this.triggerOne);
+  }
+
+  private async listProviders(_req: Request, res: Response): Promise<void> {
+    res.json({ providers: SourceProviders.definitions(), success: true });
   }
 
   private async triggerAll(req: Request, res: Response): Promise<void> {

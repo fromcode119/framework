@@ -21,6 +21,7 @@ import { ThemeAssetRouter } from '@api/routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '@api/routes/marketplace';
 import { AppearanceRouter } from '@api/routes/appearances';
 import { SourcesModule } from '@fromcode119/sources';
+import { PlatformSettingsService } from '@fromcode119/core';
 import { CoreServices } from '@fromcode119/core';
 import { SystemRouter } from '@api/routes/system-router';
 import { TenantAdminRouter } from '@api/routes/tenant-admin-router';
@@ -135,6 +136,13 @@ export class ServerRoutesSetup {
     // a "plugin" the framework discovered, packed into a tarball and loaded through a capability
     // sandbox — to build the very extensions that sandbox exists to contain.
     vApi.use(SOURCES, SourcesModule.install({
+      // Blank resolves to `<project root>/data/sources` inside the module; the operator can point it
+      // elsewhere in Settings, and nothing here invents a path.
+      workspaceRoot: await PlatformSettingsService.resolve(
+        process.env.SOURCES_WORKSPACE_ROOT,
+        PlatformSettingsService.KEY.SOURCES_WORKSPACE_ROOT,
+        '',
+      ),
       db: this.manager.db,
       hooks: this.manager.hooks,
       adminGuard: this.auth.guard(['admin']),

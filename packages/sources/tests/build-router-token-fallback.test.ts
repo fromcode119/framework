@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SourcesRouter } from '@sources/sources-router';
+import { SourcesRouter } from '@sources/http/sources-router';
 
 /**
  * The edit dialog posts a BLANK token by design — a stored secret is never sent to the browser — so

@@ -1,7 +1,9 @@
-import type { IBuildSourceInput } from '@sources/services/interfaces/build-source-input.interface';
+import type { IBuildSourceInput } from '@sources/sources/interfaces/build-source-input.interface';
 
 export interface IBuildSourceRecord extends IBuildSourceInput {
   id?: number | string;
+  /** Which provider fetches this source. See SourceProviders — the only file that names one. */
+  provider?: string;
   fileName?: string;
   gitToken?: string | null;
   lastBuildAt?: string;

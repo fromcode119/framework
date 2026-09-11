@@ -1,6 +1,6 @@
 import type { HookManager } from '@fromcode119/core';
-import { BuildService } from '@sources/services/build-service';
-import type { IBuildSourceInput } from '@sources/services/interfaces/build-source-input.interface';
+import { BuildService } from '@sources/build/build-service';
+import type { IBuildSourceInput } from '@sources/sources/interfaces/build-source-input.interface';
 
 export class BuildSourceSyncHook {
   static readonly EVENT = 'sources:sync';

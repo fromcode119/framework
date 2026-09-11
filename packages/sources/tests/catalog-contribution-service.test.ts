@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CatalogContributionService } from '@sources/services/catalog-contribution-service';
+import { CatalogContributionService } from '@sources/catalog/catalog-contribution-service';
 
 describe('CatalogContributionService.entriesFrom', () => {
   const source = (over: Record<string, unknown> = {}): any => ({

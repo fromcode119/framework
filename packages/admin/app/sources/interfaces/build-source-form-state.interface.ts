@@ -1,4 +1,17 @@
 export interface IBuildSourceFormState {
+  /** Which provider fetches this source. */
+  provider: string;
+  /** What this installation can fetch source from, as the server reported it. */
+  providers: Array<{
+    key: string;
+    label: string;
+    description: string;
+    locationLabel: string;
+    locationPlaceholder: string;
+    refLabel: string;
+    supportsSecret: boolean;
+    secretLabel?: string;
+  }>;
   autoBuild: boolean;
   autoUpdate: boolean;
   branch: string;

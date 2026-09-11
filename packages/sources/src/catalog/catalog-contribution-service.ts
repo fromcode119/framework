@@ -1,4 +1,4 @@
-import type { IBuildSourceSummary } from '@sources/services/interfaces/build-source-summary.interface';
+import type { IBuildSourceSummary } from '@sources/sources/interfaces/build-source-summary.interface';
 
 /**
  * What Sources offers the admin's catalogue.

@@ -1,7 +1,7 @@
 import { CoercionUtils } from '@fromcode119/core';
 import type { HookManager } from '@fromcode119/core';
-import { BuildService } from '@sources/services/build-service';
-import { BuildSourceType } from '@sources/services/enums/build-source-type.enum';
+import { BuildService } from '@sources/build/build-service';
+import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 
 export class BuildPackageArtifactHook {
   static readonly EVENT = 'sources:packages:resolve';

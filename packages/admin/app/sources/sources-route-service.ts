@@ -6,6 +6,7 @@
  * mounted as framework routes that would have read `/sources/sources`.
  */
 export class SourcesRouteService {
+  static providers(): string { return '/sources/providers'; }
   static list(): string { return '/sources'; }
   static create(): string { return '/sources'; }
   static one(slug: string): string { return `/sources/${encodeURIComponent(slug)}`; }

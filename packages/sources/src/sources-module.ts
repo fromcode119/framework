@@ -1,22 +1,22 @@
 import * as path from 'path';
 import type { RequestHandler } from 'express';
 import { Logger } from '@fromcode119/core';
-import { BuildService } from '@sources/services/build-service';
-import { BuildSourceSecretService } from '@sources/services/build-source-secret-service';
-import { BuildSourceService } from '@sources/services/build-source-service';
-import { CatalogContributionService } from '@sources/services/catalog-contribution-service';
-import { GitSyncService } from '@sources/services/git-sync-service';
-import { LegacyWorkspaceAdoption } from '@sources/legacy-workspace-adoption';
-import { PackageBuilder } from '@sources/services/package-builder';
-import { SourcesEvents } from '@sources/sources-events';
-import { SourcesRouter } from '@sources/sources-router';
-import { BuildPackageArtifactHook } from '@sources/hooks/build-package-artifact-hook';
-import { BuildPackageDownloadHook } from '@sources/hooks/build-package-download-hook';
-import { BuildSourceDeleteHook } from '@sources/hooks/build-source-delete-hook';
-import { BuildSourceListHook } from '@sources/hooks/build-source-list-hook';
-import { BuildSourceSyncHook } from '@sources/hooks/build-source-sync-hook';
-import { BuildTriggerHook } from '@sources/hooks/build-trigger-hook';
-import { BuildUpdatesCheckHook } from '@sources/hooks/build-updates-check-hook';
+import { BuildService } from '@sources/build/build-service';
+import { BuildSourceSecretService } from '@sources/sources/build-source-secret-service';
+import { BuildSourceService } from '@sources/sources/build-source-service';
+import { CatalogContributionService } from '@sources/catalog/catalog-contribution-service';
+import { SourceProviders } from '@sources/providers/source-providers';
+import { LegacyWorkspaceAdoption } from '@sources/settings/legacy-workspace-adoption';
+import { PackageBuilder } from '@sources/build/package-builder';
+import { SourcesEvents } from '@sources/events/sources-events';
+import { SourcesRouter } from '@sources/http/sources-router';
+import { BuildPackageArtifactHook } from '@sources/events/hooks/build-package-artifact-hook';
+import { BuildPackageDownloadHook } from '@sources/events/hooks/build-package-download-hook';
+import { BuildSourceDeleteHook } from '@sources/events/hooks/build-source-delete-hook';
+import { BuildSourceListHook } from '@sources/events/hooks/build-source-list-hook';
+import { BuildSourceSyncHook } from '@sources/events/hooks/build-source-sync-hook';
+import { BuildTriggerHook } from '@sources/events/hooks/build-trigger-hook';
+import { BuildUpdatesCheckHook } from '@sources/events/hooks/build-updates-check-hook';
 import type { ISourcesModuleInput } from '@sources/interfaces/sources-module-input.interface';
 
 /**
@@ -52,9 +52,10 @@ export class SourcesModule {
       path.join(workspaceRoot, 'themes'),
       path.join(workspaceRoot, 'core'),
     );
+    const sourceDir = path.join(workspaceRoot, 'source');
     const buildService = new BuildService(
       input.db,
-      new GitSyncService(path.join(workspaceRoot, 'source')),
+      (key) => SourceProviders.find(key, sourceDir),
       packageBuilder,
       buildSourceService,
       (event) => { void input.hooks.emit(SourcesEvents.PACKAGE_BUILT, event); },

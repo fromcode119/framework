@@ -77,6 +77,11 @@ export class GeneralBrandCard extends PureReactor {
   }
 
   @bound
+  onSourcesWorkspaceRootChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    this.patchSetting('sources_workspace_root', e.target.value);
+  }
+
+  @bound
   protected onDomainAliasesChange(aliases: string[]): void {
     this.patchSetting('domain_aliases', aliases);
   }
@@ -186,6 +191,21 @@ export class GeneralBrandCard extends PureReactor {
             disabled={this.locked('framework_repository')}
             className="w-full md:w-64 font-bold"
             placeholder={FrameworkReleaseDefaults.REPOSITORY}
+          />
+        </SettingRow>
+
+        <SettingRow
+          theme={theme}
+          icon={FrameworkIcons.Folder}
+          title="Sources Workspace"
+          description={this.describe('sources_workspace_root', 'Where Sources clones repositories and writes the packages it builds. Blank uses `data/sources` beside the platform. Never point it at the plugins or themes directories — that is where the sources being built are mounted from.')}
+        >
+          <Input
+            value={settings.sources_workspace_root}
+            onChange={this.onSourcesWorkspaceRootChange}
+            disabled={this.locked('sources_workspace_root')}
+            className="w-full md:w-64 font-bold"
+            placeholder="data/sources"
           />
         </SettingRow>
 

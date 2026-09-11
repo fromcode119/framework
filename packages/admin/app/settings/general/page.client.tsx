@@ -27,6 +27,7 @@ export class GeneralSettingsPage extends AdminComponent {
     'site_url',
     'marketplace_url',
     'framework_repository',
+    'sources_workspace_root',
     'timezone',
   ] as const;
   private static readonly BOOLEAN_KEYS = [
@@ -141,6 +142,7 @@ export class GeneralSettingsPage extends AdminComponent {
         site_url: String(settings.site_url ?? '').trim(),
         marketplace_url: String(settings.marketplace_url ?? '').trim(),
         framework_repository: String(settings.framework_repository ?? '').trim(),
+        sources_workspace_root: String(settings.sources_workspace_root ?? '').trim(),
         domain_aliases: JSON.stringify(Array.isArray(settings.domain_aliases) ? settings.domain_aliases : []),
         timezone: String(settings.timezone ?? '').trim(),
         frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),

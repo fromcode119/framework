@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BuildSourceService } from '@sources/services/build-source-service';
+import { BuildSourceService } from '@sources/sources/build-source-service';
 
 /**
  * The point of these tests is the WRITE path: a URL the transport allow-list refuses must never be

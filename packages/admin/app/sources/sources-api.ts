@@ -11,6 +11,9 @@ import { SourcesRouteService } from '@/app/sources/sources-route-service';
  */
 export class SourcesApi {
   /** `silent` matters: this list is POLLED, and a failed poll must not raise a toast every tick. */
+  /** What this installation can fetch source from. Drives the provider field. */
+  static providers(): Promise<any> { return AdminApi.get(SourcesRouteService.providers()); }
+
   static list(options?: { silent?: boolean }): Promise<any> {
     return AdminApi.get(SourcesRouteService.list(), options as RequestInit | undefined);
   }

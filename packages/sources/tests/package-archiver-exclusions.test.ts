@@ -3,7 +3,7 @@ import os from 'os';
 import path from 'path';
 import { execFileSync } from 'child_process';
 import { afterEach, describe, expect, it } from 'vitest';
-import { PackageArchiver } from '@sources/services/package-archiver';
+import { PackageArchiver } from '@sources/build/package-archiver';
 
 /**
  * This packer builds the artifact the MARKETPLACE distributes, so what it excludes is the same

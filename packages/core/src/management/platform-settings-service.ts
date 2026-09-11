@@ -66,5 +66,14 @@ export class PlatformSettingsService {
     MARKETPLACE_URL: 'marketplace_url',
     /** `owner/repo` the framework checks for its own releases when no marketplace is configured. */
     FRAMEWORK_REPOSITORY: 'framework_repository',
+    /**
+     * Where Sources writes what it builds.
+     *
+     * Deliberately an operator setting rather than a derived path: build output must never land in
+     * `process.cwd()` — in the api container that is `/app`, which the app user cannot write, and
+     * `/app/plugins` and `/app/themes` are the LIVE mounted repositories, so writing there would
+     * overwrite the very sources being packaged. Blank uses `<project root>/data/sources`.
+     */
+    SOURCES_WORKSPACE_ROOT: 'sources_workspace_root',
   } as const;
 }
