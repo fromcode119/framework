@@ -1,3 +1,4 @@
+import { ModuleLocation } from '@extension-builder/module-location';
 import { fileURLToPath } from 'node:url';
 import { Core } from '@extension-builder/core-bridge';
 import { execFile } from 'child_process';
@@ -24,7 +25,7 @@ import { promisify } from 'util';
  */
 export class BuildToolchain {
   private static readonly execFileAsync = promisify(execFile);
-  private static readonly runtimeRequire = createRequire(import.meta.url);
+  private static readonly runtimeRequire = ModuleLocation.requireFrom();
 
   /**
    * What a plugin's BACKEND bundle leaves unresolved.
@@ -142,7 +143,7 @@ export class BuildToolchain {
   }
 
   private static moduleDirectory(): string {
-    return path.dirname(fileURLToPath(import.meta.url));
+    return ModuleLocation.directory;
   }
 
   private getEsbuildModuleName(): string {

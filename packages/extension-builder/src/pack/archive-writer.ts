@@ -1,3 +1,4 @@
+import { ModuleLocation } from '@extension-builder/module-location';
 import { Core } from '@extension-builder/core-bridge';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -8,7 +9,7 @@ import { createRequire } from 'node:module';
  * this package is ESM, and Node refused the default import with "does not provide an export named
  * 'default'". `createRequire` asks for it as what it is.
  */
-const archiver = createRequire(import.meta.url)('archiver') as typeof import('archiver');
+const archiver = ModuleLocation.require('archiver') as typeof import('archiver');
 
 /**
  * Creates the distributable ZIP archives for plugin/theme/core packages.
@@ -161,7 +162,7 @@ export class ArchiveWriter {
    * wrapping directory would put every file one level too deep.
    */
   async writeTarGz(sourceDir: string, outputPath: string): Promise<void> {
-    const tar = createRequire(import.meta.url)('tar');
+    const tar = ModuleLocation.require('tar');
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.rmSync(outputPath, { force: true });
     await tar.create(

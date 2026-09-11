@@ -1,3 +1,4 @@
+import { ModuleLocation } from '@extension-builder/module-location';
 import { Core } from '@extension-builder/core-bridge';
 import { execFile } from 'child_process';
 import * as path from 'path';
@@ -18,7 +19,7 @@ import { promisify } from 'util';
  */
 export class PluginUiViteCompiler {
   private static readonly execFileAsync = promisify(execFile);
-  private static readonly runtimeRequire = createRequire(import.meta.url);
+  private static readonly runtimeRequire = ModuleLocation.requireFrom();
 
   /** Static markers the SDK entry registers on. Mirrors the grep in build-plugins.sh. */
   private static readonly COMPONENT_MARKERS =

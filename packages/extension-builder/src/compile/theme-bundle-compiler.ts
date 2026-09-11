@@ -1,3 +1,4 @@
+import { ModuleLocation } from '@extension-builder/module-location';
 import { execFile } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -24,7 +25,7 @@ import { promisify } from 'util';
 export class ThemeBundleCompiler {
   private static readonly execFileAsync = promisify(execFile);
 
-  private static readonly runtimeRequire = createRequire(import.meta.url);
+  private static readonly runtimeRequire = ModuleLocation.requireFrom();
 
   /** The authored config classes plus every local VALUE import they load at config time. */
   private static readonly STAGED_SOURCES = [

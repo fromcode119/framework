@@ -1,3 +1,4 @@
+import { ModuleLocation } from '@extension-builder/module-location';
 import { createRequire } from 'node:module';
 
 /**
@@ -13,7 +14,7 @@ import { createRequire } from 'node:module';
  * `createRequire` loads the module as what it is. One place does that; everything else reads it here.
  */
 export class Core {
-  private static readonly required = createRequire(import.meta.url)('@fromcode119/core');
+  private static readonly required = ModuleLocation.require('@fromcode119/core');
 
   static get PluginPackageLayout(): any {
     return Core.required.PluginPackageLayout;
