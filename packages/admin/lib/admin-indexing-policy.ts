@@ -27,9 +27,8 @@ export class AdminIndexingPolicy {
       return AdminIndexingPolicy.cached;
     }
 
-    const base = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
     try {
-      const response = await fetch(ApplicationUrlUtils.joinApiPath(base, 'v1/auth/host'), {
+      const response = await fetch(AdminIndexingPolicy.hostEndpoint(), {
         headers: { accept: 'application/json' },
       });
       if (!response.ok) return AdminIndexingPolicy.remember(false);
@@ -54,6 +53,22 @@ export class AdminIndexingPolicy {
       void AdminIndexingPolicy.allowed().catch(() => undefined);
     }
     return !AdminIndexingPolicy.cached;
+  }
+
+  /**
+   * Where to ask, from inside the admin's own process.
+   *
+   * `API_URL` first: it is the in-cluster address, so this never leaves the network or pays for TLS,
+   * and it keeps working when the public hostname does not resolve from inside the container.
+   *
+   * The `/api` segment is not optional — the api mounts its versioned routes under it. Asking for
+   * `<base>/v1/auth/host` returns the 404 page, which this class reads as "cannot tell" and answers
+   * by refusing, so the setting looked dead while being read perfectly.
+   */
+  private static hostEndpoint(): string {
+    const base = String(process.env.API_URL || '').trim()
+      || ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
+    return ApplicationUrlUtils.joinApiPath(base.replace(/\/+$/, ''), 'api/v1/auth/host');
   }
 
   private static remember(allowed: boolean): boolean {
