@@ -120,6 +120,10 @@ export class SystemRouter extends BaseRouter {
       this.controller.getStats);
     this.get(RouteConstants.SEGMENTS.ADMIN_STATS_SECURITY, this.auth.requirePermission('system:view'), 
       this.controller.getSecurityStats);
+    this.get(RouteConstants.SEGMENTS.ADMIN_STATS_HOST, this.auth.requirePermission('system:view'),
+      this.controller.getHostStats);
+    this.get(RouteConstants.SEGMENTS.ADMIN_STATS_SCHEDULE, this.auth.requirePermission('system:view'),
+      this.controller.getScheduleOutlook);
     
     // Integration management
     this.get(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS, this.auth.requirePermission('integrations:view'), 

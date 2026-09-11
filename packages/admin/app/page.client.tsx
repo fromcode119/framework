@@ -12,6 +12,7 @@ import { DashboardPageHeader } from '@/app/dashboard-page-header';
 import { DashboardStatsGrid } from '@/app/dashboard-stats-grid';
 import { DashboardQuickActions } from '@/app/dashboard-quick-actions';
 import { DashboardActivityChart } from '@/app/dashboard-activity-chart';
+import { DashboardSystemPanel } from '@/app/dashboard-system-panel.client';
 import { DashboardActivityBreakdown } from '@/app/dashboard-activity-breakdown';
 import { DashboardUpdateAlert } from '@/app/dashboard-update-alert';
 import { DashboardCollectionsGrid } from '@/app/dashboard-collections-grid';
@@ -232,6 +233,9 @@ export class AdminPage extends AdminComponent {
             {/* Right Sidebar - Dynamic Content */}
             <div className="space-y-6">
               <DashboardActivityChart activity={activity} days={14} />
+
+              {/* What the machine is doing, measured — see HostResourceService. */}
+              <DashboardSystemPanel />
 
               <DashboardActivityBreakdown activity={activity} />
 

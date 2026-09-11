@@ -136,6 +136,8 @@ export class AdminConstants {
     STATS: {
       COLLECTIONS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_STATS),
       SECURITY: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_SECURITY),
+      HOST: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_HOST),
+      SCHEDULE: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_SCHEDULE),
     },
     EMAIL_TELEMETRY_TEST: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_TELEMETRY_EMAIL_TEST),
     FRONTEND: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.FRONTEND),

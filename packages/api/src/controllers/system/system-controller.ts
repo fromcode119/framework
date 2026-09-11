@@ -202,6 +202,14 @@ export class SystemController extends BaseController {
     return this.adminController.getStats(req, res);
   }
 
+  async getHostStats(req: Request, res: Response) {
+    return this.adminController.getHostStats(req, res);
+  }
+
+  async getScheduleOutlook(req: Request, res: Response) {
+    return this.adminController.getScheduleOutlook(req, res);
+  }
+
   async getSecurityStats(req: Request, res: Response) {
     return this.adminController.getSecurityStats(req, res);
   }

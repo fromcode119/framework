@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { HostResourceService, SystemConstants } from '@fromcode119/core';
 
 export class SystemAdminController {
 
@@ -45,6 +46,49 @@ export class SystemAdminController {
       }
     }));
     res.json(stats);
+  }
+
+  /**
+   * What the machine is doing — memory, CPU load, disk, uptime. Measured, never configured: see
+   * HostResourceService. Behind the same `system:view` permission as the other stats.
+   */
+  async getHostStats(req: Request, res: Response) {
+    try {
+      res.json(await HostResourceService.read());
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /** How many upcoming runs the dashboard shows before it becomes a list nobody reads. */
+  private static readonly SCHEDULE_OUTLOOK_LIMIT = 8;
+
+  /**
+   * What the scheduler will do next, and what it last did — read from the scheduler's OWN table, so
+   * the dashboard cannot claim a cadence that is not the one running. A task with no `next_run` has
+   * never been pulsed; that is reported as null rather than guessed from its schedule.
+   */
+  async getScheduleOutlook(req: Request, res: Response) {
+    try {
+      const tasks = await this.runtime.db.find(SystemConstants.TABLE.SCHEDULER_TASKS, {
+        orderBy: { next_run: 'asc' },
+        limit: SystemAdminController.SCHEDULE_OUTLOOK_LIMIT,
+      });
+      res.json({
+        total: await this.runtime.db.count(SystemConstants.TABLE.SCHEDULER_TASKS),
+        upcoming: (tasks || []).map((task: any) => ({
+          name: task.name,
+          pluginSlug: task.plugin_slug || '',
+          schedule: task.schedule,
+          type: task.type,
+          isActive: task.is_active !== false,
+          nextRun: task.next_run ?? null,
+          lastRun: task.last_run ?? null,
+        })),
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   }
 
   async getSecurityStats(req: Request, res: Response) {

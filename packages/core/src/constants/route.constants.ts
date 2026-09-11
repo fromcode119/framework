@@ -106,6 +106,8 @@ export class RouteConstants {
   ADMIN_NOTIFICATIONS_READ_ALL: '/admin/notifications/read-all',
   ADMIN_STATS_COLLECTIONS: '/admin/stats/collections',
   ADMIN_STATS_SECURITY: '/admin/stats/security',
+  ADMIN_STATS_HOST: '/admin/stats/host',
+  ADMIN_STATS_SCHEDULE: '/admin/stats/schedule',
   ADMIN_INTEGRATIONS: '/admin/integrations',
   ADMIN_INTEGRATIONS_TYPE: '/admin/integrations/:type',
   ADMIN_INTEGRATIONS_PROVIDER: '/admin/integrations/:type/providers/:providerId',
