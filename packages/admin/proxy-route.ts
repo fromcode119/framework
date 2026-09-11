@@ -22,6 +22,8 @@ export class AdminProxyRoute {
    * - icons-registry (framework internal icons)
    * - internal (server-to-server endpoints — see below)
    * - favicon.ico (favicon file)
+   * - robots.txt (must answer a crawler, which has no session — the gate was redirecting it to
+   *   /login, so the file could never be read by the only thing that asks for it)
    * - Global JS/CSS and assets (Common file extensions, incl. .webmanifest so the
    *   PWA manifest is readable pre-login and the install prompt works from the login page;
    *   sw.js and /brand/*.png are already covered by the .js / .png extensions)
@@ -34,7 +36,7 @@ export class AdminProxyRoute {
    */
   static readonly config = {
     matcher: [
-      '/((?!api|_next/static|_next/image|_next/webpack-hmr|icons-registry|internal|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf|webmanifest)).*)',
+      '/((?!api|_next/static|_next/image|_next/webpack-hmr|icons-registry|internal|favicon.ico|robots.txt|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf|webmanifest)).*)',
     ],
   };
 }

@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server';
 // refuses a class component in a server graph, so one barrel import 500s every admin request. Both
 // modules below are React-free.
 import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
+import { AdminIndexingPolicy } from '@/lib/admin-indexing-policy';
 import { CookieConstants } from '@fromcode119/core/constants/cookie.constants';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 
@@ -48,6 +49,13 @@ export class AdminProxy {
   }
 
   private static applyNoStoreHeaders(response: NextResponse): NextResponse {
+    // Every response the console serves passes through here, which is why the crawler instruction
+    // goes here too: the admin previously said NOTHING to a crawler — no robots.txt, no header, no
+    // meta — so it was indexable by omission. `robots.txt` asks a crawler not to fetch; this tells
+    // one that already has the page not to index it, which is the case a pasted link creates.
+    if (AdminIndexingPolicy.refusedSynchronously()) {
+      response.headers.set('X-Robots-Tag', AdminIndexingPolicy.REFUSE);
+    }
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');

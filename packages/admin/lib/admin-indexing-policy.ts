@@ -40,6 +40,22 @@ export class AdminIndexingPolicy {
     }
   }
 
+  /**
+   * The last known answer, without waiting — for the auth gate, which is synchronous and is not
+   * worth making async for a response header.
+   *
+   * Safe because the default is the SAFE one: before any answer has arrived this reads "refuse", and
+   * a refresh is kicked off for the next request. A header that is briefly too strict costs nothing;
+   * one that is briefly too permissive puts a console in an index.
+   */
+  static refusedSynchronously(): boolean {
+    if (Date.now() - AdminIndexingPolicy.cachedAt >= AdminIndexingPolicy.TTL_MS) {
+      // Fire and forget: this request answers from what is known now, the next one is accurate.
+      void AdminIndexingPolicy.allowed().catch(() => undefined);
+    }
+    return !AdminIndexingPolicy.cached;
+  }
+
   private static remember(allowed: boolean): boolean {
     AdminIndexingPolicy.cached = allowed;
     AdminIndexingPolicy.cachedAt = Date.now();

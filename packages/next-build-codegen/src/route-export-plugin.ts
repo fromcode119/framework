@@ -27,6 +27,10 @@ export class RouteExportPlugin {
     // Middleware: Next reads the handler by name and its matcher from a `config` OBJECT — which is why
     // `config` is here even though it is a static property, not a method.
     'proxy', 'middleware', 'config',
+    // Route segment config. Also plain values rather than methods, and without them a route class had
+    // no way to say "do not prerender me" — Next answered a route whose body depends on a SETTING by
+    // freezing the build-time answer into the image, so the setting became a control nothing read.
+    'dynamic', 'revalidate', 'fetchCache', 'runtime', 'preferredRegion', 'maxDuration',
   ];
 
   /** The static method whose value becomes the module's default export. */
