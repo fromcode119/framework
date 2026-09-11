@@ -95,6 +95,12 @@ export class PluginContext {
   /** Credentials at rest, on the framework's key — so no plugin ships an encryption scheme. */
   declare readonly secrets: IPluginContextSecrets;
 
+  /** Installable versions this plugin offers, merged into the catalogue the admin already reads. */
+  declare readonly catalog: {
+    contribute(list: () => Promise<Array<Record<string, unknown>>> | Array<Record<string, unknown>>): void;
+    withdraw(): void;
+  };
+
   /**
    * Shortcut for i18n.t. Optional `locale` renders in a specific language (e.g. a customer's locale for an
    * order email) instead of the platform default.

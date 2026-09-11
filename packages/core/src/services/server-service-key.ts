@@ -29,6 +29,7 @@ export class ServerServiceKey {
 
   static readonly ENTITY_RECORDS = 'entityRecords';
   static readonly ATTENTION = 'attention';
+  static readonly CATALOG_CONTRIBUTIONS = 'catalog-contributions';
 
   static readonly ENTITY_RECORDS_RESOLUTION = 'entityRecordsResolution';
 }

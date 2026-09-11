@@ -28,6 +28,7 @@ import { LayoutResolutionService } from '@core/plugin/layout/layout-resolution-s
 import { LayoutRuntimeBridgeService } from '@core/plugin/layout/layout-runtime-bridge-service';
 import { PluginLayoutRegistryService } from '@core/plugin/layout/plugin-layout-registry-service';
 import { ThemeLayoutOverrideRegistryService } from '@core/theme/theme-layout-override-registry-service';
+import type { CatalogContributionRegistry } from '@core/marketplace/contributions/catalog-contribution-registry';
 
 /**
  * Core Services Singleton.
@@ -254,6 +255,14 @@ export class CoreServices {
    */
   get attention(): PluginAttentionRegistryService {
     return ServerServiceRegistry.require<PluginAttentionRegistryService>(ServerServiceKey.ATTENTION);
+  }
+
+  /**
+   * Registry of things that can offer installable versions besides the remote marketplace — a build
+   * server tracking git repositories, say. Core never learns what any of them are.
+   */
+  get catalogContributions(): CatalogContributionRegistry {
+    return ServerServiceRegistry.require<CatalogContributionRegistry>(ServerServiceKey.CATALOG_CONTRIBUTIONS);
   }
 
   get entityRecords(): PluginEntityRecordsRegistryService {

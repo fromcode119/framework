@@ -8,6 +8,8 @@ import path from 'path';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
+import { CoreServices } from '@core/services/core-services';
+import { CatalogEntry } from '@core/marketplace/contributions/catalog-entry';
 
 export class MarketplaceCatalogService {
   private logger = new Logger({ namespace: 'marketplace' });
@@ -47,6 +49,24 @@ export class MarketplaceCatalogService {
    * Fetch the full plugin catalog from the marketplace
    */
   public async fetchCatalog(): Promise<MarketplacePlugin[]> {
+    const remote = await this.fetchRemoteCatalog();
+    const contributed = await this.fetchContributedCatalog();
+
+    /**
+     * Contributed entries win a tie.
+     *
+     * Something built from a repository on THIS installation is newer than the same slug in a
+     * shared catalogue by definition — it was produced from source the operator controls. Letting
+     * the remote win would offer a published version as an "update" over a locally built one.
+     */
+    const merged = new Map<string, MarketplacePlugin>();
+    for (const entry of [...remote, ...contributed]) {
+      merged.set(String((entry as any)?.slug || '').toLowerCase(), entry);
+    }
+    return Array.from(merged.values());
+  }
+
+  private async fetchRemoteCatalog(): Promise<MarketplacePlugin[]> {
     try {
       await this.ensureClient();
       if (!this.client || !this.marketplaceUrl) {
@@ -60,6 +80,29 @@ export class MarketplaceCatalogService {
       this.logger.error(`Failed to fetch marketplace catalog: ${err.message}`);
       return [];
     }
+  }
+
+  /**
+   * Versions offered by something on this installation rather than by a remote catalogue.
+   *
+   * This is what lets an installation with NO marketplace answer "is there a newer version" at all.
+   * A contributor that throws is skipped rather than emptying the catalogue: one broken source must
+   * not hide every other update.
+   */
+  private async fetchContributedCatalog(): Promise<MarketplacePlugin[]> {
+    const entries: MarketplacePlugin[] = [];
+    for (const contributor of CoreServices.getInstance().catalogContributions.list()) {
+      try {
+        const rows = await contributor.list();
+        for (const row of rows || []) {
+          const entry = CatalogEntry.from(row);
+          if (entry) entries.push(entry.toCatalogPlugin() as unknown as MarketplacePlugin);
+        }
+      } catch (err: any) {
+        this.logger.warn(`Catalog contributor ${contributor.canonicalKey} failed: ${err?.message || err}`);
+      }
+    }
+    return entries;
   }
 
   /**

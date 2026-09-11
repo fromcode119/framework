@@ -15,6 +15,7 @@ import { CanonicalPathResolverRegistryService } from '@core/services/canonical-p
 import { SeedPageService } from '@core/services/seed-page-service';
 import { ServerServiceKey } from '@core/services/server-service-key';
 import { ServerServiceRegistry } from '@core/services/server-service-registry';
+import { CatalogContributionRegistry } from '@core/marketplace/contributions/catalog-contribution-registry';
 
 /**
  * Wires the SERVER-only core services into the registry `CoreServices` reads.
@@ -87,6 +88,10 @@ export class ServerCoreServices {
     ServerServiceRegistry.register(
       ServerServiceKey.ATTENTION,
       () => new PluginAttentionRegistryService(),
+    );
+    ServerServiceRegistry.register(
+      ServerServiceKey.CATALOG_CONTRIBUTIONS,
+      () => new CatalogContributionRegistry(),
     );
     ServerServiceRegistry.register(
       ServerServiceKey.ENTITY_RECORDS_RESOLUTION,

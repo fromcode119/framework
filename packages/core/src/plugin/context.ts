@@ -36,6 +36,7 @@ import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
+import { CatalogContextProxy } from '@core/plugin/context/catalog';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -244,6 +245,8 @@ export class PluginContextFactory {
         i18n: I18nContextProxy.createI18nProxy(plugin, manager, pathContext, security),
         // Credentials at rest, on the framework's key — so a plugin never invents its own.
         secrets: SecretsContextProxy.createSecretsProxy(),
+        // Installable versions this plugin can offer, merged into the catalogue the admin reads.
+        catalog: CatalogContextProxy.createCatalogProxy(plugin),
         t: (key: string, params?: Record<string, any>, locale?: string) => {
           const i18n = I18nContextProxy.createI18nProxy(plugin, manager, pathContext, security);
           return i18n.t(key, params, locale);
