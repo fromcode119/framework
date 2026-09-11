@@ -26044,9 +26044,14 @@ var GitSyncService = class _GitSyncService {
       throw new Error(_GitSyncService.explain(err));
     }
   }
+  static {
+    /** What git says when a repository needs credentials it was not given. */
+    this.NEEDS_TOKEN_MESSAGE = "This repository is private, or does not exist. Add a personal access token with read access to it.";
+  }
   /** Git's reason, stripped of anything secret and cut to the line that carries the meaning. */
   static explain(error) {
     if (_GitSyncService.isMissingGit(error)) return _GitSyncService.MISSING_GIT_MESSAGE;
+    if (_GitSyncService.needsCredentials(error)) return _GitSyncService.NEEDS_TOKEN_MESSAGE;
     const redacted = BuildErrorRedactionService.redact(error?.stderr || error?.message || error);
     const meaningful = redacted.split("\n").map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("Command failed:")).pop();
     return meaningful || "The repository could not be read.";
@@ -26054,6 +26059,10 @@ var GitSyncService = class _GitSyncService {
   static {
     /** The message the admin shows when the host has no git; stated once, used by both call paths. */
     this.MISSING_GIT_MESSAGE = "git is not installed on this server, so repositories cannot be read.";
+  }
+  static needsCredentials(error) {
+    const text = String(error?.stderr || error?.message || error);
+    return text.includes("could not read Username") || text.includes("Authentication failed") || text.includes("Repository not found");
   }
   static isMissingGit(error) {
     return String(error?.code || "") === "ENOENT" || String(error).includes("spawn git ENOENT");
@@ -26863,7 +26872,9 @@ var BuildApiRegistrar = class {
 var import_crypto = require("crypto");
 var import_server4 = require("@fromcode119/sdk/server");
 var BuildSourceSecretService = class _BuildSourceSecretService {
-  constructor() {
+  /** The framework's secrets surface, supplied by the plugin context at wiring time. */
+  constructor(secrets) {
+    this.secrets = secrets;
     this.logger = new import_server4.Logger({ namespace: "BuildSourceSecretService" });
   }
   static {
@@ -26872,12 +26883,19 @@ var BuildSourceSecretService = class _BuildSourceSecretService {
   static {
     this.prefix = "enc:v1:";
   }
+  /** Whether this installation can store a token at all — asked before a token field is offered. */
+  canStoreSecrets() {
+    return Boolean(this.secrets?.isConfigured()) || Boolean(this.resolveKey());
+  }
   decrypt(secret) {
     if (!secret) {
       return "";
     }
     if (!this.isEncrypted(secret)) {
       return secret;
+    }
+    if (!this.resolveKey() && this.secrets?.isConfigured()) {
+      return this.secrets.decrypt(secret);
     }
     const key = this.resolveKey();
     if (!key) {
@@ -26908,9 +26926,14 @@ var BuildSourceSecretService = class _BuildSourceSecretService {
     if (this.isEncrypted(trimmedSecret)) {
       return trimmedSecret;
     }
+    if (this.secrets?.isConfigured()) {
+      return this.secrets.encrypt(trimmedSecret);
+    }
     const key = this.resolveKey();
     if (!key) {
-      throw new Error("BUILD_SERVER_SECRET_KEY is not configured. Refusing to store a build source token in plaintext.");
+      throw new Error(
+        "This installation cannot store credentials: no SECRET_KEY is configured, so the token would have to be saved in plaintext. Add a source without a token, or set SECRET_KEY and restart."
+      );
     }
     const iv = (0, import_crypto.randomBytes)(12);
     const cipher = (0, import_crypto.createCipheriv)(
@@ -26931,6 +26954,13 @@ var BuildSourceSecretService = class _BuildSourceSecretService {
   normalizeSecret(secret) {
     return typeof secret === "string" ? secret.trim() : "";
   }
+  /**
+   * The plugin's OWN legacy key, read only so tokens saved before the move stay readable.
+   *
+   * Still intentionally not `JWT_SECRET`: coupling those means a session-secret leak also decrypts
+   * every stored token, and rotating either breaks the other. `SECRET_KEY` is different — it exists
+   * for credentials at rest and already carries every integration's.
+   */
   resolveKey() {
     return (process.env.BUILD_SERVER_SECRET_KEY || "").trim();
   }
@@ -27338,7 +27368,7 @@ var BuildServerBootstrap = class {
     const themesOutputDir = path6.resolve(workspaceRoot, "themes");
     logger.info(`Build workspace: ${workspaceRoot}`);
     logger.info("Initializing Build Server plugin...");
-    const secretService = new BuildSourceSecretService();
+    const secretService = new BuildSourceSecretService(this.context.secrets);
     const buildSourceService = new BuildSourceService(db, secretService);
     const gitSync = new GitSyncService(sourceDir);
     const packageBuilder = new PackageBuilder(this.context, pluginsOutputDir, themesOutputDir, coreOutputDir);

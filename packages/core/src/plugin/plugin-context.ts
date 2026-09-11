@@ -32,6 +32,7 @@ import type { IPluginContextCollections } from '@core/plugin/interfaces/plugin-c
 import type { IPluginContextEntities } from '@core/plugin/interfaces/plugin-context-entities.interface';
 import type { IPluginContextSettings } from '@core/plugin/interfaces/plugin-context-settings.interface';
 import type { IPluginContextI18n } from '@core/plugin/interfaces/plugin-context-i18n.interface';
+import type { IPluginContextSecrets } from '@core/plugin/interfaces/plugin-context-secrets.interface';
 import type { IPluginContextUi } from '@core/plugin/interfaces/plugin-context-ui.interface';
 import type { IPluginContextRuntime } from '@core/plugin/interfaces/plugin-context-runtime.interface';
 import type { IPluginContextNotifications } from '@core/plugin/interfaces/plugin-context-notifications.interface';
@@ -90,6 +91,9 @@ export class PluginContext {
   declare readonly settings: IPluginContextSettings;
 
   declare readonly i18n: IPluginContextI18n;
+
+  /** Credentials at rest, on the framework's key — so no plugin ships an encryption scheme. */
+  declare readonly secrets: IPluginContextSecrets;
 
   /**
    * Shortcut for i18n.t. Optional `locale` renders in a specific language (e.g. a customer's locale for an

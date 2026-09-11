@@ -68,6 +68,16 @@ export class SecretService {
     return String(value || '').trim() ? SecretService.getSavedSecretMask() : '';
   }
 
+  /**
+   * Whether this installation can encrypt at all.
+   *
+   * Callers ask before offering a field that takes a credential: a refusal at save time, after the
+   * operator has pasted a token, is a worse experience than a disabled field that says why.
+   */
+  static isEncryptionAvailable(): boolean {
+    return SecretService.readSecretKey() !== null;
+  }
+
   private static readSecretKey(): Buffer | null {
     // SECRET_KEY is the preferred env var; INTEGRATION_SECRET_KEY kept for backward compatibility
     const rawSecret = (String(process.env.SECRET_KEY || '').trim() || String(process.env.INTEGRATION_SECRET_KEY || '').trim());
