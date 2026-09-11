@@ -35,9 +35,14 @@ answering 200 — and rolls back automatically when it does not; and on success 
 published images except the live one and the rollback target. Nine releases in one day took a
 staging disk from 16G to 25G before it existed.
 
-Hosts are declared in `deploy/targets.json`, so a deploy does not depend on one developer's shell
-history. The server needs nothing but the compose files: the command drives it over ssh, and
-the host still has no Node and no checkout.
+The host can be given directly — `fromcode deploy v2.0.0 --host deploy@example.com --dir /srv/fromcode/deploy`
+— or named once in `deploy/targets.json`. **That file is deliberately not committed**, and neither is
+any host: an ssh address and a path on somebody's server are local configuration, and a framework
+other people deploy has no business shipping one operator's infrastructure. Copy
+`targets.example.json` to start one.
+
+The server needs nothing but the compose files: the command drives it over ssh, and the host still
+has no Node and no checkout.
 
 Images are **public**, so the server needs no `docker login` and no registry credentials —
 verified by pulling on a host with no ghcr entry in its Docker config.

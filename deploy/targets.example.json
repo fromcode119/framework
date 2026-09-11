@@ -1,0 +1,10 @@
+{
+  "staging": {
+    "host": "my-staging-host",
+    "directory": "/srv/fromcode/deploy"
+  },
+  "production": {
+    "host": "deploy@example.com",
+    "directory": "/srv/fromcode/deploy"
+  }
+}

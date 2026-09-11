@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { DeployService } from '@cli/services/deploy/deploy-service';
+import { DeploymentTarget } from '@cli/services/deploy/deployment-target';
 
 /**
  * `fromcode deploy <version>` — the whole deployment, from the repository rather than from a script
@@ -13,12 +14,16 @@ export class DeployCommandService {
     program
       .command('deploy <version>')
       .description('Deploy a published release to a target, verify it, and reclaim old images')
-      .option('-t, --target <name>', 'target declared in deploy/targets.json', 'staging')
+      .option('-t, --target <name>', 'target declared in deploy/targets.json (not committed)', 'staging')
+      .option('--host <host>', 'ssh host to deploy to, instead of a declared target')
+      .option('--dir <path>', 'deploy directory on that host')
       .option('--health-timeout <seconds>', 'how long to wait for the api to report the new version')
       .action(async (version: string, options: Record<string, string>) => {
         const seconds = Number(options.healthTimeout || DeployCommandService.DEFAULT_HEALTH_TIMEOUT_SECONDS);
         try {
-          const service = await DeployService.forTarget(String(options.target), seconds * 1000);
+          const service = options.host
+            ? DeployService.using(DeploymentTarget.fromOptions(options.host, String(options.dir || '')), seconds * 1000)
+            : await DeployService.forTarget(String(options.target), seconds * 1000);
           const deployed = await service.deploy(version);
           if (!deployed) process.exit(1);
         } catch (error: any) {

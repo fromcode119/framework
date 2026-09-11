@@ -89,6 +89,18 @@ COPY . .
 RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && \
     find . -name "*.tsbuildinfo" -delete 2>/dev/null || true
 
+# The framework's OWN extensions arrive ready to run.
+#
+# Their dependencies used to be installed on first boot, which fails on a deployment: the runtime
+# user cannot write npm's cache (`EACCES /root/.npm`), so the extension errored on every start of a
+# freshly pulled image. A bundled extension is product, not something the operator installs — the
+# build has the network and the permissions, so it installs them here, once.
+RUN for extension in bundled-plugins/*/; do \
+      [ -f "$extension/package.json" ] || continue; \
+      echo "--- installing dependencies for $extension ---"; \
+      (cd "$extension" && npm install --omit=dev --no-audit --no-fund); \
+    done
+
 # ===================================
 # SHARED BUILDER — compiles all packages sequentially.
 # All per-service targets inherit from this stage so that

@@ -4,9 +4,10 @@ import path from 'path';
 /**
  * A host this platform is deployed to.
  *
- * Declared in `deploy/targets.json`, which is committed — a deploy that depends on one developer's
- * shell history is a deploy nobody else can repeat, and the machine details were previously carried
- * only in a script that lived on the server itself.
+ * Named on the command line, or in `deploy/targets.json` for hosts you deploy to often. That file is
+ * NOT committed and neither is any host: an ssh address and a path on someone's server are local
+ * configuration, and a framework other people deploy has no business shipping one operator's
+ * infrastructure. `targets.example.json` carries the shape; `--host` and `--dir` need no file.
  */
 export class DeploymentTarget {
   constructor(
@@ -50,10 +51,17 @@ export class DeploymentTarget {
     }
   }
 
+  /** A host given on the command line — no file, nothing stored, nothing committed. */
+  static fromOptions(host: string, directory: string): DeploymentTarget {
+    return DeploymentTarget.from('command line', { host, directory });
+  }
+
   static async load(name: string): Promise<DeploymentTarget> {
     const file = DeploymentTarget.configPath();
     if (!await fs.pathExists(file)) {
-      throw new Error(`No deploy targets declared — expected ${file}`);
+      throw new Error(
+        `No deploy targets declared. Either pass --host and --dir, or copy ${path.basename(file).replace('.json', '.example.json')} to ${file} (it is deliberately not committed).`,
+      );
     }
     const targets = await fs.readJson(file);
     const row = targets?.[name];

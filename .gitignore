@@ -119,3 +119,9 @@ packages/react/src/icons/lucide-icon-names.generated.json
 # rules above silently drop `index.js`, `ui/bundle.js` and `ui/style.css` from the commit, and the
 # image ships a manifest with nothing behind it (that is exactly how v0.2.12 shipped).
 !bundled-plugins/**
+
+# Deploy targets name SOMEBODY'S machines — an ssh host and a path on it. They are local
+# configuration, not part of the framework, and committing them would ship one operator's
+# infrastructure to everyone who deploys this product. `deploy/targets.example.json` is the
+# committed shape; `fromcode deploy --host --dir` needs no file at all.
+deploy/targets.json

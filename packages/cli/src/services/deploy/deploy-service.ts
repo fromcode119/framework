@@ -24,7 +24,10 @@ export class DeployService {
   ) {}
 
   static async forTarget(name: string, healthTimeoutMs: number): Promise<DeployService> {
-    const target = await DeploymentTarget.load(name);
+    return DeployService.using(await DeploymentTarget.load(name), healthTimeoutMs);
+  }
+
+  static using(target: DeploymentTarget, healthTimeoutMs: number): DeployService {
     const shell = new RemoteShell(target);
     const stack = new ComposeStack(shell);
     return new DeployService(
