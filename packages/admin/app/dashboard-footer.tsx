@@ -7,6 +7,13 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 export class DashboardFooter extends PureReactor {
   @prop declare platformName: string;
 
+  /** Version and channel are both optional at build time, so neither leaves a stray `v` behind. */
+  private get build(): string {
+    return [AppEnv.APP_VERSION ? `v${AppEnv.APP_VERSION}` : '', AppEnv.APP_CHANNEL]
+      .filter((part) => part !== '')
+      .join(' ');
+  }
+
   render(): ReactNode {
     return (
       <div className="p-6 border-t mt-auto bg-slate-50/50 border-slate-100 dark:bg-slate-950/20 dark:border-slate-800">
@@ -16,7 +23,7 @@ export class DashboardFooter extends PureReactor {
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
                 <span className="text-[10px] font-bold tracking-tight text-slate-500 dark:text-slate-400 uppercase">
-                  {this.platformName} Infrastructure // v{AppEnv.APP_VERSION} {AppEnv.APP_CHANNEL}
+                  {this.platformName} Infrastructure{this.build ? ` // ${this.build}` : ''}
                 </span>
               </div>
               {/* No health/topology claim here: this footer fetches nothing, so any "all systems

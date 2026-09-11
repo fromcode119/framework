@@ -1,35 +1,52 @@
-import type { ChangeEvent, FormEvent, ReactElement } from 'react';
+import type { FormEvent, ReactElement } from 'react';
 import { Button } from '@/components/ui/view/button.client';
-import { Input } from '@/components/ui/view/input.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { AppEnv } from '@/lib/env';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { bound, state } from '@fromcode119/react-class-components';
-import { AdminClass } from '@/lib/admin-class';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
+import { TimezoneUtils } from '@/lib/timezone';
+import { SetupStep } from '@/app/setup/enums/setup-step.enum';
+import { SetupChecking } from '@/app/setup/setup-checking.client';
+import { SetupFrame } from '@/app/setup/setup-frame.client';
+import { SetupStepper } from '@/app/setup/setup-stepper.client';
+import { SetupLanguageStep } from '@/app/setup/setup-language-step.client';
+import { SetupAccountStep } from '@/app/setup/setup-account-step.client';
+import { SetupPlatformStep } from '@/app/setup/setup-platform-step.client';
+import type { ISetupAccountErrors } from '@/app/setup/setup-account-errors.interface';
+import { SetupAccountValidation } from '@/app/setup/setup-account-validation';
 
+/**
+ * The first screen a new installation ever shows: language, administrator account, platform.
+ *
+ * Language comes first because every word after it depends on the answer. Each value maps to a
+ * setting Settings already owns and displays, and anything left blank is not written at all.
+ */
 export class SetupPage extends AdminComponent {
-  private static readonly ICON_SIZE = 42;
   private mounted = false;
 
   @state isLoading = false;
   @state isChecking = true;
+  @state step: SetupStep = SetupStep.LANGUAGE;
+  @state locale = AdminDictionary.FALLBACK_LOCALE;
   @state email = '';
   @state password = '';
   @state confirmPassword = '';
+  @state platformName = '';
+  @state timezone = '';
   @state error = '';
-  @state fieldErrors: { email?: string; password?: string; confirmPassword?: string } = {};
+  @state fieldErrors: ISetupAccountErrors = {};
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    this.locale = this.browserLocale;
+    this.timezone = TimezoneUtils.resolveSystemTimezone();
     try {
       const data = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.STATUS);
-      if (data.initialized === true) {
-        this.router.push(AdminConstants.ROUTES.AUTH.LOGIN);
-      }
+      if (data.initialized === true) this.router.push(AdminConstants.ROUTES.AUTH.LOGIN);
     } catch (err) {
-      console.warn("API check failed in setup:", err);
+      console.warn('API check failed in setup:', err);
     } finally {
       if (this.mounted) this.isChecking = false;
     }
@@ -39,171 +56,142 @@ export class SetupPage extends AdminComponent {
     this.mounted = false;
   }
 
-  @bound
-  handleEmailChange(e: ChangeEvent<HTMLInputElement>): void {
-    this.email = e.target.value;
+  /** Their browser's language when the console speaks it, otherwise the dictionary every key is written in. */
+  private get browserLocale(): string {
+    const preferred = String(navigator?.language || '').trim();
+    return AdminDictionary.has(preferred) ? preferred.toLowerCase().split('-')[0] : AdminDictionary.FALLBACK_LOCALE;
+  }
+
+  private text(key: string): string {
+    return AdminDictionary.translate(this.locale, key);
   }
 
   @bound
-  handlePasswordChange(e: ChangeEvent<HTMLInputElement>): void {
-    this.password = e.target.value;
+  handleLocaleChange(locale: string): void {
+    this.locale = locale;
+    document.documentElement.lang = locale;
   }
 
+  @bound handleEmailChange(value: string): void { this.email = value; }
+  @bound handlePasswordChange(value: string): void { this.password = value; }
+  @bound handleConfirmPasswordChange(value: string): void { this.confirmPassword = value; }
+  @bound handlePlatformNameChange(value: string): void { this.platformName = value; }
+  @bound handleTimezoneChange(value: string): void { this.timezone = value; }
+
   @bound
-  handleConfirmPasswordChange(e: ChangeEvent<HTMLInputElement>): void {
-    this.confirmPassword = e.target.value;
+  handleBack(): void {
+    this.error = '';
+    this.step = this.step.previous();
+  }
+
+  private get accountErrors(): ISetupAccountErrors {
+    return SetupAccountValidation.check(this, {
+      required: this.text('setup.errors.required'),
+      mismatch: this.text('setup.errors.passwordMismatch'),
+    });
   }
 
   @bound
   async handleSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
     this.error = '';
-    const { email, password, confirmPassword } = this;
-    const newFieldErrors: any = {};
 
-    if (!email) newFieldErrors.email = 'Required';
-    if (!password) newFieldErrors.password = 'Required';
-    if (!confirmPassword) newFieldErrors.confirmPassword = 'Required';
-
-    if (password && confirmPassword && password !== confirmPassword) {
-      newFieldErrors.confirmPassword = 'Passwords do not match';
+    if (this.step === SetupStep.ACCOUNT) {
+      const errors = this.accountErrors;
+      if (Object.keys(errors).length > 0) {
+        this.fieldErrors = errors;
+        return;
+      }
+      this.fieldErrors = {};
     }
 
-    if (password && password.length < 6) {
-      newFieldErrors.password = 'Min 6 characters';
-    }
-
-    if (Object.keys(newFieldErrors).length > 0) {
-      this.fieldErrors = newFieldErrors;
+    if (!this.step.isLast) {
+      this.step = this.step.next();
       return;
     }
 
-    this.fieldErrors = {};
-    this.isLoading = true;
+    await this.initialize();
+  }
 
+  private async initialize(): Promise<void> {
+    this.isLoading = true;
     try {
-      const data = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.SETUP, { email, password });
+      const data = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.SETUP, {
+        email: this.email,
+        password: this.password,
+        locale: this.locale,
+        platformName: this.platformName,
+        timezone: this.timezone,
+      });
       this.auth.login(data.token, data.user);
     } catch (err: any) {
-      this.error = err.message || 'Setup failed. Please try again.';
+      // The API owns the password policy, so its wording is the answer — never a second rule here.
+      this.error = err.message || this.text('setup.errors.failed');
+      this.step = SetupStep.ACCOUNT;
     } finally {
       this.isLoading = false;
     }
   }
 
-  render(): ReactElement {
-    const { isChecking, error, email, password, confirmPassword, fieldErrors, isLoading } = this;
-
-    if (isChecking) {
+  private get currentStep(): ReactElement {
+    if (this.step === SetupStep.LANGUAGE) {
+      return <SetupLanguageStep locale={this.locale} onLocaleChange={this.handleLocaleChange} />;
+    }
+    if (this.step === SetupStep.ACCOUNT) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
-          <div className="flex flex-col items-center gap-6">
-            <div className="animate-spin text-indigo-600">
-              <FrameworkIcons.Loader size={48} />
-            </div>
-            <span className="text-[11px] font-semibold text-indigo-500 tracking-wide">Initializing...</span>
-          </div>
-        </div>
+        <SetupAccountStep
+          locale={this.locale}
+          email={this.email}
+          password={this.password}
+          confirmPassword={this.confirmPassword}
+          errors={this.fieldErrors}
+          onEmailChange={this.handleEmailChange}
+          onPasswordChange={this.handlePasswordChange}
+          onConfirmPasswordChange={this.handleConfirmPasswordChange}
+        />
       );
     }
+    return (
+      <SetupPlatformStep
+        locale={this.locale}
+        platformName={this.platformName}
+        timezone={this.timezone}
+        onPlatformNameChange={this.handlePlatformNameChange}
+        onTimezoneChange={this.handleTimezoneChange}
+      />
+    );
+  }
+
+  render(): ReactElement {
+    if (this.isChecking) return <SetupChecking locale={this.locale} />;
 
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-50 dark:bg-[#020617]">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-6 animate-in fade-in slide-in-from-top-4 duration-1000">
-            <div className={`inline-flex items-center justify-center w-16 h-16 ${AdminClass.SURFACE} mb-4 transform hover:scale-105 transition-all duration-500`}>
-              <FrameworkIcons.Orbit size={SetupPage.ICON_SIZE} className="text-indigo-600 dark:text-indigo-500 animate-[spin_10s_linear_infinite]" />
-            </div>
-            <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-950 dark:text-white">
-              System Setup
-            </h1>
-            <p className="text-slate-500 font-medium text-sm leading-relaxed max-w-[340px] mx-auto">Create the root administrator account to unlock your digital core.</p>
+      <SetupFrame locale={this.locale}>
+        <SetupStepper locale={this.locale} current={this.step} />
+        <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4">
+          {this.text(`setup.${this.step.value}.title`)}
+        </h2>
+
+        {this.error && (
+          <div className="mb-5 p-4 rounded-xl bg-rose-50 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20 text-rose-600 text-[12px] font-semibold">
+            {this.error}
           </div>
+        )}
 
-          <div className={`p-6 sm:p-7 ${AdminClass.SURFACE} animate-in fade-in slide-in-from-bottom-8 duration-1000`}>
-            {error && (
-              <div className="mb-5 p-4 rounded-xl bg-rose-50 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20 text-rose-600 text-[12px] font-semibold animate-in zoom-in duration-300 flex items-center gap-3">
-                <div className="flex-shrink-0 h-8 w-8 rounded-xl bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center">
-                  <FrameworkIcons.Zap size={18} className="fill-current" />
-                </div>
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={this.handleSubmit} className="space-y-5" noValidate>
-              <div className="space-y-4">
-                <Input
-                  label="Primary Admin Entity"
-                  placeholder="admin@fromcode.com"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={this.handleEmailChange}
-                  error={fieldErrors.email}
-                  className="py-3 text-sm"
-                />
-
-                <div className="space-y-4">
-                  <Input
-                    label="Root Password"
-                    placeholder="••••••••••••"
-                    type="password"
-                    required
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={this.handlePasswordChange}
-                    error={fieldErrors.password}
-                    className="py-3 text-sm"
-                  />
-                  <Input
-                    label="Validate Password"
-                    placeholder="••••••••••••"
-                    type="password"
-                    required
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={this.handleConfirmPasswordChange}
-                    error={fieldErrors.confirmPassword}
-                    className="py-3 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="bg-slate-50 dark:bg-indigo-500/5 rounded-xl p-4 border border-slate-100 dark:border-indigo-500/10">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/30 mt-0.5">
-                    <FrameworkIcons.Shield size={16} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold mb-1 tracking-wide text-indigo-900 dark:text-indigo-300">Omnipotent Privilege</h4>
-                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed italic">
-                      This account holds master keys to all infrastructure, deployments, and sensitive user telemetry.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full py-4 text-base font-semibold transform hover:scale-[1.01] active:scale-[0.98] shadow-2xl shadow-indigo-600/30 rounded-xl"
-                isLoading={isLoading}
-              >
-                Initialize Framework
-                {!isLoading && <FrameworkIcons.ArrowRight size={18} className="ml-2.5" />}
+        <form onSubmit={this.handleSubmit} className="space-y-6" noValidate>
+          {this.currentStep}
+          <div className="flex items-center gap-3">
+            {!this.step.isFirst && (
+              <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.handleBack} className="py-3">
+                {this.text('setup.actions.back')}
               </Button>
-            </form>
+            )}
+            <Button type="submit" className="flex-1 py-4 text-base font-semibold rounded-xl" isLoading={this.isLoading}>
+              {this.step.isLast ? this.text('setup.actions.finish') : this.text('setup.actions.continue')}
+            </Button>
           </div>
-
-          <div className="text-center mt-5 flex items-center justify-center gap-4 opacity-40 text-slate-500">
-             <div className="h-[2px] w-8 bg-slate-200 dark:bg-slate-800 rounded-full" />
-             <span className="text-[10px] font-semibold tracking-wide">
-               v{AppEnv.APP_VERSION} {AppEnv.APP_NAME} {AppEnv.APP_CHANNEL}
-             </span>
-             <div className="h-[2px] w-8 bg-slate-200 dark:bg-slate-800 rounded-full" />
-          </div>
-        </div>
-      </div>
+        </form>
+      </SetupFrame>
     );
   }
 }

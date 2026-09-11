@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 import { SecretService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerSso } from '@api/controllers/auth/auth-controller-sso';
+import { InitialSetupPreferences } from '@api/controllers/auth/initial-setup-preferences';
 
 export class AuthControllerLifecycle extends AuthControllerSso {
   private setupInProgress = false;
@@ -66,6 +67,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
     await this.setForcePasswordReset(newUser.id, false);
     await this.pushPasswordHistory(newUser.id, hashedPassword);
     await this.upsertMeta(this.getPasswordChangedAtKey(newUser.id), new Date().toISOString());
+    await this.persistSetupPreferences(req.body);
 
     const loginResult = await this.issueLoginSession(req, res, newUser);
 
@@ -80,6 +82,21 @@ export class AuthControllerLifecycle extends AuthControllerSso {
       token: loginResult.token,
       user: loginResult.user
     });
+  }
+
+  /**
+   * The wizard's platform answers, written AFTER the account exists: the account is the thing that
+   * must not be lost, and a rejected timezone is not a reason to fail an initialization that already
+   * created it. Only what was actually sent is stored — see InitialSetupPreferences.
+   */
+  private async persistSetupPreferences(body: Record<string, unknown> | undefined): Promise<void> {
+    for (const [key, value] of InitialSetupPreferences.fromRequestBody(body).entries) {
+      try {
+        await this.upsertMeta(key, value);
+      } catch (error) {
+        this.logger.error(`[AuthController] Setup could not store ${key}: ${error}`);
+      }
+    }
   }
 
   /** Names the section this must not race with; how it is serialised is the driver's business. */

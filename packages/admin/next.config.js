@@ -15,6 +15,12 @@ const nextConfig = {
   basePath: adminBasePath,
   allowedDevOrigins: NextConfigEnv.getAllowedDevOrigins(),
   reactStrictMode: true,
+  env: {
+    // The version the console SHOWS, read from the root package.json this build came from — the same
+    // number auto-tag turns into the release tag and the image tag. It used to be a literal in
+    // lib/env.ts and had been stale for months: a deployment running 0.2.3 displayed v0.1.31.
+    NEXT_PUBLIC_FRAMEWORK_VERSION: require('../../package.json').version,
+  },
   // `.client` filename convention: a CLIENT route entry is `page.client.tsx` / `layout.client.tsx` (directive
   // stamped by scripts/stamp-client-src.mjs); a SERVER route stays `page.tsx`. Listing `client.tsx`/`client.ts`
   // makes Next treat `page.client.tsx` as the route `page` — so no one-line re-export wrapper is needed.

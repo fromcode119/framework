@@ -4,8 +4,19 @@ export class AppEnv {
 	static readonly PRODUCT_NAME = 'Fromcode Atlantis';
 	static readonly AI_NAME = 'Atlantis Intelligence';
 	static readonly AI_ENABLED = process.env.NEXT_PUBLIC_ADMIN_AI_ENABLED !== 'false';
-	static readonly APP_VERSION = '0.1.31';
-	static readonly APP_CHANNEL = 'Alpha';
+	/**
+	 * The running framework version, injected at build time from the root package.json
+	 * (`next.config.js` → `NEXT_PUBLIC_FRAMEWORK_VERSION`). It was a literal here and went stale —
+	 * 0.2.3 deployments displayed v0.1.31 on the dashboard and the first-run setup screen. Empty when
+	 * the build did not supply one, and every caller renders nothing rather than a made-up number.
+	 */
+	static readonly APP_VERSION = process.env.NEXT_PUBLIC_FRAMEWORK_VERSION ?? '';
+	/**
+	 * A release channel this deployment declares for itself ("Alpha", "Beta", …). It was hardcoded to
+	 * "Alpha" for every install, including ones that are not. Unset means the console says nothing
+	 * about a channel, which is the honest default.
+	 */
+	static readonly APP_CHANNEL = process.env.NEXT_PUBLIC_ADMIN_CHANNEL ?? '';
 	static readonly APP_CODENAME = 'Fromcode Core';
 	/** Per-deployment default admin appearance id. Empty string = use the built-in default. */
 	static readonly ADMIN_APPEARANCE = process.env.NEXT_PUBLIC_ADMIN_APPEARANCE ?? '';
