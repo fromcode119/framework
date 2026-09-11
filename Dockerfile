@@ -110,7 +110,18 @@ RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && 
 # user cannot write npm's cache (`EACCES /root/.npm`), so the extension errored on every start of a
 # freshly pulled image. A bundled extension is product, not something the operator installs — the
 # build has the network and the permissions, so it installs them here, once.
-RUN for extension in bundled-plugins/*/; do \
+# `bundled-plugins/` is BUILD OUTPUT and is no longer committed, so it must be produced before the
+# image is built (`npm run bundle:extensions`). The check below is the whole point of this comment:
+# with no extensions present the loop used to do nothing and the build stayed green, which is how
+# v0.2.12 shipped an image whose Sources screen simply was not there. A missing input now FAILS.
+RUN set -e; \
+    if [ ! -d bundled-plugins ] || [ -z "$(ls -A bundled-plugins 2>/dev/null)" ]; then \
+      echo "bundled-plugins/ is empty or missing. Run 'npm run bundle:extensions' before building" >&2; \
+      echo "this image: the framework's own extensions are built from their source repositories and" >&2; \
+      echo "are not committed. Building without them ships a framework with its own screens absent." >&2; \
+      exit 1; \
+    fi; \
+    for extension in bundled-plugins/*/; do \
       [ -f "$extension/package.json" ] || continue; \
       echo "--- installing dependencies for $extension ---"; \
       (cd "$extension" && npm install --omit=dev --no-audit --no-fund); \

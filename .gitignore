@@ -114,11 +114,13 @@ packages/admin/public/fc-runtime/
 # test compares it to node_modules. Regenerated before typecheck/tests/builds — never committed.
 packages/react/src/icons/lucide-icon-names.generated.json
 
-# `bundled-plugins/` is the framework's OWN extensions, packed INTO the image — the built artifact
-# IS the deliverable here, unlike everywhere else these rules apply. Without this exception the
-# rules above silently drop `index.js`, `ui/bundle.js` and `ui/style.css` from the commit, and the
-# image ships a manifest with nothing behind it (that is exactly how v0.2.12 shipped).
-!bundled-plugins/**
+# `bundled-plugins/` is BUILD OUTPUT and is never committed. `npm run bundle:extensions` writes it
+# from the extension's own source, and the image build consumes it from the working tree.
+#
+# It was briefly committed, to get the framework's own extensions into an image whose build context
+# cannot reach their source repositories. That solved the packaging problem by putting minified
+# bundles and gzips under version control, which is not a trade this repository makes.
+bundled-plugins/
 
 # Deploy targets name SOMEBODY'S machines — an ssh host and a path on it. They are local
 # configuration, not part of the framework, and committing them would ship one operator's
