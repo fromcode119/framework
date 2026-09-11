@@ -72,10 +72,10 @@ export class SidebarNavGroups extends PureReactor {
                   {displayGroup}
                 </div>
               )}
+              {/* A full-width rule, tight against the group it separates: the old one was a 32px
+                  hairline floating in 32px of padding, which read as empty space rather than a break. */}
               {isMini && groupIdx > 0 && (
-                <div className="flex justify-center py-4">
-                  <div className="w-8 h-px bg-slate-100 dark:bg-slate-800/60" />
-                </div>
+                <div className="my-2 h-px bg-slate-200 dark:bg-slate-800" />
               )}
               {(!isCollapsed || isMini) && (
                 items.map((item, idx) => (

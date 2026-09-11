@@ -19,6 +19,7 @@ import { SettingsContextProxy } from '@core/plugin/context/settings';
 import { UiContextProxy } from '@core/plugin/context/ui';
 import { UsersContextProxy } from '@core/plugin/context/users';
 import { PeopleContextProxy } from '@core/plugin/context/people';
+import { AttentionContextProxy } from '@core/plugin/context/attention';
 import { EntityRecordsContextProxy } from '@core/plugin/context/entity-records';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import { MigrationsContextProxy } from '@core/plugin/context/migrations';
@@ -227,6 +228,7 @@ export class PluginContextFactory {
         users: UsersContextProxy.createUsersProxy(plugin, manager),
         people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb),
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
+        attention: AttentionContextProxy.createAttentionProxy(plugin),
         meta: MetaContextProxy.createMetaProxy(manager),
         // Schema migrations run on the framework's DDL connection, never the request role.
         migrations: MigrationsContextProxy.createMigrationsProxy(plugin, manager),

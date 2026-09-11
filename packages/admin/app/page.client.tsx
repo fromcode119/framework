@@ -12,6 +12,10 @@ import { DashboardPageHeader } from '@/app/dashboard-page-header';
 import { DashboardStatsGrid } from '@/app/dashboard-stats-grid';
 import { DashboardQuickActions } from '@/app/dashboard-quick-actions';
 import { DashboardActivityChart } from '@/app/dashboard-activity-chart';
+import { DashboardSystemPanel } from '@/app/dashboard-system-panel.client';
+import { DashboardNeedsYou } from '@/app/dashboard-needs-you.client';
+import { DashboardSitesPanel } from '@/app/dashboard-sites-panel.client';
+import { DashboardRecentEdits } from '@/app/dashboard-recent-edits.client';
 import { DashboardActivityBreakdown } from '@/app/dashboard-activity-breakdown';
 import { DashboardUpdateAlert } from '@/app/dashboard-update-alert';
 import { DashboardCollectionsGrid } from '@/app/dashboard-collections-grid';
@@ -159,6 +163,12 @@ export class AdminPage extends AdminComponent {
           )}
 
           {/* Stats Grid */}
+          {/* What needs the operator comes before anything that merely counts. Both render nothing
+              when there is nothing to say. */}
+          <DashboardNeedsYou />
+
+          <DashboardSitesPanel />
+
           <DashboardStatsGrid userCount={userCount} loadingStats={loadingStats} activePluginsCount={activePluginsCount} />
 
           {/* Quick Actions — each card is a role-protected resource; only show the ones this user is
@@ -185,6 +195,9 @@ export class AdminPage extends AdminComponent {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <Slot name="admin.dashboard.top" />
+
+              {/* What you were working on, before what there is a lot of. */}
+              <DashboardRecentEdits />
 
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1">
@@ -232,6 +245,9 @@ export class AdminPage extends AdminComponent {
             {/* Right Sidebar - Dynamic Content */}
             <div className="space-y-6">
               <DashboardActivityChart activity={activity} days={14} />
+
+              {/* What the machine is doing, measured — see HostResourceService. */}
+              <DashboardSystemPanel />
 
               <DashboardActivityBreakdown activity={activity} />
 

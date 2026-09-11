@@ -150,6 +150,10 @@ export class NavItemView extends Reactor {
           <Link
             href={isGroupHeader ? '#' : href}
             onClick={this.handleClick}
+            // Collapsed, the icon is the ONLY thing on screen: an 8px label truncated to "Dashboar.."
+            // named nothing, so the name lives in the tooltip and in the accessible name instead.
+            title={isMini ? displayLabel : undefined}
+            aria-label={isMini ? displayLabel : undefined}
             className={`flex items-center transition-colors duration-150 ${
               isHighlighted
                 ? 'bg-indigo-600 text-white'
@@ -158,7 +162,7 @@ export class NavItemView extends Reactor {
                 : isChildActive
                   ? 'text-indigo-600 dark:text-indigo-400'
                   : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
-            } ${isMini ? 'flex-col justify-center w-14 h-14 rounded-lg gap-1' : 'flex-1 justify-between px-2.5 py-1.5 rounded-lg'}`}
+            } ${isMini ? 'justify-center w-10 h-10 rounded-lg' : 'flex-1 justify-between px-2.5 py-1.5 rounded-lg'}`}
           >
             <div className={`flex items-center justify-center ${isMini ? 'w-full' : 'gap-2.5'}`}>
               <span className={`${isHighlighted ? 'text-white' : isPreviewingSecondary ? 'text-indigo-500 dark:text-indigo-300' : isChildActive ? 'text-indigo-500' : 'text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors'} flex items-center justify-center shrink-0`}>
@@ -178,12 +182,6 @@ export class NavItemView extends Reactor {
                 </div>
               )}
             </div>
-
-            {isMini && (
-              <span className={`text-[8px] font-semibold tracking-tight text-center leading-none px-1 ${isHighlighted ? 'text-white' : isChildActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-700'}`}>
-                {displayLabel.length > 9 ? displayLabel.substring(0, 8) + '..' : displayLabel}
-              </span>
-            )}
 
             {hasChildren && !isMini && (
               <FrameworkIcons.Down

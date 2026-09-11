@@ -3,7 +3,6 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
-import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -42,27 +41,10 @@ export class ClientLayoutHeader extends AdminComponent {
     }
   }
 
-  private get userMenuItems() {
-    const { user, logout } = this.auth;
-    return [
-      {
-        label: 'Profile Settings',
-        icon: <FrameworkIcons.User size={16} />,
-        onClick: () => user?.id && this.router.push(AdminConstants.ROUTES.USERS.DETAIL(user.id)),
-      },
-      ...(user?.roles?.includes('admin')
-        ? [{ label: 'System Settings', icon: <FrameworkIcons.Settings size={16} />, onClick: () => this.router.push(AdminConstants.ROUTES.SETTINGS.ROOT) }]
-        : []),
-      { label: 'Help Center', icon: <FrameworkIcons.Help size={16} />, onClick: () => window.open('https://docs.fromcode.com', '_blank') },
-      { label: 'Logout Session', icon: <FrameworkIcons.Logout size={16} />, onClick: logout, variant: 'danger' as const },
-    ];
-  }
-
   render(): ReactElement {
     const onMenuClick = this.onMenuClick;
     const apiStatus = this.apiStatus;
     const isMaintenance = this.isMaintenance;
-    const { user } = this.auth;
     const theme = this.theme;
     const toggleTheme = this.runtime.toggleTheme;
 
@@ -112,36 +94,6 @@ export class ClientLayoutHeader extends AdminComponent {
           <button onClick={toggleTheme} className="text-slate-500 transition-colors hover:text-indigo-500">
             {theme === ThemeMode.DARK ? <FrameworkIcons.Sun size={18} /> : <FrameworkIcons.Moon size={18} />}
           </button>
-          <Dropdown
-            items={this.userMenuItems}
-            header={
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-semibold tracking-wide text-indigo-600 dark:text-indigo-400">Connected Account</span>
-                <div className="mt-1 flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 text-xs font-bold text-white shadow-lg">
-                    {user?.email?.charAt(0).toUpperCase() || 'A'}
-                  </div>
-                  <div className="flex flex-col overflow-hidden">
-                    <span className="truncate text-[13px] font-bold tracking-tight text-slate-900 dark:text-white">{user?.email || 'Guest Account'}</span>
-                    <span className="text-[9px] font-semibold tracking-wide text-slate-400">{user?.roles?.[0] || 'Unassigned Role'}</span>
-                  </div>
-                </div>
-              </div>
-            }
-            trigger={
-              <div className="flex max-w-[200px] items-center gap-3 transition-opacity hover:opacity-80">
-                <div className="hidden flex-col items-end overflow-hidden sm:flex">
-                  <span className="w-full truncate text-right text-[11px] font-bold text-slate-900 dark:text-slate-200">
-                    {user?.email?.split('@')[0] || 'Unknown'}
-                  </span>
-                  <span className="text-[9px] font-medium tracking-tight text-slate-500">{user?.roles?.[0] || 'Guest'}</span>
-                </div>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 text-xs font-bold text-white shadow-lg shadow-indigo-600/20 transition-transform group-hover:scale-105">
-                  {user?.email?.charAt(0).toUpperCase() || 'A'}
-                </div>
-              </div>
-            }
-          />
         </div>
       </header>
     );

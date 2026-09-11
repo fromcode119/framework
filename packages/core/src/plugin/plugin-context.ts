@@ -126,6 +126,16 @@ export class PluginContext {
   declare readonly entityRecords: IPluginContextEntityRecords;
 
   /**
+   * "Needs you" registry. Register a provider returning what THIS plugin considers unfinished work
+   * for the dashboard's attention list — orders nobody fulfilled, submissions nobody answered.
+   * Called on dashboard load, so it must be one cheap query; slow providers are dropped.
+   */
+  declare readonly attention: {
+    registerProvider(input: { key: string; label: string; resolve: () => Promise<unknown[]> | unknown[] }): void;
+    unregister(key: string): void;
+  };
+
+  /**
    * Read-only access to the system meta store.
    * Use instead of querying SystemTable.META directly.
    */

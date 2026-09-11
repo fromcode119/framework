@@ -136,6 +136,11 @@ export class AdminConstants {
     STATS: {
       COLLECTIONS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_STATS),
       SECURITY: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_SECURITY),
+      HOST: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_HOST),
+      SCHEDULE: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_SCHEDULE),
+      ATTENTION: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_ATTENTION),
+      SITES: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_SITES),
+      RECENT_EDITS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_RECENT_EDITS),
     },
     EMAIL_TELEMETRY_TEST: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_TELEMETRY_EMAIL_TEST),
     FRONTEND: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.FRONTEND),
@@ -222,6 +227,8 @@ export class AdminConstants {
    */
   static readonly FRAMEWORK_RESOURCES = {
   GITHUB: 'https://github.com/fromcode119',
+  /** The product's own documentation site, beside the repository it documents. */
+  DOCS: 'https://docs.fromcode.com',
   OPENAPI: AdminConstants.ENDPOINTS.SYSTEM.OPENAPI,
 } as const;
 
