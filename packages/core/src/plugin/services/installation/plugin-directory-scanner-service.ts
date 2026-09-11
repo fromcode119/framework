@@ -262,6 +262,16 @@ export class PluginDirectoryScannerService {
                    error: err.message
                 });
               }
+            } else {
+              /**
+               * A manifest with nothing behind it. This used to fall through in silence, and that
+               * silence shipped: a bundled extension whose build output had been dropped from the
+               * commit left a manifest and a package.json in the image, loaded nothing, and reported
+               * nothing — the screen was simply absent from the admin with no error anywhere.
+               */
+              const errorMsg = `Entry file not found: ${path.relative(pluginPath, indexPath)}`;
+              this.logger.warn(`Plugin "${manifest.slug}" at ${pluginPath} was not loaded — ${errorMsg}`);
+              errored.push({ manifest, path: pluginPath, error: errorMsg });
             }
           } catch (err: any) {
             this.logger.warn(`Failed to stage plugin from ${dir}: ${err.message}`);

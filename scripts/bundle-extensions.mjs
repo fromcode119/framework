@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, readdirSync, statSync, unlinkSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,6 +23,62 @@ class BundledExtensions {
 
   static get monorepoRoot() {
     return resolve(BundledExtensions.frameworkRoot, '..', '..');
+  }
+
+  /**
+   * A plugin's own `.gitignore` ignores its build output — that is correct in the plugin repository,
+   * where `index.js` and `ui/` are artifacts. Carried into `bundled-plugins/` it ignores the very
+   * files this directory exists to ship: the first bundle committed three files (both manifests and
+   * a `.gitignore`), the image carried three files, and the extension silently did not load.
+   *
+   * Dotfiles are excluded from the integrity checksum, so removing this one cannot invalidate it.
+   */
+  static stripIgnoreFiles(directory) {
+    for (const entry of readdirSync(directory)) {
+      const path = join(directory, entry);
+      if (statSync(path).isDirectory()) {
+        BundledExtensions.stripIgnoreFiles(path);
+        continue;
+      }
+      if (entry === '.gitignore') unlinkSync(path);
+    }
+  }
+
+  /**
+   * The two ways this bundle can be empty on a server while looking fine here: the build output was
+   * never produced, or git refuses to track it. Both were invisible until a container had already
+   * booted without the extension, so both are now failures of the bundling command itself.
+   */
+  static assertShippable(slug, destination) {
+    if (!existsSync(join(destination, 'index.js'))) {
+      throw new Error(`[bundle-extensions] ${slug}: no index.js in the packed output — the plugin was not built`);
+    }
+
+    const ignored = BundledExtensions.listIgnored(BundledExtensions.listFiles(destination));
+    if (ignored) {
+      throw new Error(`[bundle-extensions] ${slug}: git would not commit these files:\n${ignored}`);
+    }
+  }
+
+  /** `check-ignore` exits 1 when nothing matches — the healthy case, not a failure. */
+  static listIgnored(files) {
+    try {
+      return execFileSync('git', ['check-ignore', '--stdin'], {
+        cwd: BundledExtensions.frameworkRoot,
+        input: files.join('\n'),
+        encoding: 'utf8',
+      }).trim();
+    } catch (error) {
+      if (error.status === 1) return '';
+      throw error;
+    }
+  }
+
+  static listFiles(directory) {
+    return readdirSync(directory).flatMap((entry) => {
+      const path = join(directory, entry);
+      return statSync(path).isDirectory() ? BundledExtensions.listFiles(path) : [path];
+    });
   }
 
   static run() {
@@ -53,6 +109,8 @@ class BundledExtensions {
       rmSync(destination, { recursive: true, force: true });
       mkdirSync(destination, { recursive: true });
       execFileSync('tar', ['-xzf', join(archiveDir, archive), '-C', destination], { stdio: 'inherit' });
+      BundledExtensions.stripIgnoreFiles(destination);
+      BundledExtensions.assertShippable(slug, destination);
       console.log(`[bundle-extensions] ${slug} -> bundled-plugins/${slug} (${archive})`);
     }
   }
