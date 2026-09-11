@@ -34,6 +34,9 @@ export class SystemSettingsController {
   SystemConstants.META_KEY.PLATFORM_NAME,
   SystemConstants.META_KEY.PLATFORM_DOMAIN,
   SystemConstants.META_KEY.TELEMETRY_ENABLED,
+  // Settings → General → Search Engines. Every save from that page carries this key, so leaving it
+  // out does not merely lose the toggle — the whole PUT 400s and NOTHING on the page saves.
+  SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING,
   // Settings → Infrastructure → System Logs. Without this the field saves "successfully" from the
   // admin's point of view and the PUT 400s — the silent-loss class named a few lines below.
   SystemConstants.META_KEY.LOG_RETENTION_DAYS,
