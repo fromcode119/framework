@@ -3,22 +3,22 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactElement } from 'react';
 import { Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
+import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { DashboardDataService } from '@/app/services/dashboard-data-service';
 import { PlatformBrandingService } from '@/lib/platform-branding-service';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { DashboardPageHeader } from '@/app/dashboard-page-header';
-import { DashboardStatsGrid } from '@/app/dashboard-stats-grid';
-import { DashboardQuickActions } from '@/app/dashboard-quick-actions';
 import { DashboardActivityChart } from '@/app/dashboard-activity-chart';
 import { DashboardSystemPanel } from '@/app/dashboard-system-panel.client';
 import { DashboardNeedsYou } from '@/app/dashboard-needs-you.client';
 import { DashboardSitesPanel } from '@/app/dashboard-sites-panel.client';
 import { DashboardRecentEdits } from '@/app/dashboard-recent-edits.client';
+import { DashboardGettingStarted } from '@/app/dashboard-getting-started.client';
+import { DashboardMissingConfig } from '@/app/dashboard-missing-config.client';
 import { DashboardActivityBreakdown } from '@/app/dashboard-activity-breakdown';
 import { DashboardUpdateAlert } from '@/app/dashboard-update-alert';
-import { DashboardCollectionsGrid } from '@/app/dashboard-collections-grid';
 import { DashboardActivityFeed } from '@/app/dashboard-activity-feed';
 import { DashboardSupportCard } from '@/app/dashboard-support-card';
 import { DashboardFooter } from '@/app/dashboard-footer';
@@ -31,11 +31,12 @@ export class AdminPage extends AdminComponent {
 
   @state stats: any[] = [];
   @state activity: any[] = [];
+  /** What this installation has and is missing — decides which face the dashboard shows. */
+  @state installation: Record<string, any> | null = null;
   @state activePluginsCount = 0;
   @state loadingActivity = true;
   @state loadingStats = true;
   @state updateAvailable: any = null;
-  @state showAllCollections = false;
   /** Real plugin-registry counts behind the header status line; null until loaded or on failure. */
   @state health: IPluginHealthCounts | null = null;
 
@@ -106,6 +107,12 @@ export class AdminPage extends AdminComponent {
   }
 
   private async fetchActivity(): Promise<void> {
+    try {
+      const installation = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.STATS.INSTALLATION);
+      if (this.mounted && installation) this.installation = installation;
+    } catch {
+      // Unreadable: fall through to the working board rather than claiming the install is empty.
+    }
     const activity = await DashboardDataService.fetchActivity();
     if (this.mounted && activity) this.activity = activity;
     if (this.mounted) this.loadingActivity = false;
@@ -138,14 +145,12 @@ export class AdminPage extends AdminComponent {
     }
     const { user } = this.auth;
     const { slots, settings } = this.runtime.plugins;
-    const { stats, activity, activePluginsCount, loadingActivity, loadingStats, updateAvailable, showAllCollections } = this;
+    const { activity, loadingActivity, updateAvailable, installation } = this;
 
     const platformName = PlatformBrandingService.resolvePlatformName(settings as Record<string, unknown> | null | undefined);
 
     const hasMainContent = slots['admin.dashboard.main'] && slots['admin.dashboard.main'].length > 0;
 
-    const userStats = stats.find(s => s.slug === 'users');
-    const userCount = userStats ? String(userStats.count) : '0';
 
     return (
       <div className="w-full pb-24 animate-in fade-in duration-500">
@@ -165,31 +170,19 @@ export class AdminPage extends AdminComponent {
           {/* Stats Grid */}
           {/* What needs the operator comes before anything that merely counts. Both render nothing
               when there is nothing to say. */}
-          <DashboardNeedsYou />
+          {/* Two faces, one dashboard. An installation with no theme and no plugins has nothing to
+              report on, so it gets the steps that change that; everything else gets the working
+              board. Both read the same checklist. */}
+          {installation?.isFresh ? (
+            <DashboardGettingStarted steps={installation.steps || []} />
+          ) : (
+            <>
+              <DashboardNeedsYou />
+              <DashboardSitesPanel />
+            </>
+          )}
 
-          <DashboardSitesPanel />
-
-          <DashboardStatsGrid userCount={userCount} loadingStats={loadingStats} activePluginsCount={activePluginsCount} />
-
-          {/* Quick Actions — each card is a role-protected resource; only show the ones this user is
-              actually permitted to use (admins hold '*', scoped staff hold their plugin permissions). */}
-          {(() => {
-            const quickActions = [
-              { label: 'Create User', href: '/users/new', icon: 'Users', permission: 'users:manage' },
-              { label: 'Media Library', href: '/media', icon: 'Image', permission: 'media:manage' },
-              { label: 'Plugins', href: '/plugins', icon: 'Package', permission: 'plugins:manage' },
-              { label: 'Themes', href: '/themes', icon: 'Layout', permission: 'themes:manage' },
-              { label: 'Settings', href: AdminConstants.ROUTES.SETTINGS.ROOT, icon: 'Settings', permission: 'settings:manage' },
-              { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY, icon: 'Activity', permission: 'system:view' },
-            ].filter((a) => this.userHasPermission(user, a.permission));
-            if (!quickActions.length) return null;
-            return (
-              <DashboardQuickActions
-                actions={quickActions.map(({ label, href, icon }) => ({ label, href, icon }))}
-                onNavigate={(href) => this.router.push(href)}
-              />
-            );
-          })()}
+          {installation?.missing ? <DashboardMissingConfig items={installation.missing} /> : null}
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -198,29 +191,6 @@ export class AdminPage extends AdminComponent {
 
               {/* What you were working on, before what there is a lot of. */}
               <DashboardRecentEdits />
-
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="h-4 w-1 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
-                  <h3 className="text-[11px] font-bold tracking-tight text-slate-900/40 dark:text-slate-400 uppercase">Content Collections</h3>
-                  <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800"></div>
-                </div>
-                <Button
-                  variant={ButtonVariant.GHOST}
-                  size={FieldSize.SM}
-                  onClick={() => { this.showAllCollections = !showAllCollections; }}
-                  className="text-[10px] whitespace-nowrap font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase"
-                >
-                  {showAllCollections ? 'Show Less' : 'View All'}
-                </Button>
-              </div>
-
-              {/* Main Resources Grid */}
-              <DashboardCollectionsGrid
-                stats={stats}
-                showAllCollections={showAllCollections}
-                onNavigate={(path) => this.router.push(path)}
-              />
 
               <div className="flex items-center gap-3">
                 <div className="h-4 w-1 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>

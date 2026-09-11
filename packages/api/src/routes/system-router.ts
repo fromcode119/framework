@@ -132,6 +132,8 @@ export class SystemRouter extends BaseRouter {
     // your own recent work would be a permission to use the dashboard.
     this.get(RouteConstants.SEGMENTS.ADMIN_STATS_RECENT_EDITS, this.auth.guard(),
       this.controller.getRecentEdits);
+    this.get(RouteConstants.SEGMENTS.ADMIN_STATS_INSTALLATION, this.auth.requirePermission('system:view'),
+      this.controller.getInstallation);
     
     // Integration management
     this.get(RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS, this.auth.requirePermission('integrations:view'), 

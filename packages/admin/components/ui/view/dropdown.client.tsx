@@ -197,7 +197,12 @@ export class Dropdown extends Reactor {
 
                 return (
                   <Fragment key={item.label}>
-                    {isLast && idx !== 0 && (
+                    {item.section ? (
+                      <div className="mt-1.5 mb-1 px-3 pt-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400 border-t border-slate-100 dark:border-slate-800">
+                        {item.section}
+                      </div>
+                    ) : null}
+                    {isLast && idx !== 0 && !item.section && (
                       <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
                     )}
                     <button
@@ -217,7 +222,15 @@ export class Dropdown extends Reactor {
                           {item.icon}
                         </span>
                       )}
-                      <span className="truncate text-left flex-1">{item.label}</span>
+                      <span className="min-w-0 flex-1 text-left">
+                        <span className="block truncate">{item.label}</span>
+                        {item.detail ? (
+                          <span className="block truncate text-[11px] font-normal text-slate-400">{item.detail}</span>
+                        ) : null}
+                      </span>
+                      {item.selected ? (
+                        <span className="ml-2 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />
+                      ) : null}
                     </button>
                   </Fragment>
                 );

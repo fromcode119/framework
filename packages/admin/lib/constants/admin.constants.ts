@@ -141,6 +141,7 @@ export class AdminConstants {
       ATTENTION: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_ATTENTION),
       SITES: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_SITES),
       RECENT_EDITS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_RECENT_EDITS),
+      INSTALLATION: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_INSTALLATION),
     },
     EMAIL_TELEMETRY_TEST: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_TELEMETRY_EMAIL_TEST),
     FRONTEND: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.FRONTEND),

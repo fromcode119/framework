@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
-import { AttentionResolutionService, CoreServices, HostResourceService, RecentEditsService, SystemConstants } from '@fromcode119/core';
+import { AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SystemConstants } from '@fromcode119/core';
 
 export class SystemAdminController {
 
@@ -178,6 +178,28 @@ export class SystemAdminController {
       });
       const userId = String((req as any)?.user?.id ?? '');
       res.json({ edits: await service.list(userId, SystemAdminController.RECENT_EDITS_LIMIT) });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * What this installation has and has not got yet — the dashboard's fresh-install face reads it to
+   * decide whether to show onboarding or the working board, and renders the same list either way.
+   */
+  async getInstallation(req: Request, res: Response) {
+    try {
+      const service = new InstallationChecklistService({
+        countThemes: () => (this.runtime.themeManager.getThemes() || []).length,
+        countSites: () => this.runtime.db.count(SystemConstants.TABLE.TENANTS),
+        countPlugins: () => (this.runtime.manager.getPlugins() || []).length,
+        countUsers: () => this.runtime.db.count(SystemConstants.TABLE.USERS),
+        readMeta: async (key: string) => {
+          const row = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });
+          return String(row?.value ?? '').trim();
+        },
+      });
+      res.json(await service.read());
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

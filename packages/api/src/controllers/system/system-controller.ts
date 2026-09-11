@@ -222,6 +222,10 @@ export class SystemController extends BaseController {
     return this.adminController.getRecentEdits(req, res);
   }
 
+  async getInstallation(req: Request, res: Response) {
+    return this.adminController.getInstallation(req, res);
+  }
+
   async getSecurityStats(req: Request, res: Response) {
     return this.adminController.getSecurityStats(req, res);
   }

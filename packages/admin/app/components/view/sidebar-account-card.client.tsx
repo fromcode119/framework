@@ -1,7 +1,8 @@
 import type { ReactElement } from 'react';
-import { prop } from '@fromcode119/react-class-components';
+import { prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { AdminApi } from '@/lib/api';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
@@ -18,6 +19,46 @@ import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.int
  */
 export class SidebarAccountCard extends AdminComponent {
   @prop declare isMini?: boolean;
+
+  /** The sites this account may enter. Empty on a single-tenant deployment, which hides the group. */
+  @state private sites: Array<Record<string, any>> = [];
+  @state private currentSite = '';
+
+  private mounted = false;
+
+  async componentDidMount(): Promise<void> {
+    this.mounted = true;
+    const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE).catch(() => null);
+    if (!this.mounted || !response || response.multiTenant !== true) return;
+    this.sites = Array.isArray(response.tenants) ? response.tenants : [];
+    this.currentSite = String(response.current ?? '');
+  }
+
+  componentWillUnmount(): void {
+    this.mounted = false;
+  }
+
+  /**
+   * Switching reloads the whole page, deliberately: the previous site's data must not linger in
+   * memory behind a new tenant's chrome. Same call the header switcher makes.
+   */
+  private async enter(tenantId: string): Promise<void> {
+    if (!tenantId || tenantId === this.currentSite) return;
+    const ok = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_SELECT, { tenantId })
+      .then(() => true)
+      .catch(() => false);
+    if (ok) window.location.reload();
+  }
+
+  private get siteItems(): IDropdownItem[] {
+    return this.sites.map((site, index) => ({
+      label: String(site.name || site.slug || site.id),
+      detail: String(site.primaryHost || site.host || ''),
+      section: index === 0 ? 'Switch site' : undefined,
+      selected: String(site.id) === this.currentSite,
+      onClick: () => { void this.enter(String(site.id)); },
+    }));
+  }
 
   private get initial(): string {
     return this.auth.user?.email?.charAt(0).toUpperCase() || '?';
@@ -47,6 +88,7 @@ export class SidebarAccountCard extends AdminComponent {
         icon: <FrameworkIcons.Help size={16} />,
         onClick: () => window.open(AdminConstants.FRAMEWORK_RESOURCES.DOCS, '_blank', 'noopener'),
       },
+      ...this.siteItems,
       {
         label: 'Sign out',
         icon: <FrameworkIcons.Logout size={16} />,
@@ -87,10 +129,23 @@ export class SidebarAccountCard extends AdminComponent {
     );
   }
 
+  /** The same identity the trigger shows, repeated at the top of the menu so the menu stands alone. */
+  private get menuHeader(): ReactElement {
+    return (
+      <div className="flex items-center gap-2.5">
+        {this.avatar}
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-[12.5px] font-semibold text-slate-900 dark:text-slate-100">{this.displayName}</span>
+          <span className="truncate text-[11px] text-slate-500">{this.auth.user?.email}</span>
+        </div>
+      </div>
+    );
+  }
+
   render(): ReactElement {
     return (
       <div className={`border-t border-slate-200 dark:border-slate-800 ${this.isMini ? 'px-2 py-2' : 'px-3 py-3'}`}>
-        <Dropdown align={HorizontalAlign.LEFT} items={this.items} trigger={this.trigger} />
+        <Dropdown align={HorizontalAlign.LEFT} items={this.items} trigger={this.trigger} header={this.menuHeader} />
       </div>
     );
   }
