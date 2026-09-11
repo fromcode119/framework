@@ -13,6 +13,13 @@ export class SetupPage extends AdminComponent {
   private static readonly ICON_SIZE = 42;
   private mounted = false;
 
+  /** Name, version and channel, skipping whatever this build did not supply. */
+  private get buildLine(): string {
+    return [AppEnv.APP_VERSION ? `v${AppEnv.APP_VERSION}` : '', AppEnv.APP_NAME, AppEnv.APP_CHANNEL]
+      .filter((part) => part !== '')
+      .join(' ');
+  }
+
   @state isLoading = false;
   @state isChecking = true;
   @state email = '';
@@ -198,7 +205,7 @@ export class SetupPage extends AdminComponent {
           <div className="text-center mt-5 flex items-center justify-center gap-4 opacity-40 text-slate-500">
              <div className="h-[2px] w-8 bg-slate-200 dark:bg-slate-800 rounded-full" />
              <span className="text-[10px] font-semibold tracking-wide">
-               v{AppEnv.APP_VERSION} {AppEnv.APP_NAME} {AppEnv.APP_CHANNEL}
+               {this.buildLine}
              </span>
              <div className="h-[2px] w-8 bg-slate-200 dark:bg-slate-800 rounded-full" />
           </div>
