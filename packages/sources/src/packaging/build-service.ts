@@ -283,10 +283,13 @@ export class BuildService {
         last_build_status: 'success',
         last_error: '',
         version: pkg.version,
-        // Only when an archive was actually written. A build stages a package directory; the
-        // archive is made on demand for a download, and claiming a filename for a file that does
-        // not exist is what made an installer fetch a 404 from the remote marketplace.
-        ...(pkg.fileName ? { file_name: pkg.fileName, artifactSha256: pkg.artifactSha256 } : {}),
+        // A build stages a package directory and writes no archive, so any archive NAMED here
+        // belongs to an earlier build of this source. Cleared rather than left: the filename carries
+        // the version, a rebuild of the same version reuses it, and a stale row would hand a
+        // download a package built before the commit that was just built. Core is the exception —
+        // it produces an archive and nothing else.
+        file_name: pkg.fileName ?? null,
+        artifactSha256: pkg.artifactSha256 ?? null,
         changelog: changelog.join('\n'),
       });
 

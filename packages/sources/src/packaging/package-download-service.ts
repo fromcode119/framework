@@ -33,12 +33,25 @@ export class PackageDownloadService {
 
     const fileName = `${slug}-${artifact.version}.zip`;
     const filePath = path.join(this.packageBuilder.outputDirFor(artifact.type), fileName);
-    if (!fs.existsSync(filePath)) {
+    if (PackageDownloadService.isStale(filePath, artifact.stagedDir)) {
       await new PackageArchiver().createZip(artifact.stagedDir, filePath);
       // Recorded so a consumer of the catalogue has a hash that did not travel inside the package.
       await this.recordArchive(slug, fileName, await ArtifactDigestService.digestFile(filePath));
     }
 
     return { filePath, fileName };
+  }
+
+  /**
+   * Whether the archive needs (re)making.
+   *
+   * The name carries the version, so a rebuild of the SAME version lands on the same filename — and
+   * an archive that merely exists is not necessarily an archive of THIS build. Staging on the
+   * 11th handed out a package built an hour and a half earlier for exactly this reason. Compared by
+   * modification time against the staged package, so a rebuild always wins.
+   */
+  private static isStale(archivePath: string, stagedDir: string): boolean {
+    if (!fs.existsSync(archivePath)) return true;
+    return fs.statSync(archivePath).mtimeMs < fs.statSync(stagedDir).mtimeMs;
   }
 }
