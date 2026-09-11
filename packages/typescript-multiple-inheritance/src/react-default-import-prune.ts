@@ -6,7 +6,7 @@ import ts from 'typescript';
  * Remove `import React from 'react'` where the `React` binding is never referenced.
  *
  * Only safe because every bundle that consumes these files now builds with `--jsx=automatic`
- * (`PLUGIN_UI_BUILD_OPTS`, `build-appearances.sh`, the theme Vite React plugin), which compiles JSX to
+ * (`PLUGIN_UI_BUILD_OPTS`, `AppearanceCompiler`, the theme Vite React plugin), which compiles JSX to
  * `react/jsx-runtime` calls instead of `React.createElement`. Under the older `--jsx=transform` the
  * import was load-bearing and removing it threw "React is not defined" at RENDER — invisible to tsc,
  * esbuild and every gate. If a build is ever moved back to `transform`, this tool must not be run.

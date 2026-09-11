@@ -8,7 +8,7 @@ import path from 'node:path';
  */
 export class AppearanceAssetService {
   /**
-   * An appearance ships its own brand (see `build-appearances.sh`, which copies `assets/` into
+   * An appearance ships its own brand (see `AppearanceCompiler`, which copies `assets/` into
    * `dist/`), so this route serves images too — not just the bundle and its stylesheet. Everything
    * unrecognised stays JavaScript, which is what the bundle and its chunks are. Getting this wrong is
    * not cosmetic: a PNG served as `application/javascript` renders today only because browsers sniff

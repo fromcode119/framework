@@ -20,6 +20,7 @@ import { PackCleaner } from '@extension-builder/pack/pack-cleaner';
 import { ThemeSsrDependencyCollector } from '@extension-builder/pack/theme-ssr-dependency-collector';
 import { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
 import { ArchiveWriter } from '@extension-builder/pack/archive-writer';
+import { AppearanceCompiler } from '@extension-builder/compile/appearance-compiler';
 
 /**
  * The only class that knows the ORDER of a build. Every other class does one step and reports.
@@ -142,7 +143,7 @@ export class ExtensionBuildPipeline {
     }
 
     if (kind === ExtensionKind.APPEARANCE) {
-      return [async () => BuildStepResult.skipped('appearance-compiler', 'appearance building is not ported yet — use build-plugins.sh')];
+      return [() => AppearanceCompiler.compile(workspace.sourceDir)];
     }
 
     return [

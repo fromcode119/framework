@@ -464,7 +464,7 @@ The kernel manages all shared infrastructure so plugins share resources without 
 
 | Capability | Description |
 |------------|-------------|
-| **Installed appearances** | `appearance/<slug>/appearance.json` + a runtime bundle. Built with `./build-appearances.sh <slug>`, loaded at runtime, switchable per site in Settings → Appearance (or locked by a workspace's kind). |
+| **Installed appearances** | `appearance/<slug>/appearance.json` + a runtime bundle. Built with `fromcode build appearance <slug>`, loaded at runtime, switchable per site in Settings → Appearance (or locked by a workspace's kind). |
 | **Surface allowlist** | An appearance declares which plugins and admin paths its users may reach; everything else shows a containment screen — a product console, not a re-skinned admin. |
 | **Workspace presets** | An appearance that is a product's console declares the plugins that product runs (`workspace` block). The "New site" form offers one preset per such appearance; the framework itself names no product. |
 

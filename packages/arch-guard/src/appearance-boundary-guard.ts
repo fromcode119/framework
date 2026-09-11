@@ -31,7 +31,7 @@ export class AppearanceBoundaryGuard {
     const ENGINE_DIR = path.resolve(ADMIN_DIR, 'lib/appearance');
     const MODE = (process.env.APPEARANCE_BOUNDARY_MODE || 'error').toLowerCase();
 
-    // `components/_appearances/` is the build-staged copy produced by build-appearances.sh (gitignored,
+    // `components/_appearances/` is the build-staged copy produced by the appearance build (gitignored,
     // not hand-authored) — it's how external appearances enter the build, so it is NOT a boundary violation.
     const IGNORE = [/\/node_modules\//, /\/dist\//, /\/\.next\//, /\/components\/_appearances\//];
 

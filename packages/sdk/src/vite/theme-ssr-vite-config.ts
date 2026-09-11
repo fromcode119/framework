@@ -18,7 +18,7 @@ import { ThemeEntryGenerator } from './theme-entry-generator';
  *
  * WHY: the storefront currently server-renders 25 characters — just the `<title>`. Every pixel, including
  * the LCP image, is painted after hydration, which pins LCP at ~11 s and caps Lighthouse at ~66 (see
- * `STOREFRONT-PERF-BASELINE.md`). Rendering the theme on the server is the only way past that; this
+ * `docs/STOREFRONT-PERF-BASELINE.md`). Rendering the theme on the server is the only way past that; this
  * config produces the artifact the server needs.
  *
  * Differences from the client config, each load-bearing:

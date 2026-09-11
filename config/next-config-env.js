@@ -121,7 +121,7 @@ class NextConfigEnv {
   // Next (turbopack + webpack, `packages/frontend/next.config.js`) and the standalone runtime bundle
   // (`packages/frontend/build/frontend-runtime-vite-config.ts`) both read THESE lists and adapt them
   // to their own option shape. A second, hand-copied list is what killed the previous islands attempt
-  // (STOREFRONT-PERF-BASELINE.md, "islands step 2 — backed out"): the day the copies drift, the
+  // (docs/STOREFRONT-PERF-BASELINE.md, "islands step 2 — backed out"): the day the copies drift, the
   // storefront ships server code or fails to build. Add an entry here, never in a bundler config.
   // ---------------------------------------------------------------------------------------------
 

@@ -18,7 +18,7 @@ import { PluginPackageLayout } from '@fromcode119/core';
  * WHY: server-rendering the THEME got the storefront its chrome, but the page BODY is a block flow owned
  * by the content plugin's browser bundle — so the LCP element (the first block's image) still does not exist
  * until hydration, and LCP still scores 0. Giving a plugin's storefront UI a Node-importable bundle is
- * what lets the server render that flow. See `STOREFRONT-PERF-BASELINE.md`.
+ * what lets the server render that flow. See `docs/STOREFRONT-PERF-BASELINE.md`.
  *
  * Differences from the client config, each load-bearing:
  *  - `ssr: true` + `target: node20` — output runs in Node, not a browser.

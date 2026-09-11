@@ -116,6 +116,18 @@ export class BuildToolchain {
     };
   }
 
+  /**
+   * LESS, for an appearance's own stylesheet.
+   *
+   * Resolved the same way as esbuild — from THIS package outwards — because it lives in the
+   * framework's `node_modules`, a sibling of the extension rather than an ancestor of it. The shell
+   * script this replaced hardcoded that sibling path and fell back to `npx --yes less`, which
+   * downloads a compiler mid-build on a machine that may be offline.
+   */
+  loadLess(): any {
+    return BuildToolchain.runtimeRequire('less');
+  }
+
   loadEsbuild(): typeof import('esbuild') {
     return BuildToolchain.runtimeRequire(this.getEsbuildModuleName()) as typeof import('esbuild');
   }
