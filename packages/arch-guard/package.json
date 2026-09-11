@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/arch-guard",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "description": "Architecture boundary enforcement — who may import what, which layer may call which, and the shape a plugin/theme/appearance must keep. INTERNAL, unlike react-class-components/next-build-codegen/typescript-multiple-inheritance: its guards encode this project's own rules (plugin, theme, appearance, Rule Zero), so there is nothing here another repo could use. Node-only build tooling, never imported by application code.",
   "license": "MIT",

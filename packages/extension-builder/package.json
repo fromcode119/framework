@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/extension-builder",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Builds plugins, themes and appearances. Node-only build tooling, never imported by application code — and never by a plugin, which reaches it through context.extensions.",
   "private": true,
   "license": "MIT",
