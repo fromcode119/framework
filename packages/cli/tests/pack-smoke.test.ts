@@ -6,6 +6,10 @@ import path from 'node:path';
 /**
  * `fromcode pack` must actually run.
  *
+ * It is also the only end-to-end exercise of the PACK half of the pipeline — `PackCleaner`, the
+ * theme SSR dependency collector and the stamp over the cleaned directory. The server build path
+ * stages that same directory and installs from it, so a break here breaks installing too.
+ *
  * It broke completely once and nothing caught it: four separate ESM faults — a barrel the CJS lexer
  * silently truncated, a default import of a CJS module, `__filename` in five files, a bare
  * `require('tar')` — each invisible to typechecks and to every existing suite, because no test had
@@ -19,7 +23,10 @@ describe('fromcode pack produces an archive', () => {
   const frameworkRoot = path.resolve(__dirname, '../../..');
   const monorepoRoot = path.resolve(frameworkRoot, '../..');
   const bin = path.join(frameworkRoot, 'packages/cli/dist/bin.js');
-  const slug = 'build-server';
+  // A real plugin that still exists. It used to be `build-server`, which was DELETED when Sources
+  // became part of the framework — so this test, whose whole job is to prove the command runs, spent
+  // weeks failing on a missing directory instead of on anything it was written to catch.
+  const slug = 'search';
 
   it('packs a plugin and writes a tarball', () => {
     if (!fs.existsSync(bin)) {
