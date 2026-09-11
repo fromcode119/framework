@@ -25,6 +25,7 @@ import { DashboardFooter } from '@/app/dashboard-footer';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import { state } from '@fromcode119/react-class-components';
 import type { IPluginHealthCounts } from '@/app/plugins/health/interfaces/plugin-health-counts.interface';
+import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
 
 export class AdminPage extends AdminComponent {
   private mounted = false;
@@ -192,11 +193,7 @@ export class AdminPage extends AdminComponent {
               {/* What you were working on, before what there is a lot of. */}
               <DashboardRecentEdits />
 
-              <div className="flex items-center gap-3">
-                <div className="h-4 w-1 rounded-full bg-indigo-600 dark:bg-indigo-500/40"></div>
-                <h3 className="text-[11px] font-bold tracking-tight text-slate-900/40 dark:text-slate-400 uppercase">Recent Activity</h3>
-                <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800"></div>
-              </div>
+              <DashboardSectionHeading label="Recent activity" />
 
               {/* Activity Section. "View All" used to open /plugins, which is not where these log
                   entries live — the Activity Log is the surface that lists them all. */}

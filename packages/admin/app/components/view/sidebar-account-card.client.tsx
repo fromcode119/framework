@@ -61,14 +61,34 @@ export class SidebarAccountCard extends AdminComponent {
     return String(this.auth.user?.roles?.[0] ?? '');
   }
 
+  /**
+   * The sites group, and the way into it.
+   *
+   * A single-site deployment has no site RECORDS at all — multi-tenancy switches on only once
+   * `_system_tenants` has rows — so there is nothing to list and nothing to switch between. Inventing
+   * one row for "the site you are on" would be a name no admin field produced. What is true in both
+   * modes is that the Sites screen is where sites are added, so that row is always here; the
+   * switchable list appears above it exactly when there is something to switch to.
+   */
   private get siteItems(): IDropdownItem[] {
-    return this.sites.map((site, index) => ({
+    const switcher = this.sites.map((site, index) => ({
       label: String(site.name || site.slug || site.id),
       detail: String(site.primaryHost || site.host || ''),
-      section: index === 0 ? 'Switch site' : undefined,
+      section: index === 0 ? 'Sites' : undefined,
       selected: String(site.id) === this.currentSite,
       onClick: () => { void this.enter(String(site.id)); },
     }));
+
+    return [
+      ...switcher,
+      {
+        label: this.sites.length > 0 ? 'Manage sites' : 'Add a site',
+        detail: this.sites.length > 0 ? undefined : 'Serving one site — add a second to switch between them',
+        section: switcher.length === 0 ? 'Sites' : undefined,
+        icon: <FrameworkIcons.Globe size={16} />,
+        onClick: () => this.router.push(AdminConstants.ROUTES.SITES.ROOT),
+      },
+    ];
   }
 
   private get items(): IDropdownItem[] {

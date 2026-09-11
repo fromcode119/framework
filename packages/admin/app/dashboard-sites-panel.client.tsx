@@ -4,6 +4,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
+import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
 
 /**
  * One row per site: host, the theme actually serving it, and whether anything broke there today.
@@ -50,12 +51,7 @@ export class DashboardSitesPanel extends AdminComponent {
 
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <div className="h-4 w-1 rounded-full bg-indigo-600 dark:bg-indigo-500/40" />
-          <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Sites</span>
-          <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800" />
-          <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{this.sites.length}</span>
-        </div>
+        <DashboardSectionHeading label="Sites" count={this.sites.length} />
         <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
           {this.sites.map((site) => (
             <div key={String(site.id)} className="flex items-center gap-2.5 px-3 py-2">

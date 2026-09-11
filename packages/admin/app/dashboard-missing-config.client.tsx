@@ -3,6 +3,7 @@ import { prop, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminPathUtils } from '@/lib/admin-path';
+import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
 
 /**
  * The things that are not configured and will silently not work — email being the sharp one, since
@@ -19,6 +20,21 @@ export class DashboardMissingConfig extends AdminComponent {
     if (path) this.router.push(AdminPathUtils.toAdminPath(path));
   }
 
+  /**
+   * Rules BETWEEN cells only, and the grid is one column below `sm` and two above it — so the second
+   * item starts a new row on a phone and shares the first row on a desktop, and its top rule has to
+   * disappear at exactly that breakpoint. Written out as literal classes because Tailwind only emits
+   * what it can read in the source.
+   */
+  private static cellClass(index: number): string {
+    return [
+      'flex items-center gap-3 px-3 py-2 border-slate-200/70 dark:border-slate-800/70',
+      index > 0 ? 'border-t' : '',
+      index === 1 ? 'sm:border-t-0' : '',
+      index % 2 === 0 ? 'sm:border-r' : '',
+    ].filter((part) => part !== '').join(' ');
+  }
+
   private get outstanding(): number {
     return this.items.filter((item) => !item.done).length;
   }
@@ -28,25 +44,36 @@ export class DashboardMissingConfig extends AdminComponent {
 
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <div className="h-4 w-1 rounded-full bg-indigo-600 dark:bg-indigo-500/40" />
-          <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Configuration</span>
-          <div className="h-px flex-1 bg-slate-200/60 dark:bg-slate-800" />
-          <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
-            {this.outstanding} outstanding
-          </span>
-        </div>
-        <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
-          {this.items.map((item) => (
-            <div key={String(item.key)} className="flex items-center gap-2.5 px-3 py-2">
-              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${item.done ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              <span className="shrink-0 text-[12px] text-slate-700 dark:text-slate-200">{String(item.title)}</span>
-              <span className="min-w-0 flex-1 truncate text-right text-[11px] text-slate-500">{String(item.detail)}</span>
-              {!item.done && item.actionLabel ? (
+        <DashboardSectionHeading
+          label="Configuration"
+          count={this.outstanding > 0 ? `${this.outstanding} to do` : 'all set'}
+        />
+        {/*
+          * Two columns from `sm` up. As one full-width list each row stretched the whole dashboard,
+          * which put "Configure" some 1300px from the words "Email delivery" — far enough apart that
+          * the pair stopped reading as one row and the button stopped looking like it belonged to
+          * anything. Paired columns keep a label and its action within a glance of each other.
+          */}
+        <div className={`${AdminClass.SURFACE} grid overflow-hidden sm:grid-cols-2`}>
+          {this.items.map((item, index) => (
+            <div key={String(item.key)} className={DashboardMissingConfig.cellClass(index)}>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-[12.5px] font-medium leading-tight text-slate-800 dark:text-slate-100">
+                  {String(item.title)}
+                </span>
+                <span
+                  className={`truncate text-[11px] leading-tight ${
+                    item.done ? 'text-slate-500 dark:text-slate-400' : 'text-amber-600 dark:text-amber-500'
+                  }`}
+                >
+                  {String(item.detail)}
+                </span>
+              </span>
+              {item.actionLabel ? (
                 <button
                   type="button"
                   onClick={() => this.go(String(item.actionPath))}
-                  className="shrink-0 text-[11px] font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                  className="shrink-0 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                 >
                   {String(item.actionLabel)}
                 </button>
