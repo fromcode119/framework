@@ -37,6 +37,10 @@ export class SystemSettingsController {
   // Settings → General → Search Engines. Every save from that page carries this key, so leaving it
   // out does not merely lose the toggle — the whole PUT 400s and NOTHING on the page saves.
   SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING,
+  // Both were sent by that same page and named nowhere here, so EVERY save from Settings → General
+  // answered 400 — including the Sources workspace root, which could be typed and never took.
+  SystemConstants.META_KEY.FRAMEWORK_REPOSITORY,
+  SystemConstants.META_KEY.SOURCES_WORKSPACE_ROOT,
   // Settings → Infrastructure → System Logs. Without this the field saves "successfully" from the
   // admin's point of view and the PUT 400s — the silent-loss class named a few lines below.
   SystemConstants.META_KEY.LOG_RETENTION_DAYS,

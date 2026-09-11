@@ -248,7 +248,17 @@ export class SystemConstants {
   NOTIFICATION_EMAIL: 'notification_email',
   NOTIFICATION_EMAIL_CC: 'notification_email_cc',
   /** Whether search engines may index the ADMIN console. Off unless an operator turns it on. */
-  ADMIN_SEARCH_INDEXING: 'admin_search_indexing'
+  ADMIN_SEARCH_INDEXING: 'admin_search_indexing',
+  /**
+   * `owner/repo` checked for framework releases, and where Sources writes what it builds.
+   *
+   * Declared here because the General settings page WRITES them. They existed only as
+   * `PlatformSettingsService.KEY` — the read side — so the admin sent keys the write side had never
+   * heard of and the whole PUT 400'd. Every save from that page failed, which is also why the
+   * workspace root could be typed in and never took effect.
+   */
+  FRAMEWORK_REPOSITORY: 'framework_repository',
+  SOURCES_WORKSPACE_ROOT: 'sources_workspace_root'
   } as const;
 
   static readonly API_PATH = {
