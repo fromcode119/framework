@@ -1,6 +1,7 @@
 {
   "name": "@fromcode119/next",
   "version": "0.2.3",
+  "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -20,9 +21,5 @@
   },
   "devDependencies": {
     "typescript": "^5.3.3"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://npm.pkg.github.com"
   }
 }
