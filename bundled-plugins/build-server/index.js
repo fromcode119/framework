@@ -25732,6 +25732,47 @@ var BuildsCollection = class {
         }
       },
       {
+        /**
+         * Run a build whenever this source's branch moves.
+         *
+         * Off by default and per source, not global: building is cheap and reversible, but it runs
+         * code from a repository, and an operator adding a source they are only watching should not
+         * have it compiled behind their back.
+         */
+        name: "autoBuild",
+        type: "boolean",
+        defaultValue: false,
+        label: "Build automatically",
+        admin: { description: "Build this source whenever new commits appear on its branch." }
+      },
+      {
+        /**
+         * Install what was built, without asking.
+         *
+         * A SEPARATE switch from autoBuild because it is a different risk: building produces a file,
+         * installing REPLACES running code on a live site. Requires autoBuild — installing something
+         * nobody built is not a thing — and stays off unless an operator turns it on deliberately.
+         */
+        name: "autoUpdate",
+        type: "boolean",
+        defaultValue: false,
+        label: "Install automatically",
+        admin: { description: "Install each successful build immediately. Replaces running code without confirmation." }
+      },
+      {
+        /**
+         * What changed in the version this source last built.
+         *
+         * The commit subjects between the previously built SHA and the new one — written by whoever
+         * made the change, never generated. Without it "update available: 0.1.5" asks an operator to
+         * agree to a number, which is the same complaint the framework's own update screen had.
+         */
+        name: "changelog",
+        type: "textarea",
+        label: "What changed",
+        admin: { readOnly: true, description: "Commit subjects since the previously built revision." }
+      },
+      {
         name: "artifactSha256",
         type: "text",
         label: "Artifact SHA-256",
@@ -26043,6 +26084,43 @@ var GitSyncService = class _GitSyncService {
       this.logger.error(`Branch listing failed for ${safeUrl}: ${String(err)}`);
       throw new Error(_GitSyncService.explain(err));
     }
+  }
+  /**
+   * The commit subjects between two revisions, newest first.
+   *
+   * This is the changelog. Not a generated summary of a diff — the subjects people wrote when they
+   * made the changes, which is the only description of a release that anybody actually authored.
+   * An empty list is honest: a build with no previous revision has nothing to compare against, and
+   * the screen says so rather than inventing "initial release".
+   */
+  async changesSince(targetDir, previousSha) {
+    if (!previousSha || !this.isGitRepo(targetDir)) return [];
+    try {
+      await _GitSyncService.execFileAsync(
+        "git",
+        ["fetch", `--deepen=${_GitSyncService.CHANGELOG_DEPTH}`, "--quiet"],
+        { cwd: targetDir, timeout: 6e4 }
+      ).catch(() => void 0);
+      const { stdout } = await _GitSyncService.execFileAsync(
+        "git",
+        // `--no-merges`: a merge commit's subject is "Merge pull request #12", which describes the
+        // act of merging rather than what changed.
+        ["log", "--no-merges", "--pretty=format:%s", `${previousSha}..HEAD`],
+        { cwd: targetDir, timeout: 3e4 }
+      );
+      return String(stdout || "").split("\n").map((line) => line.trim()).filter((line) => line !== "").slice(0, _GitSyncService.MAX_CHANGELOG_LINES);
+    } catch (err) {
+      this.logger.debug(`No changelog for ${targetDir}: ${String(err)}`);
+      return [];
+    }
+  }
+  static {
+    /** Enough to see what a release was; a year of commits in a dialog is not a changelog. */
+    this.MAX_CHANGELOG_LINES = 50;
+  }
+  static {
+    /** How far back to deepen a shallow clone so a range against the previous build can resolve. */
+    this.CHANGELOG_DEPTH = 200;
   }
   static {
     /** What git says when a repository needs credentials it was not given. */
@@ -26571,15 +26649,57 @@ var BuildService = class {
     }
     return results;
   }
+  /**
+   * Build the sources whose branch moved AND whose operator asked for it.
+   *
+   * Opted in per source, never globally: this compiles code from a repository, and somebody tracking
+   * a source to watch it must not have it built behind their back. A source with the switch off is
+   * still CHECKED — the new version shows up in the catalogue as available — it simply is not built
+   * without being asked.
+   */
   async checkAndBuildUpdates() {
     const updates = await this.checkForUpdates();
     const changed = updates.filter((u) => u.hasUpdate);
     if (changed.length === 0) return [];
+    const sources = await this.buildSourceService.listSanitizedSources();
+    const wanted = new Map(sources.map((row) => [String(row.slug), row]));
     const results = [];
     for (const update of changed) {
-      results.push(await this.buildBySlug(update.slug));
+      const source = wanted.get(String(update.slug));
+      if (!source?.autoBuild) continue;
+      const result = await this.buildBySlug(update.slug);
+      results.push(result);
+      if (result.success && source.autoUpdate) await this.installBuilt(update.slug, source);
     }
     return results;
+  }
+  /**
+   * Install what was just built, for a source whose operator asked for that too.
+   *
+   * Separate from building and separately opted into, because it is a different act: building
+   * produces a file, installing REPLACES code that is currently serving a site. A failure here is
+   * recorded against the source and never rethrown — the build itself succeeded, and losing that
+   * fact would make the next check rebuild the same commit forever.
+   */
+  async installBuilt(slug, source) {
+    try {
+      const artifact = await this.resolvePackageArtifact(slug, source.type);
+      if (!artifact?.downloadPath) {
+        this.logger.warn(`Auto-update skipped for ${slug}: the build produced no archive path.`);
+        return;
+      }
+      await this.context.extensions.installArchive({
+        filePath: artifact.downloadPath,
+        type: source.type,
+        enable: true,
+        activate: true
+      });
+      this.logger.info(`Auto-updated ${slug} to ${source.version || "the new build"}.`);
+    } catch (err) {
+      const message = BuildErrorRedactionService.redact(err?.message || String(err));
+      this.logger.error(`Auto-update failed for ${slug}: ${message}`);
+      await this.buildSourceService.recordAutoUpdateFailure(slug, message).catch(() => void 0);
+    }
   }
   async getStatus() {
     const results = await this.buildSourceService.listSanitizedSources();
@@ -26648,6 +26768,7 @@ var BuildService = class {
     try {
       const sourceDir = await this.gitSync.sync(gitUrl, branch, this.resolveSourceDirectory(type), slug, gitToken);
       const commitSha = await this.gitSync.getLatestCommitSha(sourceDir) || "unknown";
+      const changelog = await this.gitSync.changesSince(sourceDir, String(entry.lastCommitSha || ""));
       const pkg = await this.packageBuilder.build(sourceDir, type);
       this.emitPackageBuilt({
         type,
@@ -26664,9 +26785,10 @@ var BuildService = class {
         last_error: "",
         version: pkg.version,
         file_name: pkg.fileName,
-        artifactSha256: pkg.artifactSha256
+        artifactSha256: pkg.artifactSha256,
+        changelog: changelog.join("\n")
       });
-      return { slug, type, success: true, version: pkg.version, fileName: pkg.fileName };
+      return { slug, type, success: true, version: pkg.version, fileName: pkg.fileName, changelog };
     } catch (err) {
       const errorMsg = BuildErrorRedactionService.redact(err?.message || String(err));
       await this.upsertBuildRecord(slug, type, gitUrl, branch, {
@@ -27012,6 +27134,10 @@ var BuildSourceService = class {
       throw new Error(`A build source with slug "${slug}" already exists.`);
     }
     const data = {
+      // Installing cannot be on without building: there would be nothing to install. Asserted here
+      // rather than trusted from the caller, because the API is reachable from the hook bus too.
+      autoBuild: Boolean(input.autoBuild),
+      autoUpdate: Boolean(input.autoBuild) && Boolean(input.autoUpdate),
       branch: this.normalizeBranch(input.branch),
       git_secret: this.encryptSecret(input.gitSecret),
       git_url: this.normalizeGitUrl(input.gitUrl),
@@ -27060,6 +27186,17 @@ var BuildSourceService = class {
   async getSanitizedSourceBySlug(slug) {
     const source = await this.db.findOne(this.buildsSlug, { slug });
     return source ? this.sanitizeSource(source) : null;
+  }
+  /**
+   * Records why an automatic install did not happen.
+   *
+   * On the source, not in a log nobody reads: an operator who switched auto-update on and came back
+   * to an unchanged site needs the reason where they made the choice.
+   */
+  async recordAutoUpdateFailure(slug, message) {
+    await this.db.update(this.buildsSlug, { slug: this.normalizeSlug(slug) }, {
+      lastError: String(message || "").substring(0, 2e3)
+    });
   }
   async listRawSources() {
     const sources = await this.db.find(this.buildsSlug, { orderBy: { slug: "ASC" } });
@@ -27110,6 +27247,14 @@ var BuildSourceService = class {
     }
     if (typeof input.gitSecret === "string" && input.gitSecret.trim()) {
       updates.gitSecret = this.encryptSecret(input.gitSecret);
+    }
+    if (typeof input.autoBuild === "boolean") {
+      updates.autoBuild = input.autoBuild;
+      if (!input.autoBuild) updates.autoUpdate = false;
+    }
+    if (typeof input.autoUpdate === "boolean") {
+      const building = typeof input.autoBuild === "boolean" ? input.autoBuild : Boolean(existing.autoBuild);
+      updates.autoUpdate = building && input.autoUpdate;
     }
     await this.db.update(this.buildsSlug, { id: existing.id }, updates);
     const refreshed = await this.db.findOne(this.buildsSlug, { slug });
@@ -27173,7 +27318,13 @@ var BuildSourceService = class {
     const version = typeof source.version === "string" ? source.version : void 0;
     return {
       id,
+      // Named explicitly, like every field above: this object is built by hand, so anything not
+      // listed is silently dropped on the way to the admin — which is how a new column comes to
+      // exist in the database and never appear on the screen that writes it.
+      autoBuild: Boolean(source.autoBuild ?? source.auto_build),
+      autoUpdate: Boolean(source.autoUpdate ?? source.auto_update),
       branch: (source.branch || "").trim() || GitBranchPolicy.DEFAULT_BRANCH,
+      changelog: typeof source.changelog === "string" ? source.changelog : "",
       fileName,
       gitSecret: this.readStoredSecret(source),
       gitUrl: gitUrl.trim(),
@@ -27338,6 +27489,23 @@ var BuildUpdatesCheckHook = class _BuildUpdatesCheckHook {
   }
 };
 
+// plugins/build-server/src/services/catalog-contribution-service.ts
+var CatalogContributionService = class {
+  static entriesFrom(sources) {
+    return sources.filter((source) => source.lastBuildStatus === "success" && String(source.version || "").trim() !== "").map((source) => ({
+      slug: source.slug,
+      name: source.slug,
+      version: String(source.version),
+      kind: String(source.type),
+      // Resolved by the installer against this plugin's own download route; the file lives here.
+      downloadUrl: String(source.fileName || ""),
+      // What changed, in the words of whoever wrote the commits. Empty when there is no previous
+      // revision to compare against — never a stand-in sentence.
+      notes: String(source.changelog || "")
+    }));
+  }
+};
+
 // plugins/build-server/src/bootstrap/build-server-bootstrap.ts
 var BuildServerBootstrap = class {
   constructor(context) {
@@ -27390,6 +27558,14 @@ var BuildServerBootstrap = class {
     BuildTriggerHook.register(this.context, buildService);
     BuildUpdatesCheckHook.register(this.context, buildService);
     await this.encryptStoredSecrets(buildSourceService);
+    try {
+      this.context.catalog.contribute(async () => CatalogContributionService.entriesFrom(
+        await buildSourceService.listSanitizedSources()
+      ));
+      logger.info("Offering built versions to the admin catalogue.");
+    } catch (error) {
+      logger.warn(`Could not offer built versions to the catalogue: ${this.getErrorMessage(error)}`);
+    }
     this.startPolling(buildService);
     logger.info("Build Server plugin initialized.");
   }
