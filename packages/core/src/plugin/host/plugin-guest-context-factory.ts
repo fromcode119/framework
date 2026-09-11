@@ -112,11 +112,38 @@ export class PluginGuestContextFactory {
     return { info: line('info'), warn: line('warn'), error: line('error'), debug: line('debug') };
   }
 
+  /**
+   * `context.plugins.namespace(ns)` for a guest, answering truthfully about who is there.
+   *
+   * A remote reference is a lazy chain: every property access returns another chain, so it is ALWAYS
+   * truthy. In-process, `namespace('org.fromcode').broadcasts` is `undefined` when broadcasts is not
+   * running, and plugins guard on exactly that — `if (!broadcasts) return;`. Inside a guest the same
+   * guard passed for a plugin that did not exist, the call went out, and the HOST reported
+   * `cannot read "registerProvider" of null` while the plugin had already logged success and set its
+   * "registered" flag. The failure landed in the api log; the plugin believed the opposite.
+   *
+   * The guest already knows the peer set (`state.hasPeer`) — it is sent at boot for `has()` and
+   * `get()`. This makes `namespace()` use it, so one guard works the same in both worlds.
+   */
+  private static peerNamespace(namespace: string, state: { hasPeer(ns: string, slug: string): boolean }, remote: PluginGuestRemote): Record<string, unknown> {
+    return new Proxy({}, {
+      get(_target, prop) {
+        if (typeof prop === 'symbol') return undefined;
+        const slug = String(prop);
+        if (!state.hasPeer(namespace, slug)) return undefined;
+        return remote.ref('context', [{ name: 'plugins' }, { name: 'namespace', args: [namespace] }, { name: slug }]);
+      },
+      has(_target, prop) {
+        return typeof prop === 'string' && state.hasPeer(namespace, String(prop));
+      },
+    }) as Record<string, unknown>;
+  }
+
   private plugins(register: (p: IPluginGuestRegistration) => Promise<unknown>): Record<string, unknown> {
     const remote = this.remote;
     const state = this.state;
     return {
-      namespace: (namespace: string) => remote.ref('context', [{ name: 'plugins' }, { name: 'namespace', args: [namespace] }]),
+      namespace: (namespace: string) => PluginGuestContextFactory.peerNamespace(namespace, state, remote),
       has: (namespace: string, slug: string) => state.hasPeer(namespace, slug),
       get: (namespace: string, slug: string) => (state.hasPeer(namespace, slug) ? remote.ref('context', [{ name: 'plugins' }, { name: 'get', args: [namespace, slug] }]) : null),
       require: (key: string) => this.dependency(key, true),

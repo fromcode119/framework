@@ -310,11 +310,20 @@ export class PluginHost {
     target.call(this.context.logger, String(payload?.msg ?? ''), ...(Array.isArray(payload?.meta) ? payload.meta : []));
   }
 
+  /**
+   * Who the guest may call, and it must agree with who the HOST will resolve.
+   *
+   * ACTIVE only. This listed every installed plugin with a public API, including disabled ones, so a
+   * guest was told `broadcasts` was there, its `if (!broadcasts) return` guard passed, the call went
+   * out, and the host answered `cannot read "registerProvider" of null` — by which point the plugin
+   * had logged success. Two views of the same question, and the one the plugin could see was wrong.
+   */
   private peers(): Record<string, string[]> {
     const out: Record<string, string[]> = {};
     for (const plugin of this.manager.plugins.values()) {
       const api = plugin.publicAPI;
       if (!api) continue;
+      if (PluginState.resolve(plugin.state) !== PluginState.ACTIVE) continue;
       // Own property names, not `Object.keys`: a class of static methods enumerates as nothing.
       out[`${String(plugin.manifest.namespace || '').trim()}:${plugin.manifest.slug}`] = PluginGuest.functionNames(api);
     }

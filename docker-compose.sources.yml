@@ -86,6 +86,10 @@ services:
       # built before it existed: without this mount the api dies at boot with MODULE_NOT_FOUND for
       # @fromcode119/extension-builder. `dist` is what the api imports, so mount the whole package.
       - ./packages/extension-builder:/app/packages/extension-builder
+      # Sources is a workspace too, and it is what the api mounts at /api/v1/sources. Same reason as
+      # the builder above: absent from any image built before it existed, so without this mount the
+      # api dies at boot with MODULE_NOT_FOUND. The whole package, because `dist` is what it imports.
+      - ./packages/sources:/app/packages/sources
       # ...and core's BUILT output, because a plugin guest is a separate `node` process that loads core
       # from `dist`. Without this the host runs your edited `src` while every guest runs the image's
       # baked `dist` — two different versions of the same protocol in one request. That is not

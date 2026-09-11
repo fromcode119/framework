@@ -15,6 +15,7 @@
     { "path": "../cache" },
     { "path": "../email" },
     { "path": "../mcp-server" },
-    { "path": "../extension-builder" }
+    { "path": "../extension-builder" },
+    { "path": "../sources" }
   ]
 }
