@@ -13,10 +13,9 @@ import { CliUtils } from '@cli/utils';
  * cannot drift apart the way the three previous builders did.
  *
  * The builder is imported LAZILY, inside each action. A top-level import pulled its whole graph
- * into every CLI invocation — including `system sync-versions`, which builds nothing — and that
- * graph reaches React components whose decorators tsx cannot compile, so an unrelated command died
- * with "Cannot read properties of undefined (reading 'value')". A command must not cost anything
- * until it runs.
+ * into every CLI invocation — including commands that build nothing — and that graph reaches React
+ * components whose decorators tsx cannot compile, so an unrelated command died with "Cannot read
+ * properties of undefined (reading 'value')". A command must not cost anything until it runs.
  */
 export class ExtensionBuildCommandService {
   static register(program: Command): void {
