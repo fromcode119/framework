@@ -92,7 +92,12 @@ export class InstallationChecklistService {
           detail: emailProvider ? `Configured · ${emailProvider}` : 'Nothing can be sent — no order mail, no password resets',
           done: Boolean(emailProvider),
           actionLabel: 'Configure',
-          actionPath: AppPathConstants.ADMIN.SETTINGS.INTEGRATIONS,
+          /**
+           * The type MUST be named. The integrations screen falls back to the alphabetically first
+           * integration when the query says nothing, so a link to the bare path opened `?type=ai` —
+           * the AI provider — from a row about email.
+           */
+          actionPath: AppPathConstants.ADMIN.SETTINGS.INTEGRATIONS_BY_TYPE('email'),
         },
         {
           key: 'locales',
@@ -108,7 +113,8 @@ export class InstallationChecklistService {
           detail: timezone || 'Not set — dates render in the server’s own zone',
           done: Boolean(timezone),
           actionLabel: 'Change',
-          actionPath: AppPathConstants.ADMIN.SETTINGS.LOCALIZATION,
+          // Timezone is a General setting; Localization owns languages and has no timezone field.
+          actionPath: AppPathConstants.ADMIN.SETTINGS.GENERAL,
         },
         {
           key: 'team',

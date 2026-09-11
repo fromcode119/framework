@@ -237,7 +237,12 @@ export class BackupCreateCard extends AdminComponent {
                     : 'border-slate-100 bg-slate-50/60 hover:border-slate-200 hover:bg-white'}`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`flex h-11 w-11 items-center justify-center ${AdminClass.SURFACE} ${isSelected ? 'bg-indigo-600 text-white' : theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                  {/*
+                    * No `AdminClass.SURFACE` here. It is a PANEL class and it is authoritative — its
+                    * white background beat `bg-indigo-600`, so a selected scope rendered a white
+                    * icon on a white chip and the four cards looked like they had no icons at all.
+                    */}
+                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${isSelected ? 'bg-indigo-600 text-white' : theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                     {icon}
                   </div>
                   <div className="flex-1">

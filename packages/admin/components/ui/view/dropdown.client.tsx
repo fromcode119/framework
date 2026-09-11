@@ -14,6 +14,12 @@ export class Dropdown extends Reactor {
   @prop declare items: IDropdownItem[];
   @prop declare align?: HorizontalAlign;
   @prop declare header?: ReactNode;
+  /**
+   * Lets the trigger fill its container. The wrapper is `inline-block` by default — right for a
+   * button in a toolbar, wrong for the sidebar account card, which shrank to the width of the name
+   * inside it and sat visibly narrower than everything around it.
+   */
+  @prop declare block?: boolean;
 
   @ref declare triggerRef: Ref<HTMLDivElement>;
   @ref declare menuRef: Ref<HTMLDivElement>;
@@ -146,7 +152,7 @@ export class Dropdown extends Reactor {
     return (
     <>
       <div
-        className="relative inline-block text-left"
+        className={`relative text-left ${this.block ? 'block w-full' : 'inline-block'}`}
         ref={this.triggerRef}
         onClick={this.toggleOpen}
       >
@@ -197,8 +203,13 @@ export class Dropdown extends Reactor {
 
                 return (
                   <Fragment key={item.label}>
+                    {/*
+                      * A label and the space above it start a group — no rule. The rule read as a
+                      * divider belonging to the row beneath it, which in a menu of actions looks
+                      * like a separator between two unrelated things rather than a heading.
+                      */}
                     {item.section ? (
-                      <div className="mt-1.5 mb-1 px-3 pt-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400 border-t border-slate-100 dark:border-slate-800">
+                      <div className="mt-2 mb-0.5 px-3 text-[11px] font-medium text-slate-400 dark:text-slate-500">
                         {item.section}
                       </div>
                     ) : null}
@@ -228,8 +239,20 @@ export class Dropdown extends Reactor {
                           <span className="block truncate text-[11px] font-normal text-slate-400">{item.detail}</span>
                         ) : null}
                       </span>
-                      {item.selected ? (
-                        <span className="ml-2 h-2 w-2 shrink-0 rounded-full bg-indigo-500" />
+                      {/*
+                        * A radio, not a dot: these rows are one choice out of a set, and the ring
+                        * says so even on the row that is not chosen.
+                        */}
+                      {item.selectable ? (
+                        <span
+                          className={`ml-2 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                            item.selected
+                              ? 'border-indigo-500 bg-indigo-500'
+                              : 'border-slate-300 dark:border-slate-600'
+                          }`}
+                        >
+                          {item.selected ? <span className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
+                        </span>
                       ) : null}
                     </button>
                   </Fragment>

@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { ApplicationUrlUtils } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminApi } from '@/lib/api';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
@@ -62,30 +63,49 @@ export class SidebarAccountCard extends AdminComponent {
   }
 
   /**
-   * The sites group, and the way into it.
+   * The site this deployment serves, whether or not it has a site RECORD.
    *
-   * A single-site deployment has no site RECORDS at all — multi-tenancy switches on only once
-   * `_system_tenants` has rows — so there is nothing to list and nothing to switch between. Inventing
-   * one row for "the site you are on" would be a name no admin field produced. What is true in both
-   * modes is that the Sites screen is where sites are added, so that row is always here; the
-   * switchable list appears above it exactly when there is something to switch to.
+   * Multi-tenancy only switches on once `_system_tenants` has rows, so a single-site deployment has
+   * no record to list — but it is still serving a host, and the storefront URL is a real configured
+   * value rather than an invented one. Showing it answers "which site am I editing" in the one
+   * place a person looks for that, and "Add a site" is the way to a second.
    */
+  private get storefrontHost(): string {
+    const base = ApplicationUrlUtils.inferBrowserBaseUrl('frontend');
+    if (!base) return '';
+    try {
+      return new URL(base).host;
+    } catch {
+      return '';
+    }
+  }
+
   private get siteItems(): IDropdownItem[] {
-    const switcher = this.sites.map((site, index) => ({
+    const switcher = this.sites.map((site) => ({
       label: String(site.name || site.slug || site.id),
       detail: String(site.primaryHost || site.host || ''),
-      section: index === 0 ? 'Sites' : undefined,
+      selectable: true,
       selected: String(site.id) === this.currentSite,
       onClick: () => { void this.enter(String(site.id)); },
     }));
 
+    const single = switcher.length === 0 && this.storefrontHost
+      ? [{
+          label: this.storefrontHost,
+          detail: 'The site this deployment serves',
+          selectable: true,
+          selected: true,
+          onClick: () => { /* Already here — the row states which site you are editing. */ },
+        }]
+      : [];
+
+    const rows = [...single, ...switcher];
     return [
-      ...switcher,
+      ...rows.map((row, index) => ({ ...row, section: index === 0 ? 'Sites' : undefined })),
       {
-        label: this.sites.length > 0 ? 'Manage sites' : 'Add a site',
-        detail: this.sites.length > 0 ? undefined : 'Serving one site — add a second to switch between them',
-        section: switcher.length === 0 ? 'Sites' : undefined,
-        icon: <FrameworkIcons.Globe size={16} />,
+        label: 'Add a site',
+        icon: <FrameworkIcons.Plus size={16} />,
+        section: rows.length === 0 ? 'Sites' : undefined,
         onClick: () => this.router.push(AdminConstants.ROUTES.SITES.ROOT),
       },
     ];
@@ -180,7 +200,7 @@ export class SidebarAccountCard extends AdminComponent {
   render(): ReactElement {
     return (
       <div className={`border-t border-slate-200/80 dark:border-slate-800/80 ${this.isMini ? 'p-2' : 'p-2'}`}>
-        <Dropdown align={HorizontalAlign.LEFT} items={this.items} trigger={this.trigger} header={this.menuHeader} />
+        <Dropdown block align={HorizontalAlign.LEFT} items={this.items} trigger={this.trigger} header={this.menuHeader} />
       </div>
     );
   }

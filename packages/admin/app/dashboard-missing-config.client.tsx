@@ -3,6 +3,7 @@ import { prop, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminPathUtils } from '@/lib/admin-path';
+import { FrameworkIcons } from '@fromcode119/react';
 import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
 
 /**
@@ -56,36 +57,38 @@ export class DashboardMissingConfig extends AdminComponent {
           */}
         <div className={`${AdminClass.SURFACE} grid overflow-hidden sm:grid-cols-2`}>
           {this.items.map((item, index) => (
-            <div key={String(item.key)} className={DashboardMissingConfig.cellClass(index)}>
+            <button
+              key={String(item.key)}
+              type="button"
+              onClick={() => this.go(String(item.actionPath))}
+              className={DashboardMissingConfig.cellClass(index)}
+            >
               {/*
-                * Capped, not stretched. Even at half the dashboard's width a cell put its button
-                * some 500px from its label; the cap keeps the pair together, while the cell itself
-                * stays full width so the column rule lands on the column edge.
+                * The ROW is the control, not a pill sitting inside it. Each row had a bordered
+                * button, and four of them stacked read as a form of small grey boxes rather than as
+                * a list — the action word and a chevron say the same thing without the furniture.
                 */}
-              <div className="flex w-full max-w-lg items-center gap-3">
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-[12.5px] font-medium leading-tight text-slate-800 dark:text-slate-100">
-                  {String(item.title)}
+              <span className="flex w-full max-w-lg items-center gap-3">
+                <span className="flex min-w-0 flex-1 flex-col text-left">
+                  <span className="truncate text-[12.5px] font-medium leading-tight text-slate-800 dark:text-slate-100">
+                    {String(item.title)}
+                  </span>
+                  <span
+                    className={`truncate text-[11px] leading-tight ${
+                      item.done ? 'text-slate-500 dark:text-slate-400' : 'text-amber-600 dark:text-amber-500'
+                    }`}
+                  >
+                    {String(item.detail)}
+                  </span>
                 </span>
-                <span
-                  className={`truncate text-[11px] leading-tight ${
-                    item.done ? 'text-slate-500 dark:text-slate-400' : 'text-amber-600 dark:text-amber-500'
-                  }`}
-                >
-                  {String(item.detail)}
-                </span>
+                {item.actionLabel ? (
+                  <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-slate-400 transition-colors group-hover/row:text-indigo-600 dark:group-hover/row:text-indigo-400">
+                    {String(item.actionLabel)}
+                    <FrameworkIcons.ChevronRight size={13} />
+                  </span>
+                ) : null}
               </span>
-              {item.actionLabel ? (
-                <button
-                  type="button"
-                  onClick={() => this.go(String(item.actionPath))}
-                  className="shrink-0 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-                >
-                  {String(item.actionLabel)}
-                </button>
-              ) : null}
-              </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>

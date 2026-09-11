@@ -9,6 +9,7 @@ import { SettingRow } from '@/app/settings/general/setting-row';
 import { DomainAliasesInput } from '@/app/settings/general/components/view/domain-aliases-input.client';
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { FrameworkReleaseDefaults } from '@fromcode119/core/client';
 
 export class GeneralBrandCard extends PureReactor {
   /**
@@ -68,6 +69,11 @@ export class GeneralBrandCard extends PureReactor {
   @bound
   protected onMarketplaceUrlChange(e: ChangeEvent<HTMLInputElement>): void {
     this.patchSetting('marketplace_url', e.target.value);
+  }
+
+  @bound
+  onFrameworkRepositoryChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    this.patchSetting('framework_repository', e.target.value);
   }
 
   @bound
@@ -165,6 +171,21 @@ export class GeneralBrandCard extends PureReactor {
             disabled={this.locked('marketplace_url')}
             className="w-full md:w-64 font-bold"
             placeholder="https://marketplace.example.com"
+          />
+        </SettingRow>
+
+        <SettingRow
+          theme={theme}
+          icon={FrameworkIcons.Package}
+          title="Framework Repository"
+          description={this.describe('framework_repository', `Checked for new framework releases when no marketplace answers. \`owner/repo\` on GitHub — point it at your own fork if you run one. Blank uses ${FrameworkReleaseDefaults.REPOSITORY}.`)}
+        >
+          <Input
+            value={settings.framework_repository}
+            onChange={this.onFrameworkRepositoryChange}
+            disabled={this.locked('framework_repository')}
+            className="w-full md:w-64 font-bold"
+            placeholder={FrameworkReleaseDefaults.REPOSITORY}
           />
         </SettingRow>
 

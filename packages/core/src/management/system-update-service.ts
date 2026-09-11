@@ -9,6 +9,7 @@ import { ProjectPaths } from '@core/config/paths';
 import { SafeArchive } from '@core/security/safe-archive';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
+import { FrameworkReleaseSource } from '@core/management/framework-release-source';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
@@ -77,25 +78,51 @@ export class SystemUpdateService {
   }
 
   static async checkUpdate() {
+    const currentVersion = this.resolveInstalledVersion();
     try {
       this.client = await this.resolveClient();
       const marketplaceData = await this.client.fetch();
 
-      if (!marketplaceData.core) return null;
-
-      const currentVersion = this.resolveInstalledVersion();
-
-      return {
-        current: currentVersion,
-        latest: marketplaceData.core.version,
-        hasUpdate: semver.gt(marketplaceData.core.version, currentVersion),
-        downloadUrl: marketplaceData.core.downloadUrl,
-        lastUpdated: marketplaceData.core.lastUpdated
-      };
+      if (marketplaceData.core) {
+        return {
+          current: currentVersion,
+          latest: marketplaceData.core.version,
+          hasUpdate: semver.gt(marketplaceData.core.version, currentVersion),
+          downloadUrl: marketplaceData.core.downloadUrl,
+          lastUpdated: marketplaceData.core.lastUpdated
+        };
+      }
     } catch (err: any) {
-      this.logger.error(`Failed to check for updates: ${err.message}`);
-      throw err;
+      // Not fatal on its own: a deployment with no marketplace is the NORMAL case, and the framework
+      // still knows where its own releases are published.
+      this.logger.warn(`Marketplace did not answer, falling back to the framework's releases: ${err.message}`);
     }
+
+    return this.checkFrameworkReleases(currentVersion);
+  }
+
+  /**
+   * The fallback: the framework's own published releases.
+   *
+   * Without it, a deployment that has no marketplace could not tell "no newer version" from "the
+   * check broke" — the screen reported a failed check and an unknown latest version forever, which
+   * is the least useful of the three possible answers.
+   */
+  private static async checkFrameworkReleases(currentVersion: string) {
+    const latest = await FrameworkReleaseSource.latestVersion();
+    if (!latest) {
+      this.logger.warn('No update source could be reached: no marketplace, and no framework repository configured.');
+      return null;
+    }
+
+    return {
+      current: currentVersion,
+      latest,
+      hasUpdate: semver.valid(latest) ? semver.gt(latest, currentVersion) : false,
+      downloadUrl: '',
+      lastUpdated: '',
+      source: await FrameworkReleaseSource.repository(),
+    };
   }
 
   static async applyUpdate() {

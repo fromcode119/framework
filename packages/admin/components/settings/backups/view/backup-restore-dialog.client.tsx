@@ -91,7 +91,7 @@ export class BackupRestoreDialog extends AdminComponent {
                       key={scope.value}
                       type="button"
                       onClick={() => onTargetScopeChange(scope)}
-                      className={`${AdminClass.SURFACE} px-4 py-3 text-sm font-bold tracking-tight transition-all ${state.targetScope === scope ? 'border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`}
+                      className={`rounded-xl border px-4 py-3 text-sm font-bold tracking-tight transition-all ${state.targetScope === scope ? 'border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`}
                     >
                       {scope === RestoreTargetScope.SYSTEM ? 'System Root' : scope === RestoreTargetScope.PLUGIN ? 'Plugin Slug' : 'Theme Slug'}
                     </button>

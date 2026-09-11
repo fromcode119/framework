@@ -75,6 +75,7 @@ export { ApplicationHostUtils } from '@core/utils/application-host-utils';
 // and neither imports anything server-only — see the notes on those classes.
 export { InternalServiceAuth } from '@core/security/internal-service-auth';
 export { ProcessRestartService } from '@core/management/process-restart-service';
+export { FrameworkReleaseDefaults } from '@core/management/framework-release-defaults';
 export { RuntimeLocationUtils } from '@core/utils/runtime-location-utils';
 export { PublicAssetUrlUtils } from '@core/utils/public-asset-url-utils';
 export { ApiVersionUtils } from '@core/api-version';

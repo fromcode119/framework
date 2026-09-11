@@ -13,6 +13,11 @@ export interface IDropdownItem {
   section?: string;
   /** Renders the item as the current choice of its group — a site you are already inside. */
   selected?: boolean;
+  /**
+   * Marks the item as one option among several, so it carries a radio whether or not it is the
+   * chosen one. Without it a lone unselected row would show nothing and read as an action.
+   */
+  selectable?: boolean;
   /** Secondary line under the label, for items whose identity needs more than a name. */
   detail?: string;
 }

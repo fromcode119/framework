@@ -64,5 +64,7 @@ export class PlatformSettingsService {
    */
   public static readonly KEY = {
     MARKETPLACE_URL: 'marketplace_url',
+    /** `owner/repo` the framework checks for its own releases when no marketplace is configured. */
+    FRAMEWORK_REPOSITORY: 'framework_repository',
   } as const;
 }
