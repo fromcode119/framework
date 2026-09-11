@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import Link from 'next/link';
+import { PluginUnavailableReason } from '@/components/plugins/view/plugin-unavailable-reason.client';
 
 export class PluginNotFound extends PureReactor {
   @prop declare pluginSlug: string;
@@ -19,9 +20,12 @@ export class PluginNotFound extends PureReactor {
 
       <h1 className="text-4xl font-bold tracking-tighter text-slate-900 dark:text-white mb-4">Module Not Found</h1>
 
-      <p className="text-slate-500 font-semibold text-center max-w-sm leading-relaxed mb-10 px-6">
-        The <span className="text-rose-500 font-bold px-2 py-0.5 bg-rose-50 dark:bg-rose-500/10 rounded-lg">/{pluginSlug}</span> module is not registered or currently inactive in your cluster.
+      <p className="text-slate-500 font-semibold text-center max-w-sm leading-relaxed mb-4 px-6">
+        Nothing is serving <span className="text-rose-500 font-bold px-2 py-0.5 bg-rose-50 dark:bg-rose-500/10 rounded-lg">/{pluginSlug}</span>.
       </p>
+
+      {/* When the extension exists but is not running, its STATE is the answer — see the component. */}
+      <PluginUnavailableReason pluginSlug={pluginSlug} />
 
       <div className="flex items-center gap-4">
         <Link href="/plugins">
