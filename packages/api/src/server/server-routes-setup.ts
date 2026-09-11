@@ -159,10 +159,15 @@ export class ServerRoutesSetup {
       projectRoot: (this.manager as any).projectRoot,
       installer: this.manager,
       catalog: {
-        contribute: (provider) => CoreServices.getInstance().catalogContributions.register({
+        // `resolveArtifact` is forwarded, not dropped: an offer from Sources is a file this
+        // installation built, and its catalogue row carries only a filename. Without it the
+        // installer resolved that name against the REMOTE marketplace and 404'd on a package that
+        // had never been published there.
+        contribute: (provider, resolveArtifact) => CoreServices.getInstance().catalogContributions.register({
           namespace: 'org.fromcode',
           pluginSlug: 'sources',
           list: provider as never,
+          resolveArtifact,
         }),
       },
       scheduler: this.manager.scheduler,
