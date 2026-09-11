@@ -222,6 +222,8 @@ export class AdminConstants {
    */
   static readonly FRAMEWORK_RESOURCES = {
   GITHUB: 'https://github.com/fromcode119',
+  /** The product's own documentation site, beside the repository it documents. */
+  DOCS: 'https://docs.fromcode.com',
   OPENAPI: AdminConstants.ENDPOINTS.SYSTEM.OPENAPI,
 } as const;
 

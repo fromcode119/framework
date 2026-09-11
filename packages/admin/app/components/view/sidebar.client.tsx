@@ -9,6 +9,7 @@ import { PlatformBrandingService } from '@/lib/platform-branding-service';
 import { SidebarMenuService } from '@/app/services/sidebar-menu-service';
 import { SidebarBrandHeader } from '@/app/sidebar-brand-header';
 import { SidebarNavGroups } from '@/app/sidebar-nav-groups';
+import { SidebarAccountCard } from '@/app/components/view/sidebar-account-card.client';
 import { SidebarMiniToggle } from '@/app/sidebar-mini-toggle';
 import { SidebarMobileSecondaryPanel } from '@/app/sidebar-mobile-secondary-panel';
 
@@ -155,11 +156,11 @@ export class Sidebar extends AdminComponent {
     const showMobileSecondaryPanel = Boolean(this.showInlineSecondary && !isMini && (this.inlineSecondaryItems || []).length > 0);
 
     return (
-      <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-[72px]' : showMobileSecondaryPanel ? 'w-full max-w-full' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 ${showMobileSecondaryPanel ? 'border-r-0' : 'border-r'} flex ${showMobileSecondaryPanel ? 'flex-row lg:flex-col' : 'flex-col'} shadow-2xl lg:shadow-[12px_0_28px_-24px_rgba(15,23,42,0.28)] dark:lg:shadow-[12px_0_28px_-24px_rgba(2,6,23,0.9)] overflow-hidden group/sidebar`} onMouseEnter={this.onPreviewRegionEnter} onMouseLeave={this.onPreviewRegionLeave}>
+      <aside className={`fixed inset-y-0 left-0 z-[200] ${isMini ? 'w-14' : showMobileSecondaryPanel ? 'w-full max-w-full' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 ${showMobileSecondaryPanel ? 'border-r-0' : 'border-r'} flex ${showMobileSecondaryPanel ? 'flex-row lg:flex-col' : 'flex-col'} shadow-2xl lg:shadow-[12px_0_28px_-24px_rgba(15,23,42,0.28)] dark:lg:shadow-[12px_0_28px_-24px_rgba(2,6,23,0.9)] overflow-hidden group/sidebar`} onMouseEnter={this.onPreviewRegionEnter} onMouseLeave={this.onPreviewRegionLeave}>
         <div className={`min-w-0 ${showMobileSecondaryPanel ? 'w-[45%] max-w-[18rem] min-w-[15rem] border-r border-slate-200 dark:border-slate-800' : 'w-full flex-1 min-h-0'} flex flex-col bg-white dark:bg-[#020617]`}>
           <SidebarBrandHeader isMini={isMini} platformName={this.platformName} onClose={onClose} />
 
-          <nav className={`flex-1 min-h-0 ${isMini ? 'px-2' : 'px-4'} py-2 overflow-y-auto overscroll-contain scrollbar-hide space-y-1 pb-32`}>
+          <nav className={`flex-1 min-h-0 ${isMini ? 'px-2' : 'px-4'} py-2 overflow-y-auto overscroll-contain scrollbar-hide space-y-1 pb-4`}>
           <div className="pt-2">
              {!isMini && <Slot name="admin.layout.sidebar.top" />}
           </div>
@@ -189,6 +190,13 @@ export class Sidebar extends AdminComponent {
           </div>
 
           </nav>
+
+          {/* The pinned foot of the sidebar. The collapse toggle used to be `absolute bottom-0` with an
+              opaque background, which silently covered anything else placed down here. */}
+          <div className="mt-auto shrink-0">
+            <SidebarAccountCard isMini={isMini} />
+            <SidebarMiniToggle isMini={isMini} onMiniToggle={this.onMiniToggle} />
+          </div>
         </div>
 
         {showMobileSecondaryPanel && (
@@ -201,8 +209,6 @@ export class Sidebar extends AdminComponent {
           />
         )}
 
-        {/* Mini Toggle Button */}
-        <SidebarMiniToggle isMini={isMini} onMiniToggle={this.onMiniToggle} />
       </aside>
     );
   }
