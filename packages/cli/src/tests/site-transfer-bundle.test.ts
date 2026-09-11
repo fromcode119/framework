@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+// vitest, not `node:test` — the runner collects this suite, and under `node:test` it was invisible
+// to it ("No test suite found"). It had never run in CI under either runner.
+import { test, afterEach } from 'vitest';
 import { Command } from 'commander';
 import { SystemCommands } from '@cli/commands/system';
 import { SiteTransferBundleCommandService } from '@cli/services/site-transfer-bundle-command-service';
@@ -23,18 +25,18 @@ test('site-transfer CLI command exposes expected help and flags', () => {
   assert.match(helpText, /--skip-checksum/);
 });
 
-test('site-transfer CLI command forwards parsed options to the command service', async (context) => {
+const originalExecute = SiteTransferBundleCommandService.prototype.execute;
+afterEach(() => {
+  SiteTransferBundleCommandService.prototype.execute = originalExecute;
+});
+
+test('site-transfer CLI command forwards parsed options to the command service', async () => {
   const program = new Command();
-  const originalExecute = SiteTransferBundleCommandService.prototype.execute;
   let receivedOptions: Record<string, unknown> | null = null;
 
   SiteTransferBundleCommandService.prototype.execute = async function execute(options) {
     receivedOptions = options as Record<string, unknown>;
   };
-
-  context.after(() => {
-    SiteTransferBundleCommandService.prototype.execute = originalExecute;
-  });
 
   SystemCommands.registerSystemCommands(program);
   await program.parseAsync([

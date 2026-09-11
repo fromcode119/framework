@@ -1,0 +1,6 @@
+{
+  "staging": {
+    "host": "root-fromcode",
+    "directory": "/opt/apps/platform/framework/deploy"
+  }
+}

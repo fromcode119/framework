@@ -7,6 +7,7 @@ import { SystemCommands } from '@cli/commands/system';
 import { QualityCommands } from '@cli/commands/quality';
 import { AuthCommands } from '@cli/commands/auth';
 import { ExtensionBuildCommandService } from '@cli/commands/extension-build-command-service';
+import { DeployCommandService } from '@cli/commands/deploy-command-service';
 
 /**
  * The `fromcode` CLI.
@@ -45,6 +46,7 @@ export class FromcodeCli {
     SystemCommands.registerSystemCommands(program);
     QualityCommands.registerQualityCommands(program);
     AuthCommands.registerAuthCommands(program);
+    DeployCommandService.register(program);
 
     program.on('command:*', () => FromcodeCli.rejectUnknown(program));
     return program;

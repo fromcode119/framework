@@ -163,7 +163,10 @@ export default defineConfig({
           include: [
             glob('packages/mcp/tests/**/*.test.ts'),
             glob('packages/mcp-server/tests/**/*.test.ts'),
-            glob('packages/cli/tests/**/*.test.ts'),
+            // `packages/cli/**`, not `packages/cli/tests/**`: the CLI keeps some suites beside the
+            // code they cover (`src/services/tests/`), and the narrower glob collected none of them —
+            // `plugin-preflight-command-service.test.ts` had never run.
+            glob('packages/cli/**/*.test.ts'),
             glob('packages/arch-guard/tests/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],

@@ -21,6 +21,24 @@ docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up 
 Updating is the same two commands with a new `VERSION`. Rolling back is the same two commands with
 the previous one — no rebuild, so it takes seconds either way.
 
+**Prefer `fromcode deploy` over running those by hand.** From a checkout of this repository:
+
+```bash
+fromcode deploy v2.0.0                 # target defaults to "staging"
+fromcode deploy v2.0.0 --target prod
+```
+
+It does the two commands above and the three things doing them by hand does not: it pulls BEFORE
+touching `.env`, so an unpublished version changes nothing; it waits for the api to report **that
+version** — asked inside the container, since a crash-looping image leaves the previous one
+answering 200 — and rolls back automatically when it does not; and on success it removes our
+published images except the live one and the rollback target. Nine releases in one day took a
+staging disk from 16G to 25G before it existed.
+
+Hosts are declared in `deploy/targets.json`, so a deploy does not depend on one developer's shell
+history. The server needs nothing but the compose files: the command drives it over ssh, and
+the host still has no Node and no checkout.
+
 Images are **public**, so the server needs no `docker login` and no registry credentials —
 verified by pulling on a host with no ghcr entry in its Docker config.
 
