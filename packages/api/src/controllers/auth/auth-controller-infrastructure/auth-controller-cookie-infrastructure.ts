@@ -11,7 +11,9 @@ export class AuthControllerCookieInfrastructure extends AuthControllerEmailInfra
     const legacyDomain = process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req);
     this.clearCookieVariants(res, CookieConstants.AUTH_TOKEN, cookieOptions, false, legacyDomain);
     this.clearCookieVariants(res, CookieConstants.CLIENT_AUTH_TOKEN, cookieOptions, false, legacyDomain);
-    this.clearCookieVariants(res, CookieConstants.AUTH_CSRF, cookieOptions, false, legacyDomain);
+    // NOT the CSRF token: it grants nothing by itself and is required while signed OUT, so clearing
+    // it here expired the token CSRFMiddleware had just set on this very response and made the next
+    // POST — a login, or a fresh install's setup — fail with 403.
     this.clearCookieVariants(res, CookieConstants.AUTH_USER, cookieOptions, false, legacyDomain);
     this.clearCookieVariants(res, CookieConstants.ADMIN_EXPORT_AUTH_TOKEN, cookieOptions, false, legacyDomain);
   }

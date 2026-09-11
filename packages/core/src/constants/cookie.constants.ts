@@ -22,10 +22,19 @@ export class CookieConstants {
    */
   static readonly CLIENT_SESSION_MARKER = CookieConstants.cookie('session');
 
+  /**
+   * Credentials, and ONLY credentials.
+   *
+   * `AUTH_CSRF` is deliberately NOT here. It is not a credential — it is one half of a double-submit
+   * pair that grants nothing on its own, and it is needed precisely when nobody is signed in: login,
+   * password reset, and the first-run setup POST. Clearing it alongside the session meant the very
+   * response that minted a token also expired it, and the next POST was answered 403 "Invalid CSRF
+   * token". On a fresh installation that made `auth/setup` fail on the first attempt and succeed on a
+   * later one, depending on which response reached the browser last — see AuthControllerLifecycle.
+   */
   static readonly AUTH_COOKIES_TO_CLEAR = [
     CookieConstants.AUTH_TOKEN,
     CookieConstants.AUTH_USER,
-    CookieConstants.AUTH_CSRF,
     CookieConstants.CLIENT_AUTH_TOKEN,
     CookieConstants.CLIENT_SESSION_MARKER,
     CookieConstants.ADMIN_EXPORT_AUTH_TOKEN,
