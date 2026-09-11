@@ -28,7 +28,7 @@ export class DashboardMissingConfig extends AdminComponent {
    */
   private static cellClass(index: number): string {
     return [
-      'flex items-center gap-3 px-3 py-2 border-slate-200/70 dark:border-slate-800/70',
+      'px-3 py-2 border-slate-200/70 dark:border-slate-800/70',
       index > 0 ? 'border-t' : '',
       index === 1 ? 'sm:border-t-0' : '',
       index % 2 === 0 ? 'sm:border-r' : '',
@@ -57,6 +57,12 @@ export class DashboardMissingConfig extends AdminComponent {
         <div className={`${AdminClass.SURFACE} grid overflow-hidden sm:grid-cols-2`}>
           {this.items.map((item, index) => (
             <div key={String(item.key)} className={DashboardMissingConfig.cellClass(index)}>
+              {/*
+                * Capped, not stretched. Even at half the dashboard's width a cell put its button
+                * some 500px from its label; the cap keeps the pair together, while the cell itself
+                * stays full width so the column rule lands on the column edge.
+                */}
+              <div className="flex w-full max-w-lg items-center gap-3">
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-[12.5px] font-medium leading-tight text-slate-800 dark:text-slate-100">
                   {String(item.title)}
@@ -78,6 +84,7 @@ export class DashboardMissingConfig extends AdminComponent {
                   {String(item.actionLabel)}
                 </button>
               ) : null}
+              </div>
             </div>
           ))}
         </div>
