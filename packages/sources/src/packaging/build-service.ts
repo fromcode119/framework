@@ -12,6 +12,12 @@ import type { IPackageBuiltEvent } from '@sources/packaging/interfaces/package-b
 import { CoercionUtils } from '@fromcode119/core';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
 import { BuildErrorRedactionService } from '@sources/packaging/build-error-redaction-service';
+import { BuiltPackageInstaller } from '@sources/packaging/built-package-installer';
+import { PackageDownloadService } from '@sources/packaging/package-download-service';
+import type { IBuiltPackageArtifact } from '@sources/packaging/interfaces/built-package-artifact.interface';
+import { PackageArchiver } from '@sources/packaging/package-archiver';
+import { ArtifactDigestService } from '@sources/packaging/artifact-digest-service';
+import * as fs from 'fs';
 import * as path from 'path';
 
 /**
@@ -35,7 +41,19 @@ export class BuildService {
     // Auto-update installs what it just built. Injected rather than reached through a context, so
     // this package states its dependency instead of asking a sandbox for permission.
     private readonly installer?: IExtensionInstaller,
-  ) {}
+  ) {
+    this.packageDownloads = new PackageDownloadService(
+      packageBuilder,
+      (slug, fileName, digest) => this.buildSourceService.recordArchive(slug, fileName, digest),
+    );
+    this.builtPackageInstaller = new BuiltPackageInstaller(
+      installer,
+      (slug, message) => this.buildSourceService.recordAutoUpdateFailure(slug, message),
+    );
+  }
+
+  private readonly builtPackageInstaller: BuiltPackageInstaller;
+  private readonly packageDownloads: PackageDownloadService;
 
   /** The provider a row names, or null when this installation does not have it. */
   private providerFor(entry: { provider?: unknown }): ISourceProvider | null {
@@ -110,42 +128,13 @@ export class BuildService {
 
       const result = await this.buildBySlug(update.slug);
       results.push(result);
-      if (result.success && source.autoUpdate) await this.installBuilt(update.slug, source);
     }
     return results;
   }
 
-  /**
-   * Install what was just built, for a source whose operator asked for that too.
-   *
-   * Separate from building and separately opted into, because it is a different act: building
-   * produces a file, installing REPLACES code that is currently serving a site. A failure here is
-   * recorded against the source and never rethrown — the build itself succeeded, and losing that
-   * fact would make the next check rebuild the same commit forever.
-   */
-  private async installBuilt(slug: string, source: Record<string, any>): Promise<void> {
-    try {
-      const artifact = await this.resolvePackageArtifact(slug, source.type);
-      if (!artifact?.filePath) {
-        this.logger.warn(`Auto-update skipped for ${slug}: the build produced no archive path.`);
-        return;
-      }
-
-      if (!this.installer) {
-        this.logger.warn(`Auto-update skipped for ${slug}: no installer is wired.`);
-        return;
-      }
-
-      await this.installer.installExtensionArchive(artifact.filePath, source.type, {
-        enable: true,
-        activate: true,
-      });
-      this.logger.info(`Auto-updated ${slug} to ${source.version || 'the new build'}.`);
-    } catch (err: any) {
-      const message = BuildErrorRedactionService.redact(err?.message || String(err));
-      this.logger.error(`Auto-update failed for ${slug}: ${message}`);
-      await this.buildSourceService.recordAutoUpdateFailure(slug, message).catch(() => undefined);
-    }
+  /** A stored boolean, however the driver returned it. */
+  private static readFlag(value: unknown): boolean {
+    return value === true || value === 1 || value === 't' || value === 'true';
   }
 
   async getStatus(): Promise<any[]> {
@@ -175,45 +164,50 @@ export class BuildService {
     return artifact?.filePath || null;
   }
 
+  /**
+   * Everything known about a built package: where it is staged, and where a download would come from.
+   *
+   * Keyed on the recorded VERSION rather than a filename, because a build no longer produces a file
+   * — it produces a staged directory whose location the builder owns. The archive exists only once
+   * somebody has asked to download it.
+   */
   async resolvePackageArtifact(
     slug: string,
     type?: BuildSourceType,
-  ): Promise<{ artifactSha256: string; downloadPath: string; filePath: string; type: BuildSourceType; version?: string } | null> {
+  ): Promise<IBuiltPackageArtifact | null> {
     const entry = await this.db.findOne(this.buildsSlug, type ? { slug, type } : { slug });
     if (!entry) {
       return null;
     }
 
-    const fileName = typeof entry.file_name === 'string'
-      ? entry.file_name.trim()
-      : (typeof entry.fileName === 'string' ? entry.fileName.trim() : '');
-    if (!fileName) {
-      return null;
-    }
-
     const resolvedType = BuildSourceType.resolve(entry.type);
-    const downloadPath = resolvedType === BuildSourceType.CORE
-      ? `/core/${fileName}`
-      : resolvedType === BuildSourceType.THEME
-        ? `/themes/${fileName}`
-        : resolvedType === BuildSourceType.APPEARANCE
-          ? `/appearances/${fileName}`
-          : `/plugins/${fileName}`;
+    const version = CoercionUtils.toString(entry.version).trim();
+    const fileName = CoercionUtils.toString(entry.file_name ?? entry.fileName).trim() || null;
 
     return {
-      // The digest recorded at build time. An installer MUST re-hash the file and compare against
-      // this before extracting or executing anything — it is the only value in the exchange that did
-      // not travel inside the package. An empty string means "this build predates digest recording",
-      // and the installer is expected to refuse rather than assume.
+      // The digest recorded when an archive was last written. An installer that fetches the archive
+      // MUST re-hash it and compare — it is the only value in the exchange that did not travel
+      // inside the package. Empty means no archive has been written, and a caller must refuse
+      // rather than assume.
       artifactSha256: CoercionUtils.toString(entry.artifactSha256),
-      downloadPath,
-      // Asked of the builder, not rebuilt from the kind's name: joining `/themes/<file>` onto the
-      // process's cwd named `/app/themes/<file>` for an archive that lives in the WORKSPACE, at
-      // `/app/data/sources/themes/<file>`. Everything that opens the artifact reads this field.
-      filePath: path.join(this.packageBuilder.outputDirFor(resolvedType), fileName),
+      // The route that produces a download. It zips the staged package on request; nothing serves a
+      // file that may not exist.
+      downloadPath: `/sources/${slug}/package`,
+      // The package itself. Asked of the builder rather than rebuilt from the kind's name: joining
+      // `/themes/<file>` onto the process's cwd once named `/app/themes/<file>` for an archive that
+      // lives in the WORKSPACE. Null when no successful build has recorded a version.
+      stagedDir: version ? this.packageBuilder.stagingDirFor(resolvedType, slug, version) : null,
+      // The archive, if one has been written. Core only ever has this.
+      filePath: fileName ? path.join(this.packageBuilder.outputDirFor(resolvedType), fileName) : null,
+      fileName,
       type: resolvedType,
-      version: typeof entry.version === 'string' ? entry.version : undefined,
+      version: version || undefined,
     };
+  }
+
+  /** The built package as a downloadable archive, made on request. See PackageDownloadService. */
+  async archivePackage(slug: string): Promise<{ filePath: string; fileName: string } | null> {
+    return this.packageDownloads.archive(slug, await this.resolvePackageArtifact(slug));
   }
 
   async createSource(input: any): Promise<any> {
@@ -289,10 +283,22 @@ export class BuildService {
         last_build_status: 'success',
         last_error: '',
         version: pkg.version,
-        file_name: pkg.fileName,
-        artifactSha256: pkg.artifactSha256,
+        // Only when an archive was actually written. A build stages a package directory; the
+        // archive is made on demand for a download, and claiming a filename for a file that does
+        // not exist is what made an installer fetch a 404 from the remote marketplace.
+        ...(pkg.fileName ? { file_name: pkg.fileName, artifactSha256: pkg.artifactSha256 } : {}),
         changelog: changelog.join('\n'),
       });
+
+      // Every successful build, manual or scheduled, offers itself to the installer. What happens
+      // next is the source's own two settings; this is just the one place a build ends.
+      if (BuiltPackageInstaller.readFlag(entry.installAfterBuild ?? entry.install_after_build)) {
+        await this.builtPackageInstaller.install(
+          slug,
+          await this.resolvePackageArtifact(slug, type),
+          { ...entry, type, version: pkg.version },
+        );
+      }
 
       return { slug, type, success: true, version: pkg.version, fileName: pkg.fileName, changelog: changelog.join('\n') };
     } catch (err: any) {

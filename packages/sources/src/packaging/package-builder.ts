@@ -1,9 +1,10 @@
 import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 import * as path from 'path';
 import { ExtensionBuildPipeline, ExtensionKind } from '@fromcode119/extension-builder';
-import { IntegrityService } from '@fromcode119/core';
+
 import * as fs from 'fs';
 import { PackageArchiver } from '@sources/packaging/package-archiver';
+import { PackCleaner } from '@fromcode119/extension-builder';
 import { ArtifactDigestService } from '@sources/packaging/artifact-digest-service';
 import type { IPackageResult } from '@sources/packaging/interfaces/package-result.interface';
 
@@ -75,65 +76,46 @@ export class PackageBuilder {
     // `context.extensions.build`, a bridge that existed for exactly one caller: core cannot import
     // the builder (the builder depends on core), so the api layer registered an implementation into
     // a registry for a "plugin" to reach. Sources is not a plugin, so it just calls it.
+    // Step 2: compile AND package, into a staging directory that is the artifact.
+    //
+    // `pack: true` is the whole correction. The server used to pass `pack: false` and then zip the
+    // uncleaned source tree with a glob ignore-list — which meant three steps of packaging never
+    // ran here at all: PackCleaner, the theme's SSR dependency closure, and the integrity stamp
+    // over CLEANED content. The last is not cosmetic: registration hashes the INSTALLED directory,
+    // which has no `.ts`, against a checksum stamped over a source tree that does, so a plugin
+    // built here could never verify. `archive: false` stops before the tarball, which nothing here
+    // wants — an install copies this directory, and a download archives it on request.
+    const stagedDir = this.stagingDirFor(type, slug, version);
+    fs.rmSync(stagedDir, { recursive: true, force: true });
+    fs.mkdirSync(path.dirname(stagedDir), { recursive: true });
+
     const steps = await ExtensionBuildPipeline.run({
       sourceDir,
       kind: type === BuildSourceType.THEME ? ExtensionKind.THEME : ExtensionKind.PLUGIN,
       slug,
-      // In place: the zip below is made from this same directory, and packing would strip the
-      // sources the checksum is then stamped over.
-      pack: false,
+      pack: true,
+      packDir: stagedDir,
+      archive: false,
     });
     const failed = steps.find((step) => step.failed);
     if (failed) {
       throw new Error(`Build failed at ${failed.step}: ${failed.message ?? 'no detail'}`);
     }
 
-    // Step 1b: Stamp the integrity checksum LAST — it must hash the fully-built
-    // source dir. Mirrors `build-plugins.sh` so both build paths stay consistent
-    // and reuses the runtime's own IntegrityService (the hash logic can never drift).
-    await this.stampIntegrityChecksum(sourceDir, manifest);
-
-    // Step 2: Create the ZIP archive
-    const fileName = `${slug}-${version}.zip`;
-    const outputDir = type === BuildSourceType.PLUGIN ? this.pluginsOutputDir : this.themesOutputDir;
-    const filePath = path.join(outputDir, fileName);
-
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    await this.archiver.createZip(sourceDir, filePath);
-    // Digest the finished archive. Recorded OUTSIDE the package (see ArtifactDigestService) so an
-    // installer has something to verify against that the package itself did not supply.
-    const artifactSha256 = await ArtifactDigestService.digestFile(filePath);
-    return { filePath, fileName, version, slug, manifest, artifactSha256 };
+    // The manifest is re-read from the STAGED directory: the pipeline stamped the checksum there,
+    // over the cleaned content, and the copy read from `sourceDir` above predates that stamp.
+    return { stagedDir, version, slug, manifest: this.readManifest(stagedDir, type) };
   }
 
   /**
-   * Stamp the plugin's integrity checksum into its manifest.json.
+   * Where a built package is staged.
    *
-   * The checksum is the SHA-256 directory hash produced by the framework's own
-   * Uses the runtime's OWN IntegrityService, so the hashing algorithm and exclusion set
-   * (manifest.json / node_modules / package-lock.json / dotfiles) cannot drift from what
-   * `lifecycle-service` verifies at boot — a mismatch disables the extension being built.
-   * manifest.json is excluded from the hash, so writing the checksum back does not invalidate it.
-   *
-   * It used to be resolved at runtime by absolute path, because a plugin could not import core.
-   * Framework code imports it.
+   * Versioned, so a rebuild of a different version does not overwrite a package something may
+   * still be downloading, and so the directory name states what it holds.
    */
-  private async stampIntegrityChecksum(sourceDir: string, manifest: Record<string, any>): Promise<void> {
-    const manifestPath = path.join(sourceDir, 'manifest.json');
-    if (!fs.existsSync(manifestPath)) {
-      return;
-    }
-
-    const checksum = await IntegrityService.calculateDirectoryHash(sourceDir);
-    const onDisk = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-    onDisk.checksum = checksum;
-    fs.writeFileSync(manifestPath, JSON.stringify(onDisk, null, 2) + '\n');
-    manifest.checksum = checksum;
+  stagingDirFor(type: BuildSourceType, slug: string, version: string): string {
+    return path.join(this.outputDirFor(type), 'packages', `${slug}-${version}`);
   }
-
 
   /**
    * Read the manifest file from a source directory.
@@ -146,17 +128,17 @@ export class PackageBuilder {
       throw new Error(`Invalid appearance.json in ${sourceDir}: missing slug or version`);
     }
 
-    // Appearances ship a pre-built dist/ (esbuild bundle + LESS-compiled CSS, produced by
-    // build-appearances.sh in the source repo). Sources does NOT recompile them — it just
-    // packages the source + dist/ into a zip (createZip strips .ts source, keeps dist/*.js/.css + json).
-    const fileName = `${slug}-${version}.zip`;
-    const filePath = path.join(this.appearancesOutputDir, fileName);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-    await this.archiver.createZip(sourceDir, filePath);
-    const artifactSha256 = await ArtifactDigestService.digestFile(filePath);
-    return { filePath, fileName, version, slug, manifest, artifactSha256 };
+    // Appearances ship a pre-built dist/ (esbuild bundle + LESS-compiled CSS, produced in the
+    // source repo). Sources does NOT recompile them — it stages the source + dist/ and lets the
+    // cleaner strip what must not ship, exactly as for a plugin or theme. Staged rather than
+    // zipped for the same reason as the others: an install copies the directory.
+    const stagedDir = this.stagingDirFor(BuildSourceType.APPEARANCE, slug, version);
+    fs.rmSync(stagedDir, { recursive: true, force: true });
+    fs.mkdirSync(path.dirname(stagedDir), { recursive: true });
+    fs.cpSync(sourceDir, stagedDir, { recursive: true });
+    PackCleaner.clean(stagedDir);
+
+    return { stagedDir, version, slug, manifest };
   }
 
   private readManifest(sourceDir: string, type: BuildSourceType): Record<string, any> {

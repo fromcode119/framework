@@ -39,6 +39,28 @@ export class SourcesRouter extends BaseRouter {
     this.patch('/:slug', this.adminGuard, this.updateSource);
     this.delete('/:slug', this.adminGuard, this.deleteSource);
     this.post('/:slug/build', this.adminGuard, this.triggerOne);
+    // The archive, made on request. A build no longer writes one — it stages a package directory —
+    // so this is where "I want the file" is expressed. The admin used to link at
+    // `/themes/<file>.zip`, a path nothing had served since Sources stopped being a plugin.
+    this.get('/:slug/package', this.adminGuard, this.downloadPackage);
+  }
+
+  /**
+   * Streams the built package as a zip, archiving the staged directory the first time it is asked
+   * for and serving the same file afterwards.
+   */
+  private async downloadPackage(req: Request, res: Response): Promise<void> {
+    const slug = String(req.params.slug ?? '');
+    try {
+      const archive = await this.buildService.archivePackage(slug);
+      if (!archive) {
+        res.status(404).json({ success: false, error: `"${slug}" has no successful build to download.` });
+        return;
+      }
+      res.download(archive.filePath, archive.fileName);
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: 'Could not package this build: ' + err.message });
+    }
   }
 
   private async listProviders(_req: Request, res: Response): Promise<void> {

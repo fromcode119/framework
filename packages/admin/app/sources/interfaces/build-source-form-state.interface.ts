@@ -14,6 +14,7 @@ export interface IBuildSourceFormState {
   }>;
   autoBuild: boolean;
   autoUpdate: boolean;
+  installAfterBuild: boolean;
   branch: string;
   /** Branch names the remote reported. Empty until a URL is entered, or when it cannot be read. */
   branches: string[];

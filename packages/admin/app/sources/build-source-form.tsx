@@ -40,6 +40,10 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
     return {
       autoBuild: Boolean(build?.autoBuild),
       autoUpdate: Boolean(build?.autoUpdate),
+      // A source the form has never seen defaults to installing what it builds; an existing one
+      // shows what it stored. `!== false` rather than `Boolean(...)` so a row the migration has not
+      // reached yet does not read as "off" on a screen that would then save that.
+      installAfterBuild: build ? build.installAfterBuild !== false : true,
       branch: build?.branch || '',
       provider: build?.provider || 'git',
       providers: [],
@@ -307,27 +311,30 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
           </div>
 
           {/*
-            * Two switches, not one. Building produces a file; installing REPLACES code that is
-            * serving a site. Collapsing them into "keep this up to date" would hide the second act
-            * behind consent given for the first, so installing is its own choice and is only
-            * offered once building is automatic — there is nothing to install otherwise.
+            * Three switches for three different acts, none of them implying another. Building
+            * produces a package; installing one that is not there yet is additive; REPLACING code
+            * that is currently serving a site is not, and needs its own yes. They used to be two,
+            * with installing forced off unless building was automatic — so pressing Build produced
+            * a package and left it in the workspace, and no switch could say otherwise.
             */}
           <div className="md:col-span-2 space-y-3 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-800">
             <Switch
               checked={this.state.autoBuild}
-              onChange={(checked: boolean) => this.setState({
-                autoBuild: checked,
-                autoUpdate: checked ? this.state.autoUpdate : false,
-              })}
+              onChange={(checked: boolean) => this.setState({ autoBuild: checked })}
               label="Build automatically"
               description="Build this source whenever new commits appear on its branch."
             />
             <Switch
+              checked={this.state.installAfterBuild}
+              onChange={(checked: boolean) => this.setState({ installAfterBuild: checked })}
+              label="Install after build"
+              description="Put each successful build in place — whether you pressed Build or the schedule did. A theme is installed, not activated."
+            />
+            <Switch
               checked={this.state.autoUpdate}
-              disabled={!this.state.autoBuild}
               onChange={(checked: boolean) => this.setState({ autoUpdate: checked })}
-              label="Install automatically"
-              description="Install each successful build immediately, replacing the running version."
+              label="Update if already installed"
+              description="Also replace the running version when this extension is already installed."
             />
           </div>
         </div>
@@ -342,6 +349,7 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
             onClick={() => this.props.onSubmit({
               autoBuild: this.state.autoBuild,
               autoUpdate: this.state.autoUpdate,
+              installAfterBuild: this.state.installAfterBuild,
               branch: this.state.branch,
               gitSecret: this.state.gitSecret,
               gitUrl: this.state.gitUrl,

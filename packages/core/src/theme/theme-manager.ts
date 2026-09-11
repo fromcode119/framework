@@ -88,6 +88,17 @@ export class ThemeManager {
     await this.refreshStorefrontRenderer(`theme "${String(pkg?.slug || '').trim() || 'unknown'}" installed`);
   }
 
+  /**
+   * Installs a theme from a package directory this installation built.
+   *
+   * Same refresh as the archive path: the storefront renders from the files that just changed.
+   */
+  async installFromDirectory(packageDir: string): Promise<IThemeManifest> {
+    const manifest = await this.installer.installFromDirectory(packageDir, this.themes);
+    await this.refreshStorefrontRenderer(`theme "${manifest.slug}" installed`);
+    return manifest;
+  }
+
   async installFromZip(filePath: string): Promise<IThemeManifest> {
     const manifest = await this.installer.installFromZip(filePath, this.themes);
     await this.refreshStorefrontRenderer(`theme "${manifest.slug}" installed`);

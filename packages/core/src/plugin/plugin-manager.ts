@@ -295,6 +295,16 @@ export class PluginManager implements IPluginManagerInterface {
     return manifest;
   }
 
+  /** Installs a plugin from a package directory this installation built. */
+  async installPluginDirectory(
+    packageDir: string,
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
+  ): Promise<IPluginManifest> {
+    const manifest = await this.installation.installPluginDirectory(packageDir, options);
+    await this.refreshStorefrontRenderer(`plugin "${manifest.slug}" installed from a built package`);
+    return manifest;
+  }
+
   /**
    * The storefront server-renders each plugin's `ui-ssr` bundle and holds it for the life of its
    * process, so a plugin whose files just changed keeps rendering from the previous copy until the
@@ -313,6 +323,32 @@ export class PluginManager implements IPluginManagerInterface {
     this.archiveInstaller.setCoreArchiveInstaller(installer);
   }
 
+  setThemeDirectoryInstaller(installer: (packageDir: string, options?: { activate?: boolean }) => Promise<any>): void {
+    this.archiveInstaller.setThemeDirectoryInstaller(installer);
+  }
+
+  setAppearanceDirectoryInstaller(installer: (packageDir: string) => Promise<any>): void {
+    this.archiveInstaller.setAppearanceDirectoryInstaller(installer);
+  }
+
+  /**
+   * Installs a package DIRECTORY this installation built, rather than an archive.
+   *
+   * The storefront refresh mirrors the archive entry point: PLUGIN scope only, because a theme is
+   * routed to the theme manager which refreshes for itself.
+   */
+  async installExtensionDirectory(
+    packageDir: string,
+    type: ExtensionScope,
+    options: { enable?: boolean; activate?: boolean } = {},
+  ): Promise<any> {
+    const outcome = await this.archiveInstaller.installExtensionDirectory(packageDir, type, options);
+    if (ExtensionScope.find(type) === ExtensionScope.PLUGIN) {
+      await this.refreshStorefrontRenderer('a built plugin package was installed');
+    }
+    return outcome;
+  }
+
   async installExtensionArchive(
     filePath: string,
     type: ExtensionScope,
@@ -325,6 +361,16 @@ export class PluginManager implements IPluginManagerInterface {
       await this.refreshStorefrontRenderer('a plugin archive was installed');
     }
     return outcome;
+  }
+
+  /**
+   * Whether an extension of this scope is already installed. See PluginManagerQueryService.
+   *
+   * Asked before a build installs itself: putting a package where none was is a different act from
+   * replacing code that is currently serving a site, and only the second needs a separate consent.
+   */
+  async isExtensionInstalled(slug: string, type: ExtensionScope): Promise<boolean> {
+    return this.query.isExtensionInstalled(slug, type, this.themeManager);
   }
 
   async shutdown() {

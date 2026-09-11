@@ -3,6 +3,7 @@ export interface IBuildSourceFormValues {
   provider: string;
   autoBuild: boolean;
   autoUpdate: boolean;
+  installAfterBuild: boolean;
   branch: string;
   gitSecret: string;
   gitUrl: string;

@@ -25,4 +25,15 @@ export class SourcesApi {
   static checkUpdates(): Promise<any> { return AdminApi.post(SourcesRouteService.checkUpdates(), {}); }
   static listBranches(input: Record<string, unknown>): Promise<any> { return AdminApi.post(SourcesRouteService.branches(), input); }
   static inspect(input: Record<string, unknown>): Promise<any> { return AdminApi.post(SourcesRouteService.inspect(), input); }
+
+  /**
+   * Downloads the built package.
+   *
+   * Through the authenticated client rather than a plain link: the route is admin-guarded, and the
+   * link this replaces pointed at `/themes/<file>.zip` — a path nothing had served since Sources
+   * stopped being a plugin, so the button 404'd for as long as it had existed.
+   */
+  static downloadPackage(slug: string): Promise<{ blob: Blob; filename: string }> {
+    return AdminApi.download(SourcesRouteService.packageArchive(slug));
+  }
 }

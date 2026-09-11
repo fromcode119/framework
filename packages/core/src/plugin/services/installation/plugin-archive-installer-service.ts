@@ -104,34 +104,66 @@ export class PluginArchiveInstallerService {
         }
       }
 
-      const contentDir = this.findManifestDir(tempDir);
-      if (!contentDir) {
-        throw new Error('Invalid plugin: manifest.json not found anywhere in the archive.');
-      }
-
-      const manifestContent = fs.readFileSync(path.join(contentDir, 'manifest.json'), 'utf8');
-      const manifest: IPluginManifest = JSON.parse(manifestContent);
-      PluginPackageValidator.validateInstalledPackage(contentDir, manifest);
-      const targetDir = path.join(this.pluginsRoot, manifest.slug);
-
-      if (fs.existsSync(targetDir)) {
-          // A plugin directory that is a git CHECKOUT is somebody's source tree (a developer's mounted
-          // plugins folder), not an installed artifact. Replacing it with a packed archive deletes the
-          // TypeScript, the tests and the repository metadata — which happened once, from an admin
-          // upload over a mounted repo. Source is updated from its repository, never from an archive.
-          PluginArchiveInstallerService.refuseSourceCheckout(targetDir, manifest.slug, 'replace');
-          await BackupService.create(manifest.slug, targetDir, BackupSectionKey.PLUGINS);
-          fs.rmSync(targetDir, { recursive: true, force: true });
-      }
-      fs.mkdirSync(targetDir, { recursive: true });
-
-      this.moveDir(contentDir, targetDir);
-      await this.dependencyInstaller.ensureInstalled(targetDir);
-      return manifest;
+      return await this.place(tempDir, { keepSource: false });
     } finally {
       try {
         fs.rmSync(tempDir, { recursive: true, force: true });
       } catch (e) {}
     }
+  }
+
+  /**
+   * Installs a plugin that is ALREADY a package directory on disk.
+   *
+   * What a locally built plugin is. Sources stages a cleaned, checksum-stamped package; zipping it
+   * so that this method's archive twin could unzip it back into the same shape was the round trip,
+   * and the zip was the step where the packaging silently stopped happening.
+   *
+   * The staged directory is COPIED, not moved: it is the build output, and a download still has to
+   * be able to archive it afterwards.
+   */
+  async installFromDirectory(packageDir: string): Promise<IPluginManifest> {
+    if (!fs.existsSync(packageDir) || !fs.statSync(packageDir).isDirectory()) {
+      throw new Error(`Invalid plugin package: "${packageDir}" is not a directory.`);
+    }
+    return this.place(packageDir, { keepSource: true });
+  }
+
+  /**
+   * Puts a plugin content directory in place, wherever it came from.
+   *
+   * The half of an install that is not about archives. Shared by both entry points so they cannot
+   * drift — a difference between them is a plugin that installs correctly only one of the two ways.
+   */
+  private async place(sourceDir: string, options: { keepSource: boolean }): Promise<IPluginManifest> {
+    const contentDir = this.findManifestDir(sourceDir);
+    if (!contentDir) {
+      throw new Error('Invalid plugin: manifest.json not found anywhere in the package.');
+    }
+
+    const manifestContent = fs.readFileSync(path.join(contentDir, 'manifest.json'), 'utf8');
+    const manifest: IPluginManifest = JSON.parse(manifestContent);
+    PluginPackageValidator.validateInstalledPackage(contentDir, manifest);
+    const targetDir = path.join(this.pluginsRoot, manifest.slug);
+
+    if (fs.existsSync(targetDir)) {
+      // A plugin directory that is a git CHECKOUT is somebody's source tree (a developer's mounted
+      // plugins folder), not an installed artifact. Replacing it with a packed archive deletes the
+      // TypeScript, the tests and the repository metadata — which happened once, from an admin
+      // upload over a mounted repo. Source is updated from its repository, never from a package.
+      PluginArchiveInstallerService.refuseSourceCheckout(targetDir, manifest.slug, 'replace');
+      await BackupService.create(manifest.slug, targetDir, BackupSectionKey.PLUGINS);
+      fs.rmSync(targetDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(targetDir, { recursive: true });
+
+    if (options.keepSource) {
+      fs.cpSync(contentDir, targetDir, { recursive: true });
+    } else {
+      this.moveDir(contentDir, targetDir);
+    }
+
+    await this.dependencyInstaller.ensureInstalled(targetDir);
+    return manifest;
   }
 }

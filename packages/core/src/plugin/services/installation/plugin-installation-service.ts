@@ -93,6 +93,26 @@ export class PluginInstallationService {
   }
 
   /**
+   * Installs a plugin from a package directory, then finalises it exactly as an archive install
+   * does — migrations, state, discovery, enable. The half after the files land is identical, and
+   * sharing it is what stops a plugin from working only when it arrived as a zip.
+   */
+  async installPluginDirectory(
+    packageDir: string,
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
+  ): Promise<IPluginManifest> {
+    options.progressReporter?.({
+      phase: 'extracting-package',
+      message: 'Installing built plugin package...',
+      pluginSlug: 'build',
+    });
+
+    const manifest = await this.discovery.installFromDirectory(packageDir);
+    await this.finalizeInstalledPlugin(manifest.slug, options);
+    return manifest;
+  }
+
+  /**
    * Updates every installed plugin the marketplace has a NEWER version of, then schedules ONE
    * runtime restart at the end — the per-plugin path restarts after each replace, which made
    * updating N plugins cost N restarts. A plugin that fails is reported and skipped; the rest of

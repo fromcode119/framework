@@ -1,12 +1,13 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { prop } from '@fromcode119/react-class-components';
+import { bound, prop, state } from '@fromcode119/react-class-components';
 
 import { Button } from '@/components/ui/view/button.client';
 import { Download, GitBranch, Pencil, Play, Trash2 } from 'lucide-react';
 import { BuildStatusBadge } from '@/app/sources/build-status-badge';
 import { BuildChangelog } from '@/app/sources/build-changelog';
+import { SourcesApi } from '@/app/sources/sources-api';
 
 export class BuildSourceListItem extends AdminComponent {
   declare props: {
@@ -20,10 +21,40 @@ export class BuildSourceListItem extends AdminComponent {
   @prop declare onTrigger: (slug: string) => void;
   @prop declare triggerSlug: string | null;
 
+  @state downloading = false;
+
+  /**
+   * Fetches the package through the authenticated client and hands the browser the bytes.
+   *
+   * The archive is made when it is asked for, so this can take a moment on the first press — the
+   * button says so rather than appearing to do nothing.
+   */
+  @bound
+  async download(): Promise<void> {
+    if (typeof window === 'undefined' || this.downloading) return;
+    this.downloading = true;
+    try {
+      const { blob, filename } = await SourcesApi.downloadPackage(this.build.slug);
+      const objectUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
+    } finally {
+      this.downloading = false;
+    }
+  }
+
   render(): ReactNode {
-    const downloadPath = this.build.fileName
-      ? `${this.build.type === 'core' ? '/core' : (this.build.type === 'theme' ? '/themes' : '/plugins')}/${this.build.fileName}`
-      : '';
+    // Offered for any source that has built something. Gated on the VERSION, not on a filename:
+    // a build stages a package directory and writes no archive, so gating on a file meant the
+    // button appeared only after somebody had already downloaded one.
+    const canDownload = Boolean(String(this.build.version || '').trim())
+      && this.build.lastBuildStatus === 'success';
     const tokenLabel = this.build.hasGitSecret
       ? 'Per-source token stored'
       : (this.build.usesEnvToken ? 'Using app-level GITHUB_TOKEN' : 'No token configured');
@@ -62,9 +93,14 @@ export class BuildSourceListItem extends AdminComponent {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <BuildStatusBadge status={this.build.lastBuildStatus} />
-              {downloadPath ? (
-                <Button as="a" href={downloadPath} icon={<Download size={12} />} variant={ButtonVariant.GHOST}>
-                  Package
+              {canDownload ? (
+                <Button
+                  onClick={this.download}
+                  disabled={this.downloading}
+                  icon={<Download size={12} />}
+                  variant={ButtonVariant.GHOST}
+                >
+                  {this.downloading ? 'Packaging…' : 'Package'}
                 </Button>
               ) : null}
               <Button

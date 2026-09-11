@@ -106,6 +106,11 @@ export class AppearanceManager {
     return (await this.getInstaller()).installFromZip(filePath);
   }
 
+  /** Installs an appearance from a package directory this installation built. */
+  async installFromDirectory(packageDir: string): Promise<IAppearanceManifest> {
+    return (await this.getInstaller()).installFromDirectory(packageDir);
+  }
+
   /**
    * Install (or update) an appearance from the marketplace catalog by slug — resolves the catalog's
    * download URL and unpacks it into the appearances dir. This is how the Settings UI installs a

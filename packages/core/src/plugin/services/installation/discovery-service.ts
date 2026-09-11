@@ -152,4 +152,9 @@ export class DiscoveryService {
   async installFromZip(filePath: string): Promise<IPluginManifest> {
     return this.archiveInstaller.installFromZip(filePath);
   }
+
+  /** Installs a plugin from a package directory this installation built. */
+  async installFromDirectory(packageDir: string): Promise<IPluginManifest> {
+    return this.archiveInstaller.installFromDirectory(packageDir);
+  }
 }

@@ -14,6 +14,9 @@ const managerInstance = {
   init: vi.fn(async () => { calls.push('manager.init'); }),
   setThemeArchiveInstaller: vi.fn(),
   setCoreArchiveInstaller: vi.fn(),
+  // A package this installation built arrives as a directory, not an archive.
+  setThemeDirectoryInstaller: vi.fn(),
+  setAppearanceDirectoryInstaller: vi.fn(),
   setAuth: vi.fn(),
   setThemeManager: vi.fn((themeManager: unknown) => { calls.push('manager.setThemeManager'); managerInstance.wired = themeManager; }),
   discoverPlugins: vi.fn(async () => { calls.push('manager.discoverPlugins'); }),

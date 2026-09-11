@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
+import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 
 export class ApiBootstrapService {
@@ -70,6 +70,19 @@ export class ApiBootstrapService {
       return manifest;
     });
     manager.setCoreArchiveInstaller(async (filePath: string) => SystemUpdateService.applyArchive(filePath));
+    // A package this installation BUILT arrives as a directory, not an archive. Installing is the
+    // same act either way; only getting the files was ever about archives.
+    manager.setThemeDirectoryInstaller(async (packageDir: string, options?: { activate?: boolean }) => {
+      const manifest = await themeManager.installFromDirectory(packageDir);
+      // Activation is opt-IN here, the reverse of the archive path above: a build that installs
+      // itself must not change what a live site serves. Pressing Activate is its own decision.
+      if (options?.activate === true) {
+        await themeManager.activateTheme(manifest.slug);
+      }
+      return manifest;
+    });
+    manager.setAppearanceDirectoryInstaller(async (packageDir: string) =>
+      new AppearanceManager(new Logger({ namespace: 'appearance' })).installFromDirectory(packageDir));
 
     await themeManager.init();
 

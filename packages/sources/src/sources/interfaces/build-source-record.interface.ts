@@ -13,6 +13,7 @@ export interface IBuildSourceRecord extends IBuildSourceInput {
   version?: string;
   autoBuild?: boolean;
   autoUpdate?: boolean;
+  installAfterBuild?: boolean;
   /** Commit subjects since the previously built revision — the changelog for `version`. */
   changelog?: string;
   [key: string]: unknown;

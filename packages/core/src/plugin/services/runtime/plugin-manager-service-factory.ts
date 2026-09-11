@@ -110,6 +110,7 @@ export class PluginManagerServiceFactory {
     const shutdownService = new PluginManagerShutdownService(manager, manager.logger);
     const archiveInstaller = new PluginExtensionArchiveInstaller(
       (filePath: string, options: { enable?: boolean }) => manager.installUploadedPluginArchive(filePath, options),
+      (packageDir: string, options: { enable?: boolean }) => manager.installPluginDirectory(packageDir, options),
     );
 
     return {

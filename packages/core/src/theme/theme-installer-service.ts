@@ -60,26 +60,67 @@ export class ThemeInstallerService {
           throw error;
         }
       }
-      const contentDir = this.findThemeManifestDir(tempDir);
-      if (!contentDir) throw new Error('Invalid theme: theme.json not found anywhere in the archive.');
-      const manifest: IThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
-      if (!manifest.slug) throw new Error('Invalid theme: missing "slug" in theme.json.');
-      const targetDir = path.join(this.themesRoot, manifest.slug);
-      if (fs.existsSync(targetDir)) {
-        await BackupService.create(manifest.slug, targetDir, BackupSectionKey.THEMES);
-        fs.rmSync(targetDir, { recursive: true, force: true });
-      }
-      fs.mkdirSync(targetDir, { recursive: true });
-      this.moveDir(contentDir, targetDir);
-      await this.discoverThemes();
-      const installedManifest = themesMap.get(manifest.slug) || manifest;
-      await this.installDependencies(installedManifest);
-      return installedManifest;
+      return await this.place(tempDir, themesMap, { keepSource: false });
     } finally {
       try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {
         this.logger.warn(`Failed to clean up temp dir ${tempDir}: ${(e as Error).message}`);
       }
     }
+  }
+
+  /**
+   * Installs a theme that is ALREADY a package directory on disk.
+   *
+   * This is what a locally built theme is. Sources stages a cleaned, checksum-stamped package and
+   * an install used to zip that up only for this method's archive twin to unzip it again into the
+   * very shape it started in. Nothing about putting a theme in place needs an archive; only
+   * getting the directory did.
+   *
+   * The staged directory is COPIED, not moved: it is the build output, and a download still has to
+   * be able to archive it afterwards.
+   */
+  async installFromDirectory(packageDir: string, themesMap: Map<string, IThemeManifest>): Promise<IThemeManifest> {
+    if (!fs.existsSync(packageDir) || !fs.statSync(packageDir).isDirectory()) {
+      throw new Error(`Invalid theme package: "${packageDir}" is not a directory.`);
+    }
+    return this.place(packageDir, themesMap, { keepSource: true });
+  }
+
+  /**
+   * Puts a theme content directory in place, wherever it came from.
+   *
+   * The half of an install that is not about archives: find the manifest, back up what is being
+   * replaced, put the files there, rediscover, install dependencies. Shared so the archive path and
+   * the directory path cannot drift — a difference between them is a theme that installs correctly
+   * only one of the two ways.
+   */
+  private async place(
+    sourceDir: string,
+    themesMap: Map<string, IThemeManifest>,
+    options: { keepSource: boolean },
+  ): Promise<IThemeManifest> {
+    const contentDir = this.findThemeManifestDir(sourceDir);
+    if (!contentDir) throw new Error('Invalid theme: theme.json not found anywhere in the package.');
+    const manifest: IThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
+    if (!manifest.slug) throw new Error('Invalid theme: missing "slug" in theme.json.');
+
+    const targetDir = path.join(this.themesRoot, manifest.slug);
+    if (fs.existsSync(targetDir)) {
+      await BackupService.create(manifest.slug, targetDir, BackupSectionKey.THEMES);
+      fs.rmSync(targetDir, { recursive: true, force: true });
+    }
+    fs.mkdirSync(targetDir, { recursive: true });
+
+    if (options.keepSource) {
+      fs.cpSync(contentDir, targetDir, { recursive: true });
+    } else {
+      this.moveDir(contentDir, targetDir);
+    }
+
+    await this.discoverThemes();
+    const installedManifest = themesMap.get(manifest.slug) || manifest;
+    await this.installDependencies(installedManifest);
+    return installedManifest;
   }
 
   async installDependencies(manifest: IThemeManifest, options?: { strict?: boolean }) {

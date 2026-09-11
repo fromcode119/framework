@@ -65,9 +65,26 @@ export class AppearanceInstallerService {
     }
   }
 
-  private finalize(extractedDir: string, expectedSlug: string): IAppearanceManifest {
+  /**
+   * Installs an appearance that is ALREADY a package directory on disk — what a locally built one is.
+   *
+   * Copied rather than moved: the staged directory is the build output, and a download still has to
+   * be able to archive it afterwards.
+   */
+  installFromDirectory(packageDir: string): IAppearanceManifest {
+    if (!fs.existsSync(packageDir) || !fs.statSync(packageDir).isDirectory()) {
+      throw new Error(`Invalid appearance package: "${packageDir}" is not a directory.`);
+    }
+    return this.finalize(packageDir, '', { keepSource: true });
+  }
+
+  private finalize(
+    extractedDir: string,
+    expectedSlug: string,
+    options: { keepSource: boolean } = { keepSource: false },
+  ): IAppearanceManifest {
     const contentDir = this.findManifestDir(extractedDir);
-    if (!contentDir) throw new Error('Invalid appearance: appearance.json not found in the archive.');
+    if (!contentDir) throw new Error('Invalid appearance: appearance.json not found in the package.');
     const manifest: IAppearanceManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'appearance.json'), 'utf8'));
     const slug = String(manifest?.slug || expectedSlug || '').trim();
     if (!slug) throw new Error('Invalid appearance: missing "slug" in appearance.json.');
@@ -76,7 +93,11 @@ export class AppearanceInstallerService {
       fs.rmSync(targetDir, { recursive: true, force: true });
     }
     fs.mkdirSync(targetDir, { recursive: true });
-    this.moveDir(contentDir, targetDir);
+    if (options.keepSource) {
+      fs.cpSync(contentDir, targetDir, { recursive: true });
+    } else {
+      this.moveDir(contentDir, targetDir);
+    }
     this.logger.info(`Appearance "${slug}" installed to ${targetDir}.`);
     return manifest;
   }

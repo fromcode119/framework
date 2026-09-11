@@ -38,6 +38,15 @@ export class ExtensionBuildPipeline {
     slug: string;
     pack: boolean;
     packDir?: string;
+    /**
+     * Whether the staged package is also written out as an archive. Defaults to true.
+     *
+     * `pack` was doing two jobs: staging a cleaned, closured, correctly-stamped copy, and tarring
+     * it. Only the second is about archives, and the server wants the first on its own — it
+     * installs from the directory. Splitting them is what stops the server path from skipping the
+     * packaging in order to skip the tarball.
+     */
+    archive?: boolean;
   }): Promise<BuildStepResult[]> {
     // vite and tailwind load a generated module entry, because their configs are authored as
     // classes. It is build OUTPUT: `check:vite-glue` fails the build if one is left behind, so the
@@ -56,6 +65,15 @@ export class ExtensionBuildPipeline {
     slug: string;
     pack: boolean;
     packDir?: string;
+    /**
+     * Whether the staged package is also written out as an archive. Defaults to true.
+     *
+     * `pack` was doing two jobs: staging a cleaned, closured, correctly-stamped copy, and tarring
+     * it. Only the second is about archives, and the server wants the first on its own — it
+     * installs from the directory. Splitting them is what stops the server path from skipping the
+     * packaging in order to skip the tarball.
+     */
+    archive?: boolean;
   }): Promise<BuildStepResult[]> {
     const workspace = ExtensionWorkspace.resolve(input.sourceDir, input.kind);
     const results: BuildStepResult[] = [];
@@ -106,6 +124,8 @@ export class ExtensionBuildPipeline {
     }
     await IntegrityStamper.stampPackedDir(packDir);
     results.push(BuildStepResult.ok('integrity-stamper:packed'));
+
+    if (input.archive === false) return results;
 
     const version = ExtensionBuildPipeline.readVersion(packDir, input.kind);
     // `theme-` prefix for themes, bare slug for plugins — build-plugins.sh's convention, and

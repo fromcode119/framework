@@ -15,4 +15,6 @@ export class SourcesRouteService {
   static checkUpdates(): string { return '/sources/check-updates'; }
   static branches(): string { return '/sources/branches'; }
   static inspect(): string { return '/sources/inspect'; }
+  /** The built package as a downloadable archive, zipped on request. */
+  static packageArchive(slug: string): string { return `/sources/${encodeURIComponent(slug)}/package`; }
 }

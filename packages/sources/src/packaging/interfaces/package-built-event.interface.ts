@@ -9,11 +9,19 @@ export interface IPackageBuiltEvent {
   type: BuildSourceType;
   slug: string;
   version: string;
-  fileName: string;
+  /**
+   * The archive's filename, when this build produced one.
+   *
+   * Optional because a build no longer necessarily writes an archive: it stages a package
+   * directory, and a zip is made on request for a download. A consumer that needs a file asks for
+   * one; being told a filename that does not exist yet would be worse than being told nothing.
+   */
+  fileName?: string;
   manifest: Record<string, any>;
   /**
    * SHA-256 of the archive file. Carried on the event so a catalog can PUBLISH it: a consumer that
    * downloads the package has no other way to obtain a hash that did not travel inside the package.
+   * Absent whenever `fileName` is, and for the same reason.
    */
-  artifactSha256: string;
+  artifactSha256?: string;
 }

@@ -28,10 +28,14 @@ export class BuildSourceService {
     }
 
     const data = {
-      // Installing cannot be on without building: there would be nothing to install. Asserted here
-      // rather than trusted from the caller, because the API is reachable from the hook bus too.
       autoBuild: Boolean(input.autoBuild),
-      autoUpdate: Boolean(input.autoBuild) && Boolean(input.autoUpdate),
+      // Independent of automatic building. It used to be forced off unless `autoBuild` was on,
+      // which read as "there would be nothing to install" — but a manual build produces a package
+      // too, and tying the two meant pressing Build could never install anything.
+      autoUpdate: Boolean(input.autoUpdate),
+      // Defaults ON when the caller says nothing: a source is added to have its result arrive, and
+      // a build that leaves its package in the workspace did half a job.
+      installAfterBuild: input.installAfterBuild === undefined ? true : Boolean(input.installAfterBuild),
       branch: this.normalizeBranch(input.branch),
       git_secret: this.encryptSecret(input.gitSecret),
       git_url: this.normalizeGitUrl(input.gitUrl),
@@ -108,6 +112,17 @@ export class BuildSourceService {
     });
   }
 
+  /**
+   * Records the archive that was just written for a build.
+   *
+   * Written when somebody downloads, not when the build runs: a build stages a package directory,
+   * and a filename recorded for a file that does not exist is what sent an installer to the remote
+   * marketplace looking for it.
+   */
+  async recordArchive(slug: string, fileName: string, artifactSha256: string): Promise<void> {
+    await this.db.update(this.buildsSlug, { slug: this.normalizeSlug(slug) }, { fileName, artifactSha256 });
+  }
+
   async listRawSources(): Promise<IBuildSourceRecord[]> {
     const sources = await this.db.find(this.buildsSlug, { orderBy: { slug: 'ASC' } });
     return (sources as IBuildSourceRecord[]).map((source) => this.hydrateSource(source));
@@ -173,17 +188,11 @@ export class BuildSourceService {
       updates.gitSecret = this.encryptSecret(input.gitSecret);
     }
 
-    if (typeof input.autoBuild === 'boolean') {
-      updates.autoBuild = input.autoBuild;
-      // Turning building off turns installing off with it, here as well as in the form: leaving it
-      // set would mean a source that installs whatever it happens to build later.
-      if (!input.autoBuild) updates.autoUpdate = false;
-    }
-
-    if (typeof input.autoUpdate === 'boolean') {
-      const building = typeof input.autoBuild === 'boolean' ? input.autoBuild : Boolean(existing.autoBuild);
-      updates.autoUpdate = building && input.autoUpdate;
-    }
+    // Each switch stands alone. Turning automatic building off used to turn installing off with it,
+    // which quietly discarded a choice the operator had made about a different question.
+    if (typeof input.autoBuild === 'boolean') updates.autoBuild = input.autoBuild;
+    if (typeof input.autoUpdate === 'boolean') updates.autoUpdate = input.autoUpdate;
+    if (typeof input.installAfterBuild === 'boolean') updates.installAfterBuild = input.installAfterBuild;
 
     await this.db.update(this.buildsSlug, { id: existing.id }, updates);
     const refreshed = await this.db.findOne(this.buildsSlug, { slug });
@@ -306,6 +315,10 @@ export class BuildSourceService {
       // saved, the timer honoured the column, and the screen said it was off.
       autoBuild: BuildSourceService.readFlag(source.auto_build, source.autoBuild),
       autoUpdate: BuildSourceService.readFlag(source.auto_update, source.autoUpdate),
+      // A row written before the column existed reads NULL. The migration states TRUE for every
+      // such row, so a null here means the migration has not run yet — and the build path reads the
+      // same column, so both agree either way.
+      installAfterBuild: BuildSourceService.readFlag(source.install_after_build, source.installAfterBuild),
       branch: (source.branch || '').trim() || GitBranchPolicy.DEFAULT_BRANCH,
       provider: SourceProviders.normalize(source.provider),
       changelog: typeof source.changelog === 'string' ? source.changelog : '',
