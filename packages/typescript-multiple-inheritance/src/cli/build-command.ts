@@ -77,7 +77,13 @@ export class BuildCommand extends TyporCommand {
    */
   private static rejectPositional(argv: string[]): number | null {
     const buildMode = argv.some((a) => a === '-b' || a === '--build');
-    for (const arg of buildMode ? [] : argv) {
+    const args = buildMode ? [] : argv;
+    for (let at = 0; at < args.length; at += 1) {
+      const arg = args[at];
+      // The VALUE of `-p`/`--project` is a project path, not a positional — and it may be absolute, so
+      // it never matches the bare-`tsconfig.json` shape below. Refusing it made `tsmi build -p <abs>`
+      // impossible, which is exactly how `dts-bundle` invokes a declaration project.
+      if (arg === '-p' || arg === '--project') { at += 1; continue; }
       if (!arg.startsWith('-') && !/^(tsconfig[\w.-]*\.json)$/.test(arg)) {
         console.error(`[typescript-multiple-inheritance] refusing positional argument "${arg}": tsc would ignore tsconfig.json and emit\n` +
           `        build output beside your sources. Pass flags only (e.g. \`-b\`, \`-p tsconfig.json\`).`);

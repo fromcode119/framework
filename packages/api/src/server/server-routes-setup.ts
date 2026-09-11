@@ -20,6 +20,8 @@ import { ThemeRouter } from '@api/routes/themes/theme-router';
 import { ThemeAssetRouter } from '@api/routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '@api/routes/marketplace';
 import { AppearanceRouter } from '@api/routes/appearances';
+import { SourcesModule } from '@fromcode119/sources';
+import { CoreServices } from '@fromcode119/core';
 import { SystemRouter } from '@api/routes/system-router';
 import { TenantAdminRouter } from '@api/routes/tenant-admin-router';
 import { ServerUploadsConfigService } from '@api/server/server-uploads-config-service';
@@ -109,7 +111,7 @@ export class ServerRoutesSetup {
     this.app.get(systemRoutes.OPENAPI, (_req, res) => res.json(SwaggerGenerator.generate(this.manager.getCollections())));
     this.app.get(systemRoutes.DOCS, (_req, res) => res.type('html').send(DeveloperPortalHtml.render(systemRoutes.OPENAPI)));
 
-    const { AUTH, PLUGINS, MARKETPLACE, THEMES, APPEARANCES, SYSTEM, MEDIA, FILES, VERSIONS } = RouteConstants.SEGMENTS;
+    const { AUTH, PLUGINS, MARKETPLACE, THEMES, APPEARANCES, SOURCES, SYSTEM, MEDIA, FILES, VERSIONS } = RouteConstants.SEGMENTS;
     const vApi = express.Router();
     const pluginAssetRouter = new PluginAssetRouter(this.manager).router;
     const themeAssetRouter = new ThemeAssetRouter(this.themeManager).router;
@@ -129,6 +131,24 @@ export class ServerRoutesSetup {
     vApi.use(THEMES, themeAssetRouter);
     vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth, platformAdmin).router);
     vApi.use(APPEARANCES, new AppearanceRouter(this.auth, platformAdmin, platformAccess, (this.manager as any).schemaDb ?? this.manager.db).router);
+    // Sources is framework surface, mounted like every other framework router. It used to arrive as
+    // a "plugin" the framework discovered, packed into a tarball and loaded through a capability
+    // sandbox — to build the very extensions that sandbox exists to contain.
+    vApi.use(SOURCES, SourcesModule.install({
+      db: this.manager.db,
+      hooks: this.manager.hooks,
+      adminGuard: this.auth.guard(['admin']),
+      projectRoot: (this.manager as any).projectRoot,
+      installer: this.manager,
+      catalog: {
+        contribute: (provider) => CoreServices.getInstance().catalogContributions.register({
+          namespace: 'org.fromcode',
+          pluginSlug: 'sources',
+          list: provider as never,
+        }),
+      },
+      scheduler: this.manager.scheduler,
+    }).router);
     this.registerCoreExtensionRoutes(vApi);
     vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController, platformAdmin).router);
     // Tenant provisioning (T4): platform admins only, on the owner connection. Mounted under SYSTEM

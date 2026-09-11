@@ -44,6 +44,7 @@ const packageAlias = Object.fromEntries(
     ['media', '@media'], ['email', '@email'], ['scheduler', '@scheduler'], ['plugins', '@plugins'],
     ['mcp', '@mcp'], ['mcp-server', '@mcp-server'], ['sdk', '@sdk'], ['next', '@nextjs'], ['cli', '@cli'],
     ['extension-builder', '@extension-builder'],
+    ['sources', '@sources'],
   ] as ReadonlyArray<readonly [string, string]>)
     .map(([pkg, prefix]) => [`${prefix}/`, `${path.resolve(frameworkRoot, `packages/${pkg}/src`)}/`]),
 );
@@ -143,6 +144,7 @@ export default defineConfig({
             // A new package is collected by NOTHING until it appears here — every comment above this
             // line is a package that was green by default for exactly that reason.
             glob('packages/extension-builder/**/*.test.ts'),
+            glob('packages/sources/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },

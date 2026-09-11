@@ -112,29 +112,6 @@ packages/admin/public/fc-runtime/
 # test compares it to node_modules. Regenerated before typecheck/tests/builds — never committed.
 packages/react/src/icons/lucide-icon-names.generated.json
 
-# The framework's OWN extensions are SOURCE (`extensions/<slug>/src`, `index.ts`, `manifest.json`).
-# Everything the build writes there is output and is never committed — the compiled entry, the UI
-# bundles and every precompressed twin. Rules elsewhere in this file already catch `ui/bundle.js` and
-# `ui/*.css`; these catch what they miss, and the `.gz` twins that only exist after a pack.
-# `.npm-cache/` is the per-extension npm cache (NpmCacheDirectory): the container runs as a user with
-# no writable HOME, so the cache is placed beside the extension being built. Hundreds of files, all
-# derived.
-extensions/*/.npm-cache/
-extensions/*/node_modules/
-extensions/*/index.js
-extensions/*/index.js.map
-extensions/*/ui/
-extensions/*/src/ui/bundle.js
-extensions/**/*.gz
-
-# `bundled-plugins/` is BUILD OUTPUT and is never committed. `npm run bundle:extensions` writes it
-# from the extension's own source, and the image build consumes it from the working tree.
-#
-# It was briefly committed, to get the framework's own extensions into an image whose build context
-# cannot reach their source repositories. That solved the packaging problem by putting minified
-# bundles and gzips under version control, which is not a trade this repository makes.
-bundled-plugins/
-
 # Deploy targets name SOMEBODY'S machines — an ssh host and a path on it. They are local
 # configuration, not part of the framework, and committing them would ship one operator's
 # infrastructure to everyone who deploys this product. `deploy/targets.example.json` is the

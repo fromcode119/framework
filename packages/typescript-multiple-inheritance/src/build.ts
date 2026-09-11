@@ -5,6 +5,7 @@
 // component base classes) live in `@fromcode119/arch-guard`, which is the framework's policy package.
 export { TyporSyntaxPlugin } from './tsmi-syntax-plugin';
 export { AliasEmitRewrite } from './alias-emit-rewrite';
+export { DeclarationBundle } from './declaration-bundle';
 export { TyporEsbuildPlugin } from './tsmi-esbuild-plugin';
 export { ModuleConstantFold } from './module-constant-fold';
 export { ModuleDestructureFold } from './module-destructure-fold';

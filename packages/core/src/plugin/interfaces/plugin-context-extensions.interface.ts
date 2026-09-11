@@ -5,36 +5,15 @@ import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
  *
  * Extracted from an anonymous inline object type: a plugin-facing CONTRACT deserves a name it can be
  * referenced by, and 25 of these inline in one class put the file at 366 lines.
+ *
+ * It used to carry `build` and `isAvailable` as well — a bridge for a plugin to reach the extension
+ * builder it may not import, with core declaring the contract and the api layer registering an
+ * implementation so core never depended on the builder that depends on core. All of that machinery
+ * had exactly ONE caller: the "build server" plugin, which was never a plugin. It is framework code
+ * now (`@fromcode119/sources`) and calls the builder directly, so the bridge is gone.
  */
 export interface IPluginContextExtensions {
   installArchive(
     input: { filePath: string; type: ExtensionScope; enable?: boolean; activate?: boolean }
   ): Promise<any>;
-
-  /**
-   * Build one extension from a source directory.
-   *
-   * This lives here rather than being imported because a plugin may NOT import the builder:
-   * `SdkBoundaryGuard` forbids any `@fromcode119/<not-sdk>` import from a plugin or theme, and
-   * re-exporting the builder through the SDK would drag esbuild, vite, tailwind and terser into
-   * every plugin's dependency graph. Core declares the contract; the api layer supplies the
-   * implementation, so core never depends on the builder that depends on core.
-   *
-   * Never throws — a build failure is data, because the caller is usually rendering it to an
-   * operator. `failedStep` names the step, so "the build broke" is never the whole story.
-   */
-  build(input: {
-    sourceDir: string;
-    kind: string;
-    slug: string;
-    pack?: boolean;
-  }): Promise<{
-    ok: boolean;
-    failedStep?: string;
-    message?: string;
-    steps: Array<{ step: string; failed: boolean; skippedReason?: string }>;
-  }>;
-
-  /** Whether a builder is wired at all. False wherever the deployment ships no build toolchain. */
-  isAvailable(): boolean;
 }

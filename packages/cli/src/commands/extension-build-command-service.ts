@@ -24,17 +24,8 @@ export class ExtensionBuildCommandService {
     ExtensionBuildCommandService.registerChecksum(program);
   }
 
-  /**
-   * Where the extension's source is.
-   *
-   * `plugins/<slug>`, `themes/<slug>` or `appearance/<slug>` under the workspace root, unless the
-   * caller names a directory outright. An explicit `--dir` is how the framework's OWN extensions are
-   * built: they live inside the framework (`extensions/<slug>`), not in the operator's plugins mount,
-   * and deriving that layout here would bake one arrangement into a resolver whose whole point is
-   * that the monorepo is one arrangement and not the arrangement.
-   */
-  private static resolveDir(directoryName: string, slug: string, explicitDir?: string): string {
-    if (explicitDir) return path.resolve(explicitDir);
+  /** `plugins/<slug>`, `themes/<slug>` or `appearance/<slug>` under the workspace root. */
+  private static resolveDir(directoryName: string, slug: string): string {
     return path.resolve(path.dirname(CliUtils.getPluginsDir()), directoryName, slug);
   }
 
@@ -51,7 +42,7 @@ export class ExtensionBuildCommandService {
     if (steps.some((s) => s.failed)) process.exitCode = 1;
   }
 
-  private static async run(kindValue: string, slug: string, pack: boolean, explicitDir?: string): Promise<void> {
+  private static async run(kindValue: string, slug: string, pack: boolean): Promise<void> {
     const { ExtensionBuildPipeline, ExtensionKind } = await import('@fromcode119/extension-builder');
 
     let kind: ExtensionKind;
@@ -63,7 +54,7 @@ export class ExtensionBuildCommandService {
       return;
     }
 
-    const sourceDir = ExtensionBuildCommandService.resolveDir(kind.directoryName(), slug, explicitDir);
+    const sourceDir = ExtensionBuildCommandService.resolveDir(kind.directoryName(), slug);
     console.log(chalk.blue(`${pack ? 'Packing' : 'Building'} ${kind.value} ${slug}`));
     console.log(chalk.gray(`  ${sourceDir}`));
 
@@ -75,26 +66,21 @@ export class ExtensionBuildCommandService {
     program
       .command('build <kind> <slug>')
       .description('Build a plugin, theme or appearance in place (kind: plugin|theme|appearance)')
-      .option('--dir <path>', "The extension's source directory, when it is not under the workspace root")
-      .action(async (kind: string, slug: string, options: { dir?: string }) =>
-        ExtensionBuildCommandService.run(kind, slug, false, options.dir));
+      .action(async (kind: string, slug: string) => ExtensionBuildCommandService.run(kind, slug, false));
   }
 
   private static registerPack(program: Command): void {
     program
       .command('pack <kind> <slug>')
       .description('Build, clean and re-stamp an extension for distribution')
-      .option('--dir <path>', "The extension's source directory, when it is not under the workspace root")
-      .action(async (kind: string, slug: string, options: { dir?: string }) =>
-        ExtensionBuildCommandService.run(kind, slug, true, options.dir));
+      .action(async (kind: string, slug: string) => ExtensionBuildCommandService.run(kind, slug, true));
   }
 
   private static registerChecksum(program: Command): void {
     program
       .command('checksum <kind> <slug>')
       .description('Re-stamp an extension integrity checksum after an in-place rebuild')
-      .option('--dir <path>', "The extension's source directory, when it is not under the workspace root")
-      .action(async (kindValue: string, slug: string, options: { dir?: string }) => {
+      .action(async (kindValue: string, slug: string) => {
         const { ExtensionKind, IntegrityStamper } = await import('@fromcode119/extension-builder');
 
         let kind: ExtensionKind;
@@ -106,7 +92,7 @@ export class ExtensionBuildCommandService {
           return;
         }
         const sum = await IntegrityStamper.stampSourceDir(
-          ExtensionBuildCommandService.resolveDir(kind.directoryName(), slug, options.dir));
+          ExtensionBuildCommandService.resolveDir(kind.directoryName(), slug));
         console.log(sum ? chalk.green(`Checksum ${slug}: ${sum}`) : chalk.yellow(`${slug} has no manifest.json to stamp`));
       });
   }

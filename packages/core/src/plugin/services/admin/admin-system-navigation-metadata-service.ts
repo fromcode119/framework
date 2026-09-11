@@ -15,6 +15,7 @@ export class AdminSystemNavigationMetadataService {
       { label: 'Users', path: AppPathConstants.ADMIN.USERS.ROOT, icon: 'Users', group: 'Platform', priority: 11 },
       { label: 'Sites', path: AppPathConstants.ADMIN.SITES.ROOT, icon: 'Globe', group: 'Platform', priority: 12, platformOnly: true },
       { label: 'Plugins', path: AppPathConstants.ADMIN.PLUGINS.ROOT, icon: 'Package', group: 'Management', priority: 20 },
+      { label: 'Sources', path: AppPathConstants.ADMIN.SOURCES.ROOT, icon: 'GitBranch', group: 'Management', priority: 21 },
       { label: 'Media', path: AppPathConstants.ADMIN.MEDIA.ROOT, icon: 'Image', group: 'Core', priority: 30 },
       { label: 'Activity', path: AppPathConstants.ADMIN.ACTIVITY, icon: 'Activity', group: 'Platform', priority: 85 },
       { label: 'Themes', path: AppPathConstants.ADMIN.THEMES.ROOT, icon: 'Palette', group: 'Platform', priority: 90 },

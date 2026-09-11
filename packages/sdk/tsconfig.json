@@ -57,14 +57,14 @@
       "@fromcode119/sdk": [
         "./src/index.ts"
       ],
+      // There is deliberately NO entry for `@fromcode119/react` or `@fromcode119/admin/components`.
+      // Both once pointed at hand-written `*-shim.d.ts` files that were later deleted, so the mappings
+      // resolved to nothing and fell through to node resolution — which is the CORRECT behaviour here
+      // (mapping them at their SOURCE drags those packages under this project's rootDir and fails the
+      // build with TS6059). The shipped declarations that forwarded those specifiers were the real
+      // problem, and `tsconfig.declarations.json` now emits them for real.
       "@fromcode119/sdk/*": [
         "./src/*"
-      ],
-      "@fromcode119/react": [
-        "./src/react/react-shim.d.ts"
-      ],
-      "@fromcode119/admin/components": [
-        "./src/admin/admin-components-shim.d.ts"
       ]
     }
   },

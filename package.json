@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run check:workspace-typecheck && npm run check:src-artifacts && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:dependency-overrides && npm run check:mcp-tool-schemas && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && npm run check:file-size && node packages/typescript-multiple-inheritance/dist/tsmi-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run build:frontend-icons && npm run check:app-typecheck && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend-runtime",
+    "build": "npm run check:workspace-typecheck && npm run check:src-artifacts && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:dependency-overrides && npm run check:mcp-tool-schemas && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && npm run check:file-size && node packages/typescript-multiple-inheritance/dist/tsmi-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run build:sdk-types && npm run build:frontend-icons && npm run check:app-typecheck && npm run check:plugin-ui-types && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend-runtime",
     "build:api": "npm run build --workspace=@fromcode119/api",
     "build:admin": "npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run build --workspace=@fromcode119/frontend",
@@ -70,7 +70,9 @@
     "check:conventions:error": "FRAMEWORK_CONVENTION_MODE=error node packages/arch-guard/dist/arch-guard-cli.cjs convention-guard",
     "check:mcp-tool-schemas": "node packages/arch-guard/dist/arch-guard-cli.cjs mcp-tool-schemas",
     "build:frontend-host": "esbuild packages/frontend/lib/ssr/host/theme-render-guest-main.ts --bundle --platform=node --format=cjs --target=node22 --alias:@=./packages/frontend --external:@fromcode119/* --external:react --external:react-dom --external:next --outfile=packages/frontend/dist-host/theme-render-guest-main.cjs --log-level=warning",
-    "bundle:extensions": "node scripts/bundle-extensions.mjs"
+    "check:plugin-ui-types": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-types",
+    "check:plugin-ui-types:warn": "PLUGIN_UI_TYPES_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-types",
+    "build:sdk-types": "cd packages/sdk && node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs dts-bundle -p tsconfig.declarations.json --dist dist"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",

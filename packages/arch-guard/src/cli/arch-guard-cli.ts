@@ -18,6 +18,7 @@ import { OopGuardCommand } from './oop-guard-command';
 import { PluginAliasCommand } from './plugin-alias-command';
 import { PluginArchitectureCommand } from './plugin-architecture-command';
 import { PluginUiHookfreeCommand } from './plugin-ui-hookfree-command';
+import { PluginUiTypesCommand } from './plugin-ui-types-command';
 import { McpToolSchemaCommand } from './mcp-tool-schema-command';
 import { SdkBoundaryCommand } from './sdk-boundary-command';
 import { SrcArtifactsCommand } from './src-artifacts-command';
@@ -51,6 +52,7 @@ export class ArchorCli {
     ['plugin-alias', PluginAliasCommand],
     ['plugin-architecture', PluginArchitectureCommand],
     ['plugin-ui-hookfree', PluginUiHookfreeCommand],
+    ['plugin-ui-types', PluginUiTypesCommand],
     ['request-coercion', RequestCoercionCommand],
     ['mcp-tool-schemas', McpToolSchemaCommand],
     ['sdk-boundary', SdkBoundaryCommand],

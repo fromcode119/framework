@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { BuildCommand } from './build-command';
 import { DestructureFoldCommand } from './destructure-fold-command';
+import { DtsBundleCommand } from './dts-bundle-command';
 import { EsbuildCommand } from './esbuild-command';
 import { InterfaceSplitCommand } from './interface-split-command';
 import { ModuleConstantFoldCommand } from './module-constant-fold-command';
@@ -21,6 +22,7 @@ export class TyporCli {
   static readonly COMMANDS: ReadonlyMap<string, new () => TyporCommand> = new Map<string, new () => TyporCommand>([
     ['build', BuildCommand],
     ['destructure-fold', DestructureFoldCommand],
+    ['dts-bundle', DtsBundleCommand],
     ['esbuild', EsbuildCommand],
     ['interface-split', InterfaceSplitCommand],
     ['module-constant-fold', ModuleConstantFoldCommand],

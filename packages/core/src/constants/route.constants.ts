@@ -15,6 +15,8 @@ export class RouteConstants {
   MARKETPLACE: '/marketplace',
   THEMES: '/themes',
   APPEARANCES: '/appearances',
+  /** Sources — the framework's own repository-tracking screen. */
+  SOURCES: '/sources',
   APPEARANCES_CATALOG: '/catalog',
   APPEARANCES_INSTALL: '/install',
   APPEARANCES_SLUG: '/:slug',

@@ -62,7 +62,7 @@ describe('ApiBootstrapService theme manager wiring', () => {
   });
 
   it('hands the theme manager to the plugin manager before any plugin boots', async () => {
-    const { ApiBootstrapService } = await import('@api/server/api-bootstrap-service');
+    const { ApiBootstrapService } = await import('../src/server/api-bootstrap-service');
     const server = {
       pluginRouter: { use: () => {} },
       initialize: async () => {},

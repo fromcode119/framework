@@ -1,0 +1,40 @@
+{
+  // The type contract for a plugin's admin UI (`plugins/<slug>/src/ui/**`).
+  //
+  // Plugin UI is compiled by Vite/esbuild, which STRIP types without checking them, so nothing ever
+  // type-checked this surface. That is not theoretical: `build-source-form.tsx` called
+  // `this.onGitUrlChange` for a method that had been deleted, the Git URL field silently refused input,
+  // and every build stayed green. `arch-guard plugin-ui-types` is the gate that catches it.
+  //
+  // A plugin does NOT copy this file. The guard generates one project per plugin that extends it and
+  // adds only what is plugin-specific (`@plugin/*`, the file list, and the host-supplied peer packages
+  // resolved from wherever the framework actually is). One shared contract, no per-plugin scaffolding.
+  //
+  // The compiler options below MIRROR what the plugin UI is actually built with — see
+  // `PluginUiViteConfig` (`esbuild.tsconfigRaw`, `build.target`, the React automatic runtime). A gate
+  // that checks a different dialect than the build uses is worse than no gate.
+  "compilerOptions": {
+    "noEmit": true,
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    // Legacy decorators with NO defined class fields — reactor's `@prop` / `@state` install accessors,
+    // and a defined field would shadow them. Exactly what PluginUiViteConfig passes to esbuild.
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    // The SDK's own declarations are bundled (see tsconfig.declarations.json) and include the admin
+    // app's component graph; checking them here would report the framework's debt as the plugin's.
+    "skipLibCheck": true,
+    // Deliberately NOT `strict`. This gate exists to catch a call to something that does not exist —
+    // a dead method, a renamed prop, a removed export. Full strictness across every plugin's UI is a
+    // separate, much larger cleanup; turning it on here would bury the signal under a baseline.
+    "strict": false,
+    "noImplicitAny": false
+  }
+}

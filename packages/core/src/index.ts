@@ -229,8 +229,6 @@ export type { IRequestStore } from '@core/context/interfaces/request-store.inter
 
 // Plugin Services (Server-only)
 export { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
-export { ExtensionBuildRegistry } from '@core/plugin/services/extension-build-registry';
-export type { IExtensionBuildService } from '@core/plugin/interfaces/extension-build-service.interface';
 // Package LAYOUT is metadata about an extension's build output, not client code. Exported from the
 // SERVER barrel because the builder and the build configs need it in Node: reaching it through
 // `core/client` drags React components (and their decorators) into tsx-run tooling, which killed
@@ -327,6 +325,7 @@ export { ClientType } from '@core/enums/client-type.enum';
 export { UiScope } from '@core/enums/ui-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';
 export { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
+export { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 export { AuditOutcome } from '@core/security/enums/audit-outcome.enum';
 export { SnapshotType } from '@core/management/enums/snapshot-type.enum';
 export { EntityParseMode } from '@core/enums/entity-parse-mode.enum';

@@ -23,12 +23,12 @@ vi.mock('@core/plugin/services/runtime/plugin-failure-isolation-service', () => 
   }),
 }));
 
-import { LifecycleService } from '@core/plugin/services/runtime/lifecycle-service';
-import { CoreServices } from '@core/services/core-services';
-import { ServerCoreServices } from '@core/services/server-core-services';
-import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
-import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
-import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
+import { LifecycleService } from '../runtime/lifecycle-service';
+import { CoreServices } from '../../../services/core-services';
+import { ServerCoreServices } from '../../../services/server-core-services';
+import { PluginState } from '../enums/plugin-state.enum';
+import { PluginRegistryHealth } from '../enums/plugin-registry-health.enum';
+import { PluginHeldReason } from '../enums/plugin-held-reason.enum';
 
 const makePlugin = (overrides: Record<string, any> = {}) => ({
   manifest: { slug: 'test-plugin', name: 'Test', version: '1.0.0', category: 'general', capabilities: [] },

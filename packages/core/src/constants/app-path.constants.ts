@@ -103,6 +103,10 @@ export class AppPathConstants {
       IMPORT: '/sites/import',
       DETAIL: (id: string) => `/sites/${encodeURIComponent(id)}`,
     },
+    /** Sources — the framework's own repository-tracking screen. */
+    SOURCES: {
+      ROOT: '/sources',
+    },
     THEMES: {
       ROOT: '/themes',
       INSTALLED: '/themes/installed',

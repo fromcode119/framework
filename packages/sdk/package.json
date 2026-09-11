@@ -37,10 +37,11 @@
   },
   "files": [
     "dist",
-    "src/vite"
+    "src/vite",
+    "tsconfig.plugin-ui.json"
   ],
   "scripts": {
-    "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build -b",
+    "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build -b && node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs dts-bundle -p tsconfig.declarations.json --dist dist",
     "dev": "tsc -w"
   },
   "dependencies": {

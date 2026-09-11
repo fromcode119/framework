@@ -1,0 +1,100 @@
+{
+  // Declaration BUNDLE project — see `DeclarationBundle` (typescript-multiple-inheritance).
+  //
+  // The SDK's own `dist/*.d.ts` are thin re-exports of private workspace packages
+  // (`@fromcode119/admin/components`, `@fromcode119/react`, `@fromcode119/core`, …). A plugin that has
+  // only `@fromcode119/sdk` in its node_modules cannot resolve any of them, so every name the SDK
+  // forwards silently disappears — `skipLibCheck` hides the failure inside the `.d.ts` and the consumer
+  // sees only "has no exported member 'Button'".
+  //
+  // `@fromcode119/admin/components` is the worst case and does not resolve from ANY compile but the
+  // admin app's own: it is raw TypeScript inside a Next app whose 60+ re-exports all use the `@/*`
+  // alias. That is what shipped a dead `this.onGitUrlChange` call in build-source-form.tsx.
+  //
+  // This project emits real declarations for that whole graph into `dist/_types/`, rooted at
+  // `packages/` so every package lands in one self-consistent tree. `DeclarationBundle` then rewrites
+  // the surviving alias / package specifiers to relative paths inside that tree and repoints the SDK's
+  // own `dist/**/*.d.ts` at it. Nothing here is committed — `dist/` is gitignored.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "sourceMap": false,
+    "rootDir": "..",
+    "outDir": "./dist/_types",
+    "baseUrl": "../..",
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "strict": true,
+    
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "paths": {
+      // A package tsconfig REPLACES the inherited `paths` map rather than merging into it.
+      "@ai/*": ["packages/ai/src/*"],
+      "@core/*": ["packages/core/src/*"],
+      "@database/*": ["packages/database/src/*"],
+      "@react/*": ["packages/react/src/*"],
+      "@api/*": ["packages/api/src/*"],
+      "@auth/*": ["packages/auth/src/*"],
+      "@cache/*": ["packages/cache/src/*"],
+      "@queue/*": ["packages/queue/src/*"],
+      "@marketplace-client/*": ["packages/marketplace-client/src/*"],
+      "@media/*": ["packages/media/src/*"],
+      "@email/*": ["packages/email/src/*"],
+      "@scheduler/*": ["packages/scheduler/src/*"],
+      "@plugins/*": ["packages/plugins/src/*"],
+      "@mcp/*": ["packages/mcp/src/*"],
+      "@sdk/*": ["packages/sdk/src/*"],
+      "@nextjs/*": ["packages/next/src/*"],
+      "@cli/*": ["packages/cli/src/*"],
+      // The admin app's own alias. Only the admin's component/service graph is pulled in here, so the
+      // ambiguity of a bare `@/` across Next apps never arises.
+      "@/*": ["packages/admin/*"],
+      "@fromcode119/core": ["packages/core/src"],
+      "@fromcode119/core/client": ["packages/core/src/client.ts"],
+      "@fromcode119/core/*": ["packages/core/src/*"],
+      "@fromcode119/ai": ["packages/ai/src"],
+      "@fromcode119/database": ["packages/database/src"],
+      "@fromcode119/database/*": ["packages/database/src/*"],
+      "@fromcode119/sdk": ["packages/sdk/src"],
+      "@fromcode119/sdk/*": ["packages/sdk/src/*"],
+      "@fromcode119/api": ["packages/api/src"],
+      "@fromcode119/auth": ["packages/auth/src"],
+      "@fromcode119/media": ["packages/media/src"],
+      "@fromcode119/react": ["packages/react/src"],
+      "@fromcode119/react/*": ["packages/react/src/*"],
+      "@fromcode119/react-class-components": ["packages/react-class-components/src"],
+      "@fromcode119/react-class-components/*": ["packages/react-class-components/src/*"],
+      "@fromcode119/email": ["packages/email/src"],
+      "@fromcode119/cache": ["packages/cache/src"],
+      "@fromcode119/queue": ["packages/queue/src"],
+      "@fromcode119/scheduler": ["packages/scheduler/src"],
+      "@fromcode119/plugins": ["packages/plugins/src"],
+      "@fromcode119/mcp": ["packages/mcp/src"],
+      "@fromcode119/marketplace-client": ["packages/marketplace-client/src"],
+      "@fromcode119/admin/components": ["packages/admin/components/index.ts"],
+      "@fromcode119/admin/services": ["packages/admin/lib/services/index.ts"]
+    }
+  },
+  "files": [
+    "../admin/components/index.ts",
+    "../admin/lib/services/index.ts",
+    "../react/src/index.ts",
+    "../core/src/index.ts",
+    "../core/src/client.ts",
+    "../database/src/index.ts",
+    "../mcp/src/index.ts",
+    "../media/src/index.ts",
+    "../plugins/src/index.ts",
+    "../auth/src/index.ts",
+    "../api/src/index.ts",
+    "../react-class-components/src/index.ts"
+  ],
+  "references": []
+}
