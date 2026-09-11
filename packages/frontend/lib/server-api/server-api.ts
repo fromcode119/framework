@@ -153,7 +153,7 @@ export class ServerApiUtils {
           ...requestInit,
           cache: requestInit?.cache ?? 'no-store',
           signal: controller.signal,
-          headers: { ...forwardedHeaders, ...(requestInit?.headers as Record<string, string> | undefined) },
+          headers: ServerApiUtils.mergeHeaders(forwardedHeaders, requestInit?.headers),
         });
         if (!response.ok) {
           lastResponse = response;
@@ -182,6 +182,26 @@ export class ServerApiUtils {
   }
 
   /** Lenient wrapper — see {@link serverFetchJson}. */
+  /**
+   * Merge caller headers over the forwarded ones, for any `HeadersInit`.
+   *
+   * `{ ...headers }` was the bug: a `Headers` instance has no own enumerable properties, so
+   * spreading one yields `{}`. The same-origin `/api` proxy builds a real `Headers` — content-type,
+   * cookie, the CSRF token — and every one of them was dropped on the way upstream, silently and
+   * only for the callers that passed a `Headers` rather than a plain object. A POST arrived with no
+   * content type and no session.
+   */
+  static mergeHeaders(base: Record<string, string>, extra?: HeadersInit): Record<string, string> {
+    const merged: Record<string, string> = { ...base };
+    if (!extra) return merged;
+
+    // `new Headers(...)` normalises all three accepted shapes — instance, array of pairs, object.
+    new Headers(extra).forEach((value, key) => {
+      merged[key] = value;
+    });
+    return merged;
+  }
+
   static async serverFetchInternalResponse(path: string, requestInit?: RequestInit): Promise<Response | null> {
     return (await ServerApiUtils.serverFetchInternalResponseOutcome(path, requestInit)).value;
   }
@@ -210,7 +230,7 @@ export class ServerApiUtils {
         ...requestInit,
         cache: requestInit?.cache ?? 'no-store',
         signal: controller.signal,
-        headers: { ...forwardedHeaders, ...(requestInit?.headers as Record<string, string> | undefined) },
+        headers: ServerApiUtils.mergeHeaders(forwardedHeaders, requestInit?.headers),
       });
       return ServerFetchOutcome.resolved<Response>(response);
     } catch (error) {

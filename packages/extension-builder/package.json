@@ -1,7 +1,7 @@
 {
   "name": "@fromcode119/extension-builder",
   "version": "0.0.0",
-  "description": "Builds plugins, themes and appearances. Node-only build tooling, never imported by application code — and never by a plugin, which reaches it through context.extensions.",
+  "description": "Builds plugins, themes and appearances. Node-only build tooling, never imported by application code \u2014 and never by a plugin, which reaches it through context.extensions.",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -20,7 +20,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --format=cjs --platform=node --packages=external --outfile=dist/index.cjs"
+    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --format=cjs --platform=node --packages=external --outfile=dist/index.cjs && esbuild src/index.ts --bundle --format=esm --platform=node --packages=external --outfile=dist/index.js"
   },
   "dependencies": {
     "@fromcode119/core": "*",

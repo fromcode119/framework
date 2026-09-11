@@ -168,6 +168,7 @@ export default defineConfig({
             // `plugin-preflight-command-service.test.ts` had never run.
             glob('packages/cli/**/*.test.ts'),
             glob('packages/arch-guard/tests/**/*.test.ts'),
+            glob('packages/extension-builder/tests/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },

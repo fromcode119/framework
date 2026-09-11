@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { ApiRouteProxy } from '@/lib/api-route-proxy';
+import { ProxyHeaderRules } from '@fromcode119/core/api/proxy-header-rules';
 
 /**
  * The same-origin `/api/*` proxy reads the upstream body with `fetch`, which DECOMPRESSES it. Passing the
  * upstream's `Content-Encoding` through with a decoded body is what killed every theme and plugin bundle
  * in the browser: `ERR_CONTENT_DECODING_FAILED`, an SSR-only storefront, and no console error the server
  * ever sees.
+ *
+ * The rules moved out of the storefront proxy into `ProxyHeaderRules` when the admin grew a proxy of
+ * its own — one set of rules for both apps. This suite kept calling the method that used to hold
+ * them and had been failing ever since, which is the failure mode a shared helper invites: the
+ * behaviour moved, the test did not, and nothing was covering it while it looked like it was.
  */
-describe('ApiRouteProxy response headers', () => {
+describe('proxy response headers', () => {
   const build = (input: Record<string, string>): Headers =>
-    (ApiRouteProxy as unknown as { buildResponseHeaders(h: Headers): Headers })
-      .buildResponseHeaders(new Headers(input));
+    ProxyHeaderRules.forDownstreamResponse(new Headers(input));
 
   it('drops the encoding headers that no longer describe the body', () => {
     const out = build({ 'content-encoding': 'gzip', 'content-length': '101', 'content-type': 'application/javascript' });

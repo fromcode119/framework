@@ -49,8 +49,21 @@ export class PluginController extends BaseController {
     // deciding what each site gets.
     const access = new PlatformAccessResolver((this.manager as any).schemaDb ?? this.manager.db);
     const platformAdmin = await access.isPlatformAdmin(req);
-    const visible = this.manager.getSortedPlugins().filter((p) =>
-      platformAdmin || !enabledSlugs || enabledSlugs.has(p.manifest.slug));
+    /**
+     * Bundled extensions are NOT on this list.
+     *
+     * They ship inside the image as framework surface — always active, not installable, not
+     * removable — so listing them here presented the framework's own screens as somebody's plugin,
+     * counted them in "1 total / 1 active", and offered an enable toggle and a delete button that
+     * the lifecycle refuses. A control that cannot do what it says is worse than no control.
+     *
+     * The admin METADATA endpoint still carries them, which is what puts their screens in the
+     * navigation; this endpoint answers "what did an operator install", and the answer excludes
+     * what came with the framework.
+     */
+    const visible = this.manager.getSortedPlugins()
+      .filter((p) => p.manifest?.bundled !== true)
+      .filter((p) => platformAdmin || !enabledSlugs || enabledSlugs.has(p.manifest.slug));
 
     res.json(visible.map(p => ({
       manifest: p.manifest,
