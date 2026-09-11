@@ -20,7 +20,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --format=cjs --platform=node --packages=external --outfile=dist/index.cjs"
+    "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build && esbuild src/index.ts --bundle --format=cjs --platform=node --packages=external --outfile=dist/index.cjs"
   },
   "dependencies": {
     "@fromcode119/core": "*",
