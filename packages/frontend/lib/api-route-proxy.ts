@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from 'next/cache';
+import { ProxyHeaderRules } from '@fromcode119/core/api/proxy-header-rules';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
 
+/**
+ * Same-origin proxy to the framework API. The header rules — which hop-by-hop headers to drop each
+ * way, and forwarding the public host that identifies the SITE — are shared with the admin's copy in
+ * `ProxyHeaderRules`; each app keeps only its own upstream fetch.
+ */
 export class ApiRouteProxy {
   static async getResponse(request: Request): Promise<Response> {
     noStore();
@@ -23,7 +29,7 @@ export class ApiRouteProxy {
 
     return new NextResponse(await upstreamResponse.arrayBuffer(), {
       status: upstreamResponse.status,
-      headers: ApiRouteProxy.buildResponseHeaders(upstreamResponse.headers),
+      headers: ProxyHeaderRules.forDownstreamResponse(upstreamResponse.headers),
     });
   }
 
@@ -34,10 +40,7 @@ export class ApiRouteProxy {
 
   private static buildRequestInit(request: Request): RequestInit {
     const method = request.method.toUpperCase();
-    const headers = new Headers(request.headers);
-    headers.delete('host');
-    headers.delete('connection');
-    headers.delete('content-length');
+    const headers = ProxyHeaderRules.forUpstreamRequest(request);
 
     if (method === 'GET' || method === 'HEAD') {
       return { method, headers };
@@ -49,20 +52,5 @@ export class ApiRouteProxy {
       body: request.body,
       duplex: 'half',
     } as RequestInit;
-  }
-
-  private static buildResponseHeaders(headers: Headers): Headers {
-    const forwarded = new Headers(headers);
-    forwarded.delete('connection');
-    forwarded.delete('keep-alive');
-    forwarded.delete('transfer-encoding');
-    // `fetch` DECODES the upstream body, so the `arrayBuffer()` above holds plain bytes. Forwarding the
-    // upstream's `Content-Encoding: gzip` alongside them tells the browser to gunzip text that is not
-    // gzipped: every theme and plugin bundle failed with ERR_CONTENT_DECODING_FAILED and the storefront
-    // ran server-rendered only, with no client runtime at all. The compressed `Content-Length` goes with
-    // it — it describes bytes that are no longer being sent, and the platform sets the real one.
-    forwarded.delete('content-encoding');
-    forwarded.delete('content-length');
-    return forwarded;
   }
 }
