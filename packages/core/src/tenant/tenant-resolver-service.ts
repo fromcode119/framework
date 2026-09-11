@@ -59,6 +59,23 @@ export class TenantResolverService {
     return null;
   }
 
+  /**
+   * Every ACTIVE tenant, once each.
+   *
+   * The host map is keyed by host and a tenant has several, so this dedupes by id — iterating the
+   * map directly would run background work two or three times for the same customer. Suspended
+   * tenants are excluded: they are returned by `resolveByHost` so a request can say WHY it was
+   * refused, but nothing should be running work on their behalf.
+   */
+  async listActive(): Promise<TenantRecord[]> {
+    const map = await this.hostMap();
+    const byId = new Map<string, TenantRecord>();
+    for (const tenant of map.values()) {
+      if (tenant.isActive) byId.set(tenant.id, tenant);
+    }
+    return [...byId.values()];
+  }
+
   /** Call after any write to `_system_tenants`. */
   invalidate(): void {
     this.cache = null;

@@ -130,4 +130,31 @@ describe('PluginTenantAccess', () => {
     await PluginTenantAccess.warm('t2');
     expect(db.find).toHaveBeenCalledTimes(3);
   });
+
+  /**
+   * A bundled extension is part of the framework, so it is in NOBODY's installed set. Background
+   * work gated on the installed set alone therefore ran for zero tenants on a deployment where the
+   * extension was working perfectly in the admin — the Sources auto-build timer, exactly.
+   */
+  describe('isPresentFor — installed by the tenant, OR shipped by the framework', () => {
+    it('answers true for a bundled slug the tenant never installed', async () => {
+      multiTenant();
+      PluginTenantAccess.configure(fakeDb({ t1: [] }));
+      vi.spyOn(PluginTenantAccess, 'isBundledSlug').mockReturnValue(true);
+
+      expect(await PluginTenantAccess.isPresentFor('build-server', 't1')).toBe(true);
+    });
+
+    it('still asks the installed set for a slug the framework does not ship', async () => {
+      multiTenant();
+      PluginTenantAccess.configure(fakeDb({
+        t1: [{ plugin_slug: 'eta', state: 'active' }],
+        t2: [],
+      }));
+      vi.spyOn(PluginTenantAccess, 'isBundledSlug').mockReturnValue(false);
+
+      expect(await PluginTenantAccess.isPresentFor('eta', 't1')).toBe(true);
+      expect(await PluginTenantAccess.isPresentFor('eta', 't2')).toBe(false);
+    });
+  });
 });

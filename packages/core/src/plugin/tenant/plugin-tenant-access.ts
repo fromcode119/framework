@@ -134,6 +134,20 @@ export class PluginTenantAccess {
   }
 
   /**
+   * Is `slug` present for a NAMED tenant — installed by them, or shipped by the framework?
+   *
+   * The named-tenant twin of `isVisibleForCurrentTenant`, and it exists because the difference bit:
+   * background work gated on `isEnabledFor` alone ran for ZERO tenants on a deployment where the
+   * plugin was working perfectly in the admin. A bundled extension is never in any tenant's
+   * installed set — it is part of the framework, present for all of them — so asking whether they
+   * installed it is the wrong question.
+   */
+  static async isPresentFor(slug: string, tenantId: string): Promise<boolean> {
+    if (PluginTenantAccess.isBundledSlug(slug)) return true;
+    return PluginTenantAccess.isEnabledFor(slug, tenantId);
+  }
+
+  /**
    * Forgets what it knows, so the next request re-reads.
    *
    * Called by every write path. This IS the "no restart" mechanism: the gates are consulted per
