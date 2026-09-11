@@ -783,7 +783,7 @@ Commands are grouped: `fromcode <group> <command>`.
 | `theme seed` | Seed theme configuration data (also `npm run seed:theme`) |
 | `db migrate / rollback / seed / status / reset` | Atomic schema synchronization across all active plugins |
 | `test / lint / typecheck / doctor` | Quality gates and environment diagnosis (top-level commands) |
-| `system info / version / site-transfer-bundle / sync-versions` | Operations — including the full site-transfer bundle |
+| `system info / version / site-transfer-bundle` | Operations — including the full site-transfer bundle |
 | `system gateway` | The platform gateway (container entrypoint of the `gateway` image): host routing from the site table |
 | `node dist/cli/tenant-export.js --database … --uploads … --slug … --host …` | Read-only export of a single-site deployment into a site archive the Sites page can import |
 | `auth …` | Account recovery operations (run in-container; see docs) |

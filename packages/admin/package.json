@@ -1,6 +1,5 @@
 {
   "name": "@fromcode119/admin",
-  "version": "0.2.5",
   "main": "lib/index.ts",
   "types": "lib/index.ts",
   "bin": {

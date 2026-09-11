@@ -1,6 +1,5 @@
 {
   "name": "@fromcode119/media",
-  "version": "0.2.5",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

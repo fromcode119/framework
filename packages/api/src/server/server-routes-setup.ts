@@ -70,33 +70,15 @@ export class ServerRoutesSetup {
       return null;
     };
     const readVersion = (file: string): string | null => readPkg(file)?.version ?? null;
-    // The framework ROOT package (@fromcode119/framework) is the canonical engine version — it is what
-    // gets bumped on release. Individual packages (@fromcode119/core, …) may lag behind it, so read the
-    // root FIRST (by name, so a stray package.json can't masquerade as it); packages are only fallbacks.
+    // The framework ROOT package (@fromcode119/framework) is the canonical engine version, and now the
+    // ONLY package that carries one: workspace packages dropped theirs, because a number stamped into
+    // 26 files every release described nothing any of them had changed. Matched by NAME, so a stray
+    // package.json in the working directory cannot masquerade as it.
     for (const rootCandidate of [path.resolve(process.cwd(), 'package.json'), path.resolve(process.cwd(), '../../package.json')]) {
       const rootPkg = readPkg(rootCandidate);
       if (rootPkg?.name === '@fromcode119/framework' && rootPkg?.version) return rootPkg.version;
     }
-    try {
-      let dir = path.dirname(require.resolve('@fromcode119/core'));
-      for (let i = 0; i < 6; i++) {
-        const candidate = path.join(dir, 'package.json');
-        try {
-          if (fs.existsSync(candidate)) {
-            const pkg = JSON.parse(fs.readFileSync(candidate, 'utf8'));
-            if (pkg?.name === '@fromcode119/core' && pkg?.version) return pkg.version;
-          }
-        } catch {}
-        const parent = path.dirname(dir);
-        if (parent === dir) break;
-        dir = parent;
-      }
-    } catch {}
-    return (
-      readVersion(path.resolve(process.cwd(), 'packages/core/package.json')) ||
-      readVersion(path.resolve(process.cwd(), 'package.json')) ||
-      '0.0.0'
-    );
+    return readVersion(path.resolve(process.cwd(), '../../package.json')) || '0.0.0';
   }
 
   async setupRoutes() {
