@@ -25879,6 +25879,23 @@ var GitUrlPolicy = class _GitUrlPolicy {
   }
 };
 
+// plugins/build-server/src/services/build-error-redaction-service.ts
+var BuildErrorRedactionService = class _BuildErrorRedactionService {
+  static {
+    this.MARKER = "[redacted]";
+  }
+  static redact(message) {
+    let text = String(message ?? "");
+    text = text.replace(/([a-z][a-z0-9+.-]*:\/\/)[^/\s@]+@/gi, `$1${_BuildErrorRedactionService.MARKER}@`);
+    text = text.replace(/(authorization\s*[:=]\s*)(?:basic|bearer|token)?\s*\S+/gi, `$1${_BuildErrorRedactionService.MARKER}`);
+    text = text.replace(/\bgh[pousr]_[A-Za-z0-9]{16,}\b/g, _BuildErrorRedactionService.MARKER);
+    text = text.replace(/\bgithub_pat_[A-Za-z0-9_]{20,}\b/g, _BuildErrorRedactionService.MARKER);
+    text = text.replace(/x-access-token:\S+/gi, `x-access-token:${_BuildErrorRedactionService.MARKER}`);
+    text = text.replace(/(_auth(?:Token)?\s*=\s*)\S+/gi, `$1${_BuildErrorRedactionService.MARKER}`);
+    return text;
+  }
+};
+
 // plugins/build-server/src/services/extension-manifest-reader.ts
 var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
@@ -26024,9 +26041,15 @@ var GitSyncService = class _GitSyncService {
       return _GitSyncService.parseBranchRefs(stdout);
     } catch (err) {
       this.logger.error(`Branch listing failed for ${safeUrl}: ${String(err)}`);
-      if (_GitSyncService.isMissingGit(err)) throw new Error(_GitSyncService.MISSING_GIT_MESSAGE);
-      return [];
+      throw new Error(_GitSyncService.explain(err));
     }
+  }
+  /** Git's reason, stripped of anything secret and cut to the line that carries the meaning. */
+  static explain(error) {
+    if (_GitSyncService.isMissingGit(error)) return _GitSyncService.MISSING_GIT_MESSAGE;
+    const redacted = BuildErrorRedactionService.redact(error?.stderr || error?.message || error);
+    const meaningful = redacted.split("\n").map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("Command failed:")).pop();
+    return meaningful || "The repository could not be read.";
   }
   static {
     /** The message the admin shows when the host has no git; stated once, used by both call paths. */
@@ -26493,25 +26516,6 @@ var PackageBuilder = class _PackageBuilder {
 // plugins/build-server/src/services/build-service.ts
 var import_server2 = require("@fromcode119/sdk/server");
 var import_sdk3 = require("@fromcode119/sdk");
-
-// plugins/build-server/src/services/build-error-redaction-service.ts
-var BuildErrorRedactionService = class _BuildErrorRedactionService {
-  static {
-    this.MARKER = "[redacted]";
-  }
-  static redact(message) {
-    let text = String(message ?? "");
-    text = text.replace(/([a-z][a-z0-9+.-]*:\/\/)[^/\s@]+@/gi, `$1${_BuildErrorRedactionService.MARKER}@`);
-    text = text.replace(/(authorization\s*[:=]\s*)(?:basic|bearer|token)?\s*\S+/gi, `$1${_BuildErrorRedactionService.MARKER}`);
-    text = text.replace(/\bgh[pousr]_[A-Za-z0-9]{16,}\b/g, _BuildErrorRedactionService.MARKER);
-    text = text.replace(/\bgithub_pat_[A-Za-z0-9_]{20,}\b/g, _BuildErrorRedactionService.MARKER);
-    text = text.replace(/x-access-token:\S+/gi, `x-access-token:${_BuildErrorRedactionService.MARKER}`);
-    text = text.replace(/(_auth(?:Token)?\s*=\s*)\S+/gi, `$1${_BuildErrorRedactionService.MARKER}`);
-    return text;
-  }
-};
-
-// plugins/build-server/src/services/build-service.ts
 var path5 = __toESM(require("path"));
 var BuildService = class {
   constructor(db, gitSync, packageBuilder, buildSourceService, emitPackageBuilt) {

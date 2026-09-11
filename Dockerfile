@@ -24,10 +24,16 @@ FROM ${NODE_BASE_IMAGE} AS base
 # died on `spawn git ENOENT`. The screen rendered, the form accepted input, and the answer came back
 # empty, which reads as "this repository has no branches". A feature that cannot work without a
 # binary must ship the binary.
+#
+# ca-certificates is why that was not enough on its own: with no system CA store, git's first HTTPS
+# call answers `server certificate verification failed. CAfile: none`. Node's fetch had been working
+# throughout — it carries its own CA bundle — so the update check reached GitHub while git could not,
+# which is a difference no amount of reading the code would have suggested.
 RUN if command -v apk >/dev/null 2>&1; then \
             apk add --no-cache \
                 postgresql-client \
                 git \
+                ca-certificates \
                 python3 \
                 make \
                 g++ \
@@ -37,6 +43,7 @@ RUN if command -v apk >/dev/null 2>&1; then \
             apt-get update && apt-get install -y --no-install-recommends \
                 postgresql-client \
                 git \
+                ca-certificates \
                 iptables \
             && rm -rf /var/lib/apt/lists/*; \
         else \
