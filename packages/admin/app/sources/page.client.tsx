@@ -130,7 +130,7 @@ export class BuildOverview extends AdminComponent {
 
     return (
       <>
-        <div className="space-y-5 p-6 lg:p-8">
+        <div className="space-y-4 p-4 lg:p-6">
           <CompactPageHeader
             title="Sources"
             subtitle="The repositories this platform builds from — plugins, themes, and the framework itself."
@@ -151,7 +151,7 @@ export class BuildOverview extends AdminComponent {
           />
 
           {error ? (
-            <div className="rounded-3xl border border-rose-200 bg-rose-50 px-6 py-4 text-sm font-bold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
               {error}
             </div>
           ) : null}

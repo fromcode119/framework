@@ -23,19 +23,28 @@ export class BuildOverviewStats extends AdminComponent {
     ];
 
     return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         {indicators.map((indicator) => {
           const Icon = indicator.icon;
           return (
-            <Card key={indicator.label} className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400">{indicator.label}</p>
-                  <h3 className="mt-3 text-3xl font-black tracking-tight text-slate-900 dark:text-white">{loading ? '…' : indicator.value}</h3>
-                  <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500 dark:text-slate-400">{indicator.note}</p>
+            /*
+             * Padding only. The radius, the edge and the fill belong to `.fc-surface`, which is the
+             * one definition of a card here and the one an appearance can repaint — this card used to
+             * spell `rounded-3xl border-slate-200 bg-white` over the top, which is exactly the
+             * hardcoded-#fff case admin.css warns about, and made these four the only cards on the
+             * screen with their own shape.
+             */
+            <Card key={indicator.label}>
+              {/* The note stays reachable as a tooltip: it explains the counter, but spelled out on
+                  the card it was a full sentence per tile and three times the height. */}
+              <div className="flex items-center justify-between gap-3" title={indicator.note}>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{indicator.label}</p>
+                  <p className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{loading ? '…' : indicator.value}</p>
                 </div>
-                <div className={`${indicator.bg} ${indicator.color} flex h-12 w-12 items-center justify-center rounded-2xl`}>
-                  <Icon size={24} />
+                {/* A circle, not a 16px-radius square pretending to be one. */}
+                <div className={`${indicator.bg} ${indicator.color} flex h-9 w-9 shrink-0 items-center justify-center rounded-full`}>
+                  <Icon size={16} />
                 </div>
               </div>
             </Card>
