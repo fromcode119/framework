@@ -193,10 +193,15 @@ export class SidebarAccountCard extends AdminComponent {
             <span className="truncate text-[10.5px] leading-tight text-slate-400 capitalize">{this.role}</span>
           ) : null}
         </span>
-        {/* A chevron, not an arrow. `Up` is a navigation/upload glyph and this row opens a menu —
-            the caret is the affordance every other dropdown in the admin uses, and it points the way
-            the menu actually opens (upward, from the foot of the sidebar). */}
-        <FrameworkIcons.ChevronUp
+        {/*
+          * The SELECTOR affordance, not an arrow and not a single caret.
+          *
+          * `Up` was a navigation/upload glyph. A lone `ChevronUp` was better but still asserts a
+          * direction, and this row does not go up — it opens a list of accounts and sites to choose
+          * from. The paired chevrons are what every switcher of this shape uses, and they claim
+          * nothing about where you are headed.
+          */}
+        <FrameworkIcons.ChevronsUpDown
           size={14}
           className="shrink-0 text-slate-300 transition-colors group-hover/account:text-slate-500 dark:text-slate-600"
         />

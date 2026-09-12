@@ -36,6 +36,8 @@ export class FrameworkIcons {
   static readonly ChevronRight = IconUtils.createProxyIcon('ChevronRight');
   static readonly ChevronLeft = IconUtils.createProxyIcon('ChevronLeft');
   static readonly ChevronUp = IconUtils.createProxyIcon('ChevronUp');
+  /** The selector affordance: a control that opens a list to CHOOSE from, not one that navigates. */
+  static readonly ChevronsUpDown = IconUtils.createProxyIcon('ChevronsUpDown');
   static readonly Left = IconUtils.createProxyIcon('ArrowLeft');
   static readonly Right = IconUtils.createProxyIcon('ArrowRight');
   static readonly ArrowRight = IconUtils.createProxyIcon('ArrowRight');
