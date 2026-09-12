@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { PureReactor } from '@fromcode119/react-class-components';
+import { LoadingMessage } from '@/components/ui/view/loading-message.client';
 
 // Next.js App Router route loading UI — client component, so a class renders fine.
 export class GlobalLoading extends PureReactor {
@@ -19,9 +20,7 @@ export class GlobalLoading extends PureReactor {
               * you only read while waiting should not shout.
               */}
             <div className="flex flex-col items-center gap-2">
-              <p className="text-[11px] font-medium tracking-tight text-slate-500 dark:text-slate-400">
-                Just a moment
-              </p>
+              <LoadingMessage />
               <div className="flex gap-1">
                 <div className="h-1 w-1 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]"></div>
                 <div className="h-1 w-1 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]"></div>

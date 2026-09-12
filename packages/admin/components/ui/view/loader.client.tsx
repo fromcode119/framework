@@ -2,6 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { LoadingMessage } from '@/components/ui/view/loading-message.client';
 
 /** Themed loading spinner. Hook-free class: color mode from the admin runtime context. */
 export class Loader extends AdminComponent {
@@ -10,9 +11,10 @@ export class Loader extends AdminComponent {
   @prop declare fullPage?: boolean;
 
   render(): ReactNode {
-    // Plain words, not machine-speak. It said "Synchronizing Data"; a person waiting for a screen
-    // does not need the internal name of what the code is doing, only that it is coming.
-    const label = this.label ?? 'Just a moment';
+    // A caller with something specific to say passes it ("Signing you in"), and that line stands
+    // still — it is telling you WHAT is happening. With nothing specific to say the wording rotates
+    // instead, so a slow screen does not look frozen.
+    const label = this.label ?? '';
     const className = this.className ?? '';
     const fullPage = this.fullPage ?? false;
     const theme = this.theme;
@@ -36,7 +38,9 @@ export class Loader extends AdminComponent {
             }`}>
               {label}
             </p>
-          ) : null}
+          ) : (
+            <LoadingMessage className={theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} />
+          )}
           <div className="flex gap-1.5 mt-1">
             <div className={`h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.3s] ${theme === ThemeMode.DARK ? 'bg-indigo-500' : 'bg-indigo-600'}`}></div>
             <div className={`h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.15s] ${theme === ThemeMode.DARK ? 'bg-indigo-500' : 'bg-indigo-600'}`}></div>
