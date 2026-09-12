@@ -1,6 +1,6 @@
+import { ExtensionScope } from '@fromcode119/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BuiltPackageInstaller } from '@sources/packaging/built-package-installer';
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 
 /**
  * Which of the two settings allowed this install.
@@ -19,7 +19,7 @@ describe('BuiltPackageInstaller', () => {
     stagedDir: STAGED,
     filePath: null,
     fileName: null,
-    type: BuildSourceType.THEME,
+    type: ExtensionScope.THEME,
     version: '0.1.29',
     artifactSha256: '',
     downloadPath: '/sources/fromcode/package',
@@ -37,14 +37,14 @@ describe('BuiltPackageInstaller', () => {
   });
 
   it('installs the staged DIRECTORY, never an archive', async () => {
-    await service.install('fromcode', artifact(), { type: BuildSourceType.THEME });
+    await service.install('fromcode', artifact(), { type: ExtensionScope.THEME });
 
-    expect(installer.installExtensionDirectory).toHaveBeenCalledWith(STAGED, BuildSourceType.THEME, { enable: true });
+    expect(installer.installExtensionDirectory).toHaveBeenCalledWith(STAGED, ExtensionScope.THEME, { enable: true });
     expect(installer.installExtensionArchive).not.toHaveBeenCalled();
   });
 
   it('never activates: a build must not change what a live site serves', async () => {
-    await service.install('fromcode', artifact(), { type: BuildSourceType.THEME });
+    await service.install('fromcode', artifact(), { type: ExtensionScope.THEME });
 
     const [, , options] = installer.installExtensionDirectory.mock.calls[0];
     expect(options.activate).toBeUndefined();
@@ -53,7 +53,7 @@ describe('BuiltPackageInstaller', () => {
   it('leaves a running extension alone when "update if already installed" is off', async () => {
     installer.isExtensionInstalled = vi.fn(async () => true);
 
-    await service.install('fromcode', artifact(), { type: BuildSourceType.THEME, autoUpdate: false });
+    await service.install('fromcode', artifact(), { type: ExtensionScope.THEME, autoUpdate: false });
 
     expect(installer.installExtensionDirectory).not.toHaveBeenCalled();
   });
@@ -61,7 +61,7 @@ describe('BuiltPackageInstaller', () => {
   it('replaces a running extension when that setting is on', async () => {
     installer.isExtensionInstalled = vi.fn(async () => true);
 
-    await service.install('fromcode', artifact(), { type: BuildSourceType.THEME, autoUpdate: true });
+    await service.install('fromcode', artifact(), { type: ExtensionScope.THEME, autoUpdate: true });
 
     expect(installer.installExtensionDirectory).toHaveBeenCalledOnce();
   });
@@ -69,17 +69,17 @@ describe('BuiltPackageInstaller', () => {
   it('reads the stored flag however the driver returned it', async () => {
     installer.isExtensionInstalled = vi.fn(async () => true);
 
-    await service.install('fromcode', artifact(), { type: BuildSourceType.THEME, autoUpdate: 't' });
+    await service.install('fromcode', artifact(), { type: ExtensionScope.THEME, autoUpdate: 't' });
 
     expect(installer.installExtensionDirectory).toHaveBeenCalledOnce();
   });
 
   it('sends core to the archive installer, which is the one thing still packaged that way', async () => {
     const coreArtifact = artifact({
-      type: BuildSourceType.CORE, stagedDir: null, filePath: '/app/data/sources/core/fromcode-core-1.0.0.zip',
+      type: ExtensionScope.CORE, stagedDir: null, filePath: '/app/data/sources/core/fromcode-core-1.0.0.zip',
     });
 
-    await service.install('core', coreArtifact, { type: BuildSourceType.CORE });
+    await service.install('core', coreArtifact, { type: ExtensionScope.CORE });
 
     expect(installer.installExtensionArchive).toHaveBeenCalledOnce();
     expect(installer.installExtensionDirectory).not.toHaveBeenCalled();
@@ -88,12 +88,12 @@ describe('BuiltPackageInstaller', () => {
   it('records the failure against the source and does not throw, so the build still counts', async () => {
     installer.installExtensionDirectory = vi.fn(async () => { throw new Error('disk full'); });
 
-    await expect(service.install('fromcode', artifact(), { type: BuildSourceType.THEME })).resolves.toBeUndefined();
+    await expect(service.install('fromcode', artifact(), { type: ExtensionScope.THEME })).resolves.toBeUndefined();
     expect(failures).toHaveLength(1);
   });
 
   it('says so rather than guessing when a build recorded no package', async () => {
-    await service.install('fromcode', artifact({ stagedDir: null }), { type: BuildSourceType.THEME });
+    await service.install('fromcode', artifact({ stagedDir: null }), { type: ExtensionScope.THEME });
 
     expect(installer.installExtensionDirectory).not.toHaveBeenCalled();
     expect(failures).toHaveLength(1);

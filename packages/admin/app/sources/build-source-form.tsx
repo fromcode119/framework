@@ -2,7 +2,9 @@ import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Input } from '@/components/ui/view/input.client';
+import { ExtensionScope } from '@fromcode119/core/client';
 import { Select } from '@/components/ui/view/select.client';
+import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
 import { Switch } from '@/components/ui/view/switch.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Save } from 'lucide-react';
@@ -27,16 +29,16 @@ import type { IBuildSourceFormState } from '@/app/sources/interfaces/build-sourc
  */
 export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuildSourceFormState> {
   /**
-   * A fallback only. The real list comes from the API alongside the providers, for the reason the
-   * provider list already does: this one was hand-written, said Plugin/Theme/Core, and had never
-   * heard of an appearance — which the framework has been able to build all along.
+   * The kinds this admin knows, derived from the ENUM rather than typed out again.
+   *
+   * It was a hand-written list saying Plugin/Theme/Core, and it had never heard of an appearance —
+   * one of five places the same four strings were spelled by hand. `ExtensionScope` is the
+   * declaration; a kind added there appears here without anyone remembering to.
+   *
+   * Still only a fallback: the authoritative list arrives from the API with the providers, because
+   * what THIS installation can build is the server's answer, not the client's.
    */
-  private static readonly TYPES = [
-    { label: 'Plugin', value: 'plugin' },
-    { label: 'Theme', value: 'theme' },
-    { label: 'Appearance', value: 'appearance' },
-    { label: 'Core', value: 'core' },
-  ];
+  private static readonly TYPES = ExtensionScope.definitions();
 
   state: IBuildSourceFormState = BuildSourceForm.seed(this.props);
 
@@ -216,8 +218,31 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
       inspecting: false,
       inspectFailed: false,
       slug: String(declared.slug),
-      type: declared.type === 'core' ? 'core' : (declared.type === 'theme' ? 'theme' : 'plugin'),
+      type: this.declaredType(declared.type),
     });
+  }
+
+  /**
+   * The kind the SERVER read from the repository's own manifest.
+   *
+   * This was a ternary chain that knew `core` and `theme` and mapped everything else to `plugin` —
+   * so `appearance-hub`, whose `appearance.json` the reader identified correctly, arrived in the
+   * dialog as a Plugin. The detection was right; the form threw the answer away.
+   *
+   * Checked against the list the API serves rather than a set spelled out here again: that list
+   * comes from `BuildSourceType`, so a kind the platform can build is a kind this form can show,
+   * without a fourth copy to keep in step.
+   */
+  private declaredType(declared: unknown): IBuildSourceFormValues['type'] {
+    // `find` returns null for a kind this build does not know, rather than quietly calling it a
+    // plugin — which is precisely what the ternary it replaces did to every appearance.
+    const scope = ExtensionScope.find(declared);
+    if (scope) return String(scope.value) as IBuildSourceFormValues['type'];
+
+    // The server may know a kind this admin does not; trust its list before falling back.
+    const value = String(declared ?? '').trim();
+    const served = this.state.types.some((entry) => entry.value === value);
+    return (served ? value : 'plugin') as IBuildSourceFormValues['type'];
   }
 
   private onBranchChange(branch: string): void {

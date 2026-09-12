@@ -1,3 +1,4 @@
+import { ExtensionScope } from '@fromcode119/core';
 import type { ISourceProvider } from '@sources/providers/interfaces/source-provider.interface';
 import { SourceProviders } from '@sources/providers/source-providers';
 import { PackageBuilder } from '@sources/packaging/package-builder';
@@ -6,7 +7,6 @@ import type { IExtensionInstaller } from '@sources/interfaces/extension-installe
 import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
 import { BuildSourceService } from '@sources/sources/build-source-service';
 import type { IBuildSourceInput } from '@sources/sources/interfaces/build-source-input.interface';
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 import type { IBuildResult } from '@sources/packaging/interfaces/build-result.interface';
 import type { IPackageBuiltEvent } from '@sources/packaging/interfaces/package-built-event.interface';
 import { CoercionUtils } from '@fromcode119/core';
@@ -82,9 +82,9 @@ export class BuildService {
   async buildBySlug(slug: string): Promise<IBuildResult> {
     const entry = await this.buildSourceService.getRawSourceBySlug(slug);
     if (!entry) {
-      return { slug, type: BuildSourceType.PLUGIN, success: false, error: `"${slug}" not found in database.` };
+      return { slug, type: ExtensionScope.PLUGIN, success: false, error: `"${slug}" not found in database.` };
     }
-    return this.buildOne(BuildSourceType.resolve(entry.type), entry);
+    return this.buildOne(ExtensionScope.resolve(entry.type), entry);
   }
 
   async checkForUpdates(): Promise<{ slug: string; type: string; hasUpdate: boolean; remoteSha: string | null }[]> {
@@ -99,7 +99,7 @@ export class BuildService {
         : null;
       const hasUpdate = !entry.lastCommitSha || entry.lastCommitSha !== remoteSha;
       this.logger.debug(`Update status for ${entry.slug}: hasUpdate=${hasUpdate}, remoteSha=${remoteSha}`);
-      results.push({ slug: entry.slug, type: BuildSourceType.resolve(entry.type).value, hasUpdate, remoteSha });
+      results.push({ slug: entry.slug, type: ExtensionScope.resolve(entry.type).value, hasUpdate, remoteSha });
     }
 
     return results;
@@ -147,7 +147,7 @@ export class BuildService {
     return this.buildSourceService.getSanitizedSourceBySlug(slug);
   }
 
-  async resolvePackageDownloadPath(slug: string, type?: BuildSourceType): Promise<string | null> {
+  async resolvePackageDownloadPath(slug: string, type?: ExtensionScope): Promise<string | null> {
     const artifact = await this.resolvePackageArtifact(slug, type);
     return artifact?.downloadPath || null;
   }
@@ -159,7 +159,7 @@ export class BuildService {
    * browser would fetch, and the two were confused once already — an installer opened `/themes/x.zip`
    * as a file and failed with EACCES on a directory it had no business writing to.
    */
-  async resolvePackageFilePath(slug: string, type?: BuildSourceType): Promise<string | null> {
+  async resolvePackageFilePath(slug: string, type?: ExtensionScope): Promise<string | null> {
     const artifact = await this.resolvePackageArtifact(slug, type);
     return artifact?.filePath || null;
   }
@@ -173,14 +173,14 @@ export class BuildService {
    */
   async resolvePackageArtifact(
     slug: string,
-    type?: BuildSourceType,
+    type?: ExtensionScope,
   ): Promise<IBuiltPackageArtifact | null> {
     const entry = await this.db.findOne(this.buildsSlug, type ? { slug, type } : { slug });
     if (!entry) {
       return null;
     }
 
-    const resolvedType = BuildSourceType.resolve(entry.type);
+    const resolvedType = ExtensionScope.resolve(entry.type);
     const version = CoercionUtils.toString(entry.version).trim();
     const fileName = CoercionUtils.toString(entry.file_name ?? entry.fileName).trim() || null;
 
@@ -226,7 +226,7 @@ export class BuildService {
     return this.buildSourceService.updateSource(slug, input);
   }
 
-  private async buildOne(type: BuildSourceType, entry: any): Promise<IBuildResult> {
+  private async buildOne(type: ExtensionScope, entry: any): Promise<IBuildResult> {
     const { slug, gitUrl, branch } = entry;
     const gitToken = entry.gitSecret;
 
@@ -318,7 +318,7 @@ export class BuildService {
     }
   }
 
-  private async upsertBuildRecord(slug: string, type: BuildSourceType, gitUrl: string, branch: string, updates: Record<string, any>): Promise<void> {
+  private async upsertBuildRecord(slug: string, type: ExtensionScope, gitUrl: string, branch: string, updates: Record<string, any>): Promise<void> {
     const existing = await this.db.findOne(this.buildsSlug, { slug });
     if (existing) {
       await this.db.update(this.buildsSlug, { id: existing.id }, updates);
@@ -379,13 +379,13 @@ export class BuildService {
     return provider ? provider.inspect({ location: gitUrl, ref: branch, secret: token }) : null;
   }
 
-  private resolveSourceDirectory(type: BuildSourceType): string {
-    if (type === BuildSourceType.CORE) {
+  private resolveSourceDirectory(type: ExtensionScope): string {
+    if (type === ExtensionScope.CORE) {
       return 'core';
     }
-    if (type === BuildSourceType.APPEARANCE) {
+    if (type === ExtensionScope.APPEARANCE) {
       return 'appearances';
     }
-    return type === BuildSourceType.THEME ? 'themes' : 'plugins';
+    return type === ExtensionScope.THEME ? 'themes' : 'plugins';
   }
 }

@@ -25,6 +25,21 @@ export class ExtensionScope extends Enum {
   }
 
   /**
+   * What an operator may choose, for the form that asks.
+   *
+   * Served to the admin rather than hand-listed there, for the same reason the provider list is:
+   * the dropdown offered Plugin, Theme and Core while APPEARANCE had been buildable all along, so
+   * an appearance repository could only be added by calling it a plugin — which is exactly what it
+   * then reported itself as.
+   */
+  static definitions(): Array<{ label: string; value: string }> {
+    return (ExtensionScope.values() as ExtensionScope[]).map((scope) => ({
+      value: String(scope.value),
+      label: String(scope.value).charAt(0).toUpperCase() + String(scope.value).slice(1),
+    }));
+  }
+
+  /**
    * Resolve a raw wire/plugin string to a member, defaulting to PLUGIN.
    *
    * The default is only safe where "plugin" is genuinely the subject and an unrecognised value is a

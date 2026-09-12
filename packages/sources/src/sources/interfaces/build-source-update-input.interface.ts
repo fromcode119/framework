@@ -1,10 +1,10 @@
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
+import { ExtensionScope } from '@fromcode119/core';
 
 export interface IBuildSourceUpdateInput {
   branch?: string;
   gitSecret?: string;
   gitUrl?: string;
-  type?: BuildSourceType;
+  type?: ExtensionScope;
   autoBuild?: boolean;
   /**
    * Replace an extension that is ALREADY installed with a newer build.

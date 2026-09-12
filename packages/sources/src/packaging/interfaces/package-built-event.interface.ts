@@ -1,4 +1,4 @@
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
+import { ExtensionScope } from '@fromcode119/core';
 
 /**
  * Payload of the SourcesEvents.PACKAGE_BUILT event. sources announces what it built and
@@ -6,7 +6,7 @@ import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
  * marketplace plugin) — no cross-plugin coupling, no knowledge of the marketplace's tables or URLs.
  */
 export interface IPackageBuiltEvent {
-  type: BuildSourceType;
+  type: ExtensionScope;
   slug: string;
   version: string;
   /**

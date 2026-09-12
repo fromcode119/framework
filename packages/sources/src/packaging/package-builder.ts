@@ -1,4 +1,4 @@
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
+import { ExtensionScope } from '@fromcode119/core';
 import * as path from 'path';
 import { ExtensionBuildPipeline, ExtensionKind } from '@fromcode119/extension-builder';
 
@@ -46,21 +46,21 @@ export class PackageBuilder {
    * workspace at `/app/data/sources/themes/<file>`. One owner of the layout, asked rather than
    * guessed.
    */
-  outputDirFor(type: BuildSourceType): string {
-    if (type === BuildSourceType.CORE) return this.coreOutputDir;
-    if (type === BuildSourceType.APPEARANCE) return this.appearancesOutputDir;
-    if (type === BuildSourceType.THEME) return this.themesOutputDir;
+  outputDirFor(type: ExtensionScope): string {
+    if (type === ExtensionScope.CORE) return this.coreOutputDir;
+    if (type === ExtensionScope.APPEARANCE) return this.appearancesOutputDir;
+    if (type === ExtensionScope.THEME) return this.themesOutputDir;
     return this.pluginsOutputDir;
   }
 
   /**
    * Build and package a plugin or theme from its cloned source directory.
    */
-  async build(sourceDir: string, type: BuildSourceType): Promise<IPackageResult> {
-    if (type === BuildSourceType.CORE) {
+  async build(sourceDir: string, type: ExtensionScope): Promise<IPackageResult> {
+    if (type === ExtensionScope.CORE) {
       return this.buildCorePackage(sourceDir);
     }
-    if (type === BuildSourceType.APPEARANCE) {
+    if (type === ExtensionScope.APPEARANCE) {
       return this.buildAppearancePackage(sourceDir);
     }
 
@@ -91,7 +91,7 @@ export class PackageBuilder {
 
     const steps = await ExtensionBuildPipeline.run({
       sourceDir,
-      kind: type === BuildSourceType.THEME ? ExtensionKind.THEME : ExtensionKind.PLUGIN,
+      kind: type === ExtensionScope.THEME ? ExtensionKind.THEME : ExtensionKind.PLUGIN,
       slug,
       pack: true,
       packDir: stagedDir,
@@ -113,7 +113,7 @@ export class PackageBuilder {
    * Versioned, so a rebuild of a different version does not overwrite a package something may
    * still be downloading, and so the directory name states what it holds.
    */
-  stagingDirFor(type: BuildSourceType, slug: string, version: string): string {
+  stagingDirFor(type: ExtensionScope, slug: string, version: string): string {
     return path.join(this.outputDirFor(type), 'packages', `${slug}-${version}`);
   }
 
@@ -121,7 +121,7 @@ export class PackageBuilder {
    * Read the manifest file from a source directory.
    */
   private async buildAppearancePackage(sourceDir: string): Promise<IPackageResult> {
-    const manifest = this.readManifest(sourceDir, BuildSourceType.APPEARANCE);
+    const manifest = this.readManifest(sourceDir, ExtensionScope.APPEARANCE);
     const slug = manifest.slug;
     const version = manifest.version;
     if (!slug || !version) {
@@ -132,7 +132,7 @@ export class PackageBuilder {
     // source repo). Sources does NOT recompile them — it stages the source + dist/ and lets the
     // cleaner strip what must not ship, exactly as for a plugin or theme. Staged rather than
     // zipped for the same reason as the others: an install copies the directory.
-    const stagedDir = this.stagingDirFor(BuildSourceType.APPEARANCE, slug, version);
+    const stagedDir = this.stagingDirFor(ExtensionScope.APPEARANCE, slug, version);
     fs.rmSync(stagedDir, { recursive: true, force: true });
     fs.mkdirSync(path.dirname(stagedDir), { recursive: true });
     fs.cpSync(sourceDir, stagedDir, { recursive: true });
@@ -141,10 +141,10 @@ export class PackageBuilder {
     return { stagedDir, version, slug, manifest };
   }
 
-  private readManifest(sourceDir: string, type: BuildSourceType): Record<string, any> {
-    const candidates = type === BuildSourceType.PLUGIN
+  private readManifest(sourceDir: string, type: ExtensionScope): Record<string, any> {
+    const candidates = type === ExtensionScope.PLUGIN
       ? ['manifest.json', 'plugin.json']
-      : type === BuildSourceType.APPEARANCE
+      : type === ExtensionScope.APPEARANCE
         ? ['appearance.json', 'manifest.json']
         : ['theme.json', 'manifest.json'];
 

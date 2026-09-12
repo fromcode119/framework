@@ -1,8 +1,8 @@
+import { ExtensionScope } from '@fromcode119/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 import { PackageDownloadService } from '@sources/packaging/package-download-service';
 
 /**
@@ -25,7 +25,7 @@ describe('PackageDownloadService', () => {
     fileName: null,
     downloadPath: '/sources/fromcode/package',
     artifactSha256: '',
-    type: BuildSourceType.THEME,
+    type: ExtensionScope.THEME,
     version: '0.1.29',
     ...over,
   }) as never;
@@ -80,7 +80,7 @@ describe('PackageDownloadService', () => {
     const coreZip = path.join(themesDir, 'fromcode-core-1.0.0.zip');
     fs.writeFileSync(coreZip, 'PK');
 
-    const result = await service.archive('core', artifact({ stagedDir: null, filePath: coreZip, type: BuildSourceType.CORE }));
+    const result = await service.archive('core', artifact({ stagedDir: null, filePath: coreZip, type: ExtensionScope.CORE }));
 
     expect(result?.filePath).toBe(coreZip);
     expect(recorded).toHaveLength(0);

@@ -70,6 +70,12 @@ export { PluginFrontendRuntimeUtils } from '@core/utils/plugin-frontend-runtime-
 export { RouteUtils } from '@core/utils/route-utils';
 export { UrlUtils } from '@core/utils/url-utils';
 export { ApplicationUrlUtils } from '@core/utils/application-url-utils';
+// Browser-safe: a pure Enum over four strings, importing nothing but `Enum` itself. The admin needs
+// it because "plugin | theme | appearance | core" was being spelled out by hand in five places —
+// once in the form's option list, once in its state, once in its values, once in the ternary that
+// read a detected kind, and once more on the page. The list that had never heard of `appearance` is
+// how a correctly detected appearance arrived in the dialog as a Plugin.
+export { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 export { ApplicationHostUtils } from '@core/utils/application-host-utils';
 // Both are needed by the admin and frontend Next apps to serve their own internal restart endpoint,
 // and neither imports anything server-only — see the notes on those classes.

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { ExtensionScope } from '@fromcode119/core';
 
 /**
  * What an extension says it IS, read from the manifest in its own repository.
@@ -21,16 +22,16 @@ export class ExtensionManifestReader {
    * built and installed as a plugin while `appearance.json` sat unread beside it.
    *
    * `appearance.json` was missing outright. Appearances have been buildable the whole time
-   * (`BuildSourceType.APPEARANCE`, `PackageBuilder.buildAppearancePackage`); nothing could ever say
+   * (`ExtensionScope.APPEARANCE`, `PackageBuilder.buildAppearancePackage`); nothing could ever say
    * that a repository was one.
    */
-  private static readonly MANIFESTS: Array<{ file: string; type: 'plugin' | 'theme' | 'appearance' }> = [
-    { file: 'theme.json', type: 'theme' },
-    { file: 'appearance.json', type: 'appearance' },
-    { file: 'manifest.json', type: 'plugin' },
+  private static readonly MANIFESTS: Array<{ file: string; scope: ExtensionScope }> = [
+    { file: 'theme.json', scope: ExtensionScope.THEME },
+    { file: 'appearance.json', scope: ExtensionScope.APPEARANCE },
+    { file: 'manifest.json', scope: ExtensionScope.PLUGIN },
   ];
 
-  static read(directory: string): { slug: string; type: 'plugin' | 'theme' | 'appearance' | 'core'; name: string; version: string } | null {
+  static read(directory: string): { slug: string; type: string; name: string; version: string } | null {
     for (const candidate of ExtensionManifestReader.MANIFESTS) {
       const declared = ExtensionManifestReader.readFile(path.join(directory, candidate.file));
       if (!declared) continue;
@@ -40,7 +41,7 @@ export class ExtensionManifestReader {
 
       return {
         slug,
-        type: candidate.type,
+        type: String(candidate.scope.value),
         name: String(declared.name || '').trim(),
         version: String(declared.version || '').trim(),
       };
@@ -54,14 +55,14 @@ export class ExtensionManifestReader {
    * separately so a repository that is neither still returns nothing rather than a package name
    * dressed up as a slug.
    */
-  private static readCore(directory: string): { slug: string; type: 'core'; name: string; version: string } | null {
+  private static readCore(directory: string): { slug: string; type: string; name: string; version: string } | null {
     const pkg = ExtensionManifestReader.readFile(path.join(directory, 'package.json'));
     const name = String(pkg?.name || '').trim();
     if (!name || !String(pkg?.workspaces || '')) return null;
 
     return {
       slug: name.replace(/^@[^/]+\//, ''),
-      type: 'core',
+      type: String(ExtensionScope.CORE.value),
       name,
       version: String(pkg?.version || '').trim(),
     };

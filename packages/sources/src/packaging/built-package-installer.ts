@@ -1,5 +1,5 @@
+import { ExtensionScope } from '@fromcode119/core';
 import { BuildErrorRedactionService } from '@sources/packaging/build-error-redaction-service';
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 import { Logger } from '@fromcode119/core';
 import type { IBuiltPackageArtifact } from '@sources/packaging/interfaces/built-package-artifact.interface';
 import type { IExtensionInstaller } from '@sources/interfaces/extension-installer.interface';
@@ -41,7 +41,7 @@ export class BuiltPackageInstaller {
         return;
       }
 
-      const type = BuildSourceType.resolve(source.type);
+      const type = ExtensionScope.resolve(source.type);
       const installed = await this.installer.isExtensionInstalled(slug, type as never);
       if (installed && !BuiltPackageInstaller.readFlag(source.autoUpdate)) {
         this.logger.info(
@@ -72,8 +72,8 @@ export class BuiltPackageInstaller {
    * serves — activation is its own press, in the admin, by someone who meant it. The previous
    * auto-update passed `activate: true`, so a scheduled build could swap a running site's theme.
    */
-  private async place(artifact: IBuiltPackageArtifact, type: BuildSourceType): Promise<void> {
-    if (type === BuildSourceType.CORE) {
+  private async place(artifact: IBuiltPackageArtifact, type: ExtensionScope): Promise<void> {
+    if (type === ExtensionScope.CORE) {
       if (!artifact.filePath) throw new Error('The core build produced no archive.');
       await this.installer!.installExtensionArchive(artifact.filePath, type as never, { enable: true });
       return;

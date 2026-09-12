@@ -1,7 +1,7 @@
+import { ExtensionScope } from '@fromcode119/core';
 import { CoercionUtils } from '@fromcode119/core';
 import type { HookManager } from '@fromcode119/core';
 import { BuildService } from '@sources/packaging/build-service';
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 
 export class BuildPackageArtifactHook {
   static readonly EVENT = 'sources:packages:resolve';
@@ -18,14 +18,14 @@ export class BuildPackageArtifactHook {
     });
   }
 
-  private static readPayload(payload: unknown): { slug: string; type?: BuildSourceType } {
+  private static readPayload(payload: unknown): { slug: string; type?: ExtensionScope } {
     // SDK coercion, not hand-rolled `typeof` guards: `toObject`/`toString` already handle every shape an
     // untrusted hook payload can arrive in, and `resolve()` normalises anything to a member.
     const record = CoercionUtils.toObject(payload);
     return {
       slug: CoercionUtils.toString(record.slug),
       // Absent stays absent; anything present is normalised by the Enum (unknown -> PLUGIN).
-      type: record.type == null ? undefined : BuildSourceType.resolve(record.type),
+      type: record.type == null ? undefined : ExtensionScope.resolve(record.type),
     };
   }
 }

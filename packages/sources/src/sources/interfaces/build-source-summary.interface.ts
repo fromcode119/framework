@@ -1,4 +1,4 @@
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
+import { ExtensionScope } from '@fromcode119/core';
 
 /**
  * The API-safe projection of a build source: every field of the record EXCEPT the two secrets
@@ -8,7 +8,7 @@ import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
  */
 export interface IBuildSourceSummary {
   slug: string;
-  type: BuildSourceType;
+  type: ExtensionScope;
   gitUrl: string;
   branch: string;
   id?: number | string;

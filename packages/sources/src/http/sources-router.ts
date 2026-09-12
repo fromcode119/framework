@@ -1,8 +1,8 @@
+import { ExtensionScope } from '@fromcode119/core';
 import { AccessLevel, BaseRouter } from '@fromcode119/core';
 import type { Request, RequestHandler, Response } from 'express';
 import { BuildService } from '@sources/packaging/build-service';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 import { SourceProviders } from '@sources/providers/source-providers';
 
 /**
@@ -67,7 +67,7 @@ export class SourcesRouter extends BaseRouter {
   private async listProviders(_req: Request, res: Response): Promise<void> {
     // The TYPES ride along with the providers: both answer "what can this installation build from,
     // and into what", both are derived rather than hand-listed, and the form asks once.
-    res.json({ providers: SourceProviders.definitions(), types: BuildSourceType.definitions(), success: true });
+    res.json({ providers: SourceProviders.definitions(), types: ExtensionScope.definitions(), success: true });
   }
 
   private async triggerAll(req: Request, res: Response): Promise<void> {

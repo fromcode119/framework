@@ -1,3 +1,4 @@
+import { ExtensionScope } from '@fromcode119/core';
 import { Logger } from '@fromcode119/core';
 import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
 import { BuildSourceSecretService } from '@sources/sources/build-source-secret-service';
@@ -5,7 +6,6 @@ import type { IBuildSourceInput } from '@sources/sources/interfaces/build-source
 import type { IBuildSourceRecord } from '@sources/sources/interfaces/build-source-record.interface';
 import type { IBuildSourceSummary } from '@sources/sources/interfaces/build-source-summary.interface';
 import type { IBuildSourceUpdateInput } from '@sources/sources/interfaces/build-source-update-input.interface';
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 import { BuildSlugPolicy } from '@sources/sources/build-slug-policy';
 import { SourceProviders } from '@sources/providers/source-providers';
 import { GitBranchPolicy } from '@sources/providers/git/git-branch-policy';
@@ -232,8 +232,8 @@ export class BuildSourceService {
     return BuildSlugPolicy.assertAllowed(slug);
   }
 
-  private normalizeType(type: BuildSourceType | string | undefined): BuildSourceType {
-    return BuildSourceType.resolve(type);
+  private normalizeType(type: ExtensionScope | string | undefined): ExtensionScope {
+    return ExtensionScope.resolve(type);
   }
 
   private readStoredSecret(source: IBuildSourceRecord): string {

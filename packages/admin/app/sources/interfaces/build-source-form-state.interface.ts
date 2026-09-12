@@ -1,3 +1,5 @@
+import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
+
 export interface IBuildSourceFormState {
   /** Which provider fetches this source. */
   provider: string;
@@ -32,5 +34,10 @@ export interface IBuildSourceFormState {
   gitSecret: string;
   gitUrl: string;
   slug: string;
-  type: 'plugin' | 'theme' | 'core';
+  /**
+   * The kind, DETECTED from the repository's manifest. One declaration, shared with the values the
+   * form submits — it was spelled out separately here, and a union missing `appearance` is how a
+   * correctly detected appearance could not even be held in state.
+   */
+  type: IBuildSourceFormValues['type'];
 }

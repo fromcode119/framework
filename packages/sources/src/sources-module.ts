@@ -1,10 +1,10 @@
+import { ExtensionScope } from '@fromcode119/core';
 import * as path from 'path';
 import type { RequestHandler } from 'express';
 import { Logger } from '@fromcode119/core';
 import { BuildService } from '@sources/packaging/build-service';
 import { BuildSourceSecretService } from '@sources/sources/build-source-secret-service';
 import { BuildSourceService } from '@sources/sources/build-source-service';
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
 import { CatalogContributionService } from '@sources/catalog/catalog-contribution-service';
 import { SourceProviders } from '@sources/providers/source-providers';
 import { LegacyWorkspaceAdoption } from '@sources/settings/legacy-workspace-adoption';
@@ -113,7 +113,7 @@ export class SourcesModule {
       // Where the offered file actually is. An offer from here is an archive this installation built,
       // and its catalogue row carries only a filename — without this an installer resolved that name
       // against the remote marketplace and fetched a package that had never been published there.
-      async (slug: string, kind: string) => buildService.resolvePackageFilePath(slug, BuildSourceType.resolve(kind)),
+      async (slug: string, kind: string) => buildService.resolvePackageFilePath(slug, ExtensionScope.resolve(kind)),
     );
     SourcesModule.logger.info('Offering built versions to the admin catalogue.');
   }

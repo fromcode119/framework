@@ -1,10 +1,10 @@
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
+import { ExtensionScope } from '@fromcode119/core';
 
 export interface IBuildSourceInput {
   /** Which provider fetches this source. Defaults to git for rows that predate the field. */
   provider?: string;
   slug: string;
-  type: BuildSourceType;
+  type: ExtensionScope;
   gitUrl: string;
   branch: string;
   gitSecret?: string;

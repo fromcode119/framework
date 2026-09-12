@@ -1,8 +1,8 @@
-import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
+import { ExtensionScope } from '@fromcode119/core';
 
 export interface IBuildResult {
   slug: string;
-  type: BuildSourceType;
+  type: ExtensionScope;
   success: boolean;
   version?: string;
   fileName?: string;

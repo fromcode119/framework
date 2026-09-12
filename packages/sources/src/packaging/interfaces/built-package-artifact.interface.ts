@@ -1,4 +1,4 @@
-import type { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
+import type { ExtensionScope } from '@fromcode119/core';
 
 /** Everything known about a built package: where it is, and where a download would come from. */
 export interface IBuiltPackageArtifact {
@@ -11,6 +11,6 @@ export interface IBuiltPackageArtifact {
   downloadPath: string;
   /** SHA-256 of the archive, when one exists. Empty means none has been written. */
   artifactSha256: string;
-  type: BuildSourceType;
+  type: ExtensionScope;
   version?: string;
 }
