@@ -23,6 +23,27 @@ export class TenantRlsSql {
   }
 
   /** Every statement needed to bring one table under tenant isolation, in order. */
+  /**
+   * Just the COLUMN and its index — the half that is safe on a deployment with no tenants.
+   *
+   * Adoption needs this separately. It stamps every table that HAS a `tenant_id` column, but on a
+   * deployment whose tables predate tenancy the column does not exist yet: `applyTenantIsolation`
+   * returns early while tenant mode is off, and the column only arrives on the NEXT boot, after
+   * adoption has already run. So adoption stamped nothing in those tables and their rows were left
+   * with no owner — measured on a real adoption: 20 rows across 8 tables, invisible to every tenant.
+   *
+   * The column is nullable with a default that evaluates to NULL outside a tenant, so adding it
+   * before there are any tenants changes no behaviour and loses no rows.
+   */
+  static columnStatementsFor(table: string): string[] {
+    const name = TenantRlsSql.assertIdentifier(table);
+    return [
+      `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantRlsSql.COLUMN}" TEXT `
+        + `DEFAULT ${TenantRlsSql.currentTenantExpression()}`,
+      `CREATE INDEX IF NOT EXISTS "${name}_${TenantRlsSql.COLUMN}_idx" ON "${name}" ("${TenantRlsSql.COLUMN}")`,
+    ];
+  }
+
   static statementsFor(table: string): string[] {
     const name = TenantRlsSql.assertIdentifier(table);
     const predicate = TenantRlsSql.predicate();

@@ -501,9 +501,13 @@ export class PluginManager implements IPluginManagerInterface {
 
   /**
    * Physical tables belonging to collections declared `system: true` — framework configuration,
-   * which is never tenant-scoped in T0 regardless of what the table is called.
+   * which is never tenant-scoped regardless of what the table is called.
+   *
+   * PUBLIC because adoption must ask the same question the boot sweep does. Two copies of "which
+   * tables are platform configuration" would eventually disagree, and the disagreement would show
+   * up as a table scoped by one path and not the other.
    */
-  private systemCollectionTables(): Set<string> {
+  systemCollectionTables(): Set<string> {
     const tables = new Set<string>();
     for (const [, entry] of this.registeredCollections) {
       const collection: any = entry.collection;

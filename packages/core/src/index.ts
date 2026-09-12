@@ -221,6 +221,7 @@ export { TenantImportExecutor } from '@core/tenant/provisioning/tenant-import-ex
 export { TenantImportResult } from '@core/tenant/provisioning/tenant-import-result';
 export { TenantEraser } from '@core/tenant/provisioning/tenant-eraser';
 export { TenantAdoptionService } from '@core/tenant/provisioning/tenant-adoption-service';
+export { TenantColumnPreparer } from '@core/tenant/provisioning/tenant-column-preparer';
 export { PluginHostRegistry } from '@core/plugin/host/plugin-host-registry';
 export { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 export { PluginHost } from '@core/plugin/host/plugin-host';

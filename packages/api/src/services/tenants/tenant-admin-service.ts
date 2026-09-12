@@ -3,7 +3,7 @@ import path from 'path';
 import type { IDatabaseManager } from '@fromcode119/database';
 import {
   AuditOutcome, BackupCatalogService, BackupService, CoercionUtils, PluginManager, PluginState, PluginTenantStateService, SystemConstants,
-  TenantAdoptionService, TenantArchiveLayout, TenantArchiveManifest, TenantArchiveReader, TenantArchiveSource, TenantArchiveWriter, TenantEraser, TenantIdentity,
+  TenantAdoptionService, TenantArchiveLayout, TenantColumnPreparer, TenantArchiveManifest, TenantArchiveReader, TenantArchiveSource, TenantArchiveWriter, TenantEraser, TenantIdentity,
   TenantImportExecutor, TenantImportPlan, TenantImportPlanner, TenantImportResult, TenantMembershipService, TenantMode, TenantRecord,
   TenantRegistryService, TenantResolverService, TenantTableCatalog, TenantTableDescriptor, TenantThemeAccess, TenantThemeStateService, ThemeManager,
   PluginTenantAccess, RequestContextUtils, AppearanceManager, Logger, TenantKindPreset, TenantKindPresets, StringUtils, StorefrontPagesCollection } from '@fromcode119/core';
@@ -210,6 +210,11 @@ export class TenantAdminService {
 
   async adopt(identityInput: Record<string, unknown>, actor: Record<string, unknown>): Promise<unknown> {
     const identity = TenantIdentity.from(identityInput);
+    // COLUMNS FIRST. Adoption stamps the rows of every table that has a `tenant_id` column, and on a
+    // deployment whose tables predate tenancy none of them do — the column only arrives on the next
+    // boot, once a tenant exists and the sweep runs. Adopting before that stamped nothing in those
+    // tables and left their rows ownerless, which row-level security then hid from everyone.
+    await new TenantColumnPreparer(this.db).ensureColumns(this.manager.systemCollectionTables());
     const tables = await new TenantTableCatalog(this.db, this.manager.registeredCollections.values()).byColumn();
     const outcome = await new TenantAdoptionService(this.db, this.registry, tables).adopt(identity);
     await this.record('tenant.adopt', identity.slug, actor, { id: identity.id, stamped: outcome.stamped, members: outcome.members, unassigned: outcome.unassigned });
