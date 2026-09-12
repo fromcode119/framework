@@ -1,4 +1,5 @@
 import { ExtensionScope } from '@fromcode119/core';
+import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -47,7 +48,7 @@ describe('PackageDownloadService', () => {
   afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
 
   it('makes the archive on the first ask and records it', async () => {
-    const result = await service.archive('fromcode', artifact());
+    const result = await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
 
     expect(result?.fileName).toBe('fromcode-0.1.29.zip');
     expect(fs.existsSync(result!.filePath)).toBe(true);
@@ -55,22 +56,22 @@ describe('PackageDownloadService', () => {
   });
 
   it('serves the same archive again without remaking it', async () => {
-    await service.archive('fromcode', artifact());
+    await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
     recorded = [];
 
-    await service.archive('fromcode', artifact());
+    await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
 
     expect(recorded).toHaveLength(0);
   });
 
   it('REMAKES it when the package has been rebuilt since', async () => {
-    const first = await service.archive('fromcode', artifact());
+    const first = await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
     // The same version rebuilt: same staged path, same archive name, newer content.
     const later = new Date(Date.now() + 60_000);
     fs.utimesSync(staged, later, later);
     recorded = [];
 
-    await service.archive('fromcode', artifact());
+    await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
 
     expect(recorded).toHaveLength(1);
     expect(fs.statSync(first!.filePath).mtimeMs).toBeGreaterThanOrEqual(fs.statSync(staged).mtimeMs - 60_000);
@@ -80,14 +81,14 @@ describe('PackageDownloadService', () => {
     const coreZip = path.join(themesDir, 'fromcode-core-1.0.0.zip');
     fs.writeFileSync(coreZip, 'PK');
 
-    const result = await service.archive('core', artifact({ stagedDir: null, filePath: coreZip, type: ExtensionScope.CORE }));
+    const result = await service.archive(BuildSourceIdentity.parse(ExtensionScope.CORE, 'core'), artifact({ stagedDir: null, filePath: coreZip, type: ExtensionScope.CORE }));
 
     expect(result?.filePath).toBe(coreZip);
     expect(recorded).toHaveLength(0);
   });
 
   it('is null when there is no package to archive, rather than an empty zip', async () => {
-    expect(await service.archive('fromcode', artifact({ stagedDir: path.join(root, 'gone') }))).toBeNull();
-    expect(await service.archive('fromcode', null)).toBeNull();
+    expect(await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact({ stagedDir: path.join(root, 'gone') }))).toBeNull();
+    expect(await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), null)).toBeNull();
   });
 });

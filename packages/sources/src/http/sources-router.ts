@@ -4,6 +4,7 @@ import type { Request, RequestHandler, Response } from 'express';
 import { BuildService } from '@sources/packaging/build-service';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
 import { SourceProviders } from '@sources/providers/source-providers';
+import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 
 /**
  * Express router for the Sources API endpoints.
@@ -22,8 +23,8 @@ export class SourcesRouter extends BaseRouter {
     // Mounted at `/sources`, so these are the paths under it. As a plugin they were `/sources/...`
     // beneath the plugin's own namespace, which mounted here would have read `/sources/sources`.
     //
-    // ORDER IS LOAD-BEARING: every literal segment is declared before `/:slug`, or `/build` would be
-    // matched as a source called "build".
+    // ORDER IS LOAD-BEARING: every literal segment is declared before the parameterised routes, or
+    // `/build` would be matched as a source called "build".
     // What this installation can fetch source FROM. The form builds its provider field from this,
     // so adding a provider does not mean editing a dropdown in the admin.
     this.get('/providers', this.adminGuard, this.listProviders);
@@ -36,14 +37,46 @@ export class SourcesRouter extends BaseRouter {
 
     this.get('/', this.adminGuard, this.getStatus);
     this.post('/', this.adminGuard, this.createSource);
-    this.get('/:slug', this.adminGuard, this.getStatusBySlug);
-    this.patch('/:slug', this.adminGuard, this.updateSource);
-    this.delete('/:slug', this.adminGuard, this.deleteSource);
-    this.post('/:slug/build', this.adminGuard, this.triggerOne);
+    // A source is addressed by KIND and slug, because that is what identifies it: the same slug can
+    // name a plugin, a theme and an appearance, which are three different extensions in three
+    // different roots. Addressed by slug alone, every one of these routes acted on whichever row
+    // the database happened to return first.
+    this.get('/:type/:slug', this.adminGuard, this.getStatusBySlug);
+    this.patch('/:type/:slug', this.adminGuard, this.updateSource);
+    this.delete('/:type/:slug', this.adminGuard, this.deleteSource);
+    this.post('/:type/:slug/build', this.adminGuard, this.triggerOne);
     // The archive, made on request. A build no longer writes one — it stages a package directory —
     // so this is where "I want the file" is expressed. The admin used to link at
     // `/themes/<file>.zip`, a path nothing had served since Sources stopped being a plugin.
-    this.get('/:slug/package', this.adminGuard, this.downloadPackage);
+    this.get('/:type/:slug/package', this.adminGuard, this.downloadPackage);
+  }
+
+  /**
+   * The source a request addresses, or a 404 when it addresses none.
+   *
+   * `ExtensionScope.find`, never `resolve`: `resolve` answers PLUGIN for anything it cannot name, so
+   * a request to `/sources/bogus/tagiqx` would have deleted, built or downloaded the PLUGIN called
+   * tagiqx. A path that names nothing must be a 404, not a different extension.
+   */
+  private identityFrom(req: Request, res: Response): BuildSourceIdentity | null {
+    const identity = SourcesRouter.identityOrNull(req.params.type, req.params.slug);
+    if (!identity) {
+      res.status(404).json({
+        success: false,
+        error: `"${String(req.params.type ?? '')}/${String(req.params.slug ?? '')}" does not name a source.`,
+      });
+      return null;
+    }
+    return identity;
+  }
+
+  /** The same parse where the caller has its own answer for "no such source". */
+  private static identityOrNull(type: unknown, slug: unknown): BuildSourceIdentity | null {
+    try {
+      return BuildSourceIdentity.parse(type, slug);
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -51,11 +84,13 @@ export class SourcesRouter extends BaseRouter {
    * for and serving the same file afterwards.
    */
   private async downloadPackage(req: Request, res: Response): Promise<void> {
-    const slug = String(req.params.slug ?? '');
+    const identity = this.identityFrom(req, res);
+    if (!identity) return;
+
     try {
-      const archive = await this.buildService.archivePackage(slug);
+      const archive = await this.buildService.archivePackage(identity);
       if (!archive) {
-        res.status(404).json({ success: false, error: `"${slug}" has no successful build to download.` });
+        res.status(404).json({ success: false, error: `"${identity.key}" has no successful build to download.` });
         return;
       }
       res.download(archive.filePath, archive.fileName);
@@ -83,10 +118,12 @@ export class SourcesRouter extends BaseRouter {
   }
 
   private async triggerOne(req: Request, res: Response): Promise<void> {
-    const slug = String(req.params.slug ?? '');
-    console.log(`[SourcesRouter] POST /trigger/${slug}`);
+    const identity = this.identityFrom(req, res);
+    if (!identity) return;
+
+    console.log(`[SourcesRouter] POST /trigger/${identity.key}`);
     try {
-      const result = await this.buildService.buildBySlug(slug);
+      const result = await this.buildService.buildSource(identity);
       res.status(result.success ? 200 : 500).json({ success: result.success, result });
     } catch (err: any) {
       res.status(500).json({ success: false, error: 'Build failed: ' + err.message });
@@ -103,11 +140,13 @@ export class SourcesRouter extends BaseRouter {
   }
 
   private async getStatusBySlug(req: Request, res: Response): Promise<void> {
+    const identity = this.identityFrom(req, res);
+    if (!identity) return;
+
     try {
-      const slug = String(req.params.slug ?? '');
-      const build = await this.buildService.getStatusBySlug(slug);
+      const build = await this.buildService.getSourceStatus(identity);
       if (!build) {
-        res.status(404).json({ error: `No build record for "${slug}"` });
+        res.status(404).json({ error: `No build record for "${identity.key}"` });
         return;
       }
       res.json({ build });
@@ -117,9 +156,11 @@ export class SourcesRouter extends BaseRouter {
   }
 
   private async deleteSource(req: Request, res: Response): Promise<void> {
+    const identity = this.identityFrom(req, res);
+    if (!identity) return;
+
     try {
-      const slug = String(req.params.slug ?? '');
-      await this.buildService.deleteSource(slug);
+      await this.buildService.deleteSource(identity);
       res.json({ success: true });
     } catch (err: any) {
       res.status(500).json({ error: 'Failed to delete source: ' + err.message });
@@ -153,9 +194,10 @@ export class SourcesRouter extends BaseRouter {
   private async resolveRequestToken(req: Request, gitUrl: string): Promise<string | undefined> {
     const posted = String(req.body?.gitSecret || '').trim();
     if (posted) return posted;
-    const slug = String(req.body?.slug || '').trim();
-    if (!slug) return undefined;
-    return this.buildService.resolveStoredToken(slug, gitUrl);
+    // Both halves, because the stored token belongs to one source and the slug names several.
+    const identity = SourcesRouter.identityOrNull(req.body?.type, req.body?.slug);
+    if (!identity) return undefined;
+    return this.buildService.resolveStoredToken(identity, gitUrl);
   }
 
   /**
@@ -216,8 +258,11 @@ export class SourcesRouter extends BaseRouter {
   }
 
   private async updateSource(req: Request, res: Response): Promise<void> {
+    const identity = this.identityFrom(req, res);
+    if (!identity) return;
+
     try {
-      const source = await this.buildService.updateSource(String(req.params.slug ?? ''), req.body || {});
+      const source = await this.buildService.updateSource(identity, req.body || {});
       res.json({ source, success: true });
     } catch (err: any) {
       res.status(400).json({ error: err.message || 'Failed to update source.' });

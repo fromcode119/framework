@@ -4,6 +4,7 @@ import { ArtifactDigestService } from '@sources/packaging/artifact-digest-servic
 import { PackageArchiver } from '@sources/packaging/package-archiver';
 import type { IBuiltPackageArtifact } from '@sources/packaging/interfaces/built-package-artifact.interface';
 import type { PackageBuilder } from '@sources/packaging/package-builder';
+import type { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 
 /**
  * The archive, made when somebody asks for it.
@@ -19,10 +20,10 @@ import type { PackageBuilder } from '@sources/packaging/package-builder';
 export class PackageDownloadService {
   constructor(
     private readonly packageBuilder: PackageBuilder,
-    private readonly recordArchive: (slug: string, fileName: string, digest: string) => Promise<void>,
+    private readonly recordArchive: (identity: BuildSourceIdentity, fileName: string, digest: string) => Promise<void>,
   ) {}
 
-  async archive(slug: string, artifact: IBuiltPackageArtifact | null): Promise<{ filePath: string; fileName: string } | null> {
+  async archive(identity: BuildSourceIdentity, artifact: IBuiltPackageArtifact | null): Promise<{ filePath: string; fileName: string } | null> {
     if (!artifact) return null;
 
     // Core never stages; it has an archive already.
@@ -31,12 +32,12 @@ export class PackageDownloadService {
     }
     if (!artifact.stagedDir || !fs.existsSync(artifact.stagedDir)) return null;
 
-    const fileName = `${slug}-${artifact.version}.zip`;
+    const fileName = `${identity.slug}-${artifact.version}.zip`;
     const filePath = path.join(this.packageBuilder.outputDirFor(artifact.type), fileName);
     if (PackageDownloadService.isStale(filePath, artifact.stagedDir)) {
       await new PackageArchiver().createZip(artifact.stagedDir, filePath);
       // Recorded so a consumer of the catalogue has a hash that did not travel inside the package.
-      await this.recordArchive(slug, fileName, await ArtifactDigestService.digestFile(filePath));
+      await this.recordArchive(identity, fileName, await ArtifactDigestService.digestFile(filePath));
     }
 
     return { filePath, fileName };

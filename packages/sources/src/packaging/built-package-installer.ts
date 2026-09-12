@@ -3,6 +3,7 @@ import { BuildErrorRedactionService } from '@sources/packaging/build-error-redac
 import { Logger } from '@fromcode119/core';
 import type { IBuiltPackageArtifact } from '@sources/packaging/interfaces/built-package-artifact.interface';
 import type { IExtensionInstaller } from '@sources/interfaces/extension-installer.interface';
+import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 
 /**
  * What happens to a package after it is built.
@@ -21,7 +22,7 @@ export class BuiltPackageInstaller {
 
   constructor(
     private readonly installer: IExtensionInstaller | undefined,
-    private readonly recordFailure: (slug: string, message: string) => Promise<void>,
+    private readonly recordFailure: (identity: BuildSourceIdentity, message: string) => Promise<void>,
   ) {}
 
   /**
@@ -30,18 +31,26 @@ export class BuiltPackageInstaller {
    * A failure is recorded against the source and never rethrown: the build itself succeeded, and
    * losing that fact would make the next check rebuild the same commit forever.
    */
-  async install(slug: string, artifact: IBuiltPackageArtifact | null, source: Record<string, any>): Promise<void> {
+  async install(
+    identity: BuildSourceIdentity,
+    artifact: IBuiltPackageArtifact | null,
+    source: Record<string, any>,
+  ): Promise<void> {
+    const slug = identity.slug;
     try {
       if (!this.installer) {
-        this.logger.warn(`Install skipped for ${slug}: no installer is wired.`);
+        this.logger.warn(`Install skipped for ${identity.key}: no installer is wired.`);
         return;
       }
       if (!artifact) {
-        this.logger.warn(`Install skipped for ${slug}: no build was recorded.`);
+        this.logger.warn(`Install skipped for ${identity.key}: no build was recorded.`);
         return;
       }
 
-      const type = ExtensionScope.resolve(source.type);
+      // The kind comes from the identity, not from `resolve` over the row: this decides which ROOT
+      // the package is written into, and a value it could not name must never fall through to the
+      // plugins directory.
+      const type = identity.type;
       const installed = await this.installer.isExtensionInstalled(slug, type as never);
       if (installed && !BuiltPackageInstaller.readFlag(source.autoUpdate)) {
         this.logger.info(
@@ -57,8 +66,8 @@ export class BuiltPackageInstaller {
       );
     } catch (err: any) {
       const message = BuildErrorRedactionService.redact(err?.message || String(err));
-      this.logger.error(`Install failed for ${slug}: ${message}`);
-      await this.recordFailure(slug, message).catch(() => undefined);
+      this.logger.error(`Install failed for ${identity.key}: ${message}`);
+      await this.recordFailure(identity, message).catch(() => undefined);
     }
   }
 

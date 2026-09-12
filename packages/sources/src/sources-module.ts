@@ -5,6 +5,7 @@ import { Logger } from '@fromcode119/core';
 import { BuildService } from '@sources/packaging/build-service';
 import { BuildSourceSecretService } from '@sources/sources/build-source-secret-service';
 import { BuildSourceService } from '@sources/sources/build-source-service';
+import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import { CatalogContributionService } from '@sources/catalog/catalog-contribution-service';
 import { SourceProviders } from '@sources/providers/source-providers';
 import { LegacyWorkspaceAdoption } from '@sources/settings/legacy-workspace-adoption';
@@ -113,7 +114,13 @@ export class SourcesModule {
       // Where the offered file actually is. An offer from here is an archive this installation built,
       // and its catalogue row carries only a filename — without this an installer resolved that name
       // against the remote marketplace and fetched a package that had never been published there.
-      async (slug: string, kind: string) => buildService.resolvePackageFilePath(slug, ExtensionScope.resolve(kind)),
+      // `find`, not `resolve`: this answers with a FILE PATH, and a kind nobody could name must not
+      // fall through to the plugins root and hand back somebody else's package.
+      async (slug: string, kind: string) => {
+        const scope = ExtensionScope.find(kind);
+        if (!scope) return null;
+        return buildService.resolvePackageFilePath(BuildSourceIdentity.parse(scope, slug));
+      },
     );
     SourcesModule.logger.info('Offering built versions to the admin catalogue.');
   }

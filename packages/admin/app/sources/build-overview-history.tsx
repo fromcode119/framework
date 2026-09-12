@@ -8,17 +8,17 @@ import { BuildSourceListItem } from '@/app/sources/build-source-list-item';
 
 export class BuildOverviewHistory extends AdminComponent {
   declare props: {
-    builds: any[]; deletingSlug: string | null; loading: boolean;
-    onDelete: (slug: string) => void; onEdit: (build: any) => void;
-    onTrigger: (slug: string) => void; triggerSlug: string | null;
+    builds: any[]; deletingKey: string | null; loading: boolean;
+    onDelete: (build: any) => void; onEdit: (build: any) => void;
+    onTrigger: (build: any) => void; triggerKey: string | null;
   };
   @prop declare builds: any[];
-  @prop declare deletingSlug: string | null;
+  @prop declare deletingKey: string | null;
   @prop declare loading: boolean;
-  @prop declare onDelete: (slug: string) => void;
+  @prop declare onDelete: (build: any) => void;
   @prop declare onEdit: (build: any) => void;
-  @prop declare onTrigger: (slug: string) => void;
-  @prop declare triggerSlug: string | null;
+  @prop declare onTrigger: (build: any) => void;
+  @prop declare triggerKey: string | null;
 
   render(): ReactNode {
   return (
@@ -49,13 +49,13 @@ export class BuildOverviewHistory extends AdminComponent {
 
         {this.builds.map((build) => (
           <BuildSourceListItem
-            key={build.slug}
+            key={`${build.type}/${build.slug}`}
             build={build}
-            deletingSlug={this.deletingSlug}
+            deletingKey={this.deletingKey}
             onDelete={this.onDelete}
             onEdit={this.onEdit}
             onTrigger={this.onTrigger}
-            triggerSlug={this.triggerSlug}
+            triggerKey={this.triggerKey}
           />
         ))}
       </div>

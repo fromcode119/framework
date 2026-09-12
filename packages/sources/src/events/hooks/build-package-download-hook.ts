@@ -1,31 +1,37 @@
-import { ExtensionScope } from '@fromcode119/core';
 import { CoercionUtils } from '@fromcode119/core';
 import type { HookManager } from '@fromcode119/core';
 import { BuildService } from '@sources/packaging/build-service';
+import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 
 export class BuildPackageDownloadHook {
   static readonly EVENT = 'sources:downloads:resolve';
 
   static register(hooks: HookManager, buildService: BuildService): void {
     hooks.on(BuildPackageDownloadHook.EVENT, async (payload: unknown) => {
-      const request = BuildPackageDownloadHook.readPayload(payload);
-      if (!request.slug) {
+      const identity = BuildPackageDownloadHook.identityFrom(payload);
+      if (!identity) {
         return { downloadPath: null };
       }
 
-      const artifact = await buildService.resolvePackageArtifact(request.slug, request.type);
+      const artifact = await buildService.resolvePackageArtifact(identity);
       return { downloadPath: artifact?.downloadPath || null };
     });
   }
 
-  private static readPayload(payload: unknown): { slug: string; type?: ExtensionScope } {
-    // SDK coercion, not hand-rolled `typeof` guards: `toObject`/`toString` already handle every shape an
-    // untrusted hook payload can arrive in, and `resolve()` normalises anything to a member.
+  /**
+   * The source a payload names, or null when it names none.
+   *
+   * BOTH halves are required. A payload carrying only a slug used to be enough, and the kind was
+   * either guessed (`resolve` answers PLUGIN for anything) or left out of the lookup entirely — so
+   * "resolve tagiqx" could hand back the plugin when the caller meant the theme. A caller that does
+   * not say which kind is asking an ambiguous question, and gets a refusal rather than a guess.
+   */
+  private static identityFrom(payload: unknown): BuildSourceIdentity | null {
     const record = CoercionUtils.toObject(payload);
-    return {
-      slug: CoercionUtils.toString(record.slug),
-      // Absent stays absent; anything present is normalised by the Enum (unknown -> PLUGIN).
-      type: record.type == null ? undefined : ExtensionScope.resolve(record.type),
-    };
+    try {
+      return BuildSourceIdentity.parse(record.type, record.slug);
+    } catch {
+      return null;
+    }
   }
 }

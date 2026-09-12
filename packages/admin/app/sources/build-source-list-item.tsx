@@ -11,17 +11,22 @@ import { SourcesApi } from '@/app/sources/sources-api';
 
 export class BuildSourceListItem extends AdminComponent {
   declare props: {
-    build: any; deletingSlug: string | null; onDelete: (slug: string) => void;
-    onEdit: (build: any) => void; onTrigger: (slug: string) => void; triggerSlug: string | null;
+    build: any; deletingKey: string | null; onDelete: (build: any) => void;
+    onEdit: (build: any) => void; onTrigger: (build: any) => void; triggerKey: string | null;
   };
   @prop declare build: any;
-  @prop declare deletingSlug: string | null;
-  @prop declare onDelete: (slug: string) => void;
+  @prop declare deletingKey: string | null;
+  @prop declare onDelete: (build: any) => void;
   @prop declare onEdit: (build: any) => void;
-  @prop declare onTrigger: (slug: string) => void;
-  @prop declare triggerSlug: string | null;
+  @prop declare onTrigger: (build: any) => void;
+  @prop declare triggerKey: string | null;
 
   @state downloading = false;
+
+  /** This row's identity. A slug alone matches the plugin AND the theme that share it. */
+  get identityKey(): string {
+    return `${String(this.build?.type ?? '')}/${String(this.build?.slug ?? '')}`;
+  }
 
   /**
    * Fetches the package through the authenticated client and hands the browser the bytes.
@@ -34,7 +39,7 @@ export class BuildSourceListItem extends AdminComponent {
     if (typeof window === 'undefined' || this.downloading) return;
     this.downloading = true;
     try {
-      const { blob, filename } = await SourcesApi.downloadPackage(this.build.slug);
+      const { blob, filename } = await SourcesApi.downloadPackage(String(this.build.type ?? ''), this.build.slug);
       const objectUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = objectUrl;
@@ -122,21 +127,21 @@ export class BuildSourceListItem extends AdminComponent {
                 </Button>
               ) : null}
               <Button
-                icon={<Play size={12} className={this.triggerSlug === this.build.slug ? 'animate-spin' : ''} />}
-                onClick={() => this.onTrigger(this.build.slug)}
-                disabled={this.triggerSlug === this.build.slug || this.deletingSlug === this.build.slug}
+                icon={<Play size={12} className={this.triggerKey === this.identityKey ? 'animate-spin' : ''} />}
+                onClick={() => this.onTrigger(this.build)}
+                disabled={this.triggerKey === this.identityKey || this.deletingKey === this.identityKey}
                 variant={ButtonVariant.OUTLINE}
               >
-                {this.triggerSlug === this.build.slug ? 'Building' : 'Build'}
+                {this.triggerKey === this.identityKey ? 'Building' : 'Build'}
               </Button>
               <Button icon={<Pencil size={12} />} onClick={() => this.onEdit(this.build)} variant={ButtonVariant.GHOST}>
                 Edit
               </Button>
               <Button
                 className="text-slate-400 hover:text-rose-600"
-                disabled={this.deletingSlug === this.build.slug}
-                icon={<Trash2 size={12} className={this.deletingSlug === this.build.slug ? 'animate-spin' : ''} />}
-                onClick={() => this.onDelete(this.build.slug)}
+                disabled={this.deletingKey === this.identityKey}
+                icon={<Trash2 size={12} className={this.deletingKey === this.identityKey ? 'animate-spin' : ''} />}
+                onClick={() => this.onDelete(this.build)}
                 variant={ButtonVariant.GHOST}
               >
                 Remove

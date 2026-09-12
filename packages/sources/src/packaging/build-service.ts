@@ -1,4 +1,5 @@
 import { ExtensionScope } from '@fromcode119/core';
+import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import type { ISourceProvider } from '@sources/providers/interfaces/source-provider.interface';
 import { SourceProviders } from '@sources/providers/source-providers';
 import { PackageBuilder } from '@sources/packaging/package-builder';
@@ -44,11 +45,11 @@ export class BuildService {
   ) {
     this.packageDownloads = new PackageDownloadService(
       packageBuilder,
-      (slug, fileName, digest) => this.buildSourceService.recordArchive(slug, fileName, digest),
+      (identity, fileName, digest) => this.buildSourceService.recordArchive(identity, fileName, digest),
     );
     this.builtPackageInstaller = new BuiltPackageInstaller(
       installer,
-      (slug, message) => this.buildSourceService.recordAutoUpdateFailure(slug, message),
+      (identity, message) => this.buildSourceService.recordAutoUpdateFailure(identity, message),
     );
   }
 
@@ -79,12 +80,17 @@ export class BuildService {
     return results;
   }
 
-  async buildBySlug(slug: string): Promise<IBuildResult> {
-    const entry = await this.buildSourceService.getRawSourceBySlug(slug);
+  async buildSource(identity: BuildSourceIdentity): Promise<IBuildResult> {
+    const entry = await this.buildSourceService.getRawSource(identity);
     if (!entry) {
-      return { slug, type: ExtensionScope.PLUGIN, success: false, error: `"${slug}" not found in database.` };
+      return {
+        slug: identity.slug,
+        type: identity.type,
+        success: false,
+        error: `"${identity.key}" not found in database.`,
+      };
     }
-    return this.buildOne(ExtensionScope.resolve(entry.type), entry);
+    return this.buildOne(identity.type, entry);
   }
 
   async checkForUpdates(): Promise<{ slug: string; type: string; hasUpdate: boolean; remoteSha: string | null }[]> {
@@ -119,14 +125,17 @@ export class BuildService {
     if (changed.length === 0) return [];
 
     const sources = await this.buildSourceService.listSanitizedSources();
-    const wanted = new Map(sources.map((row: any) => [String(row.slug), row]));
+    // Keyed on the PAIR. Keyed on the slug alone, a theme and a plugin sharing a name collapsed to
+    // one entry, so whichever came second decided whether BOTH were built automatically.
+    const wanted = new Map(sources.map((row: any) => [`${String(row.type)}/${String(row.slug)}`, row]));
 
     const results: IBuildResult[] = [];
     for (const update of changed) {
-      const source = wanted.get(String(update.slug));
+      const identity = BuildSourceIdentity.parse(update.type, update.slug);
+      const source = wanted.get(identity.key);
       if (!source?.autoBuild) continue;
 
-      const result = await this.buildBySlug(update.slug);
+      const result = await this.buildSource(identity);
       results.push(result);
     }
     return results;
@@ -143,12 +152,13 @@ export class BuildService {
     return results;
   }
 
-  async getStatusBySlug(slug: string): Promise<any | null> {
-    return this.buildSourceService.getSanitizedSourceBySlug(slug);
+  /** ONE source's status. `getStatus()` above lists them all — different question, different name. */
+  async getSourceStatus(identity: BuildSourceIdentity): Promise<any | null> {
+    return this.buildSourceService.getSanitizedSource(identity);
   }
 
-  async resolvePackageDownloadPath(slug: string, type?: ExtensionScope): Promise<string | null> {
-    const artifact = await this.resolvePackageArtifact(slug, type);
+  async resolvePackageDownloadPath(identity: BuildSourceIdentity): Promise<string | null> {
+    const artifact = await this.resolvePackageArtifact(identity);
     return artifact?.downloadPath || null;
   }
 
@@ -159,8 +169,8 @@ export class BuildService {
    * browser would fetch, and the two were confused once already — an installer opened `/themes/x.zip`
    * as a file and failed with EACCES on a directory it had no business writing to.
    */
-  async resolvePackageFilePath(slug: string, type?: ExtensionScope): Promise<string | null> {
-    const artifact = await this.resolvePackageArtifact(slug, type);
+  async resolvePackageFilePath(identity: BuildSourceIdentity): Promise<string | null> {
+    const artifact = await this.resolvePackageArtifact(identity);
     return artifact?.filePath || null;
   }
 
@@ -171,16 +181,13 @@ export class BuildService {
    * — it produces a staged directory whose location the builder owns. The archive exists only once
    * somebody has asked to download it.
    */
-  async resolvePackageArtifact(
-    slug: string,
-    type?: ExtensionScope,
-  ): Promise<IBuiltPackageArtifact | null> {
-    const entry = await this.db.findOne(this.buildsSlug, type ? { slug, type } : { slug });
+  async resolvePackageArtifact(identity: BuildSourceIdentity): Promise<IBuiltPackageArtifact | null> {
+    const entry = await this.db.findOne(this.buildsSlug, identity.where);
     if (!entry) {
       return null;
     }
 
-    const resolvedType = ExtensionScope.resolve(entry.type);
+    const resolvedType = identity.type;
     const version = CoercionUtils.toString(entry.version).trim();
     const fileName = CoercionUtils.toString(entry.file_name ?? entry.fileName).trim() || null;
 
@@ -192,11 +199,11 @@ export class BuildService {
       artifactSha256: CoercionUtils.toString(entry.artifactSha256),
       // The route that produces a download. It zips the staged package on request; nothing serves a
       // file that may not exist.
-      downloadPath: `/sources/${slug}/package`,
+      downloadPath: `/sources/${String(identity.type.value)}/${identity.slug}/package`,
       // The package itself. Asked of the builder rather than rebuilt from the kind's name: joining
       // `/themes/<file>` onto the process's cwd once named `/app/themes/<file>` for an archive that
       // lives in the WORKSPACE. Null when no successful build has recorded a version.
-      stagedDir: version ? this.packageBuilder.stagingDirFor(resolvedType, slug, version) : null,
+      stagedDir: version ? this.packageBuilder.stagingDirFor(resolvedType, identity.slug, version) : null,
       // The archive, if one has been written. Core only ever has this.
       filePath: fileName ? path.join(this.packageBuilder.outputDirFor(resolvedType), fileName) : null,
       fileName,
@@ -206,8 +213,8 @@ export class BuildService {
   }
 
   /** The built package as a downloadable archive, made on request. See PackageDownloadService. */
-  async archivePackage(slug: string): Promise<{ filePath: string; fileName: string } | null> {
-    return this.packageDownloads.archive(slug, await this.resolvePackageArtifact(slug));
+  async archivePackage(identity: BuildSourceIdentity): Promise<{ filePath: string; fileName: string } | null> {
+    return this.packageDownloads.archive(identity, await this.resolvePackageArtifact(identity));
   }
 
   async createSource(input: any): Promise<any> {
@@ -218,12 +225,12 @@ export class BuildService {
     return this.buildSourceService.syncSources(inputs);
   }
 
-  async deleteSource(slug: string): Promise<void> {
-    await this.buildSourceService.deleteSource(slug);
+  async deleteSource(identity: BuildSourceIdentity): Promise<void> {
+    await this.buildSourceService.deleteSource(identity);
   }
 
-  async updateSource(slug: string, input: any): Promise<any> {
-    return this.buildSourceService.updateSource(slug, input);
+  async updateSource(identity: BuildSourceIdentity, input: any): Promise<any> {
+    return this.buildSourceService.updateSource(identity, input);
   }
 
   private async buildOne(type: ExtensionScope, entry: any): Promise<IBuildResult> {
@@ -296,9 +303,10 @@ export class BuildService {
       // Every successful build, manual or scheduled, offers itself to the installer. What happens
       // next is the source's own two settings; this is just the one place a build ends.
       if (BuiltPackageInstaller.readFlag(entry.installAfterBuild ?? entry.install_after_build)) {
+        const identity = BuildSourceIdentity.parse(type, slug);
         await this.builtPackageInstaller.install(
-          slug,
-          await this.resolvePackageArtifact(slug, type),
+          identity,
+          await this.resolvePackageArtifact(identity),
           { ...entry, type, version: pkg.version },
         );
       }
@@ -318,8 +326,14 @@ export class BuildService {
     }
   }
 
+  /**
+   * Writes a build's progress onto its own row.
+   *
+   * The lookup carries the kind: by slug alone, building a theme found — and stamped its status,
+   * version and error onto — a plugin that happened to share the name.
+   */
   private async upsertBuildRecord(slug: string, type: ExtensionScope, gitUrl: string, branch: string, updates: Record<string, any>): Promise<void> {
-    const existing = await this.db.findOne(this.buildsSlug, { slug });
+    const existing = await this.db.findOne(this.buildsSlug, { slug, type: String(type.value) });
     if (existing) {
       await this.db.update(this.buildsSlug, { id: existing.id }, updates);
     } else {
@@ -346,8 +360,8 @@ export class BuildService {
    * <yours>" would hand somebody else's host a working credential — the stored secret would leave
    * the server after all, just not through the field that refuses to show it.
    */
-  async resolveStoredToken(slug: string, gitUrl: string): Promise<string | undefined> {
-    const entry = await this.buildSourceService.getRawSourceBySlug(slug);
+  async resolveStoredToken(identity: BuildSourceIdentity, gitUrl: string): Promise<string | undefined> {
+    const entry = await this.buildSourceService.getRawSource(identity);
     if (!entry?.gitSecret) return undefined;
     return BuildService.sameRepository(entry.gitUrl, gitUrl) ? entry.gitSecret : undefined;
   }

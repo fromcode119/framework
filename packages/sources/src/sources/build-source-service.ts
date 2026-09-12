@@ -6,7 +6,7 @@ import type { IBuildSourceInput } from '@sources/sources/interfaces/build-source
 import type { IBuildSourceRecord } from '@sources/sources/interfaces/build-source-record.interface';
 import type { IBuildSourceSummary } from '@sources/sources/interfaces/build-source-summary.interface';
 import type { IBuildSourceUpdateInput } from '@sources/sources/interfaces/build-source-update-input.interface';
-import { BuildSlugPolicy } from '@sources/sources/build-slug-policy';
+import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import { SourceProviders } from '@sources/providers/source-providers';
 import { GitBranchPolicy } from '@sources/providers/git/git-branch-policy';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
@@ -21,10 +21,13 @@ export class BuildSourceService {
   ) {}
 
   async createSource(input: IBuildSourceInput): Promise<IBuildSourceSummary> {
-    const slug = this.normalizeSlug(input.slug);
-    const existing = await this.db.findOne(this.buildsSlug, { slug });
+    const identity = BuildSourceIdentity.parse(input.type, input.slug);
+    const existing = await this.db.findOne(this.buildsSlug, identity.where);
     if (existing) {
-      throw new Error(`A build source with slug "${slug}" already exists.`);
+      // Names the KIND, because the slug on its own is not what collided: the operator may well
+      // have a plugin by this name on purpose, and "already exists" without the kind reads as a
+      // rule against that.
+      throw new Error(`A ${String(identity.type.value)} source with slug "${identity.slug}" already exists.`);
     }
 
     const data = {
@@ -43,21 +46,21 @@ export class BuildSourceService {
       // Recorded, never implied. A source that does not say how it is fetched is a source only one
       // implementation can ever fetch.
       provider: SourceProviders.normalize(input.provider),
-      slug,
-      type: this.normalizeType(input.type),
+      slug: identity.slug,
+      type: identity.type,
     };
 
     await this.db.insert(this.buildsSlug, data);
-    const created = await this.db.findOne(this.buildsSlug, { slug });
+    const created = await this.db.findOne(this.buildsSlug, identity.where);
     if (!created) {
-      throw new Error(`Failed to create build source "${slug}".`);
+      throw new Error(`Failed to create build source "${identity.key}".`);
     }
 
     return this.sanitizeSource(created);
   }
 
-  async deleteSource(slug: string): Promise<void> {
-    const existing = await this.db.findOne(this.buildsSlug, { slug });
+  async deleteSource(identity: BuildSourceIdentity): Promise<void> {
+    const existing = await this.db.findOne(this.buildsSlug, identity.where);
     if (existing) {
       await this.db.delete(this.buildsSlug, { id: existing.id });
     }
@@ -86,8 +89,8 @@ export class BuildSourceService {
     return updated;
   }
 
-  async getRawSourceBySlug(slug: string): Promise<IBuildSourceRecord | null> {
-    const source = await this.db.findOne(this.buildsSlug, { slug });
+  async getRawSource(identity: BuildSourceIdentity): Promise<IBuildSourceRecord | null> {
+    const source = await this.db.findOne(this.buildsSlug, identity.where);
     if (!source) {
       return null;
     }
@@ -95,8 +98,8 @@ export class BuildSourceService {
     return this.hydrateSource(source);
   }
 
-  async getSanitizedSourceBySlug(slug: string): Promise<IBuildSourceSummary | null> {
-    const source = await this.db.findOne(this.buildsSlug, { slug });
+  async getSanitizedSource(identity: BuildSourceIdentity): Promise<IBuildSourceSummary | null> {
+    const source = await this.db.findOne(this.buildsSlug, identity.where);
     return source ? this.sanitizeSource(source) : null;
   }
 
@@ -106,8 +109,8 @@ export class BuildSourceService {
    * On the source, not in a log nobody reads: an operator who switched auto-update on and came back
    * to an unchanged site needs the reason where they made the choice.
    */
-  async recordAutoUpdateFailure(slug: string, message: string): Promise<void> {
-    await this.db.update(this.buildsSlug, { slug: this.normalizeSlug(slug) }, {
+  async recordAutoUpdateFailure(identity: BuildSourceIdentity, message: string): Promise<void> {
+    await this.db.update(this.buildsSlug, identity.where, {
       lastError: String(message || '').substring(0, 2000),
     });
   }
@@ -119,17 +122,17 @@ export class BuildSourceService {
    * and a filename recorded for a file that does not exist is what sent an installer to the remote
    * marketplace looking for it.
    */
-  async recordArchive(slug: string, fileName: string, artifactSha256: string): Promise<void> {
-    await this.db.update(this.buildsSlug, { slug: this.normalizeSlug(slug) }, { fileName, artifactSha256 });
+  async recordArchive(identity: BuildSourceIdentity, fileName: string, artifactSha256: string): Promise<void> {
+    await this.db.update(this.buildsSlug, identity.where, { fileName, artifactSha256 });
   }
 
   async listRawSources(): Promise<IBuildSourceRecord[]> {
-    const sources = await this.db.find(this.buildsSlug, { orderBy: { slug: 'ASC' } });
+    const sources = await this.db.find(this.buildsSlug, { orderBy: { slug: 'ASC', type: 'ASC' } });
     return (sources as IBuildSourceRecord[]).map((source) => this.hydrateSource(source));
   }
 
   async listSanitizedSources(): Promise<IBuildSourceSummary[]> {
-    const sources = await this.db.find(this.buildsSlug, { orderBy: { slug: 'ASC' } });
+    const sources = await this.db.find(this.buildsSlug, { orderBy: { slug: 'ASC', type: 'ASC' } });
     return (sources as IBuildSourceRecord[]).map((source) => this.sanitizeSource(source));
   }
 
@@ -140,14 +143,13 @@ export class BuildSourceService {
       // Every field is asserted here, NOT skipped. `sources:sync` is reachable from the hook bus as
       // well as the admin route, so a rejected entry must surface as an error the caller sees — a
       // silent `continue` would let a malformed source vanish with no signal.
-      const slug = this.normalizeSlug(input.slug);
-      const existing = await this.db.findOne(this.buildsSlug, { slug });
+      const identity = BuildSourceIdentity.parse(input.type, input.slug);
+      const existing = await this.db.findOne(this.buildsSlug, identity.where);
       if (existing) {
-        results.push(await this.updateSource(slug, {
+        results.push(await this.updateSource(identity, {
           branch: this.normalizeBranch(input.branch),
           gitSecret: input.gitSecret,
           gitUrl: this.normalizeGitUrl(input.gitUrl),
-          type: this.normalizeType(input.type),
         }));
         continue;
       }
@@ -156,18 +158,25 @@ export class BuildSourceService {
         branch: this.normalizeBranch(input.branch),
         gitSecret: input.gitSecret,
         gitUrl: this.normalizeGitUrl(input.gitUrl),
-        slug,
-        type: this.normalizeType(input.type),
+        slug: identity.slug,
+        type: identity.type,
       }));
     }
 
     return results;
   }
 
-  async updateSource(slug: string, input: IBuildSourceUpdateInput): Promise<IBuildSourceSummary> {
-    const existing = await this.db.findOne(this.buildsSlug, { slug });
+  /**
+   * Changes a source's settings. NOT its kind — that is half of which source this is.
+   *
+   * Editing the kind would move the clone directory, the staging root, the archive folder and the
+   * installer it goes through: it is a different extension, so it is delete-and-recreate rather
+   * than a field. `type` is gone from the input for that reason.
+   */
+  async updateSource(identity: BuildSourceIdentity, input: IBuildSourceUpdateInput): Promise<IBuildSourceSummary> {
+    const existing = await this.db.findOne(this.buildsSlug, identity.where);
     if (!existing) {
-      throw new Error(`Build source "${slug}" was not found.`);
+      throw new Error(`Build source "${identity.key}" was not found.`);
     }
 
     const updates: Record<string, unknown> = {};
@@ -178,10 +187,6 @@ export class BuildSourceService {
 
     if (typeof input.branch === 'string') {
       updates.branch = this.normalizeBranch(input.branch);
-    }
-
-    if (typeof input.type === 'string') {
-      updates.type = this.normalizeType(input.type);
     }
 
     if (typeof input.gitSecret === 'string' && input.gitSecret.trim()) {
@@ -195,9 +200,9 @@ export class BuildSourceService {
     if (typeof input.installAfterBuild === 'boolean') updates.installAfterBuild = input.installAfterBuild;
 
     await this.db.update(this.buildsSlug, { id: existing.id }, updates);
-    const refreshed = await this.db.findOne(this.buildsSlug, { slug });
+    const refreshed = await this.db.findOne(this.buildsSlug, identity.where);
     if (!refreshed) {
-      throw new Error(`Build source "${slug}" could not be reloaded after update.`);
+      throw new Error(`Build source "${identity.key}" could not be reloaded after update.`);
     }
 
     return this.sanitizeSource(refreshed);
@@ -226,10 +231,6 @@ export class BuildSourceService {
    */
   private normalizeGitUrl(gitUrl: string | undefined): string {
     return GitUrlPolicy.assertAllowed(gitUrl);
-  }
-
-  private normalizeSlug(slug: string | undefined): string {
-    return BuildSlugPolicy.assertAllowed(slug);
   }
 
   private normalizeType(type: ExtensionScope | string | undefined): ExtensionScope {

@@ -65,7 +65,10 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
       gitSecret: '',
       gitUrl: build?.gitUrl || '',
       slug: build?.slug || '',
-      type: build?.type === 'core' ? 'core' : (build?.type === 'theme' ? 'theme' : 'plugin'),
+      // The SAME ternary that put an appearance in the dialog as a Plugin, in the other place it
+      // was written. Now that the kind is half of which source this is, reading it wrong here would
+      // no longer be a wrong label — it would address a different source.
+      type: String(ExtensionScope.find(build?.type)?.value ?? ExtensionScope.PLUGIN.value) as IBuildSourceFormValues['type'],
     };
   }
 
@@ -146,7 +149,13 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
    */
   private remoteReadPayload(fields: Record<string, unknown>): Record<string, unknown> {
     const payload: Record<string, unknown> = { ...fields, gitSecret: this.state.gitSecret };
-    if (this.isEdit && this.props.build?.slug) payload.slug = this.props.build.slug;
+    // BOTH halves, because the stored token belongs to one source: the server refuses to look one
+    // up from a slug alone now, and sending only the slug silently lost the credential for every
+    // private repository opened for editing.
+    if (this.isEdit && this.props.build?.slug) {
+      payload.slug = this.props.build.slug;
+      payload.type = this.props.build.type;
+    }
     return payload;
   }
 

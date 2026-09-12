@@ -1,4 +1,5 @@
 import { ExtensionScope } from '@fromcode119/core';
+import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BuildService } from '@sources/packaging/build-service';
 import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
@@ -36,15 +37,15 @@ describe('BuildService — resolving a built artifact', () => {
   });
 
   it('reports the staged package inside the workspace the builder wrote into', async () => {
-    const artifact = await service.resolvePackageArtifact('fromcode', ExtensionScope.THEME);
+    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'));
 
     expect(artifact.stagedDir).toBe('/app/data/sources/themes/packages/fromcode-0.1.29');
   });
 
   it('answers with the route that MAKES a download, not a file that may not exist', async () => {
-    const artifact = await service.resolvePackageArtifact('fromcode', ExtensionScope.THEME);
+    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'));
 
-    expect(artifact.downloadPath).toBe('/sources/fromcode/package');
+    expect(artifact.downloadPath).toBe('/sources/theme/fromcode/package');
     // No archive has been written: a build stages a directory and zips only on request.
     expect(artifact.filePath).toBeNull();
     expect(artifact.fileName).toBeNull();
@@ -55,7 +56,7 @@ describe('BuildService — resolving a built artifact', () => {
       slug: 'fromcode', type: 'theme', version: '0.1.29', file_name: 'fromcode-0.1.29.zip',
     }));
 
-    const artifact = await service.resolvePackageArtifact('fromcode', ExtensionScope.THEME);
+    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'));
 
     expect(artifact.filePath).toBe('/app/data/sources/themes/fromcode-0.1.29.zip');
   });
@@ -63,7 +64,7 @@ describe('BuildService — resolving a built artifact', () => {
   it('stages nothing for a build that recorded no version, rather than naming a directory', async () => {
     service.db.findOne = vi.fn(async () => ({ slug: 'fromcode', type: 'theme', version: '  ' }));
 
-    const artifact = await service.resolvePackageArtifact('fromcode', ExtensionScope.THEME);
+    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'));
     expect(artifact.stagedDir).toBeNull();
   });
 });

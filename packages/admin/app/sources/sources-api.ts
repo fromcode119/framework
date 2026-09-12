@@ -18,10 +18,10 @@ export class SourcesApi {
     return AdminApi.get(SourcesRouteService.list(), options as RequestInit | undefined);
   }
   static create(input: Record<string, unknown>): Promise<any> { return AdminApi.post(SourcesRouteService.create(), input); }
-  static update(slug: string, input: Record<string, unknown>): Promise<any> { return AdminApi.patch(SourcesRouteService.one(slug), input); }
-  static remove(slug: string): Promise<any> { return AdminApi.delete(SourcesRouteService.one(slug)); }
+  static update(type: string, slug: string, input: Record<string, unknown>): Promise<any> { return AdminApi.patch(SourcesRouteService.one(type, slug), input); }
+  static remove(type: string, slug: string): Promise<any> { return AdminApi.delete(SourcesRouteService.one(type, slug)); }
   static buildAll(): Promise<any> { return AdminApi.post(SourcesRouteService.buildAll(), {}); }
-  static buildOne(slug: string): Promise<any> { return AdminApi.post(SourcesRouteService.buildOne(slug), {}); }
+  static buildOne(type: string, slug: string): Promise<any> { return AdminApi.post(SourcesRouteService.buildOne(type, slug), {}); }
   static checkUpdates(): Promise<any> { return AdminApi.post(SourcesRouteService.checkUpdates(), {}); }
   static listBranches(input: Record<string, unknown>): Promise<any> { return AdminApi.post(SourcesRouteService.branches(), input); }
   static inspect(input: Record<string, unknown>): Promise<any> { return AdminApi.post(SourcesRouteService.inspect(), input); }
@@ -33,7 +33,7 @@ export class SourcesApi {
    * link this replaces pointed at `/themes/<file>.zip` — a path nothing had served since Sources
    * stopped being a plugin, so the button 404'd for as long as it had existed.
    */
-  static downloadPackage(slug: string): Promise<{ blob: Blob; filename: string }> {
-    return AdminApi.download(SourcesRouteService.packageArchive(slug));
+  static downloadPackage(type: string, slug: string): Promise<{ blob: Blob; filename: string }> {
+    return AdminApi.download(SourcesRouteService.packageArchive(type, slug));
   }
 }

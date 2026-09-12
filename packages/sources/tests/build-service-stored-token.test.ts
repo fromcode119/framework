@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ExtensionScope } from '@fromcode119/core';
 import { BuildService } from '@sources/packaging/build-service';
+import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 
 /**
  * The comparison that decides whether a stored credential is released.
@@ -14,7 +16,7 @@ describe('BuildService — releasing a stored token', () => {
 
   const withStored = (gitUrl: string | null, gitSecret: string | null) => {
     service.buildSourceService = {
-      getRawSourceBySlug: vi.fn(async () => (gitUrl === null ? null : { gitUrl, gitSecret })),
+      getRawSource: vi.fn(async () => (gitUrl === null ? null : { gitUrl, gitSecret })),
     };
   };
 
@@ -24,7 +26,7 @@ describe('BuildService — releasing a stored token', () => {
   });
 
   it('releases the token for the repository it was stored against', async () => {
-    expect(await service.resolveStoredToken('forms', STORED)).toBe('stored-token');
+    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms'), STORED)).toBe('stored-token');
   });
 
   it.each([
@@ -32,7 +34,7 @@ describe('BuildService — releasing a stored token', () => {
     ['no .git suffix', 'https://github.com/fromcode119/plugin-forms'],
     ['different case', 'HTTPS://GitHub.com/Fromcode119/Plugin-Forms.git'],
   ])('still recognises the same repository with %s', async (_label, requested) => {
-    expect(await service.resolveStoredToken('forms', requested)).toBe('stored-token');
+    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms'), requested)).toBe('stored-token');
   });
 
   it.each([
@@ -42,16 +44,16 @@ describe('BuildService — releasing a stored token', () => {
     ['the host as a prefix only', 'https://github.com/fromcode119/plugin-forms.git.attacker.com'],
     ['an empty URL', ''],
   ])('refuses to release it to %s', async (_label, requested) => {
-    expect(await service.resolveStoredToken('forms', requested)).toBeUndefined();
+    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms'), requested)).toBeUndefined();
   });
 
   it('has nothing to release for a source that stores no token', async () => {
     withStored(STORED, null);
-    expect(await service.resolveStoredToken('forms', STORED)).toBeUndefined();
+    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms'), STORED)).toBeUndefined();
   });
 
   it('has nothing to release for a source that does not exist', async () => {
     withStored(null, null);
-    expect(await service.resolveStoredToken('ghost', STORED)).toBeUndefined();
+    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'ghost'), STORED)).toBeUndefined();
   });
 });

@@ -9,12 +9,23 @@ export class SourcesRouteService {
   static providers(): string { return '/sources/providers'; }
   static list(): string { return '/sources'; }
   static create(): string { return '/sources'; }
-  static one(slug: string): string { return `/sources/${encodeURIComponent(slug)}`; }
+  /**
+   * ONE source, addressed by its kind AND its slug.
+   *
+   * Both, because a slug names an extension only within its kind: a plugin, a theme and an
+   * appearance may all be called `tagiqx`. Addressed by slug alone, Delete and Build acted on
+   * whichever row came back first.
+   */
+  static one(type: string, slug: string): string {
+    return `/sources/${encodeURIComponent(type)}/${encodeURIComponent(slug)}`;
+  }
   static buildAll(): string { return '/sources/build'; }
-  static buildOne(slug: string): string { return `/sources/${encodeURIComponent(slug)}/build`; }
+  static buildOne(type: string, slug: string): string { return `${SourcesRouteService.one(type, slug)}/build`; }
   static checkUpdates(): string { return '/sources/check-updates'; }
   static branches(): string { return '/sources/branches'; }
   static inspect(): string { return '/sources/inspect'; }
   /** The built package as a downloadable archive, zipped on request. */
-  static packageArchive(slug: string): string { return `/sources/${encodeURIComponent(slug)}/package`; }
+  static packageArchive(type: string, slug: string): string {
+    return `${SourcesRouteService.one(type, slug)}/package`;
+  }
 }

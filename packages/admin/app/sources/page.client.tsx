@@ -15,13 +15,15 @@ import type { IBuildOverviewState } from '@/app/sources/interfaces/build-overvie
 
 export class BuildOverview extends AdminComponent {
   @state builds: any[] = [];
-  @state deletingSlug: string | null = null;
+  // Holds `<kind>/<slug>`, not a slug: the same slug can name a plugin AND a theme, and a
+  // slug-only comparison spun the Delete button on both rows.
+  @state deletingKey: string | null = null;
   @state editingBuild: any | null = null;
   @state editorMode: 'create' | 'edit' | null = null;
   @state error: string = '';
   @state loading: boolean = true;
   @state savingSource: boolean = false;
-  @state triggerSlug: string | null = null;
+  @state triggerKey: string | null = null;
   @state triggering: boolean = false;
   @state checking: boolean = false;
   static slots = ['admin.plugin.sources.content', 'admin.plugin.sources.overview', 'admin.plugin.sources.page.sources'];
@@ -65,19 +67,20 @@ export class BuildOverview extends AdminComponent {
     }
   }
 
-  async handleDelete(slug: string): Promise<void> {
-    if (!window.confirm(`Are you sure you want to remove "${slug}"? This stops tracking the repository but keeps existing packages.`)) {
+  async handleDelete(build: any): Promise<void> {
+    const { type, slug } = BuildOverview.identify(build);
+    if (!window.confirm(`Are you sure you want to remove the ${type} "${slug}"? This stops tracking the repository but keeps existing packages.`)) {
       return;
     }
-    this.deletingSlug = slug;
+    this.deletingKey = `${type}/${slug}`;
     try {
-      await SourcesApi.remove(slug);
+      await SourcesApi.remove(type, slug);
       await this.loadBuilds();
-      if (this.editingBuild?.slug === slug) this.closeEditor();
+      if (this.editingBuild?.slug === slug && this.editingBuild?.type === type) this.closeEditor();
     } catch (err: any) {
       this.error = err?.message || `Failed to delete ${slug}`;
     } finally {
-      this.deletingSlug = null;
+      this.deletingKey = null;
     }
   }
 
@@ -85,7 +88,11 @@ export class BuildOverview extends AdminComponent {
     this.savingSource = true;
     try {
       if (this.editorMode === 'edit' && this.editingBuild?.slug) {
-        await SourcesApi.update(this.editingBuild.slug, { ...values });
+        const { type, slug } = BuildOverview.identify(this.editingBuild);
+        // The kind is not sent: it is half of WHICH source this is, and changing it would move the
+        // clone directory, the staging root and the installer. That is a new source, not an edit.
+        const { type: _kind, ...editable } = values as unknown as Record<string, unknown>;
+        await SourcesApi.update(type, slug, editable);
       } else {
         await SourcesApi.create({ ...values });
       }
@@ -110,20 +117,26 @@ export class BuildOverview extends AdminComponent {
     }
   }
 
-  async handleTriggerOne(slug: string): Promise<void> {
-    this.triggerSlug = slug;
+  async handleTriggerOne(build: any): Promise<void> {
+    const { type, slug } = BuildOverview.identify(build);
+    this.triggerKey = `${type}/${slug}`;
     try {
-      await SourcesApi.buildOne(slug);
+      await SourcesApi.buildOne(type, slug);
       await this.loadBuilds();
     } catch (err: any) {
       this.error = err?.message || `Build failed for ${slug}`;
     } finally {
-      this.triggerSlug = null;
+      this.triggerKey = null;
     }
   }
 
+  /** A row's identity, in the one shape every call site here needs. */
+  private static identify(build: any): { type: string; slug: string } {
+    return { type: String(build?.type ?? ''), slug: String(build?.slug ?? '') };
+  }
+
   render(): ReactNode {
-    const { builds, checking, deletingSlug, editingBuild, editorMode, error, loading, savingSource, triggerSlug, triggering } = this;
+    const { builds, checking, deletingKey, editingBuild, editorMode, error, loading, savingSource, triggerKey, triggering } = this;
     const editorTitle = editorMode === 'edit' ? `Edit ${editingBuild?.slug || 'source'}` : 'Add Build Source';
     const editorDescription = editorMode === 'edit'
       ? 'Update repository details here. Leave the token blank to keep the currently stored secret.'
@@ -168,12 +181,12 @@ export class BuildOverview extends AdminComponent {
 
           <BuildOverviewHistory
             builds={builds}
-            deletingSlug={deletingSlug}
+            deletingKey={deletingKey}
             loading={loading}
-            onDelete={(slug: string) => this.handleDelete(slug)}
+            onDelete={(build: any) => this.handleDelete(build)}
             onEdit={(nextBuild: any) => { this.editingBuild = nextBuild; this.editorMode = 'edit'; }}
-            onTrigger={(slug: string) => this.handleTriggerOne(slug)}
-            triggerSlug={triggerSlug}
+            onTrigger={(build: any) => this.handleTriggerOne(build)}
+            triggerKey={triggerKey}
           />
           </div>
         </div>
