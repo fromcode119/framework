@@ -135,6 +135,8 @@ export class RouteConstants {
   TENANTS_ID_MEMBERS_LIST: '/:id/members',
   INTERNAL: '/internal',
   INTERNAL_ROUTING: '/internal/routing',
+  /** 'Is this host one of yours?' — what an edge asks before it issues a certificate for it. */
+  INTERNAL_HOST_PERMIT: '/internal/hosts/permit',
   /** Gateway-side: the api pushes here after a tenant change; the gateway answers its health here. */
   INTERNAL_ROUTING_RELOAD: '/internal/routing/reload',
   GATEWAY_HEALTH: '/healthz',

@@ -190,6 +190,8 @@ export type { IAppearanceWorkspaceDeclaration } from '@core/appearance/interface
 export { GatewayTarget } from '@core/tenant/gateway-target';
 export { TenantRoute } from '@core/tenant/tenant-route';
 export { TenantRouteMap } from '@core/tenant/tenant-route-map';
+export { HostPermissionVerdict } from '@core/enums/host-permission-verdict.enum';
+export { HostPermission } from '@core/tenant/host-permission';
 export { TenantMembership } from '@core/tenant/tenant-membership';
 export { TenantAccess } from '@core/tenant/tenant-access';
 export { TenantMembershipService } from '@core/tenant/tenant-membership-service';

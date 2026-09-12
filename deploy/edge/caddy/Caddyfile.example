@@ -1,0 +1,58 @@
+# Caddy in front of the platform — certificates without a config file per domain.
+#
+# WHY THIS FILE EXISTS AND THE FRAMEWORK HAS NO CADDY CODE: the platform states one fact through one
+# endpoint — "is this host one of ours?" — and every edge consumes that fact in its own way. Caddy is
+# the one that can ask at handshake time, so with Caddy a customer domain needs NOTHING here: the
+# operator adds it in the admin, the customer points DNS, and the first visitor triggers issuance.
+#
+# Copy this file, replace the two upstream names and the api address, and run it. Nothing in the
+# framework reads it.
+
+{
+	# ON-DEMAND TLS. Before Caddy issues for a hostname it has never seen, it GETs this endpoint with
+	# `?domain=<sni>` and issues only on a 2xx. 404 means "not ours" and 403 means "ours but
+	# suspended" — both refuse the handshake, which is what you want: no certificate is bought for a
+	# name this platform does not serve.
+	#
+	# THE ENDPOINT MUST NOT BE REACHABLE FROM THE INTERNET. It answers only to the platform's internal
+	# secret header or to a caller on a private address, and Caddy reaches it over the internal
+	# network by container name. Published publicly it becomes a way to enumerate your customers.
+	on_demand_tls {
+		ask http://api:3000/api/v1/internal/hosts/permit
+	}
+
+	email you@example.com
+}
+
+# Every host the platform serves, including customer domains nobody listed here.
+#
+# `on_demand` is what defers the certificate to first contact. Without it Caddy would need every
+# hostname up front, which is the per-domain config step this whole design exists to remove.
+https:// {
+	tls {
+		on_demand
+	}
+
+	# The gateway routes by Host: a site's host to the storefront, a workspace's to the admin, an
+	# `api.` alias to the api. Caddy does not need to know which is which — that decision already
+	# lives in the platform, and duplicating it here is how the two drift apart.
+	reverse_proxy gateway:3000 {
+		header_up X-Forwarded-Host {host}
+	}
+}
+
+# --- WHAT THIS DOES NOT DO -----------------------------------------------------------------------
+#
+# It does not ask the platform whether a site is PUBLIC. A private site still gets a certificate, on
+# purpose: it serves a holding page and its own admins sign in over HTTPS, so refusing TLS would
+# replace the holding page with a browser security warning and lock the operator out of the site they
+# are building. Who may READ a site is the platform's answer, made per request; this is only about
+# whether the name is ours.
+#
+# --- ORDER MATTERS, BECAUSE OF RATE LIMITS -------------------------------------------------------
+#
+# Add the domain in the admin FIRST, then have the customer point DNS, and do not probe the host
+# until they confirm it resolves. If the platform permits a host whose DNS does not yet point here,
+# every hit starts an ACME validation that fails, and Let's Encrypt allows five failures per hostname
+# per hour before it starts refusing — a monitoring check on a not-yet-pointed domain will find that
+# limit faster than a person can.

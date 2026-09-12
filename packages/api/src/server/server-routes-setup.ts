@@ -30,6 +30,7 @@ import { ScimRouter } from '@api/routes/scim-router';
 import { UserPermissionChecker } from '@fromcode119/auth';
 import { MediaRouter } from '@api/routes/media-router';
 import { McpRouter } from '@api/routes/mcp-routes';
+import { HostPermitRouter } from '@api/routes/host-permit-router';
 import { RoutingRouter } from '@api/routes/routing-router';
 import { McpFrameworkToolsRegistrar } from '@api/controllers/mcp/mcp-framework-tools-registrar';
 import { McpAuditRecorder } from '@api/controllers/mcp/mcp-audit-recorder';
@@ -203,7 +204,11 @@ export class ServerRoutesSetup {
     }));
 
     // The platform gateway's host → app map (T6). Secret-only; see RoutingRouter.
-    vApi.use(new RoutingRouter(new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db))).router);
+    const tenantRegistry = new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db));
+    vApi.use(new RoutingRouter(tenantRegistry).router);
+    // The same truth as the routing map, asked one host at a time — what an edge doing on-demand TLS
+    // needs at handshake time, when it cannot poll a list or send a header.
+    vApi.use(new HostPermitRouter(tenantRegistry).router);
     vApi.use(new CollectionRouter(this.manager, this.restController).router);
     this.app.use(vPrefix, vApi);
     this.app.use(PLUGINS, pluginAssetRouter);
