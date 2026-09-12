@@ -1,4 +1,4 @@
-import { SystemConstants, SystemSettingsExposureUtils, TenantMode } from '@fromcode119/core';
+import { RequestContextUtils, SystemConstants, SystemSettingsExposureUtils, TenantMode } from '@fromcode119/core';
 import { SystemController } from '@api/controllers/system/system-controller';
 
 /** A `_system_meta` stand-in that records what updateSettings actually wrote. */
@@ -122,12 +122,29 @@ describe('SystemAdminController.updateSettings — platform keys on a multi-site
     expect(meta.rows.has('ssr_render_memory_mb')).toBe(false);
   });
 
-  it('still lets a site admin write a per-site key', async () => {
+  it('still lets a site admin write a per-site key, with a site selected', async () => {
     TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
     const meta = new MetaTableStub();
     const res = createRes();
-    await createController(meta).updateSettings({ body: { measurement_system: 'imperial' }, user: { id: 247 } } as any, res);
+    // INSIDE a tenant scope, which is the only way a real request writes a per-site key: the row
+    // belongs to the selected site. Without one there is no row to write and the save is refused.
+    await RequestContextUtils.storage.run({ tenantId: 'site-a' }, async () => {
+      await createController(meta).updateSettings({ body: { measurement_system: 'imperial' }, user: { id: 247 } } as any, res);
+    });
     expect(res.status).not.toHaveBeenCalledWith(403);
     expect(meta.rows.get('measurement_system')).toBe('imperial');
+  });
+
+  it('refuses a per-site key when NO site is selected, instead of letting the database refuse it', async () => {
+    TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
+    const meta = new MetaTableStub();
+    const res = createRes();
+
+    await createController(meta).updateSettings({ body: { measurement_system: 'imperial' }, user: { id: 247 } } as any, res);
+
+    // A tenant-less row for a per-site key is one the `_system_meta` policy rejects: the save 500'd
+    // naming no key and logging nothing. Now it says which key and what to do.
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(meta.rows.get('measurement_system')).toBeUndefined();
   });
 });

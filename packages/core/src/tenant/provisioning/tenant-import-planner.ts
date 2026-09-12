@@ -42,8 +42,17 @@ export class TenantImportPlanner {
     for (const archived of reader.manifest.tables) {
       const destination = byName.get(archived.name);
       if (!destination) {
-        tables.push({ name: archived.name, rows: archived.rows, mode: 'skip', reason: 'This platform has no such tenant table.', opaqueJsonColumns: [], droppedColumns: archived.columns });
-        if (archived.rows > 0) warnings.push(`${archived.rows} row(s) of "${archived.name}" will be skipped: the table does not exist here.`);
+        // Says WHY, because "no such table" reads as a platform fault and is usually a choice: the
+        // table belongs to a plugin this platform does not run, so there is nowhere to put the rows.
+        // An operator who installs and enables that plugin and imports again keeps them.
+        const reason = 'No such table here — the plugin that owns it is not installed or not enabled on this platform.';
+        tables.push({ name: archived.name, rows: archived.rows, mode: 'skip', reason, opaqueJsonColumns: [], droppedColumns: archived.columns });
+        if (archived.rows > 0) {
+          warnings.push(
+            `${archived.rows} row(s) of "${archived.name}" will be skipped: no such table here. `
+            + 'Install and enable the plugin that owns it, then import again, to keep them.',
+          );
+        }
         continue;
       }
       tables.push(await this.planTable(reader, archived, destination));

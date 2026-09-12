@@ -71,7 +71,7 @@ export class APIServer {
       this.logger,
     );
     this.logRetention = new SystemLogRetentionService((manager as any).db, this.logger);
-    this.corsSetup = new ServerCorsSetup(this.app, this.settingsCache, this.logger);
+    this.corsSetup = new ServerCorsSetup(this.app, this.settingsCache, this.logger, (manager as any).db);
     this.maintenanceService = new ServerMaintenanceService(this.manager, this.cache, this.settingsCache, this.logger);
     this.authSetup = new ServerAuthSetup(this.auth, (manager as any).db, this.logger);
     this.middlewareSetup = new ServerMiddlewareSetup(

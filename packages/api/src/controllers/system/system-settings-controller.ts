@@ -2,6 +2,7 @@ import { AuditOutcome } from '@fromcode119/core';
 import { TenantBespokePolicies } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { ApplicationDomainSettingsUtils, RequestContextUtils, SystemConstants, SystemSettingsExposureUtils, TenantMode, TenantResolverService } from '@fromcode119/core';
+import { Logger } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
 /**
@@ -13,6 +14,8 @@ import { SystemControllerRuntime } from '@api/controllers/system/system-controll
  * other system controllers. Composed by SystemController with the same runtime.
  */
 export class SystemSettingsController {
+  private readonly logger = new Logger({ namespace: 'system-settings' });
+
   constructor(private readonly runtime: SystemControllerRuntime) {}
 
   private static readonly WRITABLE_SETTINGS_KEYS = new Set<string>([
@@ -189,6 +192,21 @@ export class SystemSettingsController {
       if (refused.length > 0 && TenantMode.isEnabled() && !platformAdmin) {
         return res.status(403).json({ error: 'platform_admin_required', message: `Platform setting(s) ${refused.join(', ')} apply to every site and only a platform admin may change them.`, keys: refused });
       }
+      // A PER-SITE key needs a site. With none selected on a multi-site platform there is no row it
+      // could belong to: the `_system_meta` policy accepts a tenant-less row only from a platform
+      // write, so the insert is refused by the database and the whole save 500s — naming no key and
+      // logging nothing. Refused here instead, saying which keys and what to do, because a control
+      // that appears to save and cannot is exactly the magic this codebase forbids.
+      const siteless = TenantMode.isEnabled() && !RequestContextUtils.getTenantId();
+      const perSite = Object.keys(preparedPayload).filter((key) => !platformKeys.has(key));
+      if (siteless && perSite.length > 0) {
+        return res.status(400).json({
+          error: 'site_required',
+          message: `Setting(s) ${perSite.join(', ')} belong to a site. Choose a site first — with none selected only platform settings can be changed.`,
+          keys: perSite,
+        });
+      }
+
       // A WORKSPACE's appearance is carried by its kind (T6 §3.3): no setting exists for it, so a
       // write is refused rather than stored where nothing reads it.
       if (SystemConstants.META_KEY.ADMIN_APPEARANCE in preparedPayload && TenantMode.isEnabled()) {
@@ -229,6 +247,9 @@ export class SystemSettingsController {
 
       res.json({ success: true });
     } catch (error: any) {
+      // LOGGED. This catch was silent, so a settings save the database refused left a 500 in the
+      // browser and NOTHING on the server — the cause could only be found by replaying the request.
+      this.logger.error(`Failed to update settings: ${error?.message ?? error}`, error);
       res.status(500).json({ error: error.message });
     }
   }
