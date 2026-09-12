@@ -104,7 +104,7 @@ export class SystemMetadataController {
     res.json({
       ...metadata,
       site: site
-        ? { id: site.id, slug: site.slug, visibility: String(site.visibility.value), isIndexable: site.isIndexable }
+        ? { id: site.id, slug: site.slug, visibility: String(site.visibility.value), isIndexable: site.isIndexable, isReadable: site.isReadable }
         : null,
       menu: Array.isArray(adminMetadata?.menu)
         ? adminMetadata.menu

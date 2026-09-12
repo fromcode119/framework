@@ -13,6 +13,25 @@ import { FrontendConfigCache } from '@/lib/frontend-config-cache';
  * whenever the plugin that serves it was inactive.
  */
 export class SiteVisibilityVerdict {
+  /**
+   * Whether an anonymous visitor may read this site at all.
+   *
+   * Asked BEFORE any content is fetched. The api refuses a private site's content with a 503, and
+   * the storefront reads a 503 from the api as "unavailable, try another prefix" — which surfaced as
+   * a 500 rather than the holding page. Deciding from the config the storefront already has avoids
+   * inferring intent from an error.
+   */
+  static async isReadable(): Promise<boolean> {
+    try {
+      const config = await FrontendConfigCache.read();
+      const site = (config as { site?: { isReadable?: unknown } } | null)?.site;
+      if (!site) return true;
+      return (site as { isReadable?: unknown }).isReadable === true;
+    } catch {
+      return true;
+    }
+  }
+
   /** True only when a site is resolved AND says it is indexable. */
   static async isIndexable(): Promise<boolean> {
     try {

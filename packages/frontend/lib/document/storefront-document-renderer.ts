@@ -93,10 +93,52 @@ export class StorefrontDocumentRenderer {
     return enabledLocales.has(first) ? { pathLocale: first, segments: segments.slice(1) } : { pathLocale: '', segments };
   }
 
+  /**
+   * What an unpublished site says to a visitor.
+   *
+   * 503 rather than 404: the site exists and will be there later, and a 404 tells a crawler the
+   * address is wrong. `no-store` because the answer changes the moment somebody publishes, and
+   * `X-Robots-Tag` because a holding page must never be the thing that gets indexed.
+   */
+  private static holding(): Response {
+    const body = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width, initial-scale=1">'
+      + '<meta name="robots" content="noindex, nofollow">'
+      + '<title>Not published yet</title></head>'
+      + '<body style="margin:0;display:grid;place-items:center;min-height:100vh;'
+      + 'font:16px/1.5 system-ui,sans-serif;color:#334155;background:#f8fafc">'
+      + '<main><p>This site is not published yet.</p></main></body></html>';
+
+    return new Response(body, {
+      status: 503,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'Retry-After': '3600',
+        'X-Robots-Tag': 'noindex, nofollow',
+      },
+    });
+  }
+
   private static async document(args: {
     content: unknown; resolutionType: string | undefined; url: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
     status?: number; notFoundPath?: string; acceptEncoding?: string;
   }): Promise<Response> {
+    // A site nobody has published yet answers here, before any content is fetched.
+    //
+    // Deciding from the config rather than from a failed fetch: the api refuses a private site's
+    // content with 503, and the storefront reads an api 503 as "unavailable, try another prefix",
+    // which surfaced to the visitor as a 500 instead of a holding page.
+    //
+    // KNOWN LIMIT: this payload is fetched server-to-server without the visitor's cookies, so the
+    // storefront knows the site is private but not who is asking — an admin previewing gets this
+    // holding response too. The api-side gate already admits admins; wiring the same for SSR needs
+    // the session forwarded on this fetch, and until it is, previewing means publishing as
+    // `unlisted` first.
+    if (!(await SiteVisibilityVerdict.isReadable())) {
+      return StorefrontDocumentRenderer.holding();
+    }
+
     const content = (args.content as Record<string, unknown> | null) || null;
     const locale = await FrontendLocaleService.resolveDocumentLocale(args.strategy);
     const [page, site, schema, markup, theme, headInjections, bodyStartInjections, frontend, translations, pageDocPrefetch] = await Promise.all([
