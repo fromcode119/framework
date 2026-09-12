@@ -1,5 +1,6 @@
 import { ModuleLocation } from '@extension-builder/module-location';
 import { Core } from '@extension-builder/core-bridge';
+import { ProcessFailureReason } from '@extension-builder/process-failure-reason';
 import { execFile } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -147,11 +148,22 @@ export class PluginUiViteCompiler {
   }
 
   private async runVite(stagingDir: string, configFile: string, env: Record<string, string>): Promise<void> {
-    await PluginUiViteCompiler.execFileAsync(
-      process.execPath,
-      [this.resolveViteCli(), 'build', '--config', configFile],
-      { cwd: path.dirname(stagingDir), timeout: 300_000, env: { ...process.env, ...env } },
-    );
+    try {
+      await PluginUiViteCompiler.execFileAsync(
+        process.execPath,
+        [this.resolveViteCli(), 'build', '--config', configFile],
+        { cwd: path.dirname(stagingDir), timeout: 300_000, env: { ...process.env, ...env } },
+      );
+    } catch (error: unknown) {
+      /*
+       * Vite's own words, not just "Command failed: node .../vite.js build --config ...". That
+       * message names the command and says nothing about what went wrong, while the reason sits on
+       * the error's `stderr` where nothing read it — the same way tailwind's reason was lost behind
+       * "exited 9".
+       */
+      const bundle = String(env.UI_BUNDLE || 'admin');
+      throw new Error(`vite build (${bundle})${ProcessFailureReason.from(error)}`);
+    }
   }
 
   /** The directory whose `node_modules` provides vite — and therefore `@vitejs/plugin-react` too. */

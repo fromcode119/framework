@@ -4,6 +4,7 @@ import * as path from 'path';
 import { spawnSync } from 'child_process';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { PluginStyleMarker } from '@extension-builder/assets/plugin-style-marker';
+import { ProcessFailureReason } from '@extension-builder/process-failure-reason';
 import { ViteConfigGlue } from '@extension-builder/deps/vite-config-glue';
 
 /**
@@ -18,13 +19,6 @@ import { ViteConfigGlue } from '@extension-builder/deps/vite-config-glue';
  */
 export class PluginStyleCompiler {
   static readonly STEP = 'plugin-style-compiler';
-
-  /** The last meaningful line of tailwind's output — the line that says what went wrong. */
-  private static reasonFrom(result: { stderr?: string; stdout?: string }): string {
-    const output = `${String(result?.stderr || '')}\n${String(result?.stdout || '')}`;
-    const line = output.split('\n').map((entry) => entry.trim()).filter((entry) => entry !== '').pop();
-    return line ? ` — ${line}` : '';
-  }
 
   private static readonly CONFIG = 'packages/sdk/src/tailwind/plugin-ui.config.ts';
   private static readonly INPUT = 'packages/sdk/src/tailwind/plugin-ui.css';
@@ -83,7 +77,7 @@ export class PluginStyleCompiler {
        */
       return BuildStepResult.failure(
         PluginStyleCompiler.STEP,
-        `${slug}: tailwind exited ${String(result.status)}${PluginStyleCompiler.reasonFrom(result)}`,
+        `${slug}: tailwind exited ${String(result.status)}${ProcessFailureReason.from(result)}`,
       );
     }
     if (!fs.existsSync(temporary) || fs.statSync(temporary).size === 0) {
