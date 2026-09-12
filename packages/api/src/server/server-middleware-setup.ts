@@ -3,6 +3,7 @@
 import express from 'express';
 import { CookieConstants, Logger, PluginManager, RequestContextUtils, TenantMembershipService, TenantMode, TenantResolverService } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
+import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
 import { ApiConfig } from '@api/config/api-config';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
 import { RequestLocaleService } from '@api/services/request/request-locale-service';
@@ -28,6 +29,8 @@ export class ServerMiddlewareSetup {
   /** Api-key surface: token -> tenant. Built lazily alongside `tenants`. */
   private apiKey: ApiKeyTenantGate | null = null;
   private tenantBinder: TenantRequestBinder | null = null;
+  private siteVisibility?: SiteVisibilityGate;
+
   /** Admin surface: session token -> tenant, membership-checked. Built lazily alongside `tenants`. */
   private adminTenant: AdminTenantResolver | null = null;
 
@@ -182,6 +185,17 @@ export class ServerMiddlewareSetup {
           res.status(503).json({ error: 'tenant_suspended', host });
           return;
         }
+        // A site that is not open yet answers only to the people building it. 503 rather than 404:
+        // the site exists and will be there later, and a 404 with a body tells a crawler the address
+        // is wrong. `no-store` because this answer changes the moment somebody publishes.
+        if (!(await this.visibilityGate().allows(tenant, req))) {
+          res.status(503)
+            .set('Retry-After', '3600')
+            .set('Cache-Control', 'no-store')
+            .set('X-Robots-Tag', 'noindex, nofollow')
+            .json({ error: 'site_private', host });
+          return;
+        }
 
         await this.binder().bind(req, res, locale, tenant, next, 'storefront');
       })
@@ -301,6 +315,12 @@ export class ServerMiddlewareSetup {
   private binder(): TenantRequestBinder {
     if (!this.tenantBinder) this.tenantBinder = new TenantRequestBinder(this.manager.db, this.logger);
     return this.tenantBinder;
+  }
+
+  /** Decides whether a request may read a site that is not published yet. Built once. */
+  private visibilityGate(): SiteVisibilityGate {
+    if (!this.siteVisibility) this.siteVisibility = new SiteVisibilityGate(this.manager.db);
+    return this.siteVisibility;
   }
 
   private resolveAdminTenant(req: any) {

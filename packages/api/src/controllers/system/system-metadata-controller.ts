@@ -1,4 +1,4 @@
-import { PluginTenantAccess } from '@fromcode119/core';
+import { PluginTenantAccess, RequestContextUtils, TenantResolverService } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { PluginState, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
@@ -87,9 +87,25 @@ export class SystemMetadataController {
     const ssrRenderMemoryMb = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_MEMORY_MB, SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT);
     const ssrRenderTimeoutMs = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_TIMEOUT_MS, SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT);
 
-    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=300');
+    // WHICH SITE this is and whether it is open yet. The storefront cannot ask the tenant table — it
+    // has no tenant knowledge, it forwards a host and the api resolves — so the one payload it
+    // already fetches per render is where the answer belongs. It decides the robots directive and,
+    // for a site that is not published, whether to render at all.
+    const tenantId = RequestContextUtils.getTenantId();
+    const site = tenantId
+      ? await TenantResolverService.shared(this.runtime.db).resolveById(tenantId)
+      : null;
+
+    // A private site's answer is not cacheable at the edge: it changes the moment somebody presses
+    // Publish, and a cached "closed" would outlive the decision.
+    res.set('Cache-Control', site && !site.isIndexable
+      ? 'no-store'
+      : 'public, max-age=30, stale-while-revalidate=300');
     res.json({
       ...metadata,
+      site: site
+        ? { id: site.id, slug: site.slug, visibility: String(site.visibility.value), isIndexable: site.isIndexable }
+        : null,
       menu: Array.isArray(adminMetadata?.menu)
         ? adminMetadata.menu
         : (Array.isArray((metadata as any)?.menu) ? (metadata as any).menu : []),

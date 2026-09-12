@@ -41,6 +41,12 @@ export class SitesTable extends PureReactor {
           {site.isWorkspace ? <span className="fc-sites__id">{site.appearance || 'default console'}</span> : null}
         </div>
       ) },
+      // Visibility sits beside State because they are the two questions an operator asks about a site
+      // and they are NOT the same: a suspended site has no admin, a private one is simply not
+      // published yet. Showing only one of them is what made "why can nobody see this?" a guess.
+      { id: 'visibility', header: 'Visible', accessor: (site) => (
+        <Badge variant={site.isPublic ? BadgeVariant.SUCCESS : BadgeVariant.WARNING}>{site.visibility}</Badge>
+      ) },
       { id: 'state', header: 'State', accessor: (site) => (
         <Badge variant={site.isActive ? BadgeVariant.SUCCESS : BadgeVariant.WARNING}>{site.state}</Badge>
       ) },

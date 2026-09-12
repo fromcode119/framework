@@ -353,3 +353,4 @@ export { ServerServiceKey } from '@core/services/server-service-key';
 
 export { AssistantVocabularyRegistryService } from '@core/services/assistant-vocabulary-registry-service';
 export { AssistantVocabularyRole } from '@core/services/enums/assistant-vocabulary-role.enum';
+export { TenantVisibility } from '@core/enums/tenant-visibility.enum';

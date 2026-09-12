@@ -1,3 +1,4 @@
+import { SiteVisibilityVerdict } from '@/lib/document/site-visibility-verdict';
 import { NextResponse } from 'next/server';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
@@ -99,7 +100,14 @@ export class StorefrontDocumentRenderer {
     const content = (args.content as Record<string, unknown> | null) || null;
     const locale = await FrontendLocaleService.resolveDocumentLocale(args.strategy);
     const [page, site, schema, markup, theme, headInjections, bodyStartInjections, frontend, translations, pageDocPrefetch] = await Promise.all([
-      ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url).then((page) => (args.status === 404 ? { ...page, robots: { index: false, follow: false } } : page)),
+      // The robots directive is the FRAMEWORK's last word, applied after whichever plugin built the
+      // head. A 404 is never indexable, and neither is a site that has not been published — that is
+      // a fact about the site, not about its content, so no plugin gets to contradict it and it
+      // holds even when the plugin that would normally set robots is inactive.
+      ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url)
+        .then(async (page) => (args.status === 404 || !(await SiteVisibilityVerdict.indexableOrUntenanted())
+          ? { ...page, robots: { index: false, follow: false } }
+          : page)),
       ResolvedContentMetadata.buildSiteMetadata(),
       ResolvedContentMetadata.buildStructuredData(content, args.resolutionType, args.url),
       ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath }),

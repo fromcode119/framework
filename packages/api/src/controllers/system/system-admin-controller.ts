@@ -139,6 +139,9 @@ export class SystemAdminController {
         host: String(tenant.primary_host || ''),
         state: String(tenant.state || ''),
         kind: String(tenant.kind || ''),
+        // Read straight off the row. A blank means a row written before the column existed; the
+        // closed answer is the honest one to show, matching the column default.
+        visibility: String(tenant.visibility || 'private'),
         themeSlug: String(themeByTenant.get(String(tenant.id))?.theme_slug || ''),
         errors24h: await this.countSiteErrors(String(tenant.id), since),
       })));

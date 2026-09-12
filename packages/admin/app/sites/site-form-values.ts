@@ -14,6 +14,7 @@ export class SiteFormValues {
     readonly plugins: string[],
     /** `site` or `workspace`; chosen once, at creation (T6). */
     readonly kind: string,
+    readonly visibility: string,
     /** Workspace only: appearance id, `''` = default console. */
     readonly appearance: string,
     /** Workspace only: the preset the operator picked, if any (it fills plugins + appearance, visibly). */
@@ -21,11 +22,13 @@ export class SiteFormValues {
   ) {}
 
   static empty(): SiteFormValues {
-    return new SiteFormValues('', '', true, '', '', 'active', '', '', [], 'site', '', '');
+    // A new site is PRIVATE. The form shows the closed answer preselected, so publishing is
+    // something somebody chooses rather than something that happens by not choosing.
+    return new SiteFormValues('', '', true, '', '', 'active', '', '', [], 'site', 'private', '', '');
   }
 
   static fromSite(site: SiteRecord): SiteFormValues {
-    return new SiteFormValues(site.slug, site.id, false, site.primaryHost, site.hostAliases.join(', '), site.state, '', site.theme ?? '', site.plugins, site.kind, site.appearance, '');
+    return new SiteFormValues(site.slug, site.id, false, site.primaryHost, site.hostAliases.join(', '), site.state, '', site.theme ?? '', site.plugins, site.kind, site.visibility, site.appearance, '');
   }
 
   get isWorkspace(): boolean {
@@ -44,6 +47,7 @@ export class SiteFormValues {
       patch.theme ?? this.theme,
       patch.plugins ?? this.plugins,
       patch.kind ?? this.kind,
+      patch.visibility ?? this.visibility,
       patch.appearance ?? this.appearance,
       patch.preset ?? this.preset,
     );
@@ -58,7 +62,7 @@ export class SiteFormValues {
     return {
       slug: this.slug.trim(), id: this.id.trim() || undefined, primaryHost: this.primaryHost.trim(), hostAliases: this.aliasList,
       adminEmail: this.adminEmail.trim() || undefined, theme: this.isWorkspace ? undefined : (this.theme || undefined), plugins: this.plugins,
-      kind: this.kind, appearance: this.isWorkspace ? this.appearance : undefined, preset: this.isWorkspace && this.preset ? this.preset : undefined,
+      kind: this.kind, visibility: this.visibility, appearance: this.isWorkspace ? this.appearance : undefined, preset: this.isWorkspace && this.preset ? this.preset : undefined,
     };
   }
 
@@ -69,6 +73,7 @@ export class SiteFormValues {
       primaryHost: this.primaryHost.trim(),
       hostAliases: this.aliasList,
       state: this.state,
+      visibility: this.visibility,
       // ENTITLEMENT — what this site may run — is edited on the Access tab and saved here. Their
       // SETTINGS are not: those live on each plugin's and the theme's own page, with this site
       // selected. Carrying both was what made this page a worse copy of pages that already exist.

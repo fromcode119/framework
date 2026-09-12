@@ -15,6 +15,8 @@ export class SiteRecord {
     readonly lastExport: string | null,
     /** `site` (storefront) or `workspace` (its domain serves the console). */
     readonly kind: string,
+    /** `private` | `unlisted` | `public` — whether the site is open to visitors and to crawlers. */
+    readonly visibility: string,
     /** Workspace only: the appearance its console is locked to; `''` = default console. */
     readonly appearance: string,
     /** Storefront pages this site actually has. Zero on a storefront site means its seed never ran. */
@@ -29,6 +31,16 @@ export class SiteRecord {
 
   get isActive(): boolean {
     return this.state === 'active';
+  }
+
+  /** Open to everyone and indexable. Anything else is shown as a warning in the admin. */
+  get isPublic(): boolean {
+    return this.visibility === 'public';
+  }
+
+  /** Closed to visitors entirely — only this site's own admins see it. */
+  get isPrivate(): boolean {
+    return this.visibility === 'private';
   }
 
   get hosts(): string[] {
@@ -53,6 +65,9 @@ export class SiteRecord {
       input.theme ? CoercionUtils.toString(input.theme) : null,
       input.lastExport ? CoercionUtils.toString(input.lastExport) : null,
       CoercionUtils.toString(input.kind) || 'site',
+      // `private` when the server said nothing: the closed answer, matching the column's default.
+      // Reading an unknown site as public would show "open" for a site nobody has published.
+      CoercionUtils.toString(input.visibility) || 'private',
       CoercionUtils.toString(input.appearance),
       CoercionUtils.toNumber(input.pageCount),
       Array.isArray(input.exports) ? input.exports.map((e: any) => ({

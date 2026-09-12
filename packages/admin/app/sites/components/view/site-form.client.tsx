@@ -75,6 +75,10 @@ export class SiteForm extends PureReactor {
     this.emit({ state: value });
   }
 
+  @bound onVisibility(value: string): void {
+    this.emit({ visibility: value });
+  }
+
   private togglePlugin(slug: string, checked: boolean): void {
     const next = new Set(this.values.plugins);
     if (checked) next.add(slug); else next.delete(slug);
@@ -178,6 +182,19 @@ export class SiteForm extends PureReactor {
           ) : (
             <Select label="State" theme={this.theme} value={values.state} onChange={this.onState} options={[{ value: 'active', label: 'Active' }, { value: 'suspended', label: 'Suspended — the site answers 503' }]} />
           )}
+          {/* A DIFFERENT question from State, and the one an operator asks far more often. Suspending
+              a site takes its admin away too; this only decides who may READ it. */}
+          <Select
+            label="Visible to"
+            theme={this.theme}
+            value={values.visibility}
+            onChange={this.onVisibility}
+            options={[
+              { value: 'private', label: 'Nobody yet — only this site\'s admins' },
+              { value: 'unlisted', label: 'Anyone with the address — not indexed' },
+              { value: 'public', label: 'Everyone — indexed' },
+            ]}
+          />
         </div>
         {this.isNew ? null : (
           /* The id is the row-level-security discriminator stamped into every row this site owns, so it

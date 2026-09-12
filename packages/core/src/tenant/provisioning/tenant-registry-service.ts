@@ -57,6 +57,7 @@ export class TenantRegistryService {
       host_aliases: JSON.stringify(identity.hostAliases),
       state: identity.state,
       kind: identity.kind.value,
+      visibility: String(identity.visibility.value),
       appearance: identity.appearance,
       created_at: new Date(),
       updated_at: new Date(),
@@ -68,7 +69,7 @@ export class TenantRegistryService {
   }
 
   /** The kind never changes after creation (it decides routing and login); the appearance of a workspace may. */
-  async update(id: string, patch: { slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; appearance?: unknown }): Promise<TenantRecord> {
+  async update(id: string, patch: { slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; visibility?: unknown; appearance?: unknown }): Promise<TenantRecord> {
     const current = await this.get(id);
     if (!current) throw new Error(`Tenant "${id}" does not exist.`);
     const identity = TenantIdentity.from({
@@ -78,6 +79,9 @@ export class TenantRegistryService {
       hostAliases: patch.hostAliases ?? current.hostAliases,
       state: patch.state ?? current.state,
       kind: current.kind,
+      // Unstated means UNCHANGED on an update — the create-time default must not re-close a site
+      // every time somebody edits its host.
+      visibility: patch.visibility ?? current.visibility.value,
       appearance: patch.appearance ?? current.appearance,
     });
     await this.assertAvailable(identity, current.id);

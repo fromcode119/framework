@@ -33,7 +33,15 @@ export class TenantSummary {
   }
 
   static tenantJson(tenant: TenantRecord): Record<string, unknown> {
-    return { id: tenant.id, slug: tenant.slug, primaryHost: tenant.primaryHost, hostAliases: tenant.hostAliases, state: tenant.state, isActive: tenant.isActive, kind: tenant.kind.value, appearance: tenant.appearance };
+    return {
+      id: tenant.id, slug: tenant.slug, primaryHost: tenant.primaryHost, hostAliases: tenant.hostAliases,
+      state: tenant.state, isActive: tenant.isActive, kind: tenant.kind.value,
+      // Both the stored value and what it MEANS. The admin shows a badge and a banner from these, and
+      // deriving "is this site hidden" from the string at three call sites is how they drift apart.
+      visibility: String(tenant.visibility.value),
+      isIndexable: tenant.isIndexable,
+      appearance: tenant.appearance,
+    };
   }
 
   /** `roles` is JSON in Postgres; a raw-manager read may hand it back as text. */

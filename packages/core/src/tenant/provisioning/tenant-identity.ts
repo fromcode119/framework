@@ -1,5 +1,6 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { TenantKind } from '@core/tenant/tenant-kind';
+import { TenantVisibility } from '@core/enums/tenant-visibility.enum';
 
 /**
  * The operator-chosen identity of a tenant: id, slug, hosts, state — validated ONCE, here, before it
@@ -23,6 +24,7 @@ export class TenantIdentity {
     readonly hostAliases: string[],
     readonly state: string,
     readonly kind: TenantKind,
+    readonly visibility: TenantVisibility,
     readonly appearance: string,
   ) {}
 
@@ -31,7 +33,7 @@ export class TenantIdentity {
     return [...new Set([this.primaryHost, ...this.hostAliases])];
   }
 
-  static from(input: { id?: unknown; slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; kind?: unknown; appearance?: unknown }): TenantIdentity {
+  static from(input: { id?: unknown; slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; kind?: unknown; visibility?: unknown; appearance?: unknown }): TenantIdentity {
     const slug = CoercionUtils.toKey(input.slug);
     if (!TenantIdentity.SLUG.test(slug)) {
       throw new Error(`Tenant slug "${slug}" must be lowercase letters, digits and dashes, starting with a letter or digit.`);
@@ -50,8 +52,14 @@ export class TenantIdentity {
     // without one is not a tenant the platform can serve. (The migration stamps existing rows.)
     const kind = TenantKind.parse(input.kind);
     if (!kind) throw new Error(`Tenant kind "${CoercionUtils.toString(input.kind)}" must be "site" or "workspace".`);
+    // A site is PRIVATE unless it says otherwise. This is the one place the rule lives: a caller
+    // that names no visibility gets the closed answer, so a site created by any path — the admin, an
+    // import, a script — arrives shut and is opened deliberately. Unlike `kind` this is not required,
+    // because "unstated" has a safe and obvious meaning here and refusing would break every existing
+    // caller for no gain.
+    const visibility = TenantVisibility.find(input.visibility) ?? TenantVisibility.PRIVATE;
     const appearance = TenantIdentity.appearanceFor(kind, input.appearance);
-    return new TenantIdentity(id, slug, primaryHost, aliases, state, kind, appearance);
+    return new TenantIdentity(id, slug, primaryHost, aliases, state, kind, visibility, appearance);
   }
 
   /** A workspace names its appearance (`''` = the default console); a site has none and may not pass one. */
