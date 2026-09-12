@@ -135,12 +135,60 @@ export class PluginGuestContextFactory {
    * `get()`. This makes `namespace()` use it, so one guard works the same in both worlds.
    */
   private static peerNamespace(namespace: string, state: { hasPeer(ns: string, slug: string): boolean }, remote: PluginGuestRemote): Record<string, unknown> {
+    const peerRef = (slug: string) => remote.ref('context', [
+      { name: 'plugins' }, { name: 'namespace', args: [namespace] }, { name: slug },
+    ]);
+    const facadeCall = (method: string, args: unknown[]) => remote.ref('context', [
+      { name: 'plugins' }, { name: 'namespace', args: [namespace] }, { name: method, args },
+    ]);
+
+    /**
+     * The facade's own methods, which are NOT plugin slugs.
+     *
+     * `has` was previously only a Proxy TRAP — the `in` operator — while plugins call it as a
+     * METHOD. So `ns.has('finance')` looked `has` up as if it were a plugin, found no such peer,
+     * returned undefined, and threw "ns.has is not a function". That took mlm down on every boot.
+     *
+     * The three that decide control flow are answered from the peer set the guest already holds, so
+     * they stay SYNCHRONOUS exactly as in-process. Returning a remote chain instead would be worse
+     * than the crash: a chain is always truthy, so `if (ns.has(x))` would take the branch for a
+     * plugin that is not there.
+     */
+    const methods: Record<string, unknown> = {
+      has: (slug: unknown) => state.hasPeer(namespace, String(slug ?? '')),
+      get: (slug: unknown) => (state.hasPeer(namespace, String(slug ?? '')) ? peerRef(String(slug)) : null),
+      require: (slug: unknown) => {
+        const name = String(slug ?? '');
+        if (!state.hasPeer(namespace, name)) {
+          throw new Error(`Plugin "${name}" is not available in namespace "${namespace}".`);
+        }
+        return peerRef(name);
+      },
+      getNamespace: () => namespace,
+      // Async in-process too, so a remote chain has the same shape a caller already awaits.
+      call: (...args: unknown[]) => facadeCall('call', args),
+      callOperation: (...args: unknown[]) => facadeCall('callOperation', args),
+      getCapabilities: (...args: unknown[]) => facadeCall('getCapabilities', args),
+      getOperations: (...args: unknown[]) => facadeCall('getOperations', args),
+      supportsOperation: (...args: unknown[]) => facadeCall('supportsOperation', args),
+      // Sync in-process and unanswerable here — it needs the peer's API shape, which lives in the
+      // host. A chain would be always-truthy, so this says so instead of guessing.
+      hasMethod: (slug: unknown, method: unknown) => {
+        throw new Error(
+          `hasMethod("${String(slug)}", "${String(method)}") is not available to an isolated plugin: `
+          + 'the answer lives in the host process and cannot be given synchronously. '
+          + `Use await context.plugins.namespace("${namespace}").call(...), which returns null when the method is absent.`,
+        );
+      },
+    };
+
     return new Proxy({}, {
       get(_target, prop) {
         if (typeof prop === 'symbol') return undefined;
-        const slug = String(prop);
-        if (!state.hasPeer(namespace, slug)) return undefined;
-        return remote.ref('context', [{ name: 'plugins' }, { name: 'namespace', args: [namespace] }, { name: slug }]);
+        const name = String(prop);
+        if (name in methods) return methods[name];
+        if (!state.hasPeer(namespace, name)) return undefined;
+        return peerRef(name);
       },
       has(_target, prop) {
         return typeof prop === 'string' && state.hasPeer(namespace, String(prop));
