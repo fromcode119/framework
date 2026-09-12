@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { EnvUtils } from '@fromcode119/core/client';
+import { SiteVisibilityProxyGuard } from '@/lib/document/site-visibility-proxy-guard';
 
 /**
  * Routes content requests to the islands document while the rollout flag is on. Theme-agnostic by
@@ -23,11 +24,22 @@ export class StorefrontDocumentProxy {
     return EnvUtils.flag(StorefrontDocumentProxy.FLAG, false);
   }
 
-  static handle(request: NextRequest): NextResponse {
-    if (!StorefrontDocumentProxy.enabled()) return NextResponse.next();
+  static async handle(request: NextRequest): Promise<NextResponse | Response> {
     if (request.method !== 'GET' && request.method !== 'HEAD') return NextResponse.next();
     const pathname = request.nextUrl.pathname;
     if (!StorefrontDocumentProxy.isDocumentPath(pathname)) return NextResponse.next();
+
+    // A site that is not published answers here, before any page runs. This is the only point every
+    // document entry passes through — the islands route and both App Router pages each resolve
+    // content of their own — and the only one that can answer 503 rather than render something.
+    const host = String(request.headers.get('x-forwarded-host') || request.headers.get('host') || '');
+    const apiBase = String(process.env.INTERNAL_API_URL || process.env.API_URL || '');
+    if (!(await SiteVisibilityProxyGuard.isReadable(host, apiBase))) {
+      return SiteVisibilityProxyGuard.holdingResponse();
+    }
+
+    // The islands rewrite is a separate, flagged decision; the visibility answer above is not.
+    if (!StorefrontDocumentProxy.enabled()) return NextResponse.next();
     const target = request.nextUrl.clone();
     target.pathname = `${StorefrontDocumentProxy.DOCUMENT_PREFIX}${pathname === '/' ? '' : pathname}`;
     return NextResponse.rewrite(target);

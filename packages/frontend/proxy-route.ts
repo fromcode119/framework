@@ -13,7 +13,7 @@ import { StorefrontDocumentProxy } from '@/lib/document/storefront-document-prox
  * files, and anything with a file extension.
  */
 export class FrontendProxyRoute {
-  static proxy(request: NextRequest): NextResponse {
+  static proxy(request: NextRequest): Promise<NextResponse | Response> {
     return StorefrontDocumentProxy.handle(request);
   }
 
