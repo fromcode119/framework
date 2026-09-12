@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BuildService } from '@sources/packaging/build-service';
 import { BuildSourceType } from '@sources/sources/enums/build-source-type.enum';
+import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
 
 /**
  * Where a built package IS, versus the route a download comes from.
@@ -17,7 +18,7 @@ describe('BuildService — resolving a built artifact', () => {
 
   beforeEach(() => {
     service = Object.create(BuildService.prototype);
-    service.buildsSlug = 'fcp_sources_builds';
+    service.buildsSlug = SourcesCollectionRegistry.BUILDS;
     service.packageBuilder = {
       outputDirFor: (type: BuildSourceType) => `${WORKSPACE}/${type === BuildSourceType.THEME ? 'themes' : 'plugins'}`,
       stagingDirFor: (type: BuildSourceType, slug: string, version: string) =>
