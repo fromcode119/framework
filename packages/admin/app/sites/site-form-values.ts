@@ -77,8 +77,25 @@ export class SiteFormValues {
     };
   }
 
-  /** The identity an import/adopt uses (no plugins/theme: those come from the archive or the deployment). */
+  /**
+   * The identity an import/adopt uses (no plugins/theme: those come from the archive or the deployment).
+   *
+   * `kind` IS part of the identity and was missing here, so Adopt and Import could never succeed —
+   * the server requires it ("site" or "workspace"), and both screens showed a Kind dropdown whose
+   * value nothing ever sent. A control writing a value nothing reads is the bug this codebase is
+   * least allowed to have, and it made adopting a deployment impossible from the admin.
+   *
+   * `appearance` rides along only for a workspace: the server refuses a site that names one, because
+   * a site renders its theme and uses the shared admin.
+   */
   toIdentity(): Record<string, unknown> {
-    return { slug: this.slug.trim(), id: this.id.trim() || undefined, primaryHost: this.primaryHost.trim(), hostAliases: this.aliasList };
+    return {
+      slug: this.slug.trim(),
+      id: this.id.trim() || undefined,
+      primaryHost: this.primaryHost.trim(),
+      hostAliases: this.aliasList,
+      kind: this.kind,
+      ...(this.isWorkspace ? { appearance: this.appearance } : {}),
+    };
   }
 }
