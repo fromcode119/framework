@@ -1,4 +1,7 @@
-import { ApplicationUrlUtils } from '@fromcode119/sdk';
+// A DEEP import, never the sdk or core barrel: middleware reaches this file, and those barrels
+// re-export the `Reactor` class component, which React refuses in a server graph — one barrel import
+// 500s every admin request. `admin-proxy.ts` carries the same warning; this module is bound by it.
+import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
 
 /**
  * Whether crawlers may index this console.

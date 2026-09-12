@@ -130,7 +130,13 @@ export class BuildOverview extends AdminComponent {
 
     return (
       <>
-        <div className="space-y-4 p-4 lg:p-6">
+        {/*
+          * No padding on the ROOT. The sticky header is a direct child so it spans the full content
+          * column and sits flat against the divider, the way every other screen's header does
+          * (see plugins/layout.client.tsx). With padding here the bar was inset on all sides and
+          * read as a floating panel — the one header in the admin shaped like a card.
+          */}
+        <div className="w-full">
           <CompactPageHeader
             title="Sources"
             subtitle="The repositories this platform builds from — plugins, themes, and the framework itself."
@@ -150,6 +156,7 @@ export class BuildOverview extends AdminComponent {
             )}
           />
 
+          <div className="space-y-4 p-4 lg:p-6">
           {error ? (
             <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
               {error}
@@ -167,6 +174,7 @@ export class BuildOverview extends AdminComponent {
             onTrigger={(slug: string) => this.handleTriggerOne(slug)}
             triggerSlug={triggerSlug}
           />
+          </div>
         </div>
 
         {editorMode ? (
