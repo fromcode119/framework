@@ -92,7 +92,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
     }
 
     if (authState.isInitialized === null || (authState.isAuthLoading && !authState.isAuthPage)) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader /></div>;
+      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label="Signing you in" /></div>;
     }
 
     // Signed in, but this workspace domain refuses the account — say so. Ahead of the login forward

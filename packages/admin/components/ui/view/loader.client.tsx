@@ -10,10 +10,9 @@ export class Loader extends AdminComponent {
   @prop declare fullPage?: boolean;
 
   render(): ReactNode {
-    // No default label. It was "Synchronizing Data" — a phrase that tells an operator nothing and
-    // appears while they wait. A caller with something real to say passes it; otherwise the spinner
-    // speaks for itself.
-    const label = this.label ?? '';
+    // Plain words, not machine-speak. It said "Synchronizing Data"; a person waiting for a screen
+    // does not need the internal name of what the code is doing, only that it is coming.
+    const label = this.label ?? 'Just a moment';
     const className = this.className ?? '';
     const fullPage = this.fullPage ?? false;
     const theme = this.theme;
