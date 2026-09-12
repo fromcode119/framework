@@ -172,9 +172,30 @@ export class TenantAdminController extends BaseController {
     return (req.body && typeof req.body === 'object' ? req.body : {}) as Record<string, unknown>;
   }
 
+  /**
+   * The identity fields adopt and import read off a request.
+   *
+   * `kind` and `appearance` belong here. Without them this projection silently dropped both, and
+   * `TenantIdentity.from` — which REQUIRES a kind — refused every request with
+   * `Tenant kind "" must be "site" or "workspace"`, whatever the operator chose. That is the whole
+   * reason adopting a deployment and importing a site could not be done from the admin: the three
+   * routes that use this (preview, execute, adopt) all lost the field here, while `create` passes
+   * the body through and worked, which is what made it look like a form problem.
+   *
+   * `appearance` is passed through rather than filtered: `TenantIdentity` is the one place that
+   * decides a site may not name one, and duplicating that rule here is how the two drift apart.
+   */
   private static identity(body: Record<string, unknown>): Record<string, unknown> {
     const tenant = (body.tenant && typeof body.tenant === 'object' ? body.tenant : body) as Record<string, unknown>;
-    return { id: tenant.id, slug: tenant.slug, primaryHost: tenant.primaryHost, hostAliases: tenant.hostAliases, state: tenant.state };
+    return {
+      id: tenant.id,
+      slug: tenant.slug,
+      primaryHost: tenant.primaryHost,
+      hostAliases: tenant.hostAliases,
+      state: tenant.state,
+      kind: tenant.kind,
+      appearance: tenant.appearance,
+    };
   }
 
   private actor(req: Request): Record<string, unknown> {
