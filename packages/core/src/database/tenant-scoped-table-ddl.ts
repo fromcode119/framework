@@ -8,18 +8,38 @@ import { SystemConstants } from '@core/constants/system.constants';
  * stale, and a table missing from it is silently GLOBAL — readable by every tenant with nothing to
  * indicate it. Deriving means a new plugin table is scoped the moment it exists.
  *
- * Framework identity and configuration tables (`_system_*`, `users`, `people`) are deliberately NOT
- * scoped in T0: who can log in where, which settings a tenant sees and which plugins it has are T1
- * and T2 decisions with their own design work. Until then the platform runs one operator across all
- * tenants.
+ * Framework IDENTITY and CONFIGURATION tables (`users`, `_system_*` settings) are deliberately NOT
+ * scoped: who can log in where, and which settings a tenant sees, are platform facts. Framework
+ * tables holding a tenant's own CONTENT are scoped — see CONTENT_TABLES, which now covers the
+ * people tables and redirects as well as media folders.
  */
 export class TenantScopedTableDdl {
   /**
    * Framework tables that hold tenant CONTENT rather than platform configuration, and so ARE scoped
-   * even though they appear in SystemConstants.TABLE. A tenant's media library is its own.
+   * even though they are `_system_*` or appear in SystemConstants.TABLE. A tenant's media library,
+   * its people and its redirects are its own.
+   *
+   * This list is what makes them SELF-HEALING, and that is why they are here rather than left to the
+   * migrations that first scoped them (021 for the people tables, 030 for redirects). Those
+   * migrations create the policy once and never run again — but `removeTenantIsolation` drops every
+   * `%_tenant_%` policy whenever a deployment has no tenants, migration-owned ones included. A
+   * deployment that ran single-tenant on this build therefore lost them permanently, and the sweep
+   * restored only what it could derive. Measured on a deployment adopted into multi-tenancy: five
+   * tables with a `tenant_id` column and zero policies — `people`, `people_addresses`,
+   * `person_relationships` and `person_catalogs` readable by every tenant, and one site's redirects
+   * firing on all of them. Both directions now come from this one list, so what the sweep removes it
+   * can also put back.
+   *
+   * The import reads the same fact: `TenantTableCatalog.byPolicy()` finds tenant tables BY POLICY,
+   * so an unscoped table is also a table a site cannot be imported into.
    */
   private static readonly CONTENT_TABLES = new Set<string>([
     String(SystemConstants.TABLE.MEDIA_FOLDERS).toLowerCase(),
+    String(SystemConstants.TABLE.PEOPLE).toLowerCase(),
+    String(SystemConstants.TABLE.PEOPLE_ADDRESSES).toLowerCase(),
+    String(SystemConstants.TABLE.PERSON_RELATIONSHIPS).toLowerCase(),
+    String(SystemConstants.TABLE.PERSON_CATALOGS).toLowerCase(),
+    '_system_redirects',
   ]);
 
   /**

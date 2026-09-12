@@ -21,13 +21,28 @@ describe('TenantScopedTableDdl.isTenantScoped', () => {
     expect(TenantScopedTableDdl.statementsFor('media')).toEqual([]);
   });
 
-  it('does NOT scope framework identity and configuration tables — that is T1/T2', () => {
+  it('does NOT scope framework IDENTITY and CONFIGURATION tables', () => {
     for (const table of [
       '_system_tenants', '_system_plugins', '_system_plugin_settings', '_system_themes',
       '_system_sessions', '_system_meta', '_system_roles', '_system_users_roles', 'users',
-      'people', 'people_addresses',
     ]) {
       expect(TenantScopedTableDdl.isTenantScoped(table)).toBe(false);
+    }
+  });
+
+  /**
+   * The people tables moved OUT of the list above, deliberately.
+   *
+   * They were left unscoped as a "T1/T2 decision with its own design work", and migrations 021/030
+   * then scoped them anyway — but only once. `removeTenantIsolation` drops every `%_tenant_%` policy
+   * on a deployment with no tenants, so a deployment that ran single-tenant on this build lost them
+   * and nothing put them back: measured on one adopted into multi-tenancy, all four people tables
+   * and `_system_redirects` had a tenant_id column and no policy, readable by every tenant. A
+   * person is a tenant's contact, not a platform fact, so the sweep owns them now.
+   */
+  it('scopes the people tables and redirects — a tenant\'s own content, and self-healing here', () => {
+    for (const table of ['people', 'people_addresses', 'person_relationships', 'person_catalogs', '_system_redirects']) {
+      expect(TenantScopedTableDdl.isTenantScoped(table)).toBe(true);
     }
   });
 
