@@ -62,25 +62,52 @@ export class ViteConfigGlue {
     return path.join(ViteStagingRoot.resolve(root), '.fromcode-config');
   }
 
+  /**
+   * The generated entry's filename, derived from its SOURCE path rather than its basename alone.
+   *
+   * `packages/sdk/src/vite/plugin-ui.config.ts` and `packages/sdk/src/tailwind/plugin-ui.config.ts`
+   * share a basename, so a flat output directory held four files for five entries: the two wrote
+   * over each other and whichever generated last silently won. Tailwind happens to be last today,
+   * which is the only reason it worked — reorder the list and tailwind is handed a vite config.
+   */
+  private static targetName(outFile: string): string {
+    const parts = outFile.split('/');
+    const parent = parts.length > 1 ? parts[parts.length - 2] : '';
+    return parent ? `${parent}-${parts[parts.length - 1]}` : parts[parts.length - 1];
+  }
+
   /** The absolute path of a generated entry, for the tool that is about to be pointed at it. */
   static generatedPath(outFile: string): string {
     const root = ViteConfigGlue.frameworkRoot();
     if (!root) return outFile;
-    return path.join(ViteConfigGlue.outputDir(root), path.basename(outFile));
+    return path.join(ViteConfigGlue.outputDir(root), ViteConfigGlue.targetName(outFile));
   }
 
   private static cli(root: string): string {
     return path.join(root, 'packages', 'next-build-codegen', 'dist', 'next-build-codegen-cli.cjs');
   }
 
+  /**
+   * How many builds are currently relying on the generated entries.
+   *
+   * They live in ONE directory shared by every build in this process, and builds DO overlap — the
+   * per-source Build button is not serialised, and `PluginUiViteCompiler` already stages per slug
+   * "so the parallel plugin builds the build server runs never collide". Without this counter the
+   * first build to finish ran `remove()` in its `finally` and deleted the configs out from under the
+   * one still running, which surfaced three steps away as
+   * `tailwind exited 9 — Specified config file ... does not exist` and vanished on a retry.
+   */
+  private static active = 0;
+
   /** Returns the generated file paths, or [] when the generator is unavailable. */
   static generate(): string[] {
+    ViteConfigGlue.active += 1;
     const root = ViteConfigGlue.frameworkRoot();
     if (!root || !fs.existsSync(ViteConfigGlue.cli(root))) return [];
 
     const written: string[] = [];
     for (const [source, className, outFile] of ViteConfigGlue.ENTRIES) {
-      const target = path.relative(root, path.join(ViteConfigGlue.outputDir(root), path.basename(outFile)));
+      const target = path.relative(root, path.join(ViteConfigGlue.outputDir(root), ViteConfigGlue.targetName(outFile)));
       fs.mkdirSync(ViteConfigGlue.outputDir(root), { recursive: true });
       const result = spawnSync('node', [ViteConfigGlue.cli(root), 'vite-config', source, className, target], {
         cwd: root,
@@ -113,10 +140,15 @@ export class ViteConfigGlue {
 
   /** Always call this in a `finally`: a leftover generated file fails `check:vite-glue`. */
   static remove(): void {
+    ViteConfigGlue.active = Math.max(0, ViteConfigGlue.active - 1);
+    // The last build out turns off the lights. An earlier one must not, or it takes the configs a
+    // concurrent build is still reading.
+    if (ViteConfigGlue.active > 0) return;
+
     const root = ViteConfigGlue.frameworkRoot();
     if (!root || !fs.existsSync(ViteConfigGlue.cli(root))) return;
     const outFiles = ViteConfigGlue.ENTRIES.map(([, , outFile]) =>
-      path.relative(root, path.join(ViteConfigGlue.outputDir(root), path.basename(outFile))));
+      path.relative(root, path.join(ViteConfigGlue.outputDir(root), ViteConfigGlue.targetName(outFile))));
     spawnSync('node', [ViteConfigGlue.cli(root), 'verify-vite-config', '--clean', ...outFiles], { cwd: root });
   }
 }

@@ -51,6 +51,23 @@ export class PluginStyleCompiler {
 
     const temporary = path.join(outDir, '.style.css.building');
     const config = ViteConfigGlue.generatedPath(PluginStyleCompiler.CONFIG);
+
+    /*
+     * Say WHY the config is missing, here, rather than letting tailwind report its own version of it.
+     * `ViteConfigGlue` collects generation failures for exactly this moment, and nothing read them —
+     * so a build that failed because the entry could not be generated announced itself as
+     * "tailwind exited 9 — Specified config file does not exist", which points at tailwind and at a
+     * path, neither of which is the cause.
+     */
+    if (!fs.existsSync(config)) {
+      const why = ViteConfigGlue.failures.length
+        ? ViteConfigGlue.failures.join('; ')
+        : 'the generator did not run, or a concurrent build removed it';
+      return BuildStepResult.failure(
+        PluginStyleCompiler.STEP,
+        `${slug}: the tailwind config was never generated at ${config} — ${why}`,
+      );
+    }
     const result = spawnSync(binary, ['-c', config, '-i', PluginStyleCompiler.INPUT, '-o', temporary, '--minify'], {
       cwd: toolchainRoot,
       encoding: 'utf8',
