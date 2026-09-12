@@ -23,7 +23,7 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
   protected present({ authState }: IAppearanceSecurityGateValues): ReactNode {
     const { Shell, nav, user, children } = this.props;
     if (authState.isInitialized === null || (authState.isAuthLoading && !authState.isAuthPage)) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label="Initializing Secure Session" /></div>;
+      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader /></div>;
     }
 
     // A WORKSPACE domain reaches the console through THIS gate, not `ClientLayoutShell` — its tenant

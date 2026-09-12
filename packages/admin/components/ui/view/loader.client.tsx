@@ -10,7 +10,10 @@ export class Loader extends AdminComponent {
   @prop declare fullPage?: boolean;
 
   render(): ReactNode {
-    const label = this.label ?? 'Synchronizing Data';
+    // No default label. It was "Synchronizing Data" — a phrase that tells an operator nothing and
+    // appears while they wait. A caller with something real to say passes it; otherwise the spinner
+    // speaks for itself.
+    const label = this.label ?? '';
     const className = this.className ?? '';
     const fullPage = this.fullPage ?? false;
     const theme = this.theme;
@@ -28,11 +31,13 @@ export class Loader extends AdminComponent {
           </div>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <p className={`font-semibold text-[10px] tracking-widest animate-pulse transition-colors duration-500 ${
-            theme === ThemeMode.DARK ? 'text-indigo-400' : 'text-indigo-600'
-          }`}>
-            {label}
-          </p>
+          {label ? (
+            <p className={`font-medium text-[11px] tracking-tight transition-colors duration-500 ${
+              theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'
+            }`}>
+              {label}
+            </p>
+          ) : null}
           <div className="flex gap-1.5 mt-1">
             <div className={`h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.3s] ${theme === ThemeMode.DARK ? 'bg-indigo-500' : 'bg-indigo-600'}`}></div>
             <div className={`h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.15s] ${theme === ThemeMode.DARK ? 'bg-indigo-500' : 'bg-indigo-600'}`}></div>

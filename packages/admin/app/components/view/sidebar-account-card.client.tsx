@@ -102,7 +102,10 @@ export class SidebarAccountCard extends AdminComponent {
 
     const rows = [...single, ...switcher];
     return [
-      ...rows.map((row, index) => ({ ...row, section: index === 0 ? 'Sites' : undefined })),
+      // `scrolls` bounds the site list in its own box. It grows with the installation — nine sites
+      // already pushed "Add a site" and "Sign out" below the fold of their own menu — and the two
+      // rows after it must stay reachable however many sites exist.
+      ...rows.map((row, index) => ({ ...row, section: index === 0 ? 'Sites' : undefined, scrolls: index === 0 ? true : undefined })),
       {
         label: 'Add a site',
         icon: <FrameworkIcons.Plus size={16} />,
@@ -190,7 +193,10 @@ export class SidebarAccountCard extends AdminComponent {
             <span className="truncate text-[10.5px] leading-tight text-slate-400 capitalize">{this.role}</span>
           ) : null}
         </span>
-        <FrameworkIcons.Up
+        {/* A chevron, not an arrow. `Up` is a navigation/upload glyph and this row opens a menu —
+            the caret is the affordance every other dropdown in the admin uses, and it points the way
+            the menu actually opens (upward, from the foot of the sidebar). */}
+        <FrameworkIcons.ChevronUp
           size={14}
           className="shrink-0 text-slate-300 transition-colors group-hover/account:text-slate-500 dark:text-slate-600"
         />

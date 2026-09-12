@@ -13,15 +13,15 @@ export class GlobalLoading extends PureReactor {
                  <div className="h-8 w-8 bg-indigo-500/10 rounded-xl animate-pulse"></div>
               </div>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <p className="text-slate-500 font-semibold text-[11px] tracking-widest animate-pulse">
-                Hydrating Interface
-              </p>
-              <div className="flex gap-1">
-                  <div className="h-1 w-1 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]"></div>
-                  <div className="h-1 w-1 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]"></div>
-                  <div className="h-1 w-1 rounded-full bg-indigo-500 animate-bounce"></div>
-              </div>
+            {/*
+              * No label. It said "Hydrating Interface" — React's word for attaching its event
+              * handlers, shown to whoever opened the page. A loading state that has nothing useful
+              * to say is better saying nothing: the spinner already means "wait".
+              */}
+            <div className="flex gap-1">
+              <div className="h-1 w-1 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="h-1 w-1 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="h-1 w-1 rounded-full bg-indigo-500 animate-bounce"></div>
             </div>
           </div>
       </div>

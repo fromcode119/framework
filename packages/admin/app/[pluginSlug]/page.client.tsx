@@ -26,7 +26,7 @@ export class PluginRootRoute extends AdminComponent {
    *
    * It is consumed with React's `use()`, which suspends until the promise it was given settles. A promise
    * built inside `render()` is a NEW promise on every render attempt, so `use()` never sees the same one
-   * resolve and the segment hangs on `loading.client.tsx` ("Hydrating Interface") forever — which is what
+   * resolve and the segment hangs on `loading.client.tsx` forever — which is what
    * a plugin root with no page slot but a same-named collection (`/forms`) did.
    */
   private collectionParams?: PromiseLike<{ pluginSlug: string; slug: string }>;

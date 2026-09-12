@@ -20,4 +20,12 @@ export interface IDropdownItem {
   selectable?: boolean;
   /** Secondary line under the label, for items whose identity needs more than a name. */
   detail?: string;
+  /**
+   * Set with `section` to bound that group in its own scrolling box.
+   *
+   * For a group that grows with the installation — the list of sites — so the menu stops growing
+   * with it. Without this the whole menu scrolls as one, and on a deployment with nine sites the
+   * actions that matter (Add a site, Sign out) were pushed below the fold of their own menu.
+   */
+  scrolls?: boolean;
 }

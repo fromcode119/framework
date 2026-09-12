@@ -179,6 +179,24 @@ export class Dropdown extends Reactor {
     this.removePositionListeners();
   }
 
+  /**
+   * Splits a flat item list into the groups its `section` headings already imply.
+   *
+   * Rendering was one flat map, so a group could not be given its own scrolling box — the whole menu
+   * scrolled as one and a long group (the sites) pushed everything after it out of reach.
+   */
+  private static groupItems(items: IDropdownItem[]): Array<{ section?: string; scrolls: boolean; items: IDropdownItem[] }> {
+    const groups: Array<{ section?: string; scrolls: boolean; items: IDropdownItem[] }> = [];
+    for (const item of items) {
+      if (item.section || groups.length === 0) {
+        groups.push({ section: item.section, scrolls: item.scrolls === true, items: [item] });
+        continue;
+      }
+      groups[groups.length - 1].items.push(item);
+    }
+    return groups;
+  }
+
   render(): ReactNode {
     const { trigger, items, header } = this;
     const { isOpen, coords } = this;
@@ -231,8 +249,18 @@ export class Dropdown extends Reactor {
               </div>
             )}
             <div className="p-1.5 overflow-y-auto" style={{ maxHeight: coords.maxHeight }}>
-              {items.map((item, idx) => {
-                const isLast = idx === items.length - 1;
+              {Dropdown.groupItems(items).map((group, groupIdx) => (
+                <Fragment key={group.section ?? `group-${groupIdx}`}>
+                {group.scrolls && group.section ? (
+                  <div className="mt-2 mb-0.5 px-3 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                    {group.section}
+                  </div>
+                ) : null}
+                <div
+                  className={group.scrolls ? 'overflow-y-auto overscroll-contain' : undefined}
+                  style={group.scrolls ? { maxHeight: '14rem' } : undefined}
+                >
+                  {group.items.map((item, idx) => {
                 const isDanger = item.variant === DropdownItemVariant.DANGER;
 
                 return (
@@ -242,12 +270,12 @@ export class Dropdown extends Reactor {
                       * divider belonging to the row beneath it, which in a menu of actions looks
                       * like a separator between two unrelated things rather than a heading.
                       */}
-                    {item.section ? (
+                    {item.section && !group.scrolls ? (
                       <div className="mt-2 mb-0.5 px-3 text-[11px] font-medium text-slate-400 dark:text-slate-500">
                         {item.section}
                       </div>
                     ) : null}
-                    {isLast && idx !== 0 && !item.section && (
+                    {idx === group.items.length - 1 && groupIdx !== 0 && !item.section && (
                       <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
                     )}
                     <button
@@ -291,7 +319,10 @@ export class Dropdown extends Reactor {
                     </button>
                   </Fragment>
                 );
-              })}
+                  })}
+                </div>
+                </Fragment>
+              ))}
             </div>
           </div>
         </RootFramework>
