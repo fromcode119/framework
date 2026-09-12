@@ -32,7 +32,22 @@ export class ProcessFailureReason {
 
   /** The reason, prefixed for appending to a message. Empty when the tool said nothing usable. */
   static from(source: { stderr?: unknown; stdout?: unknown } | unknown): string {
-    const record = (source ?? {}) as { stderr?: unknown; stdout?: unknown };
+    const record = (source ?? {}) as { stderr?: unknown; stdout?: unknown; killed?: unknown; signal?: unknown };
+
+    /*
+     * A KILLED child explains itself by having said nothing.
+     *
+     * It is the one failure with no output to quote — the process was stopped before it could write
+     * any — so reading its empty stderr and reporting nothing turns the most diagnosable failure
+     * there is into the least. A vite build of the cms plugin was being killed by the container's
+     * 768 MB ceiling and arrived as a bare "vite build (admin)", which reads as a code fault.
+     */
+    if (record.killed === true || (typeof record.signal === 'string' && record.signal)) {
+      const signal = typeof record.signal === 'string' && record.signal ? ` (${record.signal})` : '';
+      return ` — the process was killed${signal}, which usually means it ran out of memory;`
+        + ' raise the container\'s memory limit or build fewer extensions at once';
+    }
+
     // stderr first and on its own: a tool that wrote there is saying why it failed, while its stdout
     // ends with progress — concatenating the two returned "✓ 455 modules transformed." as the cause.
     const reason = ProcessFailureReason.firstMeaningful(String(record.stderr ?? ''))

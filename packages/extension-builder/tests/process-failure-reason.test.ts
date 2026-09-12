@@ -60,6 +60,14 @@ transforming...
       .toBe(' — Specified config file does not exist.');
   });
 
+  it('names a kill, which is the failure with no output to quote', () => {
+    // A vite build killed by the container's memory ceiling writes no stderr at all, so reading it
+    // reported nothing and the failure read as a code fault.
+    expect(ProcessFailureReason.from({ killed: true, signal: 'SIGKILL', stderr: '', stdout: '' }))
+      .toContain('killed (SIGKILL)');
+    expect(ProcessFailureReason.from({ killed: true, stderr: '' })).toContain('ran out of memory');
+  });
+
   it('is empty when there is nothing to say, so a caller can append it safely', () => {
     expect(ProcessFailureReason.from(undefined)).toBe('');
     expect(ProcessFailureReason.from({})).toBe('');

@@ -180,7 +180,13 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          # 768M was sized for ONE process. This container also runs an isolated process per active
+          # plugin — each with its own 256 MB heap — and shells out to vite to build a plugin's admin
+          # bundle. On staging, with twenty sources tracked, a `cms` build was killed mid-vite and
+          # reported nothing: a killed child writes no stderr, so the failure arrived as a bare
+          # "vite build (admin)" and looked like a code problem rather than a memory one.
+          # The local compose already raised this for the same reason.
+          memory: 2G
 
   admin:
     build:
