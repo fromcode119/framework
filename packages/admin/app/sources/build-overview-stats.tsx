@@ -23,34 +23,37 @@ export class BuildOverviewStats extends AdminComponent {
     ];
 
     return (
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {indicators.map((indicator) => {
-          const Icon = indicator.icon;
-          return (
-            /*
-             * Padding only. The radius, the edge and the fill belong to `.fc-surface`, which is the
-             * one definition of a card here and the one an appearance can repaint — this card used to
-             * spell `rounded-3xl border-slate-200 bg-white` over the top, which is exactly the
-             * hardcoded-#fff case admin.css warns about, and made these four the only cards on the
-             * screen with their own shape.
-             */
-            <Card key={indicator.label}>
-              {/* The note stays reachable as a tooltip: it explains the counter, but spelled out on
-                  the card it was a full sentence per tile and three times the height. */}
-              <div className="flex items-center justify-between gap-3" title={indicator.note}>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{indicator.label}</p>
-                  <p className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{loading ? '…' : indicator.value}</p>
-                </div>
-                {/* A circle, not a 16px-radius square pretending to be one. */}
-                <div className={`${indicator.bg} ${indicator.color} flex h-9 w-9 shrink-0 items-center justify-center rounded-full`}>
-                  <Icon size={16} />
-                </div>
+      /*
+       * ONE strip, not four panels.
+       *
+       * Four counters whose values are almost always 0 or 1 were given a full-width card each, so
+       * each tile was ~340px of mostly nothing with its icon floating at the far edge, disconnected
+       * from the number it belongs to. Making the tiles shorter did not fix that — the emptiness was
+       * horizontal. A single row puts the four numbers side by side where they can be compared,
+       * which is the only reason to show them together at all.
+       */
+      <Card>
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+          {indicators.map((indicator) => {
+            const Icon = indicator.icon;
+            return (
+              <div key={indicator.label} className="flex items-center gap-2.5" title={indicator.note}>
+                <span className={`${indicator.bg} ${indicator.color} flex h-7 w-7 shrink-0 items-center justify-center rounded-full`}>
+                  <Icon size={14} />
+                </span>
+                <span className="flex items-baseline gap-2">
+                  <span className="text-lg font-bold leading-none tracking-tight text-slate-900 dark:text-white">
+                    {loading ? '…' : indicator.value}
+                  </span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    {indicator.label}
+                  </span>
+                </span>
               </div>
-            </Card>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      </Card>
     );
   }
 }
