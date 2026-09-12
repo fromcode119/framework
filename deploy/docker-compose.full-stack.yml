@@ -117,6 +117,16 @@ services:
       # The api builds links back into the admin (emails, notifications), so it needs the admin's
       # PUBLIC url — the internal one below is for server-to-server calls and is not a visitor address.
       - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
+      # The STOREFRONT's public url. The api needs it for the CORS allowlist: a storefront loads its
+      # theme bundle and fonts from the api host, which is a cross-origin request, and an origin the
+      # api cannot name is refused. It was passed to the gateway and the frontend but not here, so
+      # every storefront asset 500'd with "Not allowed by CORS" while the page itself rendered —
+      # server-side HTML is fine and nothing hydrates, which looks like a theme fault and is not one.
+      - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
+      # Extra origins the api accepts, comma-separated, matched by suffix — so one entry covers every
+      # site on a domain. On a multi-tenant deployment each site answers on its OWN host, and
+      # FRONTEND_URL names only one of them; this is how an operator admits the rest.
+      - CORS_ALLOWED_DOMAINS=${CORS_ALLOWED_DOMAINS:-}
       - MARKETPLACE_URL=${MARKETPLACE_URL:-https://marketplace.fromcode.com}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
