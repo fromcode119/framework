@@ -26,9 +26,15 @@ import type { IBuildSourceFormState } from '@/app/sources/interfaces/build-sourc
  * guessed from the URL, because a repository called `fromcode-plugin-forms` may ship anything.
  */
 export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuildSourceFormState> {
+  /**
+   * A fallback only. The real list comes from the API alongside the providers, for the reason the
+   * provider list already does: this one was hand-written, said Plugin/Theme/Core, and had never
+   * heard of an appearance — which the framework has been able to build all along.
+   */
   private static readonly TYPES = [
     { label: 'Plugin', value: 'plugin' },
     { label: 'Theme', value: 'theme' },
+    { label: 'Appearance', value: 'appearance' },
     { label: 'Core', value: 'core' },
   ];
 
@@ -47,6 +53,7 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
       branch: build?.branch || '',
       provider: build?.provider || 'git',
       providers: [],
+      types: [],
       branches: [],
       branchesAttempted: false,
       branchesLoading: false,
@@ -82,11 +89,12 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
     try {
       const response: any = await SourcesApi.providers();
       const providers = Array.isArray(response?.providers) ? response.providers : [];
-      this.setState({ providers });
+      const types = Array.isArray(response?.types) ? response.types : [];
+      this.setState({ providers, types });
     } catch {
       // The form still works: a source that names no provider is tracked with the default, and the
       // field simply has nothing to offer rather than inventing an option.
-      this.setState({ providers: [] });
+      this.setState({ providers: [], types: [] });
     }
   }
 
@@ -292,7 +300,7 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
             value={this.state.type}
             disabled
             onChange={() => undefined}
-            options={BuildSourceForm.TYPES}
+            options={this.state.types.length ? this.state.types : BuildSourceForm.TYPES}
           />
 
           <div className="space-y-2">

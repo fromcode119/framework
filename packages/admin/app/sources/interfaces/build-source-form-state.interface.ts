@@ -1,6 +1,8 @@
 export interface IBuildSourceFormState {
   /** Which provider fetches this source. */
   provider: string;
+  /** What this installation can build, served with the providers so the list cannot drift. */
+  types: Array<{ label: string; value: string }>;
   /** What this installation can fetch source from, as the server reported it. */
   providers: Array<{
     key: string;

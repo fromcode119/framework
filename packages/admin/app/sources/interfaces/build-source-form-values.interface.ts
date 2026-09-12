@@ -8,5 +8,6 @@ export interface IBuildSourceFormValues {
   gitSecret: string;
   gitUrl: string;
   slug: string;
-  type: 'plugin' | 'theme' | 'core';
+  /** Detected from the repository's own manifest, never chosen — see ExtensionManifestReader. */
+  type: 'plugin' | 'theme' | 'appearance' | 'core';
 }

@@ -12,13 +12,25 @@ import path from 'path';
  * Nothing here guesses. A repository with no manifest returns nothing, and the caller says so.
  */
 export class ExtensionManifestReader {
-  /** Each kind declares itself in its own file; the first one found decides the type. */
-  private static readonly MANIFESTS: Array<{ file: string; type: 'plugin' | 'theme' }> = [
-    { file: 'manifest.json', type: 'plugin' },
+  /**
+   * Each kind declares itself in its own file; the first one found decides the type.
+   *
+   * ORDER IS THE RULE: the specific names first, the generic `manifest.json` last. A theme or an
+   * appearance may ship a `manifest.json` as well as its own file, and with the generic name checked
+   * first every one of them was read as a plugin — which is how an appearance came to be listed,
+   * built and installed as a plugin while `appearance.json` sat unread beside it.
+   *
+   * `appearance.json` was missing outright. Appearances have been buildable the whole time
+   * (`BuildSourceType.APPEARANCE`, `PackageBuilder.buildAppearancePackage`); nothing could ever say
+   * that a repository was one.
+   */
+  private static readonly MANIFESTS: Array<{ file: string; type: 'plugin' | 'theme' | 'appearance' }> = [
     { file: 'theme.json', type: 'theme' },
+    { file: 'appearance.json', type: 'appearance' },
+    { file: 'manifest.json', type: 'plugin' },
   ];
 
-  static read(directory: string): { slug: string; type: 'plugin' | 'theme' | 'core'; name: string; version: string } | null {
+  static read(directory: string): { slug: string; type: 'plugin' | 'theme' | 'appearance' | 'core'; name: string; version: string } | null {
     for (const candidate of ExtensionManifestReader.MANIFESTS) {
       const declared = ExtensionManifestReader.readFile(path.join(directory, candidate.file));
       if (!declared) continue;

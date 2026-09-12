@@ -17,6 +17,21 @@ export class BuildSourceType extends Enum {
     super(value);
   }
 
+  /**
+   * What an operator may choose, for the form that asks.
+   *
+   * Served to the admin rather than hand-listed there, for the same reason the provider list is:
+   * the dropdown offered Plugin, Theme and Core while APPEARANCE had been buildable all along
+   * (`PackageBuilder.buildAppearancePackage`), so an appearance repository could only be added by
+   * calling it a plugin — which is exactly what it then reported itself as.
+   */
+  static definitions(): Array<{ label: string; value: string }> {
+    return (BuildSourceType.values() as BuildSourceType[]).map((type) => ({
+      value: String(type.value),
+      label: String(type.value).charAt(0).toUpperCase() + String(type.value).slice(1),
+    }));
+  }
+
   /** Hydrate an untrusted value; anything unrecognised is a plugin, matching the previous fallbacks. */
   static resolve(value: unknown): BuildSourceType {
     if (value instanceof BuildSourceType) return value;

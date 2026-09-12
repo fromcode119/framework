@@ -77,35 +77,36 @@ export class BuildSourceListItem extends AdminComponent {
       : (this.build.usesEnvToken ? 'Using app-level GITHUB_TOKEN' : 'No token configured');
     const repositoryLabel = String(this.build.gitUrl || '').trim();
 
+    // The repository, without the ceremony. Every row said the same 30 characters of
+    // `https://github.com/fromcode119/` before the part that differs.
+    const repositoryShort = repositoryLabel.replace(/^https?:\/\/(www\.)?/, '').replace(/\.git$/, '');
+
     return (
-      <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-800 dark:bg-slate-950/40">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          <GitBranch size={18} />
-        </div>
+      <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-950/40">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+          <GitBranch size={14} />
+        </span>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h4 className="truncate text-sm font-semibold text-slate-900 dark:text-white">{this.build.slug}</h4>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                {this.build.type} • {this.build.branch || 'main'}
-                {this.build.version ? ` • v${this.build.version}` : ' • no build yet'}
-                {this.build.lastBuildAt ? ` • ${new Date(this.build.lastBuildAt).toLocaleString()}` : ''}
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              {/*
+                * ONE line of identity, not five. Twenty sources at 132px each was 2,678px of list in
+                * an 822px window — the screen could not show you what you had. Everything below is
+                * still here; the facts that repeat on every row (the github.com prefix, the token
+                * wording, "builds automatically") stopped taking a line each.
+                */}
+              <div className="flex min-w-0 items-baseline gap-2">
+                <h4 className="truncate text-[13px] font-semibold text-slate-900 dark:text-white">{this.build.slug}</h4>
+                <span className="shrink-0 text-[10px] uppercase tracking-wide text-slate-400">{this.build.type}</span>
+                <span className="truncate text-[11px] text-slate-500 dark:text-slate-400" title={this.packageLabel}>
+                  {this.build.branch || 'main'}
+                  {this.build.version ? ` · v${this.build.version}` : ' · no build yet'}
+                  {this.build.autoBuild ? ' · auto' : ''}
+                </span>
+              </div>
+              <p className="truncate text-[11px] text-slate-400" title={`${repositoryLabel}\n${tokenLabel}`}>
+                {repositoryShort}
               </p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                {this.packageLabel}
-                {' • '}
-                {tokenLabel}
-              </p>
-              {repositoryLabel ? (
-                <p className="mt-1 break-all text-xs text-slate-500 dark:text-slate-400">
-                  Repo: {repositoryLabel}
-                </p>
-              ) : null}
-              {this.build.autoBuild ? (
-                <p className="mt-1 text-xs text-indigo-600 dark:text-indigo-400">
-                  Builds automatically{this.build.autoUpdate ? ' and installs each build' : ''}
-                </p>
-              ) : null}
               <BuildChangelog changelog={this.build.changelog} version={this.build.version} />
             </div>
             <div className="flex flex-wrap items-center gap-2">

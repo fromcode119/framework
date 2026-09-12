@@ -10,6 +10,7 @@ import { BuildOverviewHistory } from '@/app/sources/build-overview-history';
 import { BuildOverviewStats } from '@/app/sources/build-overview-stats';
 import { BuildSourceDialog } from '@/app/sources/build-source-dialog';
 import { BuildSourceForm } from '@/app/sources/build-source-form';
+import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
 import type { IBuildOverviewState } from '@/app/sources/interfaces/build-overview-state.interface';
 
 export class BuildOverview extends AdminComponent {
@@ -80,13 +81,13 @@ export class BuildOverview extends AdminComponent {
     }
   }
 
-  async handleSaveSource(values: { branch: string; gitSecret: string; gitUrl: string; slug: string; type: 'plugin' | 'theme' | 'core' }): Promise<void> {
+  async handleSaveSource(values: IBuildSourceFormValues): Promise<void> {
     this.savingSource = true;
     try {
       if (this.editorMode === 'edit' && this.editingBuild?.slug) {
-        await SourcesApi.update(this.editingBuild.slug, values);
+        await SourcesApi.update(this.editingBuild.slug, { ...values });
       } else {
-        await SourcesApi.create(values);
+        await SourcesApi.create({ ...values });
       }
       this.closeEditor();
       await this.loadBuilds();
