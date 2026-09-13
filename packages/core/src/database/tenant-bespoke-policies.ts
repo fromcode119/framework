@@ -36,6 +36,14 @@ export class TenantBespokePolicies {
     // the whole deployment. A site cannot own these — it does not own the addresses its own domain
     // has to point at.
     'certificate_acme_directory', 'certificate_acme_contact_email', 'certificate_platform_addresses',
+    // Whether crawlers may index the platform's OWN hosts (console + api host). Platform-wide by
+    // nature: a site's indexability follows that site's visibility, not this. It was absent here, so
+    // the settings controller treated it as per-site and wrote it under whichever tenant the request
+    // carried, while `PlatformSettingsService.readFlag` reads the PLATFORM row — written per site,
+    // read globally, which is why the toggle had never once taken effect. Read by
+    // `AdminIndexingPolicy` and `PlatformRobotsRouter` through a public endpoint that can run
+    // tenant-bound, which is exactly what this list exists to keep readable.
+    'admin_search_indexing',
   ];
 
   /** The platform keys, for the code that must NOT hand them to a tenant — the tenant importer. */
