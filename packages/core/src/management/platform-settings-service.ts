@@ -88,15 +88,20 @@ export class PlatformSettingsService {
      */
     SOURCES_WORKSPACE_ROOT: 'sources_workspace_root',
     /**
-     * Whether search engines may index the ADMIN.
+     * Whether search engines may index the PLATFORM'S OWN HOSTS — the admin console and the api host.
      *
-     * Off unless an operator turns it on. The admin is an operations console: its login page names
-     * the platform and the customer, its URL structure describes the installation, and none of that
-     * is content anyone searched for. Nothing was stopping a crawler before this — no robots.txt, no
-     * `X-Robots-Tag`, no meta — so it was indexable by omission rather than by decision.
+     * Off unless an operator turns it on. These are operations surfaces: the login page names the
+     * platform and the customer, the URL structure describes the installation, and none of it is
+     * content anyone searched for. Nothing was stopping a crawler before this — no robots.txt, no
+     * `X-Robots-Tag`, no meta — so both were indexable by omission rather than by decision.
      *
      * A setting rather than a hardcoded refusal, because an installation that deliberately serves a
-     * public surface from the admin host must be able to say so.
+     * public surface from one of these hosts must be able to say so.
+     *
+     * ONE switch for both, because the platform has exactly two classes of host: a tenant's site,
+     * whose indexability follows that site's own visibility, and these. A second key would be a
+     * control nobody would ever set differently. Read by `AdminIndexingPolicy` (console) and
+     * `PlatformRobotsRouter` (api).
      */
     ADMIN_SEARCH_INDEXING: 'admin_search_indexing',
   } as const;

@@ -177,6 +177,14 @@ export class RouteConstants {
    * authority requests exactly this path and nothing else.
    */
   ACME_CHALLENGE: '/.well-known/acme-challenge',
+  /**
+   * What a crawler is told about the PLATFORM's own hosts (the console and the api host).
+   *
+   * At the ROOT of the host, not under the api's versioned base, because a crawler requests exactly
+   * this path. A site's own `robots.txt` is a different thing entirely — it is served per tenant by
+   * the storefront and reaches the api under `api/v1/plugins/<slug>/...`, never here.
+   */
+  ROBOTS: '/robots.txt',
   /** Gateway-side: the api pushes here after a tenant change; the gateway answers its health here. */
   INTERNAL_ROUTING_RELOAD: '/internal/routing/reload',
   GATEWAY_HEALTH: '/healthz',

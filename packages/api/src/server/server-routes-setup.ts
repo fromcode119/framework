@@ -38,6 +38,7 @@ import { RoutingRouter } from '@api/routes/routing-router';
 import { CertificateAdminRouter } from '@api/routes/certificate-admin-router';
 import { CertificateAdminService } from '@api/services/certificates/certificate-admin-service';
 import { AcmeChallengeRouter } from '@api/routes/acme-challenge-router';
+import { PlatformRobotsRouter } from '@api/routes/platform-robots-router';
 import { CertificatesInternalRouter } from '@api/routes/certificates-internal-router';
 import { McpFrameworkToolsRegistrar } from '@api/controllers/mcp/mcp-framework-tools-registrar';
 import { McpAuditRecorder } from '@api/controllers/mcp/mcp-audit-recorder';
@@ -256,6 +257,10 @@ export class ServerRoutesSetup {
     // because that is the path the authority requests and it must answer before the host has a
     // certificate to redirect to.
     this.app.use(AcmeChallengeRouter.MOUNT_PATH, new AcmeChallengeRouter(new AcmeChallengeStore((this.manager as any).db)).router);
+    // What a crawler is told about the platform's own hosts. At the ROOT for the same reason as the
+    // challenge above — a crawler requests exactly this path — and answered from the operator's
+    // indexing setting rather than a hardcoded refusal.
+    this.app.use(PlatformRobotsRouter.MOUNT_PATH, new PlatformRobotsRouter().router);
     this.app.use(PLUGINS, pluginAssetRouter);
     this.app.use(THEMES, themeAssetRouter);
 

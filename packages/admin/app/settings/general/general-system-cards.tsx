@@ -140,8 +140,8 @@ export class GeneralSystemCards extends PureReactor {
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Lock}
-            title="Index This Admin"
-            description="Let search engines crawl and index this console. Off by default: the login page names the platform and the customer, and the URLs describe the installation. Turn it on only if this host deliberately serves something public."
+            title="Index Platform Hosts"
+            description="Let search engines crawl and index the platform's own hosts — this console and the API host. Off by default: the login page names the platform and the customer, and the URLs describe the installation. Sites you host are not affected; each one follows its own visibility. Turn it on only if these hosts deliberately serve something public."
           >
             <Switch
               checked={settings.admin_search_indexing}

@@ -298,7 +298,14 @@ export class SystemConstants {
   EMAIL_NOTIFICATIONS: 'email_notifications',
   NOTIFICATION_EMAIL: 'notification_email',
   NOTIFICATION_EMAIL_CC: 'notification_email_cc',
-  /** Whether search engines may index the ADMIN console. Off unless an operator turns it on. */
+  /**
+   * Whether search engines may index the PLATFORM'S OWN HOSTS — the admin console and the api
+   * host, both of which read this one switch. Off unless an operator turns it on. A tenant's
+   * site is NOT governed by it; a site follows its own visibility.
+   *
+   * The stored key still says `admin_` because renaming a `_system_meta` key is a migration and
+   * an allowlist change for no behaviour; the operator-facing label is where the scope is stated.
+   */
   ADMIN_SEARCH_INDEXING: 'admin_search_indexing',
   /**
    * `owner/repo` checked for framework releases, and where Sources writes what it builds.

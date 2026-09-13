@@ -125,12 +125,14 @@ export class ServerMiddlewareSetup {
    * failure this entire layer exists to prevent.
    */
   private runWithTenant(req: any, res: any, locale: string, next: any): void {
-    // Infrastructure probes are not tenant traffic: an orchestrator health-checking the container
-    // has no host to route by, and these endpoints return no tenant data. They are exempted by
-    // PATH ONLY, and the exemption is deliberately limited to liveness/readiness — every route that
-    // can return a row stays behind tenant resolution.
+    // Not tenant traffic, and none of it can return a tenant's row: liveness/readiness probes, the
+    // extension assets the operator installed once for the whole platform, the ACME challenge a
+    // certificate authority asks for before a host is known, and the platform's own robots.txt.
+    // Exempted by PATH ONLY, and each entry carries its proof in `TenantExemptRouteUtils` — every
+    // route that can return a row stays behind tenant resolution.
     if (TenantExemptRouteUtils.isProbeRoute(req) || TenantExemptRouteUtils.isPublicAssetRoute(req)
-      || TenantExemptRouteUtils.isAcmeChallengeRoute(req)) {
+      || TenantExemptRouteUtils.isAcmeChallengeRoute(req)
+      || TenantExemptRouteUtils.isPlatformRobotsRoute(req)) {
       RequestContextUtils.storage.run({ locale }, () => next());
       return;
     }

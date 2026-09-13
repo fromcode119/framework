@@ -57,6 +57,20 @@ export class TenantExemptRouteUtils {
   }
 
   /**
+   * The PLATFORM's own `robots.txt` — what a crawler is told about the api host itself.
+   *
+   * Returns two lines of protocol text derived from one platform setting. No tenant row can reach
+   * it, which is the test every entry in this class has to pass.
+   *
+   * EXACT, and that matters here more than anywhere: a site's own robots.txt is served by a plugin
+   * under `api/v1/plugins/<slug>/...`, so a suffix match would exempt a TENANT's route and run it
+   * with no tenant bound — the same mistake `/health` made. Only the bare root path is exempt.
+   */
+  static isPlatformRobotsRoute(req: any): boolean {
+    return TenantExemptRouteUtils.pathOf(req) === RouteConstants.SEGMENTS.ROBOTS;
+  }
+
+  /**
    * One of the guardless auth routes (`RouteConstants.AUTH_PUBLIC_SEGMENTS`) — matched EXACTLY on
    * the versioned and unversioned auth path.
    *
