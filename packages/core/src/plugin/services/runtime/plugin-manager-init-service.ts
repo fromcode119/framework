@@ -11,6 +11,7 @@ import { WebhooksCollection } from '@core/collections/webhooks';
 import { CertificateExpiryWarningTask } from '@core/certificates/certificate-expiry-warning-task';
 import { CertificateIssuanceTask } from '@core/certificates/acme/certificate-issuance-task';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
+import { SitePreviewGrantService } from '@core/tenant/preview/site-preview-grant-service';
 
 /**
  * PluginManagerInitService
@@ -81,6 +82,12 @@ export class PluginManagerInitService {
     // declared it returns immediately. The per-host backoff, not this interval, rations attempts.
     await manager.scheduler.register(CertificateIssuanceTask.NAME, CertificateIssuanceTask.SCHEDULE, async () => {
       await new CertificateIssuanceTask(manager.db).run();
+    }, { type: 'cron' });
+    // Preview grants are minutes long and the sessions they become are hours long, so the table is
+    // almost always empty — but nothing else deletes a row, and a table nobody sweeps is a table that
+    // grows for the life of the deployment. Hourly, because that is the granularity that matters.
+    await manager.scheduler.register('site-preview-grant-sweep', '0 * * * *', async () => {
+      await new SitePreviewGrantService(manager.db).prune();
     }, { type: 'cron' });
 
     // Register system collections

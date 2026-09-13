@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { EnvUtils } from '@fromcode119/core/client';
+import { CookieConstants, EnvUtils } from '@fromcode119/core/client';
 import { SiteVisibilityProxyGuard } from '@/lib/document/site-visibility-proxy-guard';
 
 /**
@@ -34,7 +34,10 @@ export class StorefrontDocumentProxy {
     // content of their own — and the only one that can answer 503 rather than render something.
     const host = String(request.headers.get('x-forwarded-host') || request.headers.get('host') || '');
     const apiBase = String(process.env.INTERNAL_API_URL || process.env.API_URL || '');
-    if (!(await SiteVisibilityProxyGuard.isReadable(host, apiBase))) {
+    // WHO is asking, not just where. A site's own people hold a preview cookie for this host; the
+    // guard forwards it and lets the api decide. Read by name — nothing here interprets its value.
+    const preview = String(request.cookies.get(CookieConstants.SITE_PREVIEW)?.value || '');
+    if (!(await SiteVisibilityProxyGuard.isReadable(host, apiBase, preview))) {
       return SiteVisibilityProxyGuard.holdingResponse();
     }
 

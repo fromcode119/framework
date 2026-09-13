@@ -2,6 +2,7 @@ import { PluginTenantAccess, RequestContextUtils, TenantResolverService } from '
 import { Request, Response } from 'express';
 import { PluginState, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
 
 /**
  * The metadata documents the admin and the storefront boot from — navigation, enabled plugins,
@@ -104,7 +105,23 @@ export class SystemMetadataController {
     res.json({
       ...metadata,
       site: site
-        ? { id: site.id, slug: site.slug, visibility: String(site.visibility.value), isIndexable: site.isIndexable, isReadable: site.isReadable }
+        ? {
+          id: site.id,
+          slug: site.slug,
+          visibility: String(site.visibility.value),
+          isIndexable: site.isIndexable,
+          isReadable: site.isReadable,
+          // Whether THIS caller may read a site that is not published. The storefront cannot work
+          // this out — it holds an opaque cookie and knows nothing about sites — so the payload it
+          // already fetches per render is where the answer belongs. It decides whether to render the
+          // site at all, and whether to say out loud that only this person can see it.
+          //
+          // ASKED ONLY OF A CLOSED SITE, and that is not an optimisation. A readable site's payload
+          // is cached at the edge for everyone; a per-caller answer inside it would be served to the
+          // next anonymous visitor, who would then be told a published site is private. A closed
+          // site's payload is `no-store` (below), which is what makes a per-caller field safe there.
+          preview: site.isReadable ? false : await new SiteVisibilityGate(this.runtime.db).canPreview(site, req),
+        }
         : null,
       menu: Array.isArray(adminMetadata?.menu)
         ? adminMetadata.menu

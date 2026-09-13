@@ -215,6 +215,8 @@ export { CertificateState } from '@core/enums/certificate-state.enum';
 export { TenantMembership } from '@core/tenant/tenant-membership';
 export { TenantAccess } from '@core/tenant/tenant-access';
 export { TenantMembershipService } from '@core/tenant/tenant-membership-service';
+export { SitePreviewGrant } from '@core/tenant/preview/site-preview-grant';
+export { SitePreviewGrantService } from '@core/tenant/preview/site-preview-grant-service';
 export { DatabaseRoleGuard } from '@core/tenant/database-role-guard';
 export { StorefrontPagesCollection } from '@core/services/default-page-contract/storefront-pages-collection';
 export { DatabaseRoleBootstrapService } from '@core/database/database-role-bootstrap-service';

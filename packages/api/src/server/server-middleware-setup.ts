@@ -1,13 +1,13 @@
 /** ServerMiddlewareSetup — configures Express middlewares. Extracted from APIServer (ARC-007). */
 
 import express from 'express';
-import { CookieConstants, Logger, PluginManager, RequestContextUtils, TenantMembershipService, TenantMode, TenantResolverService } from '@fromcode119/core';
+import { CookieConstants, Logger, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMembershipService, TenantMode, TenantResolverService } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
+import { SiteVisibilityMiddleware } from '@api/server/site-visibility-middleware';
 import { ApiConfig } from '@api/config/api-config';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
 import { RequestLocaleService } from '@api/services/request/request-locale-service';
-import { ApiPathUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
 import { RequestTenantService } from '@api/services/request/request-tenant-service';
 import { AdminTenantResolver } from '@api/services/request/admin-tenant-resolver';
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
@@ -16,8 +16,8 @@ import { InternalRouteUtils } from '@api/utils/internal-route-utils';
 import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resolver';
 import { ApiKeyTenantGate } from '@api/server/api-key-tenant-gate';
 import { TenantRequestBinder } from '@api/server/tenant-request-binder';
-import { RequestSurfaceUtils } from '@fromcode119/core';
 import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
+import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
 
 export class ServerMiddlewareSetup {
@@ -29,7 +29,7 @@ export class ServerMiddlewareSetup {
   /** Api-key surface: token -> tenant. Built lazily alongside `tenants`. */
   private apiKey: ApiKeyTenantGate | null = null;
   private tenantBinder: TenantRequestBinder | null = null;
-  private siteVisibility?: SiteVisibilityGate;
+  private siteVisibility?: SiteVisibilityMiddleware;
 
   /** Admin surface: session token -> tenant, membership-checked. Built lazily alongside `tenants`. */
   private adminTenant: AdminTenantResolver | null = null;
@@ -60,6 +60,10 @@ export class ServerMiddlewareSetup {
     });
 
     this.app.use(this.auth.middleware());
+
+    // IMMEDIATELY after auth, and before anything that can return content: the first point in the
+    // chain where both halves of the question exist — which site, and who is asking.
+    this.app.use(this.visibilityGate().middleware());
 
     // Dynamic post-auth plugin middlewares
     this.app.use((req, res, next) => this.manager.middlewares.dispatch('post_auth' as any, req, res, next));
@@ -125,7 +129,8 @@ export class ServerMiddlewareSetup {
     // has no host to route by, and these endpoints return no tenant data. They are exempted by
     // PATH ONLY, and the exemption is deliberately limited to liveness/readiness — every route that
     // can return a row stays behind tenant resolution.
-    if (this.isProbeRoute(req) || this.isPublicAssetRoute(req) || this.isAcmeChallengeRoute(req)) {
+    if (TenantExemptRouteUtils.isProbeRoute(req) || TenantExemptRouteUtils.isPublicAssetRoute(req)
+      || TenantExemptRouteUtils.isAcmeChallengeRoute(req)) {
       RequestContextUtils.storage.run({ locale }, () => next());
       return;
     }
@@ -166,7 +171,13 @@ export class ServerMiddlewareSetup {
 
     // The admin is one host serving many tenants, so its tenant comes from the signed session token,
     // not the Host header. The storefront is the opposite and keeps resolving by host.
-    if (RequestSurfaceUtils.isAdminRequestContext(req)) {
+    //
+    // The preview exchange is the ONE route that must resolve by host despite LOOKING like admin
+    // traffic: it is a top-level navigation FROM the console, so it carries the console's Referer and
+    // `isAdminRequestContext` reads exactly that. Without this it routed to whatever site the
+    // operator's session was inside, the token failed its tenant check against the wrong site, and
+    // the operator was silently redirected to the holding page. Found on the first real click.
+    if (RequestSurfaceUtils.isAdminRequestContext(req) && !PublicSystemRouteUtils.isSitePreviewExchangePath(String(req.path || ''))) {
       this.runAdminTenant(req, res, locale, next);
       return;
     }
@@ -185,18 +196,8 @@ export class ServerMiddlewareSetup {
           res.status(503).json({ error: 'tenant_suspended', host });
           return;
         }
-        // A site that is not open yet answers only to the people building it. 503 rather than 404:
-        // the site exists and will be there later, and a 404 with a body tells a crawler the address
-        // is wrong. `no-store` because this answer changes the moment somebody publishes.
-        if (!(await this.visibilityGate().allows(tenant, req))) {
-          res.status(503)
-            .set('Retry-After', '3600')
-            .set('Cache-Control', 'no-store')
-            .set('X-Robots-Tag', 'noindex, nofollow')
-            .json({ error: 'site_private', host });
-          return;
-        }
-
+        // Visibility is NOT decided here — it needs to know WHO is asking, and nothing does until the
+        // auth middleware has run, which is necessarily after this. See SiteVisibilityMiddleware.
         await this.binder().bind(req, res, locale, tenant, next, 'storefront');
       })
       .catch((error: unknown) => {
@@ -205,80 +206,14 @@ export class ServerMiddlewareSetup {
       });
   }
 
-  private resolveTenant(host: string) {
-    return this.tenantResolver().resolveByHost(host);
-  }
-
   /** The first candidate host that names a tenant, or null. Order is the trust order. */
   private async resolveFirst(candidates: string[]) {
     for (const candidate of candidates) {
-      const tenant = await this.resolveTenant(candidate);
+      const tenant = await this.tenantResolver().resolveByHost(candidate);
       if (tenant) return tenant;
     }
     return null;
   }
-
-  /**
-   * Theme and plugin ASSETS — `themes/<slug>/ui/*`, `themes/<slug>/public/*`, `plugins/<slug>/ui/*` —
-   * are files the operator installed once for the whole platform, served from disk. They carry no
-   * tenant data, and the browser fetches them with a plain `<script src>` / `<link>` that sends no
-   * Origin, so tenancy could never resolve them: the storefront's client theme bundle 404'd as
-   * `unknown_host` while the server-rendered page around it looked fine. Exempt by path, like the
-   * probes, and for the same reason: nothing here can return a row.
-   */
-  private isPublicAssetRoute(req: any): boolean {
-    return RequestSurfaceUtils.isExtensionAssetPath(req?.path);
-  }
-
-  /**
-   * A certificate authority proving a host belongs to this platform.
-   *
-   * EXEMPT FROM TENANCY ON PURPOSE, and it has to be: the question is asked about a hostname that
-   * frequently has no tenant yet — a customer domain being set up, or a platform host being brought
-   * online — and tenant resolution would answer `unknown_host` to the one request that would let it
-   * become known. Nothing tenant-scoped is reachable through it: the route reads one row of a
-   * platform table keyed by a random token, and every value it can return is public by protocol.
-   *
-   * Prefix match, unlike the exact matches above, because the token is part of the path. The prefix
-   * is fixed by the protocol rather than chosen here, so it cannot collide with a plugin's route the
-   * way a bare `/health` suffix once did.
-   */
-  private isAcmeChallengeRoute(req: any): boolean {
-    return String(req?.path || '').startsWith(`${RouteConstants.SEGMENTS.ACME_CHALLENGE}/`);
-  }
-
-
-  /**
-   * Liveness/readiness only — never a data route.
-   *
-   * MATCHED EXACTLY, not by suffix. `endsWith('/health')` also matched
-   * `/api/v1/plugins/<slug>/health` — and `context.api.health(...)` is a first-class part of the
-   * plugin API, so every plugin that declares a health probe had that route silently exempted from
-   * tenancy. It then ran with NO tenant bound: the tenant gate refused it, and any data it touched
-   * would have been outside every tenant's policy. Found while verifying T2, on the first plugin
-   * route that happened to be called `/health`.
-   */
-  /**
-   * One of the guardless auth routes (`RouteConstants.AUTH_PUBLIC_SEGMENTS`) — matched EXACTLY on the
-   * versioned and unversioned auth path, never by suffix, for the reason `isProbeRoute` documents:
-   * a suffix match once exempted every plugin's own `/health` from tenancy.
-   */
-  private isPublicAuthRoute(req: any): boolean {
-    const path = String(req?.path || '').replace(/\/+$/, '');
-    const paths = RouteConstants.AUTH_PUBLIC_SEGMENTS.flatMap((segment) => {
-      const full = `${SystemConstants.API_PATH.AUTH.BASE}${segment}`;
-      return [full, ApiPathUtils.versioned(full)];
-    });
-    return paths.includes(path);
-  }
-
-  private isProbeRoute(req: any): boolean {
-    const path = String(req?.path || '').replace(/\/+$/, '');
-    const probes = ApiConfig.getInstance().probeRoutes;
-    const versioned = (probe: string) => [probe, ApiPathUtils.versioned(probe)];
-    return [...versioned(probes.HEALTH), ...versioned(probes.READY)].includes(path);
-  }
-
 
   /**
    * Admin-surface tenancy. A failure here is never a 404: the client has to tell "you have not
@@ -304,7 +239,7 @@ export class ServerMiddlewareSetup {
           // that had refused it. These routes are guardless and read no tenant rows, so they continue
           // WITHOUT a tenant bound: every tenant-scoped query behind them stays fail-closed.
           if (reason?.isAccessRevoked
-            && (this.isPublicAuthRoute(req) || PublicSystemRouteUtils.isTenancyOptionalPath(String(req.path || '')))) {
+            && (TenantExemptRouteUtils.isPublicAuthRoute(req) || PublicSystemRouteUtils.isTenancyOptionalPath(String(req.path || '')))) {
             RequestContextUtils.storage.run({ locale }, () => next());
             return;
           }
@@ -335,8 +270,10 @@ export class ServerMiddlewareSetup {
   }
 
   /** Decides whether a request may read a site that is not published yet. Built once. */
-  private visibilityGate(): SiteVisibilityGate {
-    if (!this.siteVisibility) this.siteVisibility = new SiteVisibilityGate(this.manager.db);
+  private visibilityGate(): SiteVisibilityMiddleware {
+    if (!this.siteVisibility) {
+      this.siteVisibility = new SiteVisibilityMiddleware(new SiteVisibilityGate(this.manager.db), this.logger);
+    }
     return this.siteVisibility;
   }
 

@@ -90,6 +90,11 @@ export class TenantRegistryService {
       primary_host: identity.primaryHost,
       host_aliases: JSON.stringify(identity.hostAliases),
       state: identity.state,
+      // Resolved above and then NEVER WRITTEN. The Sites form's "Visible to" dropdown sent a value on
+      // every save, the identity carried it here, and this statement dropped it on the floor — so a
+      // site could be created private and could never be opened or closed again from the admin. The
+      // one control that decides who may read a site did nothing at all.
+      visibility: String(identity.visibility.value),
       appearance: identity.appearance,
       updated_at: new Date(),
     });

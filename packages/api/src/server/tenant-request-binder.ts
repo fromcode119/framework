@@ -19,6 +19,14 @@ export class TenantRequestBinder {
 
   async bind(req: any, res: any, locale: string, tenant: TenantRecord, next: () => void, surface: string): Promise<void> {
     req.tenantId = tenant.id;
+    // The record and the surface, not just the id. The site-visibility gate runs LATER in the chain —
+    // it has to, because it asks who the caller is and nothing knows that until the auth middleware
+    // has run — and re-resolving the tenant there would ask the same question twice per request to
+    // get an answer this step already holds. `tenantSurface` is how that gate knows a request came in
+    // by Host (a visitor on the site) rather than through the admin console, which must never be
+    // gated: the console is where an unpublished site is built.
+    req.tenant = tenant;
+    req.tenantSurface = surface;
     // Integrations join the plugin and theme sets for the same reason: `MediaManager.publicUrl` and
     // `QueueManager.applySettings` are SYNCHRONOUS, so the site's own instances have to already be in
     // memory by the time a route or a render reaches them. Without this every site shared the platform's

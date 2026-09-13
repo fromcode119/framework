@@ -128,6 +128,19 @@ export class RouteConstants {
    * entries are RELATIVE to the tenants router's root.
    */
   ADMIN_TENANTS: '/admin/tenants',
+  /**
+   * Letting a site's own people look at it before it is published.
+   *
+   * NOT under `/admin`, deliberately: only half of this lives on the admin surface. The mint does,
+   * and is guarded; the exchange is requested by the operator's BROWSER on the site's own host,
+   * where there is no admin session to guard it with — the one-time token in the path is the whole
+   * credential. `SITE_PREVIEW_*` are RELATIVE to the router's root.
+   */
+  SITE_PREVIEW: '/site-preview',
+  /** Mint: the admin asks for a link to a site it administers. */
+  SITE_PREVIEW_SESSION: '/:id/session',
+  /** Spend: the browser arrives on the site's own host with the token and leaves with a cookie. */
+  SITE_PREVIEW_EXCHANGE: '/exchange/:token',
   TENANTS_ROOT: '/',
   /** `/system/admin/certificates` — the platform-wide TLS certificate list and its uploads. */
   ADMIN_CERTIFICATES: '/admin/certificates',

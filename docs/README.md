@@ -20,6 +20,9 @@ Operator guide for the system backup API, constrained restore flow, and site-tra
 ### [Certificates and TLS](./certificates-and-tls.md)
 How the platform serves HTTPS: uploading a certificate, where keys are stored, expiry warnings, and the vendor-neutral contract an edge proxy consumes.
 
+### [Site Visibility and Preview](./site-visibility-and-preview.md)
+What private/unlisted/public actually do, and how a site's own people see it before it is published — including why that needs a one-time link rather than a permission check.
+
 ### [Plugin Development Guide](./plugin-development-guide.md)
 Discover how to create your own plugins, register collections, and hook into framework events.
 

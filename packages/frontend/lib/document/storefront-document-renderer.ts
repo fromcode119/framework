@@ -176,6 +176,9 @@ export class StorefrontDocumentRenderer {
     };
     const html = DocumentMarkupRenderer.render(DocumentView.render, {
       lang: locale, page, site, theme, markup, headInjections, bodyStartInjections, schema, pageDocPrefetch, runtimeConfig,
+      // The render already got this far, so the site is either published or this caller may preview
+      // it. Only the second case says so on screen.
+      preview: await SiteVisibilityVerdict.isPreview(),
       runtimeScriptPath: FrontendRuntimeAssetManifest.runtimeScriptPath(),
       layoutStylesheets: FrontendLayoutStylesheets.hrefs(),
       status: args.status || 200,

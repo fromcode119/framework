@@ -34,6 +34,18 @@ export class SitesClient {
     return { filename: String(response?.backup?.filename || ''), rows: Number(response?.manifest?.tables?.reduce?.((sum: number, t: any) => sum + Number(t?.rows || 0), 0) ?? 0) };
   }
 
+  /**
+   * A link that opens this site even though it is not published — once, for whoever follows it.
+   *
+   * The admin cannot simply navigate to the site: its session cookie is host-scoped, so the
+   * storefront sees an anonymous visitor and answers the holding page. This asks the api to mint a
+   * one-time token, and the storefront exchanges it for a cookie of its own on arrival.
+   */
+  static async previewLink(id: string): Promise<string> {
+    const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.SITE_PREVIEW_SESSION(id), {});
+    return CoercionUtils.toString(response?.url);
+  }
+
   /** Rebuilds the site's pages from its theme's seed and its plugins' default page contracts. */
   static async materializePages(id: string): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
     const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANT_PAGES(id), {});

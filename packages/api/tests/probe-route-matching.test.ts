@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { ServerMiddlewareSetup } from '@api/server/server-middleware-setup';
+import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 
 /**
  * The probe exemption skips tenancy entirely, so anything it matches runs with NO tenant bound.
  * It therefore has to match the framework's own two probes and nothing else.
  */
-describe('ServerMiddlewareSetup.isProbeRoute', () => {
-  const isProbe = (path: string) => (ServerMiddlewareSetup.prototype as any)
-    .isProbeRoute.call({}, { path });
+describe('TenantExemptRouteUtils.isProbeRoute', () => {
+  const isProbe = (path: string) => TenantExemptRouteUtils.isProbeRoute({ path });
 
   it('matches the framework health and ready probes, versioned or not', () => {
     expect(isProbe('/health')).toBe(true);

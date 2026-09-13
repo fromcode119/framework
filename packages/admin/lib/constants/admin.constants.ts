@@ -122,6 +122,8 @@ export class AdminConstants {
     BACKUP_RESTORE_EXECUTE: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_RESTORE_EXECUTE, { id })),
     /** Tenant provisioning (Sites) — platform admins only. */
     TENANTS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANTS),
+    /** A one-time link that opens one site while it is still private. See SitePreviewRouter. */
+    SITE_PREVIEW_SESSION: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.SITE_PREVIEW_SESSION, { id })),
     CERTIFICATES: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATES),
     CERTIFICATE_PLATFORM_ADDRESSES: `${AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATES)}/platform-addresses`,
     CERTIFICATE: (host: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE, { host })),

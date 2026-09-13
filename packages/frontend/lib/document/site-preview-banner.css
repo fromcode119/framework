@@ -1,0 +1,56 @@
+/**
+ * The bar that says a site is not published yet, shown only to the person who may see it.
+ *
+ * Framework-owned and theme-independent on purpose: it appears on every theme, including ones
+ * written before this existed, so it cannot depend on a single token or class the theme supplies.
+ * Everything here is a literal value for that reason, and every property is stated rather than
+ * inherited — a theme's `* { margin: 0 }` reset must not be able to collapse it.
+ *
+ * `position: sticky` rather than `fixed`: a fixed bar sits on top of a theme's own header and hides
+ * it. Sticky pushes the page down by the bar's height and then stays at the top of the viewport,
+ * which is what a status bar should do and costs the theme no layout it has to know about.
+ */
+.fc-site-preview {
+  position: sticky;
+  top: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  background: #422006;
+  color: #fef3c7;
+  font: 600 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: 0.01em;
+  text-align: center;
+  border-bottom: 1px solid #78350f;
+}
+
+.fc-site-preview__dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+.fc-site-preview__note {
+  font-weight: 400;
+  color: #fcd34d;
+}
+
+@media (max-width: 480px) {
+  .fc-site-preview {
+    font-size: 12px;
+    padding: 0.45rem 0.75rem;
+  }
+
+  /* The second clause is context, not the message. On a phone the message alone has to fit. */
+  .fc-site-preview__note {
+    display: none;
+  }
+}

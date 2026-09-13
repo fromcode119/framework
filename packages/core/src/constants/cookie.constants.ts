@@ -23,6 +23,22 @@ export class CookieConstants {
   static readonly CLIENT_SESSION_MARKER = CookieConstants.cookie('session');
 
   /**
+   * A site's operator, recognised on the SITE'S OWN host while the site is still private.
+   *
+   * `AUTH_TOKEN` cannot do this job and never will. It is set host-scoped on purpose (see
+   * AuthControllerCookieInfrastructure — a shared cookie domain produced "Token tenant mismatch"),
+   * so the admin's session is never sent to the storefront, and on a customer's own apex domain
+   * there is no shared domain to set it on in the first place.
+   *
+   * So this is a SEPARATE, narrower credential, minted for one site and exchanged onto that site's
+   * host. It opens VISIBILITY ONLY: it says "this browser may read a site that is not published
+   * yet", and nothing else — no account, no drafts, no permission of any kind. A `?preview=1`-style
+   * parameter was tried once in this codebase and leaked drafts; this is server-validated,
+   * single-use on the way in, and tenant-bound.
+   */
+  static readonly SITE_PREVIEW = CookieConstants.cookie('site_preview');
+
+  /**
    * Credentials, and ONLY credentials.
    *
    * `AUTH_CSRF` is deliberately NOT here. It is not a credential — it is one half of a double-submit

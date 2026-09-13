@@ -53,6 +53,19 @@ export class SystemConstants {
      * challenge route; the values are public by protocol, so nothing here is secret.
      */
     ACME_CHALLENGES: '_system_acme_challenges',
+    /**
+     * Permission to look at a site that is not published yet, handed from the admin to the site's
+     * own host.
+     *
+     * PLATFORM-LEVEL, like the certificates table and for the same reason: the grant is minted on
+     * the ADMIN host, bound to one site, and spent on THAT SITE'S host — three different requests,
+     * only one of which is bound to the site it is about. A tenant-scoped table could not be read by
+     * the first of them. `tenant_id` on the row is the binding, and it is checked on every read.
+     *
+     * Only hashes are stored. Neither the one-time grant nor the session that replaces it can be
+     * read back out of the table, so a copy of the database is not a set of working preview links.
+     */
+    SITE_PREVIEW_GRANTS: '_system_site_preview_grants',
     USERS: 'users',
     ROLES: '_system_roles',
     PERMISSIONS: '_system_permissions',
@@ -355,6 +368,9 @@ export class SystemConstants {
     STATUS: SystemConstants.ROUTE_SEGMENTS.STATUS,
     FRONTEND: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.FRONTEND),
     ADMIN_TENANTS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS),
+    SITE_PREVIEW: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.SITE_PREVIEW),
+    SITE_PREVIEW_SESSION: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.SITE_PREVIEW}${SystemConstants.ROUTE_SEGMENTS.SITE_PREVIEW_SESSION}`),
+    SITE_PREVIEW_EXCHANGE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.SITE_PREVIEW}${SystemConstants.ROUTE_SEGMENTS.SITE_PREVIEW_EXCHANGE}`),
     ADMIN_CERTIFICATES: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES),
     ADMIN_CERTIFICATE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES}${SystemConstants.ROUTE_SEGMENTS.CERTIFICATES_HOST}`),
     ADMIN_CERTIFICATE_SOURCE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES}${SystemConstants.ROUTE_SEGMENTS.CERTIFICATES_HOST_SOURCE}`),

@@ -6,7 +6,7 @@ import { TenantPluginGuard } from '@api/middlewares/tenant-plugin-guard';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager } from '@fromcode119/core';
+import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { RESTController } from '@api/controllers/rest/rest-controller';
@@ -25,6 +25,9 @@ import { AcmeChallengeStore, CertificateStoreService, PlatformSettingsService, S
 import { CoreServices } from '@fromcode119/core';
 import { SystemRouter } from '@api/routes/system-router';
 import { TenantAdminRouter } from '@api/routes/tenant-admin-router';
+import { SitePreviewRouter } from '@api/routes/site-preview-router';
+import { SitePreviewController } from '@api/controllers/system/site-preview-controller';
+import { SitePreviewService } from '@api/services/tenants/site-preview-service';
 import { ServerUploadsConfigService } from '@api/server/server-uploads-config-service';
 import { ScimRouter } from '@api/routes/scim-router';
 import { UserPermissionChecker } from '@fromcode119/auth';
@@ -183,6 +186,24 @@ export class ServerRoutesSetup {
     // at its own prefix so its `/:id` never shadows a system route.
     const uploadsDir = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), this.mediaManager ?? undefined).uploadDir;
     vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_TENANTS}`, new TenantAdminRouter(this.manager, this.themeManager, uploadsDir, this.auth, platformAdmin).router);
+    // Letting a site's own people look at it before it is published. NOT on the registry router
+    // above: half of it is requested by the operator's browser on the SITE'S host, where there is no
+    // admin session to guard it with, and the other half is open to a site's own administrator
+    // rather than to platform admins alone. See SitePreviewRouter.
+    vApi.use(
+      `${SYSTEM}${RouteConstants.SEGMENTS.SITE_PREVIEW}`,
+      new SitePreviewRouter(
+        new SitePreviewController(
+          new SitePreviewService(
+            TenantResolverService.shared((this.manager as any).db),
+            new SitePreviewGrantService((this.manager as any).db),
+            new TenantMembershipService((this.manager as any).db),
+          ),
+          new SitePreviewGrantService((this.manager as any).db),
+        ),
+        this.auth,
+      ).router,
+    );
     // TLS certificates for the hosts the platform serves. Platform admins only, like the registry
     // above: a certificate covers one site's host but lives in a table every site is served from.
     vApi.use(

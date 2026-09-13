@@ -7,6 +7,7 @@ export class PublicSystemRouteUtils {
   static readonly I18N_SUFFIX = PublicRouteConstants.I18N_SUFFIX;
   static readonly EVENTS_SUFFIX = PublicRouteConstants.EVENTS_SUFFIX;
   static readonly HEALTH_SUFFIX = PublicRouteConstants.HEALTH_SUFFIX;
+  static readonly SITE_PREVIEW_EXCHANGE_PREFIX = PublicRouteConstants.SITE_PREVIEW_EXCHANGE_PREFIX;
   static readonly ACCOUNT_SELF_SERVICE_SUFFIXES = PublicRouteConstants.ACCOUNT_SELF_SERVICE_SUFFIXES;
   static readonly PLUGIN_ASSETS_PREFIX = PublicRouteConstants.PLUGIN_ASSETS_PREFIX;
   static readonly THEME_ASSETS_PREFIX = PublicRouteConstants.THEME_ASSETS_PREFIX;
@@ -32,6 +33,17 @@ export class PublicSystemRouteUtils {
 
   static isHealthPath(path: string): boolean {
     return path.includes(PublicSystemRouteUtils.HEALTH_SUFFIX);
+  }
+
+  /**
+   * The preview exchange, ANCHORED at the api's versioned base like `isAuthPath` — never matched
+   * with `includes`. Everything after the prefix is an attacker-supplied token, so a loose match
+   * would let any request name this exemption from inside a path segment of its own choosing. That
+   * is exactly how a suffix match once exempted every plugin's `/health` from tenancy.
+   */
+  static isSitePreviewExchangePath(path: string): boolean {
+    const prefixes = ApiConfig.getInstance().prefixes;
+    return String(path || '').startsWith(`${prefixes.VERSIONED}${PublicSystemRouteUtils.SITE_PREVIEW_EXCHANGE_PREFIX}`);
   }
 
   static isPluginAssetPath(path: string): boolean {

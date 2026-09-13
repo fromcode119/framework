@@ -14,21 +14,42 @@ import { FrontendConfigCache } from '@/lib/frontend-config-cache';
  */
 export class SiteVisibilityVerdict {
   /**
-   * Whether an anonymous visitor may read this site at all.
+   * Whether THIS request may read this site at all.
    *
    * Asked BEFORE any content is fetched. The api refuses a private site's content with a 503, and
    * the storefront reads a 503 from the api as "unavailable, try another prefix" — which surfaced as
    * a 500 rather than the holding page. Deciding from the config the storefront already has avoids
    * inferring intent from an error.
+   *
+   * `preview` is the api's verdict on the preview cookie this render forwarded: a site's own people
+   * may read it while it is closed. The answer is per request, which is why the payload it comes
+   * from is `no-store` for a closed site — see SystemMetadataController.
    */
   static async isReadable(): Promise<boolean> {
     try {
       const config = await FrontendConfigCache.read();
-      const site = (config as { site?: { isReadable?: unknown } } | null)?.site;
+      const site = (config as { site?: { isReadable?: unknown; preview?: unknown } } | null)?.site;
       if (!site) return true;
-      return (site as { isReadable?: unknown }).isReadable === true;
+      return site.isReadable === true || site.preview === true;
     } catch {
       return true;
+    }
+  }
+
+  /**
+   * Whether this render is somebody previewing a site that is NOT published.
+   *
+   * The one thing that makes the banner honest: it is true only when the site is closed AND this
+   * caller was let in anyway. A published site never sets it — the api leaves it false there rather
+   * than caching a per-caller answer for everyone.
+   */
+  static async isPreview(): Promise<boolean> {
+    try {
+      const config = await FrontendConfigCache.read();
+      const site = (config as { site?: { preview?: unknown } } | null)?.site;
+      return site?.preview === true;
+    } catch {
+      return false;
     }
   }
 

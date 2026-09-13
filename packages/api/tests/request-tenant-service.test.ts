@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RequestTenantService } from '@api/services/request/request-tenant-service';
-import { ServerMiddlewareSetup } from '@api/server/server-middleware-setup';
+import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 
 describe('RequestTenantService.hostCandidates', () => {
   it('uses x-forwarded-host when the edge set it — the internal Host is then the service name, not a site', () => {
@@ -33,8 +33,8 @@ describe('RequestTenantService.hostCandidates', () => {
   });
 });
 
-describe('ServerMiddlewareSetup.isPublicAssetRoute', () => {
-  const isAsset = (path: string) => (ServerMiddlewareSetup.prototype as any).isPublicAssetRoute.call({}, { path });
+describe('TenantExemptRouteUtils.isPublicAssetRoute', () => {
+  const isAsset = (path: string) => TenantExemptRouteUtils.isPublicAssetRoute({ path });
 
   it('exempts theme ui/public files and plugin ui files', () => {
     expect(isAsset('/api/v1/themes/fromcode/ui/bundle.js')).toBe(true);

@@ -38,8 +38,18 @@ export class ServerApiUtils {
     try {
       const store = await cookies();
       const forwarded: Record<string, string> = {};
+      const forwardedCookies: string[] = [];
       const token = store.get(CookieConstants.CLIENT_AUTH_TOKEN)?.value;
-      if (token) forwarded.cookie = `${CookieConstants.CLIENT_AUTH_TOKEN}=${token}`;
+      if (token) forwardedCookies.push(`${CookieConstants.CLIENT_AUTH_TOKEN}=${token}`);
+
+      // THE PREVIEW SESSION, on every server-side call, not just the config one. A site that is not
+      // published is refused by the api with a 503 — `/system/resolve`, the page document, every
+      // plugin endpoint the render touches — so forwarding it only where the visibility question is
+      // asked would get the operator past the holding page and then hand them an empty site.
+      const preview = store.get(CookieConstants.SITE_PREVIEW)?.value;
+      if (preview) forwardedCookies.push(`${CookieConstants.SITE_PREVIEW}=${preview}`);
+
+      if (forwardedCookies.length) forwarded.cookie = forwardedCookies.join('; ');
 
       if (options.forwardOperatorSession) {
         const operatorToken = store.get(CookieConstants.AUTH_TOKEN)?.value;
