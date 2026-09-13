@@ -25,10 +25,10 @@ describe('proxy response headers', () => {
 
   /**
    * A re-scoped session emits the new cookie PLUS the clears for the wider scopes it replaces, and a
-   * login emits several at once. `new Headers(upstream)` COLLAPSES repeated `Set-Cookie` into one
-   * comma-joined value, so every cookie after the first was silently lost through the proxy and a
-   * stale apex-scoped token kept deciding which site the console was on. The collapsed form is a
-   * single header, which is exactly what this asserts against.
+   * login emits several at once, so the proxy must hand back every one of them. This pins that as a
+   * CONTRACT rather than a fix: a `Headers` copied from another `Headers` already preserves repeated
+   * `Set-Cookie` (verified on Node 22 and 24), but one built from a plain object joins them with
+   * commas into a single malformed cookie — so the guarantee is worth asserting where it can regress.
    */
   it('preserves every Set-Cookie rather than collapsing them into one', () => {
     const upstream = new Headers();
