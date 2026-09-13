@@ -77,8 +77,12 @@ export class SystemSettingsController {
    */
   async platformSettingKeys(req: Request, res: Response) {
     try {
-      const editable = !TenantMode.isEnabled() || await this.runtime.isPlatformAdmin(req);
-      res.json({ keys: TenantBespokePolicies.platformKeys(), editable });
+      const tenantMode = TenantMode.isEnabled();
+      const editable = !tenantMode || await this.runtime.isPlatformAdmin(req);
+      // `tenantMode` so the admin can say WHICH settings are platform-wide even to someone allowed to
+      // change them. On a single-tenant deployment there is no second scope to contrast with, so the
+      // distinction is noise and the admin shows nothing.
+      res.json({ keys: TenantBespokePolicies.platformKeys(), editable, tenantMode });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

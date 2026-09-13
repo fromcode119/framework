@@ -9,8 +9,11 @@ import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 
 export class GeneralSystemCards extends PureReactor {
+  /** Which of these belong to the PLATFORM — asked of the server, never listed here. */
+  @prop declare platformLocks: PlatformSettingLocks;
   @prop declare settings: Record<string, any>;
   @prop declare setSettings: Dispatch<SetStateAction<Record<string, any>>>;
   @prop declare theme: ThemeMode;
@@ -36,6 +39,28 @@ export class GeneralSystemCards extends PureReactor {
   }
 
   @bound
+  /**
+   * The field's own description, plus its SCOPE when that is not obvious.
+   *
+   * Same two sentences as the brand card, for the same reason: "locked" answers why the control
+   * refuses, "platform-wide" answers what saving it will reach. Neither shows on a single-tenant
+   * deployment, where there is no second scope to contrast with.
+   */
+  private describe(key: string, description: string): ReactNode {
+    const note = this.platformLocks.locks(key)
+      ? 'Platform setting — the same for every site, and only a platform admin can change it.'
+      : this.platformLocks.isPlatform(key)
+        ? 'Platform-wide — applies to every site, not just this one.'
+        : '';
+    if (!note) return description;
+    return (
+      <>
+        {description}
+        <span className="mt-1 block text-[12px] font-semibold text-slate-400">{note}</span>
+      </>
+    );
+  }
+
   protected changeAdminSearchIndexing(val: boolean): void {
     this.setSettings((prev) => ({ ...prev, admin_search_indexing: val }));
   }
@@ -141,7 +166,10 @@ export class GeneralSystemCards extends PureReactor {
             theme={theme}
             icon={FrameworkIcons.Lock}
             title="Index Platform Hosts"
-            description="Let search engines crawl and index the platform's own hosts — this console and the API host. Off by default: the login page names the platform and the customer, and the URLs describe the installation. Sites you host are not affected; each one follows its own visibility. Turn it on only if these hosts deliberately serve something public."
+            description={this.describe(
+              'admin_search_indexing',
+              "Let search engines crawl and index the platform's own hosts — this console and the API host. Off by default: the login page names the platform and the customer, and the URLs describe the installation. Sites you host are not affected; each one follows its own visibility. Turn it on only if these hosts deliberately serve something public.",
+            )}
           >
             <Switch
               checked={settings.admin_search_indexing}

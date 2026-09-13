@@ -29,15 +29,25 @@ export class GeneralBrandCard extends PureReactor {
     return this.platformLocks.locks(key);
   }
 
-  /** The field's own description, plus who owns the value when this account cannot change it. */
+  /**
+   * The field's own description, plus its SCOPE when that is not obvious.
+   *
+   * Two different sentences, because they answer different questions. Locked: why the input is
+   * refusing. Merely platform-wide: that saving this changes it for every site — which a platform
+   * admin needs to know precisely BECAUSE nothing stops them. Neither appears on a single-tenant
+   * deployment, where there is no second scope to contrast with.
+   */
   private describe(key: string, description: string): ReactNode {
-    if (!this.locked(key)) return description;
+    const note = this.locked(key)
+      ? 'Platform setting — the same for every site, and only a platform admin can change it.'
+      : this.platformLocks.isPlatform(key)
+        ? 'Platform-wide — applies to every site, not just this one.'
+        : '';
+    if (!note) return description;
     return (
       <>
         {description}
-        <span className="mt-1 block text-[12px] font-semibold text-slate-400">
-          Platform setting — the same for every site, and only a platform admin can change it.
-        </span>
+        <span className="mt-1 block text-[12px] font-semibold text-slate-400">{note}</span>
       </>
     );
   }

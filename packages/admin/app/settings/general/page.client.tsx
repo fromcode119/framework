@@ -243,6 +243,7 @@ export class GeneralSettingsPage extends AdminComponent {
             />
 
             <GeneralSystemCards
+              platformLocks={this.platformLocks}
               settings={settings}
               setSettings={this.setSettings}
               theme={theme}
