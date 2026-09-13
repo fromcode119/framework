@@ -67,6 +67,8 @@ export class RouteConstants {
   /** Tenants this account may enter, and switching between them (multi-tenant only). */
   TENANTS_AVAILABLE: '/tenants/available',
   TENANTS_SELECT: '/tenants/select',
+  /** Step out of every site into the platform scope. Platform admins only — see `leaveTenant`. */
+  TENANTS_LEAVE: '/tenants/leave',
   /** Public: whose console is this host (a workspace tenant), before anyone is signed in. */
   HOST_INFO: '/host',
   SSO_PROVIDERS: '/sso/providers',

@@ -59,6 +59,7 @@ export class AuthRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.HOST_INFO, this.controller.hostInfo);
     this.get(RouteConstants.SEGMENTS.TENANTS_AVAILABLE, this.auth.guard(), this.controller.availableTenants);
     this.post(RouteConstants.SEGMENTS.TENANTS_SELECT, this.auth.guard(), this.controller.selectTenant);
+    this.post(RouteConstants.SEGMENTS.TENANTS_LEAVE, this.auth.guard(), this.controller.leaveTenant);
 
     // User security (requires authentication)
     this.get(RouteConstants.SEGMENTS.SECURITY, this.auth.guard(), this.controller.getMySecurityState);

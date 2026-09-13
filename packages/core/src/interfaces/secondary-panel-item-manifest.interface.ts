@@ -18,4 +18,6 @@ export interface ISecondaryPanelItemManifest {
   sourcePlugin?: string;
   allowGlobal?: boolean;
   governanceKey?: string;
+  /** See `IMenuItemManifest.siteOnly` — needs a site to mean anything, dropped while none is selected. */
+  siteOnly?: boolean;
 }

@@ -6,7 +6,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { TenantOption } from '@/lib/tenants/tenant-option';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { AdminPathUtils } from '@/lib/admin-path';
+import { TenantSwitcherMenu } from '@/app/components/view/tenant-switcher-menu.client';
 
 /**
  * Which customer's site am I editing, and how do I move to another one?
@@ -46,11 +46,38 @@ export class TenantSwitcher extends AdminComponent {
   }
 
   private async load(): Promise<void> {
-    const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE).catch(() => null);
+    // `noDedupe`, like every call in SitesClient: `AdminApi.get` memoises GET responses, and WHICH
+    // SITE YOU ARE ON is the one answer that must never come from a cache — it changes underneath
+    // this component every time somebody switches or steps out, and a stale hit leaves the header
+    // naming a site the session has already left.
+    const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE, { noDedupe: true }).catch(() => null);
     if (!this.mounted || !response) return;
     this.multiTenant = response.multiTenant === true;
     this.current = response.current ?? null;
     this.tenants = TenantOption.fromList(response.tenants);
+  }
+
+  /**
+   * Step out of every site, into the platform scope.
+   *
+   * The way back out. Picking a site used to be one-way — nothing could un-set the claim — so the
+   * only route to the console's own surfaces was to log in again.
+   */
+  @bound private async leave(): Promise<void> {
+    if (this.busy || this.current === null) {
+      this.open = false;
+      return;
+    }
+    this.busy = true;
+    const ok = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_LEAVE, {})
+      .then(() => true)
+      .catch(() => false);
+    if (!ok) {
+      this.busy = false;
+      return;
+    }
+    // Full reload, for the same reason selecting one does: the site's data must not linger.
+    window.location.reload();
   }
 
   private async select(tenantId: string, mode?: string): Promise<void> {
@@ -89,8 +116,12 @@ export class TenantSwitcher extends AdminComponent {
     if (!this.open) this.pending = null;
   }
 
-  private askMode(tenant: TenantOption): void {
+  @bound private onAskMode(tenant: TenantOption): void {
     this.pending = tenant;
+  }
+
+  @bound private onSelectTenant(tenant: TenantOption): void {
+    void this.select(tenant.id);
   }
 
   /** The two ways a platform admin opens a workspace: as its own console, or the default console to configure it. */
@@ -128,11 +159,6 @@ export class TenantSwitcher extends AdminComponent {
     return this.tenants.find((tenant) => tenant.id === this.current);
   }
 
-  /** Is the tenant currently selected one this account only reaches as a platform admin? */
-  private get currentIsPlatformAccess(): boolean {
-    return this.currentOption ? this.currentOption.platformAccess : false;
-  }
-
   render(): ReactElement | null {
     // Single tenant, or tenancy off entirely: no control at all.
     if (!this.multiTenant || this.tenants.length === 0) return null;
@@ -143,7 +169,6 @@ export class TenantSwitcher extends AdminComponent {
         <span className="fc-site fc-site--static" title={`Editing ${only.primaryHost}`}>
           <FrameworkIcons.Globe size={13} className="fc-site__icon" />
           <span className="fc-site__name">{only.label}</span>
-          {only.platformAccess ? TenantSwitcher.platformBadge() : null}
         </span>
       );
     }
@@ -157,54 +182,29 @@ export class TenantSwitcher extends AdminComponent {
           disabled={this.busy}
           aria-haspopup="listbox"
           aria-expanded={this.open}
-          title={selected ? `Editing ${selected.primaryHost} — click to switch site` : 'No site selected — choose one to start editing'}
+          title={selected
+            ? `Editing ${selected.primaryHost} — click to switch site`
+            : (this.canManageSites ? 'Platform scope — no site selected' : 'No site selected — choose one to start editing')}
           onClick={this.toggle}
         >
           <FrameworkIcons.Globe size={13} className="fc-site__icon" />
           <span className="fc-site__text">
-            <span className="fc-site__eyebrow">{selected ? 'Site' : 'No site selected'}</span>
-            <span className="fc-site__name">{selected ? selected.label : 'Choose a site'}</span>
+            <span className="fc-site__eyebrow">{selected ? 'Site' : (this.canManageSites ? 'Platform' : 'No site selected')}</span>
+            <span className="fc-site__name">{selected ? selected.label : (this.canManageSites ? 'No site' : 'Choose a site')}</span>
           </span>
-          {this.currentIsPlatformAccess ? TenantSwitcher.platformBadge() : null}
           <FrameworkIcons.ChevronDown size={13} className={this.open ? 'fc-site__caret fc-site__caret--open' : 'fc-site__caret'} />
         </button>
 
         {this.open && this.pending ? this.renderModeChoice(this.pending) : null}
         {this.open && !this.pending ? (
-          <div className="fc-site__menu" role="listbox" aria-label="Switch site">
-            <div className="fc-site__menu-head">Switch site</div>
-            {this.tenants.map((tenant) => {
-              const isCurrent = tenant.id === this.current;
-              return (
-                <button
-                  key={tenant.id}
-                  type="button"
-                  role="option"
-                  aria-selected={isCurrent}
-                  className={isCurrent ? 'fc-site__item fc-site__item--current' : 'fc-site__item'}
-                  onClick={() => (tenant.isWorkspace ? this.askMode(tenant) : this.select(tenant.id))}
-                >
-                  <span className="fc-site__item-mark" aria-hidden="true">
-                    {isCurrent ? <FrameworkIcons.Check size={13} /> : null}
-                  </span>
-                  <span className="fc-site__item-text">
-                    <span className="fc-site__item-label">
-                      {tenant.label}
-                      {tenant.isWorkspace ? <span className="fc-site__platform" title="Workspace — its domain is the console">workspace</span> : null}
-                      {tenant.platformAccess ? TenantSwitcher.platformBadge() : null}
-                    </span>
-                    <span className="fc-site__item-host">{tenant.primaryHost}</span>
-                  </span>
-                </button>
-              );
-            })}
-            {this.canManageSites ? (
-              <a className="fc-site__manage" href={AdminPathUtils.toAdminPath(AdminConstants.ROUTES.SITES.ROOT)}>
-                <FrameworkIcons.Settings size={12} />
-                <span>Manage sites</span>
-              </a>
-            ) : null}
-          </div>
+          <TenantSwitcherMenu
+            tenants={this.tenants}
+            current={this.current}
+            canManagePlatform={this.canManageSites}
+            onSelect={this.onSelectTenant}
+            onAskMode={this.onAskMode}
+            onLeave={this.leave}
+          />
         ) : null}
       </div>
     );
@@ -215,17 +215,4 @@ export class TenantSwitcher extends AdminComponent {
     return PlatformAccess.canManagePlatform(this.auth.user);
   }
 
-  /**
-   * Marks a tenant this account reaches only through the platform-admin role.
-   *
-   * The title is the whole point of the control: it names WHY access exists, so an operator cannot
-   * mistake someone else's customer for one of its own.
-   */
-  private static platformBadge(): ReactElement {
-    return (
-      <span className="fc-site__platform" title="Platform access — you are not a member of this site">
-        platform
-      </span>
-    );
-  }
 }

@@ -2,6 +2,7 @@ import { PluginTenantAccess, RequestContextUtils, TenantResolverService } from '
 import { Request, Response } from 'express';
 import { PluginState, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { AdminNavigationScopeFilter } from '@api/services/system/admin-navigation-scope-filter';
 import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
 
 /**
@@ -36,11 +37,19 @@ export class SystemMetadataController {
       // user's TOTP secret/recovery codes and the SCIM + API machine tokens.
       metadata.settings = SystemSettingsExposureUtils.toExposableSettingsMap(settings);
       metadata.secondaryPanel = metadata.secondaryPanel || this.runtime.buildDefaultSecondaryPanel();
-      // Platform-only entries (Sites) never reach a tenant admin's payload. Filtered HERE, server
-      // side: hiding in the client would still hand every customer the platform's navigation.
-      if (Array.isArray(metadata.menu) && !(await this.runtime.isPlatformAdmin(req))) {
-        metadata.menu = metadata.menu.filter((item: any) => item?.platformOnly !== true);
-      }
+      // Two filters, one place. Platform-only entries (Sites, Sources) never reach a tenant admin's
+      // payload; site-only entries never reach an operator standing on no site, because with no
+      // tenant bound their screens would answer zero rows and say nothing about why. Both are applied
+      // HERE, server side: hiding in the client would still hand the payload out.
+      const isPlatformAdmin = await this.runtime.isPlatformAdmin(req);
+      const menu = AdminNavigationScopeFilter.apply(metadata.menu, isPlatformAdmin);
+      const panel = AdminNavigationScopeFilter.applyToPanel(metadata.secondaryPanel, isPlatformAdmin);
+      metadata.menu = menu.menu;
+      metadata.secondaryPanel = panel.panel;
+      // What scope this payload describes, and which paths it withheld — so the console can say
+      // "this page belongs to a site" for a bookmarked link instead of rendering an empty screen.
+      metadata.scope = AdminNavigationScopeFilter.hasSite() ? 'site' : 'platform';
+      metadata.siteScopedPaths = [...new Set([...menu.removedPaths, ...panel.removedPaths])];
       res.json(metadata);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

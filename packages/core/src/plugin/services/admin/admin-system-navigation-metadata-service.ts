@@ -15,7 +15,7 @@ export class AdminSystemNavigationMetadataService {
       { label: 'Users', path: AppPathConstants.ADMIN.USERS.ROOT, icon: 'Users', group: 'Platform', priority: 11 },
       { label: 'Sites', path: AppPathConstants.ADMIN.SITES.ROOT, icon: 'Globe', group: 'Platform', priority: 12, platformOnly: true },
       { label: 'Plugins', path: AppPathConstants.ADMIN.PLUGINS.ROOT, icon: 'Package', group: 'Management', priority: 20 },
-      { label: 'Sources', path: AppPathConstants.ADMIN.SOURCES.ROOT, icon: 'GitBranch', group: 'Management', priority: 21 },
+      { label: 'Sources', path: AppPathConstants.ADMIN.SOURCES.ROOT, icon: 'GitBranch', group: 'Management', priority: 21, platformOnly: true },
       { label: 'Media', path: AppPathConstants.ADMIN.MEDIA.ROOT, icon: 'Image', group: 'Core', priority: 30 },
       { label: 'Activity', path: AppPathConstants.ADMIN.ACTIVITY, icon: 'Activity', group: 'Platform', priority: 85 },
       { label: 'Themes', path: AppPathConstants.ADMIN.THEMES.ROOT, icon: 'Palette', group: 'Platform', priority: 90 },
@@ -53,6 +53,7 @@ export class AdminSystemNavigationMetadataService {
       },
       {
         id: 'people',
+        siteOnly: true,
         label: 'People',
         path: AppPathConstants.ADMIN.PEOPLE.ROOT,
         sourcePaths: [AppPathConstants.ADMIN.USERS.ROOT],
@@ -118,6 +119,7 @@ export class AdminSystemNavigationMetadataService {
       },
       {
         id: 'localization',
+        siteOnly: true,
         label: 'Localization',
         path: AppPathConstants.ADMIN.SETTINGS.LOCALIZATION,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
@@ -128,6 +130,7 @@ export class AdminSystemNavigationMetadataService {
       },
       {
         id: 'appearance',
+        siteOnly: true,
         label: 'Appearance',
         path: AppPathConstants.ADMIN.SETTINGS.APPEARANCE,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
@@ -138,6 +141,7 @@ export class AdminSystemNavigationMetadataService {
       },
       {
         id: 'routing',
+        siteOnly: true,
         label: 'Routing',
         path: AppPathConstants.ADMIN.SETTINGS.ROUTING,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
@@ -148,6 +152,7 @@ export class AdminSystemNavigationMetadataService {
       },
       {
         id: 'redirects',
+        siteOnly: true,
         label: 'Redirects',
         path: AppPathConstants.ADMIN.SETTINGS.REDIRECTS,
         sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],

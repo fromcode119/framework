@@ -319,6 +319,7 @@ export class SystemConstants {
     HOST_INFO: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.HOST_INFO),
     TENANTS_AVAILABLE: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.TENANTS_AVAILABLE),
     TENANTS_SELECT: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.TENANTS_SELECT),
+    TENANTS_LEAVE: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.TENANTS_LEAVE),
     SETUP: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.SETUP),
     LOGIN: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.LOGIN),
     LOGOUT: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.LOGOUT),

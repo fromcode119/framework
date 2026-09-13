@@ -40,6 +40,7 @@ export class AdminConstants {
     HOST_INFO: AdminConstants.v(SystemConstants.API_PATH.AUTH.HOST_INFO),
     TENANTS_AVAILABLE: AdminConstants.v(SystemConstants.API_PATH.AUTH.TENANTS_AVAILABLE),
     TENANTS_SELECT: AdminConstants.v(SystemConstants.API_PATH.AUTH.TENANTS_SELECT),
+    TENANTS_LEAVE: AdminConstants.v(SystemConstants.API_PATH.AUTH.TENANTS_LEAVE),
     SETUP: AdminConstants.v(SystemConstants.API_PATH.AUTH.SETUP),
     REGISTER: AdminConstants.v(SystemConstants.API_PATH.AUTH.REGISTER),
     VERIFY_EMAIL: AdminConstants.v(SystemConstants.API_PATH.AUTH.VERIFY_EMAIL),

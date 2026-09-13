@@ -149,7 +149,12 @@ export class AdminMenuBuilderService {
                 icon: col.admin?.icon || p.admin.icon || 'FileText',
                 group: col.admin?.group || p.admin.group || p.name,
                 priority: col.admin?.priority || col.priority || 100,
-                pluginSlug: slug
+                pluginSlug: slug,
+                // DERIVED, not declared. A plugin's tables are tenant-isolated by
+                // `TenantScopedTableDdl`, so with no site selected every one of these screens would
+                // answer zero rows — a list that renders empty and explains nothing. No manifest flag
+                // to forget: it follows from where the data lives.
+                siteOnly: true,
               });
             }
           }

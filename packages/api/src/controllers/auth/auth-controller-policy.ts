@@ -3,6 +3,7 @@ import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-acce
 import { Request, Response } from 'express';
 import { PlatformSettingsService, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { randomUUID } from 'crypto';
+import { ApiUrlUtils } from '@api/utils/url';
 import { AuthControllerInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-infrastructure';
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import type { IPasswordPolicySettings } from '@api/controllers/auth/interfaces/password-policy-settings.interface';
@@ -362,14 +363,25 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     return { roles, permissions: await this.auth.getPermissionsForRoles(roles) };
   }
 
-  protected async reissueSessionForTenant(req: Request, res: Response, user: any, tenantId: string, workspaceMode?: string): Promise<string> {
+  /**
+   * Re-mint this session for a different scope. `tenantId` UNDEFINED means "no site" — the platform
+   * scope — and is a real destination, not a missing argument: `scopeSessionToTenant` already returns
+   * the account's unscoped roles for it, and `generateToken` simply omits the claim.
+   */
+  protected async reissueSessionForTenant(req: Request, res: Response, user: any, tenantId: string | undefined, workspaceMode?: string): Promise<string> {
     const sessionDurationMinutes = await this.getSessionDurationMinutes();
     const maxAgeMs = sessionDurationMinutes * 60 * 1000;
     // `req.user` is a DECODED token, so it already carries the claims jwt issued — `exp`, `iat`,
     // `nbf`. Re-signing with those still present makes jwt.sign reject `expiresIn` outright
     // ("the payload already has an exp property"), so they are dropped and re-issued fresh.
-    const { exp, iat, nbf, workspaceMode: previousMode, ...identity } = user as Record<string, unknown>;
-    void exp; void iat; void nbf; void previousMode;
+    //
+    // `tenantId` is dropped for the same reason, and it is what makes LEAVING possible at all:
+    // `generateToken` builds its payload by spreading this object and only ASSIGNS the claim when one
+    // is supplied, so a `tenantId` carried over from the token being replaced would survive
+    // `tenantId: undefined` untouched. Stepping out of a site would then re-mint the site you were
+    // already in — which is exactly what it did until this line.
+    const { exp, iat, nbf, workspaceMode: previousMode, tenantId: previousTenantId, ...identity } = user as Record<string, unknown>;
+    void exp; void iat; void nbf; void previousMode; void previousTenantId;
     // Re-resolve from the ACCOUNT, never from the token being replaced: that token's roles are already
     // scoped to whichever site the session was in, and narrowing a narrowed set would let one site's
     // roles decide what the next site grants.
@@ -388,11 +400,23 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
       identity as any,
       { expiresIn: `${sessionDurationMinutes}m`, tenantId },
     );
-    res.cookie(this.getSessionCookieName(req), token, this.getCookieOptions(req, false, maxAgeMs));
+    // CLEAR THE OTHER SCOPES FIRST, exactly as logout does and for the same reason. A session cookie
+    // is only replaced by a `Set-Cookie` whose scope matches the one it was written with, and this
+    // session is written HOST-scoped while older ones went to the apex. Setting alone left the wider
+    // cookie in the browser, still sent on every request — and `AuthManager` builds its candidate
+    // list from the RAW Cookie header, which preserves duplicates, then accepts whichever verifies
+    // first. So the stale cookie kept deciding the tenant: leaving a site re-minted a claim-less
+    // token that was never read, and switching sites had the same hole waiting behind it.
+    //
+    // Clearing runs BEFORE the set so the new host-scoped cookie is the last word for its own scope.
+    const cookieName = this.getSessionCookieName(req);
+    const cookieOptions = this.getCookieOptions(req, false, maxAgeMs);
+    this.clearCookieVariants(res, cookieName, this.getCookieOptions(req, true), true, process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req));
+    res.cookie(cookieName, token, cookieOptions);
     await this.db.update(
       SystemConstants.TABLE.SESSIONS,
       { tokenId: user.jti },
-      { tenantId },
+      { tenantId: tenantId ?? null },
     ).catch(() => undefined);
     return token;
   }
@@ -456,6 +480,37 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
 
     await this.reissueSessionForTenant(req, res, user, tenantId, mode || undefined);
     return res.json({ ok: true, tenantId, mode: mode || null });
+  }
+
+  /**
+   * Step OUT of every site, into the platform scope — the console with no tenant bound, where the
+   * things that belong to the installation rather than to any one site are managed.
+   *
+   * The way back. Selecting a site was one-way: `selectTenant` refuses an empty id and the re-issue
+   * could not mint a claim-less token, so an operator who picked a site stayed in one until they
+   * logged in again. The scope existed on the api side all along — a session with no tenant claim is
+   * already carried through unbound — with no route to reach it.
+   *
+   * PLATFORM ADMINS ONLY, enforced by the guard on the route. A site's own administrator has no
+   * platform scope to step into, and handing them one would be the trust boundary the whole tenancy
+   * programme exists to draw.
+   */
+  async leaveTenant(req: Request, res: Response) {
+    const user = (req as any).user;
+    if (!TenantMode.isEnabled()) return res.status(400).json({ error: 'not_multi_tenant' });
+    // A workspace domain IS its tenant — there is no platform scope to stand in on that host, the
+    // same reason selecting a different site is refused there.
+    if (WorkspaceHostService.of(req)) return res.status(403).json({ error: 'workspace_host_locks_tenant' });
+
+    // Checked HERE rather than as a route guard, matching `selectTenant` beside it: both answer
+    // "may this account go there", and one place per question beats a guard that can be forgotten
+    // on the next route added to this router.
+    if (!(await new TenantMembershipService(this.db).isPlatformAdminAccount(String(user.id)))) {
+      return res.status(403).json({ error: 'platform_admin_required' });
+    }
+
+    await this.reissueSessionForTenant(req, res, user, undefined);
+    return res.json({ ok: true, tenantId: null });
   }
 
 }
