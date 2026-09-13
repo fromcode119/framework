@@ -21,13 +21,13 @@ vi.mock('@fromcode119/react', () => ({
     usePlugins: () => mockUsePlugins(),
   },
   Slot: () => null,
-  FrameworkIcons: {
-    Close: () => <span>Close</span>,
-    Zap: () => <span>Zap</span>,
-    Down: () => <span>Down</span>,
-    Left: () => <span>Left</span>,
-    Activity: () => <span>ActivityIcon</span>,
-  },
+  // Every icon, not a hand-listed five. The list version broke the moment a component reached for an
+  // icon nobody had added here — React renders `undefined` as "Element type is invalid", which names
+  // the COMPONENT and not the missing icon, so the failure reads like a bug in the thing under test.
+  // A proxy means this mock never needs updating again.
+  FrameworkIcons: new Proxy({}, {
+    get: (_target, name: string) => () => <span>{String(name)}</span>,
+  }),
 }));
 
 vi.mock('@/components/view/use-theme.client', () => ({
