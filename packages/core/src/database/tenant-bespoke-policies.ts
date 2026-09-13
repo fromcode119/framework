@@ -44,6 +44,11 @@ export class TenantBespokePolicies {
     // `AdminIndexingPolicy` and `PlatformRobotsRouter` through a public endpoint that can run
     // tenant-bound, which is exactly what this list exists to keep readable.
     'admin_search_indexing',
+    // Where Sources writes what it builds, and the repo checked for framework releases. Both are read
+    // by UNTENANTED code — `ServerRoutesSetup` at boot and `FrameworkReleaseSource` on an update
+    // check — so a value saved from a site-bound admin lands on that site's row and the reader, which
+    // sees only the platform row, never finds it. Same shape as `admin_search_indexing` above.
+    'framework_repository', 'sources_workspace_root',
   ];
 
   /** The platform keys, for the code that must NOT hand them to a tenant — the tenant importer. */

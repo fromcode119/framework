@@ -1,9 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
+import { PlatformSettingsService } from '@core/management/platform-settings-service';
 
 describe('TenantBespokePolicies', () => {
   const statements = TenantBespokePolicies.statements();
   const sql = statements.join('\n');
+
+  /**
+   * THE GUARD FOR THE BUG THIS LIST INVITES.
+   *
+   * Every key `PlatformSettingsService` reads is read from the PLATFORM row. If such a key is not
+   * declared here, the settings controller files the WRITE under whichever tenant the request
+   * carried, and the read never finds it — the control saves successfully and changes nothing.
+   * That shipped for `admin_search_indexing` (the console and api indexing toggle had never once
+   * taken effect) and for `framework_repository` and `sources_workspace_root`, which are read by
+   * untenanted boot code. It fails closed, which is why none of them were noticed.
+   *
+   * Scope is currently an omission from a hand-written array, so nothing but this relates the list
+   * to its readers.
+   */
+  it('declares every key PlatformSettingsService reads as a platform key', () => {
+    const platformKeys = TenantBespokePolicies.platformKeys();
+    const read = Object.values(PlatformSettingsService.KEY);
+
+    expect(read.length).toBeGreaterThan(0);
+    expect(platformKeys).toEqual(expect.arrayContaining(read));
+  });
 
   it('gives media FOUR per-command policies, because WITH CHECK does not govern DELETE', () => {
     // A single `USING (own OR shared) WITH CHECK (own)` would let a borrower DELETE another
