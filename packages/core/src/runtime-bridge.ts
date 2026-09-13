@@ -8,6 +8,31 @@ import { EnvUtils } from '@core/utils/env-utils';
  * Utilities for accessing the Fromcode framework's shared browser runtime.
  */
 export class RuntimeBridge {
+  /**
+   * Where this process should call the api.
+   *
+   * IN THE BROWSER IT IS ALWAYS THE PAGE'S OWN ORIGIN, and that is not a preference — a different
+   * origin is a different SESSION. The cookie naming the site you are on is host-scoped, so a console
+   * served from `admin.example` that calls `api.example` sends a different (wider) cookie and gets a
+   * different answer. Measured on the console: `/auth/tenants/available` replied `current: "initech"`
+   * same-origin and `current: null` from the api host, both 200, so the header displayed
+   * "Platform / No site" while every write stayed bound to the site. Nothing errored; the scope was
+   * just quietly wrong.
+   *
+   * The browser chain this replaces could only ever land on the other origin. The bridge value, the
+   * env value and `inferBrowserBaseUrl` were each passed through `normalizeApiBaseUrlCandidate`,
+   * which REWRITES an `admin.*`/`frontend.*` host to `api.*` — so even handing it `location.origin`
+   * came back as the api host. (`NEXT_PUBLIC_API_URL` never reached the bundle anyway: it is read
+   * through a dynamic key, which Next cannot inline.) Host-role swapping is the bug, so none of it
+   * survives here.
+   *
+   * The gateway routes `/api/*`, the uploads tree and extension assets on ANY app host to the api
+   * with the Host intact, which is what makes same-origin correct rather than merely convenient — it
+   * is also how the storefront has worked since the equivalent fix there.
+   *
+   * SERVER-side is unchanged: SSR and the `/api` proxy still resolve `NEXT_PUBLIC_API_URL`/`API_URL`
+   * (and the proxy prefers `INTERNAL_API_URL`), because a server has no origin to speak of.
+   */
   static resolveApiBaseUrl(options: { fallbackHost?: string } = {}): string {
     const fallbackBaseUrl = RuntimeBridge.normalizeApiBaseUrlCandidate(options.fallbackHost);
 
@@ -18,19 +43,8 @@ export class RuntimeBridge {
         || fallbackBaseUrl;
     }
 
-    const fromBridge = RuntimeBridge.normalizeApiBaseUrlCandidate((window as any)?.FROMCODE_API_URL);
-    if (fromBridge) return fromBridge;
-
-    const runtimeBridge = RuntimeBridge.getBridge<any>();
-    const fromRuntimeBridge = RuntimeBridge.normalizeApiBaseUrlCandidate(runtimeBridge?.apiUrl);
-    if (fromRuntimeBridge) return fromRuntimeBridge;
-
-    const fromEnv = RuntimeBridge.normalizeApiBaseUrlCandidate(
-      ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true }),
-    );
-    if (fromEnv) return fromEnv;
-
-    return ApplicationUrlUtils.inferBrowserBaseUrl(ApplicationUrlUtils.API_APP) || fallbackBaseUrl;
+    return ApplicationUrlUtils.normalizeBaseUrlCandidate((window as any)?.location?.origin || '')
+      || fallbackBaseUrl;
   }
 
   /**

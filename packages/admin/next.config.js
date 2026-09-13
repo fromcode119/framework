@@ -199,9 +199,17 @@ const nextConfig = {
     // request falls through to node_modules and the package's `exports` map, i.e. built `dist` — which
     // is exactly what this dev setup exists to avoid.
     config.resolve.alias['@fromcode119/react-class-components/lang$'] = path.resolve(__dirname, '../react-class-components/src/lang.ts');
-    config.resolve.alias['@fromcode119/react/'] = path.resolve(__dirname, '../react/src/');
-    config.resolve.alias['@fromcode119/core/'] = path.resolve(__dirname, '../core/src/');
-    config.resolve.alias['@fromcode119/sdk/'] = path.resolve(__dirname, '../sdk/src/');
+    // PREFIX aliases, NO trailing slash — for exactly the reason the comment above gives. With the
+    // slash these never matched, so every DEEP import (`@fromcode119/core/runtime-bridge`,
+    // `@fromcode119/core/constants/*`) fell through to node_modules and the package `exports` map,
+    // i.e. the BAKED dist in the image. Only the barrel, which has an exact `$` key, compiled from
+    // src. A core change would then be present in the mounted source and absent from what the admin
+    // actually ran — measured 3 occurrences in the container's src, 0 in its dist — and a rebuild on
+    // the host could not fix it, because `core/dist` is not mounted. The exact `$` keys above still
+    // win for the bare specifier; these only catch the subpaths.
+    config.resolve.alias['@fromcode119/react'] = path.resolve(__dirname, '../react/src');
+    config.resolve.alias['@fromcode119/core'] = path.resolve(__dirname, '../core/src');
+    config.resolve.alias['@fromcode119/sdk'] = path.resolve(__dirname, '../sdk/src');
 
     // When package source directories are aliased into webpack, prefer TypeScript
     // source files over any stale generated JavaScript artifacts that may exist.
@@ -215,7 +223,7 @@ const nextConfig = {
     // Dynamically add aliases for all discovered extensions
     extensions.forEach(ext => {
       config.resolve.alias[`@fromcode119/${ext}$`] = path.resolve(__dirname, `../${ext}/src/index.ts`);
-      config.resolve.alias[`@fromcode119/${ext}/`] = path.resolve(__dirname, `../${ext}/src/`);
+      config.resolve.alias[`@fromcode119/${ext}`] = path.resolve(__dirname, `../${ext}/src`);
     });
 
     // `ai` is consumed as BUILT output (dist), not src-transpiled, so its `.client.*` 'use client' stamp
