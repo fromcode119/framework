@@ -9,7 +9,15 @@ import { RemoteShell } from '@cli/services/deploy/remote-shell';
  * worked.
  */
 export class ComposeStack {
-  static readonly SERVICES = ['api', 'admin', 'frontend'];
+  /**
+   * The gateway is in this list because it was silently left out of it.
+   *
+   * It is published as an image like the other three, so a deploy could always have updated it — it
+   * simply was never asked to, and the consequence is invisible: every release moved api, admin and
+   * frontend while the edge every hostname passes through stayed on whatever version it was last
+   * started with. Routing and TLS changes shipped to a container nobody restarted.
+   */
+  static readonly SERVICES = ['api', 'admin', 'frontend', 'gateway'];
 
   private static readonly FILES = '-f docker-compose.full-stack.yml -f docker-compose.images.yml';
 

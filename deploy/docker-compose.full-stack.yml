@@ -49,6 +49,13 @@ services:
       # disabled and the gateway silently falls back to single-domain path routing — which serves the
       # wrong app for a workspace host and looks like a routing bug rather than a missing variable.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:?Set INTERNAL_SERVICE_SECRET; the gateway needs it to read the host routing map}
+      # Set this and the gateway ALSO terminates TLS, serving the certificates the platform stores.
+      # Unset (the default) it terminates nothing and behaves exactly as before, which is right for
+      # every deployment whose reverse proxy holds the certificates.
+      #
+      # Without this line the variable can be set in `.env` and silently do nothing — compose only
+      # passes what a service declares, so the feature looks switched on and is not.
+      - GATEWAY_TLS_PORT=${GATEWAY_TLS_PORT:-}
     # The gateway is the ingress, so it listens where an ingress is expected: port 80. It only exists
     # under the `single-domain` profile, i.e. when you have asked for it to serve.
     #
