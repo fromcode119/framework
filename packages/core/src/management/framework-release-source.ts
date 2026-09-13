@@ -1,6 +1,7 @@
 import semver from 'semver';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import { FrameworkReleaseDefaults } from '@core/management/framework-release-defaults';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * Where the framework's own releases come from when no marketplace is configured.
@@ -37,7 +38,7 @@ export class FrameworkReleaseSource {
   static async repository(): Promise<string> {
     return PlatformSettingsService.resolve(
       process.env.FRAMEWORK_REPOSITORY,
-      PlatformSettingsService.KEY.FRAMEWORK_REPOSITORY,
+      SystemConstants.META_KEY.FRAMEWORK_REPOSITORY,
       FrameworkReleaseDefaults.REPOSITORY,
     );
   }

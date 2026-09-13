@@ -453,7 +453,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
       // `X-Robots-Tag` on requests that have no session — a setting behind auth could not be read
       // by the very requests that need it. It reveals nothing the robots.txt would not.
       searchIndexing: await PlatformSettingsService.readFlag(
-        PlatformSettingsService.KEY.ADMIN_SEARCH_INDEXING,
+        SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING,
       ),
     });
   }

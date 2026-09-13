@@ -1,5 +1,5 @@
 import express from 'express';
-import { PlatformSettingsService, RouteConstants } from '@fromcode119/core';
+import { PlatformSettingsService, RouteConstants, SystemConstants } from '@fromcode119/core';
 
 /**
  * `GET /robots.txt` for the PLATFORM's own hosts — the api host, and any host that reaches this
@@ -37,7 +37,7 @@ export class PlatformRobotsRouter {
 
   private static async answer(res: express.Response): Promise<void> {
     const indexable = await PlatformSettingsService.readFlag(
-      PlatformSettingsService.KEY.ADMIN_SEARCH_INDEXING,
+      SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING,
     );
 
     // Never cached. A cached answer outlives the setting that produced it, so an operator turning

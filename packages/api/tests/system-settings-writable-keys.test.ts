@@ -5,14 +5,20 @@ import { SystemSettingsController } from '@api/controllers/system/system-setting
 /**
  * Every key the General settings page sends must be writable.
  *
- * The PUT rejects the WHOLE payload when it carries a key this list does not name, so a key missing
- * here does not lose one toggle — it stops the entire page from saving. That has happened twice now:
+ * The PUT rejects the WHOLE payload when it carries a key the controller does not accept, so a
+ * missing key does not lose one toggle — it stops the entire page from saving. That happened twice:
  * once for `measurement_system`, and again for `framework_repository` and `sources_workspace_root`,
- * which the General page has always sent and this list never named — so EVERY save from that page
- * answered 400, and the Sources workspace root could be typed in and never take effect.
+ * which the General page has always sent — so EVERY save from that page answered 400, and the
+ * Sources workspace root could be typed in and never take effect.
+ *
+ * The hand-written list is gone; the controller now derives this from `SystemSettingRegistry`, where
+ * `writable` is declared beside `scope`. These cases stay because they name the keys that actually
+ * burned us, and they would still fail if a key were marked unwritable by mistake.
  */
 describe('SystemSettingsController — writable settings keys', () => {
-  const writable = (SystemSettingsController as any).WRITABLE_SETTINGS_KEYS as Set<string>;
+  // Reaches the private accessor rather than a copy of the list: the point is what the CONTROLLER
+  // will accept, not what the registry says in isolation.
+  const writable = (SystemSettingsController as any).writableKeys() as Set<string>;
 
   it.each([
     ['admin_search_indexing', SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING],

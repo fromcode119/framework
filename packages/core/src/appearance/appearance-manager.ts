@@ -10,6 +10,7 @@ import type { IAppearanceManifest } from '@core/appearance/interfaces/appearance
 import type { IAppearanceSummary } from '@core/appearance/interfaces/appearance-summary.interface';
 import type { IAppearanceCatalogEntry } from '@core/appearance/interfaces/appearance-catalog-entry.interface';
 import { AppearanceWorkspaceDeclarationReader } from '@core/appearance/appearance-workspace-declaration-reader';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * Manages admin appearances as a SETTINGS concern (distinct from the plugin/theme marketplace UI):
@@ -166,7 +167,7 @@ export class AppearanceManager {
   private async resolveClient(): Promise<MarketplaceClient | null> {
     if (!this.clientPromise) {
       this.clientPromise = (async () => {
-        const raw = await PlatformSettingsService.resolve(process.env.MARKETPLACE_URL, PlatformSettingsService.KEY.MARKETPLACE_URL);
+        const raw = await PlatformSettingsService.resolve(process.env.MARKETPLACE_URL, SystemConstants.META_KEY.MARKETPLACE_URL);
         const normalized = String(raw || '').trim().toLowerCase();
         if (!raw || normalized === 'off' || normalized === 'false' || normalized === 'disabled') {
           this.logger.info('Marketplace disabled — appearance catalog/update checks skipped.');

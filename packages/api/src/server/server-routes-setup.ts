@@ -6,7 +6,7 @@ import { TenantPluginGuard } from '@api/middlewares/tenant-plugin-guard';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import * as path from 'path';
 import * as fs from 'fs';
-import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager } from '@fromcode119/core';
+import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager, SystemConstants} from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { RESTController } from '@api/controllers/rest/rest-controller';
@@ -149,7 +149,7 @@ export class ServerRoutesSetup {
       // elsewhere in Settings, and nothing here invents a path.
       workspaceRoot: await PlatformSettingsService.resolve(
         process.env.SOURCES_WORKSPACE_ROOT,
-        PlatformSettingsService.KEY.SOURCES_WORKSPACE_ROOT,
+        SystemConstants.META_KEY.SOURCES_WORKSPACE_ROOT,
         '',
       ),
       db: this.manager.db,

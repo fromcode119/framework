@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
-import { PlatformSettingsService } from '@core/management/platform-settings-service';
+import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 
 describe('TenantBespokePolicies', () => {
   const statements = TenantBespokePolicies.statements();
@@ -19,12 +19,14 @@ describe('TenantBespokePolicies', () => {
    * Scope is currently an omission from a hand-written array, so nothing but this relates the list
    * to its readers.
    */
-  it('declares every key PlatformSettingsService reads as a platform key', () => {
+  it('derives its platform keys from the registry, and every one reaches the SQL', () => {
     const platformKeys = TenantBespokePolicies.platformKeys();
-    const read = Object.values(PlatformSettingsService.KEY);
 
-    expect(read.length).toBeGreaterThan(0);
-    expect(platformKeys).toEqual(expect.arrayContaining(read));
+    expect(platformKeys).toEqual(SystemSettingRegistry.platformKeys());
+    // An empty list compiles to `IN ()`, which would make every deployment truth invisible to every
+    // tenant — `marketplace_url`, `maintenance_mode`, `setup_completed` included.
+    expect(platformKeys.length).toBeGreaterThan(0);
+    for (const key of platformKeys) expect(sql).toContain(`'${key}'`);
   });
 
   it('gives media FOUR per-command policies, because WITH CHECK does not govern DELETE', () => {

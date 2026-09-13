@@ -1,4 +1,6 @@
 import { Logger } from '@core/logging';
+import { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';
+import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 
 /**
  * Resolver for NON-secret, NON-bootstrap platform configuration that may live either
@@ -30,8 +32,20 @@ export class PlatformSettingsService {
     this.accessor = accessor;
   }
 
-  /** Read a raw `_system_meta` value, or null if unavailable. Never throws. */
+  /**
+   * Read a raw `_system_meta` value, or null if unavailable.
+   *
+   * Never throws for a MISSING or unreadable value — an absent setting is `null`, which is what
+   * makes every caller's default-closed behaviour safe. It DOES throw for a scope mismatch, which
+   * is a programming error rather than a runtime condition: this service only ever sees the
+   * PLATFORM row, so reading a SITE-scoped key here returns a row no site wrote and the caller
+   * silently gets a default forever. That exact fault shipped three times before the registry
+   * existed, and failed closed every time, so nothing surfaced it. Better a named crash at boot.
+   */
   public static async getSetting(key: string): Promise<string | null> {
+    if (SystemSettingRegistry.isDeclaredSiteScoped(key)) {
+      throw new PlatformSettingScopeError(key);
+    }
     if (!this.accessor) return null;
     try {
       const value = await this.accessor(key);
@@ -70,39 +84,4 @@ export class PlatformSettingsService {
     return value === 'true' || value === '1' || value === 'on' || value === 'yes';
   }
 
-  /**
-   * Canonical `_system_meta` keys for platform settings. These match the keys written by
-   * the admin General Settings page, so a value saved there is read back here.
-   */
-  public static readonly KEY = {
-    MARKETPLACE_URL: 'marketplace_url',
-    /** `owner/repo` the framework checks for its own releases when no marketplace is configured. */
-    FRAMEWORK_REPOSITORY: 'framework_repository',
-    /**
-     * Where Sources writes what it builds.
-     *
-     * Deliberately an operator setting rather than a derived path: build output must never land in
-     * `process.cwd()` — in the api container that is `/app`, which the app user cannot write, and
-     * `/app/plugins` and `/app/themes` are the LIVE mounted repositories, so writing there would
-     * overwrite the very sources being packaged. Blank uses `<project root>/data/sources`.
-     */
-    SOURCES_WORKSPACE_ROOT: 'sources_workspace_root',
-    /**
-     * Whether search engines may index the PLATFORM'S OWN HOSTS — the admin console and the api host.
-     *
-     * Off unless an operator turns it on. These are operations surfaces: the login page names the
-     * platform and the customer, the URL structure describes the installation, and none of it is
-     * content anyone searched for. Nothing was stopping a crawler before this — no robots.txt, no
-     * `X-Robots-Tag`, no meta — so both were indexable by omission rather than by decision.
-     *
-     * A setting rather than a hardcoded refusal, because an installation that deliberately serves a
-     * public surface from one of these hosts must be able to say so.
-     *
-     * ONE switch for both, because the platform has exactly two classes of host: a tenant's site,
-     * whose indexability follows that site's own visibility, and these. A second key would be a
-     * control nobody would ever set differently. Read by `AdminIndexingPolicy` (console) and
-     * `PlatformRobotsRouter` (api).
-     */
-    ADMIN_SEARCH_INDEXING: 'admin_search_indexing',
-  } as const;
 }

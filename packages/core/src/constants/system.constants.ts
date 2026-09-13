@@ -310,10 +310,11 @@ export class SystemConstants {
   /**
    * `owner/repo` checked for framework releases, and where Sources writes what it builds.
    *
-   * Declared here because the General settings page WRITES them. They existed only as
-   * `PlatformSettingsService.KEY` — the read side — so the admin sent keys the write side had never
-   * heard of and the whole PUT 400'd. Every save from that page failed, which is also why the
-   * workspace root could be typed in and never took effect.
+   * Declared here because the General settings page WRITES them. They once existed ONLY on the read
+   * side, in a duplicate key map, so the admin sent keys the write side had never heard of and the
+   * whole PUT 400'd — which is also why the workspace root could be typed in and never took effect.
+   * That duplicate is gone: this list is the single identity, and `SystemSettingRegistry` declares
+   * each key's scope against it.
    */
   FRAMEWORK_REPOSITORY: 'framework_repository',
   SOURCES_WORKSPACE_ROOT: 'sources_workspace_root'

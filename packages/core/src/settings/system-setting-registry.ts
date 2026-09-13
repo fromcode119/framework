@@ -149,6 +149,18 @@ export class SystemSettingRegistry {
     return SystemSettingRegistry.scopeOf(key).isPlatform;
   }
 
+  /**
+   * Is this key DECLARED and SITE-scoped? True only for a key the registry knows and marks SITE.
+   *
+   * An undeclared key answers FALSE rather than throwing, on purpose: `PlatformSettingsService`
+   * also carries keys that never came from `META_KEY`, and the point of the guard is to catch a
+   * scope MISMATCH, not to police every string that reaches the settings store.
+   */
+  static isDeclaredSiteScoped(key: string): boolean {
+    const descriptor = (SystemSettingRegistry.REGISTRY as Record<string, SystemSettingDescriptor>)[key];
+    return Boolean(descriptor) && !descriptor.scope.isPlatform;
+  }
+
   static isWritable(key: string): boolean {
     return SystemSettingRegistry.writableKeys().has(key);
   }

@@ -10,6 +10,7 @@ import { pipeline } from 'stream/promises';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 import { CoreServices } from '@core/services/core-services';
 import { CatalogEntry } from '@core/marketplace/contributions/catalog-entry';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class MarketplaceCatalogService {
   private logger = new Logger({ namespace: 'marketplace' });
@@ -31,7 +32,7 @@ export class MarketplaceCatalogService {
 
     const raw = await PlatformSettingsService.resolve(
       process.env.MARKETPLACE_URL,
-      PlatformSettingsService.KEY.MARKETPLACE_URL,
+      SystemConstants.META_KEY.MARKETPLACE_URL,
     );
     const normalized = raw.toLowerCase();
     if (normalized === 'off' || normalized === 'false' || normalized === 'disabled') {

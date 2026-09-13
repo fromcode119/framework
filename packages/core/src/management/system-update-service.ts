@@ -11,6 +11,7 @@ import { PlatformSettingsService } from '@core/management/platform-settings-serv
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
 import { FrameworkReleaseSource } from '@core/management/framework-release-source';
 import { DeploymentKind } from '@core/management/deployment-kind';
+import { SystemConstants } from '@core/constants/system.constants';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
@@ -20,7 +21,7 @@ export class SystemUpdateService {
   private static async resolveClient(): Promise<MarketplaceClient> {
     const url = await PlatformSettingsService.resolve(
       process.env.MARKETPLACE_URL,
-      PlatformSettingsService.KEY.MARKETPLACE_URL,
+      SystemConstants.META_KEY.MARKETPLACE_URL,
     );
     return new MarketplaceClient(url || undefined);
   }
