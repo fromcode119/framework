@@ -23,6 +23,39 @@ describe('proxy response headers', () => {
     expect(out.get('content-type')).toBe('application/javascript');
   });
 
+  /**
+   * A re-scoped session emits the new cookie PLUS the clears for the wider scopes it replaces, and a
+   * login emits several at once. `new Headers(upstream)` COLLAPSES repeated `Set-Cookie` into one
+   * comma-joined value, so every cookie after the first was silently lost through the proxy and a
+   * stale apex-scoped token kept deciding which site the console was on. The collapsed form is a
+   * single header, which is exactly what this asserts against.
+   */
+  it('preserves every Set-Cookie rather than collapsing them into one', () => {
+    const upstream = new Headers();
+    upstream.append('set-cookie', 'fc_token=new; Path=/; HttpOnly; SameSite=Lax');
+    upstream.append('set-cookie', 'fc_token=; Domain=.example.com; Path=/; Max-Age=0');
+    upstream.append('set-cookie', 'fc_user=; Path=/; Max-Age=0');
+
+    const out = ProxyHeaderRules.forDownstreamResponse(upstream);
+
+    expect(out.getSetCookie()).toEqual([
+      'fc_token=new; Path=/; HttpOnly; SameSite=Lax',
+      'fc_token=; Domain=.example.com; Path=/; Max-Age=0',
+      'fc_user=; Path=/; Max-Age=0',
+    ]);
+  });
+
+  /** The headers must still arrive intact once handed to the `Response` the route actually returns. */
+  it('keeps them intact through the Response the proxy returns', () => {
+    const upstream = new Headers();
+    upstream.append('set-cookie', 'a=1; Path=/');
+    upstream.append('set-cookie', 'b=2; Path=/');
+
+    const response = new Response('{}', { headers: ProxyHeaderRules.forDownstreamResponse(upstream) });
+
+    expect(response.headers.getSetCookie()).toEqual(['a=1; Path=/', 'b=2; Path=/']);
+  });
+
   it('drops hop-by-hop headers and keeps everything else', () => {
     const out = build({ connection: 'keep-alive', 'keep-alive': 'timeout=5', 'transfer-encoding': 'chunked', etag: 'W/"abc"' });
     for (const dead of ['connection', 'keep-alive', 'transfer-encoding']) expect(out.get(dead)).toBeNull();

@@ -54,12 +54,32 @@ export class ProxyHeaderRules {
     return headers;
   }
 
-  /** The headers to hand back to the browser, minus everything that described the upstream hop. */
+  /**
+   * The headers to hand back to the browser, minus everything that described the upstream hop.
+   *
+   * SET-COOKIE IS COPIED ONE BY ONE, and that is not a detail. `new Headers(response.headers)`
+   * COLLAPSES repeated `Set-Cookie` values into a single comma-joined string, which a browser then
+   * reads as one malformed cookie — so every header after the first was silently lost on the way
+   * through this proxy. Any response that sets more than one cookie was affected: a login sets
+   * several, and re-scoping a session emits the new cookie PLUS the clears for the older, wider
+   * scopes it must replace. Losing those clears left a stale apex-scoped session cookie in the
+   * browser that kept being sent to the api host and kept deciding which site the console was on.
+   *
+   * `getSetCookie()` is the standard accessor that preserves them; it is used rather than reading
+   * `get('set-cookie')`, which returns the same joined string the constructor produces.
+   */
   static forDownstreamResponse(headers: Headers): Headers {
     const forwarded = new Headers(headers);
     for (const name of ProxyHeaderRules.DROPPED_RESPONSE_HEADERS) {
       forwarded.delete(name);
     }
+
+    const cookies = typeof headers.getSetCookie === 'function' ? headers.getSetCookie() : [];
+    if (cookies.length) {
+      forwarded.delete('set-cookie');
+      for (const cookie of cookies) forwarded.append('set-cookie', cookie);
+    }
+
     return forwarded;
   }
 

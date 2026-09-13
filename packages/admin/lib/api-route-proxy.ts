@@ -1,6 +1,10 @@
 import { unstable_noStore as noStore } from 'next/cache';
 import { ProxyHeaderRules } from '@fromcode119/core/api/proxy-header-rules';
-import { ApplicationUrlUtils } from '@fromcode119/core/client';
+// Deep import, not core's `client` barrel: this route is a SERVER graph. The barrel re-exports
+// core's enums, which reach reactor's barrel and its `Reactor` class component — React refuses one
+// in a server graph, so the barrel made every proxied /api call 500 in dev. Same rule as
+// `admin-proxy.ts`; this module is React-free.
+import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
 
 /**
  * Same-origin proxy to the framework API — the admin's twin of the storefront's.
