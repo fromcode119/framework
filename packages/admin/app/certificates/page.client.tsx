@@ -122,6 +122,7 @@ export class CertificatesPageClient extends AdminComponent {
             entries={this.entries}
             canUpload={this.encryptionAvailable}
             canAutomate={this.automation?.isAvailable === true}
+            terminatesTls={this.edge?.tls === true}
             platformAddresses={(this.automation?.platformAddresses as string[]) ?? []}
             showSite
             onUpload={this.openUpload}

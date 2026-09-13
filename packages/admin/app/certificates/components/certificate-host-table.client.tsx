@@ -16,11 +16,13 @@ import { CertificateStateBadge } from '@/app/certificates/components/certificate
  * table built from stored certificates could never show it.
  */
 export class CertificateHostTable extends AdminComponent {
-  declare props: Pick<CertificateHostTable, 'entries' | 'canUpload' | 'canAutomate' | 'platformAddresses' | 'busyHost' | 'showSite' | 'onUpload' | 'onRemove' | 'onAutomate'>;
+  declare props: Pick<CertificateHostTable, 'entries' | 'canUpload' | 'canAutomate' | 'terminatesTls' | 'platformAddresses' | 'busyHost' | 'showSite' | 'onUpload' | 'onRemove' | 'onAutomate'>;
 
   @prop declare entries: CertificateHost[];
   @prop declare canUpload: boolean;
   @prop declare canAutomate?: boolean;
+  /** Whether this deployment's own gateway is the thing terminating TLS. See `renderMeta`. */
+  @prop declare terminatesTls?: boolean;
   @prop declare platformAddresses?: string[];
   @prop declare busyHost?: string;
   @prop declare showSite?: boolean;
@@ -65,9 +67,15 @@ export class CertificateHostTable extends AdminComponent {
   private renderMeta(entry: CertificateHost): ReactNode {
     const dark = this.isDark;
     if (!entry.hasCertificate) {
+      // WHAT "NOTHING STORED" MEANS DEPENDS ON WHO TERMINATES TLS, and the platform must not claim
+      // more than it knows. When its own gateway is not terminating, something in front of it is —
+      // and that something holds the certificate this platform has no row for. Saying "cannot be
+      // served over HTTPS" there is flatly contradicted by the browser that just loaded the host.
       return (
         <span className={`text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-          Nothing stored — this host cannot be served over HTTPS by this platform.
+          {this.terminatesTls
+            ? 'Nothing stored — this host cannot be served over HTTPS by this platform.'
+            : 'Nothing stored here — TLS for this host is terminated before the platform, so its certificate lives there.'}
         </span>
       );
     }
