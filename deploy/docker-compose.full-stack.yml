@@ -44,6 +44,11 @@ services:
       - API_TARGET_URL=http://api:3000
       - ADMIN_TARGET_URL=http://admin:3000
       - FRONTEND_TARGET_URL=http://frontend:3000
+      # WITHOUT THIS THE GATEWAY ROUTES BY PATH, NOT BY HOST, and says nothing about it. The routing
+      # map is read from the api over the internal-service secret; with no secret the client is
+      # disabled and the gateway silently falls back to single-domain path routing — which serves the
+      # wrong app for a workspace host and looks like a routing bug rather than a missing variable.
+      - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:?Set INTERNAL_SERVICE_SECRET; the gateway needs it to read the host routing map}
     # The gateway is the ingress, so it listens where an ingress is expected: port 80. It only exists
     # under the `single-domain` profile, i.e. when you have asked for it to serve.
     #
@@ -51,8 +56,12 @@ services:
     # below): the published port answers directly, in FRONT of that proxy's TLS and access policy. On
     # such a host Traefik already holds 80 too, so set GATEWAY_PORT to something else — or drop this
     # mapping and let the proxy reach the container over the network.
+    # Bound to LOOPBACK by default. On a host where a reverse proxy already holds 80/443 — which is
+    # every deployment that terminates TLS — publishing the gateway on 80 would put it in FRONT of
+    # that proxy's TLS and access policy. The proxy reaches it over the network by name; the mapping
+    # is here only so a bare deployment can still be curled locally.
     ports:
-      - ${GATEWAY_PORT:-80}:3000
+      - ${GATEWAY_PORT:-127.0.0.1:8085}:3000
     labels:
       - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK}"
     networks:
@@ -123,6 +132,10 @@ services:
       # every storefront asset 500'd with "Not allowed by CORS" while the page itself rendered —
       # server-side HTML is fine and nothing hydrates, which looks like a theme fault and is not one.
       - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
+      # Where to push a routing reload after a site is created, renamed or removed. Without it the
+      # gateway still picks the change up, but only when its 30s cache expires — a new domain appears
+      # to "not work yet" for half a minute, which is exactly long enough to be debugged twice.
+      - GATEWAY_INTERNAL_URL=${GATEWAY_INTERNAL_URL:-http://gateway:3000}
       # Extra origins the api accepts, comma-separated, matched by suffix — so one entry covers every
       # site on a domain. On a multi-tenant deployment each site answers on its OWN host, and
       # FRONTEND_URL names only one of them; this is how an operator admits the rest.
