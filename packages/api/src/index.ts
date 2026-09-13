@@ -124,7 +124,13 @@ export class APIServer {
           || this.settingsCache.get(SystemConstants.META_KEY.SITE_URL)
           || null;
       }
-      return null; // API base URL has no DB setting — env-only
+      if (app === ApplicationUrlUtils.API_APP) {
+        // Was env-only, which made the api the one platform host an operator could not change without
+        // editing a deployment's `.env` and redeploying — while admin/frontend, the same kind of
+        // value, were a field in Settings. Setting-first now, like its siblings; env is the fallback.
+        return this.settingsCache.get(SystemConstants.META_KEY.API_URL) || null;
+      }
+      return null;
     });
 
     this.corsSetup.setup();

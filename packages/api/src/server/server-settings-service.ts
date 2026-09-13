@@ -5,6 +5,7 @@ import { SystemConstants } from '@fromcode119/core';
 import { CacheManager } from '@fromcode119/cache';
 import { RateLimitSettingsUtils } from '@api/utils/rate-limit-settings-utils';
 import { SystemSettingRegistry } from '@fromcode119/core';
+import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 
 export class ServerSettingsService {
   private settingsInterval?: NodeJS.Timeout;
@@ -33,9 +34,30 @@ export class ServerSettingsService {
    * went on enforcing the old one, which is indistinguishable from a control that does nothing. The
    * settings controller already announces every change; this listens.
    */
+  /**
+   * The settings that decide WHICH HOST reaches which app. Saving one of these has to reach the
+   * gateway, not just this process.
+   */
+  private static readonly ROUTING_KEYS: readonly string[] = [
+    SystemConstants.META_KEY.ADMIN_URL,
+    SystemConstants.META_KEY.API_URL,
+    SystemConstants.META_KEY.FRONTEND_URL,
+    SystemConstants.META_KEY.SITE_URL,
+    SystemConstants.META_KEY.PLATFORM_DOMAIN,
+  ];
+
   subscribeToSettingsChanges(hooks: { on: (event: string, handler: (payload: unknown) => void) => void }) {
-    hooks.on('system:settings:updated', () => {
+    hooks.on('system:settings:updated', (payload: unknown) => {
       this.refreshSettingsCache().catch((err) => this.logger.error('Settings cache refresh after update failed: ' + err));
+
+      // A host change must also reach the GATEWAY, which keeps its own routing map. Without this the
+      // new address only routed at the gateway's next refresh — and the operator, who had just seen
+      // the value saved, met `unknown_host` in the meantime. The same push a tenant or certificate
+      // change already uses, and best-effort for the same reason: a deployment with no gateway must
+      // not turn a settings save into an error.
+      const keys = Array.isArray((payload as any)?.keys) ? (payload as any).keys.map(String) : [];
+      if (!keys.some((key: string) => ServerSettingsService.ROUTING_KEYS.includes(key))) return;
+      void new GatewayReloadClient().notify();
     });
   }
 

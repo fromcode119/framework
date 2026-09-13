@@ -172,6 +172,14 @@ export class SystemConstants {
   SITE_URL: 'site_url',
   FRONTEND_URL: 'frontend_url',
   ADMIN_URL: 'admin_url',
+  /**
+   * The api's own public base URL.
+   *
+   * Declared late, and that is the point: admin/frontend/site were settings the resolver preferred
+   * over the environment, while this one was env-only — so renaming the api host meant editing a
+   * deployment's `.env` and redeploying, while its two siblings were a field in the admin.
+   */
+  API_URL: 'api_url',
   MARKETPLACE_URL: 'marketplace_url',
   DOMAIN_ALIASES: 'domain_aliases',
   TIMEZONE: 'timezone',

@@ -72,7 +72,7 @@ export class ServerCorsSetup {
               siteUrl: this.settingsCache.get(SystemConstants.META_KEY.SITE_URL),
               frontendUrl: this.settingsCache.get(SystemConstants.META_KEY.FRONTEND_URL) || process.env.FRONTEND_URL,
               adminUrl: this.settingsCache.get(SystemConstants.META_KEY.ADMIN_URL) || process.env.ADMIN_URL,
-              apiUrl: process.env.API_URL || process.env.NEXT_PUBLIC_API_URL,
+              apiUrl: this.settingsCache.get(SystemConstants.META_KEY.API_URL) || process.env.API_URL || process.env.NEXT_PUBLIC_API_URL,
               domainAliases: this.settingsCache.get(SystemConstants.META_KEY.DOMAIN_ALIASES),
             }),
           ];

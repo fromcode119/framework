@@ -91,6 +91,10 @@ export class SystemSettingRegistry {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: () => SystemSettingRegistry.urlDefaults().adminUrl, description: "The primary URL for your admin dashboard.", group: "General" },
     },
+    [SystemSettingRegistry.KEY.API_URL]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: () => SystemSettingRegistry.urlDefaults().apiUrl, description: "The public base URL of the API. Blank uses the address the console and sites are served from.", group: "General" },
+    },
     [SystemSettingRegistry.KEY.MARKETPLACE_URL]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.DOMAIN_ALIASES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
@@ -351,10 +355,11 @@ export class SystemSettingRegistry {
    * declaration is what this file owns. `ApplicationUrlUtils` is the framework's own resolver, so
    * nothing about which env var means which app leaks into the seed.
    */
-  static urlDefaults(): { siteUrl: string; frontendUrl: string; adminUrl: string; platformDomain: string } {
+  static urlDefaults(): { siteUrl: string; frontendUrl: string; adminUrl: string; apiUrl: string; platformDomain: string } {
     const frontendUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP);
     const adminUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP);
-    return { siteUrl: frontendUrl, frontendUrl, adminUrl, platformDomain: ApplicationUrlUtils.derivePlatformDomain(frontendUrl, adminUrl) };
+    const apiUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
+    return { siteUrl: frontendUrl, frontendUrl, adminUrl, apiUrl, platformDomain: ApplicationUrlUtils.derivePlatformDomain(frontendUrl, adminUrl) };
   }
 
   /** Every seeded default, resolved — the list the boot seed writes. */

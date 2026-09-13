@@ -15,6 +15,7 @@ import { ArchiveUploadRequestParser } from '@api/controllers/archive-upload-requ
  */
 import { AssetCacheHeaderService } from '@api/services/asset-cache-header-service';
 import { CoercionUtils } from '@fromcode119/core';
+import { ApplicationUrlUtils } from '@fromcode119/core';
 
 export class PluginArchiveSupport {
 
@@ -112,7 +113,9 @@ export class PluginArchiveSupport {
     }
 
     const configuredUrls = [
-      process.env.API_URL,
+      // Setting-first: the api's public URL is an admin setting now, and an operator who changed it
+      // there would otherwise still be validated against the stale env value.
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP) || process.env.API_URL,
       process.env.FRONTEND_URL,
       process.env.ADMIN_URL,
       process.env.MARKETPLACE_URL,
