@@ -1,5 +1,5 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
-import { SystemConstants } from '@core/constants/system.constants';
+import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 
 /**
  * Framework-owned decision of WHICH `_system_meta` rows may leave the server in an
@@ -13,27 +13,19 @@ import { SystemConstants } from '@core/constants/system.constants';
  * `startsWith('integration_')` deny-list only covers the first of those categories.
  *
  * The rule is an ALLOW-list, derived from the declared settings themselves: a row is exposable only
- * when its key is a value of {@link SystemConstants.META_KEY} — i.e. a setting the platform actually
- * declares — and is not one of the `integration_*` credential blobs. Nothing new leaks by being
- * written to the table, and a newly declared setting is exposed automatically without a second list
- * to keep in sync.
+ * when {@link SystemSettingRegistry} declares its key `exposed`. Nothing new leaks by being written
+ * to the table, and there is no second list to keep in sync.
+ *
+ * That declaration replaced a `startsWith('integration_')` test. A prefix standing in for a property
+ * is the same mistake as scope-by-omission one layer over: it happened to name every credential blob
+ * we had, and would have silently exposed the next one stored under any other prefix. The registry
+ * says it per key, beside `scope` and `writable`, so a new credential that forgets to say so does not
+ * compile at all.
  */
 export class SystemSettingsExposureUtils {
-  /** Prefix of the integration credential blobs (email/payment/storage profiles + providers). */
-  private static readonly CREDENTIAL_KEY_PREFIX = 'integration_';
-
-  private static exposableKeys: Set<string> | null = null;
-
   /** Every declared system setting key that is safe to return to an admin client. */
   static getExposableKeys(): Set<string> {
-    if (!SystemSettingsExposureUtils.exposableKeys) {
-      SystemSettingsExposureUtils.exposableKeys = new Set(
-        Object.values(SystemConstants.META_KEY)
-          .map((key) => String(key))
-          .filter((key) => key && !key.startsWith(SystemSettingsExposureUtils.CREDENTIAL_KEY_PREFIX)),
-      );
-    }
-    return SystemSettingsExposureUtils.exposableKeys;
+    return SystemSettingRegistry.exposedKeys();
   }
 
   /** True when this `_system_meta` key is a declared, operator-visible setting. */

@@ -1,10 +1,28 @@
 import { SystemConstants } from '@core/constants/system.constants';
 import { SystemSettingsExposureUtils } from '@core/security/system-settings-exposure-utils';
+import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 
 describe('SystemSettingsExposureUtils.isExposable', () => {
   it('exposes a declared system setting', () => {
     expect(SystemSettingsExposureUtils.isExposable(SystemConstants.META_KEY.SITE_NAME)).toBe(true);
     expect(SystemSettingsExposureUtils.isExposable(SystemConstants.META_KEY.RATE_LIMIT_MAX)).toBe(true);
+  });
+
+  /**
+   * Exposure is now DECLARED per key, not inferred from a prefix. This pins that the declaration is
+   * what the allow-list actually reads: a `startsWith('integration_')` test happened to name every
+   * credential blob that existed, and would have served the next one stored under any other prefix.
+   */
+  it('refuses every key the registry declares unexposed, credential blobs included', () => {
+    const declaredHidden = Object.values(SystemConstants.META_KEY)
+      .map(String)
+      .filter((key) => !SystemSettingRegistry.exposedKeys().has(key));
+
+    expect(declaredHidden.length).toBeGreaterThan(0);
+    for (const key of declaredHidden) expect(SystemSettingsExposureUtils.isExposable(key)).toBe(false);
+    // The live SMTP/gateway credentials, named so this fails loudly if one is ever marked exposed.
+    expect(SystemSettingsExposureUtils.isExposable('integration_email_profiles')).toBe(false);
+    expect(SystemSettingsExposureUtils.isExposable('integration_email_provider')).toBe(false);
   });
 
   it('EXCLUDES an unrecognised key by default — the allow-list never guesses', () => {
