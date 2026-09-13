@@ -11,10 +11,17 @@ import { RoutingMapClient } from '@cli/services/routing-map-client';
  * The platform's own edge (T6 §3.1): the ONE upstream the TLS terminator forwards every host to.
  *
  * Routes by HOST from the tenant table (via RoutingMapClient): a site's hosts → frontend, a
- * workspace's hosts → admin, any `api.` alias → api, the platform's own hosts as configured. A host
- * nobody owns is answered 404 here — fail-closed, the same rule the api applies. When no routing map
- * is configured (no internal secret) it routes by PATH within one domain, exactly as the
- * single-domain gateway always did, so an existing deployment behaves as before.
+ * workspace's hosts → admin, any `api.` alias → api, the platform's own hosts as configured. NONE of
+ * that is decided here — `TenantRouteMap.build` owns every one of those rules, including the `api.`
+ * alias, and this class only looks up the answer. Reading it as gateway behaviour sends you hunting
+ * for alias handling in this file that was never in it.
+ *
+ * A host nobody owns is answered 404 here — fail-closed, the same rule the api applies, and it is the
+ * gateway's 404 rather than the api's: the request never reaches the api at all, though both use the
+ * same `{"error":"unknown_host"}` body, so check WHICH process answered before concluding the api
+ * refused something. When no routing map is configured (no internal secret) it routes by PATH within
+ * one domain, exactly as the single-domain gateway always did, so an existing deployment behaves as
+ * before — meaning which component serves `/api` is NOT the same in both modes.
  *
  * The original Host header is kept and repeated as `X-Forwarded-Host`, which is what the apps'
  * tenancy reads first. WebSockets route the same way.
