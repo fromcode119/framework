@@ -1,4 +1,5 @@
 import { TenantRlsSql } from '@fromcode119/database';
+import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 
 /**
  * The tenant policies that are NOT the generic one, in the one place that defines them.
@@ -22,34 +23,20 @@ import { TenantRlsSql } from '@fromcode119/database';
  * directions, and keeps one definition rather than two that can drift apart.
  */
 export class TenantBespokePolicies {
-  /** Deployment truths a tenant cannot own — the only keys readable from the platform row. */
-  private static readonly PLATFORM_KEYS = [
-    'marketplace_url', 'admin_url', 'frontend_url', 'site_url',
-    'maintenance_mode', 'setup_completed',
-    // How many server-render worlds the storefront keeps resident — infrastructure, read on every
-    // tenant-bound `/system/frontend` request, so it must be visible from a tenant connection.
-    'ssr_generation_cap',
-    // Plugin isolation (T5): a process model is a platform truth, and the host reads it at boot.
-    'plugin_isolation_default', 'plugin_isolation_memory_mb', 'plugin_isolation_timeout_ms',
-    'ssr_render_memory_mb', 'ssr_render_timeout_ms',
-    // TLS certificates are platform infrastructure: one authority, one set of public addresses for
-    // the whole deployment. A site cannot own these — it does not own the addresses its own domain
-    // has to point at.
-    'certificate_acme_directory', 'certificate_acme_contact_email', 'certificate_platform_addresses',
-    // Whether crawlers may index the platform's OWN hosts (console + api host). Platform-wide by
-    // nature: a site's indexability follows that site's visibility, not this. It was absent here, so
-    // the settings controller treated it as per-site and wrote it under whichever tenant the request
-    // carried, while `PlatformSettingsService.readFlag` reads the PLATFORM row — written per site,
-    // read globally, which is why the toggle had never once taken effect. Read by
-    // `AdminIndexingPolicy` and `PlatformRobotsRouter` through a public endpoint that can run
-    // tenant-bound, which is exactly what this list exists to keep readable.
-    'admin_search_indexing',
-    // Where Sources writes what it builds, and the repo checked for framework releases. Both are read
-    // by UNTENANTED code — `ServerRoutesSetup` at boot and `FrameworkReleaseSource` on an update
-    // check — so a value saved from a site-bound admin lands on that site's row and the reader, which
-    // sees only the platform row, never finds it. Same shape as `admin_search_indexing` above.
-    'framework_repository', 'sources_workspace_root',
-  ];
+  /**
+   * Deployment truths a tenant cannot own — the only keys readable from the platform row.
+   *
+   * DERIVED, never hand-written. Scope used to be an OMISSION from an array here: a key nobody
+   * remembered to add was per-site by default, so its write was filed under whichever tenant the
+   * request carried while a platform read looked at the NULL row and found nothing. That shipped
+   * three times (`admin_search_indexing`, `framework_repository`, `sources_workspace_root`) and was
+   * invisible each time, because every one of them fails closed. `SystemSettingRegistry` declares
+   * scope once per key, as a `Record` over `META_KEY`, so a key with no declared scope is a COMPILE
+   * error rather than a silent site-scoped setting.
+   */
+  private static get PLATFORM_KEYS(): string[] {
+    return SystemSettingRegistry.platformKeys();
+  }
 
   /** The platform keys, for the code that must NOT hand them to a tenant — the tenant importer. */
   static platformKeys(): string[] {
