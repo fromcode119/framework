@@ -21,6 +21,7 @@ import { SiteStatStrip } from '@/app/sites/[id]/site-stat-strip.client';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
+import { SiteDomainsCard } from '@/app/sites/[id]/site-domains-card.client';
 import { SiteMembersCard } from '@/app/sites/[id]/site-members-card.client';
 import { SiteDangerCard } from '@/app/sites/[id]/site-danger-card.client';
 
@@ -230,6 +231,7 @@ export class SiteDetailPageClient extends AdminComponent {
             {this.tab.value === SiteTab.ACCESS.value
               ? <SiteAccessCard values={this.values} inventory={this.inventory} onChange={this.onChange} onActivated={this.load} />
               : null}
+            {this.tab.value === SiteTab.DOMAINS.value ? <SiteDomainsCard tenantId={site.id} /> : null}
             {this.tab.value === SiteTab.MEMBERS.value ? <SiteMembersCard site={site} onChanged={this.apply} /> : null}
             {this.tab.value === SiteTab.EXPORTS.value ? <SiteExportsCard site={site} theme={this.theme} /> : null}
             {this.tab.value === SiteTab.DANGER.value ? <SiteDangerCard site={site} onDeleted={this.onDeleted} /> : null}

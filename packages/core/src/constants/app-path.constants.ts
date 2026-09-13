@@ -103,6 +103,10 @@ export class AppPathConstants {
       IMPORT: '/sites/import',
       DETAIL: (id: string) => `/sites/${encodeURIComponent(id)}`,
     },
+    /** TLS certificates for every host the platform serves — platform admins only. */
+    CERTIFICATES: {
+      ROOT: '/certificates',
+    },
     /** Sources — the framework's own repository-tracking screen. */
     SOURCES: {
       ROOT: '/sources',

@@ -129,6 +129,12 @@ export class RouteConstants {
    */
   ADMIN_TENANTS: '/admin/tenants',
   TENANTS_ROOT: '/',
+  /** `/system/admin/certificates` — the platform-wide TLS certificate list and its uploads. */
+  ADMIN_CERTIFICATES: '/admin/certificates',
+  /** One host's certificate. A hostname is a safe path segment; the store normalises what arrives. */
+  CERTIFICATES_HOST: '/:host',
+  /** Who is responsible for a host's certificate — the operator, or the platform. */
+  CERTIFICATES_HOST_SOURCE: '/:host/source',
   TENANTS_ID: '/:id',
   TENANTS_ID_EXPORT: '/:id/export',
   TENANTS_ID_PAGES: '/:id/pages',
@@ -137,6 +143,13 @@ export class RouteConstants {
   INTERNAL_ROUTING: '/internal/routing',
   /** 'Is this host one of yours?' — what an edge asks before it issues a certificate for it. */
   INTERNAL_HOST_PERMIT: '/internal/hosts/permit',
+  /**
+   * The certificates and PRIVATE KEYS whatever terminates TLS loads at start.
+   *
+   * The only route that hands out key material, so it carries the strictest rule in the platform:
+   * it must never be published through the edge, and it answers nothing without the internal secret.
+   */
+  INTERNAL_CERTIFICATES: '/internal/certificates',
   /** Gateway-side: the api pushes here after a tenant change; the gateway answers its health here. */
   INTERNAL_ROUTING_RELOAD: '/internal/routing/reload',
   GATEWAY_HEALTH: '/healthz',

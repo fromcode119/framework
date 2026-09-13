@@ -1,0 +1,21 @@
+{{#if isExpired}}
+The TLS certificate for {{host}} EXPIRED on {{notAfter}}.
+
+Visitors to this address are now seeing a browser security warning instead of the site.
+{{else}}
+The TLS certificate for {{host}} expires on {{notAfter}} — {{daysRemaining}} day{{#unless isSingleDay}}s{{/unless}} from now.
+{{/if}}
+
+{{#if isUploaded}}
+This certificate was uploaded by an operator, so nothing renews it automatically. Someone has to
+upload a replacement before the date above.
+{{else}}
+This certificate is managed by the platform.
+{{/if}}
+
+Host: {{host}}
+{{#if siteSlug}}Site: {{siteSlug}}
+{{/if}}Issuer: {{issuer}}
+Valid until: {{notAfter}}
+
+Upload a replacement in the admin, under Platform - Certificates.

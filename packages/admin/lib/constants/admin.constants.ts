@@ -122,6 +122,9 @@ export class AdminConstants {
     BACKUP_RESTORE_EXECUTE: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_RESTORE_EXECUTE, { id })),
     /** Tenant provisioning (Sites) — platform admins only. */
     TENANTS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANTS),
+    CERTIFICATES: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATES),
+    CERTIFICATE: (host: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE, { host })),
+    CERTIFICATE_SOURCE: (host: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE_SOURCE, { host })),
     TENANT: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT, { id })),
     TENANT_EXPORT: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_EXPORT, { id })),
     TENANT_PAGES: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_PAGES, { id })),

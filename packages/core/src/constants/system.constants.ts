@@ -34,6 +34,12 @@ export class SystemConstants {
     TENANT_PLUGINS: '_system_tenant_plugins',
     /** Which theme one tenant renders with. Install is platform-wide (`THEMES`); only activation is per tenant. */
     TENANT_THEMES: '_system_tenant_themes',
+    /**
+     * One TLS certificate per exact host. Platform-level and never tenant-scoped: whatever terminates
+     * TLS loads every host's certificate before a request exists, so there is no tenant to scope to.
+     * `tenant_id` on the row is for display and cascade only.
+     */
+    CERTIFICATES: '_system_certificates',
     USERS: 'users',
     ROLES: '_system_roles',
     PERMISSIONS: '_system_permissions',
@@ -317,6 +323,9 @@ export class SystemConstants {
     STATUS: SystemConstants.ROUTE_SEGMENTS.STATUS,
     FRONTEND: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.FRONTEND),
     ADMIN_TENANTS: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS),
+    ADMIN_CERTIFICATES: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES),
+    ADMIN_CERTIFICATE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES}${SystemConstants.ROUTE_SEGMENTS.CERTIFICATES_HOST}`),
+    ADMIN_CERTIFICATE_SOURCE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES}${SystemConstants.ROUTE_SEGMENTS.CERTIFICATES_HOST_SOURCE}`),
     ADMIN_TENANT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID}`),
     ADMIN_TENANT_EXPORT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID_EXPORT}`),
     ADMIN_TENANT_PAGES: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID_PAGES}`),

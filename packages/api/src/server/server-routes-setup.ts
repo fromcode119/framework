@@ -21,7 +21,7 @@ import { ThemeAssetRouter } from '@api/routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '@api/routes/marketplace';
 import { AppearanceRouter } from '@api/routes/appearances';
 import { SourcesModule } from '@fromcode119/sources';
-import { PlatformSettingsService, SecretService } from '@fromcode119/core';
+import { CertificateStoreService, PlatformSettingsService, SecretService } from '@fromcode119/core';
 import { CoreServices } from '@fromcode119/core';
 import { SystemRouter } from '@api/routes/system-router';
 import { TenantAdminRouter } from '@api/routes/tenant-admin-router';
@@ -32,6 +32,9 @@ import { MediaRouter } from '@api/routes/media-router';
 import { McpRouter } from '@api/routes/mcp-routes';
 import { HostPermitRouter } from '@api/routes/host-permit-router';
 import { RoutingRouter } from '@api/routes/routing-router';
+import { CertificateAdminRouter } from '@api/routes/certificate-admin-router';
+import { CertificateAdminService } from '@api/services/certificates/certificate-admin-service';
+import { CertificatesInternalRouter } from '@api/routes/certificates-internal-router';
 import { McpFrameworkToolsRegistrar } from '@api/controllers/mcp/mcp-framework-tools-registrar';
 import { McpAuditRecorder } from '@api/controllers/mcp/mcp-audit-recorder';
 import { FilesRouter } from '@api/routes/files-router';
@@ -179,6 +182,19 @@ export class ServerRoutesSetup {
     // at its own prefix so its `/:id` never shadows a system route.
     const uploadsDir = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), this.mediaManager ?? undefined).uploadDir;
     vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_TENANTS}`, new TenantAdminRouter(this.manager, this.themeManager, uploadsDir, this.auth, platformAdmin).router);
+    // TLS certificates for the hosts the platform serves. Platform admins only, like the registry
+    // above: a certificate covers one site's host but lives in a table every site is served from.
+    vApi.use(
+      `${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_CERTIFICATES}`,
+      new CertificateAdminRouter(
+        new CertificateAdminService(
+          new CertificateStoreService((this.manager as any).db),
+          new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db)),
+        ),
+        this.auth,
+        platformAdmin,
+      ).router,
+    );
     // SCIM 2.0 provisioning — token-authenticated (not session), mounted at the standard /scim/v2 base.
     vApi.use(RouteConstants.SEGMENTS.SCIM_BASE, new ScimRouter(this.manager, this.auth).router);
     vApi.use(MEDIA, new MediaRouter(this.manager, this.auth, this.mediaManager).router);
@@ -209,6 +225,9 @@ export class ServerRoutesSetup {
     // The same truth as the routing map, asked one host at a time — what an edge doing on-demand TLS
     // needs at handshake time, when it cannot poll a list or send a header.
     vApi.use(new HostPermitRouter(tenantRegistry).router);
+    // The certificates and private keys whatever terminates TLS loads. Secret-only, never cached,
+    // and it must never be published through the edge — see CertificatesInternalRouter.
+    vApi.use(new CertificatesInternalRouter(new CertificateStoreService((this.manager as any).db)).router);
     vApi.use(new CollectionRouter(this.manager, this.restController).router);
     this.app.use(vPrefix, vApi);
     this.app.use(PLUGINS, pluginAssetRouter);

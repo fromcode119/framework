@@ -1,0 +1,23 @@
+<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;color:#1a1a1a">
+  {{#if isExpired}}
+    <p style="margin:0 0 12px"><strong style="color:#b42318">The TLS certificate for {{host}} expired on {{notAfter}}.</strong></p>
+    <p style="margin:0 0 12px">Visitors to this address are now seeing a browser security warning instead of the site.</p>
+  {{else}}
+    <p style="margin:0 0 12px"><strong>The TLS certificate for {{host}} expires on {{notAfter}}</strong> — {{daysRemaining}} day{{#unless isSingleDay}}s{{/unless}} from now.</p>
+  {{/if}}
+
+  {{#if isUploaded}}
+    <p style="margin:0 0 12px">This certificate was uploaded by an operator, so <strong>nothing renews it automatically</strong>. Someone has to upload a replacement before the date above.</p>
+  {{else}}
+    <p style="margin:0 0 12px">This certificate is managed by the platform.</p>
+  {{/if}}
+
+  <table style="border-collapse:collapse;margin:0 0 12px">
+    <tr><td style="padding:2px 12px 2px 0;color:#667085">Host</td><td style="padding:2px 0"><code>{{host}}</code></td></tr>
+    {{#if siteSlug}}<tr><td style="padding:2px 12px 2px 0;color:#667085">Site</td><td style="padding:2px 0">{{siteSlug}}</td></tr>{{/if}}
+    <tr><td style="padding:2px 12px 2px 0;color:#667085">Issuer</td><td style="padding:2px 0">{{issuer}}</td></tr>
+    <tr><td style="padding:2px 12px 2px 0;color:#667085">Valid until</td><td style="padding:2px 0">{{notAfter}}</td></tr>
+  </table>
+
+  <p style="margin:0;color:#667085">Upload a replacement in the admin, under Platform &rarr; Certificates.</p>
+</div>

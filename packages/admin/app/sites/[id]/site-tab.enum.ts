@@ -13,6 +13,8 @@ export class SiteTab extends Enum {
   static readonly OVERVIEW = new SiteTab('overview', 'Overview');
   /** What this site is ENTITLED to run — plugins, theme, appearance. Not their settings. */
   static readonly ACCESS = new SiteTab('access', 'Access');
+  /** The site's addresses, and the certificate each one is served over HTTPS with. */
+  static readonly DOMAINS = new SiteTab('domains', 'Domains');
   static readonly MEMBERS = new SiteTab('members', 'Members');
   static readonly EXPORTS = new SiteTab('exports', 'Exports');
   static readonly DANGER = new SiteTab('danger', 'Danger');

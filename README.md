@@ -59,7 +59,9 @@ npm run dev:local
 
 🏢 **Multi-site, one platform** — Serve many customer sites from one deployment. Every site has its own hosts, content, people, plugins and theme; isolation is enforced twice, by the application and by PostgreSQL row-level security, so a query that forgets its filter still returns only that site's rows. A site is either a **storefront** (a theme on its domain) or a **workspace** (its domain *is* the console, locked to a product appearance). The platform admin runs all of them from one Sites page; a site's own admins see only their site.
 
-🌐 **Framework-owned edge** — The platform gateway routes every hostname from the site table: storefront hosts → frontend, workspace hosts → admin, `api.` aliases → api, unknown hosts → 404. Creating a site on the Sites page is live within a second — no proxy rules, no generated files. Your reverse proxy only terminates TLS.
+🌐 **Framework-owned edge** — The platform gateway routes every hostname from the site table: storefront hosts → frontend, workspace hosts → admin, `api.` aliases → api, unknown hosts → 404. Creating a site on the Sites page is live within a second — no proxy rules, no generated files. Your reverse proxy only terminates TLS — or the gateway can do that too (below).
+
+🔒 **TLS certificates in the admin** — A certificate is a record in the platform, not a file on a server. Upload one per host (chain + key, validated before anything is stored, key encrypted at rest); the Certificates page lists every address the platform answers for, soonest to expire first, including the ones with no certificate at all. The platform sends its own expiry warnings at 30/14/7/1 days because [Let's Encrypt stopped sending them in June 2025](https://letsencrypt.org/2025/06/26/expiration-notification-service-has-ended), and it never silently replaces a certificate an operator paid for. Set `GATEWAY_TLS_PORT` and the gateway terminates TLS itself, answering each handshake from that store with no default certificate — so an unknown name is refused, never handed somebody else's. Leave it unset and nothing changes. Either way the framework states facts about hosts over three internal endpoints and never renders anybody's proxy config: no vendor is named anywhere in `packages/**`. See [Certificates and TLS](./docs/certificates-and-tls.md).
 
 🎛️ **Admin appearances** — The admin is skinnable end to end: an installed appearance (`appearance/<slug>`) can replace the whole console for a product, declare which surfaces its users may reach, and declare the workspace preset (plugins) it provisions. The default console stays the platform admin's "configure" mode.
 
@@ -352,6 +354,8 @@ POSTGRES_DB=fromcode
 | `GATEWAY_ROUTING_TTL_MS` | `30000` | How long the gateway keeps its routing map before refreshing (it also keeps the last map if the api is down) |
 | `API_TARGET_URL` / `ADMIN_TARGET_URL` / `FRONTEND_TARGET_URL` | `http://api:3000` … | The gateway's upstreams |
 | `GATEWAY_PORT` | `80` | Host port the gateway listens on (compose) |
+| `GATEWAY_TLS_PORT` | _(unset)_ | Opt in to the gateway terminating TLS from the certificate store. Unset = unchanged behaviour; something in front holds the certificates |
+| `GATEWAY_CERTIFICATES_TTL_MS` | `60000` | How long the gateway keeps its certificate bundle before refreshing (last good bundle survives an api outage) |
 | `APPEARANCE_DIR` | `./appearance` | Installed admin appearances (product consoles) |
 | `ADMIN_APPEARANCE` | _(empty)_ | Deployment default appearance for a standalone product install (a single-site deployment that IS a workspace) |
 
@@ -386,6 +390,7 @@ POSTGRES_DB=fromcode
 | **Security Monitor** | Real-time threat detection loop that monitors for anomaly spikes, brute-force attempts, and suspicious patterns. |
 | **Plugin Process Isolation** | An isolated plugin is a separate OS process (own unprivileged user, heap ceiling, per-call deadline, read-only code dir) speaking a message contract; capabilities are declared in the manifest and a drift is HELD until a platform admin re-approves it. |
 | **Cryptographic Signing** | Plugin signature verification on load. Unsigned or tampered plugins are rejected. |
+| **TLS Certificates** | One record per host in `_system_certificates`. The chain is stored in the clear (every visitor is handed it); the private key is encrypted at rest with `SecretService` and leaves the store through exactly one method, reached only by a secret-gated internal endpoint that must never be published through the edge. Uploads are platform-admin only and validated — key/certificate pair, host coverage, expiry — before anything is written. |
 | **Audit Logging** | Comprehensive audit trail via `AuditManager` (`_system_audit_logs`) covering admin collection mutations, MCP tool calls, plugin database writes, capability violations, and rate-limit denials. |
 | **Record Version History** | Every create/update through the admin/REST surface snapshots the record to `_system_record_versions` — for every collection of every plugin, not just CMS. Version History UI with one-click restore; also exposed over MCP (`content.versions_list` / `version_get` / `version_restore`). |
 | **JWT + API Keys** | Out-of-the-box support for JWT access tokens, refresh token rotation, and long-lived API keys. |

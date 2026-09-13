@@ -17,6 +17,9 @@ Learn how to set up the framework locally and in production environment.
 ### [Backup And Site Transfer](./backup-and-transfer.md)
 Operator guide for the system backup API, constrained restore flow, and site-transfer bundle CLI.
 
+### [Certificates and TLS](./certificates-and-tls.md)
+How the platform serves HTTPS: uploading a certificate, where keys are stored, expiry warnings, and the vendor-neutral contract an edge proxy consumes.
+
 ### [Plugin Development Guide](./plugin-development-guide.md)
 Discover how to create your own plugins, register collections, and hook into framework events.
 

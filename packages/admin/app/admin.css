@@ -323,6 +323,9 @@ html.dark {
 .fc-site__manage:hover { opacity: 1; }
 
 /* Sites (tenant provisioning) — platform admins only. */
+.fc-certificates { display: flex; flex-direction: column; }
+.fc-certificates__body { display: flex; flex-direction: column; gap: 24px; padding: 24px 24px 96px; }
+@media (min-width: 1024px) { .fc-certificates__body { padding: 32px 32px 96px; } }
 .fc-sites { display: flex; flex-direction: column; }
 .fc-sites__body { display: flex; flex-direction: column; gap: 24px; padding: 24px 24px 96px; }
 @media (min-width: 1024px) { .fc-sites__body { padding: 32px 32px 96px; } }

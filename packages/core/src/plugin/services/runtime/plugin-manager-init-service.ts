@@ -8,6 +8,8 @@ import { WorkflowService } from '@core/plugin/services/workflow-service';
 import { PersonCatalogService } from '@core/plugin/services/people/person-catalog-service';
 import { RecordVersions } from '@core/collections/record-versions';
 import { WebhooksCollection } from '@core/collections/webhooks';
+import { CertificateExpiryWarningTask } from '@core/certificates/certificate-expiry-warning-task';
+import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 
 /**
  * PluginManagerInitService
@@ -68,6 +70,11 @@ export class PluginManagerInitService {
     });
     await manager.scheduler.register('system-email-telemetry-weekly', '0 9 * * 1', async () => {
       await manager.sendWeeklyEmailTelemetryDigest();
+    }, { type: 'cron' });
+    // Nobody else warns about a certificate running out — Let's Encrypt stopped sending expiry mail
+    // in June 2025, and an uploaded certificate never had an issuer watching it at all.
+    await manager.scheduler.register(CertificateExpiryWarningTask.NAME, CertificateExpiryWarningTask.SCHEDULE, async () => {
+      await new CertificateExpiryWarningTask(new CertificateStoreService(manager.db), manager).run();
     }, { type: 'cron' });
 
     // Register system collections

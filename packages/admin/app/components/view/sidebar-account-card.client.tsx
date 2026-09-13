@@ -125,6 +125,10 @@ export class SidebarAccountCard extends AdminComponent {
       },
       ...(user?.roles?.includes('admin')
         ? [{
+            label: 'Certificates',
+            icon: <FrameworkIcons.Lock size={16} />,
+            onClick: () => this.router.push(AdminConstants.ROUTES.CERTIFICATES.ROOT),
+          }, {
             label: 'System settings',
             icon: <FrameworkIcons.Settings size={16} />,
             onClick: () => this.router.push(AdminConstants.ROUTES.SETTINGS.ROOT),
