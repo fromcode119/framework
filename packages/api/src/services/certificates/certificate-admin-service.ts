@@ -1,6 +1,7 @@
 import {
   ApplicationUrlUtils, CertificateHostRole, CertificateRecord, CertificateRejection, CertificateSource,
-  AcmeSettings, CertificateStoreService, CertificateValidationError, SecretService, TenantRegistryService,
+  AcmeSettings, CertificateStoreService, CertificateValidationError, PlatformAddressDetection,
+  SecretService, TenantRegistryService,
 } from '@fromcode119/core';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { CertificateHostEntry } from '@api/services/certificates/certificate-host-entry';
@@ -120,6 +121,18 @@ export class CertificateAdminService {
     const removed = await this.certificates.remove(host);
     if (removed) await this.reload.notify();
     return removed;
+  }
+
+  /**
+   * What this platform's own hostnames resolve to — a suggestion for the addresses setting.
+   *
+   * Never stored from here. The admin shows the hostname beside the answer so the operator can see
+   * where it came from and judge whether it is this machine or something sitting in front of it.
+   */
+  async detectPlatformAddresses(): Promise<Array<Record<string, unknown>>> {
+    const platform = [...(await this.servedHosts()).values()].filter((entry) => entry.role.isPlatform);
+    const detected = await PlatformAddressDetection.system().detect(platform.map((entry) => entry.host));
+    return detected.map((candidate) => candidate.toJson());
   }
 
   /**

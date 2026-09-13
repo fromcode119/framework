@@ -51,6 +51,23 @@ export class CertificatesClient {
     await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATES, { host, certificatePem, privateKeyPem });
   }
 
+  /**
+   * What this platform's own hostnames resolve to — a suggestion, not a setting.
+   *
+   * On its own call rather than part of the list, because it costs DNS lookups and the certificates
+   * page should not pay for them on every load.
+   */
+  static async detectPlatformAddresses(): Promise<Array<{ host: string; ipv4: string[]; ipv6: string[] }>> {
+    const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE_PLATFORM_ADDRESSES, { noDedupe: true })
+      .catch(() => null);
+    const candidates = Array.isArray(response?.candidates) ? response.candidates : [];
+    return candidates.map((entry: any) => ({
+      host: String(entry?.host ?? ''),
+      ipv4: Array.isArray(entry?.ipv4) ? entry.ipv4.map((a: unknown) => String(a)) : [],
+      ipv6: Array.isArray(entry?.ipv6) ? entry.ipv6.map((a: unknown) => String(a)) : [],
+    }));
+  }
+
   static async remove(host: string): Promise<void> {
     await AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE(host));
   }

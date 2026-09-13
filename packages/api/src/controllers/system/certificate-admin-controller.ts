@@ -29,6 +29,15 @@ export class CertificateAdminController extends BaseController {
     }
   }
 
+  /** A suggestion for the addresses setting, resolved on demand. Never stored by this call. */
+  async platformAddresses(_req: Request, res: Response): Promise<void> {
+    try {
+      res.json({ candidates: await this.service.detectPlatformAddresses() });
+    } catch (error) {
+      this.fail(res, error);
+    }
+  }
+
   async upload(req: Request, res: Response): Promise<void> {
     try {
       const body = (req.body ?? {}) as Record<string, unknown>;

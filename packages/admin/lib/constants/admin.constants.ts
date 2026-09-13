@@ -123,6 +123,7 @@ export class AdminConstants {
     /** Tenant provisioning (Sites) — platform admins only. */
     TENANTS: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANTS),
     CERTIFICATES: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATES),
+    CERTIFICATE_PLATFORM_ADDRESSES: `${AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATES)}/platform-addresses`,
     CERTIFICATE: (host: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE, { host })),
     CERTIFICATE_SOURCE: (host: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE_SOURCE, { host })),
     TENANT: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT, { id })),

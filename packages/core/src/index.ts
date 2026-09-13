@@ -204,6 +204,8 @@ export { AcmeSettings } from '@core/certificates/acme/acme-settings';
 export { CertificateIssuanceService } from '@core/certificates/acme/certificate-issuance-service';
 export { CertificateIssuanceTask } from '@core/certificates/acme/certificate-issuance-task';
 export { DnsPreflight } from '@core/certificates/acme/dns-preflight';
+export { PlatformAddressCandidate } from '@core/certificates/acme/platform-address-candidate';
+export { PlatformAddressDetection } from '@core/certificates/acme/platform-address-detection';
 export { DnsPreflightResult } from '@core/certificates/acme/dns-preflight-result';
 export { CertificateValidationError } from '@core/certificates/certificate-validation-error';
 export { CertificateHostRole } from '@core/enums/certificate-host-role.enum';

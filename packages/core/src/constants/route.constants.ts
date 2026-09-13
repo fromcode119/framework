@@ -135,6 +135,12 @@ export class RouteConstants {
   CERTIFICATES_HOST: '/:host',
   /** Who is responsible for a host's certificate — the operator, or the platform. */
   CERTIFICATES_HOST_SOURCE: '/:host/source',
+  /**
+   * What this platform's own hostnames resolve to, offered as a suggestion for the addresses
+   * setting. Its own route rather than part of the overview: the overview runs on every load of the
+   * certificates page and must not pay for DNS lookups.
+   */
+  CERTIFICATES_PLATFORM_ADDRESSES: '/platform-addresses',
   TENANTS_ID: '/:id',
   TENANTS_ID_EXPORT: '/:id/export',
   TENANTS_ID_PAGES: '/:id/pages',

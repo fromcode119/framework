@@ -389,7 +389,7 @@ export class InfrastructureSettingsPage extends AdminComponent {
               (`/system/deploy/restart`, permission `system:deploy:restart`, audited), a confirmation
               dialog, and a disabled button with a stated reason wherever the deployment cannot
               honour it. */}
-          <CertificatesSettingsCard />
+          <div className="lg:col-span-2"><CertificatesSettingsCard /></div>
           <RestartServicesCard />
 
           {/* Cache flushing and factory reset still have no endpoint and so still have no button. */}
