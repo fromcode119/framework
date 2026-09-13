@@ -108,4 +108,9 @@ export class CertificateHost {
   get isUploaded(): boolean {
     return this.source === 'uploaded';
   }
+
+  /** Whether the platform already obtains and renews this host's certificate. */
+  get isPlatformManaged(): boolean {
+    return this.source === 'automatic';
+  }
 }

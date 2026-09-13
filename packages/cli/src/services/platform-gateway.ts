@@ -1,5 +1,5 @@
 import http from 'http';
-import net from 'net';
+import { Duplex } from 'stream';
 import httpProxy from 'http-proxy';
 import { ApiPathUtils, GatewayTarget, InternalServiceAuth, RequestSurfaceUtils, RouteConstants, TenantRouteMap } from '@fromcode119/core';
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
@@ -104,7 +104,7 @@ export class PlatformGateway {
     }
   }
 
-  private upgrade(req: http.IncomingMessage, socket: net.Socket, head: Buffer): void {
+  private upgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer): void {
     void this.targetFor(req).then((target) => {
       if (!target) { socket.destroy(); return; }
       this.proxy.ws(req, socket, head, { target });
@@ -134,6 +134,13 @@ export class PlatformGateway {
     const url = req.url || '/';
     if (url === PlatformGateway.HEALTH_PATH) return this.health(res);
     if (url === PlatformGateway.RELOAD_PATH && req.method === 'POST') return this.reload(req, res);
+    // A certificate authority proving a host is ours, before that host has a certificate — and
+    // therefore before it has a route. Answered for ANY hostname, including one the routing map has
+    // never heard of: at this point in a domain's life it legitimately has not been set up yet.
+    if (GatewayPlainListenerPolicy.isChallengePath(url)) {
+      const api = this.targets[GatewayTarget.API.value];
+      if (api) { this.proxy.web(req, res, { target: api }); return; }
+    }
     const target = await this.targetFor(req);
     if (!target) {
       res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });

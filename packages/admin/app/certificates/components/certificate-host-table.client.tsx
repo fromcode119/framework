@@ -16,14 +16,17 @@ import { CertificateStateBadge } from '@/app/certificates/components/certificate
  * table built from stored certificates could never show it.
  */
 export class CertificateHostTable extends AdminComponent {
-  declare props: Pick<CertificateHostTable, 'entries' | 'canUpload' | 'busyHost' | 'showSite' | 'onUpload' | 'onRemove'>;
+  declare props: Pick<CertificateHostTable, 'entries' | 'canUpload' | 'canAutomate' | 'platformAddresses' | 'busyHost' | 'showSite' | 'onUpload' | 'onRemove' | 'onAutomate'>;
 
   @prop declare entries: CertificateHost[];
   @prop declare canUpload: boolean;
+  @prop declare canAutomate?: boolean;
+  @prop declare platformAddresses?: string[];
   @prop declare busyHost?: string;
   @prop declare showSite?: boolean;
   @prop declare onUpload: (host: string) => void;
   @prop declare onRemove: (host: string) => void;
+  @prop declare onAutomate?: (host: string) => void;
 
   private get isDark(): boolean {
     return this.theme === ThemeMode.DARK;
@@ -35,6 +38,28 @@ export class CertificateHostTable extends AdminComponent {
 
   @bound private remove(host: string): () => void {
     return () => this.onRemove(host);
+  }
+
+  @bound private automate(host: string): () => void {
+    return () => this.onAutomate?.(host);
+  }
+
+  /**
+   * What a host waiting on DNS needs its operator to do.
+   *
+   * The addresses come from the declared platform setting, never from anything inferred — they are
+   * what a customer will be told to point a domain at, and a guess here sends them to a machine
+   * nobody chose.
+   */
+  private renderDnsInstructions(entry: CertificateHost): ReactNode {
+    const addresses = this.platformAddresses ?? [];
+    if (entry.state !== 'waiting_for_dns' || !addresses.length) return null;
+    const dark = this.isDark;
+    return (
+      <p className={`mt-0.5 text-[11px] leading-snug ${dark ? 'text-amber-400' : 'text-amber-700'}`}>
+        Point {entry.host} at {addresses.join(' and ')}, then this is retried automatically.
+      </p>
+    );
   }
 
   private renderMeta(entry: CertificateHost): ReactNode {
@@ -81,6 +106,7 @@ export class CertificateHostTable extends AdminComponent {
           {entry.lastError ? (
             <p className={`mt-0.5 text-[11px] font-mono truncate ${dark ? 'text-red-400' : 'text-red-600'}`}>{entry.lastError}</p>
           ) : null}
+          {this.renderDnsInstructions(entry)}
         </div>
 
         <div className="flex items-center gap-2 shrink-0 ml-auto">
@@ -91,6 +117,16 @@ export class CertificateHostTable extends AdminComponent {
           </span>
 
           <div className="flex items-center gap-1">
+            {this.canAutomate && !entry.isPlatformManaged ? (
+              <Button
+                variant={ButtonVariant.GHOST}
+                size={FieldSize.SM}
+                onClick={this.automate(entry.host)}
+                icon={<FrameworkIcons.Refresh size={13} />}
+              >
+                Automatic
+              </Button>
+            ) : null}
             <Button
               variant={ButtonVariant.GHOST}
               size={FieldSize.SM}

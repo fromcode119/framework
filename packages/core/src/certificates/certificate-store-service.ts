@@ -113,6 +113,90 @@ export class CertificateStoreService {
     return true;
   }
 
+  /**
+   * Take ownership of a host for one issuance attempt, or return null because somebody else has it.
+   *
+   * The state goes in the WHERE, so two sweeps racing produce one winner and one null rather than
+   * two orders for the same host — which would spend the authority's budget twice for one
+   * certificate. This is the optimistic-lock pattern the repo already applies to money and stock,
+   * for the same reason: the check and the write have to be one statement.
+   */
+  async claimForIssuance(host: string, expected: CertificateState): Promise<CertificateRecord | null> {
+    const normalized = CertificateStoreService.normalizeHost(host);
+    if (!normalized) return null;
+
+    const claimed = await this.db.update(
+      CertificateStoreService.TABLE,
+      { host: normalized, state: String(expected.value) },
+      { state: String(CertificateState.ISSUING.value), last_attempt_at: new Date(), updated_at: new Date() },
+    );
+    if (!claimed) return null;
+    return this.find(normalized);
+  }
+
+  /**
+   * Store a certificate the platform obtained itself.
+   *
+   * Deliberately the same payload shape as an upload, plus the source: a certificate is a
+   * certificate however it arrived, and a second slightly-different write path is how the two drift
+   * until one of them forgets to clear the warning marker.
+   */
+  async storeIssued(host: string, tenantId: string | null, material: CertificateMaterial): Promise<CertificateRecord | null> {
+    const normalized = CertificateStoreService.normalizeHost(host);
+    if (!normalized) return null;
+
+    await this.write(normalized, {
+      tenant_id: tenantId,
+      source: String(CertificateSource.AUTOMATIC.value),
+      state: String(CertificateState.SERVING.value),
+      certificate_pem: material.certificatePem,
+      private_key_enc: SecretService.encrypt(material.privateKeyPem),
+      issuer: material.issuer,
+      subject_alt_names: JSON.stringify(material.subjectAltNames),
+      serial: material.serial,
+      fingerprint_sha256: material.fingerprintSha256,
+      not_before: material.notBefore,
+      not_after: material.notAfter,
+      last_error: '',
+      next_attempt_at: null,
+      attempts_in_window: 0,
+      last_warned_days: null,
+    });
+    return this.find(normalized);
+  }
+
+  /**
+   * An attempt that reached the authority and failed.
+   *
+   * THE MATERIAL IS NOT TOUCHED. `edgeBundle` selects on stored material rather than on state, so a
+   * certificate that is still valid keeps being served while its renewal is failing — which is the
+   * difference between a warning in the admin and every visitor seeing a security error.
+   */
+  async recordFailure(host: string, reason: string, attempts: number, nextAttemptAt: Date): Promise<void> {
+    await this.write(CertificateStoreService.normalizeHost(host), {
+      state: String(CertificateState.FAILED.value),
+      last_error: String(reason ?? ''),
+      last_attempt_at: new Date(),
+      next_attempt_at: nextAttemptAt,
+      attempts_in_window: attempts,
+    });
+  }
+
+  /**
+   * The host is not pointing here yet.
+   *
+   * `attempts_in_window` is deliberately NOT incremented: this never reached the authority, so it
+   * spent none of the failure budget the counter exists to ration.
+   */
+  async markWaitingForDns(host: string, reason: string, nextAttemptAt: Date): Promise<void> {
+    await this.write(CertificateStoreService.normalizeHost(host), {
+      state: String(CertificateState.WAITING_FOR_DNS.value),
+      last_error: String(reason ?? ''),
+      last_attempt_at: new Date(),
+      next_attempt_at: nextAttemptAt,
+    });
+  }
+
   /** Record that a warning went out at this threshold, so the same one is not sent again tomorrow. */
   async markWarned(host: string, days: number): Promise<void> {
     const normalized = CertificateStoreService.normalizeHost(host);

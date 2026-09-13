@@ -40,6 +40,19 @@ export class SystemConstants {
      * `tenant_id` on the row is for display and cascade only.
      */
     CERTIFICATES: '_system_certificates',
+    /**
+     * The account the platform holds with a certificate authority, one per directory URL.
+     *
+     * Registered once and reused forever. That is not an optimisation: authorities cap how many new
+     * accounts one address may register in a window, so a deployment that registered per order would
+     * eventually be refused for a reason that looks nothing like its cause.
+     */
+    ACME_ACCOUNTS: '_system_acme_accounts',
+    /**
+     * Challenge tokens awaiting validation. Written before an order is placed and read by the public
+     * challenge route; the values are public by protocol, so nothing here is secret.
+     */
+    ACME_CHALLENGES: '_system_acme_challenges',
     USERS: 'users',
     ROLES: '_system_roles',
     PERMISSIONS: '_system_permissions',
@@ -155,6 +168,25 @@ export class SystemConstants {
   PLATFORM_NAME: 'platform_name',
   PLATFORM_DOMAIN: 'platform_domain',
   TELEMETRY_ENABLED: 'telemetry_enabled',
+  /**
+   * Which certificate authority the platform orders from.
+   *
+   * BLANK MEANS AUTOMATIC ISSUANCE IS OFF, and the admin says so. There is deliberately no default:
+   * a deployment that has not chosen an authority must not quietly start ordering certificates from
+   * one, and the staging directory has to be a deliberate choice so it can be used for testing.
+   */
+  CERTIFICATE_ACME_DIRECTORY: 'certificate_acme_directory',
+  /** The address the certificate authority contacts about the account. Optional. */
+  CERTIFICATE_ACME_CONTACT_EMAIL: 'certificate_acme_contact_email',
+  /**
+   * The public addresses customers point their DNS at, entered by the operator.
+   *
+   * Blank means automatic issuance is off. This is never inferred from the running host: the value
+   * is what the admin PRINTS as DNS instructions and what a domain is checked against before a
+   * certificate is ordered, so a guess here would send customers to the wrong address and burn the
+   * certificate authority's failure budget proving it.
+   */
+  CERTIFICATE_PLATFORM_ADDRESSES: 'certificate_platform_addresses',
   /**
    * Days of `_system_logs` history to keep. Empty or 0 means KEEP FOREVER, and the admin field
    * says so — nothing prunes behind the operator's back. Read by SystemLogRetentionService.

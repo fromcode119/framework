@@ -17,6 +17,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { Select } from '@/components/ui/view/select.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
+import { CertificatesSettingsCard } from '@/app/settings/infrastructure/certificates-settings-card';
 import { RestartServicesCard } from '@/app/settings/infrastructure/restart-services-card';
 
 export class InfrastructureSettingsPage extends AdminComponent {
@@ -388,6 +389,7 @@ export class InfrastructureSettingsPage extends AdminComponent {
               (`/system/deploy/restart`, permission `system:deploy:restart`, audited), a confirmation
               dialog, and a disabled button with a stated reason wherever the deployment cannot
               honour it. */}
+          <CertificatesSettingsCard />
           <RestartServicesCard />
 
           {/* Cache flushing and factory reset still have no endpoint and so still have no button. */}

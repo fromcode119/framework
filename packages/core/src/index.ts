@@ -197,6 +197,14 @@ export { CertificateBundleEntry } from '@core/certificates/certificate-bundle-en
 export { CertificateMaterial } from '@core/certificates/certificate-material';
 export { CertificateRecord } from '@core/certificates/certificate-record';
 export { CertificateStoreService } from '@core/certificates/certificate-store-service';
+export { AcmeAccountStore } from '@core/certificates/acme/acme-account-store';
+export { AcmeChallengeStore } from '@core/certificates/acme/acme-challenge-store';
+export { AcmeDirectory } from '@core/certificates/acme/acme-directory.enum';
+export { AcmeSettings } from '@core/certificates/acme/acme-settings';
+export { CertificateIssuanceService } from '@core/certificates/acme/certificate-issuance-service';
+export { CertificateIssuanceTask } from '@core/certificates/acme/certificate-issuance-task';
+export { DnsPreflight } from '@core/certificates/acme/dns-preflight';
+export { DnsPreflightResult } from '@core/certificates/acme/dns-preflight-result';
 export { CertificateValidationError } from '@core/certificates/certificate-validation-error';
 export { CertificateHostRole } from '@core/enums/certificate-host-role.enum';
 export { CertificateRejection } from '@core/enums/certificate-rejection.enum';

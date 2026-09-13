@@ -9,6 +9,7 @@ import { PersonCatalogService } from '@core/plugin/services/people/person-catalo
 import { RecordVersions } from '@core/collections/record-versions';
 import { WebhooksCollection } from '@core/collections/webhooks';
 import { CertificateExpiryWarningTask } from '@core/certificates/certificate-expiry-warning-task';
+import { CertificateIssuanceTask } from '@core/certificates/acme/certificate-issuance-task';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 
 /**
@@ -75,6 +76,11 @@ export class PluginManagerInitService {
     // in June 2025, and an uploaded certificate never had an issuer watching it at all.
     await manager.scheduler.register(CertificateExpiryWarningTask.NAME, CertificateExpiryWarningTask.SCHEDULE, async () => {
       await new CertificateExpiryWarningTask(new CertificateStoreService(manager.db), manager).run();
+    }, { type: 'cron' });
+    // Obtains and renews what the platform manages. Most passes do nothing: with no authority
+    // declared it returns immediately. The per-host backoff, not this interval, rations attempts.
+    await manager.scheduler.register(CertificateIssuanceTask.NAME, CertificateIssuanceTask.SCHEDULE, async () => {
+      await new CertificateIssuanceTask(manager.db).run();
     }, { type: 'cron' });
 
     // Register system collections

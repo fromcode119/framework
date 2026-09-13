@@ -15,6 +15,7 @@ export class CertificatesClient {
     encryptionAvailable: boolean;
     warningDays: number[];
     edge: Record<string, unknown> | null;
+    automation: Record<string, unknown> | null;
   }> {
     const endpoint = tenantId
       ? `${AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATES}?tenantId=${encodeURIComponent(tenantId)}`
@@ -25,7 +26,18 @@ export class CertificatesClient {
       encryptionAvailable: response?.encryptionAvailable === true,
       warningDays: Array.isArray(response?.warningDays) ? response.warningDays.map((d: unknown) => Number(d)) : [],
       edge: (response?.edge ?? null) as Record<string, unknown> | null,
+      automation: (response?.automation ?? null) as Record<string, unknown> | null,
     };
+  }
+
+  /**
+   * Hand a host to the platform to obtain and renew, or take it back.
+   *
+   * The api refuses AUTOMATIC when it could not work — no authority declared, or nothing here
+   * terminating TLS — and the message it returns is what the caller shows.
+   */
+  static async setSource(host: string, source: string): Promise<void> {
+    await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE_SOURCE(host), { source });
   }
 
   /**

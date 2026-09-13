@@ -1,6 +1,6 @@
 import http from 'http';
 import https from 'https';
-import net from 'net';
+import { Duplex } from 'stream';
 import tls, { SecureContext } from 'tls';
 import { CertificateBundle } from '@fromcode119/core';
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
@@ -47,7 +47,7 @@ export class GatewayTlsListener {
 
   start(handlers: {
     request: (req: http.IncomingMessage, res: http.ServerResponse) => void;
-    upgrade: (req: http.IncomingMessage, socket: net.Socket, head: Buffer) => void;
+    upgrade: (req: http.IncomingMessage, socket: Duplex, head: Buffer) => void;
   }): void {
     const server = https.createServer({
       SNICallback: (servername, callback) => { void this.contextFor(servername, callback); },

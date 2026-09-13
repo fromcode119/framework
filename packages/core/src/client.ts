@@ -194,7 +194,11 @@ export { BackupCatalogGroupKey } from '@core/management/enums/backup-catalog-gro
 export { ClientType } from '@core/enums/client-type.enum';
 export { UiScope } from '@core/enums/ui-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';
-export { LayoutTargetKind } from '@core/layout/enums/layout-target-kind.enum';
+
+// Browser-safe: these carry only labels and identity, and depend on nothing but the Enum base.
+export { AcmeDirectory } from '@core/certificates/acme/acme-directory.enum';
+export { CertificateSource } from '@core/enums/certificate-source.enum';
+export { CertificateState } from '@core/enums/certificate-state.enum';export { LayoutTargetKind } from '@core/layout/enums/layout-target-kind.enum';
 export { LayoutResolutionSource } from '@core/layout/enums/layout-resolution-source.enum';
 export { LayoutResolutionStatus } from '@core/layout/enums/layout-resolution-status.enum';
 export { LayoutDiagnosticSeverity } from '@core/layout/enums/layout-diagnostic-severity.enum';

@@ -150,6 +150,12 @@ export class RouteConstants {
    * it must never be published through the edge, and it answers nothing without the internal secret.
    */
   INTERNAL_CERTIFICATES: '/internal/certificates',
+  /**
+   * Where a certificate authority asks us to prove a host is ours. Fixed by the ACME protocol, and
+   * served over PLAIN HTTP at the ROOT of the host — not under the api's versioned base, because the
+   * authority requests exactly this path and nothing else.
+   */
+  ACME_CHALLENGE: '/.well-known/acme-challenge',
   /** Gateway-side: the api pushes here after a tenant change; the gateway answers its health here. */
   INTERNAL_ROUTING_RELOAD: '/internal/routing/reload',
   GATEWAY_HEALTH: '/healthz',

@@ -8,6 +8,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { CertificateHost } from '@/lib/certificates/certificate-host';
 import { CertificateHostTable } from '@/app/certificates/components/certificate-host-table.client';
+import { CertificateStatusNotices } from '@/app/certificates/components/certificate-status-notices.client';
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
 
@@ -26,6 +27,7 @@ export class CertificatesPageClient extends AdminComponent {
   @state private entries: CertificateHost[] = [];
   @state private encryptionAvailable = false;
   @state private edge: Record<string, unknown> | null = null;
+  @state private automation: Record<string, unknown> | null = null;
   @state private isLoading = true;
   @state private loadError = '';
   @state private uploadHost = '';
@@ -42,6 +44,7 @@ export class CertificatesPageClient extends AdminComponent {
       this.entries = result.hosts;
       this.encryptionAvailable = result.encryptionAvailable;
       this.edge = result.edge;
+      this.automation = result.automation;
       this.loadError = '';
     } catch (error: any) {
       this.loadError = String(error?.message || 'Could not load certificates.');
@@ -80,28 +83,15 @@ export class CertificatesPageClient extends AdminComponent {
     await this.load();
   }
 
-  /** What this deployment's own edge reports — never an inference from the fact a row exists. */
-  private renderEdgeNotice(dark: boolean): ReactNode {
-    if (!this.edge) {
-      return (
-        <p className={`text-xs leading-snug rounded-lg px-3 py-2 mb-3 ${dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
-          The platform gateway could not be reached, so what is actually serving these certificates is unknown.
-        </p>
-      );
+  /** Hand a host to the platform. A refusal carries the api's reason, which is shown as-is. */
+  @bound private async automate(host: string): Promise<void> {
+    try {
+      await CertificatesClient.setSource(host, 'automatic');
+      this.loadError = '';
+    } catch (error: any) {
+      this.loadError = String(error?.message || 'Could not switch this host to automatic.');
     }
-    if (this.edge.tls === true) {
-      return (
-        <p className={`text-xs leading-snug rounded-lg px-3 py-2 mb-3 ${dark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-700'}`}>
-          This platform’s gateway is terminating TLS and currently holds {String(this.edge.certificates ?? 0)} certificate(s).
-        </p>
-      );
-    }
-    return (
-      <p className={`text-xs leading-snug rounded-lg px-3 py-2 mb-3 ${dark ? 'bg-amber-500/10 text-amber-300' : 'bg-amber-50 text-amber-700'}`}>
-        This deployment’s gateway is not terminating TLS, so stored certificates are not being served by anything here.
-        Something in front of the platform holds the certificates it serves.
-      </p>
-    );
+    await this.load();
   }
 
   render(): ReactNode {
@@ -118,14 +108,11 @@ export class CertificatesPageClient extends AdminComponent {
         />
         <div className="fc-certificates__body">
         <Card title="TLS">
-          {this.renderEdgeNotice(dark)}
-
-          {!this.encryptionAvailable ? (
-            <p className={`text-xs leading-snug rounded-lg px-3 py-2 mb-3 ${dark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-700'}`}>
-              No SECRET_KEY is configured on this server, so a private key cannot be stored. Uploading is disabled
-              until one is set.
-            </p>
-          ) : null}
+          <CertificateStatusNotices
+            edge={this.edge}
+            automation={this.automation}
+            encryptionAvailable={this.encryptionAvailable}
+          />
 
           {this.loadError ? (
             <p className={`text-xs rounded-lg px-3 py-2 mb-3 ${dark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-700'}`}>{this.loadError}</p>
@@ -134,9 +121,12 @@ export class CertificatesPageClient extends AdminComponent {
           <CertificateHostTable
             entries={this.entries}
             canUpload={this.encryptionAvailable}
+            canAutomate={this.automation?.isAvailable === true}
+            platformAddresses={(this.automation?.platformAddresses as string[]) ?? []}
             showSite
             onUpload={this.openUpload}
             onRemove={this.removeHost}
+            onAutomate={this.automate}
           />
         </Card>
         </div>

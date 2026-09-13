@@ -19,11 +19,12 @@ export class CertificateSource extends Enum {
   /**
    * The platform obtains and renews it.
    *
-   * DECLARED HERE BUT NOT IMPLEMENTED YET. The issuing machinery is the next slice; this member
-   * exists so the column, the admin filter and the stored rows do not have to change when it lands.
-   * Until then `isImplemented` is false and the admin says so rather than offering a dead control.
+   * Requires an authority and a platform address to be declared, and requires the platform's own
+   * gateway to be the thing terminating TLS — issuing a certificate nothing here will serve is worse
+   * than not issuing one, because it spends a rate limit to produce nothing. The admin refuses the
+   * choice with the reason rather than accepting it and failing quietly.
    */
-  static readonly AUTOMATIC = new CertificateSource('automatic', false);
+  static readonly AUTOMATIC = new CertificateSource('automatic', true);
 
   /** An operator pasted a certificate and its key. Nothing renews it; the platform only warns. */
   static readonly UPLOADED = new CertificateSource('uploaded', true);

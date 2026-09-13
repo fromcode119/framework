@@ -32,6 +32,10 @@ export class TenantBespokePolicies {
     // Plugin isolation (T5): a process model is a platform truth, and the host reads it at boot.
     'plugin_isolation_default', 'plugin_isolation_memory_mb', 'plugin_isolation_timeout_ms',
     'ssr_render_memory_mb', 'ssr_render_timeout_ms',
+    // TLS certificates are platform infrastructure: one authority, one set of public addresses for
+    // the whole deployment. A site cannot own these — it does not own the addresses its own domain
+    // has to point at.
+    'certificate_acme_directory', 'certificate_acme_contact_email', 'certificate_platform_addresses',
   ];
 
   /** The platform keys, for the code that must NOT hand them to a tenant — the tenant importer. */

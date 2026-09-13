@@ -125,7 +125,7 @@ export class ServerMiddlewareSetup {
     // has no host to route by, and these endpoints return no tenant data. They are exempted by
     // PATH ONLY, and the exemption is deliberately limited to liveness/readiness — every route that
     // can return a row stays behind tenant resolution.
-    if (this.isProbeRoute(req) || this.isPublicAssetRoute(req)) {
+    if (this.isProbeRoute(req) || this.isPublicAssetRoute(req) || this.isAcmeChallengeRoute(req)) {
       RequestContextUtils.storage.run({ locale }, () => next());
       return;
     }
@@ -228,6 +228,23 @@ export class ServerMiddlewareSetup {
    */
   private isPublicAssetRoute(req: any): boolean {
     return RequestSurfaceUtils.isExtensionAssetPath(req?.path);
+  }
+
+  /**
+   * A certificate authority proving a host belongs to this platform.
+   *
+   * EXEMPT FROM TENANCY ON PURPOSE, and it has to be: the question is asked about a hostname that
+   * frequently has no tenant yet — a customer domain being set up, or a platform host being brought
+   * online — and tenant resolution would answer `unknown_host` to the one request that would let it
+   * become known. Nothing tenant-scoped is reachable through it: the route reads one row of a
+   * platform table keyed by a random token, and every value it can return is public by protocol.
+   *
+   * Prefix match, unlike the exact matches above, because the token is part of the path. The prefix
+   * is fixed by the protocol rather than chosen here, so it cannot collide with a plugin's route the
+   * way a bare `/health` suffix once did.
+   */
+  private isAcmeChallengeRoute(req: any): boolean {
+    return String(req?.path || '').startsWith(`${RouteConstants.SEGMENTS.ACME_CHALLENGE}/`);
   }
 
 

@@ -1,6 +1,6 @@
 import {
   ApplicationUrlUtils, CertificateHostRole, CertificateRecord, CertificateRejection, CertificateSource,
-  CertificateStoreService, CertificateValidationError, SecretService, TenantRegistryService,
+  AcmeSettings, CertificateStoreService, CertificateValidationError, SecretService, TenantRegistryService,
 } from '@fromcode119/core';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { CertificateHostEntry } from '@api/services/certificates/certificate-host-entry';
@@ -31,23 +31,44 @@ export class CertificateAdminService {
    */
   async overview(): Promise<Record<string, unknown>> {
     const entries = await this.entries();
+    const edge = await this.edgeStatus.read();
     return {
       hosts: entries.map((entry) => entry.toJson()),
       encryptionAvailable: SecretService.isEncryptionAvailable(),
       warningDays: [...CertificateRecord.WARNING_DAYS],
-      edge: await this.edgeStatus.read(),
+      edge,
+      automation: await this.automation(edge),
     };
   }
 
   /** The same rows, narrowed to one site — what its own Domains tab shows. */
   async forTenant(tenantId: string): Promise<Record<string, unknown>> {
     const entries = (await this.entries()).filter((entry) => entry.tenantId === tenantId);
+    const edge = await this.edgeStatus.read();
     return {
       hosts: entries.map((entry) => entry.toJson()),
       encryptionAvailable: SecretService.isEncryptionAvailable(),
       warningDays: [...CertificateRecord.WARNING_DAYS],
-      edge: await this.edgeStatus.read(),
+      edge,
+      automation: await this.automation(edge),
     };
+  }
+
+  /**
+   * Whether the platform can obtain certificates itself, and when it cannot, why.
+   *
+   * Both halves have to be true and neither can be guessed: an authority the operator named, and
+   * this deployment's own gateway doing the terminating. The admin prints the reason rather than
+   * offering a control that would spend a rate limit to produce something nothing serves.
+   */
+  private async automation(edge: Record<string, unknown> | null): Promise<Record<string, unknown>> {
+    const settings = await AcmeSettings.load();
+    const terminatesTls = edge?.tls === true;
+    const blocked = !settings.isConfigured
+      ? settings.missingReason
+      : (terminatesTls ? '' : 'This deployment\'s gateway is not terminating TLS, so a certificate it obtained would not be served by anything here.');
+
+    return { ...settings.toJson(), terminatesTls, isAvailable: blocked.length === 0, blockedReason: blocked };
   }
 
   /**
@@ -73,8 +94,22 @@ export class CertificateAdminService {
     return stored;
   }
 
-  /** Record who is responsible for a host's certificate. Serves whatever is stored either way. */
+  /**
+   * Record who is responsible for a host's certificate. Serves whatever is stored either way.
+   *
+   * Choosing AUTOMATIC is refused when it could not work — no authority declared, no platform
+   * address, or nothing here terminating TLS. Accepting it would leave a host quietly waiting for a
+   * certificate that was never going to arrive, which is the failure mode this whole feature exists
+   * to remove.
+   */
   async setSource(host: string, source: CertificateSource): Promise<CertificateRecord | null> {
+    if (source.isPlatformManaged) {
+      const automation = await this.automation(await this.edgeStatus.read());
+      if (automation.isAvailable !== true) {
+        throw new Error(String(automation.blockedReason || 'Automatic issuance is not available on this deployment.'));
+      }
+    }
+
     const updated = await this.certificates.setSource(host, source);
     if (updated) await this.reload.notify();
     return updated;

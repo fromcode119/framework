@@ -21,7 +21,7 @@ import { ThemeAssetRouter } from '@api/routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '@api/routes/marketplace';
 import { AppearanceRouter } from '@api/routes/appearances';
 import { SourcesModule } from '@fromcode119/sources';
-import { CertificateStoreService, PlatformSettingsService, SecretService } from '@fromcode119/core';
+import { AcmeChallengeStore, CertificateStoreService, PlatformSettingsService, SecretService } from '@fromcode119/core';
 import { CoreServices } from '@fromcode119/core';
 import { SystemRouter } from '@api/routes/system-router';
 import { TenantAdminRouter } from '@api/routes/tenant-admin-router';
@@ -34,6 +34,7 @@ import { HostPermitRouter } from '@api/routes/host-permit-router';
 import { RoutingRouter } from '@api/routes/routing-router';
 import { CertificateAdminRouter } from '@api/routes/certificate-admin-router';
 import { CertificateAdminService } from '@api/services/certificates/certificate-admin-service';
+import { AcmeChallengeRouter } from '@api/routes/acme-challenge-router';
 import { CertificatesInternalRouter } from '@api/routes/certificates-internal-router';
 import { McpFrameworkToolsRegistrar } from '@api/controllers/mcp/mcp-framework-tools-registrar';
 import { McpAuditRecorder } from '@api/controllers/mcp/mcp-audit-recorder';
@@ -230,6 +231,10 @@ export class ServerRoutesSetup {
     vApi.use(new CertificatesInternalRouter(new CertificateStoreService((this.manager as any).db)).router);
     vApi.use(new CollectionRouter(this.manager, this.restController).router);
     this.app.use(vPrefix, vApi);
+    // A certificate authority proving a host is ours. At the ROOT of every host, over plain HTTP,
+    // because that is the path the authority requests and it must answer before the host has a
+    // certificate to redirect to.
+    this.app.use(AcmeChallengeRouter.MOUNT_PATH, new AcmeChallengeRouter(new AcmeChallengeStore((this.manager as any).db)).router);
     this.app.use(PLUGINS, pluginAssetRouter);
     this.app.use(THEMES, themeAssetRouter);
 

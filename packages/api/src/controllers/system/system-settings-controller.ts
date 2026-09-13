@@ -37,6 +37,9 @@ export class SystemSettingsController {
   SystemConstants.META_KEY.PLATFORM_NAME,
   SystemConstants.META_KEY.PLATFORM_DOMAIN,
   SystemConstants.META_KEY.TELEMETRY_ENABLED,
+  SystemConstants.META_KEY.CERTIFICATE_ACME_DIRECTORY,
+  SystemConstants.META_KEY.CERTIFICATE_ACME_CONTACT_EMAIL,
+  SystemConstants.META_KEY.CERTIFICATE_PLATFORM_ADDRESSES,
   // Settings → General → Search Engines. Every save from that page carries this key, so leaving it
   // out does not merely lose the toggle — the whole PUT 400s and NOTHING on the page saves.
   SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING,
