@@ -178,16 +178,14 @@ export class CertificateAdminService {
   private async servedHosts(): Promise<Map<string, CertificateHostEntry>> {
     const hosts = new Map<string, CertificateHostEntry>();
 
-    const platform: Array<[string, CertificateHostRole]> = [
-      [ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP), CertificateHostRole.PLATFORM_ADMIN],
-      [ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP), CertificateHostRole.PLATFORM_API],
-      [ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP), CertificateHostRole.PLATFORM_FRONTEND],
-    ];
-    for (const [url, role] of platform) {
-      const host = CertificateAdminService.hostOfUrl(url);
-      if (host && !hosts.has(host)) hosts.set(host, new CertificateHostEntry(host, role, null, null, null));
-    }
-
+    // TENANTS FIRST, and a tenant's host is never overwritten by a platform URL below.
+    //
+    // The order used to be the other way round, and a host claimed by a configured app URL was
+    // skipped in this loop — so when `FRONTEND_URL` named a site's own primary host (which is what a
+    // single-site deployment looks like), that host was recorded with NO tenant and the site's own
+    // Domains tab, which filters by tenant, said "no hosts are configured on this platform yet"
+    // about a site that plainly had one. The tenant is the more specific claim: it says WHOSE host
+    // this is, which is the question this list exists to answer.
     for (const tenant of await this.tenants.list()) {
       for (const host of tenant.hosts()) {
         const normalized = CertificateAdminService.normalize(host);
@@ -197,6 +195,16 @@ export class CertificateAdminService {
           : CertificateHostRole.ALIAS;
         hosts.set(normalized, new CertificateHostEntry(normalized, role, tenant.id, tenant.slug, null));
       }
+    }
+
+    const platform: Array<[string, CertificateHostRole]> = [
+      [ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP), CertificateHostRole.PLATFORM_ADMIN],
+      [ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP), CertificateHostRole.PLATFORM_API],
+      [ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP), CertificateHostRole.PLATFORM_FRONTEND],
+    ];
+    for (const [url, role] of platform) {
+      const host = CertificateAdminService.hostOfUrl(url);
+      if (host && !hosts.has(host)) hosts.set(host, new CertificateHostEntry(host, role, null, null, null));
     }
 
     return hosts;

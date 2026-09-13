@@ -22,6 +22,8 @@ export class SiteDomainsCard extends AdminComponent {
 
   @state private entries: CertificateHost[] = [];
   @state private encryptionAvailable = false;
+  /** Whether this platform's own gateway terminates TLS — decides what "nothing stored" means. */
+  @state private terminatesTls = false;
   @state private isLoading = true;
   @state private uploadHost = '';
   @state private uploadError = '';
@@ -36,6 +38,7 @@ export class SiteDomainsCard extends AdminComponent {
       const result = await CertificatesClient.list(this.tenantId);
       this.entries = result.hosts;
       this.encryptionAvailable = result.encryptionAvailable;
+      this.terminatesTls = result.edge?.tls === true;
     } finally {
       this.isLoading = false;
     }
@@ -85,6 +88,7 @@ export class SiteDomainsCard extends AdminComponent {
           <CertificateHostTable
             entries={this.entries}
             canUpload={this.encryptionAvailable}
+            terminatesTls={this.terminatesTls}
             onUpload={this.openUpload}
             onRemove={this.removeHost}
           />
