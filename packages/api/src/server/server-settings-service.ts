@@ -4,6 +4,7 @@ import { ApplicationUrlUtils, Logger } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { CacheManager } from '@fromcode119/cache';
 import { RateLimitSettingsUtils } from '@api/utils/rate-limit-settings-utils';
+import { SystemSettingRegistry } from '@fromcode119/core';
 
 export class ServerSettingsService {
   private settingsInterval?: NodeJS.Timeout;
@@ -75,59 +76,11 @@ export class ServerSettingsService {
       const hasMetaTable = await this.db.tableExists(SystemConstants.TABLE.META);
       if (!hasMetaTable) return;
 
-      const urlDefaults = this.buildUrlDefaults();
-
-      const defaults = [
-        { key: SystemConstants.META_KEY.PLATFORM_NAME, value: 'Fromcode Core', description: 'The identity of your platform instance.', group: 'General' },
-        { key: SystemConstants.META_KEY.SITE_NAME, value: 'Fromcode', description: 'Public site name used in emails and frontend.', group: 'General' },
-        { key: SystemConstants.META_KEY.SITE_URL, value: urlDefaults.siteUrl, description: 'Base URL for the public site.', group: 'General' },
-        { key: SystemConstants.META_KEY.FRONTEND_URL, value: urlDefaults.frontendUrl, description: 'The primary URL for your frontend application.', group: 'General' },
-        { key: SystemConstants.META_KEY.ADMIN_URL, value: urlDefaults.adminUrl, description: 'The primary URL for your admin dashboard.', group: 'General' },
-        { key: SystemConstants.META_KEY.DOMAIN_ALIASES, value: '[]', description: 'Additional trusted domains kept active during migrations.', group: 'General' },
-        { key: SystemConstants.META_KEY.PLATFORM_DOMAIN, value: urlDefaults.platformDomain, description: 'Root domain for the entire platform setup.', group: 'General' },
-        { key: SystemConstants.META_KEY.TIMEZONE, value: 'UTC', description: 'Default system timezone.', group: 'General' },
-        { key: SystemConstants.META_KEY.ROUTING_HOME_TARGET, value: 'auto', description: 'Homepage route target.', group: 'Routing' },
-        { key: SystemConstants.META_KEY.PERMALINK_STRUCTURE, value: '/:slug', description: 'Default URL structure for content.', group: 'General' },
-        { key: SystemConstants.META_KEY.MAINTENANCE_MODE, value: 'false', description: 'Enable global maintenance mode.', group: 'Settings' },
-        { key: SystemConstants.META_KEY.RATE_LIMIT_MAX, value: RateLimitSettingsUtils.DEFAULT_MAX_REQUESTS, description: 'Maximum requests per window per IP.', group: 'security' },
-        { key: SystemConstants.META_KEY.RATE_LIMIT_MAX_AUTHENTICATED, value: RateLimitSettingsUtils.DEFAULT_MAX_REQUESTS_AUTHENTICATED, description: 'Maximum requests per window for signed-in requests (counted per IP + token).', group: 'security' },
-        { key: SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL, value: RateLimitSettingsUtils.DEFAULT_MAX_REQUESTS_INTERNAL, description: 'Maximum requests per window for internal server-to-server calls (the storefront renderer), counted per calling service address.', group: 'security' },
-        { key: SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS, value: RateLimitSettingsUtils.DEFAULT_INTERNAL_CLIENTS, description: 'Addresses/CIDR blocks that count as internal service callers (the storefront renderer, workers). Clear it and nothing is internal: every anonymous caller falls back to the public limit.', group: 'security' },
-        { key: SystemConstants.META_KEY.RATE_LIMIT_WINDOW, value: RateLimitSettingsUtils.DEFAULT_WINDOW_MS, description: 'Rate limit window in milliseconds.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES, value: 'fcp_analytics_events, fcp_analytics_sessions', description: 'Physical table names (comma separated) whose plugin database writes are NOT recorded in the audit log. Seeded with the high-volume analytics tables so telemetry does not drown the trail; clear it and every plugin write is audited.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_SESSION_DURATION, value: '10080', description: 'Login session duration in minutes.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_PASSWORD_MIN_LENGTH, value: '8', description: 'Minimum required password length.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_UPPERCASE, value: 'true', description: 'Require uppercase letters.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_LOWERCASE, value: 'true', description: 'Require lowercase letters.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_NUMBER, value: 'true', description: 'Require digits.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_SYMBOL, value: 'false', description: 'Require symbols.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_PASSWORD_HISTORY, value: '5', description: 'Prevent reuse of the last N passwords.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_PASSWORD_BREACH_CHECK, value: 'false', description: 'Ask a breach-check provider whether a new password appears in known breaches. Calls the "auth:password:breach-check" hook. With no plugin answering it, nothing is rejected.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_PASSWORD_RESET_TOKEN_MINUTES, value: '30', description: 'Password reset token lifetime in minutes.', group: 'security' },
-        { key: SystemConstants.META_KEY.FILE_SHARE_DEFAULT_EXPIRY_DAYS, value: '30', description: 'Default lifetime of a shared-file link, in days. 0 = never expires.', group: 'Files' },
-        { key: SystemConstants.META_KEY.FILE_SHARE_DEFAULT_MAX_DOWNLOADS, value: '0', description: 'Default number of downloads allowed per recipient. 0 = unlimited.', group: 'Files' },
-        { key: SystemConstants.META_KEY.FILE_SHARE_RATE_LIMIT_PER_MINUTE, value: '30', description: 'Maximum shared-file link requests per minute, per address.', group: 'Files' },
-        { key: SystemConstants.META_KEY.AUTH_EMAIL_CHANGE_TOKEN_MINUTES, value: '60', description: 'Email change token lifetime in minutes.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_LOCKOUT_THRESHOLD, value: '5', description: 'Failed logins before lockout.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_LOCKOUT_WINDOW_MINUTES, value: '15', description: 'Window for counting failed logins.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_LOCKOUT_DURATION_MINUTES, value: '30', description: 'Lockout duration in minutes.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_CAPTCHA_ENABLED, value: 'false', description: 'Require captcha after repeated failures.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_CAPTCHA_THRESHOLD, value: '3', description: 'Failed attempts before captcha is required.', group: 'security' },
-        { key: SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS, value: 'true', description: 'Send security notification emails.', group: 'security' },
-        { key: SystemConstants.META_KEY.TWO_FACTOR_ENABLED, value: 'false', description: 'Enable two-factor authentication.', group: 'security' },
-        { key: SystemConstants.META_KEY.LOCALIZATION_LOCALES, value: '[{"code":"en","name":"English","enabled":true}]', description: 'Available locales.', group: 'Localization' },
-        { key: SystemConstants.META_KEY.ENABLED_LOCALES, value: 'en', description: 'Enabled locale codes.', group: 'Localization' },
-        { key: SystemConstants.META_KEY.DEFAULT_LOCALE, value: 'en', description: 'Default locale.', group: 'Localization' },
-        { key: SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE, value: 'en', description: 'Default admin language.', group: 'Localization' },
-        { key: SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE, value: 'en', description: 'Default frontend language.', group: 'Localization' },
-        { key: SystemConstants.META_KEY.LOCALE_URL_STRATEGY, value: 'query', description: 'Locale URL strategy.', group: 'Localization' },
-        { key: SystemConstants.META_KEY.MEASUREMENT_SYSTEM, value: 'metric', description: 'Units for physical dimensions and weight (metric cm/kg | imperial in/lb).', group: 'Localization' },
-        { key: SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED, value: 'true', description: 'Enable frontend auth flows.', group: 'security' },
-        { key: SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED, value: 'true', description: 'Allow new customer self-registration.', group: 'security' },
-        { key: SystemConstants.META_KEY.EMAIL_NOTIFICATIONS, value: 'true', description: 'Receive system alerts via email.', group: 'Engagement' },
-        { key: SystemConstants.META_KEY.MCP_REMOTE_ENABLED, value: 'false', description: 'Allow remote MCP clients (Claude web/desktop) to connect over Streamable HTTP with an API token. Off by default.', group: 'Integrations' },
-        { key: SystemConstants.META_KEY.MCP_REMOTE_MEDIA_MAX_MB, value: '25', description: 'Maximum media payload accepted by MCP upload and replace tools, in megabytes.', group: 'Integrations' },
-      ];
+      // DECLARED, not listed here. A setting's default, description and group now live beside its
+      // scope and writability in `SystemSettingRegistry`, so a setting is declared in one place
+      // instead of being half here and half in core. The app URLs among them are only knowable at
+      // boot, so the registry holds those as thunks and resolves them now.
+      const defaults = SystemSettingRegistry.seedDefaults();
 
       for (const d of defaults) {
         const existing = await this.db.findOne(SystemConstants.TABLE.META, { key: d.key });
@@ -153,22 +106,4 @@ export class ServerSettingsService {
     }
   }
 
-  private buildUrlDefaults(): {
-    siteUrl: string;
-    frontendUrl: string;
-    adminUrl: string;
-    platformDomain: string;
-  } {
-    const frontendUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP);
-    const adminUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP);
-    const siteUrl = frontendUrl;
-    const platformDomain = ApplicationUrlUtils.derivePlatformDomain(frontendUrl, adminUrl);
-
-    return {
-      siteUrl,
-      frontendUrl,
-      adminUrl,
-      platformDomain,
-    };
-  }
 }

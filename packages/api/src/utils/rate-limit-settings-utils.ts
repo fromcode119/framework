@@ -1,4 +1,4 @@
-import { CoercionUtils, EnvUtils, NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
+import { CoercionUtils, EnvUtils, NetworkAddressUtils, SystemConstants, SystemSettingRegistry } from '@fromcode119/core';
 
 /**
  * Single resolution point for the rate-limit budgets.
@@ -10,20 +10,22 @@ import { CoercionUtils, EnvUtils, NetworkAddressUtils, SystemConstants } from '@
  * no admin control produced. If a relaxed development budget is wanted, the operator raises the
  * declared setting; there is no hidden branch.
  *
- * The DEFAULT_* values mirror the seeds written by `ServerSettingsService.ensureDefaultSettings()`,
- * which imports them from here so the number exists in exactly one place.
+ * The DEFAULT_* values are READ FROM THE DECLARATION — `SystemSettingRegistry`, where each of these
+ * settings states its own seeded default beside its scope. They used to be literals here that the
+ * seed imported; now the seed and this resolver read the same declaration, so the number exists in
+ * exactly one place whichever end you come from.
  */
 export class RateLimitSettingsUtils {
   /** Requests per window for ANONYMOUS traffic (bucketed per IP). */
-  static readonly DEFAULT_MAX_REQUESTS = '100';
+  static readonly DEFAULT_MAX_REQUESTS = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_MAX);
   /** Requests per window for TOKEN-BEARING traffic (bucketed per IP + token). */
-  static readonly DEFAULT_MAX_REQUESTS_AUTHENTICATED = '5000';
+  static readonly DEFAULT_MAX_REQUESTS_AUTHENTICATED = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_MAX_AUTHENTICATED);
   /** Requests per window for INTERNAL server-to-server traffic (bucketed per calling service address). */
-  static readonly DEFAULT_MAX_REQUESTS_INTERNAL = '20000';
+  static readonly DEFAULT_MAX_REQUESTS_INTERNAL = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL);
   /** Addresses internal services call from — loopback + RFC1918, the ranges a container network uses. */
-  static readonly DEFAULT_INTERNAL_CLIENTS = NetworkAddressUtils.PRIVATE_RANGES_TEXT;
+  static readonly DEFAULT_INTERNAL_CLIENTS = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS);
   /** Length of the counting window, in milliseconds. */
-  static readonly DEFAULT_WINDOW_MS = '900000';
+  static readonly DEFAULT_WINDOW_MS = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_WINDOW);
 
   private static readonly ENV_MAX_REQUESTS = 'RATE_LIMIT_MAX';
   private static readonly ENV_MAX_REQUESTS_AUTHENTICATED = 'RATE_LIMIT_MAX_AUTHENTICATED';
