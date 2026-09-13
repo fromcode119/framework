@@ -18,4 +18,12 @@ export interface IAuthContextType {
   sessionRejected: boolean;
   login: (token: string | undefined, userData: IUser) => void;
   logout: () => Promise<void>;
+  /**
+   * Re-read the client login signal and drop the identity if it is gone.
+   *
+   * Cheap and synchronous — a cookie read, no request. Called on navigation and when the tab regains
+   * focus, because the identity is otherwise a snapshot taken at mount that outlives the session it
+   * describes.
+   */
+  revalidate: () => void;
 }

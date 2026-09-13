@@ -39,6 +39,32 @@ export class AuthProviderView extends Reactor {
     this.alive = true;
     this.onUnmount(() => { this.alive = false; });
     void this.hydrateAuthState();
+    // A tab outlives its session. Log out in a second tab, or let the seven days run out, and THIS
+    // tab still holds the identity it snapshotted at mount — so it keeps painting a signed-in
+    // console, and only finds out when a guarded request fails. Re-read the login signal whenever
+    // the operator comes back to the tab.
+    this.listen(window, 'focus', this.syncSessionSignal);
+    this.listen(document, 'visibilitychange', this.syncSessionSignal);
+  }
+
+  /**
+   * Re-derive "is anybody signed in" from the cookie, mid-session.
+   *
+   * `hydrateAuthState` already treats an absent `AUTH_USER` cookie as logged out — but only once, at
+   * mount. This applies the SAME rule for as long as the tab lives, which is the whole fix: the
+   * identity was a one-shot snapshot, and nothing re-derived it on a route change or a return to the
+   * tab.
+   *
+   * ABSENT COOKIE ONLY. This never sets `sessionRejected`: no cookie means "logged out", which sends
+   * you to login, and that is a different answer from "the server refused this session here", which
+   * is how a workspace an account may not enter says so. Collapsing the two would replace that
+   * explanation with a login form the operator would pass and still be refused by.
+   */
+  @bound private syncSessionSignal(): void {
+    if (!this.alive || !this.user) return;
+    const savedUser = AuthProviderView.browserState.readCookie(CookieConstants.AUTH_USER);
+    if (savedUser && savedUser !== 'null' && savedUser !== 'undefined') return;
+    this.user = null;
   }
 
   private async hydrateAuthState(): Promise<void> {
@@ -150,6 +176,7 @@ export class AuthProviderView extends Reactor {
       sessionRejected: this.sessionRejected,
       login: this.login,
       logout: this.logout,
+      revalidate: this.syncSessionSignal,
     };
   }
 

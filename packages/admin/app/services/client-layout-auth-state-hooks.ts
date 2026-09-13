@@ -19,7 +19,7 @@ export class ClientLayoutAuthStateHooks {
   static useState() {
     const router = useRouter();
     const pathname = usePathname();
-    const { user, isLoading: isAuthLoading, sessionRejected } = AuthHooks.useAuth();
+    const { user, isLoading: isAuthLoading, sessionRejected, revalidate } = AuthHooks.useAuth();
     const normalizedPathname = React.useMemo(() => AdminPathUtils.stripBase(pathname || '/'), [pathname]);
     const isMinimalPath = normalizedPathname?.startsWith(AdminConstants.ROUTES.MINIMAL) || normalizedPathname?.startsWith('/minimal');
     const isAuthPage = React.useMemo(
@@ -96,6 +96,19 @@ export class ClientLayoutAuthStateHooks {
      * on its own `resolved` flag — so by the time any of this renders the answer is already in.
      */
     const workspaceDenied = sessionRejected && WorkspaceAppearanceLock.locked;
+
+    /**
+     * Re-derive the identity on every navigation, BEFORE the redirect below reads it.
+     *
+     * A client-only admin route is prefetched into Next's router cache, so moving to it serves from
+     * memory and the middleware that would bounce a signed-out visitor never runs. Both shells read
+     * this one hook, so checking here covers every page: without it the console kept rendering for a
+     * session that had already ended, and only discovered it when the page's first guarded fetch came
+     * back 401 — which is a detection mechanism, not a design.
+     */
+    React.useEffect(() => {
+      revalidate();
+    }, [normalizedPathname, revalidate]);
 
     React.useEffect(() => {
       if (isInitialized === true && !user && !isAuthPage && !isAuthLoading && !workspaceDenied) {
