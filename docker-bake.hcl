@@ -15,6 +15,19 @@ variable "REGISTRY" { default = "ghcr.io/fromcode119" }
 // for a release, and can never overwrite one in the registry.
 variable "VERSION" { default = "dev" }
 
+// The repository these images are built FROM, stamped into every image as the OCI source label.
+//
+// This is not decoration. GHCR decides which repository a container package belongs to from this
+// label, and that ownership is what lets a workflow push to it. Without the label, a package keeps
+// whatever link it was first created with and follows that repository through renames — which is
+// exactly what bit us: the original repo was renamed to an archive, all four packages silently
+// followed it, and the new `framework` repo could no longer push to its own images
+// (`denied: permission_denied: write_package`) despite holding `packages: write`.
+//
+// With the label, a push re-points the package at this repository, so the linkage is declared here
+// rather than inherited from history.
+variable "SOURCE" { default = "https://github.com/fromcode119/framework" }
+
 group "default" {
   targets = ["api", "admin", "frontend", "gateway"]
 }
@@ -27,6 +40,10 @@ target "_common" {
   platforms  = ["linux/amd64"]
   cache-from = ["type=gha"]
   cache-to   = ["type=gha,mode=max"]
+  labels     = {
+    "org.opencontainers.image.source"  = SOURCE
+    "org.opencontainers.image.version" = VERSION
+  }
 }
 
 target "api" {
