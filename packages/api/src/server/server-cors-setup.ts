@@ -119,7 +119,41 @@ export class ServerCorsSetup {
       exposedHeaders: ['X-Framework-Maintenance', 'X-CSRF-Token', 'Content-Disposition'],
     };
 
-    this.app.use(cors(corsOptions));
-    this.app.options(/.*/, cors(corsOptions) as any);
+    // SAME-ORIGIN FIRST, before the allow-list is consulted at all.
+    //
+    // The allow-list answers "which OTHER origins may call us with credentials". It was also, by
+    // omission, the only thing that let an app call ITSELF: with no admin_url/frontend_url saved and
+    // no env, the list is empty and the console's own POST to its own host is refused. That is the
+    // state a deployment configured entirely from the admin starts in, and it is why this has to be
+    // decided before the list rather than inside it.
+    //
+    // It is not a relaxation. A browser sets `Origin` from the page that initiated the request and a
+    // cross-site page cannot forge it, so `Origin`'s host equalling the host this request was sent to
+    // means the request came from a page on that same host — same-origin by definition, which needs
+    // no CORS grant. `X-Forwarded-Host` is read first because that is the public host behind the
+    // gateway (and what tenancy already routes by); it is not attacker-supplied, since a browser
+    // will not let a cross-origin fetch set it without a preflight this server never approves.
+    const delegate: cors.CorsOptionsDelegate = (req: any, callback: any) => {
+      const origin = String(req?.headers?.origin || '');
+      if (origin && ServerCorsSetup.isSameOrigin(origin, req)) {
+        return callback(null, { ...corsOptions, origin: true });
+      }
+      return callback(null, corsOptions);
+    };
+
+    this.app.use(cors(delegate));
+    this.app.options(/.*/, cors(delegate) as any);
+  }
+
+  /** Did this request come from a page on the very host it was sent to? Compared with the port. */
+  private static isSameOrigin(origin: string, req: any): boolean {
+    try {
+      const originHost = new URL(origin).host.trim().toLowerCase();
+      const forwarded = String(req?.headers?.['x-forwarded-host'] || '').split(',')[0].trim();
+      const host = (forwarded || String(req?.headers?.host || '')).trim().toLowerCase();
+      return Boolean(originHost) && originHost === host;
+    } catch {
+      return false;
+    }
   }
 }
