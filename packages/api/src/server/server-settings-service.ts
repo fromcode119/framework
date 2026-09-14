@@ -117,6 +117,22 @@ export class ServerSettingsService {
           // URL) — on every cache refresh, i.e. every 10s in dev and every 5min in production. An
           // operator could set http://localhost:3002 in the admin, save, and find it silently reverted.
           // Defaults now apply on FIRST INSERT only; only the description/group metadata is reconciled.
+          // An EMPTY row is not a saved value — it is a row that was created before this setting had
+          // a default, or seeded when the environment had nothing to give. Filling it from the seed
+          // changes no behaviour (an empty setting already falls through to the environment) but it
+          // makes the ROW authoritative, which is what lets the environment variable be removed
+          // afterwards. Without this, a deployment whose url rows are blank keeps working only for
+          // as long as its env vars are there, and is silently one cleanup away from not resolving
+          // its own hosts. A row with a value is still never touched — that was the bug this
+          // insert-once rule exists to prevent.
+          const storedValue = String(existing.value ?? '').trim();
+          const seedValue = String(d.value ?? '').trim();
+          if (!storedValue && seedValue) {
+            await this.db.update(SystemConstants.TABLE.META, { key: d.key }, { value: d.value });
+            existing.value = d.value;
+            this.logger.info(`Filled empty setting "${d.key}" from its declared default so the row, not the environment, is what answers.`);
+          }
+
           if (existing.key) { this.settingsCache.set(existing.key, existing.value); await this.cache.set(`system_setting:${existing.key}`, existing.value); }
           if (existing.description !== d.description || existing.group !== d.group) {
             await this.db.update(SystemConstants.TABLE.META, { key: d.key }, { description: d.description, group: d.group });
