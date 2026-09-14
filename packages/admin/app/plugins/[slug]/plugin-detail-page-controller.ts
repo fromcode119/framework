@@ -19,6 +19,7 @@ import type { IPluginLogEntry } from '@/app/plugins/[slug]/interfaces/plugin-log
 import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
 import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
 import { PluginDetailPageService } from '@/app/plugins/[slug]/plugin-detail-page-service';
+import { PluginAssetLoaderService } from '@/app/services/plugin-asset-loader-service';
 
 export class PluginDetailPageController {
   static useModel(slug: string): IPluginDetailPageModel {
@@ -68,6 +69,25 @@ export class PluginDetailPageController {
 
       loadPlugin();
     }, [slug, router, refreshVersion]);
+
+    // This plugin's own admin UI, loaded because this is the page that administers it.
+    //
+    // The metadata-driven loader cannot do it: it is filtered by tenant visibility, and a plugin is
+    // administered in PLATFORM scope where that filter matches nothing. Without this, a custom
+    // component on a plugin SETTINGS field renders "Component <Name> not registered by any plugin"
+    // in every scope — which is why no plugin had ever shipped one (31 use a custom component on a
+    // COLLECTION field, which renders on plugin pages where the bundle does load).
+    useEffect(() => {
+      const entry = PluginDetailPageService.uiEntryMetadata(plugin);
+      if (!entry) return;
+      PluginAssetLoaderService.applyOne(entry, {
+        // Slots and collections stay owned by the metadata-driven loader. This page is here to
+        // administer ONE plugin, and registering its slots from here would put entries on screen for
+        // a plugin the current site may not even run.
+        registerSlotComponent: () => undefined,
+        registerCollection: () => undefined,
+      });
+    }, [plugin]);
 
     useEffect(() => {
       const checkUpdates = async () => {

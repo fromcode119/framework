@@ -1,4 +1,5 @@
 import type { ILoadedPlugin } from '@fromcode119/core/client';
+import type { IAdminPluginMetadata } from '@/app/interfaces/admin-plugin-metadata.interface';
 import { LoadedPluginHydration } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -16,6 +17,37 @@ export class PluginDetailPageService {
     timeout: 1000,
     allowNative: false,
   };
+
+  /**
+   * This plugin's UI assets, shaped the way the asset loader expects.
+   *
+   * Returns null when the plugin ships no admin bundle, so the caller loads nothing rather than
+   * requesting a URL that does not exist.
+   *
+   * The version query is the plugin's VERSION, not the bundle's mtime: the mtime is a filesystem
+   * fact the server has and the browser does not. That is enough for a released plugin, whose
+   * version changes with its contents; a local rebuild WITHOUT a version bump keeps the same URL,
+   * so a hard reload is still the way to see that change here.
+   */
+  static uiEntryMetadata(plugin: ILoadedPlugin | null): IAdminPluginMetadata | null {
+    const slug = String(plugin?.manifest?.slug ?? '').trim();
+    const entry = String((plugin?.manifest as any)?.ui?.entry ?? '').trim();
+    if (!slug || !entry) return null;
+
+    const version = String(plugin?.manifest?.version ?? '').trim();
+    const suffix = version ? `?v=${encodeURIComponent(version)}` : '';
+    const asset = (name: string): string => `/plugins/${slug}/ui/${String(name).replace(/^\/+/, '')}${suffix}`;
+    const css = [
+      ...(((plugin?.manifest as any)?.ui?.css) || []),
+      ...(((plugin?.manifest as any)?.ui?.adminCss) || []),
+    ].map((name: string) => asset(name));
+
+    return {
+      slug,
+      name: String(plugin?.manifest?.name ?? slug),
+      ui: { entryUrl: asset(entry), cssUrls: css },
+    };
+  }
 
   static parseTab(value: string | null): PluginDetailTab {
     return PluginDetailTab.resolve(value);

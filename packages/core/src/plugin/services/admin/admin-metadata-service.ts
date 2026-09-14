@@ -144,7 +144,15 @@ export class AdminMetadataService {
       return null;
     }
 
-    const absolutePath = path.resolve(pluginPath, 'src', 'ui', asset.replace(/^\/+/, ''));
+    // The BUILT asset, which is what the route serves — `<plugin>/ui/bundle.js`. This resolved
+    // `<plugin>/src/ui/...` (the SOURCE tree, where no bundle has ever existed), so `existsSync` was
+    // false every time and the `?v=` cache-buster was never appended to any plugin asset. The effect
+    // was silent and cumulative: a rebuilt plugin bundle kept the same URL, so browsers served the
+    // previous one and a UI change appeared not to have been built at all.
+    const built = path.resolve(pluginPath, 'ui', asset.replace(/^\/+/, ''));
+    const absolutePath = fs.existsSync(built)
+      ? built
+      : path.resolve(pluginPath, 'src', 'ui', asset.replace(/^\/+/, ''));
     if (!fs.existsSync(absolutePath)) {
       return null;
     }
