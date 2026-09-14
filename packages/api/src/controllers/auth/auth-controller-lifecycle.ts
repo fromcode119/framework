@@ -107,9 +107,14 @@ export class AuthControllerLifecycle extends AuthControllerSso {
     try {
       const existing = String((await this.manager.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_URL }))?.value ?? '').trim();
       if (!existing) {
+        // What the operator CONFIRMED on the last step, which was prefilled with the address they
+        // reached the wizard on. The header is the fallback for a setup posted without it — the
+        // value is still derived from a request they made, never invented here.
+        const confirmed = this.parseAbsoluteUrl(req.body?.adminUrl);
         const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
         const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'http').split(',')[0].trim();
-        if (host) await this.upsertMeta(SystemConstants.META_KEY.ADMIN_URL, `${proto}://${host}`);
+        const resolved = confirmed || (host ? `${proto}://${host}` : '');
+        if (resolved) await this.upsertMeta(SystemConstants.META_KEY.ADMIN_URL, resolved);
       }
 
       await this.upsertMeta(SystemConstants.META_KEY.SETUP_COMPLETED, 'true');
@@ -121,6 +126,19 @@ export class AuthControllerLifecycle extends AuthControllerSso {
       // A setup that created the admin account but could not write the marker must NOT fail: the
       // account exists, and `userCount > 0` alone keeps setup mode shut on the next boot.
       this.logger.error(`[AuthController] Could not record setup completion: ${String((error as Error)?.message ?? error)}`);
+    }
+  }
+
+  /** An absolute http(s) URL, or empty. A value that will not parse is discarded, never stored. */
+  private parseAbsoluteUrl(value: unknown): string {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    try {
+      const url = new URL(raw);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+      return `${url.protocol}//${url.host}`;
+    } catch {
+      return '';
     }
   }
 

@@ -14,6 +14,7 @@ import { SetupStepper } from '@/app/setup/setup-stepper.client';
 import { SetupLanguageStep } from '@/app/setup/setup-language-step.client';
 import { SetupAccountStep } from '@/app/setup/setup-account-step.client';
 import { SetupPlatformStep } from '@/app/setup/setup-platform-step.client';
+import { SetupAddressesStep } from '@/app/setup/setup-addresses-step.client';
 import type { ISetupAccountErrors } from '@/app/setup/setup-account-errors.interface';
 import { SetupAccountValidation } from '@/app/setup/setup-account-validation';
 
@@ -34,6 +35,13 @@ export class SetupPage extends AdminComponent {
   @state password = '';
   @state confirmPassword = '';
   @state platformName = '';
+  /**
+   * The address this console will answer on — prefilled with the one you are standing on.
+   *
+   * Derived from the request, not invented: it is the origin the operator just used. Empty on the
+   * server, where there is no origin to read, and filled in once mounted.
+   */
+  @state adminUrl = '';
   @state timezone = '';
   @state error = '';
   @state fieldErrors: ISetupAccountErrors = {};
@@ -42,6 +50,9 @@ export class SetupPage extends AdminComponent {
     this.mounted = true;
     this.locale = this.browserLocale;
     this.timezone = TimezoneUtils.resolveSystemTimezone();
+    // The address the operator actually reached this page on. Derived, never invented — and shown
+    // for confirmation on the last step rather than written silently.
+    this.adminUrl = window.location.origin;
     try {
       const data = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.STATUS);
       if (data.initialized === true) this.router.push(AdminConstants.ROUTES.AUTH.LOGIN);
@@ -76,6 +87,7 @@ export class SetupPage extends AdminComponent {
   @bound handlePasswordChange(value: string): void { this.password = value; }
   @bound handleConfirmPasswordChange(value: string): void { this.confirmPassword = value; }
   @bound handlePlatformNameChange(value: string): void { this.platformName = value; }
+  @bound handleAdminUrlChange(value: string): void { this.adminUrl = value; }
   @bound handleTimezoneChange(value: string): void { this.timezone = value; }
 
   @bound
@@ -122,6 +134,7 @@ export class SetupPage extends AdminComponent {
         locale: this.locale,
         platformName: this.platformName,
         timezone: this.timezone,
+        adminUrl: this.adminUrl.trim(),
       });
       this.auth.login(data.token, data.user);
     } catch (err: any) {
@@ -151,13 +164,22 @@ export class SetupPage extends AdminComponent {
         />
       );
     }
+    if (this.step === SetupStep.PLATFORM) {
+      return (
+        <SetupPlatformStep
+          locale={this.locale}
+          platformName={this.platformName}
+          timezone={this.timezone}
+          onPlatformNameChange={this.handlePlatformNameChange}
+          onTimezoneChange={this.handleTimezoneChange}
+        />
+      );
+    }
     return (
-      <SetupPlatformStep
+      <SetupAddressesStep
         locale={this.locale}
-        platformName={this.platformName}
-        timezone={this.timezone}
-        onPlatformNameChange={this.handlePlatformNameChange}
-        onTimezoneChange={this.handleTimezoneChange}
+        adminUrl={this.adminUrl}
+        onAdminUrlChange={this.handleAdminUrlChange}
       />
     );
   }

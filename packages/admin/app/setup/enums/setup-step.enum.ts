@@ -5,13 +5,14 @@ export class SetupStep extends Enum {
   static readonly LANGUAGE = new SetupStep('language', 0);
   static readonly ACCOUNT = new SetupStep('account', 1);
   static readonly PLATFORM = new SetupStep('platform', 2);
+  static readonly ADDRESSES = new SetupStep('addresses', 3);
 
   private constructor(value: string, readonly index: number) {
     super(value);
   }
 
   static get ordered(): SetupStep[] {
-    return [SetupStep.LANGUAGE, SetupStep.ACCOUNT, SetupStep.PLATFORM];
+    return [SetupStep.LANGUAGE, SetupStep.ACCOUNT, SetupStep.PLATFORM, SetupStep.ADDRESSES];
   }
 
   get isFirst(): boolean {
