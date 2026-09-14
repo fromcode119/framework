@@ -10,6 +10,8 @@ export class DomainAliasesInput extends Reactor {
   @prop declare value: string[];
   @prop declare onChange: (aliases: string[]) => void;
   @prop declare theme?: ThemeMode;
+  /** Out of reach in this scope — the row it belongs to is not selected. Say so, never silently drop. */
+  @prop declare disabled?: boolean;
 
   @state draft = '';
 
@@ -65,11 +67,12 @@ export class DomainAliasesInput extends Reactor {
           onChange={this.handleDraftChange}
           onKeyDown={this.handleKeyDown}
           placeholder="https://alias.example.com"
+          disabled={this.disabled}
           className="flex-1 font-bold"
         />
         <Button
           onClick={this.addAlias}
-          disabled={!draft.trim()}
+          disabled={this.disabled || !draft.trim()}
           icon={<FrameworkIcons.Plus size={13} strokeWidth={3} />}
           className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
         >
@@ -92,7 +95,8 @@ export class DomainAliasesInput extends Reactor {
               <button
                 data-alias={alias}
                 onClick={this.handleRemoveClick}
-                className={`ml-0.5 rounded transition-colors ${
+                disabled={this.disabled}
+                className={`ml-0.5 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                   isDark ? 'text-slate-400 hover:text-rose-400' : 'text-slate-400 hover:text-rose-600'
                 }`}
               >

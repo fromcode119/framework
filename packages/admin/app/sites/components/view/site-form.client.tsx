@@ -1,7 +1,8 @@
 import type { ChangeEvent, ReactNode } from 'react';
 import Link from 'next/link';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { ThemeMode } from '@fromcode119/core/client';
+import { Explanation } from '@/components/ui/view/explanation.client';
+import { RuntimeLocationUtils, ThemeMode } from '@fromcode119/core/client';
 import { PureReactor, bound, prop, state } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
@@ -183,18 +184,34 @@ export class SiteForm extends PureReactor {
             <Select label="State" theme={this.theme} value={values.state} onChange={this.onState} options={[{ value: 'active', label: 'Active' }, { value: 'suspended', label: 'Suspended — the site answers 503' }]} />
           )}
           {/* A DIFFERENT question from State, and the one an operator asks far more often. Suspending
-              a site takes its admin away too; this only decides who may READ it. */}
-          <Select
-            label="Visible to"
-            theme={this.theme}
-            value={values.visibility}
-            onChange={this.onVisibility}
-            options={[
-              { value: 'private', label: 'Nobody yet — only this site\'s admins' },
-              { value: 'unlisted', label: 'Anyone with the address — not indexed' },
-              { value: 'public', label: 'Everyone — indexed' },
-            ]}
-          />
+              a site takes its admin away too; this only decides who may READ it.
+
+              WORKSPACES GET A DIFFERENT ANSWER. A workspace's domain is a console served by the admin
+              app, and nothing reads a workspace's `visibility` for indexing — `SiteVisibilityMiddleware`
+              is storefront-only, and the admin's robots.txt and `X-Robots-Tag` follow the platform's
+              own switch. Offering "Everyone — indexed" here wrote a value nothing read: a control that
+              cannot act. It names the switch that actually governs it instead. */}
+          {values.isWorkspace ? (
+            <Explanation>
+              <p>
+                A workspace is a console, so it is never listed publicly. Search indexing for its domain
+                follows{' '}
+                <Link href={RuntimeLocationUtils.toAdminPath('/settings/general')}>Settings → General → Index Platform Hosts</Link>.
+              </p>
+            </Explanation>
+          ) : (
+            <Select
+              label="Visible to"
+              theme={this.theme}
+              value={values.visibility}
+              onChange={this.onVisibility}
+              options={[
+                { value: 'private', label: 'Nobody yet — only this site\'s admins' },
+                { value: 'unlisted', label: 'Anyone with the address — not indexed' },
+                { value: 'public', label: 'Everyone — indexed' },
+              ]}
+            />
+          )}
         </div>
         {this.isNew ? null : (
           /* The id is the row-level-security discriminator stamped into every row this site owns, so it

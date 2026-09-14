@@ -6,6 +6,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { TenantOption } from '@/lib/tenants/tenant-option';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
 import { TenantSwitcherMenu } from '@/app/components/view/tenant-switcher-menu.client';
 
 /**
@@ -69,9 +70,7 @@ export class TenantSwitcher extends AdminComponent {
       return;
     }
     this.busy = true;
-    const ok = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_LEAVE, {})
-      .then(() => true)
-      .catch(() => false);
+    const ok = await TenantScopeClient.leave();
     if (!ok) {
       this.busy = false;
       return;
@@ -151,8 +150,17 @@ export class TenantSwitcher extends AdminComponent {
     );
   }
 
+  /**
+   * Is there anywhere to switch TO?
+   *
+   * `tenants.length > 1` alone stranded a platform admin on a deployment with exactly ONE site: login
+   * auto-selects the only site an account can administer, and with the menu gone there was no way
+   * back out to the platform scope. That was survivable while every platform setting stayed editable
+   * from inside a site; it stops being survivable the moment a screen shows platform settings only in
+   * platform scope. A platform admin always has a second destination — the platform itself.
+   */
   private get canSwitch(): boolean {
-    return this.multiTenant && this.tenants.length > 1;
+    return this.multiTenant && (this.tenants.length > 1 || this.canManageSites);
   }
 
   private get currentOption(): TenantOption | undefined {

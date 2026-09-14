@@ -2,11 +2,18 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ComponentType, ReactNode } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { AdminClass } from '@/lib/admin-class';
 
 export class SettingRow extends PureReactor {
   @prop declare icon: ComponentType<{ size?: number }> | undefined;
   @prop declare title: ReactNode;
   @prop declare description: ReactNode;
+  /**
+   * What this control DOES — per state, with any related control named. Rendered as its own quiet
+   * tier below the description, because `description` is a `<p>` and block content cannot live in one.
+   * See {@link Explanation}.
+   */
+  @prop declare explanation?: ReactNode;
   @prop declare children: ReactNode;
   @prop declare theme: ThemeMode;
   /**
@@ -30,7 +37,8 @@ export class SettingRow extends PureReactor {
           </div>
           <div>
             <h3 className={`text-sm font-semibold tracking-tight ${this.isDark ? 'text-slate-200' : 'text-slate-900'}`}>{this.title}</h3>
-            <p className={`text-[13px] font-normal mt-0.5 max-w-md leading-relaxed ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>{this.description}</p>
+            <p className={`${AdminClass.of('setting-desc')} text-[13px] font-normal mt-0.5 max-w-md leading-relaxed ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>{this.description}</p>
+            {this.explanation}
           </div>
         </div>
         <div className={this.stacked ? 'md:pl-12' : 'flex-shrink-0'}>

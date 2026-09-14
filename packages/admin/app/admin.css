@@ -393,3 +393,41 @@ html.dark {
 @media (max-width: 767px) {
   .fc-sites__member, .fc-sites__grant { grid-template-columns: 1fr; }
 }
+
+/* Settings → General: where the settings this scope does NOT show actually live. Hiding a control
+   must not make the setting undiscoverable, so the screen names the other scope. */
+.fc-scope-notice {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  /* 1.5rem matches the `p-6` of the content wrapper below, so the notice's edges line up with the
+     cards rather than sitting 2px inside them; 16px matches a Card's `p-4`, so its text shares the
+     cards' text column. `--radius` is the same corner every surface uses — a literal 10px here was a
+     second answer to a question the token already answers. */
+  margin: 1.5rem 1.5rem 0; padding: 10px 16px; border-radius: var(--radius);
+  font-size: 12px; line-height: 1.5;
+  background: var(--fc-surface-2, rgba(127, 127, 127, 0.08));
+  color: var(--muted-foreground);
+}
+.fc-scope-notice__text { flex: 1 1 auto; min-width: 200px; }
+
+/* The third tier under a label and its description: what the control DOES, per state, and where the
+   related control lives. Row-level counterpart of the field renderer's provenance line. */
+.fc-explanation {
+  display: flex; flex-direction: column; gap: 3px;
+  /* `max-w-md` — the same column the description above it wraps in, so the text block has one
+     right edge instead of two. */
+  margin-top: 6px; max-width: 28rem;
+  font-size: 11px; line-height: 1.55;
+  color: var(--muted-foreground);
+}
+.fc-explanation p { margin: 0; }
+.fc-explanation strong { font-weight: 600; color: var(--foreground); opacity: 0.7; }
+.fc-explanation code { font-family: var(--font-mono, monospace); font-size: 10.5px; }
+.fc-explanation a { text-decoration: underline; text-underline-offset: 2px; }
+
+/* Inline literals inside a SettingRow's description. They were written as markdown backticks, which
+   render as backticks — the admin is not a markdown renderer. */
+.fc-setting-desc code { font-family: var(--font-mono, monospace); font-size: 0.92em; }
+
+/* An explanation inside the site form's field grid is prose, not a field: it spans the row rather
+   than taking a column, where it would be squeezed to one column's width and pushed off-screen. */
+.fc-site-form__grid > .fc-explanation { grid-column: 1 / -1; max-width: none; }

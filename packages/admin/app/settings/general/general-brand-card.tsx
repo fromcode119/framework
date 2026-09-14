@@ -25,31 +25,8 @@ export class GeneralBrandCard extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare toggleTheme: () => void;
 
-  private locked(key: string): boolean {
-    return this.platformLocks.locks(key);
-  }
-
-  /**
-   * The field's own description, plus its SCOPE when that is not obvious.
-   *
-   * Two different sentences, because they answer different questions. Locked: why the input is
-   * refusing. Merely platform-wide: that saving this changes it for every site — which a platform
-   * admin needs to know precisely BECAUSE nothing stops them. Neither appears on a single-tenant
-   * deployment, where there is no second scope to contrast with.
-   */
-  private describe(key: string, description: string): ReactNode {
-    const note = this.locked(key)
-      ? 'Platform setting — the same for every site, and only a platform admin can change it.'
-      : this.platformLocks.isPlatform(key)
-        ? 'Platform-wide — applies to every site, not just this one.'
-        : '';
-    if (!note) return description;
-    return (
-      <>
-        {description}
-        <span className="mt-1 block text-[12px] font-semibold text-slate-400">{note}</span>
-      </>
-    );
+  private shown(key: string): boolean {
+    return this.platformLocks.shown(key);
   }
 
   private patchSetting(key: string, value: unknown): void {
@@ -115,122 +92,132 @@ export class GeneralBrandCard extends PureReactor {
     const settings = this.settings;
     return (
       <Card title="Brand & Identity">
-        <SettingRow
-          theme={theme}
-          icon={FrameworkIcons.Zap}
-          title="Platform Name"
-          description="The public identifier for your portal and administrative interface."
-        >
-          <Input
-            value={settings.platform_name}
-            onChange={this.onPlatformNameChange}
-            className="w-full md:w-64 font-bold"
-            placeholder="e.g. My Website"
-          />
-        </SettingRow>
-
-        <SettingRow
-          theme={theme}
-          icon={FrameworkIcons.Globe}
-          title="Frontend URL"
-          description={this.describe('frontend_url', "The base URL where your website is hosted. Used for previews and sitemaps.")}
-        >
-          <Input
-            value={settings.frontend_url}
-            onChange={this.onFrontendUrlChange}
-            disabled={this.locked('frontend_url')}
-            className="w-full md:w-64 font-bold"
-            placeholder="https://example.com"
-          />
-        </SettingRow>
-
-        <SettingRow
-          theme={theme}
-          icon={FrameworkIcons.Globe}
-          title="Admin URL"
-          description={this.describe('admin_url', "The web address of your admin panel (e.g. https://admin.yoursite.com). Used for admin links and sign-in redirects. Leave blank to use the server's configured default.")}
-        >
-          <Input
-            value={settings.admin_url}
-            onChange={this.onAdminUrlChange}
-            disabled={this.locked('admin_url')}
-            className="w-full md:w-64 font-bold"
-            placeholder="https://admin.example.com"
-          />
-        </SettingRow>
-
-        <SettingRow
-          theme={theme}
-          icon={FrameworkIcons.Globe}
-          title="Site URL"
-          description={this.describe('site_url', "Your main public website address. Used as a fallback for links in emails, sitemaps, and feeds. Leave blank to use the server's configured default.")}
-        >
-          <Input
-            value={settings.site_url}
-            onChange={this.onSiteUrlChange}
-            disabled={this.locked('site_url')}
-            className="w-full md:w-64 font-bold"
-            placeholder="https://example.com"
-          />
-        </SettingRow>
-
-        <SettingRow
-          theme={theme}
-          icon={FrameworkIcons.Globe}
-          title="Marketplace URL"
-          description={this.describe('marketplace_url', "Where the platform downloads plugin, theme, and core updates from. Leave blank to use the default marketplace, or type 'off' to turn the marketplace off.")}
-        >
-          <Input
-            value={settings.marketplace_url}
-            onChange={this.onMarketplaceUrlChange}
-            disabled={this.locked('marketplace_url')}
-            className="w-full md:w-64 font-bold"
-            placeholder="https://marketplace.example.com"
-          />
-        </SettingRow>
-
-        <SettingRow
-          theme={theme}
-          icon={FrameworkIcons.Package}
-          title="Framework Repository"
-          description={this.describe('framework_repository', `Checked for new framework releases when no marketplace answers. \`owner/repo\` on GitHub — point it at your own fork if you run one. Blank uses ${FrameworkReleaseDefaults.REPOSITORY}.`)}
-        >
-          <Input
-            value={settings.framework_repository}
-            onChange={this.onFrameworkRepositoryChange}
-            disabled={this.locked('framework_repository')}
-            className="w-full md:w-64 font-bold"
-            placeholder={FrameworkReleaseDefaults.REPOSITORY}
-          />
-        </SettingRow>
-
-        <SettingRow
-          theme={theme}
-          icon={FrameworkIcons.Folder}
-          title="Sources Workspace"
-          description={this.describe('sources_workspace_root', 'Where Sources clones repositories and writes the packages it builds. Blank uses `data/sources` beside the platform. Never point it at the plugins or themes directories — that is where the sources being built are mounted from.')}
-        >
-          <Input
-            value={settings.sources_workspace_root}
-            onChange={this.onSourcesWorkspaceRootChange}
-            disabled={this.locked('sources_workspace_root')}
-            className="w-full md:w-64 font-bold"
-            placeholder="data/sources"
-          />
-        </SettingRow>
-
-        <SettingRow
-          theme={theme}
-          icon={FrameworkIcons.Globe}
-          title="Domain Aliases"
-          description="Additional hostnames that serve your frontend. Allowed through CORS and used for multi-domain deployments."
-        >
-          <DomainAliasesInput
-            value={this.domainAliases}
-            onChange={this.onDomainAliasesChange}
+        {this.shown('platform_name') && (
+          <SettingRow
             theme={theme}
-          />
-        </SettingRow>
+            icon={FrameworkIcons.Zap}
+            title="Platform Name"
+            description={'The public identifier for your portal and administrative interface.'}
+          >
+            <Input
+              value={settings.platform_name}
+              onChange={this.onPlatformNameChange}
+              className="w-full md:w-64 font-bold"
+              placeholder="e.g. My Website"
+            />
+          </SettingRow>
+        )}
+
+        {this.shown('frontend_url') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title="Frontend URL"
+            description="The base URL where your website is hosted. Used for previews and sitemaps."
+          >
+            <Input
+              value={settings.frontend_url}
+              onChange={this.onFrontendUrlChange}
+              className="w-full md:w-64 font-bold"
+              placeholder="https://example.com"
+            />
+          </SettingRow>
+        )}
+
+        {this.shown('admin_url') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title="Admin URL"
+            description="The web address of your admin panel (e.g. https://admin.yoursite.com). Used for admin links and sign-in redirects. Leave blank to use the server's configured default."
+          >
+            <Input
+              value={settings.admin_url}
+              onChange={this.onAdminUrlChange}
+              className="w-full md:w-64 font-bold"
+              placeholder="https://admin.example.com"
+            />
+          </SettingRow>
+        )}
+
+        {this.shown('site_url') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title="Site URL"
+            description="Your main public website address. Used as a fallback for links in emails, sitemaps, and feeds. Leave blank to use the server's configured default."
+          >
+            <Input
+              value={settings.site_url}
+              onChange={this.onSiteUrlChange}
+              className="w-full md:w-64 font-bold"
+              placeholder="https://example.com"
+            />
+          </SettingRow>
+        )}
+
+        {this.shown('marketplace_url') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title="Marketplace URL"
+            description="Where the platform downloads plugin, theme, and core updates from. Leave blank to use the default marketplace, or type 'off' to turn the marketplace off."
+          >
+            <Input
+              value={settings.marketplace_url}
+              onChange={this.onMarketplaceUrlChange}
+              className="w-full md:w-64 font-bold"
+              placeholder="https://marketplace.example.com"
+            />
+          </SettingRow>
+        )}
+
+        {this.shown('framework_repository') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Package}
+            title="Framework Repository"
+            description={<>Checked for new framework releases when no marketplace answers. <code>owner/repo</code> on GitHub — point it at your own fork if you run one. Blank uses <code>{FrameworkReleaseDefaults.REPOSITORY}</code>.</>}
+          >
+            <Input
+              value={settings.framework_repository}
+              onChange={this.onFrameworkRepositoryChange}
+              className="w-full md:w-64 font-bold"
+              placeholder={FrameworkReleaseDefaults.REPOSITORY}
+            />
+          </SettingRow>
+        )}
+
+        {this.shown('sources_workspace_root') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Folder}
+            title="Sources Workspace"
+            description={<>Where Sources clones repositories and writes the packages it builds. Blank uses <code>data/sources</code> beside the platform. Never point it at the plugins or themes directories — that is where the sources being built are mounted from.</>}
+          >
+            <Input
+              value={settings.sources_workspace_root}
+              onChange={this.onSourcesWorkspaceRootChange}
+              className="w-full md:w-64 font-bold"
+              placeholder="data/sources"
+            />
+          </SettingRow>
+        )}
+
+        {this.shown('domain_aliases') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title="Domain Aliases"
+            description={'Additional hostnames that serve your frontend. Allowed through CORS and used for multi-domain deployments.'}
+          >
+            <DomainAliasesInput
+              value={this.domainAliases}
+              onChange={this.onDomainAliasesChange}
+              theme={theme}
+            />
+          </SettingRow>
+        )}
 
         <SettingRow
           theme={theme}

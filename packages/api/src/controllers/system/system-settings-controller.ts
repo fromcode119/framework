@@ -82,7 +82,13 @@ export class SystemSettingsController {
       // `tenantMode` so the admin can say WHICH settings are platform-wide even to someone allowed to
       // change them. On a single-tenant deployment there is no second scope to contrast with, so the
       // distinction is noise and the admin shows nothing.
-      res.json({ keys: TenantBespokePolicies.platformKeys(), editable, tenantMode });
+      //
+      // `siteSelected` is the OTHER half of the same question, and it was missing: with no site
+      // chosen, `updateSettings` below refuses the whole PUT if it carries even one per-site key.
+      // Without this fact the admin could not tell which of its fields those were, so it sent them
+      // all and nothing saved. Same source as the refusal itself — the request's own tenant.
+      const siteSelected = Boolean(RequestContextUtils.getTenantId());
+      res.json({ keys: TenantBespokePolicies.platformKeys(), editable, tenantMode, siteSelected });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

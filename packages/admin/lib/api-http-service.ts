@@ -65,9 +65,13 @@ export class AdminApiHttpService {
       rawBody = await response.text().catch(() => '');
     }
 
+    // `message` FIRST. Endpoints that refuse with a reason send `{error: '<code>', message: '<sentence>'}`
+    // — preferring `error` showed the operator the bare token `site_required` and threw the sentence
+    // that named the keys and said what to do away. Endpoints that send only `{error: '<sentence>'}`
+    // still fall through to it unchanged.
     const message =
-      errorBody?.error ||
       errorBody?.message ||
+      errorBody?.error ||
       rawBody.trim() ||
       response.statusText ||
       `HTTP error! status: ${response.status}`;

@@ -15,6 +15,8 @@ import { CompactPageHeader } from '@/components/ui/view/compact-page-header.clie
 import { GeneralBrandCard } from '@/app/settings/general/general-brand-card';
 import { GeneralSystemCards } from '@/app/settings/general/general-system-cards';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
+import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
 
 export class GeneralSettingsPage extends AdminComponent {
   /** The keys this screen owns. Was the key set of a seeded `@state settings` object — see `settings`. */
@@ -96,6 +98,27 @@ export class GeneralSettingsPage extends AdminComponent {
     return mapped;
   }
 
+  /** The full field set this screen owns, serialized. WHICH of these actually go is `handleSave`'s call. */
+  private static buildPayload(settings: Record<string, any>): Record<string, unknown> {
+    return {
+      platform_name: String(settings.platform_name ?? '').trim(),
+      admin_search_indexing: Boolean(settings.admin_search_indexing),
+      email_notifications: Boolean(settings.email_notifications),
+      notification_email: String(settings.notification_email ?? '').trim(),
+      notification_email_cc: String(settings.notification_email_cc ?? '').trim(),
+      frontend_url: String(settings.frontend_url ?? '').trim(),
+      admin_url: String(settings.admin_url ?? '').trim(),
+      site_url: String(settings.site_url ?? '').trim(),
+      marketplace_url: String(settings.marketplace_url ?? '').trim(),
+      framework_repository: String(settings.framework_repository ?? '').trim(),
+      sources_workspace_root: String(settings.sources_workspace_root ?? '').trim(),
+      domain_aliases: JSON.stringify(Array.isArray(settings.domain_aliases) ? settings.domain_aliases : []),
+      timezone: String(settings.timezone ?? '').trim(),
+      frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
+      frontend_registration_enabled: Boolean(settings.frontend_registration_enabled),
+    };
+  }
+
   private static parseAliases(value: unknown): string[] {
     if (Array.isArray(value)) return value as string[];
     try {
@@ -131,32 +154,43 @@ export class GeneralSettingsPage extends AdminComponent {
     const settings = this.settings;
     // Fail closed: never PUT values that were not read back from the server.
     if (!settings) return;
+
+    // Send only what THIS SCOPE can own. The page used to PUT all fifteen keys unconditionally, and
+    // in the `PLATFORM / No site` scope eight of them are per-site: the API refuses such a PUT
+    // whole, so the platform keys the operator had just edited were discarded with it and the screen
+    // reported only the bare token `site_required`. The filter is the server's own answer
+    // (`PlatformSettingLocks`), not a second list kept here — the same facts the inputs are disabled
+    // from, so what is greyed out is exactly what is not sent.
+    const payload = GeneralSettingsPage.buildPayload(settings);
+    // BOTH, and they are not the same test. `shown` is what this scope is editing; `writable` is what
+    // the API would accept. A platform admin inside a site may WRITE a platform key, but that control
+    // lives in the platform scope — sending its form value from here would push a value nobody on this
+    // screen could see, overwriting whatever another admin changed since the page loaded.
+    const sendable = Object.fromEntries(
+      Object.entries(payload).filter(([key]) => this.platformLocks.shown(key) && this.platformLocks.writable(key)),
+    );
+
+    if (Object.keys(sendable).length === 0) {
+      addNotification({
+        title: 'Nothing To Save',
+        message: 'Nothing on this page can be changed in the current scope.',
+        type: NotificationType.ERROR
+      });
+      return;
+    }
+
     this.isSaving = true;
     try {
-      await AdminSystemSettingsClient.update({
-        platform_name: String(settings.platform_name ?? '').trim(),
-        admin_search_indexing: Boolean(settings.admin_search_indexing),
-        email_notifications: Boolean(settings.email_notifications),
-        notification_email: String(settings.notification_email ?? '').trim(),
-        notification_email_cc: String(settings.notification_email_cc ?? '').trim(),
-        frontend_url: String(settings.frontend_url ?? '').trim(),
-        admin_url: String(settings.admin_url ?? '').trim(),
-        site_url: String(settings.site_url ?? '').trim(),
-        marketplace_url: String(settings.marketplace_url ?? '').trim(),
-        framework_repository: String(settings.framework_repository ?? '').trim(),
-        sources_workspace_root: String(settings.sources_workspace_root ?? '').trim(),
-        domain_aliases: JSON.stringify(Array.isArray(settings.domain_aliases) ? settings.domain_aliases : []),
-        timezone: String(settings.timezone ?? '').trim(),
-        frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
-        frontend_registration_enabled: Boolean(settings.frontend_registration_enabled),
-      });
+      await AdminSystemSettingsClient.update(sendable);
 
-      // Update global context
+      // The WHOLE form state, not just what was sent. `AdminUrlUtils.resolveFrontendBaseUrl` reads
+      // `frontend_url`/`site_url` from this context for every "view on site" link; registering only
+      // the sent subset would leave them undefined in a site scope, where those keys are not shown.
       this.registerSettings(settings);
 
       addNotification({
         title: 'Settings Saved',
-        message: 'Global configuration updated successfully.',
+        message: 'Configuration updated successfully.',
         type: NotificationType.SUCCESS
       });
     } catch (err: any) {
@@ -196,6 +230,49 @@ export class GeneralSettingsPage extends AdminComponent {
     }
   }
 
+  /**
+   * Step out to the platform scope, so the settings this screen is not showing become reachable.
+   *
+   * Offered only to an account that may actually change them — for anyone else the notice says who
+   * can, and a button that leads to a screen they cannot use is the dead control this page just
+   * stopped rendering.
+   */
+  @bound
+  async openPlatformScope(): Promise<void> {
+    await TenantScopeClient.leaveAndReload();
+  }
+
+  private get canManagePlatform(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user);
+  }
+
+  /**
+   * One line naming where the OTHER scope's settings live.
+   *
+   * Scope decides which settings this screen shows, so without this the hidden half would simply be
+   * gone — an operator could not discover that `timezone` exists, let alone where to set it. Renders
+   * nothing on a single-tenant deployment, where nothing is hidden.
+   */
+  private renderScopeNotice(): ReactNode {
+    const notice = this.platformLocks.hiddenScopeNotice(this.canManagePlatform);
+    if (!notice) return null;
+    const offerSwitch = this.platformLocks.isSiteScope() && this.canManagePlatform;
+    return (
+      <div className="fc-scope-notice">
+        <span className="fc-scope-notice__text">{notice}</span>
+        {offerSwitch ? (
+          <Button
+            onClick={this.openPlatformScope}
+            icon={<FrameworkIcons.Globe size={13} strokeWidth={2} />}
+            className="h-8 px-3 rounded-lg text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
+          >
+            Open Platform Scope
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
+
   render(): ReactNode {
     if (this.isLoading) return <div className="p-12"><Loader label="Loading general settings..." /></div>;
 
@@ -222,6 +299,8 @@ export class GeneralSettingsPage extends AdminComponent {
             ) : null
           }
         />
+
+        {this.renderScopeNotice()}
 
         {this.loadError && (
           <LoadErrorPanel
