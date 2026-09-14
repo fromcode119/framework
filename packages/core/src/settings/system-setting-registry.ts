@@ -93,7 +93,7 @@ export class SystemSettingRegistry {
     },
     [SystemSettingRegistry.KEY.API_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: () => SystemSettingRegistry.urlDefaults().apiUrl, description: "The public base URL of the API. Blank uses the address the console and sites are served from.", group: "General" },
+      seed: { value: () => SystemSettingRegistry.urlDefaults().apiUrl, description: "The public base URL of the API. Blank uses the domain the admin and sites are served from.", group: "General" },
     },
     [SystemSettingRegistry.KEY.MARKETPLACE_URL]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.DOMAIN_ALIASES]: {
@@ -117,7 +117,7 @@ export class SystemSettingRegistry {
     [SystemSettingRegistry.KEY.TELEMETRY_ENABLED]: { scope: SettingScope.SITE, writable: true, exposed: true }, // candidate for PLATFORM (Phase 2)
 
     // TLS certificates are platform infrastructure: one authority, one set of public addresses for the
-    // whole deployment. A site cannot own these — it does not own the addresses its own domain has to
+    // whole deployment. A site cannot own these — it does not own the IP addresses its own domain has to
     // point at.
     [SystemSettingRegistry.KEY.CERTIFICATE_ACME_DIRECTORY]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.CERTIFICATE_ACME_CONTACT_EMAIL]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },

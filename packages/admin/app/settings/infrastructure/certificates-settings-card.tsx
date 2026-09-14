@@ -90,7 +90,7 @@ export class CertificatesSettingsCard extends AdminComponent {
               Its certificates are not trusted by browsers.
             </p>
 
-            <label className={`${label} mt-5`}>Contact address for the authority</label>
+            <label className={`${label} mt-5`}>Contact email for the authority</label>
             <Input value={this.contactEmail} onChange={this.onContact} placeholder="ssl@example.com" />
             <p className={help}>
               Optional. Used for account notices only — expiry warnings come from this platform, not from the authority.

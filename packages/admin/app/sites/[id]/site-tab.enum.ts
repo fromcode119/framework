@@ -9,7 +9,7 @@ import { Enum } from '@fromcode119/react-class-components';
  * everything after it.
  */
 export class SiteTab extends Enum {
-  /** Identity, addressing and the two ways into the site. Short by design. */
+  /** Identity, domains and the two ways into the site. Short by design. */
   static readonly OVERVIEW = new SiteTab('overview', 'Overview');
   /** What this site is ENTITLED to run — plugins, theme, appearance. Not their settings. */
   static readonly ACCESS = new SiteTab('access', 'Access');

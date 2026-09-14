@@ -13,7 +13,7 @@ import { SiteStatStrip } from '@/app/sites/[id]/site-stat-strip.client';
 import { SitesClient } from '@/lib/tenants/sites-client';
 
 /**
- * Identity, addressing and what the site amounts to — short enough to read without scrolling.
+ * Identity, domains and what the site amounts to — short enough to read without scrolling.
  *
  * The member roster, the entitlement toggles and the archives all used to sit below this, so the
  * things you glance at were separated from each other by twenty-five rows of other people's e-mail

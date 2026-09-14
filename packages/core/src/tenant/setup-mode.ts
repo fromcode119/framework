@@ -1,15 +1,15 @@
 /**
  * Is this deployment still waiting to be claimed?
  *
- * A platform that has never been set up has nothing to route by: no tenants, and no console host
+ * A platform that has never been set up has nothing to route by: no tenants, and no admin domain
  * configured. The gateway's rule for a host it does not recognise is a 404, fail-closed and
- * deliberately so — which leaves a fresh install with no address that answers, and no way in.
+ * deliberately so — which leaves a fresh install with no host that answers, and no way in.
  *
  * Setup mode is the ONE exception, and it is deliberately narrow:
  *
  *  - DECIDED AT BOOT, from the database, exactly like {@link TenantMode}. Not re-evaluated per
  *    request, so nothing an attacker can do to a table flips it back on while the process runs.
- *  - It requires EVERY signal of emptiness at once — no users, no tenants, no console host, and no
+ *  - It requires EVERY signal of emptiness at once — no users, no tenants, no admin domain, and no
  *    completion marker. Deleting one table does not reopen it; only a genuinely fresh database does.
  *  - It CLOSES ON A TIMER. An install that nobody claims stops being claimable, so a forgotten box
  *    does not sit open indefinitely — the case that actually costs people their servers.
@@ -17,7 +17,7 @@
  *    mid-install is refused rather than racing for the admin account.
  *  - Once completed it can only be re-entered by restarting with an empty database.
  *
- * What it is NOT: protection against someone who reaches the address before the operator does.
+ * What it is NOT: protection against someone who reaches the platform before the operator does.
  * Nothing decided by the server alone can tell those two apart — both are simply the first request.
  * That window is the accepted trade for an install that needs no secret passed out of band, and the
  * wizard says so on screen rather than leaving it implied.
@@ -34,7 +34,7 @@ export class SetupMode {
   /**
    * Decided once at boot. Every input must say "untouched" for setup to open.
    *
-   * `adminHostConfigured` is the important one: a deployment that knows its own console address has
+   * `adminHostConfigured` is the important one: a deployment that knows its own admin domain has
    * been set up, whatever else is or is not in the database.
    */
   static configure(input: {

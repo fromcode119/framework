@@ -36,7 +36,7 @@ export class SetupPage extends AdminComponent {
   @state confirmPassword = '';
   @state platformName = '';
   /**
-   * The address this console will answer on — prefilled with the one you are standing on.
+   * The domain this admin will answer on — prefilled with the origin you are standing on.
    *
    * Derived from the request, not invented: it is the origin the operator just used. Empty on the
    * server, where there is no origin to read, and filled in once mounted.
@@ -50,7 +50,7 @@ export class SetupPage extends AdminComponent {
     this.mounted = true;
     this.locale = this.browserLocale;
     this.timezone = TimezoneUtils.resolveSystemTimezone();
-    // The address the operator actually reached this page on. Derived, never invented — and shown
+    // The origin the operator actually reached this page on. Derived, never invented — and shown
     // for confirmation on the last step rather than written silently.
     this.adminUrl = window.location.origin;
     try {

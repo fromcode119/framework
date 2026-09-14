@@ -166,8 +166,8 @@ export class PlatformGateway {
   /** Pure routing rule, testable without sockets: map by host first, path rules when there is no map. */
   static resolveTarget(map: TenantRouteMap | null, host: string, pathname: string, targets: Record<string, string>): string | null {
     if (map) {
-      // NOT YET SET UP: no tenants and no console address, so there is no host to recognise and the
-      // fail-closed 404 below would leave a fresh install with no address that answers at all. While
+      // NOT YET SET UP: no tenants and no admin domain, so there is no host to recognise and the
+      // fail-closed 404 below would leave a fresh install with no host that answers at all. While
       // that is true — and `SetupMode` decides it once at boot, from an empty database, on a timer —
       // any host falls through to the SAME path rules a deployment without a routing map uses. It is
       // not a new routing rule, just the existing one applied for as long as nobody has claimed this
@@ -194,7 +194,7 @@ export class PlatformGateway {
    * While nobody has claimed this platform, every host leads to the CONSOLE.
    *
    * Not the generic path rule: that sends `/` to the frontend, and during setup there are no sites —
-   * the operator would open the address they were given and land on nothing at all. The only two
+   * the operator would open the host they were given and land on nothing at all. The only two
    * things that can usefully answer yet are the wizard and the api it posts to.
    */
   private static resolveForSetup(pathname: string, targets: Record<string, string>): string | null {

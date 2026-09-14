@@ -28,7 +28,7 @@ describe('SetupMode', () => {
   it.each([
     ['a user already exists', { userCount: 1 }],
     ['a tenant already exists', { tenantCount: 1 }],
-    ['the console address is already known', { adminHostConfigured: true }],
+    ['the admin domain is already known', { adminHostConfigured: true }],
     ['setup was completed before', { setupCompleted: true }],
   ])('stays SHUT when %s', (_label, input) => {
     configure(input);
@@ -73,7 +73,7 @@ describe('SetupMode', () => {
   });
 
   it('does not reopen when only ONE signal is cleared, which is what a deleted table looks like', () => {
-    // Users deleted, but the console address is still configured: this is an existing install
+    // Users deleted, but the admin domain is still configured: this is an existing install
     // someone emptied a table in, not a fresh one.
     configure({ userCount: 0, adminHostConfigured: true });
     expect(SetupMode.isActive()).toBe(false);

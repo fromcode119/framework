@@ -18,7 +18,7 @@
       "password": "Password",
       "confirmPassword": "Confirm password",
       "noticeTitle": "Full access",
-      "noticeBody": "This account can manage every site, plugin and setting on this installation. Use an address you control."
+      "noticeBody": "This account can manage every site, plugin and setting on this installation. Use an email address you control."
     },
     "platform": {
       "title": "Name your platform",
@@ -39,10 +39,10 @@
     },
     "checking": "Checking this installation…",
     "domain": {
-      "title": "Where the admin lives",
-      "adminUrlLabel": "Admin address",
-      "adminUrlHelp": "Prefilled with the address you are using right now. This is what the platform routes the admin by — change it only if you will reach it at a different address, and make sure that one points here first.",
-      "unclaimedWarning": "This installation has not been claimed yet. Until you finish, anyone who can reach this address can set it up instead of you. It stops accepting setup 15 minutes after starting."
+      "title": "The admin's domain",
+      "adminUrlLabel": "Admin domain",
+      "adminUrlHelp": "Prefilled with whatever you are using right now — a bare IP is fine until DNS is ready. This is what the platform routes the admin by, so change it only if you will reach it somewhere else, and point that domain here first.",
+      "unclaimedWarning": "This installation has not been claimed yet. Until you finish, anyone who can reach it can set it up instead of you. It stops accepting setup 15 minutes after starting."
     }
   }
 }

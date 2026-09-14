@@ -78,7 +78,7 @@ export class SiteDomainsCard extends AdminComponent {
     return (
       <Card title="Domains">
         <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-          The addresses this site answers on. A certificate is what lets each one be served over HTTPS;
+          The domains this site answers on. A certificate is what lets each one be served over HTTPS;
           an uploaded certificate is never renewed automatically, so it has to be replaced before it expires.
         </p>
 

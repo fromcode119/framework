@@ -63,7 +63,7 @@ npm run dev:local
 
 🌐 **Framework-owned edge** — The platform gateway routes every hostname from the site table: storefront hosts → frontend, workspace hosts → admin, `api.` aliases → api, unknown hosts → 404. Creating a site on the Sites page is live within a second — no proxy rules, no generated files. Your reverse proxy only terminates TLS — or the gateway can do that too (below).
 
-🔒 **TLS certificates in the admin** — A certificate is a record in the platform, not a file on a server. Upload one per host (chain + key, validated before anything is stored, key encrypted at rest); the Certificates page lists every address the platform answers for, soonest to expire first, including the ones with no certificate at all. The platform sends its own expiry warnings at 30/14/7/1 days because [Let's Encrypt stopped sending them in June 2025](https://letsencrypt.org/2025/06/26/expiration-notification-service-has-ended), and it never silently replaces a certificate an operator paid for. Set `GATEWAY_TLS_PORT` and the gateway terminates TLS itself, answering each handshake from that store with no default certificate — so an unknown name is refused, never handed somebody else's. Leave it unset and nothing changes. Either way the framework states facts about hosts over three internal endpoints and never renders anybody's proxy config: no vendor is named anywhere in `packages/**`. See [Certificates and TLS](./docs/certificates-and-tls.md).
+🔒 **TLS certificates in the admin** — A certificate is a record in the platform, not a file on a server. Upload one per host (chain + key, validated before anything is stored, key encrypted at rest); the Certificates page lists every domain the platform answers for, soonest to expire first, including the ones with no certificate at all. The platform sends its own expiry warnings at 30/14/7/1 days because [Let's Encrypt stopped sending them in June 2025](https://letsencrypt.org/2025/06/26/expiration-notification-service-has-ended), and it never silently replaces a certificate an operator paid for. Set `GATEWAY_TLS_PORT` and the gateway terminates TLS itself, answering each handshake from that store with no default certificate — so an unknown name is refused, never handed somebody else's. Leave it unset and nothing changes. Either way the framework states facts about hosts over three internal endpoints and never renders anybody's proxy config: no vendor is named anywhere in `packages/**`. See [Certificates and TLS](./docs/certificates-and-tls.md).
 
 🎛️ **Admin appearances** — The admin is skinnable end to end: an installed appearance (`appearance/<slug>`) can replace the whole console for a product, declare which surfaces its users may reach, and declare the workspace preset (plugins) it provisions. The default console stays the platform admin's "configure" mode.
 
@@ -211,7 +211,7 @@ npm run dev:local:api
 | **Frontend** | `http://localhost:3000` |
 
 On a database with no users yet, the admin opens a first-run wizard: language, your administrator
-account, the platform name, and the address the admin will answer on. It accepts setup for 15 minutes
+account, the platform name, and the domain the admin will answer on. It accepts setup for 15 minutes
 after start, and only from whoever gets there first.
 
 > `dev:local` starts a lightweight proxy on port 3000 that routes `/api` to the API (port 4000), `/admin` to the Admin panel (port 3001), and everything else to the Frontend (port 3002).
@@ -365,7 +365,7 @@ Copy `.env.example` to `.env` at the repo root.
 | `ADMIN_PORT` | `3001` | Admin panel port |
 | `FRONTEND_PORT` | `3002` | Frontend server port |
 | `NEXT_PUBLIC_API_URL` | _(empty)_ | Base for asset URLs in server-rendered pages. Empty means relative, i.e. the visitor's own host. The browser always calls the API on the page's own origin regardless of this. |
-| `API_URL` | _(empty)_ | Server-to-server API URL — use the Docker service name in containers, e.g. `http://api:3000`. On the api itself it seeds the public API address on first boot; change it afterwards in Settings → General. |
+| `API_URL` | _(empty)_ | Server-to-server API URL — use the Docker service name in containers, e.g. `http://api:3000`. On the api itself it seeds the public API URL on first boot; change it afterwards in Settings → General. |
 | `CORS_ALLOWED_DOMAINS` | `localhost` | Comma-separated allowed origins |
 | `DEFAULT_LOCALE` | `en` | Default language/locale |
 
