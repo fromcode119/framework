@@ -1,7 +1,7 @@
 {
   "setup": {
     "title": "Set up your platform",
-    "subtitle": "Three short steps. Everything here can be changed later in Settings.",
+    "subtitle": "A few short steps. Everything here can be changed later in Settings.",
     "steps": {
       "language": "Language",
       "account": "Administrator",
