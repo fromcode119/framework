@@ -204,3 +204,5 @@ export { LocalizedField } from '@fromcode119/core/client';
 // rather than when it next breaks a Node import of plugin code.
 export { PublicSettings } from '@fromcode119/core/client';
 export { PluginPeerRegistration } from '@sdk/plugin-peer-registration';
+export { PersonalDataRows } from '@sdk/personal-data-rows';
+export type { IPersonalDataSubjectRef, IPersonalDataRowsResult } from '@sdk/personal-data-rows';
