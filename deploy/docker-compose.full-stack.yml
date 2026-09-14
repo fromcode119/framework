@@ -445,8 +445,14 @@ services:
 networks:
   framework:
   proxy:
-    # Must already exist — this is the proxy's network, not one this stack creates.
-    name: ${EXTERNAL_PROXY_NETWORK:?Set EXTERNAL_PROXY_NETWORK to the external network your reverse proxy is on}
+    # Must already exist — this is the proxy's network, not one this stack creates. Behind an
+    # existing proxy, set EXTERNAL_PROXY_NETWORK to ITS network so it can reach these containers.
+    #
+    # The default is named rather than demanded so a bare install has nothing to put in `.env`: it
+    # still has to be created once (`docker network create fromcode-edge`), which the guide says,
+    # but there is no value for anyone to invent. A wrong guess here is loud — compose refuses to
+    # start on a missing network — which is why a default is safe where guessing a database was not.
+    name: ${EXTERNAL_PROXY_NETWORK:-fromcode-edge}
     external: true
 
 volumes:

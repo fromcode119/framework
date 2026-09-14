@@ -17,6 +17,14 @@ services:
     build: !reset null
     image: ghcr.io/fromcode119/framework-api:${VERSION:-latest}
 
+  # The one-shot that generates the bundled database's superuser password before the database is
+  # initialised. It runs the api image because that is where the `fromcode` CLI lives — listing it
+  # here is not optional: without the reset it would BUILD from source on a deployment whose whole
+  # point is that it never builds anything, and the documented install would fail before `db` starts.
+  db-secrets:
+    build: !reset null
+    image: ghcr.io/fromcode119/framework-api:${VERSION:-latest}
+
   admin:
     build: !reset null
     image: ghcr.io/fromcode119/framework-admin:${VERSION:-latest}

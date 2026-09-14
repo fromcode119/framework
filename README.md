@@ -115,23 +115,18 @@ curl -fsSLO $base/docker-compose.images.yml
 curl -fsSL  $base/.env.example -o .env
 ```
 
-#### 2. Fill in `.env`
+#### 2. There is no step 2
 
-Three lines, and none of them is a credential:
+The `.env` you just downloaded needs no editing. Nothing in it is a credential: the three secrets are
+generated on first boot, the database is chosen in the browser, and the domains are set in the
+wizard. What it holds is the handful of things Docker Compose needs *before* any container exists —
+which is exactly why those cannot be asked for on a web page — and they already have working values.
 
-```bash
-COMPOSE_PROFILES=single-domain          # run the gateway and publish a port
-GATEWAY_PORT=80                         # where it listens
-EXTERNAL_PROXY_NETWORK=fromcode-edge    # a docker network; create it below
-```
-
-Nothing about the database goes here. The first-run wizard asks which one to use and writes the
-connection itself, the way the secrets are already generated on first boot and the domains are
-already set in the browser. Setting `DATABASE_URL` still works and still wins — an existing
-deployment changes nothing — but a new one has nothing to invent.
-
-Without `COMPOSE_PROFILES=single-domain` no port is published at all: the default shape assumes a
-reverse proxy already routes to the containers, so the stack starts and nothing can reach it.
+The one worth knowing about is `COMPOSE_PROFILES=single-domain`, which runs the bundled gateway and
+publishes a port. Without it nothing is reachable: the default shape assumes a reverse proxy already
+routes to the containers, so the stack starts healthy and answers nowhere. If something else already
+holds port 80 on this host, change `GATEWAY_PORT`. Behind an existing proxy, point
+`EXTERNAL_PROXY_NETWORK` at its network instead of creating one below.
 
 #### 3. Start it
 
