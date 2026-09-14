@@ -67,7 +67,7 @@
         },
         "mysql": {
           "name": "MySQL",
-          "note": "Shipped but not finished: no backups and no test coverage yet, so it cannot be chosen here. It will also be single-site until it can separate sites' data."
+          "note": "Not available yet. The database setup steps have no MySQL path, so an installation on it would stop at the first one, and there is no backup support yet either. Unlike SQLite it could serve many sites once that work is done."
         }
       }
     },

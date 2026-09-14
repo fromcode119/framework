@@ -33,11 +33,17 @@ export class DatabaseDriverChoice extends Enum {
   static readonly SQLITE = new DatabaseDriverChoice('sqlite', { isolatesTenants: false, isAvailable: true });
 
   /**
-   * Real roles, no isolation, no backup handler and no tests — so it cannot be picked.
+   * Not installable, and the reason is bigger than it looks.
    *
-   * Its limit is unfinished work rather than anything structural, which is what separates it from
-   * SQLite: MySQL could gain an isolation strategy and host many sites, while SQLite has nowhere to
-   * put a second site's rows however much work it gets.
+   * The dialect itself is real — it has a schema builder, read operations and a working
+   * `provisionRoles`. What it does not have is a way through the migrations: `001_core_initial_schema`
+   * branches to `postgres` and `sqlite` only, and `DialectHelper` REJECTS a dialect it has no branch
+   * for, so a MySQL deployment fails on the very first migration. 25 of the 36 dialect-branching
+   * migrations name no MySQL path at all. It also has no backup handler and no tests.
+   *
+   * Still listed rather than hidden, because its limit is unfinished work rather than architecture,
+   * which is what separates it from SQLite: MySQL could gain an isolation strategy and host many
+   * sites, while SQLite has nowhere to put a second site's rows however much work it gets.
    */
   static readonly MYSQL = new DatabaseDriverChoice('mysql', { isolatesTenants: false, isAvailable: false });
 
