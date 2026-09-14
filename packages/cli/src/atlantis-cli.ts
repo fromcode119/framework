@@ -10,15 +10,19 @@ import { ExtensionBuildCommandService } from '@cli/commands/extension-build-comm
 import { DeployCommandService } from '@cli/commands/deploy-command-service';
 
 /**
- * The `fromcode` CLI.
+ * The `atlantis` CLI.
+ *
+ * `fromcode` is kept as a second name for the same binary. The framework is Atlantis and the company
+ * is Fromcode, so the command follows the framework — but a rename that silently broke every script,
+ * deploy target and shell history would cost more than the clarity is worth.
  *
  * `bin.ts` is the process entry and does nothing but call `main` — the program is built here so the
  * construction is a method rather than module-level statements, and so it can be exercised without
  * spawning a process.
  */
-export class FromcodeCli {
+export class AtlantisCli {
   static main(argv: string[]): void {
-    const program = FromcodeCli.build();
+    const program = AtlantisCli.build();
 
     // No arguments is a request for help, not an error — commander would otherwise exit silently.
     if (!argv.slice(2).length) {
@@ -33,8 +37,8 @@ export class FromcodeCli {
     const program = new Command();
 
     program
-      .name('fromcode')
-      .description('Fromcode CLI - Manage your Fromcode platform instance')
+      .name('atlantis')
+      .description('Atlantis CLI - manage this Fromcode Atlantis installation')
       .version('1.0.0');
 
     // Called directly rather than through a table of detached method references: a detached static
@@ -48,7 +52,7 @@ export class FromcodeCli {
     AuthCommands.registerAuthCommands(program);
     DeployCommandService.register(program);
 
-    program.on('command:*', () => FromcodeCli.rejectUnknown(program));
+    program.on('command:*', () => AtlantisCli.rejectUnknown(program));
     return program;
   }
 

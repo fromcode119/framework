@@ -91,7 +91,7 @@ export class AuthRecoveryCommandService {
       const user = await db.findOne(AuthRecoveryCommandService.USERS_TABLE, { email });
       if (!user) {
         console.error(chalk.red(`No user found with email: ${email}`));
-        console.error(chalk.gray('Use "fromcode auth list" to see existing users, or "auth create-admin".'));
+        console.error(chalk.gray('Use "atlantis auth list" to see existing users, or "auth create-admin".'));
         process.exit(1);
       }
       const hash = await bcrypt.hash(password, AuthRecoveryCommandService.BCRYPT_ROUNDS);

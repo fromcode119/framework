@@ -165,7 +165,7 @@
                                ▼
 ┌────────────────────────────────────────────────────────────────────┐
 │                  BUILD PLUGIN FRONTEND                              │
-│  $ fromcode plugin build seo --frontend                             │
+│  $ atlantis plugin build seo --frontend                             │
 │                                                                     │
 │  Output:                                                            │
 │  └── plugins/seo/dist/frontend/                                     │

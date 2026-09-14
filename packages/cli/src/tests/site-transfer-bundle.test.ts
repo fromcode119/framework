@@ -41,7 +41,7 @@ test('site-transfer CLI command forwards parsed options to the command service',
   SystemCommands.registerSystemCommands(program);
   await program.parseAsync([
     'node',
-    'fromcode',
+    'atlantis',
     'system',
     'site-transfer-bundle',
     '--output',

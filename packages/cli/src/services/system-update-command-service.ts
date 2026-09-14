@@ -39,7 +39,7 @@ export class SystemUpdateCommandService {
       console.log(`${chalk.bold('Installed:')} ${status.current}`);
       console.log(`${chalk.bold('Latest:')}    ${status.latest}`);
       if (status.hasUpdate) {
-        console.log(chalk.green('\nAn update is available. Run "fromcode system update" to apply it.'));
+        console.log(chalk.green('\nAn update is available. Run "atlantis system update" to apply it.'));
       } else {
         console.log(chalk.green('\nYou are on the latest framework core.'));
       }

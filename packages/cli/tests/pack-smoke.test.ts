@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 /**
- * `fromcode pack` must actually run.
+ * `atlantis pack` must actually run.
  *
  * It is also the only end-to-end exercise of the PACK half of the pipeline — `PackCleaner`, the
  * theme SSR dependency collector and the stamp over the cleaned directory. The server build path
@@ -19,7 +19,7 @@ import path from 'node:path';
  * is slower than a unit test and that is the point: the failure it guards against is "the program
  * does not start".
  */
-describe('fromcode pack produces an archive', () => {
+describe('atlantis pack produces an archive', () => {
   const frameworkRoot = path.resolve(__dirname, '../../..');
   const monorepoRoot = path.resolve(frameworkRoot, '../..');
   const bin = path.join(frameworkRoot, 'packages/cli/dist/bin.js');

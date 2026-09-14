@@ -21,7 +21,7 @@ export class BackupOperatorNotesCard extends AdminComponent {
         <div className="space-y-4 lg:col-span-2">
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/80'}`}>
             <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">CLI Bundle Command</div>
-            <pre className={`mt-3 overflow-x-auto ${AdminClass.SURFACE} px-4 py-3 text-xs ${theme === ThemeMode.DARK ? 'bg-slate-950 text-slate-200' : 'bg-white text-slate-700'}`}>npm run fromcode -- system site-transfer-bundle --label demo-transfer</pre>
+            <pre className={`mt-3 overflow-x-auto ${AdminClass.SURFACE} px-4 py-3 text-xs ${theme === ThemeMode.DARK ? 'bg-slate-950 text-slate-200' : 'bg-white text-slate-700'}`}>npm run atlantis -- system site-transfer-bundle --label demo-transfer</pre>
           </div>
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/80'}`}>
             <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Wrapper Script</div>

@@ -21,11 +21,11 @@ docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up 
 Updating is the same two commands with a new `VERSION`. Rolling back is the same two commands with
 the previous one — no rebuild, so it takes seconds either way.
 
-**Prefer `fromcode deploy` over running those by hand.** From a checkout of this repository:
+**Prefer `atlantis deploy` over running those by hand.** From a checkout of this repository:
 
 ```bash
-fromcode deploy v2.0.0                 # target defaults to "staging"
-fromcode deploy v2.0.0 --target prod
+atlantis deploy v2.0.0                 # target defaults to "staging"
+atlantis deploy v2.0.0 --target prod
 ```
 
 It does the two commands above and the three things doing them by hand does not: it pulls BEFORE
@@ -35,7 +35,7 @@ answering 200 — and rolls back automatically when it does not; and on success 
 published images except the live one and the rollback target. Nine releases in one day took a
 staging disk from 16G to 25G before it existed.
 
-The host can be given directly — `fromcode deploy v2.0.0 --host deploy@example.com --dir /srv/fromcode/deploy`
+The host can be given directly — `atlantis deploy v2.0.0 --host deploy@example.com --dir /srv/fromcode/deploy`
 — or named once in `deploy/targets.json`. **That file is deliberately not committed**, and neither is
 any host: an ssh address and a path on somebody's server are local configuration, and a framework
 other people deploy has no business shipping one operator's infrastructure. Copy

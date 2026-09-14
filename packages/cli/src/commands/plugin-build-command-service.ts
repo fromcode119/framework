@@ -143,7 +143,7 @@ export class PluginBuildCommandService {
       .description('Start plugin in development mode (watch assets)')
       .action(async (slug) => {
         console.log(chalk.blue(`\nStarting development mode for plugin: ${chalk.bold(slug)}...`));
-        const build = spawn('fromcode', ['plugin', 'build', slug, '--watch'], { stdio: 'inherit', shell: true });
+        const build = spawn('atlantis', ['plugin', 'build', slug, '--watch'], { stdio: 'inherit', shell: true });
         build.on('exit', (code) => process.exit(code || 0));
       });
   }

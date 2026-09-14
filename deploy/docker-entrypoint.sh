@@ -48,11 +48,11 @@ case "${DEPLOYMENT_MODE:-}" in
     # with roles to create.
     if [ -n "${DATABASE_BOOTSTRAP_URL:-}" ] && { [ -n "${DATABASE_URL:-}" ] || [ -r /app/data/database.json ]; }; then
       runuser -u "$APP_USER" -- env HOME=/home/node DATABASE_BOOTSTRAP_URL="$DATABASE_BOOTSTRAP_URL" \
-        npm run fromcode -- db bootstrap-roles
+        npm run atlantis -- db bootstrap-roles
     fi
     # Plugin dependencies are installed as the app user, so the api (running as `node`) can update and
     # remove them later; root-owned node_modules in a mounted plugin dir would be undeletable by it.
-    runuser -u "$APP_USER" -- env HOME=/home/node npm run fromcode -- plugin deps-install-all
+    runuser -u "$APP_USER" -- env HOME=/home/node npm run atlantis -- plugin deps-install-all
     ;;
   admin)
     own_if_needed /app/appearance

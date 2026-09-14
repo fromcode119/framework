@@ -6,7 +6,7 @@ import * as path from 'path';
 import { CliUtils } from '@cli/utils';
 
 /**
- * `fromcode build|pack|checksum <kind> <slug>` — the replacement for `./build-plugins.sh`.
+ * `atlantis build|pack|checksum <kind> <slug>` — the replacement for `./build-plugins.sh`.
  *
  * Thin by design: argument parsing, resolving where the extension lives, and an exit code. Every
  * decision about HOW to build belongs to ExtensionBuildPipeline, so the CLI, the api and the admin

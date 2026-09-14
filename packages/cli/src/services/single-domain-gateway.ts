@@ -5,7 +5,7 @@ import { RequestSurfaceUtils } from '@fromcode119/core';
 /**
  * Serves API, admin and frontend behind ONE public domain, routing by request surface.
  *
- * This is the container's entrypoint process (`fromcode system gateway`) — it lives in the CLI, beside the
+ * This is the container's entrypoint process (`atlantis system gateway`) — it lives in the CLI, beside the
  * framework's other operations, rather than as a loose script the repo alone could run.
  */
 export class SingleDomainGateway {

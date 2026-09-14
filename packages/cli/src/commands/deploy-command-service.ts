@@ -4,7 +4,7 @@ import { DeployService } from '@cli/services/deploy/deploy-service';
 import { DeploymentTarget } from '@cli/services/deploy/deployment-target';
 
 /**
- * `fromcode deploy <version>` — the whole deployment, from the repository rather than from a script
+ * `atlantis deploy <version>` — the whole deployment, from the repository rather than from a script
  * that lives on the server and drifts from it.
  */
 export class DeployCommandService {

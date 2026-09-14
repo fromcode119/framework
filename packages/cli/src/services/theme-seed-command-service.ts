@@ -3,7 +3,7 @@ import path from 'path';
 import { spawnSync } from 'child_process';
 
 /**
- * Seeds a theme into the running site — the framework capability behind `fromcode theme seed`.
+ * Seeds a theme into the running site — the framework capability behind `atlantis theme seed`.
  *
  * Lives in the CLI beside the other theme commands (and site-transfer/backup) rather than as a loose
  * script: the framework owns its own operations, and a script that only the repo can run is not a feature.
@@ -154,7 +154,7 @@ export class ThemeSeedCommandService {
       env.DATABASE_URL = databaseUrl;
     }
 
-    const result = spawnSync('npm', ['run', 'fromcode', '--', 'db', 'seed', '--file', seedFile], {
+    const result = spawnSync('npm', ['run', 'atlantis', '--', 'db', 'seed', '--file', seedFile], {
       cwd: frameworkRoot,
       stdio: 'inherit',
       env,

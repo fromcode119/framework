@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "fromcode dev",
-    "build": "fromcode build",
+    "build": "atlantis build",
     "start": "fromcode start",
-    "plugin:create": "fromcode plugin create"
+    "plugin:create": "atlantis plugin create"
   },
   "dependencies": {
     "@fromcode119/core": "latest",

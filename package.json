@@ -44,6 +44,7 @@
     "dev": "npm run dev --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "test:framework": "npm run build:frontend-icons && vitest run --config vitest.plugins.config.ts",
+    "atlantis": "tsx packages/cli/src/bin.ts",
     "fromcode": "tsx packages/cli/src/bin.ts",
     "bundle:site-transfer": "npm run fromcode -- system site-transfer-bundle",
     "seed:theme": "npm run fromcode -- theme seed",

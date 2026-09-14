@@ -43,7 +43,7 @@ Local `.env` files are for your machine only. Keep `.env` untracked, use `.env.e
 Drop a plugin directory into `plugins/` or install from the marketplace:
 
 ```bash
-npx fromcode plugin install <slug>
+npx atlantis plugin install <slug>
 ```
 
 ## Adding themes
@@ -51,7 +51,7 @@ npx fromcode plugin install <slug>
 Drop a theme directory into `themes/` or install from the marketplace:
 
 ```bash
-npx fromcode theme install <slug>
+npx atlantis theme install <slug>
 ```
 
 ### One-Package Theme (Theme + Plugins)
@@ -61,8 +61,8 @@ You can ship required plugins inside the same theme ZIP.
 1. Build and pack each required plugin:
 
 ```bash
-npx fromcode plugin pack cms
-npx fromcode plugin pack forms
+npx atlantis plugin pack cms
+npx atlantis plugin pack forms
 ```
 
 2. Place plugin ZIPs inside the theme folder (recommended: `plugins/`):
@@ -96,7 +96,7 @@ themes/my-theme/
 4. Pack theme:
 
 ```bash
-npx fromcode theme pack my-theme
+npx atlantis theme pack my-theme
 ```
 
 When this theme is activated/reset, bundled plugin ZIPs are installed first, then any remaining dependencies are installed from marketplace.

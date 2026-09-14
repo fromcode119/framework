@@ -67,7 +67,7 @@ export class PluginStateCommandService {
       const row = await db.findOne(PluginStateCommandService.TABLE, { slug: normalizedSlug });
       if (!row) {
         console.error(chalk.red(`No installed plugin with slug: ${normalizedSlug}`));
-        console.error(chalk.gray('Use "fromcode plugin state" to list installed plugins.'));
+        console.error(chalk.gray('Use "atlantis plugin state" to list installed plugins.'));
         process.exit(1);
       }
       await db.update(

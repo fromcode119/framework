@@ -48,6 +48,6 @@ Fromcode is a **plugin-first** framework. This means the core kernel is kept min
 - **SDK**: Tools for local development, testing, and building assets.
 
 ## 🛠️ Developer Resources
-- **Command Line Interface**: `fromcode dev`, `fromcode plugin create`.
+- **Command Line Interface**: `fromcode dev`, `atlantis plugin create`.
 - **Hooks & Events**: Extend system behavior without modifying core files.
 - **Component Overrides**: Replace any part of the UI from your theme or plugin.

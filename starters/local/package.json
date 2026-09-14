@@ -15,11 +15,11 @@
     "start": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 node proxy.js\" \"FROMCODE_PROJECT_ROOT=../../starters/local PORT=4000 npm run start --prefix ../../packages/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run start --prefix ../../packages/admin\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 npm run start --prefix ../../packages/frontend\"",
     "start:api": "FROMCODE_PROJECT_ROOT=../../starters/local PORT=4000 npm run start --prefix ../../packages/api",
 
-    "plugin:build": "fromcode plugin build",
-    "plugin:dev": "fromcode plugin dev",
-    "theme:build": "fromcode theme build",
-    "db:migrate": "fromcode db:migrate",
-    "db:reset": "fromcode db:reset"
+    "plugin:build": "atlantis plugin build",
+    "plugin:dev": "atlantis plugin dev",
+    "theme:build": "atlantis theme build",
+    "db:migrate": "atlantis db:migrate",
+    "db:reset": "atlantis db:reset"
   },
   "dependencies": {
     "@fromcode119/core": "latest",

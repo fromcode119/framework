@@ -249,7 +249,7 @@ export class UpdatesPage extends AdminComponent {
                       <p className="text-[11px] font-medium leading-relaxed text-slate-600 dark:text-slate-300">
                         This installation runs from a published image, so it cannot update its own
                         files — deploy <span className="font-mono font-semibold">v{latestVersion}</span> instead:
-                        <span className="mt-1 block font-mono text-[11px] text-slate-500">fromcode deploy v{latestVersion}</span>
+                        <span className="mt-1 block font-mono text-[11px] text-slate-500">atlantis deploy v{latestVersion}</span>
                       </p>
                     )}
                   </div>

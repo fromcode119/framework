@@ -524,7 +524,7 @@ The kernel manages all shared infrastructure so plugins share resources without 
 | **Memberships & platform admin** | Users are members of sites with per-site roles; an admin of one site never sees another. The platform admin (`users.is_platform_admin`) runs every site from one admin with a site switcher, and is the only one who may install or platform-enable plugins, change platform keys or mint all-sites tokens. |
 | **Per-site plugins, themes, settings** | Each site enables its own subset of the installed plugins (shared processes, never shared data), activates its own theme, and keeps its own plugin and system settings. New sites get their theme's initial pages seeded and their plugins' default pages materialized. |
 | **Provisioning** | Sites page: create (kind, hosts, plugins, theme, or appearance + a preset the appearance declares), members, export to a portable archive, import with a preview, adopt an existing single-site deployment. A single-site install is migrated with the read-only `tenant-export` CLI. |
-| **Platform gateway** | `fromcode system gateway`: routes every host from the site table, refreshed on a TTL and pushed on every change; `/healthz` reports the map age. Storefront hosts → frontend, workspace hosts → admin, `api.` aliases → api. |
+| **Platform gateway** | `atlantis system gateway`: routes every host from the site table, refreshed on a TTL and pushed on every change; `/healthz` reports the map age. Storefront hosts → frontend, workspace hosts → admin, `api.` aliases → api. |
 
 </details>
 
@@ -535,7 +535,7 @@ The kernel manages all shared infrastructure so plugins share resources without 
 
 | Capability | Description |
 |------------|-------------|
-| **Installed appearances** | `appearance/<slug>/appearance.json` + a runtime bundle. Built with `fromcode build appearance <slug>`, loaded at runtime, switchable per site in Settings → Appearance (or locked by a workspace's kind). |
+| **Installed appearances** | `appearance/<slug>/appearance.json` + a runtime bundle. Built with `atlantis build appearance <slug>`, loaded at runtime, switchable per site in Settings → Appearance (or locked by a workspace's kind). |
 | **Surface allowlist** | An appearance declares which plugins and admin paths its users may reach; everything else shows a containment screen — a product console, not a re-skinned admin. |
 | **Workspace presets** | An appearance that is a product's console declares the plugins that product runs (`workspace` block). The "New site" form offers one preset per such appearance; the framework itself names no product. |
 

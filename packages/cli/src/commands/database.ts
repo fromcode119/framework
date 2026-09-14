@@ -8,7 +8,7 @@ import { CliUtils } from '@cli/utils';
 
 export class DatabaseCommands {
   /**
-   * `fromcode db bootstrap-roles` — creates the logins the app runs as, from a privileged connection.
+   * `atlantis db bootstrap-roles` — creates the logins the app runs as, from a privileged connection.
    *
    * Runs from the container entrypoint BEFORE the application starts, so the privileged URL lives only
    * for this command; the entrypoint unsets it before exec'ing the app. Absent that variable this is a
@@ -45,7 +45,7 @@ export class DatabaseCommands {
   }
 
   /**
-   * `fromcode db init-bundled-superuser` — invent the bundled database's superuser password, once.
+   * `atlantis db init-bundled-superuser` — invent the bundled database's superuser password, once.
    *
    * A deployment that ships its own PostgreSQL still has to tell the image a password before it will
    * initialise, and that was the last credential an operator had to invent by hand. Compose cannot

@@ -65,7 +65,7 @@ export class PluginUpdateCommandService {
       for (const p of outdated) {
         console.log(`${chalk.bold(p.slug)}  ${chalk.gray(p.current)} ${chalk.gray('→')} ${chalk.green(p.latest)}`);
       }
-      console.log(chalk.gray('\nRun "fromcode plugin update <slug>" to apply.'));
+      console.log(chalk.gray('\nRun "atlantis plugin update <slug>" to apply.'));
       process.exit(0);
     } catch (error: any) {
       console.error(chalk.red('Failed to check for plugin updates:'), error.message);
@@ -79,7 +79,7 @@ export class PluginUpdateCommandService {
     try {
       const existing = await db.findOne(PluginUpdateCommandService.TABLE, { slug: normalizedSlug });
       if (!existing) {
-        console.error(chalk.red(`Plugin "${normalizedSlug}" is not installed. Use "fromcode plugin install ${normalizedSlug}".`));
+        console.error(chalk.red(`Plugin "${normalizedSlug}" is not installed. Use "atlantis plugin install ${normalizedSlug}".`));
         process.exit(1);
       }
 
