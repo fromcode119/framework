@@ -2,6 +2,7 @@
 // re-export the `Reactor` class component, which React refuses in a server graph — one barrel import
 // 500s every admin request. `admin-proxy.ts` carries the same warning; this module is bound by it.
 import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
+import { RobotsConstants } from '@fromcode119/core/constants/robots.constants';
 
 /**
  * Whether crawlers may index this console.
@@ -84,6 +85,6 @@ export class AdminIndexingPolicy {
     return allowed;
   }
 
-  /** What the `X-Robots-Tag` header says when indexing is refused. */
-  static readonly REFUSE = 'noindex, nofollow, noarchive';
+  /** What the `X-Robots-Tag` header says when indexing is refused. Spelled once, in core — the api emits the same. */
+  static readonly REFUSE = RobotsConstants.REFUSE;
 }

@@ -19,11 +19,13 @@ import { TenantRequestBinder } from '@api/server/tenant-request-binder';
 import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
 import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
+import { PlatformRobotsHeaderMiddleware } from '@api/middlewares/platform-robots-header-middleware';
 
 export class ServerMiddlewareSetup {
   private readonly requestCookies = new RequestCookieService();
   private readonly requestLocale = new RequestLocaleService();
   private readonly jsonCompression = new JsonCompressionMiddleware();
+  private readonly platformRobots = new PlatformRobotsHeaderMiddleware();
   /** Host -> tenant. Built lazily from the manager's runtime connection. */
   private tenants: TenantResolverService | null = null;
   /** Api-key surface: token -> tenant. Built lazily alongside `tenants`. */
@@ -58,6 +60,10 @@ export class ServerMiddlewareSetup {
       req.locale = locale;
       this.runWithTenant(req, res, locale, next);
     });
+
+    // Straight after tenant resolution, so "is a tenant bound?" is answerable, and before anything can
+    // send a body — a header set after the response has begun is silently dropped.
+    this.app.use(this.platformRobots.middleware());
 
     this.app.use(this.auth.middleware());
 

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { PlatformRobotsRouter } from '@api/routes/platform-robots-router';
-import { PlatformSettingsService } from '@fromcode119/core';
+import { PlatformSettingsService, RequestContextUtils } from '@fromcode119/core';
 
 /**
  * The exemption skips tenancy entirely, so anything it matches runs with NO tenant bound. The
@@ -59,5 +59,83 @@ describe('PlatformRobotsRouter', () => {
     const { headers } = await render(false);
     expect(headers['Cache-Control']).toBe('no-store, must-revalidate');
     expect(headers['X-Content-Type-Options']).toBe('nosniff');
+  });
+});
+
+/**
+ * `robots.txt` only reaches a crawler that ASKS first. A URL linked from elsewhere is fetched without
+ * it, and `Disallow` then makes matters worse — the crawler cannot read the page, so it indexes the
+ * bare address. The header is the half that covers that, and the api emitted none.
+ *
+ * It must stay off a SITE's responses: a tenant's indexability is its own (`_system_tenants.visibility`),
+ * and stamping the platform's refusal on tenant traffic would let one switch de-index every customer.
+ */
+describe('PlatformRobotsHeaderMiddleware', () => {
+  const run = async (opts: { flag: boolean; tenantId: string | null }): Promise<Record<string, string>> => {
+    vi.spyOn(PlatformSettingsService, 'readFlag').mockResolvedValue(opts.flag);
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue(opts.tenantId as any);
+
+    const { PlatformRobotsHeaderMiddleware } = await import('@api/middlewares/platform-robots-header-middleware');
+    const subject = new PlatformRobotsHeaderMiddleware();
+    const pass = async (): Promise<Record<string, string>> => {
+      // A FRESH response each time. Express gives every request its own; sharing one here let the
+      // cold-start refusal linger and made the "indexing on" case look broken.
+      const headers: Record<string, string> = {};
+      const res: any = { setHeader: (name: string, value: string) => { headers[name] = value; } };
+      await new Promise<void>((resolve) => subject.middleware()({} as any, res, resolve as any));
+      return headers;
+    };
+
+    // The first request primes the cache and refuses, fail-closed; the second reads the settled answer.
+    await pass();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return pass();
+  };
+
+  it('refuses on the very first request, before any answer has arrived', async () => {
+    vi.spyOn(PlatformSettingsService, 'readFlag').mockResolvedValue(true);
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue(null as any);
+    const { PlatformRobotsHeaderMiddleware } = await import('@api/middlewares/platform-robots-header-middleware');
+    const headers: Record<string, string> = {};
+    const res: any = { setHeader: (name: string, value: string) => { headers[name] = value; } };
+    await new Promise<void>((resolve) => new PlatformRobotsHeaderMiddleware().middleware()({} as any, res, resolve as any));
+    expect(headers['X-Robots-Tag']).toBe('noindex, nofollow, noarchive');
+  });
+
+  it('refuses indexing on a platform host when the setting is off', async () => {
+    expect(await run({ flag: false, tenantId: null })).toMatchObject({ 'X-Robots-Tag': 'noindex, nofollow, noarchive' });
+  });
+
+  it('says nothing on a platform host once the operator turns indexing on', async () => {
+    expect((await run({ flag: true, tenantId: null }))['X-Robots-Tag']).toBeUndefined();
+  });
+
+  it('never stamps a SITE response — a tenant owns its own indexability', async () => {
+    expect((await run({ flag: false, tenantId: 'acme' }))['X-Robots-Tag']).toBeUndefined();
+  });
+
+  it('refuses again once the cache goes stale, instead of repeating its last answer', async () => {
+    vi.spyOn(PlatformSettingsService, 'readFlag').mockResolvedValue(true);
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue(null as any);
+    const { PlatformRobotsHeaderMiddleware } = await import('@api/middlewares/platform-robots-header-middleware');
+    const subject = new PlatformRobotsHeaderMiddleware();
+    const pass = async (): Promise<string | undefined> => {
+      const headers: Record<string, string> = {};
+      const res: any = { setHeader: (n: string, v: string) => { headers[n] = v; } };
+      await new Promise<void>((resolve) => subject.middleware()({} as any, res, resolve as any));
+      return headers['X-Robots-Tag'];
+    };
+
+    await pass();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(await pass()).toBeUndefined();
+
+    // Turning indexing OFF must not wait out the TTL: a cache older than the TTL refuses, so the
+    // window in which responses still carried no header — the one direction that cannot be taken
+    // back — does not exist.
+    const stale = Date.now() + 61_000;
+    vi.spyOn(Date, 'now').mockReturnValue(stale);
+    expect(await pass()).toBe('noindex, nofollow, noarchive');
+    vi.mocked(Date.now).mockRestore();
   });
 });
