@@ -23,7 +23,7 @@
     "platform": {
       "title": "Name your platform",
       "name": "Platform name",
-      "nameHelp": "Shown across the admin. Leave it empty to keep the console's own name.",
+      "nameHelp": "Shown across the admin. Leave it empty to keep the default name.",
       "timezone": "Timezone",
       "timezoneHelp": "Used whenever the admin shows a date. Pre-filled from this browser — change it if the platform runs elsewhere."
     },
