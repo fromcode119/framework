@@ -17,7 +17,6 @@ describe('BootstrapSecretsService', () => {
 
   beforeEach(() => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-secrets-'));
-    vi.stubEnv('FROMCODE_DATA_DIR', dir);
     for (const key of ['JWT_SECRET', 'INTEGRATION_SECRET_KEY', 'INTERNAL_SERVICE_SECRET', 'SECRET_KEY']) {
       vi.stubEnv(key, '');
     }
@@ -29,7 +28,7 @@ describe('BootstrapSecretsService', () => {
   });
 
   it('generates what nobody supplied, and makes it usable immediately', () => {
-    const result = BootstrapSecretsService.ensure();
+    const result = BootstrapSecretsService.ensure(dir);
 
     expect(result.generated.sort()).toEqual(['INTEGRATION_SECRET_KEY', 'INTERNAL_SERVICE_SECRET', 'JWT_SECRET']);
     for (const key of result.generated) {
@@ -39,13 +38,13 @@ describe('BootstrapSecretsService', () => {
   });
 
   it('REUSES them on the next boot rather than generating again', () => {
-    const first = BootstrapSecretsService.ensure();
+    const first = BootstrapSecretsService.ensure(dir);
     const jwt = process.env.JWT_SECRET;
     const integration = process.env.INTEGRATION_SECRET_KEY;
 
     // A restart: the process starts again with nothing in its environment.
     for (const key of first.generated) vi.stubEnv(key, '');
-    const second = BootstrapSecretsService.ensure();
+    const second = BootstrapSecretsService.ensure(dir);
 
     expect(second.generated).toEqual([]);
     expect(process.env.JWT_SECRET).toBe(jwt);
@@ -55,7 +54,7 @@ describe('BootstrapSecretsService', () => {
   it('never overrides what the deployment supplied', () => {
     vi.stubEnv('JWT_SECRET', 'supplied-by-the-operator-and-long-enough-to-pass');
 
-    const result = BootstrapSecretsService.ensure();
+    const result = BootstrapSecretsService.ensure(dir);
 
     expect(result.generated).not.toContain('JWT_SECRET');
     expect(process.env.JWT_SECRET).toBe('supplied-by-the-operator-and-long-enough-to-pass');
@@ -64,24 +63,24 @@ describe('BootstrapSecretsService', () => {
   it('treats the older SECRET_KEY name as supplying the integration key', () => {
     vi.stubEnv('SECRET_KEY', 'legacy-name-still-in-use-by-older-deployments');
 
-    const result = BootstrapSecretsService.ensure();
+    const result = BootstrapSecretsService.ensure(dir);
 
     expect(result.generated).not.toContain('INTEGRATION_SECRET_KEY');
   });
 
   it('writes the file readable only by its owner', () => {
-    const { file } = BootstrapSecretsService.ensure();
+    const { file } = BootstrapSecretsService.ensure(dir);
 
     expect(fs.existsSync(file)).toBe(true);
     expect(fs.statSync(file).mode & 0o777).toBe(0o600);
   });
 
   it('regenerates rather than throwing when the file is corrupt, and repairs it', () => {
-    const { file } = BootstrapSecretsService.ensure();
+    const { file } = BootstrapSecretsService.ensure(dir);
     fs.writeFileSync(file, '{ not json');
     for (const key of ['JWT_SECRET', 'INTEGRATION_SECRET_KEY', 'INTERNAL_SERVICE_SECRET']) vi.stubEnv(key, '');
 
-    const result = BootstrapSecretsService.ensure();
+    const result = BootstrapSecretsService.ensure(dir);
 
     expect(result.generated.length).toBe(3);
     expect(JSON.parse(fs.readFileSync(file, 'utf8')).JWT_SECRET).toBe(process.env.JWT_SECRET);

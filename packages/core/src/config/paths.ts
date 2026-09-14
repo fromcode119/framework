@@ -238,17 +238,19 @@ export class ProjectPaths {
   }
 
   /**
-   * The deployment's own writable directory — `<root>/data`, or `FROMCODE_DATA_DIR`.
+   * The deployment's own writable directory — `<root>/data`.
    *
    * Already mounted in every topology because the build agent clones into it and backups stage there;
    * its compose comment says outright that its contents are the deployment's and must survive an
    * image upgrade. That is exactly the property generated secrets need, which is why they live here
    * rather than in a directory of their own that an operator would have to know to mount.
+   *
+   * Deliberately NOT overridable by an environment variable. The whole point of the work this serves
+   * is to stop requiring env to run the platform, and a knob that exists only so a test can redirect
+   * a write is a control nobody asked for — callers that need another directory are given one.
    */
   static getDataDir(): string {
-      const root = ProjectPaths.getProjectRoot();
-      const configured = String(process.env.FROMCODE_DATA_DIR || '').trim();
-      return ProjectPaths.resolveFromRoot(root, configured || 'data');
+      return ProjectPaths.resolveFromRoot(ProjectPaths.getProjectRoot(), 'data');
   }
 
   static getRepositoryArtifactsDir(subDir?: string): string {

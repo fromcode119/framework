@@ -38,9 +38,12 @@ export class BootstrapSecretsService {
    *
    * Call this BEFORE anything reads a secret — before the production assertions, before the auth
    * manager, before the settings store is opened.
+   *
+   * `directory` defaults to the deployment's data directory and exists so a caller — a test — can
+   * point it somewhere else without an environment variable being invented for the purpose.
    */
-  static ensure(): { generated: string[]; file: string } {
-    const file = path.join(ProjectPaths.getDataDir(), BootstrapSecretsService.FILE_NAME);
+  static ensure(directory: string = ProjectPaths.getDataDir()): { generated: string[]; file: string } {
+    const file = path.join(directory, BootstrapSecretsService.FILE_NAME);
     const stored = BootstrapSecretsService.read(file);
     const generated: string[] = [];
 
