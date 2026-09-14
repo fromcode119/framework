@@ -47,13 +47,7 @@ export class TenantMembershipsMigration extends BaseMigration {
         // which cannot be forged, plus a membership re-check on every request. Session LISTING in
         // the admin filters by this column in the query layer.
         //
-        // Existing sessions are deleted: they carry no tenant claim, so they would be refused on the
-        // next request anyway. Introducing tenancy logs everyone out, deliberately.
-        await db.execute(sql.raw('DELETE FROM "_system_sessions"'));
-        await db.execute(sql.raw('ALTER TABLE "_system_sessions" ADD COLUMN IF NOT EXISTS "tenant_id" TEXT'));
-        await db.execute(sql.raw(
-          'CREATE INDEX IF NOT EXISTS "_system_sessions_tenant_idx" ON "_system_sessions" ("tenant_id")',
-        ));
+        await TenantMembershipsMigration.addSessionTenantColumn(db);
 
         // A tenant's people are its own. These tables hold the real PII — until now they were
         // unscoped, so one tenant's contacts were readable by every other tenant.
@@ -68,7 +62,12 @@ export class TenantMembershipsMigration extends BaseMigration {
           db, { id: 'INTEGER PRIMARY KEY AUTOINCREMENT', json: 'TEXT', jsonDefault: "'[]'", timestamp: 'DATETIME' },
         );
         await TenantMembershipsMigration.addPlatformAdminFlag(db);
-        // No row-level security on SQLite; isolation there is file-per-tenant (see the S1 spec).
+        // The session column is NOT optional here, and leaving it out is what made SQLite unusable:
+        // every session insert writes `tenant_id` whatever the driver, so without it nobody could
+        // log in — the first-run wizard failed on "table _system_sessions has no column named
+        // tenant_id" AFTER creating the administrator account.
+        await TenantMembershipsMigration.addSessionTenantColumn(db);
+        // No row-level security on SQLite; there is no per-tenant isolation on this driver at all.
       },
     });
   }
@@ -104,6 +103,31 @@ export class TenantMembershipsMigration extends BaseMigration {
   private static async addPlatformAdminFlag(db: IDatabaseManager): Promise<void> {
     // Called from BOTH dialect branches, so it cannot use either dialect's exclusive syntax.
     await ColumnGuard.addIfMissing(db, 'users', 'is_platform_admin', 'BOOLEAN NOT NULL DEFAULT FALSE');
+  }
+
+  /**
+   * Which tenant a session belongs to.
+   *
+   * Sessions record this but are NOT row-level-security scoped, and that is deliberate rather than an
+   * omission: validating a session is what TELLS us the tenant, so a policy here would be circular —
+   * reading the session would require the tenant only the session can supply. The binding that
+   * matters is the signed tenant claim in the token (`AuthManager.verifyToken`), which cannot be
+   * forged, plus a membership re-check on every request. Session LISTING in the admin filters by this
+   * column in the query layer.
+   *
+   * Called from BOTH dialect branches — `ColumnGuard` asks each driver in its own words, because
+   * SQLite has no `ADD COLUMN IF NOT EXISTS`. It lived only in the PostgreSQL branch until a SQLite
+   * install was actually attempted, and the column is not optional: the runtime writes it on every
+   * session insert regardless of driver.
+   */
+  private static async addSessionTenantColumn(db: IDatabaseManager): Promise<void> {
+    // Existing sessions are deleted: they carry no tenant claim, so they would be refused on the
+    // next request anyway. Introducing tenancy logs everyone out, deliberately.
+    await db.execute(sql.raw('DELETE FROM "_system_sessions"'));
+    await ColumnGuard.addIfMissing(db, '_system_sessions', 'tenant_id', 'TEXT');
+    await db.execute(sql.raw(
+      'CREATE INDEX IF NOT EXISTS "_system_sessions_tenant_idx" ON "_system_sessions" ("tenant_id")',
+    ));
   }
 
 

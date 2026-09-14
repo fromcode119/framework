@@ -23,22 +23,21 @@ export class DatabaseDriverChoice extends Enum {
   static readonly POSTGRES = new DatabaseDriverChoice('postgres', { isolatesTenants: true, isAvailable: true });
 
   /**
-   * One file, one site — and NOT installable today, which was found by installing it.
+   * One file, one site, and no database server to run.
    *
-   * The dialect itself is real and tested, but migrations 040-042 are written in PostgreSQL only
-   * (`JSONB`, `::jsonb`, `TIMESTAMPTZ`, `NOW()`), so a SQLite installation crash-loops partway
-   * through its first boot. 039 had the same fault and is fixed; the remaining three need the same
-   * dialect branches, and until they have them offering this would hand somebody a container that
-   * never starts.
+   * Installable — 039 through 042 had PostgreSQL-only spellings that took the first boot down, and
+   * they now resolve their column types per dialect. What is NOT fixable is the isolation: SQLite has
+   * no row-level security, and tenancy here is one database with rows tagged `tenant_id`, so there is
+   * nowhere to put a second site's rows. That limit is architectural, not unfinished work.
    */
-  static readonly SQLITE = new DatabaseDriverChoice('sqlite', { isolatesTenants: false, isAvailable: false });
+  static readonly SQLITE = new DatabaseDriverChoice('sqlite', { isolatesTenants: false, isAvailable: true });
 
   /**
-   * Real roles, no isolation, no backup handler and no tests — so it cannot be picked either.
+   * Real roles, no isolation, no backup handler and no tests — so it cannot be picked.
    *
-   * Both unavailable drivers are blocked by unfinished work rather than by anything structural. What
-   * separates them is what finishing would buy: MySQL could gain an isolation strategy and host many
-   * sites, while SQLite has nowhere to put a second site's rows however much work it gets.
+   * Its limit is unfinished work rather than anything structural, which is what separates it from
+   * SQLite: MySQL could gain an isolation strategy and host many sites, while SQLite has nowhere to
+   * put a second site's rows however much work it gets.
    */
   static readonly MYSQL = new DatabaseDriverChoice('mysql', { isolatesTenants: false, isAvailable: false });
 

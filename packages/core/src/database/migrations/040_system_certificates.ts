@@ -1,4 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { PortableColumnTypes } from '../helpers/portable-column-types';
 import { Logger } from '../../logging';
 
 /**
@@ -31,6 +32,9 @@ export class SystemCertificatesMigration extends BaseMigration {
 
   async up(db: IDatabaseManager): Promise<void> {
     const { TABLE, logger } = SystemCertificatesMigration;
+    // One column list, spelled for whichever driver this deployment runs on. See PortableColumnTypes
+    // for why the types are resolved rather than the whole statement being written out twice.
+    const type = PortableColumnTypes.for(db.dialect);
 
     await db.execute(sql.raw(
       `CREATE TABLE IF NOT EXISTS ${TABLE} (
@@ -41,17 +45,17 @@ export class SystemCertificatesMigration extends BaseMigration {
         certificate_pem TEXT NOT NULL DEFAULT '',
         private_key_enc TEXT NOT NULL DEFAULT '',
         issuer TEXT NOT NULL DEFAULT '',
-        subject_alt_names JSONB NOT NULL DEFAULT '[]'::jsonb,
+        subject_alt_names ${type.json} NOT NULL DEFAULT ${type.jsonEmptyArray},
         serial TEXT NOT NULL DEFAULT '',
         fingerprint_sha256 TEXT NOT NULL DEFAULT '',
-        not_before TIMESTAMPTZ NULL,
-        not_after TIMESTAMPTZ NULL,
+        not_before ${type.timestamp} NULL,
+        not_after ${type.timestamp} NULL,
         last_error TEXT NOT NULL DEFAULT '',
-        last_attempt_at TIMESTAMPTZ NULL,
-        next_attempt_at TIMESTAMPTZ NULL,
+        last_attempt_at ${type.timestamp} NULL,
+        next_attempt_at ${type.timestamp} NULL,
         attempts_in_window INTEGER NOT NULL DEFAULT 0,
         last_warned_days INTEGER NULL,
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        updated_at ${type.timestamp} NOT NULL DEFAULT ${type.now}
       )`,
     ));
 

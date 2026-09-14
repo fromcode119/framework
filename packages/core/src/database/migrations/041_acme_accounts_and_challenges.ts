@@ -1,4 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { PortableColumnTypes } from '../helpers/portable-column-types';
 import { Logger } from '../../logging';
 
 /**
@@ -28,6 +29,7 @@ export class AcmeAccountsAndChallengesMigration extends BaseMigration {
 
   async up(db: IDatabaseManager): Promise<void> {
     const { ACCOUNTS, CHALLENGES, logger } = AcmeAccountsAndChallengesMigration;
+    const type = PortableColumnTypes.for(db.dialect);
 
     await db.execute(sql.raw(
       `CREATE TABLE IF NOT EXISTS ${ACCOUNTS} (
@@ -35,7 +37,7 @@ export class AcmeAccountsAndChallengesMigration extends BaseMigration {
         account_url TEXT NOT NULL DEFAULT '',
         private_key_enc TEXT NOT NULL DEFAULT '',
         contact TEXT NOT NULL DEFAULT '',
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        created_at ${type.timestamp} NOT NULL DEFAULT ${type.now}
       )`,
     ));
 
@@ -44,7 +46,7 @@ export class AcmeAccountsAndChallengesMigration extends BaseMigration {
         token TEXT PRIMARY KEY,
         host TEXT NOT NULL,
         key_authorization TEXT NOT NULL,
-        expires_at TIMESTAMPTZ NOT NULL
+        expires_at ${type.timestamp} NOT NULL
       )`,
     ));
 
