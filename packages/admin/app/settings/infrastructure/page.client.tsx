@@ -15,6 +15,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
+import { Explanation } from '@/components/ui/view/explanation.client';
 import { Select } from '@/components/ui/view/select.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { CertificatesSettingsCard } from '@/app/settings/infrastructure/certificates-settings-card';
@@ -31,6 +32,12 @@ export class InfrastructureSettingsPage extends AdminComponent {
   @state loadError: string | null = null;
   /** Days of `_system_logs` history to keep. '' / '0' means keep forever — the description says so. */
   @state logRetentionDays = '';
+  /**
+   * Separate from the log window, and floored, because this journal is not debug output — it is the
+   * security and operator record, and the platform's EU AI Act Art. 12 store.
+   */
+  @state auditRetentionDays = '';
+  @state isSavingAuditRetention = false;
   @state ssrGenerationCap = '';
   /** T5b render hosts: '' = the declared defaults. */
   @state ssrRenderMemoryMb = '';
@@ -73,6 +80,7 @@ export class InfrastructureSettingsPage extends AdminComponent {
       const response = await AdminSystemSettingsClient.getAll();
       this.maintenance = response?.maintenance_mode === true || response?.maintenance_mode === 'true';
       this.logRetentionDays = String(response?.log_retention_days ?? '');
+      this.auditRetentionDays = String(response?.audit_retention_days ?? '');
       this.ssrGenerationCap = String(response?.ssr_generation_cap ?? '');
       this.ssrRenderMemoryMb = String(response?.ssr_render_memory_mb ?? '');
       this.ssrRenderTimeoutMs = String(response?.ssr_render_timeout_ms ?? '');
@@ -106,6 +114,37 @@ export class InfrastructureSettingsPage extends AdminComponent {
   @bound
   onRetentionChange(value: number | string): void {
     this.logRetentionDays = String(value);
+  }
+
+  @bound
+  onAuditRetentionChange(value: number | string): void {
+    this.auditRetentionDays = String(value);
+  }
+
+  /**
+   * The API owns the floor and refuses a short window with a sentence; this does not pre-empt it.
+   * Duplicating the rule here would be a second place for it to drift from, and the refusal already
+   * reads as prose.
+   */
+  @bound
+  async saveAuditRetention(): Promise<void> {
+    const addNotification = this.runtime.notify.addNotification;
+    this.isSavingAuditRetention = true;
+    try {
+      await AdminSystemSettingsClient.update({ audit_retention_days: this.auditRetentionDays });
+      const days = Number(this.auditRetentionDays);
+      addNotification({
+        title: 'System Updated',
+        message: days > 0
+          ? `Audit entries older than ${days} day(s) will be removed at the next daily sweep.`
+          : 'The audit trail is kept forever.',
+        type: NotificationType.INFO,
+      });
+    } catch (err: any) {
+      addNotification({ title: 'Error', message: err?.message || 'Failed to save audit retention.', type: NotificationType.ERROR });
+    } finally {
+      this.isSavingAuditRetention = false;
+    }
   }
 
   @bound
@@ -349,7 +388,7 @@ export class InfrastructureSettingsPage extends AdminComponent {
             </SettingRow>
           </Card>
 
-          <Card title="System Logs">
+          <Card title="Retention">
             <SettingRow
               theme={theme}
               icon={FrameworkIcons.Database}
@@ -370,6 +409,48 @@ export class InfrastructureSettingsPage extends AdminComponent {
                 <Button
                   onClick={this.saveRetention}
                   isLoading={this.isSavingRetention}
+                  icon={<FrameworkIcons.Save size={13} />}
+                  className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+                >
+                  Save
+                </Button>
+              </div>
+            </SettingRow>
+
+            <SettingRow
+              theme={theme}
+              icon={FrameworkIcons.Shield}
+              title="Audit Retention"
+              stacked
+              description="Days of audit history to keep across the whole deployment, swept daily. Blank keeps every entry forever."
+              explanation={(
+                <Explanation>
+                  <p>
+                    This is not the log above. It removes the <strong>audit trail</strong> — security denials,
+                    settings changes, MCP tool calls and AI invocations — for every site on this platform.
+                  </p>
+                  <p>
+                    <strong>Minimum 180 days.</strong> This journal is this platform&rsquo;s EU AI Act Art. 12
+                    record, which is expected to survive six months; a shorter window is refused rather than
+                    quietly shortened. Blank — keep forever — is always allowed.
+                  </p>
+                  <p>Each prune is itself written to the audit trail, with how many rows went and whose.</p>
+                </Explanation>
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-full md:w-40">
+                  <NumberStepper
+                    min={0}
+                    step={1}
+                    value={this.auditRetentionDays}
+                    onChange={this.onAuditRetentionChange}
+                    placeholder="Keep forever"
+                  />
+                </div>
+                <Button
+                  onClick={this.saveAuditRetention}
+                  isLoading={this.isSavingAuditRetention}
                   icon={<FrameworkIcons.Save size={13} />}
                   className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
                 >

@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, SystemLogRetentionService } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -36,7 +36,7 @@ export class APIServer {
   private authSetup!: ServerAuthSetup;
   private middlewareSetup!: ServerMiddlewareSetup;
   private routesSetup!: ServerRoutesSetup;
-  private logRetention!: SystemLogRetentionService;
+  private logRetention!: JournalRetentionService;
 
   constructor(private manager: PluginManager, private themeManager: ThemeManager, private auth: AuthManager) {
     const cacheDriver = process.env.REDIS_URL ? 'redis' : 'memory';
@@ -70,7 +70,23 @@ export class APIServer {
       this.settingsCache,
       this.logger,
     );
-    this.logRetention = new SystemLogRetentionService((manager as any).db, this.logger);
+    this.logRetention = new JournalRetentionService(
+      (manager as any).db,
+      this.logger,
+      // The audit journal records its OWN pruning. A record of what happened that can be trimmed
+      // leaving no trace of the trimming is not a record; this is the entry that says who went.
+      JournalRetentionTargets.all({
+        auditAfterPrune: async (summary) => {
+          await manager.audit.logAction('system', 'audit.prune', summary.table, AuditOutcome.ALLOWED, {
+            retentionDays: summary.retentionDays,
+            cutoff: summary.cutoff,
+            planned: summary.planned,
+            removed: summary.removed,
+            owners: summary.owners,
+          });
+        },
+      }),
+    );
     this.corsSetup = new ServerCorsSetup(this.app, this.settingsCache, this.logger, (manager as any).db);
     this.maintenanceService = new ServerMaintenanceService(this.manager, this.cache, this.settingsCache, this.logger);
     this.authSetup = new ServerAuthSetup(this.auth, (manager as any).db, this.logger);

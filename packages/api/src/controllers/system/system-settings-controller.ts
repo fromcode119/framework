@@ -1,7 +1,7 @@
 import { AuditOutcome } from '@fromcode119/core';
 import { TenantBespokePolicies } from '@fromcode119/core';
 import { Request, Response } from 'express';
-import { ApplicationDomainSettingsUtils, RequestContextUtils, SystemConstants, SystemSettingsExposureUtils, TenantMode, TenantResolverService } from '@fromcode119/core';
+import { ApplicationDomainSettingsUtils, CoercionUtils, RequestContextUtils, SystemConstants, SystemSettingsExposureUtils, TenantMode, TenantResolverService } from '@fromcode119/core';
 import { Logger } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { SystemSettingRegistry } from '@fromcode119/core';
@@ -31,6 +31,18 @@ export class SystemSettingsController {
     return SystemSettingRegistry.writableKeys();
   }
 
+
+  /**
+   * The requested audit window when it is positive and below the floor, or `null` when there is
+   * nothing to refuse. Empty and 0 mean KEEP FOREVER and are always fine.
+   */
+  private static auditWindowBelowFloor(payload: Record<string, unknown>): number | null {
+    const key = SystemConstants.META_KEY.AUDIT_RETENTION_DAYS;
+    if (!(key in payload)) return null;
+    const requested = Math.floor(CoercionUtils.toNumber(payload[key], 0));
+    if (requested <= 0 || requested >= SystemConstants.AUDIT_RETENTION_MIN_DAYS) return null;
+    return requested;
+  }
 
   /** Single-tenant: every admin is the platform. Multi-tenant: only a flagged account. */
   /** The platform row (`tenant_id IS NULL`) of a platform key, upserted under the platform-admin marker. Returns the previous value. */
@@ -108,6 +120,23 @@ export class SystemSettingsController {
       }
 
       const preparedPayload = await this.prepareSettingsPayload(payload as Record<string, unknown>);
+
+      // The audit window has a FLOOR, and it is refused here rather than clamped. `packages/ai`
+      // declares `_system_audit_logs` the EU AI Act Art. 12 record-keeping store, so a window shorter
+      // than the six months that record is expected to survive would let the platform quietly break a
+      // commitment its own code makes. Silently storing 180 when the operator asked for 30 would be
+      // worse than refusing: they would believe they had 30. Keeping forever (empty) stays allowed.
+      const auditFloor = SystemSettingsController.auditWindowBelowFloor(preparedPayload);
+      if (auditFloor !== null) {
+        return res.status(400).json({
+          error: 'audit_retention_below_minimum',
+          message: `The audit trail must be kept for at least ${SystemConstants.AUDIT_RETENTION_MIN_DAYS} days —`
+            + ` ${auditFloor} is too short. It records security denials, settings changes and AI invocations,`
+            + ' and is this platform\'s EU AI Act record. Leave it empty to keep the audit trail forever.',
+          key: SystemConstants.META_KEY.AUDIT_RETENTION_DAYS,
+          minimumDays: SystemConstants.AUDIT_RETENTION_MIN_DAYS,
+        });
+      }
       const timestamp = new Date();
 
       const actor = (req as any).user || {};

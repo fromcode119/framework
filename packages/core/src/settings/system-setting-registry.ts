@@ -123,13 +123,17 @@ export class SystemSettingRegistry {
     [SystemSettingRegistry.KEY.CERTIFICATE_ACME_CONTACT_EMAIL]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.CERTIFICATE_PLATFORM_ADDRESSES]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
 
-    // PLATFORM, and the "candidate (Phase 2)" note that stood here was the bug. `SystemLogRetentionService`
+    // PLATFORM, and the "candidate (Phase 2)" note that stood here was the bug. `JournalRetentionService`
     // starts ONCE per api process and sweeps on ONE daily interval, reading the value on an untenanted
     // connection — which under the `_system_meta` policy sees the `tenant_id IS NULL` row and nothing
     // else. Declared SITE, the only control for it (Settings -> Infrastructure, a platform screen) could
     // not write a row the sweep would ever read: refused outright with no site selected, and filed under
     // a tenant with one. Dead in both scopes on every multi-site deployment.
     [SystemSettingRegistry.KEY.LOG_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // PLATFORM for the same reason as the logs window: one sweep, one process, one untenanted read.
+    // No seed — an empty value is KEEP FOREVER, and a platform that started expiring its own security
+    // record because a registry picked a number would be the invented default this codebase forbids.
+    [SystemSettingRegistry.KEY.AUDIT_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
 
     // Localization
     [SystemSettingRegistry.KEY.LOCALIZATION_LOCALES]: {

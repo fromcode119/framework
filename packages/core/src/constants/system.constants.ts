@@ -210,9 +210,20 @@ export class SystemConstants {
   CERTIFICATE_PLATFORM_ADDRESSES: 'certificate_platform_addresses',
   /**
    * Days of `_system_logs` history to keep. Empty or 0 means KEEP FOREVER, and the admin field
-   * says so — nothing prunes behind the operator's back. Read by SystemLogRetentionService.
+   * says so — nothing prunes behind the operator's back. Read by JournalRetentionService.
    */
   LOG_RETENTION_DAYS: 'log_retention_days',
+  /**
+   * Days of `_system_audit_logs` history to keep. Empty means KEEP FOREVER.
+   *
+   * SEPARATE FROM `LOG_RETENTION_DAYS`, and floored, because this table is not debug output. It is
+   * the security and operator record — denied actions, `settings.update`, `collection.delete`, MCP
+   * `tool.call` — and `packages/ai/src/extension.ts` declares it the platform's **EU AI Act Art. 12**
+   * record-keeping store for `ai.invoke`. A window shorter than the six months that record is
+   * expected to survive would let the platform quietly break a commitment its own code makes, so a
+   * value below {@link AUDIT_RETENTION_MIN_DAYS} is REFUSED with the reason rather than clamped.
+   */
+  AUDIT_RETENTION_DAYS: 'audit_retention_days',
   
   // Localization
   LOCALIZATION_LOCALES: 'localization_locales',
@@ -552,6 +563,17 @@ export class SystemConstants {
   PRIVATE_DIR_ENV: 'STORAGE_PRIVATE_DIR',
   DEFAULT_PRIVATE_SUBDIR: 'storage/private'
   } as const;
+
+  /**
+   * The shortest audit-retention window the platform will accept, in days.
+   *
+   * Six months, because `packages/ai/src/extension.ts` declares `_system_audit_logs` the EU AI Act
+   * Art. 12 record-keeping store and Art. 19/26 expect those records to survive six months. This is
+   * enforced as a REFUSAL with a stated reason, never a silent clamp: an operator who asks for 30
+   * days is told why they cannot have it, rather than being given 180 and left believing they got
+   * 30. Keeping forever (an empty value) is always allowed — the floor is a minimum, not a schedule.
+   */
+  static readonly AUDIT_RETENTION_MIN_DAYS = 180;
 
   /**
    * Route prefix strings used for internal permission checks.
