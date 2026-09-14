@@ -6,6 +6,7 @@ import { CliUtils } from '@cli/utils';
 import { SiteTransferBundleCommandService } from '@cli/services/site-transfer-bundle-command-service';
 import { SystemUpdateCommandService } from '@cli/services/system-update-command-service';
 import { PlatformGateway } from '@cli/services/platform-gateway';
+import { BootstrapSecretsService } from '@fromcode119/core';
 
 export class SystemCommands {
   static registerSystemCommands(program: Command) {
@@ -78,6 +79,12 @@ export class SystemCommands {
       .command('gateway')
       .description('The platform gateway: routes every host to api, admin or frontend from the tenant table (container entrypoint)')
       .action(() => {
+        // Adopt whatever the api generated, so a deployment that set no secrets still has the two
+        // processes agreeing on one. Read-only: the api owns generation, and two processes inventing
+        // their own would never match. Without this the gateway cannot fetch the routing map, falls
+        // back to path rules, and a platform that has never been set up answers 404 at `/` — the
+        // operator opens the address they were given and finds nothing.
+        BootstrapSecretsService.adopt();
         new PlatformGateway().start();
       });
   }

@@ -66,6 +66,31 @@ export class BootstrapSecretsService {
     return { generated, file };
   }
 
+  /**
+   * Adopt secrets another process already generated — READ ONLY, never creating any.
+   *
+   * The api owns generation; anything else that needs the same value (the gateway, which
+   * authenticates to the api with `INTERNAL_SERVICE_SECRET`) reads the file the api wrote. Two
+   * processes generating independently would each invent a different secret and never agree, so this
+   * deliberately cannot create: a missing file means "not shared", and the caller behaves exactly as
+   * it did when nobody set the variable.
+   *
+   * An environment value still wins, so a deployment that manages secrets itself is untouched.
+   */
+  static adopt(directory: string = ProjectPaths.getDataDir()): string[] {
+    const stored = BootstrapSecretsService.read(path.join(directory, BootstrapSecretsService.FILE_NAME));
+    const adopted: string[] = [];
+
+    for (const key of BootstrapSecretsService.KEYS) {
+      if (BootstrapSecretsService.suppliedByEnvironment(key)) continue;
+      const value = String(stored[key] || '').trim();
+      if (!value) continue;
+      process.env[key] = value;
+      adopted.push(key);
+    }
+    return adopted;
+  }
+
   private static suppliedByEnvironment(key: string): boolean {
     const names = [key, ...(BootstrapSecretsService.ALIASES[key] || [])];
     return names.some((name) => String(process.env[name] || '').trim().length > 0);

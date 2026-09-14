@@ -68,6 +68,31 @@ describe('BootstrapSecretsService', () => {
     expect(result.generated).not.toContain('INTEGRATION_SECRET_KEY');
   });
 
+  /**
+   * A second process — the gateway — must end up with the SAME internal secret the api generated, or
+   * it cannot fetch the routing map and a platform that has never been set up answers 404 at `/`.
+   * It adopts; it must never generate, because two processes each inventing one would never agree.
+   */
+  it('adopts what another process generated, and creates nothing itself', () => {
+    BootstrapSecretsService.ensure(dir);
+    const shared = process.env.INTERNAL_SERVICE_SECRET;
+    for (const key of ['JWT_SECRET', 'INTEGRATION_SECRET_KEY', 'INTERNAL_SERVICE_SECRET']) vi.stubEnv(key, '');
+
+    const adopted = BootstrapSecretsService.adopt(dir);
+
+    expect(adopted).toContain('INTERNAL_SERVICE_SECRET');
+    expect(process.env.INTERNAL_SERVICE_SECRET).toBe(shared);
+  });
+
+  it('adopts NOTHING when no file exists, rather than inventing a second set', () => {
+    const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-none-'));
+
+    expect(BootstrapSecretsService.adopt(empty)).toEqual([]);
+    expect(fs.existsSync(path.join(empty, 'secrets.json'))).toBe(false);
+
+    fs.rmSync(empty, { recursive: true, force: true });
+  });
+
   it('writes the file readable only by its owner', () => {
     const { file } = BootstrapSecretsService.ensure(dir);
 
