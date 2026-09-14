@@ -172,11 +172,29 @@ export class AuthControllerLifecycle extends AuthControllerSso {
     });
   }
 
+  /**
+   * The first account, and the only moment the platform OWNER can be identified.
+   *
+   * `roles: ['admin']` alone is a TENANT administrator — `admin` is not platform admin, deliberately
+   * (a tenant's admin must not be able to install platform code). But `is_platform_admin` is what
+   * grants every site and what the platform-scoped screens check, so an install whose founding
+   * account lacks it is locked out of its own platform the moment a first site exists: the console
+   * answers "No site access — your account is not a member of any site yet", and there is nobody with
+   * the authority to add them.
+   *
+   * Migration 029 deliberately refuses to invent an owner on an EXISTING install, because that would
+   * hand someone powers no operator granted. This is the opposite case and the reason that rule can
+   * be safe: there are no users at all, so there is no one to promote over — and whoever is standing
+   * here is the person installing the platform. Ownership is a single transferable seat enforced by a
+   * partial unique index; granting it here fills that seat once, under the same exclusive lock that
+   * guarantees this is the first account.
+   */
   private async insertInitialUser(email: string, password: string): Promise<any> {
     return this.db.insert(SystemConstants.TABLE.USERS, {
       email,
       password,
       roles: ['admin'],
+      is_platform_admin: true,
     });
   }
 

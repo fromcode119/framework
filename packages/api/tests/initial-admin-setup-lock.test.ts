@@ -36,6 +36,32 @@ describe('initial administrator setup', () => {
     expect(calls).toEqual(['lock:fromcode.initial-admin-setup', 'count', 'insert']);
   });
 
+  /**
+   * The founding account is the platform OWNER, and without this the install locks itself out.
+   *
+   * `roles: ['admin']` is a TENANT administrator — `admin` is deliberately not platform admin, so a
+   * site's own admin cannot install platform code. But `is_platform_admin` is what grants every site,
+   * and the account created here belongs to nobody's site: the moment a first site exists the console
+   * answers "No site access — your account is not a member of any site yet", and there is no one with
+   * the authority to add them. Reproduced on a fresh PostgreSQL install on 2026-09-14.
+   *
+   * Safe precisely here and nowhere else: migration 029 refuses to invent an owner on an EXISTING
+   * install because that would hand someone powers no operator granted, while this runs only when
+   * `count` says there are no users at all.
+   */
+  it('makes the first administrator the PLATFORM OWNER, not just a tenant admin', async () => {
+    const { db } = dbFixture(0);
+    const controller = new AuthControllerLifecycle({ db } as any, new AuthManager('test-secret'));
+
+    await (controller as any).createInitialUser('admin@example.test', 'hash');
+
+    expect(db.insert).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      email: 'admin@example.test',
+      roles: ['admin'],
+      is_platform_admin: true,
+    }));
+  });
+
   it('does not insert when another replica got there first while it waited', async () => {
     const { db } = dbFixture(1);
     const controller = new AuthControllerLifecycle({ db } as any, new AuthManager('test-secret'));
