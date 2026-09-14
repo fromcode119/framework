@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { ArchiveUploadSessionService, PluginManager } from '@fromcode119/core';
+import { ArchiveUploadSessionService, BaseController, PluginManager } from '@fromcode119/core';
 import { PluginInstallOperationService } from '@api/services/plugin-install-operation-service';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 
@@ -11,11 +11,14 @@ import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-su
  * Split out of PluginController (483 lines) 2026-09-09, the same way PluginArchiveSupport was.
  * Routed directly by PluginRouter.
  */
-export class PluginUploadController {
+export class PluginUploadController extends BaseController {
   private operations = PluginInstallOperationService.getInstance();
   private archiveSupport: PluginArchiveSupport;
 
+  // See PluginLifecycleController: PluginRouter passes these handlers unbound, so BaseController's
+  // constructor-time binding is what keeps `this` alive inside them.
   constructor(private manager: PluginManager) {
+    super();
     this.archiveSupport = new PluginArchiveSupport(manager);
   }
 

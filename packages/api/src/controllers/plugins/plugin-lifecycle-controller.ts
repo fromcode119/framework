@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { PluginManager, Logger, CoercionUtils, PluginRegistryHealth, PluginState, PluginTenantAccess, PluginTenantStateService, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import { BaseController, PluginManager, Logger, CoercionUtils, PluginRegistryHealth, PluginState, PluginTenantAccess, PluginTenantStateService, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 
 /**
@@ -9,10 +9,17 @@ import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-su
  * Split out of PluginController (483 lines) 2026-09-09, the same way PluginArchiveSupport was.
  * Routed directly by PluginRouter.
  */
-export class PluginLifecycleController {
+export class PluginLifecycleController extends BaseController {
   private logger = new Logger({ namespace: 'plugin-controller' });
 
-  constructor(private manager: PluginManager) {}
+  // `extends BaseController` is load-bearing, not decoration: PluginRouter passes these handlers to
+  // Express UNBOUND (`this.lifecycleController.toggle`), and BaseController binds subclass methods
+  // during construction so `this` survives. Dropping it in the 2026-09-09 split out of
+  // PluginController made every route here throw
+  // `Cannot read properties of undefined (reading 'toggleForTenant')` on the first `this.` access.
+  constructor(private manager: PluginManager) {
+    super();
+  }
 
   /**
    * Turn a plugin on or off.
