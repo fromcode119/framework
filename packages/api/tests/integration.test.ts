@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { APIServer } from '@api/index';
-import { PluginManager, ThemeManager } from '@fromcode119/core';
+import { PluginManager, ServerCoreServices, ThemeManager } from '@fromcode119/core';
 import { sql } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 
@@ -14,6 +14,13 @@ describe('System E2E / Integration', () => {
         // Setup minimal mock environment
         process.env.DATABASE_URL = ':memory:';
         process.env.API_VERSION_PREFIX = 'v1';
+        // BEFORE anything builds a server. `ApiBootstrapService` does this on every real boot, and
+        // this suite constructs `APIServer` directly — so without it `setupRoutes` reaches
+        // `CoreServices.catalogContributions`, a server-only service nothing has registered, and the
+        // whole suite fails to start. That is why all seven cases reported as skipped rather than
+        // failing: the error happened in `beforeAll`, so no case ever ran.
+        ServerCoreServices.register();
+
         auth = new AuthManager('test-secret-123');
         manager = new PluginManager();
         themeManager = new ThemeManager((manager as any).db);
