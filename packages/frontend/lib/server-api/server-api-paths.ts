@@ -111,12 +111,24 @@ export class ServerApiPaths {
 
 
   /**
-   * Get the PUBLIC API base URL for browser-accessible resources (e.g. theme assets).
-   * Uses NEXT_PUBLIC_API_URL which resolves to the public domain instead of internal Docker hostnames.
+   * The PUBLIC base for things a BROWSER will fetch — the theme bundle, `@font-face src:url(...)`,
+   * resized images. It is baked into server-rendered HTML, so it must be an address the visitor can
+   * reach, and EMPTY (a relative path) when there is none.
+   *
+   * It previously read `API_URL` too and fell back to a localhost base. Both are addresses of this
+   * SERVER, not of the visitor's browser: in a container `API_URL` is `http://api:3000`, so a
+   * deployment that set no public URL emitted `http://api:3000/api/v1/themes/<t>/ui/bundle.js` and
+   * `src:url(http://api:3000/.../font.woff)` into the page — a theme that cannot load and fonts that
+   * cannot resolve, with nothing in the server log to say so. The localhost fallback was the same
+   * mistake with a friendlier hostname, and an invented value besides.
+   *
+   * Empty is the correct answer when nothing public is configured: `ApiPathUtils.joinApiPath` turns an
+   * empty base into a leading-slash RELATIVE path, which the visitor's own host serves — the gateway
+   * routes `/api/*` on any app host to the api, and the app's own `/api` proxy covers a deployment
+   * with no gateway. Same-origin is also what the browser already does for its api calls.
    */
   static buildPublicApiBaseUrl(): string {
-    return ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true })
-      || ApplicationUrlUtils.LOCALHOST_PRIMARY_API_BASE_URL;
+    return ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL'], { stripApiPath: true });
   }
 
 
