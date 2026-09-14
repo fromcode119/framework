@@ -93,6 +93,17 @@ export class SourcesDropPermalinkColumnsMigration extends BaseMigration {
           'name',
         ).filter((name) => COLUMNS.includes(name));
       },
+      mysql: async () => {
+        // Scoped to the current schema: `information_schema` spans every database on the server, so
+        // without it a host running two deployments answers about both of their tables at once.
+        present = SourcesDropPermalinkColumnsMigration.names(
+          await db.execute(sql.raw(
+            `SELECT column_name AS name FROM information_schema.columns
+             WHERE table_schema = DATABASE() AND table_name = '${TABLE}' AND column_name IN (${quoted})`,
+          )),
+          'name',
+        );
+      },
     });
 
     return present;
@@ -111,6 +122,14 @@ export class SourcesDropPermalinkColumnsMigration extends BaseMigration {
       sqlite: async () => {
         present = SourcesDropPermalinkColumnsMigration.hasRow(
           await db.execute(sql.raw(`SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = '${TABLE}'`)),
+        );
+      },
+      mysql: async () => {
+        present = SourcesDropPermalinkColumnsMigration.hasRow(
+          await db.execute(sql.raw(
+            `SELECT 1 AS present FROM information_schema.tables
+             WHERE table_schema = DATABASE() AND table_name = '${TABLE}'`,
+          )),
         );
       },
     });

@@ -60,6 +60,12 @@ export class TenantRedirectsMigration extends BaseMigration {
         // dialects hold the same shape and a row exported from one can be imported into the other.
         await ColumnGuard.addIfMissing(db, TenantRedirectsMigration.TABLE, TenantRlsSql.COLUMN, 'TEXT');
       },
+      mysql: async () => {
+        // No row-level security on MySQL, and nothing replaces it — same story as SQLite above. The
+        // column is still added so the two dialects hold the same shape and a row exported from one
+        // can be imported into the other.
+        await ColumnGuard.addIfMissing(db, TenantRedirectsMigration.TABLE, TenantRlsSql.COLUMN, 'TEXT');
+      },
     });
   }
 
@@ -107,6 +113,7 @@ export class TenantRedirectsMigration extends BaseMigration {
         }
       },
       sqlite: async () => undefined,
+      mysql: async () => undefined,
     });
   }
 }

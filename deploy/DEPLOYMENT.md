@@ -117,17 +117,24 @@ is "Docker feels heavy", option 1 is lighter than this in every way that matters
 
 ## Configuration
 
-`deploy/.env` — see `.env.example`. These values have **no defaults** and the stack refuses to start
-without them:
+`deploy/.env` — see `.env.example`. **Nothing in it has to be filled in for a first install.** The
+secrets are generated on first boot, the database is chosen in the browser, and the domains are set
+in the first-run wizard; what is left is what Docker Compose needs before any container exists, and
+it already has working values.
 
-| Variable | Why |
-|---|---|
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | the superuser, spent once at boot to create the other two roles |
-| `DATABASE_MIGRATION_URL` | schema owner — runs migrations |
-| `DATABASE_URL` | non-owner runtime login — what actually serves requests |
-| `JWT_SECRET` | 32+ characters, unique per deployment |
-| `INTEGRATION_SECRET_KEY` | 32+ characters, unique per deployment |
-| `EXTERNAL_PROXY_NETWORK` | the EXISTING external network your reverse proxy is on; defaults to `edge`. If your platform makes a network per deployment, use that one rather than a shared one |
+Setting any of these still WINS over what the platform would do for itself, which is how every
+existing deployment keeps behaving exactly as it did:
+
+| Variable | Default | Why you might still set it |
+|---|---|---|
+| `COMPOSE_PROFILES` | `single-domain` in the example | Without it no port is published at all. Leave it off only when something else already fronts api/admin/frontend. |
+| `GATEWAY_PORT` | `80` in the example | A free port, when a reverse proxy already holds 80. |
+| `EXTERNAL_PROXY_NETWORK` | `edge` | The network your reverse proxy is already on. Must exist; compose will not create it. |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `postgres` / generated / `fromcode` | The superuser, spent once at boot to create the other two roles. The password is generated into a file the application cannot read. |
+| `DATABASE_MIGRATION_URL` | written by the wizard | Schema owner — runs migrations. |
+| `DATABASE_URL` | written by the wizard | Non-owner runtime login — what actually serves requests. Set BOTH or neither: one role for both jobs disables row-level security silently. |
+| `JWT_SECRET` | generated into `data/secrets.json` | 32+ characters. Changing a live one signs every session out. |
+| `INTEGRATION_SECRET_KEY` | generated into `data/secrets.json` | 32+ characters. Changing a live one makes every stored credential undecryptable. |
 
 Generate secrets with `openssl rand -base64 48 | tr -d '=+/' | cut -c1-48`. Keep `.env` at mode
 `600`; never commit it.

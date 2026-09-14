@@ -1,5 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 
 /**
  * T6: what a tenant IS. `kind` — `site` (a storefront on its domain, admin on the shared admin host)
@@ -30,6 +31,12 @@ export class TenantKindsMigration extends BaseMigration {
           }
         }
       },
+      mysql: async () => {
+        // TEXT cannot carry a DEFAULT in MySQL, and both columns do — VARCHAR(191) is plenty for a
+        // tenant kind or an appearance slug.
+        await ColumnGuard.addIfMissing(db, '_system_tenants', 'kind', "VARCHAR(191) NOT NULL DEFAULT 'site'");
+        await ColumnGuard.addIfMissing(db, '_system_tenants', 'appearance', "VARCHAR(191) NOT NULL DEFAULT ''");
+      },
     });
   }
 
@@ -41,6 +48,10 @@ export class TenantKindsMigration extends BaseMigration {
       },
       sqlite: async () => {
         // Older SQLite cannot drop a column; the columns are harmless.
+      },
+      mysql: async () => {
+        await db.execute(sql`ALTER TABLE "_system_tenants" DROP COLUMN "appearance"`);
+        await db.execute(sql`ALTER TABLE "_system_tenants" DROP COLUMN "kind"`);
       },
     });
   }

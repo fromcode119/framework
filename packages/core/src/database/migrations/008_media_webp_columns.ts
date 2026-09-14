@@ -1,4 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
 export class MediaWebPColumnsBackfill extends BaseMigration {
@@ -17,21 +18,17 @@ export class MediaWebPColumnsBackfill extends BaseMigration {
         `);
       },
       mysql: async () => {
-        const addColumnIfMissing = async (name: string, definition: string) => {
-          const [row]: any = await db.execute(sql`
-            SELECT COUNT(*) AS count
-            FROM information_schema.columns
-            WHERE table_name = 'media' AND column_name = ${name}
-          `);
-          if (Number(row.count) === 0) {
-            await db.execute(sql.raw(`ALTER TABLE media ADD COLUMN ${definition}`));
-          }
-        };
-
-        await addColumnIfMissing('optimized_path', 'TEXT');
-        await addColumnIfMissing('optimized_size', 'INT');
-        await addColumnIfMissing('optimized_width', 'INT');
-        await addColumnIfMissing('optimized_height', 'INT');
+        // Through ColumnGuard, which probes and speaks every dialect. The hand-rolled version here
+        // built `ADD COLUMN ${definition}` with no column NAME, and never ran because its own
+        // existence check misread the result shape — see the note in 005, which had the same pair.
+        for (const [name, definition] of [
+          ['optimized_path', 'TEXT'],
+          ['optimized_size', 'INT'],
+          ['optimized_width', 'INT'],
+          ['optimized_height', 'INT'],
+        ] as Array<[string, string]>) {
+          await ColumnGuard.addIfMissing(db, 'media', name, definition);
+        }
       },
       sqlite: async () => {
         const addIfMissing = async (col: string, def: string) => {

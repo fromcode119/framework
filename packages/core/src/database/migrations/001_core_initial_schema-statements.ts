@@ -1,5 +1,6 @@
 import { IDatabaseManager, sql } from '@fromcode119/database';
 import { InitialFrameworkPostgresTables } from '@core/database/migrations/001_core_initial_schema-postgres-tables';
+import { InitialFrameworkMysqlTables } from '@core/database/migrations/001_core_initial_schema-mysql-tables';
 import { InitialFrameworkSqliteTables } from '@core/database/migrations/001_core_initial_schema-sqlite-tables';
 
 /**
@@ -17,6 +18,10 @@ export class InitialFrameworkSchemaStatements {
     await InitialFrameworkSqliteTables.create(db);
   }
 
+  static async createMysqlTables(db: IDatabaseManager): Promise<void> {
+    await InitialFrameworkMysqlTables.create(db);
+  }
+
   static async seedPostgresRoles(db: IDatabaseManager): Promise<void> {
     await db.execute(sql`
           INSERT INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
@@ -31,6 +36,21 @@ export class InitialFrameworkSchemaStatements {
   static async seedSqliteRoles(db: IDatabaseManager): Promise<void> {
     await db.execute(sql`
           INSERT OR IGNORE INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
+          VALUES
+            ('admin', 'Administrator', 'Full system access', 'system', '["*"]'),
+            ('editor', 'Editor', 'Content management only', 'custom', '["content:read", "content:write"]'),
+            ('user', 'User', 'Standard access', 'custom', '[]')
+        `);
+  }
+
+  /**
+   * MySQL has neither `ON CONFLICT DO NOTHING` nor `INSERT OR IGNORE`; `INSERT IGNORE` is its spelling
+   * of the same intent. The rows are identical to the other two dialects, and the JSON columns take
+   * plain string literals — the driver casts them into the `JSON` column type.
+   */
+  static async seedMysqlRoles(db: IDatabaseManager): Promise<void> {
+    await db.execute(sql`
+          INSERT IGNORE INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
           VALUES
             ('admin', 'Administrator', 'Full system access', 'system', '["*"]'),
             ('editor', 'Editor', 'Content management only', 'custom', '["content:read", "content:write"]'),

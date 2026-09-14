@@ -50,6 +50,23 @@ export class SystemTenantsMigration extends BaseMigration {
           CREATE INDEX IF NOT EXISTS "_system_tenants_state_idx" ON "_system_tenants" ("state")
         `);
       },
+      mysql: async () => {
+        // "id", "slug" and "primary_host" are each a key (PK or UNIQUE) so none can be TEXT; "state"
+        // is indexed below so it needs the same width. `host_aliases` drops the JSON default — MySQL
+        // rejects a literal default on a JSON column — the framework writes '[]' on every insert.
+        await db.execute(sql.raw(`
+          CREATE TABLE IF NOT EXISTS "_system_tenants" (
+            "id" VARCHAR(191) PRIMARY KEY,
+            "slug" VARCHAR(191) NOT NULL UNIQUE,
+            "primary_host" VARCHAR(191) NOT NULL UNIQUE,
+            "host_aliases" JSON NOT NULL,
+            "state" VARCHAR(191) NOT NULL DEFAULT 'active',
+            "created_at" TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX "_system_tenants_state_idx" ("state")
+          )
+        `));
+      },
     });
   }
 }

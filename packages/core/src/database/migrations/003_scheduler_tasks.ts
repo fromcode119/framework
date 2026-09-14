@@ -38,6 +38,23 @@ export class SchedulerTasksMigration extends BaseMigration {
             "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
           )
         `);
+      },
+      mysql: async () => {
+        // `name` is UNIQUE and `plugin_slug` references _system_plugins, so neither can be TEXT here.
+        await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "_system_scheduler_tasks" (
+            "id" INT AUTO_INCREMENT PRIMARY KEY,
+            "name" VARCHAR(191) NOT NULL UNIQUE,
+            "plugin_slug" VARCHAR(191) REFERENCES "_system_plugins"("slug") ON DELETE CASCADE,
+            "schedule" VARCHAR(255) NOT NULL,
+            "type" VARCHAR(32) NOT NULL DEFAULT 'cron',
+            "last_run" TIMESTAMP NULL,
+            "next_run" TIMESTAMP NULL,
+            "is_active" BOOLEAN NOT NULL DEFAULT TRUE,
+            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
       }
     });
   }

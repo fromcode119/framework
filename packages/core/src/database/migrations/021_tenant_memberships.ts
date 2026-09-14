@@ -27,7 +27,7 @@ export class TenantMembershipsMigration extends BaseMigration {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await TenantMembershipsMigration.createMembershipTable(
-          db, { id: 'SERIAL PRIMARY KEY', json: 'JSONB', jsonDefault: "'[]'::jsonb", timestamp: 'TIMESTAMP' },
+          db, { id: 'SERIAL PRIMARY KEY', key: 'TEXT', json: 'JSONB', jsonDefault: "'[]'::jsonb", timestamp: 'TIMESTAMP' },
         );
         await TenantMembershipsMigration.addPlatformAdminFlag(db);
 
@@ -47,7 +47,7 @@ export class TenantMembershipsMigration extends BaseMigration {
         // which cannot be forged, plus a membership re-check on every request. Session LISTING in
         // the admin filters by this column in the query layer.
         //
-        await TenantMembershipsMigration.addSessionTenantColumn(db);
+        await TenantMembershipsMigration.addSessionTenantColumn(db, 'TEXT');
 
         // A tenant's people are its own. These tables hold the real PII — until now they were
         // unscoped, so one tenant's contacts were readable by every other tenant.
@@ -59,31 +59,44 @@ export class TenantMembershipsMigration extends BaseMigration {
       },
       sqlite: async () => {
         await TenantMembershipsMigration.createMembershipTable(
-          db, { id: 'INTEGER PRIMARY KEY AUTOINCREMENT', json: 'TEXT', jsonDefault: "'[]'", timestamp: 'DATETIME' },
+          db, { id: 'INTEGER PRIMARY KEY AUTOINCREMENT', key: 'TEXT', json: 'TEXT', jsonDefault: "'[]'", timestamp: 'DATETIME' },
         );
         await TenantMembershipsMigration.addPlatformAdminFlag(db);
         // The session column is NOT optional here, and leaving it out is what made SQLite unusable:
         // every session insert writes `tenant_id` whatever the driver, so without it nobody could
         // log in — the first-run wizard failed on "table _system_sessions has no column named
         // tenant_id" AFTER creating the administrator account.
-        await TenantMembershipsMigration.addSessionTenantColumn(db);
+        await TenantMembershipsMigration.addSessionTenantColumn(db, 'TEXT');
         // No row-level security on SQLite, and nothing replaces it — the file-per-tenant silo (S1,
         // 2026-09-04) is a design awaiting review, not current behaviour. Single-site only here.
+      },
+      mysql: async () => {
+        // "user_id"/"tenant_id" carry the UNIQUE below (and "tenant_id" the index after it), so
+        // neither can be TEXT here — same rule as everywhere else in this file's MySQL branch.
+        // `roles` drops the JSON default MySQL refuses; the runtime writes '[]' on every insert.
+        await TenantMembershipsMigration.createMembershipTable(
+          db, { id: 'INT AUTO_INCREMENT PRIMARY KEY', key: 'VARCHAR(191)', json: 'JSON', jsonDefault: '', timestamp: 'TIMESTAMP NULL' },
+        );
+        await TenantMembershipsMigration.addPlatformAdminFlag(db);
+        await TenantMembershipsMigration.addSessionTenantColumn(db, 'VARCHAR(191)');
+        // No row-level security on MySQL, and nothing replaces it — `TenantMode` refuses to boot a
+        // second tenant on this driver, so a deployment here is single-site only.
       },
     });
   }
 
   private static async createMembershipTable(
     db: IDatabaseManager,
-    types: { id: string; json: string; jsonDefault: string; timestamp: string },
+    types: { id: string; key: string; json: string; jsonDefault: string; timestamp: string },
   ): Promise<void> {
+    const rolesDefault = types.jsonDefault ? ` NOT NULL DEFAULT ${types.jsonDefault}` : '';
     await db.execute(sql.raw(`
       CREATE TABLE IF NOT EXISTS "_system_tenant_memberships" (
         "id" ${types.id},
-        "user_id" TEXT NOT NULL,
-        "tenant_id" TEXT NOT NULL,
-        "roles" ${types.json} NOT NULL DEFAULT ${types.jsonDefault},
-        "state" TEXT NOT NULL DEFAULT 'active',
+        "user_id" ${types.key} NOT NULL,
+        "tenant_id" ${types.key} NOT NULL,
+        "roles" ${types.json}${rolesDefault},
+        "state" ${types.key} NOT NULL DEFAULT 'active',
         "created_at" ${types.timestamp} DEFAULT CURRENT_TIMESTAMP,
         "updated_at" ${types.timestamp} DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "_system_tenant_memberships_unique" UNIQUE ("user_id", "tenant_id")
@@ -116,16 +129,19 @@ export class TenantMembershipsMigration extends BaseMigration {
    * forged, plus a membership re-check on every request. Session LISTING in the admin filters by this
    * column in the query layer.
    *
-   * Called from BOTH dialect branches — `ColumnGuard` asks each driver in its own words, because
+   * Called from ALL THREE dialect branches — `ColumnGuard` asks each driver in its own words, because
    * SQLite has no `ADD COLUMN IF NOT EXISTS`. It lived only in the PostgreSQL branch until a SQLite
    * install was actually attempted, and the column is not optional: the runtime writes it on every
    * session insert regardless of driver.
+   *
+   * `keyType` is `TEXT` on Postgres/SQLite and `VARCHAR(191)` on MySQL — the CREATE INDEX below is
+   * exactly the case the class docblock's "key" rule covers, so MySQL cannot take the TEXT spelling.
    */
-  private static async addSessionTenantColumn(db: IDatabaseManager): Promise<void> {
+  private static async addSessionTenantColumn(db: IDatabaseManager, keyType: string): Promise<void> {
     // Existing sessions are deleted: they carry no tenant claim, so they would be refused on the
     // next request anyway. Introducing tenancy logs everyone out, deliberately.
     await db.execute(sql.raw('DELETE FROM "_system_sessions"'));
-    await ColumnGuard.addIfMissing(db, '_system_sessions', 'tenant_id', 'TEXT');
+    await ColumnGuard.addIfMissing(db, '_system_sessions', 'tenant_id', keyType);
     await db.execute(sql.raw(
       'CREATE INDEX IF NOT EXISTS "_system_sessions_tenant_idx" ON "_system_sessions" ("tenant_id")',
     ));

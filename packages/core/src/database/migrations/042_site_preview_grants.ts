@@ -38,18 +38,18 @@ export class SitePreviewGrantsMigration extends BaseMigration {
 
     await db.execute(sql.raw(
       `CREATE TABLE IF NOT EXISTS ${TABLE} (
-        id TEXT PRIMARY KEY,
-        tenant_id TEXT NOT NULL REFERENCES _system_tenants(id) ON DELETE CASCADE,
-        user_id TEXT NOT NULL,
-        token_hash TEXT NOT NULL UNIQUE,
+        id ${type.key} PRIMARY KEY,
+        tenant_id ${type.key} NOT NULL REFERENCES _system_tenants(id) ON DELETE CASCADE,
+        user_id ${type.key} NOT NULL,
+        token_hash ${type.key} NOT NULL UNIQUE,
         expires_at ${type.timestamp} NOT NULL,
         -- The single-use lock, and NOT NULL for a reason the whole feature rests on: the claim is an
         -- UPDATE whose WHERE says "only if unspent", and on the raw system-table path a null in a
         -- WHERE compiles to an equality against NULL, which matches nothing. consumed_at records
         -- when; this records whether. See SitePreviewGrantState.
-        state TEXT NOT NULL DEFAULT 'issued',
+        state ${type.shortText} NOT NULL DEFAULT 'issued',
         consumed_at ${type.timestamp} NULL,
-        session_hash TEXT NULL UNIQUE,
+        session_hash ${type.key} NULL UNIQUE,
         session_expires_at ${type.timestamp} NULL,
         created_at ${type.timestamp} NOT NULL DEFAULT ${type.now}
       )`,

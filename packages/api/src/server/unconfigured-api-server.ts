@@ -129,7 +129,13 @@ export class UnconfiguredApiServer {
     }
 
     try {
-      const { file, driver } = SetupDatabaseService.apply({ driver: req.body?.driver });
+      // `server` present means "a database I run"; absent means the bundled one. Passed through
+      // rather than picked apart here — the service owns what a connection needs, and validating it
+      // in two places is how the two come to disagree.
+      const { file, driver } = SetupDatabaseService.apply({
+        driver: req.body?.driver,
+        server: req.body?.server,
+      });
       this.logger.info(`Configured the "${driver.value}" driver into ${file}. Restarting to connect.`);
       res.json({ driver: driver.value, file, restarting: true });
     } catch (error: any) {

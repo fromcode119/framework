@@ -50,6 +50,13 @@ export class TenantVisibilityMigration extends BaseMigration {
             `ALTER TABLE ${TABLE} ADD COLUMN visibility TEXT NOT NULL DEFAULT 'private'`,
           ));
         },
+        mysql: async () => {
+          // Same as SQLite — no IF NOT EXISTS on ADD COLUMN — and the column is short and compared
+          // by value, so it is bounded rather than TEXT.
+          await db.execute(sql.raw(
+            `ALTER TABLE ${TABLE} ADD COLUMN visibility VARCHAR(32) NOT NULL DEFAULT 'private'`,
+          ));
+        },
       });
     }
 
@@ -88,6 +95,13 @@ export class TenantVisibilityMigration extends BaseMigration {
         const result: any = await db.execute(sql.raw(`PRAGMA table_info(${TABLE})`));
         const rows: any[] = Array.isArray(result) ? result : (result?.rows ?? []);
         present = rows.some((row: any) => String(row?.name || '') === 'visibility');
+      },
+      mysql: async () => {
+        // Scoped to this schema — `information_schema` spans every database on the server.
+        present = TenantVisibilityMigration.hasRow(await db.execute(sql.raw(
+          `SELECT 1 AS present FROM information_schema.columns
+            WHERE table_schema = DATABASE() AND table_name = '${TABLE}' AND column_name = 'visibility'`,
+        )));
       },
     });
 

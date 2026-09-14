@@ -59,9 +59,22 @@ export class MysqlSchemaBuilder {
     `);
   }
 
+  /**
+   * How wide a string column is when MySQL will not let it be TEXT.
+   *
+   * 191 because these tables are utf8mb4 — 4 bytes per character against InnoDB's old 767-byte index
+   * limit — which is the same ceiling the migrations use for their key columns.
+   */
+  private static readonly BOUNDED_STRING = 'VARCHAR(191)';
+
   private fieldToSqlFragment(field: ISchemaField): any {
     const dbName = NamingStrategy.toSnakeCase(field.name);
-    let type = sql`TEXT`;
+    // MySQL refuses BOTH a DEFAULT and a UNIQUE on TEXT — "BLOB, TEXT, GEOMETRY or JSON column can't
+    // have a default value", and an index needs a declared length. A collection that declared a
+    // default on a text field therefore could not be created AT ALL on this driver, which is what
+    // stopped `_system_webhooks` (`method` defaults to 'POST') and took the whole boot with it.
+    const boundString = field.defaultValue !== undefined || field.unique;
+    let type = boundString ? sql.raw(MysqlSchemaBuilder.BOUNDED_STRING) : sql`TEXT`;
 
     switch (field.type) {
       case 'number': type = sql`NUMERIC`; break;
@@ -77,14 +90,19 @@ export class MysqlSchemaBuilder {
       case 'text':
       case 'select':
       default:
-        type = sql`TEXT`;
+        type = boundString ? sql.raw(MysqlSchemaBuilder.BOUNDED_STRING) : sql`TEXT`;
     }
 
     const constraints: any[] = [];
     if (field.required) constraints.push(sql`NOT NULL`);
     if (field.unique) constraints.push(sql`UNIQUE`);
 
-    if (field.defaultValue !== undefined) {
+    // A JSON column cannot carry a default here either, and unlike a string there is nothing to
+    // widen — so the default is dropped rather than failing the table. Every reader of these already
+    // treats an absent value as empty.
+    const isJsonColumn = ['json', 'relationship', 'upload', 'richText'].includes(String(field.type));
+
+    if (field.defaultValue !== undefined && !isJsonColumn) {
       if (typeof field.defaultValue === 'string') {
         constraints.push(sql.raw(`DEFAULT '${field.defaultValue.replace(/'/g, "''")}'`));
       } else if (typeof field.defaultValue === 'boolean') {

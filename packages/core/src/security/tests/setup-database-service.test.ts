@@ -94,8 +94,13 @@ describe('SetupDatabaseService', () => {
     expect(stored.migrationUrl).toBe('');
   });
 
-  it('REFUSES a driver it cannot install yet, rather than writing something that will not boot', () => {
-    expect(() => SetupDatabaseService.apply({ driver: 'mysql' })).toThrow(/can install yet/);
+  /**
+   * Every driver can be installed now, so the refusal that matters is a different one: pointing a
+   * driver at the bundled server when that server speaks a different protocol. The connection would
+   * be written, the restart would happen, and the error would name neither the driver nor the server.
+   */
+  it('REFUSES a driver the bundled server does not speak, rather than writing a connection that cannot work', () => {
+    expect(() => SetupDatabaseService.apply({ driver: 'mysql' })).toThrow(/bundled database is postgres, not mysql/);
     expect(DatabaseConnectionFileService.read()).toBeNull();
   });
 
@@ -103,13 +108,17 @@ describe('SetupDatabaseService', () => {
     expect(() => SetupDatabaseService.apply({ driver: 'oracle' })).toThrow(/not a driver this platform ships/);
   });
 
-  it('shows every driver, the unavailable one included, with what it costs', () => {
+  it('shows every driver with what it costs and what it needs', () => {
     const { drivers } = SetupDatabaseService.options();
 
     expect(drivers.map((d) => d.value)).toEqual(['postgres', 'sqlite', 'mysql']);
     expect(drivers.find((d) => d.value === 'postgres')).toMatchObject({ isAvailable: true, isSingleSiteOnly: false });
     expect(drivers.find((d) => d.value === 'sqlite')).toMatchObject({ isAvailable: true, isSingleSiteOnly: true });
-    expect(drivers.find((d) => d.value === 'mysql')).toMatchObject({ isAvailable: false, isSingleSiteOnly: true });
+    // MySQL is installable, but only against a server the operator names — the bundled one is
+    // PostgreSQL, and `hasBundledServer` is what the wizard reads to decide which form to show.
+    expect(drivers.find((d) => d.value === 'mysql'))
+      .toMatchObject({ isAvailable: true, isSingleSiteOnly: true, hasBundledServer: false });
+    expect(drivers.find((d) => d.value === 'postgres')).toMatchObject({ hasBundledServer: true });
   });
 
   it('tells the wizard where the credentials will live, so it can say so on screen', () => {
@@ -117,6 +126,69 @@ describe('SetupDatabaseService', () => {
 
     expect(options.connectionFile).toBe(DatabaseConnectionFileService.file());
     expect(options.connectionFile.endsWith('database.json')).toBe(true);
+  });
+
+  /**
+   * A database the operator already runs. This is the only route for a driver the deployment ships
+   * no server for, and the isolation rule is the whole reason it cannot be a single form field.
+   */
+  describe('a server the operator runs', () => {
+    const server = {
+      host: 'db.internal', port: 6543, database: 'platform',
+      user: 'app_role', password: 'app-pass',
+      ownerUser: 'owner_role', ownerPassword: 'owner-pass',
+    };
+
+    it('writes both roles, pointed at the server that was named', () => {
+      SetupDatabaseService.apply({ driver: 'postgres', server });
+      const stored = DatabaseConnectionFileService.read()!;
+
+      expect(new URL(stored.runtimeUrl).username).toBe('app_role');
+      expect(new URL(stored.migrationUrl).username).toBe('owner_role');
+      expect(new URL(stored.runtimeUrl).hostname).toBe('db.internal');
+      expect(new URL(stored.runtimeUrl).port).toBe('6543');
+    });
+
+    it('REFUSES a driver that isolates without a second, schema-owning role', () => {
+      expect(() => SetupDatabaseService.apply({
+        driver: 'postgres', server: { ...server, ownerUser: '' },
+      })).toThrow(/needs a second, schema-owning role/);
+
+      expect(DatabaseConnectionFileService.read()).toBeNull();
+    });
+
+    it('needs no owner role for a driver that isolates nothing', () => {
+      SetupDatabaseService.apply({ driver: 'sqlite', server: { ...server, ownerUser: '' } });
+
+      expect(DatabaseConnectionFileService.read()!.migrationUrl).toBe('');
+    });
+
+    it('falls back to the driver\'s own port rather than inventing one', () => {
+      SetupDatabaseService.apply({ driver: 'postgres', server: { ...server, port: undefined } });
+
+      expect(new URL(DatabaseConnectionFileService.read()!.runtimeUrl).port).toBe('5432');
+    });
+
+    it('encodes a password that would otherwise reshape the URL', () => {
+      SetupDatabaseService.apply({ driver: 'postgres', server: { ...server, password: 'p@ss/word' } });
+      const parsed = new URL(DatabaseConnectionFileService.read()!.runtimeUrl);
+
+      expect(parsed.hostname).toBe('db.internal');
+      expect(decodeURIComponent(parsed.password)).toBe('p@ss/word');
+    });
+
+    it.each(['host', 'database', 'user'])('refuses a server with no %s', (field) => {
+      expect(() => SetupDatabaseService.apply({
+        driver: 'postgres', server: { ...server, [field]: '' },
+      })).toThrow(new RegExp(`the ${field} is required`));
+    });
+  });
+
+  it('REFUSES a driver the bundled server does not speak, rather than pointing it at the wrong one', () => {
+    // The compose ships PostgreSQL. Building a mysql:// URL against that container would connect to
+    // a server that does not speak the protocol, and the error would name neither.
+    expect(() => SetupDatabaseService.apply({ driver: 'mysql' }))
+      .toThrow(/bundled database is postgres, not mysql|can install yet/);
   });
 
   it('URL-encodes the credentials it builds', () => {

@@ -67,9 +67,19 @@
         },
         "mysql": {
           "name": "MySQL",
-          "note": "Not available yet. The database setup steps have no MySQL path, so an installation on it would stop at the first one, and there is no backup support yet either. Unlike SQLite it could serve many sites once that work is done."
+          "note": "A database server you already run. Keeps roles and backups like PostgreSQL, but has no way to keep two sites' data apart — so this installation will only ever serve a single site. Not included in this stack: point it at your own server."
         }
-      }
+      },
+      "useBundled": "Use the bundled database",
+      "useOwn": "Use a database I run",
+      "fieldHost": "Host",
+      "fieldPort": "Port",
+      "fieldDatabase": "Database name",
+      "fieldUser": "Username",
+      "fieldPassword": "Password",
+      "fieldOwnerUser": "Schema owner username",
+      "fieldOwnerPassword": "Schema owner password",
+      "ownerRoleHelp": "This driver keeps each site's data separate, which needs two roles: one that owns the tables and runs migrations, and one that serves requests and owns nothing. Serving requests as the owner turns that separation off without any error. Both must already exist on your server."
     },
     "domain": {
       "title": "The admin's domain",

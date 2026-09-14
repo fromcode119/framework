@@ -1,5 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 
 /**
  * Lets a share point at plugin RECORDS, not only at media.
@@ -35,6 +36,18 @@ export class RecordSharesMigration extends BaseMigration {
           }
         }
       },
+      mysql: async () => {
+        // "resource_type" is short, so VARCHAR(191) takes the DEFAULT directly (TEXT cannot in
+        // MySQL). "resource_ids" is a JSON array that can outgrow 191 characters, so it stays TEXT
+        // and takes its default the long way: add it nullable, backfill the existing rows, then lock
+        // it to NOT NULL — by which point nothing is left NULL to reject.
+        await ColumnGuard.addIfMissing(db, '_system_file_shares', 'resource_type', "VARCHAR(191) NOT NULL DEFAULT ''");
+        await ColumnGuard.addIfMissing(db, '_system_file_shares', 'resource_ids', 'TEXT NULL');
+        await db.execute(sql`
+          UPDATE "_system_file_shares" SET "resource_ids" = '[]' WHERE "resource_ids" IS NULL
+        `);
+        await db.execute(sql`ALTER TABLE "_system_file_shares" MODIFY COLUMN "resource_ids" TEXT NOT NULL`);
+      },
     });
   }
 
@@ -46,6 +59,10 @@ export class RecordSharesMigration extends BaseMigration {
       },
       sqlite: async () => {
         // Older SQLite cannot drop a column; the columns are harmless.
+      },
+      mysql: async () => {
+        await db.execute(sql`ALTER TABLE "_system_file_shares" DROP COLUMN "resource_ids"`);
+        await db.execute(sql`ALTER TABLE "_system_file_shares" DROP COLUMN "resource_type"`);
       },
     });
   }

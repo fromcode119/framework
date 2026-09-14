@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { DatabaseDriverChoice } from '@fromcode119/core/client';
 import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
-import type { ISetupDatabaseOptions } from '@/app/setup/setup-database-options.interface';
+import { Input } from '@/components/ui/view/input.client';
+import type { ISetupDatabaseOptions, ISetupDatabaseServer } from '@/app/setup/setup-database-options.interface';
 
 /**
  * The step before every other one: which database this installation will use.
@@ -23,10 +24,30 @@ export class SetupDatabaseStep extends PureReactor {
   @prop declare options: ISetupDatabaseOptions;
   @prop declare driver: string;
   @prop declare onDriverChange: (driver: string) => void;
+  /** Non-null when the operator is pointing this at a server they run rather than the bundled one. */
+  @prop declare server: ISetupDatabaseServer | null;
+  @prop declare onServerChange: (field: keyof ISetupDatabaseServer, value: string) => void;
+  @prop declare onUseOwnServer: (useOwn: boolean) => void;
 
   @bound
   private handleClick(event: React.MouseEvent<HTMLButtonElement>): void {
     this.onDriverChange(event.currentTarget.value);
+  }
+
+  @bound
+  private handleServerField(event: React.ChangeEvent<HTMLInputElement>): void {
+    this.onServerChange(event.currentTarget.name as keyof ISetupDatabaseServer, event.currentTarget.value);
+  }
+
+  @bound
+  private handleUseBundled(): void { this.onUseOwnServer(false); }
+
+  @bound
+  private handleUseOwn(): void { this.onUseOwnServer(true); }
+
+  /** The driver currently chosen, as the server described it. */
+  private get selected() {
+    return this.options.drivers.find((driver) => driver.value === this.driver);
   }
 
   private text(key: string): string {
@@ -71,6 +92,62 @@ export class SetupDatabaseStep extends PureReactor {
     );
   }
 
+  private locationClass(active: boolean): string {
+    return [
+      'flex-1 rounded-lg border px-3 py-2 text-[12px] font-semibold transition-colors',
+      active
+        ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300'
+        : 'border-slate-200 text-slate-500 dark:border-slate-800 hover:border-indigo-300',
+    ].join(' ');
+  }
+
+  /**
+   * The details of a server the operator runs.
+   *
+   * TWO ROLES ARE ASKED FOR, not one, wherever the driver isolates tenants. Serving requests as the
+   * role that owns the tables turns row-level security off without any error — so the second field
+   * set is required rather than advanced, and says why on screen instead of in a tooltip.
+   *
+   * Nothing here is created: these roles exist on that server already, because this process holds no
+   * credential that could make them.
+   */
+  private get serverForm(): ReactNode {
+    const server = this.server!;
+    const field = (name: keyof ISetupDatabaseServer, label: string, type = 'text', placeholder = '') => (
+      <label className="block">
+        <span className="mb-1 block text-[11px] font-semibold text-slate-500">{label}</span>
+        <Input name={name} type={type} value={server[name]} onChange={this.handleServerField} placeholder={placeholder} />
+      </label>
+    );
+
+    return (
+      <div className="space-y-3 rounded-md border border-slate-200 px-3 py-3 dark:border-slate-800">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="col-span-2">{field('host', this.text('setup.database.fieldHost'), 'text', 'db.example.com')}</div>
+          {field('port', this.text('setup.database.fieldPort'), 'text', String(this.selected?.defaultPort ?? ''))}
+        </div>
+        {field('database', this.text('setup.database.fieldDatabase'))}
+
+        <div className="grid grid-cols-2 gap-2">
+          {field('user', this.text('setup.database.fieldUser'))}
+          {field('password', this.text('setup.database.fieldPassword'), 'password')}
+        </div>
+
+        {this.selected?.needsOwnerRole && (
+          <>
+            <p className="text-[11px] leading-relaxed text-slate-500">
+              {this.text('setup.database.ownerRoleHelp')}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {field('ownerUser', this.text('setup.database.fieldOwnerUser'))}
+              {field('ownerPassword', this.text('setup.database.fieldOwnerPassword'), 'password')}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
   render(): ReactNode {
     return (
       <div className="space-y-4">
@@ -106,16 +183,33 @@ export class SetupDatabaseStep extends PureReactor {
         </div>
 
         {/*
-          * What is about to happen, before it happens. The roles named here do not exist yet — they
-          * are created on the next boot — so this is a statement of intent the operator can check
-          * against, not a report of something already done.
+          * Where it lives. Offered only when there is a choice to make: a driver this deployment
+          * ships no server for has exactly one route, so presenting two would be a false choice.
           */}
-        <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/50">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            {this.text('setup.database.summaryTitle')}
-          </p>
-          {this.summary}
-        </div>
+        {this.selected?.hasBundledServer && (
+          <div className="flex gap-2">
+            <button type="button" onClick={this.handleUseBundled} className={this.locationClass(!this.server)}>
+              {this.text('setup.database.useBundled')}
+            </button>
+            <button type="button" onClick={this.handleUseOwn} className={this.locationClass(!!this.server)}>
+              {this.text('setup.database.useOwn')}
+            </button>
+          </div>
+        )}
+
+        {this.server ? this.serverForm : (
+          /*
+           * What is about to happen, before it happens. The roles named here do not exist yet — they
+           * are created on the next boot — so this is a statement of intent the operator can check
+           * against, not a report of something already done.
+           */
+          <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/50">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+              {this.text('setup.database.summaryTitle')}
+            </p>
+            {this.summary}
+          </div>
+        )}
 
         <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-500/40 dark:bg-amber-500/10">
           <p className="text-[12px] leading-relaxed text-amber-900 dark:text-amber-200">

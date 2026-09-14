@@ -25,6 +25,12 @@ export class PortableColumnTypes {
       jsonEmptyArray: "'[]'::jsonb",
       timestamp: 'TIMESTAMPTZ',
       now: 'NOW()',
+      key: 'TEXT',
+      shortText: 'TEXT',
+      longTextNullable: "TEXT NOT NULL DEFAULT ''",
+      autoId: 'SERIAL PRIMARY KEY',
+      boolTrue: 'TRUE',
+      boolFalse: 'FALSE',
     },
     sqlite: {
       // SQLite has no JSON column type; every JSON value in this schema is already held as TEXT.
@@ -35,6 +41,29 @@ export class PortableColumnTypes {
       // practice: that is the existing, load-bearing behaviour, not something changed here.
       timestamp: 'DATETIME',
       now: 'CURRENT_TIMESTAMP',
+      key: 'TEXT',
+      shortText: 'TEXT',
+      longTextNullable: "TEXT NOT NULL DEFAULT ''",
+      autoId: 'INTEGER PRIMARY KEY AUTOINCREMENT',
+      boolTrue: '1',
+      boolFalse: '0',
+    },
+    mysql: {
+      json: 'JSON',
+      jsonEmptyArray: "('[]')",
+      timestamp: 'TIMESTAMP NULL',
+      now: 'CURRENT_TIMESTAMP',
+      // MySQL indexes a variable-length column only with a declared prefix length, so anything that
+      // is a key, a UNIQUE or a foreign-key target cannot be TEXT. 191 because these tables are
+      // utf8mb4 — 4 bytes per character against the old 767-byte InnoDB index limit.
+      key: 'VARCHAR(191)',
+      shortText: 'VARCHAR(191)',
+      // MySQL refuses a DEFAULT on TEXT at all, so the column is nullable there instead of
+      // defaulting to the empty string. Readers already treat empty and null the same.
+      longTextNullable: 'TEXT NULL',
+      autoId: 'INT AUTO_INCREMENT PRIMARY KEY',
+      boolTrue: 'TRUE',
+      boolFalse: 'FALSE',
     },
   };
 
@@ -70,4 +99,32 @@ export interface IPortableColumnTypes {
   readonly timestamp: string;
   /** "when this row was written", as a DEFAULT. */
   readonly now: string;
+  /**
+   * A string column that is a PRIMARY KEY, a UNIQUE, or the target of a FOREIGN KEY.
+   *
+   * Separate from an ordinary string because MySQL cannot index one of unbounded length, and getting
+   * this wrong does not fail at write time — it fails at CREATE TABLE, on that driver only.
+   */
+  readonly key: string;
+  /**
+   * A short string that carries a DEFAULT.
+   *
+   * Separate from an ordinary TEXT because MySQL refuses one outright: "BLOB, TEXT, GEOMETRY or JSON
+   * column can't have a default value". Use it for a status, a source, a type — anything with a
+   * declared default or compared by value. A long free-text column with no default stays TEXT.
+   */
+  readonly shortText: string;
+  /**
+   * A long free-text column that wants to read back as "" rather than null.
+   *
+   * PostgreSQL and SQLite give TEXT a `DEFAULT ''`; MySQL forbids a default on TEXT entirely, so
+   * there it is nullable and the empty string arrives as null. Every reader of these columns already
+   * coalesces, which is why this is safe — and why it is a NAMED type rather than a quiet difference.
+   */
+  readonly longTextNullable: string;
+  /** An auto-assigned integer primary key, including the PRIMARY KEY clause. */
+  readonly autoId: string;
+  /** Literal true/false, as a DEFAULT. SQLite has no boolean type and stores 1/0. */
+  readonly boolTrue: string;
+  readonly boolFalse: string;
 }

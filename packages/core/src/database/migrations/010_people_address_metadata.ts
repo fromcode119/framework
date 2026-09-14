@@ -1,4 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
@@ -21,14 +22,9 @@ export class PeopleAddressMetadataMigration extends BaseMigration {
         `);
       },
       mysql: async () => {
-        const [row]: any = await db.execute(sql`
-          SELECT COUNT(*) AS count
-          FROM information_schema.columns
-          WHERE table_name = 'people_addresses' AND column_name = 'metadata'
-        `);
-        if (Number(row?.count) === 0) {
-          await db.execute(sql.raw(`ALTER TABLE people_addresses ADD COLUMN metadata JSON`));
-        }
+        // This one named its column correctly but still guarded on a misread result shape, so it
+        // depended on getting the check right twice. ColumnGuard asks once, in each dialect's words.
+        await ColumnGuard.addIfMissing(db, 'people_addresses', 'metadata', 'JSON');
       },
       sqlite: async () => {
         try {

@@ -1,5 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
+import { SeedGuard } from '@core/database/helpers/seed-guard';
 
 /**
  * `deploy.restart` (MCP) deliberately carries its OWN permission instead of riding on
@@ -40,6 +41,18 @@ export class AddSystemDeployPermissionMigration extends BaseMigration {
             INSERT OR IGNORE INTO "_system_roles_permissions" ("role_slug", "permission_name")
             VALUES ('admin', ${name})
           `);
+        }
+      },
+      mysql: async () => {
+        // Three dialects spell "insert if absent" three ways; SeedGuard owns that, so this is a
+        // branch rather than a third copy of the statements.
+        for (const [name, description, pluginSlug, group, impact] of permissions) {
+          await SeedGuard.insertIfMissing(db, '_system_permissions', {
+            name, description, plugin_slug: pluginSlug, group, impact,
+          }, ['name']);
+          await SeedGuard.insertIfMissing(db, '_system_roles_permissions', {
+            role_slug: 'admin', permission_name: name,
+          }, ['role_slug', 'permission_name']);
         }
       },
     });

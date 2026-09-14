@@ -96,6 +96,10 @@ export class SourcesIsPlatformConfigurationMigration extends BaseMigration {
         // SQLite has no row-level security, so there is nothing to release — and dropping a column
         // there rewrites the table, which is not worth doing for a column nothing reads.
       },
+      mysql: async () => {
+        // Migration 032's MySQL branch never added row-level security or a tenant_id column to this
+        // table in the first place (MySQL has neither), so there is nothing to release here either.
+      },
     });
 
     logger.info(`${NEW_TABLE} is out of tenancy: every site's admin and the build timer see it again.`);
@@ -113,6 +117,14 @@ export class SourcesIsPlatformConfigurationMigration extends BaseMigration {
       sqlite: async () => {
         present = SourcesIsPlatformConfigurationMigration.hasRow(
           await db.execute(sql.raw(`SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = '${table}'`)),
+        );
+      },
+      mysql: async () => {
+        present = SourcesIsPlatformConfigurationMigration.hasRow(
+          await db.execute(sql.raw(
+            `SELECT 1 AS present FROM information_schema.tables `
+            + `WHERE table_schema = DATABASE() AND table_name = '${table}'`,
+          )),
         );
       },
     });

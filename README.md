@@ -149,9 +149,20 @@ name for the platform, and the domain the admin should answer on, prefilled with
 arrived on. Setup is accepted for 15 minutes after start, and only from whoever gets there first.
 
 Three database roles are created, not one: PostgreSQL skips row-level security for superusers and
-table owners, so the role that serves requests must be neither. PostgreSQL is the only driver
-installable today — the wizard lists SQLite and MySQL with the reason each is not yet available
-rather than hiding them.
+table owners, so the role that serves requests must be neither.
+
+You can also point the wizard at a database you already run, which is the route for a managed
+PostgreSQL or for MySQL — the bundled stack ships PostgreSQL, so anything else needs a server you
+name. There it asks for two roles rather than one wherever the driver keeps sites apart, because
+serving requests as the role that owns the tables switches that separation off with no error, and
+the roles have to exist already: nothing in the platform holds a credential privileged enough to
+create them on someone else's server.
+
+| Driver | Sites | Notes |
+|---|---|---|
+| **PostgreSQL** | many | Row-level security keeps each site's data separate. The bundled default. |
+| **SQLite** | one | One file, no server. No row-level security, so it has nowhere to put a second site's rows. |
+| **MySQL** | one | Real roles and backups, but no row-level security either — same limit as SQLite, for now. |
 
 Updating is the same two commands with `VERSION=` set to a newer tag. `deploy/DEPLOYMENT.md` covers
 proxies, TLS, the split-service and single-domain shapes, and running without Docker.

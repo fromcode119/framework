@@ -55,6 +55,11 @@ export class SettingsIdentityMigration extends BaseMigration {
         // be risk with no benefit. If S1 ever ships, revisit this: the premise changes, not the
         // conclusion.
       },
+      mysql: async () => {
+        // Same reasoning as SQLite above, word for word: no row-level security on this driver,
+        // `TenantMode` refuses a second tenant, so the key alone cannot collide and there is nothing
+        // to widen.
+      },
     });
   }
 

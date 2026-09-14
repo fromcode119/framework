@@ -28,6 +28,12 @@ export class TenantPluginsMigration extends BaseMigration {
 
         await TenantPluginsMigration.scopePluginSettings(db);
       },
+      mysql: async () => {
+        await TenantPluginsMigration.createTable(db, 'TIMESTAMP NULL', 'VARCHAR(191)');
+        await TenantPluginsMigration.backfillFromActivePlugins(db, 'INSERT IGNORE');
+        // No row-level security on MySQL, and nothing replaces it — same story as SQLite below.
+        // `TenantMode` refuses to boot a multi-tenant deployment here, which is the real guard.
+      },
       sqlite: async () => {
         await TenantPluginsMigration.createTable(db, 'DATETIME');
         await TenantPluginsMigration.backfillFromActivePlugins(db);
@@ -99,16 +105,20 @@ export class TenantPluginsMigration extends BaseMigration {
     `));
   }
 
-  private static async createTable(db: IDatabaseManager, timestamp: string): Promise<void> {
+  private static async createTable(db: IDatabaseManager, timestamp: string, key: string = 'TEXT'): Promise<void> {
     // No foreign keys: `_system_plugins` rows come and go with installation, and a tenant row can be
     // removed by T4. A dangling enablement row is harmless (the plugin is not loadable, so the
     // platform axis refuses it anyway), whereas an FK would make uninstalling a plugin fail while
     // any tenant still has a row for it — turning a routine operator action into a puzzle.
+    //
+    // `key` is `TEXT` on Postgres/SQLite and `VARCHAR(191)` on MySQL: `tenant_id`/`plugin_slug` are
+    // the composite primary key and `state` carries a DEFAULT, and MySQL accepts neither on a TEXT
+    // column.
     await db.execute(sql.raw(`
       CREATE TABLE IF NOT EXISTS "_system_tenant_plugins" (
-        "tenant_id" TEXT NOT NULL,
-        "plugin_slug" TEXT NOT NULL,
-        "state" TEXT NOT NULL DEFAULT 'active',
+        "tenant_id" ${key} NOT NULL,
+        "plugin_slug" ${key} NOT NULL,
+        "state" ${key} NOT NULL DEFAULT 'active',
         "enabled_at" ${timestamp},
         "updated_at" ${timestamp} DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "_system_tenant_plugins_pk" PRIMARY KEY ("tenant_id", "plugin_slug")
@@ -128,14 +138,19 @@ export class TenantPluginsMigration extends BaseMigration {
    * per-tenant gate goes live, no tenant has a row for anything and every plugin turns off at once
    * for every customer — while the admin still reports them all "active" on the platform axis.
    */
-  private static async backfillFromActivePlugins(db: IDatabaseManager): Promise<void> {
+  /**
+   * `ON CONFLICT DO NOTHING` is the Postgres spelling, and SQLite accepts it unchanged (its upsert
+   * syntax is Postgres-compatible on this exact clause). MySQL has neither — it needs `INSERT IGNORE`
+   * instead, which is why this takes `insertKeyword` rather than being one shared statement.
+   */
+  private static async backfillFromActivePlugins(db: IDatabaseManager, insertKeyword = 'INSERT'): Promise<void> {
     await db.execute(sql.raw(`
-      INSERT INTO "_system_tenant_plugins" ("tenant_id", "plugin_slug", "state", "enabled_at")
+      ${insertKeyword} INTO "_system_tenant_plugins" ("tenant_id", "plugin_slug", "state", "enabled_at")
       SELECT t."id", p."slug", 'active', CURRENT_TIMESTAMP
       FROM "_system_tenants" t
       CROSS JOIN "_system_plugins" p
       WHERE p."state" = 'active'
-      ON CONFLICT DO NOTHING
+      ${insertKeyword === 'INSERT' ? 'ON CONFLICT DO NOTHING' : ''}
     `));
   }
 }

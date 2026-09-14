@@ -1,5 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 
 export class AddPluginHeldReasonMigration extends BaseMigration {
   readonly version = 13;
@@ -23,6 +24,9 @@ export class AddPluginHeldReasonMigration extends BaseMigration {
           const msg: string = (e?.message ?? '') + (e?.cause?.message ?? '');
           if (!msg.includes('duplicate column name')) throw e;
         }
+      },
+      mysql: async () => {
+        await ColumnGuard.addIfMissing(db, '_system_plugins', 'held_reason', 'TEXT');
       }
     });
   }
@@ -38,6 +42,9 @@ export class AddPluginHeldReasonMigration extends BaseMigration {
         } catch (e) {
           // SQLite <3.35 lacks DROP COLUMN — silently skip.
         }
+      },
+      mysql: async () => {
+        await db.execute(sql`ALTER TABLE "_system_plugins" DROP COLUMN "held_reason"`);
       }
     });
   }

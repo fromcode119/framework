@@ -17,7 +17,7 @@ import { SetupPlatformStep } from '@/app/setup/setup-platform-step.client';
 import { SetupDomainStep } from '@/app/setup/setup-domain-step.client';
 import { SetupDatabaseStep } from '@/app/setup/setup-database-step.client';
 import { SetupPhase } from '@fromcode119/core/client';
-import type { ISetupDatabaseOptions } from '@/app/setup/setup-database-options.interface';
+import type { ISetupDatabaseOptions, ISetupDatabaseServer } from '@/app/setup/setup-database-options.interface';
 import type { ISetupAccountErrors } from '@/app/setup/setup-account-errors.interface';
 import { SetupAccountValidation } from '@/app/setup/setup-account-validation';
 
@@ -61,6 +61,13 @@ export class SetupPage extends AdminComponent {
   @state phase: SetupPhase = SetupPhase.PLATFORM;
   @state databaseOptions: ISetupDatabaseOptions | null = null;
   @state databaseDriver = '';
+  /**
+   * The server the operator is pointing this at, or null for the one this deployment ships.
+   *
+   * Null is not "empty values" — it is a different answer, and the difference decides whether the
+   * platform provisions its own roles or uses roles that already exist somewhere else.
+   */
+  @state databaseServer: ISetupDatabaseServer | null = null;
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
@@ -116,7 +123,36 @@ export class SetupPage extends AdminComponent {
   @bound handlePlatformNameChange(value: string): void { this.platformName = value; }
   @bound handleAdminUrlChange(value: string): void { this.adminUrl = value; }
   @bound handleTimezoneChange(value: string): void { this.timezone = value; }
-  @bound handleDatabaseDriverChange(value: string): void { this.databaseDriver = value; }
+  @bound
+  handleDatabaseDriverChange(value: string): void {
+    this.databaseDriver = value;
+    // A driver this deployment ships no server for has only one route, so the form opens with it
+    // rather than offering a bundled option that does not exist.
+    const driver = this.databaseOptions?.drivers.find((entry) => entry.value === value);
+    if (driver && !driver.hasBundledServer) this.handleUseOwnServer(true);
+    if (driver?.hasBundledServer) this.databaseServer = null;
+  }
+
+  @bound
+  handleUseOwnServer(useOwn: boolean): void {
+    if (!useOwn) {
+      this.databaseServer = null;
+      return;
+    }
+    const port = this.databaseOptions?.drivers.find((entry) => entry.value === this.databaseDriver)?.defaultPort;
+    // Prefilled with the driver's own port and nothing else: every other field is a fact only the
+    // operator has, and a plausible-looking default would be a guess about someone's infrastructure.
+    this.databaseServer = {
+      host: '', port: port ? String(port) : '', database: '',
+      user: '', password: '', ownerUser: '', ownerPassword: '',
+    };
+  }
+
+  @bound
+  handleDatabaseServerChange(field: keyof ISetupDatabaseServer, value: string): void {
+    if (!this.databaseServer) return;
+    this.databaseServer = { ...this.databaseServer, [field]: value };
+  }
 
   /** The first driver this build can actually install — never one that is listed but unavailable. */
   private firstAvailableDriver(options: ISetupDatabaseOptions | null): string {
@@ -133,7 +169,11 @@ export class SetupPage extends AdminComponent {
   private async configureDatabase(): Promise<void> {
     this.isLoading = true;
     try {
-      await AdminApi.post(AdminConstants.ENDPOINTS.SETUP.DATABASE, { driver: this.databaseDriver });
+      await AdminApi.post(AdminConstants.ENDPOINTS.SETUP.DATABASE, {
+        driver: this.databaseDriver,
+        // Omitted entirely for the bundled database — the api reads its presence as the answer.
+        ...(this.databaseServer ? { server: this.databaseServer } : {}),
+      });
       await this.waitForRestart();
       this.phase = SetupPhase.PLATFORM;
       this.step = SetupStep.LANGUAGE;
@@ -238,6 +278,9 @@ export class SetupPage extends AdminComponent {
           options={this.databaseOptions}
           driver={this.databaseDriver}
           onDriverChange={this.handleDatabaseDriverChange}
+          server={this.databaseServer}
+          onServerChange={this.handleDatabaseServerChange}
+          onUseOwnServer={this.handleUseOwnServer}
         />
       );
     }

@@ -1,4 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
 export class MediaColumnsBackfill extends BaseMigration {
@@ -46,34 +47,37 @@ export class MediaColumnsBackfill extends BaseMigration {
         `);
       },
       mysql: async () => {
-        // MySQL lacks IF NOT EXISTS on multiple add; add individually
-        const addColumnIfMissing = async (name: string, definition: string) => {
-          const [row]: any = await db.execute(sql`
-            SELECT COUNT(*) AS count
-            FROM information_schema.columns
-            WHERE table_name = 'media' AND column_name = ${name}
-          `);
-          if (Number(row.count) === 0) {
-            await db.execute(sql.raw(`ALTER TABLE media ADD COLUMN ${definition}`));
-          }
-        };
+        // MySQL has no IF NOT EXISTS on ADD COLUMN, so each is added individually — through
+        // ColumnGuard, which probes first and speaks every dialect.
+        //
+        // This branch used to hand-roll that with two bugs, and the second hid the first: it built
+        // `ADD COLUMN ${definition}` with NO column name, and it read its own existence check as
+        // `const [row] = await db.execute(...)`, which on this driver took the rows ARRAY rather
+        // than a row — so `row.count` was undefined, the guard never fired, and the broken ALTER
+        // never ran. It only surfaced once `execute` started returning rows consistently.
+        const columns: Array<[string, string]> = [
+          ['original_name', 'TEXT'],
+          ['mime_type', 'TEXT'],
+          ['file_size', 'INT'],
+          ['width', 'INT'],
+          ['height', 'INT'],
+          ['alt', 'TEXT'],
+          ['caption', 'TEXT'],
+          ['folder_id', 'INT'],
+          ['updated_at', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP'],
+        ];
+        for (const [name, definition] of columns) {
+          await ColumnGuard.addIfMissing(db, 'media', name, definition);
+        }
 
-        await addColumnIfMissing('original_name', 'TEXT');
-        await addColumnIfMissing('mime_type', 'TEXT');
-        await addColumnIfMissing('file_size', 'INT');
-        await addColumnIfMissing('width', 'INT');
-        await addColumnIfMissing('height', 'INT');
-        await addColumnIfMissing('alt', 'TEXT');
-        await addColumnIfMissing('caption', 'TEXT');
-        await addColumnIfMissing('folder_id', 'INT');
-        await addColumnIfMissing('updated_at', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
-
-        // FK for folder_id
-        const [fkRow]: any = await db.execute(sql`
+        // The foreign key is separate: a column can exist without it, and adding it twice is an error.
+        const rows: any = await db.execute(sql`
           SELECT COUNT(*) AS count FROM information_schema.KEY_COLUMN_USAGE
-          WHERE TABLE_NAME = 'media' AND COLUMN_NAME = 'folder_id' AND REFERENCED_TABLE_NAME = 'media_folders'
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'media'
+            AND COLUMN_NAME = 'folder_id' AND REFERENCED_TABLE_NAME = 'media_folders'
         `);
-        if (Number(fkRow.count) === 0) {
+        const existing = Array.isArray(rows) ? rows[0] : (rows?.rows ?? [])[0];
+        if (Number(existing?.count ?? 0) === 0) {
           await db.execute(sql.raw(`ALTER TABLE media ADD CONSTRAINT media_folder_fk FOREIGN KEY (folder_id) REFERENCES media_folders(id) ON DELETE SET NULL`));
         }
       },

@@ -64,6 +64,14 @@ export class SourcesIsNotAPluginMigration extends BaseMigration {
           await db.execute(sql.raw(`SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = '${table}'`)),
         );
       },
+      mysql: async () => {
+        present = SourcesIsNotAPluginMigration.hasRow(
+          await db.execute(sql.raw(
+            `SELECT 1 AS present FROM information_schema.tables `
+            + `WHERE table_schema = DATABASE() AND table_name = '${table}'`,
+          )),
+        );
+      },
     });
     return present;
   }

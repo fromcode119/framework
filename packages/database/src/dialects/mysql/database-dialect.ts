@@ -2,6 +2,9 @@ import type { IDatabaseManager } from '@database/interfaces/database-manager.int
 import type { IDatabaseDialectDefinition } from '@database/dialects/interfaces/database-dialect-definition.interface';
 import type { IDatabaseDialectResolver } from '@database/dialects/interfaces/database-dialect-resolver.interface';
 import { MysqlDialectResolver } from '@database/dialects/mysql/dialect-resolver';
+// Static import: the backup handler pulls only Node built-ins, so there is nothing heavy to defer.
+// (The MANAGER stays a lazy require — that one loads the actual driver.)
+import { MysqlDatabaseBackupHandler } from '@database/dialects/mysql/database-backup-handler';
 
 export class MysqlDatabaseDialect implements IDatabaseDialectDefinition {
   readonly dialect = 'mysql';
@@ -18,6 +21,6 @@ export class MysqlDatabaseDialect implements IDatabaseDialectDefinition {
   }
 
   createBackupHandler(): ReturnType<IDatabaseDialectDefinition['createBackupHandler']> {
-    return null;
+    return new MysqlDatabaseBackupHandler();
   }
 }

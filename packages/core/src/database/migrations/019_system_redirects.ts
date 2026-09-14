@@ -49,7 +49,11 @@ export class SystemRedirectsMigration extends BaseMigration {
         await db.execute(sql.raw(`
           CREATE TABLE IF NOT EXISTS _system_redirects (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            from_path VARCHAR(768) NOT NULL UNIQUE,
+            -- 512, not 768. These tables are utf8mb4, so an index counts 4 bytes per character:
+            -- 768 is exactly InnoDB's 3072-byte ceiling for the UNIQUE alone, and the composite
+            -- index below adds enabled on top, which puts it over. The table could never be
+            -- created on MySQL. 512*4 = 2048 leaves room for both.
+            from_path VARCHAR(512) NOT NULL UNIQUE,
             to_path TEXT NOT NULL,
             type VARCHAR(8) NOT NULL DEFAULT '301',
             enabled INT NOT NULL DEFAULT 1,

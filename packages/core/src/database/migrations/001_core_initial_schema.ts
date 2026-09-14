@@ -13,6 +13,9 @@ export class InitialFrameworkMigration extends BaseMigration {
       },
       sqlite: async () => {
         await InitialFrameworkSchemaStatements.createSqliteTables(db);
+      },
+      mysql: async () => {
+        await InitialFrameworkSchemaStatements.createMysqlTables(db);
       }
     });
 
@@ -23,6 +26,9 @@ export class InitialFrameworkMigration extends BaseMigration {
       },
       sqlite: async () => {
         await InitialFrameworkSchemaStatements.seedSqliteRoles(db);
+      },
+      mysql: async () => {
+        await InitialFrameworkSchemaStatements.seedMysqlRoles(db);
       }
     });
 

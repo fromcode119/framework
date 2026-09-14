@@ -23,21 +23,30 @@ export class TenantThemesMigration extends BaseMigration {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await TenantThemesMigration.createTable(db, 'TIMESTAMP', 'JSONB');
-        await TenantThemesMigration.backfillFromActiveTheme(db, 'JSONB');
+        await TenantThemesMigration.backfillFromActiveTheme(db);
       },
       sqlite: async () => {
         await TenantThemesMigration.createTable(db, 'DATETIME', 'TEXT');
-        await TenantThemesMigration.backfillFromActiveTheme(db, 'TEXT');
+        await TenantThemesMigration.backfillFromActiveTheme(db);
+      },
+      mysql: async () => {
+        // `key` is VARCHAR(191): "tenant_id"/"theme_slug" carry the composite primary key and
+        // "state" carries a DEFAULT, and MySQL allows neither on TEXT. `INSERT IGNORE` stands in for
+        // `ON CONFLICT DO NOTHING`, which MySQL does not have.
+        await TenantThemesMigration.createTable(db, 'TIMESTAMP NULL', 'JSON', 'VARCHAR(191)');
+        await TenantThemesMigration.backfillFromActiveTheme(db, 'INSERT IGNORE');
       },
     });
   }
 
-  private static async createTable(db: IDatabaseManager, timestamp: string, json: string): Promise<void> {
+  private static async createTable(
+    db: IDatabaseManager, timestamp: string, json: string, key: string = 'TEXT',
+  ): Promise<void> {
     await db.execute(sql.raw(`
       CREATE TABLE IF NOT EXISTS "_system_tenant_themes" (
-        "tenant_id" TEXT NOT NULL,
-        "theme_slug" TEXT NOT NULL,
-        "state" TEXT NOT NULL DEFAULT 'inactive',
+        "tenant_id" ${key} NOT NULL,
+        "theme_slug" ${key} NOT NULL,
+        "state" ${key} NOT NULL DEFAULT 'inactive',
         "config" ${json},
         "updated_at" ${timestamp} DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "_system_tenant_themes_pk" PRIMARY KEY ("tenant_id", "theme_slug")
@@ -54,15 +63,14 @@ export class TenantThemesMigration extends BaseMigration {
    * nothing and keeps the single `activeTheme` it has today; a deployment with no active theme copies
    * nothing either, and that is the truth rather than an invented default.
    */
-  private static async backfillFromActiveTheme(db: IDatabaseManager, json: string): Promise<void> {
-    const configExpr = json === 'JSONB' ? 'p."config"' : 'p."config"';
+  private static async backfillFromActiveTheme(db: IDatabaseManager, insertKeyword = 'INSERT'): Promise<void> {
     await db.execute(sql.raw(`
-      INSERT INTO "_system_tenant_themes" ("tenant_id", "theme_slug", "state", "config")
-      SELECT t."id", p."slug", 'active', ${configExpr}
+      ${insertKeyword} INTO "_system_tenant_themes" ("tenant_id", "theme_slug", "state", "config")
+      SELECT t."id", p."slug", 'active', p."config"
       FROM "_system_tenants" t
       CROSS JOIN "_system_themes" p
       WHERE p."state" = 'active'
-      ON CONFLICT DO NOTHING
+      ${insertKeyword === 'INSERT' ? 'ON CONFLICT DO NOTHING' : ''}
     `));
   }
 }

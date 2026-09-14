@@ -33,18 +33,18 @@ export class AcmeAccountsAndChallengesMigration extends BaseMigration {
 
     await db.execute(sql.raw(
       `CREATE TABLE IF NOT EXISTS ${ACCOUNTS} (
-        directory_url TEXT PRIMARY KEY,
-        account_url TEXT NOT NULL DEFAULT '',
-        private_key_enc TEXT NOT NULL DEFAULT '',
-        contact TEXT NOT NULL DEFAULT '',
+        directory_url ${type.key} PRIMARY KEY,
+        account_url ${type.longTextNullable},
+        private_key_enc ${type.longTextNullable},
+        contact ${type.longTextNullable},
         created_at ${type.timestamp} NOT NULL DEFAULT ${type.now}
       )`,
     ));
 
     await db.execute(sql.raw(
       `CREATE TABLE IF NOT EXISTS ${CHALLENGES} (
-        token TEXT PRIMARY KEY,
-        host TEXT NOT NULL,
+        token ${type.key} PRIMARY KEY,
+        host ${type.key} NOT NULL,
         key_authorization TEXT NOT NULL,
         expires_at ${type.timestamp} NOT NULL
       )`,

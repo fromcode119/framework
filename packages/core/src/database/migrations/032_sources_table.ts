@@ -33,34 +33,42 @@ export class SourcesTableMigration extends BaseMigration {
       sqlite: async () => {
         await db.execute(sql.raw(SourcesTableMigration.createStatement('INTEGER PRIMARY KEY AUTOINCREMENT', 'TEXT')));
       },
+      mysql: async () => {
+        // `slug` carries a UNIQUE, `type` joins it in migration 037's composite index, and `branch`,
+        // `last_build_status` and `disable_permalink` each carry a DEFAULT — none of those five can
+        // be TEXT in MySQL, so they get VARCHAR(191) here.
+        await db.execute(sql.raw(
+          SourcesTableMigration.createStatement('INT AUTO_INCREMENT PRIMARY KEY', 'TIMESTAMP NULL', 'VARCHAR(191)'),
+        ));
+      },
     });
   }
 
   /**
-   * One shape, two dialects.
+   * One shape, three dialects.
    *
    * `IF NOT EXISTS` is what makes this safe beside migration 031: on an upgraded installation the
    * table is already there, carrying the operator's tracked repositories, and this must not touch it.
    */
-  private static createStatement(idColumn: string, timestamp: string): string {
+  private static createStatement(idColumn: string, timestamp: string, key: string = 'TEXT'): string {
     return `CREATE TABLE IF NOT EXISTS ${SourcesTableMigration.TABLE} (
       id ${idColumn},
       created_at ${timestamp} DEFAULT CURRENT_TIMESTAMP,
       updated_at ${timestamp} DEFAULT CURRENT_TIMESTAMP,
-      slug TEXT NOT NULL UNIQUE,
-      type TEXT NOT NULL,
+      slug ${key} NOT NULL UNIQUE,
+      type ${key} NOT NULL,
       git_url TEXT NOT NULL,
-      branch TEXT NOT NULL DEFAULT 'main',
+      branch ${key} NOT NULL DEFAULT 'main',
       git_secret TEXT,
       last_commit_sha TEXT,
       last_build_at TEXT,
-      last_build_status TEXT DEFAULT 'pending',
+      last_build_status ${key} DEFAULT 'pending',
       last_error TEXT,
       version TEXT,
       file_name TEXT,
       artifact_sha256 TEXT,
       custom_permalink TEXT,
-      disable_permalink TEXT DEFAULT 'false',
+      disable_permalink ${key} DEFAULT 'false',
       auto_build BOOLEAN DEFAULT FALSE,
       auto_update BOOLEAN DEFAULT FALSE,
       changelog TEXT

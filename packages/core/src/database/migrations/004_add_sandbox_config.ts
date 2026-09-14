@@ -1,5 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 
 export class AddSandboxConfigMigration extends BaseMigration {
   readonly version = 4;
@@ -25,6 +26,9 @@ export class AddSandboxConfigMigration extends BaseMigration {
           const msg: string = (e?.message ?? '') + (e?.cause?.message ?? '');
           if (!msg.includes('duplicate column name')) throw e;
         }
+      },
+      mysql: async () => {
+        await ColumnGuard.addIfMissing(db, '_system_plugins', 'sandbox_config', 'JSON');
       }
     });
   }
@@ -42,6 +46,9 @@ export class AddSandboxConfigMigration extends BaseMigration {
         } catch (e) {
           // SQLite 3.35+ feature: silently skip if column drop is unsupported
         }
+      },
+      mysql: async () => {
+        await db.execute(sql`ALTER TABLE "_system_plugins" DROP COLUMN "sandbox_config"`);
       }
     });
   }

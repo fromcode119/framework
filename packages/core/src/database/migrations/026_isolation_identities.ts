@@ -1,5 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 
 /**
  * T5c: every isolated plugin runs as its own OS user, and that user has to be the SAME one every
@@ -28,6 +29,9 @@ export class IsolationIdentitiesMigration extends BaseMigration {
           if (!msg.includes('duplicate column name')) throw e;
         }
       },
+      mysql: async () => {
+        await ColumnGuard.addIfMissing(db, '_system_plugins', 'isolation_uid', 'INTEGER');
+      },
     });
   }
 
@@ -42,6 +46,9 @@ export class IsolationIdentitiesMigration extends BaseMigration {
         } catch {
           // Older SQLite cannot drop a column; the column is harmless.
         }
+      },
+      mysql: async () => {
+        await db.execute(sql`ALTER TABLE "_system_plugins" DROP COLUMN "isolation_uid"`);
       },
     });
   }

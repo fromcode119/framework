@@ -164,6 +164,88 @@ export class PeopleIdentityMigration extends BaseMigration {
             UNIQUE ("kind", "key")
           )
         `);
+      },
+      mysql: async () => {
+        // Indexed or unique columns are bounded; everything else keeps the shape the other two use.
+        // `email` and `phone` carry indexes, and ("kind","key") is a composite UNIQUE.
+        await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "people" (
+            "id" INT AUTO_INCREMENT PRIMARY KEY,
+            "user_id" INT UNIQUE REFERENCES "users"("id") ON DELETE SET NULL,
+            "status" VARCHAR(64) NOT NULL DEFAULT 'active',
+            "source" VARCHAR(64) NOT NULL DEFAULT 'contact',
+            "first_name" TEXT,
+            "last_name" TEXT,
+            "middle_name" TEXT,
+            "display_name" TEXT,
+            "preferred_name" TEXT,
+            "email" VARCHAR(191),
+            "email_verified_at" TIMESTAMP NULL,
+            "phone" VARCHAR(64),
+            "phone_verified_at" TIMESTAMP NULL,
+            "birth_date" DATE,
+            "gender" VARCHAR(64),
+            "pronouns" VARCHAR(64),
+            "preferred_locale" VARCHAR(32),
+            "timezone" VARCHAR(64),
+            "country" VARCHAR(64),
+            "avatar_url" TEXT,
+            "bio" TEXT,
+            "last_seen_at" TIMESTAMP NULL,
+            "archived_at" TIMESTAMP NULL,
+            "metadata" JSON,
+            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_email" ON "people" ("email")`);
+        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_phone" ON "people" ("phone")`);
+
+        await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "person_relationships" (
+            "id" INT AUTO_INCREMENT PRIMARY KEY,
+            "from_person_id" INT NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
+            "to_person_id" INT NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
+            "type" VARCHAR(64) NOT NULL,
+            "metadata" JSON,
+            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_person_rel_from" ON "person_relationships" ("from_person_id")`);
+        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_person_rel_to" ON "person_relationships" ("to_person_id")`);
+
+        await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "people_addresses" (
+            "id" INT AUTO_INCREMENT PRIMARY KEY,
+            "person_id" INT NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
+            "label" VARCHAR(191),
+            "full_name" TEXT,
+            "address_line1" TEXT,
+            "address_line2" TEXT,
+            "city" VARCHAR(191),
+            "postal_code" VARCHAR(32),
+            "country" VARCHAR(64),
+            "phone" VARCHAR(64),
+            "is_default" BOOLEAN NOT NULL DEFAULT FALSE,
+            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_addr_person" ON "people_addresses" ("person_id")`);
+
+        await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "person_catalogs" (
+            "id" INT AUTO_INCREMENT PRIMARY KEY,
+            "kind" VARCHAR(96) NOT NULL,
+            "key" VARCHAR(96) NOT NULL,
+            "label" VARCHAR(255) NOT NULL,
+            "plugin_slug" VARCHAR(191),
+            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE ("kind", "key")
+          )
+        `);
       }
     });
   }

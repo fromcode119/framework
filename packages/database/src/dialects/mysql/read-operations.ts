@@ -48,6 +48,7 @@ export class MysqlReadOperations extends BaseDialect {
 
     if (typeof tableOrName === 'string') {
         const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableOrName, where);
+        let selectedEverything = false;
         if (joins && joins.length > 0) {
         const { sql: sqlStr, values } = this.buildJoinedSQL(tableOrName, joins, { ...options, where: normalizedWhere });
         const rows = await this.executeRawSelect(sqlStr, values);
@@ -64,7 +65,13 @@ export class MysqlReadOperations extends BaseDialect {
         }
         query = this.drizzle.select(selectFields).from(sql`${sql.identifier(tableOrName)}`);
         } else {
-        query = this.drizzle.select().from(sql`${sql.identifier(tableOrName)}`);
+        // `select()` with no fields renders an EMPTY select list against a raw `from` on this
+        // driver — `select  from \`t\``, a syntax error. Since a bare `find(table)` passes no
+        // columns, that is most reads on MySQL. The star is spelled out, and the result is executed
+        // as raw SQL below so the rows come back keyed by their real column names rather than by
+        // this placeholder.
+        query = this.drizzle.select({ '*': sql`*` }).from(sql`${sql.identifier(tableOrName)}`);
+        selectedEverything = true;
         }
 
         const allConditions: any[] = [];
@@ -93,8 +100,20 @@ export class MysqlReadOperations extends BaseDialect {
         if (limit) query = query.limit(limit);
         if (offset) query = query.offset(offset);
 
-        const [rows] = await query;
-        return rows || [];
+        // NOT `const [rows] = await query`. Drizzle's mysql2 `execute()` resolves to
+        // `[rows, fields]`, but a SELECT BUILDER resolves to the rows array itself — so destructuring
+        // took the FIRST ROW and returned it as if it were the result set. Every `find()` on this
+        // driver returned one object instead of an array, which is why `MigrationManager` failed with
+        // "executed.map is not a function" the first time MySQL was actually run.
+        // Composed by the builder, executed raw: drizzle maps a mapped selection onto ITS keys, which
+        // for the star placeholder above would hand every caller `{ '*': ... }` instead of columns.
+        if (selectedEverything) {
+          const { sql: text, params } = query.toSQL();
+          return await this.executeRawSelect(text, params as any[]);
+        }
+
+        const rows = await query;
+        return Array.isArray(rows) ? rows : [];
     }
 
     // tableOrName is a Drizzle table schema object
@@ -144,8 +163,10 @@ export class MysqlReadOperations extends BaseDialect {
     if (limit) query = query.limit(limit);
     if (offset) query = query.offset(offset);
 
-    const [results] = await query;
-    return results;
+    // Same as the string-table branch above: a select builder resolves to the rows, not to
+    // `[rows, fields]`.
+    const results = await query;
+    return Array.isArray(results) ? results : [];
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {
@@ -154,7 +175,10 @@ export class MysqlReadOperations extends BaseDialect {
     const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
     const normalizedWhere = isString ? await this.normalizer.normalizeWhereForTable(tableOrName, where) : where;
 
-    let query = this.drizzle.select({ total: drizzleCount() }).from(tableIdentifier);
+    // `drizzleCount()` renders to nothing against a RAW `from` on this driver — the emitted SQL was
+    // `select  from \`t\``, a syntax error, so `count()` never returned a number at all. Spelling the
+    // aggregate out keeps it independent of how the builder treats a raw table identifier.
+    let query = this.drizzle.select({ total: sql<number>`count(*)`.as('total') }).from(tableIdentifier);
 
     if (joins && joins.length > 0) {
       for (const join of joins) {
@@ -176,7 +200,11 @@ export class MysqlReadOperations extends BaseDialect {
       query = query.where(and(...conditions));
     }
 
-    const [result] = await query;
-    return Number(result[0]?.total || 0);
+    // Same destructuring mistake as `find`, and quieter: `[result]` took the single count ROW, so
+    // `result[0]` was undefined and this returned 0 for EVERY table. Nothing errors on a count of
+    // zero — it just makes an empty platform out of a full one, which is how `TenantMode` would have
+    // read "no tenants" on a MySQL deployment that had them.
+    const rows = await query;
+    return Number((Array.isArray(rows) ? rows[0] : undefined)?.total || 0);
   }
 }

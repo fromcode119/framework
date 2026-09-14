@@ -34,9 +34,9 @@ describe('DatabaseDriverChoice', () => {
     expect(DatabaseDriverChoice.MYSQL.isSingleSiteOnly).toBe(true);
   });
 
-  it('lists every driver, including the one that cannot be chosen', () => {
+  it('lists every driver, and every one can now be chosen', () => {
     expect(DatabaseDriverChoice.ordered.map((driver) => driver.value)).toEqual(['postgres', 'sqlite', 'mysql']);
-    expect(DatabaseDriverChoice.ordered.filter((driver) => !driver.isAvailable).map((d) => d.value)).toEqual(['mysql']);
+    expect(DatabaseDriverChoice.ordered.every((driver) => driver.isAvailable)).toBe(true);
   });
 
   it('refuses an unknown driver instead of resolving one, because every default here is somebody\'s isolation', () => {

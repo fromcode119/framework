@@ -1,5 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { ColumnGuard } from '../helpers/column-guard';
+import { DialectHelper } from '../helpers/dialect';
 
 /**
  * Records WHICH provider fetches each source.
@@ -23,7 +24,18 @@ export class SourcesProviderColumnMigration extends BaseMigration {
   private static readonly TABLE = 'fcp_sources_builds';
 
   async up(db: IDatabaseManager): Promise<void> {
-    await ColumnGuard.addIfMissing(db, SourcesProviderColumnMigration.TABLE, 'provider', "TEXT DEFAULT 'git'");
+    await DialectHelper.executeForDialect(db.dialect, {
+      postgres: async () => {
+        await ColumnGuard.addIfMissing(db, SourcesProviderColumnMigration.TABLE, 'provider', "TEXT DEFAULT 'git'");
+      },
+      sqlite: async () => {
+        await ColumnGuard.addIfMissing(db, SourcesProviderColumnMigration.TABLE, 'provider', "TEXT DEFAULT 'git'");
+      },
+      // TEXT cannot carry a DEFAULT in MySQL; VARCHAR(191) is plenty for a provider name.
+      mysql: async () => {
+        await ColumnGuard.addIfMissing(db, SourcesProviderColumnMigration.TABLE, 'provider', "VARCHAR(191) DEFAULT 'git'");
+      },
+    });
     // The default only applies to rows written after it exists, so existing ones are stated too —
     // a NULL provider would read as "unknown", and the build refuses an unknown provider by design.
     await db.execute(sql.raw(

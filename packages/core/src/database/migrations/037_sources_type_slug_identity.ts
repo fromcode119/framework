@@ -98,6 +98,24 @@ export class SourcesTypeSlugIdentityMigration extends BaseMigration {
           + 'so a second extension kind with the same slug stays refused on this dialect.',
         );
       },
+      mysql: async () => {
+        // Unlike SQLite, MySQL can drop an inline UNIQUE with an ordinary ALTER, so this reaches the
+        // same outcome as the Postgres branch: find any unique index whose column set is exactly
+        // `(slug)` via the catalogue, by columns rather than by name for the same reason the Postgres
+        // branch does — the generated name depends on which migration created the table.
+        const result = await db.execute(sql.raw(`
+          SELECT index_name AS name
+          FROM information_schema.STATISTICS
+          WHERE table_schema = DATABASE() AND table_name = '${TABLE}'
+            AND non_unique = 0 AND index_name <> 'PRIMARY'
+          GROUP BY index_name
+          HAVING COUNT(*) = 1 AND MAX(column_name) = 'slug'
+        `));
+        const rows: any[] = Array.isArray(result) ? result : ((result as any)?.rows ?? []);
+        for (const row of rows) {
+          await db.execute(sql.raw(`ALTER TABLE ${TABLE} DROP INDEX ${row.name}`));
+        }
+      },
     });
   }
 
@@ -139,6 +157,14 @@ export class SourcesTypeSlugIdentityMigration extends BaseMigration {
       sqlite: async () => {
         present = SourcesTypeSlugIdentityMigration.hasRow(
           await db.execute(sql.raw(`SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = '${TABLE}'`)),
+        );
+      },
+      mysql: async () => {
+        present = SourcesTypeSlugIdentityMigration.hasRow(
+          await db.execute(sql.raw(
+            `SELECT 1 AS present FROM information_schema.tables `
+            + `WHERE table_schema = DATABASE() AND table_name = '${TABLE}'`,
+          )),
         );
       },
     });

@@ -33,13 +33,27 @@ describe('PortableColumnTypes', () => {
     expect(type.now).toBe('CURRENT_TIMESTAMP');
   });
 
+  /**
+   * The one that is NOT interchangeable with an ordinary string: MySQL cannot index a column of
+   * unbounded length, and the failure is at CREATE TABLE on that driver only.
+   */
+  it('gives MySQL a bounded key type, and its own spellings', () => {
+    const type = PortableColumnTypes.for('mysql');
+
+    expect(type.key).toBe('VARCHAR(191)');
+    expect(type.json).toBe('JSON');
+    expect(type.autoId).toBe('INT AUTO_INCREMENT PRIMARY KEY');
+    expect(PortableColumnTypes.for('postgres').key).toBe('TEXT');
+    expect(PortableColumnTypes.for('sqlite').key).toBe('TEXT');
+  });
+
   it('THROWS on a dialect it does not know, rather than guessing a spelling', () => {
-    expect(() => PortableColumnTypes.for('mysql')).toThrow(/no column spellings for dialect "mysql"/);
+    expect(() => PortableColumnTypes.for('oracle')).toThrow(/no column spellings for dialect "oracle"/);
     expect(() => PortableColumnTypes.for('')).toThrow(/no column spellings/);
   });
 
   it('names the alternatives in the error, because the reader is choosing a driver', () => {
-    expect(() => PortableColumnTypes.for('oracle')).toThrow(/Known: postgres, sqlite/);
+    expect(() => PortableColumnTypes.for('oracle')).toThrow(/Known: postgres, sqlite, mysql/);
   });
 
   it('matches the dialect however the driver spells it', () => {

@@ -114,6 +114,45 @@ export class SourcesRenameMigration extends BaseMigration {
         await this.executeIfTableExists(db, '_system_scheduler_tasks',
           `UPDATE _system_scheduler_tasks SET plugin_slug = '${NEW_SLUG}' WHERE plugin_slug = '${OLD_SLUG}'`);
       },
+      mysql: async () => {
+        // MySQL foreign keys are real here too (`_system_plugin_settings.plugin_slug` and
+        // `_system_scheduler_tasks.plugin_slug` both reference `_system_plugins.slug`) and default to
+        // ON UPDATE RESTRICT, exactly the Postgres problem. There is no catalogue function to rewrite
+        // a constraint definition in place, so each one found is dropped and re-added by name with
+        // ON UPDATE CASCADE added — same outcome as the Postgres branch, reached the long way round.
+        const oldRow = await db.execute(sql.raw(
+          `SELECT 1 AS present FROM _system_plugins WHERE slug = '${OLD_SLUG}'`,
+        ));
+        if (!SourcesRenameMigration.hasRow(oldRow)) return;
+        const newRow = await db.execute(sql.raw(
+          `SELECT 1 AS present FROM _system_plugins WHERE slug = '${NEW_SLUG}'`,
+        ));
+        if (SourcesRenameMigration.hasRow(newRow)) return;
+
+        const constraints = await db.execute(sql.raw(`
+          SELECT tc.CONSTRAINT_NAME AS name, tc.TABLE_NAME AS child
+          FROM information_schema.TABLE_CONSTRAINTS tc
+          JOIN information_schema.KEY_COLUMN_USAGE kcu
+            ON tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME AND tc.TABLE_SCHEMA = kcu.TABLE_SCHEMA
+          WHERE tc.CONSTRAINT_TYPE = 'FOREIGN KEY'
+            AND tc.TABLE_SCHEMA = DATABASE()
+            AND kcu.REFERENCED_TABLE_NAME = '_system_plugins'
+        `));
+        const rows: any[] = Array.isArray(constraints) ? constraints : ((constraints as any)?.rows ?? []);
+
+        for (const row of rows) {
+          await db.execute(sql.raw(`ALTER TABLE ${row.child} DROP FOREIGN KEY ${row.name}`));
+        }
+
+        await db.execute(sql.raw(`UPDATE _system_plugins SET slug = '${NEW_SLUG}' WHERE slug = '${OLD_SLUG}'`));
+
+        for (const row of rows) {
+          await db.execute(sql.raw(`
+            ALTER TABLE ${row.child} ADD CONSTRAINT ${row.name} FOREIGN KEY (plugin_slug)
+              REFERENCES _system_plugins(slug) ON DELETE CASCADE ON UPDATE CASCADE
+          `));
+        }
+      },
     });
 
     // The task NAME is `<slug>:<task>` and no foreign key covers it, so it is rewritten by prefix on
@@ -147,6 +186,14 @@ export class SourcesRenameMigration extends BaseMigration {
       sqlite: async () => {
         present = SourcesRenameMigration.hasRow(
           await db.execute(sql.raw(`SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = '${table}'`)),
+        );
+      },
+      mysql: async () => {
+        present = SourcesRenameMigration.hasRow(
+          await db.execute(sql.raw(
+            `SELECT 1 AS present FROM information_schema.tables `
+            + `WHERE table_schema = DATABASE() AND table_name = '${table}'`,
+          )),
         );
       },
     });

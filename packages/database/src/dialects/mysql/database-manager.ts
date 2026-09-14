@@ -4,6 +4,7 @@ import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, desc, asc } from 'drizzle-orm';
 import { mysqlTable, text } from 'drizzle-orm/mysql-core';
+import { NamingStrategy } from '@database/naming-strategy';
 import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -34,11 +35,41 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
 
   constructor(connection: string) {
     super();
+    // ANSI_QUOTES, and it is what makes shared SQL work here at all.
+    //
+    // MySQL's default mode reads `"users"` as the STRING 'users', not as an identifier — so every
+    // migration written with double-quoted identifiers, which is all of them, parses as nonsense and
+    // fails in ways that name a syntax error rather than the mode. With ANSI_QUOTES it agrees with
+    // PostgreSQL and SQLite about what a quoted name is.
+    //
+    // Appended to the session mode rather than replacing it: `sql_mode` also carries the strictness
+    // settings a deployment chose, and overwriting them would quietly relax constraints this schema
+    // depends on.
     this.pool = mysql.createPool(connection);
+    MysqlDatabaseManager.applyAnsiQuotes(this.pool);
     this.drizzle = drizzle(this.pool);
     this.normalizer = new MysqlColumnNormalizer(this.pool);
     this.schemaBuilder = new MysqlSchemaBuilder(this);
     this.reader = new MysqlReadOperations(this.pool, this.drizzle, this.normalizer, this.like);
+  }
+
+  /**
+   * Set `ANSI_QUOTES` on every connection the pool opens.
+   *
+   * It has to be per CONNECTION, not once: a pool opens more as load requires and replaces ones that
+   * drop, and a session variable set on one says nothing about the next. Setting it in the connection
+   * string does not work either — `sql_mode` is a server variable, not one of mysql2's connect
+   * options, so it is accepted and ignored, which looks like it worked right up until the first
+   * quoted identifier.
+   *
+   * `CONCAT(@@sql_mode, ...)` rather than an assignment: sql_mode also carries the strictness
+   * settings a deployment chose, and replacing them would quietly relax constraints this schema
+   * depends on.
+   */
+  private static applyAnsiQuotes(pool: any): void {
+    pool.on('connection', (connection: any) => {
+      connection.query("SET SESSION sql_mode = CONCAT(@@sql_mode, ',ANSI_QUOTES')");
+    });
   }
 
   async connect() {
@@ -120,18 +151,98 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
     return (Array.isArray(rows) ? rows : []) as Array<Record<string, unknown>>;
   }
 
+  /**
+   * Run a statement, translating the two portable idioms MySQL does not have.
+   *
+   * This is what a dialect is FOR. Every migration in the tree writes
+   * `CREATE INDEX IF NOT EXISTS` and `DROP INDEX IF EXISTS`, which PostgreSQL and SQLite both accept
+   * and MySQL rejects as a syntax error. There are 43 of the first across 16 migrations; branching
+   * each one would put the same three lines in sixteen places and oblige every future migration to
+   * remember MySQL exists.
+   *
+   * It is a translation, not an override: the statement means exactly what it said, and anything
+   * this does not recognise is passed through untouched. `ER_DUP_KEYNAME` is the "already there"
+   * answer being asked for, and `ER_CANT_DROP_FIELD_OR_KEY` is its counterpart on the way out — any
+   * OTHER error still propagates, so a genuinely broken index statement fails as loudly as before.
+   */
   async execute(query: any) {
-    return this.drizzle.execute(query);
+    const statement = MysqlDatabaseManager.statementText(query);
+
+    if (statement && /^\s*CREATE\s+(UNIQUE\s+)?INDEX\s+IF\s+NOT\s+EXISTS\s/i.test(statement)) {
+      return MysqlDatabaseManager.ignoring('ER_DUP_KEYNAME', async () =>
+        MysqlDatabaseManager.rowsOf(await this.drizzle.execute(sql.raw(statement.replace(/\s+IF\s+NOT\s+EXISTS\s+/i, ' ')))));
+    }
+
+    // `ALTER TABLE t DROP COLUMN IF EXISTS c` — PostgreSQL has it, MySQL does not, and migrations
+    // write it. ER_CANT_DROP_FIELD_OR_KEY is the "already gone" answer being asked for.
+    if (statement && /^\s*ALTER\s+TABLE\s+.+\sDROP\s+COLUMN\s+IF\s+EXISTS\s/i.test(statement)) {
+      return MysqlDatabaseManager.ignoring('ER_CANT_DROP_FIELD_OR_KEY', async () =>
+        MysqlDatabaseManager.rowsOf(await this.drizzle.execute(
+          sql.raw(statement.replace(/\sDROP\s+COLUMN\s+IF\s+EXISTS\s+/i, ' DROP COLUMN ')))));
+    }
+
+    if (statement && /^\s*DROP\s+INDEX\s+IF\s+EXISTS\s/i.test(statement)) {
+      return MysqlDatabaseManager.ignoring('ER_CANT_DROP_FIELD_OR_KEY', async () =>
+        MysqlDatabaseManager.rowsOf(await this.drizzle.execute(sql.raw(statement.replace(/\s+IF\s+EXISTS\s+/i, ' ')))));
+    }
+
+    return MysqlDatabaseManager.rowsOf(await this.drizzle.execute(query));
+  }
+
+  /**
+   * The ROWS of a result, discarding mysql2's field metadata.
+   *
+   * `drizzle.execute()` on this driver resolves to `[rows, fields]`, which every caller in the tree
+   * reads wrongly: the idiom migrations use is
+   * `Array.isArray(result) ? result : result?.rows ?? []`, and against a two-element tuple that
+   * answers "two rows" for ANY query. `tableExists` therefore said yes about tables that did not
+   * exist, and a migration guarded by it silently skipped its own work.
+   *
+   * Returning the rows matches SQLite (a plain array) and is compatible with the PostgreSQL shape
+   * that idiom already handles, so the same migration code is correct on all three.
+   */
+  private static rowsOf(result: any): any {
+    if (Array.isArray(result) && result.length === 2 && Array.isArray(result[0])) return result[0];
+    return result;
+  }
+
+  /** The SQL a drizzle statement carries, when it is a plain one we can read. Otherwise empty. */
+  private static statementText(query: any): string {
+    const chunks = query?.queryChunks;
+    if (!Array.isArray(chunks)) return '';
+    // A statement built only from static text has no parameters to lose; one with bindings is left
+    // alone, because rebuilding it from its text would drop them.
+    if (chunks.some((chunk: any) => chunk?.value === undefined && chunk?.encoder)) return '';
+    return chunks.map((chunk: any) => (Array.isArray(chunk?.value) ? chunk.value.join('') : '')).join('');
+  }
+
+  /** Run `fn`, treating one MySQL error code as success — the state the caller asked for. */
+  private static async ignoring(code: string, fn: () => Promise<any>): Promise<any> {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (error?.code === code || error?.cause?.code === code) return undefined;
+      throw error;
+    }
   }
 
   invalidateTableCache(tableName: string): void {
     this.normalizer.invalidateTableCache(tableName);
   }
 
+  /**
+   * A drizzle table built from column names the caller used.
+   *
+   * The KEY stays exactly as given so the caller's data object still matches, while the SQL NAME is
+   * snake_cased — which is the convention every table in this schema is created with, and what
+   * PostgreSQL's writer already does explicitly. Without it a write of `{ userId }` emitted
+   * `` `userId` `` and MySQL answered "Unknown column", so every insert carrying a camelCase key
+   * failed: creating the first administrator died on `_system_sessions`.
+   */
   private getDynamicTable(tableName: string, columns: string[]) {
     const tableColumns: Record<string, any> = {};
     for (const col of columns) {
-      tableColumns[col] = text(col);
+      tableColumns[col] = text(NamingStrategy.toSnakeCase(col));
     }
     return mysqlTable(tableName, tableColumns);
   }
@@ -221,20 +332,33 @@ export class MysqlDatabaseManager extends BaseDialect implements IDatabaseManage
 
   // Schema Management
   async getTables(): Promise<string[]> {
-    const [result]: any = await this.execute(sql`SHOW TABLES`);
+    const result: any = await this.execute(sql`SHOW TABLES`);
     return result.map((r: any) => Object.values(r)[0]);
   }
 
   async tableExists(tableName: string): Promise<boolean> {
     const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
-    const [result]: any = await this.execute(query);
+    const result: any = await this.execute(query);
     return (result[0]?.total || 0) > 0;
   }
 
+  /**
+   * The column names of one table, lower-cased.
+   *
+   * Two things here are not cosmetic. `information_schema` returns `COLUMN_NAME` in upper case on
+   * MySQL 8, so reading `r.column_name` got `undefined` from every row — which surfaced as
+   * "Cannot read properties of undefined" rather than as anything about columns; the alias fixes the
+   * shape whatever the server's case conventions are. And the query MUST be scoped to the current
+   * schema: `information_schema` spans every database on the server, so without it a host running two
+   * deployments answered with both of their columns merged, and a guard asking "does this table
+   * already have this column" got yes from somebody else's table.
+   */
   async getColumns(tableName: string): Promise<string[]> {
-    const query = sql`SELECT column_name FROM information_schema.columns WHERE table_name = ${tableName}`;
-    const [result]: any = await this.execute(query);
-    return result.map((r: any) => r.column_name.toLowerCase());
+    const query = sql`
+      SELECT column_name AS name FROM information_schema.columns
+      WHERE table_schema = DATABASE() AND table_name = ${tableName}`;
+    const result: any = await this.execute(query);
+    return (result ?? []).map((row: any) => String(row.name ?? row.COLUMN_NAME ?? '').toLowerCase()).filter(Boolean);
   }
 
   async createTable(collection: ISchemaCollection): Promise<void> {

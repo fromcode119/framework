@@ -32,6 +32,20 @@ export class SecurityAuditLogsMigration extends BaseMigration {
             "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP
           );
         `);
+      },
+      mysql: async () => {
+        // `plugin_slug` and `status` are indexed below, and MySQL cannot index an unbounded column.
+        await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "_system_audit_logs" (
+            "id" INT AUTO_INCREMENT PRIMARY KEY,
+            "plugin_slug" VARCHAR(191) NOT NULL,
+            "action" VARCHAR(191) NOT NULL,
+            "resource" TEXT,
+            "status" VARCHAR(64) NOT NULL,
+            "metadata" JSON,
+            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
       }
     });
 

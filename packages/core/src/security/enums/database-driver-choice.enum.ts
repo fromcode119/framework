@@ -33,19 +33,18 @@ export class DatabaseDriverChoice extends Enum {
   static readonly SQLITE = new DatabaseDriverChoice('sqlite', { isolatesTenants: false, isAvailable: true });
 
   /**
-   * Not installable, and the reason is bigger than it looks.
+   * Real roles, real backups, and every migration runs — but no row-level security.
    *
-   * The dialect itself is real — it has a schema builder, read operations and a working
-   * `provisionRoles`. What it does not have is a way through the migrations: `001_core_initial_schema`
-   * branches to `postgres` and `sqlite` only, and `DialectHelper` REJECTS a dialect it has no branch
-   * for, so a MySQL deployment fails on the very first migration. 25 of the 36 dialect-branching
-   * migrations name no MySQL path at all. It also has no backup handler and no tests.
+   * Its limit is now the same as SQLite's rather than a missing implementation: tenancy here is one
+   * database with rows tagged `tenant_id`, isolated by row-level security, and MySQL has none. So a
+   * deployment on it serves one site, and `TenantMode` refuses to boot a second rather than serving
+   * every tenant to every other one. Unlike SQLite that could change — nothing structural stops an
+   * isolation strategy being added — which is why the two say different things on screen.
    *
-   * Still listed rather than hidden, because its limit is unfinished work rather than architecture,
-   * which is what separates it from SQLite: MySQL could gain an isolation strategy and host many
-   * sites, while SQLite has nowhere to put a second site's rows however much work it gets.
+   * The bundled compose ships PostgreSQL, so this is only choosable against a server the operator
+   * names. `SetupDatabaseService` refuses to point a mysql:// URL at the bundled container.
    */
-  static readonly MYSQL = new DatabaseDriverChoice('mysql', { isolatesTenants: false, isAvailable: false });
+  static readonly MYSQL = new DatabaseDriverChoice('mysql', { isolatesTenants: false, isAvailable: true });
 
   readonly isolatesTenants: boolean;
   readonly isAvailable: boolean;

@@ -41,6 +41,12 @@ export class SettingsAndMediaScopeMigration extends BaseMigration {
         // awaiting review — it is not built, so do not read this branch as isolating anything.
         // `TenantMode` refuses to boot a multi-tenant deployment here, which is the real guard.
       },
+      mysql: async () => {
+        await ColumnGuard.addIfMissing(db, '_system_meta', 'tenant_id', 'TEXT');
+        await ColumnGuard.addIfMissing(db, 'media', 'shared', 'BOOLEAN NOT NULL DEFAULT FALSE');
+        // No row-level security on MySQL, and NOTHING replaces it — same story as SQLite above.
+        // `TenantMode` refuses to boot a multi-tenant deployment here, which is the real guard.
+      },
     });
   }
 
