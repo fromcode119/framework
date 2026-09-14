@@ -90,6 +90,13 @@ storage/
 # by `npm run build:sw` (chained into admin's build/prepack). Never hand-edit or commit.
 packages/admin/public/sw.js
 
+# Generated Next middleware bindings — next-build-codegen emits these from the authored class
+# (`proxy-route.ts`, "export class AdminProxyRoute") because Next resolves middleware by export NAME
+# and compiles it in a pass that ignores build loaders. The file says "GENERATED — do not edit" in its
+# own header. `build:admin` REMOVES it again on the way out, so a build after a dev run shows it as a
+# deletion — which is how it got committed by accident on 2026-09-14.
+packages/admin/proxy.ts
+
 # Generated Vite config entries (next-build-codegen vite-config). Vite REQUIRES a default export from a config
 # module; the real config is an authored CLASS (ThemeViteConfig, PluginUiViteConfig, …) and next-build-codegen emits
 # this throwaway entry that calls it. Build output — never authored, never committed.
