@@ -142,3 +142,62 @@ describe('PersonalDataErasureService — declarations', () => {
     }
   });
 });
+
+/**
+ * There are two doors into erasure — a DSAR, which walks the registry and reaches every dataset, and
+ * `deleteMyAccount`, which used to hand-list four of the seven. That gap was silent and real: a
+ * person who deleted their own account kept their email and IP in the audit and system logs, while
+ * the same person asking through a DSAR had them anonymised.
+ *
+ * `eraseAll` is what closes it, so these tests hold it to the one property that matters — it covers
+ * whatever `listDatasets()` declares, not a list written down twice.
+ */
+describe('PersonalDataErasureService.eraseAll — the two doors cannot drift', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  const service = () => new PersonalDataErasureService(makeDb({}) as any);
+
+  it('erases EVERY dataset the service declares, leaving none behind', async () => {
+    const subject = service();
+    const declared = subject.listDatasets().map((dataset) => dataset.key).sort();
+
+    const results = await subject.eraseAll(SUBJECT as any);
+
+    expect(Object.keys(results).sort()).toEqual(declared);
+  });
+
+  it('uses each dataset\'s own declared default strategy, never one strategy for all', async () => {
+    const subject = service();
+    const seen: Array<{ key: string; strategy: string }> = [];
+    const realEraseDataset = subject.eraseDataset.bind(subject);
+    subject.eraseDataset = (async (key: string, s: any, strategy: string) => {
+      seen.push({ key, strategy });
+      return realEraseDataset(key, s, strategy);
+    }) as any;
+
+    await subject.eraseAll(SUBJECT as any);
+
+    for (const dataset of subject.listDatasets()) {
+      expect(seen.find((call) => call.key === dataset.key)?.strategy, dataset.key).toBe(dataset.defaultStrategy);
+    }
+    // audit-log must be anonymised and never deleted — it is the security record.
+    expect(seen.find((call) => call.key === 'audit-log')?.strategy).toBe('anonymise');
+  });
+
+  it('reads the account before the memberships it depends on are removed', async () => {
+    const subject = service();
+    const order: string[] = [];
+    const realEraseDataset = subject.eraseDataset.bind(subject);
+    subject.eraseDataset = (async (key: string, s: any, strategy: string) => {
+      order.push(key);
+      return realEraseDataset(key, s, strategy);
+    }) as any;
+
+    await subject.eraseAll(SUBJECT as any);
+
+    // `account` decides whether the login is shared with other sites by reading the memberships that
+    // `roles` deletes. Reversed, every account looks unshared and logins vanish from sites that never
+    // received the request.
+    expect(order.indexOf('account')).toBeLessThan(order.indexOf('roles'));
+  });
+});

@@ -82,6 +82,28 @@ export class PersonalDataErasureService {
     }
   }
 
+  /**
+   * Erase EVERY dataset the framework holds, each with the strategy its own descriptor declares.
+   *
+   * This exists so the two doors into erasure cannot drift. A DSAR walks the registry and reaches
+   * all seven; `deleteMyAccount` used to hand-list four, so a person who deleted their own account
+   * kept their email and IP in the audit and system logs while the same person asking through a DSAR
+   * had them anonymised. Same request, two outcomes, decided by which button they found.
+   *
+   * Iteration order is `listDatasets()` order, and that matters: `account` reads the memberships to
+   * decide whether the login is shared with other sites, so it must run before `roles` removes them.
+   *
+   * A dataset added to `listDatasets()` is covered by both paths from that moment on, with no second
+   * list to remember.
+   */
+  async eraseAll(subject: IPersonalDataSubject): Promise<Record<string, IPersonalDataErasure>> {
+    const results: Record<string, IPersonalDataErasure> = {};
+    for (const dataset of this.listDatasets()) {
+      results[dataset.key] = await this.eraseDataset(dataset.key, subject, dataset.defaultStrategy);
+    }
+    return results;
+  }
+
   async eraseDataset(key: string, subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
     if (strategy === PersonalDataErasureService.RETAIN) {
       return PersonalDataErasureService.empty(strategy);

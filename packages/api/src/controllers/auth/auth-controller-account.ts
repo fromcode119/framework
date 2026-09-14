@@ -67,11 +67,13 @@ export class AuthControllerAccount extends AuthControllerSession {
 
     const erasure = new PersonalDataErasureService(this.db);
     const subject = { email: String(user.email ?? ''), userId };
-    // Order matters: the account check reads the memberships, so it runs before they are removed.
-    const account = await erasure.eraseDataset('account', subject, 'anonymise');
-    await erasure.eraseDataset('person', subject, 'delete');
-    await erasure.eraseDataset('roles', subject, 'delete');
-    await erasure.eraseDataset('record-versions', subject, 'delete');
+    // Every dataset the framework holds, each with its declared default strategy. This used to
+    // hand-list four of the seven, so a self-delete left the subject's email and IP in the audit and
+    // system logs while the same person asking through a DSAR had them anonymised. The service owns
+    // the list now, and the ordering constraint (account reads memberships before roles drops them)
+    // lives with it rather than in this comment.
+    const results = await erasure.eraseAll(subject);
+    const account = results.account;
 
     // Sign-in is locked either way: the person asked to be gone from this site, and a live password
     // on a retained account is not what they asked for.
