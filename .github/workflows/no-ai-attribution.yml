@@ -41,16 +41,27 @@ jobs:
 
           echo "Checking: $RANGE"
 
-          # Author/committer identity AND message body. A bot can arrive either way: authored by the
-          # tool, or authored by a human with the tool named in a trailer.
-          PATTERN='co-authored-by:[[:space:]]*(claude|copilot|github copilot|chatgpt|gpt|gemini|cursor|devin)|generated with \[?(claude|copilot)|🤖 generated|noreply@anthropic\.com|copilot-swe-agent'
+          # ANCHORED. A real trailer starts its own line; prose that merely NAMES one does not.
+          # The first version of this file matched anywhere in the body and blocked its own commit,
+          # whose message explains what a `Co-Authored-By` trailer is. A guard that fires on the
+          # documentation of the thing it guards is a guard people switch off.
+          TRAILER='^[[:space:]]*(co-authored-by|signed-off-by):[[:space:]]*.*(claude|copilot|chatgpt|gpt-[0-9]|gemini|cursor|devin|anthropic)'
+          # A generation footer is also its own line, and only ever appears as one.
+          FOOTER='^[[:space:]]*(🤖[[:space:]]*)?generated with \[?(claude|copilot)'
+          # Identity is a whole field, so it needs no anchor — a bot cannot author under a human name.
+          IDENTITY='copilot|copilot-swe-agent|noreply@anthropic\.com|claude\[bot\]'
 
           FAILED=0
           for sha in $(git rev-list $RANGE); do
-            BLOB="$(git log -1 --format='%an%n%ae%n%cn%n%ce%n%B' "$sha")"
-            if echo "$BLOB" | grep -qiE "$PATTERN"; then
-              echo "::error::$(git log -1 --format='%h %s' "$sha") — credits an AI"
-              echo "$BLOB" | grep -iE "$PATTERN" | sed 's/^/    /'
+            WHO="$(git log -1 --format='%an%n%ae%n%cn%n%ce' "$sha")"
+            BODY="$(git log -1 --format='%B' "$sha")"
+            HIT=""
+            echo "$WHO"  | grep -qiE "$IDENTITY" && HIT="authored or committed by a bot"
+            echo "$BODY" | grep -qiE "$TRAILER"  && HIT="carries an AI co-author trailer"
+            echo "$BODY" | grep -qiE "$FOOTER"   && HIT="carries an AI generation footer"
+            if [ -n "$HIT" ]; then
+              echo "::error::$(git log -1 --format='%h %s' "$sha") — $HIT"
+              { echo "$WHO"; echo "$BODY"; } | grep -iE "$TRAILER|$FOOTER|$IDENTITY" | sed 's/^/    /'
               FAILED=1
             fi
           done
