@@ -6,6 +6,7 @@ import { CacheManager } from '@fromcode119/cache';
 import { RateLimitSettingsUtils } from '@api/utils/rate-limit-settings-utils';
 import { SystemSettingRegistry } from '@fromcode119/core';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
+import { TenantMode } from '@fromcode119/core';
 
 export class ServerSettingsService {
   private settingsInterval?: NodeJS.Timeout;
@@ -93,6 +94,25 @@ export class ServerSettingsService {
     }
   }
 
+  /**
+   * Keys that describe a SITE, which on a multi-site platform no longer belong to the platform row.
+   *
+   * `frontend_url` and `site_url` name a storefront. With one site that is the deployment itself and
+   * the platform row is a reasonable place for it; with several, each site carries its own hosts and
+   * a platform-level value is one tenant's address wearing the platform's hat. It has already caused
+   * exactly that: a site's host claimed by the platform pass with a null tenant, and the site's own
+   * Domains tab then reporting it had no hosts configured.
+   *
+   * So an EMPTY one stays empty here. Empty is the right answer — sites route by their own host —
+   * and filling it from an environment variable that should not have been set would quietly recreate
+   * the collision. `admin_url` and `api_url` are not in this list: those are the platform's own
+   * addresses however many sites it serves.
+   */
+  private static isSiteOwnedOnMultiSite(key: string): boolean {
+    if (!TenantMode.isEnabled()) return false;
+    return key === SystemConstants.META_KEY.FRONTEND_URL || key === SystemConstants.META_KEY.SITE_URL;
+  }
+
   async ensureDefaultSettings() {
     try {
       const hasMetaTable = await this.db.tableExists(SystemConstants.TABLE.META);
@@ -127,7 +147,7 @@ export class ServerSettingsService {
           // insert-once rule exists to prevent.
           const storedValue = String(existing.value ?? '').trim();
           const seedValue = String(d.value ?? '').trim();
-          if (!storedValue && seedValue) {
+          if (!storedValue && seedValue && !ServerSettingsService.isSiteOwnedOnMultiSite(d.key)) {
             await this.db.update(SystemConstants.TABLE.META, { key: d.key }, { value: d.value });
             existing.value = d.value;
             this.logger.info(`Filled empty setting "${d.key}" from its declared default so the row, not the environment, is what answers.`);
