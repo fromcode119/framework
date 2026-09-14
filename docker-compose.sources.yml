@@ -103,6 +103,14 @@ services:
       # never returns, so the restore never runs — and killing the watcher leaves every source file in
       # its rewritten state. It cost this repo ~5,200 import lines of its alias style, silently.
       - ./packages/core/dist:/app/packages/core/dist
+      # PLUGINS import `@fromcode119/sdk` and resolve it to this dist, so without the mount they run
+      # whatever the image was baked with. That is not theoretical: a DSAR erasure failed with
+      # `import_sdk.PersonalDataRows is not a constructor` and
+      # `Cannot read properties of undefined (reading 'TOMBSTONE')` — the helper existed on the host
+      # and was `undefined` in the container, so finance could neither erase nor retain a single row.
+      # Every other package the api runs from source is mounted; the sdk was the one plugins depend on
+      # most and the one nobody had mounted.
+      - ./packages/sdk/dist:/app/packages/sdk/dist
       # Same reason as core: the root tsconfig maps `@fromcode119/auth` to its SRC, so this is the copy
       # the dev server actually runs. Without it an auth change is invisible until the image is rebuilt.
       - ./packages/auth/src:/app/packages/auth/src
