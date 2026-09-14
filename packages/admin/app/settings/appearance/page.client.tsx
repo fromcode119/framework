@@ -20,6 +20,8 @@ import { AppearanceMarketplaceCard } from '@/app/settings/appearance/appearance-
 import { AppearanceInstallUrlCard } from '@/app/settings/appearance/appearance-install-url-card';
 import { AppearanceItem } from '@/app/settings/appearance/appearance-item';
 import { AppearanceCatalogItem } from '@/app/settings/appearance/appearance-catalog-item';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 
 export class AppearanceSettingsPage extends AdminComponent {
   /**
@@ -43,6 +45,12 @@ export class AppearanceSettingsPage extends AdminComponent {
   @state loading = true;
   @state url = '';
   @state busy = false;
+  /**
+   * `admin_appearance` and `admin_shadows` are per-site. In the platform scope the API refuses both,
+   * so the picker and the elevation toggle are not offered — the package catalogue below still is,
+   * because installing is platform work.
+   */
+  @state scope: SettingsPageScope | null = null;
 
   private get dark(): boolean {
     return this.theme === ThemeMode.DARK;
@@ -58,6 +66,16 @@ export class AppearanceSettingsPage extends AdminComponent {
 
   componentDidMount(): void {
     void this.load();
+    void this.loadScope();
+  }
+
+  private async loadScope(): Promise<void> {
+    this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), ['admin_appearance', 'admin_shadows']);
+  }
+
+  /** Nothing per-site can be chosen here — no site is selected. */
+  private get outOfScope(): boolean {
+    return this.scope?.isEmpty === true;
   }
 
   private notify(type: NotificationType, message: string): void {
@@ -192,7 +210,18 @@ export class AppearanceSettingsPage extends AdminComponent {
         />
 
         <div className="p-6 w-full space-y-8">
-          <AppearanceElevationCard enabled={this.shadows} busy={this.busy} onChange={this.setShadows} />
+          {this.outOfScope && (
+            <p className="fc-scope-notice">
+              <span className="fc-scope-notice__text">
+                The console's appearance and elevation are stored per site — choose a site from the site
+                menu to change them. Installing and removing appearance packages is platform work and stays here.
+              </span>
+            </p>
+          )}
+
+          {!this.outOfScope && (
+            <AppearanceElevationCard enabled={this.shadows} busy={this.busy} onChange={this.setShadows} />
+          )}
 
           <AppearanceActiveCard
             items={this.items}
@@ -204,6 +233,7 @@ export class AppearanceSettingsPage extends AdminComponent {
             onUpdate={this.updateInstalled}
             onRemove={this.remove}
             canManagePackages={this.canManagePlatform}
+            canChoose={!this.outOfScope}
           />
 
           {this.canManagePlatform && (

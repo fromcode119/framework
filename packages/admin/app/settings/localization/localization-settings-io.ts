@@ -83,10 +83,9 @@ export class LocalizationSettingsIo {
    * A plugin reads `globalSettings.measurement_system` from the SERVER settings for its own
    * dimensions.
    *
-   * REQUIRES an api-side change to land with it: `measurement_system` must be added to
-   * `SystemAdminController.WRITABLE_SETTINGS_KEYS`
-   * (`packages/api/src/controllers/system/system-admin-controller.ts:8-43`) or this PUT is rejected 400
-   * "Unknown or read-only settings key(s)". `SystemConstants.META_KEY.MEASUREMENT_SYSTEM` already exists.
+   * Writability is the REGISTRY's answer now (`SystemSettingRegistry.writableKeys()`), not a
+   * hand-written list in the controller — a key declared there is accepted, and one that is not comes
+   * back as a 400 naming it rather than being silently dropped.
    */
   static async save(
     cleaned: ILocaleItem[],

@@ -15,6 +15,9 @@ import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-
 import { RoutingPageUtils } from '@/app/settings/routing/routing-page-utils';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminClass } from '@/lib/admin-class';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
+import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
 
 export class RoutingPage extends AdminComponent {
   private static readonly PLACEHOLDERS = [
@@ -50,6 +53,11 @@ export class RoutingPage extends AdminComponent {
   @state homeTarget: string | null = null;
   @state loadError: string | null = null;
   @state searchTerm = '';
+  /**
+   * Both keys this screen writes are per-site, so in the platform scope the API refuses the save and
+   * the permalink structure and homepage target are lost together.
+   */
+  @state scope: SettingsPageScope | null = null;
   @state frontendMeta: any = null;
   @state autoResolvedSource: string | null = null;
   @state availableCollections: any[] = [];
@@ -78,6 +86,11 @@ export class RoutingPage extends AdminComponent {
   async componentDidMount(): Promise<void> {
     this.syncAutoSource();
     await this.loadRouting();
+    this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), ['permalink_structure', 'routing_home_target']);
+  }
+
+  private get outOfScope(): boolean {
+    return this.scope?.isEmpty === true;
   }
 
   @bound
@@ -448,17 +461,24 @@ export class RoutingPage extends AdminComponent {
           title="Routing"
           subtitle="Homepage target & permalink configuration"
           actions={
-            <Button
-              icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
-              onClick={this.handleSave}
-              isLoading={this.isSaving}
-              className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
-            >
-              Apply Routing
-            </Button>
+            this.outOfScope ? null : (
+              <Button
+                icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
+                onClick={this.handleSave}
+                isLoading={this.isSaving}
+                className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
+              >
+                Apply Routing
+              </Button>
+            )
           }
         />
 
+        {this.outOfScope && (
+          <SiteScopePanel detail="The permalink structure and the homepage target are stored per site. Choose a site from the site menu to configure its routing." />
+        )}
+
+        {!this.outOfScope && (
         <div className="p-6 w-full space-y-8">
           <Card title="Homepage Target">
             <div className="space-y-5 py-2">
@@ -572,6 +592,7 @@ export class RoutingPage extends AdminComponent {
             </div>
           </Card>
         </div>
+        )}
       </div>
     );
   }

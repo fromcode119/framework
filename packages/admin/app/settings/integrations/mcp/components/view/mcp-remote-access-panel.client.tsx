@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 
 /**
  * The hosted MCP transport toggle — the operator-visible switch behind `mcp_remote_enabled`.
@@ -25,8 +27,17 @@ export class McpRemoteAccessPanel extends AdminComponent {
   @state saving = false;
   @state enabled = false;
   @state maxMediaMb: number | string = '';
+  /**
+   * Both keys are per-site. In the platform scope the API refuses each write, so the toggle answered
+   * 400 on every click while looking like a working switch.
+   */
+  @state scope: SettingsPageScope | null = null;
 
   private mounted = false;
+
+  private get outOfScope(): boolean {
+    return this.scope?.isEmpty === true;
+  }
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
@@ -40,6 +51,11 @@ export class McpRemoteAccessPanel extends AdminComponent {
     } finally {
       if (this.mounted) this.loading = false;
     }
+    const scope = new SettingsPageScope(
+      await PlatformSettingLocks.load(),
+      [SystemConstants.META_KEY.MCP_REMOTE_ENABLED, SystemConstants.META_KEY.MCP_REMOTE_MEDIA_MAX_MB],
+    );
+    if (this.mounted) this.scope = scope;
   }
 
   private async saveMediaLimit(): Promise<void> {
@@ -96,6 +112,11 @@ export class McpRemoteAccessPanel extends AdminComponent {
         </p>
         {this.loading ? (
           <Loader />
+        ) : this.outOfScope ? (
+          <p className="text-xs text-slate-500">
+            Remote access is configured per site. Choose a site from the site menu to turn the hosted
+            MCP endpoint on and set its media limit.
+          </p>
         ) : (
           <div className="space-y-5">
             <Switch

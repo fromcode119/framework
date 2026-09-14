@@ -81,15 +81,15 @@ export class SystemSettingRegistry {
     },
     [SystemSettingRegistry.KEY.SITE_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: () => SystemSettingRegistry.urlDefaults().siteUrl, description: "Base URL for the public site.", group: "General" },
+      seed: { value: () => SystemSettingRegistry.urlDefaults().siteUrl, description: "Used only when Frontend URL is blank, as the same frontend address. Leave blank on a multi-site platform.", group: "General" },
     },
     [SystemSettingRegistry.KEY.FRONTEND_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: () => SystemSettingRegistry.urlDefaults().frontendUrl, description: "The primary URL for your frontend application.", group: "General" },
+      seed: { value: () => SystemSettingRegistry.urlDefaults().frontendUrl, description: "This deployment's frontend address. On a multi-site platform leave blank — a value here replaces every site's own domain in emails, sitemaps and links.", group: "General" },
     },
     [SystemSettingRegistry.KEY.ADMIN_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: () => SystemSettingRegistry.urlDefaults().adminUrl, description: "The primary URL for your admin dashboard.", group: "General" },
+      seed: { value: () => SystemSettingRegistry.urlDefaults().adminUrl, description: "This deployment's admin console address — one console serves every site.", group: "General" },
     },
     [SystemSettingRegistry.KEY.API_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
@@ -123,7 +123,13 @@ export class SystemSettingRegistry {
     [SystemSettingRegistry.KEY.CERTIFICATE_ACME_CONTACT_EMAIL]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.CERTIFICATE_PLATFORM_ADDRESSES]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
 
-    [SystemSettingRegistry.KEY.LOG_RETENTION_DAYS]: { scope: SettingScope.SITE, writable: true, exposed: true }, // candidate for PLATFORM (Phase 2)
+    // PLATFORM, and the "candidate (Phase 2)" note that stood here was the bug. `SystemLogRetentionService`
+    // starts ONCE per api process and sweeps on ONE daily interval, reading the value on an untenanted
+    // connection — which under the `_system_meta` policy sees the `tenant_id IS NULL` row and nothing
+    // else. Declared SITE, the only control for it (Settings -> Infrastructure, a platform screen) could
+    // not write a row the sweep would ever read: refused outright with no site selected, and filed under
+    // a tenant with one. Dead in both scopes on every multi-site deployment.
+    [SystemSettingRegistry.KEY.LOG_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
 
     // Localization
     [SystemSettingRegistry.KEY.LOCALIZATION_LOCALES]: {

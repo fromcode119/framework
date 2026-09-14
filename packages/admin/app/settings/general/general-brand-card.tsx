@@ -9,6 +9,7 @@ import { SettingRow } from '@/app/settings/general/setting-row';
 import { DomainAliasesInput } from '@/app/settings/general/components/view/domain-aliases-input.client';
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { Explanation } from '@/components/ui/view/explanation.client';
 import { FrameworkReleaseDefaults } from '@fromcode119/core/client';
 
 export class GeneralBrandCard extends PureReactor {
@@ -113,7 +114,21 @@ export class GeneralBrandCard extends PureReactor {
             theme={theme}
             icon={FrameworkIcons.Globe}
             title="Frontend URL"
-            description="The base URL where your website is hosted. Used for previews and sitemaps."
+            description={"This deployment's own frontend address — used by the gateway and for its certificate."}
+            explanation={(
+              <Explanation>
+                <p>
+                  It is also the base for sitemaps, sign-in and password-reset emails, plugin links and the
+                  admin&rsquo;s &ldquo;view on site&rdquo; links.
+                </p>
+                <p>
+                  <strong>On a multi-site platform, leave it blank.</strong> A value here is read before the
+                  request is, so it replaces <em>every</em> site&rsquo;s own domain everywhere in that list.
+                  Blank falls back to <code>FRONTEND_URL</code> in the environment, then to the host that made
+                  the request — which is how each site gets its own address.
+                </p>
+              </Explanation>
+            )}
           >
             <Input
               value={settings.frontend_url}
@@ -129,7 +144,19 @@ export class GeneralBrandCard extends PureReactor {
             theme={theme}
             icon={FrameworkIcons.Globe}
             title="Admin URL"
-            description="The web address of your admin panel (e.g. https://admin.yoursite.com). Used for admin links and sign-in redirects. Leave blank to use the server's configured default."
+            description={"This deployment's admin console address — one console serves every site."}
+            explanation={(
+              <Explanation>
+                <p>
+                  Used by the gateway and for the console&rsquo;s certificate, by the setup gate, and as the
+                  base for admin password-reset links.
+                </p>
+                <p>
+                  Blank falls back to <code>ADMIN_URL</code> in the environment, then to the host that made the
+                  request. Unlike the two above, this one is the platform&rsquo;s however many sites it serves.
+                </p>
+              </Explanation>
+            )}
           >
             <Input
               value={settings.admin_url}
@@ -145,7 +172,16 @@ export class GeneralBrandCard extends PureReactor {
             theme={theme}
             icon={FrameworkIcons.Globe}
             title="Site URL"
-            description="Your main public website address. Used as a fallback for links in emails, sitemaps, and feeds. Leave blank to use the server's configured default."
+            description="A fallback for Frontend URL — it has no readers of its own."
+            explanation={(
+              <Explanation>
+                <p>
+                  Used only when Frontend URL above is blank, and then it means exactly the same thing. It is
+                  also allowed through CORS.
+                </p>
+                <p><strong>On a multi-site platform, leave it blank</strong>, for the same reason as Frontend URL.</p>
+              </Explanation>
+            )}
           >
             <Input
               value={settings.site_url}
@@ -161,7 +197,7 @@ export class GeneralBrandCard extends PureReactor {
             theme={theme}
             icon={FrameworkIcons.Globe}
             title="Marketplace URL"
-            description="Where the platform downloads plugin, theme, and core updates from. Leave blank to use the default marketplace, or type 'off' to turn the marketplace off."
+            description={<>Where the platform browses for plugins, themes and appearances, and checks for updates. Blank uses the default marketplace; <code>off</code> turns the marketplace off.</>}
           >
             <Input
               value={settings.marketplace_url}

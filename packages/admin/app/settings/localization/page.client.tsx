@@ -15,6 +15,9 @@ import { MeasurementSystemCard } from '@/app/settings/localization/measurement-s
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { ILocaleItem } from '@/app/settings/localization/interfaces/locale-item.interface';
 import { LocaleUrlStrategy } from '@fromcode119/core/client';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
+import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
 
 export class LocalizationSettingsPage extends AdminComponent {
   @state isLoading = true;
@@ -34,9 +37,25 @@ export class LocalizationSettingsPage extends AdminComponent {
   @state frontendDefaultLocale = '';
   @state localeUrlStrategy: LocaleUrlStrategy = LocaleUrlStrategy.QUERY;
   @state measurementSystem: MeasurementSystem = MeasurementSystem.METRIC;
+  /**
+   * Every key this screen writes is per-site, so in the platform scope the API refuses the save and
+   * the whole locale table edit is lost. Null until the answer arrives; nothing is hidden before then.
+   */
+  @state scope: SettingsPageScope | null = null;
+
+  /** The keys `LocalizationSettingsIo.save` PUTs — the one list this page's scope is judged on. */
+  private static readonly KEYS = [
+    'localization_locales', 'enabled_locales', 'default_locale', 'admin_default_locale',
+    'frontend_default_locale', 'locale_url_strategy', 'measurement_system',
+  ] as const;
 
   async componentDidMount(): Promise<void> {
     await this.loadLocalization();
+    this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), LocalizationSettingsPage.KEYS);
+  }
+
+  private get outOfScope(): boolean {
+    return this.scope?.isEmpty === true;
   }
 
   @bound
@@ -234,17 +253,24 @@ export class LocalizationSettingsPage extends AdminComponent {
           title="Localization"
           subtitle="Locale registry & language defaults"
           actions={
-            <Button
-              icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
-              onClick={this.handleSave}
-              isLoading={this.isSaving}
-              className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
-            >
-              Save Localization
-            </Button>
+            this.outOfScope ? null : (
+              <Button
+                icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
+                onClick={this.handleSave}
+                isLoading={this.isSaving}
+                className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
+              >
+                Save Localization
+              </Button>
+            )
           }
         />
 
+        {this.outOfScope && (
+          <SiteScopePanel detail="Locales, language defaults and the measurement system are stored per site. Choose a site from the site menu to configure them." />
+        )}
+
+        {!this.outOfScope && (
         <div className="p-6 w-full space-y-8">
           <LocaleRegistryCard
             locales={locales}
@@ -273,6 +299,7 @@ export class LocalizationSettingsPage extends AdminComponent {
             setMeasurementSystem={this.setMeasurementSystem}
           />
         </div>
+        )}
       </div>
     );
   }

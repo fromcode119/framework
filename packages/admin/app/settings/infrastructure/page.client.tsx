@@ -355,7 +355,7 @@ export class InfrastructureSettingsPage extends AdminComponent {
               icon={FrameworkIcons.Database}
               title="Log Retention"
               stacked
-              description="Removes system log entries older than this many days, swept daily. Leave blank to keep every entry forever."
+              description="Days of system-log history to keep across the whole deployment, swept daily. Blank keeps every entry forever."
             >
               <div className="flex items-center gap-3">
                 <div className="w-full md:w-40">

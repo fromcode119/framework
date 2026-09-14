@@ -7,9 +7,12 @@ import { SystemConstants } from '@fromcode119/core/client';
  * exist without its value being loaded, and a value can never be loaded and then dropped on save —
  * the shape of failure that made "Update Security" report success while never sending the key.
  *
- * Each key is also in the API's `WRITABLE_SETTINGS_KEYS`
- * (`packages/api/src/controllers/system/system-admin-controller.ts`); anything missing there comes
- * back as a 400 naming the key rather than being silently dropped.
+ * Writability is the REGISTRY's answer (`SystemSettingRegistry.writableKeys()`), not a hand-written
+ * list in the controller; a key it does not declare comes back as a 400 naming the key rather than
+ * being silently dropped.
+ *
+ * Every key here is SITE-scoped, which is why this whole screen is gated by `SettingsPageScope`: with
+ * no site selected the API refuses the save, and offering the form would lose all of them at once.
  */
 export class SecuritySettingsKeys {
   static readonly ALL: readonly string[] = [

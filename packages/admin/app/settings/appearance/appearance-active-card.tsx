@@ -20,6 +20,11 @@ export class AppearanceActiveCard extends PureReactor {
   @prop declare onRemove: (slug: string) => void;
   /** Installing/removing the PACKAGE is the platform's; picking which one this site wears is not. */
   @prop declare canManagePackages: boolean;
+  /**
+   * May this scope CHOOSE the appearance? `admin_appearance` is per-site, so with no site selected
+   * there is no row to write and the API refuses — the radio must not be offered.
+   */
+  @prop declare canChoose: boolean;
 
   private subtitle(item: AppearanceItem): string {
     if (item.builtIn) return 'Built-in';
@@ -27,7 +32,7 @@ export class AppearanceActiveCard extends PureReactor {
   }
 
   render(): ReactNode {
-    const { items, catalogBySlug, active, busy, dark, onSwitch, onUpdate, onRemove, canManagePackages } = this;
+    const { items, catalogBySlug, active, busy, dark, onSwitch, onUpdate, onRemove, canManagePackages, canChoose } = this;
     return (
       <Card title="Active appearance">
         {items.map((it) => {
@@ -36,7 +41,7 @@ export class AppearanceActiveCard extends PureReactor {
           return (
             <div key={it.slug} className={`py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b last:border-0 ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
               <label className="flex items-center gap-4 cursor-pointer">
-                <input type="radio" name="appearance" className="accent-indigo-600 w-4 h-4" checked={active === it.slug} onChange={() => onSwitch(it.slug)} disabled={busy} />
+                <input type="radio" name="appearance" className="accent-indigo-600 w-4 h-4" checked={active === it.slug} onChange={() => onSwitch(it.slug)} disabled={busy || !canChoose} />
                 <span className={`p-2.5 rounded-xl h-fit ${dark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
                   <FrameworkIcons.Palette size={18} />
                 </span>

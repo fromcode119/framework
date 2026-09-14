@@ -15,6 +15,10 @@ import { SecuritySettingsCards } from '@/app/settings/security/security-settings
 import { SecuritySettingsIo } from '@/app/settings/security/security-settings-io';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminClass } from '@/lib/admin-class';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
+import { SecuritySettingsKeys } from '@/app/settings/security/security-settings-keys';
+import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
 
 export class SecuritySettingsPage extends AdminComponent {
   @state isSaving = false;
@@ -32,6 +36,14 @@ export class SecuritySettingsPage extends AdminComponent {
    */
   @state settings: Record<string, string> | null = null;
   @state loadError: string | null = null;
+  /**
+   * Whether this screen's settings belong to the scope the console is in.
+   *
+   * Every key here is per-site. In the platform scope the API refuses the save, so rendering the form
+   * would offer twenty-three controls and lose all twenty-three edits at once. Null until the answer
+   * arrives; nothing is hidden before then.
+   */
+  @state scope: SettingsPageScope | null = null;
 
   /**
    * The DASHBOARD tab reports the runtime isolation of the box every site runs on — plugin processes,
@@ -46,6 +58,12 @@ export class SecuritySettingsPage extends AdminComponent {
   async componentDidMount(): Promise<void> {
     if (!this.canManagePlatform) this.activeTab = SecurityTab.SETTINGS;
     await this.loadPageData();
+    this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), SecuritySettingsKeys.ALL);
+  }
+
+  /** Nothing on the Settings tab can be saved in this scope. */
+  private get settingsOutOfScope(): boolean {
+    return this.scope?.isEmpty === true;
   }
 
   @watch('activeTab')
@@ -160,7 +178,7 @@ export class SecuritySettingsPage extends AdminComponent {
                   Settings
                 </button>
               </div>
-              {activeTab === SecurityTab.SETTINGS && settings && (
+              {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && (
                 <Button
                   icon={<FrameworkIcons.Shield size={15} strokeWidth={2} />}
                   onClick={this.handleSave}
@@ -197,7 +215,11 @@ export class SecuritySettingsPage extends AdminComponent {
             <SecurityDashboard stats={this.stats} />
           )}
 
-          {activeTab === SecurityTab.SETTINGS && settings && (
+          {activeTab === SecurityTab.SETTINGS && this.settingsOutOfScope && (
+            <SiteScopePanel detail="Password policy, login protection, rate limits and the audit trail are stored per site. Choose a site from the site menu to configure its security." />
+          )}
+
+          {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && (
             <SecuritySettingsCards settings={settings} setSettings={this.setSettings} theme={theme} />
           )}
         </div>
