@@ -16,7 +16,7 @@ import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
  * created; the api answers on whatever host serves it. Asking for three addresses here would be
  * asking the operator to decide two things they do not have yet.
  */
-export class SetupAddressesStep extends PureReactor {
+export class SetupDomainStep extends PureReactor {
   @prop declare locale: string;
   @prop declare adminUrl: string;
   @prop declare onAdminUrlChange: (value: string) => void;
@@ -41,21 +41,21 @@ export class SetupAddressesStep extends PureReactor {
           */}
         <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-500/40 dark:bg-amber-500/10">
           <p className="text-[12px] leading-relaxed text-amber-900 dark:text-amber-200">
-            {this.text('setup.addresses.unclaimedWarning')}
+            {this.text('setup.domain.unclaimedWarning')}
           </p>
         </div>
 
         <div>
           <Input
-            id="setup-admin-url"
-            label={this.text('setup.addresses.adminUrlLabel')}
+            id="setup-admin-domain"
+            label={this.text('setup.domain.adminUrlLabel')}
             value={this.adminUrl}
             onChange={this.handleAdminUrl}
             placeholder="https://console.example.com"
             autoComplete="off"
           />
           <p className="mt-1 text-[12px] leading-relaxed text-slate-500 dark:text-slate-400">
-            {this.text('setup.addresses.adminUrlHelp')}
+            {this.text('setup.domain.adminUrlHelp')}
           </p>
         </div>
       </div>

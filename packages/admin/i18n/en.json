@@ -6,7 +6,7 @@
       "language": "Language",
       "account": "Administrator",
       "platform": "Platform",
-      "addresses": "Addresses"
+      "domain": "Domain"
     },
     "language": {
       "title": "Choose your language",
@@ -38,7 +38,7 @@
       "failed": "Setup failed. Please try again."
     },
     "checking": "Checking this installation…",
-    "addresses": {
+    "domain": {
       "title": "Where the admin lives",
       "adminUrlLabel": "Admin address",
       "adminUrlHelp": "Prefilled with the address you are using right now. This is what the platform routes the admin by — change it only if you will reach it at a different address, and make sure that one points here first.",

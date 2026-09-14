@@ -14,7 +14,7 @@ import { SetupStepper } from '@/app/setup/setup-stepper.client';
 import { SetupLanguageStep } from '@/app/setup/setup-language-step.client';
 import { SetupAccountStep } from '@/app/setup/setup-account-step.client';
 import { SetupPlatformStep } from '@/app/setup/setup-platform-step.client';
-import { SetupAddressesStep } from '@/app/setup/setup-addresses-step.client';
+import { SetupDomainStep } from '@/app/setup/setup-domain-step.client';
 import type { ISetupAccountErrors } from '@/app/setup/setup-account-errors.interface';
 import { SetupAccountValidation } from '@/app/setup/setup-account-validation';
 
@@ -176,7 +176,7 @@ export class SetupPage extends AdminComponent {
       );
     }
     return (
-      <SetupAddressesStep
+      <SetupDomainStep
         locale={this.locale}
         adminUrl={this.adminUrl}
         onAdminUrlChange={this.handleAdminUrlChange}
