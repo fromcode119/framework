@@ -5,9 +5,11 @@ import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-c
 import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import path from 'path';
+import os from 'os';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { CoreServices } from '@core/services/core-services';
 import { CatalogEntry } from '@core/marketplace/contributions/catalog-entry';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -75,8 +77,18 @@ export class MarketplaceCatalogService {
       }
       this.logger.debug(`Fetching marketplace catalog from: ${this.marketplaceUrl}`);
       const data = await this.client.fetch();
-      this.logger.info(`Successfully fetched ${data.plugins?.length || 0} plugins from marketplace.`);
-      return data.plugins || [];
+      const plugins = data.plugins || [];
+      // "Successfully fetched 0 plugins" was logged after a 503, because the client swallows the
+      // failure and hands back an empty list — so a retired marketplace looked like an empty one, and
+      // the install carried on as though the catalogue had simply offered nothing. An empty answer is
+      // reported as what it is; whether it is a real emptiness or a swallowed error, it is not a
+      // success worth claiming.
+      if (plugins.length === 0) {
+        this.logger.warn(`Marketplace at ${this.marketplaceUrl} returned no plugins — it may be unreachable or retired.`);
+        return [];
+      }
+      this.logger.info(`Successfully fetched ${plugins.length} plugins from marketplace.`);
+      return plugins;
     } catch (err: any) {
       this.logger.error(`Failed to fetch marketplace catalog: ${err.message}`);
       return [];
@@ -182,16 +194,36 @@ export class MarketplaceCatalogService {
       }
     }
 
+    // AN OFFER FROM THIS INSTALLATION IS A FILE ON DISK, NOT A URL.
+    //
+    // The catalogue merges remote entries with ones contributed by this installation, and a
+    // contributed row borrows the marketplace shape — whose only location is `downloadUrl`, a bare
+    // filename. Resolving that against the remote marketplace produced
+    // `https://marketplace.fromcode.com/.../mlm-0.1.76.zip` for a package sitting in this
+    // installation's own workspace, so every locally built plugin failed to install. The theme
+    // controller already handled this; doing it here means the five callers that funnel through
+    // `downloadAndInstall` — the Update button, batch update-all, theme dependencies and the forge
+    // tools — are all fixed rather than one of them.
+    const localPath = await MarketplaceCatalogService.resolveLocalPackage(plugin, slug);
+    if (localPath) {
+      this.logger.info(`Installing plugin "${slug}" from this installation: ${localPath}`);
+      const manifest = fs.statSync(localPath).isDirectory()
+        ? await this.discovery.installFromDirectory(localPath)
+        : await this.discovery.installFromZip(localPath);
+      return manifest;
+    }
+
     this.logger.info(`Downloading and installing plugin: ${slug} v${plugin.version}`);
 
     // Resolve absolute download URL
     const downloadUrl = this.client.resolveDownloadUrl(plugin.downloadUrl);
 
-    const tempDir = path.join(process.cwd(), '.tmp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-    
+    // os.tmpdir(), never the working directory: cwd is `/app/packages/api`, which is root-owned in
+    // the image while the api runs as an unprivileged user — so this threw EACCES on every install,
+    // before the download was even attempted. `mkdtemp` also gives each install its own directory
+    // rather than a shared one two installs can race in.
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-plugin-'));
+
     const tempZipPath = path.join(tempDir, `${slug}-${Date.now()}.zip`);
 
     try {
@@ -263,5 +295,28 @@ export class MarketplaceCatalogService {
       }
     }
     return 0;
+  }
+  /**
+   * Where a locally built package actually is, or null when the offer came from a remote catalogue.
+   *
+   * Asked of the catalogue-contribution registry rather than of any named producer: core must not
+   * know that something called Sources exists, only that whatever offered the package can say where
+   * it put it. The path is resolved from the offer the server itself looked up, so nothing a caller
+   * sent chooses which file is opened.
+   */
+  private static async resolveLocalPackage(pkg: unknown, slug: string): Promise<string | null> {
+    const offer = CoercionUtils.toObject(pkg);
+    if (CoercionUtils.toString(offer.source) !== 'local') return null;
+
+    const resolved = await CoreServices.getInstance().catalogContributions.resolveArtifact(
+      slug,
+      CoercionUtils.toString(offer.kind) || 'plugin',
+    );
+    if (!resolved) {
+      // Never fall through to the remote URL. The offer said this installation has the package; if
+      // it cannot be found, that is a fault to report, not a reason to go asking a retired host.
+      throw new Error(`Plugin "${slug}" was offered by this installation but its package could not be found.`);
+    }
+    return resolved;
   }
 }
