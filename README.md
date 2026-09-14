@@ -151,6 +151,10 @@ npm run dev:local:api
 | **Admin Panel** | `http://localhost:3000/admin` |
 | **Frontend** | `http://localhost:3000` |
 
+On a database with no users yet, the admin opens a first-run wizard: language, your administrator
+account, the platform name, and the address the admin will answer on. It accepts setup for 15 minutes
+after start, and only from whoever gets there first.
+
 > `dev:local` starts a lightweight proxy on port 3000 that routes `/api` to the API (port 4000), `/admin` to the Admin panel (port 3001), and everything else to the Frontend (port 3002).
 
 </details>
@@ -165,7 +169,7 @@ npm run dev:local:api
 ```bash
 cd framework
 cp .env.example .env
-# Edit .env — set DB credentials, JWT_SECRET, NEXT_PUBLIC_API_URL, etc.
+# Edit .env — the database credentials are the only ones required
 ```
 
 #### 2. Start all services
@@ -231,7 +235,7 @@ curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
 | Single domain (path-routed) | one hostname → `gateway` (`COMPOSE_PROFILES=single-domain`) | Gateway routes `/api`, `/admin`, else frontend |
 | Split services | one hostname per service, no gateway | API + Admin + Frontend exposed directly |
 
-The gateway needs `INTERNAL_SERVICE_SECRET` (shared with the api) to fetch the routing map; without it, it falls back to path routing and behaves as the single-domain gateway always did.
+The gateway needs `INTERNAL_SERVICE_SECRET` to fetch the routing map. Set it for all services, or let the api generate it and give the gateway the same `data/` volume to read it from. Without it the gateway falls back to path routing, as the single-domain gateway always did.
 
 #### 4. Deploy
 
@@ -301,8 +305,8 @@ Copy `.env.example` to `.env` at the repo root.
 | `PORT` | `3000` | API server port |
 | `ADMIN_PORT` | `3001` | Admin panel port |
 | `FRONTEND_PORT` | `3002` | Frontend server port |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:3000` | Browser-facing API URL (Next.js public env) |
-| `API_URL` | `http://localhost:3000` | Server-to-server API URL (use Docker service name in containers, e.g. `http://api:3000`) |
+| `NEXT_PUBLIC_API_URL` | _(empty)_ | Base for asset URLs in server-rendered pages. Empty means relative, i.e. the visitor's own host. The browser always calls the API on the page's own origin regardless of this. |
+| `API_URL` | _(empty)_ | Server-to-server API URL — use the Docker service name in containers, e.g. `http://api:3000`. On the api itself it seeds the public API address on first boot; change it afterwards in Settings → General. |
 | `CORS_ALLOWED_DOMAINS` | `localhost` | Comma-separated allowed origins |
 | `DEFAULT_LOCALE` | `en` | Default language/locale |
 
@@ -351,7 +355,7 @@ POSTGRES_DB=fromcode
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `INTERNAL_SERVICE_SECRET` | — | Shared secret for service-to-service calls: the gateway's routing map, operator restart endpoints. Required for host routing. |
+| `INTERNAL_SERVICE_SECRET` | *generated* | Shared secret for service-to-service calls: the gateway's routing map, operator restart endpoints. Generated on first boot if unset; the gateway picks it up from the shared `data/` directory. |
 | `GATEWAY_INTERNAL_URL` | `http://gateway:3000` | Where the api pushes routing reloads when a site is created, changed or removed |
 | `GATEWAY_ROUTING_TTL_MS` | `30000` | How long the gateway keeps its routing map before refreshing (it also keeps the last map if the api is down) |
 | `API_TARGET_URL` / `ADMIN_TARGET_URL` / `FRONTEND_TARGET_URL` | `http://api:3000` … | The gateway's upstreams |
