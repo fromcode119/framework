@@ -7,6 +7,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { PersonCatalogService } from '@core/plugin/services/people/person-catalog-service';
 import { PeopleAddressService } from '@core/plugin/services/people/people-address-service';
 import { PeopleDirectoryService } from '@core/plugin/services/people/people-directory-service';
+import { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import type { IPeopleAddressRef } from '@core/plugin/services/interfaces/people-address-ref.interface';
 
@@ -20,6 +21,8 @@ export class PeopleContextProxy {
     const db = manager.db as any;
     const catalogs = new PersonCatalogService(db);
     const addresses = new PeopleAddressService(db);
+    // The framework's own personal data. Core-owned because plugins may not touch system tables.
+    const personalDataService = new PersonalDataErasureService(db);
 
     async function match(input: { userId?: any; email?: string; phone?: string }) {
       if (input?.userId != null && input.userId !== '') {
@@ -161,6 +164,15 @@ export class PeopleContextProxy {
         upsert: (ref: IPeopleAddressRef, addr: Record<string, any>) => addresses.upsert(ref, addr),
         delete: (addressId: any) => addresses.delete(addressId),
         setDefault: (ref: IPeopleAddressRef, addressId: any) => addresses.setDefault(ref, addressId)
+      },
+
+      // The framework's OWN personal data — account, person, sessions, roles, edit history, journals.
+      // Core-owned because a plugin may never touch a system table, so the privacy plugin cannot
+      // honour a DSAR over them itself. It registers these datasets; core does the writing.
+      personalData: {
+        listDatasets: () => personalDataService.listDatasets(),
+        exportDataset: (key: string, subject: any) => personalDataService.exportDataset(key, subject),
+        eraseDataset: (key: string, subject: any, strategy: string) => personalDataService.eraseDataset(key, subject, strategy)
       }
     };
   }
