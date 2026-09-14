@@ -93,3 +93,61 @@ jobs:
           fi
 
           echo "No AI attribution found."
+
+      # The commit scan above cannot see this: the `🤖 Generated with [Claude Code]` footer is
+      # usually put in the PULL REQUEST BODY, which is not part of any commit. It never reaches the
+      # contributor graph, but it sits on the public PR page forever and is the marker people
+      # actually notice.
+      - name: Reject AI attribution in the pull request body
+        if: github.event_name == 'pull_request'
+        env:
+          # Passed through env, never interpolated into the script. A PR body is attacker-controlled
+          # text; `${{ }}` inside a run block would paste it straight into the shell.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          # ANCHORED, for the same reason the commit patterns are: the real footer is always its own
+          # line, and a body that merely DESCRIBES the footer must not be blocked by it.
+          FOOTER='^[[:space:]]*[-*>]?[[:space:]]*(🤖[[:space:]]*)?generated (with|by) \[?(claude|copilot|chatgpt|gemini|cursor|devin)'
+          TRAILER='^[[:space:]]*co-authored-by:[[:space:]]*.*(claude|copilot|chatgpt|gpt-[0-9]|gemini|cursor|devin|anthropic)'
+          if printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" | grep -qiE "$FOOTER|$TRAILER"; then
+            echo "::error::The pull request title or body credits an AI."
+            printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" | grep -inE "$FOOTER|$TRAILER" | sed 's/^/    /'
+            echo "Edit the pull request description and remove the line. The code is yours."
+            exit 1
+          fi
+          echo "No AI attribution in the pull request body."
+
+      # And the third surface: a byline inside the source itself. These outlive the session in a way
+      # a commit message does not — they are read by everyone who opens the file.
+      - name: Reject AI attribution in added source lines
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${BASE:-}" ] && [ -n "${HEAD:-}" ]; then
+            RANGE="$BASE $HEAD"
+          else
+            RANGE="${{ github.event.before }} ${{ github.sha }}"
+            git rev-parse --verify "${{ github.event.before }}" >/dev/null 2>&1 || RANGE="${{ github.sha }}^ ${{ github.sha }}"
+          fi
+
+          # Only ADDED lines, and only ones shaped like a comment making an authorship claim. A file
+          # that merely mentions Claude in prose is not a byline. This workflow itself is excluded
+          # because it necessarily contains every string it bans — the previous version of this guard
+          # blocked its own commit for exactly that reason.
+          BYLINE='^\+.*(//|#|/\*|\*|<!--|--)[[:space:]]*.*((ai|machine)[- ]generated|(generated|written|authored|created|added|produced) (by|with) (an? )?(ai|llm|assistant|claude|copilot|chatgpt|gpt-[0-9]|gemini|cursor|devin|anthropic))'
+
+          HITS="$(git diff --unified=0 $RANGE -- . ':(exclude).github/workflows/no-ai-attribution.yml' \
+                  | grep -inE "$BYLINE" || true)"
+
+          if [ -n "$HITS" ]; then
+            echo "::error::An added line marks the source as AI-written."
+            echo "$HITS" | sed 's/^/    /'
+            echo "Delete the byline. Describe what the code does, never who or what typed it."
+            exit 1
+          fi
+          echo "No AI attribution in added source lines."
