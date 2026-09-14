@@ -115,9 +115,19 @@ cd framework
 ```bash
 # Copy the example env file
 cp .env.example .env
-
-# Edit .env as needed — at minimum, set a strong JWT_SECRET before running
 ```
+
+You do **not** need to invent secrets. `JWT_SECRET`, `INTEGRATION_SECRET_KEY` and
+`INTERNAL_SERVICE_SECRET` are generated on first boot into `data/secrets.json` (owner-only) and reused
+from there. Set them yourself only if you manage secrets elsewhere — a value you supply always wins
+and is never overwritten. Either way **keep that file**: `JWT_SECRET` signs every session, and
+`INTEGRATION_SECRET_KEY` is what stored SMTP and payment credentials are encrypted with, so losing it
+signs everyone out and makes those credentials unreadable.
+
+You also do not need to set the platform's own addresses. `ADMIN_URL`, `API_URL` and `FRONTEND_URL`
+are settings: the first-run wizard records the address you reached it on, and Settings → General
+changes it afterwards without a redeploy. An environment variable still seeds them on first boot, so
+an existing deployment keeps working exactly as it did.
 
 The default `.env` expects a PostgreSQL at `localhost:5432` (start one with `docker compose up -d db`, or point
 `DATABASE_URL` at your own). A zero-setup single-site alternative on SQLite lives in `starters/local/` — it has no
@@ -285,6 +295,45 @@ docker run -d \
 
 ---
 
+## 🆕 First install
+
+A platform that has never been set up has no tenants and no address configured, so there is no host
+for the gateway to recognise. It opens a **setup mode** instead: reach it at whatever address you
+have — an IP is fine — and it serves the wizard.
+
+1. Start the stack. The api generates its secrets and reports `Running on …`.
+2. Open the address. You land on the first-run wizard: language, administrator, platform name, and
+   the address the admin will answer on — prefilled with the one you are already using.
+3. Submit. The address is recorded, the gateway starts routing by it, and setup mode closes.
+
+Two things to know, because neither is visible from the screen:
+
+- **Setup mode closes on its own after 15 minutes**, and on the first claim. A box nobody claims stops
+  being claimable; a second party arriving mid-install is refused. Reopening needs a restart *and* a
+  database with no users, no tenants, no admin address and no completion marker — i.e. a fresh
+  install. Emptying one table does nothing.
+- **Until you finish, whoever reaches that address can claim the platform.** No secret is passed out
+  of band, so the server cannot tell you from anyone else who gets there first. The wizard says so on
+  screen. Finish promptly, or put the address behind something while you do.
+
+Nothing is indexable at any point: the admin answers `Disallow: /` with `X-Robots-Tag: noindex`, and a
+site stays private until you publish it.
+
+### Trying a first install locally
+
+The published images are `linux/amd64`, so on an arm64 machine build from this checkout instead:
+
+```bash
+docker compose -f docker-compose.fresh.yml -p fc-fresh up -d --build
+open http://localhost:8099
+
+docker compose -f docker-compose.fresh.yml -p fc-fresh down -v   # gone, volumes included
+```
+
+It boots with an empty database and no secrets or addresses configured — the way a stranger's machine
+would. `down -v` is what makes the next run a genuinely fresh install again; without it the platform
+is already set up and the thing you meant to test cannot happen.
+
 ## ⚙️ Environment Variables
 
 Copy `.env.example` to `.env` at the repo root.
@@ -295,13 +344,13 @@ Copy `.env.example` to `.env` at the repo root.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `NODE_ENV` | `development` | `development` \| `production` |
-| `JWT_SECRET` | — | **Required.** Minimum 32 characters. Set before going live. |
+| `JWT_SECRET` | *generated* | Optional. Written to `data/secrets.json` on first boot if unset; a supplied value wins. Minimum 32 characters. |
 | `DB_DIALECT` | `postgres` | `postgres` (every multi-site deployment) or `sqlite` (single-site only) |
 | `DATABASE_URL` | `postgresql://…` | Full DB connection string |
 | `PORT` | `3000` | API server port |
 | `ADMIN_PORT` | `3001` | Admin panel port |
 | `FRONTEND_PORT` | `3002` | Frontend server port |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:3000` | Browser-facing API URL (Next.js public env) |
+| `NEXT_PUBLIC_API_URL` | *unset* | Optional. Base for asset URLs in server-rendered HTML. Empty means relative, i.e. the visitor's own host — the browser always calls the api on its own origin regardless. |
 | `API_URL` | `http://localhost:3000` | Server-to-server API URL (use Docker service name in containers, e.g. `http://api:3000`) |
 | `CORS_ALLOWED_DOMAINS` | `localhost` | Comma-separated allowed origins |
 | `DEFAULT_LOCALE` | `en` | Default language/locale |
