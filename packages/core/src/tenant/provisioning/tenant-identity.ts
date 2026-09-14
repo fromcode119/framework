@@ -1,6 +1,7 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { TenantKind } from '@core/tenant/tenant-kind';
 import { TenantVisibility } from '@core/enums/tenant-visibility.enum';
+import { TenantEnvironment } from '@core/enums/tenant-environment.enum';
 
 /**
  * The operator-chosen identity of a tenant: id, slug, hosts, state — validated ONCE, here, before it
@@ -25,6 +26,7 @@ export class TenantIdentity {
     readonly state: string,
     readonly kind: TenantKind,
     readonly visibility: TenantVisibility,
+    readonly environment: TenantEnvironment,
     readonly appearance: string,
   ) {}
 
@@ -33,7 +35,7 @@ export class TenantIdentity {
     return [...new Set([this.primaryHost, ...this.hostAliases])];
   }
 
-  static from(input: { id?: unknown; slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; kind?: unknown; visibility?: unknown; appearance?: unknown }): TenantIdentity {
+  static from(input: { id?: unknown; slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; kind?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown }): TenantIdentity {
     const slug = CoercionUtils.toKey(input.slug);
     if (!TenantIdentity.SLUG.test(slug)) {
       throw new Error(`Tenant slug "${slug}" must be lowercase letters, digits and dashes, starting with a letter or digit.`);
@@ -58,8 +60,15 @@ export class TenantIdentity {
     // because "unstated" has a safe and obvious meaning here and refusing would break every existing
     // caller for no gain.
     const visibility = TenantVisibility.find(input.visibility) ?? TenantVisibility.PRIVATE;
+    // A site is PRODUCTION unless it says otherwise — the OPPOSITE direction to visibility above, and
+    // deliberately so. Closed-by-default is right for who may READ a site; it is wrong for whether a
+    // site may SEND, because every caller that exists today creates a real site, and a new shop born
+    // silently muted would not be discovered until a customer complained that no order confirmation
+    // arrived. The one path that creates copies of live shops — the tenant import — passes
+    // `non-production` explicitly rather than relying on a default.
+    const environment = TenantEnvironment.find(input.environment) ?? TenantEnvironment.PRODUCTION;
     const appearance = TenantIdentity.appearanceFor(kind, input.appearance);
-    return new TenantIdentity(id, slug, primaryHost, aliases, state, kind, visibility, appearance);
+    return new TenantIdentity(id, slug, primaryHost, aliases, state, kind, visibility, environment, appearance);
   }
 
   /** A workspace names its appearance (`''` = the default console); a site has none and may not pass one. */

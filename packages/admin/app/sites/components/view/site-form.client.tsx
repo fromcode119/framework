@@ -80,6 +80,10 @@ export class SiteForm extends PureReactor {
     this.emit({ visibility: value });
   }
 
+  @bound onEnvironment(value: string): void {
+    this.emit({ environment: value });
+  }
+
   private togglePlugin(slug: string, checked: boolean): void {
     const next = new Set(this.values.plugins);
     if (checked) next.add(slug); else next.delete(slug);
@@ -212,6 +216,20 @@ export class SiteForm extends PureReactor {
               ]}
             />
           )}
+          {/* A THIRD axis, and deliberately not folded into "Visible to": that one decides who may READ
+              the site, this one decides whether the site may SEND. A copy of a live shop is private and
+              non-production; a client's pre-launch site is private and production, because its test
+              order confirmation has to actually arrive. */}
+          <Select
+            label="Environment"
+            theme={this.theme}
+            value={values.environment}
+            onChange={this.onEnvironment}
+            options={[
+              { value: 'production', label: 'Production — email, payments and shipments leave this site' },
+              { value: 'non-production', label: 'Non-production — nothing leaves this site' },
+            ]}
+          />
         </div>
         {this.isNew ? null : (
           /* The id is the row-level-security discriminator stamped into every row this site owns, so it

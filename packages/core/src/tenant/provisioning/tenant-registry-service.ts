@@ -58,6 +58,7 @@ export class TenantRegistryService {
       state: identity.state,
       kind: identity.kind.value,
       visibility: String(identity.visibility.value),
+      environment: String(identity.environment.value),
       appearance: identity.appearance,
       created_at: new Date(),
       updated_at: new Date(),
@@ -69,7 +70,7 @@ export class TenantRegistryService {
   }
 
   /** The kind never changes after creation (it decides routing and login); the appearance of a workspace may. */
-  async update(id: string, patch: { slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; visibility?: unknown; appearance?: unknown }): Promise<TenantRecord> {
+  async update(id: string, patch: { slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown }): Promise<TenantRecord> {
     const current = await this.get(id);
     if (!current) throw new Error(`Tenant "${id}" does not exist.`);
     const identity = TenantIdentity.from({
@@ -82,6 +83,8 @@ export class TenantRegistryService {
       // Unstated means UNCHANGED on an update — the create-time default must not re-close a site
       // every time somebody edits its host.
       visibility: patch.visibility ?? current.visibility.value,
+      // Unstated means UNCHANGED here too — editing a host must not quietly re-arm a sandbox.
+      environment: patch.environment ?? current.environment.value,
       appearance: patch.appearance ?? current.appearance,
     });
     await this.assertAvailable(identity, current.id);
@@ -95,6 +98,9 @@ export class TenantRegistryService {
       // site could be created private and could never be opened or closed again from the admin. The
       // one control that decides who may read a site did nothing at all.
       visibility: String(identity.visibility.value),
+      // Written, not merely resolved — see the note above about `visibility`, which was carried this
+      // far and then dropped, leaving its control dead for months.
+      environment: String(identity.environment.value),
       appearance: identity.appearance,
       updated_at: new Date(),
     });

@@ -239,6 +239,8 @@ export { DatabaseRoleBootstrapService } from '@core/database/database-role-boots
 export { PlatformOwnershipService } from '@core/tenant/platform-ownership-service';
 export { PlatformOwnershipError } from '@core/tenant/platform-ownership-error';
 export { TenantResolverService } from '@core/tenant/tenant-resolver-service';
+export { TenantEnvironmentGate } from '@core/tenant/tenant-environment-gate';
+export { NonProductionRefusal } from '@core/tenant/non-production-refusal';
 export { TenantMode } from '@core/tenant/tenant-mode';
 export { IntegrationTenantAccess } from '@core/integrations/integration-tenant-access';
 export { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
@@ -394,3 +396,4 @@ export { ServerServiceKey } from '@core/services/server-service-key';
 export { AssistantVocabularyRegistryService } from '@core/services/assistant-vocabulary-registry-service';
 export { AssistantVocabularyRole } from '@core/services/enums/assistant-vocabulary-role.enum';
 export { TenantVisibility } from '@core/enums/tenant-visibility.enum';
+export { TenantEnvironment } from '@core/enums/tenant-environment.enum';

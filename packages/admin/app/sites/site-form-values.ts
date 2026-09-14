@@ -15,6 +15,8 @@ export class SiteFormValues {
     /** `site` or `workspace`; chosen once, at creation (T6). */
     readonly kind: string,
     readonly visibility: string,
+    /** `production` or `non-production` — whether this site may email, pay, ship or run jobs. */
+    readonly environment: string,
     /** Workspace only: appearance id, `''` = default console. */
     readonly appearance: string,
     /** Workspace only: the preset the operator picked, if any (it fills plugins + appearance, visibly). */
@@ -24,11 +26,14 @@ export class SiteFormValues {
   static empty(): SiteFormValues {
     // A new site is PRIVATE. The form shows the closed answer preselected, so publishing is
     // something somebody chooses rather than something that happens by not choosing.
-    return new SiteFormValues('', '', true, '', '', 'active', '', '', [], 'site', 'private', '', '');
+    // A new site is PRODUCTION: every site created through this form is a real one, and a shop born
+    // silently muted would not be noticed until a customer said an order confirmation never arrived.
+    // The import path sets `non-production` explicitly instead of relying on this.
+    return new SiteFormValues('', '', true, '', '', 'active', '', '', [], 'site', 'private', 'production', '', '');
   }
 
   static fromSite(site: SiteRecord): SiteFormValues {
-    return new SiteFormValues(site.slug, site.id, false, site.primaryHost, site.hostAliases.join(', '), site.state, '', site.theme ?? '', site.plugins, site.kind, site.visibility, site.appearance, '');
+    return new SiteFormValues(site.slug, site.id, false, site.primaryHost, site.hostAliases.join(', '), site.state, '', site.theme ?? '', site.plugins, site.kind, site.visibility, site.environment, site.appearance, '');
   }
 
   get isWorkspace(): boolean {
@@ -48,6 +53,7 @@ export class SiteFormValues {
       patch.plugins ?? this.plugins,
       patch.kind ?? this.kind,
       patch.visibility ?? this.visibility,
+      patch.environment ?? this.environment,
       patch.appearance ?? this.appearance,
       patch.preset ?? this.preset,
     );
@@ -62,7 +68,7 @@ export class SiteFormValues {
     return {
       slug: this.slug.trim(), id: this.id.trim() || undefined, primaryHost: this.primaryHost.trim(), hostAliases: this.aliasList,
       adminEmail: this.adminEmail.trim() || undefined, theme: this.isWorkspace ? undefined : (this.theme || undefined), plugins: this.plugins,
-      kind: this.kind, visibility: this.visibility, appearance: this.isWorkspace ? this.appearance : undefined, preset: this.isWorkspace && this.preset ? this.preset : undefined,
+      kind: this.kind, visibility: this.visibility, environment: this.environment, appearance: this.isWorkspace ? this.appearance : undefined, preset: this.isWorkspace && this.preset ? this.preset : undefined,
     };
   }
 
@@ -74,6 +80,7 @@ export class SiteFormValues {
       hostAliases: this.aliasList,
       state: this.state,
       visibility: this.visibility,
+      environment: this.environment,
       // ENTITLEMENT — what this site may run — is edited on the Access tab and saved here. Their
       // SETTINGS are not: those live on each plugin's and the theme's own page, with this site
       // selected. Carrying both was what made this page a worse copy of pages that already exist.
