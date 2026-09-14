@@ -329,6 +329,14 @@ export class SystemConstants {
   } as const;
 
   static readonly API_PATH = {
+  /**
+   * The first-run wizard. Both of these are answered by an UNCONFIGURED process too — they are what
+   * a deployment that has not been told where its database is can still serve.
+   */
+  SETUP: {
+    STATUS: SystemConstants.ROUTE_SEGMENTS.SETUP_STATUS,
+    DATABASE: SystemConstants.ROUTE_SEGMENTS.SETUP_DATABASE,
+  },
   AUTH: {
     BASE: SystemConstants.AUTH_BASE,
     STATUS: SystemConstants.joinPath(SystemConstants.AUTH_BASE, SystemConstants.ROUTE_SEGMENTS.STATUS),

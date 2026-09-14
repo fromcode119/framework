@@ -3,7 +3,8 @@ import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
 import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
-import { BootstrapSecretsService } from '@fromcode119/core';
+import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
+import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
 
 export class ApiBootstrapService {
   private logger = new Logger({ namespace: 'api-bootstrap-service' });
@@ -53,6 +54,27 @@ export class ApiBootstrapService {
     // plugins hit the very first of them — `defaultPageContracts.register(...)` — inside
     // `manager.init()` below. Registering later than this throws on plugin boot.
     ServerCoreServices.register();
+
+    // The database the wizard configured on a previous boot, if the environment named none. Env
+    // always wins, so every deployment that sets DATABASE_URL — which is every deployment that
+    // exists today — reads no file and behaves exactly as it did.
+    const adopted = DatabaseConnectionFileService.adopt();
+    if (adopted.length) {
+      this.logger.info(`Using the database configured during setup (${adopted.join(', ')} from ${DatabaseConnectionFileService.file()}).`);
+    }
+
+    // NOTHING TO CONNECT TO, so there is nothing the real server could serve: `PluginManager` opens
+    // a connection in its constructor, one line below, and a process with no connection string dies
+    // there before it ever listens. Serve the first-run wizard instead — it writes the answer and
+    // exits, and the container manager starts this same boot again with a database to find.
+    if (!DatabaseConnectionFileService.isConfigured()) {
+      SetupMode.configureUnconfigured();
+      new UnconfiguredApiServer().listen(
+        parseInt(process.env.PORT || '3000', 10),
+        process.env.HOST || '0.0.0.0',
+      );
+      return;
+    }
 
     const manager = new PluginManager();
     const pluginApiRouter = express.Router();

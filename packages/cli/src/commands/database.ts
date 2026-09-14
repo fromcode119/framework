@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { MigrationManager, Seeder, DatabaseRoleBootstrapService } from '@fromcode119/core';
+import { MigrationManager, Seeder, DatabaseConnectionFileService, DatabaseRoleBootstrapService } from '@fromcode119/core';
 import { DatabaseFactory } from '@fromcode119/database';
 import { CliUtils } from '@cli/utils';
 
@@ -19,6 +19,11 @@ export class DatabaseCommands {
       .command('bootstrap-roles')
       .description('Create or realign the database logins named by DATABASE_URL / DATABASE_MIGRATION_URL')
       .action(async () => {
+        // The roles to create are named by the runtime connections, which on an installation set up
+        // through the wizard live in the data directory rather than the environment. Without this the
+        // command would find nothing to provision on exactly the deployments that need it most.
+        DatabaseConnectionFileService.adopt();
+
         const url = process.env[DatabaseRoleBootstrapService.BOOTSTRAP_URL_ENV];
         if (!url) {
           console.log(chalk.gray(`${DatabaseRoleBootstrapService.BOOTSTRAP_URL_ENV} is not set; leaving database roles to the operator.`));
@@ -36,6 +41,60 @@ export class DatabaseCommands {
           process.exit(1);
         }
         // No teardown: the managers expose none, and this command exits, which closes the pool with it.
+      });
+  }
+
+  /**
+   * `fromcode db init-bundled-superuser` — invent the bundled database's superuser password, once.
+   *
+   * A deployment that ships its own PostgreSQL still has to tell the image a password before it will
+   * initialise, and that was the last credential an operator had to invent by hand. Compose cannot
+   * generate one, and the api cannot either — it starts AFTER the database it would be generating
+   * the password for. So this runs as a one-shot before both of them.
+   *
+   * WRITTEN ONCE AND NEVER REWRITTEN. The password is what the existing data directory was
+   * initialised with; regenerating it would leave a database nobody can open. The file is owned by
+   * the postgres uid and readable by nobody else, so the application account — which shares this
+   * volume for the entrypoint's sake — cannot read the superuser credential it must never hold.
+   */
+  private static registerInitBundledSuperuser(db: Command): void {
+    db
+      .command('init-bundled-superuser')
+      .description('Generate the bundled database superuser password on first start (no-op afterwards)')
+      .requiredOption('--file <path>', 'Where to write the password')
+      .option('--uid <uid>', 'Owner uid for the file — the database image\'s own user', '70')
+      .action(async (options: { file: string; uid: string }) => {
+        const file = path.resolve(options.file);
+        if (fs.existsSync(file) && String(fs.readFileSync(file, 'utf8')).trim()) {
+          console.log(chalk.gray(`${file} already holds a password; leaving it alone.`));
+          process.exit(0);
+        }
+
+        try {
+          const { randomBytes } = await import('crypto');
+          // A deployment that supplied its own password keeps it: this stores that value rather than
+          // generating one, so the database is still created with what the operator chose. The image
+          // refuses to start when POSTGRES_PASSWORD and POSTGRES_PASSWORD_FILE are both set, so the
+          // file is the single path either way.
+          const supplied = String(process.env.POSTGRES_PASSWORD || '').trim();
+          const password = supplied || randomBytes(32).toString('hex');
+
+          fs.mkdirpSync(path.dirname(file));
+          fs.writeFileSync(file, `${password}\n`, { mode: 0o400 });
+          // Readable by the database image's user and by root, and by nothing else — in particular
+          // not by the account the application runs as, which shares this volume.
+          fs.chownSync(file, Number(options.uid), Number(options.uid));
+          fs.chmodSync(file, 0o400);
+          console.log(chalk.green(
+            supplied
+              ? `✔ Stored the supplied database superuser password into ${file}.`
+              : `✔ Generated the bundled database superuser password into ${file}.`,
+          ));
+          process.exit(0);
+        } catch (error: any) {
+          console.error(chalk.red('Could not generate the bundled database password:'), error.message);
+          process.exit(1);
+        }
       });
   }
 
@@ -62,6 +121,7 @@ export class DatabaseCommands {
       });
 
     DatabaseCommands.registerBootstrapRoles(db);
+    DatabaseCommands.registerInitBundledSuperuser(db);
 
     db
       .command('rollback')

@@ -122,7 +122,12 @@ services:
       # PostgreSQL row-level security applies. Supply complete, URL-encoded connection strings in
       # the deployment environment; keeping credentials out of this interpolation also means a password
       # may contain characters that compose interpolation would otherwise mangle.
-      - DATABASE_URL=${DATABASE_URL:?Set the non-owner runtime DATABASE_URL in your deployment environment}
+      # OPTIONAL since the first-run wizard existed. Set them and every service uses exactly what you
+      # set — which is what every existing deployment does. Leave them unset and the api serves the
+      # wizard instead, writes both connections into /app/data/database.json, and restarts into them.
+      # NOT declared required: compose refuses to start before a container runs, so demanding them
+      # here made the wizard unreachable — the process that would have written them never started.
+      - DATABASE_URL=${DATABASE_URL:-}
       # OPTIONAL, and privileged: used once by the entrypoint to create the two logins above, then unset
       # before the app starts. Leave it unset wherever the operator creates roles themselves — every
       # managed database, and any deployment that provisioned them by hand.
@@ -130,7 +135,18 @@ services:
       # DDL connection: migrations and collection schema sync run as the role that OWNS the
       # schema, while DATABASE_URL serves requests as a non-owner role so row-level security
       # applies to them. Unset means both use DATABASE_URL — correct for single-tenant installs.
-      - DATABASE_MIGRATION_URL=${DATABASE_MIGRATION_URL:?Set the schema-owner DATABASE_MIGRATION_URL in your deployment environment}
+      - DATABASE_MIGRATION_URL=${DATABASE_MIGRATION_URL:-}
+      # Where the bundled database lives, so the wizard can OFFER it and say exactly what it will
+      # create. Container-internal coordinates only: no credential, and nothing an operator owns.
+      # Blank on a deployment that ships no database of its own — the wizard then offers none rather
+      # than pointing at a host that does not exist.
+      - BUNDLED_DATABASE_HOST=db
+      - BUNDLED_DATABASE_PORT=5432
+      - BUNDLED_DATABASE_NAME=${POSTGRES_DB:-fromcode}
+      # Read by the ENTRYPOINT, as root, to build the privileged connection that creates the two
+      # roles — never by the application, which is why the file is owned by the database image's user.
+      - BUNDLED_DATABASE_SUPERUSER=${POSTGRES_USER:-postgres}
+      - BUNDLED_DATABASE_PASSWORD_FILE=/run/fromcode-db/superuser.password
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       # Generated on first boot into /app/data/secrets.json when unset, and reused from there. NOT
       # declared required: compose refuses to start before a container runs, so demanding it here
@@ -194,6 +210,11 @@ services:
       - db
       - redis
     volumes:
+      # Read by the ENTRYPOINT only, as root, to build the privileged connection that creates the two
+      # database roles. The application drops to `node` immediately afterwards and the file is owned
+      # by the database image's user, so the long-lived process cannot read this even though it is
+      # mounted into its container.
+      - db_secrets:/run/fromcode-db:ro
       - ../public/uploads:/app/public/uploads
       # Writable working space for anything that needs a scratch directory on disk rather than in the
       # database — the build agent clones repositories here, backups are staged here. The image has no
@@ -349,20 +370,60 @@ services:
         limits:
           memory: 512M
 
+  # Runs once, before the database, and usually does nothing.
+  #
+  # It exists for exactly one reason: the PostgreSQL image refuses to initialise without a password,
+  # compose cannot generate one, and the api cannot either — it starts after the database it would be
+  # generating the password for. So the last credential an operator had to invent by hand needed a
+  # step that runs before both. It writes the file only if it is missing, because the password is what
+  # the existing data directory was initialised with; regenerating it would lock everyone out.
+  db-secrets:
+    image: ${IMAGE_API:-fromcode-api}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api-only
+      args:
+        - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
+    # As root, and briefly: the file it writes is owned by the database image's user, so neither this
+    # container's app account nor the api's can read it afterwards.
+    user: root
+    entrypoint: ["npm", "run", "fromcode", "--", "db", "init-bundled-superuser", "--file", "/run/fromcode-db/superuser.password"]
+    environment:
+      # Set by a deployment that supplies its own superuser password. The one-shot stores it instead
+      # of generating one, so this is still the value the database is created with.
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-}
+    volumes:
+      - db_secrets:/run/fromcode-db
+    networks:
+      - framework
+    restart: "no"
+
   db:
     image: postgres:15-alpine
     environment:
       # The image creates POSTGRES_USER as a SUPERUSER — that is unavoidable — so nothing else may use
       # it. The init script below spends it once, to create the two roles the framework actually runs
       # as, and neither application container ever receives these credentials.
-      - POSTGRES_USER=${POSTGRES_USER:?Set the PostgreSQL superuser name in your deployment environment}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set the PostgreSQL superuser password in your deployment environment}
-      - POSTGRES_DB=${POSTGRES_DB:?Set the PostgreSQL database name in your deployment environment}
+      # Names, not secrets: both are shown in the setup wizard before anything is created, and both
+      # may be set to whatever a deployment prefers.
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-fromcode}
+      # ONLY the file, never POSTGRES_PASSWORD: this image REFUSES to start when both are set, so a
+      # deployment that supplies its own password would have broken the moment the generated one
+      # arrived. The one-shot above resolves that instead — it writes POSTGRES_PASSWORD into the file
+      # when the operator set one, and generates a password only when nobody did. One mechanism, and
+      # both deployments reach the image the same way.
+      - POSTGRES_PASSWORD_FILE=/run/fromcode-db/superuser.password
       # The owner and runtime logins are NOT configured here. They are named, with their passwords, by
       # DATABASE_MIGRATION_URL and DATABASE_URL on the api service, and the api entrypoint creates them
       # from DATABASE_BOOTSTRAP_URL on every boot. Declaring them twice is how the two copies drift.
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - db_secrets:/run/fromcode-db:ro
+    depends_on:
+      db-secrets:
+        condition: service_completed_successfully
     networks:
       - framework
     restart: unless-stopped
@@ -390,3 +451,7 @@ networks:
 
 volumes:
   postgres_data:
+  # Holds one file: the bundled database's superuser password. Separate from the app's data volume on
+  # purpose — that one is chowned to the application user, and this credential must stay out of its
+  # reach. The api mounts it read-only so the ENTRYPOINT (root) can read it before dropping privileges.
+  db_secrets:

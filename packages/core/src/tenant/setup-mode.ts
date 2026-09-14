@@ -1,3 +1,5 @@
+import { SetupPhase } from '@core/tenant/enums/setup-phase.enum';
+
 /**
  * Is this deployment still waiting to be claimed?
  *
@@ -17,6 +19,11 @@
  *    mid-install is refused rather than racing for the admin account.
  *  - Once completed it can only be re-entered by restarting with an empty database.
  *
+ * It asks its questions in TWO phases, separated by a process restart — see {@link SetupPhase}. The
+ * bullets above describe the platform phase, which is the one with a database to read. The database
+ * phase is opened by {@link configureUnconfigured} instead, because a deployment being asked where
+ * its database is has no table any of those four signals could come from.
+ *
  * What it is NOT: protection against someone who reaches the platform before the operator does.
  * Nothing decided by the server alone can tell those two apart — both are simply the first request.
  * That window is the accepted trade for an install that needs no secret passed out of band, and the
@@ -29,6 +36,7 @@ export class SetupMode {
   private static active = false;
   private static openedAt = 0;
   private static claimedBy: string | null = null;
+  private static phase: SetupPhase = SetupPhase.PLATFORM;
   private static now: () => number = () => Date.now();
 
   /**
@@ -49,6 +57,36 @@ export class SetupMode {
       && !input.setupCompleted;
     SetupMode.openedAt = SetupMode.active ? SetupMode.now() : 0;
     SetupMode.claimedBy = null;
+    SetupMode.phase = SetupPhase.PLATFORM;
+  }
+
+  /**
+   * Open setup for a deployment that has no database to ask.
+   *
+   * Every other signal this class reads lives IN the database, which a deployment being asked where
+   * its database is does not have. There is nothing to check and nothing that could be faked: a
+   * process holding no connection string can serve nothing but this question, so the emptiness is
+   * not inferred from a table, it is the state of the process.
+   *
+   * The window and the first-claimant lock still apply, and they matter MORE here than in the
+   * platform phase — this is the request that decides which database the installation will use.
+   */
+  static configureUnconfigured(): void {
+    SetupMode.active = true;
+    SetupMode.openedAt = SetupMode.now();
+    SetupMode.claimedBy = null;
+    SetupMode.phase = SetupPhase.DATABASE;
+  }
+
+  /**
+   * Which question setup is currently asking.
+   *
+   * The wizard needs this to know whether to show the database step at all — a deployment that was
+   * given a `DATABASE_URL` must never be asked, and after the database step the process restarts
+   * into the platform phase and must not ask again.
+   */
+  static currentPhase(): SetupPhase {
+    return SetupMode.phase;
   }
 
   /**
@@ -100,6 +138,7 @@ export class SetupMode {
     SetupMode.active = false;
     SetupMode.openedAt = 0;
     SetupMode.claimedBy = null;
+    SetupMode.phase = SetupPhase.PLATFORM;
   }
 
   /** Test seam — resets the process flags and the clock. */
@@ -107,6 +146,7 @@ export class SetupMode {
     SetupMode.active = false;
     SetupMode.openedAt = 0;
     SetupMode.claimedBy = null;
+    SetupMode.phase = SetupPhase.PLATFORM;
     SetupMode.now = clock;
   }
 }

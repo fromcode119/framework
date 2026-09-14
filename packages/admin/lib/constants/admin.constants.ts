@@ -33,6 +33,11 @@ export class AdminConstants {
 } as const;
 
   static readonly ENDPOINTS = {
+  /** The first-run wizard's own calls. Answered even by a deployment with no database yet. */
+  SETUP: {
+    STATUS: AdminConstants.v(SystemConstants.API_PATH.SETUP.STATUS),
+    DATABASE: AdminConstants.v(SystemConstants.API_PATH.SETUP.DATABASE),
+  },
   AUTH: {
     LOGIN: AdminConstants.v(SystemConstants.API_PATH.AUTH.LOGIN),
     LOGOUT: AdminConstants.v(SystemConstants.API_PATH.AUTH.LOGOUT),

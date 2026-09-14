@@ -47,6 +47,10 @@ vi.mock('@fromcode119/core', () => ({
   // Supplies the bootstrap secrets rather than generating any: this suite is about theme wiring, and
   // the real service would write a file into the deployment's data directory.
   BootstrapSecretsService: { ensure: () => ({ generated: [], file: '' }) },
+  // Answers "already configured", which is what keeps this suite on the path it is testing: an
+  // unconfigured deployment serves the first-run wizard and returns before any theme wiring happens.
+  DatabaseConnectionFileService: { adopt: () => [], isConfigured: () => true, file: () => '' },
+  SetupMode: { configureUnconfigured: () => {} },
   HotReloadService: class { start() {} },
   LocalizationUtils: { normalizeLocaleCode: () => '' },
   Logger: class { info() {} warn() {} error() {} },

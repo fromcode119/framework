@@ -56,6 +56,15 @@ export class RouteConstants {
   API_TOKENS: '/api-tokens',
   KILL: '/kill',
   SETUP: '/setup',
+  /**
+   * The first-run wizard's OWN routes, answered before there is a database.
+   *
+   * Deliberately not under `/auth`: these are the only two endpoints a deployment with no connection
+   * string can serve, and an unconfigured process has no auth to hang them off. `SETUP` above is the
+   * separate, database-backed call that creates the administrator once one exists.
+   */
+  SETUP_STATUS: '/setup/status',
+  SETUP_DATABASE: '/setup/database',
   REGISTER: '/register',
   VERIFY_EMAIL: '/verify-email',
   RESEND_VERIFICATION: '/resend-verification',

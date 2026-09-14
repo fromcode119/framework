@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { SetupMode } from '@core/tenant/setup-mode';
+import { SetupPhase } from '@core/tenant/enums/setup-phase.enum';
 
 /**
  * Setup mode is the ONE exception to the platform's fail-closed rule for an unrecognised host, so
@@ -70,6 +71,53 @@ describe('SetupMode', () => {
     expect(SetupMode.unavailableReason()).toBe('completed');
     // Nothing short of configure() — i.e. a restart reading an empty database — brings it back.
     expect(SetupMode.claim('anyone')).toBe(false);
+  });
+
+  /**
+   * The database phase exists because none of the four signals above can be read without a database.
+   * What matters is that it is a SEPARATE state: opening it must not leave the process believing the
+   * platform questions were answered, and answering the database question must not skip them.
+   */
+  describe('the database phase', () => {
+    it('opens with nothing to read, because the process holds no connection at all', () => {
+      SetupMode.reset(() => clock);
+      SetupMode.configureUnconfigured();
+
+      expect(SetupMode.isActive()).toBe(true);
+      expect(SetupMode.currentPhase()).toBe(SetupPhase.DATABASE);
+      expect(SetupMode.currentPhase().isDatabase).toBe(true);
+    });
+
+    it('still closes on the window and still gives the install to the first claimant', () => {
+      clock = 0;
+      SetupMode.reset(() => clock);
+      SetupMode.configureUnconfigured();
+
+      expect(SetupMode.claim('first')).toBe(true);
+      expect(SetupMode.claim('second')).toBe(false);
+
+      at(SetupMode.WINDOW_MS + 1);
+      expect(SetupMode.isActive()).toBe(false);
+    });
+
+    it('hands back to the platform phase on the next boot, which is a fresh configure()', () => {
+      SetupMode.reset(() => clock);
+      SetupMode.configureUnconfigured();
+      expect(SetupMode.currentPhase()).toBe(SetupPhase.DATABASE);
+
+      // The restart: the process starts again, now WITH a database, and reads the four signals.
+      configure();
+
+      expect(SetupMode.currentPhase()).toBe(SetupPhase.PLATFORM);
+      expect(SetupMode.isActive()).toBe(true);
+    });
+
+    it('defaults to the platform phase, so a deployment given a DATABASE_URL is never asked', () => {
+      configure({ userCount: 1 });
+
+      expect(SetupMode.currentPhase()).toBe(SetupPhase.PLATFORM);
+      expect(SetupMode.isActive()).toBe(false);
+    });
   });
 
   it('does not reopen when only ONE signal is cleared, which is what a deleted table looks like', () => {

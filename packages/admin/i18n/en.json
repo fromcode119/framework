@@ -38,6 +38,39 @@
       "failed": "Setup failed. Please try again."
     },
     "checking": "Checking this installation…",
+    "database": {
+      "title": "Where should this platform keep its data?",
+      "help": "Asked first because nothing else can be stored until it is answered. This is the one choice here that cannot be changed later in Settings.",
+      "summaryTitle": "What will be created",
+      "factServer": "Server",
+      "factDatabase": "Database",
+      "factRoles": "Roles",
+      "factFile": "File",
+      "factCredentials": "Credentials written to",
+      "multiSite": "Multi-site",
+      "singleSite": "Single site only",
+      "unavailable": "Not available yet",
+      "confirm": "Use this database",
+      "restarting": "Restarting the platform…",
+      "restartWarning": "Choosing this restarts the platform so it can connect. It takes about twenty seconds, and this page waits for it. The passwords are generated for you and stored on the server — you never have to type them.",
+      "claimedByOther": "Someone else reached this installation first and is setting it up. If that was not you, restart the platform to start again.",
+      "failed": "The database could not be configured. Please try again.",
+      "restartTimeout": "The platform is taking longer than expected to restart. Your database settings were saved — reload this page to continue.",
+      "drivers": {
+        "postgres": {
+          "name": "PostgreSQL",
+          "note": "Recommended. Runs one site or many, keeping each site's data separate at the database level."
+        },
+        "sqlite": {
+          "name": "SQLite",
+          "note": "One file, no database server to run. This installation will only ever serve a single site — it has no way to keep two sites' data apart."
+        },
+        "mysql": {
+          "name": "MySQL",
+          "note": "Shipped but not finished: no backups and no test coverage yet, so it cannot be chosen here. It will also be single-site until it can separate sites' data."
+        }
+      }
+    },
     "domain": {
       "title": "The admin's domain",
       "adminUrlLabel": "Admin domain",
