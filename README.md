@@ -101,7 +101,59 @@ npm run dev:local
 ---
 
 <details open>
-<summary><b>Option 1: Local Development</b> — Fastest for contributing</summary>
+<summary><b>Option 1: Install on your server</b> — the normal way to run it</summary>
+
+No checkout, no Node, no build. Two compose files and a database password.
+
+#### 1. Fetch the compose files
+
+```bash
+mkdir fromcode && cd fromcode
+base=https://raw.githubusercontent.com/fromcode119/framework/main/deploy
+curl -fsSLO $base/docker-compose.full-stack.yml
+curl -fsSLO $base/docker-compose.images.yml
+curl -fsSL  $base/.env.example -o .env
+```
+
+#### 2. Set the database credentials
+
+Only these, in `.env`:
+
+```bash
+POSTGRES_USER=fromcode
+POSTGRES_PASSWORD=<pick one>
+POSTGRES_DB=fromcode
+DATABASE_URL=postgres://fromcode_app:<pick one>@db:5432/fromcode
+DATABASE_MIGRATION_URL=postgres://fromcode_owner:<pick one>@db:5432/fromcode
+```
+
+Three roles, not one: PostgreSQL skips row-level security for superusers and table owners, so the app
+must connect as none of them. Leave the rest of the file alone — the secrets are generated on first
+boot and the addresses are set in the browser.
+
+#### 3. Start it
+
+```bash
+docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml pull
+docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up -d
+```
+
+#### 4. Open it
+
+Go to the server's address — an IP is fine, no DNS needed yet. The first-run wizard asks for your
+language, an administrator account, a name for the platform, and the address the admin should answer
+on, prefilled with the one you arrived on. Setup is accepted for 15 minutes after start, and only
+from whoever gets there first.
+
+Updating is the same two commands with `VERSION=` set to a newer tag. `deploy/DEPLOYMENT.md` covers
+proxies, TLS, the split-service and single-domain shapes, and running without Docker.
+
+</details>
+
+---
+
+<details>
+<summary><b>Option 2: Local Development</b> — Fastest for contributing</summary>
 
 #### 1. Clone the repository
 
@@ -162,7 +214,7 @@ after start, and only from whoever gets there first.
 ---
 
 <details>
-<summary><b>Option 2: Docker Compose</b> — Recommended for reproducible local environments</summary>
+<summary><b>Option 3: Docker Compose</b> — Recommended for reproducible local environments</summary>
 
 #### 1. Configure environment
 
@@ -209,7 +261,7 @@ docker compose down -v
 ---
 
 <details>
-<summary><b>Option 3: Coolify</b> — Recommended for self-hosted production</summary>
+<summary><b>Option 4: Coolify</b> — Recommended for self-hosted production</summary>
 
 [Coolify](https://coolify.io) is the recommended way to run Fromcode in production on your own infrastructure with zero-downtime deployments and automatic TLS.
 
@@ -252,7 +304,7 @@ Click **Deploy** in Coolify. Fromcode will install plugin dependencies, run migr
 ---
 
 <details>
-<summary><b>Option 4: Docker Manual Build</b> — Custom production images</summary>
+<summary><b>Option 5: Docker Manual Build</b> — Custom production images</summary>
 
 Build a specific deployment mode image from the repo root:
 

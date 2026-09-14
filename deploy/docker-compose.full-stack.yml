@@ -38,9 +38,9 @@ services:
       - frontend
     environment:
       - PORT=3000
-      - API_URL=${API_URL:-http://api.framework.local}
-      - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
-      - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
+      - API_URL=${API_URL:-}
+      - ADMIN_URL=${ADMIN_URL:-}
+      - FRONTEND_URL=${FRONTEND_URL:-}
       - API_TARGET_URL=http://api:3000
       - ADMIN_TARGET_URL=http://admin:3000
       - FRONTEND_TARGET_URL=http://frontend:3000
@@ -87,7 +87,7 @@ services:
       target: api-only
       args:
         - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
-        - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+        - NEXT_PUBLIC_API_URL=${API_URL:-}
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
     command: npm run start --workspace=@fromcode119/api
@@ -129,16 +129,16 @@ services:
       - NODE_ENV=production
       - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
-      - API_URL=${API_URL:-http://api.framework.local}
+      - API_URL=${API_URL:-}
       # The api builds links back into the admin (emails, notifications), so it needs the admin's
       # PUBLIC url — the internal one below is for server-to-server calls and is not a visitor address.
-      - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
+      - ADMIN_URL=${ADMIN_URL:-}
       # The STOREFRONT's public url. The api needs it for the CORS allowlist: a storefront loads its
       # theme bundle and fonts from the api host, which is a cross-origin request, and an origin the
       # api cannot name is refused. It was passed to the gateway and the frontend but not here, so
       # every storefront asset 500'd with "Not allowed by CORS" while the page itself rendered —
       # server-side HTML is fine and nothing hydrates, which looks like a theme fault and is not one.
-      - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
+      - FRONTEND_URL=${FRONTEND_URL:-}
       # Where to push a routing reload after a site is created, renamed or removed. Without it the
       # gateway still picks the change up, but only when its 30s cache expires — a new domain appears
       # to "not work yet" for half a minute, which is exactly long enough to be debugged twice.
@@ -225,7 +225,7 @@ services:
       target: admin-only
       args:
         - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
-        - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+        - NEXT_PUBLIC_API_URL=${API_URL:-}
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
     command: npm run start --workspace=@fromcode119/admin
@@ -241,10 +241,10 @@ services:
       - no-new-privileges:true
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
-      - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+      - NEXT_PUBLIC_API_URL=${API_URL:-}
       - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
-      - ADMIN_URL=${ADMIN_URL:-http://admin.framework.local}
+      - ADMIN_URL=${ADMIN_URL:-}
       # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
       # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
       # the deployment environment; the SAME value reaches all three services from there. Unset means those
@@ -274,7 +274,7 @@ services:
       target: frontend-only
       args:
         - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
-        - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+        - NEXT_PUBLIC_API_URL=${API_URL:-}
         - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
         - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
     command: npm run start --workspace=@fromcode119/frontend
@@ -298,10 +298,10 @@ services:
       - no-new-privileges:true
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
-      - NEXT_PUBLIC_API_URL=${API_URL:-http://api.framework.local}
+      - NEXT_PUBLIC_API_URL=${API_URL:-}
       - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
-      - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
+      - FRONTEND_URL=${FRONTEND_URL:-}
       # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
       # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
       # the deployment environment; the SAME value reaches all three services from there. Unset means those
