@@ -168,7 +168,7 @@ export class GeneralSystemCards extends PureReactor {
             title="Index Platform Hosts"
             description={this.describe(
               'admin_search_indexing',
-              "Let search engines crawl and index the platform's own hosts — this console and the API host. Off by default: the login page names the platform and the customer, and the URLs describe the installation. Sites you host are not affected; each one follows its own visibility. Turn it on only if these hosts deliberately serve something public.",
+              "Let search engines crawl and index the platform's own hosts — the admin and the API host. Off by default: the login page names the platform and the customer, and the URLs describe the installation. Sites you host are not affected; each one follows its own visibility. Turn it on only if these hosts deliberately serve something public.",
             )}
           >
             <Switch

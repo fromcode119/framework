@@ -39,9 +39,9 @@
     },
     "checking": "Checking this installation…",
     "addresses": {
-      "title": "Where this console lives",
-      "adminUrlLabel": "Console address",
-      "adminUrlHelp": "Prefilled with the address you are using right now. This is what the platform will route the console by — change it only if you will reach it at a different address, and make sure that one points here first.",
+      "title": "Where the admin lives",
+      "adminUrlLabel": "Admin address",
+      "adminUrlHelp": "Prefilled with the address you are using right now. This is what the platform routes the admin by — change it only if you will reach it at a different address, and make sure that one points here first.",
       "unclaimedWarning": "This installation has not been claimed yet. Until you finish, anyone who can reach this address can set it up instead of you. It stops accepting setup 15 minutes after starting."
     }
   }
