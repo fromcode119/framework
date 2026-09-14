@@ -123,7 +123,6 @@ services:
       # the deployment environment; keeping credentials out of this interpolation also means a password
       # may contain characters that compose interpolation would otherwise mangle.
       - DATABASE_URL=${DATABASE_URL:?Set the non-owner runtime DATABASE_URL in your deployment environment}
-      - DB_DIALECT=postgres
       # OPTIONAL, and privileged: used once by the entrypoint to create the two logins above, then unset
       # before the app starts. Leave it unset wherever the operator creates roles themselves — every
       # managed database, and any deployment that provisioned them by hand.
