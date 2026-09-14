@@ -125,14 +125,13 @@ which is exactly why those cannot be asked for on a web page — and they alread
 The one worth knowing about is `COMPOSE_PROFILES=single-domain`, which runs the bundled gateway and
 publishes a port. Without it nothing is reachable: the default shape assumes a reverse proxy already
 routes to the containers, so the stack starts healthy and answers nowhere. If something else already
-holds port 80 on this host, change `GATEWAY_PORT`. Behind an existing proxy, point
-`EXTERNAL_PROXY_NETWORK` at its network instead of creating one below — whatever that proxy is.
+holds port 80 on this host, change `GATEWAY_PORT`. Behind a proxy you already run, point
+`EXTERNAL_PROXY_NETWORK` at ITS network and set `PROXY_NETWORK_EXTERNAL=true`, so compose joins that
+network instead of creating its own — whatever that proxy is.
 
 #### 3. Start it
 
 ```bash
-docker network create edge
-
 docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml pull
 docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up -d
 ```

@@ -129,7 +129,8 @@ existing deployment keeps behaving exactly as it did:
 |---|---|---|
 | `COMPOSE_PROFILES` | `single-domain` in the example | Without it no port is published at all. Leave it off only when something else already fronts api/admin/frontend. |
 | `GATEWAY_PORT` | `80` in the example | A free port, when a reverse proxy already holds 80. |
-| `EXTERNAL_PROXY_NETWORK` | `edge` | The network your reverse proxy is already on. Must exist; compose will not create it. |
+| `EXTERNAL_PROXY_NETWORK` | `atlantis-edge` | The network the app services join. As shipped, compose creates it. |
+| `PROXY_NETWORK_EXTERNAL` | `true`, and `false` in the shipped `.env.example` | Whose network it is. `true` joins one somebody else created — a proxy you already run — and compose refuses to start if it is missing. `false` has compose create it, which is why a bare install runs no `docker network create`. Unset defaults to `true` so every deployment written before this behaves exactly as it did. |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `postgres` / generated / `fromcode` | The superuser, spent once at boot to create the other two roles. The password is generated into a file the application cannot read. |
 | `DATABASE_MIGRATION_URL` | written by the wizard | Schema owner — runs migrations. |
 | `DATABASE_URL` | written by the wizard | Non-owner runtime login — what actually serves requests. Set BOTH or neither: one role for both jobs disables row-level security silently. |

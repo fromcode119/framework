@@ -56,7 +56,7 @@ export class TenantRedirectsMigration extends BaseMigration {
       },
       sqlite: async () => {
         // No row-level security on SQLite, and nothing replaces it — the file-per-tenant silo (S1)
-        // is a design awaiting review, not current behaviour. The column is still added so the two
+        // was designed and NOT adopted; see its spec. The column is still added so the two
         // dialects hold the same shape and a row exported from one can be imported into the other.
         await ColumnGuard.addIfMissing(db, TenantRedirectsMigration.TABLE, TenantRlsSql.COLUMN, 'TEXT');
       },

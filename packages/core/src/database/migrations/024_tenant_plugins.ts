@@ -38,7 +38,7 @@ export class TenantPluginsMigration extends BaseMigration {
         await TenantPluginsMigration.createTable(db, 'DATETIME');
         await TenantPluginsMigration.backfillFromActivePlugins(db);
         // No row-level security on SQLite, and nothing replaces it — the file-per-tenant silo (S1)
-        // is a design awaiting review, not current behaviour. Single-site only on this driver.
+        // was designed and NOT adopted; see its spec. Single-site only on this driver.
       },
     });
   }

@@ -441,19 +441,24 @@ services:
 networks:
   framework:
   proxy:
-    # Must already exist — this is the proxy's network, not one this stack creates. Behind an
-    # existing proxy, set EXTERNAL_PROXY_NETWORK to ITS network so it can reach these containers.
+    # The boundary between the internet and these containers.
     #
-    # The default is named rather than demanded so a bare install has nothing to put in `.env`: it
-    # still has to be created once (`docker network create edge`), which the guide says, but there is
-    # no value for anyone to invent. A wrong guess here is loud — compose refuses to start on a
-    # missing network — which is why a default is safe where guessing a database was not.
+    # WHOSE NETWORK IS IT? That is the only question here, and it has two answers. Behind a proxy you
+    # already run, the network is THEIRS: name it and leave `PROXY_NETWORK_EXTERNAL` alone, and this
+    # stack joins a network it did not create. On a bare host nobody owns one yet, so set
+    # `PROXY_NETWORK_EXTERNAL=false` — as the shipped `.env.example` does — and compose creates it.
+    # That is what removed `docker network create` from the install guide.
     #
-    # `edge`, not a name of ours: this is the boundary between the internet and these containers, and
-    # whoever already runs a proxy on this host has a network for exactly that. Naming it after this
-    # project would imply the network belongs to it, when the point is that it is shared.
-    name: ${EXTERNAL_PROXY_NETWORK:-edge}
-    external: true
+    # The default is `true`, i.e. "somebody else's", because that is what every deployment written
+    # before this line assumed: they set neither variable and must keep behaving identically. It also
+    # fails in the safe direction — compose refuses to start on a missing network, loudly, rather
+    # than quietly creating a second one beside the proxy's and serving nothing.
+    #
+    # A compose-created network must NOT already exist, which is the other half of why the default is
+    # `true`: compose refuses to adopt a network it did not create ("exists but was not created by
+    # compose"), so a host that already has one needs the external answer, not this one.
+    name: ${EXTERNAL_PROXY_NETWORK:-atlantis-edge}
+    external: ${PROXY_NETWORK_EXTERNAL:-true}
 
 volumes:
   postgres_data:

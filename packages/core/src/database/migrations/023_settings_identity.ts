@@ -49,10 +49,10 @@ export class SettingsIdentityMigration extends BaseMigration {
       },
       sqlite: async () => {
         // Nothing to widen: a SQLite deployment serves ONE site, so the key alone is already unique.
-        // Not because of the file-per-tenant silo (S1) — that is a design awaiting review and is not
-        // built — but because this driver has no tenant isolation at all, so `TenantMode` refuses to
-        // boot a second tenant on it. Rebuilding the table to widen a key that cannot collide would
-        // be risk with no benefit. If S1 ever ships, revisit this: the premise changes, not the
+        // NOT because of the file-per-tenant silo (S1) — that was designed and never adopted — but
+        // because this driver has no tenant isolation at all, so `TenantMode` refuses to boot a
+        // second tenant on it. Rebuilding the table to widen a key that cannot collide would be risk
+        // with no benefit. If S1 is ever revived, revisit this: the premise changes, not the
         // conclusion.
       },
       mysql: async () => {

@@ -68,7 +68,7 @@ export class TenantMembershipsMigration extends BaseMigration {
         // tenant_id" AFTER creating the administrator account.
         await TenantMembershipsMigration.addSessionTenantColumn(db, 'TEXT');
         // No row-level security on SQLite, and nothing replaces it — the file-per-tenant silo (S1,
-        // 2026-09-04) is a design awaiting review, not current behaviour. Single-site only here.
+        // 2026-09-04) was designed and NOT adopted; see its spec. Single-site only here.
       },
       mysql: async () => {
         // "user_id"/"tenant_id" carry the UNIQUE below (and "tenant_id" the index after it), so
