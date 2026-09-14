@@ -17,6 +17,10 @@ on:
 
 jobs:
   check:
+    # NAMED explicitly: this string is the status-check context the branch ruleset requires. Leaving
+    # it to default to the job id makes the required check a bare "check", which is both meaningless
+    # in the UI and easy to break by renaming the job.
+    name: No AI attribution
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
