@@ -17,6 +17,8 @@ export class SiteRecord {
     readonly kind: string,
     /** `private` | `unlisted` | `public` — whether the site is open to visitors and to crawlers. */
     readonly visibility: string,
+    /** `production` | `non-production` — whether this site may email, take payment, ship or run jobs. */
+    readonly environment: string,
     /** Workspace only: the appearance its console is locked to; `''` = default console. */
     readonly appearance: string,
     /** Storefront pages this site actually has. Zero on a storefront site means its seed never ran. */
@@ -68,6 +70,9 @@ export class SiteRecord {
       // `private` when the server said nothing: the closed answer, matching the column's default.
       // Reading an unknown site as public would show "open" for a site nobody has published.
       CoercionUtils.toString(input.visibility) || 'private',
+      // `production` when the server said nothing — the column's default, and the permissive answer
+      // on purpose: reading a live site as muted would show a brake nobody applied.
+      CoercionUtils.toString(input.environment) || 'production',
       CoercionUtils.toString(input.appearance),
       CoercionUtils.toNumber(input.pageCount),
       Array.isArray(input.exports) ? input.exports.map((e: any) => ({

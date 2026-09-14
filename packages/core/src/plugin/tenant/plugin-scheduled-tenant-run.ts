@@ -58,7 +58,20 @@ export class PluginScheduledTenantRun {
       db: input.db,
       // "Has the plugin" means installed by them OR shipped by the framework: a bundled extension is
       // in nobody's installed set, and gating on that alone ran the Sources task for zero tenants.
-      appliesTo: (tenantId) => PluginTenantAccess.isPresentFor(input.pluginSlug, tenantId),
+      appliesTo: async (tenantId, tenant) => {
+        if (!(await PluginTenantAccess.isPresentFor(input.pluginSlug, tenantId))) return false;
+        // A non-production site runs no scheduled work at all. The other two brakes (email and
+        // `context.fetch`) would catch most of what a task tries to DO, but not all of it — a task
+        // that only writes rows still moves a copy's state on its own, which makes the copy diverge
+        // from the original it is meant to mirror. Skipping the tenant is the honest answer.
+        if (!tenant.environment.isProduction) {
+          PluginScheduledTenantRun.logger.info(
+            `Skipping ${input.pluginSlug}:${input.taskName} for "${tenant.slug}" — the site is marked non-production.`,
+          );
+          return false;
+        }
+        return true;
+      },
       before: (tenantId) => PluginTenantAccess.warm(tenantId),
       work: async () => { await input.handler(data); },
     });

@@ -2,6 +2,7 @@ import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
+import type { TenantRecord } from '@core/tenant/tenant-record';
 
 /**
  * Runs work once per tenant, for the paths that have no request to borrow a tenant from.
@@ -33,7 +34,9 @@ export class PerTenantRun {
     label: string;
     db: { withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> };
     work: () => Promise<void>;
-    appliesTo?: (tenantId: string) => Promise<boolean>;
+    /** The record is passed alongside the id because `listActive` already has it — a filter that
+     *  needs more than the id must not have to look the same tenant up a second time. */
+    appliesTo?: (tenantId: string, tenant: TenantRecord) => Promise<boolean>;
     before?: (tenantId: string) => Promise<void>;
   }): Promise<number> {
     if (!TenantMode.isEnabled()) {
@@ -45,7 +48,7 @@ export class PerTenantRun {
     let ran = 0;
 
     for (const tenant of tenants) {
-      if (input.appliesTo && !(await input.appliesTo(tenant.id))) continue;
+      if (input.appliesTo && !(await input.appliesTo(tenant.id, tenant))) continue;
       ran += (await PerTenantRun.runOne(input, tenant.id)) ? 1 : 0;
     }
 

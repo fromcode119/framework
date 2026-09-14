@@ -37,6 +37,7 @@ import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
 import { CatalogContextProxy } from '@core/plugin/context/catalog';
+import { TenantEnvironmentGate } from '@core/tenant/tenant-environment-gate';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -141,6 +142,11 @@ export class PluginContextFactory {
           if (!security.hasCapability('network')) {
             security.handleViolation('network');
           }
+          // The ONLY egress a sandboxed plugin has, so it is the only place a payment capture or a
+          // courier booking can be stopped. Blanket refusal on a non-production site, not a
+          // method- or host-based split: the framework cannot tell a Stripe capture from a Stripe
+          // list call, and Econt uses POST for lookups too, so anything finer would fail open.
+          await new TenantEnvironmentGate(manager.db, manager.audit).assert('network', url, plugin.manifest.slug);
           manager.audit.logAction(plugin.manifest.slug, 'Network Request', url, 'allowed');
           return fetch(url, init);
         },

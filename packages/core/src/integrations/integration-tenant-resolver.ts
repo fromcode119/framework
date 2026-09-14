@@ -5,6 +5,9 @@ import { IntegrationCoreRefreshService } from '@core/integrations/integration-co
 import { TenantEmailPolicy } from '@core/integrations/tenant-email-policy';
 import { UnconfiguredTenantEmailDriver } from '@core/integrations/unconfigured-tenant-email-driver';
 import type { IEmailDriver } from '@fromcode119/email';
+import { NonProductionEmailDriver } from '@core/integrations/non-production-email-driver';
+import { TenantEnvironmentGate } from '@core/tenant/tenant-environment-gate';
+import { AuditManager } from '@core/security/audit-manager';
 
 /**
  * Resolving ONE site's copy of a core integration, and remembering it.
@@ -61,9 +64,13 @@ export class IntegrationTenantResolver {
     const { email, resolved } = await this.coreRefresh.refreshEmail(true);
     // Compared by VALUE, not identity: `Enum` has no `equals`, and `toString()` returns the value, so
     // this holds whether `source` is the enum member the resolver sets or a string it survived as.
-    const driver = String(resolved?.source) === String(SettingSource.STORED)
+    const resolvedDriver = String(resolved?.source) === String(SettingSource.STORED)
       ? email
       : await this.platformSenderOrRefusal(tenantId, email);
+    // Wrapped, always — the wrapper decides per SEND, not here. A non-production site must stop
+    // sending the moment an operator says so, and this driver is cached for the life of the tenant's
+    // integrations, so a decision taken at resolve time would outlive the switch that changed it.
+    const driver = new NonProductionEmailDriver(resolvedDriver, new TenantEnvironmentGate(this.db, new AuditManager(this.db)));
     this.instances.set(key, driver);
     return driver;
   }

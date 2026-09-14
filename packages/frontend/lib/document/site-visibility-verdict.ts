@@ -53,6 +53,23 @@ export class SiteVisibilityVerdict {
     }
   }
 
+  /**
+   * Whether this site is marked non-production, so nothing it does reaches the outside world.
+   *
+   * FAIL OPEN here, unlike the readability verdict above, and for the same reason the column defaults
+   * to `production`: an unreadable payload must not paint a "nothing works" banner across a live shop.
+   * The brake itself is enforced server-side at the framework's chokepoints — this only reports it.
+   */
+  static async isNonProduction(): Promise<boolean> {
+    try {
+      const config = await FrontendConfigCache.read();
+      const site = (config as { site?: { isProduction?: unknown } } | null)?.site;
+      return site?.isProduction === false;
+    } catch {
+      return false;
+    }
+  }
+
   /** True only when a site is resolved AND says it is indexable. */
   static async isIndexable(): Promise<boolean> {
     try {

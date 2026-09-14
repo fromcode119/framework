@@ -14,6 +14,7 @@ import { PluginInjectionRenderer } from '@/lib/plugin-injection-renderer';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
 import { ColorSchemeBootScript } from '@/lib/color-scheme-boot-script';
 import { SitePreviewBannerView } from '@/lib/document/site-preview-banner-view';
+import { SiteEnvironmentBannerView } from '@/lib/document/site-environment-banner-view';
 import { SiteVisibilityVerdict } from '@/lib/document/site-visibility-verdict';
 
 export class FrontendRootLayoutRoute {
@@ -24,13 +25,14 @@ export class FrontendRootLayoutRoute {
   static async render({ children }: Readonly<{ children: React.ReactNode }>) {
 
     const routingConfig = await DynamicPageResolver.getLocaleRoutingConfig();
-    const [headElements, bodyStartElements, documentLocale, preview] = await Promise.all([
+    const [headElements, bodyStartElements, documentLocale, preview, nonProduction] = await Promise.all([
       PluginInjectionRenderer.loadHeadElements(),
       PluginInjectionRenderer.loadBodyStartElements(),
       FrontendLocaleService.resolveDocumentLocale(routingConfig.strategy),
       // The same banner the islands document renders, on the path that does not go through it. Both
       // documents are reachable depending on the rollout flag, and a preview must say so on either.
       SiteVisibilityVerdict.isPreview(),
+      SiteVisibilityVerdict.isNonProduction(),
     ]);
     return (
       <html lang={documentLocale} suppressHydrationWarning>
@@ -45,6 +47,7 @@ export class FrontendRootLayoutRoute {
         </head>
         <body>
           <SitePreviewBannerView.render visible={preview} />
+          <SiteEnvironmentBannerView.render visible={nonProduction} />
           {bodyStartElements}
           {/* The plugin runtime (provider stack + loader) is code-split behind this gate and arrives
               AFTER the paint — see StorefrontRuntimeGate. It renders `children` untouched until then,

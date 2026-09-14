@@ -1,6 +1,7 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { TenantState } from '@core/enums/tenant-state.enum';
 import { TenantVisibility } from '@core/enums/tenant-visibility.enum';
+import { TenantEnvironment } from '@core/enums/tenant-environment.enum';
 import { TenantKind } from '@core/tenant/tenant-kind';
 
 /**
@@ -19,12 +20,14 @@ export class TenantRecord {
   readonly kind: TenantKind;
   /** Whether the site is open to the public. A different axis from `state` — see TenantVisibility. */
   readonly visibility: TenantVisibility;
+  /** Whether the site may reach the outside world at all. A third axis — see TenantEnvironment. */
+  readonly environment: TenantEnvironment;
   /** Workspace only: the appearance its domain is locked to; `''` = the default console. */
   readonly appearance: string;
 
   private constructor(input: {
     id: string; slug: string; primaryHost: string; hostAliases: string[]; state: string; kind: TenantKind;
-    visibility: TenantVisibility; appearance: string;
+    visibility: TenantVisibility; environment: TenantEnvironment; appearance: string;
   }) {
     this.id = input.id;
     this.slug = input.slug;
@@ -33,6 +36,7 @@ export class TenantRecord {
     this.state = input.state;
     this.kind = input.kind;
     this.visibility = input.visibility;
+    this.environment = input.environment;
     this.appearance = input.appearance;
   }
 
@@ -93,6 +97,12 @@ export class TenantRecord {
       // be a row read before that ran; PRIVATE is the column's declared default, mirrored here and
       // deliberately the closed answer rather than the open one.
       visibility: TenantVisibility.find(row?.visibility) ?? TenantVisibility.PRIVATE,
+      // Migration 044 stamps every row, and its declared default is `production` — every site that
+      // existed before this column did was live and goes on sending. A blank can only be a row read
+      // before that ran, so PRODUCTION is mirrored here rather than invented. Unlike visibility, the
+      // safe direction is the permissive one: silently muting a working shop's order confirmations
+      // would go unnoticed for days.
+      environment: TenantEnvironment.find(row?.environment) ?? TenantEnvironment.PRODUCTION,
       appearance: CoercionUtils.toString(row?.appearance),
     });
   }

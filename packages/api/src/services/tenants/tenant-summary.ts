@@ -39,6 +39,7 @@ export class TenantSummary {
       // Both the stored value and what it MEANS. The admin shows a badge and a banner from these, and
       // deriving "is this site hidden" from the string at three call sites is how they drift apart.
       visibility: String(tenant.visibility.value),
+      environment: String(tenant.environment.value),
       isIndexable: tenant.isIndexable,
       appearance: tenant.appearance,
     };

@@ -4,6 +4,7 @@ import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
+import { TenantEnvironment } from '@core/enums/tenant-environment.enum';
 
 /**
  * A scheduled task has no request, so it has no tenant, so the tenancy guard skipped every query it
@@ -11,7 +12,9 @@ import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
  * "Build automatically" toggle came to be shipped for a build that could never happen.
  */
 describe('PluginScheduledTenantRun', () => {
-  const tenant = (id: string, isActive = true) => ({ id, isActive });
+  // Faithful to TenantRecord: every real record carries an `environment`. A fixture without one
+  // would let a filter that reads it pass here and throw in production.
+  const tenant = (id: string, isActive = true, environment = TenantEnvironment.PRODUCTION) => ({ id, slug: id, isActive, environment });
   let handler: ReturnType<typeof vi.fn>;
   let db: any;
 
@@ -133,6 +136,25 @@ describe('PluginScheduledTenantRun', () => {
       await run();
 
       expect(concurrent).toBe(1);
+    });
+
+    /**
+     * A non-production site runs no scheduled work. The email and network brakes would catch most of
+     * what a task tries to DO, but a task that only writes rows still advances a copy's state on its
+     * own — and a copy that drifts from the site it mirrors is no longer a useful rehearsal.
+     */
+    it('skips a tenant marked non-production and still runs the others', async () => {
+      givenTenants([
+        tenant('live-a'),
+        tenant('sandbox', true, TenantEnvironment.NON_PRODUCTION),
+        tenant('live-b'),
+      ]);
+
+      await run();
+
+      const ranFor = db.withTenant.mock.calls.map((call: unknown[]) => call[0]);
+      expect(ranFor).toEqual(['live-a', 'live-b']);
+      expect(handler).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -118,6 +118,11 @@ export class SystemMetadataController {
           id: site.id,
           slug: site.slug,
           visibility: String(site.visibility.value),
+          // Told to every visitor, not just preview holders: a non-production site is one whose
+          // checkout will refuse, and somebody testing it deserves to know that before they try
+          // rather than after.
+          environment: String(site.environment.value),
+          isProduction: site.environment.isProduction,
           isIndexable: site.isIndexable,
           isReadable: site.isReadable,
           // Whether THIS caller may read a site that is not published. The storefront cannot work
