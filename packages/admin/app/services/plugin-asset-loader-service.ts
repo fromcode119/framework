@@ -23,6 +23,31 @@ export class PluginAssetLoaderService {
     PluginAssetLoaderService.importEntries(plugins, callbacks);
   }
 
+  /**
+   * Load ONE plugin's admin UI — for the page that administers that plugin.
+   *
+   * WHY THIS EXISTS: `apply` above is driven by the admin metadata, which is filtered by
+   * `PluginTenantAccess.isVisibleForCurrentTenant`. That filter is right for the menu and the
+   * collections (an operator must not see entries for plugins this customer does not run, which
+   * would 403 on click), but it leaves a plugin's OWN settings page unable to load its OWN UI:
+   *
+   *   - platform scope has no tenant, so the filter returns nothing at all;
+   *   - site scope returns only the plugins that site enables.
+   *
+   * A plugin is administered in PLATFORM scope, so there was no scope in which a custom settings
+   * field component could ever register. Measured 2026-09-14: platform scope returned 0 plugins and
+   * site scope returned 1, while 14 were active.
+   *
+   * This loads the one plugin being administered and nothing else, so the tenant filter keeps doing
+   * its job everywhere it should. It grants no data access — the bundle is a static asset already
+   * served by an authenticated route; what it changes is only whether the admin bothers to fetch it.
+   */
+  static applyOne(plugin: IAdminPluginMetadata, callbacks: IPluginAssetLoaderCallbacks): void {
+    if (!plugin?.ui?.entryUrl) return;
+    PluginAssetLoaderService.injectAssetLinks([plugin]);
+    PluginAssetLoaderService.importEntries([plugin], callbacks);
+  }
+
   private static applyCollections(plugins: IAdminPluginMetadata[], callbacks: IPluginAssetLoaderCallbacks): void {
     const hasCompleteCollectionMetadata = plugins.every((plugin) =>
       plugin?.admin && Array.isArray(plugin.admin.collections)
