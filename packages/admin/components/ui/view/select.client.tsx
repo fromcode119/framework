@@ -183,29 +183,7 @@ export class Select extends Reactor {
              </div>
           </span>
 
-          <span className="relative z-10 ml-2 flex flex-shrink-0 items-center gap-1">
-            {canClear ? (
-              <button
-                type="button"
-                aria-label="Clear selection"
-                title="Clear selection"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onChange('');
-                  setSearchValue('');
-                  onSearchChange?.('');
-                  setIsOpen(false);
-                }}
-                className={`flex h-4 w-4 items-center justify-center rounded-full text-[11px] font-bold leading-none transition-colors ${
-                  isDarkTheme
-                    ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                    : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'
-                }`}
-              >
-                x
-              </button>
-            ) : null}
+          <span className={`relative z-10 ml-2 flex flex-shrink-0 items-center ${canClear ? 'pr-5' : ''}`}>
             <span className={`transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : chevronThemeClasses}`}>
               <FrameworkIcons.Down size={14} />
             </span>
@@ -213,6 +191,36 @@ export class Select extends Reactor {
 
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/[0.03] to-indigo-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
         </button>
+
+        {/*
+          A SIBLING of the trigger, not a child of it. This lived inside the trigger `<button>`, and a
+          `<button>` inside a `<button>` is invalid HTML: React logged a hydration error on every page
+          carrying a clearable Select, and what the browser does with the nested element is its own
+          choice, not ours. Overlaid on the trigger's reserved right padding so it lands in the same
+          place it always did.
+        */}
+        {canClear ? (
+          <button
+            type="button"
+            aria-label="Clear selection"
+            title="Clear selection"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onChange('');
+              setSearchValue('');
+              onSearchChange?.('');
+              setIsOpen(false);
+            }}
+            className={`absolute top-1/2 right-8 z-20 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[11px] font-bold leading-none transition-colors ${
+              isDarkTheme
+                ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'
+            }`}
+          >
+            x
+          </button>
+        ) : null}
 
         {isOpen && (
           <SelectMenu
