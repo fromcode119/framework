@@ -44,6 +44,9 @@ vi.mock('@api/services/framework-account-page-contract-service', () => ({
   FrameworkAccountPageContractService: { register: () => {} },
 }));
 vi.mock('@fromcode119/core', () => ({
+  // Supplies the bootstrap secrets rather than generating any: this suite is about theme wiring, and
+  // the real service would write a file into the deployment's data directory.
+  BootstrapSecretsService: { ensure: () => ({ generated: [], file: '' }) },
   HotReloadService: class { start() {} },
   LocalizationUtils: { normalizeLocaleCode: () => '' },
   Logger: class { info() {} warn() {} error() {} },
