@@ -35,6 +35,7 @@ import { MediaRouter } from '@api/routes/media-router';
 import { McpRouter } from '@api/routes/mcp-routes';
 import { HostPermitRouter } from '@api/routes/host-permit-router';
 import { RoutingRouter } from '@api/routes/routing-router';
+import { SetupStatusRouter } from '@api/routes/setup-status-router';
 import { CertificateAdminRouter } from '@api/routes/certificate-admin-router';
 import { CertificateAdminService } from '@api/services/certificates/certificate-admin-service';
 import { AcmeChallengeRouter } from '@api/routes/acme-challenge-router';
@@ -241,6 +242,10 @@ export class ServerRoutesSetup {
       tenants: new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db)),
       memberships: new TenantMembershipService((this.manager as any).db),
     }));
+
+    // The first-run wizard polls this across the restart that commits its database choice. It has to
+    // exist on THIS server too, or the poll never sees the platform come back — see SetupStatusRouter.
+    vApi.use(new SetupStatusRouter().router);
 
     // The platform gateway's host → app map (T6). Secret-only; see RoutingRouter.
     const tenantRegistry = new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db));

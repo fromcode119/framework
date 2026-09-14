@@ -63,7 +63,7 @@
         },
         "sqlite": {
           "name": "SQLite",
-          "note": "One file, no database server to run. This installation will only ever serve a single site — it has no way to keep two sites' data apart."
+          "note": "One file, no database server to run. Not available yet: parts of the database setup are written for PostgreSQL only, so an installation on it would not finish starting. It will also only ever serve a single site — it has no way to keep two sites' data apart."
         },
         "mysql": {
           "name": "MySQL",

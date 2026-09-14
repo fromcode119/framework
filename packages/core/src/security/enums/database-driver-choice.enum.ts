@@ -22,12 +22,23 @@ export class DatabaseDriverChoice extends Enum {
   /** Row-level security, three roles, backups. The only driver that can host more than one site. */
   static readonly POSTGRES = new DatabaseDriverChoice('postgres', { isolatesTenants: true, isAvailable: true });
 
-  /** One file, one site. No roles to separate, and no row-level security to separate them with. */
-  static readonly SQLITE = new DatabaseDriverChoice('sqlite', { isolatesTenants: false, isAvailable: true });
+  /**
+   * One file, one site — and NOT installable today, which was found by installing it.
+   *
+   * The dialect itself is real and tested, but migrations 040-042 are written in PostgreSQL only
+   * (`JSONB`, `::jsonb`, `TIMESTAMPTZ`, `NOW()`), so a SQLite installation crash-loops partway
+   * through its first boot. 039 had the same fault and is fixed; the remaining three need the same
+   * dialect branches, and until they have them offering this would hand somebody a container that
+   * never starts.
+   */
+  static readonly SQLITE = new DatabaseDriverChoice('sqlite', { isolatesTenants: false, isAvailable: false });
 
   /**
-   * Real roles, no isolation, and — the reason it cannot be picked — no backup handler and no tests.
-   * Nothing structural stops it: unlike SQLite its limit is unfinished work, not architecture.
+   * Real roles, no isolation, no backup handler and no tests — so it cannot be picked either.
+   *
+   * Both unavailable drivers are blocked by unfinished work rather than by anything structural. What
+   * separates them is what finishing would buy: MySQL could gain an isolation strategy and host many
+   * sites, while SQLite has nowhere to put a second site's rows however much work it gets.
    */
   static readonly MYSQL = new DatabaseDriverChoice('mysql', { isolatesTenants: false, isAvailable: false });
 

@@ -1,4 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { DialectHelper } from '../helpers/dialect';
 import { Logger } from '../../logging';
 
 /**
@@ -34,9 +35,23 @@ export class TenantVisibilityMigration extends BaseMigration {
     // does not re-run, so this is a belt to that brace, not the only guard.
     const existed = await this.hasVisibilityColumn(db);
 
-    await db.execute(sql.raw(
-      `ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'private'`,
-    ));
+    // SQLite has neither `information_schema` nor `IF NOT EXISTS` on ADD COLUMN, so both halves of
+    // this migration have to be asked in that dialect's own words — which is why `existed` is
+    // checked first rather than leaned on as a clause.
+    if (!existed) {
+      await DialectHelper.executeForDialect(db.dialect, {
+        postgres: async () => {
+          await db.execute(sql.raw(
+            `ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'private'`,
+          ));
+        },
+        sqlite: async () => {
+          await db.execute(sql.raw(
+            `ALTER TABLE ${TABLE} ADD COLUMN visibility TEXT NOT NULL DEFAULT 'private'`,
+          ));
+        },
+      });
+    }
 
     if (existed) {
       logger.info(`${TABLE}.visibility already existed; leaving every site's visibility as it is.`);
@@ -52,12 +67,34 @@ export class TenantVisibilityMigration extends BaseMigration {
     );
   }
 
-  /** Whether the column is already there, asked before adding it. */
+  /**
+   * Whether the column is already there, asked before adding it.
+   *
+   * `information_schema` is PostgreSQL's; SQLite answers the same question with `PRAGMA table_info`
+   * and errors on the other form, which took the whole boot down on that driver.
+   */
   private async hasVisibilityColumn(db: IDatabaseManager): Promise<boolean> {
-    const result: any = await db.execute(sql.raw(
-      `SELECT 1 AS present FROM information_schema.columns
-        WHERE table_name = '${TenantVisibilityMigration.TABLE}' AND column_name = 'visibility'`,
-    ));
+    const { TABLE } = TenantVisibilityMigration;
+    let present = false;
+
+    await DialectHelper.executeForDialect(db.dialect, {
+      postgres: async () => {
+        present = TenantVisibilityMigration.hasRow(await db.execute(sql.raw(
+          `SELECT 1 AS present FROM information_schema.columns
+            WHERE table_name = '${TABLE}' AND column_name = 'visibility'`,
+        )));
+      },
+      sqlite: async () => {
+        const result: any = await db.execute(sql.raw(`PRAGMA table_info(${TABLE})`));
+        const rows: any[] = Array.isArray(result) ? result : (result?.rows ?? []);
+        present = rows.some((row: any) => String(row?.name || '') === 'visibility');
+      },
+    });
+
+    return present;
+  }
+
+  private static hasRow(result: any): boolean {
     const rows: any[] = Array.isArray(result) ? result : (result?.rows ?? []);
     return rows.length > 0;
   }

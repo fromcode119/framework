@@ -19,11 +19,13 @@ import {
  * trace and never listens on anything. A brand-new install therefore had nothing to talk to, which
  * is why the five database variables had to be hand-written into a file before the first boot.
  *
- * It answers exactly four things and 503s everything else. That is not defensive coding, it is the
- * honest shape of this process: with no database there are no users, no tenants, no settings and no
- * sessions, so any other endpoint could only lie. In particular it does NOT register plugins, does
- * not serve the admin api, and holds no privileged credential — the roles named in the file it
- * writes are created on the next boot by the entrypoint, running as root.
+ * It answers only what it can answer TRUTHFULLY and 503s everything else. That is not defensive
+ * coding, it is the honest shape of this process: with no database there are no users, no tenants,
+ * no settings and no sessions, so most endpoints could only lie. The few that can be answered are
+ * answered — "nothing is installed" and "there are no tenants" are facts, not placeholders, and
+ * refusing them makes the admin shell report a failure on the one screen that is working. It does
+ * NOT register plugins, does not serve the admin api, and holds no privileged credential: the roles
+ * named in the file it writes are created on the next boot by the entrypoint, running as root.
  *
  * It ends by killing itself. Committing the answer means `process.exit(0)`, and the container
  * manager starts the real server in its place; see {@link SetupPhase} for why the restart is the
@@ -44,6 +46,17 @@ export class UnconfiguredApiServer {
     this.app.get(RouteConstants.SEGMENTS.INTERNAL_ROUTING, (req, res) => this.routingMap(req, res));
     this.app.get(`${prefix}${RouteConstants.SEGMENTS.INTERNAL_ROUTING}`, (req, res) => this.routingMap(req, res));
     this.app.get(`${prefix}${SystemConstants.API_PATH.SETUP.STATUS}`, (req, res) => this.status(req, res));
+
+    // The admin shell asks these on every page, and for a deployment with no database they have
+    // TRUE answers rather than missing ones: nothing has been installed, and there are no tenants.
+    // Answering them is not a courtesy — a 503 here makes the shell log an initialisation failure on
+    // the one screen that is working exactly as intended.
+    this.app.get(`${prefix}${SystemConstants.API_PATH.AUTH.STATUS}`, (_req, res) => {
+      res.json({ initialized: false });
+    });
+    this.app.get(`${prefix}${SystemConstants.API_PATH.AUTH.TENANTS_AVAILABLE}`, (_req, res) => {
+      res.json({ tenants: [] });
+    });
     this.app.post(`${prefix}${SystemConstants.API_PATH.SETUP.DATABASE}`, (req, res) => { void this.configure(req, res); });
 
     // Everything else, including the admin's own api calls, says WHY rather than 404ing: an admin

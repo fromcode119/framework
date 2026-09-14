@@ -117,21 +117,18 @@ curl -fsSL  $base/.env.example -o .env
 
 #### 2. Fill in `.env`
 
-```bash
-POSTGRES_USER=fromcode
-POSTGRES_PASSWORD=<pick one>
-POSTGRES_DB=fromcode
-DATABASE_URL=postgres://fromcode_app:<pick one>@db:5432/fromcode
-DATABASE_MIGRATION_URL=postgres://fromcode_owner:<pick one>@db:5432/fromcode
+Three lines, and none of them is a credential:
 
+```bash
 COMPOSE_PROFILES=single-domain          # run the gateway and publish a port
 GATEWAY_PORT=80                         # where it listens
 EXTERNAL_PROXY_NETWORK=fromcode-edge    # a docker network; create it below
 ```
 
-Three database roles, not one: PostgreSQL skips row-level security for superusers and table owners,
-so the app must connect as neither. Leave the rest of the file alone — the secrets are generated on
-first boot and the domains are set in the browser.
+Nothing about the database goes here. The first-run wizard asks which one to use and writes the
+connection itself, the way the secrets are already generated on first boot and the domains are
+already set in the browser. Setting `DATABASE_URL` still works and still wins — an existing
+deployment changes nothing — but a new one has nothing to invent.
 
 Without `COMPOSE_PROFILES=single-domain` no port is published at all: the default shape assumes a
 reverse proxy already routes to the containers, so the stack starts and nothing can reach it.
@@ -147,10 +144,19 @@ docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up 
 
 #### 4. Open it
 
-Go to the server — its IP is fine, no DNS needed yet. The first-run wizard asks for your language, an
-administrator account, a name for the platform, and the domain the admin should answer on, prefilled
-with whatever you arrived on. Setup is accepted for 15 minutes after start, and only from whoever
-gets there first.
+Go to the server — its IP is fine, no DNS needed yet. The wizard asks for the database first and
+shows exactly what it will create: the server, the database, the two roles, and the file the
+generated passwords go into. Confirming restarts the platform so it can connect, which takes about
+twenty seconds and the page waits for it.
+
+Then it asks the four things that are yours to decide: your language, an administrator account, a
+name for the platform, and the domain the admin should answer on, prefilled with whatever you
+arrived on. Setup is accepted for 15 minutes after start, and only from whoever gets there first.
+
+Three database roles are created, not one: PostgreSQL skips row-level security for superusers and
+table owners, so the role that serves requests must be neither. PostgreSQL is the only driver
+installable today — the wizard lists SQLite and MySQL with the reason each is not yet available
+rather than hiding them.
 
 Updating is the same two commands with `VERSION=` set to a newer tag. `deploy/DEPLOYMENT.md` covers
 proxies, TLS, the split-service and single-domain shapes, and running without Docker.

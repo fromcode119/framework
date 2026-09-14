@@ -83,13 +83,25 @@ describe('SetupDatabaseService', () => {
     expect(() => SetupDatabaseService.apply({ driver: 'postgres' })).toThrow(/ships no bundled database/);
   });
 
-  it('writes one connection for SQLite, which has no second role to write', () => {
-    const { driver } = SetupDatabaseService.apply({ driver: 'sqlite' });
-    const stored = DatabaseConnectionFileService.read()!;
+  /**
+   * SQLite is listed but not installable: migrations 040-042 are PostgreSQL-only, so committing to it
+   * produces a container that crash-loops on its first boot. The refusal is the point — the file
+   * writer would happily accept one connection for a driver that isolates nothing.
+   */
+  it('REFUSES SQLite while its migrations cannot run, rather than writing an install that dies', () => {
+    expect(() => SetupDatabaseService.apply({ driver: 'sqlite' })).toThrow(/can install yet/);
+    expect(DatabaseConnectionFileService.read()).toBeNull();
+  });
 
-    expect(driver).toBe(DatabaseDriverChoice.SQLITE);
-    expect(stored.runtimeUrl.startsWith('sqlite://')).toBe(true);
-    expect(stored.migrationUrl).toBe('');
+  it('would write one connection for a single-site driver, which has no second role to write', () => {
+    // The shape SQLite will use once its migrations run: `write` allows one connection ONLY because
+    // the driver isolates nothing, and this is the assertion that keeps that exemption honest.
+    const file = DatabaseConnectionFileService.write(
+      { driver: DatabaseDriverChoice.SQLITE, runtimeUrl: 'sqlite:///tmp/x.db', migrationUrl: '' },
+    );
+
+    expect(DatabaseConnectionFileService.read()!.migrationUrl).toBe('');
+    expect(file.endsWith('database.json')).toBe(true);
   });
 
   it('REFUSES a driver it cannot install yet, rather than writing something that will not boot', () => {
@@ -106,7 +118,7 @@ describe('SetupDatabaseService', () => {
 
     expect(drivers.map((d) => d.value)).toEqual(['postgres', 'sqlite', 'mysql']);
     expect(drivers.find((d) => d.value === 'postgres')).toMatchObject({ isAvailable: true, isSingleSiteOnly: false });
-    expect(drivers.find((d) => d.value === 'sqlite')).toMatchObject({ isAvailable: true, isSingleSiteOnly: true });
+    expect(drivers.find((d) => d.value === 'sqlite')).toMatchObject({ isAvailable: false, isSingleSiteOnly: true });
     expect(drivers.find((d) => d.value === 'mysql')).toMatchObject({ isAvailable: false, isSingleSiteOnly: true });
   });
 

@@ -51,7 +51,7 @@ export class SetupDomainStep extends PureReactor {
             label={this.text('setup.domain.adminUrlLabel')}
             value={this.adminUrl}
             onChange={this.handleAdminUrl}
-            placeholder="https://console.example.com"
+            placeholder="https://admin.example.com"
             autoComplete="off"
           />
           <p className="mt-1 text-[12px] leading-relaxed text-slate-500 dark:text-slate-400">
