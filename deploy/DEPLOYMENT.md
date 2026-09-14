@@ -67,8 +67,8 @@ nothing**; if it is ever made private, both begin billing.
 
 ### Behind your own proxy
 The `gateway` service sits behind a `single-domain` profile and is **not** started by default. A host
-that already runs Traefik, nginx or Caddy routes straight to `api`, `admin` and `frontend` and never
-starts it — two proxies competing for port 80 is the failure this avoids.
+that already runs a reverse proxy — whichever one — routes straight to `api`, `admin` and `frontend`
+and never starts it: two proxies competing for port 80 is the failure this avoids.
 
 ---
 
@@ -127,7 +127,7 @@ without them:
 | `DATABASE_URL` | non-owner runtime login — what actually serves requests |
 | `JWT_SECRET` | 32+ characters, unique per deployment |
 | `INTEGRATION_SECRET_KEY` | 32+ characters, unique per deployment |
-| `EXTERNAL_PROXY_NETWORK` | the EXISTING external network your reverse proxy is on (e.g. `edge`). On Coolify, `${COOLIFY_RESOURCE_UUID}` |
+| `EXTERNAL_PROXY_NETWORK` | the EXISTING external network your reverse proxy is on; defaults to `edge`. If your platform makes a network per deployment, use that one rather than a shared one |
 
 Generate secrets with `openssl rand -base64 48 | tr -d '=+/' | cut -c1-48`. Keep `.env` at mode
 `600`; never commit it.

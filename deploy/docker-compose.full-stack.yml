@@ -6,23 +6,21 @@
 # The `--project-directory` is REQUIRED, not decoration. Every path here — `build.context: .`, the
 # `../plugins` mounts — resolves against the project directory, and Compose defaults that to THIS
 # file's own folder, where there is no Dockerfile. Without the flag the build fails outright with
-# "failed to read dockerfile". (On Coolify, set the base directory to `framework/Source`; the local
-# dev stack achieves the same by including this file with `project_directory: .`.)
+# "failed to read dockerfile". (A build platform that asks for a "base directory" wants
+# `framework/Source`; the local dev stack achieves the same by including this file with
+# `project_directory: .`.)
 # Environment variables come from the deployment platform's own environment settings, or a .env file
 # at the repo root.
 # All paths are relative to the repo root (project-directory), which is what a platform building from
 # the repository root requires.
 # Set COMPOSE_PROFILES=single-domain only when you want the gateway service.
-# EXTERNAL_PROXY_NETWORK names the EXISTING external network your reverse proxy is on, so Traefik resolves
-# these services on a network it shares with them. It is deliberately not called after any one
-# platform: this file ran on Coolify first, where the variable was COOLIFY_RESOURCE_UUID, and that
-# name then had to be set on hosts that have never run Coolify.
+# EXTERNAL_PROXY_NETWORK names the EXISTING docker network your reverse proxy is on, so it can resolve
+# these services on a network it shares with them. Whatever you run in front — and this file does not
+# care which — put its network's name here; `docker network ls` shows it. The variable is named after
+# the ROLE, not after any product, so the same file works wherever it is deployed.
 #
-#   plain Traefik  EXTERNAL_PROXY_NETWORK=edge          (whatever `docker network ls` shows Traefik on)
-#   Coolify        EXTERNAL_PROXY_NETWORK=${COOLIFY_RESOURCE_UUID}
-#
-# On Coolify use the per-resource network rather than the global `coolify` one, which can collide
-# on common service names (`redis`).
+# If your platform creates a network per deployment, prefer that one over a global shared network:
+# a shared network resolves by service NAME, so two stacks both running `redis` will collide.
 
 services:
   gateway:
@@ -69,7 +67,7 @@ services:
     #
     # Note what publishing means where a reverse proxy also fronts this stack (the `proxy` network
     # below): the published port answers directly, in FRONT of that proxy's TLS and access policy. On
-    # such a host Traefik already holds 80 too, so set GATEWAY_PORT to something else — or drop this
+    # such a host something already holds 80, so set GATEWAY_PORT to something else — or drop this
     # mapping and let the proxy reach the container over the network.
     # Bound to LOOPBACK by default. On a host where a reverse proxy already holds 80/443 — which is
     # every deployment that terminates TLS — publishing the gateway on 80 would put it in FRONT of
@@ -77,8 +75,6 @@ services:
     # is here only so a bare deployment can still be curled locally.
     ports:
       - ${GATEWAY_PORT:-127.0.0.1:8085}:3000
-    labels:
-      - "traefik.docker.network=${EXTERNAL_PROXY_NETWORK}"
     networks:
       - proxy
       - framework
@@ -449,10 +445,14 @@ networks:
     # existing proxy, set EXTERNAL_PROXY_NETWORK to ITS network so it can reach these containers.
     #
     # The default is named rather than demanded so a bare install has nothing to put in `.env`: it
-    # still has to be created once (`docker network create fromcode-edge`), which the guide says,
-    # but there is no value for anyone to invent. A wrong guess here is loud — compose refuses to
-    # start on a missing network — which is why a default is safe where guessing a database was not.
-    name: ${EXTERNAL_PROXY_NETWORK:-fromcode-edge}
+    # still has to be created once (`docker network create edge`), which the guide says, but there is
+    # no value for anyone to invent. A wrong guess here is loud — compose refuses to start on a
+    # missing network — which is why a default is safe where guessing a database was not.
+    #
+    # `edge`, not a name of ours: this is the boundary between the internet and these containers, and
+    # whoever already runs a proxy on this host has a network for exactly that. Naming it after this
+    # project would imply the network belongs to it, when the point is that it is shared.
+    name: ${EXTERNAL_PROXY_NETWORK:-edge}
     external: true
 
 volumes:

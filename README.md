@@ -126,12 +126,12 @@ The one worth knowing about is `COMPOSE_PROFILES=single-domain`, which runs the 
 publishes a port. Without it nothing is reachable: the default shape assumes a reverse proxy already
 routes to the containers, so the stack starts healthy and answers nowhere. If something else already
 holds port 80 on this host, change `GATEWAY_PORT`. Behind an existing proxy, point
-`EXTERNAL_PROXY_NETWORK` at its network instead of creating one below.
+`EXTERNAL_PROXY_NETWORK` at its network instead of creating one below — whatever that proxy is.
 
 #### 3. Start it
 
 ```bash
-docker network create fromcode-edge
+docker network create edge
 
 docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml pull
 docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up -d
