@@ -1,3 +1,5 @@
+import type { IPersonalDataDataset, IPersonalDataErasure, IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data.interface';
+
 /**
  * The `context.people` surface of {@link PluginContext}.
  *
@@ -5,6 +7,19 @@
  * referenced by, and 25 of these inline in one class put the file at 366 lines.
  */
 export interface IPluginContextPeople {
+  /**
+   * Erasure and export for the personal data the FRAMEWORK holds — the account, the person record,
+   * sessions, roles, edit history and the journals.
+   *
+   * Exposed here because a plugin may never touch a system table, so the privacy plugin cannot
+   * honour a DSAR over `users`/`people`/`_system_*` itself. It registers these datasets and reports
+   * on them; core does the writing. See `PersonalDataErasureService`.
+   */
+  personalData: {
+    listDatasets(): IPersonalDataDataset[];
+    exportDataset(key: string, subject: IPersonalDataSubject): Promise<Record<string, unknown>[]>;
+    eraseDataset(key: string, subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure>;
+  };
   match(input: { userId?: any; email?: string; phone?: string }): Promise<Record<string, any> | null>;
   getById(id: any): Promise<Record<string, any> | null>;
   getByUserId(userId: any): Promise<Record<string, any> | null>;
