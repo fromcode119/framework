@@ -14,6 +14,7 @@ import { SchemaManager } from '@core/database/schema-manager';
 import { MigrationManager } from '@core/database/migration-manager';
 import { DatabaseRoleGuard } from '@core/tenant/database-role-guard';
 import { TenantMode } from '@core/tenant/tenant-mode';
+import { SetupMode } from '@core/tenant/setup-mode';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SystemConstants } from '@core/constants/system.constants';
 import { Logger } from '@core/logging';
@@ -213,6 +214,40 @@ export class PluginManager implements IPluginManagerInterface {
   }
 
   /**
+   * Decides once, at the same point and from the same connection, whether this deployment has ever
+   * been set up — and may therefore still be claimed.
+   *
+   * Every signal must say "untouched": no users, no tenants, no console address, no completion
+   * marker. Deleting one table does not reopen setup; only a genuinely fresh database does. A read
+   * that FAILS is treated as "already set up", because the safe answer to "may a stranger claim this
+   * platform" is no — the opposite of how the tenant count above is handled, and for the opposite
+   * reason.
+   */
+  private async configureSetupMode(tenantCount: number): Promise<void> {
+    try {
+      const userCount = await this.schemaDb.count(SystemConstants.TABLE.USERS);
+      const adminHost = await this.readPlatformSetting(SystemConstants.META_KEY.ADMIN_URL);
+      const completed = await this.readPlatformSetting(SystemConstants.META_KEY.SETUP_COMPLETED);
+
+      SetupMode.configure({
+        userCount: Number(userCount || 0),
+        tenantCount,
+        adminHostConfigured: adminHost.length > 0,
+        setupCompleted: completed === 'true',
+      });
+    } catch (error: unknown) {
+      SetupMode.configure({ userCount: 1, tenantCount, adminHostConfigured: true, setupCompleted: true });
+      this.logger.warn(`Could not determine setup state, treating this deployment as set up: ${String((error as Error)?.message ?? error)}`);
+    }
+  }
+
+  /** One platform-row setting, read straight from the table — no cache exists this early in boot. */
+  private async readPlatformSetting(key: string): Promise<string> {
+    const row = await this.schemaDb.findOne(SystemConstants.TABLE.META, { key });
+    return String((row as any)?.value ?? '').trim();
+  }
+
+  /**
    * Decides once, after migrations have run, whether this deployment is multi-tenant — and refuses
    * to continue if it is multi-tenant on a driver that cannot isolate, or on a connection that
    * bypasses row-level security.
@@ -232,6 +267,8 @@ export class PluginManager implements IPluginManagerInterface {
       dialect: String(this.db.dialect || ''),
       isolationSupported: this.db.supportsTenantIsolation(),
     });
+
+    await this.configureSetupMode(Number(tenants || 0));
 
     // The tenant axis of plugin enablement reads on the REQUEST connection, like every other
     // per-request lookup — not the owner connection, which exists only for DDL.

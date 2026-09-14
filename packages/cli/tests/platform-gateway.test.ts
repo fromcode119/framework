@@ -76,3 +76,36 @@ describe('PlatformGateway under a burst', () => {
     upstream.close();
   });
 });
+
+/**
+ * A deployment nobody has claimed has no tenants and no console address, so there is no host to
+ * recognise — and the fail-closed 404 would leave a fresh install with NO address that answers.
+ * While `SetupMode` says so, any host falls through to the same path rules a deployment without a
+ * routing map already uses. It is the existing rule applied for a while, not a new one.
+ */
+describe('PlatformGateway setup mode', () => {
+  const targets = { api: 'http://api:3000', admin: 'http://admin:3000', frontend: 'http://frontend:3000' };
+
+  it('serves the console by PATH for a host it has never heard of, while setup is open', () => {
+    const map = TenantRouteMap.fromJson({ routes: [], setup: true });
+
+    // The CONSOLE, not the frontend: during setup there are no sites, so the generic path rule would
+    // land the operator on nothing at all.
+    expect(PlatformGateway.resolveTarget(map, '203.0.113.5', '/', targets)).toBe(targets.admin);
+    expect(PlatformGateway.resolveTarget(map, '203.0.113.5', '/setup', targets)).toBe(targets.admin);
+    expect(PlatformGateway.resolveTarget(map, 'anything.example', '/api/v1/auth/setup', targets)).toBe(targets.api);
+  });
+
+  it('REFUSES that same unknown host the moment setup is no longer open', () => {
+    const map = TenantRouteMap.fromJson({ routes: [], setup: false });
+
+    expect(PlatformGateway.resolveTarget(map, '203.0.113.5', '/', targets)).toBeNull();
+    expect(PlatformGateway.resolveTarget(map, 'anything.example', '/api/v1/auth/setup', targets)).toBeNull();
+  });
+
+  it('carries the flag across the JSON the gateway actually fetches', () => {
+    expect(TenantRouteMap.fromJson({ routes: [], setup: true }).setup).toBe(true);
+    expect(TenantRouteMap.fromJson({ routes: [] }).setup).toBe(false);
+    expect(new TenantRouteMap([], true).toJSON().setup).toBe(true);
+  });
+});

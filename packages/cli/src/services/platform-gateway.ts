@@ -166,6 +166,15 @@ export class PlatformGateway {
   /** Pure routing rule, testable without sockets: map by host first, path rules when there is no map. */
   static resolveTarget(map: TenantRouteMap | null, host: string, pathname: string, targets: Record<string, string>): string | null {
     if (map) {
+      // NOT YET SET UP: no tenants and no console address, so there is no host to recognise and the
+      // fail-closed 404 below would leave a fresh install with no address that answers at all. While
+      // that is true — and `SetupMode` decides it once at boot, from an empty database, on a timer —
+      // any host falls through to the SAME path rules a deployment without a routing map uses. It is
+      // not a new routing rule, just the existing one applied for as long as nobody has claimed this
+      // platform. The api refuses the setup endpoint itself once the window closes or someone else
+      // claims it; the gateway only decides who gets to ask.
+      if (map.setup) return PlatformGateway.resolveForSetup(pathname, targets);
+
       const route = map.resolve(host);
       if (!route) return null;
       // An app host — a workspace console OR a site's storefront — calls the api on ITS OWN origin
@@ -178,6 +187,23 @@ export class PlatformGateway {
       if (RequestSurfaceUtils.isApiPathOnAppHost(pathname)) return targets[GatewayTarget.API.value] || null;
       return targets[route.target.value] || null;
     }
+    return PlatformGateway.resolveByPath(pathname, targets);
+  }
+
+  /**
+   * While nobody has claimed this platform, every host leads to the CONSOLE.
+   *
+   * Not the generic path rule: that sends `/` to the frontend, and during setup there are no sites —
+   * the operator would open the address they were given and land on nothing at all. The only two
+   * things that can usefully answer yet are the wizard and the api it posts to.
+   */
+  private static resolveForSetup(pathname: string, targets: Record<string, string>): string | null {
+    if (RequestSurfaceUtils.isApiPath(pathname)) return targets[GatewayTarget.API.value] || null;
+    return targets[GatewayTarget.ADMIN.value] || null;
+  }
+
+  /** The single-domain rule: decide by PATH, because no host here means anything yet. */
+  private static resolveByPath(pathname: string, targets: Record<string, string>): string | null {
     if (RequestSurfaceUtils.isApiPath(pathname)) return targets[GatewayTarget.API.value];
     if (RequestSurfaceUtils.isAdminPath(pathname)) return targets[GatewayTarget.ADMIN.value];
     if (targets[GatewayTarget.FRONTEND.value]) return targets[GatewayTarget.FRONTEND.value];

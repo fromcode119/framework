@@ -1,6 +1,7 @@
 import express from 'express';
 import { ApplicationUrlUtils, InternalServiceAuth, RouteConstants, TenantRouteMap } from '@fromcode119/core';
 import type { TenantRegistryService } from '@fromcode119/core';
+import { SetupMode } from '@fromcode119/core';
 
 /**
  * `GET /internal/routing` — the host → app map the platform gateway routes by (T6 §3.1).
@@ -26,7 +27,7 @@ export class RoutingRouter {
       admin: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
       api: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
       frontend: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
-    });
+    }, SetupMode.isActive());
     res.setHeader('Cache-Control', 'no-store');
     res.json({ ...map.toJSON(), generatedAt: new Date().toISOString() });
   }

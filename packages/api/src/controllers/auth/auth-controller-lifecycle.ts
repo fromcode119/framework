@@ -6,6 +6,8 @@ import { SecretService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerSso } from '@api/controllers/auth/auth-controller-sso';
 import { InitialSetupPreferences } from '@api/controllers/auth/initial-setup-preferences';
+import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
+import { SetupMode } from '@fromcode119/core';
 
 export class AuthControllerLifecycle extends AuthControllerSso {
   private setupInProgress = false;
@@ -68,6 +70,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
     await this.pushPasswordHistory(newUser.id, hashedPassword);
     await this.upsertMeta(this.getPasswordChangedAtKey(newUser.id), new Date().toISOString());
     await this.persistSetupPreferences(req.body);
+    await this.completeSetup(req);
 
     const loginResult = await this.issueLoginSession(req, res, newUser);
 
@@ -89,6 +92,38 @@ export class AuthControllerLifecycle extends AuthControllerSso {
    * must not be lost, and a rejected timezone is not a reason to fail an initialization that already
    * created it. Only what was actually sent is stored — see InitialSetupPreferences.
    */
+  /**
+   * Close setup, and remember the address the operator actually used to reach it.
+   *
+   * The console URL is DERIVED, not invented: it is the host this very request arrived on, which the
+   * operator demonstrably just used. Writing it means the gateway has a console host to route by from
+   * the next request onward, which is what ends setup mode for every future boot — the marker below
+   * is the belt to that braces.
+   *
+   * An address already configured is never overwritten: a deployment that was given one in env has
+   * seeded it, and the operator's own value outranks anything derived here.
+   */
+  private async completeSetup(req: Request): Promise<void> {
+    try {
+      const existing = String((await this.manager.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_URL }))?.value ?? '').trim();
+      if (!existing) {
+        const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+        const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'http').split(',')[0].trim();
+        if (host) await this.upsertMeta(SystemConstants.META_KEY.ADMIN_URL, `${proto}://${host}`);
+      }
+
+      await this.upsertMeta(SystemConstants.META_KEY.SETUP_COMPLETED, 'true');
+      SetupMode.complete();
+      // The console host just changed, so the gateway needs to hear about it now rather than at its
+      // next refresh — otherwise the operator is redirected to an address that answers unknown_host.
+      void new GatewayReloadClient().notify();
+    } catch (error: unknown) {
+      // A setup that created the admin account but could not write the marker must NOT fail: the
+      // account exists, and `userCount > 0` alone keeps setup mode shut on the next boot.
+      this.logger.error(`[AuthController] Could not record setup completion: ${String((error as Error)?.message ?? error)}`);
+    }
+  }
+
   private async persistSetupPreferences(body: Record<string, unknown> | undefined): Promise<void> {
     for (const [key, value] of InitialSetupPreferences.fromRequestBody(body).entries) {
       try {

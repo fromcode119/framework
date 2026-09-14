@@ -12,12 +12,20 @@ import type { TenantRecord } from '@core/tenant/tenant-record';
  */
 export class TenantRouteMap {
   private readonly byHost = new Map<string, TenantRoute>();
+  /**
+   * This deployment has never been set up, so the gateway must let SOMEBODY in to do it.
+   *
+   * Carried on the map because the map is what the gateway already fetches and caches; a second
+   * endpoint would be a second thing to keep in step. Decided at boot by `SetupMode` — never here.
+   */
+  readonly setup: boolean;
 
-  constructor(routes: Iterable<TenantRoute>) {
+  constructor(routes: Iterable<TenantRoute>, setup = false) {
     for (const route of routes) this.byHost.set(route.host, route);
+    this.setup = setup === true;
   }
 
-  static build(tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string }): TenantRouteMap {
+  static build(tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string }, setup = false): TenantRouteMap {
     const routes: TenantRoute[] = [];
     const platformHost = (value: string | undefined, target: GatewayTarget) => {
       const host = TenantRouteMap.hostOf(value);
@@ -32,12 +40,15 @@ export class TenantRouteMap {
         routes.push(new TenantRoute(host, target, tenant.id));
       }
     }
-    return new TenantRouteMap(routes);
+    return new TenantRouteMap(routes, setup);
   }
 
   static fromJson(raw: unknown): TenantRouteMap {
     const list = Array.isArray((raw as any)?.routes) ? (raw as any).routes : [];
-    return new TenantRouteMap(list.map((entry: unknown) => TenantRoute.from(entry)).filter((route: TenantRoute | null): route is TenantRoute => route !== null));
+    return new TenantRouteMap(
+      list.map((entry: unknown) => TenantRoute.from(entry)).filter((route: TenantRoute | null): route is TenantRoute => route !== null),
+      (raw as any)?.setup === true,
+    );
   }
 
   resolve(host: string): TenantRoute | undefined {
@@ -49,7 +60,7 @@ export class TenantRouteMap {
   }
 
   toJSON(): Record<string, unknown> {
-    return { routes: [...this.byHost.values()].map((route) => route.toJSON()) };
+    return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup };
   }
 
   /** A public app URL or bare host → bare host. */
