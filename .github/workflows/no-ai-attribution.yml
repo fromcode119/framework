@@ -1,0 +1,80 @@
+# Refuses any commit that credits an AI.
+#
+# WHY THIS EXISTS: the marker outlives the session. A `Co-Authored-By: Claude` trailer or a
+# `🤖 Generated with` line ends up in the permanent history of the repo, and from there in GitHub's
+# CONTRIBUTOR GRAPH — where it cannot be removed, because the bot commits survive in `refs/pull/N/head`
+# and GitHub never deletes a pull-request ref. Not for the owner, not via the API, not by force-push.
+#
+# That is the whole point: by the time you see the bot in the contributors list it is already too late
+# to take it out. Cleaning it up in 2026-08 (Copilot) and again in 2026-09 (Claude) each cost a history
+# rewrite that still did not clear it. The only real fix is never letting it merge.
+name: No AI attribution
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The full range being proposed, not just the tip — a clean head commit says nothing about
+          # the five behind it, and every one of them lands in history on merge.
+          fetch-depth: 0
+
+      - name: Reject AI attribution in commits
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${BASE:-}" ] && [ -n "${HEAD:-}" ]; then
+            RANGE="$BASE..$HEAD"
+          else
+            RANGE="${{ github.event.before }}..${{ github.sha }}"
+            git rev-parse --verify "${{ github.event.before }}" >/dev/null 2>&1 || RANGE="${{ github.sha }} -1"
+          fi
+
+          echo "Checking: $RANGE"
+
+          # Author/committer identity AND message body. A bot can arrive either way: authored by the
+          # tool, or authored by a human with the tool named in a trailer.
+          PATTERN='co-authored-by:[[:space:]]*(claude|copilot|github copilot|chatgpt|gpt|gemini|cursor|devin)|generated with \[?(claude|copilot)|🤖 generated|noreply@anthropic\.com|copilot-swe-agent'
+
+          FAILED=0
+          for sha in $(git rev-list $RANGE); do
+            BLOB="$(git log -1 --format='%an%n%ae%n%cn%n%ce%n%B' "$sha")"
+            if echo "$BLOB" | grep -qiE "$PATTERN"; then
+              echo "::error::$(git log -1 --format='%h %s' "$sha") — credits an AI"
+              echo "$BLOB" | grep -iE "$PATTERN" | sed 's/^/    /'
+              FAILED=1
+            fi
+          done
+
+          if [ "$FAILED" = "1" ]; then
+            cat <<'MSG'
+
+          ────────────────────────────────────────────────────────────────
+          This commit credits an AI, and that credit is PERMANENT once merged.
+
+          It reaches GitHub's contributor graph through `refs/pull/N/head`, which
+          GitHub never deletes — not for the repo owner, not by force-push, not via
+          the API. Removing it afterwards has twice required rewriting history, and
+          twice failed to clear the cached contributor list.
+
+          Fix the commits before merging:
+
+            git rebase -i <base>            # reword, or
+            git filter-branch --msg-filter 'grep -viE "co-authored-by: (claude|copilot)"' <base>..HEAD
+
+          The code is yours. It should not carry a record of how it was typed.
+          ────────────────────────────────────────────────────────────────
+          MSG
+            exit 1
+          fi
+
+          echo "No AI attribution found."
