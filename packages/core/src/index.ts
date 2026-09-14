@@ -49,6 +49,8 @@ export type { IEntitySchemaColumnPlan } from '@core/database/interfaces/entity-s
 export type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 export { MigrationManager } from '@core/database/migration-manager';
 export { JournalRetentionService } from '@core/database/journal-retention-service';
+export { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
+export type { IPersonalDataDataset, IPersonalDataErasure, IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data.interface';
 export { JournalRetentionTargets } from '@core/database/journal-retention-target';
 export type { IJournalRetentionTarget, IJournalPruneSummary } from '@core/database/journal-retention-target';
 export { Seeder } from '@core/database/seeder';

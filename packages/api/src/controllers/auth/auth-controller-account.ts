@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerSession } from '@api/controllers/auth/auth-controller-session';
 import { CoercionUtils } from '@fromcode119/core';
+import { PersonalDataErasureService } from '@fromcode119/core';
 
 export class AuthControllerAccount extends AuthControllerSession {
   async verifyPassword(req: any, res: Response) {
@@ -38,9 +39,22 @@ export class AuthControllerAccount extends AuthControllerSession {
     return res.json({ exportedAt: new Date().toISOString(), account, person: person || null });
   }
 
-  /** GDPR erasure — the signed-in user deletes their OWN account. Requires the current password. We
-   *  anonymise (strip PII, free the email) and lock sign-in (random unusable password) rather than a hard
-   *  row delete, then revoke every session. A destructive, irreversible action — password-gated. */
+  /**
+   * GDPR erasure — the signed-in user deletes their OWN account. Password-gated, irreversible.
+   *
+   * DELEGATES to `PersonalDataErasureService`, which is the same code a DSAR erasure runs. There
+   * were two implementations of "erase a person" in this codebase and they disagreed: this one
+   * tombstoned the account and nothing else, leaving the person record, its addresses, the site
+   * membership and every journal entry untouched. Worse, it tombstoned the account UNCONDITIONALLY —
+   * and `users` has no `tenant_id`, so one account can administer several sites. Somebody closing
+   * their account on one site took their own login away on every other site they held.
+   *
+   * The service applies the rule that fixes both: erase everything belonging to THIS site, and
+   * tombstone the shared account only when this site was the last one holding it. When it is not,
+   * the account survives and the caller is told why.
+   *
+   * Locking sign-in stays HERE: hashing is the auth manager's business, not the database layer's.
+   */
   async deleteMyAccount(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -51,15 +65,29 @@ export class AuthControllerAccount extends AuthControllerSession {
     const matches = await this.auth.comparePassword(password, String(user.password || ''));
     if (!matches) return res.status(400).json({ error: 'Current password is invalid' });
 
-    const tombstone = `deleted-${userId}-${Date.now()}@deleted.invalid`;
+    const erasure = new PersonalDataErasureService(this.db);
+    const subject = { email: String(user.email ?? ''), userId };
+    // Order matters: the account check reads the memberships, so it runs before they are removed.
+    const account = await erasure.eraseDataset('account', subject, 'anonymise');
+    await erasure.eraseDataset('person', subject, 'delete');
+    await erasure.eraseDataset('roles', subject, 'delete');
+    await erasure.eraseDataset('record-versions', subject, 'delete');
+
+    // Sign-in is locked either way: the person asked to be gone from this site, and a live password
+    // on a retained account is not what they asked for.
     const lockedHash = await this.auth.hashPassword(`deleted-${userId}-${Math.random().toString(36).slice(2)}`);
-    await this.db.update(SystemConstants.TABLE.USERS, { id: userId }, {
-      email: tombstone, username: tombstone, firstName: null, lastName: null,
-      password: lockedHash, roles: '[]', permissions: '[]', updatedAt: new Date(),
-    });
+    await this.db.update(SystemConstants.TABLE.USERS, { id: userId }, { password: lockedHash, updatedAt: new Date() });
     await this.revokeAllSessionsForUser(userId);
     await this.manager.writeLog('INFO', `Account self-deleted for user ${userId}`, 'system', { userId, ip: req.ip }).catch(() => {});
-    return res.json({ success: true, message: 'Your account has been deleted.' });
+
+    return res.json({
+      success: true,
+      message: account.retained > 0
+        ? 'Your data on this site has been deleted. Your sign-in account is shared with other sites and was kept there.'
+        : 'Your account has been deleted.',
+      accountRetained: account.retained > 0,
+      accountRetainedReason: account.retainedReason ?? '',
+    });
   }
 
   async changePassword(req: any, res: Response) {
