@@ -1,4 +1,4 @@
-import { InternalServiceAuth, TenantRouteMap } from '@fromcode119/core';
+import { BootstrapSecretsService, InternalServiceAuth, TenantRouteMap } from '@fromcode119/core';
 
 /**
  * Keeps the gateway's copy of the api's host → app map (T6 §3.1).
@@ -24,6 +24,15 @@ export class RoutingMapClient {
   ) {}
 
   get enabled(): boolean {
+    if (!InternalServiceAuth.isConfigured()) {
+      // The api GENERATES the shared secret on first boot, and this process may well have started
+      // before that file existed — compose ordering waits for the container, not for what it writes.
+      // Adopting once at startup therefore finds nothing on exactly the boot that matters, the
+      // gateway never fetches a map, and a platform nobody has set up answers 404 at `/`. Observed
+      // on a fresh stack: it took a gateway restart to come right. Re-adopting here costs a file
+      // read on a path that is already doing network I/O, and stops as soon as it succeeds.
+      BootstrapSecretsService.adopt();
+    }
     return InternalServiceAuth.isConfigured() && this.routingUrl.length > 0;
   }
 
