@@ -31,10 +31,10 @@ import { ThemeEntryGenerator } from './theme-entry-generator';
  *    because it loads with no import map; on the server there IS no registry and Node resolves them
  *    normally — react/react-dom through the resolve hook in `ThemeSsrRuntime`.
  *    Because those resolve through the THEME's own `node_modules`, which exists in a dev checkout but
- *    not in a freshly installed theme, the PACKAGE has to carry them: `collect-theme-ssr-deps.cjs`
- *    copies that closure in at pack time. Skipping it is how a real deployment ended up unable to
- *    import its own server bundle, with `ThemeServerRenderer` falling back to null and every page
- *    serving an empty body.
+ *    not in a freshly installed theme, the PACKAGE has to carry them: `ThemeSsrDependencyCollector`
+ *    (`@extension-builder/pack/theme-ssr-dependency-collector`) copies that closure in at pack time.
+ *    Skipping it is how a real deployment ended up unable to import its own server bundle, with
+ *    `ThemeServerRenderer` falling back to null and every page serving an empty body.
  *  - No `publicDir` — assets are already emitted by the client build; copying them twice would clobber.
  *  - No minify — server code is never shipped over the wire, and readable frames make SSR errors legible.
  *
@@ -71,7 +71,7 @@ export class ThemeSsrViteConfig {
    * 0 broken rules external, 4 bundled.
    *
    * The consequence is that a theme PACKAGE must carry these — an installed theme has no node_modules
-   * of its own — which `collect-theme-ssr-deps.cjs` does at pack time, reading the built bundle rather
+   * of its own — which `ThemeSsrDependencyCollector` does at pack time, reading the built bundle rather
    * than any hardcoded list.
    */
   private static declaredDependencies(themeDir: string): RegExp[] {

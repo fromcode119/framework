@@ -16,7 +16,7 @@ export class PluginUiHookGuard {
   // or an `export const/function <Capitalized>` (function component).
   //
   // Run from framework/Source:  node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-hookfree
-  // Resolves the repo-root plugins dir the same way check-sdk-boundary.mjs does.
+  // Resolves the repo-root plugins dir the same way the sdk-boundary guard does.
 
   static readonly PLUGINS_DIR = path.resolve(process.cwd(), '../../plugins');
 
