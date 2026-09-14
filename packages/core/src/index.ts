@@ -157,6 +157,7 @@ export { SafeArchive } from '@core/security/safe-archive';
 export { MediaPathUtils } from '@core/security/media-path-utils';
 export { SystemSettingsExposureUtils } from '@core/security/system-settings-exposure-utils';
 export { SystemSettingRegistry } from '@core/settings/system-setting-registry';
+export { BootstrapSecretsService } from '@core/security/bootstrap-secrets-service';
 export type { SystemSettingKey, SystemSettingDescriptor } from '@core/settings/system-setting-registry';
 export { SettingScope } from '@core/settings/enums/setting-scope.enum';
 export { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';

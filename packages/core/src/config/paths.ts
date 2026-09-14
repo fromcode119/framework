@@ -237,6 +237,20 @@ export class ProjectPaths {
 
   }
 
+  /**
+   * The deployment's own writable directory — `<root>/data`, or `FROMCODE_DATA_DIR`.
+   *
+   * Already mounted in every topology because the build agent clones into it and backups stage there;
+   * its compose comment says outright that its contents are the deployment's and must survive an
+   * image upgrade. That is exactly the property generated secrets need, which is why they live here
+   * rather than in a directory of their own that an operator would have to know to mount.
+   */
+  static getDataDir(): string {
+      const root = ProjectPaths.getProjectRoot();
+      const configured = String(process.env.FROMCODE_DATA_DIR || '').trim();
+      return ProjectPaths.resolveFromRoot(root, configured || 'data');
+  }
+
   static getRepositoryArtifactsDir(subDir?: string): string {
       const artifactsRoot = path.resolve(ProjectPaths.getRepositoryRoot(), 'artifacts');
       return subDir ? path.join(artifactsRoot, subDir) : artifactsRoot;

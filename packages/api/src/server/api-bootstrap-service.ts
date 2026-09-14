@@ -3,6 +3,7 @@ import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
 import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
+import { BootstrapSecretsService } from '@fromcode119/core';
 
 export class ApiBootstrapService {
   private logger = new Logger({ namespace: 'api-bootstrap-service' });
@@ -27,6 +28,19 @@ export class ApiBootstrapService {
     createServer: (manager: PluginManager, themeManager: ThemeManager, auth: AuthManager) => any,
   ): Promise<void> {
     dotenv.config();
+
+    // Before the assertions below, because they are what an unsupplied secret would fail. A
+    // deployment that sets its own keeps them; anything missing is generated once into the data
+    // directory and reused from there, so `docker compose up` needs no hand-written secrets and a
+    // restart never invalidates the sessions or the stored credentials of the previous one.
+    const secrets = BootstrapSecretsService.ensure();
+    if (secrets.generated.length) {
+      this.logger.info(
+        `Generated ${secrets.generated.join(', ')} into ${secrets.file}. `
+        + 'Keep that file: it signs sessions and decrypts stored credentials.',
+      );
+    }
+
     ApiBootstrapService.assertProductionSecret('JWT_SECRET', process.env.JWT_SECRET);
     if (process.env.NODE_ENV === 'production') {
       ApiBootstrapService.assertProductionSecret(
