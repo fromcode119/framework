@@ -115,9 +115,7 @@ curl -fsSLO $base/docker-compose.images.yml
 curl -fsSL  $base/.env.example -o .env
 ```
 
-#### 2. Set the database credentials
-
-Only these, in `.env`:
+#### 2. Fill in `.env`
 
 ```bash
 POSTGRES_USER=fromcode
@@ -125,25 +123,34 @@ POSTGRES_PASSWORD=<pick one>
 POSTGRES_DB=fromcode
 DATABASE_URL=postgres://fromcode_app:<pick one>@db:5432/fromcode
 DATABASE_MIGRATION_URL=postgres://fromcode_owner:<pick one>@db:5432/fromcode
+
+COMPOSE_PROFILES=single-domain          # run the gateway and publish a port
+GATEWAY_PORT=80                         # where it listens
+EXTERNAL_PROXY_NETWORK=fromcode-edge    # a docker network; create it below
 ```
 
-Three roles, not one: PostgreSQL skips row-level security for superusers and table owners, so the app
-must connect as none of them. Leave the rest of the file alone — the secrets are generated on first
-boot and the addresses are set in the browser.
+Three database roles, not one: PostgreSQL skips row-level security for superusers and table owners,
+so the app must connect as neither. Leave the rest of the file alone — the secrets are generated on
+first boot and the domains are set in the browser.
+
+Without `COMPOSE_PROFILES=single-domain` no port is published at all: the default shape assumes a
+reverse proxy already routes to the containers, so the stack starts and nothing can reach it.
 
 #### 3. Start it
 
 ```bash
+docker network create fromcode-edge
+
 docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml pull
 docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up -d
 ```
 
 #### 4. Open it
 
-Go to the server's address — an IP is fine, no DNS needed yet. The first-run wizard asks for your
-language, an administrator account, a name for the platform, and the address the admin should answer
-on, prefilled with the one you arrived on. Setup is accepted for 15 minutes after start, and only
-from whoever gets there first.
+Go to the server — its IP is fine, no DNS needed yet. The first-run wizard asks for your language, an
+administrator account, a name for the platform, and the domain the admin should answer on, prefilled
+with whatever you arrived on. Setup is accepted for 15 minutes after start, and only from whoever
+gets there first.
 
 Updating is the same two commands with `VERSION=` set to a newer tag. `deploy/DEPLOYMENT.md` covers
 proxies, TLS, the split-service and single-domain shapes, and running without Docker.
