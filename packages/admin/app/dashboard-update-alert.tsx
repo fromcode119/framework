@@ -3,6 +3,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode } from 'react';
 
 import { prop, PureReactor } from '@fromcode119/react-class-components';
+import { AppEnv } from '@/lib/env';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 
@@ -24,7 +25,7 @@ export class DashboardUpdateAlert extends PureReactor {
                 Framework Update Available
               </h4>
               <p className="text-sm font-bold text-slate-500 tracking-tight">
-                A new version of Fromcode Core <span className="font-bold text-amber-600">v{this.updateAvailable.latest}</span> is available.
+                A new version of {AppEnv.PRODUCT_NAME} <span className="font-bold text-amber-600">v{this.updateAvailable.latest}</span> is available.
               </p>
             </div>
           </div>

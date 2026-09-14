@@ -192,9 +192,9 @@ export class PackageBuilder {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
     return {
       slug: 'core',
-      name: packageJson.name || 'Fromcode Core',
+      name: packageJson.name || 'Fromcode Atlantis',
       version: packageJson.version,
-      description: packageJson.description || 'Fromcode framework core release',
+      description: packageJson.description || 'Fromcode Atlantis core release',
       changelog: '',
     };
   }

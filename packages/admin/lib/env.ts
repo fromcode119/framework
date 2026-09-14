@@ -17,7 +17,6 @@ export class AppEnv {
 	 * about a channel, which is the honest default.
 	 */
 	static readonly APP_CHANNEL = process.env.NEXT_PUBLIC_ADMIN_CHANNEL ?? '';
-	static readonly APP_CODENAME = 'Fromcode Core';
 	/** Per-deployment default admin appearance id. Empty string = use the built-in default. */
 	static readonly ADMIN_APPEARANCE = process.env.NEXT_PUBLIC_ADMIN_APPEARANCE ?? '';
 	/**

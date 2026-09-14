@@ -388,7 +388,7 @@ services:
     # As root, and briefly: the file it writes is owned by the database image's user, so neither this
     # container's app account nor the api's can read it afterwards.
     user: root
-    entrypoint: ["npm", "run", "fromcode", "--", "db", "init-bundled-superuser", "--file", "/run/fromcode-db/superuser.password"]
+    entrypoint: ["npm", "run", "atlantis", "--", "db", "init-bundled-superuser", "--file", "/run/fromcode-db/superuser.password"]
     environment:
       # Set by a deployment that supplies its own superuser password. The one-shot stores it instead
       # of generating one, so this is still the value the database is created with.

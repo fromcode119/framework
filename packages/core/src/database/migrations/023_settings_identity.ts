@@ -48,9 +48,12 @@ export class SettingsIdentityMigration extends BaseMigration {
         await SettingsIdentityMigration.narrowPlatformReads(db);
       },
       sqlite: async () => {
-        // SQLite isolation is file-per-tenant (S1), so one file holds one tenant's settings and the
-        // key alone is already unique within it. Rebuilding the table to widen a primary key that
-        // cannot collide would be risk with no benefit.
+        // Nothing to widen: a SQLite deployment serves ONE site, so the key alone is already unique.
+        // Not because of the file-per-tenant silo (S1) — that is a design awaiting review and is not
+        // built — but because this driver has no tenant isolation at all, so `TenantMode` refuses to
+        // boot a second tenant on it. Rebuilding the table to widen a key that cannot collide would
+        // be risk with no benefit. If S1 ever ships, revisit this: the premise changes, not the
+        // conclusion.
       },
     });
   }

@@ -67,7 +67,8 @@ export class TenantMembershipsMigration extends BaseMigration {
         // log in — the first-run wizard failed on "table _system_sessions has no column named
         // tenant_id" AFTER creating the administrator account.
         await TenantMembershipsMigration.addSessionTenantColumn(db);
-        // No row-level security on SQLite; there is no per-tenant isolation on this driver at all.
+        // No row-level security on SQLite, and nothing replaces it — the file-per-tenant silo (S1,
+        // 2026-09-04) is a design awaiting review, not current behaviour. Single-site only here.
       },
     });
   }

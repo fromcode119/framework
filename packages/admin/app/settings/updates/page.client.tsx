@@ -180,7 +180,7 @@ export class UpdatesPage extends AdminComponent {
               <div className="flex-1 space-y-5">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h2 className={`text-2xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>Fromcode Core Engine</h2>
+                    <h2 className={`text-2xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AppEnv.PRODUCT_NAME}</h2>
                     <Badge
                       variant={hasUpdate ? 'warning' : latestVersionUnknown ? 'gray' : 'success'}
                       className="px-3 py-1 text-[10px] font-bold tracking-tight rounded-full"
@@ -270,7 +270,7 @@ export class UpdatesPage extends AdminComponent {
             onConfirm={this.handleUpdate}
             isLoading={updating}
             title="Apply System Update?"
-            description={`You are about to update Fromcode Core from v${installedVersion} to v${latestVersion}. A complete system backup will be created automatically before proceeding. This process will overwrite system files and may cause a temporary service disruption while the server restarts.`}
+            description={`You are about to update ${AppEnv.PRODUCT_NAME} from v${installedVersion} to v${latestVersion}. A complete system backup will be created automatically before proceeding. This process will overwrite system files and may cause a temporary service disruption while the server restarts.`}
           />
         </div>
       </div>

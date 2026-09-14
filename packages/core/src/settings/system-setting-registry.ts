@@ -108,7 +108,7 @@ export class SystemSettingRegistry {
     [SystemSettingRegistry.KEY.ADMIN_SHADOWS]: { scope: SettingScope.SITE, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.PLATFORM_NAME]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'Fromcode Core', description: "The identity of your platform instance.", group: "General" },
+      seed: { value: 'Atlantis', description: "The identity of your platform instance.", group: "General" },
     }, // candidate for PLATFORM (Phase 2)
     [SystemSettingRegistry.KEY.PLATFORM_DOMAIN]: {
       scope: SettingScope.SITE, writable: true, exposed: true,

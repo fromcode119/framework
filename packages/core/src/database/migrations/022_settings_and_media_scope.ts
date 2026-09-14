@@ -36,7 +36,10 @@ export class SettingsAndMediaScopeMigration extends BaseMigration {
       sqlite: async () => {
         await ColumnGuard.addIfMissing(db, '_system_meta', 'tenant_id', 'TEXT');
         await ColumnGuard.addIfMissing(db, 'media', 'shared', 'BOOLEAN NOT NULL DEFAULT FALSE');
-        // No row-level security on SQLite; isolation there is file-per-tenant (see the S1 spec).
+        // No row-level security on SQLite, and NOTHING replaces it: this driver has no tenant
+        // isolation at all today. A file-per-tenant silo is designed (S1, 2026-09-04) and is still
+        // awaiting review — it is not built, so do not read this branch as isolating anything.
+        // `TenantMode` refuses to boot a multi-tenant deployment here, which is the real guard.
       },
     });
   }

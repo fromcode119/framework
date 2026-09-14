@@ -11,9 +11,9 @@ export class CliUtils {
   en: {
     'cli.status.checking': 'Checking marketplace at {{registry}}...',
     'cli.status.no_core': 'Marketplace does not provide core version information yet.',
-    'cli.status.new_version': '\nA newer version of Fromcode Core is available: {{version}}',
+    'cli.status.new_version': '\nA newer version of Fromcode Atlantis is available: {{version}}',
     'cli.status.update_hint': 'Use "atlantis core update" to apply the update.',
-    'cli.status.latest': '\nYou are running the latest version of Fromcode Core.',
+    'cli.status.latest': '\nYou are running the latest version of Fromcode Atlantis.',
     'cli.build.no_ui': 'No ui directory found for {{type}} {{slug}}. Skipping build.',
     'cli.build.no_entry': 'No entry point found in {{dir}} (index.ts/js{{extra}})',
     'cli.build.compiling': 'Compiling {{type}}: {{in}} -> {{out}}',

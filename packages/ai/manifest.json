@@ -4,7 +4,7 @@
   "version": "0.1.31",
   "type": "core-extension",
   "description": "Atlantis Intelligence assistant with multi-mode operation (chat, planning, agent), MCP-based tool abstraction, and session persistence. Supports OpenAI and Ollama providers.",
-  "author": "Fromcode Core",
+  "author": "Fromcode",
   "main": "dist/extension.js",
   "apiPath": "forge",
   "capabilities": [
