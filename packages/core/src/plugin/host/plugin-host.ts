@@ -287,7 +287,7 @@ export class PluginHost {
     }
   }
 
-  /** `/api/v1/plugins/seo/health?x=1` → `/seo/health?x=1`; null when the slug is not in the path. */
+  /** `/api/v1/plugins/<slug>/health?x=1` → `/<slug>/health?x=1`; null when the slug is not in the path. */
   static pluginPath(slug: string, fullPath: string): string | null {
     const marker = `/${slug}`;
     const index = fullPath.indexOf(marker);

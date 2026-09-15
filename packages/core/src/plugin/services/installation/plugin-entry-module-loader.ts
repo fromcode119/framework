@@ -5,7 +5,7 @@ import path from 'path';
  * Loads a plugin's server entry — the EXACT file the scanner resolved, with no second resolution pass.
  *
  * `require(file)` re-resolves the path, and a TypeScript runtime re-points it: under the api's
- * `tsx watch` dev server, `require('/app/plugins/cms/index.js')` loads `index.ts` instead, because tsx
+ * `tsx watch` dev server, `require('/app/plugins/<slug>/index.js')` loads `index.ts` instead, because tsx
  * maps a `.js` specifier onto its `.ts` sibling. A plugin's source is not runnable — its `@plugin/...`
  * specifiers are a BUILD-time alias that esbuild inlines when packing — so the plugin failed to load
  * with "Cannot find module '@plugin/src/on-init'" while its perfectly good `index.js` sat next to it.

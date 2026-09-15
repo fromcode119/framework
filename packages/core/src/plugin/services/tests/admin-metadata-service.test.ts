@@ -55,22 +55,22 @@ describe('AdminMetadataService', () => {
 
   it('keeps plugin secondary items while adding system-owned metadata and emits a single settings primary item', () => {
     const analyticsPlugin = {
-      instanceId: 'analytics-1',
+      instanceId: 'alpha-1',
       state: PluginState.ACTIVE,
       manifest: {
-        slug: 'analytics',
+        slug: 'alpha',
         namespace: 'org.fromcode',
-        name: 'Analytics',
+        name: 'Alpha',
         version: '1.0.0',
-        category: 'analytics',
+        category: 'alpha',
         admin: {
           secondaryPanel: {
             items: [
               {
                 id: 'overview',
                 label: 'Overview',
-                path: '/plugins/analytics/overview',
-                sourcePaths: ['/plugins/analytics'],
+                path: '/plugins/alpha/overview',
+                sourcePaths: ['/plugins/alpha'],
                 scope: 'self',
                 priority: 10,
               },
@@ -81,12 +81,12 @@ describe('AdminMetadataService', () => {
     } as ILoadedPlugin;
 
     const result = service.getAdminMetadata([analyticsPlugin], new Map(), {}, []);
-    const analyticsItems = result.secondaryPanel.itemsByContext['org.fromcode:analytics'] || [];
+    const alphaItems = result.secondaryPanel.itemsByContext['org.fromcode:alpha'] || [];
     const settingsItems = result.menu.filter((item: any) => item.path === AppPathConstants.ADMIN.SETTINGS.ROOT);
     const usersItem = result.menu.find((item: any) => item.path === AppPathConstants.ADMIN.USERS.ROOT);
 
-    expect(analyticsItems.map((item) => item.id)).toEqual(['overview']);
-    expect(analyticsItems[0]?.sourcePaths).toEqual(['/plugins/analytics']);
+    expect(alphaItems.map((item) => item.id)).toEqual(['overview']);
+    expect(alphaItems[0]?.sourcePaths).toEqual(['/plugins/alpha']);
     expect(settingsItems).toHaveLength(1);
     expect(settingsItems[0]?.label).toBe('Settings');
     expect(usersItem?.children).toBeUndefined();
