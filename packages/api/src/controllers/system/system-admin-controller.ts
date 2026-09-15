@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
-import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SystemConstants } from '@fromcode119/core';
+import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SystemConstants, TenantMode, PluginTenantAccess } from '@fromcode119/core';
 import { SecretService } from '@fromcode119/core';
 
 export class SystemAdminController {
@@ -75,9 +75,25 @@ export class SystemAdminController {
         orderBy: { next_run: 'asc' },
         limit: SystemAdminController.SCHEDULE_OUTLOOK_LIMIT,
       });
+
+      // `_system_scheduler_tasks` is a platform table with no row-level policy, so this listing showed
+      // a site the scheduled work of every OTHER customer's plugins — task names like
+      // `mlm:payout-sweep` beside a site that runs neither. Measured: a site running two plugins was
+      // shown tasks belonging to `tagiqx` and `astrology`. Same filter as the translations listing and
+      // for the same reason; `total` counts what is shown, or the screen says 8 and lists 2.
+      const boundTenantId = String((req as any).tenantId || '').trim();
+      const ownTasks = TenantMode.isEnabled() && boundTenantId
+        ? (tasks || []).filter((task: any) => {
+          const slug = String(task?.plugin_slug ?? '').trim();
+          return !slug || PluginTenantAccess.enabledSlugsFor(boundTenantId).has(slug);
+        })
+        : (tasks || []);
+
       res.json({
-        total: await this.runtime.db.count(SystemConstants.TABLE.SCHEDULER_TASKS),
-        upcoming: (tasks || []).map((task: any) => ({
+        total: TenantMode.isEnabled() && boundTenantId
+          ? ownTasks.length
+          : await this.runtime.db.count(SystemConstants.TABLE.SCHEDULER_TASKS),
+        upcoming: ownTasks.map((task: any) => ({
           name: task.name,
           pluginSlug: task.plugin_slug || '',
           schedule: task.schedule,
@@ -128,7 +144,18 @@ export class SystemAdminController {
    */
   async getSiteStats(req: Request, res: Response) {
     try {
-      const tenants = await this.runtime.db.find(SystemConstants.TABLE.TENANTS, { limit: 100 });
+      // THE SITES OVERVIEW IS THE OPERATOR'S. `_system_tenants` is not tenant-scoped — it is the table
+      // that DEFINES the tenants, so row-level security cannot help here — and this handler sits
+      // behind `system:view`, which a site's own administrator holds. Unfiltered it handed any site
+      // admin the platform's entire customer roster: every slug, every PRIMARY HOSTNAME, each one's
+      // state, visibility and active theme. A hostname names the customer, so this was the most
+      // directly identifying listing on the box.
+      //
+      // Bound to a site, the answer is that site's own row. In platform scope it is every site, which
+      // is the dashboard this screen exists to be.
+      const boundTenantId = String((req as any).tenantId || '').trim();
+      const scopedWhere = TenantMode.isEnabled() && boundTenantId ? { where: { id: boundTenantId } } : {};
+      const tenants = await this.runtime.db.find(SystemConstants.TABLE.TENANTS, { limit: 100, ...scopedWhere });
       const themes = await this.runtime.db.find(SystemConstants.TABLE.TENANT_THEMES, { where: { state: 'active' }, limit: 200 });
       const themeByTenant = new Map<string, any>((themes || []).map((row: any) => [String(row.tenant_id), row]));
       const since = new Date(Date.now() - SystemAdminController.SITE_HEALTH_WINDOW_MS).toISOString();

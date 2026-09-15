@@ -165,7 +165,18 @@ export class ServerRoutesSetup {
         decrypt: (value: unknown) => SecretService.decrypt(value),
       },
       hooks: this.manager.hooks,
-      adminGuard: this.auth.guard(['admin']),
+      // PLATFORM admin, not merely `admin`. Sources clones arbitrary git repositories onto the shared
+      // container and BUILDS them, so the bare role guard let a tenant's own administrator — which is
+      // what `admin` means on a multi-tenant deployment — list every other customer's repository URL
+      // and recent commit subjects, download their built package, delete their source, and trigger a
+      // clone-and-build of a repository of their choosing on the box every customer runs on.
+      //
+      // The data is deliberately global: migration 036 dropped the tenant column and the policy from
+      // `_system_sources_builds` because Sources IS platform configuration. That decision was right;
+      // the guard was simply never raised to match it, so the table stopped being tenant-scoped while
+      // the routes stayed tenant-reachable. Every neighbouring platform router above takes
+      // `platformAdmin` for exactly this reason.
+      adminGuard: [this.auth.guard(['admin']), platformAdmin.middleware()] as any,
       projectRoot: (this.manager as any).projectRoot,
       installer: this.manager,
       catalog: {

@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError } from '@fromcode119/core';
+import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
@@ -311,7 +311,27 @@ export class UserManagementService {
         permissionNames.add(name);
       }
     }
-    return this.db.find(SystemConstants.TABLE.PERMISSIONS);
+
+    // THE BACKFILL ABOVE STAYS COMPLETE; THE ANSWER IS SCOPED.
+    //
+    // `_system_permissions` is a platform registry — every active plugin's capabilities are recorded
+    // in it whoever happens to trigger this read, because a capability that is registered only when a
+    // platform admin visits a screen is a capability that half the installs never get. What must not
+    // happen is returning the whole registry to a site: it named products that site does not run
+    // (`mlm_commission:manage`, `logistics-econt:*`) and, through the names themselves, what those
+    // products do.
+    //
+    // `system` survives the filter because it is the framework's own, and every site holds it.
+    const rows = await this.db.find(SystemConstants.TABLE.PERMISSIONS);
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    if (!TenantMode.isEnabled() || !tenantId) return rows;
+
+    const visible = PluginTenantAccess.enabledSlugsFor(tenantId);
+    // Rows come back from the raw manager, so the column is `plugin_slug`.
+    return (rows || []).filter((row: any) => {
+      const slug = String(row?.plugin_slug ?? '').trim();
+      return !slug || slug === 'system' || visible.has(slug);
+    });
   }
 
   private async readAccountStatus(userId: number): Promise<'active' | 'suspended'> {
