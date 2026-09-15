@@ -48,5 +48,13 @@ export class ThemeRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.THEMES_SLUG_CONFIG, this.auth.guard(['admin']), this.controller.getConfig);
     this.post(RouteConstants.SEGMENTS.THEMES_SLUG_CONFIG, this.auth.guard(['admin']), this.controller.saveConfig);
     this.delete(RouteConstants.SEGMENTS.THEMES_SLUG, this.auth.guard(['admin']), platform, this.controller.delete);
+
+    // A SITE's OWN theme. Gated on the site's admin, NOT on a platform admin, because this writes
+    // into that site's own directory and nothing else can see it — the reason the platform tier
+    // exists ("these files are what every site renders from") does not apply to a package only one
+    // site can reach. What stands in its place is `TenantThemePackagePolicy`: no server code, no
+    // taking a slug someone else holds, and a quota on the shared disk.
+    this.post(RouteConstants.SEGMENTS.THEMES_MINE_UPLOAD, this.auth.guard(['admin']), this.upload.single('theme'), this.controller.uploadMine);
+    this.delete(RouteConstants.SEGMENTS.THEMES_MINE_SLUG, this.auth.guard(['admin']), this.controller.deleteMine);
   }
 }
