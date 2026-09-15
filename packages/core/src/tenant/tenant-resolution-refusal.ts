@@ -35,9 +35,23 @@ export class TenantResolutionRefusal extends Enum {
    * so the request continues WITHOUT a tenant instead of being refused outright. Asked as a question
    * about the refusal rather than as an `||` chain at the call site, so a new refusal has to decide
    * this for itself instead of silently defaulting to a 403.
+   *
+   * UNKNOWN_TENANT belongs here, and leaving it out locked an operator out of their own platform.
+   * The selected tenant lives in the SESSION TOKEN, so deleting the site you are currently in leaves
+   * every subsequent request naming a tenant that no longer exists. That answered 403, the admin read
+   * it as a dead session and signed the operator out — and signing back in was no escape, because the
+   * chooser needed the same refused surface to offer anywhere else to go. Deleting one site took the
+   * whole console down for the account that deleted it.
+   *
+   * It is the same SITUATION as NO_TENANT_SELECTED: the account is authenticated and simply has no
+   * valid site selected. It stays a distinct VALUE because the two have different causes and the
+   * client may want to say so — "the site you were in has been deleted" is worth telling someone —
+   * but it must not be treated as a failure of authentication, which it never was.
    */
   get allowsUnauthenticatedSurface(): boolean {
-    return this === TenantResolutionRefusal.UNAUTHENTICATED || this === TenantResolutionRefusal.NO_TENANT_SELECTED;
+    return this === TenantResolutionRefusal.UNAUTHENTICATED
+      || this === TenantResolutionRefusal.NO_TENANT_SELECTED
+      || this === TenantResolutionRefusal.UNKNOWN_TENANT;
   }
 
   /** True when the account is known and simply has no membership here. */
