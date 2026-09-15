@@ -1,3 +1,4 @@
+import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
 import { AsyncLocalStorage } from 'async_hooks';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
@@ -256,7 +257,19 @@ export class PluginGuestRemote {
   private readonly warned = new Set<string>();
 
   private warnRejected(call: string, error: unknown): void {
-    this.channel.notify('log', { level: 'warn', msg: `isolated plugin: ${call}(…) failed on the host: ${error instanceof Error ? error.message : String(error)}`, meta: [] });
+    // A peer that did not resolve is not a failure — it is "not there for this call", the same answer
+    // an in-process plugin gets as a falsy peer and handles with its own guard. Logged at DEBUG so the
+    // call path is still findable, but WARN keeps meaning something went wrong. Branching on the
+    // declared code, never on the message: see PluginPeerUnavailableError.
+    const unavailable = PluginPeerUnavailableError.is(error);
+    const message = error instanceof Error ? error.message : String(error);
+    this.channel.notify('log', {
+      level: unavailable ? 'debug' : 'warn',
+      msg: unavailable
+        ? `isolated plugin: ${call}(…) skipped — ${message}`
+        : `isolated plugin: ${call}(…) failed on the host: ${message}`,
+      meta: [],
+    });
   }
 
   /** Once per call path: the host's log names the plugin, the call and every function that did not cross. */
