@@ -1,6 +1,6 @@
-import { TenantRlsSql, sql } from '@fromcode119/database';
+
 import { Logger } from '@core/logging';
-import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
+import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 
 /**
  * Gives every tenant-scoped table its `tenant_id` column, BEFORE a deployment is adopted.
@@ -28,7 +28,7 @@ export class TenantColumnPreparer {
    * Adds the column to every scoped table that lacks it, and answers how many were changed.
    *
    * `system` is the set of table names the caller knows to be framework collections marked
-   * `system: true` — the same signal `TenantScopedTableDdl` uses to leave platform configuration
+   * `system: true` — the same signal `TenantScopedTables` uses to leave platform configuration
    * alone. A table it refuses to scope is left untouched here too, so the two cannot disagree.
    */
   async ensureColumns(systemTables: Set<string> = new Set()): Promise<number> {
@@ -37,11 +37,9 @@ export class TenantColumnPreparer {
 
     for (const table of tables ?? []) {
       const name = String(table ?? '');
-      if (!TenantScopedTableDdl.isTenantScoped(name, { system: systemTables.has(name.toLowerCase()) })) continue;
+      if (!TenantScopedTables.isTenantScoped(name, { system: systemTables.has(name.toLowerCase()) })) continue;
 
-      for (const statement of TenantRlsSql.columnStatementsFor(name)) {
-        await this.db.execute(sql.raw(statement));
-      }
+      await this.db.tenantIsolation.addTenantColumn(name);
       prepared += 1;
     }
 

@@ -14,7 +14,11 @@ import { PostgresSchemaBuilder } from '@database/dialects/postgres/schema-builde
 import { PostgresReadOperations } from '@database/dialects/postgres/read-operations';
 import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
 import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
-import { TenantRlsSql } from '@database/tenant/tenant-rls-sql';
+import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
+import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tenant-isolation';
+import { PostgresDeclaredUniqueReconciler } from '@database/dialects/postgres/declared-unique-reconciler';
+import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+import type { DeclaredUniqueOutcome } from '@database/declared-unique-outcome';
 
 import { PostgresRoleProvisioner } from '@database/dialects/postgres/role-provisioner';
 
@@ -50,6 +54,13 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   private reader: PostgresReadOperations;
   private readonly roles = new PostgresRoleProvisioner((sqlText, values) => this.queryRaw(sqlText, values));
 
+  /** Row-level security, on the same connection every other statement of this manager takes. */
+  public readonly tenantIsolation: ITenantIsolation =
+    new PostgresTenantIsolation((sqlText, values) => this.queryRaw(sqlText, values));
+
+  private readonly declaredUniques =
+    new PostgresDeclaredUniqueReconciler((sqlText, values) => this.queryRaw(sqlText, values));
+
   // Standard operators
   public readonly like = ilike;
   public readonly eq = eq;
@@ -82,11 +93,11 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
    */
   markAsPlatformConnection(): void {
     this.pool.on('connect', (client: any) => {
-      client.query(TenantRlsSql.setPlatformAdminStatement(), ['on']).catch(() => undefined);
+      PostgresTenantSession.markPlatformAdmin(client);
     });
   }
 
-  /** Postgres isolates with row-level security; see TenantRlsSql and DatabaseRoleGuard. */
+  /** Postgres isolates with row-level security; see TenantIsolationSql and DatabaseRoleGuard. */
   supportsTenantIsolation(): boolean {
     return true;
   }
@@ -95,6 +106,11 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
    * statement `fn` issues. See TenantConnectionScope for why this is not `SET LOCAL`. */
   async withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> {
     return TenantConnectionScope.run(this.pool, tenantId, fn);
+  }
+
+  /** Reconciles a declared UNIQUE against the Postgres catalog. */
+  async ensureDeclaredUnique(table: string, column: string): Promise<DeclaredUniqueOutcome> {
+    return this.declaredUniques.ensure(table, column);
   }
 
   /** Every statement `fn` issues runs untenanted with the platform-admin marker set. See TenantConnectionScope. */

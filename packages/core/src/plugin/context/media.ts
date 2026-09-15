@@ -23,7 +23,7 @@ export class MediaContextProxy {
    * framework owns the only access to the system table.
    *
    * The raw db is not an isolation hole: under tenancy the `media` table carries row-level security
-   * (a bespoke policy, because media also admits shared assets — see `TenantScopedTableDdl`), and the
+   * (a bespoke policy, because media also admits shared assets — see `TenantScopedTables`), and the
    * app connects as a non-superuser role, so the tenant filter is enforced by the CONNECTION and
    * applies to every statement here. A plugin cannot resolve another tenant's media by guessing an id.
    */

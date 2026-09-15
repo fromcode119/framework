@@ -14,6 +14,7 @@ export { WorkspaceTypecheck } from './workspace-typecheck';
 export type { IWorkspaceAreaResult } from './interfaces/workspace-area-result.interface';
 export type { IWorkspaceSlugResult } from './interfaces/workspace-slug-result.interface';
 export { AppTypecheck } from './app-typecheck';
+export { DialectSqlConfinementGuard } from './dialect-sql-confinement-guard';
 export { SrcArtifactGuard } from './src-artifact-guard';
 export { PluginUiHookGuard } from './plugin-ui-hook-guard';
 export { ClientViewMove } from './client-view-move';

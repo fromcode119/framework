@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
+import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 
 /**
  * The framework tables that hold a tenant's CONTENT, and the ones that must stay platform-wide.
@@ -11,8 +11,8 @@ import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
  * every tenant could read every other tenant's people, and one site's redirects fired on all of
  * them. Naming them here is what lets the sweep put back what it takes away.
  */
-describe('TenantScopedTableDdl — which framework tables are a tenant\'s own', () => {
-  const scoped = (table: string): boolean => TenantScopedTableDdl.isTenantScoped(table);
+describe('TenantScopedTables — which framework tables are a tenant\'s own', () => {
+  const scoped = (table: string): boolean => TenantScopedTables.isTenantScoped(table);
 
   it.each([
     'people',
@@ -34,14 +34,13 @@ describe('TenantScopedTableDdl — which framework tables are a tenant\'s own', 
     expect(scoped(table)).toBe(false);
   });
 
-  it('emits real DDL for a carved-in _system_ table, which the name rule alone would refuse', () => {
-    const statements = TenantScopedTableDdl.statementsFor('_system_redirects');
-
-    expect(statements.length).toBeGreaterThan(0);
-    expect(statements.join(' ')).toContain('_system_redirects');
+  it('scopes a carved-in _system_ table, which the name rule alone would refuse', () => {
+    // `_system_redirects` is a tenant's own content despite the prefix. Getting this wrong left one
+    // site's redirects firing on every other site.
+    expect(TenantScopedTables.isTenantScoped('_system_redirects')).toBe(true);
   });
 
   it('still refuses a collection marked system, whatever it is called', () => {
-    expect(TenantScopedTableDdl.isTenantScoped('settings', { system: true })).toBe(false);
+    expect(TenantScopedTables.isTenantScoped('settings', { system: true })).toBe(false);
   });
 });

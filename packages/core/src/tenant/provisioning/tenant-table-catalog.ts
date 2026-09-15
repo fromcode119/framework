@@ -1,5 +1,5 @@
 import type { IDatabaseManager } from '@fromcode119/database';
-import { NamingStrategy, PhysicalTableNameUtils, TableResolver, TenantRlsSql } from '@fromcode119/database';
+import { NamingStrategy, PhysicalTableNameUtils, TableResolver, TenantColumn } from '@fromcode119/database';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
@@ -36,8 +36,8 @@ export class TenantTableCatalog {
 
   /** Tables under a tenant policy right now — the multi-tenant case. */
   async byPolicy(): Promise<TenantTableDescriptor[]> {
-    const rows = await this.db.queryRaw(TenantRlsSql.isolatedPoliciesStatement());
-    const tables = [...new Set(rows.map((row) => String(row.tablename)))].filter((table) => !TenantTableCatalog.EXCLUDED.has(table));
+    const policed = await this.db.tenantIsolation.listPolicies();
+    const tables = [...new Set(policed.map((entry) => entry.table))].filter((table) => !TenantTableCatalog.EXCLUDED.has(table));
     return this.describe(tables);
   }
 
@@ -45,7 +45,7 @@ export class TenantTableCatalog {
   async byColumn(): Promise<TenantTableDescriptor[]> {
     const rows = await this.db.queryRaw(
       "SELECT table_name FROM information_schema.columns WHERE column_name = $1 AND table_schema = current_schema()",
-      [TenantRlsSql.COLUMN],
+      [TenantColumn.NAME],
     );
     const tables = [...new Set(rows.map((row) => String(row.table_name)))].filter((table) => !TenantTableCatalog.EXCLUDED.has(table));
     return this.describe(tables);
@@ -208,6 +208,6 @@ export class TenantTableCatalog {
 
   /** Quotes for the eraser, which has no other reason to know `TenantSql`. */
   static tenantColumn(): string {
-    return TenantSql.identifier(TenantRlsSql.COLUMN);
+    return TenantSql.identifier(TenantColumn.NAME);
   }
 }

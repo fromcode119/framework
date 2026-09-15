@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'async_hooks';
 import type { Pool, PoolClient } from 'pg';
-import { TenantRlsSql } from '@database/tenant/tenant-rls-sql';
+import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
 import { TenantScopeStore } from '@database/tenant/tenant-scope-store';
 import { LazyTenantClient } from '@database/tenant/lazy-tenant-client';
 import { OneShotTenantClient } from '@database/tenant/one-shot-tenant-client';
@@ -101,8 +101,7 @@ export class TenantConnectionScope {
     store.pending = (async () => {
       const client = await store.pool.connect();
       try {
-        if (store.tenantId) await client.query(TenantRlsSql.setTenantStatement(), [store.tenantId]);
-        if (store.platformAdmin) await client.query(TenantRlsSql.setPlatformAdminStatement(), ['on']);
+        await PostgresTenantSession.bind(client, { tenantId: store.tenantId, platformAdmin: store.platformAdmin });
       } catch (error) {
         client.release(error as Error);
         throw error;
@@ -120,8 +119,7 @@ export class TenantConnectionScope {
     store.inTransaction = false;
     if (!client) return;
     try {
-      await client.query(TenantRlsSql.resetTenantStatement());
-      await client.query(TenantRlsSql.resetPlatformAdminStatement());
+      await PostgresTenantSession.clear(client);
     } catch {
       // A client that cannot be cleared must never be reused carrying a stale tenant. Swallowing
       // here is deliberate: the release below is what matters, and pg discards a client whose

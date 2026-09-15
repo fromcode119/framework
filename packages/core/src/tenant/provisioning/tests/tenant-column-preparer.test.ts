@@ -1,4 +1,3 @@
-import { TenantRlsSql } from '@fromcode119/database';
 import { describe, expect, it, vi } from 'vitest';
 import { TenantColumnPreparer } from '@core/tenant/provisioning/tenant-column-preparer';
 
@@ -11,15 +10,18 @@ import { TenantColumnPreparer } from '@core/tenant/provisioning/tenant-column-pr
  * the moment isolation came on, while the adoption reported success.
  */
 describe('TenantColumnPreparer — giving scoped tables their column before adoption', () => {
+  // The preparer asks the DRIVER for the column now, so the fake is the capability, not a SQL sink.
+  // What that column statement actually says is the dialect's own test
+  // (dialects/postgres/tests/tenant-isolation-sql.test.ts), where the SQL lives.
   const dbWith = (tables: string[]) => {
-    const executed: string[] = [];
+    const prepared: string[] = [];
+    const addTenantColumn = vi.fn(async (table: string) => { prepared.push(table); });
     return {
-      executed,
+      prepared,
+      addTenantColumn,
       db: {
         getTables: async () => tables,
-        execute: vi.fn(async (statement: any) => {
-          executed.push(String(statement?.sql ?? statement?.queryChunks ?? statement));
-        }),
+        tenantIsolation: { addTenantColumn },
       },
     };
   };
@@ -28,7 +30,7 @@ describe('TenantColumnPreparer — giving scoped tables their column before adop
     const { db } = dbWith(['fcp_cms_pages']);
 
     expect(await new TenantColumnPreparer(db).ensureColumns()).toBe(1);
-    expect(db.execute).toHaveBeenCalled();
+    expect(db.tenantIsolation.addTenantColumn).toHaveBeenCalledWith('fcp_cms_pages');
   });
 
   it('prepares the framework tables that hold a tenant\'s own content', async () => {
@@ -41,7 +43,7 @@ describe('TenantColumnPreparer — giving scoped tables their column before adop
     const { db } = dbWith(['users', '_system_tenants', '_system_meta']);
 
     expect(await new TenantColumnPreparer(db).ensureColumns()).toBe(0);
-    expect(db.execute).not.toHaveBeenCalled();
+    expect(db.tenantIsolation.addTenantColumn).not.toHaveBeenCalled();
   });
 
   it('honours a collection declared system, whatever its table is called', async () => {
@@ -50,22 +52,15 @@ describe('TenantColumnPreparer — giving scoped tables their column before adop
     expect(await new TenantColumnPreparer(db).ensureColumns(new Set(['settings']))).toBe(0);
   });
 
-  it('issues exactly the column statements, one pair per scoped table', async () => {
-    const { db } = dbWith(['fcp_cms_pages']);
+  it('asks for the COLUMN only — never for enforcement', async () => {
+    const { db, prepared } = dbWith(['fcp_cms_pages', 'fcp_cms_posts']);
 
     await new TenantColumnPreparer(db).ensureColumns();
 
-    expect(db.execute).toHaveBeenCalledTimes(TenantRlsSql.columnStatementsFor('fcp_cms_pages').length);
-  });
-
-  it('the statements it issues add the column and its index, and NEVER enable row-level security', () => {
-    const statements = TenantRlsSql.columnStatementsFor('fcp_cms_pages').join(' ');
-
-    expect(statements).toContain('ADD COLUMN IF NOT EXISTS');
-    expect(statements).toContain('CREATE INDEX IF NOT EXISTS');
-    // Enabling it here would hide every row on a deployment that has no tenants yet — the documented
-    // reason the boot sweep refuses to isolate anything until a tenant exists.
-    expect(statements).not.toContain('ROW LEVEL SECURITY');
-    expect(statements).not.toContain('CREATE POLICY');
+    // One call per scoped table, and `addTenantColumn` is the half that does NOT enable row-level
+    // security. Enforcing here would hide every row on a deployment that has no tenants yet — the
+    // documented reason the boot sweep refuses to isolate anything until a tenant exists.
+    expect(prepared).toEqual(['fcp_cms_pages', 'fcp_cms_posts']);
+    expect(Object.keys(db.tenantIsolation)).toEqual(['addTenantColumn']);
   });
 });

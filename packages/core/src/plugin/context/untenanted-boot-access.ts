@@ -1,7 +1,7 @@
 import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
-import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
+import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 
 /**
  * What happens when a plugin touches tenant data at BOOT, where there is no tenant.
@@ -42,7 +42,7 @@ export class UntenantedBootAccess {
   static shouldSkip(table: unknown): boolean {
     if (!TenantMode.isEnabled()) return false;
     if (RequestContextUtils.storage.getStore()) return false;
-    return TenantScopedTableDdl.isTenantScoped(String(table ?? ''));
+    return TenantScopedTables.isTenantScoped(String(table ?? ''));
   }
 
   /**

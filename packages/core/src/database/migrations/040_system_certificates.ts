@@ -15,7 +15,7 @@ import { Logger } from '../../logging';
  * removing one host never quietly disarms another.
  *
  * PLATFORM-LEVEL, NOT TENANT-SCOPED. `_system_` prefixed tables are excluded from row-level security
- * by `TenantScopedTableDdl`, which is required here rather than incidental: whatever terminates TLS
+ * by `TenantScopedTables`, which is required here rather than incidental: whatever terminates TLS
  * reads every host's certificate at once, before any request exists and therefore before there is a
  * tenant to be scoped to. `tenant_id` is a reference for display and cascade only.
  *

@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql, TenantRlsSql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, sql, TenantColumn } from '@fromcode119/database';
 import { ColumnGuard } from '@core/database/helpers/column-guard';
 import { DialectHelper } from '@core/database/helpers/dialect';
 import { Logger } from '@core/logging';
@@ -15,7 +15,7 @@ import { Logger } from '@core/logging';
  * Two changes, and the second is as important as the first:
  *
  * 1. The table comes under row-level security like `_system_meta` (022), `_system_plugin_settings` (024)
- *    and the theme tables (025) already did. `TenantRlsSql` supplies the column, its default, the index,
+ *    and the theme tables (025) already did. `db.tenantIsolation` supplies the column, its default, the index,
  *    ENABLE + FORCE and the policy.
  *
  * 2. `from_path` STOPS BEING GLOBALLY UNIQUE and becomes unique PER SITE. Left alone, the original
@@ -42,29 +42,27 @@ export class TenantRedirectsMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        for (const statement of TenantRlsSql.statementsFor(TenantRedirectsMigration.TABLE)) {
-          await db.execute(sql.raw(statement));
-        }
-        // `scopeUniqueConstraintStatement` is the framework's own helper for exactly this: it drops the
+        await db.tenantIsolation.isolateTable(TenantRedirectsMigration.TABLE);
+        // `scopeUniqueConstraint` is the framework's own helper for exactly this: it drops the
         // single-column constraint and rebuilds it as `(from_path, tenant_id)` under the SAME name, in
         // one statement, so the table is never briefly without a uniqueness rule.
         if (await TenantRedirectsMigration.hasConstraint(db, TenantRedirectsMigration.LEGACY_UNIQUE)) {
-          await db.execute(sql.raw(TenantRlsSql.scopeUniqueConstraintStatement(
+          await db.tenantIsolation.scopeUniqueConstraint(
             TenantRedirectsMigration.TABLE, TenantRedirectsMigration.LEGACY_UNIQUE, ['from_path'],
-          )));
+          );
         }
       },
       sqlite: async () => {
         // No row-level security on SQLite, and nothing replaces it — the file-per-tenant silo (S1)
         // was designed and NOT adopted; see its spec. The column is still added so the two
         // dialects hold the same shape and a row exported from one can be imported into the other.
-        await ColumnGuard.addIfMissing(db, TenantRedirectsMigration.TABLE, TenantRlsSql.COLUMN, 'TEXT');
+        await ColumnGuard.addIfMissing(db, TenantRedirectsMigration.TABLE, TenantColumn.NAME, 'TEXT');
       },
       mysql: async () => {
         // No row-level security on MySQL, and nothing replaces it — same story as SQLite above. The
         // column is still added so the two dialects hold the same shape and a row exported from one
         // can be imported into the other.
-        await ColumnGuard.addIfMissing(db, TenantRedirectsMigration.TABLE, TenantRlsSql.COLUMN, 'TEXT');
+        await ColumnGuard.addIfMissing(db, TenantRedirectsMigration.TABLE, TenantColumn.NAME, 'TEXT');
       },
     });
   }
@@ -100,17 +98,15 @@ export class TenantRedirectsMigration extends BaseMigration {
    * Restoring the single-column rule would require every site's rules to be globally unique again,
    * which is only true if no two sites ever claimed the same path. Where they did, Postgres would
    * refuse the constraint and the only way to force it through is to DELETE one site's redirects —
-   * a migration must never do that. `removalStatementsFor` takes the policy off, which is what this
+   * a migration must never do that. `releaseTable` takes the policy off, which is what this
    * path exists for; the per-site uniqueness is harmless without it.
    */
   async down(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        for (const statement of TenantRlsSql.removalStatementsFor(
+        await db.tenantIsolation.releaseTable(
           TenantRedirectsMigration.TABLE, [`${TenantRedirectsMigration.TABLE}_tenant_isolation`],
-        )) {
-          await db.execute(sql.raw(statement));
-        }
+        );
       },
       sqlite: async () => undefined,
       mysql: async () => undefined,

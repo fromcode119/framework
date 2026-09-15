@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, TenantRlsSql, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { ColumnGuard } from '@core/database/helpers/column-guard';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
@@ -52,9 +52,7 @@ export class TenantMembershipsMigration extends BaseMigration {
         // A tenant's people are its own. These tables hold the real PII — until now they were
         // unscoped, so one tenant's contacts were readable by every other tenant.
         for (const table of TenantMembershipsMigration.PEOPLE_TABLES) {
-          for (const statement of TenantRlsSql.statementsFor(table)) {
-            await db.execute(sql.raw(statement));
-          }
+          await db.tenantIsolation.isolateTable(table);
         }
       },
       sqlite: async () => {

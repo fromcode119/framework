@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql, TenantRlsSql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '../helpers/dialect';
 
 /**
@@ -26,9 +26,7 @@ export class SourcesTableMigration extends BaseMigration {
         // Row-level security, exactly as every other tenant-scoped table gets it. The column, its
         // default, the index, ENABLE + FORCE and the policy all come from the framework's own helper
         // so this table cannot drift from the rest.
-        for (const statement of TenantRlsSql.statementsFor(SourcesTableMigration.TABLE)) {
-          await db.execute(sql.raw(statement));
-        }
+        await db.tenantIsolation.isolateTable(SourcesTableMigration.TABLE);
       },
       sqlite: async () => {
         await db.execute(sql.raw(SourcesTableMigration.createStatement('INTEGER PRIMARY KEY AUTOINCREMENT', 'TEXT')));

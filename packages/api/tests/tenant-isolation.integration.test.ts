@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Pool } from 'pg';
-import { TenantRlsSql } from '@fromcode119/database';
+import { PostgresTenantIsolation, PostgresTenantSession } from '@fromcode119/database';
 
 /**
  * The isolation proof, against a REAL Postgres.
@@ -25,15 +25,18 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('tenant isolation (real Postgres)', ()
 
     await admin.query('DROP TABLE IF EXISTS iso_orders');
     await admin.query('CREATE TABLE iso_orders (id serial PRIMARY KEY, total numeric)');
-    for (const statement of TenantRlsSql.statementsFor('iso_orders')) await admin.query(statement);
+    // The real implementation, driven straight at this client — the same statements the framework
+    // issues at boot, not a copy of them.
+    await new PostgresTenantIsolation((text, values) => admin.query(text, values).then((r: any) => r.rows))
+      .isolateTable('iso_orders');
     await admin.query('GRANT SELECT, INSERT, UPDATE, DELETE ON iso_orders TO fromcode_app');
     await admin.query('GRANT USAGE, SELECT ON SEQUENCE iso_orders_id_seq TO fromcode_app');
 
     for (const [tenant, total] of [['acme', 100], ['acme', 200], ['globex', 999]] as const) {
-      await admin.query(TenantRlsSql.setTenantStatement(), [tenant]);
+      await PostgresTenantSession.bind(admin, { tenantId: tenant });
       await admin.query('INSERT INTO iso_orders (total) VALUES ($1)', [total]);
     }
-    await admin.query(TenantRlsSql.resetTenantStatement());
+    await PostgresTenantSession.clear(admin);
   });
 
   afterAll(async () => {
@@ -45,10 +48,10 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('tenant isolation (real Postgres)', ()
   async function asTenant<T>(tenant: string, fn: (client: any) => Promise<T>): Promise<T> {
     const client = await app.connect();
     try {
-      await client.query(TenantRlsSql.setTenantStatement(), [tenant]);
+      await PostgresTenantSession.bind(client, { tenantId: tenant });
       return await fn(client);
     } finally {
-      await client.query(TenantRlsSql.resetTenantStatement());
+      await PostgresTenantSession.clear(client);
       client.release();
     }
   }
@@ -82,8 +85,8 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('tenant isolation (real Postgres)', ()
   it('a RESET tenant reads nothing and cannot insert (the empty-string trap)', async () => {
     const client = await app.connect();
     try {
-      await client.query(TenantRlsSql.setTenantStatement(), ['acme']);
-      await client.query(TenantRlsSql.resetTenantStatement());
+      await PostgresTenantSession.bind(client, { tenantId: 'acme' });
+      await PostgresTenantSession.clear(client);
       expect((await client.query('SELECT * FROM iso_orders')).rows).toHaveLength(0);
       await expect(client.query('INSERT INTO iso_orders (total) VALUES (1)'))
         .rejects.toThrow(/row-level security/i);

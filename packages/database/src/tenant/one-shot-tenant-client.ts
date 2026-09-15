@@ -1,5 +1,5 @@
 import type { PoolClient } from 'pg';
-import { TenantRlsSql } from '@database/tenant/tenant-rls-sql';
+import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
 import type { TenantScopeStore } from '@database/tenant/tenant-scope-store';
 
 /**
@@ -21,13 +21,11 @@ export class OneShotTenantClient {
   async query(...args: unknown[]): Promise<any> {
     const client: PoolClient = await this.store.pool.connect();
     try {
-      if (this.store.tenantId) await client.query(TenantRlsSql.setTenantStatement(), [this.store.tenantId]);
-      if (this.store.platformAdmin) await client.query(TenantRlsSql.setPlatformAdminStatement(), ['on']);
+      await PostgresTenantSession.bind(client, { tenantId: this.store.tenantId, platformAdmin: this.store.platformAdmin });
       return await (client.query as (...params: unknown[]) => Promise<any>)(...args);
     } finally {
       try {
-        await client.query(TenantRlsSql.resetTenantStatement());
-        await client.query(TenantRlsSql.resetPlatformAdminStatement());
+        await PostgresTenantSession.clear(client);
       } catch {
         // Same rule as TenantConnectionScope.release: the release below is what matters, and pg
         // discards a client whose session is broken rather than returning a poisoned one.

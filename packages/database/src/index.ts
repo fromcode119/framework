@@ -26,8 +26,16 @@ export { TableResolver } from '@database/table-resolver';
 export type { IPhysicalTableReference } from '@database/interfaces/physical-table-reference.interface';
 export { BaseMigration } from '@database/base-migration';
 export { SchemaKeyField } from '@database/schema-key-field';
-export { TenantRlsSql } from '@database/tenant/tenant-rls-sql';
+export { TenantColumn } from '@database/tenant/tenant-column';
+export { DeclaredUniqueOutcome } from '@database/declared-unique-outcome';
+export type { ITenantIsolation, ITenantPolicySpec, ITenantBlindUniqueRule, IScopedUniqueRules } from '@database/interfaces/tenant-isolation.interface';
 export { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
+// The EXECUTING halves of Postgres tenancy. `TenantIsolationSql` — the statements themselves — is
+// deliberately NOT exported: callers get behaviour, never SQL text. These two are here because
+// constructing the real implementation against a raw client is what an isolation integration test
+// must do; asserting against a copy of the statements would prove only that the copy matches itself.
+export { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tenant-isolation';
+export { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
 export { DatabaseConnectionUrls } from '@database/tenant/database-connection-urls';
 export { DatabaseRole } from '@database/roles/database-role';
 export { DatabaseRolePlan } from '@database/roles/database-role-plan';

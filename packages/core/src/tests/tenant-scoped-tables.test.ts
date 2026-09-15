@@ -1,24 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
+import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 
-describe('TenantScopedTableDdl.isTenantScoped', () => {
+describe('TenantScopedTables.isTenantScoped', () => {
   it('scopes plugin tables', () => {
-    expect(TenantScopedTableDdl.isTenantScoped('fcp_beta_orders')).toBe(true);
+    expect(TenantScopedTables.isTenantScoped('fcp_beta_orders')).toBe(true);
   });
 
   it('scopes content tables', () => {
-    expect(TenantScopedTableDdl.isTenantScoped('pages')).toBe(true);
+    expect(TenantScopedTables.isTenantScoped('pages')).toBe(true);
   });
 
   it('scopes media_folders, which is tenant CONTENT despite being a framework table', () => {
-    expect(TenantScopedTableDdl.isTenantScoped('media_folders')).toBe(true);
+    expect(TenantScopedTables.isTenantScoped('media_folders')).toBe(true);
   });
 
   it('leaves `media` to its own migration — its policy admits SHARED assets too', () => {
     // The generic policy would be wrong for media, and the boot sweep recreates policies, so
     // including it here would silently overwrite the sharing rule on every restart.
-    expect(TenantScopedTableDdl.isTenantScoped('media')).toBe(false);
-    expect(TenantScopedTableDdl.statementsFor('media')).toEqual([]);
+    expect(TenantScopedTables.isTenantScoped('media')).toBe(false);
   });
 
   it('does NOT scope framework IDENTITY and CONFIGURATION tables', () => {
@@ -26,7 +25,7 @@ describe('TenantScopedTableDdl.isTenantScoped', () => {
       '_system_tenants', '_system_plugins', '_system_plugin_settings', '_system_themes',
       '_system_sessions', '_system_meta', '_system_roles', '_system_users_roles', 'users',
     ]) {
-      expect(TenantScopedTableDdl.isTenantScoped(table)).toBe(false);
+      expect(TenantScopedTables.isTenantScoped(table)).toBe(false);
     }
   });
 
@@ -42,26 +41,26 @@ describe('TenantScopedTableDdl.isTenantScoped', () => {
    */
   it('scopes the people tables and redirects — a tenant\'s own content, and self-healing here', () => {
     for (const table of ['people', 'people_addresses', 'person_relationships', 'person_catalogs', '_system_redirects']) {
-      expect(TenantScopedTableDdl.isTenantScoped(table)).toBe(true);
+      expect(TenantScopedTables.isTenantScoped(table)).toBe(true);
     }
   });
 
   it('is case-insensitive and ignores surrounding whitespace', () => {
-    expect(TenantScopedTableDdl.isTenantScoped('  _SYSTEM_PLUGINS ')).toBe(false);
-    expect(TenantScopedTableDdl.isTenantScoped('  USERS ')).toBe(false);
+    expect(TenantScopedTables.isTenantScoped('  _SYSTEM_PLUGINS ')).toBe(false);
+    expect(TenantScopedTables.isTenantScoped('  USERS ')).toBe(false);
   });
 
   it('does not scope an empty name', () => {
-    expect(TenantScopedTableDdl.isTenantScoped('')).toBe(false);
+    expect(TenantScopedTables.isTenantScoped('')).toBe(false);
   });
 
-  it('emits FORCE RLS for a scoped table', () => {
-    const stmts = TenantScopedTableDdl.statementsFor('fcp_beta_orders');
-    expect(stmts.some((statement) => statement.includes('FORCE ROW LEVEL SECURITY'))).toBe(true);
+  it('scopes a plugin table it has never heard of — derived from the name, not a list', () => {
+    // A hand-listed set goes stale, and a table missing from it is silently GLOBAL.
+    expect(TenantScopedTables.isTenantScoped('fcp_beta_orders')).toBe(true);
   });
 
-  it('emits nothing for an unscoped table', () => {
-    expect(TenantScopedTableDdl.statementsFor('_system_plugins')).toEqual([]);
-    expect(TenantScopedTableDdl.statementsFor('users')).toEqual([]);
+  it('refuses platform configuration', () => {
+    expect(TenantScopedTables.isTenantScoped('_system_plugins')).toBe(false);
+    expect(TenantScopedTables.isTenantScoped('users')).toBe(false);
   });
 });

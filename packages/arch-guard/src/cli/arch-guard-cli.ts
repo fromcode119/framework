@@ -10,6 +10,7 @@ import { CoreBoundaryCommand } from './core-boundary-command';
 import { FrameworkDomainCommand } from './framework-domain-command';
 import { BlockFieldConformanceCommand } from './block-field-conformance-command';
 import { DependencyOverridesCommand } from './dependency-overrides-command';
+import { DialectSqlConfinementCommand } from './dialect-sql-confinement-command';
 import { DbFindWhereCommand } from './db-find-where-command';
 import { RequestCoercionCommand } from './request-coercion-command';
 import { ImportsCommand } from './imports-command';
@@ -43,6 +44,7 @@ export class ArchorCli {
     ['core-boundary', CoreBoundaryCommand],
     ['db-find-where', DbFindWhereCommand],
     ['dependency-overrides', DependencyOverridesCommand],
+    ['dialect-sql-confinement', DialectSqlConfinementCommand],
     ['file-size', FileSizeCommand],
     ['framework-domain', FrameworkDomainCommand],
     ['block-field-conformance', BlockFieldConformanceCommand],
