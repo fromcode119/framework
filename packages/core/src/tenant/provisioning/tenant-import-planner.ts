@@ -42,11 +42,14 @@ export class TenantImportPlanner {
     for (const archived of reader.manifest.tables) {
       const destination = byName.get(archived.name);
       if (!destination) {
-        // Says WHY, because "no such table" reads as a platform fault and is usually a choice: the
-        // table belongs to a plugin this platform does not run, so there is nowhere to put the rows.
-        // An operator who installs and enables that plugin and imports again keeps them.
-        const reason = 'No such table here — the plugin that owns it is not installed or not enabled on this platform.';
-        tables.push({ name: archived.name, rows: archived.rows, mode: 'skip', reason, opaqueJsonColumns: [], droppedColumns: archived.columns });
+        // `droppedColumns` means "columns this platform's table does not have". With no table at all
+        // the honest answer is "not applicable", not "all of them": listing every column invited the
+        // preview to print 25 names for a table whose only possible action is "install the plugin".
+        // The rows that are lost are counted in `warnings` below, which is where that fact belongs.
+        tables.push({
+          name: archived.name, rows: archived.rows, mode: 'skip', basis: 'noTable',
+          minId: null, taken: null, opaqueJsonColumns: [], droppedColumns: [],
+        });
         if (archived.rows > 0) {
           warnings.push(
             `${archived.rows} row(s) of "${archived.name}" will be skipped: no such table here. `
@@ -89,21 +92,26 @@ export class TenantImportPlanner {
     const followed = new Set(destination.references.map((ref) => ref.column));
     const opaqueJsonColumns = destination.jsonColumns.filter((column) => archived.columns.includes(column) && !followed.has(column));
     if (!destination.hasSerialId || !destination.idSequence) {
-      return { name: archived.name, rows: archived.rows, mode: 'preserve', reason: 'No serial id: rows are keyed naturally.', opaqueJsonColumns: [], droppedColumns };
+      return {
+        name: archived.name, rows: archived.rows, mode: 'preserve', basis: 'naturalKey',
+        minId: null, taken: null, opaqueJsonColumns: [], droppedColumns,
+      };
     }
     const decision = await TenantImportPlanner.decideIds(this.db, destination, reader);
     return {
       name: archived.name,
       rows: archived.rows,
       mode: decision.mode,
-      reason: decision.reason,
+      basis: decision.basis,
+      minId: decision.minId,
+      taken: decision.taken,
       opaqueJsonColumns: decision.mode === 'remap' ? opaqueJsonColumns : [],
       droppedColumns,
     };
   }
 
   /** Shared with the executor so the preview and the run decide the same way from the same numbers. */
-  static async decideIds(db: IDatabaseManager, table: TenantTableDescriptor, reader: TenantArchiveReader): Promise<{ mode: 'preserve' | 'remap'; reason: string; taken: number; minId: number | null }> {
+  static async decideIds(db: IDatabaseManager, table: TenantTableDescriptor, reader: TenantArchiveReader): Promise<{ mode: 'preserve' | 'remap'; basis: 'empty' | 'aboveSequence' | 'belowSequence'; taken: number; minId: number | null }> {
     const state = (await db.queryRaw(TenantSql.sequenceState(table.idSequence as string)))[0] ?? {};
     const taken = state.is_called === true || state.is_called === 't' ? Number(state.last_value ?? 0) : 0;
     let minId: number | null = null;
@@ -111,9 +119,9 @@ export class TenantImportPlanner {
       const id = Number(row.id);
       if (Number.isFinite(id) && (minId === null || id < minId)) minId = id;
     }
-    if (minId === null) return { mode: 'preserve', reason: 'No rows.', taken, minId };
-    if (minId > taken) return { mode: 'preserve', reason: `All ids are above the ${taken} this platform has handed out.`, taken, minId };
-    return { mode: 'remap', reason: `Ids start at ${minId}, but this platform has handed out ids up to ${taken}; rows get new ids and references are re-pointed.`, taken, minId };
+    if (minId === null) return { mode: 'preserve', basis: 'empty', taken, minId };
+    if (minId > taken) return { mode: 'preserve', basis: 'aboveSequence', taken, minId };
+    return { mode: 'remap', basis: 'belowSequence', taken, minId };
   }
 
   private async planUsers(reader: TenantArchiveReader): Promise<{ total: number; existing: number; toCreate: number }> {

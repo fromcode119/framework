@@ -348,8 +348,46 @@ html.dark {
 .fc-sites__member-email { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-sites__member-roles { display: flex; gap: 4px; }
 .fc-sites__grant { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; }
-.fc-sites__upload { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.fc-sites__upload { display: flex; flex-direction: column; gap: 12px; }
 .fc-sites__file { font-size: 13px; }
+
+/* The archive drop target. The native input is present but visually hidden — it is what makes the
+   keyboard and the file picker work, and the label wraps it so a click anywhere opens the picker. */
+.fc-dropzone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 16px;
+  border: 1px dashed var(--fc-border, #e2e8f0);
+  border-radius: 10px;
+  background: var(--fc-surface-muted, #f8fafc);
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.fc-dropzone:hover,
+.fc-dropzone:focus-within { border-color: var(--fc-accent, #4f46e5); }
+.fc-dropzone--over { border-color: var(--fc-accent, #4f46e5); background: var(--fc-accent-soft, rgba(79, 70, 229, 0.08)); }
+.fc-dropzone--filled { border-style: solid; }
+.fc-dropzone--disabled { cursor: default; opacity: .6; }
+.fc-dropzone__input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.fc-dropzone__icon { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 8px; background: var(--fc-accent-soft, rgba(79, 70, 229, 0.08)); color: var(--fc-accent, #4f46e5); }
+.fc-dropzone__file { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fc-dropzone__name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-dropzone__meta { font-size: 12px; color: var(--fc-text-muted, #64748b); }
+.fc-dropzone__clear { margin-left: auto; display: grid; place-items: center; width: 24px; height: 24px; flex: none; border: 0; border-radius: 6px; background: transparent; color: var(--fc-text-muted, #64748b); cursor: pointer; }
+.fc-dropzone__clear:hover { background: var(--fc-surface, #ffffff); color: var(--fc-text, #0f172a); }
+
+/* Progress replaces the clear control rather than sitting beside it: while bytes are moving, the
+   only useful action is waiting. */
+.fc-dropzone__progress { margin-left: auto; display: flex; align-items: center; gap: 8px; flex: none; }
+.fc-dropzone__track { display: block; width: 140px; height: 6px; border-radius: 999px; background: var(--fc-border, #e2e8f0); overflow: hidden; }
+.fc-dropzone__bar { display: block; width: 0; height: 100%; border-radius: 999px; background: var(--fc-accent, #4f46e5); transition: width .2s ease; }
+.fc-dropzone__percent { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--fc-text-muted, #64748b); min-width: 34px; text-align: right; }
+@media (max-width: 640px) {
+  .fc-dropzone__progress { width: 100%; margin: 8px 0 0 48px; }
+  .fc-dropzone__track { flex: 1; width: auto; }
+}
 .fc-sites__danger { border-color: rgba(220, 38, 38, 0.35); }
 .fc-sites__warnings, .fc-sites__blockers { margin: 8px 0; padding-left: 18px; font-size: 12px; line-height: 1.5; }
 .fc-sites__blockers { color: #b91c1c; font-weight: 600; }
@@ -386,10 +424,47 @@ html.dark {
 .fc-import-plan { display: flex; flex-direction: column; gap: 12px; }
 .fc-import-plan__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .fc-import-plan__item { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 4px; }
-.fc-import-plan__tables { overflow-x: auto; }
+.fc-import-plan__tables { display: flex; flex-direction: column; gap: 18px; }
+/* Scrolls the TABLE, not the page: a squeezed id column is unreadable, and a name broken mid-word
+   (`_system_audit` / `_logs`) reads as a different table than the one it is. */
+.fc-import-plan__group { display: flex; flex-direction: column; gap: 6px; overflow-x: auto; }
+/* The rule behind a whole group, said once here instead of repeated down a Why column. */
+.fc-import-plan__rule { margin: 0; font-size: 12px; line-height: 1.5; color: var(--fc-text-muted, #64748b); max-width: 90ch; }
+.fc-import-plan__count { font-variant-numeric: tabular-nums; opacity: 0.7; }
 .fc-import-plan__table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .fc-import-plan__table th, .fc-import-plan__table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid rgba(100, 116, 139, 0.15); vertical-align: top; }
 .fc-import-plan__table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
+/* Ids and counts line up only if they are right-aligned and never wrap. */
+.fc-import-plan__table th.fc-import-plan__num, .fc-import-plan__table td.fc-import-plan__num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* A column list wraps BETWEEN names; `anywhere` is the escape hatch for one name longer than the cell.
+   Without it a long identifier clipped mid-word, which is how the table broke at narrow widths. */
+.fc-import-plan__cols { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
+.fc-import-plan__cols + .fc-import-plan__cols { margin-top: 4px; }
+.fc-import-plan__cols code { overflow-wrap: anywhere; }
+/* Enough room for the longest table name to stay on one line; the group scrolls if the rest cannot fit. */
+.fc-import-plan__table td:first-child, .fc-import-plan__table th:first-child { min-width: 24ch; white-space: nowrap; }
+.fc-import-plan__cols-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
+.fc-import-plan__empty > summary { font-size: 12px; cursor: pointer; }
+.fc-import-plan__empty > .fc-import-plan__cols { margin-top: 6px; }
+.fc-import-plan__warnings > summary { font-size: 12px; cursor: pointer; color: #92400e; }
+
+/* Phone: a 5-column table cannot shrink, so each row becomes its own labelled block. The header is
+   hidden visually but kept for assistive tech, and every cell carries its own label instead. */
+@media (max-width: 640px) {
+  .fc-import-plan__table, .fc-import-plan__table tbody, .fc-import-plan__table tr, .fc-import-plan__table td { display: block; }
+  .fc-import-plan__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .fc-import-plan__table tr { padding: 6px 0; border-bottom: 1px solid rgba(100, 116, 139, 0.15); }
+  .fc-import-plan__table td { border-bottom: 0; padding: 2px 0; }
+  .fc-import-plan__table td.fc-import-plan__num { text-align: left; }
+  .fc-import-plan__table td[data-label]::before { content: attr(data-label); display: inline-block; min-width: 9em; padding-right: 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
+  .fc-import-plan__table td:first-child::before { display: none; }
+  /* The cell already labels each run ("JSON not re-pointed", "Dropped"); a "Not carried over"
+     header above them just says it twice. */
+  .fc-import-plan__table td[data-label="Not carried over"]::before { display: none; }
+  /* Stacked, the name has the full width — let it wrap rather than scroll the group sideways. */
+  .fc-import-plan__table td:first-child, .fc-import-plan__table th:first-child { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+  .fc-import-plan__table td:empty { display: none; }
+}
 @media (max-width: 767px) {
   .fc-sites__member, .fc-sites__grant { grid-template-columns: 1fr; }
 }

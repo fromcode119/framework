@@ -36,4 +36,14 @@ describe('SiteFormValues.toIdentity — what adopt and import submit', () => {
     expect(workspace.toIdentity().kind).toBe('workspace');
     expect(workspace.toIdentity().appearance).toBe('hub');
   });
+
+  it('SENDS visibility and environment — both were shown and neither was submitted', () => {
+    // The import screen rendered these as ordinary controls and dropped them here, so the form could
+    // read "Production" while the server applied its own non-production default. On that screen the
+    // value decides whether a copy of a live shop can email its real customers.
+    const identity = site().with({ visibility: 'public', environment: 'non-production' }).toIdentity();
+
+    expect(identity.visibility).toBe('public');
+    expect(identity.environment).toBe('non-production');
+  });
 });
