@@ -74,6 +74,12 @@ export class SystemSettingRegistry {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '25', description: "Maximum media payload accepted by MCP upload and replace tools, in megabytes.", group: "Integrations" },
     }, // candidate for PLATFORM (Phase 2)
+    // Not seeded, either of them: an unset dataset falls through to the next layer and the admin says
+    // which, so there is nothing for a seeded row to claim. DEFAULTS is read by every site, so it is
+    // PLATFORM; STRATEGIES is one site answering for the data it controls, so it is SITE.
+    [SystemSettingRegistry.KEY.PERSONAL_DATA_ERASURE_DEFAULTS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemSettingRegistry.KEY.PERSONAL_DATA_ERASURE_STRATEGIES]: { scope: SettingScope.SITE, writable: true, exposed: true },
+
     [SystemSettingRegistry.KEY.SETUP_COMPLETED]: { scope: SettingScope.PLATFORM, writable: false, exposed: true },
     [SystemSettingRegistry.KEY.SITE_NAME]: {
       scope: SettingScope.SITE, writable: true, exposed: true,

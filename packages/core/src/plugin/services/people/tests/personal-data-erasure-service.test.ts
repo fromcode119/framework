@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
 import { PersonalDataRegistry } from '@core/plugin/services/people/personal-data-registry';
 import { RequestContextUtils } from '@core/context/request-context';
+import { SystemConstants } from '@core/constants/system.constants';
 
 const SUBJECT = { email: 'subject@example.invalid', userId: 7, personId: 3 };
 
@@ -111,10 +112,34 @@ describe('PersonalDataErasureService — the journals', () => {
     expect(db.tables._system_audit_logs[1].metadata.email).toBe('other@example.invalid');
   });
 
-  /** The journal policy narrows an unmarked write to `tenant_id IS NULL` rows, silently. */
-  it('touches the journal INSIDE a platform-admin scope', async () => {
+  /**
+   * WHICH scope the journal is touched in, and why it is not always the platform marker.
+   *
+   * The `_system_logs` policy is asymmetric: `USING` admits `app.platform_admin = 'on'`, but its
+   * `WITH CHECK` has no platform clause at all. So under the marker a scrub SELECTS every tenant's
+   * rows and then cannot write back any row owned by a site — the update was refused and the whole
+   * erasure died with "new row violates row-level security policy". Every self-delete by anyone who
+   * had ever signed in failed that way, and no site's journal was ever actually anonymised.
+   */
+  it('scrubs the journal in the SITE\'s own scope when there is a site', async () => {
     const db = makeDb({ _system_audit_logs: auditRows() });
     db.find = vi.fn(async (table: string) => db.tables[table] ?? []);
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue('fromcode');
+
+    await new PersonalDataErasureService(db).eraseDataset('audit-log', SUBJECT, 'anonymise');
+
+    // No platform marker: the site's own scope both finds and may write its rows — and it is the
+    // right scope anyway, since a DSAR is made to one controller about one site.
+    expect(db.platformScopes).toBe(0);
+    expect(db.tables._system_audit_logs[0].metadata.email).toBe(PersonalDataErasureService.TOMBSTONE);
+  });
+
+  it('falls back to the platform marker when there is no site to scope to', async () => {
+    // Untenanted there is no site, and the marker is what reaches the PLATFORM's own rows
+    // (`tenant_id IS NULL`) — which that same WITH CHECK does allow.
+    const db = makeDb({ _system_audit_logs: auditRows() });
+    db.find = vi.fn(async (table: string) => db.tables[table] ?? []);
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue(undefined as any);
 
     await new PersonalDataErasureService(db).eraseDataset('audit-log', SUBJECT, 'anonymise');
 
@@ -160,11 +185,24 @@ describe('PersonalDataErasureService.eraseAll — the two doors cannot drift', (
 
   it('erases EVERY dataset the service declares, leaving none behind', async () => {
     const subject = service();
-    const declared = subject.listDatasets().map((dataset) => dataset.key).sort();
+    // Addressed `platform:<key>`, the same id a plugin's dataset uses and the same id the operator's
+    // stored policy is keyed against — one id shape everywhere a dataset is stored, shown or overridden.
+    const declared = subject.listDatasets().map((dataset) => `platform:${dataset.key}`).sort();
 
     const results = await subject.eraseAll(SUBJECT as any);
 
     expect(Object.keys(results).sort()).toEqual(declared);
+  });
+
+  it('reports WHO decided each strategy, not only what was applied', async () => {
+    // "retained 32 invoices" is only actionable beside who decided to retain them. With nothing
+    // stored at either layer, every dataset must say it fell through to the declaring plugin.
+    const results = await service().eraseAll(SUBJECT as any);
+
+    const account = results['platform:account'];
+    expect(account.source).toBe('declared');
+    expect(account.provenance).toBe('Default declared by platform');
+    expect(account.strategy).toBe('anonymise');
   });
 
   it('uses each dataset\'s own declared default strategy, never one strategy for all', async () => {
@@ -183,6 +221,28 @@ describe('PersonalDataErasureService.eraseAll — the two doors cannot drift', (
     }
     // audit-log must be anonymised and never deleted — it is the security record.
     expect(seen.find((call) => call.key === 'audit-log')?.strategy).toBe('anonymise');
+  });
+
+  it('honours the SITE policy through the same call `deleteMyAccount` makes', async () => {
+    // The whole point of moving the policy into core. `deleteMyAccount` passes no strategy and no
+    // override; if the site's stored choice did not reach the erasure from here, a self-delete would
+    // anonymise a journal the operator marked `retain` — which is what happened while the policy was
+    // a plugin setting core could not read.
+    const db = makeDb({
+      [SystemConstants.TABLE.META]: [{
+        key: SystemConstants.META_KEY.PERSONAL_DATA_ERASURE_STRATEGIES,
+        value: JSON.stringify({ 'platform:audit-log': { strategy: 'retain', reason: 'Security record, 2 years.' } }),
+      }],
+    });
+    const subject = new PersonalDataErasureService(db as any);
+
+    const results = await subject.eraseAll(SUBJECT as any);
+
+    expect(results['platform:audit-log']).toMatchObject({
+      strategy: 'retain', source: 'site', reason: 'Security record, 2 years.',
+    });
+    // Everything the operator said nothing about still runs on its own declared default.
+    expect(results['platform:sessions'].source).toBe('declared');
   });
 
   it('reads the account before the memberships it depends on are removed', async () => {
@@ -387,5 +447,72 @@ describe('PersonalDataErasureService.exportAll — the export door cannot drift 
 
     expect(orders.records).toBeUndefined();
     expect(String(orders.error)).toContain('table locked');
+  });
+});
+
+/**
+ * A retained dataset reports ZERO of everything — `retain` keeps the rows, it does not count them.
+ *
+ * `deleteMyAccount` reads this to decide what the subject is told, and reading `retained` alone told
+ * someone whose operator had chosen retention that their account had been deleted. The strategy is
+ * the fact; the counts are not.
+ */
+describe('a retained dataset is distinguishable from an erased one', () => {
+  beforeEach(() => { vi.restoreAllMocks(); PersonalDataRegistry.clear(); });
+
+  it('reports the retain strategy even though every count is zero', async () => {
+    const db = makeDb({
+      users: [{ id: 7, email: SUBJECT.email }],
+      [SystemConstants.TABLE.META]: [{
+        key: SystemConstants.META_KEY.PERSONAL_DATA_ERASURE_STRATEGIES,
+        value: JSON.stringify({ 'platform:account': { strategy: 'retain', reason: 'Statutory hold.' } }),
+      }],
+    });
+
+    const results = await new PersonalDataErasureService(db as any).eraseAll(SUBJECT as any);
+    const account = results[PersonalDataErasureService.ACCOUNT_ID];
+
+    expect(account.strategy).toBe(PersonalDataErasureService.RETAIN_STRATEGY);
+    expect(account.retained).toBe(0);
+    expect(account.reason).toBe('Statutory hold.');
+    // The account row must still be there — retain means kept.
+    expect(db.tables.users).toHaveLength(1);
+    expect(db.tables.users[0].email).toBe(SUBJECT.email);
+  });
+});
+
+/**
+ * The journal COUNT must describe the same rows the scrub will touch.
+ *
+ * Under the platform marker it spanned every site — admitted for reading, which is why it never
+ * failed the way the write did — so a request about one site reported that person's journal rows
+ * across the deployment, and the figure could never reach zero however often the erasure ran.
+ */
+describe('the journal count is scoped like the scrub', () => {
+  beforeEach(() => { vi.restoreAllMocks(); PersonalDataRegistry.clear(); });
+
+  const auditRows = () => ([
+    { id: 1, action: 'collection.delete', resource: 'orders', status: 'allowed', metadata: { userId: 7, email: SUBJECT.email } },
+    { id: 2, action: 'settings.update', resource: 'system', status: 'allowed', metadata: { userId: 99, email: 'other@example.invalid' } },
+  ]);
+
+  it('counts in the site\'s own scope when there is a site', async () => {
+    const db = makeDb({ _system_audit_logs: auditRows() });
+    db.find = vi.fn(async (table: string) => db.tables[table] ?? []);
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue('fromcode');
+
+    await new PersonalDataErasureService(db).exportDataset('audit-log', SUBJECT);
+
+    expect(db.platformScopes).toBe(0);
+  });
+
+  it('uses the platform marker only when there is no site', async () => {
+    const db = makeDb({ _system_audit_logs: auditRows() });
+    db.find = vi.fn(async (table: string) => db.tables[table] ?? []);
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue(undefined as any);
+
+    await new PersonalDataErasureService(db).exportDataset('audit-log', SUBJECT);
+
+    expect(db.platformScopes).toBe(1);
   });
 });

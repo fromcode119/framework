@@ -20,11 +20,3 @@ export interface IPersonalDataSourceDescriptor {
   /** Names of methods on the registering plugin's public API. */
   methods: { export: string; erase: string };
 }
-
-/** A registered source, with the callbacks the framework built for it. */
-export interface IPersonalDataRegisteredSource extends IPersonalDataSourceDescriptor {
-  invoke: {
-    exportSubject(subject: unknown): Promise<Record<string, unknown>[]>;
-    eraseSubject(subject: unknown, strategy: string): Promise<Record<string, unknown>>;
-  };
-}

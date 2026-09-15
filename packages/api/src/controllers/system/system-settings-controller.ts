@@ -2,6 +2,7 @@ import { AuditOutcome } from '@fromcode119/core';
 import { TenantBespokePolicies } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { ApplicationDomainSettingsUtils, CoercionUtils, RequestContextUtils, SystemConstants, SystemSettingsExposureUtils, TenantMode, TenantResolverService } from '@fromcode119/core';
+import { PersonalDataErasureService } from '@fromcode119/core';
 import { Logger } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { SystemSettingRegistry } from '@fromcode119/core';
@@ -101,6 +102,26 @@ export class SystemSettingsController {
       // all and nothing saved. Same source as the refusal itself — the request's own tenant.
       const siteSelected = Boolean(RequestContextUtils.getTenantId());
       res.json({ keys: TenantBespokePolicies.platformKeys(), editable, tenantMode, siteSelected });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+
+  /**
+   * Every personal-data dataset, with the strategy currently in force and WHICH layer decided it.
+   *
+   * Read-only on purpose: the two stored layers are ordinary system settings and are written through
+   * the settings PUT below, so there is one write path for every setting on the platform. What this
+   * adds is the part a settings map cannot carry — the datasets that exist right now (they are
+   * declared at runtime, by core and by whichever plugins this site runs), which strategies each one
+   * can honestly honour, and what an unset dataset falls through to. Without it the page would have
+   * to guess at any of those, and a guess here is a lie about what an erasure will do.
+   */
+  async getPersonalDataPolicy(_req: Request, res: Response) {
+    try {
+      const service = new PersonalDataErasureService(this.runtime.db);
+      res.json({ datasets: await service.resolveStrategies() });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

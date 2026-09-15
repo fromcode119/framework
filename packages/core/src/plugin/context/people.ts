@@ -9,8 +9,10 @@ import { PeopleAddressService } from '@core/plugin/services/people/people-addres
 import { PeopleDirectoryService } from '@core/plugin/services/people/people-directory-service';
 import { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
 import { PersonalDataRegistry } from '@core/plugin/services/people/personal-data-registry';
+import { PersonalDataErasurePolicy } from '@core/plugin/services/people/personal-data-erasure-policy';
 import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
-import type { IPersonalDataSourceDescriptor } from '@core/plugin/services/interfaces/personal-data-source.interface';
+import type { IPersonalDataChoiceMap } from '@core/plugin/services/people/interfaces/personal-data-choice-map.interface';
+import type { IPersonalDataSourceDescriptor } from '@core/plugin/services/interfaces/personal-data-source-descriptor.interface';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import type { IPeopleAddressRef } from '@core/plugin/services/interfaces/people-address-ref.interface';
 
@@ -241,11 +243,34 @@ export class PeopleContextProxy {
 
         /**
          * Erase the subject everywhere — the framework's own datasets AND every registered plugin
-         * source. `resolveStrategy` lets a caller apply the operator's per-dataset policy; a choice
-         * the dataset never declared falls back to its default rather than being handed through.
+         * source — under the operator's own policy.
+         *
+         * The strategy is NOT the caller's to supply. Core reads the site's policy and the platform
+         * default itself, so a plugin cannot disagree with `deleteMyAccount` about what a site
+         * decided. `overrides` is the one exception and it is data, not a callback: a per-run choice
+         * for THIS request (a legal hold on one dataset for one subject), which leaves the site's
+         * standing policy untouched. A function could not cross to an isolated guest anyway.
          */
-        eraseAll: (subject: any, resolveStrategy?: (source: any) => string) =>
-          personalDataService.eraseAll(subject, resolveStrategy),
+        eraseAll: (subject: any, options?: { overrides?: IPersonalDataChoiceMap; actor?: string }) =>
+          personalDataService.eraseAll(subject, options),
+
+        /**
+         * What WOULD be applied to every dataset, without touching a row — each with the layer that
+         * decided it, so a screen can name where a value came from instead of implying somebody chose it.
+         */
+        resolveStrategies: (options?: { overrides?: IPersonalDataChoiceMap; actor?: string }) =>
+          personalDataService.resolveStrategies(options),
+
+        /**
+         * Carry a policy this plugin used to own into the framework, as THIS SITE's.
+         *
+         * Core decides the scope, not the caller: it writes only inside a request that names a site,
+         * and only when the site has no policy of its own yet. A plugin cannot reach the setting any
+         * other way, so it cannot fan one site's decision across the deployment by accident.
+         * Returns whether anything was written.
+         */
+        adoptSitePolicy: (stored: IPersonalDataChoiceMap) =>
+          PersonalDataErasurePolicy.adoptSitePolicy(manager.db, stored),
 
         unregisterSources: (pluginSlug: string) => PersonalDataRegistry.unregisterByPlugin(pluginSlug)
       }

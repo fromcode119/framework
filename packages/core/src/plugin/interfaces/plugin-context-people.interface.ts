@@ -1,4 +1,6 @@
-import type { IPersonalDataDataset, IPersonalDataErasure, IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data.interface';
+import type { IPersonalDataDataset } from '@core/plugin/services/interfaces/personal-data-dataset.interface';
+import type { IPersonalDataErasure } from '@core/plugin/services/interfaces/personal-data-erasure.interface';
+import type { IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data-subject.interface';
 
 /**
  * The `context.people` surface of {@link PluginContext}.

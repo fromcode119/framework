@@ -82,13 +82,14 @@ export class AuthControllerAccount extends AuthControllerSession {
 
     const erasure = new PersonalDataErasureService(this.db);
     const subject = { email: String(user.email ?? ''), userId };
-    // Every dataset the framework holds, each with its declared default strategy. This used to
-    // hand-list four of the seven, so a self-delete left the subject's email and IP in the audit and
-    // system logs while the same person asking through a DSAR had them anonymised. The service owns
-    // the list now, and the ordering constraint (account reads memberships before roles drops them)
-    // lives with it rather than in this comment.
+    // Every dataset the platform holds — its own seven and every plugin's — each under the operator's
+    // policy for this site. This used to hand-list four of the seven, so a self-delete left the
+    // subject's email and IP in the journals while the same person asking through a DSAR had them
+    // anonymised; and until the policy moved into core it still ran on declared defaults while a DSAR
+    // ran on the operator's choices. No override is passed: a subject may not elect their own
+    // retention.
     const results = await erasure.eraseAll(subject);
-    const account = results.account;
+    const account = results[PersonalDataErasureService.ACCOUNT_ID];
 
     // Sign-in is locked either way: the person asked to be gone from this site, and a live password
     // on a retained account is not what they asked for.
@@ -97,14 +98,33 @@ export class AuthControllerAccount extends AuthControllerSession {
     await this.revokeAllSessionsForUser(userId);
     await this.manager.writeLog('INFO', `Account self-deleted for user ${userId}`, 'system', { userId, ip: req.ip }).catch(() => {});
 
+    // An account is kept for two different reasons and the subject must be told which. `retained > 0`
+    // only ever means "shared with another site"; a RETAIN strategy keeps the row and reports zero of
+    // everything, so reading the count alone told someone whose operator had chosen retention that
+    // their account had been deleted. That is the one sentence a subject exercising Art. 17 must be
+    // able to rely on, so it is decided from the STRATEGY that actually ran.
+    const keptByPolicy = account.strategy === PersonalDataErasureService.RETAIN_STRATEGY;
+    const keptAsShared = account.retained > 0;
+
     return res.json({
       success: true,
-      message: account.retained > 0
-        ? 'Your data on this site has been deleted. Your sign-in account is shared with other sites and was kept there.'
-        : 'Your account has been deleted.',
-      accountRetained: account.retained > 0,
-      accountRetainedReason: account.retainedReason ?? '',
+      message: AuthControllerAccount.outcomeMessage(keptByPolicy, keptAsShared),
+      accountRetained: keptByPolicy || keptAsShared,
+      accountRetainedReason: (keptByPolicy ? account.reason : account.retainedReason) || '',
     });
+  }
+
+  /** What the subject is told, per reason the account survived. Never "deleted" when it was not. */
+  private static outcomeMessage(keptByPolicy: boolean, keptAsShared: boolean): string {
+    if (keptByPolicy) {
+      return 'Your data on this site has been deleted. Your sign-in account is kept under this site\'s '
+        + 'retention policy, and the reason is stated below.';
+    }
+    if (keptAsShared) {
+      return 'Your data on this site has been deleted. Your sign-in account is shared with other sites '
+        + 'and was kept there.';
+    }
+    return 'Your account has been deleted.';
   }
 
   async changePassword(req: any, res: Response) {

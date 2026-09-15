@@ -1,10 +1,9 @@
 import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
+import { PersonalDataStrategy } from '@core/plugin/services/people/enums/personal-data-strategy.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
-import type {
-  IPersonalDataRegisteredSource,
-  IPersonalDataSourceDescriptor,
-} from '@core/plugin/services/interfaces/personal-data-source.interface';
+import type { IPersonalDataRegisteredSource } from '@core/plugin/services/interfaces/personal-data-registered-source.interface';
+import type { IPersonalDataSourceDescriptor } from '@core/plugin/services/interfaces/personal-data-source-descriptor.interface';
 
 /**
  * Who holds personal data on this platform.
@@ -111,8 +110,7 @@ export class PersonalDataRegistry {
 
   /** Drop anything declared that is not a strategy this platform knows how to run. */
   private static validStrategies(declared: unknown): string[] {
-    const known = ['delete', 'anonymise', 'retain'];
     if (!Array.isArray(declared)) return [];
-    return declared.map((s) => String(s || '').trim()).filter((s) => known.includes(s));
+    return declared.map((s) => PersonalDataStrategy.resolveValue(s)).filter((s) => s !== '');
   }
 }

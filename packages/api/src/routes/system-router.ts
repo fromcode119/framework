@@ -216,6 +216,11 @@ export class SystemRouter extends BaseRouter {
     this.put(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
       this.controller.updateSettings);
     
+    // What an erasure would actually do to each dataset on this site, and who decided it. Read-only:
+    // the values themselves are written through the settings PUT above, like every other system setting.
+    this.get(RouteConstants.SEGMENTS.ADMIN_PERSONAL_DATA_POLICY, this.auth.requirePermission('system:manage'),
+      this.controller.getPersonalDataPolicy);
+
     // Role management
     this.get(RouteConstants.SEGMENTS.ADMIN_ROLES, this.auth.requirePermission('roles:view'), 
       this.controller.getRoles);

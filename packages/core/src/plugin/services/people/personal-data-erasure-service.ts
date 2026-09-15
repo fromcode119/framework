@@ -1,7 +1,20 @@
 import { PersonalDataRegistry } from '@core/plugin/services/people/personal-data-registry';
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
-import type { IPersonalDataDataset, IPersonalDataErasure, IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data.interface';
+import { PersonalDataErasurePolicy } from '@core/plugin/services/people/personal-data-erasure-policy';
+import { PersonalDataDatasetKey } from '@core/plugin/services/people/enums/personal-data-dataset-key.enum';
+import { PersonalDataJournal } from '@core/plugin/services/people/enums/personal-data-journal.enum';
+import { PersonalDataStrategy } from '@core/plugin/services/people/enums/personal-data-strategy.enum';
+import { PersonalDataSubjectReader } from '@core/plugin/services/people/personal-data-subject-reader';
+import { PersonalDataJournalService } from '@core/plugin/services/people/personal-data-journal-service';
+import type { IPersonalDataDataset } from '@core/plugin/services/interfaces/personal-data-dataset.interface';
+import type { IPersonalDataErasure } from '@core/plugin/services/interfaces/personal-data-erasure.interface';
+import type { IPersonalDataErasureOutcome } from '@core/plugin/services/interfaces/personal-data-erasure-outcome.interface';
+import type { IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data-subject.interface';
+import type { IPersonalDataChoiceMap } from '@core/plugin/services/people/interfaces/personal-data-choice-map.interface';
+import type { IPersonalDataPolicyRow } from '@core/plugin/services/people/interfaces/personal-data-policy-row.interface';
+import type { IPersonalDataPolicyTarget } from '@core/plugin/services/people/interfaces/personal-data-policy-target.interface';
+import type { IPersonalDataStrategyChoice } from '@core/plugin/services/people/interfaces/personal-data-strategy-choice.interface';
 
 /**
  * Erasure and export for the data the FRAMEWORK holds about a person.
@@ -27,11 +40,32 @@ export class PersonalDataErasureService {
   /** What replaces an identifier. Recognisable as a tombstone, and not mistakable for a real value. */
   static readonly TOMBSTONE = '[erased]';
 
-  private static readonly DELETE = 'delete';
-  private static readonly ANONYMISE = 'anonymise';
-  private static readonly RETAIN = 'retain';
+  private static readonly DELETE = PersonalDataStrategy.DELETE.value;
+  private static readonly ANONYMISE = PersonalDataStrategy.ANONYMISE.value;
+  private static readonly RETAIN = PersonalDataStrategy.RETAIN.value;
 
-  constructor(private readonly db: any) {}
+  /** What the framework's own datasets are addressed as, wherever a policy is keyed `slug:dataset`. */
+  private static readonly PLATFORM_SLUG = 'platform';
+
+  /**
+   * The shared account's entry in an `eraseAll` result.
+   *
+   * Named here because the self-delete endpoint reads exactly this one to decide what to tell the
+   * subject — whether their login survived because another site still holds it — and a string spelled
+   * at the call site would go stale silently the moment the id shape changed.
+   */
+  static readonly ACCOUNT_ID = `${PersonalDataErasureService.PLATFORM_SLUG}:account`;
+
+  /** The strategy that KEEPS a dataset, named for callers that must distinguish kept from erased. */
+  static readonly RETAIN_STRATEGY = PersonalDataStrategy.RETAIN.value;
+
+  private readonly reader: PersonalDataSubjectReader;
+  private readonly journals: PersonalDataJournalService;
+
+  constructor(private readonly db: any) {
+    this.reader = new PersonalDataSubjectReader(db);
+    this.journals = new PersonalDataJournalService(db);
+  }
 
   /**
    * The datasets the framework holds, as DESCRIPTORS the privacy plugin can register.
@@ -43,22 +77,22 @@ export class PersonalDataErasureService {
    */
   listDatasets(): IPersonalDataDataset[] {
     return [
-      { key: 'account', label: 'Platform account', fields: ['email', 'username', 'firstName', 'lastName'],
+      { key: PersonalDataDatasetKey.ACCOUNT.value, label: 'Platform account', fields: ['email', 'username', 'firstName', 'lastName'],
         strategies: [PersonalDataErasureService.ANONYMISE, PersonalDataErasureService.RETAIN],
         defaultStrategy: PersonalDataErasureService.ANONYMISE },
-      { key: 'person', label: 'Person record, addresses and relationships', fields: ['email', 'phone', 'firstName', 'lastName', 'address'],
+      { key: PersonalDataDatasetKey.PERSON.value, label: 'Person record, addresses and relationships', fields: ['email', 'phone', 'firstName', 'lastName', 'address'],
         strategies: [PersonalDataErasureService.DELETE, PersonalDataErasureService.ANONYMISE],
         defaultStrategy: PersonalDataErasureService.DELETE },
-      { key: 'sessions', label: 'Sign-in sessions', fields: ['ipAddress', 'userAgent'],
+      { key: PersonalDataDatasetKey.SESSIONS.value, label: 'Sign-in sessions', fields: ['ipAddress', 'userAgent'],
         strategies: [PersonalDataErasureService.DELETE], defaultStrategy: PersonalDataErasureService.DELETE },
-      { key: 'roles', label: 'Site membership and roles', fields: ['roles'],
+      { key: PersonalDataDatasetKey.ROLES.value, label: 'Site membership and roles', fields: ['roles'],
         strategies: [PersonalDataErasureService.DELETE], defaultStrategy: PersonalDataErasureService.DELETE },
-      { key: 'record-versions', label: 'Edit history of the subject\'s own records', fields: ['versionData'],
+      { key: PersonalDataDatasetKey.RECORD_VERSIONS.value, label: 'Edit history of the subject\'s own records', fields: ['versionData'],
         strategies: [PersonalDataErasureService.DELETE], defaultStrategy: PersonalDataErasureService.DELETE },
-      { key: 'audit-log', label: 'Audit trail', fields: ['metadata.userId', 'metadata.email', 'metadata.ip'],
+      { key: PersonalDataDatasetKey.AUDIT_LOG.value, label: 'Audit trail', fields: ['metadata.userId', 'metadata.email', 'metadata.ip'],
         strategies: [PersonalDataErasureService.ANONYMISE, PersonalDataErasureService.RETAIN],
         defaultStrategy: PersonalDataErasureService.ANONYMISE },
-      { key: 'system-log', label: 'System log', fields: ['context.userId', 'context.email', 'context.ip', 'message'],
+      { key: PersonalDataDatasetKey.SYSTEM_LOG.value, label: 'System log', fields: ['context.userId', 'context.email', 'context.ip', 'message'],
         strategies: [PersonalDataErasureService.ANONYMISE, PersonalDataErasureService.RETAIN],
         defaultStrategy: PersonalDataErasureService.ANONYMISE },
     ];
@@ -66,19 +100,21 @@ export class PersonalDataErasureService {
 
   async exportDataset(key: string, subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
     switch (key) {
-      case 'account': return this.rows(await this.findUser(subject));
-      case 'person': return [
-        ...this.rows(await this.findPerson(subject)),
-        ...(await this.findAddresses(subject)),
+      case PersonalDataDatasetKey.ACCOUNT.value: return this.reader.rows(await this.reader.findUser(subject));
+      case PersonalDataDatasetKey.PERSON.value: return [
+        ...this.reader.rows(await this.reader.findPerson(subject)),
+        ...(await this.reader.findAddresses(subject)),
       ];
-      case 'sessions': return this.byUser(SystemConstants.TABLE.SESSIONS, subject);
-      case 'roles': return this.byUser(SystemConstants.TABLE.TENANT_MEMBERSHIPS, subject);
-      case 'record-versions': return this.findVersions(subject);
-      case 'audit-log':
-      case 'system-log':
+      case PersonalDataDatasetKey.SESSIONS.value: return this.reader.byUser(SystemConstants.TABLE.SESSIONS, subject);
+      case PersonalDataDatasetKey.ROLES.value: return this.reader.byUser(SystemConstants.TABLE.TENANT_MEMBERSHIPS, subject);
+      case PersonalDataDatasetKey.RECORD_VERSIONS.value: return this.reader.findVersions(subject);
+      case PersonalDataDatasetKey.AUDIT_LOG.value:
+      case PersonalDataDatasetKey.SYSTEM_LOG.value: {
         // The journals are exported as COUNTS, not rows. They carry other people's actions in the
         // same table and an unfiltered dump would be a disclosure, not a portability copy.
-        return [{ dataset: key, rows: await this.countJournal(key, subject) }];
+        const journal = PersonalDataJournal.fromValue(key);
+        return journal ? [{ dataset: key, rows: await this.journals.count(journal, subject) }] : [];
+      }
       default: return [];
     }
   }
@@ -136,37 +172,96 @@ export class PersonalDataErasureService {
    */
   async eraseAll(
     subject: IPersonalDataSubject,
-    resolveStrategy?: (source: { pluginSlug: string; key: string; defaultStrategy: string; strategies: string[] }) => string,
-  ): Promise<Record<string, IPersonalDataErasure>> {
-    const results: Record<string, IPersonalDataErasure> = {};
-    const strategyFor = (source: { pluginSlug: string; key: string; defaultStrategy: string; strategies: string[] }): string => {
-      const chosen = String(resolveStrategy?.(source) ?? '').trim();
-      // A caller may only choose among what the dataset declared it can honour. Anything else falls
-      // back to the declared default rather than being handed through to the source.
-      return source.strategies.includes(chosen) ? chosen : source.defaultStrategy;
-    };
+    options?: { overrides?: IPersonalDataChoiceMap; actor?: string },
+  ): Promise<Record<string, IPersonalDataErasureOutcome>> {
+    const policy = await PersonalDataErasurePolicy.load(this.db, options);
+    const results: Record<string, IPersonalDataErasureOutcome> = {};
 
     // The framework's own datasets first, in `listDatasets()` order — `account` reads the memberships
     // that `roles` deletes, so it must run before them.
-    for (const dataset of this.listDatasets()) {
-      const source = { pluginSlug: 'platform', key: dataset.key, defaultStrategy: dataset.defaultStrategy, strategies: dataset.strategies };
-      results[dataset.key] = await this.eraseDataset(dataset.key, subject, strategyFor(source));
+    for (const target of this.policyTargets()) {
+      const choice = policy.resolve(target);
+      results[choice.id] = {
+        ...await this.eraseDataset(target.key, subject, choice.strategy),
+        ...PersonalDataErasureService.decision(target, choice),
+      };
     }
 
     // Then every dataset a PLUGIN declared. Walking these here is what makes an erasure complete on
     // a site that has no privacy plugin installed: `deleteMyAccount` used to reach the seven above
     // and leave every order, invoice and submission untouched, with nothing reporting a gap.
     for (const source of PersonalDataRegistry.listForCurrentTenant()) {
-      const id = PersonalDataRegistry.idOf(source.pluginSlug, source.key);
+      const choice = policy.resolve(source);
+      const decision = PersonalDataErasureService.decision(source, choice);
       try {
-        results[id] = await source.invoke.eraseSubject(subject, strategyFor(source)) as unknown as IPersonalDataErasure;
+        const outcome = await source.invoke.eraseSubject(subject, choice.strategy) as unknown as IPersonalDataErasure;
+        results[choice.id] = { ...outcome, ...decision };
       } catch (error: any) {
         // Recorded, never swallowed: "nothing to erase" and "this source could not run" must not look
         // the same to whoever reads the outcome.
-        results[id] = { ...PersonalDataErasureService.empty(strategyFor(source)), remaining: 0, error: String(error?.message ?? error) } as unknown as IPersonalDataErasure;
+        results[choice.id] = {
+          ...PersonalDataErasureService.empty(choice.strategy),
+          remaining: 0,
+          ...decision,
+          error: String(error?.message ?? error),
+        };
       }
     }
     return results;
+  }
+
+  /**
+   * What WOULD be applied to every dataset, without touching a row.
+   *
+   * The settings page, the DSAR coverage list and the pre-run picker all need the same answer the
+   * erasure will act on. Computing it here is what stops a screen showing one policy while the run
+   * applies another.
+   */
+  async resolveStrategies(
+    options?: { overrides?: IPersonalDataChoiceMap; actor?: string },
+  ): Promise<IPersonalDataPolicyRow[]> {
+    const policy = await PersonalDataErasurePolicy.load(this.db, options);
+    const targets = [...this.policyTargets(), ...PersonalDataRegistry.listForCurrentTenant()];
+    return targets.map((target) => ({
+      pluginSlug: target.pluginSlug,
+      key: target.key,
+      label: target.label,
+      fields: Array.isArray((target as any).fields) ? [...(target as any).fields] : [],
+      strategies: [...target.strategies],
+      defaultStrategy: target.defaultStrategy,
+      ...policy.resolve(target),
+    }));
+  }
+
+  /**
+   * The framework's own datasets, wearing the same shape a plugin's source does.
+   *
+   * `platform` is what the operator's stored choice is keyed against for these — `platform:audit-log`
+   * — so core's datasets and a plugin's are addressed identically everywhere a policy is stored,
+   * displayed or overridden.
+   */
+  private policyTargets(): IPersonalDataPolicyTarget[] {
+    return this.listDatasets().map((dataset) => ({
+      pluginSlug: PersonalDataErasureService.PLATFORM_SLUG,
+      key: dataset.key,
+      label: dataset.label,
+      fields: dataset.fields,
+      strategies: dataset.strategies,
+      defaultStrategy: dataset.defaultStrategy,
+    })) as IPersonalDataPolicyTarget[];
+  }
+
+  /** The policy half of an outcome: what was decided, and who decided it. */
+  private static decision(target: IPersonalDataPolicyTarget, choice: IPersonalDataStrategyChoice) {
+    return {
+      label: target.label,
+      fields: Array.isArray((target as any).fields) ? [...(target as any).fields] : [],
+      strategy: choice.strategy,
+      reason: choice.reason,
+      source: choice.source,
+      provenance: choice.provenance,
+      problem: choice.problem,
+    };
   }
 
   async eraseDataset(key: string, subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
@@ -175,13 +270,13 @@ export class PersonalDataErasureService {
     }
 
     switch (key) {
-      case 'account': return this.eraseAccount(subject, strategy);
-      case 'person': return this.erasePerson(subject, strategy);
-      case 'sessions': return this.deleteBy(SystemConstants.TABLE.SESSIONS, subject, strategy);
-      case 'roles': return this.eraseMembership(subject, strategy);
-      case 'record-versions': return this.eraseVersions(subject, strategy);
-      case 'audit-log': return this.anonymiseJournal('audit-log', subject, strategy);
-      case 'system-log': return this.anonymiseJournal('system-log', subject, strategy);
+      case PersonalDataDatasetKey.ACCOUNT.value: return this.eraseAccount(subject, strategy);
+      case PersonalDataDatasetKey.PERSON.value: return this.erasePerson(subject, strategy);
+      case PersonalDataDatasetKey.SESSIONS.value: return this.deleteBy(SystemConstants.TABLE.SESSIONS, subject, strategy);
+      case PersonalDataDatasetKey.ROLES.value: return this.eraseMembership(subject, strategy);
+      case PersonalDataDatasetKey.RECORD_VERSIONS.value: return this.eraseVersions(subject, strategy);
+      case PersonalDataDatasetKey.AUDIT_LOG.value: return this.journals.anonymise(PersonalDataJournal.AUDIT, subject, strategy);
+      case PersonalDataDatasetKey.SYSTEM_LOG.value: return this.journals.anonymise(PersonalDataJournal.SYSTEM, subject, strategy);
       default: return { ...PersonalDataErasureService.empty(strategy), remaining: 0 };
     }
   }
@@ -195,7 +290,7 @@ export class PersonalDataErasureService {
    * lawful outcome the subject is told about, not a failure.
    */
   private async eraseAccount(subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
-    const user = await this.findUser(subject);
+    const user = await this.reader.findUser(subject);
     if (!user) return PersonalDataErasureService.empty(strategy);
 
     const tenantId = RequestContextUtils.getTenantId();
@@ -219,7 +314,7 @@ export class PersonalDataErasureService {
   }
 
   private async erasePerson(subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
-    const people = await this.findPeople(subject);
+    const people = await this.reader.findPeople(subject);
     if (people.length === 0) return PersonalDataErasureService.empty(strategy);
 
     let erased = 0;
@@ -252,7 +347,7 @@ export class PersonalDataErasureService {
 
   /** This site's membership and roles only — never another site's. */
   private async eraseMembership(subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
-    const userId = PersonalDataErasureService.userIdOf(subject);
+    const userId = PersonalDataSubjectReader.userIdOf(subject);
     if (!userId) return PersonalDataErasureService.empty(strategy);
 
     const tenantId = RequestContextUtils.getTenantId();
@@ -276,166 +371,22 @@ export class PersonalDataErasureService {
    * that no longer matches what was actually saved at that time.
    */
   private async eraseVersions(subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
-    const versions = await this.findVersions(subject);
+    const versions = await this.reader.findVersions(subject);
     for (const version of versions) {
       await this.db.delete(SystemConstants.TABLE.RECORD_VERSIONS, { id: (version as any).id });
     }
     return { strategy, erased: versions.length, anonymised: 0, retained: 0, remaining: 0 };
   }
 
-  /**
-   * Strip the identifiers, keep the record.
-   *
-   * An audit row's value is `action`/`resource`/`status` — what was attempted and whether it was
-   * allowed. That survives; the `userId`/`email`/`ip` inside the metadata do not. Deleting the row
-   * would destroy the security record and this platform's Art. 12 evidence along with the personal
-   * data, which is not what erasure asks for.
-   */
-  private async anonymiseJournal(key: string, subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
-    const isAudit = key === 'audit-log';
-    const table = isAudit ? SystemConstants.TABLE.AUDIT_LOGS : SystemConstants.TABLE.LOGS;
-    const blob = isAudit ? 'metadata' : 'context';
-
-    // Platform marker, or the UPDATE silently narrows to `tenant_id IS NULL` rows and every site's
-    // journal keeps the identifiers this is supposed to remove.
-    return await this.db.withPlatformAdmin(async () => {
-      const rows: any[] = await this.matchJournalRows(table, blob, subject);
-      for (const row of rows) {
-        const scrubbed = PersonalDataErasureService.scrub(row?.[blob]);
-        const patch: Record<string, unknown> = { [blob]: scrubbed };
-        if (!isAudit) patch.message = PersonalDataErasureService.scrubText(String(row?.message ?? ''), subject);
-        await this.db.update(table, { id: row.id }, patch);
-      }
-      return { strategy, erased: 0, anonymised: rows.length, retained: 0, remaining: 0 };
-    });
-  }
-
-  private async matchJournalRows(table: string, blob: string, subject: IPersonalDataSubject): Promise<any[]> {
-    const email = String(subject?.email ?? '').trim().toLowerCase();
-    const userId = PersonalDataErasureService.userIdOf(subject);
-    const rows: any[] = await this.db.find(table, { where: {} , limit: 0 }).catch(() => []);
-    return (Array.isArray(rows) ? rows : []).filter((row) => {
-      const bag = PersonalDataErasureService.asObject(row?.[blob]);
-      const inBlob = (bag.email && String(bag.email).toLowerCase() === email)
-        || (userId && bag.userId != null && String(bag.userId) === userId);
-      const inMessage = table === SystemConstants.TABLE.LOGS && email
-        && String(row?.message ?? '').toLowerCase().includes(email);
-      return Boolean(inBlob || inMessage);
-    });
-  }
-
-  private static scrub(blob: unknown): Record<string, unknown> {
-    const bag = PersonalDataErasureService.asObject(blob);
-    for (const field of ['userId', 'email', 'ip', 'ipAddress', 'userAgent']) {
-      if (field in bag) bag[field] = PersonalDataErasureService.TOMBSTONE;
-    }
-    return bag;
-  }
-
-  private static scrubText(message: string, subject: IPersonalDataSubject): string {
-    const email = String(subject?.email ?? '').trim();
-    if (!email) return message;
-    return message.split(email).join(PersonalDataErasureService.TOMBSTONE);
-  }
-
-  private static asObject(blob: unknown): Record<string, any> {
-    if (blob && typeof blob === 'object') return { ...(blob as Record<string, any>) };
-    try {
-      const parsed = JSON.parse(String(blob ?? '{}'));
-      return parsed && typeof parsed === 'object' ? parsed : {};
-    } catch {
-      return {};
-    }
-  }
-
-  private async countJournal(key: string, subject: IPersonalDataSubject): Promise<number> {
-    const table = key === 'audit-log' ? SystemConstants.TABLE.AUDIT_LOGS : SystemConstants.TABLE.LOGS;
-    const blob = key === 'audit-log' ? 'metadata' : 'context';
-    return await this.db.withPlatformAdmin(async () => (await this.matchJournalRows(table, blob, subject)).length);
-  }
 
   private async deleteBy(table: string, subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
-    const userId = PersonalDataErasureService.userIdOf(subject);
+    const userId = PersonalDataSubjectReader.userIdOf(subject);
     if (!userId) return PersonalDataErasureService.empty(strategy);
     const rows: any[] = await this.db.find(table, { where: { user_id: userId } });
     for (const row of rows) await this.db.delete(table, { id: row.id });
     return { strategy, erased: rows.length, anonymised: 0, retained: 0, remaining: 0 };
   }
 
-  private async findUser(subject: IPersonalDataSubject): Promise<Record<string, any> | null> {
-    const userId = PersonalDataErasureService.userIdOf(subject);
-    if (userId) return this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
-    const email = String(subject?.email ?? '').trim().toLowerCase();
-    return email ? this.db.findOne(SystemConstants.TABLE.USERS, { email }) : null;
-  }
-
-  /**
-   * EVERY person row for this subject, not the first one the database happens to return.
-   *
-   * A subject routinely has more than one: the row linked to their account, plus unlinked rows a
-   * plugin's `people.syncDirectory` created from its own table — an invoice customer, for instance,
-   * lands as `source: finance` with no `user_id`. `findOne` erased whichever came back first and
-   * left the rest, so an erasure reported as done left the subject's email sitting in `people`.
-   * Which row survived was effectively chance, which is not a defensible outcome under any reading
-   * of a retention obligation: the statutory document is the INVOICE, and a directory row derived
-   * from it is not that document.
-   */
-  private async findPeople(subject: IPersonalDataSubject): Promise<Record<string, any>[]> {
-    const email = String(subject?.email ?? '').trim().toLowerCase();
-    const rows: Record<string, any>[] = email
-      ? await this.db.find(SystemConstants.TABLE.PEOPLE, { where: { email } })
-      : [];
-
-    // The EMAIL leads, and `personId` only adds a row the email did not already reach.
-    //
-    // Resolving a subject sets `personId` from `people.getByEmail`, which returns ONE row. Treating
-    // that id as the answer narrowed the erasure back to a single row and left every duplicate
-    // behind — the exact bug this method exists to fix, reintroduced by trusting the more specific
-    // identifier. A personId with no email is the only case where it stands alone.
-    if (subject?.personId != null && !rows.some((row) => String(row?.id) === String(subject.personId))) {
-      const byId = await this.db.findOne(SystemConstants.TABLE.PEOPLE, { id: subject.personId });
-      if (byId) rows.push(byId);
-    }
-    return rows;
-  }
-
-  private async findPerson(subject: IPersonalDataSubject): Promise<Record<string, any> | null> {
-    const [first] = await this.findPeople(subject);
-    return first ?? null;
-  }
-
-  private async findAddresses(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
-    const person = await this.findPerson(subject);
-    if (!person) return [];
-    return this.db.find(SystemConstants.TABLE.PEOPLE_ADDRESSES, { where: { person_id: person.id } });
-  }
-
-  private async findVersions(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
-    const person = await this.findPerson(subject);
-    const user = await this.findUser(subject);
-    const out: Record<string, unknown>[] = [];
-    for (const [collection, id] of [[SystemConstants.TABLE.PEOPLE, person?.id], [SystemConstants.TABLE.USERS, user?.id]] as const) {
-      if (id == null) continue;
-      const rows = await this.db.find(SystemConstants.TABLE.RECORD_VERSIONS, {
-        where: { ref_collection: collection, ref_id: String(id) },
-      });
-      out.push(...(Array.isArray(rows) ? rows : []));
-    }
-    return out;
-  }
-
-  private async byUser(table: string, subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
-    const userId = PersonalDataErasureService.userIdOf(subject);
-    return userId ? this.db.find(table, { where: { user_id: userId } }) : [];
-  }
-
-  private rows(row: Record<string, any> | null): Record<string, unknown>[] {
-    return row ? [row] : [];
-  }
-
-  private static userIdOf(subject: IPersonalDataSubject): string {
-    return subject?.userId == null ? '' : String(subject.userId);
-  }
 
   private static empty(strategy: string): IPersonalDataErasure {
     return { strategy, erased: 0, anonymised: 0, retained: 0, remaining: 0 };
