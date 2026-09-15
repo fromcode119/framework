@@ -6,9 +6,6 @@ import { TenantImportFiles } from '@core/tenant/provisioning/tenant-import-files
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 
-/** Marks "this element/column had a dangling id and is being dropped", never written to a row. */
-const DROPPED = Symbol('dropped');
-
 /**
  * Turns one archived row into one INSERT on the destination table.
  *
@@ -25,6 +22,16 @@ const DROPPED = Symbol('dropped');
  *    `TenantImportExecutor`), so the map is already complete.
  */
 export class TenantRowInserter {
+  /**
+   * Marks "this element/column had a dangling id and is being dropped", never written to a row.
+   *
+   * A symbol rather than `null` or a sentinel number, because the thing it has to be distinguishable
+   * from is every value an archive may legitimately carry — including `null`, which is exactly what a
+   * dropped scalar column ends up as. Nothing outside this class can construct it, so it cannot
+   * arrive from a row and be mistaken for a decision this class made.
+   */
+  private static readonly DROPPED = Symbol('dropped');
+
   /** Only FK-backed self-references defer; a `schema` self-reference resolves inline (see above). */
   private readonly deferredSelfReferences: TenantColumnReference[];
   private readonly pendingSelfReferences: Array<{ id: unknown; values: Record<string, unknown> }> = [];
@@ -108,7 +115,7 @@ export class TenantRowInserter {
     const result = this.repointAt(reference, reference.path, value);
     // DROPPED only survives past the top when nothing above it was an array to filter it out of — a
     // plain scalar column with a dangling id, exactly today's `null` behaviour.
-    return result === DROPPED ? null : result;
+    return result === TenantRowInserter.DROPPED ? null : result;
   }
 
   private repointAt(reference: TenantColumnReference, path: string[], value: unknown): unknown {
@@ -119,7 +126,7 @@ export class TenantRowInserter {
     if (Array.isArray(value)) {
       return value
         .map((entry) => this.repointAt(reference, path, entry))
-        .filter((entry) => entry !== DROPPED);
+        .filter((entry) => entry !== TenantRowInserter.DROPPED);
     }
     if (path.length === 0) return this.repointLeaf(reference, value);
     if (value !== null && typeof value === 'object') {
@@ -127,7 +134,7 @@ export class TenantRowInserter {
       const [key, ...rest] = path;
       if (!(key in record)) return value;
       const nested = this.repointAt(reference, rest, record[key]);
-      if (nested === DROPPED) return reference.required ? DROPPED : { ...record, [key]: null };
+      if (nested === TenantRowInserter.DROPPED) return reference.required ? TenantRowInserter.DROPPED : { ...record, [key]: null };
       return { ...record, [key]: nested };
     }
     // The schema declared a path the archive's own shape does not have here (a scalar where an object
@@ -141,7 +148,7 @@ export class TenantRowInserter {
       const record = value as Record<string, unknown>;
       if ('id' in record && Object.keys(record).length <= 2) {
         const resolved = this.repointLeaf(reference, record.id);
-        return resolved === DROPPED ? DROPPED : { ...record, id: resolved };
+        return resolved === TenantRowInserter.DROPPED ? TenantRowInserter.DROPPED : { ...record, id: resolved };
       }
       return value;
     }
@@ -153,7 +160,7 @@ export class TenantRowInserter {
       return this.remap.resolve(reference.targetTable, value);
     }
     this.noteDangling(reference);
-    return DROPPED;
+    return TenantRowInserter.DROPPED;
   }
 
   private readonly backfilled = new Set<string>();
