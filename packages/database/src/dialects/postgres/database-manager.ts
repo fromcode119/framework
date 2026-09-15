@@ -18,6 +18,9 @@ import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant
 import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tenant-isolation';
 import { PostgresDeclaredUniqueReconciler } from '@database/dialects/postgres/declared-unique-reconciler';
 import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgres/declared-nullability-reconciler';
+import { PostgresColumnInspector } from '@database/dialects/postgres/column-inspector';
+import { PLATFORM_POOL } from '@database/tenant/tenant-scope-store';
+import type { IColumnStats } from '@database/interfaces/column-stats.interface';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 
@@ -65,6 +68,9 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   private readonly declaredNullability =
     new PostgresDeclaredNullabilityReconciler((sqlText, values) => this.queryRaw(sqlText, values));
 
+  private readonly columns =
+    new PostgresColumnInspector((sqlText, values) => this.queryRaw(sqlText, values));
+
   // Standard operators
   public readonly like = ilike;
   public readonly eq = eq;
@@ -96,6 +102,11 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
    * tenant request does can write platform rows.
    */
   markAsPlatformConnection(): void {
+    // The flag is what keeps the promise true after a scope. `connect` fires once per PHYSICAL
+    // connection, so a client that had been through any tenant or platform scope came back with the
+    // marker cleared and never got it again — every later untenanted platform write on that client
+    // was refused. The scope's release reads this and restores the resting state.
+    (this.pool as unknown as Record<symbol, unknown>)[PLATFORM_POOL] = true;
     this.pool.on('connect', (client: any) => {
       PostgresTenantSession.markPlatformAdmin(client);
     });
@@ -120,6 +131,16 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   /** Drops a NOT NULL the schema no longer declares. Never adds one. */
   async ensureDeclaredNullable(table: string, column: string): Promise<SchemaReconcileOutcome> {
     return this.declaredNullability.relax(table, column);
+  }
+
+  /** Counts on THIS connection — under FORCE RLS that is the bound tenant's rows only. */
+  async columnStats(table: string, column: string): Promise<IColumnStats> {
+    return this.columns.stats(table, column);
+  }
+
+  /** Irreversible. Only reached after a platform admin approved this exact table and column. */
+  async dropColumn(table: string, column: string): Promise<void> {
+    return this.columns.drop(table, column);
   }
 
   /** Every statement `fn` issues runs untenanted with the platform-admin marker set. See TenantConnectionScope. */

@@ -174,4 +174,39 @@ describe('TenantConnectionScope.currentClient(pool)', () => {
       expect(TenantConnectionScope.currentClient()).toBeDefined();
     });
   });
+
+  /**
+   * THE DDL POOL MUST STILL BE THE DDL POOL AFTER A SCOPE.
+   *
+   * `markAsPlatformConnection` sets the marker on the pool's `connect` event — once per physical
+   * connection. A client that had been through any scope came back with the marker cleared, and
+   * `connect` does not fire on reuse, so every later untenanted platform write on that client was
+   * refused with "new row violates row-level security policy for _system_meta" — from code that had
+   * done nothing wrong. Observed at boot the moment anything opened a scope during schema sync.
+   */
+  it('restores the platform marker when releasing a client of the PLATFORM pool', async () => {
+    const pool = new FakePool();
+    (pool as any)[Symbol.for('fromcode.platformPool')] = true;
+
+    await TenantConnectionScope.run(pool as any, 't1', async () => {
+      await TenantConnectionScope.currentClient()!.query('SELECT 1');
+    });
+
+    const texts = pool.clients[0].calls.map((call) => call.text);
+    expect(texts).toContain(TenantIsolationSql.resetTenantStatement());
+    // Back to acting for the platform, not switched off.
+    expect(texts).toContain(TenantIsolationSql.setPlatformAdminStatement());
+    expect(texts).not.toContain(TenantIsolationSql.resetPlatformAdminStatement());
+  });
+
+  it('still switches the marker OFF for an ordinary pool', async () => {
+    const pool = new FakePool();
+
+    await TenantConnectionScope.run(pool as any, 't1', async () => {
+      await TenantConnectionScope.currentClient()!.query('SELECT 1');
+    });
+
+    const texts = pool.clients[0].calls.map((call) => call.text);
+    expect(texts).toContain(TenantIsolationSql.resetPlatformAdminStatement());
+  });
 });

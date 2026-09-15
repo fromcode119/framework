@@ -4,6 +4,7 @@ import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome'
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+import type { IColumnStats } from '@database/interfaces/column-stats.interface';
 
 /**
  * Interface representing a database manager that provides access to Drizzle ORM
@@ -115,6 +116,18 @@ export interface IDatabaseManager {
    * that are already NULL and inventing one is exactly what this codebase forbids.
    */
   ensureDeclaredNullable(table: string, column: string): Promise<SchemaReconcileOutcome>;
+
+  /**
+   * How much is in a column — for showing an operator what dropping it would cost.
+   *
+   * Runs on the CURRENT connection, so on a tenant-scoped table under FORCE row-level security it
+   * reports only what that connection can see. A caller that needs the true total counts once per
+   * tenant and sums.
+   */
+  columnStats(table: string, column: string): Promise<IColumnStats>;
+
+  /** Drops a column. IRREVERSIBLE — only ever called after a human approved this exact name. */
+  dropColumn(table: string, column: string): Promise<void>;
 
   /**
    * Marks this connection as the platform's own (migrations, schema sync), permitting writes to

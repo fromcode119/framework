@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'async_hooks';
 import type { Pool, PoolClient } from 'pg';
 import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
-import { TenantScopeStore } from '@database/tenant/tenant-scope-store';
+import { TenantScopeStore, isPlatformPool } from '@database/tenant/tenant-scope-store';
 import { LazyTenantClient } from '@database/tenant/lazy-tenant-client';
 import { OneShotTenantClient } from '@database/tenant/one-shot-tenant-client';
 
@@ -119,7 +119,7 @@ export class TenantConnectionScope {
     store.inTransaction = false;
     if (!client) return;
     try {
-      await PostgresTenantSession.clear(client);
+      await PostgresTenantSession.clear(client, isPlatformPool(store.pool));
     } catch {
       // A client that cannot be cleared must never be reused carrying a stale tenant. Swallowing
       // here is deliberate: the release below is what matters, and pg discards a client whose
