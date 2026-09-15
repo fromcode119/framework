@@ -596,7 +596,7 @@ On the UI side the same philosophy is carried by three **standalone packages** (
 | `@fromcode119/next-build-codegen` | Build-time only — compiles separate `.view` JSX templates onto component classes and stamps `'use client'` directives; zero runtime cost |
 | `@fromcode119/typescript-multiple-inheritance` | TypeScript build tool adding real OOP (multiple inheritance for data classes) and package-alias rewriting; also the framework's actual typecheck gate |
 
-Data shapes are **classes**, not interface aliases — a `Person` or `Order` carries its own behavior and hydrates from API JSON via `static from(row)`. `interface` remains only for genuine behavioral contracts. See `REACTOR-DESIGN.md` for the full design.
+Data shapes are **classes**, not interface aliases — a `Person` or `Order` carries its own behavior and hydrates from API JSON via `static from(row)`. `interface` remains only for genuine behavioral contracts. See [`docs/REACTOR-DESIGN.md`](docs/REACTOR-DESIGN.md) for the full design.
 
 This means every class is independently instantiable, mockable, and replaceable — making testing and extension straightforward at every layer.
 
