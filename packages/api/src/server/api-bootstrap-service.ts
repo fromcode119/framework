@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
+import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
@@ -90,6 +90,33 @@ export class ApiBootstrapService {
       if (!db || !(await db.tableExists(SystemConstants.TABLE.META))) return null;
       const row = await db.findOne(SystemConstants.TABLE.META, { key });
       return row?.value ?? null;
+    });
+
+    // The SITE half of the same store. Same connection, and that is the point: `_system_meta` is
+    // tenant-scoped, so on a tenant-bound request this read returns THAT site's row and on an unbound
+    // one it returns the platform's. Nothing passes a tenant id, so nothing can name another site's.
+    SiteMarketplaceUrl.registerAccessor(async (key: string) => {
+      const db = (manager as any).db;
+      if (!db || !(await db.tableExists(SystemConstants.TABLE.META))) return null;
+      const row = await db.findOne(SystemConstants.TABLE.META, { key });
+      return row?.value ?? null;
+    });
+
+    // A changed catalogue must take effect on the NEXT request, not on the next restart. Without
+    // this the site would save a new marketplace URL, be told it saved, and go on browsing the old
+    // one for the life of the process — "saved but not in force", which this codebase closes
+    // everywhere else. Scoped to the site that wrote it: the hook fires on that site's own request,
+    // so no other site's resolved catalogue is thrown away.
+    manager.hooks.on('system:settings:updated', (payload: any) => {
+      const keys: string[] = Array.isArray(payload?.keys) ? payload.keys : [];
+      if (!keys.includes(SystemConstants.META_KEY.SITE_MARKETPLACE_URL)
+        && !keys.includes(SystemConstants.META_KEY.MARKETPLACE_URL)) return;
+      const marketplace = (manager as any).marketplace;
+      if (typeof marketplace?.invalidateResolvedCatalogue !== 'function') return;
+      // A change to the PLATFORM's catalogue reaches every site that has not chosen its own, so that
+      // one clears the lot; a site's own clears only its own.
+      if (keys.includes(SystemConstants.META_KEY.MARKETPLACE_URL)) marketplace.invalidateResolvedCatalogue();
+      else marketplace.invalidateResolvedCatalogue(SiteMarketplaceUrl.currentScopeKey());
     });
 
     const themeManager = new ThemeManager((manager as any).db);

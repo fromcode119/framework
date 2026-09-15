@@ -250,6 +250,7 @@ export { PluginTenantStateService } from '@core/plugin/tenant/plugin-tenant-stat
 export { TenantThemeAccess } from '@core/theme/tenant-theme-access';
 export { TenantThemeChoice } from '@core/theme/tenant-theme-choice';
 export { TenantThemeStateService } from '@core/theme/tenant-theme-state-service';
+export { SiteMarketplaceUrl } from '@core/marketplace/site-marketplace-url';
 export { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
 export { TenantImportIdentity } from '@core/tenant/provisioning/tenant-import-identity';
 export { TenantRegistryService } from '@core/tenant/provisioning/tenant-registry-service';
