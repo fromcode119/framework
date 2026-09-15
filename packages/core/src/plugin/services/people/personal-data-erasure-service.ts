@@ -32,9 +32,13 @@ import type { IPersonalDataStrategyChoice } from '@core/plugin/services/people/i
  * shared account when this was the subject's LAST membership. A request to one site must never
  * destroy a login for sites whose operators never received it and who are separate controllers.
  *
- * THE JOURNALS ARE ANONYMISED, NOT DELETED, and must be reached inside `withPlatformAdmin`: they sit
- * under the journal RLS policy, where an untenanted, unmarked write silently narrows to
- * `tenant_id IS NULL` rows — the same trap documented on `JournalRetentionService`.
+ * THE JOURNALS ARE ANONYMISED, NOT DELETED, and WHICH SCOPE reaches them depends on whether there is
+ * a site: inside a request the rows belong to that site and its own scope both finds and may write
+ * them; with no site, `withPlatformAdmin` is what reaches the platform's own `tenant_id IS NULL` rows.
+ * The marker is NOT the answer in both cases — the journal policy admits it for reading and omits it
+ * from `WITH CHECK`, so a marked write of a site's row is refused outright. See
+ * `PersonalDataJournalService.anonymise`, and `JournalRetentionService` for the mirror-image trap
+ * where an unmarked untenanted prune reached only platform rows.
  */
 export class PersonalDataErasureService {
   /** What replaces an identifier. Recognisable as a tombstone, and not mistakable for a real value. */
