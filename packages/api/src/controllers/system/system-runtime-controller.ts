@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { TenantConnectionScope } from '@fromcode119/database';
-import { ContentPreviewAccessUtils, PluginState, SystemUpdateService } from '@fromcode119/core';
+import { ContentPreviewAccessUtils, PluginState, PluginTenantAccess, SystemUpdateService } from '@fromcode119/core';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { CoercionUtils } from '@fromcode119/core';
@@ -130,8 +130,16 @@ export class SystemRuntimeController {
 
   async getI18n(req: Request, res: Response) {
     const locale = (req.query.locale as string) || 'en';
+    // The plugins THIS SITE runs, not every plugin on the box. A translation bundle names the plugin
+    // it belongs to and carries its user-facing copy — feature names, button labels, error text — so
+    // shipping the lot told a visitor which other customers' products are installed and what they
+    // say. Filtered on the same axis as every other plugin listing; in platform scope, or on a
+    // single-tenant deployment, it is unchanged.
     const activeSlugs = new Set(
-      this.runtime.manager.getPlugins().filter((plugin) => plugin.state === PluginState.ACTIVE).map((plugin) => plugin.manifest.slug)
+      this.runtime.manager.getPlugins()
+        .filter((plugin) => plugin.state === PluginState.ACTIVE)
+        .filter((plugin) => PluginTenantAccess.isVisibleForCurrentTenant(plugin))
+        .map((plugin) => plugin.manifest.slug)
     );
     const translations = (this.runtime.manager as any).i18n.translations.get(locale) || {};
     const filtered: any = {};
