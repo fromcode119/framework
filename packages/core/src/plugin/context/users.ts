@@ -1,8 +1,54 @@
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
+import { RequestContextUtils } from '@core/context/request-context';
+import { TenantMembership } from '@core/tenant/tenant-membership';
+import { TenantMode } from '@core/tenant/tenant-mode';
 
 export class UsersContextProxy {
+
+  /**
+   * The ids of the people who belong to THIS SITE, or `null` when there is no site to narrow to.
+   *
+   * `users` is a single GLOBAL table and is deliberately not row-level-security scoped — migration 021
+   * says so, because anything needed to RESOLVE tenancy cannot itself be tenant-scoped. Verified on a
+   * live box as the non-superuser role: `people` and `media` answer 0 under a bound session while
+   * `users` answers all 30, bound or not. So every read of that table here has to narrow itself; RLS
+   * will not do it.
+   *
+   * This is the same correction already made to `RolesContextProxy.resolveUserIdsWithRole`, which
+   * carries the post-mortem for what happens without it: "a shop on one site emailed its order
+   * notifications to every other customer's administrators." These methods are the ones plugins use
+   * to answer "who are the admins", so they had the same reach by the same route.
+   *
+   * `null` means no narrowing — a single-tenant deployment, or a background job with no site bound,
+   * where "everyone" is the honest answer.
+   */
+  private static async siteMemberIds(manager: IPluginManagerInterface): Promise<Set<number> | null> {
+    if (!TenantMode.isEnabled()) return null;
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    if (!tenantId) return null;
+
+    const memberships = await manager.db
+      .find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenantId } })
+      .catch(() => [] as any[]);
+
+    const ids = new Set<number>();
+    for (const row of (Array.isArray(memberships) ? memberships : [])) {
+      const membership = TenantMembership.from(row);
+      if (!membership.isActive) continue;
+      const id = Number(membership.userId);
+      if (Number.isFinite(id) && id > 0) ids.add(id);
+    }
+    return ids;
+  }
+
+  /** Keeps only the rows belonging to this site. A `null` scope means every row stands. */
+  private static narrow(rows: unknown, scope: Set<number> | null): any[] {
+    const list = Array.isArray(rows) ? rows : [];
+    if (!scope) return list;
+    return list.filter((row: any) => scope.has(Number(row?.id)));
+  }
 
   /**
    * Creates a safe, read-only users proxy for plugins.
@@ -15,8 +61,9 @@ export class UsersContextProxy {
     return {
       async findAdmins(options?: { limit?: number }) {
         const limit = Math.max(1, Math.min(500, options?.limit ?? 200));
+        const scope = await UsersContextProxy.siteMemberIds(manager);
         const rows = await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } });
-        return (Array.isArray(rows) ? rows : [])
+        return UsersContextProxy.narrow(rows, scope)
           .map(UsersContextProxy.toSafeUser)
           .filter((u) => u.email.includes('@'))
           .filter((u) => u.roles.some((r) => r === 'admin' || r === 'superadmin'));
@@ -25,8 +72,9 @@ export class UsersContextProxy {
       async findByRole(role: string, options?: { limit?: number }) {
         const normalizedRole = String(role ?? '').trim().toLowerCase();
         const limit = Math.max(1, Math.min(500, options?.limit ?? 200));
+        const scope = await UsersContextProxy.siteMemberIds(manager);
         const rows = await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } });
-        return (Array.isArray(rows) ? rows : [])
+        return UsersContextProxy.narrow(rows, scope)
           .map(UsersContextProxy.toSafeUser)
           .filter((u) => u.email.includes('@'))
           .filter((u) => u.roles.includes(normalizedRole));
@@ -48,9 +96,13 @@ export class UsersContextProxy {
       /** List users (safe profiles, newest first) — for generic "any user" needs without raw table access. */
       async list(options?: { limit?: number }): Promise<Array<{ id: any; email: string; username: string; firstName: string; lastName: string; roles: string[] }>> {
         const limit = Math.max(1, Math.min(500, options?.limit ?? 100));
-        const rows = await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } });
+        const scope = await UsersContextProxy.siteMemberIds(manager);
+        const rows = UsersContextProxy.narrow(
+          await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } }),
+          scope,
+        );
         const out: Array<{ id: any; email: string; username: string; firstName: string; lastName: string; roles: string[] }> = [];
-        for (const row of Array.isArray(rows) ? rows : []) {
+        for (const row of rows) {
           const profile = UsersContextProxy.toProfileUser(row);
           if (profile) out.push(profile);
         }

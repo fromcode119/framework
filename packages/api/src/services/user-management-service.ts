@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode } from '@fromcode119/core';
+import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode, TenantMembershipService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
@@ -138,12 +138,33 @@ export class UserManagementService {
     return userId;
   }
 
+  /**
+   * The roles, each with how many people HERE hold it.
+   *
+   * `_system_users_roles` is a platform table with no row-level policy, so counting it whole told a
+   * site how many accounts hold a role across the entire box. Measured before this change: site
+   * "initech", one member, reported 25 for `partner` — which is the global total exactly, and belongs
+   * to another product's customers. A count a site cannot account for is worse than no count: it
+   * invites someone to go looking for 24 people who are not there.
+   *
+   * Bound to a site, the count is that site's members holding the role. In platform scope it is the
+   * whole box, which is what an operator is asking.
+   */
   async getRoles() {
     const dbRoles = await this.db.find(Schema.systemRoles);
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    const memberIds = TenantMode.isEnabled() && tenantId
+      ? new Set(await new TenantMembershipService(this.db as never).listUserIdsForTenant(tenantId))
+      : null;
+
     return Promise.all(dbRoles.map(async (role: any) => {
-      const userCount = await this.db.count(Schema.systemUsersToRoles, {
-        where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug)
+      const holders = await this.db.find(Schema.systemUsersToRoles, {
+        columns: { userId: true },
+        where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug),
       });
+      const userCount = memberIds
+        ? (holders || []).filter((row: any) => memberIds.has(Number(row?.userId))).length
+        : (holders || []).length;
       const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
         columns: { permissionName: true },
         where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)
