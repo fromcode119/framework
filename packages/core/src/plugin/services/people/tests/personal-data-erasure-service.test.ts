@@ -332,3 +332,60 @@ describe('PersonalDataErasureService.eraseAll — plugin datasets, with or witho
     expect(String((results['ecommerce:orders'] as any).error)).toContain('table locked');
   });
 });
+
+/**
+ * The export door, held to the same property as the erasure door.
+ *
+ * `exportMyData` assembled an account and a person record by hand — two objects — while the same
+ * subject asking through a DSAR received every framework dataset plus every plugin's. Someone
+ * exercising Art. 15 from their own account page was told the platform held almost nothing.
+ */
+describe('PersonalDataErasureService.exportAll — the export door cannot drift either', () => {
+  beforeEach(() => { vi.restoreAllMocks(); PersonalDataRegistry.clear(); });
+
+  const service = () => new PersonalDataErasureService(makeDb({
+    users: [{ id: 7, email: SUBJECT.email }],
+    people: [{ id: 3, email: SUBJECT.email }],
+  }) as any);
+
+  it('covers every framework dataset, not a hand-picked pair', async () => {
+    const datasets = await service().exportAll(SUBJECT as any);
+
+    const platform = datasets.filter((d: any) => d.plugin === 'platform').map((d: any) => d.dataset);
+    expect(platform).toEqual([
+      'account', 'person', 'sessions', 'roles', 'record-versions', 'audit-log', 'system-log',
+    ]);
+  });
+
+  it('includes every registered plugin dataset', async () => {
+    PersonalDataRegistry.register(
+      { namespace: 'org.fromcode', pluginSlug: 'finance', key: 'invoices', label: 'Invoices',
+        fields: ['customerEmail'], strategies: ['retain'], defaultStrategy: 'retain',
+        methods: { export: 'exportPersonalData', erase: 'erasePersonalData' } },
+      { exportSubject: async () => [{ id: 1 }, { id: 2 }], eraseSubject: async () => ({}) },
+    );
+
+    const datasets = await service().exportAll(SUBJECT as any);
+    const invoices: any = datasets.find((d: any) => d.plugin === 'finance' && d.dataset === 'invoices');
+
+    expect(invoices.records).toHaveLength(2);
+    expect(invoices.personalDataFields).toEqual(['customerEmail']);
+  });
+
+  it('reports a source that failed rather than omitting it', async () => {
+    // A silently short export reads to the subject as "you hold nothing about me" — the one thing an
+    // export must never imply.
+    PersonalDataRegistry.register(
+      { namespace: 'org.fromcode', pluginSlug: 'ecommerce', key: 'orders', label: 'Orders',
+        fields: ['email'], strategies: ['anonymise'], defaultStrategy: 'anonymise',
+        methods: { export: 'e', erase: 'r' } },
+      { exportSubject: async () => { throw new Error('table locked'); }, eraseSubject: async () => ({}) },
+    );
+
+    const datasets = await service().exportAll(SUBJECT as any);
+    const orders: any = datasets.find((d: any) => d.dataset === 'orders');
+
+    expect(orders.records).toBeUndefined();
+    expect(String(orders.error)).toContain('table locked');
+  });
+});

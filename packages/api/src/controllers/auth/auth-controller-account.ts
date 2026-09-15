@@ -23,20 +23,35 @@ export class AuthControllerAccount extends AuthControllerSession {
     return res.json({ success: true });
   }
 
-  /** GDPR data export — the signed-in user's own account + person record as JSON (no password/secrets). */
+  /**
+   * GDPR data export — everything this site holds about the signed-in user (no password, no secrets).
+   *
+   * DELEGATES to `PersonalDataErasureService.exportAll`, the same walk a DSAR export runs, for the
+   * same reason `deleteMyAccount` delegates to `eraseAll`: two doors to one right must not disagree.
+   * This used to assemble an account and a person record by hand — two objects — while the identical
+   * request through a DSAR returned sixteen datasets including the subject's orders, invoices, form
+   * submissions and affiliate record. Someone exercising Art. 15 from their own account page was
+   * told, in effect, that the platform held almost nothing about them.
+   *
+   * `account` stays as a named object on the response because clients read it; it is now taken from
+   * the walk rather than assembled a second time.
+   */
   async exportMyData(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
-    let person: any = null;
-    try { person = await this.db.findOne(SystemConstants.TABLE.PEOPLE, { userId }); } catch { person = null; }
+
+    const datasets = await new PersonalDataErasureService(this.db)
+      .exportAll({ email: String(user.email ?? ''), userId });
+
     const account = {
       id: user.id, email: this.normalizeEmail(user.email), username: user.username ?? null,
       firstName: user.firstName ?? user.first_name ?? null, lastName: user.lastName ?? user.last_name ?? null,
       roles: this.readRoles(user), createdAt: user.createdAt ?? user.created_at ?? null,
     };
-    return res.json({ exportedAt: new Date().toISOString(), account, person: person || null });
+
+    return res.json({ exportedAt: new Date().toISOString(), account, datasets });
   }
 
   /**

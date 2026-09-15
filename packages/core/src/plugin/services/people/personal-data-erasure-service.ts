@@ -84,6 +84,43 @@ export class PersonalDataErasureService {
   }
 
   /**
+   * Everything held about the subject, across the framework's datasets AND every registered plugin
+   * source — the counterpart to `eraseAll`, and for the same reason.
+   *
+   * Two doors lead to a subject's own data and they must not disagree. `exportMyData` hand-assembled
+   * an account and a person record: two objects, while the same person asking through a DSAR got
+   * sixteen datasets including their orders, invoices and submissions. A subject exercising Art. 15
+   * from their account page was quietly told they held almost nothing.
+   *
+   * A source that fails is REPORTED as failed, never omitted: a silently short export reads to the
+   * subject as "you hold nothing about me", which is the one thing an export must never imply.
+   */
+  async exportAll(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
+    const datasets: Record<string, unknown>[] = [];
+
+    for (const dataset of this.listDatasets()) {
+      datasets.push({
+        plugin: 'platform',
+        dataset: dataset.key,
+        label: dataset.label,
+        personalDataFields: dataset.fields,
+        records: await this.exportDataset(dataset.key, subject),
+      });
+    }
+
+    for (const source of PersonalDataRegistry.listForCurrentTenant()) {
+      const entry = { plugin: source.pluginSlug, dataset: source.key, label: source.label, personalDataFields: source.fields };
+      try {
+        datasets.push({ ...entry, records: await source.invoke.exportSubject(subject) });
+      } catch (error: any) {
+        datasets.push({ ...entry, error: String(error?.message ?? error) });
+      }
+    }
+
+    return datasets;
+  }
+
+  /**
    * Erase EVERY dataset the framework holds, each with the strategy its own descriptor declares.
    *
    * This exists so the two doors into erasure cannot drift. A DSAR walks the registry and reaches
