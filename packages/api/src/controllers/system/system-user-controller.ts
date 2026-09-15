@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { RequestParamUtils } from '@api/utils/request-param-utils';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
-import { CoercionUtils, PlatformOwnershipService } from '@fromcode119/core';
+import { CoercionUtils, PlatformOwnershipService, RequestContextUtils, TenantMembershipService } from '@fromcode119/core';
 import { TenantUserScope } from '@api/services/request/tenant-user-scope';
 
 export class SystemUserController {
@@ -88,13 +88,38 @@ export class SystemUserController {
   async saveUser(req: Request, res: Response) {
     try {
       const id = req.params.id ? CoercionUtils.toRelationId(req.params?.id) : null;
-      // Creating is unrestricted (a new account belongs to no site yet); EDITING an existing one is not.
+      // Creating is unrestricted (the account does not exist yet, so there is nothing to protect);
+      // EDITING an existing one is not.
       if (id !== null && await this.denyOutsideScope(req, res, id)) return;
       const saved = await this.runtime.users.saveUser(id, req.body);
+      if (id === null) await this.attachToCurrentSite(saved, req.body?.roles);
       res.json({ success: true, id: saved });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
+  }
+
+  /**
+   * A new account created while a site is selected BELONGS to that site.
+   *
+   * A site's users ARE its members — that is what `TenantUserScope` filters by — so an account
+   * created here without a membership was attached to nothing: it did not appear on the Users page
+   * that had just created it, and a site administrator could neither see nor edit it, because the
+   * scope it is judged by is exactly the membership it was never given. Only a platform admin, whose
+   * scope is unrestricted, could see it at all, which is why creating a user LOOKED like it worked.
+   *
+   * With no site in scope there is nothing to attach to, and that is a real answer rather than a
+   * missing one: an account created in the platform scope is a platform-level account.
+   *
+   * The roles are the ones the operator just chose. `grant` upserts, so this cannot duplicate a
+   * membership, and it never widens one that already exists beyond what was asked for.
+   */
+  private async attachToCurrentSite(userId: unknown, roles: unknown): Promise<void> {
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    const id = CoercionUtils.toString(userId);
+    if (!tenantId || !id) return;
+    const granted = Array.isArray(roles) ? roles.map((role) => CoercionUtils.toString(role)).filter(Boolean) : [];
+    await new TenantMembershipService(this.runtime.db as never).grant(id, tenantId, granted);
   }
 
   async getUser(req: Request, res: Response) {
