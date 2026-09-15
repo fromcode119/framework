@@ -5,6 +5,7 @@ import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
 import { PluginInvocationTokens } from '@core/plugin/host/plugin-invocation-tokens';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
 import { PluginHostPortableView } from '@core/plugin/host/plugin-host-portable-view';
+import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
 import type { PluginContext } from '@core/plugin/plugin-context';
 
 /**
@@ -52,8 +53,18 @@ export class PluginHostDispatcher {
   private async walk(start: unknown, steps: IPluginRemoteCall['steps']): Promise<unknown> {
     let target: any = start;
     let owner: any = undefined;
-    for (const step of steps) {
-      if (target === null || target === undefined) throw new Error(`cannot read "${step.name}" of ${target}`);
+    for (let index = 0; index < steps.length; index += 1) {
+      const step = steps[index];
+      if (target === null || target === undefined) {
+        // WHY the target is missing decides whether anyone should be warned. A null produced by
+        // resolving another plugin means that peer is not there for this call — ordinary, and the
+        // caller's own `if (!peer)` guard would have handled it had the guest been able to see it.
+        // Any other null is a real fault and keeps the plain error.
+        if (PluginHostDispatcher.producedByPeerResolution(steps, index)) {
+          throw new PluginPeerUnavailableError(PluginHostDispatcher.peerNameFrom(steps, index));
+        }
+        throw new Error(`cannot read "${step.name}" of ${target}`);
+      }
       const next = target[step.name];
       if (step.args) {
         if (typeof next !== 'function') throw new Error(`"${step.name}" is not callable`);
@@ -66,6 +77,36 @@ export class PluginHostDispatcher {
     }
     if (PluginHostDispatcher.resolvesAnotherPluginsApi(steps)) return PluginHostPortableView.opaque(target);
     return this.portableResult(target);
+  }
+
+  /**
+   * Was the null now being walked into PRODUCED by resolving another plugin's API?
+   *
+   * Decided from the shape of the steps, never from the message — the same mechanism
+   * `resolvesAnotherPluginsApi` already uses, and for the same reason: text gets reworded, shape does
+   * not. Two shapes resolve a peer:
+   *
+   *   plugins.namespace('org.x').broadcasts     a slug READ straight off a `namespace(...)` call
+   *   plugins.namespace('org.x').get('ledger')  an explicit get/require/optional on the registry
+   *
+   * `index` is the step about to be read; the step that produced the null is the one before it. At
+   * index 0 the null is the ROOT, which no peer lookup produced.
+   */
+  private static producedByPeerResolution(steps: IPluginRemoteCall['steps'], index: number): boolean {
+    if (index < 1) return false;
+    const producer = steps[index - 1];
+    const before = String(steps[index - 2]?.name ?? '');
+    if (producer?.args) {
+      return ['get', 'require', 'optional'].includes(producer.name) && ['namespace', 'plugins', 'dependencies'].includes(before);
+    }
+    return before === 'namespace' && Boolean(steps[index - 2]?.args);
+  }
+
+  /** The peer that was asked for, for the message only — the CODE is what callers branch on. */
+  private static peerNameFrom(steps: IPluginRemoteCall['steps'], index: number): string {
+    const producer = steps[index - 1];
+    const fromArgs = producer?.args?.[0];
+    return String(typeof fromArgs === 'string' && fromArgs ? fromArgs : producer?.name ?? 'unknown');
   }
 
   /**

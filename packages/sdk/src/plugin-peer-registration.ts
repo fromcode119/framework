@@ -1,3 +1,4 @@
+import { PluginPeerUnavailableError } from '@fromcode119/core/shared';
 /**
  * Registers this plugin into a PEER plugin's registry whenever the peer becomes reachable.
  *
@@ -46,6 +47,12 @@ export class PluginPeerRegistration {
       this.context.logger.info(`[${this.context.plugin.slug}] ${this.label} registered with ${this.peerSlug} (${moment})`);
       return true;
     } catch (error) {
+      // "The peer was not there for this call" is the SAME answer as the falsy `peer` above, and takes
+      // the same branch: not now, ask again later. An isolated plugin cannot reach that conclusion from
+      // the guard — the host decides when the call actually lands, and it may decide differently — so
+      // the host says it with a CODE. Compared as a code and never as message text, which would break
+      // the moment the host reworded the error.
+      if (PluginPeerUnavailableError.is(error)) return false;
       this.context.logger.warn(`[${this.context.plugin.slug}] ${this.label} registration with ${this.peerSlug} failed (${moment}): ${String((error as any)?.message || error)}`);
       return false;
     }
