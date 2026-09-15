@@ -1,3 +1,4 @@
+import { PersonalDataRegistry } from '@core/plugin/services/people/personal-data-registry';
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import type { IPersonalDataDataset, IPersonalDataErasure, IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data.interface';
@@ -83,6 +84,43 @@ export class PersonalDataErasureService {
   }
 
   /**
+   * Everything held about the subject, across the framework's datasets AND every registered plugin
+   * source — the counterpart to `eraseAll`, and for the same reason.
+   *
+   * Two doors lead to a subject's own data and they must not disagree. `exportMyData` hand-assembled
+   * an account and a person record: two objects, while the same person asking through a DSAR got
+   * sixteen datasets including their orders, invoices and submissions. A subject exercising Art. 15
+   * from their account page was quietly told they held almost nothing.
+   *
+   * A source that fails is REPORTED as failed, never omitted: a silently short export reads to the
+   * subject as "you hold nothing about me", which is the one thing an export must never imply.
+   */
+  async exportAll(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
+    const datasets: Record<string, unknown>[] = [];
+
+    for (const dataset of this.listDatasets()) {
+      datasets.push({
+        plugin: 'platform',
+        dataset: dataset.key,
+        label: dataset.label,
+        personalDataFields: dataset.fields,
+        records: await this.exportDataset(dataset.key, subject),
+      });
+    }
+
+    for (const source of PersonalDataRegistry.listForCurrentTenant()) {
+      const entry = { plugin: source.pluginSlug, dataset: source.key, label: source.label, personalDataFields: source.fields };
+      try {
+        datasets.push({ ...entry, records: await source.invoke.exportSubject(subject) });
+      } catch (error: any) {
+        datasets.push({ ...entry, error: String(error?.message ?? error) });
+      }
+    }
+
+    return datasets;
+  }
+
+  /**
    * Erase EVERY dataset the framework holds, each with the strategy its own descriptor declares.
    *
    * This exists so the two doors into erasure cannot drift. A DSAR walks the registry and reaches
@@ -96,10 +134,37 @@ export class PersonalDataErasureService {
    * A dataset added to `listDatasets()` is covered by both paths from that moment on, with no second
    * list to remember.
    */
-  async eraseAll(subject: IPersonalDataSubject): Promise<Record<string, IPersonalDataErasure>> {
+  async eraseAll(
+    subject: IPersonalDataSubject,
+    resolveStrategy?: (source: { pluginSlug: string; key: string; defaultStrategy: string; strategies: string[] }) => string,
+  ): Promise<Record<string, IPersonalDataErasure>> {
     const results: Record<string, IPersonalDataErasure> = {};
+    const strategyFor = (source: { pluginSlug: string; key: string; defaultStrategy: string; strategies: string[] }): string => {
+      const chosen = String(resolveStrategy?.(source) ?? '').trim();
+      // A caller may only choose among what the dataset declared it can honour. Anything else falls
+      // back to the declared default rather than being handed through to the source.
+      return source.strategies.includes(chosen) ? chosen : source.defaultStrategy;
+    };
+
+    // The framework's own datasets first, in `listDatasets()` order — `account` reads the memberships
+    // that `roles` deletes, so it must run before them.
     for (const dataset of this.listDatasets()) {
-      results[dataset.key] = await this.eraseDataset(dataset.key, subject, dataset.defaultStrategy);
+      const source = { pluginSlug: 'platform', key: dataset.key, defaultStrategy: dataset.defaultStrategy, strategies: dataset.strategies };
+      results[dataset.key] = await this.eraseDataset(dataset.key, subject, strategyFor(source));
+    }
+
+    // Then every dataset a PLUGIN declared. Walking these here is what makes an erasure complete on
+    // a site that has no privacy plugin installed: `deleteMyAccount` used to reach the seven above
+    // and leave every order, invoice and submission untouched, with nothing reporting a gap.
+    for (const source of PersonalDataRegistry.listForCurrentTenant()) {
+      const id = PersonalDataRegistry.idOf(source.pluginSlug, source.key);
+      try {
+        results[id] = await source.invoke.eraseSubject(subject, strategyFor(source)) as unknown as IPersonalDataErasure;
+      } catch (error: any) {
+        // Recorded, never swallowed: "nothing to erase" and "this source could not run" must not look
+        // the same to whoever reads the outcome.
+        results[id] = { ...PersonalDataErasureService.empty(strategyFor(source)), remaining: 0, error: String(error?.message ?? error) } as unknown as IPersonalDataErasure;
+      }
     }
     return results;
   }

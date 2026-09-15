@@ -114,6 +114,23 @@ services:
       # Same reason as core: the root tsconfig maps `@fromcode119/auth` to its SRC, so this is the copy
       # the dev server actually runs. Without it an auth change is invisible until the image is rebuilt.
       - ./packages/auth/src:/app/packages/auth/src
+      # ...and EVERY other workspace the root tsconfig maps to its SRC. `tsx` honours those `paths`,
+      # so an unmounted package runs the copy BAKED INTO THE IMAGE no matter what the host checkout
+      # says. Only `auth` was mounted, so the schema/RLS work in `database` never reached the running
+      # api and it died at bootstrap with `this.db.ensureDeclaredUnique is not a function` and
+      # `Cannot read properties of undefined (reading 'addTenantColumn')` — methods that existed on
+      # the host and not in the container. `database` is the one that bites first (137 imports), but
+      # the rest fail the same way, silently, as soon as they gain an API the image predates.
+      - ./packages/database/src:/app/packages/database/src
+      - ./packages/react/src:/app/packages/react/src
+      - ./packages/media/src:/app/packages/media/src
+      - ./packages/mcp/src:/app/packages/mcp/src
+      - ./packages/email/src:/app/packages/email/src
+      - ./packages/scheduler/src:/app/packages/scheduler/src
+      - ./packages/marketplace-client/src:/app/packages/marketplace-client/src
+      - ./packages/cache/src:/app/packages/cache/src
+      - ./packages/queue/src:/app/packages/queue/src
+      - ./packages/plugins/src:/app/packages/plugins/src
       # `tsx watch` reads both at startup: the dev script and the wide-`include` tsconfig that makes
       # tsx apply legacy decorators to EVERY package's source, not just the api's own.
       - ./packages/api/package.json:/app/packages/api/package.json
