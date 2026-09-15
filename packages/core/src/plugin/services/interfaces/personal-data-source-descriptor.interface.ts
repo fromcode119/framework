@@ -6,7 +6,7 @@
  * with `could not be cloned`. Names survive the crossing, and the framework calls them back.
  */
 export interface IPersonalDataSourceDescriptor {
-  /** Vendor namespace, e.g. `org.fromcode`. */
+  /** The declaring plugin's vendor namespace, as its manifest states it. */
   namespace: string;
   pluginSlug: string;
   /** Unique within the plugin, e.g. `orders`. An operator's choice is stored against `slug:key`. */

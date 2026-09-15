@@ -266,7 +266,7 @@ describe('PersonalDataErasureService.eraseAll — the two doors cannot drift', (
 /**
  * A subject routinely has MORE THAN ONE person row: the one linked to their account, plus unlinked
  * rows a plugin's `people.syncDirectory` created from its own table — an invoice customer lands as
- * `source: finance` with no `user_id`.
+ * `source: <that plugin>` and no `user_id`.
  *
  * `findPerson` used `findOne`, so an erasure removed whichever row the database returned first and
  * left the rest. Which one survived was chance, and the leftover still carried the subject's email
@@ -279,7 +279,7 @@ describe('PersonalDataErasureService — every person row, not the first one fou
   const twoPeople = () => ({
     people: [
       { id: 1, user_id: 42, email: 'subject@example.invalid', source: 'account' },
-      { id: 2, user_id: null, email: 'subject@example.invalid', source: 'finance' },
+      { id: 2, user_id: null, email: 'subject@example.invalid', source: 'beta' },
     ],
     people_addresses: [{ id: 9, person_id: 2 }],
     person_relationships: [],
@@ -335,21 +335,21 @@ describe('PersonalDataErasureService — every person row, not the first one fou
 
 /**
  * The registry is FRAMEWORK-owned, so an erasure reaches a plugin's data on every site — including
- * one with no privacy plugin installed. Before this, `deleteMyAccount` walked the seven datasets the
+ * one where no compliance plugin is installed at all. Before this, `deleteMyAccount` walked the seven
  * framework holds itself and left every order, invoice and submission in place, reporting nothing.
  */
-describe('PersonalDataErasureService.eraseAll — plugin datasets, with or without a privacy plugin', () => {
+describe('PersonalDataErasureService.eraseAll — plugin datasets, with or without a compliance plugin', () => {
   beforeEach(() => { vi.restoreAllMocks(); PersonalDataRegistry.clear(); });
 
   const registerSource = (calls: Array<{ key: string; strategy: string }>) =>
     PersonalDataRegistry.register(
-      { namespace: 'org.fromcode', pluginSlug: 'finance', key: 'invoices', label: 'Invoices',
-        fields: ['customerEmail'], strategies: ['retain', 'anonymise'], defaultStrategy: 'retain',
+      { namespace: 'example.vendor', pluginSlug: 'beta', key: 'documents', label: 'Beta documents',
+        fields: ['email'], strategies: ['retain', 'anonymise'], defaultStrategy: 'retain',
         methods: { export: 'exportPersonalData', erase: 'erasePersonalData' } },
       {
         exportSubject: async () => [],
         eraseSubject: async (_s: unknown, strategy: string) => {
-          calls.push({ key: 'invoices', strategy });
+          calls.push({ key: 'documents', strategy });
           return { strategy, erased: 0, anonymised: 0, retained: 3, remaining: 0 };
         },
       },
@@ -362,8 +362,8 @@ describe('PersonalDataErasureService.eraseAll — plugin datasets, with or witho
 
     const results = await service.eraseAll(SUBJECT as any);
 
-    expect(calls).toEqual([{ key: 'invoices', strategy: 'retain' }]);
-    expect(results['finance:invoices'].retained).toBe(3);
+    expect(calls).toEqual([{ key: 'documents', strategy: 'retain' }]);
+    expect(results['beta:documents'].retained).toBe(3);
   });
 
   it('lets a caller choose a strategy, but only one the dataset declared', async () => {
@@ -375,12 +375,12 @@ describe('PersonalDataErasureService.eraseAll — plugin datasets, with or witho
     // asking for it gets the declared default, never a strategy the plugin refused to support.
     await service.eraseAll(SUBJECT as any, () => 'delete');
 
-    expect(calls).toEqual([{ key: 'invoices', strategy: 'retain' }]);
+    expect(calls).toEqual([{ key: 'documents', strategy: 'retain' }]);
   });
 
   it('records a source that threw instead of letting it look like an empty result', async () => {
     PersonalDataRegistry.register(
-      { namespace: 'org.fromcode', pluginSlug: 'ecommerce', key: 'orders', label: 'Orders',
+      { namespace: 'example.vendor', pluginSlug: 'alpha', key: 'records', label: 'Alpha records',
         fields: ['email'], strategies: ['anonymise'], defaultStrategy: 'anonymise',
         methods: { export: 'e', erase: 'r' } },
       { exportSubject: async () => [], eraseSubject: async () => { throw new Error('table locked'); } },
@@ -389,7 +389,7 @@ describe('PersonalDataErasureService.eraseAll — plugin datasets, with or witho
 
     const results = await service.eraseAll(SUBJECT as any);
 
-    expect(String((results['ecommerce:orders'] as any).error)).toContain('table locked');
+    expect(String((results['alpha:records'] as any).error)).toContain('table locked');
   });
 });
 
@@ -419,34 +419,34 @@ describe('PersonalDataErasureService.exportAll — the export door cannot drift 
 
   it('includes every registered plugin dataset', async () => {
     PersonalDataRegistry.register(
-      { namespace: 'org.fromcode', pluginSlug: 'finance', key: 'invoices', label: 'Invoices',
-        fields: ['customerEmail'], strategies: ['retain'], defaultStrategy: 'retain',
+      { namespace: 'example.vendor', pluginSlug: 'beta', key: 'documents', label: 'Beta documents',
+        fields: ['email'], strategies: ['retain'], defaultStrategy: 'retain',
         methods: { export: 'exportPersonalData', erase: 'erasePersonalData' } },
       { exportSubject: async () => [{ id: 1 }, { id: 2 }], eraseSubject: async () => ({}) },
     );
 
     const datasets = await service().exportAll(SUBJECT as any);
-    const invoices: any = datasets.find((d: any) => d.plugin === 'finance' && d.dataset === 'invoices');
+    const invoices: any = datasets.find((d: any) => d.plugin === 'beta' && d.dataset === 'documents');
 
     expect(invoices.records).toHaveLength(2);
-    expect(invoices.personalDataFields).toEqual(['customerEmail']);
+    expect(invoices.personalDataFields).toEqual(['email']);
   });
 
   it('reports a source that failed rather than omitting it', async () => {
     // A silently short export reads to the subject as "you hold nothing about me" — the one thing an
     // export must never imply.
     PersonalDataRegistry.register(
-      { namespace: 'org.fromcode', pluginSlug: 'ecommerce', key: 'orders', label: 'Orders',
+      { namespace: 'example.vendor', pluginSlug: 'alpha', key: 'records', label: 'Alpha records',
         fields: ['email'], strategies: ['anonymise'], defaultStrategy: 'anonymise',
         methods: { export: 'e', erase: 'r' } },
       { exportSubject: async () => { throw new Error('table locked'); }, eraseSubject: async () => ({}) },
     );
 
     const datasets = await service().exportAll(SUBJECT as any);
-    const orders: any = datasets.find((d: any) => d.dataset === 'orders');
+    const failed: any = datasets.find((d: any) => d.dataset === 'records');
 
-    expect(orders.records).toBeUndefined();
-    expect(String(orders.error)).toContain('table locked');
+    expect(failed.records).toBeUndefined();
+    expect(String(failed.error)).toContain('table locked');
   });
 });
 

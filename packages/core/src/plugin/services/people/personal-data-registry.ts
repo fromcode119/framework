@@ -8,9 +8,9 @@ import type { IPersonalDataSourceDescriptor } from '@core/plugin/services/interf
 /**
  * Who holds personal data on this platform.
  *
- * FRAMEWORK-OWNED, deliberately. This used to live in the privacy plugin, which made the registry —
+ * FRAMEWORK-OWNED, deliberately. This used to live in a plugin, which made the registry —
  * and therefore the ability to erase a plugin's data at all — conditional on an optional install. On
- * a site without privacy, "delete my account" erased the seven datasets the framework holds itself
+ * a site without that plugin, "delete my account" erased the seven datasets the framework holds itself
  * and silently left every order, invoice, form submission and review in place. Knowing who holds
  * personal data is not a compliance product; it is a property of the platform.
  *
@@ -88,8 +88,8 @@ export class PersonalDataRegistry {
    * The sources that apply to the site this request belongs to.
    *
    * The registry is process-wide — one api serves every site — so the raw list names datasets held
-   * by plugins a given site does not run. Walked unfiltered, a DSAR on a site without MLM reported
-   * `mlm:affiliates` as a source that could not be reached, which makes the fulfilment report
+   * by plugins a given site does not run. Walked unfiltered, a DSAR on a site that does not run a given plugin reported
+   * that plugin's dataset as unreachable, which makes the fulfilment report
    * incomplete and the request impossible to close for a dataset that was never that site's to hold.
    *
    * Outside a request (boot, a scheduler tick) there is no site to narrow to, so everything applies.

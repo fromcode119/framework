@@ -1,4 +1,4 @@
-/** Who a framework-side erasure is about. Mirrors the privacy plugin's subject reference. */
+/** Who an erasure or an export is about. */
 export interface IPersonalDataSubject {
   email: string;
   personId?: string | number | null;

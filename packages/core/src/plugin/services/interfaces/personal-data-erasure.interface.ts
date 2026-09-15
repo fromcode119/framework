@@ -1,4 +1,4 @@
-/** What a framework dataset did. See the privacy plugin's contract for what each number means. */
+/** What one dataset did. The four counts are the whole outcome: nothing is implied by omission. */
 export interface IPersonalDataErasure {
   strategy: string;
   erased: number;

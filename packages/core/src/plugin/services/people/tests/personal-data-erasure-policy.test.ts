@@ -8,9 +8,9 @@ import { SystemConstants } from '@core/constants/system.constants';
  * failure mode this whole design exists to prevent: an operator reading a fallback as a decision.
  */
 const TARGET = {
-  pluginSlug: 'finance',
-  key: 'invoices',
-  label: 'Invoices',
+  pluginSlug: 'beta',
+  key: 'documents',
+  label: 'Beta documents',
   strategies: ['retain', 'anonymise'],
   defaultStrategy: 'anonymise',
 };
@@ -40,14 +40,14 @@ describe('PersonalDataErasurePolicy', () => {
     const choice = policy.resolve(TARGET);
 
     expect(choice).toMatchObject({
-      id: 'finance:invoices', strategy: 'anonymise', source: 'declared',
-      provenance: 'Default declared by finance', problem: '',
+      id: 'beta:documents', strategy: 'anonymise', source: 'declared',
+      provenance: 'Default declared by beta', problem: '',
     });
   });
 
   it('prefers the platform default over the declared one', async () => {
     const policy = await PersonalDataErasurePolicy.load(makeDb({
-      platform: { 'finance:invoices': { strategy: 'retain', reason: 'Accounting law, 10 years.' } },
+      platform: { 'beta:documents': { strategy: 'retain', reason: 'Accounting law, 10 years.' } },
     }) as any);
 
     const choice = policy.resolve(TARGET);
@@ -59,8 +59,8 @@ describe('PersonalDataErasurePolicy', () => {
 
   it('prefers the site over the platform, because the site controls its own data', async () => {
     const policy = await PersonalDataErasurePolicy.load(makeDb({
-      platform: { 'finance:invoices': { strategy: 'retain', reason: 'Accounting law, 10 years.' } },
-      site: { 'finance:invoices': { strategy: 'anonymise' } },
+      platform: { 'beta:documents': { strategy: 'retain', reason: 'Accounting law, 10 years.' } },
+      site: { 'beta:documents': { strategy: 'anonymise' } },
     }) as any);
 
     const choice = policy.resolve(TARGET);
@@ -72,9 +72,9 @@ describe('PersonalDataErasurePolicy', () => {
 
   it('prefers a per-run override over everything, and attributes it to the person who chose', async () => {
     const policy = await PersonalDataErasurePolicy.load(makeDb({
-      site: { 'finance:invoices': { strategy: 'anonymise' } },
+      site: { 'beta:documents': { strategy: 'anonymise' } },
     }) as any, {
-      overrides: { 'finance:invoices': { strategy: 'retain', reason: 'Litigation hold.' } },
+      overrides: { 'beta:documents': { strategy: 'retain', reason: 'Litigation hold.' } },
       actor: 'dpo@example.test',
     });
 
@@ -89,22 +89,22 @@ describe('PersonalDataErasurePolicy', () => {
     // Silently applying `delete` to a dataset an operator marked otherwise would be the worst
     // available correction, so the next layer applies and the operator is told to choose again.
     const policy = await PersonalDataErasurePolicy.load(makeDb({
-      site: { 'finance:invoices': { strategy: 'delete' } },
-      platform: { 'finance:invoices': { strategy: 'retain', reason: 'Accounting law, 10 years.' } },
+      site: { 'beta:documents': { strategy: 'delete' } },
+      platform: { 'beta:documents': { strategy: 'retain', reason: 'Accounting law, 10 years.' } },
     }) as any);
 
     const choice = policy.resolve(TARGET);
 
     expect(choice.strategy).toBe('retain');
     expect(choice.source).toBe('platform');
-    expect(choice.problem).toContain('no longer offered by finance');
+    expect(choice.problem).toContain('no longer offered by beta');
   });
 
   it('refuses a retention with no stated legal basis, and falls to the next layer', async () => {
     // A retention nobody justified is indistinguishable from doing nothing, and the basis is the one
     // thing the subject is entitled to be told.
     const policy = await PersonalDataErasurePolicy.load(makeDb({
-      site: { 'finance:invoices': { strategy: 'retain', reason: '   ' } },
+      site: { 'beta:documents': { strategy: 'retain', reason: '   ' } },
     }) as any);
 
     const choice = policy.resolve(TARGET);
@@ -122,12 +122,12 @@ describe('PersonalDataErasurePolicy', () => {
 
   it('leaves other datasets alone when one of them is overridden', async () => {
     const policy = await PersonalDataErasurePolicy.load(makeDb({}) as any, {
-      overrides: { 'finance:invoices': { strategy: 'retain', reason: 'Litigation hold.' } },
+      overrides: { 'beta:documents': { strategy: 'retain', reason: 'Litigation hold.' } },
     });
 
-    const other = policy.resolve({ ...TARGET, key: 'wallets', label: 'Wallets' });
+    const other = policy.resolve({ ...TARGET, key: 'ledgers', label: 'Beta ledgers' });
 
     expect(other.source).toBe('declared');
-    expect(other.id).toBe('finance:wallets');
+    expect(other.id).toBe('beta:ledgers');
   });
 });
