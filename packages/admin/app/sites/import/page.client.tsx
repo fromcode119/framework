@@ -1,4 +1,4 @@
-import type { ChangeEvent, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -12,6 +12,7 @@ import { SitesClient } from '@/lib/tenants/sites-client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
 import { ImportPlanView } from '@/app/sites/import/import-plan-view.client';
+import { FileDropzone } from '@/components/ui/view/file-dropzone.client';
 
 /**
  * Import a site archive: upload → identity → PREVIEW → execute.
@@ -29,11 +30,12 @@ export class ImportSitePageClient extends AdminComponent {
   @state result: Record<string, any> | null = null;
   @state busy = false;
 
-  private readonly fileInput = this.ref<HTMLInputElement>();
-
-  @bound onFile(e: ChangeEvent<HTMLInputElement>): void {
-    this.file = e.target.files?.[0] ?? null;
+  @bound onFile(file: File | null): void {
+    this.file = file;
+    // A new archive invalidates everything read from the old one — an operator who swaps the file
+    // must not be looking at the previous archive's plan while the button says Execute.
     this.uploadId = null;
+    this.uploadPercent = 0;
     this.plan = null;
     this.result = null;
   }
@@ -52,7 +54,19 @@ export class ImportSitePageClient extends AdminComponent {
       // Preview once straight away with the archive's own identity, so the operator sees the site it holds.
       const plan = await SitesClient.previewImport(this.uploadId, {});
       const archived = plan?.manifest?.tenant ?? {};
-      this.values = SiteFormValues.empty().with({ slug: String(archived.slug ?? ''), id: String(archived.slug ?? ''), primaryHost: String(archived.primaryHost ?? ''), hostAliases: (archived.hostAliases ?? []).join(', ') });
+      // NON-PRODUCTION, shown as the preselected answer. `SiteFormValues.empty()` is the NEW-site
+      // default, and a new site is a real one — but an import is a COPY of a working shop: real
+      // customers in the rows, real payment and courier credentials in the settings. The server
+      // already refuses to assume otherwise; this makes the screen say the same thing, so the
+      // operator reads what will actually happen rather than "Production" followed by a site that
+      // is not.
+      this.values = SiteFormValues.empty().with({
+        slug: String(archived.slug ?? ''),
+        id: String(archived.slug ?? ''),
+        primaryHost: String(archived.primaryHost ?? ''),
+        hostAliases: (archived.hostAliases ?? []).join(', '),
+        environment: 'non-production',
+      });
       this.plan = plan;
     } catch (err: any) {
       this.notify(NotificationType.ERROR, 'Upload failed', err?.message || 'The archive could not be read.');
@@ -107,11 +121,20 @@ export class ImportSitePageClient extends AdminComponent {
         <div className="fc-sites__stack">
           <Card title="1. Archive">
             <div className="fc-sites__upload">
-              <input ref={this.fileInput} type="file" accept=".tar.gz,.tgz" onChange={this.onFile} className="fc-sites__file" />
-              <Button onClick={this.upload} isLoading={this.busy && !this.uploadId} disabled={!this.file || this.uploadId !== null} icon={<FrameworkIcons.Upload size={14} />}>
-                {this.uploadId ? 'Uploaded' : 'Upload and read'}
-              </Button>
-              {this.busy && !this.uploadId && this.file ? <span className="fc-sites__text">{this.uploadPercent}%</span> : null}
+              <FileDropzone
+                accept=".tar.gz,.tgz"
+                file={this.file}
+                onSelect={this.onFile}
+                percent={this.uploadPercent}
+                busy={this.busy && !this.uploadId}
+                disabled={this.uploadId !== null}
+                hint="A .tar.gz archive exported from this platform, or written by the tenant-export CLI."
+              />
+              <div className="fc-sites__actions">
+                <Button onClick={this.upload} isLoading={this.busy && !this.uploadId} disabled={!this.file || this.uploadId !== null} icon={<FrameworkIcons.Upload size={14} />}>
+                  {this.uploadId ? 'Uploaded' : 'Upload and read'}
+                </Button>
+              </div>
             </div>
           </Card>
 

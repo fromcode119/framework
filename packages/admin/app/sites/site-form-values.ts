@@ -107,6 +107,14 @@ export class SiteFormValues {
       primaryHost: this.primaryHost.trim(),
       hostAliases: this.aliasList,
       kind: this.kind,
+      // BOTH of these were shown and neither was sent. The import screen rendered "Visible to" and
+      // "Environment" as ordinary controls, dropped them here, and the server then applied its own
+      // defaults — so the form could read "Production" while the site it created was non-production.
+      // A control that writes a value nothing reads is the thing this codebase is not allowed to
+      // have, and on this screen the value decides whether a copy of a live shop can email its
+      // customers.
+      visibility: this.visibility,
+      environment: this.environment,
       ...(this.isWorkspace ? { appearance: this.appearance } : {}),
     };
   }

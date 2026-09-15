@@ -16,7 +16,19 @@ export class TenantImportPlan {
       name: string;
       rows: number;
       mode: 'preserve' | 'remap' | 'skip';
-      reason: string;
+      /**
+       * WHY the mode was chosen, as a token rather than a sentence.
+       *
+       * It used to be prose, which meant the two numbers the decision actually turns on existed only
+       * inside a sentence — so every re-numbered table repeated the same words to say something the
+       * `mode` had already said, and nothing could render the numbers on their own. The sentence is
+       * generic by construction; it belongs once, above the group. `minId`/`taken` are what differ.
+       */
+      basis: 'noTable' | 'naturalKey' | 'empty' | 'aboveSequence' | 'belowSequence';
+      /** Lowest id in the archive. `null` when the table has no serial id, or no rows. */
+      minId: number | null;
+      /** Highest id this platform has already handed out for this table. `null` with no serial id. */
+      taken: number | null;
       /** JSON columns whose embedded ids the remap cannot follow — only meaningful in `remap` mode. */
       opaqueJsonColumns: string[];
       /** Archive columns this platform's table does not have; their values are dropped. */

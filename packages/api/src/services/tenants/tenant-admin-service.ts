@@ -368,6 +368,10 @@ export class TenantAdminService {
       // never the absence of a flag. Pass `environment: 'production'` explicitly to import a real
       // migration rather than a rehearsal.
       environment: input.environment ?? TenantEnvironment.NON_PRODUCTION.value,
+      // Read, not ignored. `TenantIdentity.from` defaults an absent visibility to PRIVATE, which is
+      // the right fail-closed answer — but dropping the operator's choice on the floor meant the
+      // control could not publish a site even when they asked it to, and the screen gave no hint.
+      visibility: input.visibility,
       appearance: input.appearance ?? (archived as { appearance?: unknown }).appearance ?? '',
     });
   }

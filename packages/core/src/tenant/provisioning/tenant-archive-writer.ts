@@ -45,9 +45,18 @@ export class TenantArchiveWriter {
       const manifest = await this.source.scoped(async () => {
         const tables: TenantArchiveManifest['tables'] = [];
         const mediaFiles = new Set<string>();
+        // Collected, then said ONCE. A source running a different plugin set is missing dozens of the
+        // tables this platform declares, and a line each buried every warning that meant something.
+        const absent: string[] = [];
         for (const table of this.tables) {
-          const written = await this.writeTable(table, staging, mediaFiles, warnings);
+          const written = await this.writeTable(table, staging, mediaFiles, warnings, absent);
           if (written) tables.push(written);
+        }
+        if (absent.length) {
+          warnings.push(
+            `${absent.length} table(s) this platform declares do not exist in the source and were skipped: `
+            + `${absent.join(', ')}.`,
+          );
         }
         const users = await new TenantArchiveUsersExport(this.source).writeTo(path.join(staging, TenantArchiveLayout.USERS));
         const files = this.copyFiles(mediaFiles, staging, warnings);
@@ -80,9 +89,10 @@ export class TenantArchiveWriter {
     staging: string,
     mediaFiles: Set<string>,
     warnings: string[],
+    absent: string[],
   ): Promise<TenantArchiveManifest['tables'][number] | null> {
     if (!(await this.source.db.tableExists(table.name))) {
-      warnings.push(`Table "${table.name}" does not exist in the source and was skipped.`);
+      absent.push(table.name);
       return null;
     }
     const sourceColumns = await this.source.db.getColumns(table.name);
