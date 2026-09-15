@@ -254,9 +254,23 @@ export class RequestSurfaceUtils {
     return RequestSurfaceUtils.isFrontendPath(url.pathname);
   }
 
+  /**
+   * The console's own address, from the SETTING first and the environment second.
+   *
+   * This read raw `process.env.ADMIN_URL`, which on a deployment that configures its console in the
+   * admin — as this one does — is empty. So surface detection had no idea where the console lived
+   * and fell back to guessing from the host's shape, and a console on a name like
+   * `console.example.com` (no `admin.` prefix, no admin path) was never recognised as itself.
+   *
+   * `readAppBaseUrlFromEnvironment` is the same resolution CORS, links, emails and PDFs already use:
+   * a value configured in Settings is authoritative, the env var is the fallback. One answer to
+   * "where is the console", not two that can disagree.
+   */
   private static readConfiguredAdminUrl(): URL | null {
     return RequestSurfaceHelper.readAbsoluteUrl(
-      process.env.ADMIN_URL || '',
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP)
+        || process.env.ADMIN_URL
+        || '',
     );
   }
 
