@@ -102,6 +102,10 @@ export class SystemSettingRegistry {
       seed: { value: () => SystemSettingRegistry.urlDefaults().apiUrl, description: "The public base URL of the API. Blank uses the domain the admin and sites are served from.", group: "General" },
     },
     [SystemSettingRegistry.KEY.MARKETPLACE_URL]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // What a site may store in its OWN uploaded themes. PLATFORM scope, because the limit protects
+    // the shared disk from any one site — a site setting its own ceiling would be no ceiling.
+    [SystemSettingRegistry.KEY.TENANT_THEME_MAX_BYTES]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemSettingRegistry.KEY.TENANT_THEME_MAX_COUNT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.DOMAIN_ALIASES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '[]', description: "Additional trusted domains kept active during migrations.", group: "General" },

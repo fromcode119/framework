@@ -131,6 +131,68 @@ export class ThemeController extends BaseController {
     }
   }
 
+  /**
+   * A SITE uploading its OWN theme.
+   *
+   * Separate from {@link upload}, which installs onto the shared container for every site. The
+   * refusals live in the installer, and each of them is a 4xx the operator can act on rather than a
+   * 500: "your package contains server code", "that slug is taken", "you are over your quota" are all
+   * things the person uploading can fix, and reporting them as server errors would say the opposite.
+   */
+  async uploadMine(req: any, res: Response) {
+    if (!req.file) return res.status(400).json({ error: 'no_file', message: 'Choose a .zip or .tar.gz theme package to upload.' });
+
+    const tenantId = String((req as any).tenantId || '').trim();
+    if (!tenantId) {
+      return res.status(400).json({
+        error: 'site_required',
+        message: 'A theme belongs to one site. Choose a site first — with none selected there is nowhere to put it.',
+      });
+    }
+
+    try {
+      const manifest = await this.manager.installForTenant(req.file.path, tenantId);
+      res.json({ success: true, manifest, serverRendering: false });
+    } catch (err: any) {
+      const message = String(err?.message || 'The theme could not be installed.');
+      this.logger.warn(`Site "${tenantId}" could not upload a theme: ${message}`);
+      res.status(ThemeController.refusalStatus(message)).json({ error: 'theme_rejected', message });
+    } finally {
+      if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    }
+  }
+
+  /** A SITE removing one of its OWN themes. The manager refuses anything it does not own. */
+  async deleteMine(req: Request, res: Response) {
+    const slug = CoercionUtils.toString(req.params.slug);
+    const tenantId = String((req as any).tenantId || '').trim();
+    if (!tenantId) {
+      return res.status(400).json({ error: 'site_required', message: 'Choose a site first.' });
+    }
+
+    try {
+      await this.manager.removeTenantTheme(slug, tenantId);
+      res.json({ success: true });
+    } catch (err: any) {
+      const message = String(err?.message || 'The theme could not be removed.');
+      res.status(ThemeController.refusalStatus(message)).json({ error: 'theme_not_removed', message });
+    }
+  }
+
+  /**
+   * Which 4xx a refusal is, read from what the installer actually refused.
+   *
+   * A taken slug is a CONFLICT and nothing the uploader can retry their way out of; everything else
+   * here is a malformed or oversized package, which is a bad request. Both are the caller's to fix,
+   * so neither is a 500 — a server error would tell an operator to look at logs that say nothing is
+   * wrong.
+   */
+  private static refusalStatus(message: string): number {
+    if (/already taken/i.test(message)) return 409;
+    if (/does not belong to this site|not installed/i.test(message)) return 404;
+    return 400;
+  }
+
   async inspectUpload(req: any, res: Response) {
     if (!req.file) return res.status(400).json({ error: 'No file' });
 
