@@ -2,19 +2,12 @@ import type { IDatabaseManager } from '@fromcode119/database';
 import { NamingStrategy, PhysicalTableNameUtils, TableResolver, TenantColumn } from '@fromcode119/database';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
+import type { INestedFieldReference } from '@core/tenant/provisioning/interfaces/nested-field-reference.interface';
 import { FieldType } from '@core/enums/field-type.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
-
-/** One `relationship` sub-field found below a column, at the path leading to it. */
-interface INestedFieldReference {
-  path: string[];
-  relationTo: string;
-  hasMany: boolean;
-  required: boolean;
-}
 
 /**
  * Which tables hold tenant data on THIS platform, and what they look like.
