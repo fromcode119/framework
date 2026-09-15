@@ -413,11 +413,27 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     const cookieOptions = this.getCookieOptions(req, false, maxAgeMs);
     this.clearCookieVariants(res, cookieName, this.getCookieOptions(req, true), true, process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req));
     res.cookie(cookieName, token, cookieOptions);
-    await this.db.update(
+    // The session ROW is the server's own record of which site this session is in, and it is what an
+    // operator's support question is answered from. A swallowed failure here leaves the token saying
+    // one thing and the row saying another, with nothing anywhere to say they disagreed — the same
+    // shape as the client discarding the reason a switch was refused.
+    //
+    // It must not fail the switch: the token is already minted and the cookie already set, so the
+    // session IS in the new site whatever this row says. Logged, not thrown.
+    const updated = await this.db.update(
       SystemConstants.TABLE.SESSIONS,
       { tokenId: user.jti },
       { tenantId: tenantId ?? null },
-    ).catch(() => undefined);
+    ).catch((error: unknown) => {
+      this.logger.warn(`[auth] session row not updated for tenant "${tenantId ?? '(none)'}": ${String((error as Error)?.message ?? error)}`);
+      return null;
+    });
+    // No row matched is NOT an error the database reports — it is a silent zero, and it means the
+    // presented token's `jti` has no session row to carry the claim. Worth saying, because the token
+    // still works and the disagreement only shows up later as a switch that appears not to happen.
+    if (updated === undefined || updated === null) {
+      this.logger.warn(`[auth] no session row for jti "${String(user.jti ?? '')}" — tenant "${tenantId ?? '(none)'}" recorded on the token only.`);
+    }
     return token;
   }
 
