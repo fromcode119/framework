@@ -6,6 +6,9 @@ import { pgTable, text, timestamp, pgSchema, serial, boolean, integer, jsonb, uu
  */
 export class Schema {
   static readonly users = pgTable('users', {
+  // The flag that decides platform access. Load-bearing for authorization and read all over the
+  // framework, so it belongs in the schema rather than only in raw SQL.
+  isPlatformAdmin: boolean('is_platform_admin').notNull().default(false),
   id: serial('id').primaryKey(),
   email: text('email').notNull().unique(),
   username: text('username').unique(),
@@ -18,6 +21,11 @@ export class Schema {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
   static readonly systemRecordVersions = pgTable('_system_record_versions', {
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  // Set by the database from `app.tenant_id` on insert; row-level security filters on it. Declared so
+  // a reader can SEE the column — an undeclared column is silently absent from every `db.find`, which
+  // is how a filter on one matches nothing and looks like it is working.
+  tenantId: text('tenant_id'),
   id: serial('id').primaryKey(),
   refId: text('ref_id').notNull(),
   refCollection: text('ref_collection').notNull(),
@@ -33,6 +41,9 @@ export class Schema {
   description: text('description'),
   type: text('type').notNull().default('custom'), // 'system' or 'custom'
   permissions: jsonb('permissions').notNull().default([]), // List of capability names
+  // Which plugin declared this role, or NULL for the framework's own (migration 046). A site is shown
+  // its own plugins' roles and the unattributed ones, never another product's.
+  pluginSlug: text('plugin_slug'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
@@ -62,6 +73,9 @@ export class Schema {
 }));
 
   static readonly systemPlugins = pgTable('_system_plugins', {
+  heldReason: text('held_reason'),
+  // Which SITE uploaded this plugin; NULL is the platform's own (migration 045).
+  ownerTenantId: text('owner_tenant_id'),
   slug: text('slug').primaryKey(),
   version: text('version'),
   state: text('state').notNull().default('inactive'),
@@ -88,12 +102,20 @@ export class Schema {
 });
 
   static readonly systemPluginSettings = pgTable('_system_plugin_settings', {
+  // Set by the database from `app.tenant_id` on insert; row-level security filters on it. Declared so
+  // a reader can SEE the column — an undeclared column is silently absent from every `db.find`, which
+  // is how a filter on one matches nothing and looks like it is working.
+  tenantId: text('tenant_id'),
   pluginSlug: text('plugin_slug').primaryKey().references(() => Schema.systemPlugins.slug, { onDelete: 'cascade' }),
   settings: jsonb('settings').notNull().default({}),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
   static readonly systemSessions = pgTable('_system_sessions', {
+  // Set by the database from `app.tenant_id` on insert; row-level security filters on it. Declared so
+  // a reader can SEE the column — an undeclared column is silently absent from every `db.find`, which
+  // is how a filter on one matches nothing and looks like it is working.
+  tenantId: text('tenant_id'),
   id: uuid('id').primaryKey().defaultRandom(),
   userId: integer('user_id').notNull().references(() => Schema.users.id, { onDelete: 'cascade' }),
   tokenId: text('token_id').notNull().unique(),
@@ -106,6 +128,10 @@ export class Schema {
 });
 
   static readonly systemMeta = pgTable('_system_meta', {
+  // Set by the database from `app.tenant_id` on insert; row-level security filters on it. Declared so
+  // a reader can SEE the column — an undeclared column is silently absent from every `db.find`, which
+  // is how a filter on one matches nothing and looks like it is working.
+  tenantId: text('tenant_id'),
   key: text('key').primaryKey(),
   value: text('value').notNull(),
   description: text('description'),
@@ -114,6 +140,10 @@ export class Schema {
 });
 
   static readonly systemLogs = pgTable('_system_logs', {
+  // Set by the database from `app.tenant_id` on insert; row-level security filters on it. Declared so
+  // a reader can SEE the column — an undeclared column is silently absent from every `db.find`, which
+  // is how a filter on one matches nothing and looks like it is working.
+  tenantId: text('tenant_id'),
   id: serial('id').primaryKey(),
   pluginSlug: text('plugin_slug'),
   level: text('level').notNull(),
@@ -123,6 +153,10 @@ export class Schema {
 });
 
   static readonly systemAuditLogs = pgTable('_system_audit_logs', {
+  // Set by the database from `app.tenant_id` on insert; row-level security filters on it. Declared so
+  // a reader can SEE the column — an undeclared column is silently absent from every `db.find`, which
+  // is how a filter on one matches nothing and looks like it is working.
+  tenantId: text('tenant_id'),
   id: serial('id').primaryKey(),
   pluginSlug: text('plugin_slug'),
   action: text('action').notNull(),
@@ -133,6 +167,11 @@ export class Schema {
 });
 
   static readonly systemThemes = pgTable('_system_themes', {
+  name: text('name'),
+  version: text('version'),
+  // Which SITE uploaded this theme; NULL is the platform's own (migration 045).
+  ownerTenantId: text('owner_tenant_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }),
   slug: text('slug').primaryKey(),
   state: text('state').notNull().default('inactive'),
   config: jsonb('config'),
@@ -140,6 +179,10 @@ export class Schema {
 });
 
   static readonly mediaFolders = pgTable('media_folders', {
+  // Set by the database from `app.tenant_id` on insert; row-level security filters on it. Declared so
+  // a reader can SEE the column — an undeclared column is silently absent from every `db.find`, which
+  // is how a filter on one matches nothing and looks like it is working.
+  tenantId: text('tenant_id').notNull(),
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   parentId: integer('parent_id'),
@@ -148,6 +191,13 @@ export class Schema {
 });
 
   static readonly media = pgTable('media', {
+  // Set by the database from `app.tenant_id` on insert; row-level security filters on it. Declared so
+  // a reader can SEE the column — an undeclared column is silently absent from every `db.find`, which
+  // is how a filter on one matches nothing and looks like it is working.
+  tenantId: text('tenant_id').notNull(),
+  integration: text('integration').notNull().default('storage'),
+  provider: text('provider').notNull().default('local'),
+  shared: boolean('shared').notNull().default(false),
   id: serial('id').primaryKey(),
   filename: text('filename').notNull(),
   originalName: text('original_name').notNull(),

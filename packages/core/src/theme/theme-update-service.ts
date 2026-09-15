@@ -2,6 +2,7 @@ import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.inter
 import { Logger } from '@core/logging';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import { CatalogEntry } from '@core/marketplace/contributions/catalog-entry';
+import { CatalogContributionScope } from '@core/marketplace/catalog-contribution-scope';
 import { CoreServices } from '@core/services/core-services';
 
 /**
@@ -32,7 +33,12 @@ export class ThemeUpdateService {
    * locally and does not depend on reaching anything.
    */
   async getMarketplaceThemes() {
-    const contributed = await ThemeUpdateService.contributedThemes();
+    // What THIS installation built is the operator's inventory, not a catalogue. On a multi-tenant
+    // platform it is other customers' bespoke themes, and offering them to a site named those
+    // customers by slug with an Install button beside each.
+    const contributed = CatalogContributionScope.offeredHere()
+      ? await ThemeUpdateService.contributedThemes()
+      : [];
 
     try {
       this.logger.debug(`Fetching themes from marketplace...`);

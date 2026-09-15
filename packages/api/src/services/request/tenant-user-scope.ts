@@ -19,15 +19,28 @@ export class TenantUserScope {
 
   static async of(req: unknown, db: unknown): Promise<TenantUserScope> {
     if (!TenantMode.isEnabled()) return new TenantUserScope(null);
-    if (await new PlatformAccessResolver(db).isPlatformAdmin(req)) return new TenantUserScope(null);
 
+    // THE SITE IS ASKED FIRST, AND IT WINS.
+    //
+    // The platform-admin check used to run ahead of this and answered `null` — unrestricted — which
+    // meant an operator with a site selected read, edited and deleted every account on the platform
+    // from inside that site's console. Measured before this change: site "initech", one member, 30
+    // accounts returned, including other customers' people.
+    //
+    // A tenant is isolated from every other tenant, platform admin included. Being entitled to act on
+    // the platform is not the same as acting on it — that is done in PLATFORM scope, with no site
+    // selected, which is the branch below.
     const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
-    // No site in scope: a request that is not acting for any site may act on no account. Returning
-    // "everyone" here is how a missing tenant would silently become full access.
-    if (!tenantId) return new TenantUserScope(new Set<number>());
+    if (tenantId) {
+      const ids = await new TenantMembershipService(db as never).listUserIdsForTenant(tenantId);
+      return new TenantUserScope(new Set(ids));
+    }
 
-    const ids = await new TenantMembershipService(db as never).listUserIdsForTenant(tenantId);
-    return new TenantUserScope(new Set(ids));
+    // No site bound. A platform admin is the platform and sees everyone; anyone else acting for no
+    // site may act on no account — returning "everyone" here is how a missing tenant would silently
+    // become full access.
+    if (await new PlatformAccessResolver(db).isPlatformAdmin(req)) return new TenantUserScope(null);
+    return new TenantUserScope(new Set<number>());
   }
 
   /** `null` = unrestricted. Otherwise the only ids this request may see. */

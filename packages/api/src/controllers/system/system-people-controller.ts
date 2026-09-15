@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { RequestParamUtils } from '@api/utils/request-param-utils';
 import { CoreServices } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { TenantUserScope } from '@api/services/request/tenant-user-scope';
 import { CoercionUtils } from '@fromcode119/core';
 
 /** Admin endpoints for the unified `people` model: list people and promote a person to a login account. */
@@ -118,12 +119,37 @@ export class SystemPeopleController {
     }
   }
 
+  /**
+   * Links a person to an account — one this site may actually see.
+   *
+   * `userId` arrives in the request body and `users` carries no row-level policy, so without this
+   * gate any id resolved: the call succeeded for an account belonging to another customer, and the
+   * response echoed that account's email, username and roles back in `person.account`. Walking the
+   * ids returned the platform's whole directory, one POST at a time.
+   *
+   * REFUSED AS NOT FOUND, matching `SystemUserController.denyOutsideScope`: "you may not link user
+   * 41" still confirms that user 41 exists, which is the fact being protected.
+   *
+   * It also repairs a promise the service could not keep. Its duplicate check reads `people`, which
+   * IS row-level scoped, so it could never see that the account was already linked to a person on
+   * another site — the one-to-one guarantee in its comment was true only within a site. An id this
+   * site cannot see is now an id it cannot link, which closes both halves at once.
+   */
   async linkUser(req: Request, res: Response) {
     try {
       const id = RequestParamUtils.relationId(req, res, 'person');
       if (id === null) return;
       const rawUserId = (req.body || {}).userId;
       const userId = rawUserId == null || rawUserId === '' ? null : parseInt(String(rawUserId), 10);
+
+      // `null` is "unlink", which needs no account and so needs no check.
+      if (userId !== null) {
+        const scope = await TenantUserScope.of(req, this.runtime.db);
+        if (!scope.allows(userId)) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+      }
+
       const person = await this.runtime.people.linkUser(id, userId);
       res.json({ success: true, person });
     } catch (error: any) {

@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError } from '@fromcode119/core';
+import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode, TenantMembershipService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
@@ -49,7 +49,14 @@ export class UserManagementService {
         columns: { roleSlug: true },
         where: this.db.eq(Schema.systemUsersToRoles.userId, user.id)
       });
-      const { password, ...safeUser } = user;
+      // `password` for the obvious reason, and `isPlatformAdmin` because this listing is reachable by a
+      // site's own administrator: whether one of its members also holds platform powers identifies the
+      // operator's staff account among that site's people, and nothing on this screen needs it. The
+      // column is declared in the schema so typed callers can read it deliberately — this projection
+      // spreads whatever the row carries, so a column added there would otherwise appear here by
+      // accident rather than by decision, which is how it first turned up.
+      const { password, isPlatformAdmin, ...safeUser } = user;
+      void isPlatformAdmin;
       const [accountStatus, forcePasswordReset] = await Promise.all([
         this.readAccountStatus(user.id),
         this.readForcePasswordReset(user.id)
@@ -138,12 +145,51 @@ export class UserManagementService {
     return userId;
   }
 
+  /**
+   * The roles, each with how many people HERE hold it.
+   *
+   * `_system_users_roles` is a platform table with no row-level policy, so counting it whole told a
+   * site how many accounts hold a role across the entire box. Measured before this change: site
+   * "initech", one member, reported 25 for `partner` — which is the global total exactly, and belongs
+   * to another product's customers. A count a site cannot account for is worse than no count: it
+   * invites someone to go looking for 24 people who are not there.
+   *
+   * Bound to a site, the count is that site's members holding the role. In platform scope it is the
+   * whole box, which is what an operator is asking.
+   */
   async getRoles() {
-    const dbRoles = await this.db.find(Schema.systemRoles);
+    const allRoles = await this.db.find(Schema.systemRoles);
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+
+    // A SITE SEES THE FRAMEWORK'S ROLES AND ITS OWN PLUGINS', NEVER ANOTHER PRODUCT'S.
+    //
+    // `_system_roles` is global by design — role names are the platform's vocabulary — but plugins
+    // declare roles into it too, so a site was shown roles belonging to extensions it does not run,
+    // in its Roles screen and in the role picker on its Users page. It had no
+    // way to know what they meant, and granting one would have been meaningless.
+    //
+    // An UNATTRIBUTED role stays visible. Migration 046 adds the column with no backfill because
+    // nothing can honestly guess who created a role that predates it, and hiding one nobody can
+    // account for is the worse failure — losing `admin` from the screen with no way to discover why.
+    // `ensure` stamps each row as its plugin re-declares it, so this narrows itself as it learns.
+    const dbRoles = TenantMode.isEnabled() && tenantId
+      ? allRoles.filter((role: any) => {
+        const owner = String(role?.pluginSlug ?? '').trim();
+        return !owner || owner === 'system' || PluginTenantAccess.enabledSlugsFor(tenantId).has(owner);
+      })
+      : allRoles;
+    const memberIds = TenantMode.isEnabled() && tenantId
+      ? new Set(await new TenantMembershipService(this.db as never).listUserIdsForTenant(tenantId))
+      : null;
+
     return Promise.all(dbRoles.map(async (role: any) => {
-      const userCount = await this.db.count(Schema.systemUsersToRoles, {
-        where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug)
+      const holders = await this.db.find(Schema.systemUsersToRoles, {
+        columns: { userId: true },
+        where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug),
       });
+      const userCount = memberIds
+        ? (holders || []).filter((row: any) => memberIds.has(Number(row?.userId))).length
+        : (holders || []).length;
       const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
         columns: { permissionName: true },
         where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)
@@ -311,7 +357,27 @@ export class UserManagementService {
         permissionNames.add(name);
       }
     }
-    return this.db.find(SystemConstants.TABLE.PERMISSIONS);
+
+    // THE BACKFILL ABOVE STAYS COMPLETE; THE ANSWER IS SCOPED.
+    //
+    // `_system_permissions` is a platform registry — every active plugin's capabilities are recorded
+    // in it whoever happens to trigger this read, because a capability that is registered only when a
+    // platform admin visits a screen is a capability that half the installs never get. What must not
+    // happen is returning the whole registry to a site: it named products that site does not run
+    // — capability names carry the extension's own vocabulary, so through the names themselves, what those
+    // products do.
+    //
+    // `system` survives the filter because it is the framework's own, and every site holds it.
+    const rows = await this.db.find(SystemConstants.TABLE.PERMISSIONS);
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    if (!TenantMode.isEnabled() || !tenantId) return rows;
+
+    const visible = PluginTenantAccess.enabledSlugsFor(tenantId);
+    // Rows come back from the raw manager, so the column is `plugin_slug`.
+    return (rows || []).filter((row: any) => {
+      const slug = String(row?.plugin_slug ?? '').trim();
+      return !slug || slug === 'system' || visible.has(slug);
+    });
   }
 
   private async readAccountStatus(userId: number): Promise<'active' | 'suspended'> {

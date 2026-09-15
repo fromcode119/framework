@@ -12,6 +12,7 @@ import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plu
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { CoreServices } from '@core/services/core-services';
 import { CatalogEntry } from '@core/marketplace/contributions/catalog-entry';
+import { CatalogContributionScope } from '@core/marketplace/catalog-contribution-scope';
 import { SystemConstants } from '@core/constants/system.constants';
 
 export class MarketplaceCatalogService {
@@ -75,7 +76,10 @@ export class MarketplaceCatalogService {
    */
   public async fetchCatalog(): Promise<MarketplacePlugin[]> {
     const remote = await this.fetchRemoteCatalog();
-    const contributed = await this.fetchContributedCatalog();
+    // What THIS installation built is the operator's own inventory, not a catalogue — on a
+    // multi-tenant platform it is other customers' bespoke plugins. A site is offered the remote
+    // catalogue only; see `CatalogContributionScope`.
+    const contributed = CatalogContributionScope.offeredHere() ? await this.fetchContributedCatalog() : [];
 
     /**
      * Contributed entries win a tie.
@@ -224,7 +228,7 @@ export class MarketplaceCatalogService {
     // The catalogue merges remote entries with ones contributed by this installation, and a
     // contributed row borrows the marketplace shape — whose only location is `downloadUrl`, a bare
     // filename. Resolving that against the remote marketplace produced
-    // `https://marketplace.fromcode.com/.../mlm-0.1.76.zip` for a package sitting in this
+    // `https://marketplace.example.com/.../<slug>-<version>.zip` for a package sitting in this
     // installation's own workspace, so every locally built plugin failed to install. The theme
     // controller already handled this; doing it here means the five callers that funnel through
     // `downloadAndInstall` — the Update button, batch update-all, theme dependencies and the forge

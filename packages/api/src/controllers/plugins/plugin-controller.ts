@@ -93,9 +93,29 @@ export class PluginController extends BaseController {
     return 'The platform default is "shared" (Settings → Infrastructure → Plugin Isolation).';
   }
 
+  /**
+   * The plugins THIS SITE runs, for the surfaces that have to load their UI.
+   *
+   * Filtered on the same axis as `list` and `health`, and for a sharper reason than either: this
+   * payload carries each plugin's declared CAPABILITIES and its head injections, so unfiltered it
+   * told a site not merely which other customers' products exist on the box but what each one is
+   * permitted to do. It is also the widest-reaching of the three — every admin and storefront
+   * surface asks it on load, so it is the one most likely to be read by something that is not a
+   * person.
+   *
+   * A site loading another site's plugin UI would be wrong even if none of that were sensitive:
+   * the bundle would have nothing to talk to.
+   */
   async active(req: Request, res: Response) {
+    const tenantId = String((req as any).tenantId || '').trim();
+    const enabledSlugs = TenantMode.isEnabled() && tenantId
+      ? PluginTenantAccess.enabledSlugsFor(tenantId)
+      : null;
+
     const activePlugins = this.manager.getSortedPlugins(
-      this.manager.getPlugins().filter(p => p.state === PluginState.ACTIVE)
+      this.manager.getPlugins()
+        .filter(p => p.state === PluginState.ACTIVE)
+        .filter(p => !enabledSlugs || enabledSlugs.has(p.manifest.slug))
     ).map(p => ({
         slug: p.manifest.slug,
         version: p.manifest.version,
