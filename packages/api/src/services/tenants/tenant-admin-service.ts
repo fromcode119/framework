@@ -128,6 +128,20 @@ export class TenantAdminService {
     if (patch.appearance !== undefined && current.isWorkspace) this.assertAppearanceInstalled(CoercionUtils.toKey(patch.appearance));
 
     const { theme, plugins, ...row } = patch;
+    // A SITE's appearance is the per-site `admin_appearance` SETTING, not a column on the tenant
+    // row — `TenantIdentity.appearanceFor` refuses to store one there for a site, because that
+    // column is the workspace's kind lock. So it is split out of the row and written as the setting.
+    //
+    // It is assigned HERE, from platform scope, for the same reason a theme is: a tenant-bound
+    // request is isolated and sees only what is already its own, so if the operator could not put a
+    // site on an appearance from its record, nothing could ever put it on a new one.
+    const siteAppearance = !current.isWorkspace && row.appearance !== undefined
+      ? CoercionUtils.toKey(row.appearance)
+      : undefined;
+    if (siteAppearance !== undefined) {
+      this.assertAppearanceInstalled(siteAppearance);
+      delete row.appearance;
+    }
     if (theme !== undefined) {
       const slug = CoercionUtils.toString(theme);
       if (current.isWorkspace && slug) throw new Error('A workspace has no storefront, so it takes no theme.');
@@ -137,6 +151,7 @@ export class TenantAdminService {
     const tenant = await this.registry.update(id, row);
     if (plugins !== undefined) await this.applyPlugins(tenant.id, TenantAdminService.slugs(plugins));
     if (theme !== undefined) await this.applyTheme(tenant.id, CoercionUtils.toString(theme));
+    if (siteAppearance !== undefined) await this.applySiteAppearance(tenant.id, siteAppearance);
 
     await this.record('tenant.update', tenant.slug, actor, { id: tenant.id, patch });
     await this.gateway.notify();
@@ -150,6 +165,25 @@ export class TenantAdminService {
     for (const slug of wanted.filter((entry) => !current.includes(entry))) await state.enable(tenantId, slug);
     for (const slug of current.filter((entry) => !wanted.includes(entry))) await state.disable(tenantId, slug);
     PluginTenantAccess.invalidate(tenantId);
+  }
+
+  /**
+   * Writes the site's `admin_appearance` setting — the one an operator assigns from the site record.
+   *
+   * Inside `withTenant` on the owner connection: the owner is a superuser and bypasses row-level
+   * security, so without this scope the write would land on whichever `_system_meta` row the
+   * unbound connection sees — the PLATFORM's — and restyle the operator's own console instead of
+   * the site's. The empty slug means the built-in default, and is stored as `''` rather than
+   * deleted, so the setting keeps saying what was chosen.
+   */
+  private async applySiteAppearance(tenantId: string, slug: string): Promise<void> {
+    const key = SystemConstants.META_KEY.ADMIN_APPEARANCE;
+    const value = slug === 'default' ? '' : slug;
+    await this.db.withTenant(tenantId, async () => {
+      const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
+      if (existing) await this.db.update(SystemConstants.TABLE.META, { key }, { value, updated_at: new Date() });
+      else await this.db.insert(SystemConstants.TABLE.META, { key, value, updated_at: new Date() });
+    });
   }
 
   /** Activates the chosen theme, or clears the current one when the choice is empty. */
@@ -286,10 +320,11 @@ export class TenantAdminService {
   }
 
   private async summarize(tenant: TenantRecord): Promise<TenantSummary> {
-    const [members, plugins, choice] = await Promise.all([
+    const [members, plugins, choice, appearance] = await Promise.all([
       this.db.count(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenant.id } }),
       new PluginTenantStateService(this.db).listEnabled(tenant.id),
       TenantThemeAccess.choiceForAsync(tenant.id),
+      this.siteAppearance(tenant),
     ]);
     // The member LIST is deliberately not loaded here. `list()` summarizes every site, and this used
     // to read every membership row and then issue one user lookup PER MEMBER — so a platform with eight
@@ -297,7 +332,24 @@ export class TenantAdminService {
     // queries. The count is a single COUNT; the roster is paged on demand (`members()` below).
     // A workspace serves a console, not a storefront, so counting pages for one would be noise.
     const pageCount = tenant.isWorkspace ? 0 : await this.pagesService.countPagesFor(tenant.id);
-    return new TenantSummary(tenant, members, plugins, choice.activeSlug, this.lastExport(tenant.slug), pageCount, this.exports(tenant.slug));
+    return new TenantSummary(tenant, members, plugins, choice.activeSlug, this.lastExport(tenant.slug), pageCount, this.exports(tenant.slug), appearance);
+  }
+
+  /**
+   * The appearance THIS tenant actually wears.
+   *
+   * A workspace's is the tenant row's own kind lock — `tenant.appearance` already has it. A site's
+   * is its own `admin_appearance` SETTING (`_system_meta`, row-level-security-scoped), because
+   * `TenantIdentity.appearanceFor` refuses to store one on the row for a site. Read on the site's
+   * own connection scope, same as `applySiteAppearance` writes it, so this never answers with the
+   * platform's own setting instead.
+   */
+  private async siteAppearance(tenant: TenantRecord): Promise<string> {
+    if (tenant.isWorkspace) return tenant.appearance;
+    const row = await this.db.withTenant(tenant.id, () => this.db
+      .findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_APPEARANCE })
+      .catch(() => null));
+    return String((row as any)?.value ?? '').trim();
   }
 
   /**

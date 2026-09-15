@@ -85,7 +85,11 @@ export class SiteFormValues {
       // SETTINGS are not: those live on each plugin's and the theme's own page, with this site
       // selected. Carrying both was what made this page a worse copy of pages that already exist.
       plugins: this.plugins,
-      ...(this.isWorkspace ? { appearance: this.appearance } : { theme: this.theme }),
+      // Both kinds carry `appearance` now: a workspace's is the tenant row's kind lock, a site's is
+      // its own `admin_appearance` setting — different persistence, same field here. Only a site
+      // also has a storefront theme.
+      appearance: this.appearance,
+      ...(this.isWorkspace ? {} : { theme: this.theme }),
     };
   }
 

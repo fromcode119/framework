@@ -89,6 +89,37 @@ export class TenantThemeAccess {
   }
 
   /**
+   * Every theme this tenant has a row for — active now, retired by a later switch, or merely
+   * prepared with saved config before ever being activated. This IS the tenant's assigned set: what
+   * a site admin may choose among, distinct from every theme installed on the platform.
+   *
+   * A direct, uncached read — this answers an admin listing, not a per-request hot path, so it does
+   * not go through `cache`/`warm` (which remembers only the ACTIVE choice, not the tenant's full
+   * history of rows).
+   */
+  static async assignedSlugsFor(tenantId: string): Promise<Set<string>> {
+    const tenant = String(tenantId ?? '').trim();
+    if (!tenant || !TenantThemeAccess.db) return new Set();
+
+    try {
+      const rows = await TenantThemeAccess.db.find(SystemConstants.TABLE.TENANT_THEMES, {
+        where: { tenant_id: tenant },
+      });
+      return new Set(
+        (rows ?? [])
+          .map((row: any) => String(row?.theme_slug ?? '').trim())
+          .filter((slug: string) => slug.length > 0),
+      );
+    } catch (error: any) {
+      TenantThemeAccess.logger.warn(
+        `Could not read the assigned themes for tenant "${tenant}": ${error?.message || error}. `
+        + 'The tenant is treated as having no assigned theme until a read succeeds.',
+      );
+      return new Set();
+    }
+  }
+
+  /**
    * Forgets what it knows, so the next request re-reads. Called by every write path — this IS the
    * "no restart" mechanism for theme activation.
    */

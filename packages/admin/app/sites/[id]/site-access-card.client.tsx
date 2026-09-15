@@ -123,22 +123,44 @@ export class SiteAccessCard extends AdminComponent {
 
     return (
       <>
-        <Card title={this.values.isWorkspace ? 'Appearance' : 'Theme'}>
+        {/* A SITE has both: a storefront theme, and its own admin console's appearance (a per-site
+            SETTING, `admin_appearance` — independent of the workspace lock, since a site is never
+            locked to one). A WORKSPACE has only the console, and its appearance is the tenant row's
+            own kind lock, not this setting. Without a picker here a site's own Settings → Appearance
+            page — which lists only "default + whatever it currently wears" (T7) — had no way to ever
+            offer more than the default: nothing set the "currently wears" past the built-in console. */}
+        <Card title="Appearance">
           <p className="fc-sites__text">
             {this.values.isWorkspace
               ? 'The console this workspace’s domain serves.'
-              : 'The theme this site’s storefront renders with. Its own settings live on the Themes page with this site selected.'}
+              : 'The console this site’s own admin wears. A site admin may switch it again from Settings → Appearance.'}
           </p>
           <Select
             theme={this.theme}
-            value={this.values.isWorkspace ? this.values.appearance : this.values.theme}
-            onChange={this.values.isWorkspace ? this.onAppearance : this.onTheme}
-            placeholder={this.values.isWorkspace ? 'No appearance' : 'No theme'}
+            value={this.values.appearance}
+            onChange={this.onAppearance}
+            placeholder="Default console"
             clearable
-            options={(this.values.isWorkspace ? inventory.appearances : inventory.themes)
-              .map((entry) => ({ value: entry.slug, label: `${entry.name} ${entry.version}`.trim() }))}
+            options={inventory.appearances.map((entry) => ({ value: entry.slug, label: `${entry.name} ${entry.version}`.trim() }))}
           />
         </Card>
+
+        {this.values.isWorkspace ? null : (
+          <Card title="Theme">
+            <p className="fc-sites__text">
+              The theme this site’s storefront renders with. Its own settings live on the Themes page
+              with this site selected.
+            </p>
+            <Select
+              theme={this.theme}
+              value={this.values.theme}
+              onChange={this.onTheme}
+              placeholder="No theme"
+              clearable
+              options={inventory.themes.map((entry) => ({ value: entry.slug, label: `${entry.name} ${entry.version}`.trim() }))}
+            />
+          </Card>
+        )}
 
         <Card title={`Plugins (${this.values.plugins.length} of ${inventory.plugins.length})`}>
           <p className="fc-sites__text">

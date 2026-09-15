@@ -141,7 +141,7 @@ export class ServerRoutesSetup {
     vApi.use(MARKETPLACE, new MarketplaceRouter(this.manager, this.auth, platformAdmin).router);
     vApi.use(THEMES, themeAssetRouter);
     vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth, platformAdmin).router);
-    vApi.use(APPEARANCES, new AppearanceRouter(this.auth, platformAdmin, platformAccess, (this.manager as any).schemaDb ?? this.manager.db).router);
+    vApi.use(APPEARANCES, new AppearanceRouter(this.auth, platformAdmin, this.manager.db).router);
     // Sources is framework surface, mounted like every other framework router. It used to arrive as
     // a "plugin" the framework discovered, packed into a tarball and loaded through a capability
     // sandbox — to build the very extensions that sandbox exists to contain.
