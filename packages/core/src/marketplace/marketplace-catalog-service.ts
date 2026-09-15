@@ -12,6 +12,7 @@ import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plu
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { CoreServices } from '@core/services/core-services';
 import { CatalogEntry } from '@core/marketplace/contributions/catalog-entry';
+import { CatalogContributionScope } from '@core/marketplace/catalog-contribution-scope';
 import { SystemConstants } from '@core/constants/system.constants';
 
 export class MarketplaceCatalogService {
@@ -75,7 +76,10 @@ export class MarketplaceCatalogService {
    */
   public async fetchCatalog(): Promise<MarketplacePlugin[]> {
     const remote = await this.fetchRemoteCatalog();
-    const contributed = await this.fetchContributedCatalog();
+    // What THIS installation built is the operator's own inventory, not a catalogue — on a
+    // multi-tenant platform it is other customers' bespoke plugins. A site is offered the remote
+    // catalogue only; see `CatalogContributionScope`.
+    const contributed = CatalogContributionScope.offeredHere() ? await this.fetchContributedCatalog() : [];
 
     /**
      * Contributed entries win a tie.
