@@ -19,7 +19,11 @@ export class SiteRecord {
     readonly visibility: string,
     /** `production` | `non-production` — whether this site may email, take payment, ship or run jobs. */
     readonly environment: string,
-    /** Workspace only: the appearance its console is locked to; `''` = default console. */
+    /**
+     * The appearance this tenant's console wears. For a workspace, the kind lock on the tenant row;
+     * for a site, its own `admin_appearance` setting — a site chooses one, a workspace is fixed to
+     * one. `''` = default console either way.
+     */
     readonly appearance: string,
     /** Storefront pages this site actually has. Zero on a storefront site means its seed never ran. */
     readonly pageCount: number,

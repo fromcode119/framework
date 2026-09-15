@@ -3,7 +3,6 @@ import fs from 'fs';
 import { BaseController, PluginManager, Logger, CoercionUtils, PluginHealthReportService, PluginRegistryHealth, PluginState, PluginTenantAccess, SystemConstants, TenantMode } from '@fromcode119/core';
 import { PluginInstallOperationService } from '@api/services/plugin-install-operation-service';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
-import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 
 export class PluginController extends BaseController {
 
@@ -43,12 +42,12 @@ export class PluginController extends BaseController {
       ? PluginTenantAccess.enabledSlugsFor(tenantId)
       : null;
 
-    // A tenant admin sees what its OWN site runs — not the platform's catalogue. Twenty-five
-    // installed products, several of them other customers', is exactly the inventory a customer must
-    // not be able to read off a shared box. A platform admin sees everything, because it is the one
-    // deciding what each site gets.
-    const access = new PlatformAccessResolver((this.manager as any).schemaDb ?? this.manager.db);
-    const platformAdmin = await access.isPlatformAdmin(req);
+    // A tenant is isolated from every other tenant, platform admin included. Whoever is asking,
+    // once a site is bound to the request, the list is that site's assignment and nothing wider —
+    // twenty-five installed products, several of them other customers', is exactly the inventory a
+    // request scoped to one site must not be able to read off a shared box. The platform's full
+    // catalogue is still there; it is answered in PLATFORM scope (no tenant bound), where an
+    // operator steps out to decide what each site gets.
     /**
      * Bundled extensions are NOT on this list.
      *
@@ -63,7 +62,7 @@ export class PluginController extends BaseController {
      */
     const visible = this.manager.getSortedPlugins()
       .filter((p) => p.manifest?.bundled !== true)
-      .filter((p) => platformAdmin || !enabledSlugs || enabledSlugs.has(p.manifest.slug));
+      .filter((p) => !enabledSlugs || enabledSlugs.has(p.manifest.slug));
 
     res.json(visible.map(p => ({
       manifest: p.manifest,

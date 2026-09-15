@@ -78,6 +78,46 @@ describe('TenantThemeAccess', () => {
   });
 });
 
+describe('TenantThemeAccess.assignedSlugsFor', () => {
+  it('answers every row the tenant has — active, retired and merely prepared', async () => {
+    // This IS the tenant's assigned set, and what the admin theme list is filtered to. It is
+    // deliberately wider than `activeSlug`: a site switches among what it was assigned, and a
+    // switch RETIRES the old row rather than deleting it.
+    TenantThemeAccess.configure(fakeDb({
+      t1: [
+        { theme_slug: 'aurora', state: 'active' },
+        { theme_slug: 'basic', state: 'inactive' },
+        { theme_slug: 'nocturne', state: 'inactive', config: { variables: {} } },
+      ],
+      t2: [{ theme_slug: 'other', state: 'active' }],
+    }));
+
+    expect([...await TenantThemeAccess.assignedSlugsFor('t1')].sort()).toEqual(['aurora', 'basic', 'nocturne']);
+  });
+
+  it('answers EMPTY for a tenant with no rows, never another tenant\'s set', async () => {
+    TenantThemeAccess.configure(fakeDb({ t2: [{ theme_slug: 'other', state: 'active' }] }));
+
+    expect(await TenantThemeAccess.assignedSlugsFor('t1')).toEqual(new Set());
+  });
+
+  it('answers EMPTY when the read fails, so a database blip cannot open the list up', async () => {
+    TenantThemeAccess.configure(fakeDb({ t1: [{ theme_slug: 'aurora', state: 'active' }] }, { fail: true }));
+
+    expect(await TenantThemeAccess.assignedSlugsFor('t1')).toEqual(new Set());
+  });
+
+  it('does not read the cache, which only ever holds the ACTIVE choice', async () => {
+    const db = fakeDb({ t1: [{ theme_slug: 'aurora', state: 'active' }, { theme_slug: 'basic', state: 'inactive' }] });
+    TenantThemeAccess.configure(db);
+    await TenantThemeAccess.warm('t1');
+    (db.find as any).mockClear();
+
+    expect([...await TenantThemeAccess.assignedSlugsFor('t1')].sort()).toEqual(['aurora', 'basic']);
+    expect(db.find).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('TenantThemeStateService', () => {
   it('activate retires the previous active row and invalidates — the next request sees the new theme', async () => {
     multiTenant();

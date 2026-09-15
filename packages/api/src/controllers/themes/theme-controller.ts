@@ -1,6 +1,5 @@
 import { ThemeAssetScope } from '@api/controllers/themes/enums/theme-asset-scope.enum';
-import { TenantMode, ThemeState } from '@fromcode119/core';
-import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
+import { TenantMode, ThemeState, TenantThemeAccess } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { ArchiveUploadSessionService, BaseController, ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
@@ -19,13 +18,21 @@ export class ThemeController extends BaseController {
   }
 
   async list(req: Request, res: Response) {
-    // Until T3 the active theme is process-wide, so a tenant admin has exactly one theme that is in
-    // any sense "its": the active one. The rest of the installed set is platform inventory, and a
-    // customer reading it off the shared box is the leak this filter closes.
-    // T3: a tenant admin chooses among the themes the operator INSTALLED, for its own site — so it sees
-    // every installed theme, with `state` marking the one ITS site renders with. Putting files on disk
-    // stays a platform action elsewhere in this router.
-    const themes = this.manager.getThemes();
+    // A tenant is isolated from every other tenant — no theme visible that is not ITS OWN, the same
+    // rule the plugin list and the admin sidebar already enforce. "Its own" means every row
+    // `_system_tenant_themes` holds for it: the one currently active, one retired by a later switch,
+    // or one a platform admin merely prepared (saved config for, without activating) — never the
+    // platform's full installed set. That set is answered in PLATFORM scope (no tenant bound), where
+    // an operator assigns a theme to a site by editing the tenant record; a site admin then switches
+    // only among what was assigned to it.
+    const tenantId = String((req as any).tenantId || '').trim();
+    const assignedSlugs = TenantMode.isEnabled() && tenantId
+      ? await TenantThemeAccess.assignedSlugsFor(tenantId)
+      : null;
+
+    const themes = this.manager.getThemes()
+      .filter((theme) => !assignedSlugs || assignedSlugs.has(theme.slug));
+
     res.json(themes.map((theme) => ({
       ...theme,
       multiTenant: TenantMode.isEnabled(),

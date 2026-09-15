@@ -18,6 +18,14 @@ export class TenantSummary {
     readonly pageCount: number,
     /** Every export archive this site has, with the id the download route takes. */
     readonly exports: Array<{ id: string; filename: string; sizeBytes: number; modifiedAt: string }> = [],
+    /**
+     * The appearance this tenant actually wears. A workspace's is `tenant.appearance` (the kind
+     * lock), already correct from `tenantJson` below — but a SITE's is its own `admin_appearance`
+     * SETTING, not the tenant row (which is always `''` there), so the caller reads it separately
+     * and passes it here. Without this override the Sites page always showed "Default console" for
+     * a site no matter what an operator had assigned it.
+     */
+    readonly appearance: string = tenant.appearance,
   ) {}
 
   toJSON(): Record<string, unknown> {
@@ -29,6 +37,7 @@ export class TenantSummary {
       plugins: this.plugins,
       theme: this.theme,
       lastExport: this.lastExport,
+      appearance: this.appearance,
     };
   }
 
