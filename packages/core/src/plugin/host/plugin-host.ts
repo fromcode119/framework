@@ -6,6 +6,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginGuest } from '@core/plugin/host/plugin-guest';
 import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
@@ -256,7 +257,7 @@ export class PluginHost {
         token,
         tenantId: String(store?.tenantId ?? '').trim() || null,
         locale: String(store?.locale ?? ''),
-        peers: this.peers(),
+        peers: this.peers(store),
         enabledPlugins: this.enabledPlugins(store),
       };
       // About to wait on another process: hand the request's database connection back first. Held
@@ -322,19 +323,24 @@ export class PluginHost {
   /**
    * Who the guest may call, and it must agree with who the HOST will resolve.
    *
-   * ACTIVE only. This listed every installed plugin with a public API, including disabled ones, so a
-   * guest was told `broadcasts` was there, its `if (!broadcasts) return` guard passed, the call went
-   * out, and the host answered `cannot read "registerProvider" of null` — by which point the plugin
-   * had logged success. Two views of the same question, and the one the plugin could see was wrong.
+   * It asks `PluginsManagerResolver.isResolvable` — the SAME predicate the host applies when the call
+   * lands — with the store the dispatcher will re-enter, so the two cannot disagree by construction.
+   *
+   * They have disagreed twice. First on state: this listed every installed plugin with a public API,
+   * including disabled ones, so a guest was told `broadcasts` was there, its `if (!broadcasts) return`
+   * guard passed, the call went out, and the host answered `cannot read "registerProvider" of null` —
+   * by which point the plugin had logged success. That was fixed by filtering to ACTIVE. Then on the
+   * TENANT: the snapshot still had no tenant axis while the resolver did, so during the per-site
+   * replay of `onInit` a guest was again told yes and again refused, and the operator was shown a
+   * WARN saying registration had FAILED for a peer simply not enabled on that site.
    */
-  private peers(): Record<string, string[]> {
+  private peers(store: IRequestStore | undefined): Record<string, string[]> {
     const out: Record<string, string[]> = {};
+    const tenantId = String(store?.tenantId ?? '').trim() || null;
     for (const plugin of this.manager.plugins.values()) {
-      const api = plugin.publicAPI;
-      if (!api) continue;
-      if (PluginState.resolve(plugin.state) !== PluginState.ACTIVE) continue;
+      if (!PluginsManagerResolver.isResolvable(plugin, tenantId)) continue;
       // Own property names, not `Object.keys`: a class of static methods enumerates as nothing.
-      out[`${String(plugin.manifest.namespace || '').trim()}:${plugin.manifest.slug}`] = PluginGuest.functionNames(api);
+      out[`${String(plugin.manifest.namespace || '').trim()}:${plugin.manifest.slug}`] = PluginGuest.functionNames(plugin.publicAPI);
     }
     return out;
   }

@@ -3,6 +3,7 @@ import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { RequestContextUtils } from '@core/context/request-context';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { TenantMode } from '@core/tenant/tenant-mode';
 
 export class PluginsManagerResolver implements IPluginApiResolver {
   constructor(private readonly plugins: Map<string, ILoadedPlugin>) {}
@@ -11,23 +12,39 @@ export class PluginsManagerResolver implements IPluginApiResolver {
     return this.resolve(namespace, slug) !== undefined;
   }
 
+  /**
+   * Can this plugin's public API be handed to a caller acting for `tenantId`?
+   *
+   * THE ONE ANSWER. An isolated guest is told separately which peers it may call
+   * (`PluginHost.peers`), and the host then re-decides when the call actually arrives. While those
+   * two asked the question differently the guest was told yes and the host said no: the snapshot
+   * left the tenant axis out, so on the per-site replay of `onInit` a guest saw a peer that would
+   * not resolve, called it, and got `cannot read "<method>" of null` — reported to the operator as a
+   * registration FAILURE for something working exactly as designed. Both sides now call this.
+   *
+   * The TENANT axis applies INSIDE a request only: `context.plugins.namespace(...)` must not hand one
+   * plugin the public API of another that this customer does not run — that is a route around the
+   * gate on every other seam, reached by calling a peer instead of an endpoint. With NO tenant (boot,
+   * `plugins:ready`, a scheduler tick) there is no customer, and a plugin registering its providers
+   * with a peer is platform work between two platform-active plugins; the peer's own data access is
+   * still refused untenanted by its database proxy. Gating that made every cross-plugin registration
+   * fail at boot and succeed only on the first request to the registering plugin.
+   */
+  static isResolvable(plugin: ILoadedPlugin, tenantId: string | null): boolean {
+    if (PluginState.resolve(plugin.state) !== PluginState.ACTIVE || !plugin.publicAPI) return false;
+    const tenant = String(tenantId ?? '').trim();
+    if (!tenant) return true;
+    if (!TenantMode.isEnabled()) return true;
+    return PluginTenantAccess.enabledSlugsFor(tenant).has(String(plugin.manifest?.slug ?? '').trim());
+  }
+
   resolve(namespace: string, slug: string): unknown {
     const normalizedNamespace = String(namespace || '').trim().toLowerCase();
     const normalizedSlug = String(slug || '').trim().toLowerCase();
+    const tenantId = RequestContextUtils.getTenantId() ?? null;
 
     for (const plugin of this.plugins.values()) {
-      if (plugin.state !== PluginState.ACTIVE || !plugin.publicAPI) {
-        continue;
-      }
-
-      // The TENANT axis, INSIDE a request: `context.plugins.namespace(...)` must not hand one plugin the
-      // public API of another that this customer does not run — a route around the gate on every
-      // other seam, reached by calling a peer instead of an endpoint. OUTSIDE a request (boot,
-      // `plugins:ready`, a scheduler tick) there is no customer: a plugin registering its providers with
-      // a peer is platform work between two platform-active plugins, and the peer's own data access is
-      // still refused untenanted by its database proxy. Gating it here made every cross-plugin
-      // registration fail at boot and succeed only on the first request to the registering plugin.
-      if (RequestContextUtils.getTenantId() && !PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug)) {
+      if (!PluginsManagerResolver.isResolvable(plugin, tenantId)) {
         continue;
       }
 
