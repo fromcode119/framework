@@ -26,14 +26,26 @@ export class PostgresTenantSession {
   }
 
   /**
-   * Clears BOTH markers, always together.
+   * Clears BOTH markers, always together — then restores the pool's RESTING state.
    *
    * The platform-admin marker must never outlive the request that earned it, and a client goes back
-   * to a shared pool — so clearing the tenant while leaving the marker would hand the next borrower
-   * a connection that may write platform rows.
+   * to a shared pool, so clearing the tenant while leaving the marker would hand the next borrower a
+   * connection that may write platform rows.
+   *
+   * `platformPool` is what stops that rule breaking the DDL pool. `markAsPlatformConnection` sets the
+   * marker on the pool's `connect` event — i.e. ONCE per physical connection — so a client that had
+   * been through any scope came back with the marker off, and `connect` does not fire again on
+   * reuse. Every later untenanted platform write on that client was then refused: "new row violates
+   * row-level security policy for _system_meta", from code that had done nothing wrong and had no
+   * way to see why. Restoring the resting state here is what makes the pool's own promise — every
+   * client it hands out acts for the platform — actually true.
    */
-  static async clear(client: PostgresQueryable): Promise<void> {
+  static async clear(client: PostgresQueryable, platformPool = false): Promise<void> {
     await client.query(TenantIsolationSql.resetTenantStatement());
+    if (platformPool) {
+      await client.query(TenantIsolationSql.setPlatformAdminStatement(), ['on']);
+      return;
+    }
     await client.query(TenantIsolationSql.resetPlatformAdminStatement());
   }
 

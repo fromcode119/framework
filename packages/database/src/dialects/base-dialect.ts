@@ -3,6 +3,7 @@ import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 import { RefusingTenantIsolation } from '@database/tenant/refusing-tenant-isolation';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+import type { IColumnStats } from '@database/interfaces/column-stats.interface';
 import { JoinType } from '@database/enums/join-type.enum';
 import { sql, or, eq, ne, gt, gte, lt, lte, isNull, isNotNull, inArray, notInArray } from 'drizzle-orm';
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
@@ -61,6 +62,24 @@ export abstract class BaseDialect {
     return SchemaReconcileOutcome.unsupported(
       `${this.constructor.name}: this driver cannot reconcile a declared UNIQUE on an existing column.`,
     );
+  }
+
+  /**
+   * No catalog to read, so nothing is claimed about the column.
+   *
+   * Zero rows would be a LIE that reads as "safe to drop" — the one answer that must never be
+   * invented. A driver that cannot count says so by refusing.
+   */
+  async columnStats(_table: string, _column: string): Promise<IColumnStats> {
+    throw new Error(
+      `${this.constructor.name}: this driver cannot report column statistics, so there is nothing to `
+      + 'show an operator deciding whether a column is safe to drop. Refusing rather than reporting zero.',
+    );
+  }
+
+  /** Irreversible, so a driver without an implementation refuses rather than silently doing nothing. */
+  async dropColumn(_table: string, _column: string): Promise<void> {
+    throw new Error(`${this.constructor.name}: this driver cannot drop a column.`);
   }
 
   /** Same contract as `ensureDeclaredUnique`: a driver that cannot answer REPORTS rather than throws. */

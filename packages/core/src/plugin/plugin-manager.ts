@@ -282,6 +282,29 @@ export class PluginManager implements IPluginManagerInterface {
   }
 
   /**
+   * Records columns the database has that nothing declares — a proposal queue, never an action.
+   *
+   * A plugin that is not ACTIVE registers no collections, so its tables yield no findings this pass.
+   * Its table names are passed through so the queue is not pruned as though the debt were resolved.
+   */
+  private async auditUndeclaredColumns(): Promise<void> {
+    const inactive = [...this.plugins.values()].filter((plugin) => plugin.state !== PluginState.ACTIVE);
+    const registered = new Set([...this.registeredCollections.values()].map((entry) => entry.collection.slug));
+    const absentTables = (await this.schemaManager.listTables())
+      .filter((table) => !registered.has(table))
+      .filter((table) => inactive.some((plugin) => table.startsWith(`fcp_${String(plugin.manifest.slug).replace(/-/g, '_')}_`)));
+
+    await this.schemaManager.recordUndeclaredColumns(
+      [...this.registeredCollections.values()].map((entry) => ({
+        collection: entry.collection,
+        pluginSlug: entry.pluginSlug,
+      })),
+      inactive.map((plugin) => plugin.manifest.slug),
+      absentTables,
+    );
+  }
+
+  /**
    * Boots every plugin, then announces `plugins:ready` ONCE the whole set is registered and enabled.
    *
    * A plugin's own onInit/onEnable run inside the boot loop, so a cross-plugin registration made
@@ -294,8 +317,18 @@ export class PluginManager implements IPluginManagerInterface {
     // Every tenant-scoped table, not just the ones a registered collection happened to sync — a
     // table belonging to a disabled plugin would otherwise stay globally readable.
     await this.schemaManager.applyTenantIsolationSweep(this.systemCollectionTables());
+    // AFTER discovery, so every cross-plugin `collections.extend()` has already happened — a field
+    // one plugin injects into another's collection must not be read as an orphan.
     const active = [...this.plugins.values()].filter((plugin) => plugin.state === PluginState.ACTIVE).map((plugin) => plugin.manifest.slug);
     this.hooks.emit(PluginManager.PLUGINS_READY_EVENT, { plugins: active });
+
+    // AFTER `plugins:ready`, not before. A plugin declares a field conditionally on a PEER
+    // (`if (licensingApi) fields.push(...)`), and a peer is only resolvable once it has booted — so
+    // a sweep that runs earlier sees a field that is genuinely declared, by an ACTIVE plugin, as
+    // undeclared. That finding would carry an EMPTY `inactivePluginsAtScan`, which is documented to
+    // mean "the picture was complete" — a false positive with its safety caveat missing, which is
+    // worse than one that has it.
+    await this.auditUndeclaredColumns();
   }
 
   async updatePlugin(slug: string, pkg?: any): Promise<void> {

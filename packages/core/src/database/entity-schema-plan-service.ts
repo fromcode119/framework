@@ -35,6 +35,11 @@ export class EntitySchemaPlanService {
           .map((field) => this.toColumnName(field.name))
           .filter((column) => existing.has(column.toLowerCase()))
         : [],
+      // The REVERSE of `missingColumns`, and the half that was never computed: what the table has
+      // that nothing declares. Only ever reported — see `SchemaReconciliationService`.
+      undeclaredColumns: exists
+        ? existingColumns.filter((column) => !this.isAccountedFor(column, collection))
+        : [],
       unsupportedIndexes: this.resolveUnsupportedIndexes(collection),
     };
   }
@@ -63,6 +68,30 @@ export class EntitySchemaPlanService {
 
   toColumnName(value: string): string {
     return value.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+  }
+
+  /**
+   * Columns the framework owns rather than a field declaring them.
+   *
+   * `id`, `created_at` and `updated_at` are emitted by the schema builder when no field claims them;
+   * `tenant_id` is added by the isolation sweep. None appears in `collection.fields`, so without
+   * this every table would report four orphans.
+   */
+  private static readonly FRAMEWORK_COLUMNS = new Set<string>(['id', 'created_at', 'updated_at', 'tenant_id']);
+
+  /**
+   * Whether some declaration accounts for `column`.
+   *
+   * Reads `collection.fields` as it stands AT SYNC TIME, which matters: entity registration pushes
+   * extra fields onto a collection before it is synced (workflow status, relationship keys), and
+   * those are as declared as any other. Comparing against a static list would report them as
+   * orphans.
+   */
+  private isAccountedFor(column: string, collection: ICollection): boolean {
+    const name = String(column ?? '').toLowerCase();
+    if (EntitySchemaPlanService.FRAMEWORK_COLUMNS.has(name)) return true;
+    return (collection.fields || [])
+      .some((field) => this.toColumnName(field.name).toLowerCase() === name);
   }
 
   private resolveSyncableFields(collection: ICollection): IField[] {

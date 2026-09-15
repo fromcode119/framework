@@ -28,6 +28,7 @@ export { BaseMigration } from '@database/base-migration';
 export { SchemaKeyField } from '@database/schema-key-field';
 export { TenantColumn } from '@database/tenant/tenant-column';
 export { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
+export type { IColumnStats } from '@database/interfaces/column-stats.interface';
 export type { ITenantIsolation, ITenantPolicySpec, ITenantBlindUniqueRule, IScopedUniqueRules } from '@database/interfaces/tenant-isolation.interface';
 export { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
 // The EXECUTING halves of Postgres tenancy. `TenantIsolationSql` — the statements themselves — is

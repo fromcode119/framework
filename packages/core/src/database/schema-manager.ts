@@ -6,14 +6,18 @@ import { EntitySchemaPlanService } from '@core/database/entity-schema-plan-servi
 import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
+import { SchemaReconciliationService } from '@core/database/schema-reconciliation-service';
 import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 import type { IField } from '@core/interfaces/field.interface';
 
 export class SchemaManager {
   private logger = new Logger({ namespace: 'schema-manager' });
   private entitySchemaPlan = new EntitySchemaPlanService();
+  private readonly reconciliation: SchemaReconciliationService;
 
-  constructor(private db: IDatabaseManager) {}
+  constructor(private db: IDatabaseManager) {
+    this.reconciliation = new SchemaReconciliationService(db);
+  }
 
   async syncCollection(collection: ICollection): Promise<void> {
     const tableName = collection.slug;
@@ -49,6 +53,85 @@ export class SchemaManager {
       this.logger.error(`Failed to sync schema for ${tableName}: ${error}`);
       throw error;
     }
+  }
+
+  /**
+   * Record what the database has that NOTHING declares — once, after every plugin has registered.
+   *
+   * NOT during `syncCollection`, and that is the whole correctness of it. A collection is extended by
+   * OTHER plugins after its own table syncs: the SEO plugin injects `ogTitle`, `canonicalUrl`,
+   * `focusKeyword` and three more into cms/pages and cms/posts from its `onInit`, and ecommerce
+   * registers `licenseProduct` onto products at runtime. Judged at sync time, all of those look
+   * undeclared — measured: 13 of 19 findings were fields a later plugin declares, including one read
+   * on every order. Proposing those for removal is precisely the harm this feature exists to prevent,
+   * so the question is only asked once the full picture exists.
+   */
+  async recordUndeclaredColumns(
+    entries: Array<{ collection: ICollection; pluginSlug: string }>,
+    inactivePlugins: string[] = [],
+    absentPluginTables: string[] = [],
+  ): Promise<void> {
+    // THE DECLARED PICTURE MAY BE INCOMPLETE, and the finding must say so rather than pretend.
+    //
+    // `licenseProduct` on products is declared only when the licensing plugin is ACTIVE; with it
+    // disabled the column looks undeclared while still holding every licence issued when it ran.
+    // Refusing to audit at all while any plugin is inactive was the first answer and it is worse:
+    // measured on this deployment, 12 of 19 installed plugins are inactive, so the audit would never
+    // once have run. A queue that never runs is the report that was already rejected.
+    //
+    // So the caveat travels WITH each finding to the operator who approves it. Nothing is ever
+    // dropped automatically, and the one judgement a human is uniquely able to make — "that column
+    // belongs to the plugin I turned off last month" — is exactly the judgement this hands them.
+    if (inactivePlugins.length > 0) {
+      this.logger.info(
+        `Undeclared-column audit: ${inactivePlugins.length} installed plugin(s) are not active `
+        + `(${inactivePlugins.join(', ')}). A column one of them declares will look like an orphan, `
+        + 'so each finding is marked accordingly.',
+      );
+    }
+
+    const failed = new Set<string>();
+    const found = new Set<string>();
+
+    for (const { collection, pluginSlug } of entries) {
+      // FRAMEWORK TABLES ARE NOT JUDGED THIS WAY, and the two that proved it are `media.shared` —
+      // the column the media sharing POLICY itself reads — and `users.is_platform_admin`, which
+      // decides who is a platform administrator. Both were proposed for removal, and both are live.
+      //
+      // The cause is structural, not a missed case: a framework table's columns come from
+      // MIGRATIONS, so the collection's field list was never the full declaration and the diff
+      // against it is meaningless. Plugin tables are the opposite — their shape IS the declaration,
+      // which is exactly why plugin updates leave this debt and framework migrations do not.
+      //
+      // Still marked audited, so anything wrongly recorded by an earlier build is pruned rather than
+      // left sitting in the queue waiting to be approved.
+      if (pluginSlug === 'system' || collection.system === true) continue;
+
+      try {
+        const plan = await this.planCollection(collection);
+        if (!plan.exists) continue;
+        await this.reconciliation.record(plan, inactivePlugins);
+        for (const column of plan.undeclaredColumns) found.add(`${plan.tableName}.${column}`);
+      } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
+        // Only a FAILED audit protects its entries from pruning: no fresh answer is not the same as
+        // "no longer a finding".
+        failed.add(collection.slug);
+        this.logger.warn(`Could not audit ${collection.slug}: ${error?.message || error}`);
+      }
+    }
+
+    // A plugin that is not RUNNING registers no collections, so its tables produce no findings and
+    // would be pruned as though the debt were resolved — losing `firstSeenAt` and the caveat history
+    // on an unrelated toggle. Not-running is "no fresh answer", which is exactly what prune must
+    // leave alone.
+    for (const table of absentPluginTables) failed.add(table);
+
+    await this.reconciliation.prune(failed, found);
+  }
+
+  /** Every table in the schema — for finding ones whose plugin is not currently running. */
+  async listTables(): Promise<string[]> {
+    return (await this.db.getTables()) ?? [];
   }
 
   async planCollection(collection: ICollection, tableExists?: boolean): Promise<IEntitySchemaPlan> {
