@@ -1,10 +1,20 @@
 import type { IDatabaseManager } from '@fromcode119/database';
 import { NamingStrategy, PhysicalTableNameUtils, TableResolver, TenantColumn } from '@fromcode119/database';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
+import type { IField } from '@core/interfaces/field.interface';
+import { FieldType } from '@core/enums/field-type.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+
+/** One `relationship` sub-field found below a column, at the path leading to it. */
+interface INestedFieldReference {
+  path: string[];
+  relationTo: string;
+  hasMany: boolean;
+  required: boolean;
+}
 
 /**
  * Which tables hold tenant data on THIS platform, and what they look like.
@@ -29,10 +39,21 @@ export class TenantTableCatalog {
   /** Carries `tenant_id` but is never data to move: a session belongs to a login, not to a site. */
   private static readonly EXCLUDED = new Set<string>(['_system_sessions', SystemConstants.TABLE.TENANTS, ...TenantTableCatalog.CONFIG_TABLES]);
 
+  /** Whether this catalog was built WITH collections at all — a CLI process runs no plugin host and passes none. */
+  readonly hasSchemaReferences: boolean;
+
+  private readonly collections: Array<{ collection: ICollection; pluginSlug: string }>;
+
   constructor(
     private readonly db: IDatabaseManager,
-    private readonly collections: Iterable<{ collection: ICollection; pluginSlug: string }> = [],
-  ) {}
+    collections: Iterable<{ collection: ICollection; pluginSlug: string }> = [],
+  ) {
+    // Materialized once: `collections` may be a Map's `.values()`, a single-use iterator that a
+    // second `for...of` (this class calls `schemaReferences` from `describe`, which callers may
+    // invoke more than once against one catalog instance) would silently see as empty.
+    this.collections = [...collections];
+    this.hasSchemaReferences = this.collections.length > 0;
+  }
 
   /** Tables under a tenant policy right now — the multi-tenant case. */
   async byPolicy(): Promise<TenantTableDescriptor[]> {
@@ -144,9 +165,18 @@ export class TenantTableCatalog {
   }
 
   /**
-   * `relationship` fields → column references. `relationTo` is written three ways in the wild: a
-   * framework table (`users`, `media`), a sibling collection of the same plugin (`categories`), or the
-   * `@plugin/entity` form. Only single-valued relations are followed: a `hasMany` is stored as JSON.
+   * `relationship` fields → column references, INCLUDING what is stored as JSON: a `hasMany`
+   * relationship (a bare array of ids, or of `{ id }` objects) at the column itself, and a
+   * `relationship` sub-field nested below an `array`/`group` field (an array of objects, one key of
+   * which is itself a reference — a JSON row's `item` naming another row by id). Walking only the
+   * DECLARED shape, never a generic "any integer that matches a remapped id": the schema is what
+   * tells an id apart from a quantity or a price, and inventing that rule from the JSON alone would
+   * rewrite the wrong ones.
+   *
+   * `relationTo` is written three ways in the wild: a framework table (`users`, `media`), a sibling
+   * collection of the same plugin (a short slug such as `categories`), or the plugin-prefixed form the
+   * plugin itself uses for its own slug (`<plugin>-<entity>`, from within that same plugin) —
+   * `resolveTarget` tries all three.
    */
   private schemaReferences(wanted: Set<string>, columns: Map<string, Record<string, string>>): Map<string, TenantColumnReference[]> {
     const out = new Map<string, TenantColumnReference[]>();
@@ -154,33 +184,78 @@ export class TenantTableCatalog {
       const table = String(collection.tableName || collection.slug || '').trim();
       if (!wanted.has(table)) continue;
       for (const field of collection.fields ?? []) {
-        if (field.type !== 'relationship' || !field.relationTo || Array.isArray(field.relationTo) || field.hasMany) continue;
         const column = NamingStrategy.toSnakeCase(field.name);
         if (!columns.get(table)?.[column]) continue;
-        const target = TenantTableCatalog.resolveTarget(String(field.relationTo), pluginSlug, columns);
-        if (!target) continue;
-        const list = out.get(table) ?? [];
-        list.push(new TenantColumnReference(table, column, target, 'schema'));
-        out.set(table, list);
+        const type = FieldType.resolve(field.type);
+        if (type === FieldType.RELATIONSHIP) {
+          if (!field.relationTo || Array.isArray(field.relationTo)) continue; // polymorphic: no single target to resolve
+          const target = TenantTableCatalog.resolveTarget(String(field.relationTo), pluginSlug, columns);
+          if (!target) continue;
+          TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, 'schema', [], !!field.hasMany, !!field.required));
+          continue;
+        }
+        if ((type === FieldType.ARRAY || type === FieldType.GROUP) && field.fields) {
+          for (const nested of TenantTableCatalog.collectNestedReferences(field.fields, [])) {
+            const target = TenantTableCatalog.resolveTarget(nested.relationTo, pluginSlug, columns);
+            if (!target) continue;
+            TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, 'schema', nested.path, nested.hasMany, nested.required));
+          }
+        }
       }
     }
     return out;
   }
 
+  /** Descends `array`/`group` sub-fields looking for a `relationship`, accumulating the JSON path to it. */
+  private static collectNestedReferences(fields: IField[], path: string[]): INestedFieldReference[] {
+    const out: INestedFieldReference[] = [];
+    for (const field of fields) {
+      const here = [...path, field.name];
+      const type = FieldType.resolve(field.type);
+      if (type === FieldType.RELATIONSHIP) {
+        if (!field.relationTo || Array.isArray(field.relationTo)) continue;
+        out.push({ path: here, relationTo: String(field.relationTo), hasMany: !!field.hasMany, required: !!field.required });
+        continue;
+      }
+      if ((type === FieldType.ARRAY || type === FieldType.GROUP) && field.fields) {
+        out.push(...TenantTableCatalog.collectNestedReferences(field.fields, here));
+      }
+    }
+    return out;
+  }
+
+  private static pushReference(out: Map<string, TenantColumnReference[]>, ref: TenantColumnReference): void {
+    const list = out.get(ref.table) ?? [];
+    list.push(ref);
+    out.set(ref.table, list);
+  }
+
+  /**
+   * `relationTo` as a plugin writes it — often its own slug (`<plugin>-<entity>`), which is not a
+   * physical table name and not what `PhysicalTableNameUtils.create` would build from it (that
+   * doubles the prefix: `fcp_<plugin>_<plugin>_<entity>`). The registry is what turned that same
+   * slug into a physical table at registration time, so it is what un-turns it here: the `@plugin/entity`
+   * form, entity being `relationTo` with a leading `<pluginSlug>-` stripped when the plugin wrote its
+   * own prefix, resolved through `TableResolver` (backed by `PluginRegistry`'s aliases — kebab, camel
+   * and snake variants of the entity, or its own default naming when no alias was registered). The
+   * older guesses stay as fallbacks for the shapes they were written for; `users` is a target the
+   * catalog does not describe (it is global) but the importer remaps it.
+   */
   private static resolveTarget(relationTo: string, pluginSlug: string, known: Map<string, Record<string, string>>): string | null {
+    const entity = relationTo.startsWith(`${pluginSlug}-`) ? relationTo.slice(pluginSlug.length + 1) : relationTo;
     const candidates = [
+      TableResolver.resolve(`@${pluginSlug}/${entity}`),
       TableResolver.resolve(relationTo),
       PhysicalTableNameUtils.create(pluginSlug, relationTo),
       relationTo,
     ].filter((name) => typeof name === 'string' && name.length > 0) as string[];
-    // `users` is a target the catalog does not describe (it is global), but the importer remaps it.
     return candidates.find((name) => known.has(name) || name === SystemConstants.TABLE.USERS) ?? null;
   }
 
   private static dedupe(references: TenantColumnReference[]): TenantColumnReference[] {
     const seen = new Set<string>();
     return references.filter((ref) => {
-      const key = `${ref.column}->${ref.targetTable}`;
+      const key = `${ref.column}[${ref.path.join('.')}]->${ref.targetTable}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;

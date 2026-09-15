@@ -25,6 +25,11 @@ export class TenantImportPlanner {
     private readonly tables: TenantTableDescriptor[],
     private readonly installed: { plugins: Map<string, string>; themes: Map<string, string> },
     private readonly uploadsDir: string,
+    // False only for a catalog built with no collections at all (a CLI process runs no plugin host).
+    // Without it every `schema` reference is invisible, so a remap-mode table's JSON columns look
+    // "opaque" for a reason the operator cannot fix by reading the preview — they need the admin's
+    // import path, or an archive whose ids need no remap. `plan()` refuses rather than say nothing.
+    private readonly hasSchemaReferences: boolean = true,
   ) {}
 
   async plan(reader: TenantArchiveReader, identity: TenantIdentity): Promise<TenantImportPlan> {
@@ -48,7 +53,7 @@ export class TenantImportPlanner {
         // The rows that are lost are counted in `warnings` below, which is where that fact belongs.
         tables.push({
           name: archived.name, rows: archived.rows, mode: 'skip', basis: 'noTable',
-          minId: null, taken: null, opaqueJsonColumns: [], droppedColumns: [],
+          minId: null, taken: null, opaqueJsonColumns: [], repointedReferences: [], droppedColumns: [],
         });
         if (archived.rows > 0) {
           warnings.push(
@@ -59,6 +64,21 @@ export class TenantImportPlanner {
         continue;
       }
       tables.push(await this.planTable(reader, archived, destination));
+    }
+
+    // With no collections at all, a `schema` reference can never be found (see the constructor note)
+    // — so a table that WILL be re-numbered and carries JSON is exactly the vselenskiportal88 defect
+    // waiting to happen again, silently, and the preview would have no way to say so either. Refusing
+    // beats guessing which JSON columns would have been fine to leave opaque.
+    if (!this.hasSchemaReferences) {
+      const risky = tables.filter((table) => table.mode === 'remap' && table.opaqueJsonColumns.length > 0);
+      if (risky.length > 0) {
+        blockers.push(
+          `No collection schema was available to this import (this process runs no plugin host), and `
+          + `${risky.map((table) => table.name).join(', ')} would be re-numbered with JSON columns whose ids `
+          + 'could not be re-pointed. Import through Sites → Import in the admin, or import an archive whose ids need no remap.',
+        );
+      }
     }
 
     const plugins = reader.manifest.plugins.map((plugin) => ({
@@ -91,10 +111,13 @@ export class TenantImportPlanner {
     // A JSON column the schema declares as a relationship IS followed by the remap; the rest are opaque.
     const followed = new Set(destination.references.map((ref) => ref.column));
     const opaqueJsonColumns = destination.jsonColumns.filter((column) => archived.columns.includes(column) && !followed.has(column));
+    const repointedReferences = destination.references
+      .filter((ref) => archived.columns.includes(ref.column))
+      .map((ref) => ({ column: ref.column, path: ref.path, targetTable: ref.targetTable }));
     if (!destination.hasSerialId || !destination.idSequence) {
       return {
         name: archived.name, rows: archived.rows, mode: 'preserve', basis: 'naturalKey',
-        minId: null, taken: null, opaqueJsonColumns: [], droppedColumns,
+        minId: null, taken: null, opaqueJsonColumns: [], repointedReferences: [], droppedColumns,
       };
     }
     const decision = await TenantImportPlanner.decideIds(this.db, destination, reader);
@@ -106,6 +129,7 @@ export class TenantImportPlanner {
       minId: decision.minId,
       taken: decision.taken,
       opaqueJsonColumns: decision.mode === 'remap' ? opaqueJsonColumns : [],
+      repointedReferences: decision.mode === 'remap' ? repointedReferences : [],
       droppedColumns,
     };
   }

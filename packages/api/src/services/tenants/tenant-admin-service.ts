@@ -274,11 +274,15 @@ export class TenantAdminService {
     return new TenantImportPlanner(this.db, this.registry, tables, {
       plugins: new Map(inventory.plugins.map((plugin) => [plugin.slug, plugin.version])),
       themes: new Map(inventory.themes.map((theme) => [theme.slug, theme.version])),
-    }, this.uploadsDir);
+    }, this.uploadsDir, this.tenantTableCatalog().hasSchemaReferences);
+  }
+
+  private tenantTableCatalog(): TenantTableCatalog {
+    return new TenantTableCatalog(this.db, this.manager.registeredCollections.values());
   }
 
   private async tables(): Promise<TenantTableDescriptor[]> {
-    return new TenantTableCatalog(this.db, this.manager.registeredCollections.values()).byPolicy();
+    return this.tenantTableCatalog().byPolicy();
   }
 
   private async summarize(tenant: TenantRecord): Promise<TenantSummary> {

@@ -23,10 +23,10 @@ import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-de
  * Runs an import plan.
  *
  * Order: tenant row → (in one transaction on the OWNER connection, scoped to the new tenant so
- * row-level security both applies and passes) users → files → tables in dependency order → sequences
- * → (outside the transaction, not RLS'd) memberships, plugin enablement, theme activation. A failure
- * anywhere in the transaction rolls every row back and removes the tenant row again: an import
- * either produced a whole site or nothing.
+ * row-level security both applies and passes) users → files → every table's ids decided and
+ * allocated → tables inserted in dependency order → sequences → (outside the transaction, not RLS'd)
+ * memberships, plugin enablement, theme activation. A failure anywhere in the transaction rolls every
+ * row back and removes the tenant row again: an import either produced a whole site or nothing.
  *
  * The id decision is re-made here rather than trusted from the plan: the plan is what the operator
  * saw, but the sequence may have moved since.
@@ -55,8 +55,22 @@ export class TenantImportExecutor {
           await new TenantImportUsers(this.db).run(reader, remap, warnings);
           const files = new TenantImportFiles(this.uploadsDir).run(reader, tenant.id, warnings);
           const installedPlugins = await this.installedPluginSlugs();
-          for (const table of this.tables) {
-            if (!reader.manifest.tableNames.includes(table.name)) continue;
+          const tables = this.tables.filter((table) => reader.manifest.tableNames.includes(table.name));
+          // Every table's ids are decided and allocated BEFORE any row of ANY table is inserted — not
+          // per table, immediately before that table's own inserts, as this used to run. A reference
+          // declared by a collection schema (a `hasMany` relationship, or one nested in an `array`
+          // field) can point at a table the dependency order has not reached yet, or at the SAME table
+          // (a row naming another row of its own kind); with
+          // the whole old→new map already complete, `TenantRowInserter.repoint` resolves either case
+          // inline, in one pass, regardless of which table comes first. Insert order still follows
+          // dependency order — that is for the FOREIGN KEY constraints, which this does not change.
+          for (const table of tables) {
+            if (table.hasSerialId && table.idSequence) {
+              const decision = await TenantImportPlanner.decideIds(this.db, table, reader);
+              if (decision.mode === 'remap') await this.allocateIds(reader, table, remap);
+            }
+          }
+          for (const table of tables) {
             inserted[table.name] = await this.importTable(reader, table, tenant, remap, files, installedPlugins, warnings);
           }
           await this.db.queryRaw('COMMIT');
@@ -90,10 +104,6 @@ export class TenantImportExecutor {
     warnings: string[],
   ): Promise<number> {
     const inserter = new TenantRowInserter(this.db, table, tenant.id, remap, files, warnings);
-    if (table.hasSerialId && table.idSequence) {
-      const decision = await TenantImportPlanner.decideIds(this.db, table, reader);
-      if (decision.mode === 'remap') await this.allocateIds(reader, table, remap);
-    }
     const skipRow = TenantImportExecutor.rowFilter(table, installedPlugins);
     let count = 0;
     let skipped = 0;
