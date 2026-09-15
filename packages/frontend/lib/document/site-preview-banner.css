@@ -6,13 +6,29 @@
  * Everything here is a literal value for that reason, and every property is stated rather than
  * inherited — a theme's `* { margin: 0 }` reset must not be able to collapse it.
  *
- * `position: sticky` rather than `fixed`: a fixed bar sits on top of a theme's own header and hides
- * it. Sticky pushes the page down by the bar's height and then stays at the top of the viewport,
- * which is what a status bar should do and costs the theme no layout it has to know about.
+ * AT THE BOTTOM, and it has been at the top twice.
+ *
+ * `fixed` at the top sat over a theme's own header and hid it. `sticky` at the top was meant to fix
+ * that by pushing the page down — and it does push the DOCUMENT FLOW, but a theme whose header is
+ * itself `position: fixed` is not in that flow and stays exactly where it was, so the bar covered the
+ * navigation anyway. That was found by an operator who could not click anything to test a migrated
+ * site. There is no theme-independent way to move somebody else's fixed header.
+ *
+ * So the bar stops competing for the top of the viewport. At the bottom it collides with nothing a
+ * theme puts at the top, stays visible at every scroll position, and needs no layout the theme has to
+ * know about. `padding-bottom` on the document keeps it off the last of the page's own content.
  */
+/* The document makes room, so the bar never sits over the end of the page's own content. Stated on
+   `body` rather than `html`: a theme that scrolls an inner element still gets the gap at the bottom. */
+body {
+  padding-bottom: 2.25rem;
+}
+
 .fc-site-preview {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 2147483000;
   display: flex;
   align-items: center;
@@ -27,7 +43,7 @@
   font: 600 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: 0.01em;
   text-align: center;
-  border-bottom: 1px solid #78350f;
+  border-top: 1px solid #78350f;
 }
 
 .fc-site-preview__dot {
