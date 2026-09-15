@@ -130,10 +130,50 @@ export class PluginDirectoryScannerService {
     if (fs.existsSync(themesDir)) {
       const themes = fs.readdirSync(themesDir);
       for (const themeSlug of themes) {
+        // `tenants/` under the themes root holds SITES' themes, not a theme called "tenants". A site's
+        // theme may not carry plugins at all — a bundled plugin is code, and shipping code is not
+        // something an upload does — so this walk deliberately stops at the platform's own themes.
+        if (ProjectPaths.isTenantArtifactsDir(themeSlug)) continue;
         const themePluginsPath = path.join(themesDir, themeSlug, 'plugins');
         if (fs.existsSync(themePluginsPath) && fs.statSync(themePluginsPath).isDirectory()) {
           roots.push(themePluginsPath);
         }
+      }
+    }
+
+    // Each site's own uploaded plugins, one root per site. Tagged by the DIRECTORY they were found
+    // in — a manifest cannot name its own owner, or an uploaded plugin would claim to be the
+    // platform's and be offered to every site.
+    //
+    // ONE SITE'S BAD DIRECTORY MUST NOT COST EVERY OTHER SITE ITS PLUGINS. These entries are written
+    // by upload rather than curated, so a dangling symlink or an unreadable mode will throw from
+    // `statSync`/`readdirSync` — and an unguarded throw here aborts discovery for the whole platform.
+    // Each site is inspected inside its own try; one that cannot be read is skipped, not fatal.
+    const rootOwners = new Map<string, string>();
+    const tenantPluginsRoot = ProjectPaths.tenantArtifactsRoot(this.pluginsRoot);
+    if (fs.existsSync(tenantPluginsRoot)) {
+      let tenantIds: string[] = [];
+      try {
+        tenantIds = fs.readdirSync(tenantPluginsRoot);
+      } catch (e) {
+        this.logger.error(`Could not read ${tenantPluginsRoot}; no site's own plugins were discovered.`, e);
+        tenantIds = [];
+      }
+      for (const tenantId of tenantIds) {
+        if (tenantId.startsWith('.')) continue;
+        const tenantRoot = path.join(tenantPluginsRoot, tenantId);
+        try {
+          if (!fs.statSync(tenantRoot).isDirectory()) continue;
+        } catch (e) {
+          this.logger.error(
+            `Could not read the plugins of site "${tenantId}" at ${tenantRoot}. That site has none of `
+            + 'its own until this is fixed; every other site is unaffected.',
+            e,
+          );
+          continue;
+        }
+        rootOwners.set(tenantRoot, tenantId);
+        roots.push(tenantRoot);
       }
     }
 
@@ -145,10 +185,21 @@ export class PluginDirectoryScannerService {
     for (const root of roots) {
       if (!fs.existsSync(root)) continue;
       const isBundledRoot = root === bundledRoot;
-      const pluginDirs = fs.readdirSync(root);
+      const rootOwnerTenantId = rootOwners.get(root);
+      // Guarded because a SITE's root now feeds this loop, and those are written by upload rather than
+      // curated. A throw here would end discovery for every root still queued behind it.
+      let pluginDirs: string[] = [];
+      try {
+        pluginDirs = fs.readdirSync(root);
+      } catch (e) {
+        this.logger.error(`Could not read plugin root ${root}; skipping it. Other roots are unaffected.`, e);
+        continue;
+      }
 
       for (const dir of pluginDirs) {
         if (dir.startsWith('.')) continue;
+        // The `tenants/` level itself is a container of sites, never a plugin.
+        if (root === this.pluginsRoot && ProjectPaths.isTenantArtifactsDir(dir)) continue;
         if (dir.startsWith('ext-') || dir.startsWith('fromcode-plugin-ext-')) continue;
 
         const pluginPath = path.join(root, dir);
@@ -167,6 +218,11 @@ export class PluginDirectoryScannerService {
             if (manifest.slug) {
               manifest.slug = manifest.slug.toLowerCase();
             }
+
+            // Stamped from the directory, and stamped AFTER the manifest is parsed, so a package that
+            // declares an `ownerTenantId` of its own cannot keep it. Absent means the platform's.
+            if (rootOwnerTenantId) manifest.ownerTenantId = rootOwnerTenantId;
+            else delete manifest.ownerTenantId;
 
             // Fill the build-output paths (server entry, UI bundles, migrations dir) from the package
             // layout so a manifest never has to restate what the build already decided. Anything the
