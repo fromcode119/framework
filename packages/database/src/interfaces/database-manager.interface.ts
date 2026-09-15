@@ -1,6 +1,6 @@
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import type { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
-import type { DeclaredUniqueOutcome } from '@database/declared-unique-outcome';
+import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
@@ -104,7 +104,17 @@ export interface IDatabaseManager {
    * holding duplicates cannot take the constraint, and that is a fact to surface, not a reason to
    * refuse the boot. A driver that cannot answer says `unsupported`.
    */
-  ensureDeclaredUnique(table: string, column: string): Promise<DeclaredUniqueOutcome>;
+  ensureDeclaredUnique(table: string, column: string): Promise<SchemaReconcileOutcome>;
+
+  /**
+   * Relaxes a NOT NULL the schema no longer declares.
+   *
+   * `required: false` was only honoured when the column was CREATED, so changing a field to optional
+   * on an existing table did nothing and the database went on refusing writes the admin presents as
+   * optional. Relax-only: this never adds a NOT NULL, because tightening needs a value for the rows
+   * that are already NULL and inventing one is exactly what this codebase forbids.
+   */
+  ensureDeclaredNullable(table: string, column: string): Promise<SchemaReconcileOutcome>;
 
   /**
    * Marks this connection as the platform's own (migrations, schema sync), permitting writes to

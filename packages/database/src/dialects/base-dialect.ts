@@ -1,6 +1,6 @@
 import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
-import { DeclaredUniqueOutcome } from '@database/declared-unique-outcome';
+import { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 import { RefusingTenantIsolation } from '@database/tenant/refusing-tenant-isolation';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import { JoinType } from '@database/enums/join-type.enum';
@@ -57,9 +57,16 @@ export abstract class BaseDialect {
    * rather than throwing — nothing is unsafe about a driver that cannot reconcile a declared unique,
    * unlike isolation, where silence would be mistaken for protection.
    */
-  async ensureDeclaredUnique(_table: string, _column: string): Promise<DeclaredUniqueOutcome> {
-    return DeclaredUniqueOutcome.unsupported(
+  async ensureDeclaredUnique(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
+    return SchemaReconcileOutcome.unsupported(
       `${this.constructor.name}: this driver cannot reconcile a declared UNIQUE on an existing column.`,
+    );
+  }
+
+  /** Same contract as `ensureDeclaredUnique`: a driver that cannot answer REPORTS rather than throws. */
+  async ensureDeclaredNullable(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
+    return SchemaReconcileOutcome.unsupported(
+      `${this.constructor.name}: this driver cannot relax a NOT NULL on an existing column.`,
     );
   }
 

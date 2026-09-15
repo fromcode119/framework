@@ -18,6 +18,7 @@ import { InterfacePrefixCommand } from './interface-prefix-command';
 import { OopGuardCommand } from './oop-guard-command';
 import { PluginAliasCommand } from './plugin-alias-command';
 import { PluginArchitectureCommand } from './plugin-architecture-command';
+import { PluginRawSqlCommand } from './plugin-raw-sql-command';
 import { PluginUiHookfreeCommand } from './plugin-ui-hookfree-command';
 import { PluginUiTypesCommand } from './plugin-ui-types-command';
 import { McpToolSchemaCommand } from './mcp-tool-schema-command';
@@ -53,6 +54,7 @@ export class ArchorCli {
     ['oop-guard', OopGuardCommand],
     ['plugin-alias', PluginAliasCommand],
     ['plugin-architecture', PluginArchitectureCommand],
+    ['plugin-raw-sql', PluginRawSqlCommand],
     ['plugin-ui-hookfree', PluginUiHookfreeCommand],
     ['plugin-ui-types', PluginUiTypesCommand],
     ['request-coercion', RequestCoercionCommand],
