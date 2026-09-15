@@ -3,6 +3,14 @@ import { ThemeSettingType } from '@core/enums/theme-setting-type.enum';
 import { RuntimeModuleKind } from '@core/plugin/services/enums/runtime-module-kind.enum';
 
 export interface IThemeManifest {
+  /**
+   * Which SITE owns this theme, or absent for the platform's own.
+   *
+   * NOT declared by the package — a theme cannot name its own owner, or an uploaded one would simply
+   * claim to be the platform's. Discovery sets it from the DIRECTORY the theme was found in, which is
+   * the only thing the uploader does not control.
+   */
+  ownerTenantId?: string;
   slug: string;
   name: string;
   version: string;

@@ -115,24 +115,74 @@ export class ThemeManager {
     await StorefrontRendererRefreshService.afterExtensionsChanged(reason, this.logger);
   }
 
+  /**
+   * Every installed theme: the platform's, directly under the root, and each site's own under
+   * `tenants/<siteId>/`.
+   *
+   * One map, keyed by slug, exactly as before — a theme's slug is globally unique whoever owns it,
+   * which is what lets the ten registries keyed on it go on working. Ownership rides on the manifest
+   * (`ownerTenantId`) and is taken from the DIRECTORY, never from the package: a theme cannot declare
+   * itself the platform's.
+   *
+   * A slug collision between a site's theme and the platform's does not silently resolve here. The
+   * upload path refuses it at the door, and if one ever reaches disk anyway the platform's copy wins
+   * and the collision is logged, because quietly serving a site's file where the platform's was
+   * expected is the worse failure.
+   */
   async discoverThemes() {
     this.logger.info(`Scanning for themes in ${this.themesRoot}...`);
     this.themes.clear();
     if (!fs.existsSync(this.themesRoot)) { fs.mkdirSync(this.themesRoot, { recursive: true }); return; }
-    const dirs = fs.readdirSync(this.themesRoot);
-    for (const dir of dirs) {
+
+    for (const dir of fs.readdirSync(this.themesRoot)) {
       if (dir.startsWith('.')) continue;
-      const themePath = path.join(this.themesRoot, dir);
-      const manifestPath = path.join(themePath, 'theme.json');
-      if (fs.existsSync(manifestPath)) {
-        try {
-          const manifest: IThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themePath);
-          this.themes.set(manifest.slug, manifest);
-          this.logger.info(`Discovered theme: ${manifest.slug} v${manifest.version}`);
-        } catch (e) {
-          this.logger.error(`Failed to load theme manifest from ${dir}`, e);
-        }
+      if (ProjectPaths.isTenantArtifactsDir(dir)) continue;
+      this.loadDiscoveredTheme(path.join(this.themesRoot, dir), dir);
+    }
+    this.discoverTenantThemes();
+  }
+
+  /** Each site's own uploaded themes, one directory per site under `tenants/`. */
+  private discoverTenantThemes(): void {
+    const tenantsRoot = ProjectPaths.tenantArtifactsRoot(this.themesRoot);
+    if (!fs.existsSync(tenantsRoot)) return;
+
+    for (const tenantId of fs.readdirSync(tenantsRoot)) {
+      if (tenantId.startsWith('.')) continue;
+      const tenantRoot = path.join(tenantsRoot, tenantId);
+      if (!fs.statSync(tenantRoot).isDirectory()) continue;
+      for (const dir of fs.readdirSync(tenantRoot)) {
+        if (dir.startsWith('.')) continue;
+        this.loadDiscoveredTheme(path.join(tenantRoot, dir), `${tenantId}/${dir}`, tenantId);
       }
+    }
+  }
+
+  /** Reads one theme directory into the map. `ownerTenantId` absent means the platform owns it. */
+  private loadDiscoveredTheme(themePath: string, label: string, ownerTenantId?: string): void {
+    const manifestPath = path.join(themePath, 'theme.json');
+    if (!fs.existsSync(manifestPath)) return;
+    try {
+      const manifest: IThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themePath);
+      const existing = this.themes.get(manifest.slug);
+      if (existing) {
+        this.logger.error(
+          `Theme slug "${manifest.slug}" is claimed twice on disk — keeping `
+          + `${existing.ownerTenantId ? `site "${existing.ownerTenantId}"'s` : "the platform's"} copy and ignoring `
+          + `${ownerTenantId ? `site "${ownerTenantId}"'s` : "the platform's"} at ${label}. A slug is unique across the `
+          + 'whole platform; the upload path refuses a duplicate, so this one reached disk another way.',
+        );
+        if (!existing.ownerTenantId) return;
+        if (!ownerTenantId) this.themes.set(manifest.slug, { ...manifest, ownerTenantId });
+        return;
+      }
+      this.themes.set(manifest.slug, ownerTenantId ? { ...manifest, ownerTenantId } : manifest);
+      this.logger.info(
+        `Discovered theme: ${manifest.slug} v${manifest.version}`
+        + (ownerTenantId ? ` (uploaded by site "${ownerTenantId}")` : ''),
+      );
+    } catch (e) {
+      this.logger.error(`Failed to load theme manifest from ${label}`, e);
     }
   }
 

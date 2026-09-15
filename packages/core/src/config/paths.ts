@@ -108,6 +108,55 @@ export class ProjectPaths {
   }
 
   /**
+   * Where a SITE's own uploaded themes live: `<themes root>/tenants/<tenantId>`.
+   *
+   * The platform's themes stay where they have always been, directly under the root. A site's are one
+   * level down, under a directory named for it, so the two can never collide on disk and a site's
+   * artifacts can be removed with the site itself.
+   *
+   * Framework-owned path resolution, for the reason {@link withTenantSubdirectory} already gives: a
+   * hand-built relative path has broken every image on this platform once. The tenant id is validated
+   * here rather than trusted, and an id that fails validation resolves to NO tenant directory rather
+   * than to something adjacent.
+   */
+  static getThemesDirFor(tenantId: string): string {
+    return ProjectPaths.tenantArtifactDir(ProjectPaths.getThemesDir(), tenantId);
+  }
+
+  /** Where a SITE's own uploaded plugins live: `<plugins root>/tenants/<tenantId>`. See {@link getThemesDirFor}. */
+  static getPluginsDirFor(tenantId: string): string {
+    return ProjectPaths.tenantArtifactDir(ProjectPaths.getPluginsDir(), tenantId);
+  }
+
+  /** The directory holding every site's artifacts under a root — the one `tenants/` level itself. */
+  static tenantArtifactsRoot(base: string): string {
+    return path.join(base, SystemConstants.STORAGE.TENANTS_SUBDIR);
+  }
+
+  /**
+   * Is this a directory entry that holds SITES' artifacts rather than an artifact itself?
+   *
+   * Discovery walks the root looking for theme/plugin directories, and `tenants/` is not one — it is
+   * the container for every site's. Asked as a named question rather than compared inline, so the
+   * scanners do not each carry their own copy of the literal.
+   */
+  static isTenantArtifactsDir(name: string): boolean {
+    return name === SystemConstants.STORAGE.TENANTS_SUBDIR;
+  }
+
+  /**
+   * `<base>/tenants/<tenantId>`, or `<base>` itself when the id is missing or malformed.
+   *
+   * Falling back to the base is the same choice {@link withTenantSubdirectory} makes, and it is the
+   * safe one HERE too: a rejected id must never produce a path built from the rejected text.
+   */
+  private static tenantArtifactDir(base: string, tenantId: string): string {
+    const tenant = String(tenantId ?? '').trim();
+    if (!tenant || !/^[A-Za-z0-9_-]+$/.test(tenant)) return base;
+    return path.join(ProjectPaths.tenantArtifactsRoot(base), tenant);
+  }
+
+  /**
    * The uploads directory, resolved against the PROJECT ROOT — never against `process.cwd()`.
    *
    * `STORAGE_UPLOAD_DIR` is set to a RELATIVE value (`./public/uploads`) in the shipped compose file,
