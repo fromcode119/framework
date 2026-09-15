@@ -251,6 +251,7 @@ export { TenantThemeAccess } from '@core/theme/tenant-theme-access';
 export { TenantThemeChoice } from '@core/theme/tenant-theme-choice';
 export { TenantThemeStateService } from '@core/theme/tenant-theme-state-service';
 export { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
+export { TenantImportIdentity } from '@core/tenant/provisioning/tenant-import-identity';
 export { TenantRegistryService } from '@core/tenant/provisioning/tenant-registry-service';
 export { TenantTableCatalog } from '@core/tenant/provisioning/tenant-table-catalog';
 export { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';

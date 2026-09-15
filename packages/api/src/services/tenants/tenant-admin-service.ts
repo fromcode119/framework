@@ -4,7 +4,7 @@ import type { IDatabaseManager } from '@fromcode119/database';
 import {
   AuditOutcome, BackupCatalogService, BackupService, CoercionUtils, PluginManager, PluginState, PluginTenantStateService, SystemConstants,
   TenantAdoptionService, TenantArchiveLayout, TenantColumnPreparer, TenantArchiveManifest, TenantArchiveReader, TenantArchiveSource, TenantArchiveWriter, TenantEnvironment, TenantEraser, TenantIdentity,
-  TenantImportExecutor, TenantImportPlan, TenantImportPlanner, TenantImportResult, TenantMembershipService, TenantMode, TenantRecord,
+  TenantImportExecutor, TenantImportIdentity, TenantImportPlan, TenantImportPlanner, TenantImportResult, TenantMembershipService, TenantMode, TenantRecord,
   TenantRegistryService, TenantResolverService, TenantTableCatalog, TenantTableDescriptor, TenantThemeAccess, TenantThemeStateService, ThemeManager,
   PluginTenantAccess, RequestContextUtils, AppearanceManager, Logger, TenantKindPreset, TenantKindPresets, StringUtils, StorefrontPagesCollection } from '@fromcode119/core';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
@@ -186,7 +186,7 @@ export class TenantAdminService {
   async previewImport(archivePath: string, identityInput: Record<string, unknown>): Promise<TenantImportPlan> {
     const reader = await TenantArchiveReader.open(archivePath);
     try {
-      const identity = TenantAdminService.identityFor(reader, identityInput);
+      const identity = TenantImportIdentity.resolve(reader.manifest.tenant as unknown as Record<string, unknown>, identityInput);
       return await this.planner(await this.tables()).plan(reader, identity);
     } finally {
       reader.close();
@@ -196,7 +196,7 @@ export class TenantAdminService {
   async executeImport(archivePath: string, identityInput: Record<string, unknown>, actor: Record<string, unknown>): Promise<TenantImportResult> {
     const reader = await TenantArchiveReader.open(archivePath);
     try {
-      const identity = TenantAdminService.identityFor(reader, identityInput);
+      const identity = TenantImportIdentity.resolve(reader.manifest.tenant as unknown as Record<string, unknown>, identityInput);
       const tables = await this.tables();
       const plan = await this.planner(tables).plan(reader, identity);
       const result = await new TenantImportExecutor(this.db, this.registry, tables, this.uploadsDir).execute(reader, identity, plan);
@@ -350,31 +350,6 @@ export class TenantAdminService {
     return tenant;
   }
 
-  private static identityFor(reader: TenantArchiveReader, input: Record<string, unknown>): TenantIdentity {
-    const archived = reader.manifest.tenant;
-    return TenantIdentity.from({
-      id: input.id ?? input.slug ?? archived.slug,
-      slug: input.slug ?? archived.slug,
-      primaryHost: input.primaryHost ?? archived.primaryHost,
-      hostAliases: input.hostAliases ?? archived.hostAliases,
-      state: input.state ?? 'active',
-      // Archives written before T6 carry no kind: they were exported from sites.
-      kind: input.kind ?? (archived as { kind?: unknown }).kind ?? 'site',
-      // AN IMPORT ARRIVES MUTED. This is the one path that creates a COPY of another deployment, and
-      // what it copies is a working shop: real customers in the rows, real payment and courier
-      // credentials in the settings. Everywhere else `environment` defaults to `production`, because
-      // everywhere else the site being created is the real one. Here the safe direction is the
-      // opposite, exactly as it is for `visibility` — an operator says "this is the live one now",
-      // never the absence of a flag. Pass `environment: 'production'` explicitly to import a real
-      // migration rather than a rehearsal.
-      environment: input.environment ?? TenantEnvironment.NON_PRODUCTION.value,
-      // Read, not ignored. `TenantIdentity.from` defaults an absent visibility to PRIVATE, which is
-      // the right fail-closed answer — but dropping the operator's choice on the floor meant the
-      // control could not publish a site even when they asked it to, and the screen gave no hint.
-      visibility: input.visibility,
-      appearance: input.appearance ?? (archived as { appearance?: unknown }).appearance ?? '',
-    });
-  }
 
   private static slugs(value: unknown): string[] {
     return Array.isArray(value) ? [...new Set(value.map((entry) => CoercionUtils.toString(entry)).filter(Boolean))] : [];
