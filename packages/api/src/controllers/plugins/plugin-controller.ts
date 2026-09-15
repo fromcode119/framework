@@ -109,17 +109,37 @@ export class PluginController extends BaseController {
     res.json(activePlugins);
   }
 
-  async health(_req: Request, res: Response) {
+  /**
+   * The health of the plugins THIS SITE runs.
+   *
+   * A site on this platform behaves like its own installation, so it has a Health screen — but the
+   * registry behind it is the shared container's, and reporting it whole would hand one customer
+   * every other customer's plugin slugs, held reasons, load errors and requested capabilities. That
+   * is a richer disclosure than the plugin list itself, which is why it is filtered on the same axis
+   * and by the same rule: once a site is bound to the request, the answer is that site's assignment,
+   * whoever is asking.
+   *
+   * PLATFORM scope still reports the whole registry. That is the screen an operator uses to see a
+   * plugin that is held or failing for everyone, and it is the only place that question is asked.
+   */
+  async health(req: Request, res: Response) {
+    const tenantId = String((req as any).tenantId || '').trim();
+    const enabledSlugs = TenantMode.isEnabled() && tenantId
+      ? PluginTenantAccess.enabledSlugsFor(tenantId)
+      : null;
+
     const report = PluginHealthReportService.buildReport(
-      this.manager.getPlugins().map((p) => ({
-        slug: p.manifest.slug,
-        state: p.state,
-        healthStatus: p.healthStatus,
-        heldReason: p.heldReason,
-        error: p.error,
-        manifestCapabilities: (p.manifest.capabilities as string[]) || [],
-        approvedCapabilities: p.approvedCapabilities || [],
-      })),
+      this.manager.getPlugins()
+        .filter((p) => !enabledSlugs || enabledSlugs.has(p.manifest.slug))
+        .map((p) => ({
+          slug: p.manifest.slug,
+          state: p.state,
+          healthStatus: p.healthStatus,
+          heldReason: p.heldReason,
+          error: p.error,
+          manifestCapabilities: (p.manifest.capabilities as string[]) || [],
+          approvedCapabilities: p.approvedCapabilities || [],
+        })),
     );
     res.json(report);
   }
