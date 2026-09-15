@@ -149,18 +149,46 @@ export class TenantArchiveWriter {
     return path.posix.basename(raw);
   }
 
+  /**
+   * EVERY file in the uploads directory, not only the ones a media row points at.
+   *
+   * It used to copy exactly `names` — the paths collected from `media` rows — and that silently lost
+   * files. A site's content references images DIRECTLY by URL as well as through the library: eight
+   * `vision-board-*` files were on the source disk, displayed on the live site, and named by no media
+   * row at all, so a migrated shop rendered with holes where the original had pictures. The archive
+   * reported "50 files" and looked complete.
+   *
+   * The uploads directory IS the site's files. Deciding which of them are "really" used means reading
+   * every content field, every JSON blob and every theme template for URLs — the thing that cannot be
+   * done reliably, and whose failure mode is losing a customer's images. Copying all of them costs
+   * disk and nothing else.
+   *
+   * `names` is still used, for the WARNING: a media row pointing at a file that does not exist is a
+   * broken record worth naming, and that check would be lost if this only walked the directory.
+   */
   private copyFiles(names: Set<string>, staging: string, warnings: string[]): { count: number; bytes: number } {
     let count = 0;
     let bytes = 0;
-    for (const name of names) {
-      const from = path.join(this.source.uploadsDir, name);
-      if (!fs.existsSync(from) || !fs.statSync(from).isFile()) {
-        warnings.push(`File "${name}" is referenced by a media row but missing from the uploads directory.`);
-        continue;
-      }
-      fs.copyFileSync(from, path.join(staging, TenantArchiveLayout.FILES_DIR, name));
+    const destination = path.join(staging, TenantArchiveLayout.FILES_DIR);
+
+    const present = new Set<string>();
+    for (const entry of fs.existsSync(this.source.uploadsDir) ? fs.readdirSync(this.source.uploadsDir) : []) {
+      const from = path.join(this.source.uploadsDir, entry);
+      if (!fs.statSync(from).isFile()) continue;
+      fs.copyFileSync(from, path.join(destination, entry));
+      present.add(entry);
       count += 1;
       bytes += fs.statSync(from).size;
+    }
+
+    // Named one by one rather than counted: "12 files are missing" tells an operator there is a
+    // problem, and which twelve tells them whether it matters.
+    const missing = [...names].filter((name) => !present.has(name));
+    if (missing.length) {
+      warnings.push(
+        `${missing.length} file(s) are referenced by a media row but missing from the uploads directory`
+        + ` — the records travel, the images do not: ${missing.join(', ')}.`,
+      );
     }
     return { count, bytes };
   }
