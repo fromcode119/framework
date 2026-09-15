@@ -294,6 +294,46 @@ export class SchemaManager {
       this.logger.info(`Adding column ${column.columnName} to ${plan.tableName}...`);
       await this.db.addColumn(plan.tableName, SchemaManager.toSchemaField(column.field));
     }
+
+    await this.ensureDeclaredUniques(plan);
+  }
+
+  /**
+   * Create a unique that a field declares but the table does not carry.
+   *
+   * `unique: true` was only ever emitted when the COLUMN was created — inline on CREATE TABLE, or on
+   * ADD COLUMN. Declaring it on a column that already existed did nothing at all: the plan
+   * fingerprinted it, and no DDL followed. So a plugin author who added the constraint to an
+   * existing field got silence, and the only way to enforce it was to issue the DDL by hand — which
+   * is exactly what mlm did, on the request connection, which is not the table's owner, so it failed
+   * on every boot and the uniqueness was never enforced.
+   *
+   * Runs on the owner/DDL connection like the rest of the sync, and the tenant isolation sweep in the
+   * same pass then rewrites what is added here to `(column, tenant_id)` — so a reconciled unique ends
+   * up identical to one that came from CREATE TABLE, tenancy included.
+   *
+   * POSTGRES ONLY, the same limit the isolation sweep carries. A failure here is logged and does not
+   * take the boot down: an existing table may hold duplicates that make the constraint impossible,
+   * and refusing to start is a worse answer than reporting it.
+   */
+  private async ensureDeclaredUniques(plan: IEntitySchemaPlan): Promise<void> {
+    if (String(this.db.dialect || '').toLowerCase() !== 'postgres') return;
+    if (plan.declaredUniques.length === 0) return;
+
+    for (const column of plan.declaredUniques) {
+      try {
+        const covered = await this.db.queryRaw(TenantRlsSql.uniqueCoverageStatement(), [plan.tableName, column]);
+        if ((covered ?? []).length > 0) continue;
+
+        this.logger.info(`Adding declared UNIQUE on ${plan.tableName}.${column}...`);
+        await this.db.execute(sql.raw(TenantRlsSql.addUniqueConstraintStatement(plan.tableName, column)));
+      } catch (error: any) {
+        this.logger.warn(
+          `Could not add the declared UNIQUE on ${plan.tableName}.${column}: ${error?.message || error}. `
+          + 'Existing duplicate values are the usual cause; the constraint stays unenforced until they are resolved.'
+        );
+      }
+    }
   }
 
   private warnUnsupportedIndexes(plan: IEntitySchemaPlan): void {

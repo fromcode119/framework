@@ -7,5 +7,10 @@ export interface IEntitySchemaPlan {
   fingerprint: string;
   exists: boolean;
   missingColumns: IEntitySchemaColumnPlan[];
+  /**
+   * Columns that EXIST and are declared `unique`. Whether a unique already covers them is a question
+   * for the database, not for this pure planner — the manager asks, and adds only what is missing.
+   */
+  declaredUniques: string[];
   unsupportedIndexes: string[];
 }

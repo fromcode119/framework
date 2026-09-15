@@ -142,6 +142,36 @@ export class TenantRlsSql {
     return `ALTER TABLE "${name}" DROP CONSTRAINT "${con}", ADD CONSTRAINT "${con}" UNIQUE (${cols})`;
   }
 
+  /**
+   * Whether ANY unique constraint or index already covers `column` on `table` — alone, or together
+   * with the tenant column.
+   *
+   * Asked before adding a declared unique to a table that already exists, and both shapes count: an
+   * installation that predates tenancy carries the bare `(column)` form, while one that has been
+   * through the isolation sweep carries `(column, tenant_id)`. Either already enforces the rule, and
+   * adding a second constraint beside it would be noise at best and a conflicting rule at worst.
+   */
+  static uniqueCoverageStatement(): string {
+    return 'SELECT 1 FROM pg_index x '
+      + 'WHERE x.indrelid = quote_ident($1)::regclass AND x.indisunique AND x.indexprs IS NULL '
+      + 'AND EXISTS (SELECT 1 FROM unnest(x.indkey::int2[]) k JOIN pg_attribute a ON a.attrelid = x.indrelid AND a.attnum = k WHERE a.attname = $2) '
+      + 'LIMIT 1';
+  }
+
+  /**
+   * Add a declared unique to a column that already exists.
+   *
+   * Named the way Postgres names one it creates itself (`<table>_<column>_key`), so a table built
+   * fresh and a table reconciled afterwards end up indistinguishable. The isolation sweep then
+   * rewrites it to `(column, tenant_id)` in the same pass, exactly as it does for a unique that came
+   * from CREATE TABLE.
+   */
+  static addUniqueConstraintStatement(table: string, column: string): string {
+    const name = TenantRlsSql.assertIdentifier(table);
+    const col = TenantRlsSql.assertIdentifier(column);
+    return `ALTER TABLE "${name}" ADD CONSTRAINT "${name}_${col}_key" UNIQUE ("${col}")`;
+  }
+
   static scopeUniqueIndexStatements(table: string, index: string, columns: string[]): string[] {
     const name = TenantRlsSql.assertIdentifier(table);
     const idx = TenantRlsSql.assertIdentifier(index);

@@ -17,6 +17,15 @@ export class EntitySchemaPlanService {
           .filter((field) => !existing.has(this.toColumnName(field.name).toLowerCase()))
           .map((field) => ({ field, columnName: this.toColumnName(field.name) }))
         : [],
+      // Only for a table that already exists: on CREATE TABLE the schema builder emits the unique
+      // inline, and it is the EXISTING-column case that had no path at all — a field declared unique
+      // after its table was created was fingerprinted and then never acted on.
+      declaredUniques: exists
+        ? this.resolveSyncableFields(collection)
+          .filter((field) => Boolean(field.unique))
+          .map((field) => this.toColumnName(field.name))
+          .filter((column) => existing.has(column.toLowerCase()))
+        : [],
       unsupportedIndexes: this.resolveUnsupportedIndexes(collection),
     };
   }
