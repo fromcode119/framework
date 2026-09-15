@@ -88,8 +88,8 @@ export class RolesContextProxy {
        * Declares a role, recording WHICH PLUGIN declared it.
        *
        * The attribution is what lets a site's Roles screen show its own roles and not another
-       * product's — `_system_roles` is global, so without it `partner` from MLM is indistinguishable
-       * from the framework's `admin`, and a customer who does not run MLM was offered it anyway.
+       * product's — `_system_roles` is global, so without it a role declared by one extension is
+       * indistinguishable from the framework's own, and a site was offered it anyway.
        *
        * An EXISTING row with no attribution is stamped rather than left alone. Migration 046 adds the
        * column with no backfill on purpose: nothing can honestly guess which plugin created a role

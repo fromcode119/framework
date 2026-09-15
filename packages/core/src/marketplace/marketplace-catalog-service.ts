@@ -228,7 +228,7 @@ export class MarketplaceCatalogService {
     // The catalogue merges remote entries with ones contributed by this installation, and a
     // contributed row borrows the marketplace shape — whose only location is `downloadUrl`, a bare
     // filename. Resolving that against the remote marketplace produced
-    // `https://marketplace.fromcode.com/.../mlm-0.1.76.zip` for a package sitting in this
+    // `https://marketplace.example.com/.../<slug>-<version>.zip` for a package sitting in this
     // installation's own workspace, so every locally built plugin failed to install. The theme
     // controller already handled this; doing it here means the five callers that funnel through
     // `downloadAndInstall` — the Update button, batch update-all, theme dependencies and the forge

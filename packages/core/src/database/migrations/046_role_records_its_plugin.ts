@@ -5,15 +5,15 @@ import { Logger } from '../../logging';
 /**
  * A role can say which plugin created it.
  *
- * `_system_roles` is global, and deliberately so: `admin`, `editor` and `customer` are the platform's
+ * `_system_roles` is global, and deliberately so: `admin` and `editor` are the platform's own
  * vocabulary, and a role that existed per site could not be granted by a framework that resolves
  * identity before it resolves tenancy. That stays.
  *
- * What was missing is ATTRIBUTION. Plugins create roles through `context.roles.ensure` — MLM adds
- * `partner`, commerce adds `customer` — and once created, those slugs were indistinguishable from the
- * framework's own. So a site's Roles screen listed `partner` to a customer who does not run MLM and
- * has no way to know what it means, and offered it in the role picker on its Users page. The screen
- * could not filter them because nothing recorded whose they were.
+ * What was missing is ATTRIBUTION. Plugins declare roles through `context.roles.ensure`, and once
+ * created those slugs were indistinguishable from the framework's own. So a site's Roles screen
+ * listed a role belonging to an extension that site does not run — a name it has no way to interpret
+ * — and offered it in the role picker on its Users page. The screen could not filter them because
+ * nothing recorded whose they were.
  *
  * NULLABLE, WITH NO BACKFILL, and that is the interesting part. There is no honest way to guess which
  * plugin created a role that already exists — the slug is not a reliable clue, and inventing one would

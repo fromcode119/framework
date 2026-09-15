@@ -157,8 +157,8 @@ export class UserManagementService {
     // A SITE SEES THE FRAMEWORK'S ROLES AND ITS OWN PLUGINS', NEVER ANOTHER PRODUCT'S.
     //
     // `_system_roles` is global by design — role names are the platform's vocabulary — but plugins
-    // declare roles into it too, so a site running neither MLM nor commerce was shown `partner` and
-    // `customer` in its Roles screen and offered them in the role picker on its Users page. It had no
+    // declare roles into it too, so a site was shown roles belonging to extensions it does not run,
+    // in its Roles screen and in the role picker on its Users page. It had no
     // way to know what they meant, and granting one would have been meaningless.
     //
     // An UNATTRIBUTED role stays visible. Migration 046 adds the column with no backfill because
@@ -357,7 +357,7 @@ export class UserManagementService {
     // in it whoever happens to trigger this read, because a capability that is registered only when a
     // platform admin visits a screen is a capability that half the installs never get. What must not
     // happen is returning the whole registry to a site: it named products that site does not run
-    // (`mlm_commission:manage`, `logistics-econt:*`) and, through the names themselves, what those
+    // — capability names carry the extension's own vocabulary, so through the names themselves, what those
     // products do.
     //
     // `system` survives the filter because it is the framework's own, and every site holds it.

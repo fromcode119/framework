@@ -78,8 +78,9 @@ export class SystemAdminController {
 
       // `_system_scheduler_tasks` is a platform table with no row-level policy, so this listing showed
       // a site the scheduled work of every OTHER customer's plugins — task names like
-      // `mlm:payout-sweep` beside a site that runs neither. Measured: a site running two plugins was
-      // shown tasks belonging to `tagiqx` and `astrology`. Same filter as the translations listing and
+      // a task named for a product that site does not run. Measured on a live box: a site running two
+      // extensions was shown scheduled work belonging to two it does not. Same filter as the i18n
+      // listing and
       // for the same reason; `total` counts what is shown, or the screen says 8 and lists 2.
       const boundTenantId = String((req as any).tenantId || '').trim();
       const ownTasks = TenantMode.isEnabled() && boundTenantId
