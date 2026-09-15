@@ -8,6 +8,9 @@ import { PersonCatalogService } from '@core/plugin/services/people/person-catalo
 import { PeopleAddressService } from '@core/plugin/services/people/people-address-service';
 import { PeopleDirectoryService } from '@core/plugin/services/people/people-directory-service';
 import { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
+import { PersonalDataRegistry } from '@core/plugin/services/people/personal-data-registry';
+import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
+import type { IPersonalDataSourceDescriptor } from '@core/plugin/services/interfaces/personal-data-source.interface';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import type { IPeopleAddressRef } from '@core/plugin/services/interfaces/people-address-ref.interface';
 
@@ -172,7 +175,79 @@ export class PeopleContextProxy {
       personalData: {
         listDatasets: () => personalDataService.listDatasets(),
         exportDataset: (key: string, subject: any) => personalDataService.exportDataset(key, subject),
-        eraseDataset: (key: string, subject: any, strategy: string) => personalDataService.eraseDataset(key, subject, strategy)
+        eraseDataset: (key: string, subject: any, strategy: string) => personalDataService.eraseDataset(key, subject, strategy),
+
+        /**
+         * Declare a dataset THIS plugin holds. Data only — the methods are named, never passed, so
+         * the descriptor survives the channel to an isolated guest.
+         *
+         * The callback is built HERE, from the plugin manager's own API resolver, so the framework
+         * reaches the plugin directly instead of hopping through `context.plugins.namespace`. That
+         * hop is what required a `plugins:interact` capability and failed silently for any plugin
+         * that had not declared one.
+         */
+        registerSource: (descriptor: IPersonalDataSourceDescriptor) => {
+          const call = async (method: string, args: Record<string, unknown>): Promise<any> => {
+            const api: any = new PluginsManagerResolver(manager.plugins as any)
+              .resolve(descriptor.namespace, descriptor.pluginSlug);
+            // Two different failures, and they send an operator to different places: a plugin that is
+            // not reachable (inactive, or not enabled for this site) is a CONFIGURATION answer, while
+            // one that is reachable but missing the method is a CODE answer. Reported as one message
+            // they are indistinguishable — "social-proof does not expose exportPersonalData" reads as
+            // a missing method even when the plugin is simply switched off for this site.
+            if (!api) {
+              throw new Error(
+                `${descriptor.pluginSlug} is not reachable (inactive, or not enabled for this site), ` +
+                `so ${descriptor.key} was not searched`,
+              );
+            }
+            if (typeof api[method] !== 'function') {
+              throw new Error(`${descriptor.pluginSlug} does not expose ${method}`);
+            }
+            return api[method](args);
+          };
+
+          return PersonalDataRegistry.register(descriptor, {
+            exportSubject: async (subject: unknown) => {
+              const rows = await call(descriptor.methods.export, { key: descriptor.key, subject });
+              return Array.isArray(rows) ? rows : [];
+            },
+            eraseSubject: (subject: unknown, strategy: string) =>
+              call(descriptor.methods.erase, { key: descriptor.key, subject, strategy }),
+          });
+        },
+
+        /**
+         * Every dataset any plugin has declared. DATA ONLY — the registered `invoke` callbacks are
+         * stripped, because an isolated plugin reads this over a structured-clone channel and a
+         * function cannot cross it. The caller runs a source through `exportSource`/`eraseSource`,
+         * naming it by id, exactly as registration names its methods rather than passing them.
+         */
+        listSources: () => PersonalDataRegistry.listForCurrentTenant().map(({ invoke: _invoke, ...descriptor }) => descriptor),
+
+        /** Run one registered source's export, by `pluginSlug:key`. */
+        exportSource: (id: string, subject: any) => {
+          const source = PersonalDataRegistry.get(id);
+          if (!source) throw new Error(`Unknown personal-data source "${id}"`);
+          return source.invoke.exportSubject(subject);
+        },
+
+        /** Run one registered source's erasure, by `pluginSlug:key`. */
+        eraseSource: (id: string, subject: any, strategy: string) => {
+          const source = PersonalDataRegistry.get(id);
+          if (!source) throw new Error(`Unknown personal-data source "${id}"`);
+          return source.invoke.eraseSubject(subject, strategy);
+        },
+
+        /**
+         * Erase the subject everywhere — the framework's own datasets AND every registered plugin
+         * source. `resolveStrategy` lets a caller apply the operator's per-dataset policy; a choice
+         * the dataset never declared falls back to its default rather than being handed through.
+         */
+        eraseAll: (subject: any, resolveStrategy?: (source: any) => string) =>
+          personalDataService.eraseAll(subject, resolveStrategy),
+
+        unregisterSources: (pluginSlug: string) => PersonalDataRegistry.unregisterByPlugin(pluginSlug)
       }
     };
   }

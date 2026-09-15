@@ -1,3 +1,4 @@
+import { PersonalDataRegistry } from '@core/plugin/services/people/personal-data-registry';
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import type { IPersonalDataDataset, IPersonalDataErasure, IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data.interface';
@@ -96,10 +97,37 @@ export class PersonalDataErasureService {
    * A dataset added to `listDatasets()` is covered by both paths from that moment on, with no second
    * list to remember.
    */
-  async eraseAll(subject: IPersonalDataSubject): Promise<Record<string, IPersonalDataErasure>> {
+  async eraseAll(
+    subject: IPersonalDataSubject,
+    resolveStrategy?: (source: { pluginSlug: string; key: string; defaultStrategy: string; strategies: string[] }) => string,
+  ): Promise<Record<string, IPersonalDataErasure>> {
     const results: Record<string, IPersonalDataErasure> = {};
+    const strategyFor = (source: { pluginSlug: string; key: string; defaultStrategy: string; strategies: string[] }): string => {
+      const chosen = String(resolveStrategy?.(source) ?? '').trim();
+      // A caller may only choose among what the dataset declared it can honour. Anything else falls
+      // back to the declared default rather than being handed through to the source.
+      return source.strategies.includes(chosen) ? chosen : source.defaultStrategy;
+    };
+
+    // The framework's own datasets first, in `listDatasets()` order — `account` reads the memberships
+    // that `roles` deletes, so it must run before them.
     for (const dataset of this.listDatasets()) {
-      results[dataset.key] = await this.eraseDataset(dataset.key, subject, dataset.defaultStrategy);
+      const source = { pluginSlug: 'platform', key: dataset.key, defaultStrategy: dataset.defaultStrategy, strategies: dataset.strategies };
+      results[dataset.key] = await this.eraseDataset(dataset.key, subject, strategyFor(source));
+    }
+
+    // Then every dataset a PLUGIN declared. Walking these here is what makes an erasure complete on
+    // a site that has no privacy plugin installed: `deleteMyAccount` used to reach the seven above
+    // and leave every order, invoice and submission untouched, with nothing reporting a gap.
+    for (const source of PersonalDataRegistry.listForCurrentTenant()) {
+      const id = PersonalDataRegistry.idOf(source.pluginSlug, source.key);
+      try {
+        results[id] = await source.invoke.eraseSubject(subject, strategyFor(source)) as unknown as IPersonalDataErasure;
+      } catch (error: any) {
+        // Recorded, never swallowed: "nothing to erase" and "this source could not run" must not look
+        // the same to whoever reads the outcome.
+        results[id] = { ...PersonalDataErasureService.empty(strategyFor(source)), remaining: 0, error: String(error?.message ?? error) } as unknown as IPersonalDataErasure;
+      }
     }
     return results;
   }

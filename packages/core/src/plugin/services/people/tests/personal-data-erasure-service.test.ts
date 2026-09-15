@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
+import { PersonalDataRegistry } from '@core/plugin/services/people/personal-data-registry';
 import { RequestContextUtils } from '@core/context/request-context';
 
 const SUBJECT = { email: 'subject@example.invalid', userId: 7, personId: 3 };
@@ -269,5 +270,65 @@ describe('PersonalDataErasureService — every person row, not the first one fou
     await service.eraseDataset('person', { personId: 2 } as any, 'delete');
 
     expect(tables.people.map((row: any) => row.id)).toEqual([1]);
+  });
+});
+
+/**
+ * The registry is FRAMEWORK-owned, so an erasure reaches a plugin's data on every site — including
+ * one with no privacy plugin installed. Before this, `deleteMyAccount` walked the seven datasets the
+ * framework holds itself and left every order, invoice and submission in place, reporting nothing.
+ */
+describe('PersonalDataErasureService.eraseAll — plugin datasets, with or without a privacy plugin', () => {
+  beforeEach(() => { vi.restoreAllMocks(); PersonalDataRegistry.clear(); });
+
+  const registerSource = (calls: Array<{ key: string; strategy: string }>) =>
+    PersonalDataRegistry.register(
+      { namespace: 'org.fromcode', pluginSlug: 'finance', key: 'invoices', label: 'Invoices',
+        fields: ['customerEmail'], strategies: ['retain', 'anonymise'], defaultStrategy: 'retain',
+        methods: { export: 'exportPersonalData', erase: 'erasePersonalData' } },
+      {
+        exportSubject: async () => [],
+        eraseSubject: async (_s: unknown, strategy: string) => {
+          calls.push({ key: 'invoices', strategy });
+          return { strategy, erased: 0, anonymised: 0, retained: 3, remaining: 0 };
+        },
+      },
+    );
+
+  it('reaches a registered plugin dataset and uses its declared default', async () => {
+    const calls: Array<{ key: string; strategy: string }> = [];
+    registerSource(calls);
+    const service = new PersonalDataErasureService(makeDb({}) as any);
+
+    const results = await service.eraseAll(SUBJECT as any);
+
+    expect(calls).toEqual([{ key: 'invoices', strategy: 'retain' }]);
+    expect(results['finance:invoices'].retained).toBe(3);
+  });
+
+  it('lets a caller choose a strategy, but only one the dataset declared', async () => {
+    const calls: Array<{ key: string; strategy: string }> = [];
+    registerSource(calls);
+    const service = new PersonalDataErasureService(makeDb({}) as any);
+
+    // `delete` is NOT in this dataset's declared set — an invoice is a statutory document. A caller
+    // asking for it gets the declared default, never a strategy the plugin refused to support.
+    await service.eraseAll(SUBJECT as any, () => 'delete');
+
+    expect(calls).toEqual([{ key: 'invoices', strategy: 'retain' }]);
+  });
+
+  it('records a source that threw instead of letting it look like an empty result', async () => {
+    PersonalDataRegistry.register(
+      { namespace: 'org.fromcode', pluginSlug: 'ecommerce', key: 'orders', label: 'Orders',
+        fields: ['email'], strategies: ['anonymise'], defaultStrategy: 'anonymise',
+        methods: { export: 'e', erase: 'r' } },
+      { exportSubject: async () => [], eraseSubject: async () => { throw new Error('table locked'); } },
+    );
+    const service = new PersonalDataErasureService(makeDb({}) as any);
+
+    const results = await service.eraseAll(SUBJECT as any);
+
+    expect(String((results['ecommerce:orders'] as any).error)).toContain('table locked');
   });
 });
