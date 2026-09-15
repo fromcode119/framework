@@ -29,6 +29,17 @@ export class TenantSwitcher extends AdminComponent {
   @state multiTenant = false;
   @state busy = false;
   @state open = false;
+  /**
+   * Why the last switch did not happen, shown in the menu.
+   *
+   * A failed switch used to be SILENT: the request's error was discarded by `.catch(() => false)`,
+   * the menu closed, the scope did not change, and the operator was told nothing at all — not in the
+   * UI, not in the console. Every reason the server gives is one an operator can act on
+   * (`tenant_access_denied`, `workspace_host_locks_tenant`, `not_multi_tenant`), and throwing them
+   * away left "I clicked the site and nothing happened" as the whole diagnosis, for them and for
+   * anyone they asked.
+   */
+  @state failure: string | null = null;
   /** A workspace picked from the menu: the platform admin then chooses HOW to open it (T6 §3.3). */
   @state pending: TenantOption | null = null;
 
@@ -79,6 +90,26 @@ export class TenantSwitcher extends AdminComponent {
     window.location.reload();
   }
 
+  /**
+   * The server's refusal, in words an operator can act on.
+   *
+   * Every one of these is a DIFFERENT thing to do next, which is the whole argument for not
+   * collapsing them into "could not switch": being a customer of a site is fixed by asking for
+   * access, a workspace host is fixed by using the shared console, and an unknown code is fixed by
+   * reading the log — so the code is shown rather than hidden when it is not one we recognise.
+   */
+  private static reasonFor(error: unknown): string {
+    const code = String((error as { code?: unknown; error?: unknown } | null)?.code
+      ?? (error as { error?: unknown } | null)?.error ?? '').trim();
+    if (code === 'tenant_access_denied') return 'You are not an administrator of that site.';
+    if (code === 'workspace_host_locks_tenant') return 'This console is fixed to one site. Use the shared console to switch.';
+    if (code === 'not_multi_tenant') return 'This deployment serves a single site, so there is nothing to switch to.';
+    if (code === 'tenantId_required') return 'No site was named in the request.';
+    const message = String((error as { message?: unknown } | null)?.message ?? '').trim();
+    if (code) return `Could not switch: ${code}`;
+    return message ? `Could not switch: ${message}` : 'Could not switch, and the server gave no reason.';
+  }
+
   private async select(tenantId: string, mode?: string): Promise<void> {
     if (this.busy) return;
     if (tenantId === this.current && !mode) {
@@ -86,11 +117,18 @@ export class TenantSwitcher extends AdminComponent {
       return;
     }
     this.busy = true;
-    const ok = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_SELECT, mode ? { tenantId, mode } : { tenantId })
-      .then(() => true)
-      .catch(() => false);
-    if (!ok) {
+    this.failure = null;
+    // The REASON is kept. `.catch(() => false)` here discarded it, so a refused switch was
+    // indistinguishable from a click that did nothing — and the server always says why.
+    const failure = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_SELECT, mode ? { tenantId, mode } : { tenantId })
+      .then(() => null)
+      .catch((error: unknown) => TenantSwitcher.reasonFor(error));
+    if (failure) {
+      this.failure = failure;
       this.busy = false;
+      // The menu STAYS OPEN on failure. Closing it is what made this look like nothing had happened;
+      // the message belongs where the operator is still looking.
+      this.open = true;
       return;
     }
     // Full reload, deliberately: the previous tenant's data must not linger in memory.
@@ -205,14 +243,19 @@ export class TenantSwitcher extends AdminComponent {
 
         {this.open && this.pending ? this.renderModeChoice(this.pending) : null}
         {this.open && !this.pending ? (
-          <TenantSwitcherMenu
-            tenants={this.tenants}
-            current={this.current}
-            canManagePlatform={this.canManageSites}
-            onSelect={this.onSelectTenant}
-            onAskMode={this.onAskMode}
-            onLeave={this.leave}
-          />
+          <>
+            {this.failure ? (
+              <p className="fc-site__failure" role="alert">{this.failure}</p>
+            ) : null}
+            <TenantSwitcherMenu
+              tenants={this.tenants}
+              current={this.current}
+              canManagePlatform={this.canManageSites}
+              onSelect={this.onSelectTenant}
+              onAskMode={this.onAskMode}
+              onLeave={this.leave}
+            />
+          </>
         ) : null}
       </div>
     );

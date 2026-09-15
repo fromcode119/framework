@@ -265,6 +265,19 @@ html.dark {
   text-align: left; line-height: 1;
   transition: border-color 120ms ease, background-color 120ms ease;
 }
+/* Why a switch did not happen, above the menu that is still open. Sits in the popover rather than in
+   a toast: the operator is looking at the list they just clicked, and that is where the answer belongs. */
+.fc-site__failure {
+  margin: 0 0 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--fc-danger, #e11d48);
+  border-radius: var(--radius, 0.75rem);
+  background: var(--fc-surface, #ffffff);
+  color: var(--fc-danger, #e11d48);
+  font-size: 12px;
+  line-height: 1.45;
+  max-width: 320px;
+}
 .fc-site__trigger:hover { border-color: var(--fc-accent, #4f46e5); }
 .fc-site__trigger:focus-visible { outline: 2px solid var(--fc-accent, #4f46e5); outline-offset: 1px; }
 .fc-site__trigger:disabled { opacity: 0.6; cursor: progress; }
