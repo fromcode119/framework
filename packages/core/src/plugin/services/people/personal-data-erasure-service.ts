@@ -154,24 +154,35 @@ export class PersonalDataErasureService {
   }
 
   private async erasePerson(subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
-    const person = await this.findPerson(subject);
-    if (!person) return PersonalDataErasureService.empty(strategy);
+    const people = await this.findPeople(subject);
+    if (people.length === 0) return PersonalDataErasureService.empty(strategy);
 
-    const addresses = await this.findAddresses(subject);
-    for (const address of addresses) {
-      await this.db.delete(SystemConstants.TABLE.PEOPLE_ADDRESSES, { id: (address as any).id });
+    let erased = 0;
+    let anonymised = 0;
+
+    // Every row, not just the first. Addresses and relationships are keyed on the person, so they
+    // are cleared per row rather than once for the subject.
+    for (const person of people) {
+      const addresses = await this.db.find(SystemConstants.TABLE.PEOPLE_ADDRESSES, { where: { person_id: person.id } });
+      for (const address of addresses) {
+        await this.db.delete(SystemConstants.TABLE.PEOPLE_ADDRESSES, { id: (address as any).id });
+      }
+      erased += addresses.length;
+      await this.db.delete(SystemConstants.TABLE.PERSON_RELATIONSHIPS, { from_person_id: person.id }).catch(() => undefined);
+
+      if (strategy === PersonalDataErasureService.ANONYMISE) {
+        await this.db.update(SystemConstants.TABLE.PEOPLE, { id: person.id }, {
+          email: null, phone: null, firstName: PersonalDataErasureService.TOMBSTONE, lastName: null,
+        });
+        anonymised += 1;
+        continue;
+      }
+
+      await this.db.delete(SystemConstants.TABLE.PEOPLE, { id: person.id });
+      erased += 1;
     }
-    await this.db.delete(SystemConstants.TABLE.PERSON_RELATIONSHIPS, { from_person_id: person.id }).catch(() => undefined);
 
-    if (strategy === PersonalDataErasureService.ANONYMISE) {
-      await this.db.update(SystemConstants.TABLE.PEOPLE, { id: person.id }, {
-        email: null, phone: null, firstName: PersonalDataErasureService.TOMBSTONE, lastName: null,
-      });
-      return { strategy, erased: addresses.length, anonymised: 1, retained: 0, remaining: 0 };
-    }
-
-    await this.db.delete(SystemConstants.TABLE.PEOPLE, { id: person.id });
-    return { strategy, erased: addresses.length + 1, anonymised: 0, retained: 0, remaining: 0 };
+    return { strategy, erased, anonymised, retained: 0, remaining: 0 };
   }
 
   /** This site's membership and roles only — never another site's. */
@@ -293,10 +304,39 @@ export class PersonalDataErasureService {
     return email ? this.db.findOne(SystemConstants.TABLE.USERS, { email }) : null;
   }
 
-  private async findPerson(subject: IPersonalDataSubject): Promise<Record<string, any> | null> {
-    if (subject?.personId != null) return this.db.findOne(SystemConstants.TABLE.PEOPLE, { id: subject.personId });
+  /**
+   * EVERY person row for this subject, not the first one the database happens to return.
+   *
+   * A subject routinely has more than one: the row linked to their account, plus unlinked rows a
+   * plugin's `people.syncDirectory` created from its own table — an invoice customer, for instance,
+   * lands as `source: finance` with no `user_id`. `findOne` erased whichever came back first and
+   * left the rest, so an erasure reported as done left the subject's email sitting in `people`.
+   * Which row survived was effectively chance, which is not a defensible outcome under any reading
+   * of a retention obligation: the statutory document is the INVOICE, and a directory row derived
+   * from it is not that document.
+   */
+  private async findPeople(subject: IPersonalDataSubject): Promise<Record<string, any>[]> {
     const email = String(subject?.email ?? '').trim().toLowerCase();
-    return email ? this.db.findOne(SystemConstants.TABLE.PEOPLE, { email }) : null;
+    const rows: Record<string, any>[] = email
+      ? await this.db.find(SystemConstants.TABLE.PEOPLE, { where: { email } })
+      : [];
+
+    // The EMAIL leads, and `personId` only adds a row the email did not already reach.
+    //
+    // Resolving a subject sets `personId` from `people.getByEmail`, which returns ONE row. Treating
+    // that id as the answer narrowed the erasure back to a single row and left every duplicate
+    // behind — the exact bug this method exists to fix, reintroduced by trusting the more specific
+    // identifier. A personId with no email is the only case where it stands alone.
+    if (subject?.personId != null && !rows.some((row) => String(row?.id) === String(subject.personId))) {
+      const byId = await this.db.findOne(SystemConstants.TABLE.PEOPLE, { id: subject.personId });
+      if (byId) rows.push(byId);
+    }
+    return rows;
+  }
+
+  private async findPerson(subject: IPersonalDataSubject): Promise<Record<string, any> | null> {
+    const [first] = await this.findPeople(subject);
+    return first ?? null;
   }
 
   private async findAddresses(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {

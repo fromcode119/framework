@@ -201,3 +201,73 @@ describe('PersonalDataErasureService.eraseAll — the two doors cannot drift', (
     expect(order.indexOf('account')).toBeLessThan(order.indexOf('roles'));
   });
 });
+
+/**
+ * A subject routinely has MORE THAN ONE person row: the one linked to their account, plus unlinked
+ * rows a plugin's `people.syncDirectory` created from its own table — an invoice customer lands as
+ * `source: finance` with no `user_id`.
+ *
+ * `findPerson` used `findOne`, so an erasure removed whichever row the database returned first and
+ * left the rest. Which one survived was chance, and the leftover still carried the subject's email
+ * after a request reported as fulfilled. No retention obligation defends that: the statutory
+ * document is the invoice, not a directory row derived from it.
+ */
+describe('PersonalDataErasureService — every person row, not the first one found', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  const twoPeople = () => ({
+    people: [
+      { id: 1, user_id: 42, email: 'subject@example.invalid', source: 'account' },
+      { id: 2, user_id: null, email: 'subject@example.invalid', source: 'finance' },
+    ],
+    people_addresses: [{ id: 9, person_id: 2 }],
+    person_relationships: [],
+  });
+
+  it('deletes BOTH rows, including the unlinked one a directory sync created', async () => {
+    const tables = twoPeople();
+    const service = new PersonalDataErasureService(makeDb(tables) as any);
+
+    const result = await service.eraseDataset('person', { email: 'subject@example.invalid' } as any, 'delete');
+
+    expect(tables.people).toEqual([]);
+    // 2 people + 1 address belonging to the row that would previously have been missed.
+    expect(result.erased).toBe(3);
+  });
+
+  it('anonymises BOTH rows rather than leaving one readable', async () => {
+    const tables = twoPeople();
+    const service = new PersonalDataErasureService(makeDb(tables) as any);
+
+    const result = await service.eraseDataset('person', { email: 'subject@example.invalid' } as any, 'anonymise');
+
+    expect(result.anonymised).toBe(2);
+    expect(tables.people.map((row: any) => row.email)).toEqual([null, null]);
+  });
+
+  /**
+   * This test asserted the OPPOSITE first, and the opposite was the bug.
+   *
+   * Resolving a DSAR subject sets `personId` from `people.getByEmail`, which returns one row — so
+   * "honour the explicit personId" meant "erase one row and keep the duplicates", which is how the
+   * live erasure still left `dsar-probe6` in `people` after the first fix. The email leads; a
+   * personId only ADDS a row the email did not reach.
+   */
+  it('erases every row for the email even when a personId is also given', async () => {
+    const tables = twoPeople();
+    const service = new PersonalDataErasureService(makeDb(tables) as any);
+
+    await service.eraseDataset('person', { email: 'subject@example.invalid', personId: 2 } as any, 'delete');
+
+    expect(tables.people).toEqual([]);
+  });
+
+  it('erases the named person when there is no email to lead with', async () => {
+    const tables = twoPeople();
+    const service = new PersonalDataErasureService(makeDb(tables) as any);
+
+    await service.eraseDataset('person', { personId: 2 } as any, 'delete');
+
+    expect(tables.people.map((row: any) => row.id)).toEqual([1]);
+  });
+});
