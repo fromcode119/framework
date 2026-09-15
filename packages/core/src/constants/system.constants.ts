@@ -200,6 +200,16 @@ export class SystemConstants {
   ADMIN_APPEARANCE: 'admin_appearance',
   /** Whether admin surfaces render elevated (shadows) or flat. Absent = elevated. */
   ADMIN_SHADOWS: 'admin_shadows',
+  /**
+   * How much a SITE may store in themes it uploaded itself, and how many it may keep.
+   *
+   * Declared rather than hardcoded because the themes volume is ONE host directory shared by every
+   * tenant on the machine: the right number depends on that machine's disk, which only the operator
+   * knows. Both are visible and changeable in admin Settings, and the defaults live in the schema
+   * where an operator can see what they are — never as a literal in the install path.
+   */
+  TENANT_THEME_MAX_BYTES: 'tenant_theme_max_bytes',
+  TENANT_THEME_MAX_COUNT: 'tenant_theme_max_count',
   PLATFORM_NAME: 'platform_name',
   PLATFORM_DOMAIN: 'platform_domain',
   TELEMETRY_ENABLED: 'telemetry_enabled',

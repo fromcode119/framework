@@ -11,6 +11,8 @@ import { SafeArchive } from '@core/security/safe-archive';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import { Seeder } from '@core/database/seeder';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { ProjectPaths } from '@core/config/paths';
+import { TenantThemePackagePolicy } from '@core/theme/tenant-theme-package-policy';
 
 export class ThemeInstallerService {
   constructor(
@@ -47,6 +49,41 @@ export class ThemeInstallerService {
   }
 
   async installFromZip(filePath: string, themesMap: Map<string, IThemeManifest>): Promise<IThemeManifest> {
+    return this.withExtractedArchive(filePath, (tempDir) => this.place(tempDir, themesMap, { keepSource: false }));
+  }
+
+  /**
+   * Installs a theme UPLOADED BY ONE SITE, into that site's own directory.
+   *
+   * Deliberately not a flag on the platform path. Almost everything `place` does is wrong here — it
+   * targets the shared root, it runs the theme's seeds against the database, and it installs and
+   * enables whatever plugins the package declares. None of that may happen for a package the platform
+   * never reviewed, so this path does none of it: the files go down and nothing else runs.
+   *
+   * What it adds instead is the three refusals a shared box needs. `TenantThemePackagePolicy` decides
+   * what the package may contain; a slug already taken is refused rather than overwritten, because
+   * these slugs are global and `place` would `rm -rf` the holder's directory; and the site's quota is
+   * checked against what it already has, because the themes volume is one host directory for every
+   * tenant on the machine.
+   */
+  async installForTenant(
+    filePath: string,
+    tenantId: string,
+    themesMap: Map<string, IThemeManifest>,
+    quota: { maxBytes: number; maxThemes: number },
+  ): Promise<IThemeManifest> {
+    const owner = String(tenantId ?? '').trim();
+    if (!owner) throw new Error('A site must be selected to upload a theme.');
+    return this.withExtractedArchive(filePath, (tempDir) => this.placeForTenant(tempDir, owner, themesMap, quota));
+  }
+
+  /**
+   * Extracts an uploaded archive to a scratch directory, hands it over, and always cleans up.
+   *
+   * Shared so the platform path and the per-site path cannot disagree about what a theme package
+   * even is — a difference between them is an archive that installs one way and not the other.
+   */
+  private async withExtractedArchive<T>(filePath: string, use: (tempDir: string) => Promise<T>): Promise<T> {
     const tempDir = path.join(path.dirname(filePath), `theme-ext-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
     try {
@@ -60,12 +97,119 @@ export class ThemeInstallerService {
           throw error;
         }
       }
-      return await this.place(tempDir, themesMap, { keepSource: false });
+      return await use(tempDir);
     } finally {
       try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (e) {
         this.logger.warn(`Failed to clean up temp dir ${tempDir}: ${(e as Error).message}`);
       }
     }
+  }
+
+  /**
+   * Puts a SITE's theme in its own directory, having refused everything a site may not do.
+   *
+   * No backup of a replaced directory, unlike the platform path: a site replacing its own theme is
+   * replacing something only it can see, and writing a backup archive per upload into the shared
+   * backups volume would be a second way for one site to fill the box.
+   */
+  private async placeForTenant(
+    sourceDir: string,
+    ownerTenantId: string,
+    themesMap: Map<string, IThemeManifest>,
+    quota: { maxBytes: number; maxThemes: number },
+  ): Promise<IThemeManifest> {
+    const contentDir = this.findThemeManifestDir(sourceDir);
+    if (!contentDir) throw new Error('Invalid theme: theme.json not found anywhere in the package.');
+    const manifest: IThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
+    const slug = String(manifest.slug ?? '').trim();
+    if (!slug) throw new Error('Invalid theme: missing "slug" in theme.json.');
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+      throw new Error(`Invalid theme slug "${slug}". Use lowercase letters, digits and dashes — it becomes a directory name and a URL.`);
+    }
+
+    const violations = TenantThemePackagePolicy.violations(contentDir, manifest);
+    if (violations.length) {
+      throw new Error(
+        `This theme cannot be installed for a site because it ${violations.join(' It ')} `
+        + 'A site\'s theme renders in the browser only.',
+      );
+    }
+
+    // Global uniqueness. `place` would delete whatever is at the target, and on a shared box that
+    // could be the platform's theme or another customer's — so the answer is a refusal naming the
+    // holder, never an overwrite.
+    const existing = themesMap.get(slug);
+    if (existing && existing.ownerTenantId !== ownerTenantId) {
+      throw new Error(
+        `The theme slug "${slug}" is already taken on this platform by `
+        + `${existing.ownerTenantId ? `another site` : 'the platform'}. Theme slugs are unique across the whole `
+        + 'platform, so rename yours — prefixing it with your site name is the usual way.',
+      );
+    }
+
+    const tenantRoot = ProjectPaths.getThemesDirFor(ownerTenantId);
+    const targetDir = path.join(tenantRoot, slug);
+    this.assertWithinQuota(tenantRoot, targetDir, contentDir, quota);
+
+    if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
+    fs.mkdirSync(targetDir, { recursive: true });
+    this.moveDir(contentDir, targetDir);
+
+    await this.discoverThemes();
+    // Nothing else runs. No seeds, no dependency install, no bundled plugins — the policy above has
+    // already refused a package that asks for any of them.
+    return themesMap.get(slug) || { ...manifest, ownerTenantId };
+  }
+
+  /**
+   * Refuses an upload that would take the site past what it may store.
+   *
+   * The themes volume is ONE host directory shared by every tenant on the machine, so an unbounded
+   * upload is a denial of service against every other customer, not merely against the uploader.
+   * A theme being REPLACED does not count towards the count, and its current size is not counted
+   * either — the new copy stands where the old one did.
+   */
+  private assertWithinQuota(
+    tenantRoot: string,
+    targetDir: string,
+    contentDir: string,
+    quota: { maxBytes: number; maxThemes: number },
+  ): void {
+    const incoming = TenantThemePackagePolicy.byteSize(contentDir);
+    if (incoming > quota.maxBytes) {
+      throw new Error(
+        `This theme is ${ThemeInstallerService.megabytes(incoming)} MB, over the `
+        + `${ThemeInstallerService.megabytes(quota.maxBytes)} MB a site may store in one theme.`,
+      );
+    }
+
+    let siblings: string[] = [];
+    try {
+      siblings = fs.existsSync(tenantRoot) ? fs.readdirSync(tenantRoot).filter((name) => !name.startsWith('.')) : [];
+    } catch {
+      siblings = [];
+    }
+    const replacing = siblings.includes(path.basename(targetDir));
+    if (!replacing && siblings.length >= quota.maxThemes) {
+      throw new Error(
+        `This site already has ${siblings.length} of its own themes, which is the limit. `
+        + 'Delete one before uploading another.',
+      );
+    }
+
+    const held = siblings
+      .filter((name) => name !== path.basename(targetDir))
+      .reduce((total, name) => total + TenantThemePackagePolicy.byteSize(path.join(tenantRoot, name)), 0);
+    if (held + incoming > quota.maxBytes) {
+      throw new Error(
+        `This site's themes would total ${ThemeInstallerService.megabytes(held + incoming)} MB, over the `
+        + `${ThemeInstallerService.megabytes(quota.maxBytes)} MB it may store.`,
+      );
+    }
+  }
+
+  private static megabytes(bytes: number): string {
+    return (bytes / (1024 * 1024)).toFixed(1);
   }
 
   /**

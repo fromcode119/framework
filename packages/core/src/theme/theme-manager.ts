@@ -8,6 +8,7 @@ import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import { Seeder } from '@core/database/seeder';
 import { ProjectPaths } from '@core/config/paths';
 import { ThemeInstallerService } from '@core/theme/theme-installer-service';
+import { TenantThemeQuota } from '@core/theme/tenant-theme-quota';
 import { ThemeScaffoldService } from '@core/theme/theme-scaffold-service';
 import { ThemeDefaultPageContractOverrideLoader } from '@core/theme/theme-default-page-contract-override-loader';
 import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
@@ -103,6 +104,45 @@ export class ThemeManager {
     const manifest = await this.installer.installFromZip(filePath, this.themes);
     await this.refreshStorefrontRenderer(`theme "${manifest.slug}" installed`);
     return manifest;
+  }
+
+  /**
+   * Installs a theme a SITE uploaded, into that site's own directory.
+   *
+   * The storefront renderer is refreshed exactly as for a platform install: this site's storefront
+   * holds theme files in memory for the life of its process, so without it the upload would appear to
+   * succeed and change nothing until something else restarted that process.
+   */
+  async installForTenant(filePath: string, tenantId: string): Promise<IThemeManifest> {
+    const quota = await TenantThemeQuota.current();
+    const manifest = await this.installer.installForTenant(filePath, tenantId, this.themes, quota);
+    await this.refreshStorefrontRenderer(`theme "${manifest.slug}" uploaded by site "${tenantId}"`);
+    return manifest;
+  }
+
+  /**
+   * Removes a theme a SITE uploaded, and only ever one of ITS OWN.
+   *
+   * Ownership is re-checked here against what discovery found on disk rather than trusted from the
+   * request: the slug arrives in a URL, and the platform's themes and every other site's live under
+   * the same root. Refusing by "not yours" rather than "not found" is deliberate — the caller already
+   * knows the slug it typed, so there is nothing to disclose by being clear.
+   */
+  async removeTenantTheme(slug: string, tenantId: string): Promise<void> {
+    const owner = String(tenantId ?? '').trim();
+    const name = String(slug ?? '').trim();
+    if (!owner) throw new Error('A site must be selected to remove a theme.');
+
+    const manifest = this.themes.get(name);
+    if (!manifest) throw new Error(`Theme "${name}" is not installed.`);
+    if (manifest.ownerTenantId !== owner) {
+      throw new Error(`Theme "${name}" does not belong to this site, so it cannot be removed here.`);
+    }
+
+    const directory = path.join(ProjectPaths.getThemesDirFor(owner), name);
+    if (fs.existsSync(directory)) fs.rmSync(directory, { recursive: true, force: true });
+    await this.discoverThemes();
+    await this.refreshStorefrontRenderer(`theme "${name}" removed by site "${owner}"`);
   }
 
   /**

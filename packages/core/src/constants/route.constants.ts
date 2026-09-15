@@ -313,6 +313,17 @@ export class RouteConstants {
   THEMES_UPLOAD_INSPECT: '/upload/inspect',
   THEMES_UPLOAD_COMPLETE: '/upload/complete',
   THEMES_UPLOAD: '/upload',
+  /**
+   * A SITE uploading its OWN theme, and removing one.
+   *
+   * A separate path from `/upload` on purpose. That one installs onto the shared container and is a
+   * platform action; this one writes into the site's own directory, is gated on the site's admin
+   * rather than on a platform admin, and refuses everything `TenantThemePackagePolicy` refuses. Two
+   * different acts should not share a URL — a reader of the router has to be able to see which is
+   * which without following the middleware.
+   */
+  THEMES_MINE_UPLOAD: '/mine/upload',
+  THEMES_MINE_SLUG: '/mine/:slug',
   THEMES_SLUG_ACTIVATE: '/:slug/activate',
   THEMES_SLUG_DISABLE: '/:slug/disable',
   THEMES_SLUG_RESET: '/:slug/reset',
