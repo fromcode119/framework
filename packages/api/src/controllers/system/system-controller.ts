@@ -138,6 +138,10 @@ export class SystemController extends BaseController {
     return this.settingsController.getSettings(req, res);
   }
 
+  async getPersonalDataPolicy(req: Request, res: Response) {
+    return this.settingsController.getPersonalDataPolicy(req, res);
+  }
+
   async platformSettingKeys(req: Request, res: Response) {
     return this.settingsController.platformSettingKeys(req, res);
   }

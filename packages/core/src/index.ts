@@ -50,7 +50,9 @@ export type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-
 export { MigrationManager } from '@core/database/migration-manager';
 export { JournalRetentionService } from '@core/database/journal-retention-service';
 export { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
-export type { IPersonalDataDataset, IPersonalDataErasure, IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data.interface';
+export type { IPersonalDataDataset } from '@core/plugin/services/interfaces/personal-data-dataset.interface';
+export type { IPersonalDataErasure } from '@core/plugin/services/interfaces/personal-data-erasure.interface';
+export type { IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data-subject.interface';
 export { JournalRetentionTargets } from '@core/database/journal-retention-target';
 export type { IJournalRetentionTarget, IJournalPruneSummary } from '@core/database/journal-retention-target';
 export { Seeder } from '@core/database/seeder';

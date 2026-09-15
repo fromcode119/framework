@@ -35,7 +35,54 @@ export class AdminSystemNavigationMetadataService {
   private getSecondaryPanelItems(): ISecondaryPanelItemManifest[] {
     return [
       ...this.getUsersSecondaryPanelItems(),
+      ...this.getSitesSecondaryPanelItems(),
       ...this.getSettingsSecondaryPanelItems(),
+    ];
+  }
+
+  /**
+   * Sites, and the two things you can DO with one.
+   *
+   * Import had no entry anywhere: the page existed and worked, but the only way to reach it was a
+   * link on the Sites list — or typing `/sites/import`. A capability the operator cannot find is a
+   * hidden one, and hidden is the single thing this admin is not allowed to have.
+   *
+   * Export is deliberately NOT here: it is an action on a specific site, not a destination, and its
+   * results are listed under Settings -> Backups. A menu entry that could only ever say "pick a site
+   * first" would be a worse answer than the row action that already exists.
+   */
+  private getSitesSecondaryPanelItems(): ISecondaryPanelItemManifest[] {
+    return [
+      {
+        id: 'sites-list',
+        label: 'All sites',
+        path: AppPathConstants.ADMIN.SITES.ROOT,
+        sourcePaths: [AppPathConstants.ADMIN.SITES.ROOT],
+        icon: 'Globe',
+        scope: CapabilityScope.SELF,
+        priority: 10,
+        requiredRoles: ['admin'],
+      },
+      {
+        id: 'sites-new',
+        label: 'New site',
+        path: AppPathConstants.ADMIN.SITES.NEW,
+        sourcePaths: [AppPathConstants.ADMIN.SITES.ROOT],
+        icon: 'Plus',
+        scope: CapabilityScope.SELF,
+        priority: 20,
+        requiredRoles: ['admin'],
+      },
+      {
+        id: 'sites-import',
+        label: 'Import a site',
+        path: AppPathConstants.ADMIN.SITES.IMPORT,
+        sourcePaths: [AppPathConstants.ADMIN.SITES.ROOT],
+        icon: 'Upload',
+        scope: CapabilityScope.SELF,
+        priority: 30,
+        requiredRoles: ['admin'],
+      },
     ];
   }
 
@@ -169,6 +216,19 @@ export class AdminSystemNavigationMetadataService {
         icon: 'Shield',
         scope: CapabilityScope.SELF,
         priority: 150,
+        requiredRoles: ['admin'],
+      },
+      {
+        // Beside Security rather than under it: this is not access control, it is what the platform
+        // does with a person's data when they ask to be forgotten — and it is the only screen that
+        // says what an erasure will actually reach.
+        id: 'personal-data',
+        label: 'Personal data',
+        path: AppPathConstants.ADMIN.SETTINGS.PERSONAL_DATA,
+        sourcePaths: [AppPathConstants.ADMIN.SETTINGS.ROOT],
+        icon: 'ShieldCheck',
+        scope: CapabilityScope.SELF,
+        priority: 155,
         requiredRoles: ['admin'],
       },
       {

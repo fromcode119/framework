@@ -167,6 +167,20 @@ export class SystemConstants {
   MCP_REMOTE_ENABLED: 'mcp_remote_enabled',
   /** Maximum media payload accepted by MCP upload/replace tools, edited beside the hosted MCP toggle. */
   MCP_REMOTE_MEDIA_MAX_MB: 'mcp_remote_media_max_mb',
+  /**
+   * How each dataset honours an erasure request, keyed `"<pluginSlug>:<dataset>"`.
+   *
+   * Two keys, one shape, because the answer has two audiences: DEFAULTS is the platform's policy
+   * across every site, STRATEGIES is one site's override of it. Neither is seeded — an unset dataset
+   * falls through to the next layer and the admin names which, so a fallback is never mistaken for a
+   * decision somebody made.
+   *
+   * Framework-owned rather than a compliance plugin's setting, because the reader that must obey it
+   * is `deleteMyAccount`, which runs on every site whether or not such a plugin is installed.
+   */
+  PERSONAL_DATA_ERASURE_DEFAULTS: 'personal_data_erasure_defaults',
+  PERSONAL_DATA_ERASURE_STRATEGIES: 'personal_data_erasure_strategies',
+
   SETUP_COMPLETED: 'setup_completed',
   SITE_NAME: 'site_name',
   SITE_URL: 'site_url',

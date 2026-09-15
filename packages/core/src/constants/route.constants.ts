@@ -217,6 +217,8 @@ export class RouteConstants {
   ADMIN_SETTINGS: '/admin/settings',
   /** Which settings belong to the PLATFORM, and whether this account may change them. */
   ADMIN_SETTINGS_PLATFORM_KEYS: '/admin/settings/platform-keys',
+  /** Every personal-data dataset with the policy in force for it, and which layer decided. */
+  ADMIN_PERSONAL_DATA_POLICY: '/admin/personal-data/policy',
   ADMIN_REDIRECTS: '/admin/redirects',
   ADMIN_REDIRECTS_ID: '/admin/redirects/:id',
   ADMIN_ROLES: '/admin/roles',
