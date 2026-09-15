@@ -3,9 +3,10 @@ import React from 'react';
 
 import type { ReactElement, ReactNode } from 'react';
 import Link from 'next/link';
-import { prop } from '@fromcode119/react-class-components';
+import { prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 
@@ -13,14 +14,35 @@ export class PluginsLayout extends AdminComponent {
   @prop declare children: ReactNode;
 
   /**
+   * Null until the scope answer arrives. The platform tabs are withheld until then rather than shown
+   * and snatched back: a tab that appears for a moment and vanishes reads as a glitch, and offering
+   * one that the API now refuses with `platform_scope_required` would be a control that cannot act.
+   */
+  @state scope: PlatformSettingLocks | null = null;
+
+  async componentDidMount(): Promise<void> {
+    this.scope = await PlatformSettingLocks.load();
+  }
+
+  /**
    * Health and Marketplace describe the PLATFORM — the plugin registry of the shared container, and
-   * what may be installed onto it. Both endpoints answer `platform_admin_required` to a site
-   * administrator, so the tabs are not offered to one. Installed stays: a site's own plugin list and
-   * each plugin's per-site settings are its business.
+   * what may be installed onto it. Two separate things withhold them, and they are different
+   * questions:
+   *
+   *   WHO is asking  — a site administrator is not a platform admin; the endpoints answer
+   *                    `platform_admin_required`.
+   *   WHERE they are — with a SITE selected, nobody reads the platform's catalogue, platform admin
+   *                    included; the endpoints answer `platform_scope_required`. A tenant is isolated
+   *                    from every other tenant, and enumerating the shared box from inside one
+   *                    customer's site is the same disclosure the Installed list is filtered to close.
+   *
+   * Installed stays in both cases: a site's own plugin list and each plugin's per-site settings are
+   * its business.
    */
   private get tabs(): { label: string; href: string; icon: ReactNode }[] {
     const installed = { label: 'Installed', href: AdminConstants.ROUTES.PLUGINS.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> };
     if (!PlatformAccess.canManagePlatform(this.auth.user)) return [installed];
+    if (!this.scope || this.scope.isSiteScope()) return [installed];
     return [
       installed,
       { label: 'Health', href: AdminConstants.ROUTES.PLUGINS.HEALTH, icon: <FrameworkIcons.Activity size={16} /> },

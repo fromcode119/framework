@@ -6,6 +6,7 @@ import { ThemeController } from '@api/controllers/themes/theme-controller';
 import { ThemeAssetsListController } from '@api/controllers/themes/theme-assets-list-controller';
 import { RouteConstants } from '@fromcode119/core';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
+import { PlatformScopeGuard } from '@api/middlewares/platform-scope-guard';
 
 export class ThemeRouter extends BaseRouter {
   private controller: ThemeController;
@@ -30,9 +31,12 @@ export class ThemeRouter extends BaseRouter {
     // the installed themes for its own site, and the manager writes the tenant's row. Install, upload,
     // delete, update and the marketplace change the FILES every site renders from: platform admin only.
     const platform = this.platformAdmin.middleware();
+    // The marketplace is the platform's catalogue, so it is answered with NO SITE SELECTED — a
+    // platform admin standing inside a site is isolated exactly like the tenant whose site it is.
+    const platformScope = new PlatformScopeGuard().middleware();
     this.get(RouteConstants.SEGMENTS.THEMES_ACTIVE_ASSETS, this.auth.guard(['admin']), this.bind(this.assetsListController.listActiveThemeAssets));
     this.get('/', this.auth.guard(['admin']), this.controller.list);
-    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), platform, this.controller.getMarketplace);
+    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), platform, platformScope, this.controller.getMarketplace);
     this.get(RouteConstants.SEGMENTS.THEMES_SLUG_CHECK_UPDATE, this.auth.guard(['admin']), platform, this.controller.checkUpdate);
     this.get(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.controller.activate);
     this.post(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.controller.activate);

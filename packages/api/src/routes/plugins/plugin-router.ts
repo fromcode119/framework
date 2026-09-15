@@ -10,6 +10,7 @@ import { PluginUploadController } from '@api/controllers/plugins/plugin-upload-c
 import { PluginLifecycleController } from '@api/controllers/plugins/plugin-lifecycle-controller';
 import { RouteConstants } from '@fromcode119/core';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
+import { PlatformScopeGuard } from '@api/middlewares/platform-scope-guard';
 
 export class PluginRouter extends BaseRouter {
   private controller: PluginController;
@@ -39,6 +40,10 @@ export class PluginRouter extends BaseRouter {
     // marketplace — additionally needs a PLATFORM admin, or one customer could put code on the box
     // every other customer runs on. Single-tenant deployments pass every admin through.
     const platform = this.platformAdmin.middleware();
+    // The marketplace enumerates the whole platform, so it is answered with NO SITE SELECTED. Being a
+    // platform admin is not enough: standing inside one customer's site and reading the catalogue of
+    // everything the box has is the disclosure the tenant filter on `list` above exists to close.
+    const platformScope = new PlatformScopeGuard().middleware();
     this.get('/', this.auth.guard(['admin']), this.controller.list);
     this.get(RouteConstants.SEGMENTS.ACTIVE, this.controller.active);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_TOGGLE, this.auth.guard(['admin']), platform, this.lifecycleController.toggle);
@@ -48,7 +53,7 @@ export class PluginRouter extends BaseRouter {
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONFIG, this.auth.guard(['admin']), platform, this.controller.saveConfig);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SANDBOX, this.auth.guard(['admin']), platform, this.controller.saveSandboxConfig);
     this.delete(RouteConstants.SEGMENTS.PLUGINS_SLUG, this.auth.guard(['admin']), platform, this.lifecycleController.delete);
-    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), platform, this.controller.marketplace);
+    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), platform, platformScope, this.controller.marketplace);
     this.post(RouteConstants.SEGMENTS.PLUGINS_INSTALL, this.auth.guard(['admin']), platform, this.controller.install);
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPDATE_ALL, this.auth.guard(['admin']), platform, (req: any, res: any) => this.controller.updateAll(req, res));
     this.get(RouteConstants.SEGMENTS.PLUGINS_INSTALL_OPERATION, this.auth.guard(['admin']), platform, this.controller.installOperation);

@@ -3,6 +3,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { AppearanceManager, Logger, RouteConstants, SystemConstants, TenantMode } from '@fromcode119/core';
 import { CoercionUtils } from '@fromcode119/core';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
+import { PlatformScopeGuard } from '@api/middlewares/platform-scope-guard';
 import type { IAppearanceSummary } from '@fromcode119/core';
 /**
  * Admin appearance management — a SETTINGS concern, deliberately separate from the plugin/theme
@@ -89,8 +90,11 @@ export class AppearanceRouter extends BaseRouter {
     // Browsing, installing and removing an appearance PACKAGE are platform actions: the package is code
     // on the one container every site runs on, and removing one takes another customer's console with it.
     const platform = this.platformAdmin.middleware();
+    // The catalogue is the platform's, so it is answered with NO SITE SELECTED — the same rule the
+    // root listing above applies to a tenant-bound request.
+    const platformScope = new PlatformScopeGuard().middleware();
 
-    this.get(RouteConstants.SEGMENTS.APPEARANCES_CATALOG, platform, this.asyncHandler(async (_req, res) => {
+    this.get(RouteConstants.SEGMENTS.APPEARANCES_CATALOG, platform, platformScope, this.asyncHandler(async (_req, res) => {
       res.json({ appearances: await this.manager.catalog() });
     }));
 

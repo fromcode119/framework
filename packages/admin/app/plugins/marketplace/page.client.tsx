@@ -11,6 +11,7 @@ import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
 import { VersionComparisonService } from '@fromcode119/core/client';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { MarketplaceSearchBar } from '@/app/plugins/marketplace/components/view/marketplace-search-bar.client';
 import { MarketplacePluginCard } from '@/app/plugins/marketplace/components/view/marketplace-plugin-card.client';
@@ -36,17 +37,37 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
     return PlatformAccess.canManagePlatform(this.auth.user);
   }
 
+  /**
+   * Null until the answer arrives; `isSiteScope()` once it has.
+   *
+   * Reached directly by URL this page would otherwise fetch a catalogue the API now refuses with
+   * `platform_scope_required`, and show a spinner that never resolves into anything.
+   */
+  @state scope: PlatformSettingLocks | null = null;
+
+  private get isSiteScope(): boolean {
+    return this.scope?.isSiteScope() === true;
+  }
+
   componentDidMount(): void {
     this.mounted = true;
     if (!this.canManagePlatform) {
       this.loading = false;
       return;
     }
-    void this.fetchData();
+    void PlatformSettingLocks.load().then((scope) => {
+      if (!this.mounted) return;
+      this.scope = scope;
+      if (scope.isSiteScope()) {
+        this.loading = false;
+        return;
+      }
+      void this.fetchData();
+    });
   }
 
   componentDidUpdate(): void {
-    if (!this.canManagePlatform) return;
+    if (!this.canManagePlatform || this.isSiteScope) return;
     // During a batch update the settle loop owns all fetching — reacting to the refreshVersion bump
     // here would flip the grid into loading skeletons (and hit a restarting api) mid-batch.
     if (this.updatingAll) return;
@@ -196,6 +217,15 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
     if (!this.canManagePlatform) {
       return (
         <PlatformOnlyPanel detail="The marketplace installs plugins and themes onto the container every site runs on, so only a platform admin can browse or install from it. The plugins your site already runs are under Plugins, with each one's own settings." />
+      );
+    }
+
+    // A platform admin, but standing inside a site. The catalogue lists what the whole platform has,
+    // and a request scoped to one site does not read that — no site is shown another customer's
+    // inventory, and who is asking does not change it.
+    if (this.isSiteScope) {
+      return (
+        <PlatformOnlyPanel detail="The marketplace lists everything installed on the platform, so it is browsed with no site selected — leave the site from the site menu to open it. What this site itself runs is under Plugins, with each plugin's own settings." />
       );
     }
 
