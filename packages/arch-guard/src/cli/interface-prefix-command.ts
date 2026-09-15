@@ -8,7 +8,7 @@ import { FrameworkRoot } from './framework-root';
  * reference, via the TypeScript rename API. DRY RUN by default.
  *
  *   arch-guard interface-prefix packages/ai
- *   arch-guard interface-prefix ../../plugins/seo --apply
+ *   arch-guard interface-prefix ../../plugins/<slug> --apply
  */
 export class InterfacePrefixCommand extends ArchorCommand {
   readonly summary = 'Rename `interface Foo` -> `IFoo` and every reference [<path> --apply].';

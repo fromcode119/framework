@@ -7,35 +7,35 @@ describe('SecondarySidebarContextResolver', () => {
 
   const menuItems: IMenuItem[] = [
     { label: 'Dashboard', path: '/admin', pluginSlug: 'system' },
-    { label: 'Analytics', path: '/admin/plugins/analytics', pluginSlug: 'analytics' },
+    { label: 'Alpha', path: '/admin/plugins/alpha', pluginSlug: 'alpha' },
   ];
 
   const secondaryPanel: ISecondaryPanelState = {
     version: 1,
     contexts: {
-      'org.fromcode:analytics': {
-        id: 'org.fromcode:analytics',
-        label: 'Analytics',
+      'org.fromcode:alpha': {
+        id: 'org.fromcode:alpha',
+        label: 'Alpha',
         targetNamespace: 'org.fromcode',
-        targetPlugin: 'analytics',
-        targetCanonicalKey: 'org.fromcode:analytics',
+        targetPlugin: 'alpha',
+        targetCanonicalKey: 'org.fromcode:alpha',
       },
     },
     itemsByContext: {
-      'org.fromcode:analytics': [
+      'org.fromcode:alpha': [
         {
-          canonicalId: 'org.fromcode:analytics:self:org.fromcode:analytics:overview',
+          canonicalId: 'org.fromcode:alpha:self:org.fromcode:alpha:overview',
           id: 'overview',
           label: 'Overview',
-          path: '/admin/plugins/analytics/overview',
-          sourcePaths: ['/admin/plugins/analytics'],
+          path: '/admin/plugins/alpha/overview',
+          sourcePaths: ['/admin/plugins/alpha'],
           scope: 'self',
           sourceNamespace: 'org.fromcode',
-          sourcePlugin: 'analytics',
-          sourceCanonicalKey: 'org.fromcode:analytics',
+          sourcePlugin: 'alpha',
+          sourceCanonicalKey: 'org.fromcode:alpha',
           targetNamespace: 'org.fromcode',
-          targetPlugin: 'analytics',
-          targetCanonicalKey: 'org.fromcode:analytics',
+          targetPlugin: 'alpha',
+          targetCanonicalKey: 'org.fromcode:alpha',
           priority: 10,
           requiredRoles: ['admin'],
           requiredCapabilities: [],
@@ -48,7 +48,7 @@ describe('SecondarySidebarContextResolver', () => {
         id: 'help',
         label: 'Help',
         path: '/admin/help',
-        sourcePaths: ['/admin/plugins/analytics'],
+        sourcePaths: ['/admin/plugins/alpha'],
         scope: 'global',
         sourceNamespace: 'org.fromcode',
         sourcePlugin: 'system',
@@ -74,17 +74,17 @@ describe('SecondarySidebarContextResolver', () => {
 
   it('resolves active context from primary plugin context id', () => {
     const result = resolver.resolve({
-      pathname: '/admin/plugins/analytics',
-      primaryContextId: 'analytics',
+      pathname: '/admin/plugins/alpha',
+      primaryContextId: 'alpha',
       menuItems,
       secondaryPanel,
-      plugins: [{ slug: 'analytics', namespace: 'org.fromcode' }],
+      plugins: [{ slug: 'alpha', namespace: 'org.fromcode' }],
       userRoles: ['admin'],
       userCapabilities: ['support.read'],
     });
 
-    expect(result.activeContextId).toBe('org.fromcode:analytics');
-    expect(result.activeSourcePath).toBe('/admin/plugins/analytics');
+    expect(result.activeContextId).toBe('org.fromcode:alpha');
+    expect(result.activeSourcePath).toBe('/admin/plugins/alpha');
     expect(result.items.map((entry) => entry.id)).toEqual(['overview', 'help']);
   });
 
@@ -92,11 +92,11 @@ describe('SecondarySidebarContextResolver', () => {
     // Admins carry `['*']` rather than per-capability entries. Without wildcard handling every
     // `requiredCapabilities` item was denied to them — the filter is fed the session's PERMISSIONS.
     const result = resolver.resolve({
-      pathname: '/admin/plugins/analytics',
-      primaryContextId: 'analytics',
+      pathname: '/admin/plugins/alpha',
+      primaryContextId: 'alpha',
       menuItems,
       secondaryPanel,
-      plugins: [{ slug: 'analytics', namespace: 'org.fromcode' }],
+      plugins: [{ slug: 'alpha', namespace: 'org.fromcode' }],
       userRoles: ['admin'],
       userCapabilities: ['*'],
     });
@@ -106,11 +106,11 @@ describe('SecondarySidebarContextResolver', () => {
 
   it('filters out items user cannot access by role/capability', () => {
     const result = resolver.resolve({
-      pathname: '/admin/plugins/analytics',
-      primaryContextId: 'analytics',
+      pathname: '/admin/plugins/alpha',
+      primaryContextId: 'alpha',
       menuItems,
       secondaryPanel,
-      plugins: [{ slug: 'analytics', namespace: 'org.fromcode' }],
+      plugins: [{ slug: 'alpha', namespace: 'org.fromcode' }],
       userRoles: ['editor'],
       userCapabilities: [],
     });
@@ -478,8 +478,8 @@ describe('SecondarySidebarContextResolver', () => {
 
   it('keeps plugin secondary-sidebar contexts unchanged when system context exists', () => {
     const result = resolver.resolve({
-      pathname: '/admin/plugins/analytics',
-      primaryContextId: 'analytics',
+      pathname: '/admin/plugins/alpha',
+      primaryContextId: 'alpha',
       menuItems,
       secondaryPanel: {
         ...secondaryPanel,
@@ -516,12 +516,12 @@ describe('SecondarySidebarContextResolver', () => {
           ],
         },
       },
-      plugins: [{ slug: 'analytics', namespace: 'org.fromcode' }],
+      plugins: [{ slug: 'alpha', namespace: 'org.fromcode' }],
       userRoles: ['admin'],
       userCapabilities: ['support.read'],
     });
 
-    expect(result.activeContextId).toBe('org.fromcode:analytics');
+    expect(result.activeContextId).toBe('org.fromcode:alpha');
     expect(result.items.map((entry) => entry.id)).toEqual(['overview', 'help']);
   });
 });

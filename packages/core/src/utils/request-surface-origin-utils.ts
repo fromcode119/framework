@@ -69,14 +69,14 @@ export class RequestSurfaceOriginUtils {
       // THE REQUEST'S OWN ADDRESS, and it is the only candidate a top-level navigation always has.
       //
       // `origin` and `referer` are sent by fetch and by link clicks; a DOWNLOAD, a `window.open` or a
-      // pasted address sends neither. So a PDF opened from the console arrived looking like traffic
+      // pasted address sends neither. So a PDF opened from the admin arrived looking like traffic
       // from nowhere, admin detection failed, tenancy fell back to resolving the host as a SITE, and
-      // the console's own host is not one: `404 unknown_host` on a document the operator was looking
+      // the admin's own host is not one: `404 unknown_host` on a document the operator was looking
       // at the admin page for. Every download and direct link in the admin had the same hole.
       //
       // This is not a guess about the host — it is the address the operator configured as
       // `admin_url`, compared against the address the request actually arrived on. A request that
-      // reaches the console's own URL IS console traffic, whatever headers a browser chose to omit.
+      // reaches the admin's own URL IS admin traffic, whatever headers a browser chose to omit.
       RequestSurfaceOriginUtils.selfUrl(requestLike, readHeader),
     ];
 

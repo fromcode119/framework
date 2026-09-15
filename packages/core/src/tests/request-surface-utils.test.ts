@@ -83,12 +83,12 @@ describe('RequestSurfaceUtils', () => {
 /**
  * A DOWNLOAD is a top-level navigation: no `origin`, no `referer`, no client header.
  *
- * Opening an invoice PDF from the console sent none of the three, so admin detection failed, tenancy
- * fell back to resolving the host as a SITE, and the console's own host is not one — `404
+ * Opening a generated document from the admin sent none of the three, so admin detection failed,
+ * tenancy fell back to resolving the host as a SITE, and the admin's own host is not one — `404
  * unknown_host` on a document the operator was looking at the admin page for. Every download and
  * direct link in the admin had the same hole.
  */
-describe('a request that arrives on the console is console traffic', () => {
+describe('a request that arrives on the admin app is admin traffic', () => {
   const withAdminUrl = async (url: string, run: () => void) => {
     const previous = process.env.ADMIN_URL;
     process.env.ADMIN_URL = url;
@@ -97,29 +97,29 @@ describe('a request that arrives on the console is console traffic', () => {
     }
   };
 
-  it('recognises the console by the address the request arrived on, with no headers to help', async () => {
-    await withAdminUrl('https://console.example.com', () => {
+  it('recognises the admin app by the address the request arrived on, with no headers to help', async () => {
+    await withAdminUrl('https://admin.example.com', () => {
       expect(RequestSurfaceUtils.isAdminRequestContext({
-        headers: { 'x-forwarded-host': 'console.example.com', 'x-forwarded-proto': 'https' },
-        url: '/api/v1/plugins/finance/invoices/303/pdf',
+        headers: { 'x-forwarded-host': 'admin.example.com', 'x-forwarded-proto': 'https' },
+        url: '/api/v1/plugins/example/documents/303/pdf',
       })).toBe(true);
     });
   });
 
-  it('does NOT mistake a site for the console', async () => {
-    await withAdminUrl('https://console.example.com', () => {
+  it('does NOT mistake a site for the admin app', async () => {
+    await withAdminUrl('https://admin.example.com', () => {
       expect(RequestSurfaceUtils.isAdminRequestContext({
         headers: { 'x-forwarded-host': 'someshop.example.com', 'x-forwarded-proto': 'https' },
-        url: '/api/v1/plugins/finance/invoices/303/pdf',
+        url: '/api/v1/plugins/example/documents/303/pdf',
       })).toBe(false);
     });
   });
 
   it('prefers the forwarded host, because behind a proxy `host` is an internal name', async () => {
-    await withAdminUrl('https://console.example.com', () => {
+    await withAdminUrl('https://admin.example.com', () => {
       expect(RequestSurfaceUtils.isAdminRequestContext({
-        headers: { host: 'api:3000', 'x-forwarded-host': 'console.example.com', 'x-forwarded-proto': 'https' },
-        url: '/api/v1/plugins/finance/invoices/303/pdf',
+        headers: { host: 'api:3000', 'x-forwarded-host': 'admin.example.com', 'x-forwarded-proto': 'https' },
+        url: '/api/v1/plugins/example/documents/303/pdf',
       })).toBe(true);
     });
   });
