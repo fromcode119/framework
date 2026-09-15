@@ -142,18 +142,43 @@ export class ThemeManager {
     this.discoverTenantThemes();
   }
 
-  /** Each site's own uploaded themes, one directory per site under `tenants/`. */
+  /**
+   * Each site's own uploaded themes, one directory per site under `tenants/`.
+   *
+   * ONE SITE'S BAD DIRECTORY MUST NOT COST EVERY OTHER SITE ITS THEME. These entries are written by
+   * upload, so unlike the platform's own they are not curated: a dangling symlink, a directory removed
+   * between the readdir and the stat, or a mode nobody can read will throw from `statSync`/`readdirSync`
+   * — and an unguarded throw here aborts the whole scan, which means NO themes are discovered at all
+   * and every storefront on the box renders with none. So each site is walked inside its own try, and a
+   * site that cannot be read is logged and skipped while the rest carry on.
+   */
   private discoverTenantThemes(): void {
     const tenantsRoot = ProjectPaths.tenantArtifactsRoot(this.themesRoot);
     if (!fs.existsSync(tenantsRoot)) return;
 
-    for (const tenantId of fs.readdirSync(tenantsRoot)) {
+    let tenantIds: string[] = [];
+    try {
+      tenantIds = fs.readdirSync(tenantsRoot);
+    } catch (e) {
+      this.logger.error(`Could not read ${tenantsRoot}; no site's own themes were discovered.`, e);
+      return;
+    }
+
+    for (const tenantId of tenantIds) {
       if (tenantId.startsWith('.')) continue;
       const tenantRoot = path.join(tenantsRoot, tenantId);
-      if (!fs.statSync(tenantRoot).isDirectory()) continue;
-      for (const dir of fs.readdirSync(tenantRoot)) {
-        if (dir.startsWith('.')) continue;
-        this.loadDiscoveredTheme(path.join(tenantRoot, dir), `${tenantId}/${dir}`, tenantId);
+      try {
+        if (!fs.statSync(tenantRoot).isDirectory()) continue;
+        for (const dir of fs.readdirSync(tenantRoot)) {
+          if (dir.startsWith('.')) continue;
+          this.loadDiscoveredTheme(path.join(tenantRoot, dir), `${tenantId}/${dir}`, tenantId);
+        }
+      } catch (e) {
+        this.logger.error(
+          `Could not read the themes of site "${tenantId}" at ${tenantRoot}. That site has no theme of `
+          + 'its own until this is fixed; every other site is unaffected.',
+          e,
+        );
       }
     }
   }

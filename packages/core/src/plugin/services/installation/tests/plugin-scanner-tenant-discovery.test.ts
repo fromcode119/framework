@@ -111,6 +111,40 @@ describe('plugin discovery with per-site plugins on disk', () => {
     expect(owners.real).toBe('acme');
   });
 
+  it('a site whose directory cannot be READ costs only that site — everyone else keeps their plugins', async () => {
+    // Unguarded, a throw in the tenant walk ends discovery for the whole platform: no plugin is
+    // registered for anyone, not just for the site whose directory is broken.
+    const plugins = tempRoot('fc-plugins-');
+    const themes = tempRoot('fc-themes-');
+    writePlugin(path.join(plugins, 'alpha'), { slug: 'alpha' });
+    writePlugin(path.join(plugins, 'tenants', 'globex', 'globex-ok'), { slug: 'globex-ok' });
+    const broken = path.join(plugins, 'tenants', 'acme');
+    fs.mkdirSync(broken, { recursive: true });
+    fs.chmodSync(broken, 0o000);
+
+    try {
+      const result = await scannerOn(plugins, themes).discoverPlugins(new Map(), {});
+      const owners = ownersBySlug(result);
+
+      expect(Object.keys(owners)).toContain('alpha');
+      expect(owners['globex-ok']).toBe('globex');
+    } finally {
+      fs.chmodSync(broken, 0o755);
+    }
+  });
+
+  it('a DANGLING SYMLINK where a site directory should be is skipped, not fatal', async () => {
+    const plugins = tempRoot('fc-plugins-');
+    const themes = tempRoot('fc-themes-');
+    writePlugin(path.join(plugins, 'alpha'), { slug: 'alpha' });
+    fs.mkdirSync(path.join(plugins, 'tenants'), { recursive: true });
+    fs.symlinkSync(path.join(plugins, 'does-not-exist'), path.join(plugins, 'tenants', 'acme'));
+
+    const result = await scannerOn(plugins, themes).discoverPlugins(new Map(), {});
+
+    expect(Object.keys(ownersBySlug(result))).toContain('alpha');
+  });
+
   it('does not walk a SITE theme for bundled plugins — an upload ships no code', async () => {
     // `tenants/` under the themes root is a container of sites, not a theme named "tenants", and a
     // site's theme may not carry plugins at all.

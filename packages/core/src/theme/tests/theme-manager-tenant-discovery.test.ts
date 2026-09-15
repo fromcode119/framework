@@ -116,6 +116,53 @@ describe('theme discovery with per-site themes on disk', () => {
     expect(errors.join(' ')).toMatch(/claimed twice/i);
   });
 
+  it('a site whose directory cannot be READ costs only that site — everyone else keeps their theme', async () => {
+    // The failure this guards is total: an unguarded throw in the tenant walk aborts discovery, so
+    // NO theme is found for anyone and every storefront on the box renders with none.
+    const root = themesRoot();
+    writeTheme(path.join(root, 'aurora'), { slug: 'aurora', name: 'Aurora', version: '1.0.0' });
+    writeTheme(path.join(root, 'tenants', 'globex', 'globex-ok'), { slug: 'globex-ok', name: 'OK', version: '1.0.0' });
+    const broken = path.join(root, 'tenants', 'acme');
+    fs.mkdirSync(broken, { recursive: true });
+    fs.chmodSync(broken, 0o000);
+    const subject = managerOn(root);
+    vi.spyOn((subject as any).logger, 'error').mockImplementation(() => undefined);
+
+    try {
+      await expect(subject.discoverThemes()).resolves.not.toThrow();
+      expect(discovered(subject).has('aurora')).toBe(true);
+      expect(discovered(subject).get('globex-ok')?.ownerTenantId).toBe('globex');
+    } finally {
+      fs.chmodSync(broken, 0o755);
+    }
+  });
+
+  it('a DANGLING SYMLINK where a site directory should be is skipped, not fatal', async () => {
+    const root = themesRoot();
+    writeTheme(path.join(root, 'aurora'), { slug: 'aurora', name: 'Aurora', version: '1.0.0' });
+    fs.mkdirSync(path.join(root, 'tenants'), { recursive: true });
+    fs.symlinkSync(path.join(root, 'does-not-exist'), path.join(root, 'tenants', 'acme'));
+    const subject = managerOn(root);
+    vi.spyOn((subject as any).logger, 'error').mockImplementation(() => undefined);
+
+    await expect(subject.discoverThemes()).resolves.not.toThrow();
+    expect(discovered(subject).has('aurora')).toBe(true);
+  });
+
+  it('names the failing site in the log, so the operator knows whose to fix', async () => {
+    const root = themesRoot();
+    fs.mkdirSync(path.join(root, 'tenants'), { recursive: true });
+    fs.symlinkSync(path.join(root, 'nope'), path.join(root, 'tenants', 'acme'));
+    const subject = managerOn(root);
+    const errors: string[] = [];
+    vi.spyOn((subject as any).logger, 'error').mockImplementation((message: string) => { errors.push(String(message)); });
+
+    await subject.discoverThemes();
+
+    expect(errors.join(' ')).toMatch(/acme/);
+    expect(errors.join(' ')).toMatch(/every other site is unaffected/i);
+  });
+
   it('survives a themes root with no tenants directory at all', async () => {
     const root = themesRoot();
     writeTheme(path.join(root, 'aurora'), { slug: 'aurora', name: 'Aurora', version: '1.0.0' });

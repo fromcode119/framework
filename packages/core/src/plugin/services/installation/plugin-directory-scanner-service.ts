@@ -144,13 +144,34 @@ export class PluginDirectoryScannerService {
     // Each site's own uploaded plugins, one root per site. Tagged by the DIRECTORY they were found
     // in — a manifest cannot name its own owner, or an uploaded plugin would claim to be the
     // platform's and be offered to every site.
+    //
+    // ONE SITE'S BAD DIRECTORY MUST NOT COST EVERY OTHER SITE ITS PLUGINS. These entries are written
+    // by upload rather than curated, so a dangling symlink or an unreadable mode will throw from
+    // `statSync`/`readdirSync` — and an unguarded throw here aborts discovery for the whole platform.
+    // Each site is inspected inside its own try; one that cannot be read is skipped, not fatal.
     const rootOwners = new Map<string, string>();
     const tenantPluginsRoot = ProjectPaths.tenantArtifactsRoot(this.pluginsRoot);
     if (fs.existsSync(tenantPluginsRoot)) {
-      for (const tenantId of fs.readdirSync(tenantPluginsRoot)) {
+      let tenantIds: string[] = [];
+      try {
+        tenantIds = fs.readdirSync(tenantPluginsRoot);
+      } catch (e) {
+        this.logger.error(`Could not read ${tenantPluginsRoot}; no site's own plugins were discovered.`, e);
+        tenantIds = [];
+      }
+      for (const tenantId of tenantIds) {
         if (tenantId.startsWith('.')) continue;
         const tenantRoot = path.join(tenantPluginsRoot, tenantId);
-        if (!fs.statSync(tenantRoot).isDirectory()) continue;
+        try {
+          if (!fs.statSync(tenantRoot).isDirectory()) continue;
+        } catch (e) {
+          this.logger.error(
+            `Could not read the plugins of site "${tenantId}" at ${tenantRoot}. That site has none of `
+            + 'its own until this is fixed; every other site is unaffected.',
+            e,
+          );
+          continue;
+        }
         rootOwners.set(tenantRoot, tenantId);
         roots.push(tenantRoot);
       }
@@ -165,7 +186,15 @@ export class PluginDirectoryScannerService {
       if (!fs.existsSync(root)) continue;
       const isBundledRoot = root === bundledRoot;
       const rootOwnerTenantId = rootOwners.get(root);
-      const pluginDirs = fs.readdirSync(root);
+      // Guarded because a SITE's root now feeds this loop, and those are written by upload rather than
+      // curated. A throw here would end discovery for every root still queued behind it.
+      let pluginDirs: string[] = [];
+      try {
+        pluginDirs = fs.readdirSync(root);
+      } catch (e) {
+        this.logger.error(`Could not read plugin root ${root}; skipping it. Other roots are unaffected.`, e);
+        continue;
+      }
 
       for (const dir of pluginDirs) {
         if (dir.startsWith('.')) continue;
