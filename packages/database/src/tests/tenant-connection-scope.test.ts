@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
-import { TenantRlsSql } from '@database/tenant/tenant-rls-sql';
+import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
 
 class FakeClient {
   readonly calls: Array<{ text: string; values?: unknown[] }> = [];
@@ -37,9 +37,9 @@ describe('TenantConnectionScope', () => {
     });
     expect(pool.clients).toHaveLength(1);
     const texts = pool.clients[0].calls.map((call) => call.text);
-    expect(pool.clients[0].calls[0]).toEqual({ text: TenantRlsSql.setTenantStatement(), values: ['t1'] });
+    expect(pool.clients[0].calls[0]).toEqual({ text: TenantIsolationSql.setTenantStatement(), values: ['t1'] });
     expect(texts.slice(1, 3)).toEqual(['select 1', 'select 2']);
-    expect(texts).toContain(TenantRlsSql.resetTenantStatement());
+    expect(texts).toContain(TenantIsolationSql.resetTenantStatement());
     expect(pool.clients[0].released).toBe(true);
     expect(TenantConnectionScope.currentClient()).toBeUndefined();
   });
@@ -63,7 +63,7 @@ describe('TenantConnectionScope', () => {
       await TenantConnectionScope.currentClient()!.query('after wait');
     });
     expect(pool.clients).toHaveLength(2);
-    expect(pool.clients[1].calls[0]).toEqual({ text: TenantRlsSql.setTenantStatement(), values: ['t1'] });
+    expect(pool.clients[1].calls[0]).toEqual({ text: TenantIsolationSql.setTenantStatement(), values: ['t1'] });
     expect(pool.clients[1].calls[1].text).toBe('after wait');
     expect(pool.clients[1].released).toBe(true);
   });
@@ -90,9 +90,9 @@ describe('TenantConnectionScope', () => {
       await TenantConnectionScope.currentClient()!.query('insert platform row');
     });
     const calls = pool.clients[0].calls;
-    expect(calls[0]).toEqual({ text: TenantRlsSql.setPlatformAdminStatement(), values: ['on'] });
-    expect(calls.some((call) => call.text === TenantRlsSql.setTenantStatement())).toBe(false);
-    expect(calls.map((call) => call.text)).toContain(TenantRlsSql.resetPlatformAdminStatement());
+    expect(calls[0]).toEqual({ text: TenantIsolationSql.setPlatformAdminStatement(), values: ['on'] });
+    expect(calls.some((call) => call.text === TenantIsolationSql.setTenantStatement())).toBe(false);
+    expect(calls.map((call) => call.text)).toContain(TenantIsolationSql.resetPlatformAdminStatement());
   });
 
   it('refuses an empty tenant id', async () => {
@@ -147,9 +147,9 @@ describe('TenantConnectionScope after the scope has closed', () => {
     expect(pool.clients).toHaveLength(3);
     for (const client of pool.clients) expect(client.released).toBe(true);
     const texts = pool.clients[1].calls.map((call) => call.text);
-    expect(pool.clients[1].calls[0]).toEqual({ text: TenantRlsSql.setTenantStatement(), values: ['t1'] });
+    expect(pool.clients[1].calls[0]).toEqual({ text: TenantIsolationSql.setTenantStatement(), values: ['t1'] });
     expect(texts).toContain('trailing audit write');
-    expect(texts).toContain(TenantRlsSql.resetTenantStatement());
+    expect(texts).toContain(TenantIsolationSql.resetTenantStatement());
   });
 
   it('keeps the platform-admin marker on a one-shot client for a closed platform scope', async () => {
@@ -159,8 +159,8 @@ describe('TenantConnectionScope after the scope has closed', () => {
     await late!.query('late platform write');
     expect(pool.clients).toHaveLength(1);
     expect(pool.clients[0].released).toBe(true);
-    expect(pool.clients[0].calls[0]).toEqual({ text: TenantRlsSql.setPlatformAdminStatement(), values: ['on'] });
-    expect(pool.clients[0].calls.map((c) => c.text)).toContain(TenantRlsSql.resetPlatformAdminStatement());
+    expect(pool.clients[0].calls[0]).toEqual({ text: TenantIsolationSql.setPlatformAdminStatement(), values: ['on'] });
+    expect(pool.clients[0].calls.map((c) => c.text)).toContain(TenantIsolationSql.resetPlatformAdminStatement());
   });
 });
 

@@ -1,5 +1,8 @@
 import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
+import { DeclaredUniqueOutcome } from '@database/declared-unique-outcome';
+import { RefusingTenantIsolation } from '@database/tenant/refusing-tenant-isolation';
+import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import { JoinType } from '@database/enums/join-type.enum';
 import { sql, or, eq, ne, gt, gte, lt, lte, isNull, isNotNull, inArray, notInArray } from 'drizzle-orm';
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
@@ -40,6 +43,24 @@ export abstract class BaseDialect {
    */
   supportsTenantIsolation(): boolean {
     return false;
+  }
+
+  /**
+   * The refusing implementation, for the same reason `supportsTenantIsolation` defaults to false: a
+   * base class must not hand out a security property nobody implemented. A driver with row-level
+   * security overrides this with a real one.
+   */
+  readonly tenantIsolation: ITenantIsolation = new RefusingTenantIsolation(this.constructor.name);
+
+  /**
+   * No catalog to interrogate and no way to add the constraint after the fact, so this REPORTS
+   * rather than throwing — nothing is unsafe about a driver that cannot reconcile a declared unique,
+   * unlike isolation, where silence would be mistaken for protection.
+   */
+  async ensureDeclaredUnique(_table: string, _column: string): Promise<DeclaredUniqueOutcome> {
+    return DeclaredUniqueOutcome.unsupported(
+      `${this.constructor.name}: this driver cannot reconcile a declared UNIQUE on an existing column.`,
+    );
   }
 
   /**

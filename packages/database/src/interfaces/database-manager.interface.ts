@@ -1,7 +1,9 @@
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import type { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
+import type { DeclaredUniqueOutcome } from '@database/declared-unique-outcome';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
+import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 
 /**
  * Interface representing a database manager that provides access to Drizzle ORM
@@ -81,6 +83,28 @@ export interface IDatabaseManager {
    * and a multi-tenant deployment on such a driver refuses to boot (see TenantMode).
    */
   supportsTenantIsolation(): boolean;
+
+  /**
+   * The tenant-isolation DDL, executed by the driver that owns it.
+   *
+   * ALWAYS PRESENT — callers never type-check it (see the no-defensive-`typeof` rule). On a driver
+   * with no isolation strategy every method REFUSES rather than doing nothing, so a caller can never
+   * be told a table is isolated when it is not. Ask `supportsTenantIsolation()` first if skipping is
+   * legitimate.
+   *
+   * This exists so no code outside the owning dialect writes or executes a tenancy SQL string:
+   * row-level security is Postgres-only and has no portable form, so it belongs beside the driver.
+   */
+  readonly tenantIsolation: ITenantIsolation;
+
+  /**
+   * Enforces a UNIQUE that a field DECLARES on a column that already exists.
+   *
+   * Not tenancy — it is ordinary schema reconciliation, and it reports rather than throws: a table
+   * holding duplicates cannot take the constraint, and that is a fact to surface, not a reason to
+   * refuse the boot. A driver that cannot answer says `unsupported`.
+   */
+  ensureDeclaredUnique(table: string, column: string): Promise<DeclaredUniqueOutcome>;
 
   /**
    * Marks this connection as the platform's own (migrations, schema sync), permitting writes to

@@ -16,7 +16,7 @@ import { Logger } from '../../logging';
  * row, so revoking the row ends both.
  *
  * PLATFORM-LEVEL, NOT TENANT-SCOPED. `_system_` prefixed tables are excluded from row-level security
- * by `TenantScopedTableDdl`, which is required rather than incidental here: the grant is written on
+ * by `TenantScopedTables`, which is required rather than incidental here: the grant is written on
  * the admin host, where the request is bound to whichever site the operator is currently inside —
  * frequently not the one being previewed, and on the Sites registry, not any of them. `tenant_id` is
  * the binding instead, and it is compared on every read.

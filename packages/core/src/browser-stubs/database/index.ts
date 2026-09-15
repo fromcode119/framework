@@ -3,7 +3,6 @@
 export { BaseMigration } from '@core/browser-stubs/database/base-migration';
 export { NamingStrategy } from '@core/browser-stubs/database/naming-strategy';
 export { DatabaseFactory } from '@core/browser-stubs/database/database-factory';
-export { TenantRlsSql } from '@core/browser-stubs/database/tenant-rls-sql';
 export { DatabaseConnectionUrls } from '@core/browser-stubs/database/database-connection-urls';
 export { Schema } from '@core/browser-stubs/database/schema';
 export { sql } from '@core/browser-stubs/database/sql';

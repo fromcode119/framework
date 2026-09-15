@@ -12,7 +12,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { UntenantedBootAccess } from '@core/plugin/context/untenanted-boot-access';
-import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
+import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 
 // Plugins read with the schema's camelCase field names. Raw-SQL paths in
 // the dialects return rows keyed by snake_case DB columns; convert top-level
@@ -82,7 +82,7 @@ export class DatabaseContextProxy {
     // Single-tenant deployment: no tenant exists to scope by, and injecting one would filter every
     // query to nothing. Pre-tenancy behaviour, unchanged.
     if (!TenantMode.isEnabled()) return args;
-    if (!TenantScopedTableDdl.isTenantScoped(String(args[0] ?? ''))) return args;
+    if (!TenantScopedTables.isTenantScoped(String(args[0] ?? ''))) return args;
     // A question about the table's shape has no rows to scope, so it needs no tenant to answer.
     if (DatabaseContextProxy.ROW_FREE_METHODS.has(prop)) return args;
     const tenantId = RequestContextUtils.requireTenantId();

@@ -1,5 +1,5 @@
 import type { IDatabaseManager } from '@fromcode119/database';
-import { TenantRlsSql } from '@fromcode119/database';
+
 import { Logger } from '@core/logging';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -90,9 +90,7 @@ export class TenantAdoptionService {
       );
       return rows.length;
     }
-    const before = await this.db.queryRaw(TenantRlsSql.unassignedCountStatement(table.name));
-    await this.db.queryRaw(TenantRlsSql.backfillStatement(table.name), [tenantId]);
-    return Number(before[0]?.unassigned ?? 0);
+    return this.db.tenantIsolation.assignUnassigned(table.name, tenantId);
   }
 
   private async grantEveryone(tenantId: string): Promise<number> {
@@ -140,9 +138,8 @@ export class TenantAdoptionService {
     for (const table of this.tables) {
       if (!table.hasTenantColumn) continue;
       if (table.name === SystemConstants.TABLE.META || table.name === SystemConstants.TABLE.PLUGIN_SETTINGS) continue;
-      const rows = await this.db.queryRaw(TenantRlsSql.unassignedCountStatement(table.name));
-      const count = Number(rows[0]?.unassigned ?? 0);
-      if (count > 0) out[table.name] = count;
+      const remaining = await this.db.tenantIsolation.countUnassigned(table.name);
+      if (remaining > 0) out[table.name] = remaining;
     }
     return out;
   }

@@ -1,12 +1,11 @@
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
-import { IDatabaseManager, sql } from '@fromcode119/database';
+import { IDatabaseManager, TenantColumn } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import { SystemConstants } from '@core/constants/system.constants';
 import { EntitySchemaPlanService } from '@core/database/entity-schema-plan-service';
-import { TenantScopedTableDdl } from '@core/database/tenant-scoped-table-ddl';
+import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
-import { TenantRlsSql } from '@fromcode119/database';
 import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 import type { IField } from '@core/interfaces/field.interface';
 
@@ -88,7 +87,10 @@ export class SchemaManager {
    * safe to run on every boot.
    */
   async applyTenantIsolationSweep(systemTables: Set<string>): Promise<void> {
-    if (String(this.db.dialect || '').toLowerCase() !== 'postgres') return;
+    // The capability, ASKED of the driver — not a string compare against its name. Row-level
+    // security is the Postgres driver's to own, and a caller that hard-codes the dialect goes stale
+    // the moment another driver gains isolation.
+    if (!this.db.supportsTenantIsolation()) return;
 
     // No tenants means nothing to isolate — and a policy left standing here empties the whole site
     // (see `applyTenantIsolation`). Repair rather than skip: an installation that ran an earlier
@@ -109,8 +111,8 @@ export class SchemaManager {
     // Framework tables whose policy comes from a migration (`people`, `person_catalogs`, the bespoke
     // three) never pass through `applyTenantIsolation`, so their unique rules are scoped here — every
     // table that carries a tenant policy, whichever path gave it one.
-    const policed = await this.db.queryRaw(TenantRlsSql.isolatedPoliciesStatement());
-    for (const table of new Set(policed.map((row) => String(row.tablename)))) {
+    const policed = await this.db.tenantIsolation.listPolicies();
+    for (const table of new Set(policed.map((entry) => entry.table))) {
       await this.scopeUniqueConstraints(table);
     }
   }
@@ -123,10 +125,10 @@ export class SchemaManager {
    * it gained one. Applying them from the sweep makes both directions self-healing.
    */
   private async applyBespokeTenantPolicies(): Promise<void> {
-    for (const statement of TenantBespokePolicies.statements()) {
-      await this.db.execute(sql.raw(statement)).catch((error: any) => {
+    for (const spec of TenantBespokePolicies.specs()) {
+      await this.db.tenantIsolation.applyPolicy(spec).catch((error: any) => {
         if (SchemaManager.isDuplicateObject(error)) return;
-        this.logger.warn(`Bespoke tenant policy failed: ${error?.message || error}`);
+        this.logger.warn(`Bespoke tenant policy for "${spec.table}" failed: ${error?.message || error}`);
       });
     }
   }
@@ -141,14 +143,8 @@ export class SchemaManager {
    * next boot with a tenant re-applies the policies.
    */
   private async removeTenantIsolation(): Promise<void> {
-    const result: any = await this.db.execute(sql.raw(TenantRlsSql.isolatedPoliciesStatement()));
-    const rows: any[] = result?.rows ?? result ?? [];
-
     const byTable = new Map<string, string[]>();
-    for (const row of rows) {
-      const table = String(row?.tablename ?? '').trim();
-      const policy = String(row?.policyname ?? '').trim();
-      if (!table || !policy) continue;
+    for (const { table, policy } of await this.db.tenantIsolation.listPolicies()) {
       byTable.set(table, [...(byTable.get(table) ?? []), policy]);
     }
     if (byTable.size === 0) return;
@@ -161,11 +157,9 @@ export class SchemaManager {
     );
 
     for (const [table, policies] of byTable) {
-      for (const statement of TenantRlsSql.removalStatementsFor(table, policies)) {
-        await this.db.execute(sql.raw(statement)).catch((error: any) => {
-          this.logger.warn(`Could not remove tenant isolation from "${table}": ${error?.message || error}`);
-        });
-      }
+      await this.db.tenantIsolation.releaseTable(table, policies).catch((error: any) => {
+        this.logger.warn(`Could not remove tenant isolation from "${table}": ${error?.message || error}`);
+      });
     }
   }
 
@@ -181,11 +175,10 @@ export class SchemaManager {
    */
   private async warnAboutUnassignedRows(tableName: string): Promise<void> {
     try {
-      const counted: any = await this.db.execute(sql.raw(TenantRlsSql.unassignedCountStatement(tableName)));
-      const unassigned = Number(counted?.rows?.[0]?.unassigned || 0);
+      const unassigned = await this.db.tenantIsolation.countUnassigned(tableName);
       if (unassigned === 0) return;
       this.logger.warn(
-        `${tableName}: ${unassigned} row(s) predate tenancy and have no ${TenantRlsSql.COLUMN}, so they `
+        `${tableName}: ${unassigned} row(s) predate tenancy and have no ${TenantColumn.NAME}, so they `
         + 'will be invisible to every tenant. Assign them an owner or delete them — they are not lost, '
         + 'but nothing can read them.',
       );
@@ -205,30 +198,13 @@ export class SchemaManager {
    * Uniques a FOREIGN KEY depends on are left alone and named in the log.
    */
   private async scopeUniqueConstraints(tableName: string): Promise<void> {
-    const constraints = await this.db.queryRaw(TenantRlsSql.tenantBlindUniqueConstraintsStatement(), [tableName, TenantRlsSql.COLUMN]);
-    for (const row of constraints) {
-      const columns = SchemaManager.columnList(row.columns);
-      if (columns.length === 0) continue;
-      this.logger.info(`${tableName}: UNIQUE "${row.name}" (${columns.join(', ')}) is scoped per tenant.`);
-      await this.db.execute(sql.raw(TenantRlsSql.scopeUniqueConstraintStatement(tableName, String(row.name), columns)));
+    const scoped = await this.db.tenantIsolation.scopeUniqueRules(tableName);
+    for (const rule of scoped.constraints) {
+      this.logger.info(`${tableName}: UNIQUE "${rule.name}" (${rule.columns.join(', ')}) is scoped per tenant.`);
     }
-    const indexes = await this.db.queryRaw(TenantRlsSql.tenantBlindUniqueIndexesStatement(), [tableName, TenantRlsSql.COLUMN]);
-    for (const row of indexes) {
-      const columns = SchemaManager.columnList(row.columns);
-      if (columns.length === 0) continue;
-      this.logger.info(`${tableName}: UNIQUE INDEX "${row.name}" (${columns.join(', ')}) is scoped per tenant.`);
-      for (const statement of TenantRlsSql.scopeUniqueIndexStatements(tableName, String(row.name), columns)) {
-        await this.db.execute(sql.raw(statement));
-      }
+    for (const rule of scoped.indexes) {
+      this.logger.info(`${tableName}: UNIQUE INDEX "${rule.name}" (${rule.columns.join(', ')}) is scoped per tenant.`);
     }
-  }
-
-  /** `array_agg` arrives as a JS array from pg, or as `{a,b}` text through some paths. */
-  private static columnList(value: unknown): string[] {
-    if (Array.isArray(value)) return value.map((entry) => String(entry));
-    const text = String(value ?? '').trim();
-    if (!text.startsWith('{')) return text ? [text] : [];
-    return text.slice(1, -1).split(',').map((entry) => entry.replace(/^"|"$/g, '').trim()).filter(Boolean);
   }
 
   /** Walks the driver's wrapper chain looking for Postgres' duplicate_object code. */
@@ -261,32 +237,28 @@ export class SchemaManager {
    * and that restart is what runs this sweep for real.
    */
   private async applyTenantIsolation(tableName: string, options: { system?: boolean } = {}): Promise<void> {
-    if (String(this.db.dialect || '').toLowerCase() !== 'postgres') return;
+    if (!this.db.supportsTenantIsolation()) return;
     if (!TenantMode.isEnabled()) return;
+    if (!TenantScopedTables.isTenantScoped(tableName, options)) return;
 
-    const statements = TenantScopedTableDdl.statementsFor(tableName, options);
-    if (statements.length === 0) return;
-
-    for (const statement of statements) {
-      // Count orphans BEFORE row-level security goes on. FORCE RLS applies to the table OWNER too,
-      // so once it is enabled even this connection cannot see rows with a NULL tenant_id — the
-      // diagnostic would report zero for exactly the tables that need reporting.
-      if (statement.includes('ENABLE ROW LEVEL SECURITY')) {
-        await this.warnAboutUnassignedRows(tableName);
-        await this.scopeUniqueConstraints(tableName);
-      }
-      try {
-        await this.db.execute(sql.raw(statement));
-      } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
-        // 42710 = duplicate_object. The statements above drop the policy first so this should not
-        // happen, but the driver wraps the pg error, so the code is checked down the cause chain
-        // rather than only on the surface object.
-        if (SchemaManager.isDuplicateObject(error)) continue;
-        this.logger.error(`Failed to apply tenant isolation to ${tableName}: ${error}`);
-        throw error;
-      }
+    try {
+      // The column FIRST, then the diagnostics, then enforcement — and the order is load-bearing.
+      // FORCE RLS applies to the table OWNER too, so once it is on even this connection cannot see
+      // rows with a NULL tenant_id: counting afterwards would report zero for exactly the tables
+      // that need reporting. This used to be expressed by looking for 'ENABLE ROW LEVEL SECURITY'
+      // inside the statement strings, which only worked while the caller could read the SQL.
+      await this.db.tenantIsolation.addTenantColumn(tableName);
+      await this.warnAboutUnassignedRows(tableName);
+      await this.scopeUniqueConstraints(tableName);
+      await this.db.tenantIsolation.enforceIsolation(tableName);
+    } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
+      // 42710 = duplicate_object. The statements drop the policy first so this should not happen,
+      // but the driver wraps the pg error, so the code is checked down the cause chain rather than
+      // only on the surface object.
+      if (SchemaManager.isDuplicateObject(error)) return;
+      this.logger.error(`Failed to apply tenant isolation to ${tableName}: ${error}`);
+      throw error;
     }
-
   }
 
   private async updateTable(plan: IEntitySchemaPlan): Promise<void> {
@@ -308,30 +280,33 @@ export class SchemaManager {
    * is exactly what mlm did, on the request connection, which is not the table's owner, so it failed
    * on every boot and the uniqueness was never enforced.
    *
-   * Runs on the owner/DDL connection like the rest of the sync, and the tenant isolation sweep in the
-   * same pass then rewrites what is added here to `(column, tenant_id)` — so a reconciled unique ends
-   * up identical to one that came from CREATE TABLE, tenancy included.
+   * The driver decides HOW — it owns the catalog query and the DDL — and reports back. A driver that
+   * cannot do it answers `unsupported`, which is said ONCE per sync rather than per column: it is a
+   * property of the deployment, not of this table.
    *
-   * POSTGRES ONLY, the same limit the isolation sweep carries. A failure here is logged and does not
-   * take the boot down: an existing table may hold duplicates that make the constraint impossible,
-   * and refusing to start is a worse answer than reporting it.
+   * A failure does not take the boot down: an existing table may hold duplicates that make the
+   * constraint impossible, and refusing to start is a worse answer than reporting it.
    */
   private async ensureDeclaredUniques(plan: IEntitySchemaPlan): Promise<void> {
-    if (String(this.db.dialect || '').toLowerCase() !== 'postgres') return;
     if (plan.declaredUniques.length === 0) return;
 
     for (const column of plan.declaredUniques) {
-      try {
-        const covered = await this.db.queryRaw(TenantRlsSql.uniqueCoverageStatement(), [plan.tableName, column]);
-        if ((covered ?? []).length > 0) continue;
+      const outcome = await this.db.ensureDeclaredUnique(plan.tableName, column);
 
-        this.logger.info(`Adding declared UNIQUE on ${plan.tableName}.${column}...`);
-        await this.db.execute(sql.raw(TenantRlsSql.addUniqueConstraintStatement(plan.tableName, column)));
-      } catch (error: any) {
+      if (outcome.state === 'added') {
+        this.logger.info(`Added the declared UNIQUE on ${plan.tableName}.${column}.`);
+      } else if (outcome.state === 'failed') {
         this.logger.warn(
-          `Could not add the declared UNIQUE on ${plan.tableName}.${column}: ${error?.message || error}. `
+          `Could not add the declared UNIQUE on ${plan.tableName}.${column}: ${outcome.reason}. `
           + 'Existing duplicate values are the usual cause; the constraint stays unenforced until they are resolved.'
         );
+      } else if (outcome.state === 'unsupported') {
+        // Once, then stop asking: every remaining column would say the same thing.
+        this.logger.warn(
+          `Declared UNIQUE rules cannot be reconciled on this driver, so ${plan.tableName} keeps `
+          + `whatever its table was created with. ${outcome.reason}`
+        );
+        return;
       }
     }
   }

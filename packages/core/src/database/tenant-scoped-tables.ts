@@ -1,8 +1,8 @@
-import { TenantRlsSql } from '@fromcode119/database';
 import { SystemConstants } from '@core/constants/system.constants';
 
 /**
- * Which tables are tenant-scoped, and the DDL that scopes them.
+ * WHICH tables are tenant-scoped. The DDL that scopes them belongs to the driver
+ * (`db.tenantIsolation`); this class only answers the question.
  *
  * Derived from the table's own NAME rather than a hand-maintained inventory. A hand-listed set goes
  * stale, and a table missing from it is silently GLOBAL — readable by every tenant with nothing to
@@ -13,7 +13,7 @@ import { SystemConstants } from '@core/constants/system.constants';
  * tables holding a tenant's own CONTENT are scoped — see CONTENT_TABLES, which now covers the
  * people tables and redirects as well as media folders.
  */
-export class TenantScopedTableDdl {
+export class TenantScopedTables {
   /**
    * Framework tables that hold tenant CONTENT rather than platform configuration, and so ARE scoped
    * even though they are `_system_*` or appear in SystemConstants.TABLE. A tenant's media library,
@@ -56,26 +56,20 @@ export class TenantScopedTableDdl {
   private static readonly SYSTEM_TABLES = new Set<string>(
     Object.values(SystemConstants.TABLE)
       .map((table) => String(table).toLowerCase())
-      .filter((table) => !TenantScopedTableDdl.CONTENT_TABLES.has(table)),
+      .filter((table) => !TenantScopedTables.CONTENT_TABLES.has(table)),
   );
 
   static isTenantScoped(table: string, options: { system?: boolean } = {}): boolean {
     const name = String(table ?? '').trim().toLowerCase();
     if (!name) return false;
-    if (TenantScopedTableDdl.BESPOKE_POLICY_TABLES.has(name)) return false;
-    if (TenantScopedTableDdl.CONTENT_TABLES.has(name)) return true;
+    if (TenantScopedTables.BESPOKE_POLICY_TABLES.has(name)) return false;
+    if (TenantScopedTables.CONTENT_TABLES.has(name)) return true;
     // A collection marked `system: true` is framework configuration, whatever its table is called.
     // The `settings` collection is the worked example: its slug looks like ordinary content, but it
     // is the global settings store. Scoping it would put platform configuration behind a tenant.
     if (options.system === true) return false;
     if (name.startsWith('_system_')) return false;
-    if (TenantScopedTableDdl.SYSTEM_TABLES.has(name)) return false;
+    if (TenantScopedTables.SYSTEM_TABLES.has(name)) return false;
     return true;
-  }
-
-  /** Every statement needed to bring `table` under tenant isolation; empty when it is not scoped. */
-  static statementsFor(table: string, options: { system?: boolean } = {}): string[] {
-    if (!TenantScopedTableDdl.isTenantScoped(table, options)) return [];
-    return TenantRlsSql.statementsFor(table);
   }
 }
