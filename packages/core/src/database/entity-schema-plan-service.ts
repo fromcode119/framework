@@ -26,6 +26,15 @@ export class EntitySchemaPlanService {
           .map((field) => this.toColumnName(field.name))
           .filter((column) => existing.has(column.toLowerCase()))
         : [],
+      // Only for a table that already exists, and for the same reason as `declaredUniques`: on
+      // CREATE TABLE the builder emits the right nullability, and it is the EXISTING column whose
+      // `required` was relaxed afterwards that had no path at all.
+      declaredOptionals: exists
+        ? this.resolveSyncableFields(collection)
+          .filter((field) => !field.required)
+          .map((field) => this.toColumnName(field.name))
+          .filter((column) => existing.has(column.toLowerCase()))
+        : [],
       unsupportedIndexes: this.resolveUnsupportedIndexes(collection),
     };
   }

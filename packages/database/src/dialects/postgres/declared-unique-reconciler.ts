@@ -1,5 +1,5 @@
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
-import { DeclaredUniqueOutcome } from '@database/declared-unique-outcome';
+import { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 
 type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<string, unknown>>>;
 
@@ -28,15 +28,15 @@ export class PostgresDeclaredUniqueReconciler {
    * is a worse answer than saying so. The caller logs it; the column stays unenforced until the
    * duplicates are resolved.
    */
-  async ensure(table: string, column: string): Promise<DeclaredUniqueOutcome> {
+  async ensure(table: string, column: string): Promise<SchemaReconcileOutcome> {
     const covered = await this.run(TenantIsolationSql.uniqueCoverageStatement(), [table, column]);
-    if ((covered ?? []).length > 0) return DeclaredUniqueOutcome.covered();
+    if ((covered ?? []).length > 0) return SchemaReconcileOutcome.satisfied();
 
     try {
       await this.run(TenantIsolationSql.addUniqueConstraintStatement(table, column));
-      return DeclaredUniqueOutcome.added();
+      return SchemaReconcileOutcome.changed();
     } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
-      return DeclaredUniqueOutcome.failed(String(error?.message || error));
+      return SchemaReconcileOutcome.failed(String(error?.message || error));
     }
   }
 }

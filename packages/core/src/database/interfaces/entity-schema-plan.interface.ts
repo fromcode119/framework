@@ -12,5 +12,11 @@ export interface IEntitySchemaPlan {
    * for the database, not for this pure planner — the manager asks, and adds only what is missing.
    */
   declaredUniques: string[];
+
+  /**
+   * Existing columns whose field is NOT declared required — the database may still hold a NOT NULL
+   * from when the column was created, which no longer matches what the admin presents.
+   */
+  declaredOptionals: string[];
   unsupportedIndexes: string[];
 }

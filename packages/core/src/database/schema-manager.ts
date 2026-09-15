@@ -268,6 +268,7 @@ export class SchemaManager {
     }
 
     await this.ensureDeclaredUniques(plan);
+    await this.relaxDeclaredOptionals(plan);
   }
 
   /**
@@ -293,7 +294,7 @@ export class SchemaManager {
     for (const column of plan.declaredUniques) {
       const outcome = await this.db.ensureDeclaredUnique(plan.tableName, column);
 
-      if (outcome.state === 'added') {
+      if (outcome.state === 'changed') {
         this.logger.info(`Added the declared UNIQUE on ${plan.tableName}.${column}.`);
       } else if (outcome.state === 'failed') {
         this.logger.warn(
@@ -306,6 +307,36 @@ export class SchemaManager {
           `Declared UNIQUE rules cannot be reconciled on this driver, so ${plan.tableName} keeps `
           + `whatever its table was created with. ${outcome.reason}`
         );
+        return;
+      }
+    }
+  }
+
+  /**
+   * Drop a NOT NULL the schema no longer declares.
+   *
+   * The mirror of `ensureDeclaredUniques`, and the same gap from the other side: `required: false`
+   * was only honoured when the column was CREATED, so relaxing a field on an existing table changed
+   * the admin and nothing else — the database went on refusing writes the form presents as optional.
+   *
+   * Relax-only. Nothing here ever ADDS a NOT NULL: the rows that are already NULL would need a value
+   * and inventing one is forbidden. Tightening a column stays a migration someone writes.
+   */
+  private async relaxDeclaredOptionals(plan: IEntitySchemaPlan): Promise<void> {
+    if (plan.declaredOptionals.length === 0) return;
+
+    for (const column of plan.declaredOptionals) {
+      const outcome = await this.db.ensureDeclaredNullable(plan.tableName, column);
+
+      if (outcome.state === 'changed') {
+        this.logger.info(`${plan.tableName}.${column} is optional in the schema; dropped its NOT NULL.`);
+      } else if (outcome.state === 'failed') {
+        this.logger.warn(
+          `Could not relax NOT NULL on ${plan.tableName}.${column}: ${outcome.reason}. `
+          + 'Writes that leave it empty will go on being refused until this is resolved.'
+        );
+      } else if (outcome.state === 'unsupported') {
+        // Once per sync, not per column: it is a property of the driver, not of this table.
         return;
       }
     }

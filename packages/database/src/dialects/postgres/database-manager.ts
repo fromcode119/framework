@@ -17,8 +17,9 @@ import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope'
 import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
 import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tenant-isolation';
 import { PostgresDeclaredUniqueReconciler } from '@database/dialects/postgres/declared-unique-reconciler';
+import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgres/declared-nullability-reconciler';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
-import type { DeclaredUniqueOutcome } from '@database/declared-unique-outcome';
+import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 
 import { PostgresRoleProvisioner } from '@database/dialects/postgres/role-provisioner';
 
@@ -60,6 +61,9 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
 
   private readonly declaredUniques =
     new PostgresDeclaredUniqueReconciler((sqlText, values) => this.queryRaw(sqlText, values));
+
+  private readonly declaredNullability =
+    new PostgresDeclaredNullabilityReconciler((sqlText, values) => this.queryRaw(sqlText, values));
 
   // Standard operators
   public readonly like = ilike;
@@ -109,8 +113,13 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   }
 
   /** Reconciles a declared UNIQUE against the Postgres catalog. */
-  async ensureDeclaredUnique(table: string, column: string): Promise<DeclaredUniqueOutcome> {
+  async ensureDeclaredUnique(table: string, column: string): Promise<SchemaReconcileOutcome> {
     return this.declaredUniques.ensure(table, column);
+  }
+
+  /** Drops a NOT NULL the schema no longer declares. Never adds one. */
+  async ensureDeclaredNullable(table: string, column: string): Promise<SchemaReconcileOutcome> {
+    return this.declaredNullability.relax(table, column);
   }
 
   /** Every statement `fn` issues runs untenanted with the platform-admin marker set. See TenantConnectionScope. */
