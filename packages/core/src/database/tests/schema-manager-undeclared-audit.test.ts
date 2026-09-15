@@ -48,4 +48,34 @@ describe('SchemaManager.recordUndeclaredColumns — what may be audited', () => 
     // recorded against it is cleaned up rather than left where it can be approved.
     expect(failedTables.has('media')).toBe(false);
   });
+
+  it('writes the schema fingerprint as the PLATFORM row, whatever tenant is bound', async () => {
+    // `syncCollection` also runs inside a request — enabling a plugin with a site selected — and an
+    // unwrapped write lands the tenant's row because `_system_meta.tenant_id` defaults to the
+    // current tenant. Measured on the dev database: 235 per-tenant duplicates of facts that
+    // describe one shared schema, after which the platform row stops being updated and every boot
+    // re-syncs tables it already synced.
+    let wrapped = false;
+    let insertedWhileWrapped = false;
+    const db = {
+      tableExists: async () => true,
+      getColumns: async () => ['id'],
+      supportsTenantIsolation: () => true,
+      withPlatformAdmin: async (fn: () => Promise<unknown>) => {
+        wrapped = true;
+        try { return await fn(); } finally { wrapped = false; }
+      },
+      findOne: async () => null,
+      insert: async () => { insertedWhileWrapped = wrapped; return {}; },
+      update: async () => ({}),
+      createTable: async () => undefined,
+      tenantIsolation: { addTenantColumn: async () => undefined, enforceIsolation: async () => undefined, scopeUniqueRules: async () => ({ constraints: [], indexes: [] }), countUnassigned: async () => 0 },
+      ensureDeclaredUnique: async () => ({ state: 'satisfied', reason: '' }),
+      ensureDeclaredNullable: async () => ({ state: 'satisfied', reason: '' }),
+    } as any;
+
+    await new SchemaManager(db).syncCollection({ slug: 'fcp_cms_pages', fields: [] } as any);
+
+    expect(insertedWhileWrapped).toBe(true);
+  });
 });

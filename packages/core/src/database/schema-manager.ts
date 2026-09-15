@@ -436,6 +436,24 @@ export class SchemaManager {
     );
   }
 
+  /**
+   * The fingerprint is a PLATFORM fact, so it is written as the platform's row.
+   *
+   * One shared schema and one copy of each plugin per platform: a table has exactly one shape, and
+   * "is this table in sync" cannot have a different answer per site. But `syncCollection` also runs
+   * inside a REQUEST — enabling a plugin from the admin with a site selected — and an unwrapped
+   * write there lands the tenant's row, because `_system_meta.tenant_id` defaults to the current
+   * tenant. Measured on this deployment: 235 per-tenant duplicates (190 under one site alone)
+   * beside 167 platform rows, for facts that describe the same shared schema.
+   *
+   * The duplicate is not merely untidy. `findOne` on a tenant-bound connection then reads the
+   * tenant's copy, so the PLATFORM row stops being updated and goes stale — and the next untenanted
+   * boot re-syncs every table it already synced, because the fingerprint it can see no longer
+   * matches.
+   *
+   * `withPlatformAdmin` is also what makes the write legal: the policy admits a tenant-less row only
+   * from a connection carrying the platform marker.
+   */
   private async persistSchemaFingerprint(plan: IEntitySchemaPlan): Promise<void> {
     const metaTableExists = await this.db.tableExists(SystemConstants.TABLE.META);
     if (!metaTableExists) {
@@ -447,18 +465,21 @@ export class SchemaManager {
       fingerprint: plan.fingerprint,
       updatedAt: new Date().toISOString(),
     });
-    const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
 
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.META, { key }, { value });
-      return;
-    }
+    await this.db.withPlatformAdmin(async () => {
+      const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
 
-    await this.db.insert(SystemConstants.TABLE.META, {
-      key,
-      value,
-      description: `Entity schema fingerprint for ${plan.tableName}`,
-      group: 'Entity Schema',
+      if (existing) {
+        await this.db.update(SystemConstants.TABLE.META, { key }, { value });
+        return;
+      }
+
+      await this.db.insert(SystemConstants.TABLE.META, {
+        key,
+        value,
+        description: `Entity schema fingerprint for ${plan.tableName}`,
+        group: 'Entity Schema',
+      });
     });
   }
 }
