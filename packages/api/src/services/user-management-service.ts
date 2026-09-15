@@ -49,7 +49,14 @@ export class UserManagementService {
         columns: { roleSlug: true },
         where: this.db.eq(Schema.systemUsersToRoles.userId, user.id)
       });
-      const { password, ...safeUser } = user;
+      // `password` for the obvious reason, and `isPlatformAdmin` because this listing is reachable by a
+      // site's own administrator: whether one of its members also holds platform powers identifies the
+      // operator's staff account among that site's people, and nothing on this screen needs it. The
+      // column is declared in the schema so typed callers can read it deliberately — this projection
+      // spreads whatever the row carries, so a column added there would otherwise appear here by
+      // accident rather than by decision, which is how it first turned up.
+      const { password, isPlatformAdmin, ...safeUser } = user;
+      void isPlatformAdmin;
       const [accountStatus, forcePasswordReset] = await Promise.all([
         this.readAccountStatus(user.id),
         this.readForcePasswordReset(user.id)
