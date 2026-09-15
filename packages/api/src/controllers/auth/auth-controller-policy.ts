@@ -475,6 +475,40 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
   }
 
   /**
+   * What the browser SENT and what it is being TOLD, for one tenant switch.
+   *
+   * A switch that answers 200, writes the session row, and leaves the browser in the old scope has
+   * exactly one unobservable step: the cookie exchange. `fc_token` is httpOnly and `Set-Cookie` is a
+   * forbidden header, so neither side of it can be read from the page — which is how this class of
+   * bug survives several rounds of confident, wrong diagnosis.
+   *
+   * NAMES AND ATTRIBUTES ONLY. A session token is a credential; it never appears here, and the count
+   * of each name is what actually matters — two `fc_token` cookies arriving is the whole answer, and
+   * their values would add nothing but risk to a log file.
+   */
+  private describeSessionCookieExchange(req: Request, res: Response, tenantId: string): void {
+    const raw = String((req.headers as Record<string, unknown>)?.cookie ?? '');
+    const presented = new Map<string, number>();
+    for (const part of raw.split(';')) {
+      const name = part.split('=')[0]?.trim();
+      if (name) presented.set(name, (presented.get(name) ?? 0) + 1);
+    }
+    const sent = res.getHeader('Set-Cookie');
+    const directives = (Array.isArray(sent) ? sent : [sent])
+      .filter(Boolean)
+      .map((entry) => {
+        const [pair, ...attrs] = String(entry).split(';');
+        const name = pair.split('=')[0]?.trim() ?? '?';
+        const cleared = /expires=Thu, 01 Jan 1970|Max-Age=0/i.test(String(entry));
+        return `${name}[${cleared ? 'CLEAR' : 'SET'}${attrs.map((a) => a.trim()).filter((a) => /^(domain|path|samesite|secure|httponly)/i.test(a)).map((a) => ` ${a}`).join('')}]`;
+      });
+    this.logger.info(
+      `[auth] tenant switch to "${tenantId}" — presented: ${[...presented].map(([n, c]) => (c > 1 ? `${n} x${c}` : n)).join(', ') || '(none)'}`
+      + ` | responding: ${directives.join(' ') || '(no Set-Cookie)'}`,
+    );
+  }
+
+  /**
    * Switch tenant. A tenant the account may not enter is a 403 — never a redirect into one it can,
    * which would quietly put an operator in the wrong customer's site.
    */
@@ -495,6 +529,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
     }
 
     await this.reissueSessionForTenant(req, res, user, tenantId, mode || undefined);
+    this.describeSessionCookieExchange(req, res, tenantId);
     return res.json({ ok: true, tenantId, mode: mode || null });
   }
 
