@@ -26,7 +26,7 @@ export class PersonalDataSubjectReader {
    *
    * A subject routinely has more than one: the row linked to their account, plus unlinked rows a
    * plugin's `people.syncDirectory` created from its own table — an invoice customer, for instance,
-   * lands as `source: finance` with no `user_id`. `findOne` erased whichever came back first and
+   * lands with that plugin as its `source` and no `user_id`. `findOne` erased whichever came back first and
    * left the rest, so an erasure reported as done left the subject's email sitting in `people`.
    * Which row survived was effectively chance, which is not a defensible outcome under any reading
    * of a retention obligation: the statutory document is the INVOICE, and a directory row derived

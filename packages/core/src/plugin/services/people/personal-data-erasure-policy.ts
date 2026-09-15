@@ -11,10 +11,10 @@ import type { IPersonalDataStrategyChoice } from '@core/plugin/services/people/i
 /**
  * WHICH strategy applies to a dataset, and who decided it.
  *
- * FRAMEWORK-OWNED, and that is the point. This policy used to be a privacy-plugin setting, so core
+ * FRAMEWORK-OWNED, and that is the point. This policy used to be a plugin's own setting, so core
  * could not read it: `deleteMyAccount` ran on declared defaults while a DSAR for the same person on
  * the same site ran on the operator's choices. Same right, two doors, two answers. And a site with
- * no privacy plugin had erasure behaviour with no control over it at all.
+ * no such plugin had erasure behaviour with no control over it at all.
  *
  * Four layers, innermost first. Each names itself, because an operator must never mistake a fallback
  * for a decision they made:

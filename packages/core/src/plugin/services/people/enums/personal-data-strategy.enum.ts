@@ -11,7 +11,7 @@ import { Enum } from '@fromcode119/react-class-components';
  *
  * Each dataset DECLARES which of these it can honestly honour; the operator CHOOSES among those,
  * per dataset, per site. One list, because three had started: the erasure service held its own
- * constants, the registry validated descriptors against a second array, and the privacy plugin
+ * constants, the registry validated descriptors against a second array, and a plugin
  * resolved operator choices against a third — and a strategy added to one and not the others is a
  * dataset declaring something nothing can run.
  */

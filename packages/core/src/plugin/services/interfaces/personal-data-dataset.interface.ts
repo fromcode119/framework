@@ -1,4 +1,4 @@
-/** One framework-held dataset, declared so the privacy plugin can register and report on it. */
+/** One framework-held dataset, declared so a compliance plugin can report on it without naming a table. */
 export interface IPersonalDataDataset {
   key: string;
   label: string;

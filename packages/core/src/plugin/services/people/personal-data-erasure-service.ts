@@ -22,7 +22,7 @@ import type { IPersonalDataStrategyChoice } from '@core/plugin/services/people/i
  * This lives in core because it structurally cannot live anywhere else: `users`, `people`,
  * `_system_sessions`, `_system_users_roles`, `_system_tenant_memberships`, `_system_record_versions`
  * and the two journals are system tables, and a plugin reaching into one bypasses access control.
- * The privacy plugin orchestrates DSARs and reports on them; it must not — and now need not — know
+ * A compliance plugin orchestrates DSARs and reports on them; it must not — and now need not — know
  * any of these table names.
  *
  * THE ACCOUNT IS GLOBAL; EVERYTHING ELSE IS NOT. `users` has no `tenant_id` and row-level security
@@ -72,7 +72,7 @@ export class PersonalDataErasureService {
   }
 
   /**
-   * The datasets the framework holds, as DESCRIPTORS the privacy plugin can register.
+   * The datasets the framework holds, as DESCRIPTORS a compliance plugin can report on.
    *
    * Each declares only the strategies it can honestly honour. `audit-log` offers no `delete`: it is
    * the security record and this platform's EU AI Act Art. 12 store, and a row removed from it is
@@ -192,7 +192,7 @@ export class PersonalDataErasureService {
     }
 
     // Then every dataset a PLUGIN declared. Walking these here is what makes an erasure complete on
-    // a site that has no privacy plugin installed: `deleteMyAccount` used to reach the seven above
+    // a site with no compliance plugin installed at all: `deleteMyAccount` used to reach the seven above
     // and leave every order, invoice and submission untouched, with nothing reporting a gap.
     for (const source of PersonalDataRegistry.listForCurrentTenant()) {
       const choice = policy.resolve(source);
