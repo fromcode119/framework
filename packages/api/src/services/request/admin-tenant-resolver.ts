@@ -36,15 +36,8 @@ export class AdminTenantResolver {
     const workspace = await this.workspaceHosts.resolve(req);
     req.workspaceTenant = workspace;
 
-    const token = AdminTenantResolver.tokenFrom(req);
-    if (!token) return { tenant: null, reason: TenantResolutionRefusal.UNAUTHENTICATED };
-
-    let claim: any;
-    try {
-      claim = await this.auth.verifyToken(token);
-    } catch {
-      return { tenant: null, reason: TenantResolutionRefusal.UNAUTHENTICATED };
-    }
+    const claim = await this.newestValidClaim(AdminTenantResolver.tokensFrom(req));
+    if (!claim) return { tenant: null, reason: TenantResolutionRefusal.UNAUTHENTICATED };
 
     const userId = String(claim?.id || '').trim();
     if (workspace) {
@@ -76,19 +69,59 @@ export class AdminTenantResolver {
    * tenant that the auth layer then refuses to authenticate — two sources of truth disagreeing about
    * the same request. This uses the one the auth layer will actually accept.
    */
-  private static tokenFrom(req: any): string {
-    const cookies = req?.cookies ?? {};
-    const fromParsed = String(cookies[CookieConstants.AUTH_TOKEN] || cookies[CookieConstants.CLIENT_AUTH_TOKEN] || '').trim();
-    if (fromParsed) return fromParsed;
+  /**
+   * The NEWEST session the browser presented, not the first one it happened to send.
+   *
+   * A browser can hold two cookies of the same name at once — one host-scoped, one written to the
+   * apex before admin sessions were narrowed to the host — and it sends BOTH. RFC 6265 orders them by
+   * path length and then by AGE, so the STALE one arrives first, and reading "the first" read the
+   * dead session on every request.
+   *
+   * That is what made switching site look like it silently did nothing: the switch really did mint a
+   * token carrying the new tenant and really did write the session row, but the next request went on
+   * presenting the old cookie, whose claim has no tenant. Nothing errored, because a stale token is
+   * perfectly valid — it simply belongs to nobody's site. `clearCookieVariants` exists to delete the
+   * apex copy, and `CSRFMiddleware` already reads every value for exactly this reason; the session
+   * READ was the one path still assuming there is only ever one.
+   *
+   * `iat` decides, because the question "which of these sessions is the live one" has a factual
+   * answer: the one minted most recently is the one the operator just established.
+   */
+  private async newestValidClaim(tokens: string[]): Promise<any | null> {
+    let newest: any = null;
+    for (const token of tokens) {
+      try {
+        const claim: any = await this.auth.verifyToken(token);
+        if (!claim) continue;
+        if (!newest || Number(claim.iat ?? 0) >= Number(newest.iat ?? 0)) newest = claim;
+      } catch {
+        // An expired or forged cookie sitting beside a good one must not deny the good one.
+      }
+    }
+    return newest;
+  }
 
-    // The tenant middleware runs before cookie-parser on some paths, so fall back to the raw header.
+  /** EVERY session cookie on the request, freshest-first order decided by the caller. */
+  private static tokensFrom(req: any): string[] {
+    const names: string[] = [CookieConstants.AUTH_TOKEN, CookieConstants.CLIENT_AUTH_TOKEN];
+    const found: string[] = [];
+
+    // The raw header FIRST, because it is the only place a duplicate survives: cookie-parser keeps
+    // one value per name, so `req.cookies` cannot even represent the case this method exists for.
     const raw = String(req?.headers?.cookie || '');
     for (const part of raw.split(';')) {
       const [name, ...rest] = part.trim().split('=');
-      if (name === CookieConstants.AUTH_TOKEN || name === CookieConstants.CLIENT_AUTH_TOKEN) {
-        return rest.join('=').trim();
-      }
+      if (!names.includes(name)) continue;
+      const value = rest.join('=').trim();
+      if (value && !found.includes(value)) found.push(value);
     }
-    return '';
+
+    // The tenant middleware runs before cookie-parser on some paths and after it on others.
+    const cookies = req?.cookies ?? {};
+    for (const name of names) {
+      const value = String((cookies as Record<string, unknown>)[name] || '').trim();
+      if (value && !found.includes(value)) found.push(value);
+    }
+    return found;
   }
 }
