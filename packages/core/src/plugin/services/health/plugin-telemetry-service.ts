@@ -178,7 +178,18 @@ export class PluginTelemetryService {
 
     const now = Date.now();
     const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
-    const rows = await (this.db as any).find(SystemConstants.TABLE.LOGS, { orderBy: 'timestamp DESC', limit: 2000 }).catch(() => []);
+    // ACROSS EVERY SITE, and it has to be asked for. This digest runs from cron, so there is no
+    // request and no tenant — and the journal policy answers an untenanted, unmarked read with the
+    // `tenant_id IS NULL` rows alone. The weekly mail to the platform's operators was therefore
+    // reporting platform rows only, and silently omitting every site's: measured on one deployment,
+    // 5,465 of the journal's rows belong to sites and 63,234 do not, and since this takes only the
+    // 2,000 most recent a site's error could essentially never appear. It read as a quiet week.
+    //
+    // The recipients are a PLATFORM setting and the admin log viewer already shows a platform admin
+    // every site's rows, so reading across tenants here is the same answer given the same way.
+    const rows = await (this.db as any).withPlatformAdmin(
+      () => (this.db as any).find(SystemConstants.TABLE.LOGS, { orderBy: 'timestamp DESC', limit: 2000 }),
+    ).catch(() => []);
     const recent = (rows || []).filter((row: any) => {
       const ts = new Date(row?.timestamp || 0).getTime();
       return Number.isFinite(ts) && ts >= weekAgo;
