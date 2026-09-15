@@ -54,13 +54,17 @@ export class TenantImportCli {
       const registry = new TenantRegistryService(db, TenantResolverService.shared(db));
 
       // WHICH tables hold tenant data is the platform's own answer, discovered from its policies —
-      // the same source the export CLI uses. There are no registered collections in a CLI process
-      // (no plugin host is running), and there need not be: the catalog enriches with them when a
-      // server has them and discovers the rest from the database either way.
-      const tables = await new TenantTableCatalog(db).byPolicy();
+      // the same source the export CLI uses. There are no registered collections in a CLI process (no
+      // plugin host is running), so `catalog` finds every FOREIGN KEY reference from the database but
+      // NONE of the `relationship` fields a collection schema declares — those exist only in JSON, with
+      // no constraint to discover them by. The planner is told this explicitly (`hasSchemaReferences`)
+      // rather than guessing from an empty result, so it can refuse a remap it cannot re-point instead
+      // of silently importing exactly the defect this importer exists to prevent.
+      const catalog = new TenantTableCatalog(db);
+      const tables = await catalog.byPolicy();
       if (tables.length === 0) throw new Error('This platform has no tenant tables at all; boot it once so the schema exists.');
 
-      const planner = new TenantImportPlanner(db, registry, tables, await TenantImportCli.installed(db), uploadsDir);
+      const planner = new TenantImportPlanner(db, registry, tables, await TenantImportCli.installed(db), uploadsDir, catalog.hasSchemaReferences);
       const plan = await planner.plan(reader, identity);
 
       TenantImportCli.report(plan, args.json);
@@ -114,6 +118,10 @@ export class TenantImportCli {
     console.log(`[tenant-import] ${rows} row(s) across ${plan.tables.length} table(s); ${plan.users.toCreate} new user(s) of ${plan.users.total}; ${plan.files.count} file(s).`);
     if (plan.remappedTables.length > 0) {
       console.log(`[tenant-import] re-numbered on import: ${plan.remappedTables.join(', ')}`);
+    }
+    for (const table of plan.tables.filter((entry) => entry.mode === 'remap' && entry.repointedReferences.length > 0)) {
+      const refs = table.repointedReferences.map((ref) => `${ref.path.length ? `${ref.column}[].${ref.path.join('.')}` : ref.column} → ${ref.targetTable}`);
+      console.log(`[tenant-import] re-pointed in "${table.name}": ${refs.join(', ')}`);
     }
     for (const plugin of plan.plugins.filter((entry) => !entry.installedVersion)) {
       console.log(`[tenant-import] plugin not installed here: ${plugin.slug} (archive ${plugin.archiveVersion})`);

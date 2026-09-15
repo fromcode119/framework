@@ -5,6 +5,12 @@
  * taken, every column that pointed at the old id has to be re-pointed. Two sources feed it — the
  * database's own FOREIGN KEY constraints, and the `relationship` fields of the collection schemas
  * plugins register (most plugin tables declare their relations there and not as constraints).
+ *
+ * A `schema` reference may point at the id not from the column's own value, but from somewhere
+ * INSIDE the JSON it stores — a `hasMany` relationship is a JSON array of ids, and an `array`/`group`
+ * field with a `relationship` sub-field stores the id at a key below the column. `path` is that
+ * declared route, read off the collection schema; it is empty for a plain column (`fk` references,
+ * and single-valued `relationship` columns, always have an empty path).
  */
 export class TenantColumnReference {
   constructor(
@@ -12,9 +18,20 @@ export class TenantColumnReference {
     readonly column: string,
     readonly targetTable: string,
     readonly source: 'fk' | 'schema',
+    /** JSON keys below `column`, as declared by nested `array`/`group` sub-fields. `[]` = the column itself. */
+    readonly path: string[] = [],
+    /** The `hasMany` the relationship field declared — informational; `path`/runtime shape drive the walk. */
+    readonly hasMany: boolean = false,
+    /** The `required` the field at the end of `path` declared — a dangling id there drops the whole element. */
+    readonly required: boolean = false,
   ) {}
 
   get isSelfReference(): boolean {
     return this.table === this.targetTable;
+  }
+
+  /** How this reference is named in a warning or the import preview: `column`, or `column[].a.b` through a path. */
+  describe(): string {
+    return this.path.length === 0 ? this.column : `${this.column}[].${this.path.join('.')}`;
   }
 }

@@ -11,6 +11,7 @@ type PlanTable = {
   minId: number | null;
   taken: number | null;
   opaqueJsonColumns: string[];
+  repointedReferences: Array<{ column: string; path: string[]; targetTable: string }>;
   droppedColumns: string[];
 };
 
@@ -53,6 +54,12 @@ export class ImportPlanView extends PureReactor {
     const dropped = ImportPlanView.columns('Dropped', table.droppedColumns);
     if (!json && !dropped) return null;
     return <>{json}{dropped}</>;
+  }
+
+  /** The positive counterpart of `lost`'s "JSON not re-pointed": what the remap WILL follow. */
+  private static repointed(table: PlanTable): ReactNode {
+    const labels = table.repointedReferences.map((ref) => `${ref.path.length ? `${ref.column}[].${ref.path.join('.')}` : ref.column} → ${ref.targetTable}`);
+    return ImportPlanView.columns('Re-pointed', labels);
   }
 
   /**
@@ -159,7 +166,7 @@ export class ImportPlanView extends PureReactor {
             'Re-numbered', remapped.length,
             'The archive’s lowest id is at or below the highest id this platform has already handed out for that table, so its rows get new ids and every reference to them is re-pointed.',
             <table className="fc-import-plan__table">
-              <thead><tr><th>Table</th><th className="fc-import-plan__num">Rows</th><th className="fc-import-plan__num">Lowest id</th><th className="fc-import-plan__num">Handed out here</th><th>Not carried over</th></tr></thead>
+              <thead><tr><th>Table</th><th className="fc-import-plan__num">Rows</th><th className="fc-import-plan__num">Lowest id</th><th className="fc-import-plan__num">Handed out here</th><th>Re-pointed</th><th>Not carried over</th></tr></thead>
               <tbody>
                 {remapped.map((table) => (
                   <tr key={table.name}>
@@ -167,6 +174,7 @@ export class ImportPlanView extends PureReactor {
                     <td data-label="Rows" className="fc-import-plan__num">{table.rows.toLocaleString()}</td>
                     <td data-label="Lowest id" className="fc-import-plan__num">{table.minId?.toLocaleString()}</td>
                     <td data-label="Handed out here" className="fc-import-plan__num">{table.taken?.toLocaleString()}</td>
+                    <td data-label="Re-pointed">{ImportPlanView.repointed(table)}</td>
                     <td data-label="Not carried over">{ImportPlanView.lost(table)}</td>
                   </tr>
                 ))}

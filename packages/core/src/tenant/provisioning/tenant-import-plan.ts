@@ -31,6 +31,8 @@ export class TenantImportPlan {
       taken: number | null;
       /** JSON columns whose embedded ids the remap cannot follow — only meaningful in `remap` mode. */
       opaqueJsonColumns: string[];
+      /** The references the remap WILL follow — only meaningful in `remap` mode. */
+      repointedReferences: Array<{ column: string; path: string[]; targetTable: string }>;
       /** Archive columns this platform's table does not have; their values are dropped. */
       droppedColumns: string[];
     }>,

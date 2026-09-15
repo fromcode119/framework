@@ -1,9 +1,13 @@
 import type { IDatabaseManager } from '@fromcode119/database';
 import { SystemConstants } from '@core/constants/system.constants';
+import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
 import { TenantIdRemap } from '@core/tenant/provisioning/tenant-id-remap';
 import { TenantImportFiles } from '@core/tenant/provisioning/tenant-import-files';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+
+/** Marks "this element/column had a dangling id and is being dropped", never written to a row. */
+const DROPPED = Symbol('dropped');
 
 /**
  * Turns one archived row into one INSERT on the destination table.
@@ -13,11 +17,16 @@ import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-de
  *  - Reference columns are re-pointed through the remap of the table they target.
  *  - Columns the destination lacks are dropped; JSON columns are stringified; booleans that arrive
  *    as SQLite's 0/1 become booleans.
- *  - Self-references (`media_folders.parent_id`) are inserted NULL and set in a second pass, once
- *    every row of the table exists — otherwise a child inserted before its parent fails the FK.
+ *  - Self-references from a FOREIGN KEY (`media_folders.parent_id`) are inserted NULL and set in a
+ *    second pass, once every row of the table exists — otherwise a child inserted before its parent
+ *    fails the FK. A self-reference declared only by a `schema` field (a row naming another row of
+ *    its own table in a `hasMany` relationship) has no such constraint and needs no deferral: every
+ *    id of THIS table was allocated before the first row of it was inserted (see
+ *    `TenantImportExecutor`), so the map is already complete.
  */
 export class TenantRowInserter {
-  private readonly selfReferenceColumns: string[];
+  /** Only FK-backed self-references defer; a `schema` self-reference resolves inline (see above). */
+  private readonly deferredSelfReferences: TenantColumnReference[];
   private readonly pendingSelfReferences: Array<{ id: unknown; values: Record<string, unknown> }> = [];
 
   constructor(
@@ -28,7 +37,7 @@ export class TenantRowInserter {
     private readonly files: TenantImportFiles,
     private readonly warnings: string[] = [],
   ) {
-    this.selfReferenceColumns = table.selfReferences.map((ref) => ref.column);
+    this.deferredSelfReferences = table.selfReferences.filter((ref) => ref.source === 'fk');
   }
 
   /** Inserts; returns the row's id on the destination when the table has one. */
@@ -43,17 +52,18 @@ export class TenantRowInserter {
     const newId = this.table.hasColumn('id') ? this.remap.resolve(this.table.name, row.id) : null;
     if (this.table.hasColumn('id')) values.id = newId;
 
+    const deferredSet = new Set<TenantColumnReference>(this.deferredSelfReferences);
     for (const reference of this.table.references) {
-      if (reference.isSelfReference || !(reference.column in values)) continue;
-      values[reference.column] = this.repoint(reference.targetTable, values[reference.column]);
+      if (deferredSet.has(reference) || !(reference.column in values)) continue;
+      values[reference.column] = this.repoint(reference, values[reference.column]);
     }
-    const deferred: Record<string, unknown> = {};
-    for (const column of this.selfReferenceColumns) {
-      if (values[column] === null || values[column] === undefined) continue;
-      deferred[column] = this.repoint(this.table.name, values[column]);
-      values[column] = null;
+    const deferredValues: Record<string, unknown> = {};
+    for (const reference of this.deferredSelfReferences) {
+      if (values[reference.column] === null || values[reference.column] === undefined) continue;
+      deferredValues[reference.column] = this.repoint(reference, values[reference.column]);
+      values[reference.column] = null;
     }
-    if (Object.keys(deferred).length > 0) this.pendingSelfReferences.push({ id: newId, values: deferred });
+    if (Object.keys(deferredValues).length > 0) this.pendingSelfReferences.push({ id: newId, values: deferredValues });
 
     if (this.table.name === SystemConstants.TABLE.MEDIA) this.files.rewriteMediaRow(values);
 
@@ -87,33 +97,68 @@ export class TenantRowInserter {
   /**
    * A reference is a bare id in a plain column, but a `relationship` field the schema declares may be
    * STORED as JSON — a scalar id, `{ id }`, or a list of either (CMS keeps `parent`, `featuredImage`
-   * that way). Those shapes are the schema's, not a guess, so they are followed; anything else in a
-   * JSON column stays as written.
+   * that way), or nested below `reference.path` (a `hasMany` array, or an `array`/`group` sub-field —
+   * `addonPricingRules[].addon`). Those shapes are the schema's, not a guess, so they are followed;
+   * anything else in a JSON column stays as written. The actual value is walked as it is FOUND — an
+   * array is mapped element-wise and an object is descended by key regardless of which of `array` or
+   * `group` the field declared, because the archive's JSON is the ground truth for shape, the schema
+   * only for where an id lives in it.
    */
-  private repoint(targetTable: string, value: unknown): unknown {
+  private repoint(reference: TenantColumnReference, value: unknown): unknown {
+    const result = this.repointAt(reference, reference.path, value);
+    // DROPPED only survives past the top when nothing above it was an array to filter it out of — a
+    // plain scalar column with a dangling id, exactly today's `null` behaviour.
+    return result === DROPPED ? null : result;
+  }
+
+  private repointAt(reference: TenantColumnReference, path: string[], value: unknown): unknown {
     if (value === null || value === undefined) return value;
-    if (Array.isArray(value)) return value.map((entry) => this.repoint(targetTable, entry));
-    if (typeof value === 'object') {
-      const record = value as Record<string, unknown>;
-      if ('id' in record && Object.keys(record).length <= 2) return { ...record, id: this.remap.resolve(targetTable, record.id) };
-      return value;
+    if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
+      try { return this.repointAt(reference, path, JSON.parse(value)); } catch { return value; }
     }
-    if (typeof value === 'string' && value.startsWith('{')) {
-      try { return this.repoint(targetTable, JSON.parse(value)); } catch { return value; }
+    if (Array.isArray(value)) {
+      return value
+        .map((entry) => this.repointAt(reference, path, entry))
+        .filter((entry) => entry !== DROPPED);
+    }
+    if (path.length === 0) return this.repointLeaf(reference, value);
+    if (value !== null && typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      const [key, ...rest] = path;
+      if (!(key in record)) return value;
+      const nested = this.repointAt(reference, rest, record[key]);
+      if (nested === DROPPED) return reference.required ? DROPPED : { ...record, [key]: null };
+      return { ...record, [key]: nested };
+    }
+    // The schema declared a path the archive's own shape does not have here (a scalar where an object
+    // was expected) — nothing to rewrite, leave it exactly as the archive wrote it.
+    return value;
+  }
+
+  /** The `{ id, … }` CMS shape, or a bare id — the two forms a leaf (path exhausted) can take. */
+  private repointLeaf(reference: TenantColumnReference, value: unknown): unknown {
+    if (value !== null && typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      if ('id' in record && Object.keys(record).length <= 2) {
+        const resolved = this.repointLeaf(reference, record.id);
+        return resolved === DROPPED ? DROPPED : { ...record, id: resolved };
+      }
+      return value;
     }
     // A RE-NUMBERED target has a mapping for every row the archive carried. An id with no mapping points
     // at a row that was not in the archive (deleted in the source; SQLite never enforced the key): the
     // destination WOULD enforce it, so the reference is dropped and said, rather than failing the import.
-    if (this.remap.isRemapped(targetTable) && !this.remap.has(targetTable, value)) {
-      this.noteDangling(targetTable, value);
-      return null;
+    // In PRESERVE mode `isRemapped` is false and the id is the source's own dangling data — untouched.
+    if (!this.remap.isRemapped(reference.targetTable) || this.remap.has(reference.targetTable, value)) {
+      return this.remap.resolve(reference.targetTable, value);
     }
-    return this.remap.resolve(targetTable, value);
+    this.noteDangling(reference);
+    return DROPPED;
   }
 
-  private readonly dangling = new Map<string, number>();
-
   private readonly backfilled = new Set<string>();
+
+  private readonly danglingNoted = new Set<string>();
 
   private noteBackfilled(column: string): void {
     const key = `${this.table.name}.${column}`;
@@ -122,14 +167,11 @@ export class TenantRowInserter {
     this.warnings.push(`"${this.table.name}" required a value for "${column}" that the archive did not have; the empty value was used.`);
   }
 
-  private noteDangling(targetTable: string, value: unknown): void {
-    const key = `${this.table.name}->${targetTable}`;
-    const count = (this.dangling.get(key) ?? 0) + 1;
-    this.dangling.set(key, count);
-    const message = `"${this.table.name}" referenced "${targetTable}" row(s) the archive does not carry; those references were cleared.`;
-    const index = this.warnings.findIndex((entry) => entry === message);
-    if (index < 0) this.warnings.push(message);
-    void value;
+  private noteDangling(reference: TenantColumnReference): void {
+    const key = `${this.table.name}.${reference.describe()}->${reference.targetTable}`;
+    if (this.danglingNoted.has(key)) return;
+    this.danglingNoted.add(key);
+    this.warnings.push(`"${this.table.name}"."${reference.describe()}" referenced "${reference.targetTable}" row(s) the archive does not carry; those references were cleared.`);
   }
 
   private encode(column: string, value: unknown): unknown {
