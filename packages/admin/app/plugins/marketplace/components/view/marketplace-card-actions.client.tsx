@@ -13,9 +13,21 @@ export class MarketplaceCardActions extends PureReactor {
   @prop declare installing: string | null;
   @prop declare onOpenInstalled: (e: MouseEvent) => void;
   @prop declare onInstall: (e: MouseEvent) => void;
+  /**
+   * May THIS admin actually install onto the platform?
+   *
+   * A site administrator may browse the catalogue — a site on this platform behaves like its own
+   * installation, so it has a marketplace — but installing a plugin puts code on the container every
+   * customer shares, and `PLUGINS_INSTALL` answers `platform_admin_required`. Rendering the button
+   * anyway would be a control that cannot act, so the card says who can instead.
+   *
+   * This is a plugin-only limitation: a site installs a THEME into its own directory, so that button
+   * has somewhere real to go.
+   */
+  @prop declare canInstall: boolean;
 
   render(): ReactNode {
-    const { plugin, theme, installed, installedVersion, hasUpdate, installing, onOpenInstalled, onInstall } = this;
+    const { plugin, theme, installed, installedVersion, hasUpdate, installing, onOpenInstalled, onInstall, canInstall } = this;
     return (
       <div className="px-4 pb-4 space-y-3">
         {installed && hasUpdate && (
@@ -34,7 +46,7 @@ export class MarketplaceCardActions extends PureReactor {
               <FrameworkIcons.Check size={16} />
               <span>Installed</span>
             </button>
-          ) : hasUpdate ? (
+          ) : hasUpdate && canInstall ? (
             <button
               onClick={onInstall}
               disabled={!!installing}
@@ -43,6 +55,14 @@ export class MarketplaceCardActions extends PureReactor {
               <FrameworkIcons.Loader size={16} className="animate-spin" />
               <span>{installing === plugin.slug ? 'Updating...' : 'Update Plugin'}</span>
             </button>
+          ) : !canInstall ? (
+            <div
+              className={`w-full flex items-center justify-center gap-2.5 h-9 rounded-lg text-[10px] font-semibold uppercase tracking-wide ${theme === ThemeMode.DARK ? 'bg-slate-800/60 text-slate-500' : 'bg-slate-50 text-slate-400'}`}
+              title="Installing a plugin puts code on the container every site shares, so a platform admin does it. Ask yours to add this to your site."
+            >
+              <FrameworkIcons.Shield size={14} />
+              <span>Platform admin installs this</span>
+            </div>
           ) : (
             <button
               onClick={onInstall}

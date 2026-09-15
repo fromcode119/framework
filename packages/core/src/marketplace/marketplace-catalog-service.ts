@@ -3,7 +3,7 @@ import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.in
 import { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
 import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-client';
 import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
-import { PlatformSettingsService } from '@core/management/platform-settings-service';
+import { SiteMarketplaceUrl } from '@core/marketplace/site-marketplace-url';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
@@ -16,10 +16,17 @@ import { SystemConstants } from '@core/constants/system.constants';
 
 export class MarketplaceCatalogService {
   private logger = new Logger({ namespace: 'marketplace' });
-  private client: MarketplaceClient | null = null;
   private manifestCache = new Map<string, IPluginManifest>();
-  private marketplaceUrl: string | null = null;
-  private resolved = false;
+
+  /**
+   * One resolved catalogue per SITE, keyed by `SiteMarketplaceUrl.currentScopeKey()` (`''` is the
+   * platform's).
+   *
+   * A single client held for the life of the process was correct only while every site browsed the
+   * same catalogue. Now that a site can point at its own, that cache would hand the FIRST site's
+   * marketplace to every site after it — a cross-tenant leak created by a cache, not by a filter.
+   */
+  private resolvedByScope = new Map<string, { client: MarketplaceClient | null; url: string | null }>();
 
   constructor(private discovery: DiscoveryService) {}
 
@@ -28,24 +35,39 @@ export class MarketplaceCatalogService {
    * build the client. Resolution is deferred (not done in the constructor) so the DB-backed
    * setting can be consulted once it's available; env still wins when set.
    */
-  private async ensureClient(): Promise<void> {
-    if (this.resolved) return;
-    this.resolved = true;
+  private async ensureClient(): Promise<{ client: MarketplaceClient | null; url: string | null }> {
+    const scope = SiteMarketplaceUrl.currentScopeKey();
+    const cached = this.resolvedByScope.get(scope);
+    if (cached) return cached;
 
-    const raw = await PlatformSettingsService.resolve(
-      process.env.MARKETPLACE_URL,
-      SystemConstants.META_KEY.MARKETPLACE_URL,
-    );
+    // The SITE's own catalogue when it has chosen one, the platform's otherwise.
+    const raw = await SiteMarketplaceUrl.current();
     const normalized = raw.toLowerCase();
     if (normalized === 'off' || normalized === 'false' || normalized === 'disabled') {
-      this.logger.info('Marketplace disabled via MARKETPLACE_URL/setting.');
-      return;
+      this.logger.info(`Marketplace disabled for ${scope ? `site "${scope}"` : 'the platform'}.`);
+      const off = { client: null, url: null };
+      this.resolvedByScope.set(scope, off);
+      return off;
     }
 
-    this.marketplaceUrl = MarketplaceUrlService.resolveCatalogUrl(
+    const url = MarketplaceUrlService.resolveCatalogUrl(
       !raw || normalized === 'undefined' || normalized === 'null' ? undefined : raw,
     );
-    this.client = new MarketplaceClient(this.marketplaceUrl);
+    const resolved = { client: new MarketplaceClient(url), url };
+    this.resolvedByScope.set(scope, resolved);
+    return resolved;
+  }
+
+  /**
+   * Forget a resolved catalogue so the next read re-resolves.
+   *
+   * Called when the setting changes. Without it a site that corrected its marketplace URL would go on
+   * browsing the old one for the life of the process — the "saved but not in effect" shape this
+   * codebase closes everywhere else.
+   */
+  public invalidateResolvedCatalogue(scopeKey?: string): void {
+    if (scopeKey === undefined) this.resolvedByScope.clear();
+    else this.resolvedByScope.delete(scopeKey);
   }
 
   /**
@@ -71,12 +93,12 @@ export class MarketplaceCatalogService {
 
   private async fetchRemoteCatalog(): Promise<MarketplacePlugin[]> {
     try {
-      await this.ensureClient();
-      if (!this.client || !this.marketplaceUrl) {
+      const { client, url } = await this.ensureClient();
+      if (!client || !url) {
         return [];
       }
-      this.logger.debug(`Fetching marketplace catalog from: ${this.marketplaceUrl}`);
-      const data = await this.client.fetch();
+      this.logger.debug(`Fetching marketplace catalog from: ${url}`);
+      const data = await client.fetch();
       const plugins = data.plugins || [];
       // "Successfully fetched 0 plugins" was logged after a 503, because the client swallows the
       // failure and hands back an empty list — so a retired marketplace looked like an empty one, and
@@ -84,7 +106,7 @@ export class MarketplaceCatalogService {
       // reported as what it is; whether it is a real emptiness or a swallowed error, it is not a
       // success worth claiming.
       if (plugins.length === 0) {
-        this.logger.warn(`Marketplace at ${this.marketplaceUrl} returned no plugins — it may be unreachable or retired.`);
+        this.logger.warn(`Marketplace at ${url} returned no plugins — it may be unreachable or retired.`);
         return [];
       }
       this.logger.info(`Successfully fetched ${plugins.length} plugins from marketplace.`);
@@ -148,8 +170,11 @@ export class MarketplaceCatalogService {
     progressReporter?: IPluginInstallProgressReporter,
     version?: string,
   ): Promise<IPluginManifest> {
-    await this.ensureClient();
-    if (!this.client) {
+    // Resolved once for this install and carried down, rather than re-read per step: an install
+    // downloads dependencies too, and every one of them must come from the SAME catalogue the plugin
+    // was found in.
+    const { client } = await this.ensureClient();
+    if (!client) {
       throw new Error('Marketplace is disabled.');
     }
 
@@ -216,7 +241,7 @@ export class MarketplaceCatalogService {
     this.logger.info(`Downloading and installing plugin: ${slug} v${plugin.version}`);
 
     // Resolve absolute download URL
-    const downloadUrl = this.client.resolveDownloadUrl(plugin.downloadUrl);
+    const downloadUrl = client.resolveDownloadUrl(plugin.downloadUrl);
 
     // os.tmpdir(), never the working directory: cwd is `/app/packages/api`, which is root-owned in
     // the image while the api runs as an unprivileged user — so this threw EACCES on every install,

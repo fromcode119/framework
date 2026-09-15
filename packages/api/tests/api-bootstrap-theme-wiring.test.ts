@@ -20,6 +20,11 @@ const managerInstance = {
   setAuth: vi.fn(),
   setThemeManager: vi.fn((themeManager: unknown) => { calls.push('manager.setThemeManager'); managerInstance.wired = themeManager; }),
   discoverPlugins: vi.fn(async () => { calls.push('manager.discoverPlugins'); }),
+  // Boot subscribes to `system:settings:updated` so a changed marketplace URL takes effect on the
+  // next request rather than the next restart. The real manager always has hooks — the settings
+  // controller emits on them — so the stub carries them rather than the code guarding for their
+  // absence.
+  hooks: { on: vi.fn(), emit: vi.fn() },
   wired: null as unknown,
 };
 
@@ -56,6 +61,8 @@ vi.mock('@fromcode119/core', () => ({
   Logger: class { info() {} warn() {} error() {} },
   PluginManager: class { constructor() { return managerInstance; } },
   PlatformSettingsService: { registerAccessor: () => {} },
+  // The SITE half of the settings store, wired alongside it at boot.
+  SiteMarketplaceUrl: { registerAccessor: () => {}, currentScopeKey: () => '' },
   ServerCoreServices: { register: () => {} },
   SystemConstants: { TABLE: { META: '_system_meta' }, META_KEY: { DEFAULT_LOCALE: 'default_locale' } },
   SystemRedirectService: { register: () => {} },

@@ -32,7 +32,10 @@ export class ThemeRouter extends BaseRouter {
     const platform = this.platformAdmin.middleware();
     this.get(RouteConstants.SEGMENTS.THEMES_ACTIVE_ASSETS, this.auth.guard(['admin']), this.bind(this.assetsListController.listActiveThemeAssets));
     this.get('/', this.auth.guard(['admin']), this.controller.list);
-    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), platform, this.controller.getMarketplace);
+    // A site browses its own theme catalogue. Unlike plugins, it can also ACT on what it finds:
+    // `/mine/upload` installs a theme into the site's own directory, so the Install button here has
+    // somewhere real to go. Installing onto the SHARED root stays platform-only below.
+    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.controller.getMarketplace);
     this.get(RouteConstants.SEGMENTS.THEMES_SLUG_CHECK_UPDATE, this.auth.guard(['admin']), platform, this.controller.checkUpdate);
     this.get(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.controller.activate);
     this.post(RouteConstants.SEGMENTS.THEMES_SLUG_ACTIVATE, this.auth.guard(['admin']), this.controller.activate);

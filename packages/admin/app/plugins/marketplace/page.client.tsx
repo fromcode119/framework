@@ -269,6 +269,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
                   hasUpdate={hasUpdate}
                   hasImageError={imageErrors[plugin.slug]}
                   installing={installing}
+                  canInstall={this.canManagePlatform}
                   onOpenDetail={() => this.router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.slug))}
                   onOpenInstalled={(e) => { e.stopPropagation(); this.router.push(AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.slug)); }}
                   onInstall={(e) => this.handleInstall(e, plugin.slug, plugin.version)}

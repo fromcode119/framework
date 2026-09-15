@@ -106,6 +106,10 @@ export class SystemSettingRegistry {
     // the shared disk from any one site — a site setting its own ceiling would be no ceiling.
     [SystemSettingRegistry.KEY.TENANT_THEME_MAX_BYTES]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.TENANT_THEME_MAX_COUNT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // A site pointing at its OWN catalogue. SITE scope: read for the site the request is about, and
+    // it wins over the platform's when set. See the key's own note for why this is a second key
+    // rather than a re-scoping of `marketplace_url` above.
+    [SystemSettingRegistry.KEY.SITE_MARKETPLACE_URL]: { scope: SettingScope.SITE, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.DOMAIN_ALIASES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '[]', description: "Additional trusted domains kept active during migrations.", group: "General" },

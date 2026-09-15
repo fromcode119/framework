@@ -43,12 +43,23 @@ export class PluginRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.ACTIVE, this.controller.active);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_TOGGLE, this.auth.guard(['admin']), platform, this.lifecycleController.toggle);
     this.post(RouteConstants.SEGMENTS.PLUGINS_REAPPROVE_ALL, this.auth.guard(['admin']), platform, this.lifecycleController.reapproveAll);
-    this.get(RouteConstants.SEGMENTS.PLUGINS_HEALTH, this.auth.guard(['admin']), platform, this.controller.health);
+    // Health is a SITE screen: a site on this platform behaves like its own installation, so it can
+    // see whether the plugins IT runs are healthy. The controller filters the report to the bound
+    // site's assignment, which is what makes this safe to open — without that filter it would hand
+    // one customer every other customer's slugs, held reasons and load errors. In PLATFORM scope it
+    // still reports the whole registry, which is the operator's view.
+    this.get(RouteConstants.SEGMENTS.PLUGINS_HEALTH, this.auth.guard(['admin']), this.controller.health);
     this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONFIG, this.auth.guard(['admin']), platform, this.controller.getConfig);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONFIG, this.auth.guard(['admin']), platform, this.controller.saveConfig);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SANDBOX, this.auth.guard(['admin']), platform, this.controller.saveSandboxConfig);
     this.delete(RouteConstants.SEGMENTS.PLUGINS_SLUG, this.auth.guard(['admin']), platform, this.lifecycleController.delete);
-    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), platform, this.controller.marketplace);
+    // Browsing a catalogue is a SITE action; INSTALLING from it is not, and the two are separated
+    // deliberately. A site may look — it has a marketplace of its own, and may point it at its own
+    // catalogue (`site_marketplace_url`) — while `PLUGINS_INSTALL` below stays platform-only, because
+    // installing a plugin puts code on the container every customer shares. Per-site plugin install
+    // is not merely ungated work: it cannot be safe until the privileged spawner is on the box, since
+    // the default launcher does not isolate identity.
+    this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.controller.marketplace);
     this.post(RouteConstants.SEGMENTS.PLUGINS_INSTALL, this.auth.guard(['admin']), platform, this.controller.install);
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPDATE_ALL, this.auth.guard(['admin']), platform, (req: any, res: any) => this.controller.updateAll(req, res));
     this.get(RouteConstants.SEGMENTS.PLUGINS_INSTALL_OPERATION, this.auth.guard(['admin']), platform, this.controller.installOperation);
