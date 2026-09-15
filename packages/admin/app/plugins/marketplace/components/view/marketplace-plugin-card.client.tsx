@@ -12,7 +12,7 @@ import { AdminClass } from '@/lib/admin-class';
 
 export class MarketplacePluginCard extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<MarketplacePluginCard, 'plugin' | 'theme' | 'installed' | 'installedVersion' | 'hasUpdate' | 'hasImageError' | 'installing' | 'onOpenDetail' | 'onOpenInstalled' | 'onInstall' | 'onImageError'>;
+  declare props: Pick<MarketplacePluginCard, 'plugin' | 'theme' | 'installed' | 'installedVersion' | 'hasUpdate' | 'hasImageError' | 'installing' | 'canInstall' | 'onOpenDetail' | 'onOpenInstalled' | 'onInstall' | 'onImageError'>;
 
   @prop declare plugin: IPluginEntry;
   @prop declare theme: ThemeMode;
@@ -21,6 +21,8 @@ export class MarketplacePluginCard extends PureReactor {
   @prop declare hasUpdate: boolean;
   @prop declare hasImageError: boolean;
   @prop declare installing: string | null;
+  /** May this admin install onto the platform? See {@link MarketplaceCardActions.canInstall}. */
+  @prop declare canInstall: boolean;
   @prop declare onOpenDetail: () => void;
   @prop declare onOpenInstalled: (e: MouseEvent) => void;
   @prop declare onInstall: (e: MouseEvent) => void;
@@ -29,7 +31,7 @@ export class MarketplacePluginCard extends PureReactor {
   render(): ReactNode {
     const {
       plugin, theme, installed, installedVersion, hasUpdate, hasImageError, installing,
-      onOpenDetail, onOpenInstalled, onInstall, onImageError
+      onOpenDetail, onOpenInstalled, onInstall, onImageError, canInstall
     } = this;
     const isFeatured = Boolean(plugin.isFeatured);
     const isVerified = Boolean(plugin.isVerified);
@@ -128,6 +130,7 @@ export class MarketplacePluginCard extends PureReactor {
           installedVersion={installedVersion}
           hasUpdate={hasUpdate}
           installing={installing}
+          canInstall={canInstall}
           onOpenInstalled={onOpenInstalled}
           onInstall={onInstall}
         />
