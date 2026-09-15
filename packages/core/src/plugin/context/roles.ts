@@ -69,7 +69,7 @@ export class RolesContextProxy {
    * Creates a roles proxy for plugins.
    * Plugins should use context.roles.ensure() instead of querying the system roles table directly.
    */
-  static createRolesProxy(manager: IPluginManagerInterface) {
+  static createRolesProxy(manager: IPluginManagerInterface, pluginSlug?: string) {
     // Runtime authorization (UserPermissionChecker) reads a user's roles from the `users.roles` JSON
     // column — NOT the junction table. assign/removeRole must keep that column in sync or granting/
     // revoking a role is a silent no-op for access control (mirrors the API's saveUserRoles fix). Reads
@@ -84,7 +84,20 @@ export class RolesContextProxy {
     };
 
     return {
+      /**
+       * Declares a role, recording WHICH PLUGIN declared it.
+       *
+       * The attribution is what lets a site's Roles screen show its own roles and not another
+       * product's — `_system_roles` is global, so without it `partner` from MLM is indistinguishable
+       * from the framework's `admin`, and a customer who does not run MLM was offered it anyway.
+       *
+       * An EXISTING row with no attribution is stamped rather than left alone. Migration 046 adds the
+       * column with no backfill on purpose: nothing can honestly guess which plugin created a role
+       * that predates the column, so the plugin that declares it says so on the next boot. Only a
+       * blank is filled — a row already attributed to someone else is never reassigned.
+       */
       async ensure(slug: string, data: { name: string; description?: string; type?: string; permissions?: any[] }): Promise<void> {
+        const owner = String(pluginSlug ?? '').trim();
         const existing = await manager.db.findOne(SystemConstants.TABLE.ROLES, { slug });
         if (!existing) {
           await manager.db.insert(SystemConstants.TABLE.ROLES, {
@@ -92,8 +105,13 @@ export class RolesContextProxy {
             name: data.name,
             description: data.description ?? '',
             type: data.type ?? 'custom',
-            permissions: JSON.stringify(data.permissions ?? [])
+            permissions: JSON.stringify(data.permissions ?? []),
+            ...(owner ? { pluginSlug: owner } : {}),
           });
+          return;
+        }
+        if (owner && !String((existing as any)?.pluginSlug ?? '').trim()) {
+          await manager.db.update(SystemConstants.TABLE.ROLES, { slug }, { pluginSlug: owner });
         }
       },
 

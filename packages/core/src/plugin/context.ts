@@ -233,7 +233,7 @@ export class PluginContextFactory {
         migrations: MigrationsContextProxy.createMigrationsProxy(plugin, manager),
         media: MediaContextProxy.createMediaProxy(manager),
         recordVersions: RecordVersionsContextProxy.createRecordVersionsProxy(manager),
-        roles: RolesContextProxy.createRolesProxy(manager),
+        roles: RolesContextProxy.createRolesProxy(manager, plugin.manifest.slug),
         notifications: NotificationsContextProxy.createNotificationsProxy(manager, plugin.manifest.slug),
         theme: ThemeContextProxy.createThemeProxy(plugin, manager),
         entities: EntitiesContextProxy.createEntitiesProxy(),

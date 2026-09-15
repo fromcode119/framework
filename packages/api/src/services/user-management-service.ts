@@ -151,8 +151,26 @@ export class UserManagementService {
    * whole box, which is what an operator is asking.
    */
   async getRoles() {
-    const dbRoles = await this.db.find(Schema.systemRoles);
+    const allRoles = await this.db.find(Schema.systemRoles);
     const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+
+    // A SITE SEES THE FRAMEWORK'S ROLES AND ITS OWN PLUGINS', NEVER ANOTHER PRODUCT'S.
+    //
+    // `_system_roles` is global by design — role names are the platform's vocabulary — but plugins
+    // declare roles into it too, so a site running neither MLM nor commerce was shown `partner` and
+    // `customer` in its Roles screen and offered them in the role picker on its Users page. It had no
+    // way to know what they meant, and granting one would have been meaningless.
+    //
+    // An UNATTRIBUTED role stays visible. Migration 046 adds the column with no backfill because
+    // nothing can honestly guess who created a role that predates it, and hiding one nobody can
+    // account for is the worse failure — losing `admin` from the screen with no way to discover why.
+    // `ensure` stamps each row as its plugin re-declares it, so this narrows itself as it learns.
+    const dbRoles = TenantMode.isEnabled() && tenantId
+      ? allRoles.filter((role: any) => {
+        const owner = String(role?.pluginSlug ?? '').trim();
+        return !owner || owner === 'system' || PluginTenantAccess.enabledSlugsFor(tenantId).has(owner);
+      })
+      : allRoles;
     const memberIds = TenantMode.isEnabled() && tenantId
       ? new Set(await new TenantMembershipService(this.db as never).listUserIdsForTenant(tenantId))
       : null;

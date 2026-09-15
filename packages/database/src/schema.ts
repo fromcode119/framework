@@ -33,6 +33,9 @@ export class Schema {
   description: text('description'),
   type: text('type').notNull().default('custom'), // 'system' or 'custom'
   permissions: jsonb('permissions').notNull().default([]), // List of capability names
+  // Which plugin declared this role, or NULL for the framework's own (migration 046). A site is shown
+  // its own plugins' roles and the unattributed ones, never another product's.
+  pluginSlug: text('plugin_slug'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
