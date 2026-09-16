@@ -327,9 +327,13 @@ export class TenantIsolationSql {
    *
    * Two things the generic policy cannot express:
    *
-   *   READ — a PLATFORM admin sees everything. This is the record of the whole container, and an
-   *   operator investigating an incident cannot be asked to enter each site in turn. The marker is
-   *   set deliberately for that read (`db.withPlatformAdmin`), never merely by being untenanted.
+   *   READ — a PLATFORM admin sees everything, but ONLY from the platform scope. The marker is set
+   *   deliberately for that read (`db.withPlatformAdmin`), never merely by being untenanted; what is
+   *   new is that it no longer overrides a BOUND site. An operator investigating an incident still
+   *   cannot be asked to enter each site in turn — they read the whole container from Platform, which
+   *   is where that job belongs. Standing inside one site and being shown every other site's journal
+   *   is the thing this platform is not allowed to do: measured before the change, a platform admin
+   *   bound to one site read another site's log row. Isolation is not conditional on who is asking.
    *
    *   WRITE — an UNTENANTED connection must be able to write, with no marker. Boot, migrations and
    *   platform actions all log before any tenant is bound, and requiring the marker there would
@@ -351,7 +355,7 @@ export class TenantIsolationSql {
       `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
       `DROP POLICY IF EXISTS "${name}_tenant_isolation" ON "${name}"`,
       `CREATE POLICY "${name}_tenant_isolation" ON "${name}"
-         USING (${own} OR ${platform} OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))
+         USING (${own} OR (${platform} AND ${current} IS NULL) OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))
          WITH CHECK (${own} OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))`,
     ];
   }

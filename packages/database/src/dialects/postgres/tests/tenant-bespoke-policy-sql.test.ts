@@ -82,11 +82,15 @@ describe('TenantIsolationSql.bespokePolicyStatements', () => {
     }
   });
 
-  it('lets a PLATFORM admin read a journal, and an UNTENANTED connection write one', () => {
+  it('lets a PLATFORM admin read a journal FROM THE PLATFORM SCOPE, and an UNTENANTED connection write one', () => {
     const sql = sqlFor(JOURNAL);
     // Boot, migrations and platform actions all log before any tenant is bound; requiring the
     // marker on write would refuse exactly the entries a journal exists to keep.
-    expect(sql).toContain("USING (\"tenant_id\" = nullif(current_setting('app.tenant_id', true), '') OR current_setting('app.platform_admin', true) = 'on'");
+    //
+    // The read marker is paired with "no tenant bound". Unpaired it overrode a BOUND site, so an
+    // operator standing in one customer read every other customer's journal — measured on a live
+    // database before this changed. Isolation is not conditional on who is asking.
+    expect(sql).toContain("USING (\"tenant_id\" = nullif(current_setting('app.tenant_id', true), '') OR (current_setting('app.platform_admin', true) = 'on' AND nullif(current_setting('app.tenant_id', true), '') IS NULL)");
     expect(sql).toContain('WITH CHECK ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR ("tenant_id" IS NULL AND nullif(current_setting(\'app.tenant_id\', true), \'\') IS NULL))');
   });
 
