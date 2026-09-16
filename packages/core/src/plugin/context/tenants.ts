@@ -1,4 +1,6 @@
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { PerTenantRun } from '@core/tenant/per-tenant-run';
+import { SiteBaseUrl } from '@core/tenant/site-base-url';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
@@ -46,6 +48,24 @@ export class TenantsContextProxy {
        * failed. One signature, both worlds.
        */
       current: async (): Promise<string | null> => RequestContextUtils.getTenantId() ?? null,
+
+      /**
+       * The absolute base URLs of the SITE this code is running for.
+       *
+       * Use these for any link that LEAVES the platform — an email, a webhook payload, a PDF. Every
+       * one of them used to be built from the deployment's configured URL, which is the PLATFORM's
+       * host and carries no tenant: the recipient clicked, landed where tenancy could not resolve
+       * them, and got a 404. A legally required unsubscribe link was one of them.
+       *
+       * `frontend` is where a person goes; `api` is where a link that hits an endpoint goes, which
+       * on a site with an `api.` alias is a different host. Outside a request, on a single-site
+       * deployment, or when the site cannot be resolved, both are the platform's configured URLs —
+       * exactly what every caller got before.
+       */
+      baseUrls: async (): Promise<{ frontend: string; api: string }> => ({
+        frontend: await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.FRONTEND_APP),
+        api: await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.API_APP),
+      }),
 
       /**
        * Whether this deployment serves more than one site.
