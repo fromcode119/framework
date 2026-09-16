@@ -167,10 +167,25 @@ export class ProjectPaths {
    * setting; this is the single one.
    */
   static getUploadsDir(): string {
+      return ProjectPaths.withTenantSubdirectory(ProjectPaths.getUploadsRoot());
+  }
+
+  /**
+   * The uploads directory SHARED by every site — the parent of each site's own.
+   *
+   * Distinct from {@link getUploadsDir}, which answers with the bound site's subdirectory of this. The
+   * two are easy to confuse and the confusion is one-way dangerous: using the ROOT where the site's
+   * was meant puts one customer's file where every other customer can read it, while the reverse only
+   * fails to find something.
+   *
+   * Legitimate callers are the ones that are genuinely about the whole tree: the static mount's
+   * fallback for files written before sites had their own directories, the free-space check, and
+   * anything constructing a driver that will apply the per-site part itself, per request.
+   */
+  static getUploadsRoot(): string {
       const root = ProjectPaths.getProjectRoot();
       const configured = String(process.env[SystemConstants.STORAGE.UPLOAD_DIR_ENV] || '').trim();
-      const base = ProjectPaths.resolveFromRoot(root, configured || SystemConstants.STORAGE.DEFAULT_UPLOADS_SUBDIR);
-      return ProjectPaths.withTenantSubdirectory(base);
+      return ProjectPaths.resolveFromRoot(root, configured || SystemConstants.STORAGE.DEFAULT_UPLOADS_SUBDIR);
   }
 
   /**
@@ -179,13 +194,17 @@ export class ProjectPaths {
    * Single-tenant deployments get the base directory unchanged — every existing installation keeps
    * the paths it already has, and nothing needs moving.
    *
+   * PUBLIC because the storage driver's root is an operator-CONFIGURABLE directory, not just this
+   * module's default: the same per-site rule has to apply to whatever base they named, and the only
+   * honest place to express that is here, where the segment is validated.
+   *
    * The tenant id is used as a single path SEGMENT and is validated before use: a tenant id is
    * framework-controlled, but joining an unvalidated identifier into a filesystem path is how
    * traversal bugs happen, so the check is here rather than assumed upstream. Framework-owned path
    * resolution only — a hand-built relative upload path has already broken every image on this
    * platform once.
    */
-  private static withTenantSubdirectory(base: string): string {
+  static withTenantSubdirectory(base: string): string {
     const tenantId = RequestContextUtils.getTenantId();
     if (!tenantId) return base;
     if (!/^[A-Za-z0-9_-]+$/.test(tenantId)) return base;

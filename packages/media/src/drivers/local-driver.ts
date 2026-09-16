@@ -8,7 +8,21 @@ import { MediaStorageConstants } from '@media/constants/media-storage.constants'
 
 export class LocalStorageDriver implements IStorageDriver {
   public readonly provider = 'local';
-  constructor(private uploadDir: string, private publicUrlBase: string) {}
+
+  /**
+   * The directory may be a FUNCTION, resolved on every access rather than captured once.
+   *
+   * A deployment that serves several sites gives each one its own subdirectory, and which one is
+   * current depends on the request being served — so a driver built at boot, where there is no
+   * request, captured the shared parent and every site read and wrote into it. This package knows
+   * nothing about sites and should not: it knows only that its root is answered when asked.
+   */
+  constructor(private readonly uploadDirInput: string | (() => string), private publicUrlBase: string) {}
+
+  /** The directory in force right now. */
+  private get uploadDir(): string {
+    return typeof this.uploadDirInput === 'function' ? this.uploadDirInput() : this.uploadDirInput;
+  }
 
   /**
    * The public path segment files are served under, with no surrounding slashes.

@@ -6,3 +6,4 @@ export { ServerMiddlewareSetup } from '@api/server/server-middleware-setup';
 export { ServerRoutesSetup } from '@api/server/server-routes-setup';
 export { ServerSettingsService } from '@api/server/server-settings-service';
 export { ServerUploadsConfigService } from '@api/server/server-uploads-config-service';
+export { TenantUploadsStatic } from '@api/server/tenant-uploads-static';
