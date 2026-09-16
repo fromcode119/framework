@@ -1,4 +1,4 @@
-import { CoercionUtils, ExtensionScope } from '@fromcode119/core';
+import { CoercionUtils, ExtensionScope, RouteConstants } from '@fromcode119/core';
 import { AccessLevel, BaseRouter } from '@fromcode119/core';
 import type { Request, RequestHandler, Response } from 'express';
 import { BuildService } from '@sources/packaging/build-service';
@@ -27,33 +27,37 @@ export class SourcesRouter extends BaseRouter {
     // `/build` would be matched as a source called "build".
     // What this installation can fetch source FROM. The form builds its provider field from this,
     // so adding a provider does not mean editing a dropdown in the admin.
-    this.get('/providers', this.adminGuard, this.listProviders);
-    this.post('/build', this.adminGuard, this.triggerAll);
-    this.post('/check-updates', this.adminGuard, this.checkUpdates);
+    const S = RouteConstants.SEGMENTS;
+    /** One source, by kind and slug — every per-source route hangs off this. */
+    const ONE = S.SOURCES_ONE;
+
+    this.get(S.SOURCES_PROVIDERS, this.adminGuard, this.listProviders);
+    this.post(S.SOURCES_BUILD, this.adminGuard, this.triggerAll);
+    this.post(S.SOURCES_CHECK_UPDATES, this.adminGuard, this.checkUpdates);
     // POST, not GET: the request carries a repository URL and possibly a token, and neither belongs
     // in a query string that lands in access logs.
-    this.post('/branches', this.adminGuard, this.listBranches);
-    this.post('/inspect', this.adminGuard, this.inspectSource);
+    this.post(S.SOURCES_BRANCHES, this.adminGuard, this.listBranches);
+    this.post(S.SOURCES_INSPECT, this.adminGuard, this.inspectSource);
 
-    this.get('/', this.adminGuard, this.getStatus);
-    this.post('/', this.adminGuard, this.createSource);
+    this.get(S.ROOT, this.adminGuard, this.getStatus);
+    this.post(S.ROOT, this.adminGuard, this.createSource);
     // A source is addressed by KIND and slug, because that is what identifies it: the same slug can
     // name a plugin, a theme and an appearance, which are three different extensions in three
     // different roots. Addressed by slug alone, every one of these routes acted on whichever row
     // the database happened to return first.
-    this.get('/:type/:slug', this.adminGuard, this.getStatusBySlug);
-    this.patch('/:type/:slug', this.adminGuard, this.updateSource);
-    this.delete('/:type/:slug', this.adminGuard, this.deleteSource);
-    this.post('/:type/:slug/build', this.adminGuard, this.triggerOne);
+    this.get(ONE, this.adminGuard, this.getStatusBySlug);
+    this.patch(ONE, this.adminGuard, this.updateSource);
+    this.delete(ONE, this.adminGuard, this.deleteSource);
+    this.post(`${ONE}${S.SOURCES_BUILD}`, this.adminGuard, this.triggerOne);
     // The archive, made on request. A build no longer writes one — it stages a package directory —
     // so this is where "I want the file" is expressed. The admin used to link at
     // `/themes/<file>.zip`, a path nothing had served since Sources stopped being a plugin.
-    this.get('/:type/:slug/package', this.adminGuard, this.downloadPackage);
+    this.get(`${ONE}${S.SOURCES_PACKAGE}`, this.adminGuard, this.downloadPackage);
     // What is running, what was last built, and every version still staged. Three facts from three
     // places — the screen could previously show only the middle one.
-    this.get('/:type/:slug/versions', this.adminGuard, this.listVersions);
+    this.get(`${ONE}${S.VERSIONS}`, this.adminGuard, this.listVersions);
     // Puts one of those staged versions in place. POST: it replaces code that is serving.
-    this.post('/:type/:slug/install', this.adminGuard, this.installVersion);
+    this.post(`${ONE}${S.SOURCES_INSTALL}`, this.adminGuard, this.installVersion);
   }
 
   /**

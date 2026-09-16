@@ -38,6 +38,19 @@ export class AdminConstants {
     STATUS: AdminConstants.v(SystemConstants.API_PATH.SETUP.STATUS),
     DATABASE: AdminConstants.v(SystemConstants.API_PATH.SETUP.DATABASE),
   },
+  /** Sources. The per-source suffixes are appended to an encoded `<base>/<kind>/<slug>`. */
+  SOURCES: {
+    BASE: AdminConstants.v(SystemConstants.API_PATH.SOURCES.BASE),
+    PROVIDERS: AdminConstants.v(SystemConstants.API_PATH.SOURCES.PROVIDERS),
+    BUILD_ALL: AdminConstants.v(SystemConstants.API_PATH.SOURCES.BUILD_ALL),
+    CHECK_UPDATES: AdminConstants.v(SystemConstants.API_PATH.SOURCES.CHECK_UPDATES),
+    BRANCHES: AdminConstants.v(SystemConstants.API_PATH.SOURCES.BRANCHES),
+    INSPECT: AdminConstants.v(SystemConstants.API_PATH.SOURCES.INSPECT),
+    BUILD_SUFFIX: SystemConstants.API_PATH.SOURCES.BUILD_SUFFIX,
+    PACKAGE_SUFFIX: SystemConstants.API_PATH.SOURCES.PACKAGE_SUFFIX,
+    VERSIONS_SUFFIX: SystemConstants.API_PATH.SOURCES.VERSIONS_SUFFIX,
+    INSTALL_SUFFIX: SystemConstants.API_PATH.SOURCES.INSTALL_SUFFIX,
+  },
   AUTH: {
     LOGIN: AdminConstants.v(SystemConstants.API_PATH.AUTH.LOGIN),
     LOGOUT: AdminConstants.v(SystemConstants.API_PATH.AUTH.LOGOUT),
