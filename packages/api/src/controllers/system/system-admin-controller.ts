@@ -219,8 +219,23 @@ export class SystemAdminController {
    * What this installation has and has not got yet — the dashboard's fresh-install face reads it to
    * decide whether to show onboarding or the working board, and renders the same list either way.
    */
+  /**
+   * The installation checklist, and WHOSE installation it describes.
+   *
+   * Every count here is the container's: how many sites exist, how many accounts, what is installed
+   * on the box. The route is guarded by `system:view`, which a SITE's own administrator holds — so a
+   * customer's admin was told how many other customers this platform has and how many accounts exist
+   * in total. That is the same permission, and the same class of leak, as the sites roster.
+   *
+   * Inside a site the counts are that SITE's, and the container-level facts are omitted rather than
+   * scoped: "how many sites are on this box" and "is this deployment multi-site" have no per-site
+   * answer, and inventing one would be worse than leaving them out. The platform scope is unchanged.
+   */
   async getInstallation(req: Request, res: Response) {
     try {
+      const tenantId = this.boundTenantId(req);
+      if (tenantId) return res.json(await this.siteInstallation(tenantId));
+
       const service = new InstallationChecklistService({
         countThemes: () => (this.runtime.themeManager.getThemes() || []).length,
         activeThemeName: () => String(this.runtime.themeManager.getActiveThemeManifest()?.name || ''),
@@ -243,9 +258,91 @@ export class SystemAdminController {
     }
   }
 
+  /** The site this request is bound to, or '' in the platform scope. Same idiom as the sweeps above. */
+  private boundTenantId(req: Request): string {
+    if (!TenantMode.isEnabled()) return '';
+    return String((req as any).tenantId || '').trim();
+  }
+
+  /**
+   * The checklist for ONE site: what IT has, counted from the rows that record what belongs to it.
+   *
+   * No `sites` count and no `mode` — those describe the container, not a site. `isFresh` keeps its
+   * meaning: a site with no theme and no plugins of its own is one nobody has started using.
+   */
+  private async siteInstallation(tenantId: string): Promise<Record<string, unknown>> {
+    const countFor = async (table: string): Promise<number> => {
+      const rows = await this.runtime.db.find(table, { where: { tenant_id: tenantId } }).catch(() => []);
+      return Array.isArray(rows) ? rows.length : 0;
+    };
+
+    const [themes, plugins, members] = await Promise.all([
+      countFor(SystemConstants.TABLE.TENANT_THEMES),
+      countFor(SystemConstants.TABLE.TENANT_PLUGINS),
+      countFor(SystemConstants.TABLE.TENANT_MEMBERSHIPS),
+    ]);
+
+    return {
+      isFresh: themes === 0 && plugins === 0,
+      counts: { themes, plugins, users: members },
+      storefront: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
+      scope: 'site',
+    };
+  }
+
+  /**
+   * The security summary as ONE site sees it.
+   *
+   * The container-level facts are REMOVED rather than filtered, because they have no per-site
+   * version: the running plugin processes and the host's memory describe the box every customer
+   * shares. What remains is recomputed over this site's own plugins, so the counts and the slug
+   * lists describe what this site runs and nothing else.
+   *
+   * `integrityEnforced` / `signatureEnforced` stay: they are booleans about the environment this
+   * site runs in, carrying no other customer's data, and a site operator reading "plugins here must
+   * be signed" is being told something true about their own runtime.
+   */
+  private securitySummaryForSite(summary: any, tenantId: string): Record<string, unknown> {
+    const enabled = PluginTenantAccess.enabledSlugsFor(tenantId);
+    const mine = (this.runtime.manager.getPlugins() || [])
+      .filter((plugin: any) => enabled.has(String(plugin?.manifest?.slug ?? '')));
+    const isSandboxed = (plugin: any) => plugin?.manifest?.sandbox !== false;
+    const active = mine.filter((plugin: any) => String(plugin?.state ?? '') === 'active');
+    const mismatch = active.filter(isSandboxed).filter((plugin: any) => !plugin?.isSandboxed);
+    const slugsOf = (list: any[]) => list.map((plugin: any) => String(plugin?.manifest?.slug ?? ''));
+
+    return {
+      monitor: summary?.monitor,
+      pluginIsolation: {
+        totalPlugins: mine.length,
+        activePlugins: active.length,
+        sandboxConfiguredPlugins: mine.filter(isSandboxed).length,
+        sandboxActivePlugins: active.filter(isSandboxed).length,
+        sandboxRuntimeActivePlugins: active.filter((plugin: any) => !!plugin?.isSandboxed).length,
+        sandboxPolicyRuntimeMismatchPlugins: mismatch.length,
+        sandboxPolicyRuntimeMismatchSlugs: slugsOf(mismatch),
+        unsandboxedActivePlugins: active.filter((plugin: any) => !isSandboxed(plugin)).length,
+        unsandboxedActivePluginSlugs: slugsOf(active.filter((plugin: any) => !isSandboxed(plugin))),
+      },
+      integrityEnforced: summary?.integrityEnforced,
+      signatureEnforced: summary?.signatureEnforced,
+      scope: 'site',
+    };
+  }
+
+  /**
+   * The security summary, for the plugins THIS SCOPE runs.
+   *
+   * `getSecuritySummary()` reads every plugin loaded on the container. Behind `system:view` — which a
+   * site's own administrator holds — that handed one customer the full registry of what every other
+   * customer runs, each entry's isolation state and held reasons included.
+   */
   async getSecurityStats(req: Request, res: Response) {
     try {
-      res.json(await this.runtime.manager.getSecuritySummary());
+      const summary = await this.runtime.manager.getSecuritySummary();
+      const tenantId = this.boundTenantId(req);
+      if (!tenantId) return res.json(summary);
+      res.json(this.securitySummaryForSite(summary, tenantId));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
