@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { AdminScope } from '@fromcode119/core/client';
 import { Card } from '@/components/ui/view/card.client';
 import { PluginTrendChart } from '@/components/plugin-dashboard/view/plugin-trend-chart.client';
 import { DashboardActivityWindow } from '@/app/dashboard-activity-window';
@@ -18,23 +19,30 @@ export class DashboardActivityChart extends PureReactor {
   @prop declare activity: Array<{ timestamp?: string | number; level?: string }>;
   @prop declare days?: number;
   /**
-   * Which scope the journal was read in — `'site'` inside a site, `'platform'` outside one, as
-   * `/admin/stats/installation` reports it. The feed is tenant-scoped, so inside a site these
+   * Which scope the journal was read in, as `/admin/stats/installation` reports it — an
+   * {@link AdminScope} value, arriving over JSON as its plain string. The feed is tenant-scoped, so inside a site these
    * events are that SITE's; heading them "Platform Activity" named a source the card is not
    * reading. Absent, the wording stays neutral rather than asserting either.
    */
   @prop declare scope?: string;
 
+  /** Resolved ONCE: `scope` arrives as a JSON string, and a string never equals an enum member. */
+  private get scope_(): AdminScope | undefined {
+    return AdminScope.resolve(this.scope);
+  }
+
   private get subject(): string {
-    if (this.scope === 'site') return 'Site';
-    if (this.scope === 'platform') return 'Platform';
-    return 'Recent';
+    const scope = this.scope_;
+    if (!scope) return 'Recent';
+    return scope.isSite ? 'Site' : 'Platform';
   }
 
   private get emptyCopy(): string {
-    if (this.scope === 'site') return 'Nothing has happened on this site yet.';
-    if (this.scope === 'platform') return 'Nothing has happened on this platform yet.';
-    return 'Nothing has happened yet.';
+    const scope = this.scope_;
+    if (!scope) return 'Nothing has happened yet.';
+    return scope.isSite
+      ? 'Nothing has happened on this site yet.'
+      : 'Nothing has happened on this platform yet.';
   }
 
   /** Days shown in the bar form — a week reads unlabelled; a fortnight of bars does not. */

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SystemAdminController } from '@api/controllers/system/system-admin-controller';
-import { TenantMode } from '@fromcode119/core';
+import { AdminScope, TenantMode } from '@fromcode119/core';
 
 /**
  * Two dashboard endpoints that answered with the whole container.
@@ -70,7 +70,7 @@ describe('installation stats', () => {
     expect(out.body.counts).not.toHaveProperty('sites');
     expect(out.body.counts.users).toBe(2); // this site's memberships, not every account
     expect(out.body).not.toHaveProperty('mode'); // "multi-site" describes the container
-    expect(out.body.scope).toBe('site');
+    expect(out.body.scope).toBe(AdminScope.SITE);
   });
 
   it('still describes the whole installation in the platform scope', async () => {
@@ -87,7 +87,9 @@ describe('installation stats', () => {
 
     // The dashboard heads its activity card from this. Absent, it can only say "Recent" — and a card
     // headed "Platform Activity" inside a site is the defect this whole pass is about.
-    expect(out.body.scope).toBe('platform');
+    // The member, not the string: `res.json` here captures the body before serialisation. That it
+    // goes over the wire as "platform" is asserted in admin-scope.enum.test.ts.
+    expect(out.body.scope).toBe(AdminScope.PLATFORM);
   });
 });
 
@@ -98,7 +100,7 @@ describe('security stats', () => {
 
     // `enabledSlugsFor` answers empty for an unknown site, which is the fail-closed direction.
     expect(out.body.pluginIsolation.totalPlugins).toBeLessThan(SUMMARY.pluginIsolation.totalPlugins);
-    expect(out.body.scope).toBe('site');
+    expect(out.body.scope).toBe(AdminScope.SITE);
   });
 
   it('withholds the container facts a site cannot have a version of', async () => {

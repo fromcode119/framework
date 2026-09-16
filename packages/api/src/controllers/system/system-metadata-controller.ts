@@ -1,4 +1,4 @@
-import { PluginTenantAccess, RequestContextUtils, TenantResolverService } from '@fromcode119/core';
+import { PluginTenantAccess, RequestContextUtils, TenantResolverService, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { PluginState, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
@@ -48,7 +48,7 @@ export class SystemMetadataController {
       metadata.secondaryPanel = panel.panel;
       // What scope this payload describes, and which paths it withheld — so the console can say
       // "this page belongs to a site" for a bookmarked link instead of rendering an empty screen.
-      metadata.scope = AdminNavigationScopeFilter.hasSite() ? 'site' : 'platform';
+      metadata.scope = AdminNavigationScopeFilter.hasSite() ? AdminScope.SITE : AdminScope.PLATFORM;
       metadata.siteScopedPaths = [...new Set([...menu.removedPaths, ...panel.removedPaths])];
       // The mirror: withheld because a site IS selected and these belong to the platform. Reported
       // separately because the two need opposite advice — one says "choose a site", the other says

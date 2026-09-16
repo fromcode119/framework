@@ -193,6 +193,7 @@ export { BackupCatalogGroupKey } from '@core/management/enums/backup-catalog-gro
 // ── Shared UI/runtime enums (browser-safe reactor `Enum` value objects) ───────
 export { ClientType } from '@core/enums/client-type.enum';
 export { UiScope } from '@core/enums/ui-scope.enum';
+export { AdminScope } from '@core/enums/admin-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';
 
 // Browser-safe: these carry only labels and identity, and depend on nothing but the Enum base.

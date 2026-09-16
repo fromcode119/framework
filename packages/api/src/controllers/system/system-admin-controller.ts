@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
-import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SystemConstants, TenantMode, PluginTenantAccess } from '@fromcode119/core';
+import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SystemConstants, TenantMode, PluginTenantAccess, AdminScope } from '@fromcode119/core';
 import { SecretService } from '@fromcode119/core';
 
 export class SystemAdminController {
@@ -255,7 +255,7 @@ export class SystemAdminController {
       // `scope` is stamped on BOTH branches, not just the site one. The dashboard heads its activity
       // card with it, and a missing value there is not "platform" — it is "we don't know", which is
       // the one thing the card must not present as either.
-      res.json({ ...await service.read(), scope: 'platform' });
+      res.json({ ...await service.read(), scope: AdminScope.PLATFORM });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -289,7 +289,7 @@ export class SystemAdminController {
       isFresh: themes === 0 && plugins === 0,
       counts: { themes, plugins, users: members },
       storefront: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
-      scope: 'site',
+      scope: AdminScope.SITE,
     };
   }
 
@@ -329,7 +329,7 @@ export class SystemAdminController {
       },
       integrityEnforced: summary?.integrityEnforced,
       signatureEnforced: summary?.signatureEnforced,
-      scope: 'site',
+      scope: AdminScope.SITE,
     };
   }
 
