@@ -5,6 +5,7 @@ import { PluginPublicSettingsService } from '@core/plugin/services/settings/plug
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { AppearanceManager } from '@core/appearance/appearance-manager';
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * PluginManagerQueryService
@@ -48,11 +49,17 @@ export class PluginManagerQueryService {
   }
 
   /**
-   * WHICH version of an extension is installed, or null when none is.
+   * WHICH version of an extension is INSTALLED, or null when none is.
    *
-   * Read from what is ON DISK, exactly like {@link isExtensionInstalled}, and for the same reason:
-   * the build record says what was produced, and the question here is what is RUNNING. The screen
-   * that shows both needs them to come from different places or it is comparing a value with itself.
+   * For a plugin this is the `_system_plugins` row, not the manifest held in memory. The in-memory
+   * copy is what this PROCESS loaded at boot, so after an install it still reports the previous
+   * version until a restart — the Sources screen then said "installed 0.1.29" while the row, the files
+   * and the admin's own Installed page all said 0.1.30, and the panel refused to offer a rollback
+   * because it believed the old version was still in place. The row is what every other screen reads,
+   * and agreeing with them is worth more here than reporting this process's private view.
+   *
+   * Themes and appearances are read from their managers, which re-read their directories rather than
+   * caching a boot-time snapshot, so those already answer with what is in place.
    *
    * CORE answers null. It is what is running rather than something installed beside it, and no
    * caller may offer to swap its version from this surface.
@@ -76,6 +83,14 @@ export class PluginManagerQueryService {
     }
     if (scope === ExtensionScope.CORE) return null;
 
+    const row = await this.db?.findOne?.(SystemConstants.TABLE.PLUGINS, { slug: name })
+      .catch(() => null);
+    const recorded = version(row?.version);
+    if (recorded) return recorded;
+
+    // No row is not the same as no plugin: a plugin discovered from disk that has never been recorded
+    // still answers with what it loaded, rather than reading as "not installed" and offering a fresh
+    // install of something already running.
     return version(Array.from(this.plugins.values())
       .find((plugin) => plugin?.manifest?.slug === name)?.manifest?.version);
   }

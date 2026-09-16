@@ -277,6 +277,30 @@ export class BuildService {
     return { installed: wanted };
   }
 
+  /**
+   * The built package as something an installer can OPEN — an archive when one was written, the staged
+   * directory otherwise.
+   *
+   * `resolvePackageFilePath` answers only with the archive, and a build no longer writes one: it stages
+   * a directory and the zip is produced when somebody presses Download. So on any installation where
+   * nobody had downloaded a package, that method answered null for every source, the catalogue reported
+   * "offered by this installation but its package could not be found", and the admin's Update button
+   * failed for every locally built plugin. Measured on production: `file_name` was empty for all 20.
+   *
+   * The staged directory is a first-class answer rather than a consolation — the installer already
+   * branches on `isDirectory()` and installs one directly. Existence is checked here so that a missing
+   * package is reported as missing, instead of throwing `ENOENT` inside the caller's `statSync`.
+   */
+  async resolveInstallablePackagePath(identity: BuildSourceIdentity): Promise<string | null> {
+    const artifact = await this.resolvePackageArtifact(identity);
+    if (!artifact) return null;
+
+    for (const candidate of [artifact.filePath, artifact.stagedDir]) {
+      if (candidate && fs.existsSync(candidate)) return candidate;
+    }
+    return null;
+  }
+
   /** The built package as a downloadable archive, made on request. See PackageDownloadService. */
   async archivePackage(identity: BuildSourceIdentity): Promise<{ filePath: string; fileName: string } | null> {
     return this.packageDownloads.archive(identity, await this.resolvePackageArtifact(identity));
