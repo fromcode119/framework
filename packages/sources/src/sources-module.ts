@@ -111,15 +111,21 @@ export class SourcesModule {
 
     input.catalog.contribute(
       async () => CatalogContributionService.entriesFrom(await buildSourceService.listSanitizedSources()),
-      // Where the offered file actually is. An offer from here is an archive this installation built,
-      // and its catalogue row carries only a filename — without this an installer resolved that name
-      // against the remote marketplace and fetched a package that had never been published there.
-      // `find`, not `resolve`: this answers with a FILE PATH, and a kind nobody could name must not
-      // fall through to the plugins root and hand back somebody else's package.
+      // Where the offered package actually is. An offer from here is something this installation
+      // built, and its catalogue row carries only a filename — without this an installer resolved that
+      // name against the remote marketplace and fetched a package that had never been published there.
+      //
+      // An ARCHIVE or the STAGED DIRECTORY, because a build writes only the latter: the zip appears
+      // when somebody presses Download. Asking for the archive alone answered null for every source
+      // nobody had downloaded, so the offer said "we have it" and the install then said it could not
+      // be found — which is what the admin's Update button did for every locally built plugin.
+      //
+      // `find`, not `resolve`: this answers with a PATH, and a kind nobody could name must not fall
+      // through to the plugins root and hand back somebody else's package.
       async (slug: string, kind: string) => {
         const scope = ExtensionScope.find(kind);
         if (!scope) return null;
-        return buildService.resolvePackageFilePath(BuildSourceIdentity.parse(scope, slug));
+        return buildService.resolveInstallablePackagePath(BuildSourceIdentity.parse(scope, slug));
       },
     );
     SourcesModule.logger.info('Offering built versions to the admin catalogue.');
