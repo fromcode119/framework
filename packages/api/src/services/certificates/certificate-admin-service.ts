@@ -1,7 +1,7 @@
 import {
-  AcmeChallengeType, AcmeCloudflareTokenStore, AdminScope, ApplicationUrlUtils, CertificateHostRole, CertificateRecord,
-  CertificateRejection, CertificateSource, AcmeSettings, CertificateStoreService, CertificateValidationError,
-  PlatformAddressDetection, SecretService, TenantRegistryService,
+  AcmeChallengeType, AcmeCloudflareTokenStore, AdminScope, ApplicationUrlUtils, CertificateAutomationUnavailableError,
+  CertificateHostRole, CertificateRecord, CertificateRejection, CertificateSource, AcmeSettings, CertificateStoreService,
+  CertificateValidationError, PlatformAddressDetection, SecretService, TenantRegistryService,
 } from '@fromcode119/core';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { CertificateHostEntry } from '@api/services/certificates/certificate-host-entry';
@@ -141,17 +141,17 @@ export class CertificateAdminService {
   ): Promise<CertificateRecord | null> {
     const dnsWildcard = options.dnsWildcard === true;
     if (dnsWildcard && source !== CertificateSource.AUTOMATIC) {
-      throw new Error('The DNS-01 wildcard variant only applies to the Automatic source.');
+      throw new CertificateAutomationUnavailableError('The DNS-01 wildcard variant only applies to the Automatic source.');
     }
 
     if (source.isPlatformManaged) {
       const edge = await this.edgeStatus.read();
       const automation = await this.automation(edge);
       if (automation.isAvailable !== true) {
-        throw new Error(String(automation.blockedReason || 'Automatic issuance is not available on this deployment.'));
+        throw new CertificateAutomationUnavailableError(String(automation.blockedReason || 'Automatic issuance is not available on this deployment.'));
       }
       if (dnsWildcard && automation.isCloudflareConfigured !== true) {
-        throw new Error('No Cloudflare API token is saved, so DNS-01/wildcard issuance is not available. Add one under Settings → Certificates.');
+        throw new CertificateAutomationUnavailableError('No Cloudflare API token is saved, so DNS-01/wildcard issuance is not available. Add one under Settings → Certificates.');
       }
     }
 

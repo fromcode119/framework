@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
-import { BaseController, CertificateSource, CertificateValidationError, CoercionUtils, Logger } from '@fromcode119/core';
+import {
+  BaseController, CertificateAutomationUnavailableError, CertificateSource, CertificateValidationError, CoercionUtils, Logger,
+} from '@fromcode119/core';
 import { CertificateAdminService } from '@api/services/certificates/certificate-admin-service';
 
 /**
@@ -145,10 +147,19 @@ export class CertificateAdminController extends BaseController {
    * A rejected certificate is 422 and carries WHICH refusal it was, because "invalid certificate"
    * sends somebody back to their issuer to re-download both files when only one of them is wrong.
    * The message is never echoed from the pasted material.
+   *
+   * `CertificateAutomationUnavailableError` is a DIFFERENT kind of expected refusal — nothing was
+   * pasted wrong, the deployment itself cannot automate right now (no authority configured, or its
+   * gateway isn't terminating TLS). That is a 409, not a 500: the request was well-formed and the
+   * server did exactly what it should, so it must not be logged as a server fault.
    */
   private fail(res: Response, error: unknown): void {
     if (error instanceof CertificateValidationError) {
       res.status(422).json({ error: String(error.reason.value), reasonKey: error.reason.translationKey });
+      return;
+    }
+    if (error instanceof CertificateAutomationUnavailableError) {
+      res.status(409).json({ error: error.message });
       return;
     }
     const message = error instanceof Error ? error.message : 'Certificate operation failed.';

@@ -232,6 +232,7 @@ export { PlatformAddressCandidate } from '@core/certificates/acme/platform-addre
 export { PlatformAddressDetection } from '@core/certificates/acme/platform-address-detection';
 export { DnsPreflightResult } from '@core/certificates/acme/dns-preflight-result';
 export { CertificateValidationError } from '@core/certificates/certificate-validation-error';
+export { CertificateAutomationUnavailableError } from '@core/certificates/certificate-automation-unavailable-error';
 export { CertificateHostRole } from '@core/enums/certificate-host-role.enum';
 export { CertificateRejection } from '@core/enums/certificate-rejection.enum';
 export { CertificateSource } from '@core/enums/certificate-source.enum';
