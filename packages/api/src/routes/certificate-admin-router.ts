@@ -29,8 +29,9 @@ export class CertificateAdminRouter extends BaseRouter {
     const platform = this.platformAdmin.middleware();
     const S = RouteConstants.SEGMENTS;
     this.get(S.TENANTS_ROOT, admin, platform, this.controller.list);
-    // Before `/:host`, so "platform-addresses" is never read as a hostname.
+    // Before `/:host`, so neither "platform-addresses" nor "cloudflare-token" is ever read as a hostname.
     this.get(S.CERTIFICATES_PLATFORM_ADDRESSES, admin, platform, this.controller.platformAddresses);
+    this.put(S.CERTIFICATES_CLOUDFLARE_TOKEN, admin, platform, this.controller.setCloudflareToken);
     this.post(S.TENANTS_ROOT, admin, platform, this.controller.upload);
     // `/:host/source` is registered before `/:host` so "source" is never read as a hostname.
     this.put(S.CERTIFICATES_HOST_SOURCE, admin, platform, this.controller.setSource);

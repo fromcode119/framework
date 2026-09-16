@@ -234,6 +234,17 @@ export class SystemConstants {
    */
   CERTIFICATE_PLATFORM_ADDRESSES: 'certificate_platform_addresses',
   /**
+   * The Cloudflare API token used for DNS-01 challenges (wildcard certificates).
+   *
+   * STORED ENCRYPTED, via SecretService, exactly like an integration's own credentials — this is a
+   * token with DNS edit rights on the operator's zone. BLANK MEANS DNS-01 IS UNAVAILABLE, the same
+   * shape as the rest of this feature: an admin who has not pasted a token has not consented to the
+   * platform managing DNS records, so nothing here is guessed or reused from anywhere else. Never
+   * exposed through the generic settings read — see AcmeSettings.isCloudflareConfigured — and never
+   * returned to any admin response; only whether it is set.
+   */
+  CERTIFICATE_ACME_CLOUDFLARE_TOKEN: 'certificate_acme_cloudflare_token',
+  /**
    * Days of `_system_logs` history to keep. Empty or 0 means KEEP FOREVER, and the admin field
    * says so — nothing prunes behind the operator's back. Read by JournalRetentionService.
    */
@@ -455,6 +466,7 @@ export class SystemConstants {
     ADMIN_CERTIFICATES: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES),
     ADMIN_CERTIFICATE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES}${SystemConstants.ROUTE_SEGMENTS.CERTIFICATES_HOST}`),
     ADMIN_CERTIFICATE_SOURCE: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES}${SystemConstants.ROUTE_SEGMENTS.CERTIFICATES_HOST_SOURCE}`),
+    ADMIN_CERTIFICATE_CLOUDFLARE_TOKEN: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_CERTIFICATES}${SystemConstants.ROUTE_SEGMENTS.CERTIFICATES_CLOUDFLARE_TOKEN}`),
     ADMIN_TENANT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID}`),
     ADMIN_TENANT_EXPORT: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID_EXPORT}`),
     ADMIN_TENANT_PAGES: SystemConstants.joinPath(SystemConstants.SYSTEM_BASE, `${SystemConstants.ROUTE_SEGMENTS.ADMIN_TENANTS}${SystemConstants.ROUTE_SEGMENTS.TENANTS_ID_PAGES}`),

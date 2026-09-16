@@ -26,6 +26,8 @@ export class CertificateHost {
     readonly subjectAltNames: string[],
     readonly fingerprint: string,
     readonly lastError: string,
+    /** 'http-01' or 'dns-01' — which challenge the current AUTOMATIC certificate was ordered with. */
+    readonly challenge: string,
   ) {}
 
   static from(raw: unknown): CertificateHost {
@@ -47,6 +49,7 @@ export class CertificateHost {
       Array.isArray(certificate.subjectAltNames) ? certificate.subjectAltNames.map((n: unknown) => String(n)) : [],
       CoercionUtils.toString(certificate.fingerprintSha256 ?? ''),
       CoercionUtils.toString(certificate.lastError ?? ''),
+      CoercionUtils.toString(certificate.challenge ?? ''),
     );
   }
 
@@ -112,5 +115,33 @@ export class CertificateHost {
   /** Whether the platform already obtains and renews this host's certificate. */
   get isPlatformManaged(): boolean {
     return this.source === 'automatic';
+  }
+
+  /**
+   * Whether the certificate ACTUALLY STORED for this host covers `*.<host>`.
+   *
+   * Reads `subjectAltNames` — the served certificate — never `source`/`wildcard`, which are the
+   * operator's INTENT for the next order. `setSource` flips `wildcard` to `true` the instant the
+   * host is switched, before any DNS-01 order has run; deriving this from intent would claim
+   * "covers *.host" on screen while the certificate actually being served has no such SAN.
+   *
+   * Must match `*.<this.host>` specifically — NOT merely "contains some wildcard SAN". A cert for
+   * zone `example.com` (SANs `example.com`, `*.example.com`) is valid TLS coverage for the host
+   * `shop.example.com`, but it does not carry a `*.shop.example.com` SAN — claiming "covers
+   * *.shop.example.com" on that row would be a claim this certificate does not support.
+   */
+  get isDnsWildcard(): boolean {
+    const wanted = `*.${this.host}`.toLowerCase();
+    return this.subjectAltNames.some((name) => name.toLowerCase() === wanted);
+  }
+
+  /** Whether the platform's AUTOMATIC source is currently set to order via DNS-01 (intent, not the served certificate). */
+  get isAutomaticDns01(): boolean {
+    return this.isPlatformManaged && this.challenge === 'dns-01';
+  }
+
+  /** Whether the platform's AUTOMATIC source is currently set to order via plain HTTP-01 (intent, not the served certificate). */
+  get isAutomaticHttp01(): boolean {
+    return this.isPlatformManaged && this.challenge !== 'dns-01';
   }
 }

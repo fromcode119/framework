@@ -138,6 +138,10 @@ export class SystemSettingRegistry {
     [SystemSettingRegistry.KEY.CERTIFICATE_ACME_DIRECTORY]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.CERTIFICATE_ACME_CONTACT_EMAIL]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.CERTIFICATE_PLATFORM_ADDRESSES]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // A CREDENTIAL, not a setting the generic PUT may touch — same shape as EMAIL_PROFILES above.
+    // Written only through AcmeCloudflareTokenStore (encrypted via SecretService) and never read back
+    // in the clear; AcmeSettings exposes only whether it is configured, not the value.
+    [SystemSettingRegistry.KEY.CERTIFICATE_ACME_CLOUDFLARE_TOKEN]: { scope: SettingScope.PLATFORM, writable: false, exposed: false },
 
     // PLATFORM, and the "candidate (Phase 2)" note that stood here was the bug. `JournalRetentionService`
     // starts ONCE per api process and sweeps on ONE daily interval, reading the value on an untenanted

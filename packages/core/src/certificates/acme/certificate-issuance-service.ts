@@ -1,5 +1,6 @@
 import { AcmeAccountStore } from '@core/certificates/acme/acme-account-store';
 import { AcmeChallengeStore } from '@core/certificates/acme/acme-challenge-store';
+import { AcmeChallengeType } from '@core/enums/acme-challenge-type.enum';
 import { AcmeClientAdapter } from '@core/certificates/acme/acme-client-adapter';
 import { AcmeSettings } from '@core/certificates/acme/acme-settings';
 import { CertificateIssuanceBackoff } from '@core/certificates/acme/certificate-issuance-backoff';
@@ -9,6 +10,8 @@ import { CertificateSource } from '@core/enums/certificate-source.enum';
 import { CertificateState } from '@core/enums/certificate-state.enum';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 import { ChallengeReachabilityProbe } from '@core/certificates/acme/challenge-reachability-probe';
+import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare-dns-provider';
+import { CloudflareZonePreflight } from '@core/certificates/acme/dns/cloudflare-zone-preflight';
 import { DnsPreflight } from '@core/certificates/acme/dns-preflight';
 import { Logger } from '@core/logging';
 
@@ -36,6 +39,9 @@ export class CertificateIssuanceService {
     private readonly preflight: DnsPreflight = DnsPreflight.system(),
     private readonly probe: ChallengeReachabilityProbe | null = null,
     private readonly adapter: AcmeClientAdapter | null = null,
+    /** Built fresh per attempt from the configured token — injected so tests never touch the network. */
+    private readonly zonePreflightFactory: (token: string) => CloudflareZonePreflight =
+      (token) => new CloudflareZonePreflight(new CloudflareDnsProvider(token)),
   ) {}
 
   /** One pass. Never throws: a sweep that dies takes every other host's renewal with it. */
@@ -77,6 +83,11 @@ export class CertificateIssuanceService {
    * things to whoever has to fix them — and because only one of them costs anything at the authority.
    */
   private async attempt(record: CertificateRecord, settings: AcmeSettings): Promise<void> {
+    if (record.challenge === AcmeChallengeType.DNS_01) {
+      await this.attemptDns01(record, settings);
+      return;
+    }
+
     const dns = await this.preflight.check(record.host, settings.platformAddresses);
     if (!dns.isPointingHere) {
       await this.store.markWaitingForDns(
@@ -106,6 +117,60 @@ export class CertificateIssuanceService {
     await this.order(record, settings);
   }
 
+  /**
+   * DNS-01's own pre-flight: `DnsPreflight`/`ChallengeReachabilityProbe` both assume HTTP-01 and
+   * require the host's A/AAAA record to point at this platform — wrong here, since DNS-01 never
+   * requires the origin to be reachable by HTTP at all (a Cloudflare-proxied or DNS-only host is the
+   * normal case). The only thing worth checking before spending an order is whether the configured
+   * token can even see the zone.
+   */
+  private async attemptDns01(record: CertificateRecord, settings: AcmeSettings): Promise<void> {
+    if (!settings.isCloudflareConfigured) {
+      // Not the authority's fault and not counted against its budget — this never reached it.
+      await this.store.recordFailure(
+        record.host,
+        'No Cloudflare API token is configured, so DNS-01 issuance cannot proceed.',
+        record.attemptsInWindow,
+        CertificateIssuanceBackoff.after(CertificateIssuanceBackoff.UNREACHABLE_RECHECK_MS),
+      );
+      return;
+    }
+
+    let cloudflareToken: string;
+    try {
+      // A decrypt, not a field read — `isCloudflareConfigured` above only proved ciphertext EXISTS,
+      // never that it still decrypts. A rotated SECRET_KEY makes this throw; left uncaught, that
+      // exception would escape `attemptDns01` entirely, skip `recordFailure`, and leave the host with
+      // no `lastError`/`nextAttemptAt` — perpetually "due" and silently starving every other host's
+      // renewal slot. The message must say which of the two is wrong: absent vs. undecryptable.
+      cloudflareToken = settings.cloudflareToken;
+    } catch (error: any) {
+      await this.store.recordFailure(
+        record.host,
+        `The saved Cloudflare API token could not be decrypted (check SECRET_KEY): ${error?.message || error}`,
+        record.attemptsInWindow,
+        CertificateIssuanceBackoff.after(CertificateIssuanceBackoff.UNREACHABLE_RECHECK_MS),
+      );
+      return;
+    }
+
+    const reason = await this.zonePreflightFactory(cloudflareToken).check(record.host);
+    if (reason) {
+      await this.store.recordFailure(
+        record.host,
+        reason,
+        record.attemptsInWindow,
+        CertificateIssuanceBackoff.after(CertificateIssuanceBackoff.UNREACHABLE_RECHECK_MS),
+      );
+      return;
+    }
+
+    const claimed = await this.store.claimForIssuance(record.host, record.storedState);
+    if (!claimed) return;
+
+    await this.order(record, settings);
+  }
+
   /** The part that spends a rate limit. Everything above has already proved it should succeed. */
   private async order(record: CertificateRecord, settings: AcmeSettings): Promise<void> {
     const adapter = this.adapter ?? new AcmeClientAdapter(this.challenges);
@@ -117,6 +182,9 @@ export class CertificateIssuanceService {
         accountUrl: account.accountUrl || undefined,
         contactEmail: settings.contactEmail || undefined,
         host: record.host,
+        challengeType: record.challenge,
+        altNames: record.wildcard ? [`*.${record.host}`] : undefined,
+        cloudflareToken: record.challenge === AcmeChallengeType.DNS_01 ? settings.cloudflareToken : undefined,
       });
 
       if (issued.accountUrl && issued.accountUrl !== account.accountUrl) {

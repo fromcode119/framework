@@ -16,11 +16,13 @@ import { CertificateStateBadge } from '@/app/certificates/components/certificate
  * table built from stored certificates could never show it.
  */
 export class CertificateHostTable extends AdminComponent {
-  declare props: Pick<CertificateHostTable, 'entries' | 'canUpload' | 'canAutomate' | 'terminatesTls' | 'platformAddresses' | 'busyHost' | 'showSite' | 'onUpload' | 'onRemove' | 'onAutomate'>;
+  declare props: Pick<CertificateHostTable, 'entries' | 'canUpload' | 'canAutomate' | 'canAutomateWildcard' | 'terminatesTls' | 'platformAddresses' | 'busyHost' | 'showSite' | 'onUpload' | 'onRemove' | 'onAutomate' | 'onAutomateWildcard'>;
 
   @prop declare entries: CertificateHost[];
   @prop declare canUpload: boolean;
   @prop declare canAutomate?: boolean;
+  /** Whether a Cloudflare token is saved, so the DNS-01/wildcard variant of Automatic is offered too. */
+  @prop declare canAutomateWildcard?: boolean;
   /** Whether this deployment's own gateway is the thing terminating TLS. See `renderMeta`. */
   @prop declare terminatesTls?: boolean;
   @prop declare platformAddresses?: string[];
@@ -29,6 +31,7 @@ export class CertificateHostTable extends AdminComponent {
   @prop declare onUpload: (host: string) => void;
   @prop declare onRemove: (host: string) => void;
   @prop declare onAutomate?: (host: string) => void;
+  @prop declare onAutomateWildcard?: (host: string) => void;
 
   private get isDark(): boolean {
     return this.theme === ThemeMode.DARK;
@@ -44,6 +47,10 @@ export class CertificateHostTable extends AdminComponent {
 
   @bound private automate(host: string): () => void {
     return () => this.onAutomate?.(host);
+  }
+
+  @bound private automateWildcard(host: string): () => void {
+    return () => this.onAutomateWildcard?.(host);
   }
 
   /**
@@ -83,6 +90,15 @@ export class CertificateHostTable extends AdminComponent {
       <span className={`text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
         {entry.issuer ? `${entry.issuer} · ` : ''}until {entry.expiryDate}
         {entry.isUploaded ? ' · uploaded, not renewed automatically' : ''}
+        {/*
+          Two independent claims about two different things — how the certificate was OBTAINED
+          (isAutomaticDns01, the platform's ordering intent/method) vs what the STORED certificate
+          actually COVERS (isDnsWildcard, read from its own SANs). A hand-uploaded wildcard cert
+          covers *.host without having been obtained via DNS-01; neither claim may stand in for
+          the other.
+        */}
+        {entry.isAutomaticDns01 ? ' · DNS-01' : ''}
+        {entry.isDnsWildcard ? ' · covers *.'.concat(entry.host) : ''}
       </span>
     );
   }
@@ -125,14 +141,30 @@ export class CertificateHostTable extends AdminComponent {
           </span>
 
           <div className="flex items-center gap-1">
-            {this.canAutomate && !entry.isPlatformManaged ? (
+            {/*
+              A host already Automatic is on exactly ONE variant (http-01 or dns-01). Whichever one
+              it is NOT currently on stays offered, so there is always a path between the two — a
+              host on plain Automatic can switch to wildcard, and a host on wildcard can switch back.
+              Never hide both for an already-automatic host.
+            */}
+            {this.canAutomate && !entry.isAutomaticHttp01 ? (
               <Button
                 variant={ButtonVariant.GHOST}
                 size={FieldSize.SM}
                 onClick={this.automate(entry.host)}
                 icon={<FrameworkIcons.Refresh size={13} />}
               >
-                Automatic
+                {entry.isPlatformManaged ? 'Switch to plain (HTTP-01)' : 'Automatic'}
+              </Button>
+            ) : null}
+            {this.canAutomateWildcard && !entry.isAutomaticDns01 ? (
+              <Button
+                variant={ButtonVariant.GHOST}
+                size={FieldSize.SM}
+                onClick={this.automateWildcard(entry.host)}
+                icon={<FrameworkIcons.Refresh size={13} />}
+              >
+                {entry.isPlatformManaged ? 'Switch to wildcard (DNS-01)' : 'Automatic (wildcard)'}
               </Button>
             ) : null}
             <Button

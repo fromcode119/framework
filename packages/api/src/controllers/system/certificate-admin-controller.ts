@@ -19,9 +19,25 @@ export class CertificateAdminController extends BaseController {
     super();
   }
 
-  /** Every served host and its certificate, or one site's hosts when `tenantId` is given. */
+  /**
+   * Every served host and its certificate, or one site's hosts when the request asks for one.
+   *
+   * `PlatformAdminGuard` on this route answers WHO — every caller here is a platform admin. It does
+   * not answer WHERE: an operator who has stepped INTO a site is still that role, but the console is
+   * headed with that site's name and this list has to match it. `req.tenantId` is what carries WHERE
+   * (see `system-runtime-controller.ts`'s `readsWholeContainer` for the identical shape of bug, fixed
+   * the same way) — when it is bound, `forTenant` is the answer regardless of any `?tenantId=` query
+   * param, because a bound request has no business reading a DIFFERENT site's hosts either. Only an
+   * unbound request — the platform-wide `/certificates` screen — still lets the query param pick one
+   * site, or falls through to every host on the box.
+   */
   async list(req: Request, res: Response): Promise<void> {
     try {
+      const boundTenantId = CoercionUtils.toString((req as any).tenantId ?? '');
+      if (boundTenantId) {
+        res.json(await this.service.forTenant(boundTenantId));
+        return;
+      }
       const tenantId = CoercionUtils.toString(req.query?.tenantId ?? '');
       res.json(tenantId ? await this.service.forTenant(tenantId) : await this.service.overview());
     } catch (error) {
@@ -60,12 +76,24 @@ export class CertificateAdminController extends BaseController {
         res.status(400).json({ error: 'unknown_certificate_source' });
         return;
       }
-      const updated = await this.service.setSource(CoercionUtils.toString(req.params.host), source);
+      const updated = await this.service.setSource(CoercionUtils.toString(req.params.host), source, {
+        dnsWildcard: body.dnsWildcard === true,
+      });
       if (!updated) {
         res.status(404).json({ error: 'certificate_not_found' });
         return;
       }
       res.json(updated.toAdminJson());
+    } catch (error) {
+      this.fail(res, error);
+    }
+  }
+
+  /** Store or clear the Cloudflare API token. Responds with whether one is now configured, never the value. */
+  async setCloudflareToken(req: Request, res: Response): Promise<void> {
+    try {
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      res.json(await this.service.setCloudflareToken(body.token));
     } catch (error) {
       this.fail(res, error);
     }

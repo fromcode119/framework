@@ -94,6 +94,17 @@ export class CertificatesPageClient extends AdminComponent {
     await this.load();
   }
 
+  /** Same as `automate`, but asks for the DNS-01 variant that also covers `*.<host>`. */
+  @bound private async automateWildcard(host: string): Promise<void> {
+    try {
+      await CertificatesClient.setSource(host, 'automatic', true);
+      this.loadError = '';
+    } catch (error: any) {
+      this.loadError = String(error?.message || 'Could not switch this host to automatic (wildcard).');
+    }
+    await this.load();
+  }
+
   render(): ReactNode {
     const dark = this.theme === ThemeMode.DARK;
     if (this.isLoading) return <Loader />;
@@ -122,12 +133,14 @@ export class CertificatesPageClient extends AdminComponent {
             entries={this.entries}
             canUpload={this.encryptionAvailable}
             canAutomate={this.automation?.isAvailable === true}
+            canAutomateWildcard={this.automation?.dnsWildcardAvailable === true}
             terminatesTls={this.edge?.tls === true}
             platformAddresses={(this.automation?.platformAddresses as string[]) ?? []}
             showSite
             onUpload={this.openUpload}
             onRemove={this.removeHost}
             onAutomate={this.automate}
+            onAutomateWildcard={this.automateWildcard}
           />
         </Card>
         </div>

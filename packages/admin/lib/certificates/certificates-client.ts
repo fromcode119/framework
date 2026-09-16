@@ -34,10 +34,22 @@ export class CertificatesClient {
    * Hand a host to the platform to obtain and renew, or take it back.
    *
    * The api refuses AUTOMATIC when it could not work — no authority declared, or nothing here
-   * terminating TLS — and the message it returns is what the caller shows.
+   * terminating TLS — and the message it returns is what the caller shows. `dnsWildcard` asks for
+   * the DNS-01 variant (`*.<host>` included), refused separately when no Cloudflare token is saved.
    */
-  static async setSource(host: string, source: string): Promise<void> {
-    await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE_SOURCE(host), { source });
+  static async setSource(host: string, source: string, dnsWildcard = false): Promise<void> {
+    await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE_SOURCE(host), { source, dnsWildcard });
+  }
+
+  /**
+   * Store or clear the Cloudflare API token DNS-01/wildcard orders use.
+   *
+   * The response never carries the token back — only whether one is now configured, the same shape
+   * `automation.isCloudflareConfigured` already reports.
+   */
+  static async setCloudflareToken(token: string): Promise<{ isCloudflareConfigured: boolean }> {
+    const response = await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE_CLOUDFLARE_TOKEN, { token });
+    return { isCloudflareConfigured: response?.isCloudflareConfigured === true };
   }
 
   /**
