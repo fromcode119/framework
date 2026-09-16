@@ -3,6 +3,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMembership } from '@core/tenant/tenant-membership';
+import { TenantMembershipService } from '@core/tenant/tenant-membership-service';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { StringUtils } from '@core/utils/string-utils';
 
@@ -173,17 +174,45 @@ export class UsersContextProxy {
       async create(input: { email: string; password: string; roles?: string[]; firstName?: string; lastName?: string }): Promise<{ id: any } | null> {
         const email = String(input?.email ?? '').trim().toLowerCase();
         if (!email.includes('@')) return null;
+        const roles = Array.isArray(input?.roles) && input.roles.length ? input.roles : ['customer'];
+
+        /**
+         * Make the account a MEMBER of the site that asked for it.
+         *
+         * Without this the row lands in the global `users` table belonging to no site, which every
+         * other method here now treats as "not one of ours" — so a plugin could create a person and
+         * then fail to find them a line later. `users` is also global, so the idempotent branch below
+         * can return an account that belongs to a DIFFERENT site; attaching a membership is what turns
+         * that into this site's invite flow rather than a silent link to a stranger's login. The
+         * account's other sites are untouched, and the roles granted are this site's own.
+         *
+         * An EXISTING membership is never rewritten. `grant` replaces the roles it is handed, and the
+         * default here is `customer` — enough to demote a site's own administrator on a second call.
+         */
+        const joinThisSite = async (userId: unknown): Promise<void> => {
+          const tenantId = RequestContextUtils.getTenantId();
+          if (!TenantMode.isEnabled() || !tenantId || userId == null) return;
+          const memberships = new TenantMembershipService(manager.db);
+          if ((await memberships.rolesForTenant(String(userId), tenantId)) !== null) return;
+          await memberships.grant(String(userId), tenantId, roles);
+        };
+
         const existing = await manager.db.findOne(SystemConstants.TABLE.USERS, { email });
-        if (existing?.id != null) return { id: existing.id };
+        if (existing?.id != null) {
+          await joinThisSite(existing.id);
+          return { id: existing.id };
+        }
         const row: any = await manager.db.insert(SystemConstants.TABLE.USERS, {
           email,
           password: String(input?.password ?? ''),
-          roles: Array.isArray(input?.roles) && input.roles.length ? input.roles : ['customer'],
+          roles,
           firstName: input?.firstName ? String(input.firstName) : null,
           lastName: input?.lastName ? String(input.lastName) : null,
         });
         const created = Array.isArray(row) ? row[0] : row;
-        return created?.id != null ? { id: created.id } : null;
+        if (created?.id == null) return null;
+        await joinThisSite(created.id);
+        return { id: created.id };
       }
     };
 
