@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { CoercionUtils, RateLimiter, SystemConstants } from '@fromcode119/core';
+import { CoercionUtils, NetworkAddressUtils, RateLimiter, SystemConstants } from '@fromcode119/core';
 import { McpStreamableHandler } from '@fromcode119/mcp-server';
 import { McpWirePaths } from '@fromcode119/mcp';
 import { McpController } from '@api/controllers/mcp/mcp-controller';
@@ -82,7 +82,7 @@ export class McpRouter {
         res.status(403).json({ ok: false, error: 'The hosted MCP transport is disabled. Enable it in Settings → Integrations → MCP.' });
         return;
       }
-      const address = String(req.ip || req.headers?.['x-forwarded-for'] || 'unknown');
+      const address = NetworkAddressUtils.resolveClientIp(req) || 'unknown';
       if (!limiter.check(`mcp-remote:${address}`)) {
         res.status(429).json({ ok: false, error: 'Rate limit exceeded on the hosted MCP transport.' });
         return;

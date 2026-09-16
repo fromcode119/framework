@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { BaseController, PluginManager, Logger, GrantOutcome, FileGrantRepository, FileShareAccessService, MediaVisibility, SystemConstants } from '@fromcode119/core';
+import { BaseController, PluginManager, Logger, GrantOutcome, FileGrantRepository, FileShareAccessService, MediaVisibility, NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { FileShareRateLimiter } from '@api/services/file-share-rate-limiter';
 import { CoercionUtils } from '@fromcode119/core';
@@ -32,7 +32,7 @@ export class FilesController extends BaseController {
   }
 
   private clientIp(req: any): string {
-    return String(req.ip || req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+    return NetworkAddressUtils.resolveClientIp(req);
   }
 
   /** The address of the signed-in user, from the SESSION only — never from the request body. */

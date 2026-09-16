@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { randomBytes } from 'crypto';
-import { SystemConstants } from '@fromcode119/core';
+import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerAccount } from '@api/controllers/auth/auth-controller-account';
 import type { IApiTokenRecord } from '@api/controllers/auth/interfaces/api-token-record.interface';
 import { CoercionUtils } from '@fromcode119/core';
@@ -89,7 +89,7 @@ export class AuthControllerSecurity extends AuthControllerAccount {
         prefix,
         scopes,
         createdAt: nowIso,
-        createdByIp: String(req.ip || ''),
+        createdByIp: NetworkAddressUtils.resolveClientIp(req),
         expiresAt,
         revokedAt: null,
         lastUsedAt: null

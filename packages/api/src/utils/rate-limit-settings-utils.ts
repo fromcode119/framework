@@ -1,4 +1,4 @@
-import { CoercionUtils, EnvUtils, NetworkAddressUtils, SystemConstants, SystemSettingRegistry } from '@fromcode119/core';
+import { CloudflareEdgeProvider, CoercionUtils, EnvUtils, NetworkAddressUtils, SystemConstants, SystemSettingRegistry } from '@fromcode119/core';
 
 /**
  * Single resolution point for the rate-limit budgets.
@@ -24,6 +24,8 @@ export class RateLimitSettingsUtils {
   static readonly DEFAULT_MAX_REQUESTS_INTERNAL = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL);
   /** Addresses internal services call from — loopback + RFC1918, the ranges a container network uses. */
   static readonly DEFAULT_INTERNAL_CLIENTS = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS);
+  /** Cloudflare's published edge ranges, additional to the hardcoded list `NetworkAddressUtils` ships with. */
+  static readonly DEFAULT_CLOUDFLARE_EDGE_RANGES = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_CLOUDFLARE_EDGE_RANGES);
   /** Length of the counting window, in milliseconds. */
   static readonly DEFAULT_WINDOW_MS = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_WINDOW);
 
@@ -31,6 +33,7 @@ export class RateLimitSettingsUtils {
   private static readonly ENV_MAX_REQUESTS_AUTHENTICATED = 'RATE_LIMIT_MAX_AUTHENTICATED';
   private static readonly ENV_MAX_REQUESTS_INTERNAL = 'RATE_LIMIT_MAX_INTERNAL';
   private static readonly ENV_INTERNAL_CLIENTS = 'RATE_LIMIT_INTERNAL_CLIENTS';
+  private static readonly ENV_CLOUDFLARE_EDGE_RANGES = 'RATE_LIMIT_CLOUDFLARE_EDGE_RANGES';
   private static readonly ENV_WINDOW_MS = 'RATE_LIMIT_WINDOW_MS';
 
   /** The configured counting window in ms. */
@@ -83,6 +86,36 @@ export class RateLimitSettingsUtils {
       ? (EnvUtils.text(RateLimitSettingsUtils.ENV_INTERNAL_CLIENTS) || RateLimitSettingsUtils.DEFAULT_INTERNAL_CLIENTS)
       : CoercionUtils.toString(stored);
     return NetworkAddressUtils.parseList(raw);
+  }
+
+  /**
+   * The Cloudflare edge ranges an operator has declared, ADDITIONAL to the hardcoded default ranges
+   * `CloudflareEdgeProvider` ships with — folded into {@link resolveNetworkEdgeRanges} so a range
+   * Cloudflare publishes after this platform's code was last updated can still be trusted, without a
+   * deploy. A saved blank value means "no additions"; it does not, and cannot, shrink the hardcoded
+   * baseline.
+   */
+  static resolveCloudflareEdgeRanges(settingsCache?: Map<string, string>): string[] {
+    const stored = settingsCache?.get(SystemConstants.META_KEY.RATE_LIMIT_CLOUDFLARE_EDGE_RANGES);
+    const raw = stored === undefined
+      ? (EnvUtils.text(RateLimitSettingsUtils.ENV_CLOUDFLARE_EDGE_RANGES) || RateLimitSettingsUtils.DEFAULT_CLOUDFLARE_EDGE_RANGES)
+      : CoercionUtils.toString(stored);
+    return NetworkAddressUtils.parseList(raw);
+  }
+
+  /**
+   * Every registered network-edge provider's operator-declared extra ranges, keyed by the provider's
+   * own `key` — the shape `NetworkAddressUtils.resolveClientIp`/`matchEdgeProvider` expect.
+   *
+   * Cloudflare is the only provider with a declared settings row today (`resolveCloudflareEdgeRanges`,
+   * above); a future provider registered in `NetworkEdgeProviderRegistry` gets its own settings key
+   * and its own case here the same way — this method is the one place that maps "provider" to "which
+   * setting holds its extra ranges", so `resolveClientIp` itself never has to know.
+   */
+  static resolveNetworkEdgeRanges(settingsCache?: Map<string, string>): Readonly<Record<string, readonly string[]>> {
+    return {
+      [CloudflareEdgeProvider.KEY]: RateLimitSettingsUtils.resolveCloudflareEdgeRanges(settingsCache),
+    };
   }
 
   private static resolve(

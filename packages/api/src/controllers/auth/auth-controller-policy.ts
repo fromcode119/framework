@@ -1,7 +1,7 @@
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
 import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-access-denied-error';
 import { Request, Response } from 'express';
-import { PlatformSettingsService, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import { NetworkAddressUtils, PlatformSettingsService, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { randomUUID } from 'crypto';
 import { ApiUrlUtils } from '@api/utils/url';
 import { AuthControllerInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-infrastructure';
@@ -78,7 +78,7 @@ export class AuthControllerPolicy extends AuthControllerInfrastructure {
       tokenId: jti,
       expiresAt,
       userAgent: req.headers['user-agent'],
-      ipAddress: req.ip
+      ipAddress: NetworkAddressUtils.resolveClientIp(req)
     });
 
     const cookieOptions = this.getCookieOptions(req, false, maxAgeMs);

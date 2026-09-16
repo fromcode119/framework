@@ -1,4 +1,4 @@
-import { CookieConstants, RouteConstants, SystemConstants } from '@fromcode119/core';
+import { CookieConstants, NetworkAddressUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
 
 export class AdminBootstrapRateLimitUtils {
@@ -33,7 +33,7 @@ export class AdminBootstrapRateLimitUtils {
     path?: unknown;
     baseUrl?: unknown;
   }): string {
-    const clientKey = AdminBootstrapRateLimitUtils.resolveClientKey(requestLike.ip);
+    const clientKey = AdminBootstrapRateLimitUtils.resolveClientKey(NetworkAddressUtils.resolveClientIp(requestLike));
     const bootstrapGroup = AdminBootstrapRateLimitUtils.resolveBootstrapGroup(requestLike);
     if (bootstrapGroup) return `admin-bootstrap:${clientKey}:${bootstrapGroup}`;
     // Authenticated traffic gets its OWN bucket per ip+token so a busy admin session —

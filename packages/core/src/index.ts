@@ -175,6 +175,9 @@ export type { SystemSettingKey, SystemSettingDescriptor } from '@core/settings/s
 export { SettingScope } from '@core/settings/enums/setting-scope.enum';
 export { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';
 export { NetworkAddressUtils } from '@core/security/network-address-utils';
+export type { INetworkEdgeProvider } from '@core/security/interfaces/network-edge-provider.interface';
+export { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
+export { CloudflareEdgeProvider } from '@core/security/providers/cloudflare/cloudflare-edge-provider';
 export { OutboundUrlSecurityPolicy } from '@core/security/outbound-url-security-policy';
 export { ProjectPaths } from '@core/config/paths';
 

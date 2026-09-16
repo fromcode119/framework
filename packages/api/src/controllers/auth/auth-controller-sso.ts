@@ -2,7 +2,7 @@ import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-acce
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason.enum';
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/core';
+import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { randomBytes } from 'crypto';
 import { AuthControllerRegistration } from '@api/controllers/auth/auth-controller-registration';
 import { CoercionUtils } from '@fromcode119/core';
@@ -74,7 +74,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
         'INFO',
         `Password reset requested for ${email}`,
         'system',
-        { userId: user.id, email, ip: req.ip, emailSent }
+        { userId: user.id, email, ip: NetworkAddressUtils.resolveClientIp(req), emailSent }
       ).catch(() => {});
 
       return res.json({ success: true, message: genericMessage });
@@ -170,7 +170,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
       'INFO',
       `Password reset completed for ${tokenResult.email}`,
       'system',
-      { userId: tokenResult.userId, email: tokenResult.email, ip: req.ip }
+      { userId: tokenResult.userId, email: tokenResult.email, ip: NetworkAddressUtils.resolveClientIp(req) }
     ).catch(() => {});
 
     await this.sendSecurityNotification({
@@ -209,7 +209,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
         idToken,
         accessToken,
         profile: req.body?.profile || null,
-        ip: req.ip,
+        ip: NetworkAddressUtils.resolveClientIp(req),
         userAgent: req.headers['user-agent']
       });
     } catch (err: any) {
@@ -257,13 +257,13 @@ export class AuthControllerSso extends AuthControllerRegistration {
     }
 
     const loginResult = await this.issueLoginSession(req, res, user);
-    await this.clearLoginThrottleState(this.getLoginThrottleKey(email, req.ip || ''));
+    await this.clearLoginThrottleState(this.getLoginThrottleKey(email, NetworkAddressUtils.resolveClientIp(req) || ''));
 
     await this.manager.writeLog(
       'INFO',
       `SSO login for ${email} via ${provider}`,
       'system',
-      { userId: user.id, email, provider, ip: req.ip }
+      { userId: user.id, email, provider, ip: NetworkAddressUtils.resolveClientIp(req) }
     ).catch(() => {});
 
     return res.json({
