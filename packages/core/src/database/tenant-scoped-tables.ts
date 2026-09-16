@@ -40,6 +40,19 @@ export class TenantScopedTables {
     String(SystemConstants.TABLE.PERSON_RELATIONSHIPS).toLowerCase(),
     String(SystemConstants.TABLE.PERSON_CATALOGS).toLowerCase(),
     '_system_redirects',
+    // PRIVATE FILE DELIVERY. A share is one site's send of its own files, a grant is one recipient's
+    // access to it, and the access log is who opened what. All three are that site's, and none was
+    // scoped: the tables carried no `tenant_id` and no policy, while the admin routes that list them
+    // query with no filter and are guarded by `admin` — which is what a SITE's own administrator
+    // holds. One customer's administrator could therefore list every other customer's private file
+    // shares and their recipients.
+    //
+    // Scoped here rather than in a migration for the reason this whole list exists: a migration
+    // writes the policy once, and `removeTenantIsolation` drops it again on any deployment that runs
+    // without tenants. From here it is restored on every boot.
+    String(SystemConstants.TABLE.FILE_SHARES).toLowerCase(),
+    String(SystemConstants.TABLE.FILE_GRANTS).toLowerCase(),
+    String(SystemConstants.TABLE.FILE_ACCESS_LOG).toLowerCase(),
   ]);
 
   /**
