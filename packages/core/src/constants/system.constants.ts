@@ -15,6 +15,7 @@ export class SystemConstants {
   private static readonly FILES_BASE = SystemConstants.ROUTE_SEGMENTS.FILES;
   private static readonly VERSIONS_BASE = SystemConstants.ROUTE_SEGMENTS.VERSIONS;
   private static readonly COLLECTIONS_BASE = '/collections';
+  private static readonly SOURCES_BASE = SystemConstants.ROUTE_SEGMENTS.SOURCES;
   private static readonly joinPath = (base: string, segment: string): string => `${base}${segment}`;
 
   static readonly TABLE = {
@@ -364,6 +365,26 @@ export class SystemConstants {
   } as const;
 
   static readonly API_PATH = {
+  /**
+   * Sources, the framework's repository-tracking surface.
+   *
+   * The per-source routes take a kind and a slug, so their SUFFIXES are published rather than whole
+   * paths — the caller encodes the two values and appends. Everything here composes from the same
+   * segments the router mounts, so the two cannot drift.
+   */
+  SOURCES: {
+    BASE: SystemConstants.SOURCES_BASE,
+    PROVIDERS: SystemConstants.joinPath(SystemConstants.SOURCES_BASE, SystemConstants.ROUTE_SEGMENTS.SOURCES_PROVIDERS),
+    BUILD_ALL: SystemConstants.joinPath(SystemConstants.SOURCES_BASE, SystemConstants.ROUTE_SEGMENTS.SOURCES_BUILD),
+    CHECK_UPDATES: SystemConstants.joinPath(SystemConstants.SOURCES_BASE, SystemConstants.ROUTE_SEGMENTS.SOURCES_CHECK_UPDATES),
+    BRANCHES: SystemConstants.joinPath(SystemConstants.SOURCES_BASE, SystemConstants.ROUTE_SEGMENTS.SOURCES_BRANCHES),
+    INSPECT: SystemConstants.joinPath(SystemConstants.SOURCES_BASE, SystemConstants.ROUTE_SEGMENTS.SOURCES_INSPECT),
+    /** Appended to `<BASE>/<kind>/<slug>` by the caller, which owns the encoding. */
+    BUILD_SUFFIX: SystemConstants.ROUTE_SEGMENTS.SOURCES_BUILD,
+    PACKAGE_SUFFIX: SystemConstants.ROUTE_SEGMENTS.SOURCES_PACKAGE,
+    VERSIONS_SUFFIX: SystemConstants.ROUTE_SEGMENTS.VERSIONS,
+    INSTALL_SUFFIX: SystemConstants.ROUTE_SEGMENTS.SOURCES_INSTALL,
+  },
   /**
    * The first-run wizard. Both of these are answered by an UNCONFIGURED process too — they are what
    * a deployment that has not been told where its database is can still serve.

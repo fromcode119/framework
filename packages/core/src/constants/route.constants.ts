@@ -17,6 +17,24 @@ export class RouteConstants {
   APPEARANCES: '/appearances',
   /** Sources — the framework's own repository-tracking screen. */
   SOURCES: '/sources',
+  /**
+   * The Sources router's own sub-paths, RELATIVE to the mount above.
+   *
+   * Declared here because they were written twice — once as literals in the router and again as
+   * literals in the admin's route service — with nothing tying the two together. A path typed at a
+   * call site is a path that drifts from the router, and these had already drifted once.
+   *
+   * The server appends them to its mount; the admin composes them onto `API_PATH.SOURCES`.
+   */
+  SOURCES_PROVIDERS: '/providers',
+  SOURCES_CHECK_UPDATES: '/check-updates',
+  SOURCES_BRANCHES: '/branches',
+  SOURCES_INSPECT: '/inspect',
+  SOURCES_BUILD: '/build',
+  SOURCES_PACKAGE: '/package',
+  SOURCES_INSTALL: '/install',
+  /** ONE source, by KIND and slug — a slug names an extension only within its kind. */
+  SOURCES_ONE: '/:type/:slug',
   APPEARANCES_CATALOG: '/catalog',
   APPEARANCES_INSTALL: '/install',
   APPEARANCES_SLUG: '/:slug',
