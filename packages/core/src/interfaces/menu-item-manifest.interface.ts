@@ -19,4 +19,20 @@ export interface IMenuItemManifest {
    * so a plugin's own screens are site-scoped whether or not anyone declares it.
    */
   siteOnly?: boolean;
+  /**
+   * Belongs to the PLATFORM and means nothing inside a site; dropped from the payload while one is
+   * selected.
+   *
+   * The true mirror of {@link siteOnly}, and a different axis from {@link platformOnly}. That one is
+   * about WHO is asking — a tenant's own administrator never sees these. This is about WHERE the
+   * operator is STANDING: a platform administrator who has stepped into a site was still handed the
+   * platform's own screens, so the console showed that site's people and media beside the registry of
+   * every site and every repository this installation builds. Switching into a site is supposed to
+   * mean the console is that site's.
+   *
+   * Like `siteOnly`, a FACT about where the item's data lives rather than a preference. These screens
+   * have no tenant column at all, so standing in a site changes nothing about what they would show —
+   * which is exactly why showing them there mixes the two worlds instead of scoping anything.
+   */
+  platformScopeOnly?: boolean;
 }

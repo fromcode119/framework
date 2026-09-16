@@ -13,9 +13,12 @@ export class AdminSystemNavigationMetadataService {
     return [
       { label: 'Dashboard', path: AppPathConstants.ADMIN.ROOT, icon: 'Dashboard', group: 'Core', priority: 10 },
       { label: 'Users', path: AppPathConstants.ADMIN.USERS.ROOT, icon: 'Users', group: 'Platform', priority: 11 },
-      { label: 'Sites', path: AppPathConstants.ADMIN.SITES.ROOT, icon: 'Globe', group: 'Platform', priority: 12, platformOnly: true },
+      // The registry of every site, and of every repository this installation builds. Both are the
+      // PLATFORM's own and have no tenant column, so they are withheld inside a site: stepping into a
+      // site is meant to make the console that site's, not that site's plus the platform's.
+      { label: 'Sites', path: AppPathConstants.ADMIN.SITES.ROOT, icon: 'Globe', group: 'Platform', priority: 12, platformOnly: true, platformScopeOnly: true },
       { label: 'Plugins', path: AppPathConstants.ADMIN.PLUGINS.ROOT, icon: 'Package', group: 'Management', priority: 20 },
-      { label: 'Sources', path: AppPathConstants.ADMIN.SOURCES.ROOT, icon: 'GitBranch', group: 'Management', priority: 21, platformOnly: true },
+      { label: 'Sources', path: AppPathConstants.ADMIN.SOURCES.ROOT, icon: 'GitBranch', group: 'Management', priority: 21, platformOnly: true, platformScopeOnly: true },
       { label: 'Media', path: AppPathConstants.ADMIN.MEDIA.ROOT, icon: 'Image', group: 'Core', priority: 30 },
       { label: 'Activity', path: AppPathConstants.ADMIN.ACTIVITY, icon: 'Activity', group: 'Platform', priority: 85 },
       { label: 'Themes', path: AppPathConstants.ADMIN.THEMES.ROOT, icon: 'Palette', group: 'Platform', priority: 90 },

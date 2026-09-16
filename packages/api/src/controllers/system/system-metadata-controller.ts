@@ -50,6 +50,10 @@ export class SystemMetadataController {
       // "this page belongs to a site" for a bookmarked link instead of rendering an empty screen.
       metadata.scope = AdminNavigationScopeFilter.hasSite() ? 'site' : 'platform';
       metadata.siteScopedPaths = [...new Set([...menu.removedPaths, ...panel.removedPaths])];
+      // The mirror: withheld because a site IS selected and these belong to the platform. Reported
+      // separately because the two need opposite advice — one says "choose a site", the other says
+      // "switch to Platform".
+      metadata.platformScopedPaths = [...new Set([...menu.platformPaths, ...panel.platformPaths])];
       res.json(metadata);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
