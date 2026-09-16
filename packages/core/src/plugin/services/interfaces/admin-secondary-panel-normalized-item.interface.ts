@@ -21,4 +21,8 @@ export interface IAdminSecondaryPanelNormalizedItem {
   advisorySourcePlugin?: string;
   allowGlobal?: boolean;
   governanceKey?: string;
+  /** See `ISecondaryPanelItemManifest.siteOnly` — carried through so the request filter can read it. */
+  siteOnly?: boolean;
+  /** See `ISecondaryPanelItemManifest.platformScopeOnly` — same reason. */
+  platformScopeOnly?: boolean;
 }

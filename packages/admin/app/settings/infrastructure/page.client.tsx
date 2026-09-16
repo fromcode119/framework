@@ -5,6 +5,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { state, bound } from '@fromcode119/react-class-components';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
@@ -222,6 +223,20 @@ export class InfrastructureSettingsPage extends AdminComponent {
   }
 
   render(): ReactNode {
+    // WHERE first, then WHO. `canManagePlatform` below answers whether this ACCOUNT may change the
+    // server every site runs on; it never asked which site the console is standing in, so a platform
+    // admin who had stepped into a customer's site was still shown maintenance mode, the SSR caps and
+    // the isolation limits — controls that stop or reshape every OTHER site on the box — under a
+    // header naming that one customer. The screen belongs to the platform scope, like Sites and
+    // Sources.
+    return (
+      <PlatformScopeGate what="Infrastructure & Health">
+        {this.body()}
+      </PlatformScopeGate>
+    );
+  }
+
+  private body(): ReactNode {
     const theme = this.theme;
 
     if (this.isLoading) return <div className="p-12"><Loader label="Loading infrastructure settings..." /></div>;

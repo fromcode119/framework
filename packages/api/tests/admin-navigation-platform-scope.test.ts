@@ -83,4 +83,47 @@ describe('admin navigation by scope', () => {
     expect(labels((result.panel as any).management)).toEqual(['Dashboard', 'Orders']);
     expect(result.platformPaths).toEqual(['/sites', '/sources']);
   });
+
+  /**
+   * The panel the admin actually receives keys its entries by the plugin that contributed them, so
+   * the entries sit one level DOWN, under `itemsByContext`. The filter walked only the top level and
+   * copied any non-array through whole — so the one object holding every settings entry was the one
+   * thing never filtered, and both flags were dead there.
+   */
+  it('reaches the entries nested under itemsByContext', () => {
+    onSite(true);
+
+    const result = AdminNavigationScopeFilter.applyToPanel(
+      { version: 3, itemsByContext: { 'org.fromcode:system': MENU } },
+      true,
+    );
+
+    const items = (result.panel as any).itemsByContext['org.fromcode:system'];
+    expect(labels(items)).toEqual(['Dashboard', 'Orders']);
+    expect(result.platformPaths).toEqual(['/sites', '/sources']);
+  });
+
+  it('withholds nested site entries in the platform scope too', () => {
+    onSite(false);
+
+    const result = AdminNavigationScopeFilter.applyToPanel(
+      { itemsByContext: { 'org.fromcode:system': MENU } },
+      true,
+    );
+
+    const items = (result.panel as any).itemsByContext['org.fromcode:system'];
+    expect(labels(items)).toEqual(['Dashboard', 'Sites', 'Sources']);
+    expect(result.removedPaths).toEqual(['/orders']);
+  });
+
+  it('leaves everything that is not a menu array exactly as it was', () => {
+    onSite(true);
+
+    const panel = { version: 3, policy: { mode: 'merge' }, precedence: ['a', 'b'] };
+    const result = AdminNavigationScopeFilter.applyToPanel(panel, true) as any;
+
+    expect(result.panel.version).toBe(3);
+    expect(result.panel.policy).toEqual({ mode: 'merge' });
+    expect(result.panel.precedence).toEqual(['a', 'b']);
+  });
 });

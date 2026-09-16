@@ -12,6 +12,13 @@ import { SystemConstants } from '@core/constants/system.constants';
  * scoped: who can log in where, and which settings a tenant sees, are platform facts. Framework
  * tables holding a tenant's own CONTENT are scoped — see CONTENT_TABLES, which now covers the
  * people tables and redirects as well as media folders.
+ *
+ * `_system_sessions` is the identity case worth naming, because it HAS a tenant column and is still
+ * not here. A session must be readable BEFORE a tenant is bound — that read is what establishes who
+ * is asking and therefore which site they may enter — so a policy on it would close the door it is
+ * holding open. Its admin surfaces scope themselves, in application code, through `TenantUserScope`.
+ * The tenancy registry (`_system_tenants`, `_system_tenant_*`) is unscoped for the same shape of
+ * reason: it is the map that answers which sites an account may enter.
  */
 export class TenantScopedTables {
   /**
@@ -53,6 +60,24 @@ export class TenantScopedTables {
     String(SystemConstants.TABLE.FILE_SHARES).toLowerCase(),
     String(SystemConstants.TABLE.FILE_GRANTS).toLowerCase(),
     String(SystemConstants.TABLE.FILE_ACCESS_LOG).toLowerCase(),
+    // Preview grants hand out access to a site's UNPUBLISHED content. The column was already there;
+    // the policy was not. Generic scoping is right here even though older rows carry no owner: a
+    // grant is a short-lived capability, and an unreadable one simply stops working, which is the
+    // safe direction for an access token. `_system_notifications` needed the opposite and is a
+    // `journal` in TenantBespokePolicies instead — see the note there.
+    String(SystemConstants.TABLE.SITE_PREVIEW_GRANTS).toLowerCase(),
+    // A site's OUTBOUND INTEGRATIONS and their delivery history. `webhooks` is a collection served by
+    // the generic CRUD, whose listing has no filter of its own and is guarded by `admin` — the role a
+    // SITE's own administrator holds — so one customer could read every other customer's endpoint
+    // URLs and secrets. The deliveries are that site's traffic, and also feed the dashboard's failure
+    // count.
+    //
+    // Generic scoping is safe for these two specifically because there is nothing to strand: checked
+    // against production through the admin API, which on the deployed build applies no tenant filter
+    // and so reports the whole box — it answered `{"webhooks":[],"deliveries":[]}`. Nothing exists
+    // yet to be left without an owner, so scoping now closes the hole before anything does.
+    String(SystemConstants.TABLE.WEBHOOKS).toLowerCase(),
+    String(SystemConstants.TABLE.WEBHOOK_DELIVERIES).toLowerCase(),
   ]);
 
   /**

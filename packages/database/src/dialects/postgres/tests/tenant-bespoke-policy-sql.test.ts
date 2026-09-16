@@ -22,6 +22,7 @@ describe('TenantIsolationSql.bespokePolicyStatements', () => {
   };
   const JOURNAL: ITenantPolicySpec = { table: '_system_logs', kind: 'journal' };
   const SETTINGS: ITenantPolicySpec = { table: '_system_plugin_settings', kind: 'tenant-settings' };
+  const UNOWNED: ITenantPolicySpec = { table: '_system_email_suppressions', kind: 'unowned-read' };
 
   it('gives a shared-read table FOUR per-command policies, because WITH CHECK does not govern DELETE', () => {
     const sql = sqlFor(MEDIA);
@@ -32,6 +33,34 @@ describe('TenantIsolationSql.bespokePolicyStatements', () => {
     expect(sql).toContain('FOR UPDATE USING');
     expect(sql).toContain('FOR DELETE USING');
     expect(sql).not.toContain('FOR DELETE USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "shared" IS TRUE)');
+  });
+
+  /**
+   * The do-not-email list, where losing a row is the dangerous direction.
+   *
+   * The generic predicate is strict equality, so an unowned row matches in NO scope — for this table
+   * that means silently resuming mail to someone who asked not to receive it. `unowned-read` widens
+   * the READ to unowned rows and nothing else.
+   */
+  it('lets every tenant READ an unowned row, so a suppression nobody owns keeps applying', () => {
+    const sql = sqlFor(UNOWNED);
+    expect(sql).toContain('FOR SELECT USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "tenant_id" IS NULL)');
+  });
+
+  it('lets NOBODY write an unowned row — not even to delete it', () => {
+    const sql = sqlFor(UNOWNED);
+    // Same trap as shared-read: DELETE falls back to USING, so a single `USING (own OR unowned)`
+    // would let any tenant delete every unowned suppression on the platform.
+    expect(sql).toContain('FOR DELETE USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\'))');
+    expect(sql).not.toContain('FOR DELETE USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "tenant_id" IS NULL)');
+    expect(sql).not.toContain('FOR UPDATE USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "tenant_id" IS NULL)');
+    expect(sql).not.toContain('FOR INSERT WITH CHECK ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "tenant_id" IS NULL)');
+  });
+
+  it('still stamps NEW rows with the current tenant, so widening reads does not make new rows global', () => {
+    const sql = sqlFor(UNOWNED);
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS "tenant_id" TEXT DEFAULT nullif(current_setting(\'app.tenant_id\', true), \'\')');
+    expect(sql).toContain('FORCE ROW LEVEL SECURITY');
   });
 
   it('lets a tenant read platform settings ONLY for the declared deployment truths', () => {
@@ -82,11 +111,15 @@ describe('TenantIsolationSql.bespokePolicyStatements', () => {
     }
   });
 
-  it('lets a PLATFORM admin read a journal, and an UNTENANTED connection write one', () => {
+  it('lets a PLATFORM admin read a journal FROM THE PLATFORM SCOPE, and an UNTENANTED connection write one', () => {
     const sql = sqlFor(JOURNAL);
     // Boot, migrations and platform actions all log before any tenant is bound; requiring the
     // marker on write would refuse exactly the entries a journal exists to keep.
-    expect(sql).toContain("USING (\"tenant_id\" = nullif(current_setting('app.tenant_id', true), '') OR current_setting('app.platform_admin', true) = 'on'");
+    //
+    // The read marker is paired with "no tenant bound". Unpaired it overrode a BOUND site, so an
+    // operator standing in one customer read every other customer's journal — measured on a live
+    // database before this changed. Isolation is not conditional on who is asking.
+    expect(sql).toContain("USING (\"tenant_id\" = nullif(current_setting('app.tenant_id', true), '') OR (current_setting('app.platform_admin', true) = 'on' AND nullif(current_setting('app.tenant_id', true), '') IS NULL)");
     expect(sql).toContain('WITH CHECK ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR ("tenant_id" IS NULL AND nullif(current_setting(\'app.tenant_id\', true), \'\') IS NULL))');
   });
 

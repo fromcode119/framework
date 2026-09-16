@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ThemeHooks } from '@/components/view/use-theme.client';
 import { AuthHooks } from '@/components/view/use-auth.client';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { Bridge } from '@fromcode119/react-class-components';
 import { BackupsPageControllerHooks } from '@/components/settings/backups/view/backups-page-controller.client';
@@ -24,11 +25,17 @@ export class BackupsPageClient extends Bridge<IBackupsPageBridgeValues> {
   protected present({ theme, controller, canManagePlatform }: IBackupsPageBridgeValues): ReactNode {
     // A system backup is the WHOLE database — every site on this container — and a restore overwrites
     // all of them. A site's own data leaves through its export on Sites, which is a different scope.
-    if (!canManagePlatform) {
-      return (
-        <PlatformOnlyPanel detail="A system backup contains every site on this platform, and restoring one overwrites all of them, so only a platform admin can take or restore them. Your own site's content is exported from Sites." />
-      );
-    }
-    return <BackupsPageClientView theme={theme} controller={controller} />;
+    //
+    // Which is exactly why WHO was not enough on its own: a platform admin standing inside a customer's
+    // site was shown the roster of every backup on the box, and a restore button that would roll every
+    // other customer back, on a console headed with that one customer's name. The scope gate is the
+    // WHERE half, and it wraps the WHO check rather than replacing it.
+    return (
+      <PlatformScopeGate what="Backups">
+        {canManagePlatform
+          ? <BackupsPageClientView theme={theme} controller={controller} />
+          : <PlatformOnlyPanel detail="A system backup contains every site on this platform, and restoring one overwrites all of them, so only a platform admin can take or restore them. Your own site's content is exported from Sites." />}
+      </PlatformScopeGate>
+    );
   }
 }

@@ -18,29 +18,42 @@ export class SecurityDashboard extends PureReactor {
     // the memory accounting of a mechanism that no longer exists.
     const processes: any[] = Array.isArray(stats?.sandbox?.processes) ? stats.sandbox.processes : [];
     const hostRssMB = SecuritySettingsPageUtils.bytesToMB(stats?.hostMemory?.rssBytes);
+    // WITHHELD is not ZERO. In a site scope the API omits `sandbox` and `hostMemory` outright — they
+    // describe the shared container, and a process table is not divisible by site. Rendering them
+    // anyway printed "Plugin Processes 0" and "No plugin is running in its own process right now"
+    // beside "Sandbox active 2", which is not a gap in the data but a contradiction of it, and
+    // "- MB" under a heading promising the api process's resident set. Same call this screen already
+    // made when isolates were replaced by processes: a card that cannot carry a real value is not
+    // shown at all.
+    const processesKnown = stats?.sandbox !== undefined;
+    const hostMemoryKnown = stats?.hostMemory !== undefined;
 
     return (
       <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-semibold tracking-wide text-slate-500">Plugin Processes</span>
-              <FrameworkIcons.Box size={16} className="text-indigo-500" />
-            </div>
-            <div className="text-3xl font-bold">{processes.length}</div>
-            <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Running under their own identity</div>
-          </Card>
-          <Card className="p-6 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-semibold tracking-wide text-slate-500">Host Memory</span>
-              <FrameworkIcons.Zap size={16} className="text-amber-500" />
-            </div>
-            <div className="text-3xl font-bold">{hostRssMB} MB</div>
-            <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Resident set of the api process</div>
-            <div className="mt-3 text-[11px] text-slate-500">
-              Plugin processes are separate: each carries its own limit, listed below.
-            </div>
-          </Card>
+          {processesKnown ? (
+            <Card className="p-6 relative overflow-hidden">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-semibold tracking-wide text-slate-500">Plugin Processes</span>
+                <FrameworkIcons.Box size={16} className="text-indigo-500" />
+              </div>
+              <div className="text-3xl font-bold">{processes.length}</div>
+              <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Running under their own identity</div>
+            </Card>
+          ) : null}
+          {hostMemoryKnown ? (
+            <Card className="p-6 relative overflow-hidden">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-semibold tracking-wide text-slate-500">Host Memory</span>
+                <FrameworkIcons.Zap size={16} className="text-amber-500" />
+              </div>
+              <div className="text-3xl font-bold">{hostRssMB} MB</div>
+              <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Resident set of the api process</div>
+              <div className="mt-3 text-[11px] text-slate-500">
+                Plugin processes are separate: each carries its own limit, listed below.
+              </div>
+            </Card>
+          ) : null}
           <Card className="p-6 relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-semibold tracking-wide text-slate-500">Threat Alerts</span>
@@ -53,6 +66,7 @@ export class SecurityDashboard extends PureReactor {
           </Card>
         </div>
 
+        {processesKnown ? (
         <Card title="Plugin Processes">
           <div className="pt-2">
             {processes.length === 0 ? (
@@ -83,6 +97,7 @@ export class SecurityDashboard extends PureReactor {
             )}
           </div>
         </Card>
+        ) : null}
 
         {stats.pluginIsolation && (
           <Card title="Plugin Isolation Coverage">

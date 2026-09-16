@@ -54,6 +54,12 @@ export class AdminSystemNavigationMetadataService {
    * results are listed under Settings -> Backups. A menu entry that could only ever say "pick a site
    * first" would be a worse answer than the row action that already exists.
    */
+  /**
+   * The Sites panel. Every entry is the PLATFORM's — the registry of every site on the installation,
+   * and the two doors that add another one. `Sites` itself already carried `platformScopeOnly`; its
+   * panel entries did not, so inside a site the sub-nav still offered "All sites", "New site" and
+   * "Import a site" under that one customer's name.
+   */
   private getSitesSecondaryPanelItems(): ISecondaryPanelItemManifest[] {
     return [
       {
@@ -65,6 +71,7 @@ export class AdminSystemNavigationMetadataService {
         scope: CapabilityScope.SELF,
         priority: 10,
         requiredRoles: ['admin'],
+        platformScopeOnly: true,
       },
       {
         id: 'sites-new',
@@ -75,6 +82,7 @@ export class AdminSystemNavigationMetadataService {
         scope: CapabilityScope.SELF,
         priority: 20,
         requiredRoles: ['admin'],
+        platformScopeOnly: true,
       },
       {
         id: 'sites-import',
@@ -85,6 +93,7 @@ export class AdminSystemNavigationMetadataService {
         scope: CapabilityScope.SELF,
         priority: 30,
         requiredRoles: ['admin'],
+        platformScopeOnly: true,
       },
     ];
   }
@@ -243,6 +252,7 @@ export class AdminSystemNavigationMetadataService {
         scope: CapabilityScope.SELF,
         priority: 160,
         requiredRoles: ['admin'],
+        platformScopeOnly: true,
       },
       {
         id: 'backups',
@@ -253,6 +263,7 @@ export class AdminSystemNavigationMetadataService {
         scope: CapabilityScope.SELF,
         priority: 170,
         requiredRoles: ['admin'],
+        platformScopeOnly: true,
       },
       {
         id: 'updates',
@@ -263,6 +274,7 @@ export class AdminSystemNavigationMetadataService {
         scope: CapabilityScope.SELF,
         priority: 180,
         requiredRoles: ['admin'],
+        platformScopeOnly: true,
       },
     ];
   }

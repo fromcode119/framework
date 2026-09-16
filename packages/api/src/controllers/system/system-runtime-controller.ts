@@ -9,6 +9,21 @@ import { CoercionUtils } from '@fromcode119/core';
 export class SystemRuntimeController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
 
+  /**
+   * May THIS request read the whole container's journal?
+   *
+   * Being a platform admin answers WHO, not WHERE. An operator who has entered a site is acting as
+   * that site: the console is headed with its name, and everything else on the page is its own. The
+   * platform marker also CLEARS the bound tenant (`runAsPlatformAdmin` passes `tenantId = null`), so
+   * escalating on the role alone put every other customer's log lines — and the platform's own
+   * untenanted boot lines — on that site's dashboard. The whole-container view belongs to the
+   * platform scope, which is where the operator asks for it.
+   */
+  private async readsWholeContainer(req: Request): Promise<boolean> {
+    if (String((req as any).tenantId || '').trim()) return false;
+    return new PlatformAccessResolver(this.runtime.db).isPlatformAdmin(req);
+  }
+
   async getActivity(req: Request, res: Response) {
     return this.runtime.restController.getGlobalActivity(this.runtime.manager.getCollections(), req, res);
   }
@@ -38,8 +53,8 @@ export class SystemRuntimeController {
         search: req.query.search as string,
       };
       // Same rule as the audit trail below: the journal is tenant-scoped by policy, and only a
-      // PLATFORM admin asks to read across every site.
-      const platformAdmin = await new PlatformAccessResolver(this.runtime.db).isPlatformAdmin(req);
+      // PLATFORM admin IN THE PLATFORM SCOPE asks to read across every site.
+      const platformAdmin = await this.readsWholeContainer(req);
       res.json(platformAdmin
         ? await this.runtime.db.withPlatformAdmin(() => this.runtime.system.getLogs(query))
         : await this.runtime.system.getLogs(query));
@@ -57,10 +72,11 @@ export class SystemRuntimeController {
         status: req.query.status as string,
       };
       // The trail is tenant-scoped by policy, so this request already sees only the site it is acting
-      // in. A PLATFORM admin is the exception and asks for it explicitly: this is the security log of
-      // the whole container, and an operator investigating an incident cannot be made to enter each
-      // site in turn. The marker lives on the connection for this read alone.
-      const platformAdmin = await new PlatformAccessResolver(this.runtime.db).isPlatformAdmin(req);
+      // in. A PLATFORM admin standing IN THE PLATFORM SCOPE is the exception and asks for it
+      // explicitly: this is the security log of the whole container, and an operator investigating an
+      // incident cannot be made to enter each site in turn. Inside a site it stays that site's trail.
+      // The marker lives on the connection for this read alone.
+      const platformAdmin = await this.readsWholeContainer(req);
       res.json(platformAdmin
         ? await this.runtime.db.withPlatformAdmin(() => this.runtime.system.getAuditLogs(query))
         : await this.runtime.system.getAuditLogs(query));

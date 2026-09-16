@@ -372,6 +372,7 @@ export type { IRegisteredWidgetDefinition, IWidgetDefinitionInput, IWidgetSettin
 export { WidgetViewport } from '@core/widget';
 export { ClientType } from '@core/enums/client-type.enum';
 export { UiScope } from '@core/enums/ui-scope.enum';
+export { AdminScope } from '@core/enums/admin-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';
 export { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
 export { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';

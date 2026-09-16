@@ -256,6 +256,8 @@ export class TenantIsolationSql {
         return TenantIsolationSql.journalStatements(spec.table);
       case 'tenant-settings':
         return TenantIsolationSql.tenantSettingsStatements(spec.table);
+      case 'unowned-read':
+        return TenantIsolationSql.unownedReadStatements(spec.table);
     }
   }
 
@@ -282,6 +284,39 @@ export class TenantIsolationSql {
       `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
       ...names.map((policy) => `DROP POLICY IF EXISTS "${policy}" ON "${name}"`),
       `CREATE POLICY "${name}_tenant_select" ON "${name}" FOR SELECT USING (${own} OR "${shared}" IS TRUE)`,
+      `CREATE POLICY "${name}_tenant_insert" ON "${name}" FOR INSERT WITH CHECK (${own})`,
+      `CREATE POLICY "${name}_tenant_update" ON "${name}" FOR UPDATE USING (${own}) WITH CHECK (${own})`,
+      `CREATE POLICY "${name}_tenant_delete" ON "${name}" FOR DELETE USING (${own})`,
+    ];
+  }
+
+  /**
+   * Own rows plus UNOWNED ones, readable by all and writable only by their owner.
+   *
+   * The same four-policy shape as `sharedReadStatements`, and for the same reason: `WITH CHECK` does
+   * not govern DELETE, so a single `USING (own OR unowned)` would let any tenant delete every
+   * unowned row. Writes are `own` alone, which also means an unowned row cannot be edited or deleted
+   * by anyone — correct for a do-not-email entry whose owner is unknown. It is adopted by being
+   * stamped, not by being claimed through a policy.
+   *
+   * NOTE the column default: new rows still stamp the current tenant, so this widens reads for the
+   * rows that predate scoping WITHOUT making new rows platform-wide.
+   */
+  private static unownedReadStatements(table: string): string[] {
+    const name = TenantIsolationSql.assertIdentifier(table);
+    const current = TenantIsolationSql.currentTenantExpression();
+    const own = `"${TenantColumn.NAME}" = ${current}`;
+    const unowned = `"${TenantColumn.NAME}" IS NULL`;
+    const names = [`${name}_tenant_isolation`, `${name}_tenant_select`, `${name}_tenant_insert`,
+                   `${name}_tenant_update`, `${name}_tenant_delete`];
+    return [
+      `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT `
+        + `DEFAULT ${current}`,
+      `CREATE INDEX IF NOT EXISTS "${name}_${TenantColumn.NAME}_idx" ON "${name}" ("${TenantColumn.NAME}")`,
+      `ALTER TABLE "${name}" ENABLE ROW LEVEL SECURITY`,
+      `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
+      ...names.map((policy) => `DROP POLICY IF EXISTS "${policy}" ON "${name}"`),
+      `CREATE POLICY "${name}_tenant_select" ON "${name}" FOR SELECT USING (${own} OR ${unowned})`,
       `CREATE POLICY "${name}_tenant_insert" ON "${name}" FOR INSERT WITH CHECK (${own})`,
       `CREATE POLICY "${name}_tenant_update" ON "${name}" FOR UPDATE USING (${own}) WITH CHECK (${own})`,
       `CREATE POLICY "${name}_tenant_delete" ON "${name}" FOR DELETE USING (${own})`,
@@ -327,9 +362,13 @@ export class TenantIsolationSql {
    *
    * Two things the generic policy cannot express:
    *
-   *   READ — a PLATFORM admin sees everything. This is the record of the whole container, and an
-   *   operator investigating an incident cannot be asked to enter each site in turn. The marker is
-   *   set deliberately for that read (`db.withPlatformAdmin`), never merely by being untenanted.
+   *   READ — a PLATFORM admin sees everything, but ONLY from the platform scope. The marker is set
+   *   deliberately for that read (`db.withPlatformAdmin`), never merely by being untenanted; what is
+   *   new is that it no longer overrides a BOUND site. An operator investigating an incident still
+   *   cannot be asked to enter each site in turn — they read the whole container from Platform, which
+   *   is where that job belongs. Standing inside one site and being shown every other site's journal
+   *   is the thing this platform is not allowed to do: measured before the change, a platform admin
+   *   bound to one site read another site's log row. Isolation is not conditional on who is asking.
    *
    *   WRITE — an UNTENANTED connection must be able to write, with no marker. Boot, migrations and
    *   platform actions all log before any tenant is bound, and requiring the marker there would
@@ -351,7 +390,7 @@ export class TenantIsolationSql {
       `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
       `DROP POLICY IF EXISTS "${name}_tenant_isolation" ON "${name}"`,
       `CREATE POLICY "${name}_tenant_isolation" ON "${name}"
-         USING (${own} OR ${platform} OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))
+         USING (${own} OR (${platform} AND ${current} IS NULL) OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))
          WITH CHECK (${own} OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))`,
     ];
   }

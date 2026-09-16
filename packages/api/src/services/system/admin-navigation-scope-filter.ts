@@ -59,27 +59,55 @@ export class AdminNavigationScopeFilter {
     return { menu: kept, removedPaths, platformPaths };
   }
 
-  /** The same rule for the secondary panel, whose entries carry the same two flags. */
+  /**
+   * The same rule for the secondary panel, whose entries carry the same two flags.
+   *
+   * The panel's entries are NOT at the top level. They live under `itemsByContext`, keyed by the
+   * plugin that contributed them (`{ 'org.fromcode:system': [ … ] }`), and this walked only the
+   * top level: a non-array value was copied through whole, so the one object actually holding the
+   * entries was the one thing never filtered. Every flag on a settings entry was therefore dead —
+   * `siteOnly` as much as `platformScopeOnly`, which is why Localization and Appearance were also
+   * offered in the platform scope, where they have no row to write.
+   *
+   * So it descends. Only arrays are filtered, and an array whose items carry no flag comes back
+   * unchanged, which leaves `contexts`, `policy` and `precedence` exactly as they were.
+   */
   static applyToPanel(
     panel: unknown,
     isPlatformAdmin: boolean,
   ): { panel: unknown; removedPaths: string[]; platformPaths: string[] } {
-    const bag = (panel && typeof panel === 'object' ? panel : {}) as Record<string, unknown>;
     const removedPaths: string[] = [];
     const platformPaths: string[] = [];
-    const filtered: Record<string, unknown> = {};
-
-    for (const [key, value] of Object.entries(bag)) {
-      if (!Array.isArray(value)) {
-        filtered[key] = value;
-        continue;
-      }
-      const result = AdminNavigationScopeFilter.apply(value, isPlatformAdmin);
-      filtered[key] = result.menu;
-      removedPaths.push(...result.removedPaths);
-      platformPaths.push(...result.platformPaths);
-    }
+    const filtered = AdminNavigationScopeFilter.filterNode(
+      panel && typeof panel === 'object' ? panel : {},
+      isPlatformAdmin,
+      removedPaths,
+      platformPaths,
+    );
 
     return { panel: filtered, removedPaths, platformPaths };
+  }
+
+  /** Filters every array reachable through plain objects, leaving everything else identical. */
+  private static filterNode(
+    value: unknown,
+    isPlatformAdmin: boolean,
+    removedPaths: string[],
+    platformPaths: string[],
+  ): unknown {
+    if (Array.isArray(value)) {
+      const result = AdminNavigationScopeFilter.apply(value, isPlatformAdmin);
+      removedPaths.push(...result.removedPaths);
+      platformPaths.push(...result.platformPaths);
+      return result.menu;
+    }
+    if (!value || typeof value !== 'object') return value;
+
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, child]) => [
+        key,
+        AdminNavigationScopeFilter.filterNode(child, isPlatformAdmin, removedPaths, platformPaths),
+      ]),
+    );
   }
 }

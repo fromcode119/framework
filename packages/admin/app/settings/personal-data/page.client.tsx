@@ -65,7 +65,14 @@ export class PersonalDataSettingsPage extends AdminComponent {
       this.platform = PersonalDataPolicyClient.toChoiceMap(settings?.[SystemConstants.META_KEY.PERSONAL_DATA_ERASURE_DEFAULTS]);
       this.hadSite = Object.keys(this.site).length > 0;
       this.hadPlatform = Object.keys(this.platform).length > 0;
-      this.platformEditable = Boolean(platformKeys?.editable);
+      // WHO may write a platform key is not WHERE that control belongs. `editable` answers only the
+      // first, so inside a site the PLATFORM column stayed editable — and its value is the default
+      // every OTHER site inherits, changed from a console headed with one site's name. Same rule the
+      // settings screens apply through `SettingsPageScope.sendable`: shown is not sendable, and a
+      // platform control lives in the platform scope. Read-only here, not hidden, because the site
+      // column is read against it and hiding it would make the inherited value unexplainable.
+      const inSite = platformKeys?.tenantMode === true && platformKeys?.siteSelected !== false;
+      this.platformEditable = Boolean(platformKeys?.editable) && !inSite;
       // With no site chosen the settings PUT refuses any per-site key outright, so the site column is
       // shown as read-only rather than offering an edit that cannot be saved.
       this.siteEditable = Boolean(platformKeys?.siteSelected);
