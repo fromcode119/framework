@@ -35,7 +35,11 @@ export class CatalogEntry {
     );
   }
 
-  /** The catalogue's own shape, so a contributed entry is indistinguishable downstream. */
+  /**
+   * The catalogue's own shape, so a contributed entry travels through the same code as a remote one
+   * — except for `source`, which is the one thing that must NOT be indistinguishable. The screen has
+   * to be able to say that this came off our own build server and not from a catalogue.
+   */
   toCatalogPlugin(): Record<string, unknown> {
     return {
       slug: this.slug,

@@ -36,6 +36,10 @@ export class MarketplacePluginCard extends PureReactor {
     const isFeatured = Boolean(plugin.isFeatured);
     const isVerified = Boolean(plugin.isVerified);
     const isTrending = Boolean(plugin.isTrending);
+    // Built on THIS server through Sources rather than offered by a catalogue. Both arrive in one
+    // merged list and render identically, so without saying so the screen offers an operator who is
+    // connected to no marketplace a page that looks exactly like a marketplace.
+    const isBuiltHere = String(plugin.source || '') === 'local';
 
     return (
       <Card
@@ -57,6 +61,14 @@ export class MarketplacePluginCard extends PureReactor {
               )}
             </div>
             <div className="flex items-center gap-2">
+              {isBuiltHere && (
+                <Badge
+                  variant={BadgeVariant.AMBER}
+                  title="Built on this server from a source you control — not offered by a marketplace."
+                >
+                  Built here
+                </Badge>
+              )}
               {isFeatured && (
                 <Badge variant={BadgeVariant.BLUE} className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
                   Featured
