@@ -18,6 +18,7 @@ import { SitesTable } from '@/app/sites/components/view/sites-table.client';
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 
 /**
  * Every site on this platform, and the actions that create, move and remove one.
@@ -140,6 +141,7 @@ export class SitesPageClient extends AdminComponent {
   render(): ReactNode {
     const theme = this.theme;
     return (
+      <PlatformScopeGate what="Sites">
       <div className="fc-sites">
         <CompactPageHeader
           theme={theme}
@@ -191,6 +193,7 @@ export class SitesPageClient extends AdminComponent {
           icon={<FrameworkIcons.Trash size={16} />}
         />
       </div>
+      </PlatformScopeGate>
     );
   }
 }

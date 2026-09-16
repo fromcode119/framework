@@ -1,4 +1,5 @@
 import { SourcesApi } from '@/app/sources/sources-api';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -143,6 +144,7 @@ export class BuildOverview extends AdminComponent {
       : 'Track a plugin or theme repository in a focused dialog without disrupting the build list.';
 
     return (
+      <PlatformScopeGate what="Sources">
       <>
         {/*
           * No padding on the ROOT. The sticky header is a direct child so it spans the full content
@@ -197,6 +199,7 @@ export class BuildOverview extends AdminComponent {
           </BuildSourceDialog>
         ) : null}
       </>
+      </PlatformScopeGate>
     );
   }
 }
