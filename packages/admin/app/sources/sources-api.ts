@@ -26,6 +26,13 @@ export class SourcesApi {
   static listBranches(input: Record<string, unknown>): Promise<any> { return AdminApi.post(SourcesRouteService.branches(), input); }
   static inspect(input: Record<string, unknown>): Promise<any> { return AdminApi.post(SourcesRouteService.inspect(), input); }
 
+  /** What is running, what was last built, and every version still installable. */
+  static versions(type: string, slug: string): Promise<any> { return AdminApi.get(SourcesRouteService.versions(type, slug)); }
+  /** Puts a specific staged version in place. Replaces code that is serving, so POST. */
+  static installVersion(type: string, slug: string, version: string): Promise<any> {
+    return AdminApi.post(SourcesRouteService.install(type, slug), { version });
+  }
+
   /**
    * Downloads the built package.
    *

@@ -1,4 +1,4 @@
-import { ExtensionScope } from '@fromcode119/core';
+import { CoercionUtils, ExtensionScope } from '@fromcode119/core';
 import { AccessLevel, BaseRouter } from '@fromcode119/core';
 import type { Request, RequestHandler, Response } from 'express';
 import { BuildService } from '@sources/packaging/build-service';
@@ -49,6 +49,11 @@ export class SourcesRouter extends BaseRouter {
     // so this is where "I want the file" is expressed. The admin used to link at
     // `/themes/<file>.zip`, a path nothing had served since Sources stopped being a plugin.
     this.get('/:type/:slug/package', this.adminGuard, this.downloadPackage);
+    // What is running, what was last built, and every version still staged. Three facts from three
+    // places — the screen could previously show only the middle one.
+    this.get('/:type/:slug/versions', this.adminGuard, this.listVersions);
+    // Puts one of those staged versions in place. POST: it replaces code that is serving.
+    this.post('/:type/:slug/install', this.adminGuard, this.installVersion);
   }
 
   /**
@@ -96,6 +101,43 @@ export class SourcesRouter extends BaseRouter {
       res.download(archive.filePath, archive.fileName);
     } catch (err: any) {
       res.status(500).json({ success: false, error: 'Could not package this build: ' + err.message });
+    }
+  }
+
+  private async listVersions(req: Request, res: Response): Promise<void> {
+    const identity = this.identityFrom(req, res);
+    if (!identity) return;
+
+    try {
+      res.json(await this.buildService.listVersions(identity));
+    } catch (err: any) {
+      res.status(500).json({ error: 'Failed to read versions: ' + err.message });
+    }
+  }
+
+  /**
+   * Installs a named staged version.
+   *
+   * 400 rather than 500 when the version is unknown or absent: the request named something that is
+   * not there, which is the caller's to correct, and the message says what IS there.
+   */
+  private async installVersion(req: Request, res: Response): Promise<void> {
+    const identity = this.identityFrom(req, res);
+    if (!identity) return;
+
+    const version = CoercionUtils.toString((req.body as any)?.version).trim();
+    if (!version) {
+      res.status(400).json({ error: 'A version is required.' });
+      return;
+    }
+
+    try {
+      const result = await this.buildService.installVersion(identity, version);
+      res.json({ ...result, ...(await this.buildService.listVersions(identity)) });
+    } catch (err: any) {
+      const message = String(err?.message || err);
+      const unknownVersion = message.includes('is not staged') || message.includes('cannot be switched');
+      res.status(unknownVersion ? 400 : 500).json({ error: message });
     }
   }
 

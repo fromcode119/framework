@@ -443,6 +443,11 @@ export class PluginManager implements IPluginManagerInterface {
     return this.query.isExtensionInstalled(slug, type, this.themeManager);
   }
 
+  /** Which version is installed, or null when none is. See the query service for why it reads disk. */
+  async installedExtensionVersion(slug: string, type: ExtensionScope): Promise<string | null> {
+    return this.query.installedExtensionVersion(slug, type, this.themeManager);
+  }
+
   async shutdown() {
     return this.shutdownService.shutdown();
   }
