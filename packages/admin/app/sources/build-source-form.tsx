@@ -372,11 +372,18 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
               label="Install after build"
               description="Put each successful build in place — whether you pressed Build or the schedule did. A theme is installed, not activated."
             />
+            {/* DEPENDENT on the switch above, because the code is: the installer is only reached
+                inside the `installAfterBuild` branch, so this flag is never consulted while that one
+                is off. Left enabled it read as a third independent choice, and turning it on by
+                itself did nothing whatsoever — with nothing on screen or in a log to say so. */}
             <Switch
               checked={this.state.autoUpdate}
               onChange={(checked: boolean) => this.setState({ autoUpdate: checked })}
+              disabled={!this.state.installAfterBuild}
               label="Update if already installed"
-              description="Also replace the running version when this extension is already installed."
+              description={this.state.installAfterBuild
+                ? 'Also replace the running version when this extension is already installed.'
+                : 'Needs "Install after build" above — nothing is replaced while builds are not installed.'}
             />
           </div>
         </div>
