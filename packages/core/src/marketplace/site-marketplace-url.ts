@@ -1,36 +1,44 @@
 import { Logger } from '@core/logging';
-import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * Which catalogue THIS SITE browses.
  *
- * A site on this platform behaves like its own installation: it has a marketplace, and it may point
- * that marketplace at a catalogue of its own. So the answer is the site's setting when it has one and
- * the platform's otherwise — a site that has chosen nothing browses what the operator offers, which
- * is what every site did before this existed.
+ * ONE key — `marketplace_url` — for the platform and for every site, because the settings store is
+ * already partitioned by site and does not need a second name to express "mine".
  *
- * THE READ CARRIES NO TENANT ID. `_system_meta` is tenant-scoped, so the request's own connection
- * binding decides whose row comes back; there is nothing to pass and therefore no way to read another
- * site's catalogue by accident. That is the same reason `TenantEmailPolicy` reads the way it does, and
- * it is why the accessor below is handed the REQUEST connection rather than the owner one.
+ * `_system_meta` is keyed `(key, tenant_id)` with NULLS NOT DISTINCT, so a site's own row sits
+ * alongside the platform's under the same key rather than colliding with it. Its row-level policy then
+ * does both halves of the job:
  *
- * A FAILED READ IS NOT A CHOICE. If the site row cannot be read this answers with the platform's
- * catalogue rather than with nothing: a site whose marketplace silently emptied because a query broke
- * would look exactly like a site whose operator offers nothing, and nobody could tell those apart.
+ *   READ  — a tenant sees its own rows, and additionally the platform's `tenant_id IS NULL` row for an
+ *           allowlist of keys that `marketplace_url` is already on. So a site that has chosen nothing
+ *           INHERITS the operator's catalogue through the same key, with no fallback logic to write.
+ *   WRITE — `WITH CHECK` allows a tenant to write only `tenant_id = itself`; writing the platform's
+ *           NULL row needs `app.platform_admin`. A site therefore cannot overwrite the operator's
+ *           value even by accident.
+ *
+ * All this resolver adds is PRECEDENCE, which is the one thing the policy cannot express: when both
+ * rows are visible the site's own is the answer. `findOne` would have returned whichever the planner
+ * happened to hand back first.
+ *
+ * There was briefly a second key for the site's value. It was never necessary — this is what the
+ * schema was already built to do — and no deployment ever stored one.
  */
 export class SiteMarketplaceUrl {
   private static readonly logger = new Logger({ namespace: 'site-marketplace' });
-  private static accessor: ((key: string) => Promise<string | null>) | null = null;
+  private static accessor: ((key: string) => Promise<Array<{ tenantId: string | null; value: string }>>) | null = null;
 
   /**
-   * Wire the `_system_meta` reader once the DB is up, exactly as `PlatformSettingsService` is wired.
+   * Wire the `_system_meta` reader once the DB is up.
    *
-   * Before this is called — a CLI, a test, a boot-time caller — there is no site setting to read and
-   * every answer is the platform's, which is the behaviour that existed before per-site catalogues.
+   * It returns ROWS, not a value: the precedence below needs to know which site each row belongs to,
+   * and that is invisible once a single value has been picked.
    */
-  static registerAccessor(accessor: (key: string) => Promise<string | null>): void {
+  static registerAccessor(
+    accessor: (key: string) => Promise<Array<{ tenantId: string | null; value: string }>>,
+  ): void {
     SiteMarketplaceUrl.accessor = accessor;
   }
 
@@ -39,11 +47,25 @@ export class SiteMarketplaceUrl {
     SiteMarketplaceUrl.accessor = null;
   }
 
-  /** The catalogue URL in force for the current request's site. */
-  static async current(): Promise<string> {
-    const own = await SiteMarketplaceUrl.siteValue();
+  /**
+   * The catalogue URL in force for the current request's site.
+   *
+   * The site's own row wins; the platform's is what every site that has chosen nothing gets. `envValue`
+   * is last and only when the store holds nothing at all — it is how a deployment configured this
+   * before the setting existed. The caller passes it, exactly as `PlatformSettingsService.resolve`
+   * requires, so this stays free of `process.env` coupling and is testable without it.
+   */
+  static async current(envValue?: string): Promise<string> {
+    const rows = await SiteMarketplaceUrl.rows();
+    const scope = SiteMarketplaceUrl.currentScopeKey();
+
+    const own = scope ? rows.find((row) => String(row.tenantId ?? '') === scope)?.value ?? '' : '';
     if (own) return own;
-    return PlatformSettingsService.resolve(process.env.MARKETPLACE_URL, SystemConstants.META_KEY.MARKETPLACE_URL);
+
+    const platform = rows.find((row) => row.tenantId === null)?.value ?? '';
+    if (platform) return platform;
+
+    return String(envValue ?? '').trim();
   }
 
   /**
@@ -58,19 +80,21 @@ export class SiteMarketplaceUrl {
     return String(RequestContextUtils.getTenantId() ?? '').trim();
   }
 
-  private static async siteValue(): Promise<string> {
-    if (!SiteMarketplaceUrl.accessor) return '';
-    // No tenant bound means no site to ask — a boot-time or background read, which is the platform's.
-    if (!SiteMarketplaceUrl.currentScopeKey()) return '';
+  /**
+   * A FAILED READ IS NOT A CHOICE. If the rows cannot be read this answers with none rather than
+   * pretending the store was empty in a way that looks like a deliberate "off": the caller then falls
+   * through to the environment, which is the last thing an operator explicitly set.
+   */
+  private static async rows(): Promise<Array<{ tenantId: string | null; value: string }>> {
+    if (!SiteMarketplaceUrl.accessor) return [];
     try {
-      const value = await SiteMarketplaceUrl.accessor(SystemConstants.META_KEY.SITE_MARKETPLACE_URL);
-      return String(value ?? '').trim();
+      return (await SiteMarketplaceUrl.accessor(SystemConstants.META_KEY.MARKETPLACE_URL)) ?? [];
     } catch (error: unknown) {
       SiteMarketplaceUrl.logger.warn(
-        `Could not read "${SystemConstants.META_KEY.SITE_MARKETPLACE_URL}"; falling back to the platform's catalogue. `
+        `Could not read "${SystemConstants.META_KEY.MARKETPLACE_URL}". `
         + `${error instanceof Error ? error.message : String(error)}`,
       );
-      return '';
+      return [];
     }
   }
 }

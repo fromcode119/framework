@@ -60,11 +60,6 @@ export class GeneralBrandCard extends PureReactor {
   }
 
   @bound
-  private onSiteMarketplaceUrlChange(e: { target: { value: string } }): void {
-    this.patchSetting('site_marketplace_url', e.target.value);
-  }
-
-  @bound
   onFrameworkRepositoryChange(e: React.ChangeEvent<HTMLInputElement>): void {
     this.patchSetting('framework_repository', e.target.value);
   }
@@ -202,30 +197,13 @@ export class GeneralBrandCard extends PureReactor {
             theme={theme}
             icon={FrameworkIcons.Globe}
             title="Marketplace URL"
-            description={<>Where the platform browses for plugins, themes and appearances, and checks for updates. Blank uses the default marketplace; <code>off</code> turns the marketplace off.</>}
+            description={this.platformLocks.isSiteScope()
+              ? <>Where THIS site browses for plugins and themes. Blank uses the platform&apos;s marketplace; <code>off</code> turns this site&apos;s marketplace off. A catalogue that cannot be reached shows an empty marketplace rather than an error.</>
+              : <>Where the platform browses for plugins, themes and appearances, and checks for updates, and what every site that has not set its own uses. Blank uses the default marketplace; <code>off</code> turns the marketplace off.</>}
           >
             <Input
               value={settings.marketplace_url}
               onChange={this.onMarketplaceUrlChange}
-              className="w-full md:w-64 font-bold"
-              placeholder="https://marketplace.example.com"
-            />
-          </SettingRow>
-        )}
-
-        {/* The SITE's own catalogue. Shown only in a site scope, where `marketplace_url` above is
-            hidden — the two never appear together, because one is the platform's answer and the
-            other is this site's override of it. */}
-        {this.shown('site_marketplace_url') && (
-          <SettingRow
-            theme={theme}
-            icon={FrameworkIcons.Globe}
-            title="Marketplace URL"
-            description={<>Where THIS site browses for plugins and themes. Blank uses the platform&apos;s marketplace; <code>off</code> turns this site&apos;s marketplace off. A catalogue that cannot be reached shows an empty marketplace rather than an error.</>}
-          >
-            <Input
-              value={settings.site_marketplace_url}
-              onChange={this.onSiteMarketplaceUrlChange}
               className="w-full md:w-64 font-bold"
               placeholder="https://marketplace.example.com"
             />

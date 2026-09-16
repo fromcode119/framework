@@ -101,7 +101,17 @@ export class SystemSettingsController {
       // Without this fact the admin could not tell which of its fields those were, so it sent them
       // all and nothing saved. Same source as the refusal itself — the request's own tenant.
       const siteSelected = Boolean(RequestContextUtils.getTenantId());
-      res.json({ keys: TenantBespokePolicies.platformKeys(), editable, tenantMode, siteSelected });
+      // `inheritedKeys` is a SUBSET of `keys`, sent alongside rather than carved out of it: the client
+      // still needs to know they are platform-owned (to explain what a blank field falls back to), and
+      // additionally that this scope may set its own. Carving them out would have made a site's
+      // marketplace field look like an ordinary per-site setting with no platform value behind it.
+      res.json({
+        keys: TenantBespokePolicies.platformKeys(),
+        inheritedKeys: SystemSettingRegistry.inheritedKeys(),
+        editable,
+        tenantMode,
+        siteSelected,
+      });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -167,9 +177,16 @@ export class SystemSettingsController {
       // saw the default. Only a platform admin may write that row — and on a multi-site platform a
       // site admin may not write it AT ALL: a site row of a platform key is read by nothing, so
       // accepting it would be a control that silently does nothing. Refused, with the reason.
+      // INHERITED keys carry a platform row AND a per-site one, so they are platform keys to the
+      // database and site keys to this screen. Everything below turns on the difference: a site row of
+      // one is read (by the site that wrote it), which is exactly what made a site row of a PLATFORM
+      // key worth refusing.
+      const inheritedKeys = new Set(SystemSettingRegistry.inheritedKeys());
       const platformKeys = new Set(TenantBespokePolicies.platformKeys());
+      const platformOnlyKeys = new Set([...platformKeys].filter((key) => !inheritedKeys.has(key)));
+      const tenantBound = Boolean(RequestContextUtils.getTenantId());
       const platformAdmin = await this.runtime.isPlatformAdmin(req);
-      const refused = Object.keys(preparedPayload).filter((key) => platformKeys.has(key));
+      const refused = Object.keys(preparedPayload).filter((key) => platformOnlyKeys.has(key));
       if (refused.length > 0 && TenantMode.isEnabled() && !platformAdmin) {
         return res.status(403).json({ error: 'platform_admin_required', message: `Platform setting(s) ${refused.join(', ')} apply to every site and only a platform admin may change them.`, keys: refused });
       }
@@ -179,6 +196,8 @@ export class SystemSettingsController {
       // logging nothing. Refused here instead, saying which keys and what to do, because a control
       // that appears to save and cannot is exactly the magic this codebase forbids.
       const siteless = TenantMode.isEnabled() && !RequestContextUtils.getTenantId();
+      // An INHERITED key is NOT siteless-refused: with no site selected it is simply the platform's
+      // own value being edited, which is the row it lands in below.
       const perSite = Object.keys(preparedPayload).filter((key) => !platformKeys.has(key));
       if (siteless && perSite.length > 0) {
         return res.status(400).json({
@@ -201,13 +220,34 @@ export class SystemSettingsController {
       for (const [key, value] of Object.entries(preparedPayload)) {
         const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
         let previousValue: string | undefined;
-        if (asPlatform && platformKeys.has(key)) {
+        // The platform row for a platform-only key wherever the admin is standing, and for an
+        // INHERITED key only when no site is selected. Inside a site an INHERITED key falls through to
+        // the tenant-scoped write below, which lands in THAT site's row — the override itself.
+        const writesPlatformRow = platformOnlyKeys.has(key) || (inheritedKeys.has(key) && !tenantBound);
+        if (asPlatform && writesPlatformRow) {
           previousValue = await this.writePlatformSetting(key, serializedValue, timestamp);
         } else {
-          const existing = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });
+          // Address THIS SCOPE'S row, not merely the key.
+          //
+          // `findOne` by key alone was safe only while a tenant could see one row per key. The policy
+          // publishes the platform's `tenant_id IS NULL` row to every tenant for the keys on its
+          // allowlist, so inside a site that lookup can return the PLATFORM's row — and updating it
+          // is refused by `WITH CHECK` with `new row violates row-level security policy`, naming
+          // neither the key nor the reason. Matching on tenancy as well as key is what makes a site's
+          // save land in the site's own row. An INSERT needs no tenant of its own: the column defaults
+          // to the session's.
+          const scopeOf = (row: any): string | null => row?.tenant_id ?? null;
+          const currentScope = RequestContextUtils.getTenantId() ?? null;
+          const candidates = await this.runtime.db.find(SystemConstants.TABLE.META, { where: { key } });
+          const existing = (Array.isArray(candidates) ? candidates : [])
+            .find((row: any) => scopeOf(row) === currentScope);
           previousValue = existing ? String((existing as any).value ?? '') : undefined;
           if (existing) {
-            await this.runtime.db.update(SystemConstants.TABLE.META, { key }, { value: serializedValue, updated_at: timestamp });
+            await this.runtime.db.update(
+              SystemConstants.TABLE.META,
+              currentScope === null ? { key } : { key, tenant_id: currentScope },
+              { value: serializedValue, updated_at: timestamp },
+            );
           } else {
             await this.runtime.db.insert(SystemConstants.TABLE.META, { key, value: serializedValue, updated_at: timestamp });
           }

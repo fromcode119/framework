@@ -85,21 +85,37 @@ export class ApiBootstrapService {
     // Let platform settings (non-secret, non-bootstrap config) fall back to the
     // `_system_meta` store when their env var is unset, so they can be changed from the
     // admin Settings page without a redeploy. Env always wins (see PlatformSettingsService).
+    //
+    // Reads the PLATFORM row specifically — `tenant_id IS NULL` — which is what this service has
+    // always documented itself as doing and did not do. It used `findOne` on the key alone, over the
+    // request's own tenant-scoped connection, so the row it got back depended on who was asking. That
+    // was harmless only while no site could own a row under a platform key; a site may now hold its
+    // own `marketplace_url`, and a platform operation must not pick it up because it happened to run
+    // inside that site's request. Every key reaching here is PLATFORM-scoped — `getSetting` throws
+    // for a site-scoped one — so the platform's row is the only correct answer.
     PlatformSettingsService.registerAccessor(async (key: string) => {
       const db = (manager as any).db;
       if (!db || !(await db.tableExists(SystemConstants.TABLE.META))) return null;
-      const row = await db.findOne(SystemConstants.TABLE.META, { key });
-      return row?.value ?? null;
+      const rows = await db.find(SystemConstants.TABLE.META, { where: { key } });
+      const platformRow = (Array.isArray(rows) ? rows : []).find((row: any) => (row?.tenant_id ?? null) === null);
+      return platformRow?.value ?? null;
     });
 
-    // The SITE half of the same store. Same connection, and that is the point: `_system_meta` is
-    // tenant-scoped, so on a tenant-bound request this read returns THAT site's row and on an unbound
-    // one it returns the platform's. Nothing passes a tenant id, so nothing can name another site's.
+    // The same store, read as ROWS. Same connection, and that is the point: `_system_meta` is
+    // tenant-scoped, so a tenant-bound request sees its own row plus the platform's `tenant_id IS NULL`
+    // one (`marketplace_url` is on the policy's allowlist for exactly that), and an unbound request
+    // sees only the platform's. Nothing passes a tenant id, so nothing can name another site's.
+    //
+    // `find`, not `findOne`: both rows can be visible at once and the resolver has to tell them apart
+    // to prefer the site's. `findOne` returns whichever the planner hands back first.
     SiteMarketplaceUrl.registerAccessor(async (key: string) => {
       const db = (manager as any).db;
-      if (!db || !(await db.tableExists(SystemConstants.TABLE.META))) return null;
-      const row = await db.findOne(SystemConstants.TABLE.META, { key });
-      return row?.value ?? null;
+      if (!db || !(await db.tableExists(SystemConstants.TABLE.META))) return [];
+      const rows = await db.find(SystemConstants.TABLE.META, { where: { key } });
+      return (Array.isArray(rows) ? rows : []).map((row: any) => ({
+        tenantId: row?.tenant_id ?? null,
+        value: String(row?.value ?? '').trim(),
+      }));
     });
 
     // A changed catalogue must take effect on the NEXT request, not on the next restart. Without
@@ -109,14 +125,15 @@ export class ApiBootstrapService {
     // so no other site's resolved catalogue is thrown away.
     manager.hooks.on('system:settings:updated', (payload: any) => {
       const keys: string[] = Array.isArray(payload?.keys) ? payload.keys : [];
-      if (!keys.includes(SystemConstants.META_KEY.SITE_MARKETPLACE_URL)
-        && !keys.includes(SystemConstants.META_KEY.MARKETPLACE_URL)) return;
+      if (!keys.includes(SystemConstants.META_KEY.MARKETPLACE_URL)) return;
       const marketplace = (manager as any).marketplace;
       if (typeof marketplace?.invalidateResolvedCatalogue !== 'function') return;
-      // A change to the PLATFORM's catalogue reaches every site that has not chosen its own, so that
-      // one clears the lot; a site's own clears only its own.
-      if (keys.includes(SystemConstants.META_KEY.MARKETPLACE_URL)) marketplace.invalidateResolvedCatalogue();
-      else marketplace.invalidateResolvedCatalogue(SiteMarketplaceUrl.currentScopeKey());
+      // One key now, so WHO wrote it decides the blast radius rather than which key was written. A
+      // site's own save clears that site; the platform's clears every site, because each one that has
+      // chosen nothing is reading the value that just changed.
+      const scope = SiteMarketplaceUrl.currentScopeKey();
+      if (scope) marketplace.invalidateResolvedCatalogue(scope);
+      else marketplace.invalidateResolvedCatalogue();
     });
 
     const themeManager = new ThemeManager((manager as any).db);

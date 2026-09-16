@@ -55,7 +55,7 @@ export class PluginRouter extends BaseRouter {
     this.delete(RouteConstants.SEGMENTS.PLUGINS_SLUG, this.auth.guard(['admin']), platform, this.lifecycleController.delete);
     // Browsing a catalogue is a SITE action; INSTALLING from it is not, and the two are separated
     // deliberately. A site may look — it has a marketplace of its own, and may point it at its own
-    // catalogue (`site_marketplace_url`) — while `PLUGINS_INSTALL` below stays platform-only, because
+    // catalogue (its own `marketplace_url` row) — while `PLUGINS_INSTALL` below stays platform-only, because
     // installing a plugin puts code on the container every customer shares. Per-site plugin install
     // is not merely ungated work: it cannot be safe until the privileged spawner is on the box, since
     // the default launcher does not isolate identity.

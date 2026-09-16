@@ -41,8 +41,10 @@ export class MarketplaceCatalogService {
     const cached = this.resolvedByScope.get(scope);
     if (cached) return cached;
 
-    // The SITE's own catalogue when it has chosen one, the platform's otherwise.
-    const raw = await SiteMarketplaceUrl.current();
+    // The SITE's own catalogue when it has chosen one, the platform's otherwise. One key answers both
+    // — the settings store is partitioned by site, so a site's row and the platform's live under the
+    // same name without colliding, and the policy already lets a site read the platform's.
+    const raw = await SiteMarketplaceUrl.current(process.env.MARKETPLACE_URL);
     const normalized = raw.toLowerCase();
     if (normalized === 'off' || normalized === 'false' || normalized === 'disabled') {
       this.logger.info(`Marketplace disabled for ${scope ? `site "${scope}"` : 'the platform'}.`);
