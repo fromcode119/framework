@@ -211,7 +211,7 @@ export class AdminPage extends AdminComponent {
 
             {/* Right Sidebar - Dynamic Content */}
             <div className="space-y-6">
-              <DashboardActivityChart activity={activity} days={14} />
+              <DashboardActivityChart activity={activity} days={14} scope={installation?.scope} />
 
               {/* What the machine is doing, measured — see HostResourceService. */}
               <DashboardSystemPanel />

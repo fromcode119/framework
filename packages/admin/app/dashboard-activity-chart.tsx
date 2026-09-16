@@ -6,7 +6,9 @@ import { DashboardActivityWindow } from '@/app/dashboard-activity-window';
 import { DashboardActivityBars } from '@/app/dashboard-activity-bars.client';
 
 /**
- * Platform activity, in whichever of three forms the data can honestly support.
+ * Activity for the scope the console is in, in whichever of three forms the data can honestly
+ * support. The journal behind it is tenant-scoped, so inside a site this is that site's activity;
+ * the heading says which (see `scope`).
  *
  * It used to draw a 14-day line chart unconditionally. On a fresh installation that is one event
  * against an empty axis — a vertical stroke that looks like a spike and means "we logged your
@@ -15,6 +17,25 @@ import { DashboardActivityBars } from '@/app/dashboard-activity-bars.client';
 export class DashboardActivityChart extends PureReactor {
   @prop declare activity: Array<{ timestamp?: string | number; level?: string }>;
   @prop declare days?: number;
+  /**
+   * Which scope the journal was read in — `'site'` inside a site, `'platform'` outside one, as
+   * `/admin/stats/installation` reports it. The feed is tenant-scoped, so inside a site these
+   * events are that SITE's; heading them "Platform Activity" named a source the card is not
+   * reading. Absent, the wording stays neutral rather than asserting either.
+   */
+  @prop declare scope?: string;
+
+  private get subject(): string {
+    if (this.scope === 'site') return 'Site';
+    if (this.scope === 'platform') return 'Platform';
+    return 'Recent';
+  }
+
+  private get emptyCopy(): string {
+    if (this.scope === 'site') return 'Nothing has happened on this site yet.';
+    if (this.scope === 'platform') return 'Nothing has happened on this platform yet.';
+    return 'Nothing has happened yet.';
+  }
 
   /** Days shown in the bar form — a week reads unlabelled; a fortnight of bars does not. */
   private static readonly BAR_DAYS = 7;
@@ -37,15 +58,15 @@ export class DashboardActivityChart extends PureReactor {
 
     if (window.isEmpty) {
       return (
-        <Card title="Platform Activity">
-          <p className="text-[12px] text-slate-500">Nothing has happened on this platform yet.</p>
+        <Card title={`${this.subject} Activity`}>
+          <p className="text-[12px] text-slate-500">{this.emptyCopy}</p>
         </Card>
       );
     }
 
     if (!window.hasShape) {
       return (
-        <Card title={`Platform Activity${window.firstActiveLabel ? ` · since ${window.firstActiveLabel}` : ''}`}>
+        <Card title={`${this.subject} Activity${window.firstActiveLabel ? ` · since ${window.firstActiveLabel}` : ''}`}>
           <div className="flex items-baseline gap-2.5 mb-3">
             <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{window.totalEvents}</span>
             <span className="text-[12px] text-slate-500">
@@ -61,7 +82,7 @@ export class DashboardActivityChart extends PureReactor {
     }
 
     return (
-      <Card title={`Platform Activity · last ${this.days_} days`}>
+      <Card title={`${this.subject} Activity · last ${this.days_} days`}>
         <PluginTrendChart
           height={140}
           xLabels={window.buckets.map((bucket) => bucket.label)}

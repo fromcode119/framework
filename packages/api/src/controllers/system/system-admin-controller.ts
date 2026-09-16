@@ -252,7 +252,10 @@ export class SystemAdminController {
           return String(row?.value ?? '').trim();
         },
       });
-      res.json(await service.read());
+      // `scope` is stamped on BOTH branches, not just the site one. The dashboard heads its activity
+      // card with it, and a missing value there is not "platform" — it is "we don't know", which is
+      // the one thing the card must not present as either.
+      res.json({ ...await service.read(), scope: 'platform' });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

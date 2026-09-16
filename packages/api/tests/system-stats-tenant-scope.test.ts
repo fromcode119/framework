@@ -80,6 +80,15 @@ describe('installation stats', () => {
     expect(out.body.counts.sites).toBe(9);
     expect(out.body.mode).toBe('multi-site');
   });
+
+  it('stamps the scope on the platform branch too, so the dashboard never has to guess', async () => {
+    const { res, out } = respond();
+    await controller().getInstallation({} as never, res);
+
+    // The dashboard heads its activity card from this. Absent, it can only say "Recent" — and a card
+    // headed "Platform Activity" inside a site is the defect this whole pass is about.
+    expect(out.body.scope).toBe('platform');
+  });
 });
 
 describe('security stats', () => {
