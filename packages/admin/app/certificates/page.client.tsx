@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
+import { AdminScope, ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
@@ -11,7 +11,6 @@ import { CertificateHostTable } from '@/app/certificates/components/certificate-
 import { CertificateStatusNotices } from '@/app/certificates/components/certificate-status-notices.client';
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
-import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
 
 /**
  * Every TLS certificate on the platform, in one list.
@@ -30,12 +29,11 @@ export class CertificatesPageClient extends AdminComponent {
   @state private edge: Record<string, unknown> | null = null;
   @state private automation: Record<string, unknown> | null = null;
   /**
-   * 'platform' for the whole-box read, or a tenant id when the api narrowed the list to one site — an
-   * operator can land on this SAME platform-wide screen while their session is bound to a site, and
+   * An operator can land on this SAME platform-wide screen while their session is bound to a site, and
    * the list is silently scoped to that site's hosts underneath them. The subtitle has to say whose
    * hosts these are rather than always claiming platform-wide coverage (see `subtitle` below).
    */
-  @state private scope = 'platform';
+  @state private scope: AdminScope | undefined = AdminScope.PLATFORM;
   @state private isLoading = true;
   @state private loadError = '';
   @state private uploadHost = '';
@@ -53,7 +51,7 @@ export class CertificatesPageClient extends AdminComponent {
       this.encryptionAvailable = result.encryptionAvailable;
       this.edge = result.edge;
       this.automation = result.automation;
-      this.scope = result.scope;
+      this.scope = AdminScope.resolve(result.scope);
       this.loadError = '';
     } catch (error: any) {
       this.loadError = String(error?.message || 'Could not load certificates.');
@@ -116,12 +114,14 @@ export class CertificatesPageClient extends AdminComponent {
 
   /**
    * The subtitle claims exactly what `this.scope` says it does — platform-wide only when the read
-   * actually was. A bound request answers `forTenant`, so anything other than the literal `'platform'`
-   * means the list below is one site's hosts, and the copy must say "this site", not "this platform".
+   * actually was. A bound request answers `forTenant`, so `isSite` means the list below is one site's
+   * hosts, and the copy must say "this site", not "this platform". No scope at all (an old/unknown
+   * response shape) stays neutral rather than asserting either.
    */
   private get subtitle(): string {
-    const key = this.scope === 'platform' ? 'certificates.subtitlePlatform' : 'certificates.subtitleSite';
-    return AdminDictionary.translate(AdminDictionary.FALLBACK_LOCALE, key);
+    if (this.scope?.isSite) return "Every address this site answers for, and what it serves HTTPS with.";
+    if (this.scope?.isPlatform) return "Every address this platform answers for, and what it serves HTTPS with.";
+    return 'What this installation serves HTTPS with.';
   }
 
   render(): ReactNode {

@@ -87,9 +87,5 @@
       "adminUrlHelp": "Prefilled with whatever you are using right now — a bare IP is fine until DNS is ready. This is what the platform routes the admin by, so change it only if you will reach it somewhere else, and point that domain here first.",
       "unclaimedWarning": "This installation has not been claimed yet. Until you finish, anyone who can reach it can set it up instead of you. It stops accepting setup 15 minutes after starting."
     }
-  },
-  "certificates": {
-    "subtitlePlatform": "Every address this platform answers for, and what it serves HTTPS with. Soonest to expire first.",
-    "subtitleSite": "Every address this site answers for, and what it serves HTTPS with. Soonest to expire first."
   }
 }

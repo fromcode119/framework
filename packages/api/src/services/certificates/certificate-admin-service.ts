@@ -1,5 +1,5 @@
 import {
-  AcmeChallengeType, AcmeCloudflareTokenStore, ApplicationUrlUtils, CertificateHostRole, CertificateRecord,
+  AcmeChallengeType, AcmeCloudflareTokenStore, AdminScope, ApplicationUrlUtils, CertificateHostRole, CertificateRecord,
   CertificateRejection, CertificateSource, AcmeSettings, CertificateStoreService, CertificateValidationError,
   PlatformAddressDetection, SecretService, TenantRegistryService,
 } from '@fromcode119/core';
@@ -40,9 +40,9 @@ export class CertificateAdminService {
       warningDays: [...CertificateRecord.WARNING_DAYS],
       edge,
       automation: await this.automation(edge),
-      // 'platform' — nothing narrows this read, so the caller must be told that plainly rather than
-      // infer it from an absent field. The admin's subtitle reads this to say whose hosts these are.
-      scope: 'platform',
+      // Nothing narrows this read, so the caller must be told that plainly rather than infer it from
+      // an absent field. The admin's subtitle reads this to say whose hosts these are.
+      scope: AdminScope.PLATFORM,
     };
   }
 
@@ -56,9 +56,7 @@ export class CertificateAdminService {
       warningDays: [...CertificateRecord.WARNING_DAYS],
       edge,
       automation: await this.automation(edge),
-      // The requested tenant id, not the literal string 'site' — a truthy, non-'platform' scope is
-      // what the admin's subtitle branches on, and the id itself is useful to anyone logging the response.
-      scope: tenantId,
+      scope: AdminScope.SITE,
     };
   }
 
