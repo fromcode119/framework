@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import express from 'express';
 import request from 'supertest';
+import { TenantUploadsStatic } from '@api/server/tenant-uploads-static';
 
 /**
  * Serving `/uploads` for the site the request is for, WITHOUT 404ing what came before.
@@ -43,7 +44,7 @@ describe('tenant-scoped uploads static', () => {
     fs.writeFileSync(path.join(dir, name), body);
   };
 
-  beforeEach(async () => {
+  beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'uploads-static-'));
     (globalThis as any).__uploadsRoot = root;
 
@@ -51,15 +52,14 @@ describe('tenant-scoped uploads static', () => {
     write(path.join(root, 'tenants', 'site-b'), 'own.txt', 'B');
     write(root, 'legacy.txt', 'OLD');
 
-    const { TenantUploadsStatic } = await import('@api/server/tenant-uploads-static');
     app = express();
     app.use('/uploads', new TenantUploadsStatic({}, {}).middleware());
   });
 
-  afterEach(() => {
-    fs.rmSync(root, { recursive: true, force: true });
-    vi.resetModules();
-  });
+  // No `vi.resetModules()`: the module is imported once at the top, and resetting the registry between
+  // cases raced that import — the suite failed once in a full run and passed alone, which is the worst
+  // way for a test to be wrong.
+  afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
 
   it('serves a site its OWN file', async () => {
     const res = await request(app).get('/uploads/own.txt').set('Host', 'a.test');
