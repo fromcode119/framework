@@ -57,11 +57,9 @@ export class CertificateAdminController extends BaseController {
   async upload(req: Request, res: Response): Promise<void> {
     try {
       const body = (req.body ?? {}) as Record<string, unknown>;
-      const stored = await this.service.upload(
-        CoercionUtils.toString(body.host),
-        body.certificatePem,
-        body.privateKeyPem,
-      );
+      const host = CoercionUtils.toString(body.host);
+      if (!(await this.assertHostInScope(req, res, host))) return;
+      const stored = await this.service.upload(host, body.certificatePem, body.privateKeyPem);
       res.status(201).json(stored.toAdminJson());
     } catch (error) {
       this.fail(res, error);
@@ -70,13 +68,15 @@ export class CertificateAdminController extends BaseController {
 
   async setSource(req: Request, res: Response): Promise<void> {
     try {
+      const host = CoercionUtils.toString(req.params.host);
+      if (!(await this.assertHostInScope(req, res, host))) return;
       const body = (req.body ?? {}) as Record<string, unknown>;
       const source = CertificateSource.find(body.source);
       if (!source) {
         res.status(400).json({ error: 'unknown_certificate_source' });
         return;
       }
-      const updated = await this.service.setSource(CoercionUtils.toString(req.params.host), source, {
+      const updated = await this.service.setSource(host, source, {
         dnsWildcard: body.dnsWildcard === true,
       });
       if (!updated) {
@@ -101,7 +101,9 @@ export class CertificateAdminController extends BaseController {
 
   async remove(req: Request, res: Response): Promise<void> {
     try {
-      const removed = await this.service.remove(CoercionUtils.toString(req.params.host));
+      const host = CoercionUtils.toString(req.params.host);
+      if (!(await this.assertHostInScope(req, res, host))) return;
+      const removed = await this.service.remove(host);
       if (!removed) {
         res.status(404).json({ error: 'certificate_not_found' });
         return;
@@ -110,6 +112,31 @@ export class CertificateAdminController extends BaseController {
     } catch (error) {
       this.fail(res, error);
     }
+  }
+
+  /**
+   * Does a WRITE against `host` stay inside the request's own site, when it is bound to one?
+   *
+   * The mirror of `list()`'s read-side scoping, for `upload`/`setSource`/`remove`: a bound request
+   * (`req.tenantId` truthy — an operator stepped into a site) must not touch a host belonging to a
+   * DIFFERENT site, or to no site at all. The owning tenant is resolved server-side via the same
+   * `servedHosts()` lookup `list()` already uses — never a client-supplied tenant id, which would let
+   * the caller assert its own way past the check.
+   *
+   * A mismatch answers `certificate_not_found`, the SAME 404 `setSource`/`remove` already use for a
+   * host that resolves to nothing at all — so a scoped-out host does not leak its existence, or whose
+   * site it belongs to, through a different error shape. An unbound (platform-scope) request is
+   * unrestricted, same as today.
+   */
+  private async assertHostInScope(req: Request, res: Response, host: string): Promise<boolean> {
+    const boundTenantId = CoercionUtils.toString((req as any).tenantId ?? '');
+    if (!boundTenantId) return true;
+    const owner = await this.service.hostTenantId(host);
+    if (owner !== boundTenantId) {
+      res.status(404).json({ error: 'certificate_not_found' });
+      return false;
+    }
+    return true;
   }
 
   /**

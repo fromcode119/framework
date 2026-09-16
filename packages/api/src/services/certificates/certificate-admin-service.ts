@@ -40,6 +40,9 @@ export class CertificateAdminService {
       warningDays: [...CertificateRecord.WARNING_DAYS],
       edge,
       automation: await this.automation(edge),
+      // 'platform' — nothing narrows this read, so the caller must be told that plainly rather than
+      // infer it from an absent field. The admin's subtitle reads this to say whose hosts these are.
+      scope: 'platform',
     };
   }
 
@@ -53,7 +56,23 @@ export class CertificateAdminService {
       warningDays: [...CertificateRecord.WARNING_DAYS],
       edge,
       automation: await this.automation(edge),
+      // The requested tenant id, not the literal string 'site' — a truthy, non-'platform' scope is
+      // what the admin's subtitle branches on, and the id itself is useful to anyone logging the response.
+      scope: tenantId,
     };
+  }
+
+  /**
+   * Which tenant owns a served host, resolved the same way the list itself is built.
+   *
+   * `undefined` means the platform does not serve this host at all; `null` means it serves it but the
+   * host belongs to no tenant (one of the platform's own three). Both are "not this site" to a
+   * tenant-scoped caller — the distinction exists only so `servedHosts()` stays the single place that
+   * decides host ownership, instead of a second lookup a write route could get out of sync with.
+   */
+  async hostTenantId(host: string): Promise<string | null | undefined> {
+    const served = (await this.servedHosts()).get(CertificateAdminService.normalize(host));
+    return served ? served.tenantId : undefined;
   }
 
   /**

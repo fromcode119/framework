@@ -11,6 +11,7 @@ import { CertificateHostTable } from '@/app/certificates/components/certificate-
 import { CertificateStatusNotices } from '@/app/certificates/components/certificate-status-notices.client';
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
+import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
 
 /**
  * Every TLS certificate on the platform, in one list.
@@ -28,6 +29,13 @@ export class CertificatesPageClient extends AdminComponent {
   @state private encryptionAvailable = false;
   @state private edge: Record<string, unknown> | null = null;
   @state private automation: Record<string, unknown> | null = null;
+  /**
+   * 'platform' for the whole-box read, or a tenant id when the api narrowed the list to one site — an
+   * operator can land on this SAME platform-wide screen while their session is bound to a site, and
+   * the list is silently scoped to that site's hosts underneath them. The subtitle has to say whose
+   * hosts these are rather than always claiming platform-wide coverage (see `subtitle` below).
+   */
+  @state private scope = 'platform';
   @state private isLoading = true;
   @state private loadError = '';
   @state private uploadHost = '';
@@ -45,6 +53,7 @@ export class CertificatesPageClient extends AdminComponent {
       this.encryptionAvailable = result.encryptionAvailable;
       this.edge = result.edge;
       this.automation = result.automation;
+      this.scope = result.scope;
       this.loadError = '';
     } catch (error: any) {
       this.loadError = String(error?.message || 'Could not load certificates.');
@@ -105,6 +114,16 @@ export class CertificatesPageClient extends AdminComponent {
     await this.load();
   }
 
+  /**
+   * The subtitle claims exactly what `this.scope` says it does — platform-wide only when the read
+   * actually was. A bound request answers `forTenant`, so anything other than the literal `'platform'`
+   * means the list below is one site's hosts, and the copy must say "this site", not "this platform".
+   */
+  private get subtitle(): string {
+    const key = this.scope === 'platform' ? 'certificates.subtitlePlatform' : 'certificates.subtitleSite';
+    return AdminDictionary.translate(AdminDictionary.FALLBACK_LOCALE, key);
+  }
+
   render(): ReactNode {
     const dark = this.theme === ThemeMode.DARK;
     if (this.isLoading) return <Loader />;
@@ -115,7 +134,7 @@ export class CertificatesPageClient extends AdminComponent {
           theme={this.theme}
           icon={<FrameworkIcons.Lock size={18} strokeWidth={2} />}
           title="Certificates"
-          subtitle="Every address this platform answers for, and what it serves HTTPS with. Soonest to expire first."
+          subtitle={this.subtitle}
         />
         <div className="fc-certificates__body">
         <Card title="TLS">
