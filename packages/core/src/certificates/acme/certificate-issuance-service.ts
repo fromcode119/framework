@@ -13,6 +13,7 @@ import { ChallengeReachabilityProbe } from '@core/certificates/acme/challenge-re
 import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider';
 import { CloudflareZonePreflight } from '@core/certificates/acme/dns/cloudflare-zone-preflight';
 import { DnsPreflight } from '@core/certificates/acme/dns-preflight';
+import type { IDnsChallengeProvider } from '@core/certificates/acme/dns-challenge-provider.interface';
 import { Logger } from '@core/logging';
 
 /**
@@ -39,9 +40,14 @@ export class CertificateIssuanceService {
     private readonly preflight: DnsPreflight = DnsPreflight.system(),
     private readonly probe: ChallengeReachabilityProbe | null = null,
     private readonly adapter: AcmeClientAdapter | null = null,
-    /** Built fresh per attempt from the configured token — injected so tests never touch the network. */
-    private readonly zonePreflightFactory: (token: string) => CloudflareZonePreflight =
-      (token) => new CloudflareZonePreflight(new CloudflareDnsProvider(token)),
+    /**
+     * Built fresh per attempt from the configured token — injected so tests never touch the
+     * network. One instance serves both the zone preflight check and, if that passes, the actual
+     * order below: `AcmeClientAdapter` only knows `IDnsChallengeProvider`, and this is the one
+     * place that decides the concrete vendor is Cloudflare.
+     */
+    private readonly dnsProviderFactory: (token: string) => CloudflareDnsProvider =
+      (token) => new CloudflareDnsProvider(token),
   ) {}
 
   /** One pass. Never throws: a sweep that dies takes every other host's renewal with it. */
@@ -154,7 +160,8 @@ export class CertificateIssuanceService {
       return;
     }
 
-    const reason = await this.zonePreflightFactory(cloudflareToken).check(record.host);
+    const dnsProvider = this.dnsProviderFactory(cloudflareToken);
+    const reason = await new CloudflareZonePreflight(dnsProvider).check(record.host);
     if (reason) {
       await this.store.recordFailure(
         record.host,
@@ -168,11 +175,11 @@ export class CertificateIssuanceService {
     const claimed = await this.store.claimForIssuance(record.host, record.storedState);
     if (!claimed) return;
 
-    await this.order(record, settings);
+    await this.order(record, settings, dnsProvider);
   }
 
   /** The part that spends a rate limit. Everything above has already proved it should succeed. */
-  private async order(record: CertificateRecord, settings: AcmeSettings): Promise<void> {
+  private async order(record: CertificateRecord, settings: AcmeSettings, dnsProvider?: IDnsChallengeProvider): Promise<void> {
     const adapter = this.adapter ?? new AcmeClientAdapter(this.challenges);
     try {
       const account = await this.resolveAccount(settings);
@@ -184,7 +191,7 @@ export class CertificateIssuanceService {
         host: record.host,
         challengeType: record.challenge,
         altNames: record.wildcard ? [`*.${record.host}`] : undefined,
-        cloudflareToken: record.challenge === AcmeChallengeType.DNS_01 ? settings.cloudflareToken : undefined,
+        dnsProvider: record.challenge === AcmeChallengeType.DNS_01 ? dnsProvider : undefined,
       });
 
       if (issued.accountUrl && issued.accountUrl !== account.accountUrl) {

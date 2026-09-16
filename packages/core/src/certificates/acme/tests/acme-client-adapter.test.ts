@@ -3,8 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 /**
  * The adapter's two jobs for Phase 1: build the CSR with `altNames` only when a wildcard order asks
  * for them (HTTP-01's existing single-name CSR must not change shape), and route DNS-01's challenge
- * create/remove to Cloudflare instead of `AcmeChallengeStore` — while HTTP-01 keeps using the store
- * exactly as before.
+ * create/remove to the injected `IDnsChallengeProvider` instead of `AcmeChallengeStore` — while
+ * HTTP-01 keeps using the store exactly as before.
+ *
+ * The adapter never constructs a concrete DNS provider itself — that is the whole point of this
+ * refactor — so these tests inject a plain fake object satisfying `IDnsChallengeProvider` rather
+ * than mocking `CloudflareDnsProvider`.
  *
  * `acme-client` is loaded with `await import(...)` inside the adapter, so it is mocked at the module
  * level; `client.auto()` is stubbed to just CALL the two challenge functions once each and return a
@@ -30,13 +34,7 @@ vi.mock('acme-client', () => ({
 const createChallengeRecord = vi.fn(async () => ({ zoneId: 'zone-1', recordId: 'record-1' }));
 const removeChallengeRecord = vi.fn(async () => {});
 
-vi.mock('@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider', () => ({
-  CloudflareDnsProvider: class {
-    constructor(public token: string) {}
-    createChallengeRecord = createChallengeRecord;
-    removeChallengeRecord = removeChallengeRecord;
-  },
-}));
+const fakeDnsProvider = { createChallengeRecord, removeChallengeRecord };
 
 import { AcmeChallengeType } from '@core/enums/acme-challenge-type.enum';
 import { AcmeClientAdapter } from '@core/certificates/acme/acme-client-adapter';
@@ -87,14 +85,14 @@ describe('AcmeClientAdapter', () => {
       host: 'example.test',
       challengeType: AcmeChallengeType.DNS_01,
       altNames: ['*.example.test'],
-      cloudflareToken: 'cf-token',
+      dnsProvider: fakeDnsProvider,
     });
 
     expect(createCsr).toHaveBeenCalledWith({ commonName: 'example.test', altNames: ['*.example.test'] });
     expect(autoMock.mock.calls[0][0].challengePriority).toEqual(['dns-01']);
   });
 
-  it('DNS-01 routes challenge create/remove to CloudflareDnsProvider, at "_acme-challenge.<identifier>", never AcmeChallengeStore', async () => {
+  it('DNS-01 routes challenge create/remove to the injected DnsChallengeProvider, at "_acme-challenge.<identifier>", never AcmeChallengeStore', async () => {
     const adapter = new AcmeClientAdapter(challengeStore as any);
     await adapter.issue({
       directoryUrl: 'https://authority.test/directory',
@@ -102,7 +100,7 @@ describe('AcmeClientAdapter', () => {
       host: 'example.test',
       challengeType: AcmeChallengeType.DNS_01,
       altNames: ['*.example.test'],
-      cloudflareToken: 'cf-token',
+      dnsProvider: fakeDnsProvider,
     });
 
     expect(createChallengeRecord).toHaveBeenCalledWith('example.test', '_acme-challenge.example.test', 'key-auth-1');
@@ -111,7 +109,7 @@ describe('AcmeClientAdapter', () => {
     expect(challengeStore.remove).not.toHaveBeenCalled();
   });
 
-  it('DNS-01 with no Cloudflare token configured refuses before ordering anything', async () => {
+  it('DNS-01 with no DNS challenge provider injected refuses before ordering anything', async () => {
     const adapter = new AcmeClientAdapter(challengeStore as any);
     await expect(adapter.issue({
       directoryUrl: 'https://authority.test/directory',
@@ -119,7 +117,7 @@ describe('AcmeClientAdapter', () => {
       host: 'example.test',
       challengeType: AcmeChallengeType.DNS_01,
       altNames: ['*.example.test'],
-    })).rejects.toThrow(/no Cloudflare token/i);
+    })).rejects.toThrow(/no DNS challenge provider/i);
 
     expect(autoMock).not.toHaveBeenCalled();
   });
