@@ -47,6 +47,39 @@ export class PluginManagerQueryService {
     return Array.from(this.plugins.values()).some((plugin) => plugin?.manifest?.slug === name);
   }
 
+  /**
+   * WHICH version of an extension is installed, or null when none is.
+   *
+   * Read from what is ON DISK, exactly like {@link isExtensionInstalled}, and for the same reason:
+   * the build record says what was produced, and the question here is what is RUNNING. The screen
+   * that shows both needs them to come from different places or it is comparing a value with itself.
+   *
+   * CORE answers null. It is what is running rather than something installed beside it, and no
+   * caller may offer to swap its version from this surface.
+   */
+  async installedExtensionVersion(slug: string, type: ExtensionScope, themeManager?: any): Promise<string | null> {
+    const name = String(slug || '').trim();
+    if (!name) return null;
+
+    const scope = ExtensionScope.find(type);
+    const version = (value: unknown): string | null => {
+      const text = String(value ?? '').trim();
+      return text || null;
+    };
+
+    if (scope === ExtensionScope.THEME) {
+      return version(themeManager?.getThemes?.().find((theme: any) => theme?.slug === name)?.version);
+    }
+    if (scope === ExtensionScope.APPEARANCE) {
+      return version(new AppearanceManager(this.logger).list()
+        .find((item) => item.slug === name && !item.builtIn)?.version);
+    }
+    if (scope === ExtensionScope.CORE) return null;
+
+    return version(Array.from(this.plugins.values())
+      .find((plugin) => plugin?.manifest?.slug === name)?.manifest?.version);
+  }
+
   /** Returns plugins in topological order based on their dependencies. */
   getSortedPlugins(pluginsToSort?: ILoadedPlugin[]): ILoadedPlugin[] {
     const list = pluginsToSort || Array.from(this.plugins.values());

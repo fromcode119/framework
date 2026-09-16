@@ -35,4 +35,14 @@ export interface IExtensionInstaller {
    * they ended up as one setting that did neither well.
    */
   isExtensionInstalled(slug: string, scope: ExtensionScope): Promise<boolean>;
+
+  /**
+   * WHICH version is installed, or null when none is.
+   *
+   * Separate from the boolean above because the screen needs both and they answer different
+   * questions: whether a build may install itself, and whether what is running is the thing that was
+   * built. A source could report "built v0.1.31" for weeks while v0.1.20 served every request, and
+   * nothing on the page could tell the operator.
+   */
+  installedExtensionVersion(slug: string, scope: ExtensionScope): Promise<string | null>;
 }

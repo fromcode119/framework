@@ -118,6 +118,88 @@ export class PackageBuilder {
   }
 
   /**
+   * Every version of this extension still staged on disk, newest first.
+   *
+   * Nothing prunes these: a build clears its OWN version's directory and leaves the rest, so the
+   * versions an installation has built accumulate and are already installable — which is what makes
+   * going back to one a listing problem rather than a rebuild.
+   *
+   * Derived from the directories rather than from a build record, because the record holds ONE
+   * version — the latest — and the whole point here is the others.
+   *
+   * A remainder must LOOK like a version — it has to start with a digit. Slugs contain hyphens
+   * (`logistics-econt`), so a bare prefix match would read `forms-extra-0.1.0` as version
+   * `extra-0.1.0` of `forms` and offer another extension's package as one of this one's.
+   */
+  listStagedVersions(type: ExtensionScope, slug: string): string[] {
+    const name = String(slug || '').trim();
+    if (!name) return [];
+
+    const packagesDir = path.join(this.outputDirFor(type), 'packages');
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(packagesDir, { withFileTypes: true });
+    } catch {
+      // No directory means nothing has been built for this kind yet — an empty list, not an error.
+      return [];
+    }
+
+    const prefix = `${name}-`;
+    return entries
+      .filter((entry) => entry.isDirectory() && entry.name.startsWith(prefix))
+      .map((entry) => entry.name.slice(prefix.length))
+      .filter((version) => /^\d/.test(version))
+      .sort(PackageBuilder.byVersionDescending);
+  }
+
+  /**
+   * Newest first.
+   *
+   * Two things a plain string sort gets wrong, both of which put the wrong entry at the top of a
+   * list an operator is about to install from:
+   *
+   *   NUMBERS  — `0.1.9` sorts above `0.1.31` as text, so the newest build would not be first.
+   *   PRERELEASES — `1.0.0-rc.1` sorts above `1.0.0` as text, and it is the OLDER of the two: a
+   *                 release outranks the candidates that preceded it.
+   *
+   * The release part is compared segment by segment as numbers; a version with no prerelease suffix
+   * then outranks the same release with one. Non-numeric segments fall back to text so the order
+   * stays stable rather than correct by luck.
+   */
+  private static byVersionDescending(left: string, right: string): number {
+    const split = (value: string): { release: string[]; pre: string } => {
+      const at = value.indexOf('-');
+      return at === -1
+        ? { release: value.split('.'), pre: '' }
+        : { release: value.slice(0, at).split('.'), pre: value.slice(at + 1) };
+    };
+
+    const a = split(left);
+    const b = split(right);
+
+    for (let index = 0; index < Math.max(a.release.length, b.release.length); index += 1) {
+      const x = a.release[index];
+      const y = b.release[index];
+      if (x === undefined) return 1;
+      if (y === undefined) return -1;
+      const nx = Number(x);
+      const ny = Number(y);
+      if (Number.isInteger(nx) && Number.isInteger(ny)) {
+        if (nx !== ny) return ny - nx;
+        continue;
+      }
+      const comparison = String(y).localeCompare(String(x));
+      if (comparison !== 0) return comparison;
+    }
+
+    // Same release. No prerelease suffix is the finished one and comes first.
+    if (a.pre === b.pre) return 0;
+    if (!a.pre) return -1;
+    if (!b.pre) return 1;
+    return b.pre.localeCompare(a.pre);
+  }
+
+  /**
    * Read the manifest file from a source directory.
    */
   private async buildAppearancePackage(sourceDir: string): Promise<IPackageResult> {

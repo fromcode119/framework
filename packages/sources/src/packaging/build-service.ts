@@ -212,6 +212,71 @@ export class BuildService {
     };
   }
 
+  /**
+   * What is RUNNING, what was last BUILT, and everything still installable.
+   *
+   * Three different facts that the screen used to collapse into one. A source reported the version it
+   * last built and nothing else, so an installation could report "built 0.1.31" for weeks while
+   * 0.1.20 served every request — the two are recorded in different places and nothing compared them.
+   *
+   * `available` is read from disk rather than from any record: a build clears its own version's
+   * staging directory and leaves every other, so the versions this installation can still put in
+   * place are simply the ones that are still there.
+   */
+  async listVersions(identity: BuildSourceIdentity): Promise<{
+    installed: string | null;
+    built: string | null;
+    available: string[];
+  }> {
+    const entry = await this.db.findOne(this.buildsSlug, identity.where);
+    const built = CoercionUtils.toString(entry?.version).trim() || null;
+    const installed = this.installer
+      ? await this.installer.installedExtensionVersion(identity.slug, identity.type)
+      : null;
+
+    return {
+      installed,
+      built,
+      available: this.packageBuilder.listStagedVersions(identity.type, identity.slug),
+    };
+  }
+
+  /**
+   * Puts a SPECIFIC staged version in place — the way back to an older build.
+   *
+   * Deliberately not routed through `BuiltPackageInstaller`: that one exists to decide whether a
+   * FRESH build may install itself, and answers to `installAfterBuild` and `autoUpdate`. This is an
+   * operator pressing a button about a version that already exists, so those two settings have
+   * nothing to say about it — consulting them would make the control silently do nothing on a source
+   * configured not to auto-install, which is most of them.
+   *
+   * Refuses a version it cannot find on disk rather than installing the newest as a courtesy: the
+   * request named a version, and quietly installing a different one is the worst outcome available.
+   */
+  async installVersion(identity: BuildSourceIdentity, version: string): Promise<{ installed: string }> {
+    const wanted = CoercionUtils.toString(version).trim();
+    if (!wanted) throw new Error('No version was given.');
+    if (!this.installer) throw new Error('No installer is wired; this deployment cannot install packages.');
+    if (identity.type === ExtensionScope.CORE) {
+      // Core replaces the running project root. Whatever swapping its version means, it is not this
+      // button, and answering the request would be worse than refusing it.
+      throw new Error('Core cannot be switched to another version from here.');
+    }
+
+    const available = this.packageBuilder.listStagedVersions(identity.type, identity.slug);
+    if (!available.includes(wanted)) {
+      throw new Error(`Version "${wanted}" is not staged for ${identity.key}. Available: ${available.join(', ') || 'none'}.`);
+    }
+
+    const stagedDir = this.packageBuilder.stagingDirFor(identity.type, identity.slug, wanted);
+    // `activate: false` — installing a theme is not choosing it. Putting a version back must not also
+    // switch the site onto it; that is a separate decision the operator makes on the Themes screen.
+    await this.installer.installExtensionDirectory(stagedDir, identity.type, { activate: false });
+    this.logger.info(`Installed ${identity.key} version ${wanted} from ${stagedDir}.`);
+
+    return { installed: wanted };
+  }
+
   /** The built package as a downloadable archive, made on request. See PackageDownloadService. */
   async archivePackage(identity: BuildSourceIdentity): Promise<{ filePath: string; fileName: string } | null> {
     return this.packageDownloads.archive(identity, await this.resolvePackageArtifact(identity));

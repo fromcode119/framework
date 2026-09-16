@@ -24,6 +24,14 @@ export class SourcesRouteService {
   static checkUpdates(): string { return '/sources/check-updates'; }
   static branches(): string { return '/sources/branches'; }
   static inspect(): string { return '/sources/inspect'; }
+  /** What is installed, what was last built, and every version still staged. */
+  static versions(type: string, slug: string): string {
+    return `${SourcesRouteService.one(type, slug)}/versions`;
+  }
+  /** Puts one of those staged versions in place. */
+  static install(type: string, slug: string): string {
+    return `${SourcesRouteService.one(type, slug)}/install`;
+  }
   /** The built package as a downloadable archive, zipped on request. */
   static packageArchive(type: string, slug: string): string {
     return `${SourcesRouteService.one(type, slug)}/package`;
