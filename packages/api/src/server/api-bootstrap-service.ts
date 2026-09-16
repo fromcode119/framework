@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
+import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SiteBaseUrl, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
@@ -135,6 +135,11 @@ export class ApiBootstrapService {
       if (scope) marketplace.invalidateResolvedCatalogue(scope);
       else marketplace.invalidateResolvedCatalogue();
     });
+
+    // A site's own absolute URLs, for every link that leaves the platform. Wired here with the same
+    // database the tenant resolver uses; before this call it answers with the platform's URLs, which
+    // is what a CLI or a boot-time caller should get anyway.
+    SiteBaseUrl.registerDatabase((manager as any).db);
 
     const themeManager = new ThemeManager((manager as any).db);
     // The plugin manager resolves every plugin's `context.theme.*` through this reference, and plugins
