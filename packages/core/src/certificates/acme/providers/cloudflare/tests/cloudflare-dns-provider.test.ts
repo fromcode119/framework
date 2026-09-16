@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare-dns-provider';
+import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider';
 
 /**
  * The Cloudflare DNS-01 provider, entirely against a mocked HTTP layer — no live network call, ever.

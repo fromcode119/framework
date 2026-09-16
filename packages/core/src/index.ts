@@ -175,6 +175,9 @@ export type { SystemSettingKey, SystemSettingDescriptor } from '@core/settings/s
 export { SettingScope } from '@core/settings/enums/setting-scope.enum';
 export { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';
 export { NetworkAddressUtils } from '@core/security/network-address-utils';
+export type { INetworkEdgeProvider } from '@core/security/interfaces/network-edge-provider.interface';
+export { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
+export { CloudflareEdgeProvider } from '@core/security/providers/cloudflare/cloudflare-edge-provider';
 export { OutboundUrlSecurityPolicy } from '@core/security/outbound-url-security-policy';
 export { ProjectPaths } from '@core/config/paths';
 
@@ -225,8 +228,8 @@ export { DnsPreflight } from '@core/certificates/acme/dns-preflight';
 export { AcmeChallengeType } from '@core/enums/acme-challenge-type.enum';
 export { AcmeClientAdapter } from '@core/certificates/acme/acme-client-adapter';
 export { AcmeCloudflareTokenStore } from '@core/certificates/acme/dns/acme-cloudflare-token-store';
-export { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare-dns-provider';
-export { CloudflareChallengeRecord } from '@core/certificates/acme/providers/cloudflare-challenge-record';
+export { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider';
+export { CloudflareChallengeRecord } from '@core/certificates/acme/providers/cloudflare/cloudflare-challenge-record';
 export { CloudflareZonePreflight } from '@core/certificates/acme/dns/cloudflare-zone-preflight';
 export { PlatformAddressCandidate } from '@core/certificates/acme/platform-address-candidate';
 export { PlatformAddressDetection } from '@core/certificates/acme/platform-address-detection';

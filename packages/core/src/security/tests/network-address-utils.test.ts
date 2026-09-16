@@ -82,3 +82,70 @@ describe('NetworkAddressUtils.matchesAny', () => {
     expect(NetworkAddressUtils.matchesAny('10.0.0.5', undefined)).toBe(false);
   });
 });
+
+describe('NetworkAddressUtils.matchEdgeProvider', () => {
+  it('finds the registered Cloudflare provider for an address inside its published IPv4 range', () => {
+    expect(NetworkAddressUtils.matchEdgeProvider('104.16.0.1')?.key).toBe('cloudflare');
+  });
+
+  it('finds the registered Cloudflare provider for an address inside its published IPv6 range', () => {
+    expect(NetworkAddressUtils.matchEdgeProvider('2606:4700::1')?.key).toBe('cloudflare');
+  });
+
+  it('matches nothing for an address outside every registered provider', () => {
+    expect(NetworkAddressUtils.matchEdgeProvider('8.8.8.8')).toBeNull();
+  });
+
+  it('matches an operator-declared extra range for a provider, keyed by its own provider key', () => {
+    expect(NetworkAddressUtils.matchEdgeProvider('203.0.113.9', { cloudflare: ['203.0.113.0/24'] })?.key)
+      .toBe('cloudflare');
+  });
+
+  it('does not credit an extra range declared under the wrong provider key', () => {
+    expect(NetworkAddressUtils.matchEdgeProvider('203.0.113.9', { 'some-other-provider': ['203.0.113.0/24'] }))
+      .toBeNull();
+  });
+});
+
+describe('NetworkAddressUtils.resolveClientIp', () => {
+  it("trusts the matched provider's own header when the chain shows the request transited its edge", () => {
+    // 104.16.0.1 is inside Cloudflare's published 104.16.0.0/13 edge range — this is what `req.ip`
+    // resolves to when the trust-proxy walk stops at Cloudflare's own edge address, and Cloudflare's
+    // provider declares `cf-connecting-ip` as ITS trusted header, never hardcoded in this method.
+    expect(NetworkAddressUtils.resolveClientIp({
+      ip: '104.16.0.1',
+      headers: { 'cf-connecting-ip': '203.0.113.42' },
+    })).toBe('203.0.113.42');
+  });
+
+  it('ignores the trusted header on a request that did not arrive through a known edge provider', () => {
+    // A direct connection to the origin (bypassing Cloudflare entirely) forging the header must not
+    // get to claim an arbitrary IP — 203.0.113.9 is not a Cloudflare address, so the header is ignored.
+    expect(NetworkAddressUtils.resolveClientIp({
+      ip: '203.0.113.9',
+      headers: { 'cf-connecting-ip': '198.51.100.7' },
+    })).toBe('203.0.113.9');
+  });
+
+  it('falls back to req.ip unchanged when there is no trusted header at all', () => {
+    // The non-Cloudflare-proxied case — most hosts on this platform still are not behind Cloudflare.
+    expect(NetworkAddressUtils.resolveClientIp({ ip: '203.0.113.9', headers: {} })).toBe('203.0.113.9');
+    expect(NetworkAddressUtils.resolveClientIp({ ip: '203.0.113.9' })).toBe('203.0.113.9');
+  });
+
+  it('falls back to req.ip when the matched provider header holds a malformed, non-IP value', () => {
+    // The chain proves the hop transited Cloudflare's edge, but the header value itself is garbage —
+    // it must never be trusted verbatim; this must behave exactly like the no-header case.
+    expect(NetworkAddressUtils.resolveClientIp({
+      ip: '104.16.0.1',
+      headers: { 'cf-connecting-ip': 'not-an-ip' },
+    })).toBe('104.16.0.1');
+  });
+
+  it('honours operator-declared extra ranges, keyed by provider, for a header not yet in the hardcoded list', () => {
+    expect(NetworkAddressUtils.resolveClientIp(
+      { ip: '203.0.113.9', headers: { 'cf-connecting-ip': '198.51.100.7' } },
+      { cloudflare: ['203.0.113.0/24'] },
+    )).toBe('198.51.100.7');
+  });
+});

@@ -7,7 +7,7 @@ import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason
  */
 
 import { Request, Response } from 'express';
-import { RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
+import { NetworkAddressUtils, RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerTokenSupport } from '@api/controllers/auth/auth-controller-token-support';
 import type { ILoginThrottleSettings } from '@api/controllers/auth/interfaces/login-throttle-settings.interface';
 import type { ILoginThrottleState } from '@api/controllers/auth/interfaces/login-throttle-state.interface';
@@ -83,7 +83,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     const { captchaToken } = req.body || {};
     const email = this.normalizeEmail(req.body?.email);
     if (!email || !this.isValidEmail(email)) return res.status(400).json({ error: 'A valid email is required' });
-    const throttleKey = this.getVerificationResendThrottleKey(email, req.ip || '');
+    const throttleKey = this.getVerificationResendThrottleKey(email, NetworkAddressUtils.resolveClientIp(req) || '');
     const throttleSettings = await this.getVerificationResendThrottleSettings();
     const existingThrottleState = await this.readLoginThrottleState(throttleKey);
 
@@ -115,7 +115,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
       try {
         const captchaResult = await this.manager.hooks.call('auth:captcha:verify', {
           token: String(captchaToken || '').trim(),
-          ip: req.ip,
+          ip: NetworkAddressUtils.resolveClientIp(req),
           email
         }) as Record<string, unknown> | undefined;
         if (captchaResult && captchaResult.valid === false) {

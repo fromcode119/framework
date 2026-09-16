@@ -1,6 +1,6 @@
 import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason.enum';
 import { Request, Response } from 'express';
-import { SystemConstants } from '@fromcode119/core';
+import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerSession } from '@api/controllers/auth/auth-controller-session';
 import { CoercionUtils } from '@fromcode119/core';
 import { PersonalDataErasureService } from '@fromcode119/core';
@@ -96,7 +96,7 @@ export class AuthControllerAccount extends AuthControllerSession {
     const lockedHash = await this.auth.hashPassword(`deleted-${userId}-${Math.random().toString(36).slice(2)}`);
     await this.db.update(SystemConstants.TABLE.USERS, { id: userId }, { password: lockedHash, updatedAt: new Date() });
     await this.revokeAllSessionsForUser(userId);
-    await this.manager.writeLog('INFO', `Account self-deleted for user ${userId}`, 'system', { userId, ip: req.ip }).catch(() => {});
+    await this.manager.writeLog('INFO', `Account self-deleted for user ${userId}`, 'system', { userId, ip: NetworkAddressUtils.resolveClientIp(req) }).catch(() => {});
 
     // An account is kept for two different reasons and the subject must be told which. `retained > 0`
     // only ever means "shared with another site"; a RETAIN strategy keeps the row and reports zero of
@@ -167,7 +167,7 @@ export class AuthControllerAccount extends AuthControllerSession {
       'INFO',
       `Password changed for ${user.email}`,
       'system',
-      { userId, email: user.email, ip: req.ip, revokeOtherSessions: revokeOtherSessions !== false }
+      { userId, email: user.email, ip: NetworkAddressUtils.resolveClientIp(req), revokeOtherSessions: revokeOtherSessions !== false }
     ).catch(() => {});
 
     await this.sendSecurityNotification({
@@ -237,7 +237,7 @@ export class AuthControllerAccount extends AuthControllerSession {
       'INFO',
       `Email change requested for ${oldEmail} -> ${newEmail}`,
       'system',
-      { userId, oldEmail, newEmail, ip: req.ip, emailSent: sent }
+      { userId, oldEmail, newEmail, ip: NetworkAddressUtils.resolveClientIp(req), emailSent: sent }
     ).catch(() => {});
 
     const response: Record<string, any> = {

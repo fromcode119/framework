@@ -2,6 +2,8 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { SettingScope } from '@core/settings/enums/setting-scope.enum';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { NetworkAddressUtils } from '@core/security/network-address-utils';
+import { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
+import { CloudflareEdgeProvider } from '@core/security/providers/cloudflare/cloudflare-edge-provider';
 
 /** Every declared `_system_meta` key, derived from `META_KEY` so a new key with no descriptor here is a compile error. */
 export type SystemSettingKey = typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY];
@@ -295,6 +297,10 @@ export class SystemSettingRegistry {
     [SystemSettingRegistry.KEY.RATE_LIMIT_INTERNAL_CLIENTS]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: NetworkAddressUtils.PRIVATE_RANGES_TEXT, description: "Addresses/CIDR blocks that count as internal service callers (the storefront renderer, workers). Clear it and nothing is internal: every anonymous caller falls back to the public limit.", group: "security" },
+    },
+    [SystemSettingRegistry.KEY.RATE_LIMIT_CLOUDFLARE_EDGE_RANGES]: {
+      scope: SettingScope.SITE, writable: true, exposed: true,
+      seed: { value: NetworkEdgeProviderRegistry.rangesTextFor(new CloudflareEdgeProvider()), description: "Cloudflare's published edge IP ranges (https://www.cloudflare.com/ips/), trusted to set the CF-Connecting-IP header naming the real visitor. Seeded with the ranges built into the code; extend this if Cloudflare publishes a new range before the platform is updated. Never remove a range here to reduce trust — that requires a code change.", group: "security" },
     },
     [SystemSettingRegistry.KEY.RATE_LIMIT_WINDOW]: {
       scope: SettingScope.SITE, writable: true, exposed: true,

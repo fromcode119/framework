@@ -23,7 +23,7 @@ export class RateLimitBucketUtils {
   /** The limiter key this request counts against. */
   static resolveKey(requestLike: IRateLimitRequest, settingsCache?: Map<string, string>): string {
     if (RateLimitBucketUtils.isInternalServiceRequest(requestLike, settingsCache)) {
-      return `internal:${RateLimitBucketUtils.resolveClientAddress(requestLike)}`;
+      return `internal:${RateLimitBucketUtils.resolveClientAddress(requestLike, settingsCache)}`;
     }
     return AdminBootstrapRateLimitUtils.resolveKey(requestLike);
   }
@@ -63,12 +63,17 @@ export class RateLimitBucketUtils {
     if (allowedClients.length === 0) return false;
 
     return NetworkAddressUtils.matchesAny(RateLimitBucketUtils.resolvePeerAddress(requestLike), allowedClients)
-      && NetworkAddressUtils.matchesAny(RateLimitBucketUtils.resolveClientAddress(requestLike), allowedClients);
+      && NetworkAddressUtils.matchesAny(RateLimitBucketUtils.resolveClientAddress(requestLike, settingsCache), allowedClients);
   }
 
-  /** The address the proxy chain resolved this request to (Express `req.ip`). */
-  private static resolveClientAddress(requestLike: IRateLimitRequest): string {
-    return NetworkAddressUtils.normalize(requestLike.ip);
+  /**
+   * The address the proxy chain resolved this request to — Express `req.ip`, or a registered edge
+   * provider's own trusted header (e.g. Cloudflare's `CF-Connecting-IP`) when the chain proves the
+   * request actually transited that provider's edge (its hardcoded ranges plus whatever the operator
+   * has additionally declared).
+   */
+  private static resolveClientAddress(requestLike: IRateLimitRequest, settingsCache?: Map<string, string>): string {
+    return NetworkAddressUtils.resolveClientIp(requestLike, RateLimitSettingsUtils.resolveNetworkEdgeRanges(settingsCache));
   }
 
   /** The address at the other end of the TCP socket — the one hop nothing can forge a header for. */

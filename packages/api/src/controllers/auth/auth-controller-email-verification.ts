@@ -3,7 +3,7 @@ import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason
 import * as speakeasy from 'speakeasy';
 import type { Request, Response } from 'express';
 import { randomBytes } from 'crypto';
-import { SystemConstants, SecretService } from '@fromcode119/core';
+import { NetworkAddressUtils, SystemConstants, SecretService } from '@fromcode119/core';
 import { AuthControllerPolicy } from '@api/controllers/auth/auth-controller-policy';
 import { CoercionUtils } from '@fromcode119/core';
 
@@ -209,7 +209,7 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
         'WARN',
         `Failed 2FA attempt for ${user.email}`,
         'system',
-        { userId: user.id, ip: req.ip }
+        { userId: user.id, ip: NetworkAddressUtils.resolveClientIp(req) }
       ).catch(() => {});
       res.status(401).json({ error: 'Invalid 2FA token or recovery code' });
       return false;
@@ -219,7 +219,7 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
       'INFO',
       `Successful 2FA challenge (${method}) for ${user.email}`,
       'system',
-      { userId: user.id, email: user.email, ip: req.ip, method }
+      { userId: user.id, email: user.email, ip: NetworkAddressUtils.resolveClientIp(req), method }
     ).catch(() => {});
     return true;
   }

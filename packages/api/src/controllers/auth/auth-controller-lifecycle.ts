@@ -3,7 +3,7 @@ import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { TwoFactorMethod } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { SecretService } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/core';
+import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerSso } from '@api/controllers/auth/auth-controller-sso';
 import { InitialSetupPreferences } from '@api/controllers/auth/initial-setup-preferences';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
@@ -78,7 +78,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
       'INFO',
       `System initialized. Admin account created: ${normalizedEmail}`,
       'system',
-      { userId: newUser.id, email: normalizedEmail, ip: req.ip }
+      { userId: newUser.id, email: normalizedEmail, ip: NetworkAddressUtils.resolveClientIp(req) }
     ).catch(() => {});
 
     res.json({
@@ -201,7 +201,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
   async login(req: Request, res: Response) {
     const { password, totpToken, recoveryCode, captchaToken } = req.body || {};
     const email = this.normalizeEmail(req.body?.email);
-    const throttleKey = this.getLoginThrottleKey(email, req.ip || '');
+    const throttleKey = this.getLoginThrottleKey(email, NetworkAddressUtils.resolveClientIp(req) || '');
     const throttleSettings = await this.getLoginThrottleSettings();
     const throttleState = await this.readLoginThrottleState(throttleKey);
 
@@ -228,7 +228,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
         try {
           const captchaResult: any = await this.manager.hooks.call('auth:captcha:verify', {
             token: String(captchaToken || '').trim(),
-            ip: req.ip,
+            ip: NetworkAddressUtils.resolveClientIp(req),
             email
           });
           if (captchaResult && captchaResult.valid === false) {
@@ -254,7 +254,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
           await this.manager.writeLog('WARN', `Blocked login for suspended account: ${email}`, 'system', {
             userId: user.id,
             email,
-            ip: req.ip
+            ip: NetworkAddressUtils.resolveClientIp(req)
           }).catch(() => {});
           return res.status(403).json({
             error: 'Account is suspended. Please contact support.'
@@ -268,7 +268,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
             'WARN',
             `Failed login attempt for ${email} (Invalid Password)`,
             'system',
-            { email, ip: req.ip }
+            { email, ip: NetworkAddressUtils.resolveClientIp(req) }
           ).catch(() => {});
           return res.status(401).json({ error: 'Invalid email or password' });
         }
@@ -331,7 +331,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
               'WARN',
               `Failed 2FA attempt for ${user.email}`,
               'system',
-              { userId: user.id, ip: req.ip }
+              { userId: user.id, ip: NetworkAddressUtils.resolveClientIp(req) }
             ).catch(() => {});
             return res.status(401).json({ error: 'Invalid 2FA token or recovery code' });
           }
@@ -340,7 +340,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
             'INFO',
             `Successful 2FA challenge (${twoFactorMethod}) for ${user.email}`,
             'system',
-            { userId: user.id, email: user.email, ip: req.ip, method: twoFactorMethod }
+            { userId: user.id, email: user.email, ip: NetworkAddressUtils.resolveClientIp(req), method: twoFactorMethod }
           ).catch(() => {});
         }
 
@@ -354,7 +354,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
           {
             userId: user.id,
             email: user.email,
-            ip: req.ip,
+            ip: NetworkAddressUtils.resolveClientIp(req),
             userAgent: req.headers['user-agent'],
             jti: loginResult.user.jti,
             twoFactorUsed: !!(totpToken || recoveryCode)
@@ -367,7 +367,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
           subject: 'New login detected',
           title: 'A new login was detected on your account.',
           details: [
-            `IP address: ${String(req.ip || 'unknown')}`,
+            `IP address: ${String(NetworkAddressUtils.resolveClientIp(req) || 'unknown')}`,
             `User-Agent: ${String(req.headers['user-agent'] || 'unknown')}`,
             `Time: ${new Date().toISOString()}`
           ]
@@ -387,7 +387,7 @@ export class AuthControllerLifecycle extends AuthControllerSso {
         'WARN',
         `Failed login attempt for non-existent user: ${email}`,
         'system',
-        { email, ip: req.ip }
+        { email, ip: NetworkAddressUtils.resolveClientIp(req) }
       ).catch(() => {});
       return res.status(401).json({ error: 'Invalid email or password' });
     } catch (err: any) {

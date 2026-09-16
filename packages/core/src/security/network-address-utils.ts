@@ -1,5 +1,7 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { BlockList, isIP } from 'net';
+import type { INetworkEdgeProvider } from '@core/security/interfaces/network-edge-provider.interface';
+import { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
 
 /**
  * Address matching for the network allowlists the platform declares.
@@ -32,6 +34,14 @@ export class NetworkAddressUtils {
   static get PRIVATE_RANGES_TEXT(): string {
     return NetworkAddressUtils.PRIVATE_RANGES.join(', ');
   }
+
+  /**
+   * Each registered edge provider's own block list, built once and cached by provider key — the
+   * provider-driven replacement for a single hardcoded Cloudflare list. See
+   * `NetworkEdgeProviderRegistry` for how a second provider gets added here without touching any of
+   * the methods below.
+   */
+  private static readonly EDGE_PROVIDER_BLOCK_LISTS = new Map<string, BlockList>();
 
   /** Strip the IPv6 brackets, the IPv4-mapped prefix and any `:port` suffix Node may attach. */
   static normalize(value: unknown): string {
@@ -97,6 +107,65 @@ export class NetworkAddressUtils {
     return !NetworkAddressUtils.NON_PUBLIC_ADDRESSES.check(normalized, family === 4 ? 'ipv4' : 'ipv6');
   }
 
+  /**
+   * The registered edge provider whose published (plus operator-declared) ranges contain `address`,
+   * or `null` when it matches none of them. `extraRangesByProvider` is keyed by each provider's
+   * `key` — e.g. `{ cloudflare: [...] }` — the operator-declared addition to that provider's own
+   * hardcoded default ranges.
+   */
+  static matchEdgeProvider(
+    address: unknown,
+    extraRangesByProvider?: Readonly<Record<string, readonly string[]>>,
+  ): INetworkEdgeProvider | null {
+    const normalized = NetworkAddressUtils.normalize(address);
+    const family = isIP(normalized);
+    if (!family) return null;
+
+    for (const provider of NetworkEdgeProviderRegistry.ALL) {
+      const blockList = NetworkAddressUtils.edgeBlockListFor(provider);
+      if (blockList.check(normalized, family === 4 ? 'ipv4' : 'ipv6')) return provider;
+      if (NetworkAddressUtils.matchesAny(normalized, extraRangesByProvider?.[provider.key])) return provider;
+    }
+    return null;
+  }
+
+  /**
+   * The real visitor address for a request that may have transited a known edge provider (Cloudflare
+   * today; any provider registered in `NetworkEdgeProviderRegistry`) in front of our own reverse
+   * proxy.
+   *
+   * `req.ip` is already what Express's `trust proxy` walk (see `packages/api/src/index.ts`) resolved —
+   * for a request that genuinely came through an edge provider, that walk trusts the private hop to
+   * Traefik and then stops at the next entry, which is the provider's OWN edge address (public, so
+   * untrusted by the RFC1918-only predicate). When that stopping point matches a registered
+   * provider's own ranges, THAT provider's `trustedIpHeader` names the real visitor — the provider's
+   * edge sets that header itself, overwriting anything the client sent, so it can only be trusted
+   * when the chain already proves the request transited that provider's network, and only when the
+   * header actually holds a syntactically valid IP (a malformed value falls through exactly like no
+   * header at all, never returned verbatim). Any other case — a host not behind a known provider, or
+   * a direct connection to the origin forging the header to bypass the edge entirely — falls back to
+   * `req.ip` exactly as it resolved before this method existed, so neither case is a regression and
+   * neither trusts a forged header.
+   *
+   * `extraRangesByProvider` is the operator-declared addition to each provider's hardcoded edge list
+   * (see `RateLimitSettingsUtils.resolveNetworkEdgeRanges`) — optional, and omitted callers behave
+   * exactly as before this parameter existed.
+   */
+  static resolveClientIp(
+    req: { ip?: unknown; headers?: Record<string, unknown> } | null | undefined,
+    extraRangesByProvider?: Readonly<Record<string, readonly string[]>>,
+  ): string {
+    const resolvedIp = NetworkAddressUtils.normalize(req?.ip);
+    if (!resolvedIp) return resolvedIp;
+
+    const provider = NetworkAddressUtils.matchEdgeProvider(resolvedIp, extraRangesByProvider);
+    if (provider) {
+      const headerValue = NetworkAddressUtils.normalize(req?.headers?.[provider.trustedIpHeader]);
+      if (headerValue && isIP(headerValue)) return headerValue;
+    }
+    return resolvedIp;
+  }
+
   /** Split an operator-entered list (commas, whitespace or newlines) into patterns. */
   static parseList(value: unknown): string[] {
     return CoercionUtils.toString(value)
@@ -133,6 +202,19 @@ export class NetworkAddressUtils {
     ] as Array<[string, number]>) {
       list.addSubnet(address, prefix, 'ipv6');
     }
+    return list;
+  }
+
+  /** Built once per provider key and cached — every provider's ranges are fixed for the process. */
+  private static edgeBlockListFor(provider: INetworkEdgeProvider): BlockList {
+    let list = NetworkAddressUtils.EDGE_PROVIDER_BLOCK_LISTS.get(provider.key);
+    if (list) return list;
+
+    list = new BlockList();
+    for (const [address, prefix] of provider.defaultRanges) {
+      list.addSubnet(address, prefix, address.includes(':') ? 'ipv6' : 'ipv4');
+    }
+    NetworkAddressUtils.EDGE_PROVIDER_BLOCK_LISTS.set(provider.key, list);
     return list;
   }
 }

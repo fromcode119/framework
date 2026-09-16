@@ -1,5 +1,5 @@
 import { Resolver } from 'dns/promises';
-import { CloudflareChallengeRecord } from '@core/certificates/acme/providers/cloudflare-challenge-record';
+import { CloudflareChallengeRecord } from '@core/certificates/acme/providers/cloudflare/cloudflare-challenge-record';
 
 /**
  * Publishes and withdraws `_acme-challenge` TXT records through Cloudflare's API, for DNS-01.

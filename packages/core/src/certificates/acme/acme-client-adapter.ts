@@ -1,7 +1,7 @@
 import { AcmeChallengeStore } from '@core/certificates/acme/acme-challenge-store';
 import { AcmeChallengeType } from '@core/enums/acme-challenge-type.enum';
-import { CloudflareChallengeRecord } from '@core/certificates/acme/providers/cloudflare-challenge-record';
-import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare-dns-provider';
+import type { IDnsChallengeProvider } from '@core/certificates/acme/dns-challenge-provider.interface';
+import type { IDnsChallengeRecord } from '@core/certificates/acme/dns-challenge-record.interface';
 
 /**
  * The ONLY place this platform speaks ACME.
@@ -16,8 +16,10 @@ import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudfl
  * core for anything else must not have to resolve it.
  *
  * TWO CHALLENGE TYPES. HTTP-01 answers through `AcmeChallengeStore`, unchanged from before. DNS-01
- * answers through `CloudflareDnsProvider` and is the only way to prove control of a WILDCARD name —
- * an authority can only validate `*.example.com` by asking DNS, never by asking a URL. TLS-ALPN-01
+ * answers through whatever `IDnsChallengeProvider` the caller injects and is the only way to prove
+ * control of a WILDCARD name — an authority can only validate `*.example.com` by asking DNS, never
+ * by asking a URL. This class never knows which DNS vendor that is; the caller (currently
+ * `CertificateIssuanceService`) is the one place that constructs a concrete provider. TLS-ALPN-01
  * would still need a special handshake path in the gateway for no gain over the two above.
  */
 export class AcmeClientAdapter {
@@ -45,7 +47,7 @@ export class AcmeClientAdapter {
     /** Extra names the CSR should cover, e.g. `['*.example.com']` for a wildcard order. */
     altNames?: readonly string[];
     /** Required when `challengeType` is 'dns-01'; ignored otherwise. */
-    cloudflareToken?: string;
+    dnsProvider?: IDnsChallengeProvider;
   }): Promise<{ certificatePem: string; privateKeyPem: string; accountUrl: string }> {
     const acme = await import('acme-client');
     const challengeType: AcmeChallengeType = input.challengeType ?? AcmeChallengeType.HTTP_01;
@@ -63,14 +65,14 @@ export class AcmeClientAdapter {
       extraNames.length ? { commonName: input.host, altNames: extraNames } : { commonName: input.host },
     );
 
-    if (challengeType === AcmeChallengeType.DNS_01 && !String(input.cloudflareToken || '').trim()) {
-      throw new Error('DNS-01 was requested with no Cloudflare token configured.');
+    if (challengeType === AcmeChallengeType.DNS_01 && !input.dnsProvider) {
+      throw new Error('DNS-01 was requested with no DNS challenge provider configured.');
     }
-    const dnsProvider = challengeType === AcmeChallengeType.DNS_01 ? new CloudflareDnsProvider(String(input.cloudflareToken)) : null;
+    const dnsProvider = challengeType === AcmeChallengeType.DNS_01 ? input.dnsProvider! : null;
     // Keyed by the challenge's own URL (unique per authorization/challenge per RFC 8555) so the
     // apex and wildcard authorizations — which publish under the SAME record name — each remove
     // only the specific record id they created.
-    const dnsRecords = new Map<string, CloudflareChallengeRecord>();
+    const dnsRecords = new Map<string, IDnsChallengeRecord>();
 
     const certificatePem = await client.auto({
       csr,
@@ -83,8 +85,8 @@ export class AcmeClientAdapter {
         if (challengeType === AcmeChallengeType.DNS_01) {
           // RFC 8555: a wildcard authorization's identifier is the BASE name, with no "*." — the
           // apex and wildcard authorizations for one order therefore both resolve to the same
-          // record name here, which is exactly the case `CloudflareDnsProvider` is built to answer
-          // (ADD, never upsert).
+          // record name here, which is exactly the case an `IDnsChallengeProvider` is built to
+          // answer (ADD, never upsert).
           const zoneName = String(authz?.identifier?.value || input.host);
           const recordName = `${AcmeClientAdapter.DNS_CHALLENGE_PREFIX}${zoneName}`;
           const created = await dnsProvider!.createChallengeRecord(zoneName, recordName, keyAuthorization);

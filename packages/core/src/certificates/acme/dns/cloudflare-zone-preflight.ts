@@ -1,4 +1,4 @@
-import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare-dns-provider';
+import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider';
 
 /**
  * Does this Cloudflare token actually manage the zone we are about to order for — asked BEFORE an
