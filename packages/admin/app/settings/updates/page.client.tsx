@@ -3,6 +3,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
 import { state, bound } from '@fromcode119/react-class-components';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
@@ -122,6 +123,17 @@ export class UpdatesPage extends AdminComponent {
   }
 
   render(): ReactNode {
+    // WHERE before WHO, as on Infrastructure and Backups. Applying an update replaces the framework
+    // every site runs on and restarts the box; offering that button from a console headed with one
+    // customer's name says it is that customer's to press.
+    return (
+      <PlatformScopeGate what="Updates">
+        {this.body()}
+      </PlatformScopeGate>
+    );
+  }
+
+  private body(): ReactNode {
     if (!this.canManagePlatform) {
       return (
         <PlatformOnlyPanel detail="A system update replaces the framework every site on this platform runs on, so only a platform admin can check for or apply one. Nothing here is specific to your site." />

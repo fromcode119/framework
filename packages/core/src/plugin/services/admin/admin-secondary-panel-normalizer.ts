@@ -32,6 +32,14 @@ export class AdminSecondaryPanelNormalizer {
       advisorySourcePlugin: String(input.item.sourcePlugin || '').trim() || undefined,
       allowGlobal: input.item.allowGlobal === true,
       governanceKey: String(input.item.governanceKey || '').trim() || undefined,
+      // The two SCOPE flags. Normalising dropped them, so every panel entry reached the request
+      // filter already stripped of the only fields that filter reads — which made both flags dead on
+      // the secondary panel, however carefully an entry declared them: Localization and Appearance
+      // were offered in the platform scope where they have no row to write, and Infrastructure,
+      // Backups and Updates inside a site, where they change the box every other site runs on.
+      // Carried as declared (undefined when absent), because the filter tests for `=== true`.
+      siteOnly: input.item.siteOnly === true ? true : undefined,
+      platformScopeOnly: input.item.platformScopeOnly === true ? true : undefined,
     };
   }
 
