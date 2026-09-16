@@ -21,6 +21,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 export class PlatformSettingLocks {
   private constructor(
     private readonly keys: Set<string>,
+    private readonly inherited: Set<string>,
     private readonly editable: boolean,
     private readonly tenantMode: boolean,
     private readonly siteSelected: boolean,
@@ -28,7 +29,7 @@ export class PlatformSettingLocks {
 
   /** Nothing locked — the state before the answer arrives, and after a failed request. */
   static none(): PlatformSettingLocks {
-    return new PlatformSettingLocks(new Set(), true, false, true);
+    return new PlatformSettingLocks(new Set(), new Set(), true, false, true);
   }
 
   static async load(): Promise<PlatformSettingLocks> {
@@ -43,17 +44,32 @@ export class PlatformSettingLocks {
     }
     if (!response) return PlatformSettingLocks.none();
     const keys: string[] = Array.isArray(response.keys) ? response.keys.map((key: unknown) => String(key)) : [];
+    const inherited: string[] = Array.isArray(response.inheritedKeys)
+      ? response.inheritedKeys.map((key: unknown) => String(key))
+      : [];
     return new PlatformSettingLocks(
       new Set(keys),
+      new Set(inherited),
       response.editable !== false,
       response.tenantMode === true,
       response.siteSelected !== false,
     );
   }
 
-  /** A platform setting this account may not change. */
+  /**
+   * A platform setting this account may not change.
+   *
+   * An INHERITED key is exempt: what a site writes is its OWN row, so there is no platform value being
+   * changed and no platform admin needed to change it.
+   */
   private locksAsPlatformOnly(key: string): boolean {
+    if (this.isInherited(key) && this.isSiteScope()) return false;
     return !this.editable && this.keys.has(key);
+  }
+
+  /** May every site override this key with its own value? */
+  private isInherited(key: string): boolean {
+    return this.inherited.has(key);
   }
 
   /** A per-site setting with no site selected — there is no row it could belong to. */
@@ -89,6 +105,9 @@ export class PlatformSettingLocks {
    */
   shown(key: string): boolean {
     if (!this.tenantMode) return true;
+    // An INHERITED key belongs in BOTH scopes and means something different in each: the platform's
+    // value, and this site's override of it. It is the one key the scope split does not divide.
+    if (this.isInherited(key)) return true;
     return this.siteSelected ? !this.keys.has(key) : this.keys.has(key);
   }
 

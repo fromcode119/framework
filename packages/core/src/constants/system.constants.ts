@@ -195,21 +195,6 @@ export class SystemConstants {
    */
   API_URL: 'api_url',
   MARKETPLACE_URL: 'marketplace_url',
-  /**
-   * The catalogue THIS SITE browses, when it wants one of its own.
-   *
-   * A separate key from `marketplace_url` rather than a re-scoping of it, because the two are
-   * different values with different readers. `marketplace_url` is PLATFORM scope and is read at boot
-   * and by platform infrastructure — the update service and the appearance installer — where there is
-   * no site to ask. This one is SITE scope, read for the site the request is about, and it simply
-   * WINS over the platform's when a site has set it.
-   *
-   * Re-scoping the existing key was the alternative and it fails loudly by design:
-   * `PlatformSettingsService.getSetting` throws `PlatformSettingScopeError` for a site-scoped key, so
-   * the three platform callers would crash at boot. That tripwire exists because reading a site key
-   * from the platform row shipped three times and failed closed silently every time.
-   */
-  SITE_MARKETPLACE_URL: 'site_marketplace_url',
   DOMAIN_ALIASES: 'domain_aliases',
   TIMEZONE: 'timezone',
   ADMIN_APPEARANCE: 'admin_appearance',

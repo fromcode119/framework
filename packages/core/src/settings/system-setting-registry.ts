@@ -101,15 +101,17 @@ export class SystemSettingRegistry {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: () => SystemSettingRegistry.urlDefaults().apiUrl, description: "The public base URL of the API. Blank uses the domain the admin and sites are served from.", group: "General" },
     },
-    [SystemSettingRegistry.KEY.MARKETPLACE_URL]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // ONE key for the platform and for every site — INHERITED, so a site may set its own and a site
+    // that has not inherits the operator's. See SettingScope.INHERITED for why this needs no second key. `_system_meta` is keyed `(key, tenant_id)`, so a
+    // site's row sits alongside the platform's rather than colliding, and the table's policy already
+    // lets a tenant read the platform's row for this key — a site that has chosen nothing inherits the
+    // operator's catalogue with no second key to express it. PLATFORM here declares who this service
+    // answers for: `PlatformSettingsService` reads the platform's row and nothing else.
+    [SystemSettingRegistry.KEY.MARKETPLACE_URL]: { scope: SettingScope.INHERITED, writable: true, exposed: true },
     // What a site may store in its OWN uploaded themes. PLATFORM scope, because the limit protects
     // the shared disk from any one site — a site setting its own ceiling would be no ceiling.
     [SystemSettingRegistry.KEY.TENANT_THEME_MAX_BYTES]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.TENANT_THEME_MAX_COUNT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
-    // A site pointing at its OWN catalogue. SITE scope: read for the site the request is about, and
-    // it wins over the platform's when set. See the key's own note for why this is a second key
-    // rather than a re-scoping of `marketplace_url` above.
-    [SystemSettingRegistry.KEY.SITE_MARKETPLACE_URL]: { scope: SettingScope.SITE, writable: true, exposed: true },
     [SystemSettingRegistry.KEY.DOMAIN_ALIASES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '[]', description: "Additional trusted domains kept active during migrations.", group: "General" },
@@ -412,7 +414,15 @@ export class SystemSettingRegistry {
     return SystemSettingRegistry.writableKeys().has(key);
   }
 
-  /** Every PLATFORM-scoped key. Deep-equal to the pre-registry 18-key list — see the guard test. */
+  /**
+   * Every key the platform owns a row for — PLATFORM and INHERITED alike.
+   *
+   * This is what the `_system_meta` row-level policy publishes to tenants, so an INHERITED key MUST
+   * stay in it: dropping one would hide the platform's value from every site that has not set its own,
+   * which is the inheritance itself.
+   *
+   * Deep-equal to the pre-registry 18-key list — see the guard test.
+   */
   static platformKeys(): string[] {
     if (!SystemSettingRegistry.platformKeysCache) {
       SystemSettingRegistry.platformKeysCache = Object.entries(SystemSettingRegistry.REGISTRY)
@@ -420,6 +430,19 @@ export class SystemSettingRegistry {
         .map(([key]) => key);
     }
     return [...SystemSettingRegistry.platformKeysCache];
+  }
+
+  /**
+   * The keys a site may override with its own row.
+   *
+   * A SUBSET of {@link platformKeys}, never a rival to it: these keys keep their platform row and its
+   * visibility, and gain a per-site one. The admin needs them apart because the two scopes show and
+   * write them differently; the database does not, which is why the policy still reads the full list.
+   */
+  static inheritedKeys(): string[] {
+    return Object.entries(SystemSettingRegistry.REGISTRY)
+      .filter(([, descriptor]) => descriptor.scope.isInherited)
+      .map(([key]) => key);
   }
 
   /** Every key the generic settings PUT may accept. */
