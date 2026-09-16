@@ -79,6 +79,23 @@ export class TenantBespokePolicies {
       // `admin` guard and no tenant filter, so another site's content could be read back out of its
       // history even though the record itself is isolated.
       { table: '_system_record_versions', kind: 'journal' },
+      // THE IN-APP INBOX, and a `journal` rather than a generic scoped table for a reason that cost
+      // a rewrite: the generic predicate is strict equality, so a row whose `tenant_id` is NULL
+      // matches in NO scope. `TenantAdoptionService` states the invariant — "one NULL row is a row
+      // that becomes invisible to everyone" — and this table cannot satisfy it, because it is
+      // written from BOTH sides. A plugin notifying a site's admins writes it inside that site; the
+      // certificate-expiry sweep and the boot health reporter write it with no tenant bound at all.
+      // Scoping it generically would therefore have hidden every notification ever written by the
+      // untenanted half, on every existing deployment, silently.
+      //
+      // The journal predicate is exactly the rule wanted: a site sees its own, and rows written
+      // untenanted belong to the platform scope, where the operator can still read them.
+      //
+      // What was wrong before: the table had no tenant column at all, so every row an account held
+      // was shown in every scope it could enter. Measured here — one operator in four sites holding
+      // 141 rows, among them "The TLS certificate for globex.framework.local expires in 1 day",
+      // another customer's domain in the bell while standing inside a different site.
+      { table: '_system_notifications', kind: 'journal' },
     ];
   }
 }
