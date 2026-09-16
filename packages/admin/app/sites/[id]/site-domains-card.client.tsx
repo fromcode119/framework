@@ -24,7 +24,9 @@ export class SiteDomainsCard extends AdminComponent {
   @state private encryptionAvailable = false;
   /** Whether this platform's own gateway terminates TLS — decides what "nothing stored" means. */
   @state private terminatesTls = false;
+  @state private automation: Record<string, unknown> | null = null;
   @state private isLoading = true;
+  @state private loadError = '';
   @state private uploadHost = '';
   @state private uploadError = '';
   @state private isSaving = false;
@@ -39,9 +41,35 @@ export class SiteDomainsCard extends AdminComponent {
       this.entries = result.hosts;
       this.encryptionAvailable = result.encryptionAvailable;
       this.terminatesTls = result.edge?.tls === true;
+      this.automation = result.automation;
+      this.loadError = '';
+    } catch (error: any) {
+      this.loadError = String(error?.message || 'Could not load certificates.');
     } finally {
       this.isLoading = false;
     }
+  }
+
+  /** Hand a host to the platform. A refusal carries the api's reason, which is shown as-is. */
+  @bound private async automate(host: string): Promise<void> {
+    try {
+      await CertificatesClient.setSource(host, 'automatic');
+      this.loadError = '';
+    } catch (error: any) {
+      this.loadError = String(error?.message || 'Could not switch this host to automatic.');
+    }
+    await this.load();
+  }
+
+  /** Same as `automate`, but asks for the DNS-01 variant that also covers `*.<host>`. */
+  @bound private async automateWildcard(host: string): Promise<void> {
+    try {
+      await CertificatesClient.setSource(host, 'automatic', true);
+      this.loadError = '';
+    } catch (error: any) {
+      this.loadError = String(error?.message || 'Could not switch this host to automatic (wildcard).');
+    }
+    await this.load();
   }
 
   @bound private openUpload(host: string): void {
@@ -82,15 +110,24 @@ export class SiteDomainsCard extends AdminComponent {
           an uploaded certificate is never renewed automatically, so it has to be replaced before it expires.
         </p>
 
+        {this.loadError ? (
+          <p className={`text-xs rounded-lg px-3 py-2 mb-3 ${dark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-700'}`}>{this.loadError}</p>
+        ) : null}
+
         {this.isLoading ? (
           <p className={`text-sm ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Loading…</p>
         ) : (
           <CertificateHostTable
             entries={this.entries}
             canUpload={this.encryptionAvailable}
+            canAutomate={this.automation?.isAvailable === true}
+            canAutomateWildcard={this.automation?.dnsWildcardAvailable === true}
             terminatesTls={this.terminatesTls}
+            platformAddresses={(this.automation?.platformAddresses as string[]) ?? []}
             onUpload={this.openUpload}
             onRemove={this.removeHost}
+            onAutomate={this.automate}
+            onAutomateWildcard={this.automateWildcard}
           />
         )}
 

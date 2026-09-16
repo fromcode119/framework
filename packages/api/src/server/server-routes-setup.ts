@@ -21,7 +21,7 @@ import { ThemeAssetRouter } from '@api/routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '@api/routes/marketplace';
 import { AppearanceRouter } from '@api/routes/appearances';
 import { SourcesModule } from '@fromcode119/sources';
-import { AcmeChallengeStore, CertificateStoreService, PlatformSettingsService, SecretService } from '@fromcode119/core';
+import { AcmeChallengeStore, AcmeCloudflareTokenStore, CertificateStoreService, PlatformSettingsService, SecretService } from '@fromcode119/core';
 import { CoreServices } from '@fromcode119/core';
 import { SystemRouter } from '@api/routes/system-router';
 import { TenantAdminRouter } from '@api/routes/tenant-admin-router';
@@ -225,6 +225,7 @@ export class ServerRoutesSetup {
         new CertificateAdminService(
           new CertificateStoreService((this.manager as any).db),
           new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db)),
+          new AcmeCloudflareTokenStore((this.manager as any).db),
         ),
         this.auth,
         platformAdmin,

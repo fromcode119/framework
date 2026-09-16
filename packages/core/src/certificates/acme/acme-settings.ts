@@ -1,5 +1,6 @@
 import { AcmeDirectory } from '@core/certificates/acme/acme-directory.enum';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
+import { SecretService } from '@core/security/secret-service';
 import { SystemConstants } from '@core/constants/system.constants';
 
 /**
@@ -17,21 +18,50 @@ export class AcmeSettings {
     readonly directoryUrl: string,
     readonly contactEmail: string,
     readonly platformAddresses: readonly string[],
+    /** Ciphertext as stored (or '' when unset) — decrypted lazily by {@link cloudflareToken}. */
+    private readonly cloudflareTokenEnc: string,
   ) {}
 
   /** Read the declared settings. Never throws; unreadable settings read as blank, which is off. */
   static async load(): Promise<AcmeSettings> {
-    const [directory, contact, addresses] = await Promise.all([
+    const [directory, contact, addresses, cloudflareToken] = await Promise.all([
       PlatformSettingsService.getSetting(SystemConstants.META_KEY.CERTIFICATE_ACME_DIRECTORY),
       PlatformSettingsService.getSetting(SystemConstants.META_KEY.CERTIFICATE_ACME_CONTACT_EMAIL),
       PlatformSettingsService.getSetting(SystemConstants.META_KEY.CERTIFICATE_PLATFORM_ADDRESSES),
+      PlatformSettingsService.getSetting(SystemConstants.META_KEY.CERTIFICATE_ACME_CLOUDFLARE_TOKEN),
     ]);
 
     return new AcmeSettings(
       String(directory ?? '').trim(),
       String(contact ?? '').trim(),
       AcmeSettings.parseAddresses(addresses),
+      String(cloudflareToken ?? '').trim(),
     );
+  }
+
+  /**
+   * The Cloudflare token, decrypted — for the DNS-01 provider and its preflight only. NEVER put
+   * this in {@link toJson}; the admin sees only {@link isCloudflareConfigured}.
+   */
+  get cloudflareToken(): string {
+    return this.cloudflareTokenEnc ? SecretService.decrypt(this.cloudflareTokenEnc) : '';
+  }
+
+  /**
+   * Whether a token has been saved at all. Blank means DNS-01/wildcard issuance is unavailable.
+   *
+   * NEVER DECRYPTS. This is read on every Certificates page load and every source change —
+   * including plain http-01 ones that have nothing to do with Cloudflare — so a token whose
+   * ciphertext can no longer be decrypted (SECRET_KEY rotated or removed after it was saved) must
+   * not throw from here and take the whole page down with it. Presence of ciphertext is all this
+   * answers; the decrypt itself only ever happens in {@link cloudflareToken}, at the one call site
+   * that actually places a DNS-01 order — `CertificateIssuanceService.attemptDns01`, which wraps
+   * that read in its own try/catch and calls `recordFailure` on a decrypt failure. Letting the
+   * throw escape to the sweep's outer catch instead would skip `recordFailure` — no `lastError`,
+   * no `nextAttemptAt` — and leave the host perpetually "due" with nothing visible in the admin.
+   */
+  get isCloudflareConfigured(): boolean {
+    return this.cloudflareTokenEnc.length > 0;
   }
 
   /** Whether the platform may place an order at all. Both halves are required. */
@@ -69,6 +99,7 @@ export class AcmeSettings {
       platformAddresses: [...this.platformAddresses],
       isConfigured: this.isConfigured,
       missingReason: this.missingReason,
+      isCloudflareConfigured: this.isCloudflareConfigured,
     };
   }
 

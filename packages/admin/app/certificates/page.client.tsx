@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
+import { AdminScope, ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
@@ -28,6 +28,12 @@ export class CertificatesPageClient extends AdminComponent {
   @state private encryptionAvailable = false;
   @state private edge: Record<string, unknown> | null = null;
   @state private automation: Record<string, unknown> | null = null;
+  /**
+   * An operator can land on this SAME platform-wide screen while their session is bound to a site, and
+   * the list is silently scoped to that site's hosts underneath them. The subtitle has to say whose
+   * hosts these are rather than always claiming platform-wide coverage (see `subtitle` below).
+   */
+  @state private scope: AdminScope | undefined = AdminScope.PLATFORM;
   @state private isLoading = true;
   @state private loadError = '';
   @state private uploadHost = '';
@@ -45,6 +51,7 @@ export class CertificatesPageClient extends AdminComponent {
       this.encryptionAvailable = result.encryptionAvailable;
       this.edge = result.edge;
       this.automation = result.automation;
+      this.scope = AdminScope.resolve(result.scope);
       this.loadError = '';
     } catch (error: any) {
       this.loadError = String(error?.message || 'Could not load certificates.');
@@ -94,6 +101,29 @@ export class CertificatesPageClient extends AdminComponent {
     await this.load();
   }
 
+  /** Same as `automate`, but asks for the DNS-01 variant that also covers `*.<host>`. */
+  @bound private async automateWildcard(host: string): Promise<void> {
+    try {
+      await CertificatesClient.setSource(host, 'automatic', true);
+      this.loadError = '';
+    } catch (error: any) {
+      this.loadError = String(error?.message || 'Could not switch this host to automatic (wildcard).');
+    }
+    await this.load();
+  }
+
+  /**
+   * The subtitle claims exactly what `this.scope` says it does — platform-wide only when the read
+   * actually was. A bound request answers `forTenant`, so `isSite` means the list below is one site's
+   * hosts, and the copy must say "this site", not "this platform". No scope at all (an old/unknown
+   * response shape) stays neutral rather than asserting either.
+   */
+  private get subtitle(): string {
+    if (this.scope?.isSite) return "Every address this site answers for, and what it serves HTTPS with.";
+    if (this.scope?.isPlatform) return "Every address this platform answers for, and what it serves HTTPS with.";
+    return 'What this installation serves HTTPS with.';
+  }
+
   render(): ReactNode {
     const dark = this.theme === ThemeMode.DARK;
     if (this.isLoading) return <Loader />;
@@ -104,7 +134,7 @@ export class CertificatesPageClient extends AdminComponent {
           theme={this.theme}
           icon={<FrameworkIcons.Lock size={18} strokeWidth={2} />}
           title="Certificates"
-          subtitle="Every address this platform answers for, and what it serves HTTPS with. Soonest to expire first."
+          subtitle={this.subtitle}
         />
         <div className="fc-certificates__body">
         <Card title="TLS">
@@ -122,12 +152,14 @@ export class CertificatesPageClient extends AdminComponent {
             entries={this.entries}
             canUpload={this.encryptionAvailable}
             canAutomate={this.automation?.isAvailable === true}
+            canAutomateWildcard={this.automation?.dnsWildcardAvailable === true}
             terminatesTls={this.edge?.tls === true}
             platformAddresses={(this.automation?.platformAddresses as string[]) ?? []}
             showSite
             onUpload={this.openUpload}
             onRemove={this.removeHost}
             onAutomate={this.automate}
+            onAutomateWildcard={this.automateWildcard}
           />
         </Card>
         </div>

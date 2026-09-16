@@ -148,6 +148,7 @@ export class AdminConstants {
     CERTIFICATE_PLATFORM_ADDRESSES: `${AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATES)}/platform-addresses`,
     CERTIFICATE: (host: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE, { host })),
     CERTIFICATE_SOURCE: (host: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE_SOURCE, { host })),
+    CERTIFICATE_CLOUDFLARE_TOKEN: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE_CLOUDFLARE_TOKEN),
     TENANT: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT, { id })),
     TENANT_EXPORT: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_EXPORT, { id })),
     TENANT_PAGES: (id: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_PAGES, { id })),

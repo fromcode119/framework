@@ -1,5 +1,7 @@
+import { AcmeChallengeType } from '@core/enums/acme-challenge-type.enum';
 import { CertificateSource } from '@core/enums/certificate-source.enum';
 import { CertificateState } from '@core/enums/certificate-state.enum';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SecretService } from '@core/security/secret-service';
 
 /**
@@ -44,6 +46,10 @@ export class CertificateRecord {
     readonly attemptsInWindow: number,
     readonly lastWarnedDays: number | null,
     readonly updatedAt: Date | null,
+    /** Which challenge this host's AUTOMATIC certificate is ordered with. */
+    readonly challenge: AcmeChallengeType,
+    /** Whether the order asks for `*.<host>` as well, via DNS-01's `altNames`. */
+    readonly wildcard: boolean,
   ) {}
 
   /** Hydrate a raw system-table row. System tables are read through the raw manager, so snake_case. */
@@ -71,6 +77,8 @@ export class CertificateRecord {
       Number.parseInt(String(row?.attempts_in_window ?? 0), 10) || 0,
       row?.last_warned_days === null || row?.last_warned_days === undefined ? null : Number(row.last_warned_days),
       CertificateRecord.readDate(row?.updated_at),
+      AcmeChallengeType.resolve(row?.challenge),
+      CoercionUtils.toBoolean(row?.wildcard) === true,
     );
   }
 
@@ -139,6 +147,8 @@ export class CertificateRecord {
       notBefore: this.notBefore?.toISOString() ?? null,
       notAfter: this.notAfter?.toISOString() ?? null,
       daysRemaining: this.daysRemaining,
+      challenge: this.challenge.value,
+      wildcard: this.wildcard,
       lastError: this.lastError,
       lastAttemptAt: this.lastAttemptAt?.toISOString() ?? null,
       nextAttemptAt: this.nextAttemptAt?.toISOString() ?? null,

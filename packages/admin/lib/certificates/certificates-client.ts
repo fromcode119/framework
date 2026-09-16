@@ -16,6 +16,13 @@ export class CertificatesClient {
     warningDays: number[];
     edge: Record<string, unknown> | null;
     automation: Record<string, unknown> | null;
+    /**
+     * `'platform'` for the whole-box read, or the tenant id when the api narrowed it — either because
+     * this call passed `tenantId`, or because the request itself was bound to a site server-side (an
+     * operator who has stepped into a site gets that site's rows back even without asking for them).
+     * The caller reads this to know WHOSE hosts it is looking at, not just how many.
+     */
+    scope: string;
   }> {
     const endpoint = tenantId
       ? `${AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATES}?tenantId=${encodeURIComponent(tenantId)}`
@@ -27,6 +34,7 @@ export class CertificatesClient {
       warningDays: Array.isArray(response?.warningDays) ? response.warningDays.map((d: unknown) => Number(d)) : [],
       edge: (response?.edge ?? null) as Record<string, unknown> | null,
       automation: (response?.automation ?? null) as Record<string, unknown> | null,
+      scope: typeof response?.scope === 'string' && response.scope ? response.scope : 'platform',
     };
   }
 
@@ -34,10 +42,22 @@ export class CertificatesClient {
    * Hand a host to the platform to obtain and renew, or take it back.
    *
    * The api refuses AUTOMATIC when it could not work — no authority declared, or nothing here
-   * terminating TLS — and the message it returns is what the caller shows.
+   * terminating TLS — and the message it returns is what the caller shows. `dnsWildcard` asks for
+   * the DNS-01 variant (`*.<host>` included), refused separately when no Cloudflare token is saved.
    */
-  static async setSource(host: string, source: string): Promise<void> {
-    await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE_SOURCE(host), { source });
+  static async setSource(host: string, source: string, dnsWildcard = false): Promise<void> {
+    await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE_SOURCE(host), { source, dnsWildcard });
+  }
+
+  /**
+   * Store or clear the Cloudflare API token DNS-01/wildcard orders use.
+   *
+   * The response never carries the token back — only whether one is now configured, the same shape
+   * `automation.isCloudflareConfigured` already reports.
+   */
+  static async setCloudflareToken(token: string): Promise<{ isCloudflareConfigured: boolean }> {
+    const response = await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE_CLOUDFLARE_TOKEN, { token });
+    return { isCloudflareConfigured: response?.isCloudflareConfigured === true };
   }
 
   /**

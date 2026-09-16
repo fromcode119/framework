@@ -183,6 +183,8 @@ export class RouteConstants {
    * certificates page and must not pay for DNS lookups.
    */
   CERTIFICATES_PLATFORM_ADDRESSES: '/platform-addresses',
+  /** Store or clear the Cloudflare API token DNS-01/wildcard orders use. Never returns the value. */
+  CERTIFICATES_CLOUDFLARE_TOKEN: '/cloudflare-token',
   TENANTS_ID: '/:id',
   TENANTS_ID_EXPORT: '/:id/export',
   TENANTS_ID_PAGES: '/:id/pages',

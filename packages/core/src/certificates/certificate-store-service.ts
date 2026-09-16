@@ -1,3 +1,4 @@
+import { AcmeChallengeType } from '@core/enums/acme-challenge-type.enum';
 import { CertificateMaterial } from '@core/certificates/certificate-material';
 import { CertificateRecord } from '@core/certificates/certificate-record';
 import { CertificateRejection } from '@core/enums/certificate-rejection.enum';
@@ -28,13 +29,6 @@ export class CertificateStoreService {
       orderBy: { not_after: 'asc' },
     });
     return (rows ?? []).map((row) => CertificateRecord.from(row));
-  }
-
-  /** The rows for one set of hosts. Used by a site's own page, which knows only its hosts. */
-  async listForHosts(hosts: readonly string[]): Promise<CertificateRecord[]> {
-    const wanted = new Set(hosts.map((host) => CertificateStoreService.normalizeHost(host)).filter(Boolean));
-    if (!wanted.size) return [];
-    return (await this.list()).filter((record) => wanted.has(record.host));
   }
 
   async find(host: string): Promise<CertificateRecord | null> {
@@ -91,15 +85,28 @@ export class CertificateStoreService {
   }
 
   /**
-   * Change who is responsible for a host's certificate.
+   * Change who is responsible for a host's certificate, and — for AUTOMATIC — which challenge and
+   * whether it should cover the wildcard.
    *
    * Switching to a source the platform has not implemented yet must not pretend to do anything, so
    * this only records the choice; whatever is stored keeps serving until something replaces it.
+   *
+   * `challenge`/`wildcard` are ALWAYS written explicitly rather than left alone, so a host that was
+   * previously set to the DNS-01 wildcard variant and is switched back to plain Automatic (or to
+   * Uploaded) does not keep a stale wildcard flag nothing intends any more.
    */
-  async setSource(host: string, source: CertificateSource): Promise<CertificateRecord | null> {
+  async setSource(
+    host: string,
+    source: CertificateSource,
+    options: { challenge?: AcmeChallengeType; wildcard?: boolean } = {},
+  ): Promise<CertificateRecord | null> {
     const normalized = CertificateStoreService.normalizeHost(host);
     if (!normalized) return null;
-    await this.write(normalized, { source: String(source.value) });
+    await this.write(normalized, {
+      source: String(source.value),
+      challenge: (options.challenge ?? AcmeChallengeType.HTTP_01).value,
+      wildcard: options.wildcard ?? false,
+    });
     return this.find(normalized);
   }
 
