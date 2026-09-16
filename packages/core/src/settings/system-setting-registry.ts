@@ -3,7 +3,6 @@ import { SettingScope } from '@core/settings/enums/setting-scope.enum';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { NetworkAddressUtils } from '@core/security/network-address-utils';
 import { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
-import { CloudflareEdgeProvider } from '@core/security/providers/cloudflare/cloudflare-edge-provider';
 import type { SystemSettingKey } from '@core/settings/system-setting-registry.types';
 import type { SystemSettingDescriptor } from '@core/settings/system-setting-registry.interfaces';
 
@@ -267,9 +266,9 @@ export class SystemSettingRegistry {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: NetworkAddressUtils.PRIVATE_RANGES_TEXT, description: "Addresses/CIDR blocks that count as internal service callers (the storefront renderer, workers). Clear it and nothing is internal: every anonymous caller falls back to the public limit.", group: "security" },
     },
-    [SystemSettingRegistry.KEY.RATE_LIMIT_CLOUDFLARE_EDGE_RANGES]: {
+    [SystemSettingRegistry.KEY.RATE_LIMIT_EDGE_PROVIDER_RANGES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: NetworkEdgeProviderRegistry.rangesTextFor(new CloudflareEdgeProvider()), description: "Cloudflare's published edge IP ranges (https://www.cloudflare.com/ips/), trusted to set the CF-Connecting-IP header naming the real visitor. Seeded with the ranges built into the code; extend this if Cloudflare publishes a new range before the platform is updated. Never remove a range here to reduce trust — that requires a code change.", group: "security" },
+      seed: { value: () => SystemSettingRegistry.edgeProviderRangesDefault(), description: "Each registered edge provider's published IP ranges, trusted to set that provider's real-visitor header (e.g. Cloudflare's CF-Connecting-IP). JSON, keyed by the provider's own key (\"cloudflare\", ...). Seeded with the ranges built into the code; extend a provider's entry if it publishes a new range before the platform is updated. Never remove a range here to reduce trust — that requires a code change.", group: "security" },
     },
     [SystemSettingRegistry.KEY.RATE_LIMIT_WINDOW]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
@@ -365,6 +364,19 @@ export class SystemSettingRegistry {
     const adminUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP);
     const apiUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
     return { siteUrl: frontendUrl, frontendUrl, adminUrl, apiUrl, platformDomain: ApplicationUrlUtils.derivePlatformDomain(frontendUrl, adminUrl) };
+  }
+
+  /**
+   * Every registered edge provider's published ranges, as the JSON object `resolveNetworkEdgeRanges`
+   * expects — keyed by each provider's own `key`, built by walking `NetworkEdgeProviderRegistry.ALL`
+   * rather than naming a vendor. Adding a second provider needs no change here.
+   */
+  static edgeProviderRangesDefault(): string {
+    return JSON.stringify(
+      Object.fromEntries(
+        NetworkEdgeProviderRegistry.ALL.map((provider) => [provider.key, NetworkEdgeProviderRegistry.rangesTextFor(provider)]),
+      ),
+    );
   }
 
   /** Every seeded default, resolved — the list the boot seed writes. */
