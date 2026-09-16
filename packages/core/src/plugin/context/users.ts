@@ -3,7 +3,9 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMembership } from '@core/tenant/tenant-membership';
+import { TenantMembershipService } from '@core/tenant/tenant-membership-service';
 import { TenantMode } from '@core/tenant/tenant-mode';
+import { StringUtils } from '@core/utils/string-utils';
 
 export class UsersContextProxy {
 
@@ -24,7 +26,7 @@ export class UsersContextProxy {
    * `null` means no narrowing — a single-tenant deployment, or a background job with no site bound,
    * where "everyone" is the honest answer.
    */
-  private static async siteMemberIds(manager: IPluginManagerInterface): Promise<Set<number> | null> {
+  private static async siteMembers(manager: IPluginManagerInterface): Promise<Map<number, string[]> | null> {
     if (!TenantMode.isEnabled()) return null;
     const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
     if (!tenantId) return null;
@@ -33,21 +35,61 @@ export class UsersContextProxy {
       .find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenantId } })
       .catch(() => [] as any[]);
 
-    const ids = new Set<number>();
+    const members = new Map<number, string[]>();
     for (const row of (Array.isArray(memberships) ? memberships : [])) {
       const membership = TenantMembership.from(row);
       if (!membership.isActive) continue;
       const id = Number(membership.userId);
-      if (Number.isFinite(id) && id > 0) ids.add(id);
+      if (Number.isFinite(id) && id > 0) members.set(id, StringUtils.normalizeSlugList(membership.roles));
     }
-    return ids;
+    return members;
   }
 
-  /** Keeps only the rows belonging to this site. A `null` scope means every row stands. */
-  private static narrow(rows: unknown, scope: Set<number> | null): any[] {
-    const list = Array.isArray(rows) ? rows : [];
-    if (!scope) return list;
-    return list.filter((row: any) => scope.has(Number(row?.id)));
+  /**
+   * The member rows themselves, fetched BY ID rather than paged and filtered.
+   *
+   * The limit has to apply INSIDE the site. Paging the newest N rows across the platform and
+   * intersecting afterwards is the same query with a silent failure attached: where there are more
+   * accounts than the cap, a site whose people registered early is simply not in the page being
+   * filtered, and the answer returns EMPTY rather than wrong. Empty is the worse of the two here,
+   * because these are the methods that resolve who receives a notification — a recipient list of zero
+   * is dropped without an error, and nobody learns the message was never sent.
+   */
+  private static async membersPage(
+    manager: IPluginManagerInterface,
+    members: Map<number, string[]>,
+    limit: number,
+  ): Promise<any[]> {
+    const ids = [...members.keys()];
+    if (!ids.length) return [];
+    const rows = await manager.db
+      .find(SystemConstants.TABLE.USERS, { where: { id: { in: ids } }, orderBy: { created_at: 'desc' }, limit })
+      .catch(() => [] as any[]);
+    return Array.isArray(rows) ? rows : [];
+  }
+
+  /** Is this row a member of the bound site? `null` members means there is no site to narrow to. */
+  private static isVisible(members: Map<number, string[]> | null, row: unknown): boolean {
+    if (!row) return false;
+    if (!members) return true;
+    return members.has(Number((row as any)?.id));
+  }
+
+  /**
+   * Does this account hold `role` HERE?
+   *
+   * The SITE's membership decides, not the global `users.roles` column. They disagree in a case this
+   * platform actually produces: an account imported into a site carries THAT SITE's roles, so an
+   * operator who is a customer of one site still reads as `admin` in the global column — and answering
+   * from the column put them on that site's own admin notification list.
+   */
+  private static holdsRole(members: Map<number, string[]> | null, row: any, roles: string[]): boolean {
+    if (members) {
+      const held = members.get(Number(row?.id)) ?? [];
+      return roles.some((role) => held.includes(role));
+    }
+    const global = StringUtils.normalizeSlugList(row?.roles);
+    return roles.some((role) => global.includes(role));
   }
 
   /**
@@ -61,28 +103,42 @@ export class UsersContextProxy {
     return {
       async findAdmins(options?: { limit?: number }) {
         const limit = Math.max(1, Math.min(500, options?.limit ?? 200));
-        const scope = await UsersContextProxy.siteMemberIds(manager);
-        const rows = await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } });
-        return UsersContextProxy.narrow(rows, scope)
+        const members = await UsersContextProxy.siteMembers(manager);
+        const rows = members
+          ? await UsersContextProxy.membersPage(manager, members, limit)
+          : await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } });
+        return (Array.isArray(rows) ? rows : [])
+          .filter((row: any) => UsersContextProxy.holdsRole(members, row, ['admin', 'superadmin']))
           .map(UsersContextProxy.toSafeUser)
-          .filter((u) => u.email.includes('@'))
-          .filter((u) => u.roles.some((r) => r === 'admin' || r === 'superadmin'));
+          .filter((u) => u.email.includes('@'));
       },
 
       async findByRole(role: string, options?: { limit?: number }) {
         const normalizedRole = String(role ?? '').trim().toLowerCase();
         const limit = Math.max(1, Math.min(500, options?.limit ?? 200));
-        const scope = await UsersContextProxy.siteMemberIds(manager);
-        const rows = await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } });
-        return UsersContextProxy.narrow(rows, scope)
+        const members = await UsersContextProxy.siteMembers(manager);
+        const rows = members
+          ? await UsersContextProxy.membersPage(manager, members, limit)
+          : await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } });
+        return (Array.isArray(rows) ? rows : [])
+          .filter((row: any) => UsersContextProxy.holdsRole(members, row, [normalizedRole]))
           .map(UsersContextProxy.toSafeUser)
-          .filter((u) => u.email.includes('@'))
-          .filter((u) => u.roles.includes(normalizedRole));
+          .filter((u) => u.email.includes('@'));
       },
 
+      /**
+       * NOT FOUND, rather than found-but-refused, for an account outside this site.
+       *
+       * These are the lookups a plugin steers with caller input — an id or an email from a form, a
+       * hook, a request body — so unnarrowed they are an enumeration oracle over every account on the
+       * platform: a hit says the address is registered somewhere, and the profile hands back the
+       * holder's name. Callers then WRITE what they resolved, so another customer's email and real
+       * name end up inside this site's own rows, reading back as if they belonged here.
+       */
       async findById(id: any) {
         if (!id) return null;
         const row = await manager.db.findOne(SystemConstants.TABLE.USERS, { id });
+        if (!UsersContextProxy.isVisible(await UsersContextProxy.siteMembers(manager), row)) return null;
         return UsersContextProxy.toProfileUser(row);
       },
 
@@ -90,17 +146,17 @@ export class UsersContextProxy {
         const normalized = String(email ?? '').trim().toLowerCase();
         if (!normalized) return null;
         const row = await manager.db.findOne(SystemConstants.TABLE.USERS, { email: normalized });
+        if (!UsersContextProxy.isVisible(await UsersContextProxy.siteMembers(manager), row)) return null;
         return UsersContextProxy.toProfileUser(row);
       },
 
       /** List users (safe profiles, newest first) — for generic "any user" needs without raw table access. */
       async list(options?: { limit?: number }): Promise<Array<{ id: any; email: string; username: string; firstName: string; lastName: string; roles: string[] }>> {
         const limit = Math.max(1, Math.min(500, options?.limit ?? 100));
-        const scope = await UsersContextProxy.siteMemberIds(manager);
-        const rows = UsersContextProxy.narrow(
-          await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } }),
-          scope,
-        );
+        const members = await UsersContextProxy.siteMembers(manager);
+        const rows = members
+          ? await UsersContextProxy.membersPage(manager, members, limit)
+          : await manager.db.find(SystemConstants.TABLE.USERS, { limit, orderBy: { created_at: 'desc' } });
         const out: Array<{ id: any; email: string; username: string; firstName: string; lastName: string; roles: string[] }> = [];
         for (const row of rows) {
           const profile = UsersContextProxy.toProfileUser(row);
@@ -118,17 +174,45 @@ export class UsersContextProxy {
       async create(input: { email: string; password: string; roles?: string[]; firstName?: string; lastName?: string }): Promise<{ id: any } | null> {
         const email = String(input?.email ?? '').trim().toLowerCase();
         if (!email.includes('@')) return null;
+        const roles = Array.isArray(input?.roles) && input.roles.length ? input.roles : ['customer'];
+
+        /**
+         * Make the account a MEMBER of the site that asked for it.
+         *
+         * Without this the row lands in the global `users` table belonging to no site, which every
+         * other method here now treats as "not one of ours" — so a plugin could create a person and
+         * then fail to find them a line later. `users` is also global, so the idempotent branch below
+         * can return an account that belongs to a DIFFERENT site; attaching a membership is what turns
+         * that into this site's invite flow rather than a silent link to a stranger's login. The
+         * account's other sites are untouched, and the roles granted are this site's own.
+         *
+         * An EXISTING membership is never rewritten. `grant` replaces the roles it is handed, and the
+         * default here is `customer` — enough to demote a site's own administrator on a second call.
+         */
+        const joinThisSite = async (userId: unknown): Promise<void> => {
+          const tenantId = RequestContextUtils.getTenantId();
+          if (!TenantMode.isEnabled() || !tenantId || userId == null) return;
+          const memberships = new TenantMembershipService(manager.db);
+          if ((await memberships.rolesForTenant(String(userId), tenantId)) !== null) return;
+          await memberships.grant(String(userId), tenantId, roles);
+        };
+
         const existing = await manager.db.findOne(SystemConstants.TABLE.USERS, { email });
-        if (existing?.id != null) return { id: existing.id };
+        if (existing?.id != null) {
+          await joinThisSite(existing.id);
+          return { id: existing.id };
+        }
         const row: any = await manager.db.insert(SystemConstants.TABLE.USERS, {
           email,
           password: String(input?.password ?? ''),
-          roles: Array.isArray(input?.roles) && input.roles.length ? input.roles : ['customer'],
+          roles,
           firstName: input?.firstName ? String(input.firstName) : null,
           lastName: input?.lastName ? String(input.lastName) : null,
         });
         const created = Array.isArray(row) ? row[0] : row;
-        return created?.id != null ? { id: created.id } : null;
+        if (created?.id == null) return null;
+        await joinThisSite(created.id);
+        return { id: created.id };
       }
     };
 
