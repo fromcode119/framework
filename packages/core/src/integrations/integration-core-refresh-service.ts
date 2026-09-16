@@ -65,11 +65,16 @@ export class IntegrationCoreRefreshService {
     } catch (error: any) {
       this.logger.error(`Failed to initialize storage integration: ${error.message}. Falling back to default local driver.`);
       // Fallback to local driver to prevent system-wide crashes
-      const uploadDir = ProjectPaths.getUploadsDir();
+      // The BASE, with the site's subdirectory applied per request below rather than captured here:
+      // this runs at boot and on a settings change, where there is no request and therefore no site.
+      const uploadDir = ProjectPaths.getUploadsRoot();
       const publicUrl = process.env.STORAGE_PUBLIC_URL || '/uploads';
       return {
         storage: new MediaManager({
-          [MediaManager.PUBLIC_SPACE]: StorageFactory.create('local', { uploadDir, publicUrlBase: publicUrl }),
+          [MediaManager.PUBLIC_SPACE]: StorageFactory.create('local', {
+            uploadDir: () => ProjectPaths.withTenantSubdirectory(uploadDir),
+            publicUrlBase: publicUrl,
+          }),
           [PrivateStorageDriverFactory.SPACE]: PrivateStorageDriverFactory.create(uploadDir),
         }),
         resolved: null,

@@ -15,7 +15,7 @@ import { ErrorResponseMiddleware } from '@api/middlewares/error-response-middlew
 import { RateLimitMiddleware } from '@api/middlewares/rate-limit-middleware';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from '@api/services/graph-ql-service';
-import { ApiBootstrapService, ServerCorsSetup, ServerAuthSetup, ServerMaintenanceService, ServerMiddlewareSetup, ServerRoutesSetup, ServerSettingsService, ServerUploadsConfigService } from '@api/server/index';
+import { ApiBootstrapService, ServerCorsSetup, ServerAuthSetup, ServerMaintenanceService, ServerMiddlewareSetup, ServerRoutesSetup, ServerSettingsService, ServerUploadsConfigService, TenantUploadsStatic } from '@api/server/index';
 import { WebhookRouteUtils } from '@api/utils/webhook-route-utils';
 
 export class APIServer {
@@ -178,9 +178,13 @@ export class APIServer {
         }
       },
     };
-    this.app.use(uploadsConfig.publicPath, express.static(uploadsConfig.uploadDir, uploadsStaticOptions));
+    // Per-SITE, with the shared parent behind it for files written before sites had their own
+    // directory. See TenantUploadsStatic for why the tenant is resolved from the host here rather
+    // than read from the request context.
+    const uploadsStatic = new TenantUploadsStatic((this.manager as any).db, uploadsStaticOptions).middleware();
+    this.app.use(uploadsConfig.publicPath, uploadsStatic);
     if (uploadsConfig.publicPath !== ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL) {
-      this.app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, express.static(uploadsConfig.uploadDir, uploadsStaticOptions));
+      this.app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, uploadsStatic);
     }
 
     const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT || '10mb';

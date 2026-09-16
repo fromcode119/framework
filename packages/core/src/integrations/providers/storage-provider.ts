@@ -55,7 +55,15 @@ export class StorageIntegrationDefinition {
           ? config.uploadDir 
           : path.resolve(context?.projectRoot || process.cwd(), config.uploadDir);
         return new MediaManager({
-          [MediaManager.PUBLIC_SPACE]: StorageFactory.create('local', { ...config, uploadDir: absolutePath }),
+          // The site's own subdirectory of the operator's configured root, resolved per request. A
+          // fixed string here is the boot-time value — no request, no site — so every site wrote into
+          // the shared parent and could read what the others had put there.
+          [MediaManager.PUBLIC_SPACE]: StorageFactory.create('local', {
+            ...config,
+            uploadDir: () => ProjectPaths.withTenantSubdirectory(absolutePath),
+          }),
+          // The PARENT, deliberately: this only has to resolve outside the statically served tree,
+          // and that is a property of the root rather than of any one site.
           [PrivateStorageDriverFactory.SPACE]: PrivateStorageDriverFactory.create(absolutePath),
         });
       }
