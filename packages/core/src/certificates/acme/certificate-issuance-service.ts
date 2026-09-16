@@ -10,7 +10,7 @@ import { CertificateSource } from '@core/enums/certificate-source.enum';
 import { CertificateState } from '@core/enums/certificate-state.enum';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 import { ChallengeReachabilityProbe } from '@core/certificates/acme/challenge-reachability-probe';
-import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare-dns-provider';
+import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider';
 import { CloudflareZonePreflight } from '@core/certificates/acme/dns/cloudflare-zone-preflight';
 import { DnsPreflight } from '@core/certificates/acme/dns-preflight';
 import { Logger } from '@core/logging';

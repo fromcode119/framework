@@ -30,7 +30,7 @@ vi.mock('acme-client', () => ({
 const createChallengeRecord = vi.fn(async () => ({ zoneId: 'zone-1', recordId: 'record-1' }));
 const removeChallengeRecord = vi.fn(async () => {});
 
-vi.mock('@core/certificates/acme/providers/cloudflare-dns-provider', () => ({
+vi.mock('@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider', () => ({
   CloudflareDnsProvider: class {
     constructor(public token: string) {}
     createChallengeRecord = createChallengeRecord;

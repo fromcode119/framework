@@ -1,7 +1,7 @@
 import { AcmeChallengeStore } from '@core/certificates/acme/acme-challenge-store';
 import { AcmeChallengeType } from '@core/enums/acme-challenge-type.enum';
-import { CloudflareChallengeRecord } from '@core/certificates/acme/providers/cloudflare-challenge-record';
-import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare-dns-provider';
+import { CloudflareChallengeRecord } from '@core/certificates/acme/providers/cloudflare/cloudflare-challenge-record';
+import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider';
 
 /**
  * The ONLY place this platform speaks ACME.
