@@ -16,6 +16,12 @@ import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
  *                          certificate warning naming another customer's domain, shown in every scope.
  *                          It is a JOURNAL, not a generically scoped table — see below.
  *   site_preview_grants  — access to a site's unpublished content. Had the column, never the policy.
+ *   webhooks             — a site's outbound endpoints and their secrets, served by the generic CRUD
+ *                          whose listing has no filter and is guarded by `admin`.
+ *   webhook_deliveries   — that site's delivery history, which also feeds the dashboard failure count.
+ *   email_suppressions   — not merely a read leak: `isSuppressed` matches on the ADDRESS alone, so one
+ *                          site's bounce stopped every other site mailing that person. It is an
+ *                          `unowned-read`, not generic — see below.
  *
  * Named here rather than in a migration for the reason the list exists: a migration writes the policy
  * once, and `removeTenantIsolation` drops it again on any deployment that runs without tenants.
@@ -23,6 +29,8 @@ import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 describe('site-owned system tables are tenant content', () => {
   const tables = [
     SystemConstants.TABLE.SITE_PREVIEW_GRANTS,
+    SystemConstants.TABLE.WEBHOOKS,
+    SystemConstants.TABLE.WEBHOOK_DELIVERIES,
   ];
 
   it.each(tables)('%s is scoped', (table) => {
@@ -51,6 +59,22 @@ describe('site-owned system tables are tenant content', () => {
       .toBe('journal');
     // The generic sweep must skip exactly the bespoke tables, so it must NOT also claim this one.
     expect(TenantScopedTables.isTenantScoped(SystemConstants.TABLE.NOTIFICATIONS)).toBe(false);
+  });
+
+  /**
+   * The do-not-email list, where losing a row is the DANGEROUS direction.
+   *
+   * Generic scoping would make an unowned suppression match in no scope, quietly resuming mail to
+   * someone who asked not to receive it. Production sends real email and its unowned count is not
+   * knowable from here, so the policy has to be safe without knowing it: an unowned row keeps
+   * applying everywhere, while each site owns what it writes.
+   */
+  it('scopes the do-not-email list so an unowned suppression still applies', () => {
+    const table = SystemConstants.TABLE.EMAIL_SUPPRESSIONS;
+    expect(TenantBespokePolicies.tables()).toContain(table);
+    expect(TenantBespokePolicies.specs().find((s) => s.table === table)?.kind).toBe('unowned-read');
+    // The generic sweep must skip exactly the bespoke tables.
+    expect(TenantScopedTables.isTenantScoped(table)).toBe(false);
   });
 
   /**

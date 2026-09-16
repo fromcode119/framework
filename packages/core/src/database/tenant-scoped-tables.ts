@@ -66,6 +66,18 @@ export class TenantScopedTables {
     // safe direction for an access token. `_system_notifications` needed the opposite and is a
     // `journal` in TenantBespokePolicies instead — see the note there.
     String(SystemConstants.TABLE.SITE_PREVIEW_GRANTS).toLowerCase(),
+    // A site's OUTBOUND INTEGRATIONS and their delivery history. `webhooks` is a collection served by
+    // the generic CRUD, whose listing has no filter of its own and is guarded by `admin` — the role a
+    // SITE's own administrator holds — so one customer could read every other customer's endpoint
+    // URLs and secrets. The deliveries are that site's traffic, and also feed the dashboard's failure
+    // count.
+    //
+    // Generic scoping is safe for these two specifically because there is nothing to strand: checked
+    // against production through the admin API, which on the deployed build applies no tenant filter
+    // and so reports the whole box — it answered `{"webhooks":[],"deliveries":[]}`. Nothing exists
+    // yet to be left without an owner, so scoping now closes the hole before anything does.
+    String(SystemConstants.TABLE.WEBHOOKS).toLowerCase(),
+    String(SystemConstants.TABLE.WEBHOOK_DELIVERIES).toLowerCase(),
   ]);
 
   /**

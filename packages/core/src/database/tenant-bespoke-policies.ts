@@ -96,6 +96,20 @@ export class TenantBespokePolicies {
       // 141 rows, among them "The TLS certificate for globex.framework.local expires in 1 day",
       // another customer's domain in the bell while standing inside a different site.
       { table: '_system_notifications', kind: 'journal' },
+      // THE DO-NOT-EMAIL LIST, and the one table here where losing a row is the DANGEROUS direction.
+      //
+      // It was not merely readable across sites: `isSuppressed` matches on the ADDRESS alone, so one
+      // site's bounce or unsubscribe silently stopped every OTHER site mailing that person.
+      // Unsubscribing from one sender is not consent withdrawn from all of them.
+      //
+      // It is NOT generically scoped, because the generic predicate is strict equality and an
+      // unowned row would then match in no scope at all — which for this table means quietly
+      // resuming mail to someone who asked not to receive it. Production sends real email, and the
+      // count of unowned rows there is not knowable from here, so the policy must be safe without
+      // needing to know it. `unowned-read` is: a row nobody owns keeps applying everywhere, which is
+      // the only honest reading of a suppression that predates per-site suppression, while each site
+      // owns what it writes and no site can edit or delete another's — or an unowned one.
+      { table: '_system_email_suppressions', kind: 'unowned-read' },
     ];
   }
 }
