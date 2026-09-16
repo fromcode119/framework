@@ -114,7 +114,9 @@ export class MarketplaceCatalogService {
         return [];
       }
       this.logger.info(`Successfully fetched ${plugins.length} plugins from marketplace.`);
-      return plugins;
+      // Stamped explicitly rather than left undefined: the merged list is the only place the two
+      // origins meet, and a missing marker would read as "unknown" for exactly half of it.
+      return plugins.map((plugin: any) => ({ ...plugin, source: 'remote' }));
     } catch (err: any) {
       this.logger.error(`Failed to fetch marketplace catalog: ${err.message}`);
       return [];
