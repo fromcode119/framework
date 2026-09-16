@@ -50,6 +50,11 @@ export class PluginGuestContextFactory {
           register({ kind: 'tenants-for-each', handlerId: this.handlers.keep('tenants', work) }) as Promise<number>,
         current: () => remote.call('context', [{ name: 'tenants' }, { name: 'current', args: [] }]),
         isMultiSite: () => remote.call('context', [{ name: 'tenants' }, { name: 'isMultiSite', args: [] }]),
+        // Forwarded like the two above, and it has to be: an isolated plugin has no tenant resolver
+        // and no database connection of its own, so the HOST is the only side that can answer which
+        // host this site is reached on. Omitting it did not degrade — it threw `is not a function` the
+        // first time a guest asked, which is how a plugin that mails a link found out.
+        baseUrls: () => remote.call('context', [{ name: 'tenants' }, { name: 'baseUrls', args: [] }]),
       },
       jobs: {
         add: (name: string, data: unknown, options?: unknown) => remote.call('context', [{ name: 'jobs' }, { name: 'add', args: PluginGuestRemote.portable([name, data, options]) }]),
