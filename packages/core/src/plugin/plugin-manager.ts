@@ -12,11 +12,7 @@ import type { QueueManager } from '@fromcode119/queue';
 import { QueueSettingsReader } from '@core/queue/queue-settings-reader';
 import { SchemaManager } from '@core/database/schema-manager';
 import { MigrationManager } from '@core/database/migration-manager';
-import { DatabaseRoleGuard } from '@core/tenant/database-role-guard';
 import { TenantMode } from '@core/tenant/tenant-mode';
-import { SetupMode } from '@core/tenant/setup-mode';
-import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
-import { SystemConstants } from '@core/constants/system.constants';
 import { Logger } from '@core/logging';
 import { I18nManager } from '@core/i18n/i18n-manager';
 import { EmailCategoryRegistry } from '@core/email/email-category-registry';
@@ -203,7 +199,7 @@ export class PluginManager implements IPluginManagerInterface {
 
   async init() {
     await this.bootstrap.init();
-    await this.configureTenantMode();
+    await this.bootstrap.configureTenantMode();
     // AFTER tenancy is known, never before: these rows are tenant-scoped, and seeding them while
     // TenantMode was still off wrote them with no tenant, which row-level security refuses outright.
     await this.bootstrap.seedPeopleCatalogs();
@@ -213,96 +209,6 @@ export class PluginManager implements IPluginManagerInterface {
     this.jobs.applySettings(await QueueSettingsReader.read(this.db));
   }
 
-  /**
-   * Decides once, at the same point and from the same connection, whether this deployment has ever
-   * been set up — and may therefore still be claimed.
-   *
-   * Every signal must say "untouched": no users, no tenants, no console address, no completion
-   * marker. Deleting one table does not reopen setup; only a genuinely fresh database does. A read
-   * that FAILS is treated as "already set up", because the safe answer to "may a stranger claim this
-   * platform" is no — the opposite of how the tenant count above is handled, and for the opposite
-   * reason.
-   */
-  private async configureSetupMode(tenantCount: number): Promise<void> {
-    try {
-      const userCount = await this.schemaDb.count(SystemConstants.TABLE.USERS);
-      const adminHost = await this.readPlatformSetting(SystemConstants.META_KEY.ADMIN_URL);
-      const completed = await this.readPlatformSetting(SystemConstants.META_KEY.SETUP_COMPLETED);
-
-      SetupMode.configure({
-        userCount: Number(userCount || 0),
-        tenantCount,
-        adminHostConfigured: adminHost.length > 0,
-        setupCompleted: completed === 'true',
-      });
-    } catch (error: unknown) {
-      SetupMode.configure({ userCount: 1, tenantCount, adminHostConfigured: true, setupCompleted: true });
-      this.logger.warn(`Could not determine setup state, treating this deployment as set up: ${String((error as Error)?.message ?? error)}`);
-    }
-  }
-
-  /** One platform-row setting, read straight from the table — no cache exists this early in boot. */
-  private async readPlatformSetting(key: string): Promise<string> {
-    const row = await this.schemaDb.findOne(SystemConstants.TABLE.META, { key });
-    return String((row as any)?.value ?? '').trim();
-  }
-
-  /**
-   * Decides once, after migrations have run, whether this deployment is multi-tenant — and refuses
-   * to continue if it is multi-tenant on a driver that cannot isolate, or on a connection that
-   * bypasses row-level security.
-   *
-   * Runs AFTER bootstrap because `_system_tenants` only exists once migration 020 has run. A
-   * deployment with no tenant rows stays single-tenant and skips both checks: it behaves exactly as
-   * it did before tenancy existed, on any driver.
-   */
-  private async configureTenantMode(): Promise<void> {
-    // Failure to read the tenancy registry must stop startup. Treating a database error as
-    // "zero tenants" silently disabled RLS checks and could start a multi-tenant deployment on
-    // the privileged migration connection.
-    const tenants = await this.schemaDb.count(SystemConstants.TABLE.TENANTS);
-
-    TenantMode.configure({
-      tenantCount: Number(tenants || 0),
-      dialect: String(this.db.dialect || ''),
-      isolationSupported: this.db.supportsTenantIsolation(),
-    });
-
-    await this.configureSetupMode(Number(tenants || 0));
-
-    // The tenant axis of plugin enablement reads on the REQUEST connection, like every other
-    // per-request lookup — not the owner connection, which exists only for DDL.
-    PluginTenantAccess.configure(this.db);
-
-    // Only meaningful once tenants exist: a single-tenant deployment has nothing to isolate, and
-    // demanding a least-privilege role there would break every existing installation.
-    if (TenantMode.isEnabled()) {
-      await DatabaseRoleGuard.assertNotPrivileged(this.db as any);
-    }
-  }
-
-  /**
-   * Records columns the database has that nothing declares — a proposal queue, never an action.
-   *
-   * A plugin that is not ACTIVE registers no collections, so its tables yield no findings this pass.
-   * Its table names are passed through so the queue is not pruned as though the debt were resolved.
-   */
-  private async auditUndeclaredColumns(): Promise<void> {
-    const inactive = [...this.plugins.values()].filter((plugin) => plugin.state !== PluginState.ACTIVE);
-    const registered = new Set([...this.registeredCollections.values()].map((entry) => entry.collection.slug));
-    const absentTables = (await this.schemaManager.listTables())
-      .filter((table) => !registered.has(table))
-      .filter((table) => inactive.some((plugin) => table.startsWith(`fcp_${String(plugin.manifest.slug).replace(/-/g, '_')}_`)));
-
-    await this.schemaManager.recordUndeclaredColumns(
-      [...this.registeredCollections.values()].map((entry) => ({
-        collection: entry.collection,
-        pluginSlug: entry.pluginSlug,
-      })),
-      inactive.map((plugin) => plugin.manifest.slug),
-      absentTables,
-    );
-  }
 
   /**
    * Boots every plugin, then announces `plugins:ready` ONCE the whole set is registered and enabled.
@@ -328,7 +234,7 @@ export class PluginManager implements IPluginManagerInterface {
     // undeclared. That finding would carry an EMPTY `inactivePluginsAtScan`, which is documented to
     // mean "the picture was complete" — a false positive with its safety caveat missing, which is
     // worse than one that has it.
-    await this.auditUndeclaredColumns();
+    await this.bootstrap.auditUndeclaredColumns();
   }
 
   async updatePlugin(slug: string, pkg?: any): Promise<void> {
