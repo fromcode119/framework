@@ -31,7 +31,18 @@ export class LeakedInterfaceCopyGuard {
   private static readonly SKIP_LINE = /^\s*(\/\*|\*|\/\/|import|export\s+(type|interface)|interface\s)/;
 
   private static readonly SKIP_DIR = new Set([
-    'node_modules', 'dist', '.next', 'build', 'coverage', '.git', 'ui-ssr',
+    'node_modules', 'dist', '.next', 'build', 'coverage', '.git', 'ui-ssr', 'tests', '__tests__',
+  ]);
+
+  /**
+   * The standalone tooling layer, exempt for the same reason `TypeofGuard` exempts it: these packages
+   * hold no user-facing surface at all. A guard NAMING the interface it is telling a developer to use
+   * ("expose BEHAVIOUR through the driver (see ITenantIsolation)") is the diagnostic doing its job —
+   * the rule is about COPY a person reads in the product, not about text a developer reads in a
+   * terminal.
+   */
+  private static readonly EXEMPT_PACKAGES = new Set([
+    'react-class-components', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard',
   ]);
 
   static readonly BASELINE: Readonly<Record<string, number>> = {
@@ -52,9 +63,12 @@ export class LeakedInterfaceCopyGuard {
       let isDir = false;
       try { isDir = statSync(full).isDirectory(); } catch { continue; }
       if (isDir) {
-        if (LeakedInterfaceCopyGuard.SKIP_DIR.has(entry) || LeakedInterfaceCopyGuard.isBuildOutput(full)) continue;
+        if (LeakedInterfaceCopyGuard.SKIP_DIR.has(entry) || LeakedInterfaceCopyGuard.EXEMPT_PACKAGES.has(entry)
+          || LeakedInterfaceCopyGuard.isBuildOutput(full)) continue;
         LeakedInterfaceCopyGuard.files(full, out);
-      } else if (/\.tsx?$/.test(entry) && !/\.d\.ts$/.test(entry)) {
+      // A test names the interface UNDER TEST — `describe('IMcpToolDefinition')` is not copy. Skipped
+      // the same way `TypeofGuard` skips them, rather than each guard inventing its own scan scope.
+      } else if (/\.tsx?$/.test(entry) && !/\.d\.ts$/.test(entry) && !/\.test\.tsx?$/.test(entry)) {
         out.push(full);
       }
     }

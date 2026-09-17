@@ -11,6 +11,9 @@ import { FrameworkRoot } from './framework-root';
 export class ImportsCommand extends ArchorCommand {
   readonly summary = 'Unresolvable specifiers and non-alias in-package imports.';
 
+  /** The build already ran this at `error`; CI keeps that, rather than quietly relaxing it. */
+  readonly ciEnv = { ARCHOR_IMPORTS_MODE: 'error' };
+
   run(_argv: string[]): number {
     const framework = FrameworkRoot.find();
     const { broken, style } = ImportGuard.scan(FrameworkRoot.repo(), framework);

@@ -178,8 +178,9 @@ export class OopGuard {
   try {
     pkgs = readdirSync(OopGuard.PACKAGES_DIR);
   } catch {
-    console.error(`Cannot read packages dir: ${OopGuard.PACKAGES_DIR}`);
-    process.exit(2);
+    // THROW, never `process.exit` — see the note in `plugin-ui-hook-guard`. Exiting from inside a
+    // guard ends the whole `arch-guard ci` pass; an unreadable target is a failure, not a clean scan.
+    throw new Error(`Cannot read packages dir: ${OopGuard.PACKAGES_DIR}`);
   }
   
   // Build the full scan list FIRST: (area, package, files). Scanning whole package dirs — not four

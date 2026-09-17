@@ -166,8 +166,10 @@ export class PluginArchitectureGuard {
         ')',
     );
 
-    process.exit(errorCount > 0 ? 1 : 0);
-
-    return 0;
+    // RETURN, never `process.exit`. This guard is one of several run in a single process by
+    // `arch-guard ci`, and exiting here ended that whole pass — on a clean result it exited 0, so the
+    // guards queued after it never ran and CI reported success while four of them were failing. The
+    // `return 0` below this line had been dead code, which is what hid it.
+    return errorCount > 0 ? 1 : 0;
   }
 }

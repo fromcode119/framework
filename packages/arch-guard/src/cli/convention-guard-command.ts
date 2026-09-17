@@ -20,6 +20,9 @@ import { ArchorCommand } from './arch-guard-command';
 export class ConventionGuardCommand extends ArchorCommand {
   readonly summary = 'Hardcoded copy + typeof type-guards, ratcheted per area [--detail].';
 
+  /** Reports by default so a migration can ratchet; the build ran it at `error` and CI does too. */
+  readonly ciEnv = { FRAMEWORK_CONVENTION_MODE: 'error' };
+
   private roots(repoRoot: string): { area: string; dir: string }[] {
     return [
       { area: 'plugins', dir: path.join(repoRoot, 'plugins') },

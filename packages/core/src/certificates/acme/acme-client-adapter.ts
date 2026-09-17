@@ -1,7 +1,7 @@
 import { AcmeChallengeStore } from '@core/certificates/acme/acme-challenge-store';
 import { AcmeChallengeType } from '@core/enums/acme-challenge-type.enum';
-import type { IDnsChallengeProvider } from '@core/certificates/acme/dns-challenge-provider.interface';
-import type { IDnsChallengeRecord } from '@core/certificates/acme/dns-challenge-record.interface';
+import type { IDnsChallengeProvider } from '@core/certificates/acme/interfaces/dns-challenge-provider.interface';
+import type { IDnsChallengeRecord } from '@core/certificates/acme/interfaces/dns-challenge-record.interface';
 
 /**
  * The ONLY place this platform speaks ACME.

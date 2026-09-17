@@ -12,6 +12,9 @@ import { ArchorCommand } from './arch-guard-command';
 export class OopGuardCommand extends ArchorCommand {
   readonly summary = 'Report or enforce the OOP conventions (ratcheted per area).';
 
+  /** Same env the build used — the bases list is part of the rule, not a caller's preference. */
+  readonly ciEnv = { TSMI_COMPONENT_BASES: 'AdminComponent,PluginComponent,ThemeComponent', FRAMEWORK_OOP_MODE: 'error' };
+
   run(argv: string[]): number {
     const mode = process.env.FRAMEWORK_OOP_MODE === 'error' ? 'error' : 'warn';
     const perPackage = OopGuard.scan();

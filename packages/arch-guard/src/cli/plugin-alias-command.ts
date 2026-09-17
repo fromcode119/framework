@@ -17,6 +17,10 @@ import { FrameworkRoot } from './framework-root';
 export class PluginAliasCommand extends ArchorCommand {
   readonly summary = 'Rewrite a plugin\'s relative in-package imports to the @plugin/ alias.';
 
+  /** A codemod: it REWRITES source. CI must never run it — a check that edits the tree it is
+   *  checking cannot be trusted to have checked anything. */
+  readonly runsInCi = false;
+
   private static pluginDirs(repoRoot: string): string[] {
     const base = path.join(repoRoot, 'plugins');
     if (!existsSync(base)) return [];

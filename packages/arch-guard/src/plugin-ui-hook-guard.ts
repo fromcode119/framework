@@ -90,8 +90,11 @@ export class PluginUiHookGuard {
   try {
     slugs = readdirSync(PluginUiHookGuard.PLUGINS_DIR);
   } catch {
-    console.error(`Cannot read plugins dir: ${PluginUiHookGuard.PLUGINS_DIR}`);
-    process.exit(2);
+    // THROW, never `process.exit`: this runs in-process alongside every other guard under
+    // `arch-guard ci`, and exiting here would end that pass and take the remaining guards with it.
+    // Scanning nothing must also never look like scanning cleanly — a guard that cannot read its
+    // target has not passed.
+    throw new Error(`Cannot read plugins dir: ${PluginUiHookGuard.PLUGINS_DIR}`);
   }
   
   for (const slug of slugs) {

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { SiteTab } from '@/app/sites/[id]/site-tab.enum';
+import { SiteTab } from '@/app/sites/[id]/enums/site-tab.enum';
 
 /** The section switcher for a site's page. Presentational — the page owns which tab is current. */
 export class SiteTabBar extends PureReactor {

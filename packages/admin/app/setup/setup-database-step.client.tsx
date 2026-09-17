@@ -3,7 +3,7 @@ import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { DatabaseDriverChoice } from '@fromcode119/core/client';
 import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
 import { Input } from '@/components/ui/view/input.client';
-import type { ISetupDatabaseOptions, ISetupDatabaseServer } from '@/app/setup/setup-database-options.interface';
+import type { ISetupDatabaseOptions, ISetupDatabaseServer } from '@/app/setup/interfaces/setup-database-options.interface';
 
 /**
  * The step before every other one: which database this installation will use.

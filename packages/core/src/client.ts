@@ -197,7 +197,7 @@ export { AdminScope } from '@core/enums/admin-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';
 
 // Browser-safe: these carry only labels and identity, and depend on nothing but the Enum base.
-export { AcmeDirectory } from '@core/certificates/acme/acme-directory.enum';
+export { AcmeDirectory } from '@core/certificates/acme/enums/acme-directory.enum';
 // The wizard's driver list and phase. Both are plain `Enum` values with no server reach, and the
 // admin needs them to render the first-run screen before any of the server-only code could load.
 export { DatabaseDriverChoice } from '@core/security/enums/database-driver-choice.enum';

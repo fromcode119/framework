@@ -17,8 +17,8 @@ import { SetupPlatformStep } from '@/app/setup/setup-platform-step.client';
 import { SetupDomainStep } from '@/app/setup/setup-domain-step.client';
 import { SetupDatabaseStep } from '@/app/setup/setup-database-step.client';
 import { SetupPhase } from '@fromcode119/core/client';
-import type { ISetupDatabaseOptions, ISetupDatabaseServer } from '@/app/setup/setup-database-options.interface';
-import type { ISetupAccountErrors } from '@/app/setup/setup-account-errors.interface';
+import type { ISetupDatabaseOptions, ISetupDatabaseServer } from '@/app/setup/interfaces/setup-database-options.interface';
+import type { ISetupAccountErrors } from '@/app/setup/interfaces/setup-account-errors.interface';
 import { SetupAccountValidation } from '@/app/setup/setup-account-validation';
 
 /**

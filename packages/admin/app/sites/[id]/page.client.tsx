@@ -10,7 +10,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminApi } from '@/lib/api';
 import { SiteRecord } from '@/lib/tenants/site-record';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
-import { SiteTab } from '@/app/sites/[id]/site-tab.enum';
+import { SiteTab } from '@/app/sites/[id]/enums/site-tab.enum';
 import { SiteTabBar } from '@/app/sites/[id]/site-tab-bar.client';
 import { SiteAccessCard } from '@/app/sites/[id]/site-access-card.client';
 import { SiteExportsCard } from '@/app/sites/[id]/site-exports-card.client';

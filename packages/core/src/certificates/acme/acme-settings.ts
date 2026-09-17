@@ -1,4 +1,4 @@
-import { AcmeDirectory } from '@core/certificates/acme/acme-directory.enum';
+import { AcmeDirectory } from '@core/certificates/acme/enums/acme-directory.enum';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import { SecretService } from '@core/security/secret-service';
 import { SystemConstants } from '@core/constants/system.constants';
