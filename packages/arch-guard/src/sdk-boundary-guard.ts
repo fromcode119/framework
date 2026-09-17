@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { GuardScope } from './cli/guard-scope';
+import { SdkBoundaryPatterns } from './sdk-boundary-patterns';
 
 /**
  * Plugins and themes may import only `@fromcode119/sdk` — never core/database/api directly.
@@ -24,84 +25,6 @@ export class SdkBoundaryGuard {
       console.log('[check-sdk-boundary] OK — no plugin or theme in scope.');
       return 0;
     }
-    const SOURCE_FILE_PATTERN = /\.(ts|tsx|js|jsx|mjs|cjs)$/;
-    const JSON_FILE_PATTERN = /\/package\.json$/;
-    const IGNORE_PATH_PATTERNS = [
-      /\/node_modules\//,
-      /\/dist\//,
-      /\/ui\/bundle\.js$/,
-      /\/bundle\.js$/,
-      /\/index\.js$/,
-      /\/seed-old\.ts$/,
-      // Built artifacts — not source code:
-      // - themes/<slug>/ui/** holds the Vite build output (hashed chunks like
-      //   vendor-chakra-XXXXXXXX.js); the corresponding source lives in src/.
-      // - frontend.js is an esbuild bundle output by convention (like bundle.js).
-      /\/themes\/[^/]+\/ui\//,
-      // themes/<slug>/ui-ssr/** holds the compiled SSR + island bundle output (entry.mjs/live.js);
-      // the source lives in src/islands/. Same rationale as ui/ above — build artifacts, not source.
-      /\/themes\/[^/]+\/ui-ssr\//,
-      /\/frontend\.js$/,
-    ];
-
-    const IMPORT_PATTERN = /@fromcode119\/(?!sdk(?:\/|['"\s]|$))[A-Za-z0-9._/-]+/g;
-    const STRING_PATTERNS: Array<{ regex: RegExp; label: string; skipInAbsoluteUrl?: boolean }> = [
-      // `skipInAbsoluteUrl`: a versioned segment inside an absolute third-party URL is that service's
-      // own address (Expo's https://exp.host/--/api/v2/push/send), not a path composed against OUR
-      // API — the rule targets relative-path composition that must go through the plugin's route
-      // resolver / ApplicationUrlUtils. Hardcoding one of OUR hosts is caught by the host rules below.
-      { regex: /\/api\/v\d+\//g, label: 'hardcoded versioned API path', skipInAbsoluteUrl: true },
-      { regex: /api\.framework\.local/g, label: 'hardcoded api.framework.local host' },
-      { regex: /__FROMCODE_API_URL/g, label: 'legacy __FROMCODE_API_URL bridge usage' },
-      { regex: /FROMCODE_API_URL/g, label: 'direct FROMCODE_API_URL bridge usage' },
-      // READING the variable is the violation — the URL comes from `ApplicationUrlUtils`, which is the
-      // whole point of the rule. A test ASSIGNING it is arranging the world the code under test runs
-      // in, the way a fixture sets any other environment value; there is no other way to simulate a
-      // deployment's base URL, so reporting it asks for a test to be deleted rather than fixed.
-      { regex: /NEXT_PUBLIC_API_URL(?!\s*=[^=])/g, label: 'direct NEXT_PUBLIC_API_URL usage in plugin/theme code' },
-      { regex: /SystemConstants\.API_PATH\.AUTH\b/g, label: 'framework auth API path constant usage in plugin/theme code' },
-      { regex: /ApiPathUtils\.authPath\s*\(/g, label: 'framework auth path builder usage in plugin/theme code' },
-      {
-        regex: /['"`]\/auth\/(?:status|setup|login|logout|register|verify-email|resend-verification|forgot-password|reset-password|verify-password|profile|change-password|security|email-change\/request|email-change\/confirm|2fa(?:\/status|\/setup|\/verify|\/recovery-codes\/regenerate)?|sessions(?:\/me|\/revoke-others)?)(?:['"`])/g,
-        label: 'direct framework auth API path in plugin/theme code',
-      },
-    ];
-    // Patterns that are violations ONLY in frontend (plugin UI + theme) code — a plugin's own backend may
-    // legitimately reference its own versioned path. Same `{ regex, label }` shape as STRING_PATTERNS.
-    const FRONTEND_STRING_PATTERNS = [
-      {
-        regex: /ApiPathUtils\.pluginPath\s*\(/g,
-        label: 'plugin UI/theme code should not compose plugin paths with ApiPathUtils.pluginPath()',
-      },
-      {
-        // A literal versioned plugin API path in FRONTEND code (with OR without a leading slash — the no-slash
-        // form slips past the global `/api/v\d+/` rule when built via joinApiPath(base, 'api/v1/...')). Frontend
-        // must call a plugin through its namespace client (`runtime.fromcode.<slug>` / a passed scope client),
-        // which owns the base + version + auth.
-        regex: /\bapi\/v\d+\/plugins\/[a-z0-9-]+/gi,
-        label: 'hardcoded plugin API path in frontend code — call the plugin via its namespace client, not a literal api/v1/plugins/<slug> string',
-      },
-      {
-        // Secret credentials (Stripe/API secret keys) are resolved SERVER-SIDE only. A browser/theme bundle
-        // must never call a `get…SecretKey()` accessor — that would pull a server secret into the client.
-        // Domain-agnostic by design: matches the accessor SHAPE, so it catches ANY plugin's secret-key getter
-        // without this framework scanner naming a specific plugin or provider.
-        regex: /\bget\w*SecretKey\s*\(/gi,
-        label: 'secret-key accessor called in frontend code — secret credentials are server-side only and must never be resolved in a browser/theme bundle',
-      },
-    ];
-    const PLUGIN_UI_FILE_PATTERN = /\/plugins\/[^/]+\/ui\/.+\.(ts|tsx|js|jsx|mjs|cjs)$/;
-    const THEME_SOURCE_FILE_PATTERN = /\/themes\/[^/]+\/.+\.(ts|tsx|js|jsx|mjs|cjs)$/;
-    const BROWSER_STATE_PATTERNS = [
-      { regex: /\blocalStorage\b/g, label: 'raw localStorage usage outside shared browser-state authorities' },
-      { regex: /\bsessionStorage\b/g, label: 'raw sessionStorage usage outside shared browser-state authorities' },
-      { regex: /document\.cookie\b/g, label: 'raw document.cookie usage outside shared browser-state authorities' },
-      { regex: /Cookies\.(?:get|set|remove)\s*\(/g, label: 'raw js-cookie usage outside shared browser-state authorities' },
-      {
-        regex: /URLSearchParams\s*\(\s*window\.location\.search\s*\)/g,
-        label: 'raw window.location.search query parsing outside shared browser-state authorities',
-      },
-    ];
 
     function walk(directoryPath: any) {
       const entries = fs.readdirSync(directoryPath, { withFileTypes: true });
@@ -119,11 +42,11 @@ export class SdkBoundaryGuard {
     }
 
     function shouldScan(filePath) {
-      if (!SOURCE_FILE_PATTERN.test(filePath) && !JSON_FILE_PATTERN.test(filePath)) {
+      if (!SdkBoundaryPatterns.SOURCE_FILE_PATTERN.test(filePath) && !SdkBoundaryPatterns.JSON_FILE_PATTERN.test(filePath)) {
         return false;
       }
 
-      return !IGNORE_PATH_PATTERNS.some((pattern) => pattern.test(filePath));
+      return !SdkBoundaryPatterns.IGNORE_PATH_PATTERNS.some((pattern) => pattern.test(filePath));
     }
 
     function createLineState() {
@@ -136,7 +59,7 @@ export class SdkBoundaryGuard {
     }
 
     function stripCommentsFromLine(line, state) {
-      if (JSON_FILE_PATTERN.test(line)) {
+      if (SdkBoundaryPatterns.JSON_FILE_PATTERN.test(line)) {
         return { text: line, state };
       }
 
@@ -199,10 +122,10 @@ export class SdkBoundaryGuard {
 
     function collectLineViolations(filePath, lineText, lineNumber, ownPackageName) {
       const violations: any[] = [];
-      const isPluginUiFile = PLUGIN_UI_FILE_PATTERN.test(filePath);
-      const isThemeSourceFile = THEME_SOURCE_FILE_PATTERN.test(filePath);
+      const isPluginUiFile = SdkBoundaryPatterns.PLUGIN_UI_FILE_PATTERN.test(filePath);
+      const isThemeSourceFile = SdkBoundaryPatterns.THEME_SOURCE_FILE_PATTERN.test(filePath);
 
-      for (const match of lineText.matchAll(IMPORT_PATTERN)) {
+      for (const match of lineText.matchAll(SdkBoundaryPatterns.IMPORT_PATTERN)) {
         // A package.json naming ITSELF with a scoped name is not a boundary
         // violation — only references to other framework packages are.
         if (ownPackageName && match[0] === ownPackageName) {
@@ -222,7 +145,7 @@ export class SdkBoundaryGuard {
         });
       }
 
-      for (const candidate of STRING_PATTERNS) {
+      for (const candidate of SdkBoundaryPatterns.STRING_PATTERNS) {
         for (const match of lineText.matchAll(candidate.regex)) {
           // A match that directly continues an absolute `https?://…` token sits inside a
           // third-party service URL — out of scope for path-composition rules (see the flag).
@@ -242,7 +165,7 @@ export class SdkBoundaryGuard {
 
       if (isPluginUiFile || isThemeSourceFile) {
         // Comments are stripped before this runs, so a match is a real literal in frontend code.
-        for (const candidate of FRONTEND_STRING_PATTERNS) {
+        for (const candidate of SdkBoundaryPatterns.FRONTEND_STRING_PATTERNS) {
           for (const match of lineText.matchAll(candidate.regex)) {
             violations.push({
               filePath,
@@ -253,7 +176,7 @@ export class SdkBoundaryGuard {
         }
       }
 
-      for (const candidate of BROWSER_STATE_PATTERNS) {
+      for (const candidate of SdkBoundaryPatterns.BROWSER_STATE_PATTERNS) {
         for (const match of lineText.matchAll(candidate.regex)) {
           violations.push({
             filePath,
@@ -267,7 +190,7 @@ export class SdkBoundaryGuard {
     }
 
     function readOwnPackageName(filePath, content) {
-      if (!JSON_FILE_PATTERN.test(filePath)) {
+      if (!SdkBoundaryPatterns.JSON_FILE_PATTERN.test(filePath)) {
         return null;
       }
 
@@ -287,7 +210,7 @@ export class SdkBoundaryGuard {
 
       lines.forEach((rawLine, index) => {
         const lineNumber = index + 1;
-        const strippedLine = JSON_FILE_PATTERN.test(filePath)
+        const strippedLine = SdkBoundaryPatterns.JSON_FILE_PATTERN.test(filePath)
           ? rawLine
           : stripCommentsFromLine(rawLine, lineState).text;
 
