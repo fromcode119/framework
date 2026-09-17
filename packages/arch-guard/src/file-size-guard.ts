@@ -61,12 +61,50 @@ export class FileSizeGuard {
   static findOversized(root: string): Array<{ file: string; lines: number; codeLines: number; limit: number }> {
     const found: Array<{ file: string; lines: number; codeLines: number; limit: number }> = [];
     FileSizeGuard.walk(root, (filePath) => {
+      if (FileSizeGuard.declaresNothing(filePath)) return;
       const limit = FileSizeGuard.limitFor(filePath);
       const lines = FileSizeGuard.countLines(filePath);
       if (lines > limit) found.push({ file: filePath, lines, codeLines: FileSizeGuard.countCodeLines(filePath), limit });
     });
     return found.sort((left, right) => right.lines - left.lines);
   }
+
+  /**
+   * A module that DECLARES nothing — only imports, re-exports and comments.
+   *
+   * A barrel is the case: `core/src/index.ts` is 416 lines of `export { X } from './x'` and nothing
+   * else. The limit exists because a long file is hard to hold in your head, and that cost comes from
+   * LOGIC — branches, state, methods that reach each other. A list of names has none of it, and no
+   * one has ever been confused by the four-hundredth export in a barrel the way they are by the
+   * four-hundredth line of a class.
+   *
+   * WHY THIS IS NOT AN EXEMPTION LIST. The obvious version — skip files called `index.ts` — is a
+   * NAME standing in for a property, which is the mistake this codebase keeps finding in its own
+   * guards: it would also skip an `index.ts` that had quietly grown logic, and it would not skip the
+   * published entry points (`core/shared`, `reactor/lang`) that are barrels under another name. This
+   * reads what the file IS. Add one function to a barrel and it is measured again from that moment,
+   * with nothing to update.
+   *
+   * A `export const x = …` is a declaration and counts; `export { x } from './x'` does not.
+   */
+  static declaresNothing(filePath: string): boolean {
+    let content: string;
+    try { content = fs.readFileSync(filePath, 'utf8'); } catch { return false; }
+    const code = content
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('//'));
+    if (!code.length) return false;
+    return code.every((line) => FileSizeGuard.IMPORT_OR_REEXPORT.test(line) || FileSizeGuard.CONTINUATION.test(line));
+  }
+
+  /** `import …`, `export … from '…'`, `export type { … }` — a line that moves a name, not one that makes one. */
+  private static readonly IMPORT_OR_REEXPORT =
+    /^(?:import\b|export\s+(?:type\s+)?(?:\*|\{)|export\s+(?:type\s+)?\{[^}]*\}\s+from\b|export\s+\*)/;
+
+  /** The middle of a multi-line import/export list: bare names, commas, braces. */
+  private static readonly CONTINUATION = /^(?:[A-Za-z_$][\w$]*\s*(?:as\s+[A-Za-z_$][\w$]*\s*)?,?|\}?\s*from\s+['"][^'"]+['"];?|[{}],?|,)$/;
 
   /**
    * Lines that are neither blank nor comment — the logic you actually have to hold in your head.
