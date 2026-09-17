@@ -4,6 +4,17 @@ import { SitePreviewService } from '@api/services/tenants/site-preview-service';
 
 /** See the grant-service suite for why `= NULL` matches nothing here too. */
 class FakeDb {
+  /** The tenant this connection is bound to. Only `withTenant` sets it — unbound is the platform. */
+  private bound: string | null = null;
+
+  /** Row-level security is enforced against the CONNECTION, so the grant service binds the site
+   *  before writing a row that names it. See the grant-service suite. */
+  async withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> {
+    const outer = this.bound;
+    this.bound = tenantId;
+    try { return await fn(); } finally { this.bound = outer; }
+  }
+
   readonly rows: Array<Record<string, any>> = [];
   async insert(_t: string, row: Record<string, any>): Promise<void> { this.rows.push({ ...row }); }
   async findOne(_t: string, where: Record<string, any>): Promise<Record<string, any> | null> {
