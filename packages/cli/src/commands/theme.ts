@@ -1,9 +1,11 @@
 import { Command } from 'commander';
+// TYPE-only: erased at compile time, so importing it does not eagerly pull the whole
+// extension-builder graph into every CLI invocation — same reasoning as ExtensionBuildCommandService.
+import type { ThemeBundleCompiler as ThemeBundleCompilerType } from '@fromcode119/extension-builder';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import archiver from 'archiver';
-import * as esbuild from 'esbuild';
 import { CliUtils } from '@cli/utils';
 import { ThemeSeedCommandService } from '@cli/services/theme-seed-command-service';
 
@@ -155,36 +157,18 @@ export class ThemeBoot {
             return;
           }
 
-          const uiDir = path.join(themeDir, 'ui');
-          const entryFile = path.join(uiDir, 'index.ts');
-          const outFile = path.join(uiDir, 'bundle.js');
-
-          if (!fs.existsSync(entryFile)) {
-            console.error(chalk.red(`Entry file not found: ${entryFile}`));
+          // The real theme build IS the framework-owned Vite pipeline (ThemeBundleCompiler) — the
+          // same one `atlantis build theme <slug>` drives. A theme ships src/ + theme.json, never a
+          // hand-authored ui/index.ts; there is no other entry point to build from.
+          const { ThemeBundleCompiler } = await import('@fromcode119/extension-builder');
+          const compiler: ThemeBundleCompilerType = new ThemeBundleCompiler();
+          if (!compiler.hasThemeSources(themeDir)) {
+            console.error(chalk.red(`Theme "${slug}" has no theme.json or src/ directory — nothing to build: ${themeDir}`));
             return;
           }
 
           console.log(chalk.blue(`\nBuilding theme: ${chalk.bold(slug)}...`));
-
-          await CliUtils.compileStyles(uiDir);
-
-          await esbuild.build({
-            entryPoints: [entryFile],
-            bundle: true,
-            minify: true,
-            sourcemap: true,
-            format: 'esm',
-            platform: 'browser',
-            target: ['es2020'],
-            outfile: outFile,
-            loader: {
-              '.css': 'css',
-              '.svg': 'dataurl',
-              '.png': 'dataurl'
-            },
-            external: ['react', 'react-dom', '@fromcode119/react', 'lucide-react']
-          });
-
+          await compiler.build(themeDir, slug);
           console.log(chalk.green('Theme build completed successfully!'));
 
         } catch (error) {
@@ -194,7 +178,7 @@ export class ThemeBoot {
 
     theme
       .command('dev <slug>')
-      .description('Run theme development mode with watch/rebuild')
+      .description('Run theme development mode: rebuild on every change under src/')
       .action(async (slug) => {
         try {
           const themesDir = path.join(CliUtils.getProjectRoot(), 'themes');
@@ -204,48 +188,74 @@ export class ThemeBoot {
             return;
           }
 
-          const uiDir = path.join(themeDir, 'ui');
-          const entryFile = path.join(uiDir, 'index.ts');
-          const outFile = path.join(uiDir, 'bundle.js');
-
-          if (!fs.existsSync(entryFile)) {
-            console.error(chalk.red(`Entry file not found: ${entryFile}`));
+          const { ThemeBundleCompiler } = await import('@fromcode119/extension-builder');
+          const compiler: ThemeBundleCompilerType = new ThemeBundleCompiler();
+          if (!compiler.hasThemeSources(themeDir)) {
+            console.error(chalk.red(`Theme "${slug}" has no theme.json or src/ directory — nothing to build: ${themeDir}`));
             return;
           }
 
-          console.log(chalk.blue(`\n🚀 Starting Theme Development Mode: ${chalk.bold(slug)}`));
-          console.log(chalk.gray('Watching for changes in:'), uiDir);
+          console.log(chalk.blue(`\nStarting theme development mode: ${chalk.bold(slug)}`));
+          console.log(chalk.gray('Watching for changes in:'), path.join(themeDir, 'src'));
 
-          const ctx = await esbuild.context({
-            entryPoints: [entryFile],
-            bundle: true,
-            minify: false,
-            sourcemap: 'inline',
-            format: 'esm',
-            platform: 'browser',
-            target: ['es2020'],
-            outfile: outFile,
-            loader: {
-              '.css': 'css',
-              '.svg': 'dataurl',
-              '.png': 'dataurl'
-            },
-            external: ['react', 'react-dom'],
-            plugins: [{
-              name: 'rebuild-logger',
-              setup(build) {
-                build.onEnd(result => {
-                  if (result.errors.length > 0) {
-                    console.log(chalk.red('❌ Build failed with errors'));
-                  } else {
-                    console.log(chalk.green(`✓ Rebuilt theme ${slug} at ${new Date().toLocaleTimeString()}`));
-                  }
-                });
+          // ThemeBundleCompiler has no watch mode of its own — it shells out to `vite build`, not
+          // `vite dev` (a theme has no dev server of its own; it is server-rendered by the frontend).
+          // So this drives the same compiler on a debounced file watcher instead, exactly like the
+          // esbuild watch context this replaces did — same visible behaviour (edit, wait, rebuilt),
+          // now going through the pipeline that actually produces a working bundle.
+          let rebuildTimer: NodeJS.Timeout | null = null;
+          let building = false;
+          let rebuildQueued = false;
+
+          const rebuild = async (): Promise<void> => {
+            if (building) {
+              rebuildQueued = true;
+              return;
+            }
+            building = true;
+            try {
+              await compiler.build(themeDir, slug);
+              console.log(chalk.green(`✓ Rebuilt theme ${slug} at ${new Date().toLocaleTimeString()}`));
+            } catch (error) {
+              console.log(chalk.red(`✗ Build failed: ${error}`));
+            } finally {
+              building = false;
+              if (rebuildQueued) {
+                rebuildQueued = false;
+                await rebuild();
               }
-            }]
-          });
+            }
+          };
 
-          await ctx.watch();
+          const scheduleRebuild = (): void => {
+            if (rebuildTimer) clearTimeout(rebuildTimer);
+            rebuildTimer = setTimeout(() => { void rebuild(); }, 200);
+          };
+
+          // `ThemeBundleCompiler.build` itself writes (and removes) `src/theme-entry.generated.jsx`
+          // as build INPUT — that write/delete lands inside the very directory being watched. Without
+          // filtering it out, every rebuild schedules another rebuild of itself: an infinite loop that
+          // never settles (measured: 15+ rebuilds/sec until killed).
+          const GENERATED_ENTRY_FILE = 'theme-entry.generated.jsx';
+          const onSourceEvent = (_eventType: string, filename: string | null): void => {
+            if (filename && path.basename(filename) === GENERATED_ENTRY_FILE) return;
+            scheduleRebuild();
+          };
+
+          await rebuild();
+
+          const watcher = fs.watch(path.join(themeDir, 'src'), { recursive: true }, onSourceEvent);
+          const themeJsonWatcher = fs.watch(path.join(themeDir, 'theme.json'), scheduleRebuild);
+
+          const stop = () => {
+            watcher.close();
+            themeJsonWatcher.close();
+            if (rebuildTimer) clearTimeout(rebuildTimer);
+            process.exit(0);
+          };
+          process.on('SIGINT', stop);
+          process.on('SIGTERM', stop);
+
           console.log(chalk.gray('Keep this terminal open, or press Ctrl+C to stop.'));
 
         } catch (error) {
