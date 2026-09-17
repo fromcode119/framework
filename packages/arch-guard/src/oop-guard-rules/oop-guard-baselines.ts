@@ -242,7 +242,7 @@ export class OopGuardBaselines {
     //     JSX; the renderers intentionally build elements from runtime-provided component types.
     'admin/components/collection/custom-field-error-boundary.ts',
     'admin/components/collection/field-custom-component.tsx',
-    'admin/components/collection/list/page-service.ts',
+    'admin/components/collection/list/record-cell-renderers.tsx',
     'admin/components/ui/array-field-row-renderer.tsx',
     'frontend/app/plugin-loader-mount-service.ts',
   ]);

@@ -1,6 +1,5 @@
 import { Platform } from '@fromcode119/react-class-components';
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
-import React from 'react';
 import type { ReactNode } from 'react';
 
 import { Badge } from '@/components/ui/view/badge.client';
@@ -10,6 +9,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { CollectionListRelationshipCellValue } from '@/components/collection/list/view/relationship-cell-value.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { RecordOperations } from '@/components/collection/list/record-operations';
+import { RecordCellRenderers } from '@/components/collection/list/record-cell-renderers';
 
 export class CollectionListPageService {
   static resolveStatusField(collection: any): any {
@@ -50,7 +50,7 @@ export class CollectionListPageService {
         id: columnName,
         header,
         sortable: CollectionListPageService.isSortableColumn(columnName, field, { timestamps, hasWorkflow }),
-        accessor: (row: any) => RecordOperations.renderCellValue({ columnName, field, header, raw: row[columnName] })
+        accessor: (row: any) => RecordCellRenderers.renderCellValue({ columnName, field, header, raw: row[columnName] })
       };
     });
   }
