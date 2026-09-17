@@ -6,6 +6,8 @@ import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
+import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
+import { LogLevel } from '@core/enums/log-level.enum';
 
 /**
  * What the guest asks of the HOST, and what happens when the guest dies.
@@ -39,8 +41,11 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
 
   protected notified(type: string, payload: any): void {
     if (type !== 'log' || !this.context) return;
-    const level = String(payload?.level ?? 'info') as 'info' | 'warn' | 'error';
-    const target = (this.context.logger as any)[level] ?? this.context.logger.info;
+    // The guest names a level; `LogLevel` owns that list. Its `.value` is the LABEL (`INFO`), and the
+    // logger's method is the lower-case form of it — INFO when the guest says nothing usable, which is
+    // what this did before and is the level a plugin's own `console.log` should land at.
+    const level = LogLevel.find(payload?.level) ?? LogLevel.INFO;
+    const target = (this.context.logger as any)[String(level.value).toLowerCase()] ?? this.context.logger.info;
     target.call(this.context.logger, String(payload?.msg ?? ''), ...(Array.isArray(payload?.meta) ? payload.meta : []));
   }
 
@@ -112,8 +117,8 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     await this.start();
     if (this.context) {
       this.registrations.resetForRestart(this.context);
-      await this.invoke({ kind: 'lifecycle', name: 'onInit' }, undefined);
-      if (this.wasEnabled) await this.invoke({ kind: 'lifecycle', name: 'onEnable' }, undefined);
+      await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onInit' }, undefined);
+      if (this.wasEnabled) await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onEnable' }, undefined);
       // A fresh process has an EMPTY memory: everything its PEERS registered into it (a fulfilment
       // provider, a search provider, a broadcasts content provider) is gone with the old one. Say
       // `plugins:ready` again — the same event peers already re-register on at boot — naming the

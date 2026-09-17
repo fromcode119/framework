@@ -13,6 +13,7 @@ import { PluginGuestState } from '@core/plugin/host/plugin-guest-state';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { IPluginInvocation } from '@core/plugin/host/interfaces/plugin-invocation.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
+import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 
 /**
  * The plugin's process. Loads the plugin exactly as the scanner would in-process, gives it a context
@@ -94,12 +95,12 @@ export class PluginGuest {
     const context = this.context as PluginContext;
     // The contract mirror: filled at the first lifecycle call and refreshed at the first request.
     await PluginGuestCoreBridge.primeFor(invocation.kind, this.remote);
-    if (invocation.kind === 'lifecycle') {
+    if (invocation.kind === String(PluginInvocationKind.LIFECYCLE.value)) {
       const hook = this.contract[String(invocation.name)];
       if (typeof hook !== 'function') return undefined;
       return hook(context, ...(invocation.args ?? []));
     }
-    if (invocation.kind === 'public-api') {
+    if (invocation.kind === String(PluginInvocationKind.PUBLIC_API.value)) {
       const fn = this.contract.publicAPI?.[String(invocation.name)];
       if (typeof fn !== 'function') throw new Error(`guest: no public API function "${invocation.name}"`);
       return fn(...(invocation.args ?? []));

@@ -30,6 +30,7 @@ import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginHostGuestBridge } from '@core/plugin/host/plugin-host-guest-bridge';
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
+import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 
 /**
  * One isolated plugin, from the host's side: its process, its channel, its tokens, its stand-ins.
@@ -81,7 +82,7 @@ export class PluginHost extends PluginHostGuestBridge {
     this.settings = settings;
     this.limits = settings.forPlugin(manifest.sandbox);
     this.proxy = new PluginHostHttpProxy('');
-    this.callbacks = new PluginHostCallbacks(slug, (handlerId, args, store) => this.invoke({ kind: 'callback', handlerId, args }, store));
+    this.callbacks = new PluginHostCallbacks(slug, (handlerId, args, store) => this.invoke({ kind: String(PluginInvocationKind.CALLBACK.value), handlerId, args }, store));
     const plugin = { manifest } as unknown as ILoadedPlugin;
     const ddl = PluginSchemaDatabaseProxy.create(plugin, manager);
     this.dispatcher = new PluginHostDispatcher(slug, this.tokens, manager.db, ddl, this.callbacks);
@@ -188,7 +189,7 @@ export class PluginHost extends PluginHostGuestBridge {
           if (key === 'onInit') { this.initDeferred = true; return undefined; }
           if (key === 'onDisable' || key === 'onUninstall') return undefined;
           await this.start();
-          if (this.initDeferred) { this.initDeferred = false; await this.invoke({ kind: 'lifecycle', name: 'onInit' }, RequestContextUtils.storage.getStore()); }
+          if (this.initDeferred) { this.initDeferred = false; await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onInit' }, RequestContextUtils.storage.getStore()); }
         }
         if (key === 'onEnable') this.wasEnabled = true;
         if (key === 'onDisable') this.wasEnabled = false;
@@ -196,7 +197,7 @@ export class PluginHost extends PluginHostGuestBridge {
         // never did, so an isolated plugin's onInit ran untenanted even when the caller had entered a
         // site's scope — which is exactly what the per-site replay does. Every write the guest made
         // was refused, and the plugin was told nothing.
-        return this.invoke({ kind: 'lifecycle', name: key, args: extra }, RequestContextUtils.storage.getStore());
+        return this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: key, args: extra }, RequestContextUtils.storage.getStore());
       };
     }
     stubs.publicAPI = this.lazyPublicApi();
@@ -216,7 +217,7 @@ export class PluginHost extends PluginHostGuestBridge {
       get(_target, prop) {
         if (typeof prop !== 'string') return undefined;
         if (!host.describeResult?.publicApiKeys.includes(prop)) return undefined;
-        return (...args: unknown[]) => host.invoke({ kind: 'public-api', name: prop, args }, RequestContextUtils.storage.getStore());
+        return (...args: unknown[]) => host.invoke({ kind: String(PluginInvocationKind.PUBLIC_API.value), name: prop, args }, RequestContextUtils.storage.getStore());
       },
       ownKeys() { return host.describeResult?.publicApiKeys ?? []; },
       getOwnPropertyDescriptor(_target, prop) {
@@ -264,7 +265,7 @@ export class PluginHost extends PluginHostGuestBridge {
       // through the wait, ten such waits emptied the pool and the guest's own calls then queued behind
       // them — a deadlock until the deadline. The next statement on this side takes a fresh one.
       await TenantConnectionScope.releaseCurrent();
-      const result = await this.channel.request('invoke', invocation, work.kind === 'lifecycle' ? PluginHostState.BOOT_TIMEOUT_MS : this.limits.timeoutMs);
+      const result = await this.channel.request('invoke', invocation, work.kind === String(PluginInvocationKind.LIFECYCLE.value) ? PluginHostState.BOOT_TIMEOUT_MS : this.limits.timeoutMs);
       return this.callbacks.revive(result);
     } finally {
       this.tokens.revoke(token);

@@ -6,8 +6,8 @@
  * handler id — the host forwards them over HTTP to the guest's socket by path.
  */
 export interface IPluginGuestRegistration {
-  /** `plugins-on`: `context.plugins.on(event)` — the platform bus (`plugins:ready`), NOT the tenant-gated plugin hooks. */
-  kind: 'route' | 'use' | 'middleware' | 'hook' | 'hook-off' | 'plugins-on' | 'scheduler' | 'tenants-for-each' | 'job-worker' | 'mcp-tools' | 'gate' | 'canonical-path';
+  /** A `PluginGuestRegistrationKind` VALUE — the message is serialised, so it travels as its string. */
+  kind: string;
   handlerId?: string;
   /** route / use */
   method?: string;

@@ -10,6 +10,7 @@ import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { IPluginContextApi } from '@core/plugin/interfaces/plugin-context-api.interface';
 import type { IMiddlewareConfig } from '@core/interfaces/middleware-config.interface';
+import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 
 /**
  * `context.api` inside a guest: every route is mounted on the guest's own Express under the same
@@ -66,7 +67,7 @@ export class PluginGuestApiFactory {
     const id = this.handlers.keep('middleware', config.handler as (...args: any[]) => unknown);
     this.http.mountMiddleware(id, (req: Request, res: Response, next: NextFunction) => config.handler(req, res, next));
     void this.channel.request('register', {
-      kind: 'middleware',
+      kind: String(PluginGuestRegistrationKind.MIDDLEWARE.value),
       handlerId: id,
       middleware: { id: config.id, priority: config.priority, stage: String((config.stage as any)?.value ?? config.stage) },
     } satisfies IPluginGuestRegistration, 30_000);

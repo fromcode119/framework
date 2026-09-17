@@ -7,6 +7,7 @@ import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remo
 import { PluginHostPortableView } from '@core/plugin/host/plugin-host-portable-view';
 import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
 import type { PluginContext } from '@core/plugin/plugin-context';
+import { PluginRemoteCallRoot } from '@core/plugin/host/enums/plugin-remote-call-root.enum';
 
 /**
  * Runs one guest call against the REAL context, under the tenant the call's token was minted for.
@@ -44,9 +45,9 @@ export class PluginHostDispatcher {
   }
 
   private root(context: PluginContext, root: IPluginRemoteCall['root']): unknown {
-    if (root === 'context') return context;
-    if (root === 'core') return CoreServices.getInstance();
-    if (root === 'ddl') return this.ddl;
+    if (root === String(PluginRemoteCallRoot.CONTEXT.value)) return context;
+    if (root === String(PluginRemoteCallRoot.CORE.value)) return CoreServices.getInstance();
+    if (root === String(PluginRemoteCallRoot.DDL.value)) return this.ddl;
     throw new Error(`unknown call root "${root}"`);
   }
 

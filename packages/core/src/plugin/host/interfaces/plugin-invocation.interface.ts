@@ -7,8 +7,8 @@
  * keeps working — but they authorise nothing: the host resolves the token, not these fields.
  */
 export interface IPluginInvocation {
-  /** `callback`: a function the guest handed out inside a payload, called by whoever received it. */
-  kind: 'lifecycle' | 'hook' | 'scheduler' | 'job' | 'mcp-tool' | 'gate' | 'canonical-path' | 'public-api' | 'callback';
+  /** A `PluginInvocationKind` VALUE — the message is serialised, so it travels as its string. */
+  kind: string;
   handlerId?: string;
   /** lifecycle: onInstall | onInit | onUpdate | onEnable | onDisable | onUninstall; public-api: the function name */
   name?: string;

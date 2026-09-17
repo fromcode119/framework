@@ -11,6 +11,7 @@ import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { IRequestStore } from '@core/context/interfaces/request-store.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
+import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 
 /**
  * The host's stand-ins for what the guest registered: each one is registered on the REAL context
@@ -42,18 +43,18 @@ export class PluginHostRegistrations {
    */
   apply(context: PluginContext, registration: IPluginGuestRegistration): void | Promise<number> {
     switch (registration.kind) {
-      case 'route': return this.route(context, registration);
-      case 'use': return this.use(context, registration);
-      case 'middleware': return this.middleware(context, registration);
-      case 'hook': return this.hook(context, registration);
-      case 'hook-off': return this.hookOff(context, registration);
-      case 'plugins-on': return this.pluginsOn(context, registration);
-      case 'scheduler': return this.scheduler(context, registration);
-      case 'tenants-for-each': return this.tenantsForEach(registration);
-      case 'job-worker': return this.jobWorker(context, registration);
-      case 'mcp-tools': return this.mcpTools(context, registration);
-      case 'gate': return this.gate(registration);
-      case 'canonical-path': return this.canonicalPath(registration);
+      case String(PluginGuestRegistrationKind.ROUTE.value): return this.route(context, registration);
+      case String(PluginGuestRegistrationKind.USE.value): return this.use(context, registration);
+      case String(PluginGuestRegistrationKind.MIDDLEWARE.value): return this.middleware(context, registration);
+      case String(PluginGuestRegistrationKind.HOOK.value): return this.hook(context, registration);
+      case String(PluginGuestRegistrationKind.HOOK_OFF.value): return this.hookOff(context, registration);
+      case String(PluginGuestRegistrationKind.PLUGINS_ON.value): return this.pluginsOn(context, registration);
+      case String(PluginGuestRegistrationKind.SCHEDULER.value): return this.scheduler(context, registration);
+      case String(PluginGuestRegistrationKind.TENANTS_FOR_EACH.value): return this.tenantsForEach(registration);
+      case String(PluginGuestRegistrationKind.JOB_WORKER.value): return this.jobWorker(context, registration);
+      case String(PluginGuestRegistrationKind.MCP_TOOLS.value): return this.mcpTools(context, registration);
+      case String(PluginGuestRegistrationKind.GATE.value): return this.gate(registration);
+      case String(PluginGuestRegistrationKind.CANONICAL_PATH.value): return this.canonicalPath(registration);
       default: throw new Error(`unknown registration kind "${(registration as any).kind}"`);
     }
   }
