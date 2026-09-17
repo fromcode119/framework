@@ -64,4 +64,5 @@ export * from 'drizzle-orm/pg-core';
 
 // Type aliases for backward compatibility
 export type { IDatabaseManager as DatabaseManager } from '@database/interfaces/database-manager.interface';
+export { SchemaReconcileState } from '@database/enums/schema-reconcile-state.enum';
 export { SortDirection } from '@database/enums/sort-direction.enum';

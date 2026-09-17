@@ -235,3 +235,4 @@ export { SnapshotType } from '@core/management/enums/snapshot-type.enum';
 export { LocaleUrlStrategy } from '@core/enums/locale-url-strategy.enum';
 export { TwoFactorMethod } from '@core/enums/two-factor-method.enum';
 export { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-import-id-mode.enum';
+export { PluginIsolationMode } from '@core/plugin/host/enums/plugin-isolation-mode.enum';

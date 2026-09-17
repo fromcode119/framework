@@ -218,7 +218,10 @@ export abstract class BaseRouter {
           continue;
         }
 
-        const instanceMethod = Reflect.get(this, propertyName);
+        // `Reflect.get`'s generic signature ties its return to `keyof this`, but `propertyName` is a
+        // plain runtime string from `getOwnPropertyNames` — the real value is untyped; this check is
+        // real narrowing, not a contract guard.
+        const instanceMethod: unknown = Reflect.get(this, propertyName);
         if (typeof instanceMethod !== 'function') {
           continue;
         }

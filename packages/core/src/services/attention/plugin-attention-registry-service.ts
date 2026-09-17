@@ -12,14 +12,20 @@ import type { IAttentionProviderRegistration } from '@core/services/attention/in
 export class PluginAttentionRegistryService {
   private readonly providers = new Map<string, IAttentionProviderRegistration & { canonicalKey: string }>();
 
-  register(registration: IAttentionProviderRegistration): void {
+  // Plugins call this across the SDK boundary, so a caller can hand a registration missing
+  // `resolve` despite the declared contract — the checks below are real validation, not decoration.
+  register(registration: Omit<IAttentionProviderRegistration, 'resolve'> & { resolve?: unknown }): void {
     const namespace = String(registration?.namespace || '').trim();
     const pluginSlug = String(registration?.pluginSlug || '').trim();
     const key = String(registration?.key || '').trim();
-    if (!namespace || !pluginSlug || !key || typeof registration?.resolve !== 'function') return;
+    const resolve = registration?.resolve;
+    if (!namespace || !pluginSlug || !key || typeof resolve !== 'function') return;
 
     const canonicalKey = `${namespace}:${pluginSlug}:${key}`;
-    this.providers.set(canonicalKey, { ...registration, namespace, pluginSlug, key, canonicalKey });
+    this.providers.set(canonicalKey, {
+      ...registration, namespace, pluginSlug, key, canonicalKey,
+      resolve: resolve as IAttentionProviderRegistration['resolve'],
+    });
   }
 
   unregister(canonicalKey: string): void {

@@ -12,7 +12,9 @@ import type { ITagOption } from '@/components/ui/tag-field/interfaces/tag-option
  * keeping the React class thin without changing behavior.
  */
 export class TagFieldDataService {
-  static parseTags(value: string[] | string, hasMany = true): any[] {
+  // `value` is a raw stored record field: despite the caller's `string[] | string` prop type,
+  // schema-less/legacy data can hand this a number, object, boolean, null, etc. at runtime.
+  static parseTags(value: unknown, hasMany = true): any[] {
     if (Array.isArray(value)) return value.filter(v => v !== null && v !== undefined);
     if (value !== null && value !== undefined && typeof value === 'string' && value.trim()) {
       if (!hasMany) return [value];

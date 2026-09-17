@@ -18,38 +18,36 @@ export class ThemeConfigService {
   ) {}
 
   /** The shape rules on their own, so the per-tenant path can validate without writing the platform row. */
-  validateThemeConfig(slug: string, config: { variables?: Record<string, string> }): void {
+  // `config` is an HTTP request body (see theme-controller.ts `saveConfig`), not a trusted object —
+  // the declared `{ variables?: Record<string, string> }` shape further down is what this validates,
+  // not what is guaranteed on entry.
+  validateThemeConfig(slug: string, config: Record<string, unknown>): void {
     if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
-    const extraKeys = Object.keys(config).filter((k) => k !== 'variables');
-    if (extraKeys.length > 0) throw new Error(`Unknown theme config keys: ${extraKeys.join(', ')}`);
-    if (config.variables !== undefined) {
-      if (typeof config.variables !== 'object' || Array.isArray(config.variables)) {
-        throw new Error('Theme variables must be a plain object.');
-      }
-      for (const [key, value] of Object.entries(config.variables)) {
-        if (typeof value !== 'string') throw new Error(`Theme variable "${key}" must be a string.`);
-      }
-    }
+    ThemeConfigService.assertValidThemeConfigShape(config);
   }
 
-  async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
+  async saveThemeConfig(slug: string, config: Record<string, unknown>) {
     if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
-    const extraKeys = Object.keys(config).filter((k) => k !== 'variables');
-    if (extraKeys.length > 0) throw new Error(`Unknown theme config keys: ${extraKeys.join(', ')}`);
-    if (config.variables !== undefined) {
-      if (typeof config.variables !== 'object' || Array.isArray(config.variables)) {
-        throw new Error('Theme variables must be a plain object.');
-      }
-      for (const [key, value] of Object.entries(config.variables)) {
-        if (typeof value !== 'string') throw new Error(`Theme variable "${key}" must be a string.`);
-      }
-    }
+    ThemeConfigService.assertValidThemeConfigShape(config);
     const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
     if (existing) {
       await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: JSON.stringify(config), updated_at: new Date() });
     } else {
       const manifest = this.themes.get(slug)!;
       await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: ThemeState.INACTIVE.value, config: JSON.stringify(config), created_at: new Date(), updated_at: new Date() });
+    }
+  }
+
+  private static assertValidThemeConfigShape(config: Record<string, unknown>): void {
+    const extraKeys = Object.keys(config).filter((k) => k !== 'variables');
+    if (extraKeys.length > 0) throw new Error(`Unknown theme config keys: ${extraKeys.join(', ')}`);
+    if (config.variables !== undefined) {
+      if (typeof config.variables !== 'object' || config.variables === null || Array.isArray(config.variables)) {
+        throw new Error('Theme variables must be a plain object.');
+      }
+      for (const [key, value] of Object.entries(config.variables)) {
+        if (typeof value !== 'string') throw new Error(`Theme variable "${key}" must be a string.`);
+      }
     }
   }
 

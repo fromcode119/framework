@@ -2,6 +2,7 @@ import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-
 import { SystemConstants } from '@core/constants/system.constants';
 import type { Logger } from '@core/logging';
 import type { IDatabaseManager } from '@fromcode119/database';
+import { SchemaReconcileState } from '@fromcode119/database';
 
 /**
  * Applies the parts of a collection's declaration that the CREATE never covered.
@@ -47,14 +48,14 @@ export class DeclaredSchemaReconciler {
     for (const column of plan.declaredUniques) {
       const outcome = await this.db.ensureDeclaredUnique(plan.tableName, column);
 
-      if (outcome.state === 'changed') {
+      if (outcome.state === SchemaReconcileState.CHANGED) {
         this.logger.info(`Added the declared UNIQUE on ${plan.tableName}.${column}.`);
-      } else if (outcome.state === 'failed') {
+      } else if (outcome.state === SchemaReconcileState.FAILED) {
         this.logger.warn(
           `Could not add the declared UNIQUE on ${plan.tableName}.${column}: ${outcome.reason}. `
           + 'Existing duplicate values are the usual cause; the constraint stays unenforced until they are resolved.'
         );
-      } else if (outcome.state === 'unsupported') {
+      } else if (outcome.state === SchemaReconcileState.UNSUPPORTED) {
         // Once, then stop asking: every remaining column would say the same thing.
         this.logger.warn(
           `Declared UNIQUE rules cannot be reconciled on this driver, so ${plan.tableName} keeps `
@@ -81,14 +82,14 @@ export class DeclaredSchemaReconciler {
     for (const column of plan.declaredOptionals) {
       const outcome = await this.db.ensureDeclaredNullable(plan.tableName, column);
 
-      if (outcome.state === 'changed') {
+      if (outcome.state === SchemaReconcileState.CHANGED) {
         this.logger.info(`${plan.tableName}.${column} is optional in the schema; dropped its NOT NULL.`);
-      } else if (outcome.state === 'failed') {
+      } else if (outcome.state === SchemaReconcileState.FAILED) {
         this.logger.warn(
           `Could not relax NOT NULL on ${plan.tableName}.${column}: ${outcome.reason}. `
           + 'Writes that leave it empty will go on being refused until this is resolved.'
         );
-      } else if (outcome.state === 'unsupported') {
+      } else if (outcome.state === SchemaReconcileState.UNSUPPORTED) {
         // Once per sync, not per column: it is a property of the driver, not of this table.
         return;
       }

@@ -46,7 +46,9 @@ export class FormatterService extends BaseService {
    * formatNumber(1234567) // "1,234,567"
    * formatNumber(1234.56) // "1,234.56"
    */
-  formatNumber(value: number, decimals?: number): string {
+  // Public service surface (`AdminServices.formatter`) consumed by plugin/theme admin code with
+  // record field values, which are not guaranteed to match the declared type at runtime.
+  formatNumber(value: unknown, decimals?: number): string {
     if (typeof value !== 'number' || isNaN(value)) return '0';
     const fixed = decimals !== undefined ? value.toFixed(decimals) : String(value);
     return fixed.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -82,7 +84,7 @@ export class FormatterService extends BaseService {
    * formatPercent(0.1234) // "12.34%"
    * formatPercent(0.5) // "50%"
    */
-  formatPercent(value: number, decimals: number = 0): string {
+  formatPercent(value: unknown, decimals: number = 0): string {
     if (typeof value !== 'number' || isNaN(value)) return '0%';
     return `${(value * 100).toFixed(decimals)}%`;
   }

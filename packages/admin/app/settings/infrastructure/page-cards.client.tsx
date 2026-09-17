@@ -10,6 +10,7 @@ import { SettingRow } from '@/app/settings/general/setting-row';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { Select } from '@/components/ui/view/select.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
+import { PluginIsolationMode } from '@fromcode119/core/client';
 
 /**
  * The four cards this screen is made of.
@@ -146,7 +147,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
               onChange={this.onIsolationDefault}
               placeholder="Default: isolated"
               clearable
-              options={[{ value: 'isolated', label: 'Isolated — own process per plugin' }, { value: 'shared', label: 'Shared — inside the API process' }]}
+              options={[{ value: String(PluginIsolationMode.ISOLATED.value), label: 'Isolated — own process per plugin' }, { value: String(PluginIsolationMode.SHARED.value), label: 'Shared — inside the API process' }]}
             />
           </SettingRow>
           <SettingRow

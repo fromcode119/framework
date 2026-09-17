@@ -93,9 +93,10 @@ export class BuildSourceMapper {
     const id = typeof source.id === 'number' || typeof source.id === 'string'
       ? source.id
       : undefined;
-    const gitUrl = typeof source.git_url === 'string'
-      ? source.git_url
-      : (typeof source.gitUrl === 'string' ? source.gitUrl : '');
+    // `source` is always a raw DB row here (see the "Snake FIRST" note below) — the column is
+    // `git_url`; a camelCase `gitUrl` on this object exists only in the (required, non-optional)
+    // type, never at runtime, so there is nothing left to fall back to.
+    const gitUrl = typeof source.git_url === 'string' ? source.git_url : '';
     const lastBuildAt = typeof source.last_build_at === 'string'
       ? source.last_build_at
       : (typeof source.lastBuildAt === 'string' ? source.lastBuildAt : undefined);

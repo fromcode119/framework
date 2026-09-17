@@ -115,7 +115,9 @@ export class ResolvedContentMetadata {
       record: content,
     });
     const schema = head?.schema;
-    return Array.isArray(schema) ? schema.filter((json) => typeof json === 'string' && json.trim()) : [];
+    return Array.isArray(schema)
+      ? schema.filter((json): json is string => typeof json === 'string' && !!json.trim())
+      : [];
   }
 
   private static resolveStringField(content: Record<string, unknown> | null, field: string): string {
@@ -145,8 +147,12 @@ export class ResolvedContentMetadata {
       await new Promise((resolve) => setTimeout(resolve, delayMs));
       outcome = await ServerApiUtils.serverFetchJsonOutcome(path);
     }
-    const data = outcome.valueOrThrow(path) as IHeadData | null;
-    return data && typeof data === 'object' && typeof data.title === 'string' ? data : null;
+    // The plugin's JSON response, not yet a trusted `IHeadData` — `title` is the one field this
+    // boundary actually validates before the rest of the class treats the shape as safe.
+    const data = outcome.valueOrThrow(path) as unknown;
+    return data && typeof data === 'object' && typeof (data as { title?: unknown }).title === 'string'
+      ? (data as IHeadData)
+      : null;
   });
 
   /** Two short waits cover a plugin process swap (~1 s); an api that is really down still fails fast. */

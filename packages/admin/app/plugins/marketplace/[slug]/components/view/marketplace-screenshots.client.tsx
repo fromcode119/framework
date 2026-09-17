@@ -53,7 +53,7 @@ export class MarketplaceScreenshots extends PureReactor {
           {plugin.screenshots.length > 1 && (
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
               {plugin.screenshots.map((item, idx) => {
-                const src = typeof item === 'string' ? item : item.url;
+                const src = item.url;
                 return (
                   <button
                     key={idx}

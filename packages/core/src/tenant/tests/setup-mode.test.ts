@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { SetupMode } from '@core/tenant/setup-mode';
 import { SetupPhase } from '@core/tenant/enums/setup-phase.enum';
+import { SetupUnavailableReason } from '@core/tenant/enums/setup-unavailable-reason.enum';
 
 /**
  * Setup mode is the ONE exception to the platform's fail-closed rule for an unrecognised host, so
@@ -43,7 +44,7 @@ describe('SetupMode', () => {
 
     at(SetupMode.WINDOW_MS + 1);
     expect(SetupMode.isActive()).toBe(false);
-    expect(SetupMode.unavailableReason()).toBe('expired');
+    expect(SetupMode.unavailableReason()).toBe(SetupUnavailableReason.EXPIRED);
   });
 
   it('gives the install to the FIRST claimant and refuses a second party', () => {
@@ -68,7 +69,7 @@ describe('SetupMode', () => {
     SetupMode.complete();
 
     expect(SetupMode.isActive()).toBe(false);
-    expect(SetupMode.unavailableReason()).toBe('completed');
+    expect(SetupMode.unavailableReason()).toBe(SetupUnavailableReason.COMPLETED);
     // Nothing short of configure() — i.e. a restart reading an empty database — brings it back.
     expect(SetupMode.claim('anyone')).toBe(false);
   });

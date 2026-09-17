@@ -1,4 +1,5 @@
 import { SetupPhase } from '@core/tenant/enums/setup-phase.enum';
+import { SetupUnavailableReason } from '@core/tenant/enums/setup-unavailable-reason.enum';
 
 /**
  * Is this deployment still waiting to be claimed?
@@ -102,9 +103,9 @@ export class SetupMode {
   }
 
   /** Why setup is not open, in the words the operator needs — for the screen, not a log. */
-  static unavailableReason(): 'completed' | 'expired' | null {
-    if (!SetupMode.active) return 'completed';
-    if (SetupMode.now() - SetupMode.openedAt > SetupMode.WINDOW_MS) return 'expired';
+  static unavailableReason(): SetupUnavailableReason | null {
+    if (!SetupMode.active) return SetupUnavailableReason.COMPLETED;
+    if (SetupMode.now() - SetupMode.openedAt > SetupMode.WINDOW_MS) return SetupUnavailableReason.EXPIRED;
     return null;
   }
 

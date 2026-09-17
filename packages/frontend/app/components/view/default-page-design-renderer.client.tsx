@@ -31,7 +31,6 @@ export class DefaultPageDesignRenderer extends Reactor {
     const Component = resolved.winner as ComponentType<{ content?: unknown; entry?: unknown }>;
     const isRenderableComponent =
       typeof Component === 'function' ||
-      typeof Component === 'string' ||
       Boolean((Component as any)?.$$typeof);
     if (!isRenderableComponent) {
       console.warn(`[DefaultPageDesignRenderer] Invalid component for target "${targetKey}". Owner: ${resolved.winnerOwner || 'unknown'}`);

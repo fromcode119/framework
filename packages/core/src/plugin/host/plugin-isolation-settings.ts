@@ -1,5 +1,6 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
+import { PluginIsolationMode } from '@core/plugin/host/enums/plugin-isolation-mode.enum';
 
 /**
  * The operator's isolation settings — declared platform settings (Settings → Infrastructure →
@@ -11,7 +12,7 @@ import { SystemConstants } from '@core/constants/system.constants';
  */
 export class PluginIsolationSettings {
   private constructor(
-    readonly defaultMode: 'isolated' | 'shared',
+    readonly defaultMode: PluginIsolationMode,
     readonly memoryMb: number,
     readonly timeoutMs: number,
   ) {}
@@ -22,14 +23,14 @@ export class PluginIsolationSettings {
     const memory = CoercionUtils.toNumber(await value(SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB));
     const timeout = CoercionUtils.toNumber(await value(SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS));
     return new PluginIsolationSettings(
-      mode === 'shared' ? 'shared' : 'isolated',
+      PluginIsolationMode.resolve(mode),
       memory > 0 ? memory : SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT,
       timeout > 0 ? timeout : SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT,
     );
   }
 
   static defaults(): PluginIsolationSettings {
-    return new PluginIsolationSettings('isolated', SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT, SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT);
+    return new PluginIsolationSettings(PluginIsolationMode.ISOLATED, SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT, SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT);
   }
 
   /** Effective limits for one plugin: its manifest's `sandbox` object wins over the platform values. */
@@ -48,6 +49,6 @@ export class PluginIsolationSettings {
       if (enabled === false) return false;
       if (enabled === true) return true;
     }
-    return this.defaultMode === 'isolated';
+    return this.defaultMode === PluginIsolationMode.ISOLATED;
   }
 }

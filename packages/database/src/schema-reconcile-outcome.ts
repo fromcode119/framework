@@ -1,3 +1,4 @@
+import { SchemaReconcileState } from '@database/enums/schema-reconcile-state.enum';
 /**
  * What a driver did when asked to bring one piece of an EXISTING table back in line with what a
  * field declares.
@@ -17,25 +18,25 @@
  */
 export class SchemaReconcileOutcome {
   private constructor(
-    readonly state: 'changed' | 'satisfied' | 'failed' | 'unsupported',
+    readonly state: SchemaReconcileState,
     readonly reason: string,
   ) {}
 
   /** The driver altered the table to match the declaration. */
   static changed(): SchemaReconcileOutcome {
-    return new SchemaReconcileOutcome('changed', '');
+    return new SchemaReconcileOutcome(SchemaReconcileState.CHANGED, '');
   }
 
   /** Already true — a unique that covers the column, a column already nullable. */
   static satisfied(): SchemaReconcileOutcome {
-    return new SchemaReconcileOutcome('satisfied', '');
+    return new SchemaReconcileOutcome(SchemaReconcileState.SATISFIED, '');
   }
 
   static failed(reason: string): SchemaReconcileOutcome {
-    return new SchemaReconcileOutcome('failed', reason);
+    return new SchemaReconcileOutcome(SchemaReconcileState.FAILED, reason);
   }
 
   static unsupported(reason: string): SchemaReconcileOutcome {
-    return new SchemaReconcileOutcome('unsupported', reason);
+    return new SchemaReconcileOutcome(SchemaReconcileState.UNSUPPORTED, reason);
   }
 }
