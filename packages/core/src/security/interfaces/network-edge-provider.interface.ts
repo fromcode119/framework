@@ -14,4 +14,13 @@ export interface INetworkEdgeProvider {
   readonly trustedIpHeader: string;
   /** This provider's published edge ranges — the seed for its operator-editable settings row. */
   readonly defaultRanges: ReadonlyArray<readonly [string, number]>;
+  /**
+   * The `_system_meta` key this provider's extra ranges lived under BEFORE the generic, per-provider
+   * settings shape existed — optional, and only ever populated by a provider that predates that
+   * shape. An operator's extension under the old key must not silently vanish when the setting
+   * became provider-generic; the resolver checks this key when the new shape has never been saved,
+   * so the migration lives on the provider that actually had the old key, never in generic code that
+   * would otherwise have to name it.
+   */
+  readonly legacyRangesKey?: string;
 }
