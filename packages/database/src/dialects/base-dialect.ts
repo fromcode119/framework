@@ -14,6 +14,7 @@ import type { IJoinClause } from '@database/interfaces/join-clause.interface';
 import { OrderByBuilder } from '@database/dialects/order-by-builder';
 import type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
 import { BlindSchemaIntrospection } from '@database/introspection/blind-schema-introspection';
+import { SqlPredicateRenderer } from '@database/dialects/sql-predicate-renderer';
 
 /**
  * BaseDialect - Shared utilities for database dialect implementations
@@ -23,6 +24,50 @@ import { BlindSchemaIntrospection } from '@database/introspection/blind-schema-i
  */
 export abstract class BaseDialect {
   protected orderByBuilder = new OrderByBuilder();
+
+  /**
+   * How one comparison becomes SQL. Composed rather than inherited — `SqlPredicateRenderer` says why
+   * a base class could not express this.
+   *
+   * Arrow closures, so a SUBCLASS override still wins: Postgres overriding `getParamPlaceholder` is
+   * what runs, because `this` is resolved when the closure is called.
+   */
+  protected readonly predicates = new SqlPredicateRenderer({
+    quoteIdentifier: (name) => this.quoteIdentifier(name),
+    getParamPlaceholder: (index) => this.getParamPlaceholder(index),
+    normalizeParamValue: (value) => this.normalizeParamValue(value),
+    comparisonColumn: (comparison, quotedColumn) => this.comparisonColumn(comparison, quotedColumn),
+    equalityColumnExpression: (quotedColumn, value) => this.equalityColumnExpression(quotedColumn, value),
+    patternColumnExpression: (quotedColumn) => this.patternColumnExpression(quotedColumn),
+    getLikeOperator: () => this.getLikeOperator(),
+    resolveColumn: (column, tableOrName) => this.resolveColumn(column, tableOrName),
+    drizzlePatternColumn: (column) => this.drizzlePatternColumn(column),
+  });
+
+  /** @see SqlPredicateRenderer.buildWhereConditions */
+  protected buildWhereConditions(where: any, tableOrName?: any): any[] {
+    return this.predicates.buildWhereConditions(where, tableOrName);
+  }
+
+  /** @see SqlPredicateRenderer.buildRawWhereClause */
+  protected buildRawWhereClause(where: any): { sql: string; values: any[] } {
+    return this.predicates.buildRawWhereClause(where);
+  }
+
+  /** @see SqlPredicateRenderer.renderPredicate */
+  protected renderPredicate(comparison: WhereComparison, quotedColumn: string, values: any[]): string {
+    return this.predicates.renderPredicate(comparison, quotedColumn, values);
+  }
+
+  /** @see SqlPredicateRenderer.drizzleSearchCondition */
+  protected drizzleSearchCondition(search?: { columns: string[]; value: string }): any {
+    return this.predicates.drizzleSearchCondition(search);
+  }
+
+  /** @see SqlPredicateRenderer.drizzlePatternCondition */
+  protected drizzlePatternCondition(column: any, comparison: WhereComparison): any {
+    return this.predicates.drizzlePatternCondition(column, comparison);
+  }
 
   /**
    * Marks this connection as the PLATFORM's own — the one that runs migrations and schema sync.
@@ -169,38 +214,6 @@ export abstract class BaseDialect {
     return NamingStrategy.normalizeParamValue(value);
   }
 
-  /**
-   * Build WHERE clause conditions from a plain object
-   * Converts { id: 1, status: 'active' } into drizzle condition array
-   *
-   * Keys are canonical camelCase field names; `resolveColumn` maps each to the real column (see there).
-   * Pass `tableOrName` whenever the caller has a drizzle table object so its declared columns win.
-   */
-  protected buildWhereConditions(where: any, tableOrName?: any): any[] {
-    if (typeof where !== 'object' || where === null) return [];
-    if (Object.getPrototypeOf(where) !== Object.prototype) return [];
-
-    // Same parse as the raw-SQL path, so `{ createdAt: { gte, lte } }` means the same range whether the
-    // caller reached a drizzle table object or a string table name.
-    return WhereClauseParser.parse(where).map((comparison) => {
-      const column = this.resolveColumn(comparison.column, tableOrName);
-      // Same null rule as the raw-SQL paths: absence is IS NULL / IS NOT NULL, never `= NULL`.
-      if (comparison.value === null) {
-        if (comparison.operator === 'eq') return isNull(column);
-        if (comparison.operator === 'ne') return isNotNull(column);
-        throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}"). Only eq/ne accept null, as IS NULL / IS NOT NULL.`);
-      }
-      if (comparison.isSet) {
-        // Drizzle's own inArray/notInArray REJECT an empty list at runtime. An empty set is a real
-        // thing to ask for, though — "any of the ids this page selected", where the page selected
-        // none — so it renders as the constant it means, rather than throwing at the call site.
-        if (comparison.values.length === 0) return comparison.operator === 'in' ? sql`1 = 0` : sql`1 = 1`;
-        return comparison.operator === 'in' ? inArray(column, comparison.values) : notInArray(column, comparison.values);
-      }
-      if (comparison.isPattern) return this.drizzlePatternCondition(column, comparison);
-      return BaseDialect.DRIZZLE_OPERATORS[comparison.operator](column, comparison.value);
-    });
-  }
 
   /**
    * The left-hand column expression for one predicate, given the caller's already-quoted column.
@@ -224,89 +237,15 @@ export abstract class BaseDialect {
     return quotedColumn;
   }
 
-  /**
-   * The predicate for a null operand. Only equality has a meaning against absence; a range against
-   * null is a call-site bug and raises rather than matching nothing.
-   */
-  private static nullPredicate(comparison: { operator: string; column: string }): string {
-    if (comparison.operator === 'eq') return 'IS NULL';
-    if (comparison.operator === 'ne') return 'IS NOT NULL';
-    throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}"). Only eq/ne accept null, as IS NULL / IS NOT NULL.`);
-  }
 
-  /**
-   * The ONE place a `where` predicate becomes SQL on the raw-string paths.
-   *
-   * Every raw builder below used to inline the same `column operator placeholder` line, which
-   * quietly assumed every operator takes exactly one operand and one placeholder. That assumption is
-   * why `in` could not exist: callers wanting "any of these statuses" had to fetch rows and filter
-   * them in memory, which is slower and — past the fetch limit — silently WRONG. It also let the
-   * three copies drift: the join builder had never grown the null handling the other two have, so a
-   * `{ deletedAt: null }` filter on a joined query emitted `= NULL` and matched nothing. Routing all
-   * three through here is what fixed that, and what stops the next divergence.
-   *
-   * `values` is appended to in step with the placeholders, so operands stay parameterised: nothing a
-   * caller supplies is ever interpolated into the SQL string.
-   */
-  protected renderPredicate(comparison: WhereComparison, quotedColumn: string, values: any[]): string {
-    if (comparison.isSet) return this.renderSetPredicate(comparison, quotedColumn, values);
-    if (comparison.isPattern) return this.renderPatternPredicate(comparison, quotedColumn, values);
-    // `= NULL` is never true in SQL, so a null operand would make the predicate match NOTHING —
-    // silently. Null is a real operand meaning absence; it becomes IS NULL / IS NOT NULL, param-free.
-    if (comparison.value === null) return `${quotedColumn} ${BaseDialect.nullPredicate(comparison)}`;
-    values.push(this.normalizeParamValue(comparison.value));
-    return `${this.comparisonColumn(comparison, quotedColumn)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`;
-  }
 
-  /** `col IN ($1, $2, …)` — one placeholder per element, never an interpolated list. */
-  private renderSetPredicate(comparison: WhereComparison, quotedColumn: string, values: any[]): string {
-    const operands = comparison.values;
-    // `IN ()` is a syntax error, so the empty set renders as the constant it MEANS: `in: []` matches
-    // no row, `notIn: []` excludes none. Emitting nothing instead would drop the filter and return
-    // every row — the failure mode this layer has been bitten by before.
-    if (operands.length === 0) return comparison.operator === 'in' ? '1 = 0' : '1 = 1';
-    // A NULL inside a set never matches under IN (and silently voids NOT IN entirely), so it is a
-    // call-site bug rather than a filter — the same rule as a range against null.
-    if (operands.some((operand) => operand === null || operand === undefined)) {
-      throw new Error(`Invalid where clause for column "${comparison.column}": "${comparison.operator}" cannot contain null. Ask for absence with { ${comparison.column}: null } instead.`);
-    }
-    const placeholders = operands.map((operand) => {
-      values.push(this.normalizeParamValue(operand));
-      return this.getParamPlaceholder(values.length);
-    });
-    return `${quotedColumn} ${WhereComparison.SET_OPERATORS[comparison.operator]} (${placeholders.join(', ')})`;
-  }
 
-  /** `col LIKE $1 ESCAPE '!'` — the operand carries the wildcards, the caller's text never does. */
-  private renderPatternPredicate(comparison: WhereComparison, quotedColumn: string, values: any[]): string {
-    if (comparison.value === null || comparison.value === undefined) {
-      throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}").`);
-    }
-    values.push(comparison.likePattern);
-    return `${this.patternColumnExpression(quotedColumn)} ${this.getLikeOperator()} ${this.getParamPlaceholder(values.length)} ESCAPE '${WhereComparison.LIKE_ESCAPE}'`;
-  }
-
-  /**
-   * The drizzle equivalent of `renderPatternPredicate`.
-   *
-   * Drizzle's `like`/`ilike` helpers emit no ESCAPE clause, so a pattern built through them would let
-   * a user's own `%` act as a wildcard. This keeps the escape character the raw paths use, and asks
-   * the dialect for the same operator (Postgres answers ILIKE), so a search means one thing whether
-   * the caller reached a typed table or a table name.
-   */
-  protected drizzlePatternCondition(column: any, comparison: WhereComparison): any {
-    return sql`${this.drizzlePatternColumn(column)} ${sql.raw(this.getLikeOperator())} ${comparison.likePattern} ESCAPE ${sql.raw(`'${WhereComparison.LIKE_ESCAPE}'`)}`;
-  }
 
   /** The drizzle twin of {@link patternColumnExpression} — Postgres casts, everyone else does not. */
   protected drizzlePatternColumn(column: any): any {
     return column;
   }
 
-  /** Canonical operator name -> drizzle condition builder, keyed exactly like WhereComparison. */
-  private static readonly DRIZZLE_OPERATORS: Record<string, (column: any, value: any) => any> = {
-    eq, ne, gt, gte, lt, lte,
-  };
 
   /**
    * Build ORDER BY clause from various formats
@@ -321,33 +260,6 @@ export abstract class BaseDialect {
    */
   protected buildRawOrderByClause(orderBy: any): string {
     return this.orderByBuilder.buildRawOrderByClause(orderBy);
-  }
-
-  /**
-   * Build raw SQL WHERE clause for string-based queries
-   * Returns SQL string and parameter values array
-   */
-  protected buildRawWhereClause(where: any): { sql: string; values: any[] } {
-    if (!where || typeof where !== 'object' || Object.getPrototypeOf(where) !== Object.prototype) {
-      return { sql: '', values: [] };
-    }
-
-    const comparisons = WhereClauseParser.parse(where);
-    if (comparisons.length === 0) {
-      return { sql: '', values: [] };
-    }
-
-    // Rendered by the shared `renderPredicate`, because three paths emitting different predicates from
-    // one parse is exactly the drift the shared parser exists to prevent.
-    const values: any[] = [];
-    const conditions = comparisons.map(
-      (comparison) => this.renderPredicate(comparison, this.quoteIdentifier(comparison.column), values),
-    );
-
-    return {
-      sql: ` WHERE ${conditions.join(' AND ')}`,
-      values
-    };
   }
 
   /**
@@ -539,25 +451,6 @@ export abstract class BaseDialect {
    */
   protected patternColumnExpression(quotedColumn: string): string {
     return quotedColumn;
-  }
-
-  /**
-   * The drizzle twin of the OR-ed LIKE group `buildRawFilterSQL` appends, so `count` can apply the
-   * SAME search `find` did.
-   *
-   * It could not, until now: `count` accepted only `where`, so a searched list showed the total of
-   * the UNSEARCHED table — "1 of 240 results" under a list of one. A total that does not describe the
-   * list beside it is a lie the operator has no way to spot.
-   */
-  protected drizzleSearchCondition(search?: { columns: string[]; value: string }): any {
-    if (!search || search.columns.length === 0 || !search.value) return null;
-    const pattern = `%${WhereComparison.escapeLikeOperand(search.value)}%`;
-    const escapeClause = sql.raw(`ESCAPE '${WhereComparison.LIKE_ESCAPE}'`);
-    const likeOperator = sql.raw(this.getLikeOperator());
-    const parts = search.columns.map(
-      (column) => sql`${sql.raw(this.patternColumnExpression(this.quoteIdentifier(column)))} ${likeOperator} ${pattern} ${escapeClause}`,
-    );
-    return parts.length === 1 ? parts[0] : or(...parts);
   }
 
   /**
