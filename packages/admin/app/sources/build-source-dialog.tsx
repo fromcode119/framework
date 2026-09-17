@@ -1,3 +1,4 @@
+import { Platform } from '@fromcode119/react-class-components';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/view/button.client';
@@ -49,7 +50,7 @@ export class BuildSourceDialog extends AdminComponent {
       </div>
     );
 
-    if (typeof document === 'undefined') return dialog;
+    if (!Platform.isBrowser) return dialog;
     return this.portal(dialog);
   }
 }

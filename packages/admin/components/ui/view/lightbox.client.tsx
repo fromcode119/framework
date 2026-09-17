@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
+import {Reactor, prop, state, bound, Platform} from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
 export class Lightbox extends Reactor {
@@ -32,13 +32,13 @@ export class Lightbox extends Reactor {
   }
 
   private applyOpenSideEffects(): void {
-    if (typeof document === 'undefined') return;
+    if (!Platform.isBrowser) return;
     document.body.style.overflow = this.isOpen ? 'hidden' : '';
   }
 
   componentDidMount(): void {
     this.mounted = true;
-    if (typeof window !== 'undefined') window.addEventListener('keydown', this.handleKeyDown);
+    if (Platform.hasWindow) window.addEventListener('keydown', this.handleKeyDown);
     this.applyOpenSideEffects();
   }
 
@@ -47,8 +47,8 @@ export class Lightbox extends Reactor {
   }
 
   componentWillUnmount(): void {
-    if (typeof window !== 'undefined') window.removeEventListener('keydown', this.handleKeyDown);
-    if (typeof document !== 'undefined') document.body.style.overflow = '';
+    if (Platform.hasWindow) window.removeEventListener('keydown', this.handleKeyDown);
+    if (Platform.isBrowser) document.body.style.overflow = '';
   }
 
   render(): ReactNode {

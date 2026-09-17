@@ -18,7 +18,20 @@ import path from 'node:path';
  */
 export class HardcodedCopyGuard {
   /** Non-ASCII letters — Cyrillic, Greek, accented Latin. ASCII-only English is not flagged here. */
-  private static readonly NON_ASCII = /[^\x00-\x7F]/;
+  /**
+   * A letter from a NON-LATIN script — Cyrillic, Greek, Hebrew, Arabic, CJK and the rest.
+   *
+   * This used to be `/[^\x00-\x7F]/`, any non-ASCII byte, on the premise that non-ASCII means
+   * natural language that is not English. It does not: this codebase writes English with typographic
+   * punctuation, so an em dash, a curly apostrophe or a middle dot matched. "Nothing stored — this
+   * host cannot be served over HTTPS" was counted as untranslated copy because of one dash, and the
+   * count climbed with every well-typeset English sentence — 496 in the framework, essentially all of
+   * them English.
+   *
+   * A LETTER outside the Latin script is the thing actually being looked for. Punctuation is shared
+   * across scripts and says nothing about language, so it is no longer evidence of anything.
+   */
+  private static readonly NON_ASCII = /(?![\p{Script=Latin}])\p{L}/u;
 
   private static readonly SKIP_DIR = new Set([
     'node_modules', 'dist', '.next', 'build', 'coverage', '.git',
@@ -26,10 +39,14 @@ export class HardcodedCopyGuard {
   ]);
 
   static readonly BASELINE: Readonly<Record<string, number>> = {
-    plugins: 2748,
-    themes: 503,
-    framework: 244,
-    appearance: 280,
+    // Re-measured once the guard stopped counting punctuation as language. The framework is CLEAN —
+    // it is English-only by design, and every one of its 496 findings was an English sentence with an
+    // em dash or a curly apostrophe in it. What remains in plugins and themes is genuinely
+    // untranslated copy.
+    plugins: 698,
+    themes: 419,
+    framework: 0,
+    appearance: 3,
   };
 
 

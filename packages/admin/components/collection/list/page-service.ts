@@ -1,3 +1,4 @@
+import { Platform } from '@fromcode119/react-class-components';
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import React from 'react';
 import type { ReactNode } from 'react';
@@ -200,7 +201,7 @@ export class CollectionListPageService {
    * `window.open(...export?token=...)`, which opened a blank tab and frequently downloaded nothing.
    */
   static async exportRecords(resolvedSlug: string, format: ExportFormat, ids?: string[]): Promise<void> {
-    if (typeof window === 'undefined') return;
+    if (!Platform.hasWindow) return;
     const params = new URLSearchParams({ format: format.value });
     if (ids?.length) params.append('ids', ids.join(','));
     const { blob, filename } = await AdminApi.download(

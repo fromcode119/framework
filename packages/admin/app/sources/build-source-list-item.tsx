@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { bound, prop, state } from '@fromcode119/react-class-components';
+import {bound, prop, state, Platform} from '@fromcode119/react-class-components';
 
 import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
@@ -49,7 +49,7 @@ export class BuildSourceListItem extends AdminComponent {
    */
   @bound
   async download(): Promise<void> {
-    if (typeof window === 'undefined' || this.downloading) return;
+    if (!Platform.hasWindow || this.downloading) return;
     this.downloading = true;
     try {
       const { blob, filename } = await SourcesApi.downloadPackage(String(this.build.type ?? ''), this.build.slug);

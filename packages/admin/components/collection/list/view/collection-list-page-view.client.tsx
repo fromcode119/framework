@@ -1,7 +1,7 @@
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
-import { Reactor, prop, ref, state } from '@fromcode119/react-class-components';
+import {Reactor, prop, ref, state, Platform} from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 
 import { AdminServices } from '@/lib/admin-services';
@@ -33,7 +33,7 @@ export class CollectionListPageView extends Reactor {
   @state loadError = '';
   @state search = '';
   @state debouncedSearch = '';
-  @state page = typeof window === 'undefined'
+  @state page = !Platform.hasWindow
     ? 1
     : CollectionListUtils.parsePageQueryValue(new URLSearchParams(window.location.search).get('page'));
   @state sort = '-createdAt';

@@ -1,3 +1,4 @@
+import { Platform } from '@fromcode119/react-class-components';
 import { RestoreTargetScope } from '@/components/settings/backups/enums/restore-target-scope.enum';
 import { BackupPreset } from '@/components/settings/backups/enums/backup-preset.enum';
 import { BackupSectionKey, BackupCatalogGroupKey, BackupCatalogRootKind } from '@fromcode119/core';
@@ -325,7 +326,7 @@ export class SystemBackupPageUtils {
     id: string,
     onProgress?: (state: { loadedBytes: number; totalBytes: number | null; percent: number | null }) => void,
   ): Promise<string> {
-    if (typeof window === 'undefined') return '';
+    if (!Platform.hasWindow) return '';
     const { blob, filename } = await AdminApi.download(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_DOWNLOAD(id), undefined, onProgress);
     const objectUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');

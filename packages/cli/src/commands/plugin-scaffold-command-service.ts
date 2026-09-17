@@ -1,3 +1,4 @@
+import { EnvUtils } from '@core/utils/env-utils';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
@@ -162,7 +163,7 @@ export const init = () => {
 };
 
 // --- Self-Registration ---
-const __fcRegistry = typeof window !== 'undefined' ? (window as any).__fromcodeRuntimeModules : null;
+const __fcRegistry = EnvUtils.isBrowser() ? (window as any).__fromcodeRuntimeModules : null;
 if (__fcRegistry && __fcRegistry['@fromcode119/react']) {
   const Fromcode = __fcRegistry['@fromcode119/react'];
 

@@ -17,7 +17,7 @@ import { IntegrationHeader } from '@/app/settings/integrations/integration-heade
 import { IntegrationEmptyState } from '@/app/settings/integrations/integration-empty-state';
 import { IntegrationSelectors } from '@/app/settings/integrations/integration-selectors';
 import { IntegrationStaleJsService } from '@/app/settings/integrations/integration-stale-js-service';
-import { prop, state } from '@fromcode119/react-class-components';
+import {prop, state, Platform} from '@fromcode119/react-class-components';
 import type { IIntegrationConfigField } from '@/app/settings/integrations/interfaces/integration-config-field.interface';
 import type { IIntegrationProvider } from '@/app/settings/integrations/interfaces/integration-provider.interface';
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
@@ -58,7 +58,7 @@ export class IntegrationsSettingsPageClient extends AdminComponent {
     // integration — every deep link landed on "AI Assistant". The live URL is the source of truth on
     // the client; the promise stays as the SSR path.
     const fromPromise = String(searchParams?.type || '');
-    const fromLocation = typeof window === 'undefined'
+    const fromLocation = !Platform.hasWindow
       ? ''
       : String(new URLSearchParams(window.location.search).get('type') || '');
     this.queryType = IntegrationsPageUtils.normalizeKey(fromPromise || fromLocation);

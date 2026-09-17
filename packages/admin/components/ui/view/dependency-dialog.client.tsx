@@ -2,7 +2,7 @@ import { DependencyIssueType } from '@/components/ui/enums/dependency-issue-type
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { prop, bound } from '@fromcode119/react-class-components';
+import {prop, bound, Platform} from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@/components/ui/view/root-framework.client';
@@ -18,7 +18,7 @@ export class DependencyDialog extends AdminComponent {
   @prop declare isLoading?: boolean;
 
   private applyBodyOverflow(): void {
-    if (typeof document === 'undefined') return;
+    if (!Platform.isBrowser) return;
     document.body.style.overflow = this.isOpen ? 'hidden' : 'unset';
   }
 
@@ -31,7 +31,7 @@ export class DependencyDialog extends AdminComponent {
   }
 
   componentWillUnmount(): void {
-    if (typeof document !== 'undefined') document.body.style.overflow = 'unset';
+    if (Platform.isBrowser) document.body.style.overflow = 'unset';
   }
 
   @bound private confirmResolve(): void {

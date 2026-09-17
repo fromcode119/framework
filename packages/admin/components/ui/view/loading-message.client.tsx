@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop, state } from '@fromcode119/react-class-components';
+import {PureReactor, prop, state, Platform} from '@fromcode119/react-class-components';
 
 /**
  * The line under a spinner, changed every few seconds so a wait does not look frozen.
@@ -32,7 +32,7 @@ export class LoadingMessage extends PureReactor {
   componentDidMount(): void {
     // Someone who asked for less motion gets the first line and no rotation — the text changing IS
     // the motion here, so honouring the preference means not starting the timer at all.
-    if (typeof window === 'undefined') return;
+    if (!Platform.hasWindow) return;
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
 
     this.intervalId = window.setInterval(() => {

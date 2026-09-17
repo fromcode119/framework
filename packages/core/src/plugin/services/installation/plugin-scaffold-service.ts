@@ -1,3 +1,4 @@
+import { EnvUtils } from '@core/utils/env-utils';
 /** Plugin scaffold service — creates new plugin boilerplate on disk. Extracted from PluginManager (ARC-007). */
 
 import * as path from 'path';
@@ -70,7 +71,7 @@ export class PluginScaffoldService {
       'export const init = () => {',
       `  console.info('[${slug}] UI initialized.');`,
       '};', '',
-      'if (typeof window !== "undefined" && window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules["@fromcode119/react"]) {',
+      'if (EnvUtils.isBrowser() && window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules["@fromcode119/react"]) {',
       '  init();',
       '}', '',
     ].join('\n');

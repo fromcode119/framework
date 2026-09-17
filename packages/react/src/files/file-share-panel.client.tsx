@@ -1,3 +1,4 @@
+import { EnvUtils } from '@core/utils/env-utils';
 import type { ReactNode } from 'react';
 import { state, bound } from '@fromcode119/react-class-components';
 import { ApiVersionUtils, ApplicationUrlUtils, FileRoutePaths } from '@fromcode119/core/client';
@@ -43,7 +44,7 @@ export class FileSharePanel extends PluginComponent {
   }
 
   private get token(): string {
-    if (typeof window === 'undefined') return '';
+    if (EnvUtils.isServer()) return '';
     const parts = window.location.pathname.split('/').filter(Boolean);
     return decodeURIComponent(parts[parts.indexOf('files') + 1] || '');
   }

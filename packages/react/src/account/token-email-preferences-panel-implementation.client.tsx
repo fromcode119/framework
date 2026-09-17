@@ -1,3 +1,4 @@
+import { EnvUtils } from '@core/utils/env-utils';
 import { RouteConstants } from '@fromcode119/core/client';
 import { AccountEmailPreferencesPanel } from '@react/account/email-preferences-panel';
 import { TokenEmailPreferencesPanel } from '@react/account/token-email-preferences-panel.client';
@@ -28,7 +29,7 @@ export class TokenEmailPreferencesPanelImplementation extends AccountEmailPrefer
    * empty into the markup.
    */
   private get token(): string {
-    if (typeof window === 'undefined') return '';
+    if (EnvUtils.isServer()) return '';
     return String(new URLSearchParams(window.location.search).get('token') || '').trim();
   }
 
