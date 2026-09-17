@@ -2,6 +2,7 @@ import path from 'node:path';
 import { FileSizeGuard } from '../file-size-guard';
 import { ArchorCommand } from './arch-guard-command';
 import { FrameworkRoot } from './framework-root';
+import { GuardScope } from './guard-scope';
 
 /**
  * `arch-guard file-size` — the documented `.ts` ≤ 300 / `.tsx` ≤ 200 limits, measured on every root.
@@ -13,13 +14,6 @@ import { FrameworkRoot } from './framework-root';
 export class FileSizeCommand extends ArchorCommand {
   readonly summary = 'File-size limits (.ts ≤ 300, .tsx ≤ 200) across framework, plugins, themes and appearances.';
 
-  /** Roots to measure, relative to the framework directory. */
-  private static readonly ROOTS: Readonly<Record<string, string>> = {
-    framework: 'packages',
-    plugins: '../../plugins',
-    themes: '../../themes',
-    appearance: '../../appearance',
-  };
 
   /**
    * OVER TARGET (`.ts` > 300 / `.tsx` > 200). Pre-existing debt, counted 2026-09-09. LOWER as it is paid
@@ -51,10 +45,19 @@ export class FileSizeCommand extends ArchorCommand {
     let failed = false;
     console.log(`File size (.ts ≤ ${FileSizeGuard.TS_MAX_LINES}, .tsx ≤ ${FileSizeGuard.TSX_MAX_LINES}):`);
 
-    for (const [name, relative] of Object.entries(FileSizeCommand.ROOTS)) {
-      const baseline = FileSizeCommand.BASELINES[name] ?? 0;
-      const unreadableBaseline = FileSizeCommand.UNREADABLE_BASELINES[name] ?? 0;
-      const oversized = FileSizeGuard.findOversized(path.resolve(framework, relative));
+    const repoRoot = FrameworkRoot.repo();
+    // Guarding ONE extension reads the numbers that extension declares about itself; guarding a tree
+    // uses the framework's record of its own debt. An extension that declares nothing has a baseline
+    // of zero, which is where a repository with no stated debt belongs.
+    const extension = GuardScope.isExtension(repoRoot);
+    for (const { area: name, dir } of GuardScope.areas(repoRoot)) {
+      const baseline = extension
+        ? GuardScope.declaredBaseline(dir, 'fileSize', 'overTarget')
+        : FileSizeCommand.BASELINES[name] ?? 0;
+      const unreadableBaseline = extension
+        ? GuardScope.declaredBaseline(dir, 'fileSize', 'unreadable')
+        : FileSizeCommand.UNREADABLE_BASELINES[name] ?? 0;
+      const oversized = FileSizeGuard.findOversized(dir);
       const unreadable = oversized.filter((entry) => entry.lines >= FileSizeGuard.UNREADABLE_LINES);
       const count = oversized.length;
 

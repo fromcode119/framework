@@ -1,5 +1,7 @@
+import path from 'node:path';
 import { PluginUiTypecheck } from '../plugin-ui-typecheck';
 import { ArchorCommand } from './arch-guard-command';
+import { GuardScope } from './guard-scope';
 import { FrameworkRoot } from './framework-root';
 
 /**
@@ -21,30 +23,6 @@ import { FrameworkRoot } from './framework-root';
 export class PluginUiTypesCommand extends ArchorCommand {
   readonly summary = 'Real tsc --noEmit for every plugin’s admin UI (Vite/esbuild do NOT check types).';
 
-  /**
-   * Pre-existing debt only — 137 errors across 17 plugins the day the gate was added, every one of
-   * them invisible until then. LOWER as it is paid off; never raise to make a build pass. A plugin
-   * absent from this map has a baseline of ZERO, which is where a newly added plugin starts and where
-   * analytics, astrology, hub, plugin-manager, search, seo and tagiqx already are.
-   */
-  static readonly BASELINES: Readonly<Record<string, number>> = {
-    appointments: 29,
-    broadcasts: 1,
-    cms: 14,
-    ecommerce: 23,
-    finance: 3,
-    forms: 2,
-    licensing: 1,
-    lms: 7,
-    logistics: 1,
-    'logistics-econt': 3,
-    mlm: 7,
-    numerology: 31,
-    privacy: 4,
-    'social-proof': 7,
-    subscriptions: 1,
-    'test-feature': 2,
-  };
 
   /** How many diagnostics to print per plugin before truncating. */
   private static readonly SHOWN = 10;
@@ -55,7 +33,12 @@ export class PluginUiTypesCommand extends ArchorCommand {
     const mode = process.env.PLUGIN_UI_TYPES_MODE === 'warn' ? 'warn' : 'error';
 
     const all = PluginUiTypecheck.plugins(repo);
-    const selected = argv.length ? argv : all;
+    // A scoped run checks the ONE plugin it was pointed at; argv still names plugins explicitly for a
+    // local spot-check, and an unscoped run is every plugin exactly as before.
+    const scoped = GuardScope.isExtension(repo)
+      ? GuardScope.areas(repo).map((entry) => path.basename(entry.dir)).filter((slug) => all.includes(slug))
+      : [];
+    const selected = argv.length ? argv : (scoped.length ? scoped : all);
     const unknown = selected.filter((slug) => !all.includes(slug));
     if (unknown.length) {
       console.error(`[arch-guard] no plugin UI found for: ${unknown.join(', ')}`);
@@ -65,7 +48,9 @@ export class PluginUiTypesCommand extends ArchorCommand {
     console.log('Plugin UI typecheck (real tsc — Vite/esbuild do NOT check types):');
     let failed = false;
     for (const slug of selected) {
-      const baseline = PluginUiTypesCommand.BASELINES[slug] ?? 0;
+      // The plugin's OWN declared number, from `arch-guard.json` in its repository — the framework
+      // holds no per-plugin ledger. Absent means zero, which is what a plugin claiming no debt means.
+      const baseline = GuardScope.declaredBaseline(path.join(repo, 'plugins', slug), 'pluginUiTypes');
       const found = PluginUiTypecheck.report(framework, repo, slug);
       console.log(`  ${slug}: ${found.length} errors (baseline ${baseline})`);
 

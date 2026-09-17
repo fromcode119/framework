@@ -5,8 +5,8 @@ import path from 'node:path';
  * WHICH trees a guard run covers.
  *
  * The framework used to guard everything: its own packages, and every plugin, theme and appearance
- * beside it. That is why a per-plugin debt ledger — `{ ecommerce: 23, numerology: 31, … }` — ended up
- * inside `packages/`, and why an exemption for a keyed fragment had to name the themes that use one.
+ * beside it. That is why a per-plugin debt ledger — one line per slug — ended up inside `packages/`, and why
+ * an exemption for a keyed fragment had to name the themes that use one.
  * The framework names no extension, so it cannot be the thing that counts their violations.
  *
  * An extension guards ITSELF, in its own repository's CI, with this same binary pointed at its own
@@ -51,6 +51,44 @@ export class GuardScope {
       throw new Error(`[arch-guard] ${GuardScope.ENV}="${scope}" is neither an area nor a directory.`);
     }
     return [{ area: GuardScope.areaOf(dir, repoRoot), dir }];
+  }
+
+  /**
+   * Is this run guarding ONE extension rather than a whole tree?
+   *
+   * The distinction decides where a baseline comes from. A tree's baseline is the framework's record
+   * of its own debt; a single extension's belongs to that extension, in its own repository, next to
+   * the code it describes — which is the point of scoping at all.
+   */
+  static isExtension(repoRoot: string): boolean {
+    const areas = GuardScope.areas(repoRoot);
+    if (areas.length !== 1) return false;
+    const [only] = areas;
+    return !GuardScope.all(repoRoot).some((entry) => entry.dir === only?.dir);
+  }
+
+  /**
+   * A number an extension declares about ITSELF, from `arch-guard.json` in its own root.
+   *
+   * Absent means ZERO — a repository that has declared no debt is asserting it has none, and a guard
+   * that silently invented an allowance would be the baseline problem all over again. The framework
+   * therefore holds no per-extension numbers; it reads what the extension states.
+   *
+   *   { "fileSize": { "overTarget": 12, "unreadable": 0 } }
+   */
+  static declaredBaseline(dir: string, ...keys: string[]): number {
+    let config: unknown;
+    try {
+      config = JSON.parse(fs.readFileSync(path.join(dir, 'arch-guard.json'), 'utf8'));
+    } catch {
+      return 0;
+    }
+    let node: unknown = config;
+    for (const key of keys) {
+      if (!node || typeof node !== 'object') return 0;
+      node = (node as Record<string, unknown>)[key];
+    }
+    return typeof node === 'number' && Number.isFinite(node) ? node : 0;
   }
 
   /**
