@@ -1,3 +1,4 @@
+import type { AbstractConstructor } from './abstract-constructor';
 import type { IConstructor } from './interfaces/constructor.interface';
 
 /**
@@ -23,6 +24,15 @@ import type { IConstructor } from './interfaces/constructor.interface';
  *    them into values — this is the bug most hand-rolled mixin helpers ship with).
  *  - Pure type-shape classes (all `declare` members) carry no runtime members at all, so composing them
  *    costs nothing beyond one empty subclass.
+ *  - ABSTRACT bases are accepted, which is the case this exists for: splitting one large class into
+ *    halves that are abstract precisely because neither is usable alone. `abstract` is erased at
+ *    runtime, so `extends` and `Reflect.construct` work on them unchanged.
+ *
+ * ONE CHECK DOES NOT SURVIVE, and it is worth knowing before choosing this over a plain chain: the
+ * result is a concrete constructor, so TypeScript no longer enforces that the final class implements
+ * a base's abstract MEMBERS. That check is lost in any type-level mixin, not just this one. Where it
+ * matters more than the shape does, use a linear `A extends B extends C` chain instead — the auth
+ * controllers and ThemeManager are both built that way on purpose.
  */
 export class Typor {
   /** Copy own property descriptors (methods, getters, setters) from `source` onto `target`. */
@@ -42,31 +52,33 @@ export class Typor {
    * interface form, so naming them only added two `type` declarations to a package that otherwise has
    * none. Inlining is the remedy the conventions prescribe for exactly this case.
    */
-  static mixin<A extends IConstructor, B extends IConstructor>(
+  static mixin<A extends AbstractConstructor, B extends AbstractConstructor>(
     a: A, b: B,
   ): IConstructor<
-    (A extends IConstructor<infer I> ? I : never) & (B extends IConstructor<infer I> ? I : never)
+    (A extends AbstractConstructor<infer I> ? I : never) & (B extends AbstractConstructor<infer I> ? I : never)
   > & Omit<A, 'prototype'> & Omit<B, 'prototype'>;
-  static mixin<A extends IConstructor, B extends IConstructor, C extends IConstructor>(
+  static mixin<A extends AbstractConstructor, B extends AbstractConstructor, C extends AbstractConstructor>(
     a: A, b: B, c: C,
   ): IConstructor<
-    (A extends IConstructor<infer I> ? I : never) & (B extends IConstructor<infer I> ? I : never)
-    & (C extends IConstructor<infer I> ? I : never)
+    (A extends AbstractConstructor<infer I> ? I : never) & (B extends AbstractConstructor<infer I> ? I : never)
+    & (C extends AbstractConstructor<infer I> ? I : never)
   > & Omit<A, 'prototype'> & Omit<B, 'prototype'> & Omit<C, 'prototype'>;
-  static mixin<A extends IConstructor, B extends IConstructor, C extends IConstructor, D extends IConstructor>(
+  static mixin<A extends AbstractConstructor, B extends AbstractConstructor, C extends AbstractConstructor, D extends AbstractConstructor>(
     a: A, b: B, c: C, d: D,
   ): IConstructor<
-    (A extends IConstructor<infer I> ? I : never) & (B extends IConstructor<infer I> ? I : never)
-    & (C extends IConstructor<infer I> ? I : never) & (D extends IConstructor<infer I> ? I : never)
+    (A extends AbstractConstructor<infer I> ? I : never) & (B extends AbstractConstructor<infer I> ? I : never)
+    & (C extends AbstractConstructor<infer I> ? I : never) & (D extends AbstractConstructor<infer I> ? I : never)
   > & Omit<A, 'prototype'> & Omit<B, 'prototype'> & Omit<C, 'prototype'> & Omit<D, 'prototype'>;
-  static mixin(...bases: IConstructor[]): IConstructor {
+  static mixin(...bases: AbstractConstructor[]): IConstructor {
     const [first, ...rest] = bases;
     if (!first) throw new TypeError('Typor.mixin needs at least one base class.');
-    if (!rest.length) return first;
+    // `abstract` is a COMPILE-TIME marker with no runtime existence, so a single abstract base is a
+    // perfectly good constructor to hand back — the cast states that rather than hiding it.
+    if (!rest.length) return first as IConstructor;
 
     // The FIRST base stays the real prototype parent, so `instanceof first` holds and its constructor
     // runs natively. The others are folded in below.
-    const Mixed = class extends first {
+    const Mixed = class extends (first as IConstructor) {
       constructor(...args: any[]) {
         super(...args);
         for (const base of rest) {

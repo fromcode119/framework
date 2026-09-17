@@ -23,8 +23,9 @@ import { RequestContextUtils } from '@core/context/request-context';
 import { TenantThemeAccess } from '@core/theme/tenant-theme-access';
 import { TenantThemeStateService } from '@core/theme/tenant-theme-state-service';
 import { ThemeLifecycle } from '@core/theme/theme-lifecycle';
+import { ThemeDiscovery } from '@core/theme/theme-discovery';
 
-export class ThemeManager extends ThemeLifecycle {
+export class ThemeManager extends ThemeDiscovery, ThemeLifecycle {
   protected activeTheme: string | null = null;
   protected themes: Map<string, IThemeManifest> = new Map();
   protected themesRoot: string;
