@@ -124,7 +124,7 @@ export type { ICollectionListPathOptions } from '@core/collections/interfaces/co
 export { HookEventUtils } from '@core/hook-events';
 // CollectionHookPhase is an Enum CLASS — a VALUE export, or plugins cannot reach `.BEFORE_CREATE` and
 // are forced back to raw strings. Only the events interface is type-only.
-export { CollectionHookPhase } from '@core/collections/interfaces/collection-hook-events.interface';
+export { CollectionHookPhase } from '@core/enums/collection-hook-phase.enum';
 export type { ICollectionHookEvents } from '@core/collections/interfaces/collection-hook-events.interface';
 export { PaginationUtils } from '@core/pagination';
 export type { IPaginationInput } from '@core/interfaces/pagination-input.interface';
