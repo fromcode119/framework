@@ -71,7 +71,7 @@ export class OopGuardCommand extends ArchorCommand {
         `${b.warnings.length} warn (${b.files} files)`);
     }
     console.log(`Total: ${sum('violations')} violations, ${sum('enumDebt')} enum-debt (unions→Enum), ` +
-      `${sum('ifaceDebt')} iface-debt (I-prefix + one-per-file), ${sum('exportDebt')} export-debt (→ class), ` +
+      `${sum('ifaceDebt')} iface-debt (I-prefix, one-per-file, never beside a class), ${sum('exportDebt')} export-debt (→ class), ` +
       `${sum('clientDebt')} use-client-literal (→ .client. filename), ${sum('orphanIface')} orphan-interface, ` +
       `${sum('warnings')} warnings.`);
     console.log(`       ${sum('defaultExport')} export-default-expr, ` +

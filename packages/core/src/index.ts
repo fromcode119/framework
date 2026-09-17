@@ -54,7 +54,8 @@ export type { IPersonalDataDataset } from '@core/plugin/services/interfaces/pers
 export type { IPersonalDataErasure } from '@core/plugin/services/interfaces/personal-data-erasure.interface';
 export type { IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data-subject.interface';
 export { JournalRetentionTargets } from '@core/database/journal-retention-target';
-export type { IJournalRetentionTarget, IJournalPruneSummary } from '@core/database/journal-retention-target';
+export type { IJournalRetentionTarget } from '@core/database/interfaces/journal-retention-target.interface';
+export type { IJournalPruneSummary } from '@core/database/interfaces/journal-prune-summary.interface';
 export { Seeder } from '@core/database/seeder';
 export { HookManager } from '@core/hooks/hook-manager';
 export { HookAdapterFactory } from '@core/hooks/hook-adapter-factory';
@@ -165,10 +166,12 @@ export { SystemSettingsExposureUtils } from '@core/security/system-settings-expo
 export { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 export { BootstrapSecretsService } from '@core/security/bootstrap-secrets-service';
 export { DatabaseConnectionFileService } from '@core/security/database-connection-file-service';
-export type { IDatabaseConnectionFile, IStoredDatabaseConnection } from '@core/security/database-connection-file-service';
+export type { IDatabaseConnectionFile } from '@core/security/interfaces/database-connection-file.interface';
+export type { IStoredDatabaseConnection } from '@core/security/interfaces/stored-database-connection.interface';
 export { DatabaseDriverChoice } from '@core/security/enums/database-driver-choice.enum';
 export { SetupDatabaseService } from '@core/security/setup-database-service';
-export type { IBundledDatabaseTarget, ISetupDatabaseOptions } from '@core/security/setup-database-service';
+export type { IBundledDatabaseTarget } from '@core/security/interfaces/bundled-database-target.interface';
+export type { ISetupDatabaseOptions } from '@core/security/interfaces/setup-database-options.interface';
 export { SetupMode } from '@core/tenant/setup-mode';
 export { SetupPhase } from '@core/tenant/enums/setup-phase.enum';
 export type { ISystemSettingDescriptor } from '@core/settings/interfaces/system-setting-descriptor.interface';

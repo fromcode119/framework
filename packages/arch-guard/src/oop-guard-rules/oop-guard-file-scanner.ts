@@ -173,6 +173,14 @@ export class OopGuardFileScanner {
           }
         }
         if (ifaces.length > 1) bucket.ifaceDebt.push(`${rel}: ${ifaces.length} interfaces in one file (split one-per-file)`);
+        // An interface BESIDE a class is the same defect as two interfaces in one file, and nothing
+        // was looking for it: `one-contract-per-file` reads only `*.interface.ts`, and the rule above
+        // needs TWO. So a contract could be declared next to the class that happens to use it, which
+        // is how it stops being addressable — it cannot be imported without importing the class, and
+        // it moves only when the class does. Eight files in the framework had drifted into it.
+        if (ifaces.length > 0 && OopGuardPatterns.CLASS_DECL.test(codeOnly)) {
+          bucket.ifaceDebt.push(`${rel}: interface '${ifaces[0]}' declared beside a class (give it its own interfaces/<name>.interface.ts)`);
+        }
         if (!found.length) continue;
         // Normalize BOTH client-boundary conventions so allowlist entries (kept under the plain path) keep
         // matching: the `.client` filename infix (X.tsx -> X.client.tsx) and the `view/` folder that those

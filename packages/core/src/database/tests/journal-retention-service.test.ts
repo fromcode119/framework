@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { JournalRetentionService } from '@core/database/journal-retention-service';
 import { JournalRetentionTargets } from '@core/database/journal-retention-target';
-import type { IJournalRetentionTarget } from '@core/database/journal-retention-target';
+import type { IJournalRetentionTarget } from '@core/database/interfaces/journal-retention-target.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 
 const LOGS = JournalRetentionTargets.all()[0];

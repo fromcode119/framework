@@ -2,20 +2,7 @@ import type { ChangeEvent, DragEvent, ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
-
-export interface IFileDropzoneProps {
-  /** What the browser will accept, e.g. `.tar.gz,.tgz`. */
-  accept?: string;
-  /** The chosen file, owned by the parent so it survives a re-render. */
-  file: File | null;
-  onSelect: (file: File | null) => void;
-  /** 0-100 while a transfer is running; anything else hides the bar. */
-  percent?: number;
-  busy?: boolean;
-  /** Shown when nothing is chosen. */
-  hint?: string;
-  disabled?: boolean;
-}
+import type { IFileDropzoneProps } from '@/components/ui/view/interfaces/file-dropzone-props.interface';
 
 /**
  * Choose a file by DROPPING it, or by clicking — and see what is happening while it uploads.

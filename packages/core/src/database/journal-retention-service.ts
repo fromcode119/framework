@@ -1,6 +1,6 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
-import type { IJournalRetentionTarget } from '@core/database/journal-retention-target';
+import type { IJournalRetentionTarget } from '@core/database/interfaces/journal-retention-target.interface';
 
 /**
  * Prunes the platform's JOURNALS to the windows their operator declared.

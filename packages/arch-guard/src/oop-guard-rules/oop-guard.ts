@@ -40,7 +40,15 @@ export class OopGuard {
 
   static isGlueOrEntry(rel: string): boolean {
     const p = rel.replace(/\\/g, '/');
-    if (/^(reactor|next-build-codegen|typescript-multiple-inheritance|arch-guard)\//.test(p)) return true;
+    // typor, reactor and next-build-codegen ARE the layer that makes class-based code possible and
+    // cannot themselves be class-only — `abstract new (...)` is illegal as an interface member, so
+    // typor's `AbstractConstructor` has no other form.
+    //
+    // `arch-guard` used to be in this list and did NOT belong: it is an ordinary class-based CLI that
+    // was swept in by the same regex, which switched every module-level check off across 40 files —
+    // and an `interface` sitting beside a class in one of its own guards is how that was noticed.
+    // Removed and measured: with it enforced, every bucket is still 0. It needed no exemption at all.
+    if (/^(reactor|next-build-codegen|typescript-multiple-inheritance)\//.test(p)) return true;
     if (/(^|\/)(bin|server)\.ts$/.test(p)) return true;
     if (/(^|\/)[a-z0-9-]*-?entry(\.[a-z]+)?\.tsx?$/.test(p)) return true;
     if (/\.config\.(ts|mjs|js)$/.test(p)) return true;

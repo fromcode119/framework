@@ -205,4 +205,5 @@ export { LocalizedField } from '@fromcode119/core/client';
 export { PublicSettings } from '@fromcode119/core/client';
 export { PluginPeerRegistration } from '@sdk/plugin-peer-registration';
 export { PersonalDataRows } from '@sdk/personal-data-rows';
-export type { IPersonalDataSubjectRef, IPersonalDataRowsResult } from '@sdk/personal-data-rows';
+export type { IPersonalDataSubjectRef } from '@sdk/interfaces/personal-data-subject-ref.interface';
+export type { IPersonalDataRowsResult } from '@sdk/interfaces/personal-data-rows-result.interface';

@@ -1,15 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
-
-/** What one class declaration says about itself, gathered syntactically. */
-interface IClassFacts {
-  file: string;
-  base: string | null;
-  declared: string[];
-  assigns: Set<string>;
-  dereferences: Set<string>;
-}
+import type { IClassFacts } from './interfaces/class-facts.interface';
 
 /**
  * A `declare`d field must be ASSIGNED by the class or one of its subclasses, or it is permanently

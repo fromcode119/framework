@@ -1,10 +1,6 @@
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
-
-/** What a connection is acting as, for the duration it is held. */
-export interface ITenantSessionBinding {
-  tenantId?: string | null;
-  platformAdmin?: boolean;
-}
+import type { ITenantSessionBinding } from '@database/dialects/postgres/tenant/interfaces/tenant-session-binding.interface';
+import type { IPostgresQueryable } from '@database/dialects/postgres/tenant/interfaces/postgres-queryable.interface';
 
 /**
  * Binds and clears the tenancy markers on ONE pooled client.
@@ -20,7 +16,7 @@ export interface ITenantSessionBinding {
  */
 export class PostgresTenantSession {
   /** Sets the markers the binding asks for. A binding with neither leaves the client untenanted. */
-  static async bind(client: PostgresQueryable, binding: ITenantSessionBinding): Promise<void> {
+  static async bind(client: IPostgresQueryable, binding: ITenantSessionBinding): Promise<void> {
     if (binding.tenantId) await client.query(TenantIsolationSql.setTenantStatement(), [binding.tenantId]);
     if (binding.platformAdmin) await client.query(TenantIsolationSql.setPlatformAdminStatement(), ['on']);
   }
@@ -40,7 +36,7 @@ export class PostgresTenantSession {
    * way to see why. Restoring the resting state here is what makes the pool's own promise — every
    * client it hands out acts for the platform — actually true.
    */
-  static async clear(client: PostgresQueryable, platformPool = false): Promise<void> {
+  static async clear(client: IPostgresQueryable, platformPool = false): Promise<void> {
     await client.query(TenantIsolationSql.resetTenantStatement());
     if (platformPool) {
       await client.query(TenantIsolationSql.setPlatformAdminStatement(), ['on']);
@@ -55,12 +51,8 @@ export class PostgresTenantSession {
    * Used from the pool's `connect` event, where there is nothing to await into and a failure must
    * not take the connection down.
    */
-  static markPlatformAdmin(client: PostgresQueryable): void {
+  static markPlatformAdmin(client: IPostgresQueryable): void {
     client.query(TenantIsolationSql.setPlatformAdminStatement(), ['on']).catch(() => undefined);
   }
 }
 
-/** The only thing this needs of a `pg` client, so tests can pass a recorder. */
-export interface PostgresQueryable {
-  query(text: string, values?: unknown[]): Promise<unknown>;
-}

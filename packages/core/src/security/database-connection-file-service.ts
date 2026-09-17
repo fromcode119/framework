@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { ProjectPaths } from '@core/config/paths';
 import { DatabaseDriverChoice } from '@core/security/enums/database-driver-choice.enum';
+import type { IDatabaseConnectionFile } from '@core/security/interfaces/database-connection-file.interface';
+import type { IStoredDatabaseConnection } from '@core/security/interfaces/stored-database-connection.interface';
 
 /**
  * Where a deployment's database connection comes from when nobody put one in the environment.
@@ -133,14 +135,3 @@ export class DatabaseConnectionFileService {
   }
 }
 
-/** What is written. The privileged bootstrap credential is deliberately not part of it. */
-export interface IDatabaseConnectionFile {
-  readonly driver: DatabaseDriverChoice;
-  readonly runtimeUrl: string;
-  readonly migrationUrl: string;
-}
-
-/** What is read back. The driver is `undefined` when the file names one this build does not ship. */
-export interface IStoredDatabaseConnection extends Omit<IDatabaseConnectionFile, 'driver'> {
-  readonly driver: DatabaseDriverChoice | undefined;
-}
