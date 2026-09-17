@@ -2,76 +2,20 @@ import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Input } from '@/components/ui/view/input.client';
-import { ExtensionScope } from '@fromcode119/core/client';
 import { Select } from '@/components/ui/view/select.client';
-import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
 import { Switch } from '@/components/ui/view/switch.client';
-import { AdminComponent } from '@/components/view/admin-component.client';
 import { Save } from 'lucide-react';
-import { SourcesApi } from '@/app/sources/sources-api';
 import type { IBuildSourceFormProps } from '@/app/sources/interfaces/build-source-form-props.interface';
-import type { IBuildSourceFormState } from '@/app/sources/interfaces/build-source-form-state.interface';
+import { BuildSourceFormRemote } from '@/app/sources/build-source-form-remote';
+import { BuildSourceFormState } from '@/app/sources/build-source-form-state';
 
 /**
- * Create/edit form for a build source, built from the admin's OWN controls.
+ * The form for adding or editing a source.
  *
- * It used to be raw `<input>` and `<select>` elements with a hand-written class string, so the type
- * field opened the operating system's dropdown in the middle of the admin — a different font, a
- * different palette, and none of the admin's keyboard behaviour.
- *
- * Two fields also asked for things the repository already knows, and asking created a second source
- * of truth that could only ever disagree. The branch is chosen from what the remote actually has,
- * rather than typed against a default of "main" that is wrong for every repository whose default is
- * `master`. The slug and type are READ FROM THE EXTENSION'S OWN MANIFEST — they are its identity,
- * they name the built package and the tables it owns, and they are already declared in the file the
- * build will read anyway. A repository that declares nothing is reported as such; nothing is
- * guessed from the URL, because a repository called `fromcode-plugin-forms` may ship anything.
+ * The top of the chain: the lifecycle and the markup. What the form holds and what it reads from the
+ * repository live in the links below — see `BuildSourceFormState`.
  */
-export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuildSourceFormState> {
-  /**
-   * The kinds this admin knows, derived from the ENUM rather than typed out again.
-   *
-   * It was a hand-written list saying Plugin/Theme/Core, and it had never heard of an appearance —
-   * one of five places the same four strings were spelled by hand. `ExtensionScope` is the
-   * declaration; a kind added there appears here without anyone remembering to.
-   *
-   * Still only a fallback: the authoritative list arrives from the API with the providers, because
-   * what THIS installation can build is the server's answer, not the client's.
-   */
-  private static readonly TYPES = ExtensionScope.definitions();
-
-  state: IBuildSourceFormState = BuildSourceForm.seed(this.props);
-
-
-  private static seed(props: IBuildSourceFormProps): IBuildSourceFormState {
-    const build = props.build;
-    return {
-      autoBuild: Boolean(build?.autoBuild),
-      autoUpdate: Boolean(build?.autoUpdate),
-      // A source the form has never seen defaults to installing what it builds; an existing one
-      // shows what it stored. `!== false` rather than `Boolean(...)` so a row the migration has not
-      // reached yet does not read as "off" on a screen that would then save that.
-      installAfterBuild: build ? build.installAfterBuild !== false : true,
-      branch: build?.branch || '',
-      provider: build?.provider || 'git',
-      providers: [],
-      types: [],
-      branches: [],
-      branchesAttempted: false,
-      branchesLoading: false,
-      branchFailure: '',
-      inspecting: false,
-      inspectFailed: false,
-      gitSecret: '',
-      gitUrl: build?.gitUrl || '',
-      slug: build?.slug || '',
-      // The SAME ternary that put an appearance in the dialog as a Plugin, in the other place it
-      // was written. Now that the kind is half of which source this is, reading it wrong here would
-      // no longer be a wrong label — it would address a different source.
-      type: String(ExtensionScope.find(build?.type)?.value ?? ExtensionScope.PLUGIN.value) as IBuildSourceFormValues['type'],
-    };
-  }
-
+export class BuildSourceForm extends BuildSourceFormRemote {
   /**
    * An edit dialog opens with a repository already chosen, so it asks straight away.
    *
@@ -84,200 +28,11 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
     if (this.state.gitUrl.trim()) void this.loadBranches();
   }
 
-  /**
-   * What this installation can fetch source from.
-   *
-   * Asked rather than hardcoded: the provider list is the server's to state, and a field built from
-   * a literal here would drift the moment one is added.
-   */
-  private async loadProviders(): Promise<void> {
-    try {
-      const response: any = await SourcesApi.providers();
-      const providers = Array.isArray(response?.providers) ? response.providers : [];
-      const types = Array.isArray(response?.types) ? response.types : [];
-      this.setState({ providers, types });
-    } catch {
-      // The form still works: a source that names no provider is tracked with the default, and the
-      // field simply has nothing to offer rather than inventing an option.
-      this.setState({ providers: [], types: [] });
-    }
-  }
-
-  /** The chosen provider's definition, or null until the list arrives. */
-  private get providerDefinition(): IBuildSourceFormState['providers'][number] | null {
-    return this.state.providers.find((entry) => entry.key === this.state.provider) ?? null;
-  }
-
   componentDidUpdate(prev: IBuildSourceFormProps): void {
     if (prev.build === this.props.build && prev.mode === this.props.mode) return;
-    this.setState(BuildSourceForm.seed(this.props), () => {
+    this.setState(BuildSourceFormState.seed(this.props), () => {
       if (this.state.gitUrl.trim()) void this.loadBranches();
     });
-  }
-
-  private get isEdit(): boolean {
-    return this.props.mode === 'edit';
-  }
-
-  private get hasStoredToken(): boolean {
-    return Boolean(this.props.build?.hasGitSecret);
-  }
-
-  private get tokenHelpText(): string {
-    /**
-     * The token is what unblocks a private repository, so when reading one failed for want of
-     * credentials this field says so — it is the field the operator has to fill in next, and the
-     * message belongs where the fix is.
-     */
-    if (this.state.branchFailure) return this.state.branchFailure;
-    if (!this.isEdit) return 'Optional. Private repositories need a token; public repositories can stay blank.';
-    return this.hasStoredToken
-      ? 'A token is already stored securely. Paste a new token only if you want to replace it.'
-      : 'No token is stored for this source. Leave blank to use the server GITHUB_TOKEN.';
-  }
-
-  private get tokenPlaceholder(): string {
-    return this.isEdit ? 'Paste new token to replace stored token' : 'Optional personal access token';
-  }
-
-  /**
-   * What a remote-reading call needs to authenticate.
-   *
-   * An existing source carries its slug so the server can fall back to the token it already holds —
-   * the stored secret is deliberately never sent to the browser, so this form has nothing to send
-   * until the operator types a replacement.
-   */
-  private remoteReadPayload(fields: Record<string, unknown>): Record<string, unknown> {
-    const payload: Record<string, unknown> = { ...fields, gitSecret: this.state.gitSecret };
-    // BOTH halves, because the stored token belongs to one source: the server refuses to look one
-    // up from a slug alone now, and sending only the slug silently lost the credential for every
-    // private repository opened for editing.
-    if (this.isEdit && this.props.build?.slug) {
-      payload.slug = this.props.build.slug;
-      payload.type = this.props.build.type;
-    }
-    return payload;
-  }
-
-  /**
-   * Asks the remote what branches it has, when there is a URL to ask about.
-   *
-   * On blur rather than on every keystroke: this is a network call to somebody's git host, and a
-   * half-typed URL is not a question worth asking.
-   */
-  private async loadBranches(): Promise<void> {
-    const gitUrl = this.state.gitUrl.trim();
-    if (!gitUrl) {
-      this.setState({ branches: [], branchesAttempted: false });
-      return;
-    }
-
-    this.setState({ branchesLoading: true });
-    // try/finally, not a catch on the promise: a call that throws BEFORE returning one skips the
-    // catch entirely, and the field then sits on "Reading branches…" for the rest of the session.
-    let response: any = null;
-    let failure = '';
-    try {
-      response = await SourcesApi.listBranches(this.remoteReadPayload({ gitUrl }));
-    } catch (error: any) {
-      // The server's own words — it knows whether git is missing or the remote refused.
-      failure = String(error?.message || error?.error || '').trim();
-      response = null;
-    }
-
-    const branches: string[] = Array.isArray(response?.branches) ? response.branches : [];
-    // Only adopt a branch the remote actually reported; never invent one. The one thing that must
-    // survive a failed read is a branch this source is ALREADY tracking: clearing it turned a
-    // temporary inability to reach the remote into a saved change to what gets built.
-    const branch = branches.length === 0
-      ? this.state.branch
-      : (branches.includes(this.state.branch)
-        ? this.state.branch
-        : (branches.includes('main') ? 'main' : branches[0]));
-
-    this.setState({ branches, branchesAttempted: true, branchesLoading: false, branch, branchFailure: failure });
-    if (branch) await this.inspect(branch);
-  }
-
-  /**
-   * Reads the repository's manifest for what it declares itself to be.
-   *
-   * Runs whenever the branch changes, because a branch can rename or retype an extension, and the
-   * source being created tracks THAT branch.
-   */
-  private async inspect(branch: string): Promise<void> {
-    const gitUrl = this.state.gitUrl.trim();
-    if (!gitUrl || !branch) return;
-
-    this.setState({ inspecting: true, inspectFailed: false });
-    let response: any = null;
-    try {
-      response = await SourcesApi.inspect(this.remoteReadPayload({ gitUrl, branch }));
-    } catch {
-      response = null;
-    }
-
-    const declared = response?.declared;
-    if (!declared?.slug) {
-      this.setState({ inspecting: false, inspectFailed: true });
-      return;
-    }
-
-    this.setState({
-      inspecting: false,
-      inspectFailed: false,
-      slug: String(declared.slug),
-      type: this.declaredType(declared.type),
-    });
-  }
-
-  /**
-   * The kind the SERVER read from the repository's own manifest.
-   *
-   * This was a ternary chain that knew `core` and `theme` and mapped everything else to `plugin` —
-   * so `appearance-hub`, whose `appearance.json` the reader identified correctly, arrived in the
-   * dialog as a Plugin. The detection was right; the form threw the answer away.
-   *
-   * Checked against the list the API serves rather than a set spelled out here again: that list
-   * comes from `BuildSourceType`, so a kind the platform can build is a kind this form can show,
-   * without a fourth copy to keep in step.
-   */
-  private declaredType(declared: unknown): IBuildSourceFormValues['type'] {
-    // `find` returns null for a kind this build does not know, rather than quietly calling it a
-    // plugin — which is precisely what the ternary it replaces did to every appearance.
-    const scope = ExtensionScope.find(declared);
-    if (scope) return String(scope.value) as IBuildSourceFormValues['type'];
-
-    // The server may know a kind this admin does not; trust its list before falling back.
-    const value = String(declared ?? '').trim();
-    const served = this.state.types.some((entry) => entry.value === value);
-    return (served ? value : 'plugin') as IBuildSourceFormValues['type'];
-  }
-
-  private onBranchChange(branch: string): void {
-    this.setState({ branch });
-    void this.inspect(branch);
-  }
-
-  /** What the identity fields can say before a repository has answered — never a guess. */
-  private get slugPlaceholder(): string {
-    if (this.state.inspecting) return 'Reading the repository…';
-    if (this.state.inspectFailed) return 'This repository declares no extension manifest';
-    return 'Read from the repository';
-  }
-
-  private get branchOptions(): Array<{ label: string; value: string }> {
-    return this.state.branches.map((branch) => ({ label: branch, value: branch }));
-  }
-
-  /** What the branch field can say when it has nothing to offer — never a guessed name. */
-  private get branchPlaceholder(): string {
-    if (this.state.branchesLoading) return 'Reading branches…';
-    if (!this.state.gitUrl.trim()) return 'Enter a repository URL first';
-    if (this.state.branchFailure) return this.state.branchFailure;
-    if (!this.state.branchesAttempted) return 'Reading branches…';
-    if (this.state.branches.length === 0) return 'No branches could be read';
-    return 'Select a branch';
   }
 
   render(): ReactNode {
@@ -334,7 +89,7 @@ export class BuildSourceForm extends AdminComponent<IBuildSourceFormProps, IBuil
             value={this.state.type}
             disabled
             onChange={() => undefined}
-            options={this.state.types.length ? this.state.types : BuildSourceForm.TYPES}
+            options={this.state.types.length ? this.state.types : BuildSourceFormState.TYPES}
           />
 
           <div className="space-y-2">

@@ -1,217 +1,28 @@
-import { MeasurementSystem } from '@fromcode119/core/client';
-import { NotificationType } from '@/components/enums/notification-type.enum';
-import type { ReactNode, SetStateAction } from 'react';
-import { state, bound } from '@fromcode119/react-class-components';
-import { ContextBridge } from '@fromcode119/react';
-import { AdminComponent } from '@/components/view/admin-component.client';
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
-import { LocalizationSettingsIo } from '@/app/settings/localization/localization-settings-io';
 import { LocaleRegistryCard } from '@/app/settings/localization/locale-registry-card';
 import { LocaleTargetsCard } from '@/app/settings/localization/locale-targets-card';
 import { MeasurementSystemCard } from '@/app/settings/localization/measurement-system-card';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
-import { ILocaleItem } from '@/app/settings/localization/interfaces/locale-item.interface';
-import { LocaleUrlStrategy } from '@fromcode119/core/client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
+import { LocalizationSettingsPageActions } from '@/app/settings/localization/page-actions.client';
+import { LocalizationSettingsPageState } from '@/app/settings/localization/page-state.client';
 
-export class LocalizationSettingsPage extends AdminComponent {
-  @state isLoading = true;
-  @state isSaving = false;
-  /**
-   * `null` means NEVER LOADED — it is not an empty registry.
-   *
-   * This used to be seeded with a hardcoded `English (en)` row, and `componentDidMount` had
-   * `try/finally` with no `catch`, so a failed settings GET rendered English as a configured locale
-   * and "Save Localization" would then write `en` as the platform's ONLY locale — destroying a
-   * multi-locale configuration on the strength of a transient API failure.
-   */
-  @state locales: ILocaleItem[] | null = null;
-  @state loadError: string | null = null;
-  @state defaultLocale = '';
-  @state adminDefaultLocale = '';
-  @state frontendDefaultLocale = '';
-  @state localeUrlStrategy: LocaleUrlStrategy = LocaleUrlStrategy.QUERY;
-  @state measurementSystem: MeasurementSystem = MeasurementSystem.METRIC;
-  /**
-   * Every key this screen writes is per-site, so in the platform scope the API refuses the save and
-   * the whole locale table edit is lost. Null until the answer arrives; nothing is hidden before then.
-   */
-  @state scope: SettingsPageScope | null = null;
-
-  /** The keys `LocalizationSettingsIo.save` PUTs — the one list this page's scope is judged on. */
-  private static readonly KEYS = [
-    'localization_locales', 'enabled_locales', 'default_locale', 'admin_default_locale',
-    'frontend_default_locale', 'locale_url_strategy', 'measurement_system',
-  ] as const;
-
+/**
+ * Settings — Localization.
+ *
+ * The top of the chain: the lifecycle and the markup. What the page knows and what it can do live in
+ * the links below — see `LocalizationSettingsPageState`.
+ */
+export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
   async componentDidMount(): Promise<void> {
     await this.loadLocalization();
-    this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), LocalizationSettingsPage.KEYS);
-  }
-
-  private get outOfScope(): boolean {
-    return this.scope?.isEmpty === true;
-  }
-
-  @bound
-  async retryLoad(): Promise<void> {
-    this.isLoading = true;
-    await this.loadLocalization();
-  }
-
-  private async loadLocalization(): Promise<void> {
-    this.loadError = null;
-    try {
-      const loaded = await LocalizationSettingsIo.load();
-      this.locales = loaded.locales;
-      this.defaultLocale = loaded.defaultLocale;
-      this.adminDefaultLocale = loaded.adminDefaultLocale;
-      this.frontendDefaultLocale = loaded.frontendDefaultLocale;
-      this.localeUrlStrategy = loaded.localeUrlStrategy;
-      this.measurementSystem = loaded.measurementSystem;
-    } catch (err: any) {
-      this.locales = null;
-      this.loadError = err?.message || 'The localization settings request failed.';
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  private get registerSettings(): (settings: Record<string, any>) => void {
-    const plugins = this.runtime?.plugins;
-    if (plugins?.registerSettings) return plugins.registerSettings.bind(plugins);
-    return ContextBridge.registerSettings.bind(ContextBridge);
-  }
-
-  private get localeSelectOptions(): { value: string; label: string }[] {
-    return LocalizationSettingsIo.buildSelectOptions(this.locales ?? []);
-  }
-
-  @bound
-  updateLocale(id: string, patch: Partial<ILocaleItem>): void {
-    const locales = this.locales;
-    if (!locales) return;
-    this.locales = locales.map((locale) => (locale.id === id ? { ...locale, ...patch } : locale));
-  }
-
-  @bound
-  addLocale(): void {
-    const locales = this.locales;
-    if (!locales) return;
-    const tempId = `locale-${Date.now()}`;
-    this.locales = [
-      ...locales,
-      {
-        id: tempId,
-        code: '',
-        name: '',
-        enabled: true
-      }
-    ];
-  }
-
-  @bound
-  removeLocale(id: string): void {
-    const locales = this.locales;
-    if (!locales) return;
-    this.locales = locales.filter((locale) => locale.id !== id);
-  }
-
-  @bound
-  setDefaultLocale(value: string): void {
-    this.defaultLocale = value;
-  }
-
-  @bound
-  setAdminDefaultLocale(value: string): void {
-    this.adminDefaultLocale = value;
-  }
-
-  @bound
-  setFrontendDefaultLocale(value: string): void {
-    this.frontendDefaultLocale = value;
-  }
-
-  @bound
-  setLocaleUrlStrategy(update: SetStateAction<LocaleUrlStrategy>): void {
-    this.localeUrlStrategy = typeof update === 'function'
-      ? (update as (prev: LocaleUrlStrategy) => LocaleUrlStrategy)(this.localeUrlStrategy)
-      : update;
-  }
-
-  @bound
-  setMeasurementSystem(value: MeasurementSystem): void {
-    this.measurementSystem = value;
-  }
-
-  @bound
-  async handleSave(): Promise<void> {
-    const addNotification = this.runtime.notify.addNotification;
-    const locales = this.locales;
-    // Fail closed: never PUT a locale registry that was not read back from the server. The Save control
-    // is not rendered in this state.
-    if (!locales) return;
-    this.isSaving = true;
-    try {
-      const cleaned = LocalizationSettingsIo.cleanLocales(locales);
-
-      if (!cleaned.length) {
-        addNotification({
-          title: 'Invalid Locale List',
-          message: 'Add at least one locale with a valid ISO code.',
-          type: NotificationType.ERROR
-        });
-        return;
-      }
-
-      const saved = await LocalizationSettingsIo.save(
-        cleaned,
-        {
-          defaultLocale: this.defaultLocale,
-          adminDefaultLocale: this.adminDefaultLocale,
-          frontendDefaultLocale: this.frontendDefaultLocale
-        },
-        this.localeUrlStrategy,
-        this.measurementSystem,
-      );
-
-      this.locales = saved.cleaned;
-      this.defaultLocale = saved.defaultLocale;
-      this.adminDefaultLocale = saved.adminDefaultLocale;
-      this.frontendDefaultLocale = saved.frontendDefaultLocale;
-
-      this.registerSettings({
-        localization_locales: JSON.stringify(saved.cleaned.map(({ id, ...rest }) => rest)),
-        enabled_locales: saved.enabledCodes.join(','),
-        default_locale: saved.defaultLocale,
-        admin_default_locale: saved.adminDefaultLocale,
-        frontend_default_locale: saved.frontendDefaultLocale,
-        // `.value`, not the Enum instance: every consumer of the settings context reads a plain string,
-        // so `settings.locale_url_strategy === 'path'` against a member object is permanently false and
-        // an Enum reaching JSX renders as `[object Object]`.
-        locale_url_strategy: this.localeUrlStrategy.value,
-        measurement_system: this.measurementSystem.value
-      });
-
-      addNotification({
-        title: 'Localization Updated',
-        message: 'Locale registry and defaults have been saved.',
-        type: NotificationType.SUCCESS
-      });
-    } catch (error: any) {
-      addNotification({
-        title: 'Save Failed',
-        message: error?.message || 'Failed to save localization settings.',
-        type: NotificationType.ERROR
-      });
-    } finally {
-      this.isSaving = false;
-    }
+    this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), LocalizationSettingsPageState.KEYS);
   }
 
   render(): ReactNode {

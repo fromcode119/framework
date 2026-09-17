@@ -1,126 +1,29 @@
 import { ThemeMode } from '@fromcode119/core/client';
-import { NotificationType } from '@/components/enums/notification-type.enum';
-import { state, bound } from '@fromcode119/react-class-components';
-import { ContextBridge } from '@fromcode119/react';
-import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
-import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
-import { RoutingPageUtils } from '@/app/settings/routing/routing-page-utils';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
-import { RoutingHomeOptions } from '@/app/settings/routing/routing-home-options';
+import { RoutingPageActions } from '@/app/settings/routing/page-actions.client';
+import { RoutingPageState } from '@/app/settings/routing/page-state.client';
 
-export class RoutingPage extends AdminComponent {
-  private static readonly PLACEHOLDERS = [
-    { label: ':slug', description: 'The sanitized post title (recommended)', example: 'hello-world' },
-    { label: ':id', description: 'The unique numeric ID of the content', example: '123' },
-    { label: ':year', description: 'The 4-digit year of publication', example: '2026' },
-    { label: ':month', description: 'The 2-digit month of publication', example: '01' },
-    { label: ':day', description: 'The 2-digit day of publication', example: '31' },
-    { label: ':category', description: 'The primary category slug', example: 'news' },
-    { label: ':author', description: 'The author username', example: 'admin' },
-  ];
-  private static readonly PRESETS = [
-    { label: 'Plain', value: '/:slug' },
-    { label: 'Day and name', value: '/:year/:month/:day/:slug' },
-    { label: 'Month and name', value: '/:year/:month/:slug' },
-    { label: 'Numeric', value: '/:id' },
-    { label: 'Category and name', value: '/:category/:slug' },
-  ];
-  private static readonly EMPTY_COLLECTIONS = [];
-  @state isSaving = false;
-  @state isLoading = true;
-  /**
-   * `null` means NEVER LOADED, for both of these.
-   *
-   * They were seeded `'/:slug'` and `'auto'` — which are exactly the values
-   * `packages/api/src/server/server-settings-service.ts` already DECLARES and seeds for
-   * `permalink_structure` / `routing_home_target`. So the copies here were a second, invisible
-   * default, and because `componentDidMount` had `try/finally` with no `catch`, a failed settings GET
-   * rendered them as the operator's saved routing and "Apply Routing" wrote them back over whatever
-   * was really stored.
-   */
-  @state structure: string | null = null;
-  @state homeTarget: string | null = null;
-  @state loadError: string | null = null;
-  @state searchTerm = '';
-  /**
-   * Both keys this screen writes are per-site, so in the platform scope the API refuses the save and
-   * the permalink structure and homepage target are lost together.
-   */
-  @state scope: SettingsPageScope | null = null;
-  @state frontendMeta: any = null;
-  @state autoResolvedSource: string | null = null;
-  @state availableCollections: any[] = [];
-  @state homeOptions: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [
-    { value: 'auto', label: 'Auto detect', group: 'System' }
-  ];
-
-  private optionsRequestId = 0;
-  private optionsTimeout: ReturnType<typeof setTimeout> | null = null;
-  private optionsDeps: { frontendMeta: any; availableCollections: any; collections: any; searchTerm: string } | null = null;
-  private autoRequestId = 0;
-  private autoDeps: { availableCollections: any; collections: any; homeTarget: string | null } | null = null;
-
-  /** Collections published by the plugin registry (replaces `SettingsRegistrationService.useRegistration`). */
-  private get safeCollections(): any[] {
-    const collections = this.runtime?.plugins?.collections;
-    return Array.isArray(collections) ? collections : RoutingPage.EMPTY_COLLECTIONS;
-  }
-
-  private get registerSettings(): (settings: Record<string, any>) => void {
-    const plugins = this.runtime?.plugins;
-    if (plugins?.registerSettings) return plugins.registerSettings.bind(plugins);
-    return ContextBridge.registerSettings.bind(ContextBridge);
-  }
-
+/**
+ * Routing — the permalink structure and what the home page serves.
+ *
+ * The top of the chain: the lifecycle and the markup. What the page knows, how it resolves the
+ * current home target and what it can save live in the links below — see `RoutingPageState`.
+ */
+export class RoutingPage extends RoutingPageActions {
   async componentDidMount(): Promise<void> {
     this.syncAutoSource();
     await this.loadRouting();
     this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), ['permalink_structure', 'routing_home_target']);
-  }
-
-  private get outOfScope(): boolean {
-    return this.scope?.isEmpty === true;
-  }
-
-  @bound
-  async retryLoad(): Promise<void> {
-    this.isLoading = true;
-    await this.loadRouting();
-  }
-
-  private async loadRouting(): Promise<void> {
-    this.loadError = null;
-    try {
-      const [settingsResponse, frontendMeta, collectionStats] = await Promise.all([
-        AdminSystemSettingsClient.getAll(),
-        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.FRONTEND).catch(() => null),
-        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.STATS.COLLECTIONS).catch(() => [])
-      ]);
-
-      // Read from the response ALONE — an absent key renders empty, it does not fall back to a literal.
-      this.structure = String(settingsResponse?.permalink_structure ?? '');
-      this.homeTarget = String(settingsResponse?.routing_home_target ?? '');
-      this.frontendMeta = frontendMeta;
-      this.availableCollections = Array.isArray(collectionStats) ? collectionStats : [];
-    } catch (err: any) {
-      this.structure = null;
-      this.homeTarget = null;
-      this.loadError = err?.message || 'The routing settings request failed.';
-    } finally {
-      this.isLoading = false;
-    }
   }
 
   componentDidUpdate(): void {
@@ -133,188 +36,6 @@ export class RoutingPage extends AdminComponent {
     this.optionsTimeout = null;
     this.optionsRequestId += 1;
     this.autoRequestId += 1;
-  }
-
-  /** Debounced rebuild of the homepage target options (replaces the `[deps]` effect + `setTimeout` cleanup). */
-  private scheduleHomeOptions(): void {
-    const deps = {
-      frontendMeta: this.frontendMeta,
-      availableCollections: this.availableCollections,
-      collections: this.safeCollections,
-      searchTerm: this.searchTerm
-    };
-    const prev = this.optionsDeps;
-    if (
-      prev &&
-      prev.frontendMeta === deps.frontendMeta &&
-      prev.availableCollections === deps.availableCollections &&
-      prev.collections === deps.collections &&
-      prev.searchTerm === deps.searchTerm
-    ) return;
-    this.optionsDeps = deps;
-
-    if (this.optionsTimeout) clearTimeout(this.optionsTimeout);
-    this.optionsTimeout = null;
-    if (!this.frontendMeta) return;
-
-    const requestId = ++this.optionsRequestId;
-    this.optionsTimeout = setTimeout(() => { void this.buildHomeOptions(requestId); }, 250);
-  }
-
-  private async buildHomeOptions(requestId: number): Promise<void> {
-    const sortedOptions = await RoutingHomeOptions.build({
-      searchTerm: this.searchTerm,
-      frontendMeta: this.frontendMeta,
-      availableCollections: this.availableCollections || [],
-      collections: this.safeCollections,
-    });
-    // The guard stays with the page: a slower earlier build must not overwrite a newer list.
-    if (requestId === this.optionsRequestId) {
-      this.homeOptions = sortedOptions;
-    }
-  }
-
-  private syncAutoSource(): void {
-    const deps = {
-      availableCollections: this.availableCollections,
-      collections: this.safeCollections,
-      homeTarget: this.homeTarget
-    };
-    const prev = this.autoDeps;
-    if (
-      prev &&
-      prev.availableCollections === deps.availableCollections &&
-      prev.collections === deps.collections &&
-      prev.homeTarget === deps.homeTarget
-    ) return;
-    this.autoDeps = deps;
-    void this.detectAutoSource(++this.autoRequestId);
-  }
-
-  private async detectAutoSource(requestId: number): Promise<void> {
-    if (this.homeTarget !== 'auto') {
-      this.autoResolvedSource = null;
-      return;
-    }
-    const availableCollectionSet = new Set(
-      (this.availableCollections || [])
-        .flatMap((c: any) => [String(c?.shortSlug || ''), String(c?.slug || '')])
-        .filter(Boolean)
-    );
-    const candidateCollections = (this.safeCollections || [])
-      .filter((c: any) => {
-        if (!c || c.system) return false;
-        if (availableCollectionSet.size > 0) {
-          const shortSlug = String(c.shortSlug || c.slug || '');
-          const fullSlug = String(c.slug || '');
-          if (!availableCollectionSet.has(shortSlug) && !availableCollectionSet.has(fullSlug)) return false;
-        } else {
-          // Skip probing collections when admin stats endpoint is unavailable.
-          return false;
-        }
-        return RoutingPageUtils.getFieldNames(c).has('slug');
-      })
-      .map((c: any) => ({
-        collectionSlug: c.shortSlug || c.slug,
-        collectionLabel: c.label || c.name || c.shortSlug || c.slug,
-        priority: RoutingPageUtils.getAutoCollectionPriority(c)
-      }))
-      .sort((a: any, b: any) => a.priority - b.priority || a.collectionSlug.localeCompare(b.collectionSlug));
-
-    const queries = [
-      { label: '"/"', query: 'customPermalink=%2F' },
-      { label: '"/"', query: 'path=%2F' },
-      { label: '"home"', query: 'slug=home' },
-    ];
-
-    for (const { label, query } of queries) {
-      for (const candidate of candidateCollections) {
-        try {
-          const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(candidate.collectionSlug)}?${query}&limit=1`);
-          const doc = Array.isArray(result) ? result[0] : result?.docs?.[0];
-          if (doc) {
-            const title = RoutingPageUtils.getRecordDisplayTitle(doc, candidate.collectionLabel);
-            if (requestId === this.autoRequestId) {
-              this.autoResolvedSource = `Matched ${label} -> ${title} (${candidate.collectionLabel})`;
-            }
-            return;
-          }
-        } catch {
-          // Candidate collection unavailable or no access; continue.
-        }
-      }
-    }
-    if (requestId === this.autoRequestId) {
-      this.autoResolvedSource = 'No content match for "/" or "home" (using theme fallback).';
-    }
-  }
-
-  @bound
-  setStructure(value: string): void {
-    this.structure = value;
-  }
-
-  @bound
-  setHomeTarget(value: string): void {
-    this.homeTarget = value;
-  }
-
-  @bound
-  setSearchTerm(value: string): void {
-    this.searchTerm = value;
-  }
-
-  @bound
-  appendPlaceholder(label: string): void {
-    const structure = this.structure;
-    if (structure === null || structure.includes(label)) return;
-    this.structure = structure.endsWith('/') ? `${structure}${label}` : `${structure}/${label}`;
-  }
-
-  @bound
-  async handleSave(): Promise<void> {
-    const addNotification = this.runtime.notify.addNotification;
-    const structure = this.structure;
-    const homeTarget = this.homeTarget;
-    // Fail closed: never PUT values that were not read back from the server. The Save controls are not
-    // rendered in this state.
-    if (structure === null || homeTarget === null) return;
-    this.isSaving = true;
-    try {
-      await AdminSystemSettingsClient.update({
-        permalink_structure: structure,
-        routing_home_target: homeTarget,
-      });
-
-      this.registerSettings({
-        permalink_structure: structure,
-        routing_home_target: homeTarget
-      });
-
-      addNotification({
-        title: 'Routing Updated',
-        message: 'Routing configuration has been synced.',
-        type: NotificationType.SUCCESS
-      });
-    } catch (err: any) {
-      addNotification({
-        title: 'Update Failed',
-        message: err?.message || 'Failed to save routing settings.',
-        type: NotificationType.ERROR
-      });
-    } finally {
-      this.isSaving = false;
-    }
-  }
-
-  private get resolvedSourceLabel(): string {
-    const selectedHomeOption = this.homeOptions.find((opt) => opt.value === this.homeTarget);
-    const autoFallbackLayout = RoutingPageUtils.detectAutoFallbackLayout(this.frontendMeta);
-    return this.homeTarget === 'auto'
-      ? `${this.autoResolvedSource || 'Auto mode: checking "/" and "home"...'}${autoFallbackLayout ? ` Theme fallback: ${autoFallbackLayout}.` : ''}`
-      : selectedHomeOption
-        ? `${selectedHomeOption.sourceKind || selectedHomeOption.group || 'Source'} · ${selectedHomeOption.label}`
-        : `Custom target · ${this.homeTarget}`;
   }
 
   render() {
@@ -411,7 +132,7 @@ export class RoutingPage extends AdminComponent {
                   Common Structures
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {RoutingPage.PRESETS.map((preset) => (
+                  {RoutingPageState.PRESETS.map((preset) => (
                     <button
                       key={preset.value}
                       onClick={() => this.setStructure(preset.value)}
@@ -463,7 +184,7 @@ export class RoutingPage extends AdminComponent {
 
           <Card title="Available Placeholders">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-4">
-              {RoutingPage.PLACEHOLDERS.map((tag) => (
+              {RoutingPageState.PLACEHOLDERS.map((tag) => (
                 <button
                   key={tag.label}
                   onClick={() => this.appendPlaceholder(tag.label)}

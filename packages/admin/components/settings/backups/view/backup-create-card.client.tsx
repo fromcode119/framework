@@ -3,93 +3,21 @@ import { BackupPreset } from '@/components/settings/backups/enums/backup-preset.
 import { BackupSectionKey } from '@fromcode119/core';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
-import type { ChangeEvent, DragEvent, ReactNode } from 'react';
-import { prop, state, ref, bound } from '@fromcode119/react-class-components';
-import type { Ref } from '@fromcode119/react-class-components';
-import { AdminComponent } from '@/components/view/admin-component.client';
+import type { ReactNode } from 'react';
+import { state, ref } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import type { ISystemBackupCapabilities } from '@/components/settings/backups/interfaces/system-backup-capabilities.interface';
-import type { IBackupProgressView } from '@/components/settings/backups/interfaces/backup-progress-view.interface';
 import { SystemBackupPageUtils } from '@/components/settings/backups/system-backup-page-utils';
-import { AdminClass } from '@/lib/admin-class';
 import { BackupSectionOptions } from '@/components/settings/backups/backup-section-options';
+import { BackupCreateCardDropZone } from '@/components/settings/backups/view/backup-create-card-drop-zone.client';
 
-export class BackupCreateCard extends AdminComponent {
-  private static readonly BACKUP_IMPORT_ACCEPT = '.tar.gz,.gz,application/gzip,application/x-gzip,.sql,.db';
-  @prop declare capabilities: ISystemBackupCapabilities;
-  @prop declare createSections: BackupSectionKey[];
-  @prop declare isCreating: boolean;
-  @prop declare isImporting: boolean;
-  @prop declare createProgress: IBackupProgressView | null;
-  @prop declare importProgress: IBackupProgressView | null;
-  @prop declare onToggleSection: (value: BackupSectionKey) => void;
-  @prop declare onApplyPreset: (value: BackupPreset) => void;
-  @prop declare onCreate: () => Promise<void>;
-  @prop declare onImport: (file: File) => Promise<void>;
-
-  @ref declare fileInputRef: Ref<HTMLInputElement>;
-
-  @state isDropActive = false;
-  @state importError = '';
-
-  private handleImportFile(file: File | null): void {
-    if (!file) {
-      return;
-    }
-
-    const normalizedName = String(file.name || '').trim().toLowerCase();
-    const isSupportedArchive = normalizedName.endsWith('.tar.gz') || normalizedName.endsWith('.sql') || normalizedName.endsWith('.db');
-    if (!isSupportedArchive) {
-      this.importError = 'Choose a .tar.gz, .sql, or .db backup archive.';
-      return;
-    }
-
-    this.importError = '';
-    void this.onImport(file);
-  }
-
-  @bound private handleUploadClick(): void {
-    if (!this.capabilities.canManage || this.isCreating || this.isImporting) {
-      return;
-    }
-
-    this.fileInputRef.current?.click();
-  }
-
-  @bound private handleFileChange(event: ChangeEvent<HTMLInputElement>): void {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    this.handleImportFile(file || null);
-  }
-
-  @bound private handleDragOver(event: DragEvent<HTMLDivElement>): void {
-    event.preventDefault();
-    if (!this.capabilities.canManage || this.isCreating || this.isImporting) {
-      return;
-    }
-
-    this.isDropActive = true;
-  }
-
-  @bound private handleDragLeave(event: DragEvent<HTMLDivElement>): void {
-    event.preventDefault();
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      this.isDropActive = false;
-    }
-  }
-
-  @bound private handleDrop(event: DragEvent<HTMLDivElement>): void {
-    event.preventDefault();
-    this.isDropActive = false;
-    if (!this.capabilities.canManage || this.isCreating || this.isImporting) {
-      return;
-    }
-
-    this.handleImportFile(event.dataTransfer.files?.[0] || null);
-  }
-
+/**
+ * Creating a backup, and restoring from one.
+ *
+ * The top of the chain: the markup. Taking the file lives in `BackupCreateCardDropZone`.
+ */
+export class BackupCreateCard extends BackupCreateCardDropZone {
   render(): ReactNode {
     const {
       capabilities,
@@ -121,7 +49,7 @@ export class BackupCreateCard extends AdminComponent {
               ref={this.fileInputRef}
               type="file"
               className="hidden"
-              accept={BackupCreateCard.BACKUP_IMPORT_ACCEPT}
+              accept={BackupCreateCardDropZone.BACKUP_IMPORT_ACCEPT}
               onChange={this.handleFileChange}
             />
             <Button
