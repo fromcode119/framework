@@ -18,6 +18,7 @@ import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
+import { RoutingHomeOptions } from '@/app/settings/routing/routing-home-options';
 
 export class RoutingPage extends AdminComponent {
   private static readonly PLACEHOLDERS = [
@@ -161,122 +162,18 @@ export class RoutingPage extends AdminComponent {
   }
 
   private async buildHomeOptions(requestId: number): Promise<void> {
-    const query = this.searchTerm.trim().toLowerCase();
-    const frontendMeta = this.frontendMeta;
-    const options: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [{ value: 'auto', label: 'Auto detect', group: 'System', sourceKind: 'Auto' }];
-    const optionSet = new Set(options.map((o) => o.value));
-    const availableCollectionSet = new Set(
-      (this.availableCollections || [])
-        .flatMap((c: any) => [String(c?.shortSlug || ''), String(c?.slug || '')])
-        .filter(Boolean)
-    );
-
-    const rawLayouts = frontendMeta?.activeTheme?.layouts;
-    const themeLayoutEntries = Array.isArray(rawLayouts)
-      ? rawLayouts.map((layout: any, idx: number) => {
-        if (typeof layout === 'string') return { key: layout, label: layout };
-        const key = String(layout?.slug || layout?.name || layout?.key || layout?.id || `layout-${idx + 1}`);
-        const label = String(layout?.title || layout?.label || layout?.name || layout?.slug || key);
-        return { key, label };
-      })
-      : Object.entries(rawLayouts || {}).map(([key, layout]: [string, any]) => {
-        if (typeof layout === 'string') return { key, label: layout };
-        const label = String(layout?.title || layout?.label || layout?.name || layout?.slug || key);
-        return { key, label };
-      });
-
-    themeLayoutEntries.forEach(({ key, label }) => {
-      const value = `layout:${key}`;
-      if (optionSet.has(value)) return;
-      if (query && !label.toLowerCase().includes(query)) return;
-      optionSet.add(value);
-      options.push({
-        value,
-        label,
-        group: 'Theme Layouts',
-        sourceKind: 'Layout'
-      });
+    const sortedOptions = await RoutingHomeOptions.build({
+      searchTerm: this.searchTerm,
+      frontendMeta: this.frontendMeta,
+      availableCollections: this.availableCollections || [],
+      collections: this.safeCollections,
     });
-
-    const collectionCandidates = (this.safeCollections || []).filter((c: any) => {
-      if (!c || c.system) return false;
-      if (availableCollectionSet.size > 0) {
-        const shortSlug = String(c.shortSlug || c.slug || '');
-        const fullSlug = String(c.slug || '');
-        if (!availableCollectionSet.has(shortSlug) && !availableCollectionSet.has(fullSlug)) return false;
-      } else {
-        // If system collection stats are unavailable, avoid probing unknown collection routes.
-        return false;
-      }
-      const fields = Array.isArray(c.fields) ? c.fields : [];
-      return fields.some((f: any) => f.name === 'slug');
-    });
-
-    const docsResponses = await Promise.all(
-      collectionCandidates.map(async (c: any) => {
-        const collectionSlug = c.shortSlug || c.slug;
-        const limit = query ? 150 : 50;
-        try {
-          const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${collectionSlug}?limit=${limit}&sort=title`);
-          return { collection: c, collectionSlug, docs: response?.docs || [] };
-        } catch {
-          return { collection: c, collectionSlug, docs: [] };
-        }
-      })
-    );
-
-    docsResponses.forEach(({ collection, collectionSlug, docs }) => {
-      docs.forEach((doc: any) => {
-        if (!doc || doc.id === undefined || doc.id === null) return;
-        const value = `collection:${collectionSlug}:${doc.id}`;
-        if (optionSet.has(value)) return;
-
-        const collectionLabel = collection.label || collection.name || collection.shortSlug || collectionSlug;
-        const title = RoutingPageUtils.getRecordDisplayTitle(doc, collectionLabel);
-        const permalink = doc.customPermalink || doc.slug || '';
-        const permalinkLabel = permalink ? `/${String(permalink).replace(/^\/+/, '')}` : '/';
-        const searchableText = `${title} ${permalinkLabel} ${collectionLabel}`.toLowerCase();
-        if (query && !searchableText.includes(query)) return;
-
-        const pluginSlug = collection.pluginSlug || 'System';
-        const pluginLabel = pluginSlug.charAt(0).toUpperCase() + pluginSlug.slice(1);
-        const groupLabel = `Collection Records · ${pluginLabel}`;
-        const sourceTag = RoutingPageUtils.getCollectionSourceTag(pluginSlug, collectionLabel);
-
-        optionSet.add(value);
-        options.push({
-          value,
-          label: `${title} (${permalinkLabel})`,
-          group: groupLabel,
-          section: collectionLabel,
-          sourceKind: sourceTag
-        });
-      });
-    });
-
-    const groupOrder = new Map<string, number>([
-      ['System', 0],
-      ['Theme Layouts', 1]
-    ]);
-    const sortedOptions = [...options].sort((a, b) => {
-      const aGroup = a.group || 'Options';
-      const bGroup = b.group || 'Options';
-      const aSection = a.section || '';
-      const bSection = b.section || '';
-      const aRank = groupOrder.has(aGroup) ? groupOrder.get(aGroup)! : 2;
-      const bRank = groupOrder.has(bGroup) ? groupOrder.get(bGroup)! : 2;
-      if (aRank !== bRank) return aRank - bRank;
-      if (aGroup !== bGroup) return aGroup.localeCompare(bGroup);
-      if (aSection !== bSection) return aSection.localeCompare(bSection);
-      return a.label.localeCompare(b.label);
-    });
-
+    // The guard stays with the page: a slower earlier build must not overwrite a newer list.
     if (requestId === this.optionsRequestId) {
       this.homeOptions = sortedOptions;
     }
   }
 
-  /** Resolve what "auto" currently points at (replaces the `[deps]` effect + `cancelled` flag). */
   private syncAutoSource(): void {
     const deps = {
       availableCollections: this.availableCollections,
