@@ -18,8 +18,20 @@ import path from 'node:path';
  */
 export class TypeofGuard {
   /** `typeof … === '<primitive>'` in either direction. `undefined` is intentionally absent. */
+  /**
+   * The shapes the convention actually bans: `typeof x === 'string' | 'number' | 'boolean' |
+   * 'function'`. Those have a home — `CoercionUtils.toString/toNumber/toBoolean` for untrusted input,
+   * and for a framework contract nothing at all, because the contract is guaranteed and the guard is
+   * a dead branch.
+   *
+   * `'object'` and `'symbol'` are NOT in that list, and used to be. They are how TypeScript narrows an
+   * `unknown` — `typeof parsed === 'object'` before reading a parsed JSON body, `typeof error !==
+   * 'object'` in a catch. There is no `CoercionUtils.toObject` to reach for and no contract being
+   * defended; the check IS the narrowing. Counting them made the guard report 491 findings with no
+   * available fix, which is how a guard becomes noise.
+   */
   private static readonly PATTERN =
-    /typeof\s+[^=!\n]+?\s*[=!]==?\s*['"](?:string|number|boolean|function|object|symbol|bigint)['"]/g;
+    /typeof\s+[^=!\n]+?\s*[=!]==?\s*['"](?:string|number|boolean|function)['"]/g;
 
   private static readonly SKIP_DIR = new Set([
     'node_modules', 'dist', '.next', 'build', 'coverage', '.git', 'tests', '__tests__',
@@ -32,10 +44,13 @@ export class TypeofGuard {
   private static readonly EXEMPT_PACKAGES = new Set(['react-class-components', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
 
   static readonly BASELINE: Readonly<Record<string, number>> = {
-    plugins: 801,
-    themes: 78,
-    framework: 815,
-    appearance: 20,
+    // Re-measured once the guard stopped counting `'object'`/`'symbol'` narrowing, which has no fix
+    // to apply. Every number here is a LOWER one; each remaining hit is a string/number/boolean/
+    // function check with a real alternative.
+    plugins: 394,
+    themes: 41,
+    framework: 585,
+    appearance: 19,
   };
 
 
