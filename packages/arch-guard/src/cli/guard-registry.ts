@@ -10,6 +10,7 @@ import { BlockFieldConformanceCommand } from './block-field-conformance-command'
 import { DependencyOverridesCommand } from './dependency-overrides-command';
 import { DialectSqlConfinementCommand } from './dialect-sql-confinement-command';
 import { DbFindWhereCommand } from './db-find-where-command';
+import { ReExportCommand } from './re-export-command';
 import { RequestCoercionCommand } from './request-coercion-command';
 import { ImportsCommand } from './imports-command';
 import { InterfacePrefixCommand } from './interface-prefix-command';
@@ -20,6 +21,7 @@ import { PluginRawSqlCommand } from './plugin-raw-sql-command';
 import { PluginUiHookfreeCommand } from './plugin-ui-hookfree-command';
 import { PluginUiTypesCommand } from './plugin-ui-types-command';
 import { McpToolSchemaCommand } from './mcp-tool-schema-command';
+import { OneContractPerFileCommand } from './one-contract-per-file-command';
 import { SdkBoundaryCommand } from './sdk-boundary-command';
 import { SrcArtifactsCommand } from './src-artifacts-command';
 import { ThemeOverrideBoundaryCommand } from './theme-override-boundary-command';
@@ -54,12 +56,14 @@ export class GuardRegistry {
     ['block-field-conformance', BlockFieldConformanceCommand],
     ['imports', ImportsCommand],
     ['interface-prefix', InterfacePrefixCommand],
+    ['one-contract-per-file', OneContractPerFileCommand],
     ['oop-guard', OopGuardCommand],
     ['plugin-alias', PluginAliasCommand],
     ['plugin-architecture', PluginArchitectureCommand],
     ['plugin-raw-sql', PluginRawSqlCommand],
     ['plugin-ui-hookfree', PluginUiHookfreeCommand],
     ['plugin-ui-types', PluginUiTypesCommand],
+    ['re-exports', ReExportCommand],
     ['request-coercion', RequestCoercionCommand],
     ['mcp-tool-schemas', McpToolSchemaCommand],
     ['sdk-boundary', SdkBoundaryCommand],

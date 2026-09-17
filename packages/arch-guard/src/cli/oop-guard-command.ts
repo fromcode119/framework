@@ -83,7 +83,7 @@ export class OopGuardCommand extends ArchorCommand {
   }
 
   /**
-   * The three ratcheted buckets, printed per area. Returns the areas that are ABOVE their baseline —
+   * The ratcheted buckets, printed per area. Returns the areas that are ABOVE their baseline —
    * a non-empty result is what fails the build in error mode.
    */
   private static ratchets(perPackage: Map<string, any>): string[] {
@@ -91,6 +91,8 @@ export class OopGuardCommand extends ArchorCommand {
       ['violations', 'Violations per area', OopGuardBaselines.VIOLATION_BASELINE, ''],
       ['moduleDecl', 'Module-level declarations per area', OopGuardBaselines.MODULE_DECL_BASELINE, ' moduleDecl'],
       ['typesFile', '*.types.ts bags per area', OopGuardBaselines.TYPES_FILE_BASELINE, ' typesFile'],
+      ['typeAlias', 'export type aliases per area', OopGuardBaselines.TYPE_ALIAS_BASELINE, ' typeAlias'],
+      ['exportDebt', 'module-level export const/function per area', OopGuardBaselines.EXPORT_DEBT_BASELINE, ' exportDebt'],
     ];
     const overBaseline: string[] = [];
     const repoRoot = FrameworkRoot.repo();

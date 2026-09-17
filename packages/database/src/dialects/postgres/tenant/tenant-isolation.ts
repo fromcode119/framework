@@ -1,11 +1,9 @@
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
 import { TenantColumn } from '@database/tenant/tenant-column';
-import type {
-  IScopedUniqueRules,
-  ITenantBlindUniqueRule,
-  ITenantIsolation,
-  ITenantPolicySpec,
-} from '@database/interfaces/tenant-isolation.interface';
+import type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
+import type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-unique-rule.interface';
+import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+import type { ITenantPolicySpec } from '@database/interfaces/tenant-policy-spec.interface';
 
 type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<string, unknown>>>;
 

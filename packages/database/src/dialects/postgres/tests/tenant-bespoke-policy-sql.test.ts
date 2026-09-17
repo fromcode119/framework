@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
-import type { ITenantPolicySpec } from '@database/interfaces/tenant-isolation.interface';
+import type { ITenantPolicySpec } from '@database/interfaces/tenant-policy-spec.interface';
 
 /**
  * What the driver RENDERS from a bespoke policy declaration.

@@ -66,6 +66,40 @@ export class OopGuardBaselines {
   };
 
 
+  /**
+   * `export type X = …` outside a class, per area.
+   *
+   * ZERO in the framework, and it is enforced rather than reported. It was neither for a long time:
+   * the bucket was counted, printed in the totals line, and nothing could fail on it — so a type
+   * alias could be added at any time and the only consequence was a number in a report. The files
+   * whose aliases genuinely cannot be anything else are named in LOAD_BEARING_TYPES with the reason,
+   * and are not counted here; that list is the whole allowance.
+   */
+  static readonly TYPE_ALIAS_BASELINE: Record<string, number> = {
+    framework: 0,
+    plugins: 9,
+    themes: 1,
+    appearance: 0,
+  };
+
+
+  /**
+   * `export const` / `export function` at module level, per area — a value or a behaviour that
+   * belongs to some class and was left loose.
+   *
+   * ZERO in the framework, and measured that way today, so the ratchet costs nothing to close and
+   * stops the next one. Codegen TEMPLATE strings are not counted: the scanner strips template
+   * literals first, so a scaffolded `export const slots = …` inside a backtick is the generated
+   * plugin's code, not this package's.
+   */
+  static readonly EXPORT_DEBT_BASELINE: Record<string, number> = {
+    framework: 0,
+    plugins: 6,
+    themes: 1,
+    appearance: 0,
+  };
+
+
   static readonly MODULE_DECL_BASELINE: Record<string, number> = {
     framework: 0,
     // Re-set when `isTypeLevelOnly` was retired: the bucket now counts EVERY module-level `type`, not
@@ -115,10 +149,7 @@ export class OopGuardBaselines {
     'database/src/dialects/postgres/tenant/tenant-isolation.ts',
     // `ITenantPolicySpec` is a DISCRIMINATED UNION of policy shapes, each with its own fields. A
     // single interface cannot express "one of these four"; a class cannot either.
-    'database/src/interfaces/tenant-isolation.interface.ts',
-    // `SystemSettingKey` is derived from the META_KEY map (`typeof X[keyof typeof X]`), so a new key
-    // with no descriptor is a compile error. A mapped derivation, not a declaration anyone authored.
-    'core/src/settings/system-setting-registry.ts',
+    'database/src/interfaces/tenant-policy-spec.interface.ts',
   ]);
 
 

@@ -379,7 +379,13 @@ export class OopGuard {
           bucket.defaultExport.push(`${rel}: 'export default <expression>' (generate it via next-build-codegen)`);
         }
         for (const m of codeOnly.matchAll(OopGuardPatterns.TOP_LEVEL_BINDING)) bucket.topLevel.push(`${rel}: module-level '${m[0].trim().slice(0, 40)}' (move into the class)`);
-        for (const m of codeOnly.matchAll(OopGuardPatterns.TYPE_ALIAS)) bucket.typeAlias.push(`${rel}: type alias '${m[1]}' (interface, or reactor Enum)`);
+        // LOAD_BEARING_TYPES is the exemption, and it is FILE-level and explicit: a function signature
+        // and a discriminated union are the only two things no interface, class or Enum can express,
+        // and every file holding one is named there with the reason. Everything else is enforced at
+        // zero, so a new `export type` fails the build rather than raising a number nobody reads.
+        if (!OopGuardBaselines.LOAD_BEARING_TYPES.has(rel.replace(/\\/g, '/'))) {
+          for (const m of codeOnly.matchAll(OopGuardPatterns.TYPE_ALIAS)) bucket.typeAlias.push(`${rel}: type alias '${m[1]}' (interface, or reactor Enum)`);
+        }
       }
       if (ifaces.length > 1) bucket.ifaceDebt.push(`${rel}: ${ifaces.length} interfaces in one file (split one-per-file)`);
       if (!found.length) continue;

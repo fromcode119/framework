@@ -86,8 +86,15 @@ export class PluginManagerInitService {
     // Preview grants are minutes long and the sessions they become are hours long, so the table is
     // almost always empty — but nothing else deletes a row, and a table nobody sweeps is a table that
     // grows for the life of the deployment. Hourly, because that is the granularity that matters.
+    // Once per tenant: the rows are tenant-owned, so an untenanted sweep reads an empty table under
+    // row-level security and deletes nothing — the table would grow for the life of the deployment
+    // while the timer reported success every hour.
     await manager.scheduler.register('site-preview-grant-sweep', '0 * * * *', async () => {
-      await new SitePreviewGrantService(manager.db).prune();
+      await PerTenantRun.forEach({
+        label: 'site-preview-grant-sweep',
+        db: manager.db,
+        work: async () => { await new SitePreviewGrantService(manager.db).prune(); },
+      });
     }, { type: 'cron' });
 
     // Register system collections

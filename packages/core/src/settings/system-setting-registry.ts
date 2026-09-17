@@ -3,9 +3,8 @@ import { SettingScope } from '@core/settings/enums/setting-scope.enum';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { NetworkAddressUtils } from '@core/security/network-address-utils';
 import { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
-import type { ISystemSettingDescriptor, SystemSettingKey } from '@core/settings/interfaces/system-setting-descriptor.interface';
+import type { ISystemSettingDescriptor } from '@core/settings/interfaces/system-setting-descriptor.interface';
 
-export type { ISystemSettingDescriptor, SystemSettingKey } from '@core/settings/interfaces/system-setting-descriptor.interface';
 
 /**
  * The single place a system setting's SCOPE is declared.
@@ -16,7 +15,7 @@ export type { ISystemSettingDescriptor, SystemSettingKey } from '@core/settings/
  * and `sources_workspace_root` shipped broken: the write landed under whichever tenant the request
  * carried, the platform-only reader never found it, and nothing on the page or in a log said so.
  *
- * `Record<SystemSettingKey, ISystemSettingDescriptor>` makes that specific bug a compile error: every
+ * Keying the registry by the META_KEY map's own values makes that specific bug a compile error: every
  * value `META_KEY` declares must have an entry here, or the file does not build.
  *
  * MUST NOT import `TenantMode` or `PlatformSettingsService` — scope belongs to the setting, mode
@@ -25,7 +24,7 @@ export type { ISystemSettingDescriptor, SystemSettingKey } from '@core/settings/
 export class SystemSettingRegistry {
   private static readonly KEY = SystemConstants.META_KEY;
 
-  private static readonly REGISTRY: Record<SystemSettingKey, ISystemSettingDescriptor> = {
+  private static readonly REGISTRY: Record<typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY], ISystemSettingDescriptor> = {
     [SystemSettingRegistry.KEY.EMAIL_PROFILES]: { scope: SettingScope.SITE, writable: false, exposed: false },
     [SystemSettingRegistry.KEY.EMAIL_PROVIDER]: { scope: SettingScope.SITE, writable: false, exposed: false },
     [SystemSettingRegistry.KEY.EMAIL_PLATFORM_FALLBACK]: { scope: SettingScope.SITE, writable: false, exposed: true },
@@ -310,7 +309,7 @@ export class SystemSettingRegistry {
   private static exposedKeysCache: Set<string> | null = null;
 
   /** The descriptor for a declared key. Throws for anything not in `META_KEY` — never guesses. */
-  static describe(key: SystemSettingKey): ISystemSettingDescriptor {
+  static describe(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): ISystemSettingDescriptor {
     const descriptor = SystemSettingRegistry.REGISTRY[key];
     if (!descriptor) {
       throw new Error(`SystemSettingRegistry: "${key}" is not a declared system setting.`);
@@ -318,11 +317,11 @@ export class SystemSettingRegistry {
     return descriptor;
   }
 
-  static scopeOf(key: SystemSettingKey): SettingScope {
+  static scopeOf(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): SettingScope {
     return SystemSettingRegistry.describe(key).scope;
   }
 
-  static isPlatform(key: SystemSettingKey): boolean {
+  static isPlatform(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): boolean {
     return SystemSettingRegistry.scopeOf(key).isPlatform;
   }
 
@@ -393,7 +392,7 @@ export class SystemSettingRegistry {
   }
 
   /** A single declared default, for a reader that needs it without running the seed. */
-  static defaultValueOf(key: SystemSettingKey): string {
+  static defaultValueOf(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): string {
     const seed = SystemSettingRegistry.describe(key).seed;
     if (!seed) return '';
     return typeof seed.value === 'function' ? seed.value() : seed.value;

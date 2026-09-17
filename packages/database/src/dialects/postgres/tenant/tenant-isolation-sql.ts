@@ -1,5 +1,5 @@
 import { TenantColumn } from '@database/tenant/tenant-column';
-import type { ITenantPolicySpec } from '@database/interfaces/tenant-isolation.interface';
+import type { ITenantPolicySpec } from '@database/interfaces/tenant-policy-spec.interface';
 
 /**
  * The tenant-scoping DDL, in ONE place because it is security-critical and easy to get subtly wrong.

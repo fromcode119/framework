@@ -59,7 +59,12 @@ export class SitePreviewGrantService {
     }
 
     const token = SitePreviewToken.mint();
-    await this.db.insert(SitePreviewGrantService.TABLE, {
+    // BOUND TO THE SITE BEING PREVIEWED, not to the scope the operator is standing in. A preview is
+    // minted from PLATFORM — the admin is looking at the list of sites, not standing inside one — so
+    // `app.tenant_id` is empty and the row's own `WITH CHECK (tenant_id = current tenant)` refuses
+    // it: minting failed with "new row violates row-level security policy" for every site. Naming
+    // the tenant in the VALUES is not enough; the policy compares against the CONNECTION.
+    await this.db.withTenant(site, () => this.db.insert(SitePreviewGrantService.TABLE, {
       id: randomUUID(),
       tenant_id: site,
       user_id: account,
@@ -69,7 +74,7 @@ export class SitePreviewGrantService {
       consumed_at: null,
       session_hash: null,
       session_expires_at: null,
-    });
+    }));
     return token;
   }
 

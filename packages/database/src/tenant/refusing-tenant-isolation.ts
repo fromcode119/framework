@@ -1,8 +1,6 @@
-import type {
-  IScopedUniqueRules,
-  ITenantIsolation,
-  ITenantPolicySpec,
-} from '@database/interfaces/tenant-isolation.interface';
+import type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
+import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+import type { ITenantPolicySpec } from '@database/interfaces/tenant-policy-spec.interface';
 
 /**
  * The isolation capability of a driver that has none: every method REFUSES.

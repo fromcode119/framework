@@ -29,7 +29,10 @@ export { SchemaKeyField } from '@database/schema-key-field';
 export { TenantColumn } from '@database/tenant/tenant-column';
 export { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 export type { IColumnStats } from '@database/interfaces/column-stats.interface';
-export type { ITenantIsolation, ITenantPolicySpec, ITenantBlindUniqueRule, IScopedUniqueRules } from '@database/interfaces/tenant-isolation.interface';
+export type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
+export type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-unique-rule.interface';
+export type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+export type { ITenantPolicySpec } from '@database/interfaces/tenant-policy-spec.interface';
 export { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
 // The EXECUTING halves of Postgres tenancy. `TenantIsolationSql` — the statements themselves — is
 // deliberately NOT exported: callers get behaviour, never SQL text. These two are here because
