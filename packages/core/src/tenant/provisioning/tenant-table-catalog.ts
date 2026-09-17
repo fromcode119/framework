@@ -1,3 +1,4 @@
+import { TenantColumnSource } from '@core/tenant/provisioning/enums/tenant-column-source.enum';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { NamingStrategy, PhysicalTableNameUtils, TableResolver, TenantColumn } from '@fromcode119/database';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
@@ -94,7 +95,7 @@ export class TenantTableCatalog {
     const out = new Map<string, TenantColumnReference[]>();
     for (const key of await this.db.introspection.foreignKeys(tables)) {
       const list = out.get(key.table) ?? [];
-      list.push(new TenantColumnReference(key.table, key.column, key.targetTable, 'fk'));
+      list.push(new TenantColumnReference(key.table, key.column, key.targetTable, TenantColumnSource.FK));
       out.set(key.table, list);
     }
     return out;
@@ -127,14 +128,14 @@ export class TenantTableCatalog {
           if (!field.relationTo || Array.isArray(field.relationTo)) continue; // polymorphic: no single target to resolve
           const target = TenantTableCatalog.resolveTarget(String(field.relationTo), pluginSlug, columns);
           if (!target) continue;
-          TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, 'schema', [], !!field.hasMany, !!field.required));
+          TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, TenantColumnSource.SCHEMA, [], !!field.hasMany, !!field.required));
           continue;
         }
         if ((type === FieldType.ARRAY || type === FieldType.GROUP) && field.fields) {
           for (const nested of TenantTableCatalog.collectNestedReferences(field.fields, [])) {
             const target = TenantTableCatalog.resolveTarget(nested.relationTo, pluginSlug, columns);
             if (!target) continue;
-            TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, 'schema', nested.path, nested.hasMany, nested.required));
+            TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, TenantColumnSource.SCHEMA, nested.path, nested.hasMany, nested.required));
           }
         }
       }

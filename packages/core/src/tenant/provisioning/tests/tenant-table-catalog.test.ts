@@ -5,6 +5,7 @@ import type { ICollection } from '@core/collections/interfaces/collection.interf
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
 import { TenantTableCatalog } from '@core/tenant/provisioning/tenant-table-catalog';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+import { TenantColumnSource } from '@core/tenant/provisioning/enums/tenant-column-source.enum';
 
 function table(name: string, refs: Array<[string, string]> = [], types: Record<string, string> = { id: 'integer', tenant_id: 'text' }): TenantTableDescriptor {
   return new TenantTableDescriptor(name, types, true, `${name}_id_seq`, refs.map(([column, target]) => new TenantColumnReference(name, column, target, 'fk')));
@@ -55,7 +56,7 @@ describe('TenantTableCatalog.describe — schema-declared references', () => {
     expect(ref.path).toEqual([]);
     expect(ref.hasMany).toBe(true);
     expect(ref.targetTable).toBe('fcp_widgets_items');
-    expect(ref.source).toBe('schema');
+    expect(ref.source).toBe(TenantColumnSource.SCHEMA);
   });
 
   it('descends into an array field to find a relationship sub-field, carrying the path and required flag', async () => {

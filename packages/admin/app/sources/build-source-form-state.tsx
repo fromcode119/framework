@@ -55,7 +55,7 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
       // The SAME ternary that put an appearance in the dialog as a Plugin, in the other place it
       // was written. Now that the kind is half of which source this is, reading it wrong here would
       // no longer be a wrong label — it would address a different source.
-      type: String(ExtensionScope.find(build?.type)?.value ?? ExtensionScope.PLUGIN.value) as IBuildSourceFormValues['type'],
+      type: String(ExtensionScope.find(build?.type)?.value ?? ExtensionScope.PLUGIN.value),
     };
   }
 

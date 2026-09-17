@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TenantIdRemap } from '@core/tenant/provisioning/tenant-id-remap';
 import { TenantArchiveManifest } from '@core/tenant/provisioning/tenant-archive-manifest';
+import { TenantArchiveKind } from '@core/tenant/provisioning/enums/tenant-archive-kind.enum';
 
 describe('TenantIdRemap', () => {
   it('leaves values alone for tables that were not remapped, and unknown ids alone within remapped ones', () => {
@@ -28,13 +29,13 @@ describe('TenantArchiveManifest.from', () => {
   });
 
   it('round-trips through toJSON', () => {
-    const manifest = new TenantArchiveManifest(1, '2026-09-05T00:00:00.000Z', '0.1.88', 'single-tenant',
+    const manifest = new TenantArchiveManifest(1, '2026-09-05T00:00:00.000Z', '0.1.88', TenantArchiveKind.SINGLE_TENANT,
       { id: 'v', slug: 'v', primaryHost: 'v.test', hostAliases: ['www.v.test'], state: 'active' },
       [{ slug: 'eta', version: '0.1.33' }], { slug: 'fromcode', version: '0.1.27', config: null },
       [{ name: 'fcp_zeta_pages', rows: 44, columns: ['id', 'title'], hasSerialId: true }], 28, { count: 19, bytes: 1000 }, []);
     const again = TenantArchiveManifest.from(JSON.parse(JSON.stringify(manifest.toJSON())));
     expect(again.tenant.slug).toBe('v');
-    expect(again.source).toBe('single-tenant');
+    expect(again.source).toBe(TenantArchiveKind.SINGLE_TENANT);
     expect(again.totalRows).toBe(44);
     expect(again.tableNames).toEqual(['fcp_zeta_pages']);
   });

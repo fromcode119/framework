@@ -1,3 +1,4 @@
+import { TenantArchiveKind } from '@core/tenant/provisioning/enums/tenant-archive-kind.enum';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 
 /**
@@ -15,7 +16,7 @@ export class TenantArchiveManifest {
     readonly formatVersion: number,
     readonly exportedAt: string,
     readonly frameworkVersion: string,
-    readonly source: 'tenant' | 'single-tenant',
+    readonly source: TenantArchiveKind,
     readonly tenant: { id: string; slug: string; primaryHost: string; hostAliases: string[]; state: string; kind: string; appearance: string },
     readonly plugins: Array<{ slug: string; version: string }>,
     readonly theme: { slug: string; version: string; config: Record<string, unknown> | null } | null,
@@ -38,7 +39,7 @@ export class TenantArchiveManifest {
       formatVersion: this.formatVersion,
       exportedAt: this.exportedAt,
       frameworkVersion: this.frameworkVersion,
-      source: this.source,
+      source: String(this.source.value),
       tenant: this.tenant,
       plugins: this.plugins,
       theme: this.theme,
@@ -59,7 +60,9 @@ export class TenantArchiveManifest {
     const tenant = input.tenant ?? {};
     const slug = CoercionUtils.toString(tenant.slug);
     if (!slug) throw new Error('Tenant archive manifest names no tenant slug.');
-    const source = input.source === 'single-tenant' ? 'single-tenant' : 'tenant';
+    // Anything the manifest does not name is a TENANT archive, which is what every archive written
+    // before this field existed was.
+    const source = TenantArchiveKind.find(input.source) ?? TenantArchiveKind.TENANT;
     return new TenantArchiveManifest(
       formatVersion,
       CoercionUtils.toString(input.exportedAt),

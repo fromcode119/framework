@@ -234,3 +234,4 @@ export { SnapshotType } from '@core/management/enums/snapshot-type.enum';
 // setting — two classes meant the admin's PATH could never equal the frontend's PATH.
 export { LocaleUrlStrategy } from '@core/enums/locale-url-strategy.enum';
 export { TwoFactorMethod } from '@core/enums/two-factor-method.enum';
+export { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-import-id-mode.enum';

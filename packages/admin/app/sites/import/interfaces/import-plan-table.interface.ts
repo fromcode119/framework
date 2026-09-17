@@ -7,7 +7,13 @@
 export interface IImportPlanTable {
   name: string;
   rows: number;
-  mode: 'preserve' | 'remap' | 'skip';
+  /**
+   * A `TenantImportIdMode` VALUE, as the plan sends it.
+   *
+   * The platform's own `TenantImportPlan` carries the same string for the same reason: the plan is
+   * JSON by the time the admin sees it. The vocabulary is owned once, by the enum.
+   */
+  mode: string;
   basis: 'noTable' | 'naturalKey' | 'empty' | 'aboveSequence' | 'belowSequence';
   minId: number | null;
   taken: number | null;

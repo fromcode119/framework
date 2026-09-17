@@ -136,16 +136,16 @@ export abstract class BuildSourceFormRemote extends BuildSourceFormState {
    * comes from `BuildSourceType`, so a kind the platform can build is a kind this form can show,
    * without a fourth copy to keep in step.
    */
-  protected declaredType(declared: unknown): IBuildSourceFormValues['type'] {
+  protected declaredType(declared: unknown): string {
     // `find` returns null for a kind this build does not know, rather than quietly calling it a
     // plugin — which is precisely what the ternary it replaces did to every appearance.
     const scope = ExtensionScope.find(declared);
-    if (scope) return String(scope.value) as IBuildSourceFormValues['type'];
+    if (scope) return String(scope.value);
 
     // The server may know a kind this admin does not; trust its list before falling back.
     const value = String(declared ?? '').trim();
     const served = this.state.types.some((entry) => entry.value === value);
-    return (served ? value : 'plugin') as IBuildSourceFormValues['type'];
+    return served ? value : String(ExtensionScope.PLUGIN.value);
   }
 
   protected onBranchChange(branch: string): void {

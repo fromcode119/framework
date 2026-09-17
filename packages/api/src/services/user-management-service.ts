@@ -3,6 +3,7 @@ import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode, TenantMembershipService } from '@fromcode119/core';
+import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { SystemConstants } from '@fromcode119/core';
 import { RoleManagementService } from '@api/services/role-management-service';
 
@@ -68,7 +69,7 @@ export class UserManagementService {
       return {
         ...safeUser,
         roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
-        accountStatus,
+        accountStatus: String(accountStatus.value),
         forcePasswordReset
       };
     }));
@@ -90,7 +91,7 @@ export class UserManagementService {
     return {
       ...safeUser,
       roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
-      accountStatus,
+      accountStatus: String(accountStatus.value),
       forcePasswordReset
     };
   }
@@ -126,11 +127,12 @@ export class UserManagementService {
       userId = newUser.id;
     }
 
-    if (typeof data.accountStatus === 'string') {
-      const status = String(data.accountStatus).trim().toLowerCase() === 'suspended' ? 'suspended' : 'active';
-      await this.upsertMeta(`user:${userId}:account_status`, status);
+    // `undefined` means "not being changed"; anything else is an operator's choice, resolved by the
+    // enum rather than compared to a literal here.
+    if (data.accountStatus !== undefined) {
+      await this.upsertMeta(`user:${userId}:account_status`, String(AccountStatus.resolve(data.accountStatus).value));
     } else if (!id) {
-      await this.upsertMeta(`user:${userId}:account_status`, 'active');
+      await this.upsertMeta(`user:${userId}:account_status`, String(AccountStatus.ACTIVE.value));
     }
     if (typeof data.forcePasswordReset === 'boolean') {
       await this.upsertMeta(`user:${userId}:force_password_reset`, data.forcePasswordReset ? 'true' : 'false');
@@ -263,10 +265,17 @@ export class UserManagementService {
     });
   }
 
-  private async readAccountStatus(userId: number): Promise<'active' | 'suspended'> {
+  /**
+   * The stored account status, as the ENUM the auth controllers already write and compare.
+   *
+   * This used to be an inline `'active' | 'suspended'` with its own defaulting, which is
+   * `AccountStatus.resolve` spelled out a second time — for the same meta key the auth chain reads.
+   * Two copies of "what does an unreadable value mean" is one copy too many when the answer decides
+   * whether somebody may sign in.
+   */
+  private async readAccountStatus(userId: number): Promise<AccountStatus> {
     const row = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:account_status` });
-    const value = String(row?.value || '').trim().toLowerCase();
-    return value === 'suspended' ? 'suspended' : 'active';
+    return AccountStatus.resolve(row?.value);
   }
 
   private async readForcePasswordReset(userId: number): Promise<boolean> {

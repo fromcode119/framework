@@ -3,6 +3,7 @@ import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { TenantImportIdMode } from '@fromcode119/core/client';
 
 
 /**
@@ -96,9 +97,9 @@ export class ImportPlanView extends PureReactor {
     const byRows = (a: IImportPlanTable, b: IImportPlanTable) => b.rows - a.rows;
     const empty = all.filter((t) => t.rows === 0);
     const withRows = all.filter((t) => t.rows > 0);
-    const skipped = withRows.filter((t) => t.mode === 'skip').sort(byRows);
-    const remapped = withRows.filter((t) => t.mode === 'remap').sort(byRows);
-    const kept = withRows.filter((t) => t.mode === 'preserve').sort(byRows);
+    const skipped = withRows.filter((t) => t.mode === String(TenantImportIdMode.SKIP.value)).sort(byRows);
+    const remapped = withRows.filter((t) => t.mode === String(TenantImportIdMode.REMAP.value)).sort(byRows);
+    const kept = withRows.filter((t) => t.mode === String(TenantImportIdMode.PRESERVE.value)).sort(byRows);
     const skippedRows = skipped.reduce((sum, t) => sum + t.rows, 0);
 
     return (

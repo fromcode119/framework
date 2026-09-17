@@ -1,3 +1,4 @@
+import { TenantArchiveKind } from '@core/tenant/provisioning/enums/tenant-archive-kind.enum';
 import type { IDatabaseManager } from '@fromcode119/database';
 
 /**
@@ -15,7 +16,7 @@ import type { IDatabaseManager } from '@fromcode119/database';
 export class TenantArchiveSource {
   private constructor(
     readonly db: IDatabaseManager,
-    readonly kind: 'tenant' | 'single-tenant',
+    readonly kind: TenantArchiveKind,
     readonly tenantId: string | null,
     readonly uploadsDir: string,
   ) {}
@@ -23,15 +24,15 @@ export class TenantArchiveSource {
   static tenant(db: IDatabaseManager, tenantId: string, uploadsDir: string): TenantArchiveSource {
     const id = String(tenantId ?? '').trim();
     if (!id) throw new Error('TenantArchiveSource.tenant: empty tenant id.');
-    return new TenantArchiveSource(db, 'tenant', id, uploadsDir);
+    return new TenantArchiveSource(db, TenantArchiveKind.TENANT, id, uploadsDir);
   }
 
   static singleTenant(db: IDatabaseManager, uploadsDir: string): TenantArchiveSource {
-    return new TenantArchiveSource(db, 'single-tenant', null, uploadsDir);
+    return new TenantArchiveSource(db, TenantArchiveKind.SINGLE_TENANT, null, uploadsDir);
   }
 
   get isTenant(): boolean {
-    return this.kind === 'tenant';
+    return this.kind === TenantArchiveKind.TENANT;
   }
 
   /** Runs `fn` under the tenant's row-level-security scope when there is a tenant; plainly otherwise. */
