@@ -40,8 +40,19 @@ export class ThemeCommands {
 
           console.log(chalk.green(`\nCreating theme "${themeName}" in ${themePath}...`));
 
+          // A theme ships NO hand-written entry file. `ThemeEntryGenerator.resolveEntry` GENERATES
+          // `src/theme-entry.generated.jsx` from theme.json's "build" block (styles/components/
+          // eagerComponents globs) unless the theme hand-authors `src/index.jsx` — which this scaffold
+          // does not, so it declares its glob patterns instead. The generated entry hands its component
+          // maps to the boot class named in "build.boot" (default `@theme/theme-boot` → `ThemeBoot`),
+          // so the one file this scaffold DOES write by hand is `src/theme-boot.ts`.
           await fs.ensureDir(themePath);
-          await fs.ensureDir(path.join(themePath, 'ui/layouts'));
+          await fs.ensureDir(path.join(themePath, 'src/styles'));
+
+          const colors = {
+            primary: '#3b82f6',
+            secondary: '#10b981',
+          };
 
           const themeJson = {
             slug,
@@ -50,29 +61,52 @@ export class ThemeCommands {
             description: `Custom theme ${themeName}`,
             author: 'Me',
             screenshot: 'screenshot.png',
-            config: {
-              colors: {
-                primary: '#3b82f6',
-                secondary: '#10b981'
-              }
-            }
+            config: { colors },
+            // `ui.entry`/`ui.css` are the BUILD OUTPUT the Vite theme build emits — `bundle.js` and
+            // `<slug>-theme.css` (see `ThemeViteConfig`'s asset naming). Declared here so the admin can
+            // resolve them once the theme is built; nothing on disk yet.
+            ui: {
+              entry: 'bundle.js',
+              css: [`${slug}-theme.css`],
+            },
+            // Glob patterns `ThemeEntryGenerator` reads to generate the Vite entry. Empty until this
+            // theme declares real layouts/block renderers — an empty scaffold ships no invented ones.
+            build: {
+              styles: ['./styles/*.css'],
+              components: [],
+              eagerComponents: [],
+            },
+            // No third-party UI library declared yet, so no chunk to split out — everything unclaimed
+            // lands in the generic `vendor` chunk (see `ThemeViteConfig`). Add an entry here (and to this
+            // theme's own package.json `dependencies`) once one is.
+            vendorChunks: {},
           };
 
           await fs.writeJson(path.join(themePath, 'theme.json'), themeJson, { spaces: 2 });
 
-          await fs.writeFile(path.join(themePath, 'ui/theme.css'), `
+          await fs.writeFile(path.join(themePath, 'src/styles/theme.css'), `
 :root {
-  --primary: ${themeJson.config.colors.primary};
-  --secondary: ${themeJson.config.colors.secondary};
+  --primary: ${colors.primary};
+  --secondary: ${colors.secondary};
 }
 `.trim() + '\n');
 
-          await fs.writeFile(path.join(themePath, 'ui/index.ts'), `
-import '@cli/commands/theme.css';
-
-export const init = () => {
-  console.log('[Theme: ${slug}] Initialized');
-};
+          await fs.writeFile(path.join(themePath, 'src/theme-boot.ts'), `
+/**
+ * Everything this theme does when it boots. The generated entry (\`theme-entry.generated.jsx\`) hands in
+ * the component maps built from theme.json's "build.components" / "build.eagerComponents" globs — both
+ * empty until this theme declares real layouts or block renderers there.
+ */
+export class ThemeBoot {
+  static start(renderers: Record<string, () => Promise<unknown>>, eagerRenderers: Record<string, unknown>): void {
+    // Nothing declared yet. Once "build" lists layout/renderer globs, register them here — e.g.
+    // \`ThemeOverrideRegistrar.registerThemeBlockRenderers('${slug}', { ...renderers, ...eagerRenderers }, '${slug}.')\`
+    // for CMS block renderers, and \`ContextBridge.registerTheme('${slug}', { layouts, defaultLayout })\`
+    // once real layout components exist (see \`themes/fromcode/src/theme-boot.ts\` for a worked example).
+    void renderers;
+    void eagerRenderers;
+  }
+}
 `.trim() + '\n');
 
           console.log(chalk.green('\nTheme scaffolded successfully!'));
