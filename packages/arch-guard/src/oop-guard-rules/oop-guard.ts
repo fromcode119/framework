@@ -255,7 +255,14 @@ export class OopGuard {
       // reported as a warning, not a violation — the same standing the old hand-written shims had, but
       // structural (grep-able, self-maintaining) instead of a hand-kept path allowlist.
       const isReactorBridge = /class\s+\w+\s+extends\s+Bridge\b/.test(src);
-      if (OopGuardPatterns.REACT_IMPORT.test(src)) found.push(`${rel}: non-type import from 'react'`);
+      // A KEYED FRAGMENT is irreducible: `<>…</>` cannot carry a `key`, so a fragment inside a
+      // `.map()` has to name React's `Fragment`, and nothing re-exports it. Recognised STRUCTURALLY
+      // — the import brings in Fragment and nothing else, and the file really does use it keyed —
+      // for the same reason `Bridge` is: a path allowlist would have to name the repositories that
+      // happen to do this today, and the framework names no extension.
+      const isKeyedFragmentOnly = /^\s*import\s*\{\s*Fragment\s*,?\s*\}\s*from\s*['"]react['"]/m.test(src)
+        && /<Fragment\s+key=/.test(src);
+      if (OopGuardPatterns.REACT_IMPORT.test(src) && !isKeyedFragmentOnly) found.push(`${rel}: non-type import from 'react'`);
       if (OopGuardPatterns.BUILTIN_HOOK.test(src)) found.push(`${rel}: React hook call`);
       else if (file.endsWith('.tsx') && OopGuardPatterns.CUSTOM_HOOK.test(src)) found.push(`${rel}: custom hook invocation (use<X>())`);
       if (OopGuardPatterns.RAW_REACT.test(src)) found.push(`${rel}: raw React escape hatch (createElement/forwardRef/createContext/memo/…)`);

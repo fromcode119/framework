@@ -177,12 +177,6 @@ export class OopGuardBaselines {
     // These call React 19's `cache()` for per-request memoization. `cache` is a runtime VALUE, so it MUST stay a
     // value import — type-ifying it erased it at runtime and broke `next build`
     // ("ReferenceError: cache is not defined"). Not a migration gap.
-    // KEYED FRAGMENTS — irreducible. `<>…</>` cannot take a `key`, so a fragment inside a `.map()` must
-    // name React's `Fragment`, and neither `@fromcode119/react` nor the SDK re-exports it. Both files
-    // use it exactly once, as `<Fragment key={…}>`.
-    '../../../themes/fromcode/src/cms/renderers/blocks/fcs-technologies.tsx',
-    '../../../themes/vselenskiportal88/src/components/pages/vision-board/vision-board-page.tsx',
-
     'frontend/lib/dynamic-page-resolver.ts',
     'frontend/lib/frontend-config-cache.ts',
     'frontend/lib/frontend-public-settings.ts',
