@@ -1,4 +1,4 @@
-import { CoercionUtils, EnvUtils, NetworkAddressUtils, SystemConstants, SystemSettingRegistry } from '@fromcode119/core';
+import { CloudflareEdgeProvider, CoercionUtils, EnvUtils, NetworkAddressUtils, SystemConstants, SystemSettingRegistry } from '@fromcode119/core';
 
 /**
  * Single resolution point for the rate-limit budgets.
@@ -28,6 +28,15 @@ export class RateLimitSettingsUtils {
   static readonly DEFAULT_EDGE_PROVIDER_RANGES = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_EDGE_PROVIDER_RANGES);
   /** Length of the counting window, in milliseconds. */
   static readonly DEFAULT_WINDOW_MS = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_WINDOW);
+
+  /**
+   * The `_system_meta` key this setting lived under before it became provider-generic. Referenced
+   * ONLY here, as a fixed historical fact about data that may already be on disk — not a live
+   * dependency on Cloudflare. An operator who had extended the old key must not have that extension
+   * silently vanish just because the setting was renamed; the legacy row is the only thing that can
+   * still find it. See `resolveNetworkEdgeRanges`.
+   */
+  private static readonly LEGACY_CLOUDFLARE_EDGE_RANGES_KEY = 'rate_limit_cloudflare_edge_ranges';
 
   private static readonly ENV_MAX_REQUESTS = 'RATE_LIMIT_MAX';
   private static readonly ENV_MAX_REQUESTS_AUTHENTICATED = 'RATE_LIMIT_MAX_AUTHENTICATED';
@@ -103,11 +112,26 @@ export class RateLimitSettingsUtils {
    * provider, which does not translate to a single flat env var. The DB-backed setting (editable without
    * a deploy) plus the code-level seed already cover "extend without a deploy" and "safe out of the box",
    * so the env-var layer is intentionally dropped here rather than carried forward as a mismatched shape.
+   *
+   * READ-TIME MIGRATION for the rename off the old Cloudflare-only key: when the new key was never
+   * saved but the OLD one was, the old value is the operator's extension of Cloudflare's ranges
+   * specifically (that setting never held anything else), so it becomes this provider's extra ranges
+   * rather than being silently discarded in favour of the hardcoded seed. A value already saved under
+   * the new key always wins — this only fires for a deployment that has not been touched since the
+   * rename. The old row itself is left in place; nothing here deletes it.
    */
   static resolveNetworkEdgeRanges(settingsCache?: Map<string, string>): Readonly<Record<string, readonly string[]>> {
     const stored = settingsCache?.get(SystemConstants.META_KEY.RATE_LIMIT_EDGE_PROVIDER_RANGES);
-    const raw = stored === undefined ? RateLimitSettingsUtils.DEFAULT_EDGE_PROVIDER_RANGES : CoercionUtils.toString(stored);
-    return RateLimitSettingsUtils.parseEdgeProviderRanges(raw);
+    if (stored !== undefined) {
+      return RateLimitSettingsUtils.parseEdgeProviderRanges(CoercionUtils.toString(stored));
+    }
+
+    const legacy = settingsCache?.get(RateLimitSettingsUtils.LEGACY_CLOUDFLARE_EDGE_RANGES_KEY);
+    if (legacy !== undefined) {
+      return { [CloudflareEdgeProvider.KEY]: NetworkAddressUtils.parseList(CoercionUtils.toString(legacy)) };
+    }
+
+    return RateLimitSettingsUtils.parseEdgeProviderRanges(RateLimitSettingsUtils.DEFAULT_EDGE_PROVIDER_RANGES);
   }
 
   /** Safely parse the stored/default JSON blob into the provider-keyed ranges map. Malformed input matches nothing. */
