@@ -5,6 +5,7 @@ import type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-u
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import type { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
 import type { ISqlRunner } from '@database/interfaces/sql-runner.interface';
+import { PostgresTenantPolicyRenderer } from '@database/dialects/postgres/tenant/postgres-tenant-policy-renderer';
 
 
 /**
@@ -45,7 +46,7 @@ export class PostgresTenantIsolation implements ITenantIsolation {
   }
 
   async applyPolicy(spec: TenantPolicySpec): Promise<void> {
-    await this.runAll(TenantIsolationSql.bespokePolicyStatements(spec));
+    await this.runAll(spec.render(new PostgresTenantPolicyRenderer()));
   }
 
   async scopeUniqueRules(table: string): Promise<IScopedUniqueRules> {

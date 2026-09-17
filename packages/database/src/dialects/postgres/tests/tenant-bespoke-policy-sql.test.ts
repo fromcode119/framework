@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
+import { PostgresTenantPolicyRenderer } from '@database/dialects/postgres/tenant/postgres-tenant-policy-renderer';
 import { JournalPolicySpec } from '@database/tenant/policies/journal-policy-spec';
 import { PlatformKeysVisiblePolicySpec } from '@database/tenant/policies/platform-keys-visible-policy-spec';
 import { SharedReadPolicySpec } from '@database/tenant/policies/shared-read-policy-spec';
@@ -14,8 +14,8 @@ import type { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-s
  * they did too — every one of them is preserved, because each is a rule that was got wrong once.
  * Core's own test now asserts the declarations (`tenant-bespoke-policies.test.ts`).
  */
-describe('TenantIsolationSql.bespokePolicyStatements', () => {
-  const render = (spec: TenantPolicySpec) => TenantIsolationSql.bespokePolicyStatements(spec);
+describe('bespoke tenant policies, as Postgres DDL', () => {
+  const render = (spec: TenantPolicySpec) => spec.render(new PostgresTenantPolicyRenderer());
   const sqlFor = (spec: TenantPolicySpec) => render(spec).join('\n');
 
   const MEDIA = new SharedReadPolicySpec('media', 'shared');
