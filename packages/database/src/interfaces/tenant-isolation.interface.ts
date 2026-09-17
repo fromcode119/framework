@@ -1,4 +1,4 @@
-import type { ITenantPolicySpec } from '@database/interfaces/tenant-policy-spec.interface';
+import type { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
 import type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
 
 /**
@@ -50,7 +50,7 @@ export interface ITenantIsolation {
   listPolicies(): Promise<Array<{ table: string; policy: string }>>;
 
   /** Applies one policy the generic rule cannot express. Idempotent. */
-  applyPolicy(spec: ITenantPolicySpec): Promise<void>;
+  applyPolicy(spec: TenantPolicySpec): Promise<void>;
 
   /**
    * Rewrites every tenant-blind UNIQUE constraint and stand-alone unique index on `table` to

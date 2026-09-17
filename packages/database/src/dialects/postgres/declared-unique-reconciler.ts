@@ -1,7 +1,7 @@
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
 import { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
+import type { ISqlRunner } from '@database/interfaces/sql-runner.interface';
 
-type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<string, unknown>>>;
 
 /**
  * Creates a UNIQUE that a field DECLARES but the table does not carry.
@@ -18,7 +18,7 @@ type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<stri
  * up identical to one that came from CREATE TABLE, tenancy included.
  */
 export class PostgresDeclaredUniqueReconciler {
-  constructor(private readonly run: SqlRunner) {}
+  constructor(private readonly run: ISqlRunner) {}
 
   /**
    * Adds the constraint, or reports why it did not.

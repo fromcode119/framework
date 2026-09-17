@@ -131,26 +131,28 @@ export class OopGuardBaselines {
    * (recursive) interface — see `ICollectionInput` / `IFieldInput`.
    */
   /**
-   * Declarations that genuinely cannot live inside a class, and are therefore not debt.
+   * EMPTY, and that is the finding.
    *
-   * The convention allows exactly two shapes to stay a `type`: a FUNCTION-TYPE alias, and a
-   * derivation (`Pick`, a mapped type, a union of object shapes). Neither can be expressed as a class
-   * or as one interface, and TypeScript has no way to write them inside a class body. Everything else
-   * — a data record, a closed string union — has a home: a class, an interface, or a reactor `Enum`.
+   * This list held the declarations said to be impossible to express any other way, and both claims
+   * in it were wrong:
    *
-   * Each entry names WHY, so this cannot quietly become the baseline it replaced.
+   *   `type SqlRunner = (text, values?) => Promise<Row[]>` — "a function-type alias is the canonical
+   *   survivor". An interface holds a CALL SIGNATURE, so it was never a survivor; it was also copied
+   *   verbatim into four files, which is the duplicate-declaration defect this codebase bans
+   *   everywhere else. It is now one `ISqlRunner` interface.
+   *
+   *   `ITenantPolicySpec` — "a DISCRIMINATED UNION ... a class cannot either". A class hierarchy plus
+   *   a renderer interface expresses it, and expresses it better: with the union, exhaustiveness
+   *   needed a `never` check somebody had to remember to write, while a missing renderer method is
+   *   now a compile error nobody can skip.
+   *
+   * The lesson is not about these two entries. An allowlist whose entries each carry a confident
+   * reason is indistinguishable from a real exemption until somebody tries to empty it, and until
+   * then it makes the guard report zero while the thing it forbids is still in the tree. Adding an
+   * entry here is claiming no class, interface or reactor `Enum` can express a declaration — check
+   * that by writing the alternative, not by arguing it.
    */
-  static readonly LOAD_BEARING_TYPES: ReadonlySet<string> = new Set<string>([
-    // `type SqlRunner = (text, values?) => Promise<Row[]>` — the function these classes are
-    // constructed with. A function-type alias is the canonical survivor.
-    'database/src/dialects/postgres/column-inspector.ts',
-    'database/src/dialects/postgres/declared-nullability-reconciler.ts',
-    'database/src/dialects/postgres/declared-unique-reconciler.ts',
-    'database/src/dialects/postgres/tenant/tenant-isolation.ts',
-    // `ITenantPolicySpec` is a DISCRIMINATED UNION of policy shapes, each with its own fields. A
-    // single interface cannot express "one of these four"; a class cannot either.
-    'database/src/interfaces/tenant-policy-spec.interface.ts',
-  ]);
+  static readonly LOAD_BEARING_TYPES: ReadonlySet<string> = new Set<string>();
 
 
   /**

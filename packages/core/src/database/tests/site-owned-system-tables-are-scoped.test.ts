@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
+import { JournalPolicySpec, PlatformKeysVisiblePolicySpec, SharedReadPolicySpec, TenantSettingsPolicySpec, UnownedReadPolicySpec } from '@fromcode119/database';
 
 /**
  * The remaining `_system_*` tables that hold one site's own information.
@@ -55,8 +56,8 @@ describe('site-owned system tables are tenant content', () => {
    */
   it('scopes the inbox as a journal, so untenanted rows stay readable in the platform scope', () => {
     expect(TenantBespokePolicies.tables()).toContain(SystemConstants.TABLE.NOTIFICATIONS);
-    expect(TenantBespokePolicies.specs().find((s) => s.table === SystemConstants.TABLE.NOTIFICATIONS)?.kind)
-      .toBe('journal');
+    expect(TenantBespokePolicies.specs().find((s) => s.table === SystemConstants.TABLE.NOTIFICATIONS))
+      .toBeInstanceOf(JournalPolicySpec);
     // The generic sweep must skip exactly the bespoke tables, so it must NOT also claim this one.
     expect(TenantScopedTables.isTenantScoped(SystemConstants.TABLE.NOTIFICATIONS)).toBe(false);
   });
@@ -72,7 +73,7 @@ describe('site-owned system tables are tenant content', () => {
   it('scopes the do-not-email list so an unowned suppression still applies', () => {
     const table = SystemConstants.TABLE.EMAIL_SUPPRESSIONS;
     expect(TenantBespokePolicies.tables()).toContain(table);
-    expect(TenantBespokePolicies.specs().find((s) => s.table === table)?.kind).toBe('unowned-read');
+    expect(TenantBespokePolicies.specs().find((s) => s.table === table)).toBeInstanceOf(UnownedReadPolicySpec);
     // The generic sweep must skip exactly the bespoke tables.
     expect(TenantScopedTables.isTenantScoped(table)).toBe(false);
   });

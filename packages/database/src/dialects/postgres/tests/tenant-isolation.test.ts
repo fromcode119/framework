@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tenant-isolation';
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
 import { RefusingTenantIsolation } from '@database/tenant/refusing-tenant-isolation';
+import { SharedReadPolicySpec } from '@database/tenant/policies/shared-read-policy-spec';
 
 /**
  * The executing half. The statements themselves are asserted in `tenant-isolation-sql.test.ts`;
@@ -110,7 +111,7 @@ describe('RefusingTenantIsolation', () => {
     await expect(refusing.listPolicies()).rejects.toThrow(/no tenant isolation/);
     await expect(refusing.scopeUniqueRules('pages')).rejects.toThrow(/no tenant isolation/);
     await expect(refusing.countUnassigned('pages')).rejects.toThrow(/no tenant isolation/);
-    await expect(refusing.applyPolicy({ table: 'media', kind: 'shared-read', sharedColumn: 'shared' }))
+    await expect(refusing.applyPolicy(new SharedReadPolicySpec('media', 'shared')))
       .rejects.toThrow(/no tenant isolation/);
   });
 

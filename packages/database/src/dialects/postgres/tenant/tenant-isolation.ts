@@ -3,9 +3,9 @@ import { TenantColumn } from '@database/tenant/tenant-column';
 import type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
 import type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-unique-rule.interface';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
-import type { ITenantPolicySpec } from '@database/interfaces/tenant-policy-spec.interface';
+import type { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
+import type { ISqlRunner } from '@database/interfaces/sql-runner.interface';
 
-type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<string, unknown>>>;
 
 /**
  * Tenant isolation as Postgres implements it: row-level security.
@@ -16,7 +16,7 @@ type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<stri
  * issues therefore lands exactly where the same statement landed before this class existed.
  */
 export class PostgresTenantIsolation implements ITenantIsolation {
-  constructor(private readonly run: SqlRunner) {}
+  constructor(private readonly run: ISqlRunner) {}
 
   async addTenantColumn(table: string): Promise<void> {
     await this.runAll(TenantIsolationSql.columnStatementsFor(table));
@@ -44,7 +44,7 @@ export class PostgresTenantIsolation implements ITenantIsolation {
       .filter((entry) => entry.table !== '' && entry.policy !== '');
   }
 
-  async applyPolicy(spec: ITenantPolicySpec): Promise<void> {
+  async applyPolicy(spec: TenantPolicySpec): Promise<void> {
     await this.runAll(TenantIsolationSql.bespokePolicyStatements(spec));
   }
 

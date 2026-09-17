@@ -1,5 +1,6 @@
 import { TenantColumn } from '@database/tenant/tenant-column';
-import type { ITenantPolicySpec } from '@database/interfaces/tenant-policy-spec.interface';
+import { PostgresTenantPolicyRenderer } from '@database/dialects/postgres/tenant/postgres-tenant-policy-renderer';
+import { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
 
 /**
  * The tenant-scoping DDL, in ONE place because it is security-critical and easy to get subtly wrong.
@@ -242,23 +243,11 @@ export class TenantIsolationSql {
   /**
    * Renders one policy the generic rule cannot express.
    *
-   * The caller declares the MEANING (`ITenantPolicySpec`); every `CREATE POLICY` below is written
-   * here, where the rest of the Postgres tenancy SQL lives. These were previously built in core,
-   * which is how `CREATE POLICY` text ended up outside the dialect that owns it.
+   * The spec picks its own renderer method, so there is no `switch` here to forget a kind in. The
+   * per-kind SQL lives in the private statement builders below.
    */
-  static bespokePolicyStatements(spec: ITenantPolicySpec): string[] {
-    switch (spec.kind) {
-      case 'shared-read':
-        return TenantIsolationSql.sharedReadStatements(spec.table, spec.sharedColumn);
-      case 'platform-keys-visible':
-        return TenantIsolationSql.platformKeysVisibleStatements(spec.table, spec.keyColumn, spec.platformKeys);
-      case 'journal':
-        return TenantIsolationSql.journalStatements(spec.table);
-      case 'tenant-settings':
-        return TenantIsolationSql.tenantSettingsStatements(spec.table);
-      case 'unowned-read':
-        return TenantIsolationSql.unownedReadStatements(spec.table);
-    }
+  static bespokePolicyStatements(spec: TenantPolicySpec): string[] {
+    return spec.render(new PostgresTenantPolicyRenderer());
   }
 
   /**
@@ -268,7 +257,7 @@ export class TenantIsolationSql {
    * USING, so a borrower could delete another tenant's shared asset out from under them. Sharing
    * must widen READS and nothing else.
    */
-  private static sharedReadStatements(table: string, sharedColumn: string): string[] {
+  static sharedReadStatements(table: string, sharedColumn: string): string[] {
     const name = TenantIsolationSql.assertIdentifier(table);
     const shared = TenantIsolationSql.assertIdentifier(sharedColumn);
     const current = TenantIsolationSql.currentTenantExpression();
@@ -302,7 +291,7 @@ export class TenantIsolationSql {
    * NOTE the column default: new rows still stamp the current tenant, so this widens reads for the
    * rows that predate scoping WITHOUT making new rows platform-wide.
    */
-  private static unownedReadStatements(table: string): string[] {
+  static unownedReadStatements(table: string): string[] {
     const name = TenantIsolationSql.assertIdentifier(table);
     const current = TenantIsolationSql.currentTenantExpression();
     const own = `"${TenantColumn.NAME}" = ${current}`;
@@ -328,7 +317,7 @@ export class TenantIsolationSql {
    * resolves to two visible rows and `findOne(META, { key })` is unambiguous. The `IS NULL` branch
    * keeps a deployment with no tenants reading all of its own settings.
    */
-  private static platformKeysVisibleStatements(table: string, keyColumn: string, platformKeys: string[]): string[] {
+  static platformKeysVisibleStatements(table: string, keyColumn: string, platformKeys: string[]): string[] {
     const name = TenantIsolationSql.assertIdentifier(table);
     const key = TenantIsolationSql.assertIdentifier(keyColumn);
     const keys = platformKeys.map((entry) => `'${TenantIsolationSql.assertLiteral(entry)}'`).join(', ');
@@ -377,7 +366,7 @@ export class TenantIsolationSql {
    * Rows written before this policy carry NULL and stay visible only to the platform: fail-closed,
    * and an honest signal that their owner is unknown rather than a quiet leak.
    */
-  private static journalStatements(table: string): string[] {
+  static journalStatements(table: string): string[] {
     const name = TenantIsolationSql.assertIdentifier(table);
     const current = TenantIsolationSql.currentTenantExpression();
     const own = `"${TenantColumn.NAME}" = ${current}`;
@@ -396,7 +385,7 @@ export class TenantIsolationSql {
   }
 
   /** Per tenant with no shared keys: a plugin's configuration is never platform-level. */
-  private static tenantSettingsStatements(table: string): string[] {
+  static tenantSettingsStatements(table: string): string[] {
     const name = TenantIsolationSql.assertIdentifier(table);
     const current = TenantIsolationSql.currentTenantExpression();
     const own = `"${TenantColumn.NAME}" = ${current}`;

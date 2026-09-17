@@ -1,6 +1,6 @@
 import { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
+import type { ISqlRunner } from '@database/interfaces/sql-runner.interface';
 
-type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<string, unknown>>>;
 
 /**
  * Relaxes a NOT NULL that the schema no longer declares.
@@ -22,7 +22,7 @@ type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<stri
  * The primary key is never touched: its NOT NULL is structural, not a field declaration.
  */
 export class PostgresDeclaredNullabilityReconciler {
-  constructor(private readonly run: SqlRunner) {}
+  constructor(private readonly run: ISqlRunner) {}
 
   /**
    * Whether `column` on `table` is NOT NULL while the schema says it is optional, and if so, relax it.

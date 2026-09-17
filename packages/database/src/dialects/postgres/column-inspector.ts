@@ -1,6 +1,6 @@
 import type { IColumnStats } from '@database/interfaces/column-stats.interface';
+import type { ISqlRunner } from '@database/interfaces/sql-runner.interface';
 
-type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<string, unknown>>>;
 
 /**
  * Reads how much is actually IN a column, and drops one when a human has said to.
@@ -18,7 +18,7 @@ type SqlRunner = (text: string, values?: unknown[]) => Promise<Array<Record<stri
  * tenant and summing; see `SchemaReconciliationService`.
  */
 export class PostgresColumnInspector {
-  constructor(private readonly run: SqlRunner) {}
+  constructor(private readonly run: ISqlRunner) {}
 
   /**
    * Row count, non-null count, NON-EMPTY count and one sample value.
