@@ -129,6 +129,9 @@ export class OopGuardBaselines {
     // the plugin-scaffold codegen TEMPLATE strings — neither is real React usage in this file.
     'cli/src/commands/plugin-build-command-service.ts',
     'cli/src/commands/plugin-scaffold-command-service.ts',
+    // Same false positive as the two above: `React.createElement` here is inside the BROWSER_REQUIRE_SHIM
+    // string — generated code handed to a browser, not React this package calls.
+    'extension-builder/src/deps/build-toolchain.ts',
     // Irreducible Next-navigation-hook boundaries: these render a minimal function component that calls
     // useRouter/usePathname (next/navigation) — hooks with NO class API, so exactly one function boundary is
     // unavoidable (same principle as the react bridge's PluginRuntimeProvider).
@@ -148,6 +151,9 @@ export class OopGuardBaselines {
     'admin/app/services/client-layout-auth-state-hooks.ts',
     'admin/app/services/client-layout-navigation-state-hooks.ts',
     'admin/app/services/client-layout-sidebar-state-hooks.ts',
+    // Same layer and same shape as its three siblings above — it arrived later, with site selection,
+    // and was simply never added here.
+    'admin/app/services/client-layout-site-state-hooks.ts',
     'admin/components/admin-runtime-context.tsx',
     'admin/components/admin-runtime-provider.tsx',
     'admin/components/admin-runtime-provider-view.tsx',
@@ -171,6 +177,12 @@ export class OopGuardBaselines {
     // These call React 19's `cache()` for per-request memoization. `cache` is a runtime VALUE, so it MUST stay a
     // value import — type-ifying it erased it at runtime and broke `next build`
     // ("ReferenceError: cache is not defined"). Not a migration gap.
+    // KEYED FRAGMENTS — irreducible. `<>…</>` cannot take a `key`, so a fragment inside a `.map()` must
+    // name React's `Fragment`, and neither `@fromcode119/react` nor the SDK re-exports it. Both files
+    // use it exactly once, as `<Fragment key={…}>`.
+    '../../../themes/fromcode/src/cms/renderers/blocks/fcs-technologies.tsx',
+    '../../../themes/vselenskiportal88/src/components/pages/vision-board/vision-board-page.tsx',
+
     'frontend/lib/dynamic-page-resolver.ts',
     'frontend/lib/frontend-config-cache.ts',
     'frontend/lib/frontend-public-settings.ts',

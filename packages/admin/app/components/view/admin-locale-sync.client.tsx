@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from 'react';
 import { Reactor } from '@fromcode119/react-class-components';
 import { TranslationContext } from '@fromcode119/react';
