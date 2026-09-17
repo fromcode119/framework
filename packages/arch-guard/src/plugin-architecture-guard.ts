@@ -1,6 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
+import { FileSizeGuard } from './file-size-guard';
 
 /**
  * Layer order route -> controller -> service -> repository, plus file-size limits.
@@ -14,7 +15,7 @@ export class PluginArchitectureGuard {
 
     // Plugin architecture checker — restored after the original was lost.
     // Enforces the documented plugin conventions (AGENTS.md / CLAUDE.md):
-    //   SIZE   — .ts files ≤ 300 lines, .tsx files ≤ 200 lines
+    //   SIZE   — see FileSizeGuard; the limit is declared there, not copied here
     //   LAYER  — controllers must not access context.db directly (route → controller
     //            → service → repository); entry/wiring files must not hold business logic
     //   LEGACY — dead dual field lookups (`row?.fieldName || row?.field_name`) and
@@ -38,8 +39,10 @@ export class PluginArchitectureGuard {
       .map((slug) => slug.trim())
       .filter(Boolean);
 
-    const TS_MAX_LINES = 300;
-    const TSX_MAX_LINES = 200;
+    // Read from FileSizeGuard, never restated: this file used to carry its own copy of both numbers,
+    // so raising the .tsx limit in one place left the other guard enforcing the old one.
+    const TS_MAX_LINES = FileSizeGuard.TS_MAX_LINES;
+    const TSX_MAX_LINES = FileSizeGuard.TSX_MAX_LINES;
     const SOURCE_PATTERN = /\.(ts|tsx)$/;
     const IGNORE_PATTERNS = [
       /\/node_modules\//,

@@ -6,18 +6,18 @@ import { GuardScope } from './guard-scope';
 import { GuardTarget } from './guard-target';
 
 /**
- * `arch-guard file-size` — the documented `.ts` ≤ 300 / `.tsx` ≤ 200 limits, measured on every root.
+ * `arch-guard file-size` — the documented source-file limit, measured on every root.
  *
  *   arch-guard file-size              # error mode (default) — fails on ANY file over the target
  *   arch-guard file-size --list       # print the oversized files, longest first
  *   FILE_SIZE_MODE=warn arch-guard …  # report only
  */
 export class FileSizeCommand extends ArchorCommand {
-  readonly summary = 'File-size limits (.ts ≤ 300, .tsx ≤ 200) across framework, plugins, themes and appearances.';
+  readonly summary = 'File-size limits across framework, plugins, themes and appearances.';
 
 
   /**
-   * OVER TARGET (`.ts` > 300 / `.tsx` > 200). Pre-existing debt, counted 2026-09-09. LOWER as it is paid
+   * OVER TARGET. Pre-existing debt, counted 2026-09-09. LOWER as it is paid
    * off; never raise to make a build pass — a raise is the rule being deleted one number at a time.
    */
 

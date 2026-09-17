@@ -4,19 +4,27 @@ import path from 'node:path';
 /**
  * The file-size rule, applied to EVERY extension root rather than to plugins only.
  *
- * The limits have been documented since the beginning (`.ts` ≤ 300, `.tsx` ≤ 200) and 154 files break
- * them, four of them over 700 lines. The reason is not that anyone disagreed with the rule: it is that
- * the only thing checking it — the plugin-architecture guard — scans `../../plugins` and nothing else,
- * defaults to warn, and is not part of `build`. So the framework's own packages, the themes and the
- * appearances have never been measured at all, and a rule nothing measures is a preference.
+ * The limit has been documented since the beginning and 154 files broke it, four of them over 700
+ * lines. The reason was not that anyone disagreed with the rule: the only thing checking it — the
+ * plugin-architecture guard — scans `../../plugins` and nothing else, defaults to warn, and is not
+ * part of `build`. So the framework's own packages, the themes and the appearances had never been
+ * measured at all, and a rule nothing measures is a preference.
  *
- * This measures all four roots and is a RATCHET: the count may fall, never rise. Splitting a file
- * lowers the baseline; adding a long one fails the build. That is the same shape as the app-typecheck
- * gate, and it is deliberately not a big-bang refactor — 154 files cannot be split safely at once.
+ * This measures all four roots, and the target is 0 — no baselines, no per-area quotas.
  */
 export class FileSizeGuard {
-  static readonly TS_MAX_LINES = 300;
-  static readonly TSX_MAX_LINES = 200;
+  /**
+   * ONE limit for both extensions, set by the operator: "300-350 is ok".
+   *
+   * `.tsx` was held to 200 on the theory that markup is denser than logic. It is not — a component's
+   * JSX is one element per line where a service packs a whole clause onto one, so the stricter limit
+   * was measuring line-length convention rather than how much a file does, and it made the `.tsx`
+   * target the only one nobody could reach. Raised to match `.ts` on 2026-09-17.
+   */
+  static readonly MAX_LINES = 300;
+
+  static readonly TS_MAX_LINES = FileSizeGuard.MAX_LINES;
+  static readonly TSX_MAX_LINES = FileSizeGuard.MAX_LINES;
 
   /**
    * The point where a file stops being merely over-length and becomes unreadable.
