@@ -17,6 +17,8 @@ export class CloudflareEdgeProvider implements INetworkEdgeProvider {
 
   readonly key = CloudflareEdgeProvider.KEY;
   readonly trustedIpHeader = 'cf-connecting-ip';
+  /** This provider's ranges lived under this key before the generic, per-provider settings shape existed. */
+  readonly legacyRangesKey = 'rate_limit_cloudflare_edge_ranges';
 
   readonly defaultRanges: ReadonlyArray<readonly [string, number]> = [
     ['173.245.48.0', 20], ['103.21.244.0', 22], ['103.22.200.0', 22], ['103.31.4.0', 22],

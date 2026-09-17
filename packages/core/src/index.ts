@@ -171,7 +171,7 @@ export { SetupDatabaseService } from '@core/security/setup-database-service';
 export type { IBundledDatabaseTarget, ISetupDatabaseOptions } from '@core/security/setup-database-service';
 export { SetupMode } from '@core/tenant/setup-mode';
 export { SetupPhase } from '@core/tenant/enums/setup-phase.enum';
-export type { SystemSettingKey, SystemSettingDescriptor } from '@core/settings/system-setting-registry';
+export type { SystemSettingKey, ISystemSettingDescriptor } from '@core/settings/system-setting-registry';
 export { SettingScope } from '@core/settings/enums/setting-scope.enum';
 export { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';
 export { NetworkAddressUtils } from '@core/security/network-address-utils';

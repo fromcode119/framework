@@ -3,43 +3,9 @@ import { SettingScope } from '@core/settings/enums/setting-scope.enum';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { NetworkAddressUtils } from '@core/security/network-address-utils';
 import { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
-import { CloudflareEdgeProvider } from '@core/security/providers/cloudflare/cloudflare-edge-provider';
+import type { ISystemSettingDescriptor, SystemSettingKey } from '@core/settings/interfaces/system-setting-descriptor.interface';
 
-/** Every declared `_system_meta` key, derived from `META_KEY` so a new key with no descriptor here is a compile error. */
-export type SystemSettingKey = typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY];
-
-export interface SystemSettingDescriptor {
-  /**
-   * Who this setting's value is FOR — see {@link SettingScope}. Decided by WHO READS it: boot,
-   * background/cron work, and platform infrastructure (URLs, certificates, isolation, SSR, maintenance,
-   * setup, marketplace, repository, workspace root, indexing) are PLATFORM; everything else is SITE.
-   * No default — every key must say which, on purpose.
-   */
-  scope: SettingScope;
-  /** May the generic settings PUT accept this key at all? False for credential blobs and internal bookkeeping. */
-  writable: boolean;
-  /**
-   * May this row leave the server in an admin/settings response?
-   *
-   * `_system_meta` is the framework's key/value scratch space, not a settings table: alongside the
-   * operator-visible settings it holds live SMTP and gateway passwords. Exposure used to be decided
-   * by a `startsWith('integration_')` test — a PREFIX standing in for a property, which is the same
-   * shape of mistake as scope-by-omission: a credential stored under any other prefix would have
-   * been served to the admin client automatically. Declared here instead, per key.
-   */
-  exposed: boolean;
-  /**
-   * What to write when this setting has never been saved, and how to describe it.
-   *
-   * Optional on purpose: 49 of the declared keys seed a row and the rest do not, and "no seed" is a
-   * real answer — the reader falls back to its own default and no row claims otherwise. Unlike
-   * `scope`, an omission here cannot silently misfile anything.
-   *
-   * `value` may be a thunk for the few defaults that are only knowable at boot (the app URLs come
-   * from the environment). It is evaluated once, when the seed runs.
-   */
-  seed?: { value: string | (() => string); description: string; group: string };
-}
+export type { ISystemSettingDescriptor, SystemSettingKey } from '@core/settings/interfaces/system-setting-descriptor.interface';
 
 /**
  * The single place a system setting's SCOPE is declared.
@@ -50,7 +16,7 @@ export interface SystemSettingDescriptor {
  * and `sources_workspace_root` shipped broken: the write landed under whichever tenant the request
  * carried, the platform-only reader never found it, and nothing on the page or in a log said so.
  *
- * `Record<SystemSettingKey, SystemSettingDescriptor>` makes that specific bug a compile error: every
+ * `Record<SystemSettingKey, ISystemSettingDescriptor>` makes that specific bug a compile error: every
  * value `META_KEY` declares must have an entry here, or the file does not build.
  *
  * MUST NOT import `TenantMode` or `PlatformSettingsService` — scope belongs to the setting, mode
@@ -59,7 +25,7 @@ export interface SystemSettingDescriptor {
 export class SystemSettingRegistry {
   private static readonly KEY = SystemConstants.META_KEY;
 
-  private static readonly REGISTRY: Record<SystemSettingKey, SystemSettingDescriptor> = {
+  private static readonly REGISTRY: Record<SystemSettingKey, ISystemSettingDescriptor> = {
     [SystemSettingRegistry.KEY.EMAIL_PROFILES]: { scope: SettingScope.SITE, writable: false, exposed: false },
     [SystemSettingRegistry.KEY.EMAIL_PROVIDER]: { scope: SettingScope.SITE, writable: false, exposed: false },
     [SystemSettingRegistry.KEY.EMAIL_PLATFORM_FALLBACK]: { scope: SettingScope.SITE, writable: false, exposed: true },
@@ -298,9 +264,9 @@ export class SystemSettingRegistry {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: NetworkAddressUtils.PRIVATE_RANGES_TEXT, description: "Addresses/CIDR blocks that count as internal service callers (the storefront renderer, workers). Clear it and nothing is internal: every anonymous caller falls back to the public limit.", group: "security" },
     },
-    [SystemSettingRegistry.KEY.RATE_LIMIT_CLOUDFLARE_EDGE_RANGES]: {
+    [SystemSettingRegistry.KEY.RATE_LIMIT_EDGE_PROVIDER_RANGES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: NetworkEdgeProviderRegistry.rangesTextFor(new CloudflareEdgeProvider()), description: "Cloudflare's published edge IP ranges (https://www.cloudflare.com/ips/), trusted to set the CF-Connecting-IP header naming the real visitor. Seeded with the ranges built into the code; extend this if Cloudflare publishes a new range before the platform is updated. Never remove a range here to reduce trust — that requires a code change.", group: "security" },
+      seed: { value: () => SystemSettingRegistry.edgeProviderRangesDefault(), description: "Each registered edge provider's published IP ranges, trusted to set that provider's real-visitor header (e.g. Cloudflare's CF-Connecting-IP). JSON, keyed by the provider's own key (\"cloudflare\", ...). Seeded with the ranges built into the code; extend a provider's entry if it publishes a new range before the platform is updated. Never remove a range here to reduce trust — that requires a code change.", group: "security" },
     },
     [SystemSettingRegistry.KEY.RATE_LIMIT_WINDOW]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
@@ -344,7 +310,7 @@ export class SystemSettingRegistry {
   private static exposedKeysCache: Set<string> | null = null;
 
   /** The descriptor for a declared key. Throws for anything not in `META_KEY` — never guesses. */
-  static describe(key: SystemSettingKey): SystemSettingDescriptor {
+  static describe(key: SystemSettingKey): ISystemSettingDescriptor {
     const descriptor = SystemSettingRegistry.REGISTRY[key];
     if (!descriptor) {
       throw new Error(`SystemSettingRegistry: "${key}" is not a declared system setting.`);
@@ -368,7 +334,7 @@ export class SystemSettingRegistry {
    * scope MISMATCH, not to police every string that reaches the settings store.
    */
   static isDeclaredSiteScoped(key: string): boolean {
-    const descriptor = (SystemSettingRegistry.REGISTRY as Record<string, SystemSettingDescriptor>)[key];
+    const descriptor = (SystemSettingRegistry.REGISTRY as Record<string, ISystemSettingDescriptor>)[key];
     return Boolean(descriptor) && !descriptor.scope.isPlatform;
   }
 
@@ -396,6 +362,19 @@ export class SystemSettingRegistry {
     const adminUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP);
     const apiUrl = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
     return { siteUrl: frontendUrl, frontendUrl, adminUrl, apiUrl, platformDomain: ApplicationUrlUtils.derivePlatformDomain(frontendUrl, adminUrl) };
+  }
+
+  /**
+   * Every registered edge provider's published ranges, as the JSON object `resolveNetworkEdgeRanges`
+   * expects — keyed by each provider's own `key`, built by walking `NetworkEdgeProviderRegistry.ALL`
+   * rather than naming a vendor. Adding a second provider needs no change here.
+   */
+  static edgeProviderRangesDefault(): string {
+    return JSON.stringify(
+      Object.fromEntries(
+        NetworkEdgeProviderRegistry.ALL.map((provider) => [provider.key, NetworkEdgeProviderRegistry.rangesTextFor(provider)]),
+      ),
+    );
   }
 
   /** Every seeded default, resolved — the list the boot seed writes. */

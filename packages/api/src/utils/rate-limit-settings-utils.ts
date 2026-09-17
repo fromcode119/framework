@@ -1,4 +1,4 @@
-import { CloudflareEdgeProvider, CoercionUtils, EnvUtils, NetworkAddressUtils, SystemConstants, SystemSettingRegistry } from '@fromcode119/core';
+import { CoercionUtils, EnvUtils, NetworkAddressUtils, NetworkEdgeProviderRegistry, SystemConstants, SystemSettingRegistry } from '@fromcode119/core';
 
 /**
  * Single resolution point for the rate-limit budgets.
@@ -24,8 +24,8 @@ export class RateLimitSettingsUtils {
   static readonly DEFAULT_MAX_REQUESTS_INTERNAL = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL);
   /** Addresses internal services call from — loopback + RFC1918, the ranges a container network uses. */
   static readonly DEFAULT_INTERNAL_CLIENTS = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS);
-  /** Cloudflare's published edge ranges, additional to the hardcoded list `NetworkAddressUtils` ships with. */
-  static readonly DEFAULT_CLOUDFLARE_EDGE_RANGES = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_CLOUDFLARE_EDGE_RANGES);
+  /** Every registered edge provider's published ranges, JSON keyed by provider key — see `resolveNetworkEdgeRanges`. */
+  static readonly DEFAULT_EDGE_PROVIDER_RANGES = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_EDGE_PROVIDER_RANGES);
   /** Length of the counting window, in milliseconds. */
   static readonly DEFAULT_WINDOW_MS = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.RATE_LIMIT_WINDOW);
 
@@ -33,7 +33,6 @@ export class RateLimitSettingsUtils {
   private static readonly ENV_MAX_REQUESTS_AUTHENTICATED = 'RATE_LIMIT_MAX_AUTHENTICATED';
   private static readonly ENV_MAX_REQUESTS_INTERNAL = 'RATE_LIMIT_MAX_INTERNAL';
   private static readonly ENV_INTERNAL_CLIENTS = 'RATE_LIMIT_INTERNAL_CLIENTS';
-  private static readonly ENV_CLOUDFLARE_EDGE_RANGES = 'RATE_LIMIT_CLOUDFLARE_EDGE_RANGES';
   private static readonly ENV_WINDOW_MS = 'RATE_LIMIT_WINDOW_MS';
 
   /** The configured counting window in ms. */
@@ -89,33 +88,74 @@ export class RateLimitSettingsUtils {
   }
 
   /**
-   * The Cloudflare edge ranges an operator has declared, ADDITIONAL to the hardcoded default ranges
-   * `CloudflareEdgeProvider` ships with — folded into {@link resolveNetworkEdgeRanges} so a range
-   * Cloudflare publishes after this platform's code was last updated can still be trusted, without a
-   * deploy. A saved blank value means "no additions"; it does not, and cannot, shrink the hardcoded
-   * baseline.
+   * Every registered edge provider's operator-declared extra ranges, ADDITIONAL to each provider's own
+   * hardcoded default ranges — keyed by the provider's own `key`, the shape
+   * `NetworkAddressUtils.resolveClientIp`/`matchEdgeProvider` expect. A saved blank value means "no
+   * additions for any provider"; it does not, and cannot, shrink a provider's hardcoded baseline.
+   *
+   * ONE generic setting holds every provider's ranges as one JSON object (see
+   * `SystemSettingRegistry.edgeProviderRangesDefault`), built and read by walking
+   * `NetworkEdgeProviderRegistry.ALL` rather than naming a vendor — a second provider needs no new
+   * settings key, env var, or case here.
+   *
+   * No env-var override for this setting: the old single-provider setting was one comma-separated CIDR
+   * list, which an env var could reasonably hold, but this one is a JSON object across every registered
+   * provider, which does not translate to a single flat env var. The DB-backed setting (editable without
+   * a deploy) plus the code-level seed already cover "extend without a deploy" and "safe out of the box",
+   * so the env-var layer is intentionally dropped here rather than carried forward as a mismatched shape.
+   *
+   * READ-TIME MIGRATION for the rename off whichever provider used to have its own single-provider
+   * settings key: when the new key was never saved, {@link resolveLegacyProviderRanges} checks each
+   * registered provider's OWN declared `legacyRangesKey` — so a provider that predates the generic
+   * shape keeps its operator's extension instead of it being silently discarded in favour of the
+   * hardcoded seed, and the migration lives on that provider, never named here. A value already saved
+   * under the new key always wins — this only fires for a deployment that has not been touched since
+   * the rename. The old row itself is left in place; nothing here deletes it.
    */
-  static resolveCloudflareEdgeRanges(settingsCache?: Map<string, string>): string[] {
-    const stored = settingsCache?.get(SystemConstants.META_KEY.RATE_LIMIT_CLOUDFLARE_EDGE_RANGES);
-    const raw = stored === undefined
-      ? (EnvUtils.text(RateLimitSettingsUtils.ENV_CLOUDFLARE_EDGE_RANGES) || RateLimitSettingsUtils.DEFAULT_CLOUDFLARE_EDGE_RANGES)
-      : CoercionUtils.toString(stored);
-    return NetworkAddressUtils.parseList(raw);
+  static resolveNetworkEdgeRanges(settingsCache?: Map<string, string>): Readonly<Record<string, readonly string[]>> {
+    const stored = settingsCache?.get(SystemConstants.META_KEY.RATE_LIMIT_EDGE_PROVIDER_RANGES);
+    if (stored !== undefined) {
+      return RateLimitSettingsUtils.parseEdgeProviderRanges(CoercionUtils.toString(stored));
+    }
+
+    const legacy = RateLimitSettingsUtils.resolveLegacyProviderRanges(settingsCache);
+    if (legacy) return legacy;
+
+    return RateLimitSettingsUtils.parseEdgeProviderRanges(RateLimitSettingsUtils.DEFAULT_EDGE_PROVIDER_RANGES);
   }
 
   /**
-   * Every registered network-edge provider's operator-declared extra ranges, keyed by the provider's
-   * own `key` — the shape `NetworkAddressUtils.resolveClientIp`/`matchEdgeProvider` expect.
-   *
-   * Cloudflare is the only provider with a declared settings row today (`resolveCloudflareEdgeRanges`,
-   * above); a future provider registered in `NetworkEdgeProviderRegistry` gets its own settings key
-   * and its own case here the same way — this method is the one place that maps "provider" to "which
-   * setting holds its extra ranges", so `resolveClientIp` itself never has to know.
+   * Walks every registered provider's own `legacyRangesKey` (see `INetworkEdgeProvider`) looking for a
+   * value saved before the generic shape existed. `null` when no registered provider declares one, or
+   * none of those that do were ever saved — the caller falls through to the hardcoded seed in that case.
    */
-  static resolveNetworkEdgeRanges(settingsCache?: Map<string, string>): Readonly<Record<string, readonly string[]>> {
-    return {
-      [CloudflareEdgeProvider.KEY]: RateLimitSettingsUtils.resolveCloudflareEdgeRanges(settingsCache),
-    };
+  private static resolveLegacyProviderRanges(settingsCache?: Map<string, string>): Readonly<Record<string, readonly string[]>> | null {
+    let result: Record<string, readonly string[]> | null = null;
+    for (const provider of NetworkEdgeProviderRegistry.ALL) {
+      if (!provider.legacyRangesKey) continue;
+      const legacy = settingsCache?.get(provider.legacyRangesKey);
+      if (legacy === undefined) continue;
+      (result ??= {})[provider.key] = NetworkAddressUtils.parseList(CoercionUtils.toString(legacy));
+    }
+    return result;
+  }
+
+  /** Safely parse the stored/default JSON blob into the provider-keyed ranges map. Malformed input matches nothing. */
+  private static parseEdgeProviderRanges(raw: string): Readonly<Record<string, readonly string[]>> {
+    if (!raw) return {};
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return {};
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+
+    const result: Record<string, readonly string[]> = {};
+    for (const [providerKey, value] of Object.entries(parsed as Record<string, unknown>)) {
+      result[providerKey] = NetworkAddressUtils.parseList(value);
+    }
+    return result;
   }
 
   private static resolve(
