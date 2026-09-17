@@ -53,8 +53,15 @@ describe('BackupService', () => {
   });
 
   it('creates a sqlite database copy when DATABASE_URL uses a relative file: URL', async () => {
-    const frameworkRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-service-framework-'));
-    temporaryDirectories.push(frameworkRoot);
+    // The fake framework root is nested TWO levels inside the sandbox, because the relative URL under
+    // test resolves two levels above it. A root placed directly in the temp dir resolved `../../data`
+    // to whatever sits two levels above the system temp dir — harmless under macOS's deep
+    // `/var/folders/...` path, and `/data` on Linux, where the test died with EACCES the first time it
+    // ran anywhere but a developer's laptop.
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-service-'));
+    temporaryDirectories.push(sandbox);
+    const frameworkRoot = path.join(sandbox, 'framework', 'Source');
+    fs.mkdirSync(frameworkRoot, { recursive: true });
     process.env.FROMCODE_PROJECT_ROOT = frameworkRoot;
     fs.writeFileSync(path.join(frameworkRoot, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');
 

@@ -1,0 +1,134 @@
+# Runs the framework's own test suite.
+#
+# WHY THIS EXISTS: nothing ran it. The repository had four workflows — guards, tagging, attribution
+# and images — and not one of them invoked vitest, so 3,053 tests existed and none of them had an
+# opinion about a pull request. `Arch guard` is a static gate; it type-checks and measures structure,
+# and says nothing about behaviour.
+#
+# AND WHY IT BRINGS SERVICES: 34 of those tests are integration suites that SKIP unless the thing they
+# test is reachable, which is the honest design — a green run against no database is worse than no
+# test. But skipping was the only thing that ever happened, including for `tenant-isolation`, which is
+# the proof that row-level security keeps one customer's rows away from another. The services below
+# are what turn "skipped" into "passed".
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      # The tenant suites need a REAL PostgreSQL: row-level security is a property of the server, and
+      # the driver's own fallbacks would make a mock agree with whatever it was told.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fromcode
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+      # A job surviving the process that enqueued it, a failed job being retried, and a failure being
+      # audible are all properties of the broker rather than of the adapter class.
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+      # Every bug the MySQL read suite guards was silent: `find()` returning the first row instead of
+      # the rows, `count()` answering 0 for every table. None is visible without a server.
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: rootpw
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -prootpw"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+
+    steps:
+      # `framework/Source`, not `framework`: this repository's ROOT is the framework's `Source`
+      # directory, and the same mistake cost `Arch guard` its first three runs.
+      - name: Check out the framework
+        uses: actions/checkout@v5
+        with:
+          path: framework/Source
+
+      # 22, matching NODE_BASE_IMAGE in the Dockerfile.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: framework/Source/package-lock.json
+
+      - name: Install
+        working-directory: framework/Source
+        run: npm ci
+
+      # The suite imports BUILT output for the packages that ship as `dist` (core, react, sdk), the
+      # same reason the guard workflow builds them. Locally those directories have existed for months,
+      # so a fresh checkout is the only place the difference shows.
+      - name: Build the packages the tests import
+        working-directory: framework/Source
+        run: npm run build:packages
+
+      # The storefront runtime bundle is a build ARTIFACT, and `frontend-runtime-bundle.test.ts`
+      # deliberately fails when it has not been built — it guards the bundle's contents and its size
+      # ratchet, neither of which means anything against a stale or absent file.
+      - name: Build the storefront runtime bundle
+        working-directory: framework/Source
+        run: npm run build:frontend-runtime
+
+      # `atlantis db` — the roles and migrations below run through the framework's own commands rather
+      # than a SQL fixture kept beside them, so what CI sets up cannot drift from what a deployment does.
+      - name: Build the CLI
+        working-directory: framework/Source
+        run: npm run build --workspace=@fromcode119/cli
+
+      # The two logins tenant isolation is defined in terms of: an owner that runs DDL, and a runtime
+      # role that is NOSUPERUSER / NOBYPASSRLS — without which every policy is decorative and every
+      # case in the suite would pass for the wrong reason.
+      - name: Provision the database roles
+        working-directory: framework/Source
+        env:
+          DATABASE_BOOTSTRAP_URL: postgresql://postgres:postgres@127.0.0.1:5432/fromcode
+          DATABASE_URL: postgresql://fromcode_app:app_ci_only@127.0.0.1:5432/fromcode
+          DATABASE_MIGRATION_URL: postgresql://fromcode_owner:owner_ci_only@127.0.0.1:5432/fromcode
+        run: node packages/cli/dist/bin.js db bootstrap-roles
+
+      - name: Migrate
+        working-directory: framework/Source
+        env:
+          DATABASE_URL: postgresql://fromcode_app:app_ci_only@127.0.0.1:5432/fromcode
+          DATABASE_MIGRATION_URL: postgresql://fromcode_owner:owner_ci_only@127.0.0.1:5432/fromcode
+        run: node packages/cli/dist/bin.js db migrate
+
+      # Only the suites' OWN variables are exported here. `DATABASE_URL` deliberately is not: it would
+      # be visible to all 3,053 tests, and a unit test that quietly reached a real database instead of
+      # its fixture is exactly the kind of accident this file is meant to prevent.
+      - name: Run the suite
+        working-directory: framework/Source
+        env:
+          TENANT_TEST_DATABASE_URL: postgresql://fromcode_app:app_ci_only@127.0.0.1:5432/fromcode
+          TENANT_TEST_OWNER_URL: postgresql://fromcode_owner:owner_ci_only@127.0.0.1:5432/fromcode
+          QUEUE_TEST_REDIS_URL: redis://127.0.0.1:6379
+          MYSQL_TEST_URL: mysql://root:rootpw@127.0.0.1:3306/mysql
+        run: npm run test:framework

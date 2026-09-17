@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { afterAll, describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 /**
@@ -15,26 +16,52 @@ import path from 'node:path';
  * `require('tar')` — each invisible to typechecks and to every existing suite, because no test had
  * ever executed the command end to end. The CLI even printed `✗ archive-writer` with no message.
  *
- * This runs the real binary against the real bundled extension and asserts an archive appears. It
- * is slower than a unit test and that is the point: the failure it guards against is "the program
- * does not start".
+ * It runs the real binary and asserts an archive appears. It is slower than a unit test and that is
+ * the point: the failure it guards against is "the program does not start".
+ *
+ * THE SUBJECT IS A FIXTURE THIS TEST WRITES, not a plugin that happens to be checked out beside the
+ * framework. It used to pack `build-server`, which was deleted when Sources became part of the
+ * framework, and this suite — whose whole job is to prove the command runs — spent weeks failing on
+ * a missing directory. It was then pointed at `search`, which is a different repository: the day the
+ * suite first ran in CI, against a framework-only checkout, it failed the same way for the same
+ * reason. A fixture cannot be deleted by someone else and needs nothing else on disk.
  */
 describe('atlantis pack produces an archive', () => {
   const frameworkRoot = path.resolve(__dirname, '../../..');
-  const monorepoRoot = path.resolve(frameworkRoot, '../..');
   const bin = path.join(frameworkRoot, 'packages/cli/dist/bin.js');
-  // A real plugin that still exists. It used to be `build-server`, which was DELETED when Sources
-  // became part of the framework — so this test, whose whole job is to prove the command runs, spent
-  // weeks failing on a missing directory instead of on anything it was written to catch.
-  const slug = 'search';
+  const slug = 'packsmoke';
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'pack-smoke-'));
+
+  afterAll(() => fs.rmSync(projectRoot, { recursive: true, force: true }));
+
+  /** The smallest thing the pipeline recognises as a plugin: a manifest and a backend entry. */
+  const writeFixture = (): void => {
+    const dir = path.join(projectRoot, 'plugins', slug);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'manifest.json'), `${JSON.stringify({
+      name: 'Pack Smoke',
+      slug,
+      version: '0.0.1',
+      description: 'Fixture plugin. Exists only so the pack pipeline has something to pack.',
+      author: 'Fromcode',
+      main: 'index.js',
+    }, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(path.join(dir, 'index.ts'),
+      'export class PackSmokePlugin {\n  static readonly slug = \'packsmoke\';\n}\n\nexport default PackSmokePlugin;\n',
+      'utf8');
+  };
 
   it('packs a plugin and writes a tarball', () => {
     if (!fs.existsSync(bin)) {
       throw new Error(`${bin} is missing — build the CLI before running this suite`);
     }
+    writeFixture();
 
+    // `FROMCODE_PROJECT_ROOT` is what decides where `plugins/` is read from and where `dist/` is
+    // written, so the whole run happens inside the temp directory and touches no checkout.
     const output = execFileSync(process.execPath, [bin, 'pack', 'plugin', slug], {
-      cwd: monorepoRoot,
+      cwd: frameworkRoot,
+      env: { ...process.env, FROMCODE_PROJECT_ROOT: projectRoot },
       encoding: 'utf8',
       timeout: 300_000,
     });
@@ -47,6 +74,16 @@ describe('atlantis pack produces an archive', () => {
 
     const archive = archiveLine!.slice(archiveLine!.indexOf('/')).trim();
     expect(fs.existsSync(archive), `${archive} was reported but does not exist`).toBe(true);
-    expect(fs.statSync(archive).size).toBeGreaterThan(1024);
+
+    // What the archive CONTAINS, rather than how big it is. The old assertion was a 1 KB floor
+    // calibrated against whichever real plugin the test happened to name, which says nothing about
+    // whether the pipeline produced anything useful — and a fixture legitimately compresses below it.
+    // These two entries are the pack's actual output: the manifest it stamps and the COMPILED entry,
+    // whose presence is the proof that the backend compiler ran rather than being skipped.
+    const entries = execFileSync('tar', ['-tzf', archive], { encoding: 'utf8' })
+      .split('\n').map((entry) => entry.trim()).filter(Boolean);
+    expect(entries).toContain('manifest.json');
+    expect(entries).toContain('index.js');
+    expect(entries).not.toContain('index.ts');
   }, 300_000);
 });
