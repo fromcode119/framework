@@ -24,25 +24,20 @@ import { TenantSummary } from '@api/services/tenants/tenant-summary';
 import { TenantLookup } from '@api/services/tenants/tenant-lookup';
 import { TenantMembersService } from '@api/services/tenants/tenant-members-service';
 import { TenantPagesService } from '@api/services/tenants/tenant-pages-service';
+import { TenantArchiveAdmin } from '@api/services/tenants/tenant-archive-admin';
 
-export class TenantAdminService {
+export class TenantAdminService extends TenantArchiveAdmin {
 
-  private readonly db: IDatabaseManager;
-  private readonly registry: TenantRegistryService;
-  private readonly memberships: TenantMembershipService;
-  private readonly catalog: BackupCatalogService;
-  private readonly audit: SystemBackupRepository;
-  private readonly appearances: AppearanceManager;
-  private readonly gateway = new GatewayReloadClient();
-  private readonly lookup: TenantLookup;
-  private readonly membersService: TenantMembersService;
-  private readonly pagesService: TenantPagesService;
 
   constructor(
-    private readonly manager: PluginManager,
-    private readonly themeManager: ThemeManager,
-    private readonly uploadsDir: string,
+    manager: PluginManager,
+    themeManager: ThemeManager,
+    uploadsDir: string,
   ) {
+    super();
+    this.manager = manager;
+    this.themeManager = themeManager;
+    this.uploadsDir = uploadsDir;
     this.db = ((manager as any).schemaDb ?? manager.db) as IDatabaseManager;
     this.registry = new TenantRegistryService(this.db, TenantResolverService.shared(manager.db));
     this.memberships = new TenantMembershipService(this.db);
@@ -96,7 +91,7 @@ export class TenantAdminService {
   }
 
   /** The workspace presets on offer: one per installed appearance that declares a `workspace` block. */
-  private presets(): TenantKindPreset[] {
+  protected presets(): TenantKindPreset[] {
     return TenantKindPresets.fromAppearances(this.appearances.list());
   }
 
@@ -196,222 +191,4 @@ export class TenantAdminService {
   }
 
   /** Writes `backups/tenants/tenant-<slug>-<ts>.tar.gz` and returns the catalog entry the Backups page shows. */
-  async exportTenant(id: string, actor: Record<string, unknown>): Promise<{ archivePath: string; backup: unknown; manifest: unknown }> {
-    const tenant = await this.requireTenant(id);
-    const result = await this.writeArchive(tenant);
-    await this.record('tenant.export', tenant.slug, actor, { id: tenant.id, archive: path.basename(result.archivePath), rows: result.manifest.totalRows });
-    return { archivePath: result.archivePath, backup: this.catalog.resolveByPath(result.archivePath), manifest: result.manifest.toJSON() };
-  }
-
-  /** Export first, ALWAYS; then erase. The typed slug is the operator's confirmation. */
-  async deleteTenant(id: string, confirmSlug: string, actor: Record<string, unknown>): Promise<{ archive: string; deleted: Record<string, number>; files: number }> {
-    const tenant = await this.requireTenant(id);
-    if (CoercionUtils.toString(confirmSlug) !== tenant.slug) {
-      throw new Error(`Type the site's slug ("${tenant.slug}") to confirm deletion.`);
-    }
-    const exported = await this.writeArchive(tenant);
-    const tables = await this.tables();
-    const outcome = await new TenantEraser(this.db, this.registry, tables, this.uploadsDir).erase(tenant, exported.archivePath);
-    await this.record('tenant.delete', tenant.slug, actor, { id: tenant.id, archive: path.basename(exported.archivePath), ...outcome });
-    await this.gateway.notify();
-    return { archive: path.basename(exported.archivePath), ...outcome };
-  }
-
-  async previewImport(archivePath: string, identityInput: Record<string, unknown>): Promise<TenantImportPlan> {
-    const reader = await TenantArchiveReader.open(archivePath);
-    try {
-      const identity = TenantImportIdentity.resolve(reader.manifest.tenant as unknown as Record<string, unknown>, identityInput);
-      return await this.planner(await this.tables()).plan(reader, identity);
-    } finally {
-      reader.close();
-    }
-  }
-
-  async executeImport(archivePath: string, identityInput: Record<string, unknown>, actor: Record<string, unknown>): Promise<TenantImportResult> {
-    const reader = await TenantArchiveReader.open(archivePath);
-    try {
-      const identity = TenantImportIdentity.resolve(reader.manifest.tenant as unknown as Record<string, unknown>, identityInput);
-      const tables = await this.tables();
-      const plan = await this.planner(tables).plan(reader, identity);
-      const result = await new TenantImportExecutor(this.db, this.registry, tables, this.uploadsDir).execute(reader, identity, plan);
-      await this.record('tenant.import', result.tenant.slug, actor, { id: result.tenant.id, archive: path.basename(archivePath), rows: result.totalRows, remapped: result.remappedTables });
-    await this.gateway.notify();
-      return result;
-    } finally {
-      reader.close();
-    }
-  }
-
-  async adopt(identityInput: Record<string, unknown>, actor: Record<string, unknown>): Promise<unknown> {
-    const identity = TenantIdentity.from(identityInput);
-    // COLUMNS FIRST. Adoption stamps the rows of every table that has a `tenant_id` column, and on a
-    // deployment whose tables predate tenancy none of them do — the column only arrives on the next
-    // boot, once a tenant exists and the sweep runs. Adopting before that stamped nothing in those
-    // tables and left their rows ownerless, which row-level security then hid from everyone.
-    await new TenantColumnPreparer(this.db).ensureColumns(this.manager.systemCollectionTables());
-    const tables = await new TenantTableCatalog(this.db, this.manager.registeredCollections.values()).byColumn();
-    const outcome = await new TenantAdoptionService(this.db, this.registry, tables).adopt(identity);
-    await this.record('tenant.adopt', identity.slug, actor, { id: identity.id, stamped: outcome.stamped, members: outcome.members, unassigned: outcome.unassigned });
-    await this.gateway.notify();
-    return { ...outcome, tenant: TenantSummary.tenantJson(outcome.tenant) };
-  }
-
-  /** Installed inventory the import planner compares the archive against, and the create form offers. */
-  installed(): {
-    plugins: Array<{ slug: string; version: string; name: string }>;
-    themes: Array<{ slug: string; version: string; name: string }>;
-    appearances: Array<{ slug: string; version: string; name: string }>;
-    presets: Array<Record<string, unknown>>;
-  } {
-    return {
-      // EVERY installed plugin, with its platform state — not only the runnable ones. Filtering the
-      // rest out silently is what made the site form look like the platform had fewer plugins than it
-      // does: a held or disabled plugin simply vanished, with no row and no reason.
-      plugins: this.manager.getPlugins()
-        .map((plugin) => ({
-          slug: plugin.manifest.slug,
-          version: String(plugin.manifest.version || ''),
-          name: String(plugin.manifest.name || plugin.manifest.slug),
-          state: String(plugin.state ?? ''),
-          heldReason: String((plugin as { heldReason?: unknown }).heldReason ?? ''),
-          runnable: plugin.state === PluginState.ACTIVE,
-          // What the row shows beside the name — the same description and icon the Plugins page uses,
-          // so the two lists read as the same kind of thing rather than one being a stripped copy.
-          description: String(plugin.manifest.description || ''),
-          icon: String((plugin.manifest as { admin?: { icon?: unknown } }).admin?.icon || 'Box'),
-        })),
-      themes: this.themeManager.getThemes().map((theme) => ({ slug: theme.slug, version: String(theme.version || ''), name: String(theme.name || theme.slug) })),
-      appearances: this.appearances.list().map((entry) => ({ slug: entry.slug, version: String(entry.version || ''), name: String(entry.name || entry.slug) })),
-      presets: this.presets().map((preset) => preset.toJSON()),
-    };
-  }
-
-  private async writeArchive(tenant: TenantRecord): Promise<{ archivePath: string; manifest: TenantArchiveManifest }> {
-    const tables = await this.tables();
-    const source = TenantArchiveSource.tenant(this.db, tenant.id, this.uploadsDir);
-    const enabled = await new PluginTenantStateService(this.db).listEnabled(tenant.id);
-    const installed = new Map(this.installed().plugins.map((plugin) => [plugin.slug, plugin.version]));
-    const choice = await TenantThemeAccess.choiceForAsync(tenant.id);
-    const themeVersion = this.installed().themes.find((theme) => theme.slug === choice.activeSlug)?.version ?? '';
-    const outputPath = path.join(BackupService.getBackupsDirectory(SystemConstants.BACKUPS.TENANTS_SUBDIR), TenantArchiveLayout.archiveName(tenant.slug, new Date()));
-    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-    return new TenantArchiveWriter(source, tables).write({
-      tenant: { id: tenant.id, slug: tenant.slug, primaryHost: tenant.primaryHost, hostAliases: tenant.hostAliases, state: tenant.state, kind: tenant.kind.value, appearance: tenant.appearance },
-      plugins: enabled.map((slug) => ({ slug, version: installed.get(slug) ?? '' })),
-      theme: choice.activeSlug ? { slug: choice.activeSlug, version: themeVersion, config: choice.config } : null,
-      outputPath,
-    });
-  }
-
-  private planner(tables: TenantTableDescriptor[]): TenantImportPlanner {
-    const inventory = this.installed();
-    return new TenantImportPlanner(this.db, this.registry, tables, {
-      plugins: new Map(inventory.plugins.map((plugin) => [plugin.slug, plugin.version])),
-      themes: new Map(inventory.themes.map((theme) => [theme.slug, theme.version])),
-    }, this.uploadsDir, this.tenantTableCatalog().hasSchemaReferences);
-  }
-
-  private tenantTableCatalog(): TenantTableCatalog {
-    return new TenantTableCatalog(this.db, this.manager.registeredCollections.values());
-  }
-
-  private async tables(): Promise<TenantTableDescriptor[]> {
-    return this.tenantTableCatalog().byPolicy();
-  }
-
-  private async summarize(tenant: TenantRecord): Promise<TenantSummary> {
-    const [members, plugins, choice, appearance] = await Promise.all([
-      this.db.count(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenant.id } }),
-      new PluginTenantStateService(this.db).listEnabled(tenant.id),
-      TenantThemeAccess.choiceForAsync(tenant.id),
-      this.siteAppearance(tenant),
-    ]);
-    // The member LIST is deliberately not loaded here. `list()` summarizes every site, and this used
-    // to read every membership row and then issue one user lookup PER MEMBER — so a platform with eight
-    // sites and a hundred thousand members each rendered the Sites page with hundreds of thousands of
-    // queries. The count is a single COUNT; the roster is paged on demand (`members()` below).
-    // A workspace serves a console, not a storefront, so counting pages for one would be noise.
-    const pageCount = tenant.isWorkspace ? 0 : await this.pagesService.countPagesFor(tenant.id);
-    return new TenantSummary(tenant, members, plugins, choice.activeSlug, this.lastExport(tenant.slug), pageCount, this.exports(tenant.slug), appearance);
-  }
-
-  /**
-   * The appearance THIS tenant actually wears.
-   *
-   * A workspace's is the tenant row's own kind lock — `tenant.appearance` already has it. A site's
-   * is its own `admin_appearance` SETTING (`_system_meta`, row-level-security-scoped), because
-   * `TenantIdentity.appearanceFor` refuses to store one on the row for a site. Read on the site's
-   * own connection scope, same as `applySiteAppearance` writes it, so this never answers with the
-   * platform's own setting instead.
-   */
-  private async siteAppearance(tenant: TenantRecord): Promise<string> {
-    if (tenant.isWorkspace) return tenant.appearance;
-    const row = await this.db.withTenant(tenant.id, () => this.db
-      .findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_APPEARANCE })
-      .catch(() => null));
-    return String((row as any)?.value ?? '').trim();
-  }
-
-  /**
-   * This site's export archives, newest first, as the catalog entries the download route accepts.
-   *
-   * A filename alone was useless: the card printed it and told the operator to find it on another page.
-   * The catalog already assigns each archive an id, which is what `/system/admin/backups/:id/download`
-   * takes — so the same list can be downloaded from where it is shown.
-   */
-  private exports(slug: string): Array<{ id: string; filename: string; sizeBytes: number; modifiedAt: string }> {
-    const dir = BackupService.getBackupsDirectory(SystemConstants.BACKUPS.TENANTS_SUBDIR);
-    if (!fs.existsSync(dir)) return [];
-    const own = new RegExp(`^tenant-${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-\\d{4}-\\d{2}-\\d{2}T`);
-    return fs.readdirSync(dir)
-      .filter((name) => own.test(name) && name.endsWith(TenantArchiveLayout.EXTENSION))
-      .sort()
-      .reverse()
-      .map((name) => {
-        const item = this.catalog.resolveByPath(path.join(dir, name));
-        return { id: item.id, filename: item.filename, sizeBytes: item.sizeBytes, modifiedAt: item.modifiedAt };
-      });
-  }
-
-  private lastExport(slug: string): string | null {
-    const dir = BackupService.getBackupsDirectory(SystemConstants.BACKUPS.TENANTS_SUBDIR);
-    if (!fs.existsSync(dir)) return null;
-    // `tenant-<slug>-<ISO timestamp>` — anchored on the digits, or "acme" would claim "acme-copy"'s archives.
-    const own = new RegExp(`^tenant-${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-\\d{4}-\\d{2}-\\d{2}T`);
-    const files = fs.readdirSync(dir).filter((name) => own.test(name) && name.endsWith(TenantArchiveLayout.EXTENSION)).sort();
-    return files.length ? files[files.length - 1] : null;
-  }
-
-  /** Members of a tenant, paged and searchable — delegated to TenantMembersService. */
-  async members(tenantId: string, options: { q?: string; limit?: number; offset?: number } = {}) {
-    return this.membersService.members(tenantId, options);
-  }
-
-  async addMember(tenantId: string, email: string, roles: string[]): Promise<void> {
-    return this.membersService.addMember(tenantId, email, roles);
-  }
-
-  async removeMember(tenantId: string, userId: string): Promise<void> {
-    return this.membersService.removeMember(tenantId, userId);
-  }
-
-  /** Create the tenant's pages from theme + plugin contracts — delegated to TenantPagesService. */
-  async materializePages(tenantId: string): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
-    return this.pagesService.materializePages(tenantId);
-  }
-
-  private async requireTenant(id: string): Promise<TenantRecord> {
-    const tenant = await this.registry.get(id);
-    if (!tenant) throw new Error(`Tenant "${id}" was not found.`);
-    return tenant;
-  }
-
-
-  private static slugs(value: unknown): string[] {
-    return Array.isArray(value) ? [...new Set(value.map((entry) => CoercionUtils.toString(entry)).filter(Boolean))] : [];
-  }
-
-  private async record(action: string, resource: string, actor: Record<string, unknown>, metadata: Record<string, unknown>): Promise<void> {
-    await this.audit.recordOperation({ action, resource, status: AuditOutcome.ALLOWED, metadata: { ...actor, ...metadata } });
-  }
 }
