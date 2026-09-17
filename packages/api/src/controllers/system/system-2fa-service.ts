@@ -12,9 +12,12 @@ import { Schema } from '@fromcode119/database';
 import { AuthUtils } from '@api/utils/auth';
 import { UserManagementService } from '@api/services/user-management-service';
 import { RequestParamUtils } from '@api/utils/request-param-utils';
+import { TwoFactorRecoveryCodes } from '@api/controllers/system/two-factor-recovery-codes';
 
 export class SystemTwoFactorService {
   private readonly logger = new Logger({ namespace: 'System2FA' });
+
+  private readonly recovery: TwoFactorRecoveryCodes;
 
   constructor(
     private readonly db: any,
@@ -22,7 +25,9 @@ export class SystemTwoFactorService {
     private readonly users: UserManagementService,
     /** Reads the operator-configured sender — see {@link FrameworkEmailSenderService}. */
     private readonly integrations: { getConfig(type: string): Promise<any> },
-  ) {}
+  ) {
+    this.recovery = new TwoFactorRecoveryCodes(db, this.logger, integrations, emailGetter);
+  }
 
   async getTwoFactorStatus(req: Request, res: Response) {
     try {
@@ -89,7 +94,7 @@ export class SystemTwoFactorService {
       throw new Error('User not found');
     }
 
-    const issuer = await this.resolveFrameworkAppName();
+    const issuer = await this.recovery.resolveFrameworkAppName();
     const secret = speakeasy.generateSecret({ name: `${issuer} (${user.email})`, length: 32 });
     const qrCode = await QRCode.toDataURL(secret.otpauth_url!);
     const key = `user:${userId}:totp_secret_pending`;
@@ -140,7 +145,7 @@ export class SystemTwoFactorService {
     await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
     await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret` });
     await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
-    await this.db.delete(SystemConstants.TABLE.META, { key: this.getRecoveryCodesKey(userId) });
+    await this.db.delete(SystemConstants.TABLE.META, { key: this.recovery.getRecoveryCodesKey(userId) });
     await this.sendSecurityNotification({ userId, subject: 'Two-factor authentication disabled', title: 'Two-factor authentication has been disabled on your account.', details: [`Time: ${new Date().toISOString()}`] });
     return { success: true, message: '2FA disabled successfully' };
   }
@@ -173,147 +178,44 @@ export class SystemTwoFactorService {
     throw new Error('That code didn’t work — use the current one from your authenticator, or a recovery code.');
   }
 
-  private getRecoveryCodesKey(userId: number) { return `user:${userId}:2fa_recovery_codes`; }
-
-  private generateRecoveryCodes(count: number = 10): string[] {
-    const codes: string[] = [];
-    while (codes.length < count) {
-      const raw = randomBytes(5).toString('hex').toUpperCase();
-      const formatted = `${raw.slice(0, 5)}-${raw.slice(5, 10)}`;
-      if (!codes.includes(formatted)) codes.push(formatted);
-    }
-    return codes;
+  /** @see TwoFactorRecoveryCodes.generateRecoveryCodes */
+  generateRecoveryCodes(...args: Parameters<TwoFactorRecoveryCodes["generateRecoveryCodes"]>): ReturnType<TwoFactorRecoveryCodes["generateRecoveryCodes"]> {
+    return this.recovery.generateRecoveryCodes(...args);
   }
 
-  private hashRecoveryCode(code: string): string {
-    return createHash('sha256').update(code.toUpperCase().replace(/-/g, '')).digest('hex');
+  /** @see TwoFactorRecoveryCodes.hashRecoveryCode */
+  hashRecoveryCode(...args: Parameters<TwoFactorRecoveryCodes["hashRecoveryCode"]>): ReturnType<TwoFactorRecoveryCodes["hashRecoveryCode"]> {
+    return this.recovery.hashRecoveryCode(...args);
   }
 
-  private async readRecoveryCodeRecords(userId: number): Promise<Array<{ hash: string; usedAt: string | null; createdAt?: string }>> {
-    const row = await this.db.findOne(SystemConstants.TABLE.META, { key: this.getRecoveryCodesKey(userId) });
-    const raw = String(row?.value || '').trim();
-    if (!raw) return [];
-    try {
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return parsed.map((e) => ({ hash: String(e?.hash || '').trim(), usedAt: e?.usedAt ? String(e.usedAt) : null, createdAt: e?.createdAt ? String(e.createdAt) : undefined })).filter((e) => !!e.hash);
-    } catch { return []; }
+  /** @see TwoFactorRecoveryCodes.readRecoveryCodeRecords */
+  readRecoveryCodeRecords(...args: Parameters<TwoFactorRecoveryCodes["readRecoveryCodeRecords"]>): ReturnType<TwoFactorRecoveryCodes["readRecoveryCodeRecords"]> {
+    return this.recovery.readRecoveryCodeRecords(...args);
   }
 
-  private async writeRecoveryCodeRecords(userId: number, records: Array<{ hash: string; usedAt: string | null; createdAt?: string }>) {
-    const key = this.getRecoveryCodesKey(userId);
-    await this.upsertMetaValue(key, JSON.stringify(records));
+  /** @see TwoFactorRecoveryCodes.writeRecoveryCodeRecords */
+  writeRecoveryCodeRecords(...args: Parameters<TwoFactorRecoveryCodes["writeRecoveryCodeRecords"]>): ReturnType<TwoFactorRecoveryCodes["writeRecoveryCodeRecords"]> {
+    return this.recovery.writeRecoveryCodeRecords(...args);
   }
 
-  private async upsertMetaValue(key: string, value: string) {
-    const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.META, { key }, { value });
-      return;
-    }
-
-    await this.db.insert(SystemConstants.TABLE.META, { key, value });
+  /** @see TwoFactorRecoveryCodes.upsertMetaValue */
+  upsertMetaValue(...args: Parameters<TwoFactorRecoveryCodes["upsertMetaValue"]>): ReturnType<TwoFactorRecoveryCodes["upsertMetaValue"]> {
+    return this.recovery.upsertMetaValue(...args);
   }
 
-  private resolveErrorStatus(error: any): number {
-    const message = String(error?.message || '').trim().toLowerCase();
-    if (message.includes('user not found')) {
-      return 404;
-    }
-    if (message.includes('disabled by the administrator')) {
-      return 403;
-    }
-    if (
-      message.includes('invalid') ||
-      message.includes('not initiated') ||
-      message.includes('must be enabled')
-    ) {
-      return 400;
-    }
-    return 500;
+  /** @see TwoFactorRecoveryCodes.getMetaValue */
+  getMetaValue(...args: Parameters<TwoFactorRecoveryCodes["getMetaValue"]>): ReturnType<TwoFactorRecoveryCodes["getMetaValue"]> {
+    return this.recovery.getMetaValue(...args);
   }
 
-  private async sendSecurityNotification(options: { userId: number; subject: string; title: string; details?: string[] }) {
-    try {
-      const enabled = await this.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS });
-      if (String(enabled?.value || 'true').trim().toLowerCase() !== 'true') return;
-      const user = await this.db.findOne(Schema.users, { id: options.userId });
-      const recipient = AuthUtils.normalizeEmail(user?.email);
-      if (!recipient) return;
-      const appName = await this.resolveFrameworkAppName();
-      const sender = await this.resolveFrameworkSender();
-      if (!sender.isConfigured) {
-        this.logger.error(
-          `[System2FA] Security notification not sent: no sender address is configured. Set ${FrameworkEmailSenderService.SETTING_HINT}.`,
-        );
-        return;
-      }
-      const from = sender.identity;
-      const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
-      const html = await this.renderSecurityNotificationHtml(options.title, details);
-      const payload: Record<string, any> = {
-        to: recipient, from, subject: `${appName}: ${options.subject}`,
-        text: `${options.title}\n\n${details.join('\n')}`,
-      };
-      if (html) {
-        payload.html = html;
-      }
-      await this.emailGetter().send(payload);
-    } catch {}
+  /** @see TwoFactorRecoveryCodes.sendSecurityNotification */
+  sendSecurityNotification(...args: Parameters<TwoFactorRecoveryCodes["sendSecurityNotification"]>): ReturnType<TwoFactorRecoveryCodes["sendSecurityNotification"]> {
+    return this.recovery.sendSecurityNotification(...args);
   }
 
-  /**
-   * Render the security-notification email body from its Handlebars template file.
-   * Fail-safe: returns an empty string when the template cannot be read/compiled,
-   * so the caller falls back to a text-only email instead of crashing.
-   */
-  private async renderSecurityNotificationHtml(title: string, details: string[]): Promise<string> {
-    try {
-      const templatePath = path.join(__dirname, 'templates', 'security-notification.html');
-      const templateSource = await fs.readFile(templatePath, 'utf-8');
-      return Handlebars.compile(templateSource)({ title, details }).trim();
-    } catch {
-      return '';
-    }
+  /** @see TwoFactorRecoveryCodes.resolveErrorStatus */
+  resolveErrorStatus(...args: Parameters<TwoFactorRecoveryCodes["resolveErrorStatus"]>): ReturnType<TwoFactorRecoveryCodes["resolveErrorStatus"]> {
+    return this.recovery.resolveErrorStatus(...args);
   }
 
-  private async resolveFrameworkAppName(): Promise<string> {
-    const platformName = await this.getMetaValue(SystemConstants.META_KEY.PLATFORM_NAME);
-    if (platformName) {
-      return platformName;
-    }
-
-    const siteName = await this.getMetaValue(SystemConstants.META_KEY.SITE_NAME);
-    if (siteName) {
-      return siteName;
-    }
-
-    return String(process.env.APP_NAME || '').trim() || 'Platform';
-  }
-
-  /** The configured sender. Was a second copy of the invented `no-reply@<domain>` builder. */
-  private async resolveFrameworkSender(): Promise<FrameworkEmailSender> {
-    return FrameworkEmailSenderService.resolve(this.integrations, await this.resolveFrameworkAppName());
-  }
-
-  private async resolveFrameworkPlatformDomain(): Promise<string> {
-    const configuredPlatformDomain = await this.getMetaValue(SystemConstants.META_KEY.PLATFORM_DOMAIN);
-    if (configuredPlatformDomain) {
-      return configuredPlatformDomain.toLowerCase();
-    }
-
-    return ApplicationUrlUtils.derivePlatformDomain(
-      await this.getMetaValue(SystemConstants.META_KEY.SITE_URL),
-      await this.getMetaValue(SystemConstants.META_KEY.FRONTEND_URL),
-      await this.getMetaValue(SystemConstants.META_KEY.ADMIN_URL),
-      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
-      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
-      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
-    );
-  }
-
-  private async getMetaValue(key: string): Promise<string> {
-    const row = await this.db.findOne(SystemConstants.TABLE.META, { key });
-    return String(row?.value || '').trim();
-  }
 }

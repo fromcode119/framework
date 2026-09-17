@@ -5,9 +5,10 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { PublicRouteConstants } from '@core/constants/public-route.constants';
 import { RuntimeBridge } from '@core/runtime-bridge';
 import { EnvUtils } from '@core/utils/env-utils';
+import { OptimizedImageUrlUtils } from '@core/utils/optimized-image-url-utils';
 
 export class PublicAssetUrlUtils {
-  private static readonly uploadBasePath = String(SystemConstants.STORAGE.DEFAULT_PUBLIC_URL).trim();
+  static readonly uploadBasePath = String(SystemConstants.STORAGE.DEFAULT_PUBLIC_URL).trim();
 
   static resolveApiBaseUrl(): string {
     return RuntimeBridge.resolveApiBaseUrl();
@@ -29,79 +30,30 @@ export class PublicAssetUrlUtils {
    * core. Nothing registered ⇒ every helper below returns the original URL, so a site without an
    * optimizer plugin still renders — just unoptimized.
    */
-  private static imageOptimizer: ((uploadPath: string, width: number, quality: number) => string) | null = null;
 
-  /** Called once by the plugin that owns the optimizer endpoint, from its storefront/admin UI boot. */
+    /**
+   * Image optimisation, kept on this class because PLUGINS AND THEMES CALL IT BY THIS NAME.
+   *
+   * `PublicAssetUrlUtils.registerImageOptimizer` is the cms plugin's entry point and
+   * `responsiveUploadSrcSet` is read by themes — both live in their own repositories, so moving the
+   * implementation must not move the name. The logic is in {@link OptimizedImageUrlUtils}; this stays
+   * as the published surface.
+   */
   static registerImageOptimizer(builder: (uploadPath: string, width: number, quality: number) => string): void {
-    PublicAssetUrlUtils.imageOptimizer = builder;
+    OptimizedImageUrlUtils.registerImageOptimizer(builder);
   }
 
-  /**
-   * An upload image at a target width, through the registered optimizer. Non-uploads (theme assets,
-   * remote URLs, data URIs) and an unregistered optimizer both return the input unchanged — the caller
-   * always gets a usable `src`.
-   */
-  // Default quality 80: photographic content below ~75 shows visible artifacts, and sources that
-  // are themselves compressed (most uploads) degrade twice. 60 was cheap on bytes but every image
-  // on the storefront paid for it.
+  /** @see OptimizedImageUrlUtils.optimizedUploadUrl */
   static optimizedUploadUrl(url: any, width: number, quality = 80): string {
-    const raw = String(url || '').trim();
-    if (!raw) return '';
-    const uploadPath = PublicAssetUrlUtils.extractUploadPath(raw);
-    if (!uploadPath || !PublicAssetUrlUtils.imageOptimizer) return raw;
-    return String(PublicAssetUrlUtils.imageOptimizer(uploadPath, width, quality) || raw);
+    return OptimizedImageUrlUtils.optimizedUploadUrl(url, width, quality);
   }
 
-  /**
-   * A `srcset` for an upload image across `widths`, so the browser downloads the size it will display
-   * instead of the full-resolution original. Empty string when the image cannot be optimized, which is
-   * exactly what an `<img srcSet={...}>` should receive in that case — a srcset of identical URLs at
-   * different width descriptors is worse than none, because the browser then picks by descriptor and
-   * still downloads the original.
-   */
+  /** @see OptimizedImageUrlUtils.responsiveUploadSrcSet */
   static responsiveUploadSrcSet(url: any, widths: number[], quality = 80): string {
-    const raw = String(url || '').trim();
-    if (!raw || !PublicAssetUrlUtils.imageOptimizer) return '';
-    if (!PublicAssetUrlUtils.extractUploadPath(raw)) return '';
-
-    const uniqueWidths = Array.from(new Set(
-      (Array.isArray(widths) ? widths : [])
-        .map((value) => Math.round(Number(value) || 0))
-        .filter((value) => Number.isFinite(value) && value > 0),
-    )).sort((left, right) => left - right);
-    if (!uniqueWidths.length) return '';
-
-    return uniqueWidths
-      .map((width) => `${PublicAssetUrlUtils.optimizedUploadUrl(raw, width, quality)} ${width}w`)
-      .join(', ');
+    return OptimizedImageUrlUtils.responsiveUploadSrcSet(url, widths, quality);
   }
 
-  /**
-   * The optimizable path inside a value, whether it arrived as a path or an absolute URL: an upload, or
-   * a theme's own UI asset. Themes ship their own imagery and it is often the heaviest thing on a page,
-   * so leaving it out would optimize only half the images on the site. Anything else (remote URL, data
-   * URI, SVG) returns null and is served untouched.
-   */
-  private static extractUploadPath(url: string): string | null {
-    const pathname = PublicAssetUrlUtils.toPathname(url);
-    if (!pathname) return null;
-    if (pathname.startsWith(`${PublicAssetUrlUtils.uploadBasePath}/`)) return pathname;
-    // Vector art is already tiny and rasterising it would make it worse.
-    if (/\.svg(\?|$)/i.test(pathname)) return null;
-    // Derived from the theme-UI route template — see ApiPathUtils.themeUiAssetMatcher.
-    if (ApiPathUtils.themeUiAssetMatcher().test(pathname)) return pathname;
-    return null;
-  }
-
-  private static toPathname(url: string): string {
-    if (url.startsWith('/')) return url;
-    try {
-      return new URL(url).pathname;
-    } catch {
-      return '';
-    }
-  }
-
+/** Called once by the plugin that owns the optimizer endpoint, from its storefront/admin UI boot. */
   static themeAssetUrl(themeSlug: string, assetPath: any, apiBaseUrl = PublicAssetUrlUtils.resolveApiBaseUrl()): string {
     const normalizedAssetPath = PublicAssetUrlUtils.trimLeadingSlashes(assetPath);
     return ApiPathUtils.themeUiAssetUrl(apiBaseUrl, themeSlug, normalizedAssetPath);
