@@ -25,6 +25,8 @@ import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 
 import { PluginBootHealthReporter } from '@core/plugin/services/runtime/plugin-boot-health-reporter';
 import { PluginSeedRunner } from '@core/plugin/services/runtime/plugin-seed-runner';
+import { PluginRegistrationState } from '@core/plugin/services/runtime/plugin-registration-state';
+import { PluginTeardownService } from '@core/plugin/services/runtime/plugin-teardown-service';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
@@ -34,15 +36,20 @@ export class LifecycleService {
   private bootHealth: PluginBootHealthReporter;
   private seedRunner: PluginSeedRunner;
 
+  private readonly registrationState: PluginRegistrationState;
+  private readonly teardown: PluginTeardownService;
+
   constructor(
     private manager: IPluginManagerInterface,
     private registry: PluginStateService,
     private discovery: DiscoveryService,
     private schemaManager: SchemaManager
   ) {
+    this.registrationState = new PluginRegistrationState(this.manager, this.registry, this.logger);
     this.seeder = new Seeder(manager.db);
     this.failureIsolation = new PluginFailureIsolationService(manager, registry, this.logger);
     this.activation = new PluginCollectionActivationService(manager, schemaManager, this.seeder, this.logger);
+    this.teardown = new PluginTeardownService(this.manager, this.registry, this.activation, this.logger);
     this.bootHealth = new PluginBootHealthReporter(this.manager, this.logger);
     this.seedRunner = new PluginSeedRunner(this.manager, this.activation);
   }
@@ -83,90 +90,7 @@ export class LifecycleService {
     this.discovery.validateDependencies(plugin.manifest, this.manager.plugins);
 
     const registryData = await this.registry.loadInstalledPluginsState();
-    const normSlug = slug.toLowerCase();
-    const saved = registryData[normSlug];
-    let state: PluginState = saved?.state || PluginState.INACTIVE;
-
-    // A BUNDLED extension is part of the product, not an operator's choice: it ships inside the
-    // image and runs from the first boot, whatever (if anything) the plugins table says about it.
-    // Without this, the framework's own screens would be one forgotten toggle away from missing.
-    if (plugin.manifest?.bundled === true) {
-      state = PluginState.ACTIVE;
-    }
-
-    // Failures now only flip health_status to 'error' and PRESERVE the desired `state`
-    // (see PluginStateService.markPluginHealthError), so saved.state is normally a real
-    // 'active' | 'inactive' value and the plugin recovers to exactly where it was: an
-    // active plugin re-enables below, an inactive one stays inactive. This branch is a
-    // defensive fallback for legacy rows persisted with state='error' before that change —
-    // recover them conservatively to 'inactive' rather than guess. A tampered/malicious
-    // plugin never reaches here (the integrity check above throws first).
-    if (state === PluginState.ERROR) {
-      state = PluginState.INACTIVE;
-    }
-
-    // Rehydrate a persisted hold so it STAYS visibly held across reboots: a plugin held for capability
-    // drift is saved inactive + held_reason. On the next boot the drift gate below is skipped (state is
-    // no longer 'active'), so without this the in-memory plugin would look like a plain inactive one and
-    // the held signal (and its 'warning' health) would vanish until re-approved. Only rehydrate for
-    // non-active rows; enable()/clearPluginHeld nulls held_reason on re-approval so it won't re-apply.
-    let heldReason: PluginHeldReason | undefined = state !== PluginState.ACTIVE ? saved?.heldReason : undefined;
-
-    /**
-     * The capability gate exists because a plugin that quietly grows new powers between versions is
-     * how a supply-chain compromise looks. A BUNDLED extension has no such supply chain: it is built
-     * from this repository into this image, so its capabilities arrive with the upgrade an operator
-     * deliberately performed. Holding it would make the framework's own screens vanish on upgrade
-     * pending a re-approval nobody could have anticipated — which is exactly what happened when the
-     * build server gained `i18n`.
-     */
-    const isBundled = plugin.manifest?.bundled === true;
-    if (isBundled) {
-      heldReason = undefined;
-      await this.registry.savePluginState(
-        slug,
-        PluginState.ACTIVE,
-        (plugin.manifest.capabilities as string[]) || [],
-        plugin.manifest.version,
-      );
-    }
-
-    if (state === PluginState.ACTIVE && !isBundled) {
-      const diff = PluginBootHealthReporter.computeCapabilityDiff(
-        (plugin.manifest.capabilities as string[]) || [],
-        saved?.approvedCapabilities || [],
-      );
-      if (diff.changed) {
-        const action = PluginBootHealthReporter.resolveDriftAction(slug, Boolean(saved?.signatureVerified));
-        if (action === PluginApprovalMode.AUTO_APPROVE) {
-          const currentCaps = (plugin.manifest.capabilities as string[]) || [];
-          this.logger.warn(
-            `Plugin "${slug}" AUTO-APPROVED capability change (added: [${diff.added.join(', ')}], removed: [${diff.removed.join(', ')}]) — AUTO_APPROVE_PLUGIN_CAPABILITIES is on and the plugin is trusted.`,
-          );
-          await this.registry.savePluginState(slug, PluginState.ACTIVE, currentCaps, plugin.manifest.version);
-          await this.registry.writeLog('WARN', `Auto-approved capability change for "${slug}": +[${diff.added.join(', ')}] -[${diff.removed.join(', ')}]`, slug);
-          try {
-            const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
-            await notifications.notifyAdmins({
-              subject: `[Fromcode] Auto-approved new capabilities for "${slug}"`,
-              text: `"${slug}" gained capabilities [${diff.added.join(', ')}] and was auto-approved (AUTO_APPROVE_PLUGIN_CAPABILITIES on, plugin trusted). Review in Admin -> Plugins if unexpected.`,
-            });
-          } catch { /* best-effort */ }
-          // state stays 'active' -> the existing active path enables it below.
-        } else {
-          // Capability set changed since it was last approved. Do NOT silently deactivate (that looked
-          // like a deliberate disable and caused a prod outage). Hold it: inactive + health 'warning' +
-          // reason, so the admin sees it and one-click re-approves (enable() advances the approved set).
-          state = PluginState.INACTIVE;
-          heldReason = PluginHeldReason.CAPABILITY_DRIFT;
-          this.logger.warn(
-            `Plugin "${slug}" HELD: capabilities changed since approval (added: [${diff.added.join(', ')}], removed: [${diff.removed.join(', ')}]). Re-approve to activate.`,
-          );
-          await this.registry.markPluginHeld(slug, heldReason);
-        }
-      }
-    }
-
+    const { state, heldReason, saved } = await this.registrationState.resolve(slug, plugin, registryData);
     const loadedPlugin: ILoadedPlugin = {
       ...plugin,
       instanceId: randomUUID(),
@@ -319,82 +243,14 @@ export class LifecycleService {
     }
   }
 
-  async disable(slug: string, options: { persistState?: boolean } = {}): Promise<void> {
-    const plugin = this.manager.plugins.get(slug);
-    if (!plugin || plugin.state !== PluginState.ACTIVE) return;
-
-    // Check if any active plugins depend on this one
-    const activeDependents = Array.from(this.manager.plugins.values()).filter(p => 
-      p.state === PluginState.ACTIVE && 
-      p.manifest.dependencies && 
-      p.manifest.dependencies[slug]
-    );
-    
-    if (activeDependents.length > 0) {
-      const dependentNames = activeDependents.map(p => p.manifest.slug).join(', ');
-      throw new Error(
-        `Cannot disable plugin "${slug}" because it is required by active plugins: ${dependentNames}. ` +
-        `Please disable those plugins first.`
-      );
-    }
-
-    if (plugin.manifest?.bundled === true) {
-      throw new Error(
-        `Cannot disable "${slug}": it is part of the framework, not an installed plugin. `
-        + 'Bundled extensions ship inside the image and are always available.',
-      );
-    }
-
-    const ctx = (this.manager as any).createContext(plugin);
-    try {
-      if (plugin.onDisable) await plugin.onDisable(ctx);
-      plugin.state = PluginState.INACTIVE;
-      this.manager.middlewares.unregisterByPlugin(slug);
-      if (options.persistState !== false) {
-        await this.registry.savePluginState(slug, PluginState.INACTIVE, undefined, plugin.manifest.version);
-        await this.registry.writeLog('INFO', `Plugin "${slug}" disabled.`, slug);
-      }
-    } catch (error) {
-      this.logger.error(`Error disabling plugin "${slug}": ${error}`);
-    }
+  /** @see PluginTeardownService.disable */
+  disable(...args: Parameters<PluginTeardownService["disable"]>): ReturnType<PluginTeardownService["disable"]> {
+    return this.teardown.disable(...args);
   }
 
-  async delete(slug: string): Promise<void> {
-    const plugin = this.manager.plugins.get(slug);
-    if (plugin?.manifest?.bundled === true) {
-      throw new Error(
-        `Cannot remove "${slug}": it ships with the framework. Removing it would delete part of the `
-        + 'image, and the next container start would bring it back anyway.',
-      );
-    }
-    if (plugin) {
-      // Never `rm -rf` a developer's mounted source checkout from the admin (see PluginArchiveInstallerService).
-      PluginArchiveInstallerService.refuseSourceCheckout(String(plugin.path || ''), slug, 'delete');
-      const dependents = Array.from(this.manager.plugins.values()).filter(p =>
-        p.manifest.dependencies && p.manifest.dependencies[slug]
-      );
-      if (dependents.length > 0) {
-        throw new Error(`Cannot delete plugin "${slug}" because it is required by: ${dependents.map(p => p.manifest.slug).join(', ')}`);
-      }
-      if (plugin.state === PluginState.ACTIVE) await this.disable(slug);
-
-      if (plugin.onUninstall) {
-        const ctx = (this.manager as any).createContext(plugin);
-        try {
-          await plugin.onUninstall(ctx);
-        } catch (err: any) {
-          this.logger.error(`Error during onUninstall for plugin "${slug}": ${err.message}`);
-        }
-      }
-      // T5: a plugin's process goes with it — after onDisable/onUninstall ran inside it.
-      await this.manager.pluginHosts?.stop(slug);
-    }
-
-    await this.manager.db.delete(SystemConstants.TABLE.PLUGINS, { slug });
-    const pluginPath = plugin?.path;
-    this.manager.plugins.delete(slug);
-    this.manager.middlewares.unregisterByPlugin(slug);
-
-    this.activation.cleanupAfterDelete(slug, pluginPath, plugin?.manifest.main || PluginPackageLayout.SERVER_ENTRY);
+  /** @see PluginTeardownService.delete */
+  delete(...args: Parameters<PluginTeardownService["delete"]>): ReturnType<PluginTeardownService["delete"]> {
+    return this.teardown.delete(...args);
   }
+
 }
