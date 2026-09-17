@@ -14,6 +14,7 @@ import type { ISystemBackupCapabilities } from '@/components/settings/backups/in
 import type { IBackupProgressView } from '@/components/settings/backups/interfaces/backup-progress-view.interface';
 import { SystemBackupPageUtils } from '@/components/settings/backups/system-backup-page-utils';
 import { AdminClass } from '@/lib/admin-class';
+import { BackupSectionOptions } from '@/components/settings/backups/backup-section-options';
 
 export class BackupCreateCard extends AdminComponent {
   private static readonly BACKUP_IMPORT_ACCEPT = '.tar.gz,.gz,application/gzip,application/x-gzip,.sql,.db';
@@ -212,7 +213,7 @@ export class BackupCreateCard extends AdminComponent {
         ) : null}
 
         <div className="grid gap-4 lg:grid-cols-2">
-          {SystemBackupPageUtils.getSectionOptions().map((option) => {
+          {BackupSectionOptions.getSectionOptions().map((option) => {
             const isSelected = createSections.includes(option.key);
             const icon = option.key === BackupSectionKey.DATABASE
               ? <FrameworkIcons.Database size={18} />
@@ -266,7 +267,7 @@ export class BackupCreateCard extends AdminComponent {
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Selected Scope</p>
               <p className={`mt-2 text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                {SystemBackupPageUtils.describeSections(createSections)}
+                {BackupSectionOptions.describeSections(createSections)}
               </p>
             </div>
             <p className="max-w-xl text-sm text-slate-500">

@@ -9,12 +9,13 @@ import type { IBackupsPageControllerState } from '@/components/settings/backups/
 import type { IRestoreDialogState } from '@/components/settings/backups/interfaces/restore-dialog-state.interface';
 import { SystemBackupPageUtils } from '@/components/settings/backups/system-backup-page-utils';
 import { SystemBackupHooks } from '@/components/settings/backups/view/use-system-backups.client';
+import { BackupSectionOptions } from '@/components/settings/backups/backup-section-options';
 
 export class BackupsPageControllerHooks {
   static useController(): IBackupsPageControllerState {
     const { addNotification } = NotificationHooks.useNotification();
     const backupState = SystemBackupHooks.useBackups();
-    const [createSections, setCreateSections] = React.useState<BackupSectionKey[]>(SystemBackupPageUtils.createDefaultSections());
+    const [createSections, setCreateSections] = React.useState<BackupSectionKey[]>(BackupSectionOptions.createDefaultSections());
     const [deleteCandidate, setDeleteCandidate] = React.useState<IBackupCatalogItemView | null>(null);
     const [restoreState, setRestoreState] = React.useState<IRestoreDialogState>(SystemBackupPageUtils.createInitialRestoreState());
 
@@ -49,7 +50,7 @@ export class BackupsPageControllerHooks {
         addNotification({
           type: NotificationType.SUCCESS,
           title: 'Backup Created',
-          message: `${response.backup.displayName} includes ${SystemBackupPageUtils.describeSections(response.selection.includedSections)}.`,
+          message: `${response.backup.displayName} includes ${BackupSectionOptions.describeSections(response.selection.includedSections)}.`,
         });
         if (response.selection.warnings.length) {
           addNotification({
@@ -85,11 +86,11 @@ export class BackupsPageControllerHooks {
     }, [addNotification, backupState]);
 
     const toggleCreateSection = React.useCallback((value: BackupSectionKey) => {
-      setCreateSections((current) => SystemBackupPageUtils.toggleSection(current, value));
+      setCreateSections((current) => BackupSectionOptions.toggleSection(current, value));
     }, []);
 
     const applyCreatePreset = React.useCallback((value: BackupPreset) => {
-      setCreateSections(SystemBackupPageUtils.applyCreatePreset(value));
+      setCreateSections(BackupSectionOptions.applyCreatePreset(value));
     }, []);
 
     const closeDeleteDialog = React.useCallback(() => {
