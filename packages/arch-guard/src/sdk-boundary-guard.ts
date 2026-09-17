@@ -54,7 +54,11 @@ export class SdkBoundaryGuard {
       { regex: /api\.framework\.local/g, label: 'hardcoded api.framework.local host' },
       { regex: /__FROMCODE_API_URL/g, label: 'legacy __FROMCODE_API_URL bridge usage' },
       { regex: /FROMCODE_API_URL/g, label: 'direct FROMCODE_API_URL bridge usage' },
-      { regex: /NEXT_PUBLIC_API_URL/g, label: 'direct NEXT_PUBLIC_API_URL usage in plugin/theme code' },
+      // READING the variable is the violation — the URL comes from `ApplicationUrlUtils`, which is the
+      // whole point of the rule. A test ASSIGNING it is arranging the world the code under test runs
+      // in, the way a fixture sets any other environment value; there is no other way to simulate a
+      // deployment's base URL, so reporting it asks for a test to be deleted rather than fixed.
+      { regex: /NEXT_PUBLIC_API_URL(?!\s*=[^=])/g, label: 'direct NEXT_PUBLIC_API_URL usage in plugin/theme code' },
       { regex: /SystemConstants\.API_PATH\.AUTH\b/g, label: 'framework auth API path constant usage in plugin/theme code' },
       { regex: /ApiPathUtils\.authPath\s*\(/g, label: 'framework auth path builder usage in plugin/theme code' },
       {

@@ -126,6 +126,7 @@ export class PluginUiCompiler {
       jsxFragment: 'ReactPrimitives.Fragment',
       banner: { js: BuildToolchain.BROWSER_REQUIRE_SHIM },
       external: this.toolchain.browserExternals(extraExternal),
+      plugins: [BuildToolchain.denyFrameworkInternals()],
       logLevel: 'warning',
     });
 
@@ -187,6 +188,7 @@ export class PluginUiCompiler {
         jsxFragment: 'ReactPrimitives.Fragment',
         banner: { js: BuildToolchain.BROWSER_REQUIRE_SHIM },
         external: this.toolchain.browserExternals([]),
+      plugins: [BuildToolchain.denyFrameworkInternals()],
         logLevel: 'warning',
       });
     }
@@ -232,6 +234,7 @@ export class PluginUiCompiler {
       jsxFragment: 'ReactPrimitives.Fragment',
       banner: { js: BuildToolchain.BROWSER_REQUIRE_SHIM },
       external: this.toolchain.browserExternals(extraExternal),
+      plugins: [BuildToolchain.denyFrameworkInternals()],
       logLevel: 'warning',
     });
   }
