@@ -1,19 +1,9 @@
 import type { ReactNode } from 'react';
+import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan-table.interface';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
-type PlanTable = {
-  name: string;
-  rows: number;
-  mode: 'preserve' | 'remap' | 'skip';
-  basis: 'noTable' | 'naturalKey' | 'empty' | 'aboveSequence' | 'belowSequence';
-  minId: number | null;
-  taken: number | null;
-  opaqueJsonColumns: string[];
-  repointedReferences: Array<{ column: string; path: string[]; targetTable: string }>;
-  droppedColumns: string[];
-};
 
 /**
  * The import plan, as something an operator can actually read before deciding. Presentational.
@@ -49,7 +39,7 @@ export class ImportPlanView extends PureReactor {
     );
   }
 
-  private static lost(table: PlanTable): ReactNode {
+  private static lost(table: IImportPlanTable): ReactNode {
     const json = ImportPlanView.columns('JSON not re-pointed', table.opaqueJsonColumns);
     const dropped = ImportPlanView.columns('Dropped', table.droppedColumns);
     if (!json && !dropped) return null;
@@ -57,7 +47,7 @@ export class ImportPlanView extends PureReactor {
   }
 
   /** The positive counterpart of `lost`'s "JSON not re-pointed": what the remap WILL follow. */
-  private static repointed(table: PlanTable): ReactNode {
+  private static repointed(table: IImportPlanTable): ReactNode {
     const labels = table.repointedReferences.map((ref) => `${ref.path.length ? `${ref.column}[].${ref.path.join('.')}` : ref.column} → ${ref.targetTable}`);
     return ImportPlanView.columns('Re-pointed', labels);
   }
@@ -98,12 +88,12 @@ export class ImportPlanView extends PureReactor {
 
   render(): ReactNode {
     const plan = this.plan;
-    const all: PlanTable[] = plan.tables ?? [];
+    const all: IImportPlanTable[] = plan.tables ?? [];
     const manifest = plan.manifest ?? {};
 
     // A 0-row table is a no-op whatever its mode, so it groups by emptiness first. Biggest data
     // first within each group — the rows that matter most are the ones you should not have to scroll to.
-    const byRows = (a: PlanTable, b: PlanTable) => b.rows - a.rows;
+    const byRows = (a: IImportPlanTable, b: IImportPlanTable) => b.rows - a.rows;
     const empty = all.filter((t) => t.rows === 0);
     const withRows = all.filter((t) => t.rows > 0);
     const skipped = withRows.filter((t) => t.mode === 'skip').sort(byRows);

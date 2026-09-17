@@ -96,7 +96,30 @@ export class OopGuardBaselines {
    * Marking the ARRAY containers readonly is therefore sufficient, and that IS expressible as a plain
    * (recursive) interface — see `ICollectionInput` / `IFieldInput`.
    */
-  static readonly LOAD_BEARING_TYPES: ReadonlySet<string> = new Set<string>([]);
+  /**
+   * Declarations that genuinely cannot live inside a class, and are therefore not debt.
+   *
+   * The convention allows exactly two shapes to stay a `type`: a FUNCTION-TYPE alias, and a
+   * derivation (`Pick`, a mapped type, a union of object shapes). Neither can be expressed as a class
+   * or as one interface, and TypeScript has no way to write them inside a class body. Everything else
+   * — a data record, a closed string union — has a home: a class, an interface, or a reactor `Enum`.
+   *
+   * Each entry names WHY, so this cannot quietly become the baseline it replaced.
+   */
+  static readonly LOAD_BEARING_TYPES: ReadonlySet<string> = new Set<string>([
+    // `type SqlRunner = (text, values?) => Promise<Row[]>` — the function these classes are
+    // constructed with. A function-type alias is the canonical survivor.
+    'database/src/dialects/postgres/column-inspector.ts',
+    'database/src/dialects/postgres/declared-nullability-reconciler.ts',
+    'database/src/dialects/postgres/declared-unique-reconciler.ts',
+    'database/src/dialects/postgres/tenant/tenant-isolation.ts',
+    // `ITenantPolicySpec` is a DISCRIMINATED UNION of policy shapes, each with its own fields. A
+    // single interface cannot express "one of these four"; a class cannot either.
+    'database/src/interfaces/tenant-isolation.interface.ts',
+    // `SystemSettingKey` is derived from the META_KEY map (`typeof X[keyof typeof X]`), so a new key
+    // with no descriptor is a compile error. A mapped derivation, not a declaration anyone authored.
+    'core/src/settings/system-setting-registry.ts',
+  ]);
 
 
   /**

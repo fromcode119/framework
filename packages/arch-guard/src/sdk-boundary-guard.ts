@@ -1,6 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
+import { GuardScope } from './cli/guard-scope';
 
 /**
  * Plugins and themes may import only `@fromcode119/sdk` — never core/database/api directly.
@@ -13,10 +14,16 @@ export class SdkBoundaryGuard {
   static run(): number {
 
     const ROOT = process.cwd();
-    const TARGET_DIRS = [
-      path.resolve(ROOT, '../../plugins'),
-      path.resolve(ROOT, '../../themes'),
-    ];
+    // WHOSE code this checks. The rule is about plugins and themes, so the framework's own area is
+    // never a target; a scoped run narrows it further to the single extension being guarded from its
+    // own repository, and an unscoped run is both trees exactly as before.
+    const TARGET_DIRS = GuardScope.areas(path.resolve(ROOT, '..', '..'))
+      .filter((entry) => entry.area === 'plugins' || entry.area === 'themes')
+      .map((entry) => entry.dir);
+    if (!TARGET_DIRS.length) {
+      console.log('[check-sdk-boundary] OK — no plugin or theme in scope.');
+      return 0;
+    }
     const SOURCE_FILE_PATTERN = /\.(ts|tsx|js|jsx|mjs|cjs)$/;
     const JSON_FILE_PATTERN = /\/package\.json$/;
     const IGNORE_PATH_PATTERNS = [

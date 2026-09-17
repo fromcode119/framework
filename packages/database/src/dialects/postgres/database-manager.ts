@@ -19,7 +19,7 @@ import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tena
 import { PostgresDeclaredUniqueReconciler } from '@database/dialects/postgres/declared-unique-reconciler';
 import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgres/declared-nullability-reconciler';
 import { PostgresColumnInspector } from '@database/dialects/postgres/column-inspector';
-import { PLATFORM_POOL } from '@database/tenant/tenant-scope-store';
+import { PlatformPool } from '@database/tenant/tenant-scope-store';
 import type { IColumnStats } from '@database/interfaces/column-stats.interface';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
@@ -106,7 +106,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     // connection, so a client that had been through any tenant or platform scope came back with the
     // marker cleared and never got it again — every later untenanted platform write on that client
     // was refused. The scope's release reads this and restores the resting state.
-    (this.pool as unknown as Record<symbol, unknown>)[PLATFORM_POOL] = true;
+    PlatformPool.mark(this.pool);
     this.pool.on('connect', (client: any) => {
       PostgresTenantSession.markPlatformAdmin(client);
     });

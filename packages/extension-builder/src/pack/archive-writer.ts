@@ -9,7 +9,6 @@ import { createRequire } from 'node:module';
  * this package is ESM, and Node refused the default import with "does not provide an export named
  * 'default'". `createRequire` asks for it as what it is.
  */
-const archiver = ModuleLocation.require('archiver') as typeof import('archiver');
 
 /**
  * Creates the distributable ZIP archives for plugin/theme/core packages.
@@ -17,10 +16,13 @@ const archiver = ModuleLocation.require('archiver') as typeof import('archiver')
  * PackageBuilder delegates archive creation to this class.
  */
 export class ArchiveWriter {
+  /** CommonJS, so required rather than imported — see the note above. A static, not a module-level const. */
+  private static readonly archiver = ModuleLocation.require('archiver') as typeof import('archiver');
+
   createCoreZip(sourceDir: string, outputPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const output = fs.createWriteStream(outputPath);
-      const archive = archiver('zip', { zlib: { level: 9 } });
+      const archive = ArchiveWriter.archiver('zip', { zlib: { level: 9 } });
 
       output.on('close', () => resolve());
       archive.on('error', (err: any) => reject(err));
@@ -64,7 +66,7 @@ export class ArchiveWriter {
   createZip(sourceDir: string, outputPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const output = fs.createWriteStream(outputPath);
-      const archive = archiver('zip', { zlib: { level: 9 } });
+      const archive = ArchiveWriter.archiver('zip', { zlib: { level: 9 } });
 
       output.on('close', () => resolve());
       archive.on('error', (err: any) => reject(err));
