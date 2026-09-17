@@ -72,14 +72,21 @@ jobs:
         working-directory: framework/Source
         run: npm ci
 
-      # `build:tooling` first: arch-guard imports typor's `build` entry (it reuses the same TypeScript
-      # program the workspace typecheck builds), and typor is consumed as its BUILT output. A fresh
-      # checkout has no `dist`, so building arch-guard alone failed on a module that exists in source.
+      # `build:packages` — tooling, runtime, the generated icon list and the libraries — because the
+      # guards measure BUILT output as well as source, exactly as the Dockerfile does:
+      #   - arch-guard imports typor's `build` entry, and typor is consumed as built output;
+      #   - `app-typecheck` type-checks admin and frontend, which resolve core/react/sdk from `dist`;
+      #   - `imports` resolves `lucide-icon-names.generated.json`, which `build:frontend-icons` emits
+      #     and nothing commits.
+      # Locally none of this showed, because every one of those directories has been on disk for
+      # months. A fresh checkout is the only place the difference is visible.
+      - name: Build the packages the guards measure
+        working-directory: framework/Source
+        run: npm run build:packages
+
       - name: Build the guards
         working-directory: framework/Source
-        run: |
-          npm run build:tooling
-          npm run build --workspace=@fromcode119/arch-guard
+        run: npm run build --workspace=@fromcode119/arch-guard
 
       # `--scope` decides the subject, never the rules. Unquoted interpolation is avoided: the area and
       # name are passed as environment values so a caller cannot inject shell through them.

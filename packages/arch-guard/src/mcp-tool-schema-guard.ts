@@ -55,6 +55,9 @@ export class McpToolSchemaGuard {
 
     const violations: IMcpToolSchemaViolation[] = [];
     for (const root of roots) {
+      // The framework's own CI checks out the framework ALONE, so `plugins/` is legitimately absent
+      // and there is nothing there to scan. An ENOENT here used to end the whole `ci` pass.
+      if (!fs.existsSync(root)) continue;
       for (const file of McpToolSchemaGuard.walk(root)) {
         violations.push(...McpToolSchemaGuard.findViolations(file, fs.readFileSync(file, 'utf8')));
       }
