@@ -4,7 +4,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
 import { AdminClass } from '@/lib/admin-class';
-import type { ISetupAccountErrors } from '@/app/setup/setup-account-errors.interface';
+import type { ISetupAccountErrors } from '@/app/setup/interfaces/setup-account-errors.interface';
 
 /**
  * Step two: the administrator account.

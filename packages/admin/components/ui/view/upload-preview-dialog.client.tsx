@@ -1,6 +1,6 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
+import {PureReactor, prop, Platform} from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
@@ -18,7 +18,7 @@ export class UploadPreviewDialog extends PureReactor {
   @prop declare onConfirm: () => void;
 
   private applyBodyOverflow(): void {
-    if (typeof document === 'undefined') return;
+    if (!Platform.isBrowser) return;
     document.body.style.overflow = this.isOpen ? 'hidden' : 'unset';
   }
 
@@ -31,7 +31,7 @@ export class UploadPreviewDialog extends PureReactor {
   }
 
   componentWillUnmount(): void {
-    if (typeof document !== 'undefined') document.body.style.overflow = 'unset';
+    if (Platform.isBrowser) document.body.style.overflow = 'unset';
   }
 
   render(): ReactNode {

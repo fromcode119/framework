@@ -57,15 +57,58 @@ export class BuildToolchain {
    */
   static readonly BROWSER_REQUIRE_SHIM = 'var require=(m)=>{if(m==="react")return window.React;if(m==="react-dom")return window.ReactDOM;if(m==="react/jsx-runtime"||m==="react/jsx-dev-runtime"){var c=(t,p,k)=>window.React.createElement(t,k===void 0?p:Object.assign({},p,{key:k}));return{jsx:c,jsxs:c,jsxDEV:c,Fragment:window.React.Fragment};}if(m==="lucide-react")return window.Lucide||window.FrameworkIcons;throw new Error("Dynamic require of "+m+" not supported");};';
 
+  /**
+   * Framework packages a plugin or theme must NEVER reach — enforced, not advised.
+   *
+   * These were externals, which meant esbuild left the `require` in the bundle and the HOST resolved
+   * it: an extension could import `@fromcode119/core` and receive the real framework internals, with
+   * only a guard objecting after the fact. The SDK exists so an extension gets a curated surface;
+   * anything that can reach past it makes that surface decorative. Third-party extensions make this a
+   * security boundary, not a style rule.
+   *
+   * `@fromcode119/sdk` is deliberately absent — that IS the sanctioned surface, and the host provides
+   * it at runtime.
+   */
+  static readonly FORBIDDEN_PACKAGES: readonly string[] = [
+    '@fromcode119/core',
+    '@fromcode119/database',
+    '@fromcode119/media',
+    '@fromcode119/email',
+    '@fromcode119/cache',
+    '@fromcode119/scheduler',
+  ];
+
+  /**
+   * An esbuild plugin that REFUSES a forbidden specifier rather than quietly externalising it.
+   *
+   * Failing the build is the point: a lint can be ignored and a violation can ship, but an extension
+   * that cannot be built cannot reach anything. The message names the import and the alternative, so
+   * the fix is obvious from the error alone.
+   */
+  static denyFrameworkInternals() {
+    const forbidden = new Set(BuildToolchain.FORBIDDEN_PACKAGES);
+    return {
+      name: 'deny-framework-internals',
+      setup(build: { onResolve(o: { filter: RegExp }, cb: (a: { path: string; importer: string }) => unknown): void }) {
+        build.onResolve({ filter: /^@fromcode119\// }, (args) => {
+          const pkg = args.path.split('/').slice(0, 2).join('/');
+          if (!forbidden.has(pkg)) return null;
+          return {
+            errors: [{
+              text: `"${args.path}" is framework-internal and cannot be imported by a plugin or theme. `
+                + `Import what you need from "@fromcode119/sdk"; if the SDK does not expose it, that is a `
+                + `gap to fill in the SDK, not to reach past it.`,
+              location: { file: args.importer },
+            }],
+          };
+        });
+      },
+    };
+  }
+
   nodeExternals(): string[] {
     return [
       '@fromcode119/sdk',
-      '@fromcode119/core',
-      '@fromcode119/database',
-      '@fromcode119/media',
-      '@fromcode119/email',
-      '@fromcode119/cache',
-      '@fromcode119/scheduler',
       // Native or otherwise unbundlable, and externalised by build-plugins.sh too.
       'sweph',
       'handlebars',

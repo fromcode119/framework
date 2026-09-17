@@ -3,6 +3,10 @@ import path from 'path';
 import { ProjectPaths } from '@core/config/paths';
 import { DatabaseConnectionFileService } from '@core/security/database-connection-file-service';
 import { DatabaseDriverChoice } from '@core/security/enums/database-driver-choice.enum';
+import type { IBundledDatabaseTarget } from '@core/security/interfaces/bundled-database-target.interface';
+import type { IExternalDatabaseServer } from '@core/security/interfaces/external-database-server.interface';
+import type { ISetupDatabaseRequest } from '@core/security/interfaces/setup-database-request.interface';
+import type { ISetupDatabaseOptions } from '@core/security/interfaces/setup-database-options.interface';
 
 /**
  * Turns "which database" — the one question the first-run wizard asks before anything exists — into
@@ -217,47 +221,3 @@ export class SetupDatabaseService {
   }
 }
 
-/** A database the deployment ships with itself, described by the deployment rather than guessed. */
-export interface IBundledDatabaseTarget {
-  /** The driver this server speaks — a wizard must not offer a different one against it. */
-  readonly driver: string;
-  readonly host: string;
-  readonly port: number;
-  readonly database: string;
-  readonly ownerRole: string;
-  readonly runtimeRole: string;
-}
-
-/** A database the operator already runs, described by them. Nothing here is created by this platform. */
-export interface IExternalDatabaseServer {
-  readonly host: string;
-  readonly port?: number | string;
-  readonly database: string;
-  /** The role that SERVES REQUESTS. On a driver that isolates, it must own nothing. */
-  readonly user: string;
-  readonly password?: string;
-  /** The role that owns the schema and runs migrations. Required wherever isolation is real. */
-  readonly ownerUser?: string;
-  readonly ownerPassword?: string;
-}
-
-/** What the wizard posts. `server` present means "a database I run"; absent means the bundled one. */
-export interface ISetupDatabaseRequest {
-  readonly driver: unknown;
-  readonly server?: IExternalDatabaseServer;
-}
-
-/** What the wizard shows. Every field here appears on screen before anything is committed. */
-export interface ISetupDatabaseOptions {
-  readonly drivers: Array<{
-    value: string;
-    isAvailable: boolean;
-    isSingleSiteOnly: boolean;
-    hasBundledServer: boolean;
-    needsOwnerRole: boolean;
-    defaultPort: number;
-  }>;
-  readonly bundled: IBundledDatabaseTarget | null;
-  readonly sqliteFile: string;
-  readonly connectionFile: string;
-}

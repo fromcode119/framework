@@ -1,7 +1,7 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
-import { PortableColumnTypes } from '../helpers/portable-column-types';
-import { Logger } from '../../logging';
+import { DialectHelper } from '@core/database/helpers/dialect';
+import { PortableColumnTypes } from '@core/database/helpers/portable-column-types';
+import { Logger } from '@core/logging';
 
 /**
  * Which challenge a certificate was ordered with, and whether it covers the wildcard.

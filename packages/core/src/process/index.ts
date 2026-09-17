@@ -21,3 +21,5 @@ export type { IGuestProcess } from '@core/process/interfaces/guest-process.inter
 export type { IGuestProcessSpec } from '@core/process/interfaces/guest-process-spec.interface';
 export type { IMessagePort } from '@core/process/interfaces/message-port.interface';
 export type { ISpawnerPrepared } from '@core/process/interfaces/spawner-prepared.interface';
+export { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
+export { MessagePortEvent } from '@core/process/enums/message-port-event.enum';

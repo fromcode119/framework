@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, pgSchema, serial, boolean, integer, jsonb, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, serial, boolean, integer, jsonb, uuid } from 'drizzle-orm/pg-core';
 
 /**
  * The framework's system tables. Drizzle needs the table objects as values; they live as static
@@ -221,15 +221,4 @@ export class Schema {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
 
-// Introspection Schema for info-schema queries
-  static readonly infoSchema = pgSchema('information_schema');
-  static readonly infoTables = Schema.infoSchema.table('tables', {
-  tableName: text('table_name'),
-  tableSchema: text('table_schema'),
-});
-  static readonly infoColumns = Schema.infoSchema.table('columns', {
-  tableName: text('table_name'),
-  columnName: text('column_name'),
-  tableSchema: text('table_schema'),
-});
 }

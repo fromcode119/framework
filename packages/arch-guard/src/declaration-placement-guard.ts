@@ -22,9 +22,6 @@ export class DeclarationPlacementGuard {
     'node_modules', 'dist', '.next', 'build', 'coverage', '.git', 'ui-ssr',
   ]);
 
-  static readonly BASELINE: Readonly<Record<string, number>> = {
-    plugins: 0, themes: 0, framework: 0, appearance: 0,
-  };
 
   /**
    * `appearance/` packs are FLAT — the workspace typecheck includes only `index.ts`, `*.ts`, `*.tsx` at

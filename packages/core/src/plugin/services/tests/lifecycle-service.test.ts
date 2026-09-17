@@ -1,11 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs';
 
-vi.mock('@core/security/sandbox-manager', () => ({
-  SandboxManager: vi.fn(function SandboxManager() {
-    throw new Error('no isolated-vm');
-  }),
-}));
 vi.mock('@core/security/integrity-service', () => ({ IntegrityService: { verifyPluginIntegrity: vi.fn().mockResolvedValue(true) } }));
 vi.mock('@core/security/plugin-signature-service', () => ({ PluginSignatureService: { isEnforced: vi.fn().mockReturnValue(false), verify: vi.fn().mockReturnValue(true) } }));
 vi.mock('@core/management/manifest', () => ({ ManifestValidator: { validate: vi.fn() } }));
@@ -23,12 +18,12 @@ vi.mock('@core/plugin/services/runtime/plugin-failure-isolation-service', () => 
   }),
 }));
 
-import { LifecycleService } from '../runtime/lifecycle-service';
-import { CoreServices } from '../../../services/core-services';
-import { ServerCoreServices } from '../../../services/server-core-services';
-import { PluginState } from '../enums/plugin-state.enum';
-import { PluginRegistryHealth } from '../enums/plugin-registry-health.enum';
-import { PluginHeldReason } from '../enums/plugin-held-reason.enum';
+import { LifecycleService } from '@core/plugin/services/runtime/lifecycle-service';
+import { CoreServices } from '@core/services/core-services';
+import { ServerCoreServices } from '@core/services/server-core-services';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
+import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 
 const makePlugin = (overrides: Record<string, any> = {}) => ({
   manifest: { slug: 'test-plugin', name: 'Test', version: '1.0.0', category: 'general', capabilities: [] },

@@ -1,4 +1,4 @@
-import type { IDnsChallengeRecord } from '@core/certificates/acme/dns-challenge-record.interface';
+import type { IDnsChallengeRecord } from '@core/certificates/acme/interfaces/dns-challenge-record.interface';
 
 /**
  * What `AcmeClientAdapter` needs from a DNS-01 provider — publish a TXT record and withdraw it

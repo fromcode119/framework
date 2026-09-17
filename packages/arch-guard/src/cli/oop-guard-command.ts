@@ -1,6 +1,7 @@
 import { OopGuard } from '../oop-guard-rules/oop-guard';
 import { OopGuardBaselines } from '../oop-guard-rules/oop-guard-baselines';
 import { ArchorCommand } from './arch-guard-command';
+import { GuardTarget } from './guard-target';
 
 /**
  * `arch-guard oop-guard` — report (or enforce) the OOP conventions across every area.
@@ -11,6 +12,9 @@ import { ArchorCommand } from './arch-guard-command';
  */
 export class OopGuardCommand extends ArchorCommand {
   readonly summary = 'Report or enforce the OOP conventions (ratcheted per area).';
+
+  /** Same env the build used — the bases list is part of the rule, not a caller's preference. */
+  readonly ciEnv = { TSMI_COMPONENT_BASES: 'AdminComponent,PluginComponent,ThemeComponent', FRAMEWORK_OOP_MODE: 'error' };
 
   run(argv: string[]): number {
     const mode = process.env.FRAMEWORK_OOP_MODE === 'error' ? 'error' : 'warn';
@@ -29,7 +33,7 @@ export class OopGuardCommand extends ArchorCommand {
       console.error('These buckets were driven to zero and are enforced. Run --list <bucket> for the offenders.');
     }
     if (overBaseline.length) {
-      console.error(`\nViolations ABOVE baseline: ${overBaseline.join(', ')} — run --list violations.`);
+      console.error(`\nMUST BE 0: ${overBaseline.join(', ')} — run --list <bucket> for the offenders.`);
     }
     if (mode === 'error' && (overBaseline.length || regressed.length)) {
       console.error('\nFramework OOP check FAILED (mode=error).');
@@ -67,7 +71,7 @@ export class OopGuardCommand extends ArchorCommand {
         `${b.warnings.length} warn (${b.files} files)`);
     }
     console.log(`Total: ${sum('violations')} violations, ${sum('enumDebt')} enum-debt (unions→Enum), ` +
-      `${sum('ifaceDebt')} iface-debt (I-prefix + one-per-file), ${sum('exportDebt')} export-debt (→ class), ` +
+      `${sum('ifaceDebt')} iface-debt (I-prefix, one-per-file, never beside a class), ${sum('exportDebt')} export-debt (→ class), ` +
       `${sum('clientDebt')} use-client-literal (→ .client. filename), ${sum('orphanIface')} orphan-interface, ` +
       `${sum('warnings')} warnings.`);
     console.log(`       ${sum('defaultExport')} export-default-expr, ` +
@@ -78,29 +82,29 @@ export class OopGuardCommand extends ArchorCommand {
   }
 
   /**
-   * The three ratcheted buckets, printed per area. Returns the areas that are ABOVE their baseline —
-   * a non-empty result is what fails the build in error mode.
+   * Every enforced bucket, printed per area. Returns the areas that are not at zero — a non-empty
+   * result is what fails the build in error mode.
    */
   private static ratchets(perPackage: Map<string, any>): string[] {
-    const buckets: ReadonlyArray<readonly [string, string, Record<string, number>, string]> = [
-      ['violations', 'Violations per area', OopGuardBaselines.VIOLATION_BASELINE, ''],
-      ['moduleDecl', 'Module-level declarations per area', OopGuardBaselines.MODULE_DECL_BASELINE, ' moduleDecl'],
-      ['typesFile', '*.types.ts bags per area', OopGuardBaselines.TYPES_FILE_BASELINE, ' typesFile'],
+    const buckets: ReadonlyArray<readonly [string, string, string]> = [
+      ['violations', 'Violations per area', ''],
+      ['moduleDecl', 'Module-level declarations per area', ' moduleDecl'],
+      ['typesFile', '*.types.ts bags per area', ' typesFile'],
+      ['typeAlias', 'export type aliases per area', ' typeAlias'],
+      ['exportDebt', 'module-level export const/function per area', ' exportDebt'],
     ];
     const overBaseline: string[] = [];
 
-    for (const [key, heading, baselines, label] of buckets) {
-      const perArea = new Map(Object.keys(baselines).map((a) => [a, 0]));
+    for (const [key, heading, label] of buckets) {
+      const perArea = new Map<string, number>();
       for (const [pkg, b] of perPackage) {
         const area = OopGuard.areaOf(pkg);
         perArea.set(area, (perArea.get(area) ?? 0) + b[key].length);
       }
-      console.log(`${heading} (ratcheted — may fall, never rise):`);
+      console.log(`${heading} (must be 0):`);
       for (const [area, count] of perArea) {
-        const baseline = baselines[area];
-        const note = count > baseline ? ' ← ABOVE BASELINE' : (count < baseline ? ' ← lower the baseline' : '');
-        console.log(`  ${area}: ${count} (baseline ${baseline})${note}`);
-        if (count > baseline) overBaseline.push(`${area}${label}: ${count} > ${baseline}`);
+        console.log(`  ${area}: ${count}${count > GuardTarget.COUNT ? ' ← MUST BE 0' : ''}`);
+        if (count > GuardTarget.COUNT) overBaseline.push(`${area}${label}: ${count}`);
       }
     }
     return overBaseline;

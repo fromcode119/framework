@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { SystemConstants } from '@fromcode119/core/client';
-import { GuestProcessLaunchers, PluginChannel } from '@fromcode119/core/process';
+import { GuestOutputStream, GuestProcessLaunchers, PluginChannel } from '@fromcode119/core/process';
 import type { IGuestProcess } from '@fromcode119/core/process';
 import { ThemeRenderSettings } from '@/lib/ssr/host/theme-render-settings';
 import { ThemeSsrGeneration } from '@/lib/ssr/theme-ssr-generation';
@@ -53,7 +53,7 @@ export class ThemeRenderHost {
     });
     this.guest = guest;
     this.channel = new PluginChannel(guest.port);
-    guest.onOutput((stream, line) => (stream === 'stderr' ? console.warn(`[${label}] ${line}`) : console.info(`[${label}] ${line}`)));
+    guest.onOutput((stream, line) => (stream === GuestOutputStream.STDERR ? console.warn(`[${label}] ${line}`) : console.info(`[${label}] ${line}`)));
     guest.onExit((code, signal) => {
       if (this.guest !== guest) return;
       this.alive = false;

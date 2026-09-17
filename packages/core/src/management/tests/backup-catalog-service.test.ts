@@ -5,13 +5,14 @@ import path from 'path';
 import { ProjectPaths } from '@core/config/paths';
 import { BackupCatalogService } from '@core/management/backup-catalog-service';
 import { BackupCatalogGroupKey } from '@core/management/enums/backup-catalog-group-key.enum';
+import { FrameworkRootLocator } from '@core/config/framework-root-locator';
 
 describe('BackupCatalogService', () => {
   const temporaryDirectories: string[] = [];
 
   afterEach(() => {
     delete process.env.FROMCODE_PROJECT_ROOT;
-    (ProjectPaths as any).cachedRoot = null;
+    FrameworkRootLocator.forget();
 
     for (const directoryPath of temporaryDirectories) {
       if (fs.existsSync(directoryPath)) {

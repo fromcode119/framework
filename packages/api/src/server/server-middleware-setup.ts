@@ -1,40 +1,28 @@
 /** ServerMiddlewareSetup — configures Express middlewares. Extracted from APIServer (ARC-007). */
 
 import express from 'express';
-import { CookieConstants, Logger, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMembershipService, TenantMode, TenantResolverService } from '@fromcode119/core';
+import { CookieConstants, Logger, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
-import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
-import { SiteVisibilityMiddleware } from '@api/server/site-visibility-middleware';
 import { ApiConfig } from '@api/config/api-config';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
 import { RequestLocaleService } from '@api/services/request/request-locale-service';
 import { RequestTenantService } from '@api/services/request/request-tenant-service';
-import { AdminTenantResolver } from '@api/services/request/admin-tenant-resolver';
-import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
 import { ScimRouteUtils } from '@api/utils/scim-route-utils';
 import { InternalRouteUtils } from '@api/utils/internal-route-utils';
 import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resolver';
-import { ApiKeyTenantGate } from '@api/server/api-key-tenant-gate';
-import { TenantRequestBinder } from '@api/server/tenant-request-binder';
 import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
 import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
 import { PlatformRobotsHeaderMiddleware } from '@api/middlewares/platform-robots-header-middleware';
+import { ServerTenantMiddlewareParts } from '@api/server/server-tenant-middleware-parts';
 
 export class ServerMiddlewareSetup {
   private readonly requestCookies = new RequestCookieService();
   private readonly requestLocale = new RequestLocaleService();
   private readonly jsonCompression = new JsonCompressionMiddleware();
   private readonly platformRobots = new PlatformRobotsHeaderMiddleware();
-  /** Host -> tenant. Built lazily from the manager's runtime connection. */
-  private tenants: TenantResolverService | null = null;
-  /** Api-key surface: token -> tenant. Built lazily alongside `tenants`. */
-  private apiKey: ApiKeyTenantGate | null = null;
-  private tenantBinder: TenantRequestBinder | null = null;
-  private siteVisibility?: SiteVisibilityMiddleware;
-
-  /** Admin surface: session token -> tenant, membership-checked. Built lazily alongside `tenants`. */
-  private adminTenant: AdminTenantResolver | null = null;
+  /** The tenant collaborators, built lazily from the manager's runtime connection. */
+  private tenantParts: ServerTenantMiddlewareParts | null = null;
 
   constructor(
     private readonly app: express.Application,
@@ -69,7 +57,7 @@ export class ServerMiddlewareSetup {
 
     // IMMEDIATELY after auth, and before anything that can return content: the first point in the
     // chain where both halves of the question exist — which site, and who is asking.
-    this.app.use(this.visibilityGate().middleware());
+    this.app.use(this.parts().visibilityGate().middleware());
 
     // Dynamic post-auth plugin middlewares
     this.app.use((req, res, next) => this.manager.middlewares.dispatch('post_auth' as any, req, res, next));
@@ -173,7 +161,7 @@ export class ServerMiddlewareSetup {
     // the site (see ApiKeyTenantResolver). Checked before the admin/storefront split — an api-key
     // request with an admin client header is still an api-key request.
     if (ApiKeyTenantResolver.hasKey(req)) {
-      this.apiKeyGate().run(req, res, locale, next);
+      this.parts().apiKeyGate().run(req, res, locale, next);
       return;
     }
 
@@ -206,7 +194,7 @@ export class ServerMiddlewareSetup {
         }
         // Visibility is NOT decided here — it needs to know WHO is asking, and nothing does until the
         // auth middleware has run, which is necessarily after this. See SiteVisibilityMiddleware.
-        await this.binder().bind(req, res, locale, tenant, next, 'storefront');
+        await this.parts().binder().bind(req, res, locale, tenant, next, 'storefront');
       })
       .catch((error: unknown) => {
         this.logger.error(`Tenant resolution failed for host "${host}"`, error);
@@ -217,7 +205,7 @@ export class ServerMiddlewareSetup {
   /** The first candidate host that names a tenant, or null. Order is the trust order. */
   private async resolveFirst(candidates: string[]) {
     for (const candidate of candidates) {
-      const tenant = await this.tenantResolver().resolveByHost(candidate);
+      const tenant = await this.parts().resolver().resolveByHost(candidate);
       if (tenant) return tenant;
     }
     return null;
@@ -229,7 +217,7 @@ export class ServerMiddlewareSetup {
    * and neither is "this domain does not exist".
    */
   private runAdminTenant(req: any, res: any, locale: string, next: any): void {
-    this.resolveAdminTenant(req)
+    this.parts().admin().resolve(req)
       .then(async ({ tenant, reason }) => {
         if (!tenant) {
           // Unauthenticated admin traffic still has to reach the auth middleware and the login
@@ -259,7 +247,7 @@ export class ServerMiddlewareSetup {
           return;
         }
 
-        await this.binder().bind(req, res, locale, tenant, next, 'admin');
+        await this.parts().binder().bind(req, res, locale, tenant, next, 'admin');
       })
       .catch((error: unknown) => {
         this.logger.error('Admin tenant resolution failed', error);
@@ -267,39 +255,8 @@ export class ServerMiddlewareSetup {
       });
   }
 
-  private apiKeyGate(): ApiKeyTenantGate {
-    if (!this.apiKey) this.apiKey = new ApiKeyTenantGate(this.manager.db, this.tenantResolver(), this.binder(), this.logger);
-    return this.apiKey;
+  /** The tenant collaborators — see ServerTenantMiddlewareParts for why they are one object. */
+  private parts(): ServerTenantMiddlewareParts {
+    return (this.tenantParts ??= new ServerTenantMiddlewareParts(this.manager.db, this.auth, this.logger));
   }
-
-  private binder(): TenantRequestBinder {
-    if (!this.tenantBinder) this.tenantBinder = new TenantRequestBinder(this.manager.db, this.logger);
-    return this.tenantBinder;
-  }
-
-  /** Decides whether a request may read a site that is not published yet. Built once. */
-  private visibilityGate(): SiteVisibilityMiddleware {
-    if (!this.siteVisibility) {
-      this.siteVisibility = new SiteVisibilityMiddleware(new SiteVisibilityGate(this.manager.db), this.logger);
-    }
-    return this.siteVisibility;
-  }
-
-  private resolveAdminTenant(req: any) {
-    if (!this.adminTenant) {
-      this.adminTenant = new AdminTenantResolver(
-        this.auth,
-        this.tenantResolver(),
-        new TenantMembershipService(this.manager.db),
-        new WorkspaceHostService(this.tenantResolver()),
-      );
-    }
-    return this.adminTenant.resolve(req);
-  }
-
-  private tenantResolver(): TenantResolverService {
-    if (!this.tenants) this.tenants = TenantResolverService.shared(this.manager.db);
-    return this.tenants;
-  }
-
 }

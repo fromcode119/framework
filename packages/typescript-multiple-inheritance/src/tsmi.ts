@@ -1,3 +1,5 @@
+import type { AbstractConstructor } from './abstract-constructor';
+import type { UnionToIntersection } from './union-to-intersection';
 import type { IConstructor } from './interfaces/constructor.interface';
 
 /**
@@ -23,8 +25,32 @@ import type { IConstructor } from './interfaces/constructor.interface';
  *    them into values — this is the bug most hand-rolled mixin helpers ship with).
  *  - Pure type-shape classes (all `declare` members) carry no runtime members at all, so composing them
  *    costs nothing beyond one empty subclass.
+ *  - ABSTRACT bases are accepted, which is the case this exists for: splitting one large class into
+ *    halves that are abstract precisely because neither is usable alone. `abstract` is erased at
+ *    runtime, so `extends` and `Reflect.construct` work on them unchanged.
+ *
+ * ONE CHECK DOES NOT SURVIVE, and it is worth knowing before choosing this over a plain chain: the
+ * result is a concrete constructor, so TypeScript no longer enforces that the final class implements
+ * a base's abstract MEMBERS. That check is lost in any type-level mixin, not just this one. Where it
+ * matters more than the shape does, use a linear `A extends B extends C` chain instead — the auth
+ * controllers and ThemeManager are both built that way on purpose.
  */
 export class Typor {
+  /**
+   * The bases a mixed class folded in, published on the class itself.
+   *
+   * A mixin COPIES the second and later bases onto one prototype; it does not chain them. Anything
+   * that walks `getPrototypeOf` to find per-class metadata therefore sees only the first base and
+   * silently misses the rest. reactor is exactly such a consumer: `@state` registers against the
+   * declaring prototype, and a component split as `extends A, B` lost every state field declared in
+   * B — no error, just a field that never re-rendered.
+   *
+   * `Symbol.for` rather than an import, deliberately: typor must not depend on reactor, and reactor
+   * must not depend on typor. Whoever needs the extra prototypes looks for this well-known symbol and
+   * ignores it when absent.
+   */
+  static readonly MIXED_BASES = Symbol.for('typor.mixedBases');
+
   /** Copy own property descriptors (methods, getters, setters) from `source` onto `target`. */
   private static copyMembers(target: object, source: object): void {
     for (const key of Reflect.ownKeys(source)) {
@@ -35,38 +61,37 @@ export class Typor {
   }
 
   /**
-   * Compose two or more classes into one. See the class doc for resolution order.
+   * Compose ANY NUMBER of classes into one. See the class doc for resolution order.
    *
-   * The instance and static shapes are written INLINE rather than as named `type` aliases. Both are
-   * type-level OPERATORS — a conditional with `infer`, and a mapped `Omit` — which have no class or
-   * interface form, so naming them only added two `type` declarations to a package that otherwise has
-   * none. Inlining is the remedy the conventions prescribe for exactly this case.
+   * One variadic signature rather than a hand-written overload per arity. It used to be three
+   * overloads — two, three and four bases — which meant five was a type error for no reason anyone
+   * could act on: a class large enough to want splitting is exactly the class likely to want more
+   * than four parts.
+   *
+   * `T[number]` indexes the tuple of bases, which yields a UNION; `UnionToIntersection` turns that
+   * into the intersection the result actually has.
+   *
+   * The static side is `UnionToIntersection<T[number]>` — the base types WHOLE, not `Omit`-ed. The
+   * `Omit<A, 'prototype'>` this used to do is what made the documented claim about static types false:
+   * measured before the change, a class extending a mixin of two bases could not see either base's
+   * statics at the type level, while the runtime had them both. Omitting `prototype` was meant to
+   * avoid a conflict between the bases' prototypes; intersecting them instead gives `prototype: A & B`,
+   * which is the honest type and costs nothing.
    */
-  static mixin<A extends IConstructor, B extends IConstructor>(
-    a: A, b: B,
-  ): IConstructor<
-    (A extends IConstructor<infer I> ? I : never) & (B extends IConstructor<infer I> ? I : never)
-  > & Omit<A, 'prototype'> & Omit<B, 'prototype'>;
-  static mixin<A extends IConstructor, B extends IConstructor, C extends IConstructor>(
-    a: A, b: B, c: C,
-  ): IConstructor<
-    (A extends IConstructor<infer I> ? I : never) & (B extends IConstructor<infer I> ? I : never)
-    & (C extends IConstructor<infer I> ? I : never)
-  > & Omit<A, 'prototype'> & Omit<B, 'prototype'> & Omit<C, 'prototype'>;
-  static mixin<A extends IConstructor, B extends IConstructor, C extends IConstructor, D extends IConstructor>(
-    a: A, b: B, c: C, d: D,
-  ): IConstructor<
-    (A extends IConstructor<infer I> ? I : never) & (B extends IConstructor<infer I> ? I : never)
-    & (C extends IConstructor<infer I> ? I : never) & (D extends IConstructor<infer I> ? I : never)
-  > & Omit<A, 'prototype'> & Omit<B, 'prototype'> & Omit<C, 'prototype'> & Omit<D, 'prototype'>;
-  static mixin(...bases: IConstructor[]): IConstructor {
+  static mixin<T extends AbstractConstructor[]>(
+    ...bases: T
+  ): IConstructor<UnionToIntersection<T[number] extends AbstractConstructor<infer I> ? I : never>>
+    & UnionToIntersection<T[number]>;
+  static mixin(...bases: AbstractConstructor[]): any {
     const [first, ...rest] = bases;
     if (!first) throw new TypeError('Typor.mixin needs at least one base class.');
-    if (!rest.length) return first;
+    // `abstract` is a COMPILE-TIME marker with no runtime existence, so a single abstract base is a
+    // perfectly good constructor to hand back — the cast states that rather than hiding it.
+    if (!rest.length) return first as IConstructor;
 
     // The FIRST base stays the real prototype parent, so `instanceof first` holds and its constructor
     // runs natively. The others are folded in below.
-    const Mixed = class extends first {
+    const Mixed = class extends (first as IConstructor) {
       constructor(...args: any[]) {
         super(...args);
         for (const base of rest) {
@@ -76,6 +101,10 @@ export class Typor {
         }
       }
     };
+
+    // Publish what was folded in, so a consumer walking the prototype chain can find the bases that
+    // are not on it. See MIXED_BASES.
+    Object.defineProperty(Mixed, Typor.MIXED_BASES, { value: bases, enumerable: false });
 
     for (const base of rest) {
       Typor.copyMembers(Mixed.prototype, base.prototype);

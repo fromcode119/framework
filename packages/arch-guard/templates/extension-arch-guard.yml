@@ -1,0 +1,22 @@
+# Guards THIS extension with the framework's architecture rules.
+#
+# Copy to `.github/workflows/arch-guard.yml` in a plugin, theme or appearance repository and set the
+# two inputs. The rules live in the framework and are versioned with it; this repository supplies only
+# the subject, so no plugin, theme or appearance name ever has to appear inside the framework.
+#
+#   area: plugins | themes | appearance
+#   name: this repository's directory name in the tree (e.g. the plugin slug)
+name: Arch guard
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  guard:
+    uses: fromcode119/framework/.github/workflows/arch-guard.yml@main
+    with:
+      area: plugins
+      name: CHANGE-ME

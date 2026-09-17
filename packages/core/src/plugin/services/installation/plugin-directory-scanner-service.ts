@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
-import Module from 'module';
 import { Logger } from '@core/logging';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { ProjectPaths } from '@core/config/paths';
@@ -10,7 +9,7 @@ import { PluginDependencyInstallerService } from '@core/plugin/services/installa
 import { PluginModuleResolverService } from '@core/plugin/services/installation/plugin-module-resolver-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
-import { PluginEntryModuleLoader } from '@core/plugin/services/installation/plugin-entry-module-loader';
+import { PluginModuleLoader } from '@core/plugin/services/installation/plugin-module-loader';
 
 /**
  * PluginDirectoryScannerService
@@ -35,6 +34,8 @@ export class PluginDirectoryScannerService {
   dependencies: z.record(z.string()).optional(),
 }).passthrough();
 
+  private readonly moduleLoader: PluginModuleLoader;
+
   constructor(
     private pluginsRoot: string,
     private projectRoot: string,
@@ -43,71 +44,13 @@ export class PluginDirectoryScannerService {
     /** T5: when present, isolated plugins are DESCRIBED by their own process instead of required here. */
     private hosts: { isIsolated(sandbox: unknown): Promise<boolean>; describe(slug: string, dir: string, entry: string, manifest: Record<string, unknown>, active: boolean): Promise<Record<string, unknown>> } | null = null,
   ) {
-    this.ensureSharedModuleResolution();
+    this.moduleLoader = new PluginModuleLoader(projectRoot);
+    this.moduleLoader.ensureSharedModuleResolution();
   }
 
-  private ensureSharedModuleResolution(): void {
-    try {
-      const projectNodeModules = path.resolve(this.projectRoot, 'node_modules');
-      if (!fs.existsSync(projectNodeModules) || !fs.statSync(projectNodeModules).isDirectory()) return;
-
-      const delimiter = path.delimiter;
-      const existing = String(process.env.NODE_PATH || '')
-        .split(delimiter)
-        .map((entry) => entry.trim())
-        .filter(Boolean);
-
-      if (!existing.includes(projectNodeModules)) {
-        process.env.NODE_PATH = existing.length > 0
-          ? `${projectNodeModules}${delimiter}${existing.join(delimiter)}`
-          : projectNodeModules;
-        (Module as any)._initPaths();
-      }
-    } catch {
-      // Best effort: plugin resolution still has fallback behavior.
-    }
-  }
-
-  private shouldUseNativeImport(error: unknown): boolean {
-    if (!error || typeof error !== 'object') {
-      return false;
-    }
-
-    const code = 'code' in error ? String((error as { code?: unknown }).code || '') : '';
-    const message = 'message' in error ? String((error as { message?: unknown }).message || '') : '';
-
-    return code === 'ERR_REQUIRE_ESM'
-      || message.includes('Must use import to load ES Module')
-      || message.includes('require() of ES Module');
-  }
-
-  private async nativeImportModule(filePath: string): Promise<any> {
-    const { pathToFileURL } = await import('url');
-    const dynamicImport = new Function('specifier', 'return import(specifier);');
-    return dynamicImport(pathToFileURL(filePath).href);
-  }
-
-  private async loadPluginModule(indexPath: string): Promise<any> {
-    try {
-      return PluginEntryModuleLoader.load(indexPath);
-    } catch (error: any) {
-      if (!this.shouldUseNativeImport(error)) {
-        throw error;
-      }
-
-      return this.nativeImportModule(indexPath);
-    }
-  }
-
-  /** Directory names under a root, lowercased; an absent root is simply an empty set. */
-  private static listDirectoryNames(root: string): Set<string> {
-    try {
-      return new Set(fs.readdirSync(root)
-        .filter((name) => !name.startsWith('.'))
-        .map((name) => name.toLowerCase()));
-    } catch {
-      return new Set<string>();
-    }
+  /** @see PluginModuleLoader.loadPluginModule */
+  loadPluginModule(...args: Parameters<PluginModuleLoader["loadPluginModule"]>): ReturnType<PluginModuleLoader["loadPluginModule"]> {
+    return this.moduleLoader.loadPluginModule(...args);
   }
 
   public async discoverPlugins(
@@ -123,7 +66,7 @@ export class PluginDirectoryScannerService {
     // deployment that root is empty, so the bundled copy is what loads. Either way the slug is
     // marked bundled, which is what makes it always-on and unremovable.
     const bundledRoot = ProjectPaths.getBundledPluginsDir();
-    const bundledSlugs = PluginDirectoryScannerService.listDirectoryNames(bundledRoot);
+    const bundledSlugs = PluginModuleLoader.listDirectoryNames(bundledRoot);
     const roots = [this.pluginsRoot, bundledRoot];
 
     const themesDir = ProjectPaths.getThemesDir();

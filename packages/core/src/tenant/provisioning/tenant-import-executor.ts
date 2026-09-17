@@ -1,3 +1,4 @@
+import { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-import-id-mode.enum';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -67,7 +68,7 @@ export class TenantImportExecutor {
           for (const table of tables) {
             if (table.hasSerialId && table.idSequence) {
               const decision = await TenantImportPlanner.decideIds(this.db, table, reader);
-              if (decision.mode === 'remap') await this.allocateIds(reader, table, remap);
+              if (decision.mode === TenantImportIdMode.REMAP) await this.allocateIds(reader, table, remap);
             }
           }
           for (const table of tables) {

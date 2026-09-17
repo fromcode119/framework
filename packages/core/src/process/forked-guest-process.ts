@@ -3,6 +3,7 @@ import { IpcMessagePort } from '@core/process/ipc-message-port';
 import { LineSplitter } from '@core/process/line-splitter';
 import type { IGuestProcess } from '@core/process/interfaces/guest-process.interface';
 import type { IMessagePort } from '@core/process/interfaces/message-port.interface';
+import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 
 /** A guest that is our own forked child: IPC channel, same user, `kill` is a syscall away. */
 export class ForkedGuestProcess implements IGuestProcess {
@@ -25,9 +26,9 @@ export class ForkedGuestProcess implements IGuestProcess {
     this.child.on('exit', (code, signal) => listener(code, signal));
   }
 
-  onOutput(listener: (stream: 'stdout' | 'stderr', line: string) => void): void {
-    const out = new LineSplitter((line) => listener('stdout', line));
-    const err = new LineSplitter((line) => listener('stderr', line));
+  onOutput(listener: (stream: GuestOutputStream, line: string) => void): void {
+    const out = new LineSplitter((line) => listener(GuestOutputStream.STDOUT, line));
+    const err = new LineSplitter((line) => listener(GuestOutputStream.STDERR, line));
     this.child.stdout?.on('data', (chunk: Buffer) => out.push(chunk));
     this.child.stderr?.on('data', (chunk: Buffer) => err.push(chunk));
     this.child.on('exit', () => { out.flush(); err.flush(); });

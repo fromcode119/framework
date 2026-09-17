@@ -29,7 +29,17 @@ export { SchemaKeyField } from '@database/schema-key-field';
 export { TenantColumn } from '@database/tenant/tenant-column';
 export { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 export type { IColumnStats } from '@database/interfaces/column-stats.interface';
-export type { ITenantIsolation, ITenantPolicySpec, ITenantBlindUniqueRule, IScopedUniqueRules } from '@database/interfaces/tenant-isolation.interface';
+export type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
+export type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-unique-rule.interface';
+export type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+export type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
+export type { IForeignKeyReference } from '@database/interfaces/foreign-key-reference.interface';
+export { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
+export { SharedReadPolicySpec } from '@database/tenant/policies/shared-read-policy-spec';
+export { PlatformKeysVisiblePolicySpec } from '@database/tenant/policies/platform-keys-visible-policy-spec';
+export { JournalPolicySpec } from '@database/tenant/policies/journal-policy-spec';
+export { TenantSettingsPolicySpec } from '@database/tenant/policies/tenant-settings-policy-spec';
+export { UnownedReadPolicySpec } from '@database/tenant/policies/unowned-read-policy-spec';
 export { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
 // The EXECUTING halves of Postgres tenancy. `TenantIsolationSql` — the statements themselves — is
 // deliberately NOT exported: callers get behaviour, never SQL text. These two are here because
@@ -54,4 +64,5 @@ export * from 'drizzle-orm/pg-core';
 
 // Type aliases for backward compatibility
 export type { IDatabaseManager as DatabaseManager } from '@database/interfaces/database-manager.interface';
+export { SchemaReconcileState } from '@database/enums/schema-reconcile-state.enum';
 export { SortDirection } from '@database/enums/sort-direction.enum';

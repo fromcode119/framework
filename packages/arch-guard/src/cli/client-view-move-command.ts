@@ -12,6 +12,10 @@ import { FrameworkRoot } from './framework-root';
 export class ClientViewMoveCommand extends ArchorCommand {
   readonly summary = 'Move *.client.* modules into view/ and rewrite imports [<path> --apply].';
 
+  /** A codemod: it REWRITES source. CI must never run it — a check that edits the tree it is
+   *  checking cannot be trusted to have checked anything. */
+  readonly runsInCi = false;
+
   run(argv: string[]): number {
     const framework = FrameworkRoot.find();
     const apply = argv.includes('--apply');

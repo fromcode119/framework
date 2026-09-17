@@ -3,6 +3,7 @@ import type { ICollection, IResolvedPluginDefaultPageContract } from '@fromcode1
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { ResolutionContractPresentationService } from '@api/services/helpers/resolution-contract-presentation-service';
 import { ResolutionContractPathService } from '@api/services/helpers/resolution-contract-path-service';
+import { ResolutionCollectionLookup } from '@api/services/helpers/resolution-collection-lookup';
 import { PluginDefaultPageContractMaterializationMode } from '@fromcode119/core';
 import { PluginDefaultPageContractResolutionStatus } from '@fromcode119/core';
 
@@ -96,7 +97,7 @@ export class ResolutionContractMatchService {
       preview?: boolean;
     },
   ): Promise<{ type: string; plugin: string; doc: any } | null> {
-    const collectionEntry = this.findPagesCollectionEntry(collections, activePlugins);
+    const collectionEntry = ResolutionCollectionLookup.pages(collections, activePlugins);
     const slugValue = this.resolveSingletonSlugValue(contract);
     if (!collectionEntry || !slugValue) {
       return null;
@@ -135,7 +136,7 @@ export class ResolutionContractMatchService {
   ): Promise<{ type: string; plugin: string; doc: any } | null> {
     const routeParameters = ResolutionContractPathService.extractPathParameters(matchingPattern, normalizedInput);
     const recordSlug = String(routeParameters.slug || '').trim();
-    const collectionEntry = this.findContractCollectionEntry(contract, collections, activePlugins);
+    const collectionEntry = ResolutionCollectionLookup.forContract(contract, collections, activePlugins);
     if (!recordSlug || !collectionEntry || !collectionEntry.collection.fields.some((field) => field.name === 'slug')) {
       return null;
     }
@@ -176,7 +177,7 @@ export class ResolutionContractMatchService {
     },
   ): Promise<{ type: string; plugin: string; doc: any } | null> {
     const baseSlug = this.resolveShellBaseSlug(contract, matchingPattern);
-    const collectionEntry = this.findPagesCollectionEntry(collections, activePlugins);
+    const collectionEntry = ResolutionCollectionLookup.pages(collections, activePlugins);
     if (!baseSlug || !collectionEntry) {
       return null;
     }
@@ -214,57 +215,6 @@ export class ResolutionContractMatchService {
     }
 
     return segments[segments.length - 1] || null;
-  }
-
-  private findContractCollectionEntry(
-    contract: IResolvedPluginDefaultPageContract,
-    collections: Map<string, { collection: ICollection; pluginSlug: string }>,
-    activePlugins: Set<string>,
-  ): { collection: ICollection; pluginSlug: string } | null {
-    const expectedCollection = String(contract.recordCollection || '').trim();
-    if (!expectedCollection) {
-      return null;
-    }
-
-    for (const { collection, pluginSlug } of collections.values()) {
-      if (!collection) {
-        continue;
-      }
-      if (pluginSlug !== contract.pluginSlug) {
-        continue;
-      }
-      if (pluginSlug !== 'system' && !activePlugins.has(pluginSlug)) {
-        continue;
-      }
-
-      const collectionNames = [collection.shortSlug, collection.slug]
-        .map((value) => String(value || '').trim())
-        .filter(Boolean);
-      if (collectionNames.includes(expectedCollection)) {
-        return { collection, pluginSlug };
-      }
-    }
-
-    return null;
-  }
-
-  private findPagesCollectionEntry(
-    collections: Map<string, { collection: ICollection; pluginSlug: string }>,
-    activePlugins: Set<string>,
-  ): { collection: ICollection; pluginSlug: string } | null {
-    for (const { collection, pluginSlug } of collections.values()) {
-      if (!collection) {
-        continue;
-      }
-      if (pluginSlug !== 'system' && !activePlugins.has(pluginSlug)) {
-        continue;
-      }
-      if ((collection.shortSlug || collection.slug) === 'pages') {
-        return { collection, pluginSlug };
-      }
-    }
-
-    return null;
   }
 
   private isRoutableDetailRecord(doc: any, collection: ICollection, preview?: boolean): boolean {

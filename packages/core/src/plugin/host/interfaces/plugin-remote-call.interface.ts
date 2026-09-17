@@ -8,7 +8,8 @@
  * PluginInvocationTokens); it is how the host knows which tenant to run the call under.
  */
 export interface IPluginRemoteCall {
-  root: 'context' | 'core' | 'ddl';
+  /** A `PluginRemoteCallRoot` VALUE — the message is serialised, so it travels as its string. */
+  root: string;
   steps: Array<{ name: string; args?: unknown[] }>;
   token: string | null;
 }

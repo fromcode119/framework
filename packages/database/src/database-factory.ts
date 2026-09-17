@@ -77,11 +77,17 @@ export class DatabaseFactory {
     return DatabaseDialectRegistry.resolve(connection);
   }
 
+  /**
+   * Register every dialect this build ships, on first use.
+   *
+   * There used to be a `typeof window !== 'undefined'` early return here, guarding against being
+   * loaded in a browser. It was dead, and actively harmful if it had ever fired: `DatabaseFactory` is
+   * exported through no client surface, `registerDefaults` runs only from `create()`, and `create()`
+   * has already thrown without a connection string by the time it gets here. Returning early would
+   * have left `drivers` empty and turned a missing driver into "Unsupported database dialect …
+   * Available: " — a worse error than the import failing where it actually failed.
+   */
   private static registerDefaults() {
-    if (typeof window !== 'undefined') {
-      return;
-    }
-
     for (const definition of DatabaseDialectDefinitionLoader.load()) {
       for (const protocol of definition.protocols) {
         if (!this.drivers.has(protocol)) {

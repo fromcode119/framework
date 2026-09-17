@@ -5,6 +5,7 @@ import { CollectionListPageService } from '@/components/collection/list/page-ser
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import type { ICollectionListPageViewProps } from '@/components/collection/list/interfaces/collection-list-page-view-props.interface';
 import type { ICollectionListPageViewState } from '@/components/collection/list/interfaces/collection-list-page-view-state.interface';
+import { RecordOperations } from '@/components/collection/list/record-operations';
 
 /**
  * Imperative lifecycle/effect logic for the collection list page, extracted from the former
@@ -109,7 +110,7 @@ export class CollectionListPageLifecycle {
 
   private static loadPluginSettings(self: any): void {
     const collection = CollectionListPageLifecycle.collectionOf(self);
-    CollectionListPageService.loadPluginSettings(collection?.pluginSlug)
+    RecordOperations.loadPluginSettings(collection?.pluginSlug)
       .then((response) => self.updateState('pluginSettings', response))
       .catch((error) => console.error('Failed to load plugin settings:', error));
   }

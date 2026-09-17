@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgres/declared-nullability-reconciler';
+import { SchemaReconcileState } from '@database/enums/schema-reconcile-state.enum';
 
 /**
  * Relaxing a NOT NULL the schema no longer declares.
@@ -22,7 +23,7 @@ describe('PostgresDeclaredNullabilityReconciler', () => {
 
     const outcome = await new PostgresDeclaredNullabilityReconciler(run).relax('fcp_finance_payment_methods', 'notes');
 
-    expect(outcome.state).toBe('changed');
+    expect(outcome.state).toBe(SchemaReconcileState.CHANGED);
     expect(issued[1].text).toBe('ALTER TABLE "fcp_finance_payment_methods" ALTER COLUMN "notes" DROP NOT NULL');
   });
 
@@ -31,7 +32,7 @@ describe('PostgresDeclaredNullabilityReconciler', () => {
 
     const outcome = await new PostgresDeclaredNullabilityReconciler(run).relax('pages', 'notes');
 
-    expect(outcome.state).toBe('satisfied');
+    expect(outcome.state).toBe(SchemaReconcileState.SATISFIED);
     expect(issued).toHaveLength(1);
   });
 
@@ -40,7 +41,7 @@ describe('PostgresDeclaredNullabilityReconciler', () => {
 
     const outcome = await new PostgresDeclaredNullabilityReconciler(run).relax('pages', 'id');
 
-    expect(outcome.state).toBe('satisfied');
+    expect(outcome.state).toBe(SchemaReconcileState.SATISFIED);
     expect(issued).toHaveLength(1);
     expect(issued.some((entry) => entry.text.includes('DROP NOT NULL'))).toBe(false);
   });
@@ -50,7 +51,7 @@ describe('PostgresDeclaredNullabilityReconciler', () => {
 
     const outcome = await new PostgresDeclaredNullabilityReconciler(run).relax('pages', 'ghost');
 
-    expect(outcome.state).toBe('satisfied');
+    expect(outcome.state).toBe(SchemaReconcileState.SATISFIED);
     expect(issued).toHaveLength(1);
   });
 
@@ -71,7 +72,7 @@ describe('PostgresDeclaredNullabilityReconciler', () => {
 
     const outcome = await new PostgresDeclaredNullabilityReconciler(run).relax('pages', 'notes');
 
-    expect(outcome.state).toBe('failed');
+    expect(outcome.state).toBe(SchemaReconcileState.FAILED);
     expect(outcome.reason).toContain('permission denied');
   });
 
@@ -83,7 +84,7 @@ describe('PostgresDeclaredNullabilityReconciler', () => {
     // refuse the whole boot. What matters is that the statement is never built, so nothing runs.
     const outcome = await new PostgresDeclaredNullabilityReconciler(run).relax('pages"; DROP TABLE users; --', 'notes');
 
-    expect(outcome.state).toBe('failed');
+    expect(outcome.state).toBe(SchemaReconcileState.FAILED);
     expect(outcome.reason).toContain('not a plain SQL identifier');
     expect(issued.some((entry) => entry.text.includes('ALTER TABLE'))).toBe(false);
   });

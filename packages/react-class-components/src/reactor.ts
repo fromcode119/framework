@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import type { ReactNode, RefObject } from 'react';
 import { ReactiveMetadata } from './reactive-metadata';
 import { WatcherDescriptor } from './watcher-descriptor';
+import { ReactiveWatchers } from './reactive-watchers';
 import { Transition } from './transition';
 import { Platform } from './platform';
 
@@ -30,10 +31,9 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
   // Values written through a `@state` accessor that React has not committed yet — see
   // `defineStateAccessors`. Reads consult this FIRST so a field reads back what was just assigned.
   private __pendingState?: Record<string, unknown>;
-  // Reactor's OWN last-seen values for watched keys. React's `prevState` is not dependable here (the
-  // state object is rebuilt per commit and watchers can fire from a hand-called componentDidUpdate),
-  // so we snapshot watched keys ourselves and `@watch` fires reliably on real mounts.
-  private readonly __watchPrev: Record<string, unknown> = {};
+  // Reactor's OWN last-seen values for watched keys — see `ReactiveWatchers`. Built only for a
+  // component that actually declares `@watch`.
+  private __watchers?: ReactiveWatchers;
 
   /**
    * `context` is FORWARDED, not dropped.
@@ -269,62 +269,26 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
     }
 
     if (meta.stateFields.length > 0 || meta.watchers.length > 0) {
-      const watchers = meta.watchers;
       const originalDidMount = self['componentDidMount']?.bind(this);
       self['componentDidMount'] = (): void => {
         this.__mounted = true;
-        if (watchers.length > 0) this.seedWatchPrev(watchers);
+        this.__watchers?.seed(this.state as Record<string, unknown>);
         originalDidMount?.();
       };
     }
 
     if (meta.watchers.length > 0) {
-      const watchers = meta.watchers;
-      const stateKeys = new Set(meta.stateFields);
+      this.__watchers = new ReactiveWatchers(meta.watchers, new Set(meta.stateFields));
       const originalDidUpdate = self['componentDidUpdate']?.bind(this);
       self['componentDidUpdate'] = (prevProps: unknown, prevState: unknown, snapshot?: unknown): void => {
-        this.dispatchWatchers(watchers, stateKeys, prevProps as P);
+        this.__watchers?.dispatch(
+          this,
+          this.state as Record<string, unknown>,
+          this.props as Record<string, unknown>,
+          prevProps as Record<string, unknown>,
+        );
         originalDidUpdate?.(prevProps, prevState, snapshot);
       };
-    }
-  }
-
-  /**
-   * Resolve a watched key's (prev, curr) pair. For `@state` keys we CANNOT trust React's `prevState` —
-   * the `@state` setter mutates `this.state` in place, so React hands back an already-mutated prevState —
-   * so we read the previous value from our own `__watchPrev` snapshot. Props are never mutated, so React's
-   * `prevProps` is authoritative for `@prop` keys (also what the manual-didUpdate unit tests rely on).
-   */
-  private watchedPair(key: string, isState: boolean, prevProps: P): { prev: unknown; curr: unknown } {
-    if (isState) {
-      return { prev: this.__watchPrev[key], curr: (this.state as Record<string, unknown>)?.[key] };
-    }
-    return { prev: (prevProps as Record<string, unknown>)?.[key], curr: (this.props as Record<string, unknown>)?.[key] };
-  }
-
-  /** Seed the state-watch snapshot at mount so the FIRST post-mount state change compares to a real baseline. */
-  private seedWatchPrev(watchers: WatcherDescriptor[]): void {
-    const state = this.state as Record<string, unknown>;
-    for (const watcher of watchers) {
-      for (const key of watcher.keys) if (state && key in state) this.__watchPrev[key] = state[key];
-    }
-  }
-
-  private dispatchWatchers(watchers: WatcherDescriptor[], stateKeys: Set<string>, prevProps: P): void {
-    const instance = this as unknown as Record<string, (next: unknown, previous: unknown) => void>;
-    for (const watcher of watchers) {
-      for (const key of watcher.keys) {
-        const { prev, curr } = this.watchedPair(key, stateKeys.has(key), prevProps);
-        if (prev !== curr) {
-          instance[watcher.method](curr, prev);
-          break; // one fire per watcher, matching the first changed key
-        }
-      }
-    }
-    // Refresh the state snapshot AFTER dispatch so re-entrant state changes compare against this baseline.
-    const state = this.state as Record<string, unknown>;
-    for (const watcher of watchers) {
-      for (const key of watcher.keys) if (stateKeys.has(key) && state) this.__watchPrev[key] = state[key];
     }
   }
 }

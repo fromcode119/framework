@@ -3,6 +3,7 @@ import net from 'net';
 import path from 'path';
 import v8 from 'v8';
 import type { IMessagePort } from '@core/process/interfaces/message-port.interface';
+import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
 
 /**
  * Structured-clone messages over a Unix stream socket: a 4-byte big-endian length, then the
@@ -68,8 +69,8 @@ export class SocketMessagePort implements IMessagePort {
     this.socket.write(Buffer.concat([header, body]));
   }
 
-  on(event: 'message' | 'disconnect', listener: (...args: any[]) => void): this {
-    if (event === 'message') this.messageListeners.add(listener);
+  on(event: MessagePortEvent, listener: (...args: any[]) => void): this {
+    if (event === MessagePortEvent.MESSAGE) this.messageListeners.add(listener);
     else this.disconnectListeners.add(listener);
     return this;
   }

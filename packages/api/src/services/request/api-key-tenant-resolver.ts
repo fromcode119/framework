@@ -2,6 +2,7 @@ import { McpWirePaths } from '@fromcode119/mcp';
 import type { TenantRecord } from '@fromcode119/core';
 import { McpTokenLookupService } from '@api/controllers/mcp/mcp-token-lookup-service';
 import { McpTokenRecord } from '@api/controllers/mcp/mcp-token-record';
+import { ApiKeyRefusalReason } from '@api/services/request/enums/api-key-refusal-reason.enum';
 
 /**
  * Which site an API-KEY request acts in.
@@ -28,22 +29,22 @@ export class ApiKeyTenantResolver {
   }
 
   /** The token is published on `req.apiToken` so the auth layer authenticates the SAME record. */
-  async resolve(req: any): Promise<{ tenant: TenantRecord | null; reason?: 'invalid_token' | 'site_required' | 'unknown_site' | 'site_mismatch' }> {
+  async resolve(req: any): Promise<{ tenant: TenantRecord | null; reason?: string }> {
     const record = await this.lookup.find(String(req?.headers?.[ApiKeyTenantResolver.KEY_HEADER] ?? ''));
-    if (!record || record.isExpired) return { tenant: null, reason: 'invalid_token' };
+    if (!record || record.isExpired) return { tenant: null, reason: String(ApiKeyRefusalReason.INVALID_TOKEN.value) };
     req.apiToken = record;
 
     const requested = String(req?.headers?.[McpWirePaths.SITE_HEADER] ?? '').trim().toLowerCase();
     if (!record.allSites) {
       const tenant = await this.tenants.resolveById(record.tenantId as string);
-      if (!tenant) return { tenant: null, reason: 'unknown_site' };
-      if (requested && !ApiKeyTenantResolver.names(tenant, requested)) return { tenant: null, reason: 'site_mismatch' };
+      if (!tenant) return { tenant: null, reason: String(ApiKeyRefusalReason.UNKNOWN_SITE.value) };
+      if (requested && !ApiKeyTenantResolver.names(tenant, requested)) return { tenant: null, reason: String(ApiKeyRefusalReason.SITE_MISMATCH.value) };
       return { tenant };
     }
 
-    if (!requested) return { tenant: null, reason: 'site_required' };
+    if (!requested) return { tenant: null, reason: String(ApiKeyRefusalReason.SITE_REQUIRED.value) };
     const tenant = (await this.tenants.resolveById(requested)) ?? (await this.tenants.resolveByHost(requested));
-    return tenant ? { tenant } : { tenant: null, reason: 'unknown_site' };
+    return tenant ? { tenant } : { tenant: null, reason: String(ApiKeyRefusalReason.UNKNOWN_SITE.value) };
   }
 
   static tokenOf(req: any): McpTokenRecord | null {

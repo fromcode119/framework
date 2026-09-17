@@ -1,11 +1,11 @@
 import { Response } from 'express';
 import { randomBytes } from 'crypto';
 import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
-import { AuthControllerAccount } from '@api/controllers/auth/auth-controller-account';
+import { AuthControllerEmailChange } from '@api/controllers/auth/auth-controller-email-change';
 import type { IApiTokenRecord } from '@api/controllers/auth/interfaces/api-token-record.interface';
 import { CoercionUtils } from '@fromcode119/core';
 
-export class AuthControllerSecurity extends AuthControllerAccount {
+export class AuthControllerSecurity extends AuthControllerEmailChange {
   async getMySecurityState(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });

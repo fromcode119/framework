@@ -14,7 +14,9 @@ import type { IRegisteredEntityRecordProvider } from '@core/services/entity-reco
 export class PluginEntityRecordsRegistryService {
   private readonly providers = new Map<string, IRegisteredEntityRecordProvider>();
 
-  register(registration: IEntityRecordProviderRegistration): IRegisteredEntityRecordProvider | null {
+  // Plugins call this across the SDK boundary, so a caller can hand a registration missing
+  // `resolve` despite the declared contract — `createEntry` validates it for real.
+  register(registration: Partial<IEntityRecordProviderRegistration>): IRegisteredEntityRecordProvider | null {
     const entry = this.createEntry(registration);
     if (!entry) return null;
     this.providers.set(entry.canonicalKey, entry);
@@ -44,7 +46,7 @@ export class PluginEntityRecordsRegistryService {
   }
 
   private createEntry(
-    registration: IEntityRecordProviderRegistration,
+    registration: Partial<IEntityRecordProviderRegistration>,
   ): IRegisteredEntityRecordProvider | null {
     const namespace = String(registration?.namespace || '').trim();
     const pluginSlug = String(registration?.pluginSlug || '').trim();

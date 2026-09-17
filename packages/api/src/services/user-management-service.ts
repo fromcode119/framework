@@ -3,7 +3,9 @@ import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode, TenantMembershipService } from '@fromcode119/core';
+import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { SystemConstants } from '@fromcode119/core';
+import { RoleManagementService } from '@api/services/role-management-service';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
 // path (which maps camelCase → snake_case columns); the drizzle schema-object write path does not
@@ -11,16 +13,19 @@ import { SystemConstants } from '@fromcode119/core';
 
 export class UserManagementService {
   private static readonly USERS_ROLES_TABLE = getTableName(Schema.systemUsersToRoles);
-  private static readonly ROLES_PERMISSIONS_TABLE = getTableName(Schema.systemRolesToPermissions);
   private static readonly USERS_TABLE = getTableName(Schema.users);
 
   private logger = new Logger({ namespace: 'UserManagement' });
+
+  private readonly roles: RoleManagementService;
 
   constructor(
     private db: IDatabaseManager, 
     private auth: AuthManager,
     private manager: PluginManager
-  ) {}
+  ) {
+    this.roles = new RoleManagementService(db);
+  }
 
   private mergeRoles(columnRoles: any, rbacRoles: string[]): string[] {
     let col: string[] = [];
@@ -64,7 +69,7 @@ export class UserManagementService {
       return {
         ...safeUser,
         roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
-        accountStatus,
+        accountStatus: String(accountStatus.value),
         forcePasswordReset
       };
     }));
@@ -86,7 +91,7 @@ export class UserManagementService {
     return {
       ...safeUser,
       roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
-      accountStatus,
+      accountStatus: String(accountStatus.value),
       forcePasswordReset
     };
   }
@@ -122,11 +127,12 @@ export class UserManagementService {
       userId = newUser.id;
     }
 
-    if (typeof data.accountStatus === 'string') {
-      const status = String(data.accountStatus).trim().toLowerCase() === 'suspended' ? 'suspended' : 'active';
-      await this.upsertMeta(`user:${userId}:account_status`, status);
+    // `undefined` means "not being changed"; anything else is an operator's choice, resolved by the
+    // enum rather than compared to a literal here.
+    if (data.accountStatus !== undefined) {
+      await this.upsertMeta(`user:${userId}:account_status`, String(AccountStatus.resolve(data.accountStatus).value));
     } else if (!id) {
-      await this.upsertMeta(`user:${userId}:account_status`, 'active');
+      await this.upsertMeta(`user:${userId}:account_status`, String(AccountStatus.ACTIVE.value));
     }
     if (typeof data.forcePasswordReset === 'boolean') {
       await this.upsertMeta(`user:${userId}:force_password_reset`, data.forcePasswordReset ? 'true' : 'false');
@@ -145,150 +151,29 @@ export class UserManagementService {
     return userId;
   }
 
-  /**
-   * The roles, each with how many people HERE hold it.
-   *
-   * `_system_users_roles` is a platform table with no row-level policy, so counting it whole told a
-   * site how many accounts hold a role across the entire box. Measured before this change: site
-   * "initech", one member, reported 25 for `partner` — which is the global total exactly, and belongs
-   * to another product's customers. A count a site cannot account for is worse than no count: it
-   * invites someone to go looking for 24 people who are not there.
-   *
-   * Bound to a site, the count is that site's members holding the role. In platform scope it is the
-   * whole box, which is what an operator is asking.
-   */
-  async getRoles() {
-    const allRoles = await this.db.find(Schema.systemRoles);
-    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
-
-    // A SITE SEES THE FRAMEWORK'S ROLES AND ITS OWN PLUGINS', NEVER ANOTHER PRODUCT'S.
-    //
-    // `_system_roles` is global by design — role names are the platform's vocabulary — but plugins
-    // declare roles into it too, so a site was shown roles belonging to extensions it does not run,
-    // in its Roles screen and in the role picker on its Users page. It had no
-    // way to know what they meant, and granting one would have been meaningless.
-    //
-    // An UNATTRIBUTED role stays visible. Migration 046 adds the column with no backfill because
-    // nothing can honestly guess who created a role that predates it, and hiding one nobody can
-    // account for is the worse failure — losing `admin` from the screen with no way to discover why.
-    // `ensure` stamps each row as its plugin re-declares it, so this narrows itself as it learns.
-    const dbRoles = TenantMode.isEnabled() && tenantId
-      ? allRoles.filter((role: any) => {
-        const owner = String(role?.pluginSlug ?? '').trim();
-        return !owner || owner === 'system' || PluginTenantAccess.enabledSlugsFor(tenantId).has(owner);
-      })
-      : allRoles;
-    const memberIds = TenantMode.isEnabled() && tenantId
-      ? new Set(await new TenantMembershipService(this.db as never).listUserIdsForTenant(tenantId))
-      : null;
-
-    return Promise.all(dbRoles.map(async (role: any) => {
-      const holders = await this.db.find(Schema.systemUsersToRoles, {
-        columns: { userId: true },
-        where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug),
-      });
-      const userCount = memberIds
-        ? (holders || []).filter((row: any) => memberIds.has(Number(row?.userId))).length
-        : (holders || []).length;
-      const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
-        columns: { permissionName: true },
-        where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)
-      });
-      return { ...role, permissions: permsResult.map((r: any) => r.permissionName), users: userCount };
-    }));
+  /** @see RoleManagementService.getRoles */
+  getRoles(...args: Parameters<RoleManagementService["getRoles"]>): ReturnType<RoleManagementService["getRoles"]> {
+    return this.roles.getRoles(...args);
   }
 
-  async saveRole(slug: string, data: any) {
-    const now = new Date();
-    await this.db.upsert(Schema.systemRoles, {
-      slug,
-      name: data.name,
-      description: data.description,
-      type: data.type || 'custom',
-      permissions: Array.isArray(data.permissions) ? data.permissions : [],
-      // Provide timestamps explicitly: drizzle would otherwise emit the pg `.defaultNow()` (`now()`)
-      // for these omitted columns, which the SQLite runtime rejects ("no such function: now").
-      createdAt: now,
-      updatedAt: now,
-    }, {
-      target: 'slug',
-      set: {
-        name: data.name,
-        description: data.description,
-        type: data.type || 'custom',
-        permissions: Array.isArray(data.permissions) ? data.permissions : [],
-        updatedAt: now
-      }
-    });
-
-    if (Array.isArray(data.permissions)) {
-      await this.db.delete(UserManagementService.ROLES_PERMISSIONS_TABLE, { roleSlug: slug });
-      if (data.permissions.length > 0) {
-        for (const perm of data.permissions) {
-          await this.db.insert(UserManagementService.ROLES_PERMISSIONS_TABLE, { roleSlug: slug, permissionName: perm });
-        }
-      }
-    }
+  /** @see RoleManagementService.saveRole */
+  saveRole(...args: Parameters<RoleManagementService["saveRole"]>): ReturnType<RoleManagementService["saveRole"]> {
+    return this.roles.saveRole(...args);
   }
 
-  async getRole(slug: string) {
-    const role = await this.db.findOne(Schema.systemRoles, { slug });
-    if (!role) return null;
-
-    const userCount = await this.db.count(Schema.systemUsersToRoles, {
-      where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug)
-    });
-    const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
-      columns: { permissionName: true },
-      where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)
-    });
-
-    return {
-      ...role,
-      permissions: permsResult.map((r: any) => r.permissionName),
-      users: userCount
-    };
+  /** @see RoleManagementService.getRole */
+  getRole(...args: Parameters<RoleManagementService["getRole"]>): ReturnType<RoleManagementService["getRole"]> {
+    return this.roles.getRole(...args);
   }
 
-  async deleteRole(slug: string) {
-    await this.db.delete(Schema.systemRoles, { slug });
-    return true;
+  /** @see RoleManagementService.deleteRole */
+  deleteRole(...args: Parameters<RoleManagementService["deleteRole"]>): ReturnType<RoleManagementService["deleteRole"]> {
+    return this.roles.deleteRole(...args);
   }
 
-  async savePermission(data: any) {
-    if (!data?.name) {
-      throw new Error('Permission name is required');
-    }
-
-    const now = new Date();
-    const existing = await this.db.findOne(SystemConstants.TABLE.PERMISSIONS, { name: data.name });
-    const payload = {
-      name: data.name,
-      description: data.description || null,
-      pluginSlug: data.pluginSlug || 'system',
-      group: data.group || 'Other',
-      impact: data.impact || 'Medium',
-      updatedAt: now
-    };
-
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.PERMISSIONS, { name: data.name }, payload);
-      return;
-    }
-
-    try {
-      await this.db.insert(SystemConstants.TABLE.PERMISSIONS, {
-        ...payload,
-        createdAt: now
-      });
-    } catch (error: any) {
-      const message = String(error?.message || '');
-      if (!message.includes('UNIQUE constraint failed') && !message.toLowerCase().includes('duplicate')) {
-        throw error;
-      }
-
-      await this.db.update(SystemConstants.TABLE.PERMISSIONS, { name: data.name }, payload);
-    }
+  /** @see RoleManagementService.savePermission */
+  savePermission(...args: Parameters<RoleManagementService["savePermission"]>): ReturnType<RoleManagementService["savePermission"]> {
+    return this.roles.savePermission(...args);
   }
 
   async deleteUser(id: number) {
@@ -380,10 +265,17 @@ export class UserManagementService {
     });
   }
 
-  private async readAccountStatus(userId: number): Promise<'active' | 'suspended'> {
+  /**
+   * The stored account status, as the ENUM the auth controllers already write and compare.
+   *
+   * This used to be an inline `'active' | 'suspended'` with its own defaulting, which is
+   * `AccountStatus.resolve` spelled out a second time — for the same meta key the auth chain reads.
+   * Two copies of "what does an unreadable value mean" is one copy too many when the answer decides
+   * whether somebody may sign in.
+   */
+  private async readAccountStatus(userId: number): Promise<AccountStatus> {
     const row = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:account_status` });
-    const value = String(row?.value || '').trim().toLowerCase();
-    return value === 'suspended' ? 'suspended' : 'active';
+    return AccountStatus.resolve(row?.value);
   }
 
   private async readForcePasswordReset(userId: number): Promise<boolean> {

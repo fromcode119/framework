@@ -7,6 +7,7 @@ import { FactualQueryToolService } from '@ai/admin-assistant-runtime/runtime/fac
 import { ReadOnlyChatToolLoopRepairService } from '@ai/admin-assistant-runtime/runtime/read-only-chat-tool-loop-repair-service';
 import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
 import type { IChatReply } from '@ai/admin-assistant-runtime/runtime/interfaces/chat-reply.interface';
+import { ReadOnlyToolCatalog } from '@ai/admin-assistant-runtime/runtime/read-only-tool-catalog';
 
 export class ReadOnlyChatToolLoop {
   static requiresToolGrounding(message: string): boolean {
@@ -30,8 +31,8 @@ export class ReadOnlyChatToolLoop {
     maxTokens: number;
     provider: string;
   }): Promise<IChatReply | null> {
-    const readOnlyTools = ReadOnlyChatToolLoop.selectReadOnlyTools(input.context, input.message);
-    const checkpointContext = ReadOnlyChatToolLoop.buildCheckpointContext(input.context);
+    const readOnlyTools = ReadOnlyToolCatalog.selectReadOnlyTools(input.context, input.message);
+    const checkpointContext = ReadOnlyToolCatalog.buildCheckpointContext(input.context);
     const toolResults: Array<{ tool: string; input: Record<string, any>; result: any }> = [];
     const seenCalls = new Set<string>();
 
@@ -154,7 +155,7 @@ export class ReadOnlyChatToolLoop {
       '{"message":"string","toolCalls":[{"tool":"string","input":{}}]}',
       'Use at most 2 read-only tool calls.',
       'Only return toolCalls as an empty array when the answer is already obvious from the conversation and does not require workspace inspection.',
-      `Available read-only tools: ${ReadOnlyChatToolLoop.serializeToolCatalog(input.tools)}`,
+      `Available read-only tools: ${ReadOnlyToolCatalog.serializeToolCatalog(input.tools)}`,
     ];
     if (input.checkpointContext) {
       plannerPromptLines.push(`Checkpoint context: ${input.checkpointContext}`);
@@ -243,60 +244,5 @@ export class ReadOnlyChatToolLoop {
     } catch {
       return null;
     }
-  }
-  private static selectReadOnlyTools(
-    context: IRuntimeContext,
-    message: string,
-  ): Array<{ tool: string; description: string; metadata?: Record<string, unknown> }> {
-    const allTools = (Array.isArray(context.tools) ? context.tools : [])
-      .filter((tool) => tool?.readOnly === true)
-      .map((tool) => ({
-        tool: String(tool?.tool || '').trim(),
-        description: String(tool?.description || '').trim(),
-        metadata: tool?.metadata && typeof tool.metadata === 'object'
-          ? { ...(tool.metadata as Record<string, unknown>) }
-          : undefined,
-      }))
-      .filter((tool) => !!tool.tool);
-
-    const ranked = FactualQueryToolService.rankReadOnlyTools(context, message);
-    if (ranked.length === 0) return allTools.slice(0, 18);
-    const byName = new Map(allTools.map((tool) => [tool.tool, tool]));
-    const prioritized = ranked.flatMap((tool) => {
-      const entry = byName.get(tool.tool);
-      return entry ? [entry] : [];
-    });
-    const fallback = allTools.filter((tool) => !prioritized.some((entry) => entry.tool === tool.tool));
-    return [...prioritized, ...fallback].slice(0, 18);
-  }
-  private static serializeToolCatalog(
-    tools: Array<{ tool: string; description: string; metadata?: Record<string, unknown> }>,
-  ): string {
-    return JSON.stringify(tools.map((tool) => ({
-      tool: tool.tool,
-      description: tool.description,
-      metadata: tool.metadata && typeof tool.metadata === 'object'
-        ? { category: tool.metadata.category, entity: tool.metadata.entity, filters: tool.metadata.filters, returns: tool.metadata.returns, followupHints: tool.metadata.followupHints }
-        : undefined,
-    })));
-  }
-
-  private static buildCheckpointContext(context: IRuntimeContext): string {
-    const factual = context.checkpoint?.memory?.factual;
-    if (factual?.tool) {
-      return JSON.stringify({
-        tool: factual.tool,
-        input: factual.input,
-        rangeLabel: factual.rangeLabel,
-        rangeFrom: factual.rangeFrom,
-        rangeTo: factual.rangeTo,
-        primaryMetricPath: factual.primaryMetricPath,
-      });
-    }
-    const listing = context.checkpoint?.memory?.listing;
-    if (listing?.collectionSlug) {
-      return JSON.stringify({ collectionSlug: listing.collectionSlug, lastSelectedRowIndex: listing.lastSelectedRowIndex, lastSelectedField: listing.lastSelectedField });
-    }
-    return '';
   }
 }

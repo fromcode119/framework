@@ -1,5 +1,7 @@
 import { TenantColumn } from '@database/tenant/tenant-column';
-import type { ITenantPolicySpec } from '@database/interfaces/tenant-isolation.interface';
+import { PostgresTenantPolicyRenderer } from '@database/dialects/postgres/tenant/postgres-tenant-policy-renderer';
+import { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
+import { SqlIdentifier } from '@database/dialects/postgres/sql-identifier';
 
 /**
  * The tenant-scoping DDL, in ONE place because it is security-critical and easy to get subtly wrong.
@@ -23,7 +25,6 @@ export class TenantIsolationSql {
   static readonly SETTING = 'app.tenant_id';
   static readonly PLATFORM_ADMIN_SETTING = 'app.platform_admin';
 
-  private static readonly IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
   /** The tenant match used by both USING and WITH CHECK. Empty/unset resolves to NULL, never a match. */
   static predicate(): string {
@@ -43,7 +44,7 @@ export class TenantIsolationSql {
    * before there are any tenants changes no behaviour and loses no rows.
    */
   static columnStatementsFor(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     return [
       `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT `
         + `DEFAULT ${TenantIsolationSql.currentTenantExpression()}`,
@@ -61,7 +62,7 @@ export class TenantIsolationSql {
    * reporting.
    */
   static enforcementStatementsFor(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     const predicate = TenantIsolationSql.predicate();
     return [
       `ALTER TABLE "${name}" ENABLE ROW LEVEL SECURITY`,
@@ -104,9 +105,9 @@ export class TenantIsolationSql {
    * and recreates the policy, so the transition works in both directions.
    */
   static removalStatementsFor(table: string, policies: string[]): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     return [
-      ...policies.map((policy) => `DROP POLICY IF EXISTS "${TenantIsolationSql.assertIdentifier(policy)}" ON "${name}"`),
+      ...policies.map((policy) => `DROP POLICY IF EXISTS "${SqlIdentifier.assert(policy, 'TenantIsolationSql')}" ON "${name}"`),
       `ALTER TABLE "${name}" NO FORCE ROW LEVEL SECURITY`,
       `ALTER TABLE "${name}" DISABLE ROW LEVEL SECURITY`,
     ];
@@ -160,16 +161,16 @@ export class TenantIsolationSql {
    * tenant_id IS a value — the platform row; content tables have no such row.)
    */
   static scopeUniqueConstraintStatement(table: string, constraint: string, columns: string[]): string {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const con = TenantIsolationSql.assertIdentifier(constraint);
-    const cols = [...columns, TenantColumn.NAME].map((column) => `"${TenantIsolationSql.assertIdentifier(column)}"`).join(', ');
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    const con = SqlIdentifier.assert(constraint, 'TenantIsolationSql');
+    const cols = [...columns, TenantColumn.NAME].map((column) => `"${SqlIdentifier.assert(column, 'TenantIsolationSql')}"`).join(', ');
     return `ALTER TABLE "${name}" DROP CONSTRAINT "${con}", ADD CONSTRAINT "${con}" UNIQUE (${cols})`;
   }
 
   static scopeUniqueIndexStatements(table: string, index: string, columns: string[]): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const idx = TenantIsolationSql.assertIdentifier(index);
-    const cols = [...columns, TenantColumn.NAME].map((column) => `"${TenantIsolationSql.assertIdentifier(column)}"`).join(', ');
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    const idx = SqlIdentifier.assert(index, 'TenantIsolationSql');
+    const cols = [...columns, TenantColumn.NAME].map((column) => `"${SqlIdentifier.assert(column, 'TenantIsolationSql')}"`).join(', ');
     return [`DROP INDEX IF EXISTS "${idx}"`, `CREATE UNIQUE INDEX "${idx}" ON "${name}" (${cols})`];
   }
 
@@ -198,20 +199,20 @@ export class TenantIsolationSql {
    * from CREATE TABLE.
    */
   static addUniqueConstraintStatement(table: string, column: string): string {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const col = TenantIsolationSql.assertIdentifier(column);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    const col = SqlIdentifier.assert(column, 'TenantIsolationSql');
     return `ALTER TABLE "${name}" ADD CONSTRAINT "${name}_${col}_key" UNIQUE ("${col}")`;
   }
 
   /** Assigns rows that predate tenancy to an owner. Never invents one — the caller names the tenant. */
   static backfillStatement(table: string): string {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     return `UPDATE "${name}" SET "${TenantColumn.NAME}" = $1 WHERE "${TenantColumn.NAME}" IS NULL`;
   }
 
   /** Counts rows that predate tenancy and are therefore invisible to every tenant. */
   static unassignedCountStatement(table: string): string {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     return `SELECT count(*)::int AS unassigned FROM "${name}" WHERE "${TenantColumn.NAME}" IS NULL`;
   }
 
@@ -239,210 +240,11 @@ export class TenantIsolationSql {
     return "SELECT set_config('app.platform_admin', 'off', false)";
   }
 
-  /**
-   * Renders one policy the generic rule cannot express.
-   *
-   * The caller declares the MEANING (`ITenantPolicySpec`); every `CREATE POLICY` below is written
-   * here, where the rest of the Postgres tenancy SQL lives. These were previously built in core,
-   * which is how `CREATE POLICY` text ended up outside the dialect that owns it.
-   */
-  static bespokePolicyStatements(spec: ITenantPolicySpec): string[] {
-    switch (spec.kind) {
-      case 'shared-read':
-        return TenantIsolationSql.sharedReadStatements(spec.table, spec.sharedColumn);
-      case 'platform-keys-visible':
-        return TenantIsolationSql.platformKeysVisibleStatements(spec.table, spec.keyColumn, spec.platformKeys);
-      case 'journal':
-        return TenantIsolationSql.journalStatements(spec.table);
-      case 'tenant-settings':
-        return TenantIsolationSql.tenantSettingsStatements(spec.table);
-      case 'unowned-read':
-        return TenantIsolationSql.unownedReadStatements(spec.table);
-    }
-  }
-
-  /**
-   * FOUR policies, one per command, because `WITH CHECK` does not govern DELETE.
-   *
-   * A single `USING (own OR shared) WITH CHECK (own)` looks right and is not: DELETE falls back to
-   * USING, so a borrower could delete another tenant's shared asset out from under them. Sharing
-   * must widen READS and nothing else.
-   */
-  private static sharedReadStatements(table: string, sharedColumn: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const shared = TenantIsolationSql.assertIdentifier(sharedColumn);
-    const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
-    const names = [`${name}_tenant_isolation`, `${name}_tenant_select`, `${name}_tenant_insert`,
-                   `${name}_tenant_update`, `${name}_tenant_delete`];
-    return [
-      `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT `
-        + `DEFAULT ${current}`,
-      `CREATE INDEX IF NOT EXISTS "${name}_${TenantColumn.NAME}_idx" ON "${name}" ("${TenantColumn.NAME}")`,
-      `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${shared}" BOOLEAN NOT NULL DEFAULT FALSE`,
-      `ALTER TABLE "${name}" ENABLE ROW LEVEL SECURITY`,
-      `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
-      ...names.map((policy) => `DROP POLICY IF EXISTS "${policy}" ON "${name}"`),
-      `CREATE POLICY "${name}_tenant_select" ON "${name}" FOR SELECT USING (${own} OR "${shared}" IS TRUE)`,
-      `CREATE POLICY "${name}_tenant_insert" ON "${name}" FOR INSERT WITH CHECK (${own})`,
-      `CREATE POLICY "${name}_tenant_update" ON "${name}" FOR UPDATE USING (${own}) WITH CHECK (${own})`,
-      `CREATE POLICY "${name}_tenant_delete" ON "${name}" FOR DELETE USING (${own})`,
-    ];
-  }
-
-  /**
-   * Own rows plus UNOWNED ones, readable by all and writable only by their owner.
-   *
-   * The same four-policy shape as `sharedReadStatements`, and for the same reason: `WITH CHECK` does
-   * not govern DELETE, so a single `USING (own OR unowned)` would let any tenant delete every
-   * unowned row. Writes are `own` alone, which also means an unowned row cannot be edited or deleted
-   * by anyone — correct for a do-not-email entry whose owner is unknown. It is adopted by being
-   * stamped, not by being claimed through a policy.
-   *
-   * NOTE the column default: new rows still stamp the current tenant, so this widens reads for the
-   * rows that predate scoping WITHOUT making new rows platform-wide.
-   */
-  private static unownedReadStatements(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
-    const unowned = `"${TenantColumn.NAME}" IS NULL`;
-    const names = [`${name}_tenant_isolation`, `${name}_tenant_select`, `${name}_tenant_insert`,
-                   `${name}_tenant_update`, `${name}_tenant_delete`];
-    return [
-      `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT `
-        + `DEFAULT ${current}`,
-      `CREATE INDEX IF NOT EXISTS "${name}_${TenantColumn.NAME}_idx" ON "${name}" ("${TenantColumn.NAME}")`,
-      `ALTER TABLE "${name}" ENABLE ROW LEVEL SECURITY`,
-      `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
-      ...names.map((policy) => `DROP POLICY IF EXISTS "${policy}" ON "${name}"`),
-      `CREATE POLICY "${name}_tenant_select" ON "${name}" FOR SELECT USING (${own} OR ${unowned})`,
-      `CREATE POLICY "${name}_tenant_insert" ON "${name}" FOR INSERT WITH CHECK (${own})`,
-      `CREATE POLICY "${name}_tenant_update" ON "${name}" FOR UPDATE USING (${own}) WITH CHECK (${own})`,
-      `CREATE POLICY "${name}_tenant_delete" ON "${name}" FOR DELETE USING (${own})`,
-    ];
-  }
-
-  /**
-   * A tenant sees a platform row only for the deployment truths the caller names, so one key never
-   * resolves to two visible rows and `findOne(META, { key })` is unambiguous. The `IS NULL` branch
-   * keeps a deployment with no tenants reading all of its own settings.
-   */
-  private static platformKeysVisibleStatements(table: string, keyColumn: string, platformKeys: string[]): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const key = TenantIsolationSql.assertIdentifier(keyColumn);
-    const keys = platformKeys.map((entry) => `'${TenantIsolationSql.assertLiteral(entry)}'`).join(', ');
-    const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
-    return [
-      `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT`,
-      // The DEFAULT is load-bearing and was missing. Migration 022 added the column without one, so
-      // ANY write that did not name a tenant — which is most of them, since callers use
-      // `db.insert(META, { key, value })` — landed a NULL, i.e. a PLATFORM row. Under the policy
-      // that is refused outright ("new row violates row-level security policy"), which is how
-      // enabling a plugin failed while merely reading settings looked perfectly healthy.
-      // With the default, a tenant-bound connection writes the tenant's own row, and an untenanted
-      // one (boot, single-tenant) still writes the platform row it means to.
-      `ALTER TABLE "${name}" ALTER COLUMN "${TenantColumn.NAME}" SET DEFAULT ${current}`,
-      `CREATE INDEX IF NOT EXISTS "${name}_tenant_idx" ON "${name}" ("${TenantColumn.NAME}")`,
-      `ALTER TABLE "${name}" ENABLE ROW LEVEL SECURITY`,
-      `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
-      `DROP POLICY IF EXISTS "${name}_tenant_isolation" ON "${name}"`,
-      `CREATE POLICY "${name}_tenant_isolation" ON "${name}"
-         USING (${own} OR ("${TenantColumn.NAME}" IS NULL AND (${current} IS NULL OR "${key}" IN (${keys}))))
-         WITH CHECK (
-           ${own}
-           OR ("${TenantColumn.NAME}" IS NULL AND current_setting('${TenantIsolationSql.PLATFORM_ADMIN_SETTING}', true) = 'on')
-         )`,
-    ];
-  }
-
-  /**
-   * A JOURNAL of what happened on a site — the audit trail and the system event log.
-   *
-   * Two things the generic policy cannot express:
-   *
-   *   READ — a PLATFORM admin sees everything, but ONLY from the platform scope. The marker is set
-   *   deliberately for that read (`db.withPlatformAdmin`), never merely by being untenanted; what is
-   *   new is that it no longer overrides a BOUND site. An operator investigating an incident still
-   *   cannot be asked to enter each site in turn — they read the whole container from Platform, which
-   *   is where that job belongs. Standing inside one site and being shown every other site's journal
-   *   is the thing this platform is not allowed to do: measured before the change, a platform admin
-   *   bound to one site read another site's log row. Isolation is not conditional on who is asking.
-   *
-   *   WRITE — an UNTENANTED connection must be able to write, with no marker. Boot, migrations and
-   *   platform actions all log before any tenant is bound, and requiring the marker there would
-   *   refuse those rows outright — silently losing exactly the entries a journal exists to keep.
-   *
-   * Rows written before this policy carry NULL and stay visible only to the platform: fail-closed,
-   * and an honest signal that their owner is unknown rather than a quiet leak.
-   */
-  private static journalStatements(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
-    const platform = `current_setting('${TenantIsolationSql.PLATFORM_ADMIN_SETTING}', true) = 'on'`;
-    return [
-      `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT DEFAULT ${current}`,
-      `ALTER TABLE "${name}" ALTER COLUMN "${TenantColumn.NAME}" SET DEFAULT ${current}`,
-      `CREATE INDEX IF NOT EXISTS "${name}_tenant_idx" ON "${name}" ("${TenantColumn.NAME}")`,
-      `ALTER TABLE "${name}" ENABLE ROW LEVEL SECURITY`,
-      `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
-      `DROP POLICY IF EXISTS "${name}_tenant_isolation" ON "${name}"`,
-      `CREATE POLICY "${name}_tenant_isolation" ON "${name}"
-         USING (${own} OR (${platform} AND ${current} IS NULL) OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))
-         WITH CHECK (${own} OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))`,
-    ];
-  }
-
-  /** Per tenant with no shared keys: a plugin's configuration is never platform-level. */
-  private static tenantSettingsStatements(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
-    return [
-      `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT `
-        + `DEFAULT ${current}`,
-      `CREATE INDEX IF NOT EXISTS "${name}_tenant_idx" `
-        + `ON "${name}" ("${TenantColumn.NAME}")`,
-      `ALTER TABLE "${name}" ENABLE ROW LEVEL SECURITY`,
-      `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
-      `DROP POLICY IF EXISTS "${name}_tenant_isolation" ON "${name}"`,
-      `CREATE POLICY "${name}_tenant_isolation" ON "${name}"
-         USING (${own} OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))
-         WITH CHECK (
-           ${own}
-           OR ("${TenantColumn.NAME}" IS NULL AND current_setting('${TenantIsolationSql.PLATFORM_ADMIN_SETTING}', true) = 'on')
-         )`,
-    ];
-  }
 
   /** The current tenant, or NULL when unset OR reset-to-empty. The nullif is the whole point. */
-  private static currentTenantExpression(): string {
+  static currentTenantExpression(): string {
     return `nullif(current_setting('${TenantIsolationSql.SETTING}', true), '')`;
   }
 
-  private static assertIdentifier(name: string): string {
-    const trimmed = String(name ?? '').trim();
-    if (!TenantIsolationSql.IDENTIFIER.test(trimmed)) {
-      throw new Error(`TenantIsolationSql: "${trimmed}" is not a plain SQL identifier; refusing to build DDL.`);
-    }
-    return trimmed;
-  }
 
-  /**
-   * A settings KEY is interpolated into the policy body, so it is checked too.
-   *
-   * These come from `SystemSettingRegistry` and are compile-time constants today, but a policy is
-   * the last place to rely on that: a key is not an identifier (it may hold `.` or `-`), so it
-   * cannot go through `assertIdentifier`, and interpolating it unchecked would make the registry a
-   * SQL-injection surface the moment a key ever becomes dynamic.
-   */
-  private static assertLiteral(value: string): string {
-    const trimmed = String(value ?? '').trim();
-    if (!/^[A-Za-z0-9_.:-]+$/.test(trimmed)) {
-      throw new Error(`TenantIsolationSql: "${trimmed}" is not a safe policy literal; refusing to build DDL.`);
-    }
-    return trimmed;
-  }
 }

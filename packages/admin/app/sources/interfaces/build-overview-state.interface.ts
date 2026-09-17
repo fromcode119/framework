@@ -1,8 +1,9 @@
+import type { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
 export interface IBuildOverviewState {
   builds: any[];
   deletingKey: string | null;
   editingBuild: any | null;
-  editorMode: 'create' | 'edit' | null;
+  editorMode: SourceEditorMode | null;
   error: string;
   loading: boolean;
   savingSource: boolean;

@@ -3,6 +3,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { UiFieldUtils } from '@/lib/ui';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 import type { FieldProvenance } from '@/lib/collection/field-provenance';
+import { FieldProvenanceKind } from '@/lib/collection/enums/field-provenance-kind.enum';
 
 export class FieldRendererFooter extends PureReactor {
   @prop declare field: ICollectionField;
@@ -17,9 +18,9 @@ export class FieldRendererFooter extends PureReactor {
    */
   private renderProvenance(): React.ReactNode {
     const p = this.provenance;
-    if (!p || p.kind === 'own') return null;
+    if (!p || p.kind === FieldProvenanceKind.OWN) return null;
 
-    if (p.kind === 'none') {
+    if (p.kind === FieldProvenanceKind.NONE) {
       return p.emptyMeans ? <p className={UiFieldUtils.TEXT.PROVENANCE_NONE}>Empty — {p.emptyMeans}</p> : null;
     }
 

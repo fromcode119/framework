@@ -12,7 +12,13 @@ export class Button extends PureReactor {
 
   @prop declare variant?: ButtonVariant;
   @prop declare size?: FieldSize;
-  @prop declare children: ReactNode;
+  /**
+   * OPTIONAL: an icon-only button is a designed use of this component, not an oversight — `sizes`
+   * below carries an `icon` entry (`h-10 w-10 p-0`) that exists for exactly that shape. Requiring
+   * children contradicted it, and cost nine plugin UIs a compile error each for a button the
+   * framework's own styling supports.
+   */
+  @prop declare children?: ReactNode;
   @prop declare className?: string;
   @prop declare isLoading?: boolean;
   @prop declare icon?: ReactNode;

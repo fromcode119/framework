@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
+import { JournalPolicySpec, PlatformKeysVisiblePolicySpec, SharedReadPolicySpec, TenantSettingsPolicySpec, UnownedReadPolicySpec } from '@fromcode119/database';
 
 /**
  * What core DECLARES. The statements a driver renders from these specs are asserted beside the SQL,
@@ -35,8 +36,8 @@ describe('TenantBespokePolicies', () => {
     // And the spec must actually CARRY them to the driver: declaring the keys somewhere the policy
     // never sees is the same silent failure as not declaring them at all.
     const meta = specFor('_system_meta');
-    expect(meta?.kind).toBe('platform-keys-visible');
-    expect(meta?.kind === 'platform-keys-visible' && meta.platformKeys).toEqual(platformKeys);
+    expect(meta).toBeInstanceOf(PlatformKeysVisiblePolicySpec);
+    expect(meta instanceof PlatformKeysVisiblePolicySpec && meta.platformKeys).toEqual(platformKeys);
   });
 
   it('declares media as SHARED-READ, which is what earns it four per-command policies', () => {
@@ -44,13 +45,13 @@ describe('TenantBespokePolicies', () => {
     // tenant's shared asset: DELETE falls back to USING. Sharing must widen reads and nothing else.
     // That the driver splits it into four is asserted in the dialect's own test.
     const media = specFor('media');
-    expect(media?.kind).toBe('shared-read');
-    expect(media?.kind === 'shared-read' && media.sharedColumn).toBe('shared');
+    expect(media).toBeInstanceOf(SharedReadPolicySpec);
+    expect(media instanceof SharedReadPolicySpec && media.sharedColumn).toBe('shared');
   });
 
   it('declares the settings key column, without which the policy cannot name the platform keys', () => {
     const meta = specFor('_system_meta');
-    expect(meta?.kind === 'platform-keys-visible' && meta.keyColumn).toBe('key');
+    expect(meta instanceof PlatformKeysVisiblePolicySpec && meta.keyColumn).toBe('key');
   });
 
   it('declares every journal table, and a journal is NOT the generic rule', () => {
@@ -58,12 +59,12 @@ describe('TenantBespokePolicies', () => {
     // customer's site. Their `_system_` prefix is the only reason the generic sweep skipped them,
     // and a journal is a tenant's own record, not platform configuration.
     for (const table of ['_system_audit_logs', '_system_logs', '_system_record_versions']) {
-      expect(specFor(table)?.kind).toBe('journal');
+      expect(specFor(table)).toBeInstanceOf(JournalPolicySpec);
     }
   });
 
   it('declares plugin settings as per-tenant — a plugin\'s configuration is never platform-level', () => {
-    expect(specFor('_system_plugin_settings')?.kind).toBe('tenant-settings');
+    expect(specFor('_system_plugin_settings')).toBeInstanceOf(TenantSettingsPolicySpec);
   });
 
   it('tables() names exactly what it declares, so the generic sweep skips exactly these', () => {

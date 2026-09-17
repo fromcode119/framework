@@ -11,13 +11,19 @@ import type { ICatalogContributor } from '@core/marketplace/contributions/interf
 export class CatalogContributionRegistry {
   private readonly contributors = new Map<string, ICatalogContributor & { canonicalKey: string }>();
 
-  register(contributor: ICatalogContributor): void {
+  // Plugins call this across the SDK boundary, so a caller can hand a contributor missing `list`
+  // despite the declared contract — the check below is real validation, not decoration.
+  register(contributor: Omit<ICatalogContributor, 'list'> & { list?: unknown }): void {
     const namespace = String(contributor?.namespace || '').trim();
     const pluginSlug = String(contributor?.pluginSlug || '').trim();
-    if (!namespace || !pluginSlug || typeof contributor?.list !== 'function') return;
+    const list = contributor?.list;
+    if (!namespace || !pluginSlug || typeof list !== 'function') return;
 
     const canonicalKey = `${namespace}:${pluginSlug}`;
-    this.contributors.set(canonicalKey, { ...contributor, namespace, pluginSlug, canonicalKey });
+    this.contributors.set(canonicalKey, {
+      ...contributor, namespace, pluginSlug, canonicalKey,
+      list: list as ICatalogContributor['list'],
+    });
   }
 
   unregisterByPlugin(namespace: string, pluginSlug: string): void {

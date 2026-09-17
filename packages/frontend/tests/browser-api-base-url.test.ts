@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { FrontendApiBaseUrl } from '../lib/api-base-url';
+import { FrontendApiBaseUrl } from '@/lib/api-base-url';
 
 /**
  * The site's host is the only thing that names the site, so the storefront's browser must call the API

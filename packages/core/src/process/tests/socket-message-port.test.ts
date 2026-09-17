@@ -4,6 +4,7 @@ import path from 'path';
 import { describe, expect, it } from 'vitest';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { SocketMessagePort } from '@core/process/socket-message-port';
+import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
 
 describe('SocketMessagePort', () => {
   it('carries structured-clone messages both ways and closes when the peer goes', async () => {
@@ -24,7 +25,7 @@ describe('SocketMessagePort', () => {
     // One connection only: the listener is gone once the guest connected.
     await expect(SocketMessagePort.connect(socketPath, 300)).rejects.toBeTruthy();
 
-    const closed = new Promise<void>((resolve) => hostPort.on('disconnect', () => resolve()));
+    const closed = new Promise<void>((resolve) => hostPort.on(MessagePortEvent.DISCONNECT, () => resolve()));
     guestPort.close();
     await closed;
     expect(hostPort.isClosed).toBe(true);
@@ -38,7 +39,7 @@ describe('SocketMessagePort', () => {
     const accepting = SocketMessagePort.listenOnce(socketPath, 0o600, 2_000);
     const guestPort = await SocketMessagePort.connect(socketPath, 2_000);
     const hostPort = await accepting;
-    const received = new Promise<any>((resolve) => hostPort.on('message', resolve));
+    const received = new Promise<any>((resolve) => hostPort.on(MessagePortEvent.MESSAGE, resolve));
     const big = { text: 'x'.repeat(2 * 1024 * 1024), list: Array.from({ length: 1000 }, (_, i) => i) };
     guestPort.send(big);
     const message = await received;

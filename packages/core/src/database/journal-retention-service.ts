@@ -1,6 +1,6 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
-import type { IJournalRetentionTarget } from '@core/database/journal-retention-target';
+import type { IJournalRetentionTarget } from '@core/database/interfaces/journal-retention-target.interface';
 
 /**
  * Prunes the platform's JOURNALS to the windows their operator declared.
@@ -178,9 +178,12 @@ export class JournalRetentionService {
     let removed = 0;
 
     for (;;) {
+      // `columns`, not `select` — `find` has no `select` option, so the projection was silently
+      // dropped and every batch pulled WHOLE journal rows (message, context, metadata) to read one
+      // id from each. Harmless in outcome, wasteful at the size these tables reach.
       const batch: Array<Record<string, any>> = await this.db.find(target.table, {
         where,
-        select: ['id'],
+        columns: { id: true },
         limit: JournalRetentionService.DELETE_BATCH,
       });
       const ids = batch.map((row) => row?.id).filter((id) => id !== undefined && id !== null);

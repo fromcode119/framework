@@ -1,31 +1,7 @@
 #!/usr/bin/env node
-import { AppTypecheckCommand } from './app-typecheck-command';
-import { FileSizeCommand } from './file-size-command';
-import { AppearanceBoundaryCommand } from './appearance-boundary-command';
 import { ArchorCommand } from './arch-guard-command';
-import { ClientViewMoveCommand } from './client-view-move-command';
-import { ComponentMigrationCommand } from './component-migration-command';
-import { ConventionGuardCommand } from './convention-guard-command';
-import { CoreBoundaryCommand } from './core-boundary-command';
-import { FrameworkDomainCommand } from './framework-domain-command';
-import { BlockFieldConformanceCommand } from './block-field-conformance-command';
-import { DependencyOverridesCommand } from './dependency-overrides-command';
-import { DialectSqlConfinementCommand } from './dialect-sql-confinement-command';
-import { DbFindWhereCommand } from './db-find-where-command';
-import { RequestCoercionCommand } from './request-coercion-command';
-import { ImportsCommand } from './imports-command';
-import { InterfacePrefixCommand } from './interface-prefix-command';
-import { OopGuardCommand } from './oop-guard-command';
-import { PluginAliasCommand } from './plugin-alias-command';
-import { PluginArchitectureCommand } from './plugin-architecture-command';
-import { PluginRawSqlCommand } from './plugin-raw-sql-command';
-import { PluginUiHookfreeCommand } from './plugin-ui-hookfree-command';
-import { PluginUiTypesCommand } from './plugin-ui-types-command';
-import { McpToolSchemaCommand } from './mcp-tool-schema-command';
-import { SdkBoundaryCommand } from './sdk-boundary-command';
-import { SrcArtifactsCommand } from './src-artifacts-command';
-import { ThemeOverrideBoundaryCommand } from './theme-override-boundary-command';
-import { WorkspaceCheckCommand } from './workspace-check-command';
+import { CiCommand } from './ci-command';
+import { GuardRegistry } from './guard-registry';
 
 /**
  * The single `arch-guard` entry point: `arch-guard <command> [args…]`.
@@ -33,36 +9,17 @@ import { WorkspaceCheckCommand } from './workspace-check-command';
  * One binary with subcommands, rather than a file per check invoked by path. A guard that silently
  * stops running is indistinguishable from a passing build, so an unknown or missing command is a HARD
  * failure (exit 2) that names what was asked for — never a quiet exit 0.
+ *
+ * The command table lives in {@link GuardRegistry} because `arch-guard ci` walks it to run every
+ * guard, and a registry owned by this class would mean the ci command importing the dispatcher that
+ * imports the ci command. `ci` is added HERE for the same reason — it is the one command that must
+ * not appear in the set it iterates.
  */
 export class ArchorCli {
   /** command name -> the class that implements it. */
   static readonly COMMANDS: ReadonlyMap<string, new () => ArchorCommand> = new Map<string, new () => ArchorCommand>([
-    ['app-typecheck', AppTypecheckCommand],
-    ['appearance-boundary', AppearanceBoundaryCommand],
-    ['client-view-move', ClientViewMoveCommand],
-    ['component-migration', ComponentMigrationCommand],
-    ['convention-guard', ConventionGuardCommand],
-    ['core-boundary', CoreBoundaryCommand],
-    ['db-find-where', DbFindWhereCommand],
-    ['dependency-overrides', DependencyOverridesCommand],
-    ['dialect-sql-confinement', DialectSqlConfinementCommand],
-    ['file-size', FileSizeCommand],
-    ['framework-domain', FrameworkDomainCommand],
-    ['block-field-conformance', BlockFieldConformanceCommand],
-    ['imports', ImportsCommand],
-    ['interface-prefix', InterfacePrefixCommand],
-    ['oop-guard', OopGuardCommand],
-    ['plugin-alias', PluginAliasCommand],
-    ['plugin-architecture', PluginArchitectureCommand],
-    ['plugin-raw-sql', PluginRawSqlCommand],
-    ['plugin-ui-hookfree', PluginUiHookfreeCommand],
-    ['plugin-ui-types', PluginUiTypesCommand],
-    ['request-coercion', RequestCoercionCommand],
-    ['mcp-tool-schemas', McpToolSchemaCommand],
-    ['sdk-boundary', SdkBoundaryCommand],
-    ['src-artifacts', SrcArtifactsCommand],
-    ['theme-override-boundary', ThemeOverrideBoundaryCommand],
-    ['workspace-check', WorkspaceCheckCommand],
+    ['ci', CiCommand],
+    ...GuardRegistry.COMMANDS,
   ]);
 
   static main(argv: string[]): number {

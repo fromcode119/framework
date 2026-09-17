@@ -1,5 +1,5 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
-import { AttentionSeverity } from '@core/services/attention/attention-severity.enum';
+import { AttentionSeverity } from '@core/services/attention/enums/attention-severity.enum';
 
 /**
  * One thing that needs the operator, from core or from a plugin.

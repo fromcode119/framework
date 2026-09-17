@@ -7,4 +7,4 @@ export { DatabaseConnectionUrls } from '@core/browser-stubs/database/database-co
 export { Schema } from '@core/browser-stubs/database/schema';
 export { sql } from '@core/browser-stubs/database/sql';
 export { eq } from '@core/browser-stubs/database/eq';
-export type { IDatabaseManager } from '@core/browser-stubs/database/database-manager.interface';
+export type { IDatabaseManager } from '@core/browser-stubs/database/interfaces/database-manager.interface';

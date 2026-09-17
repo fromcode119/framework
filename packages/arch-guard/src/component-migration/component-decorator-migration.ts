@@ -3,6 +3,7 @@ import path from 'node:path';
 import ts from 'typescript';
 import { WorkspaceTypecheck } from '../workspace-typecheck';
 import { ComponentClassAnalyzer } from './component-class-analyzer';
+import { ComponentFieldDeclarations } from './component-field-declarations';
 import { ComponentSourceRewriter } from './component-source-rewriter';
 import { ComponentTypeAnalyzer } from './component-type-analyzer';
 
@@ -135,86 +136,12 @@ export class ComponentDecoratorMigration {
           continue;
         }
 
-        const already = ComponentClassAnalyzer.declaredNames(stmt);
-        const inits = ComponentClassAnalyzer.stateInitialisers(stmt);
-        const [propsType, stateType] = base.typeArguments;
-        const decls: string[] = [];
-        const needed = new Map<string, string>();
-        const emitted: Record<'props' | 'state', Set<string>> = { props: new Set(), state: new Set() };
-        let bad = false;
-
-        for (const [index, node] of [propsType, stateType].entries()) {
-          if (!node) continue;
-          const asText = node.getText();
-          // A bag with no members carries nothing to declare — that slot is simply dropped.
-          // This MUST be tested before the generic guard below: `Record<string, unknown>` is itself a
-          // parameterised type reference, so the guard used to bail on the single commonest shape in the
-          // tree — `extends PluginComponent<Record<string, unknown>, ISomeState>`, i.e. "no props, real
-          // state" — and 78 classes were reported unsafe that are entirely safe.
-          if (['Record<string, unknown>', 'any', '{}', 'unknown', 'object'].includes(asText)) continue;
-          // `IProps<T>` puts the class's own type PARAMETER in its member types. Moved onto the class,
-          // `T` names nothing — and the import carried for it resolves to a member that does not exist.
-          if (ts.isTypeReferenceNode(node) && node.typeArguments?.length) {
-            bad = true;
-            note(`generic props/state '${node.getText().slice(0, 40)}'`);
-            break;
-          }
-          const members = ComponentTypeAnalyzer.membersOf(node, checker);
-          if (!members) {
-            bad = true;
-            note(ts.isTypeReferenceNode(node)
-              ? `unresolved interface '${node.getText()}'`
-              : `unsupported type '${node.getText().slice(0, 40)}'`);
-            break;
-          }
-          for (const m of members) {
-            // A name carried by BOTH props and state is TWO distinct values — `this.row` cannot be both.
-            // Declaring one and dropping the other silently changes which value the component reads
-            // (it quietly narrowed a `ThemeMode | 'light' | 'dark'` state to the prop of the same name).
-            if (index === 1 && emitted.props.has(m.name)) {
-              bad = true;
-              note(`'${m.name}' is both a prop and a state field`);
-              break;
-            }
-            if (already.has(m.name)) {
-              bad = true;
-              note(`'${m.name}' already declared on the class`);
-              break;
-            }
-            already.add(m.name);
-            emitted[index === 0 ? 'props' : 'state'].add(m.name);
-            if (ComponentTypeAnalyzer.hasUnresolvedName(m.node, checker)) {
-              bad = true;
-              note(`'${m.name}' names an undeclared type — fix the interface first`);
-              break;
-            }
-            if (m.type.includes('import(')) {
-              bad = true;
-              note('member type uses an inline import() path');
-              break;
-            }
-            if (inherited.has(m.name)) {
-              bad = true;
-              note(`'${m.name}' collides with a base-class member`);
-              break;
-            }
-            for (const [name, spec] of ComponentTypeAnalyzer.typeDependencies(m.node, checker)) {
-              needed.set(name, spec);
-            }
-            const init = inits.get(m.name) ?? ComponentTypeAnalyzer.defaultFor(m.type);
-            // `!`, never `declare`. esbuild — which builds every plugin and theme bundle — rejects a
-            // decorator on an ambient field ("Decorators are not valid here") and the whole UI bundle
-            // fails. The definite-assignment form is what plugin components already use and compiles in
-            // both toolchains; under `useDefineForClassFields: false` neither emits a shadowing field.
-            decls.push(index === 0
-              ? `  @prop ${m.name}${m.optional ? '?' : '!'}: ${m.type};`
-              : `  @state ${m.name}: ${m.type} = ${ComponentTypeAnalyzer.withoutRedundantCast(init, m.type)};`);
-          }
-        }
-        if (bad) {
+        const derived = ComponentFieldDeclarations.derive(base, stmt, inherited, checker, note);
+        if (!derived) {
           skipped += 1;
           continue;
         }
+        const { decls, needed, emitted } = derived;
         // No members left to declare means every one is ALREADY a field — the generic argument list is
         // pure leftover, so drop it and emit nothing. Treating that as "unsafe" left 27 appearance
         // components carrying `<Props, State>` they no longer used.

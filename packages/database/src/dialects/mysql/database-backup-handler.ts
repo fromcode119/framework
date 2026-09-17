@@ -3,6 +3,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import type { IDatabaseBackupContext } from '@database/dialects/interfaces/database-backup-context.interface';
 import type { IDatabaseBackupHandler } from '@database/dialects/interfaces/database-backup-handler.interface';
+import type { IMysqlBackupTarget } from '@database/dialects/mysql/interfaces/mysql-backup-target.interface';
 
 /**
  * A MySQL backup, which this driver had none of — the reason it could not be offered at install.
@@ -83,10 +84,3 @@ export class MysqlDatabaseBackupHandler implements IDatabaseBackupHandler {
   }
 }
 
-interface IMysqlBackupTarget {
-  readonly host: string;
-  readonly port: string;
-  readonly user: string;
-  readonly password: string;
-  readonly database: string;
-}

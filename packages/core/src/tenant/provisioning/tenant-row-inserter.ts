@@ -1,3 +1,4 @@
+import { TenantColumnSource } from '@core/tenant/provisioning/enums/tenant-column-source.enum';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
@@ -44,7 +45,7 @@ export class TenantRowInserter {
     private readonly files: TenantImportFiles,
     private readonly warnings: string[] = [],
   ) {
-    this.deferredSelfReferences = table.selfReferences.filter((ref) => ref.source === 'fk');
+    this.deferredSelfReferences = table.selfReferences.filter((ref) => ref.source === TenantColumnSource.FK);
   }
 
   /** Inserts; returns the row's id on the destination when the table has one. */

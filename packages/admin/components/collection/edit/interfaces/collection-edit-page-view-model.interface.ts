@@ -21,7 +21,10 @@ export interface ICollectionEditPageViewModel {
   setReadOnlyOverridePasswordTarget: (value: { name: string; label: string } | null) => void;
   readOnlyOverrideVerifying: boolean;
   formData: Record<string, any>;
-  setFormData: (value: Record<string, any>) => void;
+  // Plugin slot/field components are handed this like React's `Dispatch<SetStateAction<...>>` and
+  // legitimately call it with an updater function — see the `typeof v === 'function'` check in
+  // collection-edit-page-view-model.client.ts.
+  setFormData: (value: Record<string, any> | ((prev: Record<string, any>) => Record<string, any>)) => void;
   handleSubmit: (e?: any, summary?: string) => Promise<any>;
   saving: boolean;
   fieldErrors: Record<string, string[]>;

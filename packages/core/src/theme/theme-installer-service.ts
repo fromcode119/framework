@@ -13,8 +13,13 @@ import { Seeder } from '@core/database/seeder';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { ProjectPaths } from '@core/config/paths';
 import { TenantThemePackagePolicy } from '@core/theme/tenant-theme-package-policy';
+import { ThemeBundledPluginInstaller } from '@core/theme/theme-bundled-plugin-installer';
+import { ThemeTenantPlacement } from '@core/theme/theme-tenant-placement';
 
 export class ThemeInstallerService {
+  private readonly bundledPlugins: ThemeBundledPluginInstaller;
+  private readonly tenantPlacement: ThemeTenantPlacement;
+
   constructor(
     private readonly logger: Logger,
     private readonly themesRoot: string,
@@ -23,7 +28,18 @@ export class ThemeInstallerService {
     private readonly pluginManager: any,
     private readonly discoverThemes: () => Promise<void>,
     private readonly resolveThemeDirectory: (slug: string) => string,
-  ) {}
+  ) {
+    this.bundledPlugins = new ThemeBundledPluginInstaller(
+      logger,
+      pluginManager,
+      (slug) => this.resolveThemeDirectory(slug),
+    );
+    this.tenantPlacement = new ThemeTenantPlacement(
+      discoverThemes,
+      (dir) => this.findThemeManifestDir(dir),
+      (from, to) => this.moveDir(from, to),
+    );
+  }
 
   // --- Public install methods ---
 
@@ -105,111 +121,9 @@ export class ThemeInstallerService {
     }
   }
 
-  /**
-   * Puts a SITE's theme in its own directory, having refused everything a site may not do.
-   *
-   * No backup of a replaced directory, unlike the platform path: a site replacing its own theme is
-   * replacing something only it can see, and writing a backup archive per upload into the shared
-   * backups volume would be a second way for one site to fill the box.
-   */
-  private async placeForTenant(
-    sourceDir: string,
-    ownerTenantId: string,
-    themesMap: Map<string, IThemeManifest>,
-    quota: { maxBytes: number; maxThemes: number },
-  ): Promise<IThemeManifest> {
-    const contentDir = this.findThemeManifestDir(sourceDir);
-    if (!contentDir) throw new Error('Invalid theme: theme.json not found anywhere in the package.');
-    const manifest: IThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
-    const slug = String(manifest.slug ?? '').trim();
-    if (!slug) throw new Error('Invalid theme: missing "slug" in theme.json.');
-    if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
-      throw new Error(`Invalid theme slug "${slug}". Use lowercase letters, digits and dashes — it becomes a directory name and a URL.`);
-    }
-
-    const violations = TenantThemePackagePolicy.violations(contentDir, manifest);
-    if (violations.length) {
-      throw new Error(
-        `This theme cannot be installed for a site because it ${violations.join(' It ')} `
-        + 'A site\'s theme renders in the browser only.',
-      );
-    }
-
-    // Global uniqueness. `place` would delete whatever is at the target, and on a shared box that
-    // could be the platform's theme or another customer's — so the answer is a refusal naming the
-    // holder, never an overwrite.
-    const existing = themesMap.get(slug);
-    if (existing && existing.ownerTenantId !== ownerTenantId) {
-      throw new Error(
-        `The theme slug "${slug}" is already taken on this platform by `
-        + `${existing.ownerTenantId ? `another site` : 'the platform'}. Theme slugs are unique across the whole `
-        + 'platform, so rename yours — prefixing it with your site name is the usual way.',
-      );
-    }
-
-    const tenantRoot = ProjectPaths.getThemesDirFor(ownerTenantId);
-    const targetDir = path.join(tenantRoot, slug);
-    this.assertWithinQuota(tenantRoot, targetDir, contentDir, quota);
-
-    if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
-    fs.mkdirSync(targetDir, { recursive: true });
-    this.moveDir(contentDir, targetDir);
-
-    await this.discoverThemes();
-    // Nothing else runs. No seeds, no dependency install, no bundled plugins — the policy above has
-    // already refused a package that asks for any of them.
-    return themesMap.get(slug) || { ...manifest, ownerTenantId };
-  }
-
-  /**
-   * Refuses an upload that would take the site past what it may store.
-   *
-   * The themes volume is ONE host directory shared by every tenant on the machine, so an unbounded
-   * upload is a denial of service against every other customer, not merely against the uploader.
-   * A theme being REPLACED does not count towards the count, and its current size is not counted
-   * either — the new copy stands where the old one did.
-   */
-  private assertWithinQuota(
-    tenantRoot: string,
-    targetDir: string,
-    contentDir: string,
-    quota: { maxBytes: number; maxThemes: number },
-  ): void {
-    const incoming = TenantThemePackagePolicy.byteSize(contentDir);
-    if (incoming > quota.maxBytes) {
-      throw new Error(
-        `This theme is ${ThemeInstallerService.megabytes(incoming)} MB, over the `
-        + `${ThemeInstallerService.megabytes(quota.maxBytes)} MB a site may store in one theme.`,
-      );
-    }
-
-    let siblings: string[] = [];
-    try {
-      siblings = fs.existsSync(tenantRoot) ? fs.readdirSync(tenantRoot).filter((name) => !name.startsWith('.')) : [];
-    } catch {
-      siblings = [];
-    }
-    const replacing = siblings.includes(path.basename(targetDir));
-    if (!replacing && siblings.length >= quota.maxThemes) {
-      throw new Error(
-        `This site already has ${siblings.length} of its own themes, which is the limit. `
-        + 'Delete one before uploading another.',
-      );
-    }
-
-    const held = siblings
-      .filter((name) => name !== path.basename(targetDir))
-      .reduce((total, name) => total + TenantThemePackagePolicy.byteSize(path.join(tenantRoot, name)), 0);
-    if (held + incoming > quota.maxBytes) {
-      throw new Error(
-        `This site's themes would total ${ThemeInstallerService.megabytes(held + incoming)} MB, over the `
-        + `${ThemeInstallerService.megabytes(quota.maxBytes)} MB it may store.`,
-      );
-    }
-  }
-
-  private static megabytes(bytes: number): string {
-    return (bytes / (1024 * 1024)).toFixed(1);
+  /** @see ThemeTenantPlacement.placeForTenant */
+  private async placeForTenant(...args: Parameters<ThemeTenantPlacement["placeForTenant"]>): ReturnType<ThemeTenantPlacement["placeForTenant"]> {
+    return this.tenantPlacement.placeForTenant(...args);
   }
 
   /**
@@ -308,134 +222,29 @@ export class ThemeInstallerService {
 
   // --- Private file helpers ---
 
-  private async installBundledPlugins(manifest: IThemeManifest, failures: string[]) {
-    const themePath = this.resolveThemeDirectory(manifest.slug);
-    const archivePaths = this.getBundledPluginArchivePaths(manifest, themePath);
-    if (archivePaths.length === 0) return;
-    this.logger.info(`Installing ${archivePaths.length} bundled plugin archive(s) for theme "${manifest.slug}".`);
-    const installedSlugs = new Set<string>();
-    let installedOrUpdated = false;
-    for (const archivePath of archivePaths) {
-      try {
-        const archiveManifest = await this.readBundledPluginManifest(archivePath);
-        if (archiveManifest?.slug) {
-          const existing = this.pluginManager.plugins.get(archiveManifest.slug);
-          if (existing) {
-            const same = !!existing.manifest?.version && existing.manifest.version === archiveManifest.version;
-            if (same) { installedSlugs.add(archiveManifest.slug); continue; }
-          }
-        }
-        const installed = await this.pluginManager.installFromZip(archivePath);
-        installedOrUpdated = true;
-        if (installed?.slug) installedSlugs.add(installed.slug);
-      } catch (err: any) {
-        const msg = `Failed to install bundled plugin archive "${archivePath}" for theme "${manifest.slug}": ${err.message}`;
-        failures.push(msg); this.logger.error(msg);
-      }
-    }
-    if (installedSlugs.size === 0) return;
-    if (installedOrUpdated) await this.pluginManager.discoverPlugins();
-    for (const slug of installedSlugs) {
-      try { await this.pluginManager.enable(slug); }
-      catch (err: any) { const msg = `Bundled plugin "${slug}" installed but failed to enable: ${err.message}`; failures.push(msg); this.logger.error(msg); }
-    }
+  /** @see ThemeBundledPluginInstaller.installBundledPlugins */
+  installBundledPlugins(...args: Parameters<ThemeBundledPluginInstaller["installBundledPlugins"]>): ReturnType<ThemeBundledPluginInstaller["installBundledPlugins"]> {
+    return this.bundledPlugins.installBundledPlugins(...args);
   }
 
-  getBundledPluginArchivePaths(manifest: IThemeManifest, themePath: string): string[] {
-    const archives = new Set<string>();
-    const addArchive = (p: string) => {
-      if (fs.existsSync(p) && fs.statSync(p).isFile() && this.isSupportedPluginArchive(p)) archives.add(p);
-    };
-    const declared = (manifest as any).bundledPlugins;
-    if (Array.isArray(declared)) {
-      for (const entry of declared) {
-        if (typeof entry !== 'string' || !entry.trim()) { this.logger.warn(`Ignoring invalid bundled plugin entry in theme "${manifest.slug}" manifest.`); continue; }
-        const candidate = path.resolve(themePath, entry);
-        const rel = path.relative(themePath, candidate);
-        if (rel.startsWith('..') || path.isAbsolute(rel)) { this.logger.warn(`Ignoring bundled plugin path outside theme directory: ${entry}`); continue; }
-        addArchive(candidate);
-      }
-    }
-    for (const dirName of ['plugins', 'bundled-plugins']) {
-      for (const archivePath of this.collectPluginArchiveFiles(path.join(themePath, dirName))) addArchive(archivePath);
-    }
-    return Array.from(archives);
+  /** @see ThemeBundledPluginInstaller.getBundledPluginArchivePaths */
+  getBundledPluginArchivePaths(...args: Parameters<ThemeBundledPluginInstaller["getBundledPluginArchivePaths"]>): ReturnType<ThemeBundledPluginInstaller["getBundledPluginArchivePaths"]> {
+    return this.bundledPlugins.getBundledPluginArchivePaths(...args);
   }
 
-  findThemeManifestDir(dir: string): string | null {
-    if (fs.existsSync(path.join(dir, 'theme.json'))) return dir;
-    for (const item of fs.readdirSync(dir)) {
-      const full = path.join(dir, item);
-      if (fs.statSync(full).isDirectory()) { const found = this.findThemeManifestDir(full); if (found) return found; }
-    }
-    return null;
+  /** @see ThemeBundledPluginInstaller.findThemeManifestDir */
+  findThemeManifestDir(...args: Parameters<ThemeBundledPluginInstaller["findThemeManifestDir"]>): ReturnType<ThemeBundledPluginInstaller["findThemeManifestDir"]> {
+    return this.bundledPlugins.findThemeManifestDir(...args);
   }
 
-  isZipArchive(filePath: string): boolean {
-    const ext = path.extname(filePath).toLowerCase();
-    if (ext === '.zip') return true;
-    if (ext === '.tar' || ext === '.tgz' || ext === '.gz') return false;
-    try {
-      const fd = fs.openSync(filePath, 'r');
-      try { const h = Buffer.alloc(4); const n = fs.readSync(fd, h, 0, 4, 0); return n >= 2 && h[0] === 0x50 && h[1] === 0x4b; } finally { fs.closeSync(fd); }
-    } catch { return false; }
+  /** @see ThemeBundledPluginInstaller.isZipArchive */
+  isZipArchive(...args: Parameters<ThemeBundledPluginInstaller["isZipArchive"]>): ReturnType<ThemeBundledPluginInstaller["isZipArchive"]> {
+    return this.bundledPlugins.isZipArchive(...args);
   }
 
-  private collectPluginArchiveFiles(rootDir: string): string[] {
-    if (!fs.existsSync(rootDir) || !fs.statSync(rootDir).isDirectory()) return [];
-    const files: string[] = [];
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      if (entry.name.startsWith('.')) continue;
-      const abs = path.join(rootDir, entry.name);
-      if (entry.isDirectory()) files.push(...this.collectPluginArchiveFiles(abs));
-      else if (entry.isFile() && this.isSupportedPluginArchive(abs)) files.push(abs);
-    }
-    return files;
+  /** @see ThemeBundledPluginInstaller.moveDir */
+  moveDir(...args: Parameters<ThemeBundledPluginInstaller["moveDir"]>): ReturnType<ThemeBundledPluginInstaller["moveDir"]> {
+    return this.bundledPlugins.moveDir(...args);
   }
 
-  private async readBundledPluginManifest(archivePath: string): Promise<{ slug: string; version?: string } | null> {
-    try {
-      if (this.isZipArchive(archivePath)) {
-        const zip = new AdmZip(archivePath);
-        for (const entry of zip.getEntries()) {
-          if (entry.isDirectory || !entry.entryName.toLowerCase().endsWith('manifest.json')) continue;
-          const parsed = JSON.parse(entry.getData().toString('utf8'));
-          const slug = String(parsed?.slug || '').trim();
-          const version = String(parsed?.version || '').trim();
-          if (slug) return { slug, version: version || undefined };
-        }
-        return null;
-      }
-
-      if (!this.isSupportedPluginArchive(archivePath)) return null;
-      const tempDir = fs.mkdtempSync(path.join(path.dirname(archivePath), '.bundled-plugin-manifest-'));
-      try {
-        await BackupService.restore(archivePath, tempDir);
-        const manifestDir = this.findThemeManifestDir(tempDir);
-        if (!manifestDir) return null;
-        const parsed = JSON.parse(fs.readFileSync(path.join(manifestDir, 'manifest.json'), 'utf8'));
-        const slug = String(parsed?.slug || '').trim();
-        const version = String(parsed?.version || '').trim();
-        return slug ? { slug, version: version || undefined } : null;
-      } finally {
-        fs.rmSync(tempDir, { recursive: true, force: true });
-      }
-    } catch (e) {
-      this.logger.warn(`Failed to read manifest from bundled archive "${archivePath}": ${(e as Error).message}`);
-      return null;
-    }
-  }
-
-  private isSupportedPluginArchive(filePath: string): boolean {
-    const normalized = filePath.toLowerCase();
-    return normalized.endsWith('.zip') || normalized.endsWith('.tar.gz') || normalized.endsWith('.tgz');
-  }
-
-  moveDir(src: string, dest: string) {
-    for (const file of fs.readdirSync(src)) {
-      const s = path.join(src, file), d = path.join(dest, file);
-      if (fs.statSync(s).isDirectory()) { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); this.moveDir(s, d); }
-      else { try { fs.renameSync(s, d); } catch { this.logger.debug(`Cross-device move: falling back to copy+delete for ${s}`); fs.copyFileSync(s, d); fs.unlinkSync(s); } }
-    }
-  }
 }

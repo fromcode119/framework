@@ -6,6 +6,7 @@ import { ProjectPaths } from '@core/config/paths';
 import { DatabaseConnectionFileService } from '@core/security/database-connection-file-service';
 import { DatabaseDriverChoice } from '@core/security/enums/database-driver-choice.enum';
 import { SetupDatabaseService } from '@core/security/setup-database-service';
+import { FrameworkRootLocator } from '@core/config/framework-root-locator';
 
 /**
  * What the wizard commits to when somebody picks a driver.
@@ -23,7 +24,7 @@ describe('SetupDatabaseService', () => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-setup-db-'));
     fs.mkdirSync(path.join(root, 'data'), { recursive: true });
     vi.stubEnv('FROMCODE_PROJECT_ROOT', root);
-    (ProjectPaths as any).cachedRoot = null;
+    FrameworkRootLocator.forget();
     vi.stubEnv('DATABASE_URL', '');
     vi.stubEnv('DATABASE_MIGRATION_URL', '');
     vi.stubEnv(SetupDatabaseService.BUNDLED_HOST_ENV, 'db');
@@ -33,7 +34,7 @@ describe('SetupDatabaseService', () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    (ProjectPaths as any).cachedRoot = null;
+    FrameworkRootLocator.forget();
     fs.rmSync(root, { recursive: true, force: true });
   });
 

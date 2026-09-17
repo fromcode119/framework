@@ -8,6 +8,7 @@ import { IDatabaseManager } from '@fromcode119/database';
 import { AssistantManagementToolsService } from '@ai/api/forge/management-tools-service';
 import { AssistantCatalogService } from '@ai/api/forge/catalog-service';
 import { AssistantRuntimeContentResolver } from '@ai/api/forge/runtime-content-resolver';
+import { AssistantRuntimeContentOperations } from '@ai/api/forge/runtime-content-operations';
 import { PluginAssistantDiscoveryService } from '@ai/api/forge/plugin-assistant-discovery-service';
 import type { IAdminAssistantRuntimeOptions } from '@ai/admin-assistant-runtime/interfaces/admin-assistant-runtime-options.interface';
 
@@ -43,6 +44,8 @@ export class AssistantRuntimeFactoryService {
       (req as any).cookies,
     );
 
+    const content = new AssistantRuntimeContentOperations(this.restController, contentResolver, req);
+
     const runtimeOptions = {
       aiClient: aiClient || null,
       getCollections: () => this.catalog.getCollectionsContext(),
@@ -62,74 +65,13 @@ export class AssistantRuntimeFactoryService {
         path: String(theme?.path || '').trim() || path.join(themesRoot, String(theme?.slug || '').trim()),
       })),
       findCollectionBySlug: (source: string) => this.catalog.findCollectionBySlug(source),
-      listContent: async (collection, options) => {
-        const rawCollection = collection.raw || collection;
-        const limit = Math.min(100, Math.max(1, Number(options?.limit || 20)));
-        const offset = Math.max(0, Number(options?.offset || 0));
-        const result = await this.restController.find(rawCollection, {
-          query: {
-            limit,
-            offset,
-            preview: true,
-          },
-          user,
-          headers: req.headers,
-          cookies: (req as any).cookies,
-        });
-        return {
-          docs: Array.isArray(result?.docs) ? result.docs : [],
-          totalDocs: Number(result?.totalDocs || 0),
-          limit,
-          offset,
-        };
-      },
-      resolveContent: async (collection, selector) => {
-        return contentResolver.resolveContentItem(collection, selector || {});
-      },
-      createContent: async (collection, payload) => {
-        const rawCollection = collection.raw || collection;
-        return this.restController.create(rawCollection, {
-          body: payload,
-          query: {},
-          params: {},
-          user,
-          headers: req.headers,
-          cookies: (req as any).cookies,
-        });
-      },
-      updateContent: async (collection, targetId, payload) => {
-        const rawCollection: any = collection.raw || collection;
-        const primaryKey = String(rawCollection?.primaryKey || 'id');
-        const whereField = primaryKey === 'id' ? 'id' : primaryKey;
-
-        const existing = await contentResolver.resolveContentItem(collection, {
-          id: targetId,
-        });
-        const resolvedId = existing && typeof existing === 'object'
-          ? (existing as any)[whereField] ?? (existing as any).id ?? targetId
-          : targetId;
-
-        return this.restController.update(rawCollection, {
-          body: payload,
-          query: {},
-          params: { id: String(resolvedId) },
-          user,
-          headers: req.headers,
-          cookies: (req as any).cookies,
-        });
-      },
-      listRecordVersions: async (collection, refId, versionOptions) => {
-        const rawCollection: any = collection.raw || collection;
-        return this.restController.versioning.getVersions(String(rawCollection.slug), refId, versionOptions || {});
-      },
-      getRecordVersion: async (collection, refId, version) => {
-        const rawCollection: any = collection.raw || collection;
-        return this.restController.versioning.getVersion(String(rawCollection.slug), refId, version);
-      },
-      restoreRecordVersion: async (collection, refId, version) => {
-        const rawCollection: any = collection.raw || collection;
-        return this.restController.versioning.restoreVersion(rawCollection, refId, version, user);
-      },
+      listContent: async (collection, options) => content.list(collection, options),
+      resolveContent: async (collection, selector) => content.resolve(collection, selector),
+      createContent: async (collection, payload) => content.create(collection, payload),
+      updateContent: async (collection, targetId, payload) => content.update(collection, targetId, payload),
+      listRecordVersions: async (collection, refId, versionOptions) => content.listVersions(collection, refId, versionOptions),
+      getRecordVersion: async (collection, refId, version) => content.getVersion(collection, refId, version),
+      restoreRecordVersion: async (collection, refId, version) => content.restoreVersion(collection, refId, version),
       getSetting: async (key: string) => {
         const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
         return {

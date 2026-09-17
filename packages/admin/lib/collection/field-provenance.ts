@@ -1,5 +1,6 @@
 import { CoercionUtils } from '@fromcode119/core/client';
 import type { IFieldFallbackRule } from '@/lib/collection/interfaces/field-fallback-rule.interface';
+import { FieldProvenanceKind } from '@/lib/collection/enums/field-provenance-kind.enum';
 
 /**
  * Answers, for ONE field on ONE record, the question the admin could not previously answer:
@@ -16,8 +17,7 @@ import type { IFieldFallbackRule } from '@/lib/collection/interfaces/field-fallb
  * changes a value.
  */
 export class FieldProvenance {
-  /** `own` = the record's own value; `inherited` = empty, a setting decides; `none` = empty, nothing renders. */
-  readonly kind: 'own' | 'inherited' | 'none';
+  readonly kind: FieldProvenanceKind;
   readonly effectiveValue: string;
   readonly settingLabel: string;
   readonly settingsHref: string;
@@ -83,7 +83,7 @@ export class FieldProvenance {
     schema?: Record<string, any>,
   ): FieldProvenance | null {
     if (!rules) return null;
-    if (FieldProvenance.isPresent(value)) return new FieldProvenance({ kind: 'own' });
+    if (FieldProvenance.isPresent(value)) return new FieldProvenance({ kind: FieldProvenanceKind.OWN });
 
     const list = Array.isArray(rules) ? rules : [rules];
     for (const rule of list) {
@@ -92,16 +92,16 @@ export class FieldProvenance {
       if (!FieldProvenance.isPresent(inherited)) {
         // The rule matched but the setting it points at is itself blank — so nothing is rendered, and
         // saying "inherits from X" would be a lie. Report the real outcome instead.
-        return new FieldProvenance({ kind: 'none', emptyMeans: rule.emptyMeans ?? '' });
+        return new FieldProvenance({ kind: FieldProvenanceKind.NONE, emptyMeans: rule.emptyMeans ?? '' });
       }
       return new FieldProvenance({
-        kind: 'inherited',
+        kind: FieldProvenanceKind.INHERITED,
         effectiveValue: CoercionUtils.toString(inherited),
         settingLabel: FieldProvenance.labelFor(rule.settingKey, schema),
         settingsTab: FieldProvenance.tabFor(rule.settingKey, schema),
         settingsHref,
       });
     }
-    return new FieldProvenance({ kind: 'none', emptyMeans: list[0]?.emptyMeans ?? '' });
+    return new FieldProvenance({ kind: FieldProvenanceKind.NONE, emptyMeans: list[0]?.emptyMeans ?? '' });
   }
 }

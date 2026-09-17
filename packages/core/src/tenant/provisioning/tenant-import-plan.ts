@@ -1,3 +1,4 @@
+import { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-import-id-mode.enum';
 import { TenantArchiveManifest } from '@core/tenant/provisioning/tenant-archive-manifest';
 
 /**
@@ -15,7 +16,14 @@ export class TenantImportPlan {
     readonly tables: Array<{
       name: string;
       rows: number;
-      mode: 'preserve' | 'remap' | 'skip';
+      /**
+       * A `TenantImportIdMode` VALUE, carried as a string.
+       *
+       * This whole object is spread into `toJSON` and shown to the operator before anything is
+       * written, so it crosses the wire — an Enum instance would not survive the trip. The enum owns
+       * the vocabulary; this field owns one of its values.
+       */
+      mode: string;
       /**
        * WHY the mode was chosen, as a token rather than a sentence.
        *
@@ -49,7 +57,7 @@ export class TenantImportPlan {
   }
 
   get remappedTables(): string[] {
-    return this.tables.filter((table) => table.mode === 'remap').map((table) => table.name);
+    return this.tables.filter((table) => table.mode === String(TenantImportIdMode.REMAP.value)).map((table) => table.name);
   }
 
   toJSON(): Record<string, unknown> {

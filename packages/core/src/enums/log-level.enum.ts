@@ -23,6 +23,17 @@ export class LogLevel extends Enum {
     return this.severity <= level.severity;
   }
 
+  /**
+   * The member a value names, or null when it names none.
+   *
+   * `find`, not `resolve`: a caller that has its own answer for "unrecognised" must not be handed
+   * DEBUG, which is the most verbose level and the wrong default almost everywhere except `LOG_LEVEL`.
+   */
+  static find(value: unknown): LogLevel | null {
+    if (value instanceof LogLevel) return value;
+    return (LogLevel.fromValue(String(value ?? '').trim().toUpperCase()) as LogLevel | undefined) ?? null;
+  }
+
   /** Resolve a raw `LOG_LEVEL` value (any case) to a member; anything unknown means DEBUG (most verbose). */
   static resolve(value: unknown): LogLevel {
     if (value instanceof LogLevel) return value;

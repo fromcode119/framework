@@ -1,249 +1,25 @@
-import { NotificationType } from '@/components/enums/notification-type.enum';
-import type { ReactNode, SetStateAction } from 'react';
-import { state, bound } from '@fromcode119/react-class-components';
-import { Slot, ContextBridge } from '@fromcode119/react';
-import { AdminComponent } from '@/components/view/admin-component.client';
+import type { ReactNode } from 'react';
+import { Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { AdminApi } from '@/lib/api';
-import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
-import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
-import { TimezoneUtils } from '@/lib/timezone';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { GeneralBrandCard } from '@/app/settings/general/general-brand-card';
 import { GeneralSystemCards } from '@/app/settings/general/general-system-cards';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
-import { PlatformAccess } from '@/lib/tenants/platform-access';
-import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
+import { GeneralSettingsPageActions } from '@/app/settings/general/page-actions.client';
 
-export class GeneralSettingsPage extends AdminComponent {
-  /** The keys this screen owns. Was the key set of a seeded `@state settings` object — see `settings`. */
-  private static readonly TEXT_KEYS = [
-    'platform_name',
-    'notification_email',
-    'notification_email_cc',
-    'frontend_url',
-    'admin_url',
-    'site_url',
-    'marketplace_url',
-    'framework_repository',
-    'sources_workspace_root',
-    'timezone',
-  ] as const;
-  private static readonly BOOLEAN_KEYS = [
-    'admin_search_indexing',
-    'email_notifications',
-    'frontend_auth_enabled',
-    'frontend_registration_enabled',
-  ] as const;
-
-  @state isSaving = false;
-  @state isSendingTelemetryTest = false;
-  @state isLoading = true;
-  /**
-   * `null` means NEVER LOADED — it is not an empty form.
-   *
-   * This used to be seeded with `timezone: 'UTC'`, `frontend_auth_enabled: true` and
-   * `frontend_registration_enabled: true`. All three are DECLARED server-side
-   * (`packages/api/src/server/server-settings-service.ts` seeds them into `_system_meta`), so the
-   * copies here were a second, invisible default — and because the load had no `catch`, a failed
-   * settings GET rendered "Frontend Registration: ON" as though an operator had enabled public
-   * self-registration, and Save then persisted it. No seed now: a failed load shows `loadError` and
-   * the Save control is not rendered.
-   */
-  @state settings: Record<string, any> | null = null;
-  /**
-   * Which of these settings belong to the PLATFORM and are out of this account's reach. Asked of the
-   * server, never listed here — see {@link PlatformSettingLocks}. Nothing is locked until it answers.
-   */
-  @state platformLocks: PlatformSettingLocks = PlatformSettingLocks.none();
-  @state loadError: string | null = null;
-
+/**
+ * Settings — General.
+ *
+ * The top of the chain: the lifecycle and the markup. What the page knows and what it can do live in
+ * the links below — see `GeneralSettingsPageState`.
+ */
+export class GeneralSettingsPage extends GeneralSettingsPageActions {
   async componentDidMount(): Promise<void> {
     await this.loadSettings();
     this.platformLocks = await PlatformSettingLocks.load();
-  }
-
-  @bound
-  async retryLoad(): Promise<void> {
-    this.isLoading = true;
-    await this.loadSettings();
-  }
-
-  private async loadSettings(): Promise<void> {
-    this.loadError = null;
-    try {
-      const response = await AdminSystemSettingsClient.getAll();
-      this.settings = GeneralSettingsPage.mapResponse(response);
-    } catch (err: any) {
-      this.settings = null;
-      this.loadError = err?.message || 'The system settings request failed.';
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  /** Build the form state from the response ALONE — an absent key stays absent, it is not invented. */
-  private static mapResponse(response: Record<string, any>): Record<string, any> {
-    const source = response || {};
-    const mapped: Record<string, any> = { domain_aliases: GeneralSettingsPage.parseAliases(source.domain_aliases) };
-    GeneralSettingsPage.TEXT_KEYS.forEach((key) => {
-      mapped[key] = source[key] ?? '';
-    });
-    GeneralSettingsPage.BOOLEAN_KEYS.forEach((key) => {
-      mapped[key] = source[key] === true || source[key] === 'true';
-    });
-    return mapped;
-  }
-
-  /** The full field set this screen owns, serialized. WHICH of these actually go is `handleSave`'s call. */
-  private static buildPayload(settings: Record<string, any>): Record<string, unknown> {
-    return {
-      platform_name: String(settings.platform_name ?? '').trim(),
-      admin_search_indexing: Boolean(settings.admin_search_indexing),
-      email_notifications: Boolean(settings.email_notifications),
-      notification_email: String(settings.notification_email ?? '').trim(),
-      notification_email_cc: String(settings.notification_email_cc ?? '').trim(),
-      frontend_url: String(settings.frontend_url ?? '').trim(),
-      admin_url: String(settings.admin_url ?? '').trim(),
-      site_url: String(settings.site_url ?? '').trim(),
-      marketplace_url: String(settings.marketplace_url ?? '').trim(),
-      framework_repository: String(settings.framework_repository ?? '').trim(),
-      sources_workspace_root: String(settings.sources_workspace_root ?? '').trim(),
-      domain_aliases: JSON.stringify(Array.isArray(settings.domain_aliases) ? settings.domain_aliases : []),
-      timezone: String(settings.timezone ?? '').trim(),
-      frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
-      frontend_registration_enabled: Boolean(settings.frontend_registration_enabled),
-    };
-  }
-
-  private static parseAliases(value: unknown): string[] {
-    if (Array.isArray(value)) return value as string[];
-    try {
-      const parsed = JSON.parse(String(value ?? ''));
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private get registerSettings(): (settings: Record<string, any>) => void {
-    const plugins = this.runtime?.plugins;
-    if (plugins?.registerSettings) return plugins.registerSettings.bind(plugins);
-    return ContextBridge.registerSettings.bind(ContextBridge);
-  }
-
-  private get timezoneOptions(): { label: string; value: string }[] {
-    return TimezoneUtils.getTimezoneOptions(String(this.settings?.timezone ?? '').trim());
-  }
-
-  @bound
-  setSettings(update: SetStateAction<Record<string, any>>): void {
-    const current = this.settings;
-    if (!current) return;
-    this.settings = typeof update === 'function'
-      ? (update as (prev: Record<string, any>) => Record<string, any>)(current)
-      : update;
-  }
-
-  @bound
-  async handleSave(): Promise<void> {
-    const addNotification = this.runtime.notify.addNotification;
-    const settings = this.settings;
-    // Fail closed: never PUT values that were not read back from the server.
-    if (!settings) return;
-
-    // Send only what THIS SCOPE can own. The page used to PUT all fifteen keys unconditionally, and
-    // in the `PLATFORM / No site` scope eight of them are per-site: the API refuses such a PUT
-    // whole, so the platform keys the operator had just edited were discarded with it and the screen
-    // reported only the bare token `site_required`. The filter is the server's own answer
-    // (`PlatformSettingLocks`), not a second list kept here — the same facts the inputs are disabled
-    // from, so what is greyed out is exactly what is not sent.
-    const payload = GeneralSettingsPage.buildPayload(settings);
-    // BOTH, and they are not the same test. `shown` is what this scope is editing; `writable` is what
-    // the API would accept. A platform admin inside a site may WRITE a platform key, but that control
-    // lives in the platform scope — sending its form value from here would push a value nobody on this
-    // screen could see, overwriting whatever another admin changed since the page loaded.
-    const sendable = Object.fromEntries(
-      Object.entries(payload).filter(([key]) => this.platformLocks.shown(key) && this.platformLocks.writable(key)),
-    );
-
-    if (Object.keys(sendable).length === 0) {
-      addNotification({
-        title: 'Nothing To Save',
-        message: 'Nothing on this page can be changed in the current scope.',
-        type: NotificationType.ERROR
-      });
-      return;
-    }
-
-    this.isSaving = true;
-    try {
-      await AdminSystemSettingsClient.update(sendable);
-
-      // The WHOLE form state, not just what was sent. `AdminUrlUtils.resolveFrontendBaseUrl` reads
-      // `frontend_url`/`site_url` from this context for every "view on site" link; registering only
-      // the sent subset would leave them undefined in a site scope, where those keys are not shown.
-      this.registerSettings(settings);
-
-      addNotification({
-        title: 'Settings Saved',
-        message: 'Configuration updated successfully.',
-        type: NotificationType.SUCCESS
-      });
-    } catch (err: any) {
-      // Was a single opaque sentence for every failure, so a 403 was indistinguishable from a bad URL.
-      addNotification({
-        title: 'Save Failed',
-        message: err?.message || 'Could not save settings.',
-        type: NotificationType.ERROR
-      });
-    } finally {
-      this.isSaving = false;
-    }
-  }
-
-  @bound
-  async handleSendTelemetryTest(): Promise<void> {
-    const addNotification = this.runtime.notify.addNotification;
-    this.isSendingTelemetryTest = true;
-    try {
-      const result = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.EMAIL_TELEMETRY_TEST, {});
-      const recipientsCount = Number(result?.recipientsCount || 0);
-      addNotification({
-        title: 'Telemetry Test Sent',
-        message: recipientsCount > 0
-          ? `Test email dispatched to ${recipientsCount} recipient${recipientsCount === 1 ? '' : 's'}.`
-          : 'Test email dispatched.',
-        type: NotificationType.SUCCESS
-      });
-    } catch (err: any) {
-      addNotification({
-        title: 'Test Failed',
-        message: err?.message || 'Failed to send telemetry test email.',
-        type: NotificationType.ERROR
-      });
-    } finally {
-      this.isSendingTelemetryTest = false;
-    }
-  }
-
-  /**
-   * Step out to the platform scope, so the settings this screen is not showing become reachable.
-   *
-   * Offered only to an account that may actually change them — for anyone else the notice says who
-   * can, and a button that leads to a screen they cannot use is the dead control this page just
-   * stopped rendering.
-   */
-  @bound
-  async openPlatformScope(): Promise<void> {
-    await TenantScopeClient.leaveAndReload();
-  }
-
-  private get canManagePlatform(): boolean {
-    return PlatformAccess.canManagePlatform(this.auth.user);
   }
 
   /**
@@ -253,7 +29,7 @@ export class GeneralSettingsPage extends AdminComponent {
    * gone — an operator could not discover that `timezone` exists, let alone where to set it. Renders
    * nothing on a single-tenant deployment, where nothing is hidden.
    */
-  private renderScopeNotice(): ReactNode {
+  protected renderScopeNotice(): ReactNode {
     const notice = this.platformLocks.hiddenScopeNotice(this.canManagePlatform);
     if (!notice) return null;
     const offerSwitch = this.platformLocks.isSiteScope() && this.canManagePlatform;

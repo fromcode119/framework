@@ -1,3 +1,4 @@
+import { EnvUtils } from '@core/utils/env-utils';
 /** ThemeScaffoldService — creates new theme boilerplate on disk. Extracted from ThemeManager (ARC-007). */
 
 import path from 'path';
@@ -43,7 +44,7 @@ export class ThemeScaffoldService {
       'export const init = () => {',
       `  console.info('[theme:${slug}] initialized.');`,
       '};', '',
-      'if (typeof window !== "undefined") {',
+      'if (EnvUtils.isBrowser()) {',
       '  init();',
       '}', '',
     ].join('\n');

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { TypeUtils } from '@fromcode119/core';
 import type { IControllerDeps } from '@ai/api/helpers/interfaces/controller-deps.interface';
+import { BatchState } from '@ai/components/enums/batch-state.enum';
 
 /** Handles the executeAssistantActions endpoint logic. */
 export class ExecuteActionsHandler {
@@ -43,7 +44,8 @@ export class ExecuteActionsHandler {
         if (item?.ok === false) { acc.failed += 1; return acc; }
         acc.ok += 1; return acc;
       }, { ok: 0, unchanged: 0, failed: 0 });
-      const batchState = (dryRun ? 'previewed' : 'applied') as 'previewed' | 'applied';
+      // The wire value, not the member: this goes into the JSON response and the saved session.
+      const batchState = String((dryRun ? BatchState.PREVIEWED : BatchState.APPLIED).value);
 
       if (sessionId && result?.results) {
         deps.recordReasoningStep(sessionId, `Executed ${actions.length} actions with ${successCount} successes`, { actionCount: actions.length }, { results: result.results, successCount }, successCount / Math.max(1, actions.length));

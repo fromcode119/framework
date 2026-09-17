@@ -1,3 +1,4 @@
+import { EnvUtils } from '@fromcode119/core/utils/env-utils';
 /**
  * Copy for the framework's OWN surfaces, resolved without a theme, a plugin or the context provider.
  *
@@ -33,7 +34,7 @@ export class FrameworkTranslations {
    * platform's configured locale, so this needs no settings request of its own.
    */
   static get locale(): string {
-    if (typeof document === 'undefined') return 'en';
+    if (EnvUtils.isServer()) return 'en';
     return FrameworkTranslations.normalizeLocale(document.documentElement.lang || 'en');
   }
 

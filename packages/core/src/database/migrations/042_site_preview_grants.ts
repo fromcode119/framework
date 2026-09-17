@@ -1,6 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { PortableColumnTypes } from '../helpers/portable-column-types';
-import { Logger } from '../../logging';
+import { PortableColumnTypes } from '@core/database/helpers/portable-column-types';
+import { Logger } from '@core/logging';
 
 /**
  * Somewhere to record that a site's own people may look at it before it is published.

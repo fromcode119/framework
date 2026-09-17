@@ -10,6 +10,7 @@ import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { DropdownPlacement } from '@/components/ui/enums/dropdown-placement.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.interface';
+import { AvatarSize } from '@/app/components/enums/avatar-size.enum';
 
 /**
  * Who you are signed in as, at the foot of the sidebar — and the only place the account menu lives.
@@ -149,8 +150,8 @@ export class SidebarAccountCard extends AdminComponent {
     ];
   }
 
-  private avatar(size: 'sm' | 'md'): ReactElement {
-    const box = size === 'sm' ? 'h-7 w-7 text-[11px]' : 'h-9 w-9 text-[13px]';
+  private avatar(size: AvatarSize): ReactElement {
+    const box = size === AvatarSize.SMALL ? 'h-7 w-7 text-[11px]' : 'h-9 w-9 text-[13px]';
     return (
       <span
         className={`${box} flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 font-semibold text-white ring-1 ring-inset ring-white/15`}
@@ -164,7 +165,7 @@ export class SidebarAccountCard extends AdminComponent {
   private get menuHeader(): ReactElement {
     return (
       <div className="flex items-center gap-3">
-        {this.avatar('md')}
+        {this.avatar(AvatarSize.MEDIUM)}
         <div className="flex min-w-0 flex-col">
           <span className="truncate text-[13px] font-semibold leading-tight text-slate-900 dark:text-white">
             {this.displayName}
@@ -181,14 +182,14 @@ export class SidebarAccountCard extends AdminComponent {
     if (this.isMini) {
       return (
         <span className="flex justify-center py-1" title={this.auth.user?.email || 'Account'}>
-          {this.avatar('sm')}
+          {this.avatar(AvatarSize.SMALL)}
         </span>
       );
     }
 
     return (
       <span className="group/account flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/70">
-        {this.avatar('sm')}
+        {this.avatar(AvatarSize.SMALL)}
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-[12.5px] font-semibold leading-tight text-slate-800 dark:text-slate-100">
             {this.displayName}

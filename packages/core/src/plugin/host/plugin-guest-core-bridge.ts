@@ -4,6 +4,8 @@ import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginGuestHandlers } from '@core/plugin/host/plugin-guest-handlers';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
+import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
+import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 
 /**
  * The in-process singletons plugins reach for OUTSIDE the context, re-pointed at the host.
@@ -38,7 +40,7 @@ export class PluginGuestCoreBridge {
    * the plugin may not declare — that broke plugins that never use hooks.
    */
   static async primeFor(kind: string, remote: PluginGuestRemote): Promise<void> {
-    if (kind === 'lifecycle') {
+    if (kind === String(PluginInvocationKind.LIFECYCLE.value)) {
       if (PluginGuestCoreBridge.primedAtBoot) return;
       PluginGuestCoreBridge.primedAtBoot = true;
       await PluginGuestCoreBridge.prime(remote);
@@ -69,10 +71,10 @@ export class PluginGuestCoreBridge {
         register: (key: string, role: unknown, terms: readonly string[]) => remote.call('core', [{ name: 'assistantVocabulary' }, { name: 'register', args: PluginGuestRemote.portable([key, role, [...terms]]) }]),
       },
       contentResolutionGates: {
-        register: (key: string, gate: (...args: any[]) => unknown) => registration({ kind: 'gate', key, handlerId: handlers.keep('gate', gate) }),
+        register: (key: string, gate: (...args: any[]) => unknown) => registration({ kind: String(PluginGuestRegistrationKind.GATE.value), key, handlerId: handlers.keep('gate', gate) }),
       },
       canonicalPathResolvers: {
-        register: (key: string, resolver: (...args: any[]) => unknown) => registration({ kind: 'canonical-path', key, handlerId: handlers.keep('canonical-path', resolver) }),
+        register: (key: string, resolver: (...args: any[]) => unknown) => registration({ kind: String(PluginGuestRegistrationKind.CANONICAL_PATH.value), key, handlerId: handlers.keep('canonical-path', resolver) }),
       },
     };
 

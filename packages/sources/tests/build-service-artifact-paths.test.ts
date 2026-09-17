@@ -1,7 +1,7 @@
 import { ExtensionScope } from '@fromcode119/core';
 import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BuildService } from '@sources/packaging/build-service';
+import { BuiltPackageService } from '@sources/packaging/built-package-service';
 import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
 
 /**
@@ -13,12 +13,12 @@ import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
  * A build now stages a DIRECTORY and writes an archive only when somebody downloads one, so
  * "there is no file" is a normal answer rather than a failure.
  */
-describe('BuildService — resolving a built artifact', () => {
+describe('BuiltPackageService — resolving a built artifact', () => {
   const WORKSPACE = '/app/data/sources';
   let service: any;
 
   beforeEach(() => {
-    service = Object.create(BuildService.prototype);
+    service = Object.create(BuiltPackageService.prototype);
     service.buildsSlug = SourcesCollectionRegistry.BUILDS;
     service.packageBuilder = {
       outputDirFor: (type: ExtensionScope) => `${WORKSPACE}/${type === ExtensionScope.THEME ? 'themes' : 'plugins'}`,

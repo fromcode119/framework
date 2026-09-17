@@ -1,3 +1,4 @@
+import { TenantColumnSource } from '@core/tenant/provisioning/enums/tenant-column-source.enum';
 /**
  * One column of one tenant table that holds the id of a row in another (or the same) table.
  *
@@ -17,7 +18,7 @@ export class TenantColumnReference {
     readonly table: string,
     readonly column: string,
     readonly targetTable: string,
-    readonly source: 'fk' | 'schema',
+    readonly source: TenantColumnSource,
     /** JSON keys below `column`, as declared by nested `array`/`group` sub-fields. `[]` = the column itself. */
     readonly path: string[] = [],
     /** The `hasMany` the relationship field declared — informational; `path`/runtime shape drive the walk. */

@@ -1,5 +1,5 @@
 import { AttentionItem } from '@core/services/attention/attention-item';
-import { AttentionSeverity } from '@core/services/attention/attention-severity.enum';
+import { AttentionSeverity } from '@core/services/attention/enums/attention-severity.enum';
 import { PluginAttentionRegistryService } from '@core/services/attention/plugin-attention-registry-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { AppPathConstants } from '@core/constants/app-path.constants';

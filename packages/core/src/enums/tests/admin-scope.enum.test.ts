@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AdminScope } from '../admin-scope.enum';
+import { AdminScope } from '@core/enums/admin-scope.enum';
 
 /**
  * The reason this is an enum and not two string literals.

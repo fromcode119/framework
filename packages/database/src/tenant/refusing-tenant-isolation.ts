@@ -1,8 +1,6 @@
-import type {
-  IScopedUniqueRules,
-  ITenantIsolation,
-  ITenantPolicySpec,
-} from '@database/interfaces/tenant-isolation.interface';
+import type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
+import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+import type { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
 
 /**
  * The isolation capability of a driver that has none: every method REFUSES.
@@ -40,7 +38,7 @@ export class RefusingTenantIsolation implements ITenantIsolation {
     return this.refuse('list tenant policies on', 'this database');
   }
 
-  async applyPolicy(spec: ITenantPolicySpec): Promise<void> {
+  async applyPolicy(spec: TenantPolicySpec): Promise<void> {
     return this.refuse('apply a tenant policy to', spec.table);
   }
 

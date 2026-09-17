@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AdminSecondaryPanelNormalizer } from '../admin-secondary-panel-normalizer';
+import { AdminSecondaryPanelNormalizer } from '@core/plugin/services/admin/admin-secondary-panel-normalizer';
 
 /**
  * The scope flags must survive normalisation.

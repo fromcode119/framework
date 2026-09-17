@@ -1,0 +1,104 @@
+# Runs every architecture guard in one pass and FAILS the run if any of them fails.
+#
+# WHY THIS EXISTS: ~40 guards existed and nothing ran them. They were reachable only as individual npm
+# scripts, fifteen of which `npm run build` chained — and the Dockerfile calls the granular build
+# targets (`build:tooling`, `build:libs`, `build:admin`, …), never `npm run build`. So the images built
+# green while guards were failing, the ratchets stopped ratcheting, and their baselines quietly became
+# permission instead of debt anyone was paying down.
+#
+# SCOPE: this job guards the FRAMEWORK. A plugin, theme or appearance guards ITSELF, in its own
+# repository, by calling the reusable job below — which is why the framework holds no list of their
+# names. See `GuardScope`.
+name: Arch guard
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+  # Called by an extension repository to guard itself with these rules. It passes WHERE it sits in the
+  # tree (`plugins`, `themes` or `appearance`) and under what directory name; the job assembles the
+  # layout the guards expect and points them at that directory alone.
+  workflow_call:
+    inputs:
+      area:
+        description: 'plugins | themes | appearance'
+        required: true
+        type: string
+      name:
+        description: "The extension's directory name, e.g. the plugin slug"
+        required: true
+        type: string
+      framework-ref:
+        description: 'Framework ref to guard against (default: main)'
+        required: false
+        default: main
+        type: string
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      # The guards resolve a repo root holding `framework/Source` beside `plugins/`, `themes/` and
+      # `appearance/`, so both checkouts go to the paths that reproduce it.
+      # `framework/Source`, not `framework`: this repository's ROOT is the framework's `Source`
+      # directory — `packages/`, the Dockerfile and `package-lock.json` sit at the top of it. Checking
+      # it out to `framework` put every one of them one level above where the rest of this job looks,
+      # so `cache-dependency-path` resolved nothing and the run died at setup-node before a single
+      # guard ran. Nothing caught it because this workflow had never executed until now.
+      - name: Check out the framework
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.event_name == 'workflow_call' && 'fromcode119/framework' || github.repository }}
+          ref: ${{ github.event_name == 'workflow_call' && inputs.framework-ref || github.ref }}
+          path: framework/Source
+
+      - name: Check out the extension
+        if: ${{ github.event_name == 'workflow_call' }}
+        uses: actions/checkout@v5
+        with:
+          path: ${{ inputs.area }}/${{ inputs.name }}
+
+      # 22, matching NODE_BASE_IMAGE in the Dockerfile — the guards must run on the version the
+      # images are built with, and there is no .nvmrc to read it from.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: framework/Source/package-lock.json
+
+      - name: Install
+        working-directory: framework/Source
+        run: npm ci
+
+      # `build:packages` — tooling, runtime, the generated icon list and the libraries — because the
+      # guards measure BUILT output as well as source, exactly as the Dockerfile does:
+      #   - arch-guard imports typor's `build` entry, and typor is consumed as built output;
+      #   - `app-typecheck` type-checks admin and frontend, which resolve core/react/sdk from `dist`;
+      #   - `imports` resolves `lucide-icon-names.generated.json`, which `build:frontend-icons` emits
+      #     and nothing commits.
+      # Locally none of this showed, because every one of those directories has been on disk for
+      # months. A fresh checkout is the only place the difference is visible.
+      - name: Build the packages the guards measure
+        working-directory: framework/Source
+        run: npm run build:packages
+
+      - name: Build the guards
+        working-directory: framework/Source
+        run: npm run build --workspace=@fromcode119/arch-guard
+
+      # `--scope` decides the subject, never the rules. Unquoted interpolation is avoided: the area and
+      # name are passed as environment values so a caller cannot inject shell through them.
+      - name: Run the guards
+        working-directory: framework/Source
+        env:
+          GUARD_AREA: ${{ inputs.area }}
+          GUARD_NAME: ${{ inputs.name }}
+        run: |
+          if [ -n "$GUARD_AREA" ]; then
+            scope="$(cd "../../$GUARD_AREA/$GUARD_NAME" && pwd)"
+          else
+            scope=framework
+          fi
+          node packages/arch-guard/dist/arch-guard-cli.cjs ci --scope "$scope"

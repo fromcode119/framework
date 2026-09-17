@@ -8,11 +8,7 @@ export class SettingsRegistrationService {
 
     try {
       const plugins = ContextHooks.usePlugins();
-      if (typeof plugins?.registerSettings === 'function') {
-        registerSettings = plugins.registerSettings.bind(plugins);
-      } else {
-        SettingsRegistrationService.warnFallback(scope, pageLabel, includeCollectionsFallback);
-      }
+      registerSettings = plugins.registerSettings.bind(plugins);
 
       if (Array.isArray(plugins?.collections)) {
         collections = plugins.collections;

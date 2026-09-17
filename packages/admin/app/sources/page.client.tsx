@@ -13,6 +13,7 @@ import { BuildSourceDialog } from '@/app/sources/build-source-dialog';
 import { BuildSourceForm } from '@/app/sources/build-source-form';
 import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
 import type { IBuildOverviewState } from '@/app/sources/interfaces/build-overview-state.interface';
+import { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
 
 export class BuildOverview extends AdminComponent {
   @state builds: any[] = [];
@@ -20,7 +21,7 @@ export class BuildOverview extends AdminComponent {
   // slug-only comparison spun the Delete button on both rows.
   @state deletingKey: string | null = null;
   @state editingBuild: any | null = null;
-  @state editorMode: 'create' | 'edit' | null = null;
+  @state editorMode: SourceEditorMode | null = null;
   @state error: string = '';
   @state loading: boolean = true;
   @state savingSource: boolean = false;
@@ -88,7 +89,7 @@ export class BuildOverview extends AdminComponent {
   async handleSaveSource(values: IBuildSourceFormValues): Promise<void> {
     this.savingSource = true;
     try {
-      if (this.editorMode === 'edit' && this.editingBuild?.slug) {
+      if (this.editorMode === SourceEditorMode.EDIT && this.editingBuild?.slug) {
         const { type, slug } = BuildOverview.identify(this.editingBuild);
         // The kind is not sent: it is half of WHICH source this is, and changing it would move the
         // clone directory, the staging root and the installer. That is a new source, not an edit.
@@ -138,8 +139,8 @@ export class BuildOverview extends AdminComponent {
 
   render(): ReactNode {
     const { builds, checking, deletingKey, editingBuild, editorMode, error, loading, savingSource, triggerKey, triggering } = this;
-    const editorTitle = editorMode === 'edit' ? `Edit ${editingBuild?.slug || 'source'}` : 'Add Build Source';
-    const editorDescription = editorMode === 'edit'
+    const editorTitle = editorMode === SourceEditorMode.EDIT ? `Edit ${editingBuild?.slug || 'source'}` : 'Add Build Source';
+    const editorDescription = editorMode === SourceEditorMode.EDIT
       ? 'Update repository details here. Leave the token blank to keep the currently stored secret.'
       : 'Track a plugin or theme repository in a focused dialog without disrupting the build list.';
 
@@ -159,7 +160,7 @@ export class BuildOverview extends AdminComponent {
             icon={<Hammer size={20} />}
             actions={(
               <div className="flex items-center gap-2">
-                <Button icon={<GitBranch size={14} />} onClick={() => { this.editorMode = 'create'; this.editingBuild = null; }} variant={ButtonVariant.PRIMARY}>
+                <Button icon={<GitBranch size={14} />} onClick={() => { this.editorMode = SourceEditorMode.CREATE; this.editingBuild = null; }} variant={ButtonVariant.PRIMARY}>
                   Add Source
                 </Button>
                 <Button disabled={checking} icon={<RefreshCw size={14} className={checking ? 'animate-spin' : ''} />} onClick={() => this.handleCheckUpdates()} variant={ButtonVariant.OUTLINE}>
@@ -186,7 +187,7 @@ export class BuildOverview extends AdminComponent {
             deletingKey={deletingKey}
             loading={loading}
             onDelete={(build: any) => this.handleDelete(build)}
-            onEdit={(nextBuild: any) => { this.editingBuild = nextBuild; this.editorMode = 'edit'; }}
+            onEdit={(nextBuild: any) => { this.editingBuild = nextBuild; this.editorMode = SourceEditorMode.EDIT; }}
             onTrigger={(build: any) => this.handleTriggerOne(build)}
             triggerKey={triggerKey}
           />

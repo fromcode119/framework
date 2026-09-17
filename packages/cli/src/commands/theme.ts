@@ -6,6 +6,7 @@ import archiver from 'archiver';
 import * as esbuild from 'esbuild';
 import { CliUtils } from '@cli/utils';
 import { ThemeSeedCommandService } from '@cli/services/theme-seed-command-service';
+import { ThemeScaffoldFiles } from '@cli/commands/theme-scaffold-files';
 
 export class ThemeCommands {
   static registerThemeCommands(program: Command) {
@@ -40,8 +41,19 @@ export class ThemeCommands {
 
           console.log(chalk.green(`\nCreating theme "${themeName}" in ${themePath}...`));
 
+          // A theme ships NO hand-written entry file. `ThemeEntryGenerator.resolveEntry` GENERATES
+          // `src/theme-entry.generated.jsx` from theme.json's "build" block (styles/components/
+          // eagerComponents globs) unless the theme hand-authors `src/index.jsx` — which this scaffold
+          // does not, so it declares its glob patterns instead. The generated entry hands its component
+          // maps to the boot class named in "build.boot" (default `@theme/theme-boot` → `ThemeBoot`),
+          // so the one file this scaffold DOES write by hand is `src/theme-boot.ts`.
           await fs.ensureDir(themePath);
-          await fs.ensureDir(path.join(themePath, 'ui/layouts'));
+          await fs.ensureDir(path.join(themePath, 'src/styles'));
+
+          const colors = {
+            primary: '#3b82f6',
+            secondary: '#10b981',
+          };
 
           const themeJson = {
             slug,
@@ -50,30 +62,31 @@ export class ThemeCommands {
             description: `Custom theme ${themeName}`,
             author: 'Me',
             screenshot: 'screenshot.png',
-            config: {
-              colors: {
-                primary: '#3b82f6',
-                secondary: '#10b981'
-              }
-            }
+            config: { colors },
+            // `ui.entry`/`ui.css` are the BUILD OUTPUT the Vite theme build emits — `bundle.js` and
+            // `<slug>-theme.css` (see `ThemeViteConfig`'s asset naming). Declared here so the admin can
+            // resolve them once the theme is built; nothing on disk yet.
+            ui: {
+              entry: 'bundle.js',
+              css: [`${slug}-theme.css`],
+            },
+            // Glob patterns `ThemeEntryGenerator` reads to generate the Vite entry. Empty until this
+            // theme declares real layouts/block renderers — an empty scaffold ships no invented ones.
+            build: {
+              styles: ['./styles/*.css'],
+              components: [],
+              eagerComponents: [],
+            },
+            // No third-party UI library declared yet, so no chunk to split out — everything unclaimed
+            // lands in the generic `vendor` chunk (see `ThemeViteConfig`). Add an entry here (and to this
+            // theme's own package.json `dependencies`) once one is.
+            vendorChunks: {},
           };
 
           await fs.writeJson(path.join(themePath, 'theme.json'), themeJson, { spaces: 2 });
 
-          await fs.writeFile(path.join(themePath, 'ui/theme.css'), `
-:root {
-  --primary: ${themeJson.config.colors.primary};
-  --secondary: ${themeJson.config.colors.secondary};
-}
-`.trim() + '\n');
-
-          await fs.writeFile(path.join(themePath, 'ui/index.ts'), `
-import '@cli/commands/theme.css';
-
-export const init = () => {
-  console.log('[Theme: ${slug}] Initialized');
-};
-`.trim() + '\n');
+          await fs.writeFile(path.join(themePath, 'src/styles/theme.css'), ThemeScaffoldFiles.css(colors));
+          await fs.writeFile(path.join(themePath, 'src/theme-boot.ts'), ThemeScaffoldFiles.themeBoot(slug));
 
           console.log(chalk.green('\nTheme scaffolded successfully!'));
 

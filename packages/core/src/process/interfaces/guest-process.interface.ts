@@ -1,4 +1,5 @@
 import type { IMessagePort } from '@core/process/interfaces/message-port.interface';
+import type { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 
 /** A running guest, however it was started. */
 export interface IGuestProcess {
@@ -15,5 +16,5 @@ export interface IGuestProcess {
   readonly socketMode: number;
   kill(signal?: NodeJS.Signals): void;
   onExit(listener: (code: number | null, signal: string | null) => void): void;
-  onOutput(listener: (stream: 'stdout' | 'stderr', line: string) => void): void;
+  onOutput(listener: (stream: GuestOutputStream, line: string) => void): void;
 }

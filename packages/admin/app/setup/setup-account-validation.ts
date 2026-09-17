@@ -1,4 +1,4 @@
-import type { ISetupAccountErrors } from '@/app/setup/setup-account-errors.interface';
+import type { ISetupAccountErrors } from '@/app/setup/interfaces/setup-account-errors.interface';
 
 /**
  * The only two account faults a browser can judge on its own: an empty field, and two passwords that

@@ -45,6 +45,7 @@ export class PluginBackendCompiler {
       outfile: path.join(sourceDir, Core.PluginPackageLayout.SERVER_ENTRY),
       alias: this.toolchain.selfAlias(sourceDir),
       external: this.toolchain.nodeExternals(),
+      plugins: [BuildToolchain.denyFrameworkInternals()],
       sourcemap: true,
       minify: false,
       logLevel: 'warning',

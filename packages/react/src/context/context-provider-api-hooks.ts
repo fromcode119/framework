@@ -50,8 +50,10 @@ export class ContextProviderApiHooks {
       apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl
     ), [apiUrl]);
 
+    // `path` is exposed to plugin code as `context.api.get/post/...` (untyped at the runtime
+    // boundary), so a caller can hand this anything despite the declared `string` type below.
     const apiFetch = React.useCallback(async (
-      path: string,
+      path: unknown,
       options: RequestInit & { silent?: boolean; noDedupe?: boolean } = {},
     ) => {
       const { silent, noDedupe, ...fetchOptions } = options as any;

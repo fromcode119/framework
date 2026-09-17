@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { McpRegistryProvider } from '@core/mcp/mcp-registry-provider';
 import { McpContextProxy } from '@core/plugin/context/mcp';
 import { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrations';
+import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 
 /**
  * A relaunched guest boots again under the SAME PluginContext and registers the same MCP tools. The
@@ -21,7 +22,7 @@ describe('PluginHostRegistrations.resetForRestart', () => {
       mcp: McpContextProxy.createMcpProxy({ manifest: { slug } } as any),
     };
     const registration: any = {
-      kind: 'mcp-tools',
+      kind: String(PluginGuestRegistrationKind.MCP_TOOLS.value),
       tools: [{ tool: `${slug}.things.list`, handlerId: 'h1', permission: 'things:read', inputSchema: { type: 'object', properties: {} } }],
     };
 

@@ -124,13 +124,36 @@ export class ImportGuard {
     return null;
   }
 
+  /**
+   * The package a PACKAGE alias names, wherever it is imported from.
+   *
+   * `@core/`, `@email/`, `@mcp/` … are declared in the ROOT tsconfig, so every package inherits them
+   * and any package may use any of them. Resolution used to go only through {@link aliasRoot}, which
+   * answers with the IMPORTER's own package — so a cross-package alias could never match its prefix
+   * and came back null, i.e. `BROKEN`. That reported 26 imports as unresolvable that TypeScript
+   * resolves without complaint: core's `@email/interfaces/email-driver.interface`, the api tests'
+   * `@core/constants/cookie.constants`, and so on. They were type-only imports, which TypeScript
+   * erases at emit, so the build could not contradict the guard either.
+   */
+  private static packageAliasRoot(spec: string, framework: string): { root: string; prefix: string } | null {
+    for (const [pkg, prefix] of ImportGuard.PACKAGE_ALIASES) {
+      if (!spec.startsWith(prefix)) continue;
+      const src = path.resolve(framework, 'packages', pkg, 'src');
+      if (existsSync(src)) return { root: src, prefix };
+    }
+    return null;
+  }
+
   /** Absolute path a specifier points at, `'external'` for packages, or null when it does not exist. */
   static resolveSpecifier(spec: string, importer: string, framework: string, repoRoot: string): string | null {
     const dir = path.dirname(importer);
     let base: string;
     if (spec.startsWith('.')) base = path.normalize(path.join(dir, spec));
     else if (ImportGuard.aliasPrefixes().some((prefix) => spec.startsWith(prefix))) {
-      const alias = ImportGuard.aliasRoot(importer, framework, repoRoot);
+      // A package alias names its target outright; `@/`, `@theme/` and `@plugin/` are relative to
+      // whoever is importing, so they fall back to the importer's own root.
+      const alias = ImportGuard.packageAliasRoot(spec, framework)
+        ?? ImportGuard.aliasRoot(importer, framework, repoRoot);
       if (!alias || !spec.startsWith(alias.prefix)) return null;
       base = path.normalize(path.join(alias.root, spec.slice(alias.prefix.length)));
     } else return 'external';
@@ -174,7 +197,14 @@ export class ImportGuard {
     }
     // an odd number of unescaped backticks before this point means we are inside a template literal
     const backticks = (source.slice(0, at).match(/(?<!\\)`/g) || []).length;
-    return backticks % 2 === 1;
+    if (backticks % 2 === 1) return true;
+
+    // `await expect(import('./gone')).rejects.toThrow()` — a test PROVING a module is absent. The
+    // specifier is the subject of the assertion, so "it does not resolve" is the point rather than a
+    // defect: reporting it would mean the only way to keep such a test green is to delete the test.
+    const lineEnd = source.indexOf('\n', at);
+    const whole = source.slice(lineStart, lineEnd === -1 ? source.length : lineEnd);
+    return /\bexpect\s*\(/.test(whole) && /\.rejects\b|\btoThrow\b/.test(whole);
   }
 
   /** Every unresolvable specifier and every style deviation, as printable lines. */

@@ -1,3 +1,4 @@
+import { Platform } from '@fromcode119/react-class-components';
 import { RestoreTargetScope } from '@/components/settings/backups/enums/restore-target-scope.enum';
 import { BackupPreset } from '@/components/settings/backups/enums/backup-preset.enum';
 import { BackupSectionKey, BackupCatalogGroupKey, BackupCatalogRootKind } from '@fromcode119/core';
@@ -9,6 +10,8 @@ import type { IBackupCatalogGroupView } from '@/components/settings/backups/inte
 import type { IBackupCatalogItemView } from '@/components/settings/backups/interfaces/backup-catalog-item-view.interface';
 import type { IRestoreDialogState } from '@/components/settings/backups/interfaces/restore-dialog-state.interface';
 import type { ISystemBackupListResponseView } from '@/components/settings/backups/interfaces/system-backup-list-response-view.interface';
+import { BackupSectionOptions } from '@/components/settings/backups/backup-section-options';
+
 export class SystemBackupPageUtils {
   static createEmptyListResponse(): ISystemBackupListResponseView {
     return {
@@ -51,80 +54,6 @@ export class SystemBackupPageUtils {
       confirmationText: '',
       formError: '',
     };
-  }
-
-  static createDefaultSections(): BackupSectionKey[] {
-    return BackupSectionKey.values() as BackupSectionKey[];
-  }
-
-  static applyCreatePreset(value: BackupPreset): BackupSectionKey[] {
-    if (value === BackupPreset.CORE_DB) return [BackupSectionKey.CORE, BackupSectionKey.DATABASE];
-    if (value === BackupPreset.PLUGINS_ONLY) return [BackupSectionKey.PLUGINS];
-    if (value === BackupPreset.THEMES_ONLY) return [BackupSectionKey.THEMES];
-    return this.createDefaultSections();
-  }
-
-  static toggleSection(
-    sections: BackupSectionKey[],
-    value: BackupSectionKey,
-  ): BackupSectionKey[] {
-    return sections.includes(value)
-      ? sections.filter((section) => section !== value)
-      : [...sections, value].sort((left, right) => this.getSectionSortIndex(left) - this.getSectionSortIndex(right));
-  }
-
-  static getSectionOptions(): Array<{
-    key: BackupSectionKey;
-    label: string;
-    description: string;
-    helper: string;
-  }> {
-    return [
-      {
-        key: BackupSectionKey.CORE,
-        label: 'Core Files',
-        description: 'Packages, configs, scripts, docs, tests, and the rest of the framework workspace.',
-        helper: 'Use this for code and system configuration rollback.',
-      },
-      {
-        key: BackupSectionKey.DATABASE,
-        label: 'Database',
-        description: 'A PostgreSQL dump or SQLite copy when the active environment supports it.',
-        helper: 'Use this when you need content and settings state.',
-      },
-      {
-        key: BackupSectionKey.PLUGINS,
-        label: 'Plugins',
-        description: 'The full plugins directory, including installed plugin code and assets.',
-        helper: 'Use this when plugin code changed or needs migration.',
-      },
-      {
-        key: BackupSectionKey.THEMES,
-        label: 'Themes',
-        description: 'The full themes directory, including custom theme source and built assets.',
-        helper: 'Use this when frontend presentation changed.',
-      },
-    ];
-  }
-
-  static describeSections(sections: BackupSectionKey[]): string {
-    if (!sections.length) return 'nothing selected';
-    return sections.map((section) => this.getSectionLabel(section)).join(', ');
-  }
-
-  /**
-   * `includedSections` arrives from the API, where `Enum.toJSON()` has already flattened each member
-   * to its plain string — so a bare `value === BackupSectionKey.CORE` is comparing a string to an
-   * object and is ALWAYS false. Every section then fell through to 'Themes' in the
-   * "Backup Created" toast. Hydrate first, exactly as the enum's own doc instructs.
-   */
-  static getSectionLabel(value: BackupSectionKey | string): string {
-    const section = BackupSectionKey.resolve(value);
-    if (section === BackupSectionKey.CORE) return 'Core Files';
-    if (section === BackupSectionKey.DATABASE) return 'Database';
-    if (section === BackupSectionKey.PLUGINS) return 'Plugins';
-    if (section === BackupSectionKey.THEMES) return 'Themes';
-    return String(value ?? '');
   }
 
   static createRestoreStateForItem(item: IBackupCatalogItemView): IRestoreDialogState {
@@ -325,7 +254,7 @@ export class SystemBackupPageUtils {
     id: string,
     onProgress?: (state: { loadedBytes: number; totalBytes: number | null; percent: number | null }) => void,
   ): Promise<string> {
-    if (typeof window === 'undefined') return '';
+    if (!Platform.hasWindow) return '';
     const { blob, filename } = await AdminApi.download(AdminConstants.ENDPOINTS.SYSTEM.BACKUP_DOWNLOAD(id), undefined, onProgress);
     const objectUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -339,7 +268,4 @@ export class SystemBackupPageUtils {
     return filename;
   }
 
-  private static getSectionSortIndex(value: BackupSectionKey): number {
-    return (BackupSectionKey.values() as BackupSectionKey[]).indexOf(value);
-  }
 }

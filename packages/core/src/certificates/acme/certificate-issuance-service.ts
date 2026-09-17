@@ -13,7 +13,7 @@ import { ChallengeReachabilityProbe } from '@core/certificates/acme/challenge-re
 import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider';
 import { CloudflareZonePreflight } from '@core/certificates/acme/dns/cloudflare-zone-preflight';
 import { DnsPreflight } from '@core/certificates/acme/dns-preflight';
-import type { IDnsChallengeProvider } from '@core/certificates/acme/dns-challenge-provider.interface';
+import type { IDnsChallengeProvider } from '@core/certificates/acme/interfaces/dns-challenge-provider.interface';
 import { Logger } from '@core/logging';
 
 /**

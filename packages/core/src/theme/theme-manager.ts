@@ -22,21 +22,23 @@ import { TenantMode } from '@core/tenant/tenant-mode';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantThemeAccess } from '@core/theme/tenant-theme-access';
 import { TenantThemeStateService } from '@core/theme/tenant-theme-state-service';
+import { ThemeLifecycle } from '@core/theme/theme-lifecycle';
 
-export class ThemeManager {
-  private activeTheme: string | null = null;
-  private themes: Map<string, IThemeManifest> = new Map();
-  private themesRoot: string;
-  private logger = new Logger({ namespace: 'theme-manager' });
-  private client: MarketplaceClient;
-  private seeder: Seeder;
-  private installer: ThemeInstallerService;
+export class ThemeManager extends ThemeLifecycle {
+  protected activeTheme: string | null = null;
+  protected themes: Map<string, IThemeManifest> = new Map();
+  protected themesRoot: string;
+  protected logger = new Logger({ namespace: 'theme-manager' });
+  protected client: MarketplaceClient;
+  protected seeder: Seeder;
+  protected installer: ThemeInstallerService;
   private scaffolder: ThemeScaffoldService;
   private overrideLoader: ThemeDefaultPageContractOverrideLoader;
-  private configService: ThemeConfigService;
+  protected configService: ThemeConfigService;
   private updateService: ThemeUpdateService;
 
-  constructor(private db: any, private pluginManager?: any) {
+  constructor(protected db: any, protected pluginManager?: any) {
+    super();
     this.themesRoot = ProjectPaths.getThemesDir();
     this.client = new MarketplaceClient();
     this.seeder = new Seeder(db);
@@ -151,288 +153,16 @@ export class ThemeManager {
    * restart is actually requested before the install reports success, but it can never fail the
    * install: the service reports an unreachable or absent frontend as a reason, not an error.
    */
-  private async refreshStorefrontRenderer(reason: string): Promise<void> {
+  protected async refreshStorefrontRenderer(reason: string): Promise<void> {
     await StorefrontRendererRefreshService.afterExtensionsChanged(reason, this.logger);
   }
 
-  /**
-   * Every installed theme: the platform's, directly under the root, and each site's own under
-   * `tenants/<siteId>/`.
-   *
-   * One map, keyed by slug, exactly as before — a theme's slug is globally unique whoever owns it,
-   * which is what lets the ten registries keyed on it go on working. Ownership rides on the manifest
-   * (`ownerTenantId`) and is taken from the DIRECTORY, never from the package: a theme cannot declare
-   * itself the platform's.
-   *
-   * A slug collision between a site's theme and the platform's does not silently resolve here. The
-   * upload path refuses it at the door, and if one ever reaches disk anyway the platform's copy wins
-   * and the collision is logged, because quietly serving a site's file where the platform's was
-   * expected is the worse failure.
-   */
-  async discoverThemes() {
-    this.logger.info(`Scanning for themes in ${this.themesRoot}...`);
-    this.themes.clear();
-    if (!fs.existsSync(this.themesRoot)) { fs.mkdirSync(this.themesRoot, { recursive: true }); return; }
-
-    for (const dir of fs.readdirSync(this.themesRoot)) {
-      if (dir.startsWith('.')) continue;
-      if (ProjectPaths.isTenantArtifactsDir(dir)) continue;
-      this.loadDiscoveredTheme(path.join(this.themesRoot, dir), dir);
-    }
-    this.discoverTenantThemes();
-  }
-
-  /**
-   * Each site's own uploaded themes, one directory per site under `tenants/`.
-   *
-   * ONE SITE'S BAD DIRECTORY MUST NOT COST EVERY OTHER SITE ITS THEME. These entries are written by
-   * upload, so unlike the platform's own they are not curated: a dangling symlink, a directory removed
-   * between the readdir and the stat, or a mode nobody can read will throw from `statSync`/`readdirSync`
-   * — and an unguarded throw here aborts the whole scan, which means NO themes are discovered at all
-   * and every storefront on the box renders with none. So each site is walked inside its own try, and a
-   * site that cannot be read is logged and skipped while the rest carry on.
-   */
-  private discoverTenantThemes(): void {
-    const tenantsRoot = ProjectPaths.tenantArtifactsRoot(this.themesRoot);
-    if (!fs.existsSync(tenantsRoot)) return;
-
-    let tenantIds: string[] = [];
-    try {
-      tenantIds = fs.readdirSync(tenantsRoot);
-    } catch (e) {
-      this.logger.error(`Could not read ${tenantsRoot}; no site's own themes were discovered.`, e);
-      return;
-    }
-
-    for (const tenantId of tenantIds) {
-      if (tenantId.startsWith('.')) continue;
-      const tenantRoot = path.join(tenantsRoot, tenantId);
-      try {
-        if (!fs.statSync(tenantRoot).isDirectory()) continue;
-        for (const dir of fs.readdirSync(tenantRoot)) {
-          if (dir.startsWith('.')) continue;
-          this.loadDiscoveredTheme(path.join(tenantRoot, dir), `${tenantId}/${dir}`, tenantId);
-        }
-      } catch (e) {
-        this.logger.error(
-          `Could not read the themes of site "${tenantId}" at ${tenantRoot}. That site has no theme of `
-          + 'its own until this is fixed; every other site is unaffected.',
-          e,
-        );
-      }
-    }
-  }
-
-  /** Reads one theme directory into the map. `ownerTenantId` absent means the platform owns it. */
-  private loadDiscoveredTheme(themePath: string, label: string, ownerTenantId?: string): void {
-    const manifestPath = path.join(themePath, 'theme.json');
-    if (!fs.existsSync(manifestPath)) return;
-    try {
-      const manifest: IThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themePath);
-      const existing = this.themes.get(manifest.slug);
-      if (existing) {
-        this.logger.error(
-          `Theme slug "${manifest.slug}" is claimed twice on disk — keeping `
-          + `${existing.ownerTenantId ? `site "${existing.ownerTenantId}"'s` : "the platform's"} copy and ignoring `
-          + `${ownerTenantId ? `site "${ownerTenantId}"'s` : "the platform's"} at ${label}. A slug is unique across the `
-          + 'whole platform; the upload path refuses a duplicate, so this one reached disk another way.',
-        );
-        if (!existing.ownerTenantId) return;
-        if (!ownerTenantId) this.themes.set(manifest.slug, { ...manifest, ownerTenantId });
-        return;
-      }
-      this.themes.set(manifest.slug, ownerTenantId ? { ...manifest, ownerTenantId } : manifest);
-      this.logger.info(
-        `Discovered theme: ${manifest.slug} v${manifest.version}`
-        + (ownerTenantId ? ` (uploaded by site "${ownerTenantId}")` : ''),
-      );
-    } catch (e) {
-      this.logger.error(`Failed to load theme manifest from ${label}`, e);
-    }
-  }
-
-  private loadThemeManifestFromDisk(slug: string): IThemeManifest | null {
-    try {
-      const themeDirectory = this.resolveThemeDirectory(slug);
-      const manifestPath = path.join(themeDirectory, 'theme.json');
-      if (!fs.existsSync(manifestPath)) {
-        return null;
-      }
-
-      const manifest: IThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themeDirectory);
-      this.themes.set(manifest.slug, manifest);
-      return manifest;
-    } catch (error) {
-      this.logger.warn(`Failed to refresh theme manifest for ${slug}: ${(error as Error).message}`);
-      return null;
-    }
-  }
-
-  private async loadActiveTheme() {
-    try {
-      const row = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value });
-      if (row) {
-        this.activeTheme = row.slug;
-        this.logger.info(`Active theme set to: ${row.slug}`);
-        // Boot has no tenant. On a multi-tenant deployment default pages are tenant-scoped rows, so
-        // materializing here would write orphans no tenant can see (T0 §8.8's shape) — each tenant's
-        // pages are materialized when ITS theme is activated, on its own connection.
-        if (!TenantMode.isEnabled()) await this.materializeDefaultPages();
-      }
-    } catch (e) { this.logger.error("Failed to load active theme from DB", e); }
-  }
 
   /** The tenant this request acts for, or a thrown error — theme activation is never ambiguous about whose site. */
-  private requireTenant(action: string): string {
+  protected requireTenant(action: string): string {
     const tenantId = RequestContextUtils.getTenantId();
     if (!tenantId) throw new Error(`Cannot ${action}: no site is selected for this request.`);
     return tenantId;
-  }
-
-  /**
-   * Run a theme's declared INITIAL content (its `seeds` file) for the site this request is bound to.
-   * On a multi-site platform the install-time seed runs untenanted and can write no site's rows, so a
-   * site gets its theme's pages and navigation here — at creation, or on demand from the Sites page.
-   * A theme without seeds is a no-op; a theme whose seed file is missing reports it rather than
-   * pretending.
-   */
-  async seedThemeForCurrentSite(slug: string): Promise<{ seeded: boolean; reason?: string }> {
-    const manifest = this.themes.get(slug);
-    if (!manifest) throw new Error(`Theme "${slug}" not found.`);
-    if (!(manifest as any).seeds) return { seeded: false, reason: 'theme declares no seeds' };
-    if (TenantMode.isEnabled()) this.requireTenant('seed a theme');
-    await this.installer.runSeeds(manifest);
-    return { seeded: true };
-  }
-
-  async activateTheme(slug: string) {
-    const manifest = this.themes.get(slug);
-    if (!manifest) throw new Error(`Theme "${slug}" not found.`);
-
-    // MULTI-TENANT: activation is a SITE action. It writes the tenant's row, materializes the tenant's
-    // default pages on this (tenant-bound) connection, and touches no file — so it needs no storefront
-    // restart: the tenant's next request carries a new render signature and the renderer rebuilds.
-    if (TenantMode.isEnabled()) {
-      const tenantId = this.requireTenant('activate a theme');
-      await new TenantThemeStateService(this.db).activate(tenantId, slug);
-      await this.materializeDefaultPages();
-      this.logger.info(`Theme "${slug}" activated for tenant "${tenantId}".`);
-      this.pluginManager?.emit?.('theme:activated', { slug, manifest, tenantId });
-      return;
-    }
-
-    const timestamp = new Date();
-    const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
-    const activeThemeRow = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value });
-
-    if (activeThemeRow && activeThemeRow.slug !== slug) {
-      await this.db.update(SystemConstants.TABLE.THEMES, { slug: activeThemeRow.slug }, { state: ThemeState.INACTIVE.value, updated_at: timestamp });
-    }
-
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.ACTIVE.value, updated_at: timestamp });
-    } else {
-      await this.db.insert(SystemConstants.TABLE.THEMES, { slug, name: manifest.name, version: manifest.version, state: ThemeState.ACTIVE.value, created_at: timestamp, updated_at: timestamp });
-    }
-
-    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.ACTIVE.value, updated_at: timestamp });
-    this.activeTheme = slug;
-    await this.materializeDefaultPages();
-    this.logger.info(`Theme "${slug}" activated.`);
-    this.pluginManager?.emit?.('theme:activated', { slug, manifest });
-    // A different theme means a different server-render bundle; the storefront loaded the previous
-    // one at boot and cannot swap it in place.
-    await this.refreshStorefrontRenderer(`theme "${slug}" activated`);
-  }
-
-  async disableTheme(slug: string) {
-    const manifest = this.themes.get(slug);
-    if (!manifest) throw new Error(`Theme "${slug}" not found.`);
-
-    if (TenantMode.isEnabled()) {
-      const tenantId = this.requireTenant('disable a theme');
-      await new TenantThemeStateService(this.db).disable(tenantId, slug);
-      this.logger.info(`Theme "${slug}" disabled for tenant "${tenantId}".`);
-      this.pluginManager?.emit?.('theme:deactivated', { slug, tenantId });
-      return;
-    }
-
-    const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
-    if (!existing && this.activeTheme !== slug) {
-      return;
-    }
-
-    await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { state: ThemeState.INACTIVE.value, updated_at: new Date() });
-    if (this.activeTheme === slug) {
-      this.activeTheme = null;
-    }
-
-    this.logger.info(`Theme "${slug}" disabled.`);
-    this.pluginManager?.emit?.('theme:deactivated', { slug });
-  }
-
-  async resetTheme(slug: string, options?: { runSeeds?: boolean; resetConfig?: boolean }) {
-    const manifest = this.themes.get(slug);
-    if (!manifest) throw new Error(`Theme "${slug}" not found.`);
-    const runSeeds = options?.runSeeds !== false;
-    const resetConfig = options?.resetConfig === true;
-    if (resetConfig) {
-      const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
-      if (TenantMode.isEnabled()) {
-        await new TenantThemeStateService(this.db).saveConfig(this.requireTenant('reset a theme'), slug, null);
-      } else if (existing) {
-        await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: null });
-      }
-    }
-    if (runSeeds) await this.installer.runSeeds(manifest);
-    // Seeds and default pages write tenant-scoped rows; inside a request the connection is tenant-bound,
-    // so on a multi-tenant deployment they land in the tenant that asked and nowhere else.
-    if (this.getActiveThemeManifest()?.slug === slug) {
-      await this.materializeDefaultPages();
-    }
-    this.logger.info(`Theme "${slug}" reset.`);
-  }
-
-  async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
-    if (TenantMode.isEnabled()) {
-      this.configService.validateThemeConfig(slug, config);
-      return new TenantThemeStateService(this.db).saveConfig(this.requireTenant('configure a theme'), slug, config);
-    }
-    return this.configService.saveThemeConfig(slug, config);
-  }
-
-  async getThemeConfig(slug: string): Promise<any> {
-    if (TenantMode.isEnabled()) {
-      const choice = await TenantThemeAccess.choiceForAsync(this.requireTenant('read a theme config'));
-      return choice.activeSlug === slug ? (choice.config || {}) : {};
-    }
-    return this.configService.getThemeConfig(slug);
-  }
-
-  async deleteTheme(slug: string) {
-    if (TenantMode.isEnabled()) {
-      // Every tenant's row for it goes, or a customer stays "active" on files that no longer exist and
-      // its storefront logs NO SERVER RENDERING until someone notices. Said out loud, per tenant.
-      const orphaned = await new TenantThemeStateService(this.db).clearForTheme(slug);
-      for (const tenantId of orphaned) {
-        this.logger.warn(`Theme "${slug}" was deleted while ACTIVE for tenant "${tenantId}": that site now renders with no theme.`);
-      }
-    } else if (this.activeTheme === slug) {
-      await this.discoverThemes();
-      const fallbackSlug = Array.from(this.themes.keys()).find((c) => c !== slug);
-      if (fallbackSlug) {
-        this.logger.info(`Theme "${slug}" is active. Activating fallback theme "${fallbackSlug}" before deletion.`);
-        await this.activateTheme(fallbackSlug);
-      } else {
-        await this.db.update(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value }, { state: ThemeState.INACTIVE.value });
-        this.activeTheme = null;
-      }
-    }
-    const targetDir = this.resolveThemeDirectory(slug);
-    if (fs.existsSync(targetDir)) { this.logger.info(`Deleting theme files at ${targetDir}`); fs.rmSync(targetDir, { recursive: true, force: true }); }
-    this.themes.delete(slug);
-    try { await this.db.delete(SystemConstants.TABLE.THEMES, { slug }); } catch (e: any) { this.logger.warn(`Failed to cleanup DB entries for deleted theme ${slug}: ${e.message}`); }
-    this.logger.info(`Theme "${slug}" deleted.`);
   }
 
   /**
@@ -501,7 +231,7 @@ export class ThemeManager {
     return this.overrideLoader.load(themeDirectory);
   }
 
-  private async materializeDefaultPages(): Promise<void> {
+  protected async materializeDefaultPages(): Promise<void> {
     if (!this.pluginManager) {
       return;
     }
@@ -524,7 +254,7 @@ export class ThemeManager {
     }
   }
 
-  private resolveThemeDirectory(slug: string): string {
+  protected resolveThemeDirectory(slug: string): string {
     const directPath = path.join(this.themesRoot, slug);
     if (fs.existsSync(directPath)) return directPath;
     if (!fs.existsSync(this.themesRoot)) throw new Error(`Themes root not found: ${this.themesRoot}`);

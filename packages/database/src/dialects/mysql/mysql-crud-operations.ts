@@ -1,0 +1,157 @@
+import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
+import type { ISchemaField } from '@database/interfaces/schema-field.interface';
+import { BaseDialect } from '@database/dialects/base-dialect';
+import { drizzle } from 'drizzle-orm/mysql2';
+import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, desc, asc } from 'drizzle-orm';
+
+/**
+ * Reading and writing rows, and the schema calls beside them — the MySQL half.
+ *
+ * A LINK in the chain rather than a collaborator, for the same reason as the Postgres one: this IS
+ * the manager's published surface, and putting `find`/`insert`/`update` behind delegators would add a
+ * hop to every database call to move a line count.
+ */
+export abstract class MysqlCrudOperations extends BaseDialect {
+  protected declare reader: any;
+  protected declare normalizer: any;
+  protected declare schemaBuilder: any;
+  public declare readonly drizzle: any;
+
+  abstract execute(query: any): Promise<any>;
+  protected abstract getDynamicTable(tableName: string, columns: string[]): any;
+
+  async find(tableOrName: any, options: any = {}): Promise<any[]> {
+    return this.reader.find(tableOrName, options);
+  }
+
+  async findOne(tableName: string, where: any): Promise<any | null> {
+    const results = await this.find(tableName, { where, limit: 1 });
+    return results[0] || null;
+  }
+
+  async insert(tableName: string, data: any): Promise<any> {
+    const normalizedData = await this.normalizer.normalizeDataForTable(tableName, data);
+    const columns = Object.keys(normalizedData);
+    const table = this.getDynamicTable(tableName, columns);
+    const [result] = await this.drizzle.insert(table).values(normalizedData);
+
+    // MySQL insert doesn't return the row with .returning() usually (depends on driver/version)
+    // For now, return what we have or try to fetch it if needed.
+    // In many cases, result.insertId is useful.
+    return { ...normalizedData, id: result.insertId };
+  }
+
+  async update(tableName: string, where: any, data: any): Promise<any> {
+    const normalizedData = await this.normalizer.normalizeDataForTable(tableName, data);
+    const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, where);
+    const allColumns = [...new Set([...Object.keys(normalizedWhere || {}), ...Object.keys(normalizedData)])];
+    const table = this.getDynamicTable(tableName, allColumns);
+
+    const conditions = this.buildWhereConditions(normalizedWhere);
+
+    await this.drizzle
+      .update(table)
+      .set(normalizedData)
+      .where(and(...conditions));
+
+    return this.findOne(tableName, normalizedWhere);
+  }
+
+  async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
+    // MySQL Drizzle uses onDuplicateKeyUpdate
+    const query = this.drizzle.insert(tableOrName).values(data).onDuplicateKeyUpdate({
+      set: options.set
+    });
+    const [result] = await query;
+    return { ...data, id: result.insertId };
+  }
+
+  async delete(tableOrName: any, where: any): Promise<boolean> {
+    if (typeof tableOrName === 'string') {
+      const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableOrName, where);
+      const columns = Object.keys(normalizedWhere || {});
+      const table = this.getDynamicTable(tableOrName, columns);
+
+      const conditions = this.buildWhereConditions(normalizedWhere);
+      const [result] = await this.drizzle.delete(table).where(and(...conditions));
+      return result.affectedRows > 0;
+    }
+
+    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
+    const conditions = this.buildWhereConditions(where, tableOrName);
+    let query = this.drizzle.delete(tableOrName);
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
+      query = query.where(where);
+    } else {
+      throw new Error('Unsafe delete blocked: missing where clause');
+    }
+    const [result] = await query;
+    return result.affectedRows > 0;
+  }
+
+  async count(tableOrName: any, options: any = {}): Promise<number> {
+    return this.reader.count(tableOrName, options);
+  }
+
+  /** COUNT(*) per group — SQL aggregation, so analytics never page rows into memory to count them. */
+  async groupCount(
+    tableName: string,
+    options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },
+  ): Promise<Array<Record<string, unknown>>> {
+    return this.reader.groupCount(tableName, options);
+  }
+
+  // Schema Management
+  async getTables(): Promise<string[]> {
+    const result: any = await this.execute(sql`SHOW TABLES`);
+    return result.map((r: any) => Object.values(r)[0]);
+  }
+
+  async tableExists(tableName: string): Promise<boolean> {
+    const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
+    const result: any = await this.execute(query);
+    return (result[0]?.total || 0) > 0;
+  }
+
+  /**
+   * The column names of one table, lower-cased.
+   *
+   * Two things here are not cosmetic. `information_schema` returns `COLUMN_NAME` in upper case on
+   * MySQL 8, so reading `r.column_name` got `undefined` from every row — which surfaced as
+   * "Cannot read properties of undefined" rather than as anything about columns; the alias fixes the
+   * shape whatever the server's case conventions are. And the query MUST be scoped to the current
+   * schema: `information_schema` spans every database on the server, so without it a host running two
+   * deployments answered with both of their columns merged, and a guard asking "does this table
+   * already have this column" got yes from somebody else's table.
+   */
+  async getColumns(tableName: string): Promise<string[]> {
+    const query = sql`
+      SELECT column_name AS name FROM information_schema.columns
+      WHERE table_schema = DATABASE() AND table_name = ${tableName}`;
+    const result: any = await this.execute(query);
+    return (result ?? []).map((row: any) => String(row.name ?? row.COLUMN_NAME ?? '').toLowerCase()).filter(Boolean);
+  }
+
+  async createTable(collection: ISchemaCollection): Promise<void> {
+    await this.schemaBuilder.createTable(collection);
+  }
+
+  async addColumn(tableName: string, field: ISchemaField): Promise<void> {
+    await this.schemaBuilder.addColumn(tableName, field);
+  }
+
+  async ensureMigrationTable(tableName: string): Promise<void> {
+    await this.schemaBuilder.ensureMigrationTable(tableName);
+  }
+
+  async resetDatabase(): Promise<void> {
+    const tables = await this.getTables();
+    await this.execute(sql`SET FOREIGN_KEY_CHECKS = 0`);
+    for (const table of tables) {
+      await this.execute(sql`DROP TABLE ${sql.identifier(table)}`);
+    }
+    await this.execute(sql`SET FOREIGN_KEY_CHECKS = 1`);
+  }
+}

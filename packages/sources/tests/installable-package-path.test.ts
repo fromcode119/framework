@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { BuildService } from '@sources/packaging/build-service';
+import { BuiltPackageService } from '@sources/packaging/built-package-service';
 import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
 
@@ -19,7 +19,7 @@ import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
  *
  * The staged directory is a first-class answer — the installer already branches on `isDirectory()`.
  */
-describe('BuildService — the installable package', () => {
+describe('BuiltPackageService — the installable package', () => {
   const identity = BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms') as BuildSourceIdentity;
   let root: string;
   let service: any;
@@ -28,7 +28,7 @@ describe('BuildService — the installable package', () => {
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'installable-'));
     entry = { version: '0.1.31', file_name: '' };
-    service = Object.create(BuildService.prototype);
+    service = Object.create(BuiltPackageService.prototype);
     service.buildsSlug = SourcesCollectionRegistry.BUILDS;
     service.db = { findOne: vi.fn(async () => entry) };
     service.packageBuilder = {

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -87,11 +87,17 @@ export class PluginUiHookGuard {
   let scanned = 0;
   
   let slugs: string[] = [];
+  // ABSENT is not the same as UNREADABLE, and the difference decides whether this is a failure. The
+  // framework's own CI checks out the framework ALONE, so there is no `plugins/` beside it and there
+  // is genuinely nothing to scan. A directory that exists and cannot be read is the other case — a
+  // broken symlink, a permission — and scanning nothing must never look like scanning cleanly, so
+  // that one still throws. (THROW, never `process.exit`: this runs in-process alongside every other
+  // guard under `arch-guard ci`, and exiting would take the remaining guards with it.)
+  if (!existsSync(PluginUiHookGuard.PLUGINS_DIR)) return { violations, warnings: knownOffenderWarnings, scanned };
   try {
     slugs = readdirSync(PluginUiHookGuard.PLUGINS_DIR);
   } catch {
-    console.error(`Cannot read plugins dir: ${PluginUiHookGuard.PLUGINS_DIR}`);
-    process.exit(2);
+    throw new Error(`Cannot read plugins dir: ${PluginUiHookGuard.PLUGINS_DIR}`);
   }
   
   for (const slug of slugs) {

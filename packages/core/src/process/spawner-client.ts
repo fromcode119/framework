@@ -4,6 +4,7 @@ import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.interface';
 import type { IGuestProcessSpec } from '@core/process/interfaces/guest-process-spec.interface';
 import type { ISpawnerPrepared } from '@core/process/interfaces/spawner-prepared.interface';
+import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 
 /**
  * The app's handle on its privileged spawner: the one root process left after the app dropped its
@@ -19,7 +20,7 @@ export class SpawnerClient {
 
   private readonly channel: PluginChannel;
   private readonly exitListeners = new Map<string, Set<(code: number | null, signal: string | null, pid: number | null) => void>>();
-  private readonly outputListeners = new Map<string, Set<(stream: 'stdout' | 'stderr', line: string) => void>>();
+  private readonly outputListeners = new Map<string, Set<(stream: GuestOutputStream, line: string) => void>>();
 
   constructor(private readonly child: ChildProcess) {
     this.channel = new PluginChannel(new IpcMessagePort(child));
@@ -61,7 +62,7 @@ export class SpawnerClient {
     this.exitListeners.get(id)!.add(listener);
   }
 
-  onOutput(id: string, listener: (stream: 'stdout' | 'stderr', line: string) => void): void {
+  onOutput(id: string, listener: (stream: GuestOutputStream, line: string) => void): void {
     if (!this.outputListeners.has(id)) this.outputListeners.set(id, new Set());
     this.outputListeners.get(id)!.add(listener);
   }
@@ -79,7 +80,7 @@ export class SpawnerClient {
       return;
     }
     if (type === 'output') {
-      for (const listener of this.outputListeners.get(id) ?? []) listener(payload.stream === 'stderr' ? 'stderr' : 'stdout', String(payload.line ?? ''));
+      for (const listener of this.outputListeners.get(id) ?? []) listener(payload.stream === String(GuestOutputStream.STDERR.value) ? GuestOutputStream.STDERR : GuestOutputStream.STDOUT, String(payload.line ?? ''));
     }
   }
 }

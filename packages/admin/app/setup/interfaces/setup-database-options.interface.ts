@@ -1,3 +1,5 @@
+import type { ISetupDatabaseDriver } from '@/app/setup/interfaces/setup-database-driver.interface';
+
 /**
  * What the api tells the wizard about this deployment's database choices.
  *
@@ -19,28 +21,4 @@ export interface ISetupDatabaseOptions {
   } | null;
   readonly sqliteFile: string;
   readonly connectionFile: string;
-}
-
-export interface ISetupDatabaseDriver {
-  readonly value: string;
-  /** False for a driver this build ships but cannot install yet; it is listed, not offered. */
-  readonly isAvailable: boolean;
-  /** True when choosing it means this installation can never host a second site. */
-  readonly isSingleSiteOnly: boolean;
-  /** True when this deployment ships a server speaking it, so nothing has to be typed. */
-  readonly hasBundledServer: boolean;
-  /** True when the form must ask for a second, schema-owning role — see the isolation note. */
-  readonly needsOwnerRole: boolean;
-  readonly defaultPort: number;
-}
-
-/** A server the operator runs, as the form collects it. */
-export interface ISetupDatabaseServer {
-  host: string;
-  port: string;
-  database: string;
-  user: string;
-  password: string;
-  ownerUser: string;
-  ownerPassword: string;
 }

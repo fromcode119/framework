@@ -1,6 +1,7 @@
 import { SpawnerClient } from '@core/process/spawner-client';
 import type { IGuestProcess } from '@core/process/interfaces/guest-process.interface';
 import type { IMessagePort } from '@core/process/interfaces/message-port.interface';
+import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 
 /**
  * A guest the privileged spawner started as another user: not our child, so exit and output arrive
@@ -27,7 +28,7 @@ export class SpawnedGuestProcess implements IGuestProcess {
     this.spawner.onExit(this.id, (code, signal, pid) => { if (pid === null || pid === this.pid) listener(code, signal); });
   }
 
-  onOutput(listener: (stream: 'stdout' | 'stderr', line: string) => void): void {
+  onOutput(listener: (stream: GuestOutputStream, line: string) => void): void {
     this.spawner.onOutput(this.id, listener);
   }
 }

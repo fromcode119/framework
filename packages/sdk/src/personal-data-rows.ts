@@ -1,19 +1,6 @@
-/** Who a DSAR is about, as the privacy plugin resolves them. */
-export interface IPersonalDataSubjectRef {
-  email: string;
-  personId?: string | number | null;
-  userId?: string | number | null;
-}
+import type { IPersonalDataSubjectRef } from '@sdk/interfaces/personal-data-subject-ref.interface';
+import type { IPersonalDataRowsResult } from '@sdk/interfaces/personal-data-rows-result.interface';
 
-/** What a dataset did, in the shape the privacy plugin's fulfilment report expects. */
-export interface IPersonalDataRowsResult {
-  strategy: string;
-  erased: number;
-  anonymised: number;
-  retained: number;
-  remaining: number;
-  retainedReason?: string;
-}
 
 /**
  * Find, delete and anonymise a subject's rows in ONE of this plugin's own tables.

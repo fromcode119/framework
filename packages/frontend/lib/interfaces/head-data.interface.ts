@@ -15,6 +15,8 @@ export interface IHeadData {
   ogImage: string;
   twitterCard: string;
   twitterHandle: string;
+  // Only `title` is validated at the provider-response boundary (`headDataCache`); `schema` comes
+  // straight off the plugin's JSON response, so each entry is checked before use, not trusted here.
   /** JSON-LD payloads (each one standalone JSON) rendered as ld+json scripts in the page body. */
-  schema?: string[];
+  schema?: unknown[];
 }

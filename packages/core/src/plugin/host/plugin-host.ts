@@ -27,6 +27,10 @@ import type { IRequestStore } from '@core/context/interfaces/request-store.inter
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
+import { PluginHostGuestBridge } from '@core/plugin/host/plugin-host-guest-bridge';
+import { PluginHostState } from '@core/plugin/host/plugin-host-state';
+import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
+import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 
 /**
  * One isolated plugin, from the host's side: its process, its channel, its tokens, its stand-ins.
@@ -37,51 +41,40 @@ import type { PluginContext } from '@core/plugin/plugin-context';
  * re-initialised; after three deaths the plugin is disabled with the reason, and nothing else on the
  * platform notices either way.
  */
-export class PluginHost {
-  private static readonly MAX_RESTARTS = 3;
-  private static readonly BOOT_TIMEOUT_MS = 60_000;
-  private static readonly HEALTHY_AFTER_MS = 60_000;
+export class PluginHost extends PluginHostGuestBridge {
   /** The guest's Express server, inside the directory only the host and that guest can reach. */
-  static readonly ROUTES_SOCKET = 'routes.sock';
   /** Mirrors `PluginManager.PLUGINS_READY_EVENT`; re-emitted when this guest is replaced. */
-  static readonly PLUGINS_READY_EVENT = 'plugins:ready';
 
-  private readonly logger: Logger;
-  private readonly tokens = new PluginInvocationTokens();
-  private limits: { memoryMb: number; timeoutMs: number };
-  private socketPath = '';
-  private readonly proxy: PluginHostHttpProxy;
-  private readonly registrations: PluginHostRegistrations;
-  private readonly dispatcher: PluginHostDispatcher;
-  private readonly callbacks: PluginHostCallbacks;
-  private readonly settings: PluginIsolationSettings;
-  private guest: IGuestProcess | null = null;
-  private channel: PluginChannel | null = null;
-  private context: PluginContext | null = null;
-  private describeResult: { contractKeys: string[]; publicApiKeys: string[]; manifest: unknown } | null = null;
-  private restarts = 0;
-  private stopping = false;
-  private restarting = false;
-  private healthyTimer: NodeJS.Timeout | null = null;
-  private wasEnabled = false;
-  private initDeferred = false;
 
   constructor(
-    readonly slug: string,
-    private readonly pluginDir: string,
-    private readonly entryPath: string,
-    private manifest: Record<string, unknown>,
-    private readonly manager: IPluginManagerInterface,
+    slug: string,
+    pluginDir: string,
+    entryPath: string,
+    manifest: Record<string, unknown>,
+    manager: IPluginManagerInterface,
     settings: PluginIsolationSettings,
-    private readonly projectRoot: string,
+    projectRoot: string,
     /** The OS user the guest runs as when a privileged spawner exists; ignored by the fork launcher. */
-    readonly identity: IGuestIdentity | null = null,
+    identity: IGuestIdentity | null = null,
   ) {
+    super();
+    this.slug = slug;
+    this.pluginDir = pluginDir;
+    this.entryPath = entryPath;
+    this.manifest = manifest;
+    this.manager = manager;
+    this.projectRoot = projectRoot;
+    this.identity = identity;
+    // EVERY declared field is assigned here, `null`/`false`/`0` included — see PluginHostState.
     this.logger = new Logger({ namespace: `plugin-host:${slug}` });
+    this.tokens = new PluginInvocationTokens();
+    this.socketPath = ''; this.guest = null; this.channel = null; this.context = null;
+    this.describeResult = null; this.restarts = 0; this.stopping = false; this.restarting = false;
+    this.healthyTimer = null; this.wasEnabled = false; this.initDeferred = false;
     this.settings = settings;
     this.limits = settings.forPlugin(manifest.sandbox);
     this.proxy = new PluginHostHttpProxy('');
-    this.callbacks = new PluginHostCallbacks(slug, (handlerId, args, store) => this.invoke({ kind: 'callback', handlerId, args }, store));
+    this.callbacks = new PluginHostCallbacks(slug, (handlerId, args, store) => this.invoke({ kind: String(PluginInvocationKind.CALLBACK.value), handlerId, args }, store));
     const plugin = { manifest } as unknown as ILoadedPlugin;
     const ddl = PluginSchemaDatabaseProxy.create(plugin, manager);
     this.dispatcher = new PluginHostDispatcher(slug, this.tokens, manager.db, ddl, this.callbacks);
@@ -133,9 +126,9 @@ export class PluginHost {
       writableDirs: [path.join(this.projectRoot, 'data', 'plugins', this.slug)],
     });
     this.guest = guest;
-    this.socketPath = path.join(guest.socketDir, PluginHost.ROUTES_SOCKET);
+    this.socketPath = path.join(guest.socketDir, PluginHostState.ROUTES_SOCKET);
     this.proxy.retarget(this.socketPath);
-    guest.onOutput((stream, line) => (stream === 'stderr' ? this.logger.warn(line) : this.logger.info(line)));
+    guest.onOutput((stream, line) => (stream === GuestOutputStream.STDERR ? this.logger.warn(line) : this.logger.info(line)));
     this.channel = new PluginChannel(guest.port);
     this.channel.serve((type, payload) => this.serve(type, payload));
     this.channel.onNotify((type, payload) => this.notified(type, payload));
@@ -160,14 +153,14 @@ export class PluginHost {
         config: (this.manifest.config as Record<string, unknown>) || {},
       },
     };
-    const described = await this.channel.request<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }>('boot', boot, PluginHost.BOOT_TIMEOUT_MS);
+    const described = await this.channel.request<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }>('boot', boot, PluginHostState.BOOT_TIMEOUT_MS);
     this.describeResult = described;
     const who = launcher.isolatesIdentity && this.identity ? `, uid ${this.identity.uid}` : '';
     this.logger.info(`isolated process ${guest.pid} up (heap ${this.limits.memoryMb} MB, deadline ${this.limits.timeoutMs} ms${who})`);
     // A guest that stays up for a minute has earned its restart budget back: three failures in a
     // lifetime is a broken plugin, three failures a week apart is not.
     if (this.healthyTimer) clearTimeout(this.healthyTimer);
-    this.healthyTimer = setTimeout(() => { this.restarts = 0; }, PluginHost.HEALTHY_AFTER_MS);
+    this.healthyTimer = setTimeout(() => { this.restarts = 0; }, PluginHostState.HEALTHY_AFTER_MS);
     this.healthyTimer.unref();
     return described;
   }
@@ -188,7 +181,7 @@ export class PluginHost {
           if (key === 'onInit') { this.initDeferred = true; return undefined; }
           if (key === 'onDisable' || key === 'onUninstall') return undefined;
           await this.start();
-          if (this.initDeferred) { this.initDeferred = false; await this.invoke({ kind: 'lifecycle', name: 'onInit' }, RequestContextUtils.storage.getStore()); }
+          if (this.initDeferred) { this.initDeferred = false; await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onInit' }, RequestContextUtils.storage.getStore()); }
         }
         if (key === 'onEnable') this.wasEnabled = true;
         if (key === 'onDisable') this.wasEnabled = false;
@@ -196,7 +189,7 @@ export class PluginHost {
         // never did, so an isolated plugin's onInit ran untenanted even when the caller had entered a
         // site's scope — which is exactly what the per-site replay does. Every write the guest made
         // was refused, and the plugin was told nothing.
-        return this.invoke({ kind: 'lifecycle', name: key, args: extra }, RequestContextUtils.storage.getStore());
+        return this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: key, args: extra }, RequestContextUtils.storage.getStore());
       };
     }
     stubs.publicAPI = this.lazyPublicApi();
@@ -216,7 +209,7 @@ export class PluginHost {
       get(_target, prop) {
         if (typeof prop !== 'string') return undefined;
         if (!host.describeResult?.publicApiKeys.includes(prop)) return undefined;
-        return (...args: unknown[]) => host.invoke({ kind: 'public-api', name: prop, args }, RequestContextUtils.storage.getStore());
+        return (...args: unknown[]) => host.invoke({ kind: String(PluginInvocationKind.PUBLIC_API.value), name: prop, args }, RequestContextUtils.storage.getStore());
       },
       ownKeys() { return host.describeResult?.publicApiKeys ?? []; },
       getOwnPropertyDescriptor(_target, prop) {
@@ -245,7 +238,7 @@ export class PluginHost {
     this.tokens.revokeAll();
   }
 
-  private async invoke(work: Partial<IPluginInvocation> & { kind: IPluginInvocation['kind'] }, store: IRequestStore | undefined): Promise<unknown> {
+  protected async invoke(work: Partial<IPluginInvocation> & { kind: IPluginInvocation['kind'] }, store: IRequestStore | undefined): Promise<unknown> {
     if (!this.channel || this.channel.isClosed) throw new Error(`plugin "${this.slug}" is not running`);
     const token = this.tokens.mint(work.kind, store);
     try {
@@ -264,7 +257,7 @@ export class PluginHost {
       // through the wait, ten such waits emptied the pool and the guest's own calls then queued behind
       // them — a deadlock until the deadline. The next statement on this side takes a fresh one.
       await TenantConnectionScope.releaseCurrent();
-      const result = await this.channel.request('invoke', invocation, work.kind === 'lifecycle' ? PluginHost.BOOT_TIMEOUT_MS : this.limits.timeoutMs);
+      const result = await this.channel.request('invoke', invocation, work.kind === String(PluginInvocationKind.LIFECYCLE.value) ? PluginHostState.BOOT_TIMEOUT_MS : this.limits.timeoutMs);
       return this.callbacks.revive(result);
     } finally {
       this.tokens.revoke(token);
@@ -297,131 +290,4 @@ export class PluginHost {
     return marker + (rest === '' ? '/' : rest);
   }
 
-  private async serve(type: string, payload: any): Promise<unknown> {
-    if (type === 'call') {
-      if (!this.context) throw new Error(`plugin "${this.slug}" called the host before it had a context`);
-      return this.dispatcher.dispatch(this.context, payload as IPluginRemoteCall);
-    }
-    if (type === 'register') {
-      if (!this.context) throw new Error(`plugin "${this.slug}" registered before it had a context`);
-      // Registrations are normally fire-and-forget, but one of them ANSWERS: `tenants.forEach` runs
-      // the guest's work once per site and reports how many it ran for. Returning what `apply` gave
-      // back is what lets the guest await its own count instead of a bare `true`.
-      const answer = await this.registrations.apply(this.context, payload as IPluginGuestRegistration);
-      return answer === undefined ? true : answer;
-    }
-    throw new Error(`host: unknown message "${type}"`);
-  }
-
-  private notified(type: string, payload: any): void {
-    if (type !== 'log' || !this.context) return;
-    const level = String(payload?.level ?? 'info') as 'info' | 'warn' | 'error';
-    const target = (this.context.logger as any)[level] ?? this.context.logger.info;
-    target.call(this.context.logger, String(payload?.msg ?? ''), ...(Array.isArray(payload?.meta) ? payload.meta : []));
-  }
-
-  /**
-   * Who the guest may call, and it must agree with who the HOST will resolve.
-   *
-   * It asks `PluginsManagerResolver.isResolvable` — the SAME predicate the host applies when the call
-   * lands — with the store the dispatcher will re-enter, so the two cannot disagree by construction.
-   *
-   * They have disagreed twice. First on state: this listed every installed plugin with a public API,
-   * including disabled ones, so a guest was told `broadcasts` was there, its `if (!broadcasts) return`
-   * guard passed, the call went out, and the host answered `cannot read "registerProvider" of null` —
-   * by which point the plugin had logged success. That was fixed by filtering to ACTIVE. Then on the
-   * TENANT: the snapshot still had no tenant axis while the resolver did, so during the per-site
-   * replay of `onInit` a guest was again told yes and again refused, and the operator was shown a
-   * WARN saying registration had FAILED for a peer simply not enabled on that site.
-   */
-  private peers(store: IRequestStore | undefined): Record<string, string[]> {
-    const out: Record<string, string[]> = {};
-    const tenantId = String(store?.tenantId ?? '').trim() || null;
-    for (const plugin of this.manager.plugins.values()) {
-      if (!PluginsManagerResolver.isResolvable(plugin, tenantId)) continue;
-      // Own property names, not `Object.keys`: a class of static methods enumerates as nothing.
-      out[`${String(plugin.manifest.namespace || '').trim()}:${plugin.manifest.slug}`] = PluginGuest.functionNames(plugin.publicAPI);
-    }
-    return out;
-  }
-
-  private enabledPlugins(store: IRequestStore | undefined): string[] {
-    const tenantId = String(store?.tenantId ?? '').trim();
-    const active = [...this.manager.plugins.values()].filter((p) => PluginState.resolve(p.state) === PluginState.ACTIVE).map((p) => p.manifest.slug);
-    if (!tenantId) return active;
-    const enabled = PluginTenantAccess.enabledSlugsFor(tenantId);
-    return active.filter((slug) => enabled.has(slug));
-  }
-
-  private exited(code: number | null, signal: string | null): void {
-    this.channel?.close(new Error(`plugin "${this.slug}" process exited (${signal ?? code})`));
-    this.channel = null;
-    this.guest = null;
-    this.describeResult = null;
-    this.tokens.revokeAll();
-    if (this.stopping || this.restarting) return;
-    void this.restart(`process exited (${signal ?? code})`);
-  }
-
-  /**
-   * The plugin's files were replaced on disk (an update): a fresh process loads the new code, and the
-   * old registrations are re-pointed at it exactly as after a crash — no api restart, no lost routes.
-   * A guest that is not running (inactive plugin) has nothing to replace; its next `onEnable` loads the
-   * new code anyway. Not counted against the restart budget: this is the operator's doing.
-   */
-  async reload(manifest: Record<string, unknown>): Promise<void> {
-    this.manifest = manifest;
-    this.limits = this.settings.forPlugin(manifest.sandbox);
-    if (!this.guest && !this.channel) return;
-    this.logger.info('plugin files replaced; starting a fresh process with the new code');
-    this.restarting = true;
-    try {
-      await this.relaunch();
-    } finally {
-      this.restarting = false;
-    }
-  }
-
-  /** Kill (if alive), start again, re-init (and re-enable when it was enabled). Shared by restart and reload. */
-  private async relaunch(): Promise<void> {
-    if (this.guest) { this.guest.kill('SIGKILL'); this.guest = null; this.channel?.close(); this.channel = null; this.describeResult = null; }
-    await this.start();
-    if (this.context) {
-      this.registrations.resetForRestart(this.context);
-      await this.invoke({ kind: 'lifecycle', name: 'onInit' }, undefined);
-      if (this.wasEnabled) await this.invoke({ kind: 'lifecycle', name: 'onEnable' }, undefined);
-      // A fresh process has an EMPTY memory: everything its PEERS registered into it (a fulfilment
-      // provider, a search provider, a broadcasts content provider) is gone with the old one. Say
-      // `plugins:ready` again — the same event peers already re-register on at boot — naming the
-      // plugin that came back, so they register with it once more.
-      const active = [...this.manager.plugins.values()].filter((p) => PluginState.resolve(p.state) === PluginState.ACTIVE).map((p) => p.manifest.slug);
-      this.manager.hooks.emit(PluginHost.PLUGINS_READY_EVENT, { plugins: active, restarted: this.slug });
-    }
-  }
-
-  /** Kill (if alive), then bring the guest back and re-run its init; after MAX_RESTARTS, disable with the reason. */
-  private async restart(reason: string): Promise<void> {
-    if (this.stopping || this.restarting) return;
-    this.restarting = true;
-    this.restarts += 1;
-    if (this.restarts > PluginHost.MAX_RESTARTS) {
-      this.logger.error(`${reason}; restarted ${PluginHost.MAX_RESTARTS} times already — disabling.`);
-      this.restarting = false;
-      await this.manager.disableWithError(this.slug, `Isolated plugin process failed repeatedly: ${reason}`);
-      return;
-    }
-    const delayMs = 1000 * 2 ** (this.restarts - 1);
-    this.logger.warn(`${reason}; restarting in ${delayMs} ms (attempt ${this.restarts}/${PluginHost.MAX_RESTARTS}).`);
-    if (this.guest) { this.guest.kill('SIGKILL'); this.guest = null; this.channel?.close(); this.channel = null; this.describeResult = null; }
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
-    try {
-      await this.relaunch();
-      this.logger.info('guest restarted and re-initialised');
-      this.restarting = false;
-    } catch (error) {
-      this.logger.error(`restart failed: ${error instanceof Error ? error.message : String(error)}`);
-      this.restarting = false;
-      void this.restart('restart failed');
-    }
-  }
 }

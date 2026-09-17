@@ -43,6 +43,15 @@ export class OopGuardPatterns {
   // Interface conventions: every interface is `I`-prefixed (IFoo) and ONE interface per file.
   static readonly INTERFACE_DECL = /export\s+interface\s+([A-Za-z0-9_]+)/g;
 
+  /**
+   * A class declaration, for the "an interface must not sit beside a class" half of the rule above.
+   *
+   * Not `/g` on purpose: this one is only ever asked a yes/no question, and a global regex carries
+   * `lastIndex` between calls — the second file it is tested against would answer from where the
+   * first left off.
+   */
+  static readonly CLASS_DECL = /^export\s+(?:abstract\s+)?class\s+[A-Za-z0-9_]+/m;
+
   // EVERY exported function/const (any casing) — the convention is `export class`, no exceptions.
   // `async` sits between `export` and `function`, so it must be optional here — without it every
   // `export async function GET` (Next route handlers) slipped through unreported.

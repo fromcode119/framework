@@ -5,13 +5,14 @@ import path from 'path';
 import * as tar from 'tar';
 import { ProjectPaths } from '@core/config/paths';
 import { SiteTransferBundleService } from '@core/management/site-transfer-bundle-service';
+import { FrameworkRootLocator } from '@core/config/framework-root-locator';
 
 describe('SiteTransferBundleService', () => {
   const temporaryDirectories: string[] = [];
 
   afterEach(() => {
     delete process.env.FROMCODE_PROJECT_ROOT;
-    (ProjectPaths as any).cachedRoot = null;
+    FrameworkRootLocator.forget();
 
     for (const directoryPath of temporaryDirectories) {
       if (fs.existsSync(directoryPath)) {

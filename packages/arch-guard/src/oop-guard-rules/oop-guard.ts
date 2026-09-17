@@ -1,8 +1,10 @@
 /* eslint-disable */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { GuardScope } from '../cli/guard-scope';
 import { OopGuardBaselines } from './oop-guard-baselines';
 import { OopGuardPatterns } from './oop-guard-patterns';
+import { OopGuardFileScanner } from './oop-guard-file-scanner';
 
 /**
  * The OOP convention guard — every rule the codebase is held to, in one class.
@@ -19,16 +21,34 @@ export class OopGuard {
   // framework. Scanning only `packages/` is why 86 bare exports and every `'use client'` literal outside
   // the framework went unreported. Each area is scanned as a set of "packages" (its direct subdirectories).
   static readonly REPO_ROOT = path.resolve(process.cwd(), '..', '..');
-  static readonly EXTRA_AREAS = [
-    { area: 'plugins', dir: path.join(OopGuard.REPO_ROOT, 'plugins') },
-    { area: 'themes', dir: path.join(OopGuard.REPO_ROOT, 'themes') },
-    { area: 'appearance', dir: path.join(OopGuard.REPO_ROOT, 'appearance') },
-  ];
+  /**
+   * The non-framework trees this run covers, and whether the framework's own packages are in it.
+   *
+   * A method rather than a constant because the answer depends on {@link GuardScope}: the framework's
+   * CI guards the framework, and an extension guards itself from its own repository. Unscoped, this is
+   * all three areas exactly as before.
+   */
+  static extraAreas(): { area: string; dir: string }[] {
+    return GuardScope.areas(OopGuard.REPO_ROOT).filter((entry) => entry.area !== 'framework');
+  }
+
+  /** Is the framework's own `packages/` part of this run? */
+  static includesFramework(): boolean {
+    return GuardScope.areas(OopGuard.REPO_ROOT).some((entry) => entry.area === 'framework');
+  }
   static readonly MODE = process.env.FRAMEWORK_OOP_MODE === 'error' ? 'error' : 'warn';
 
   static isGlueOrEntry(rel: string): boolean {
     const p = rel.replace(/\\/g, '/');
-    if (/^(reactor|next-build-codegen|typescript-multiple-inheritance|arch-guard)\//.test(p)) return true;
+    // typor, reactor and next-build-codegen ARE the layer that makes class-based code possible and
+    // cannot themselves be class-only — `abstract new (...)` is illegal as an interface member, so
+    // typor's `AbstractConstructor` has no other form.
+    //
+    // `arch-guard` used to be in this list and did NOT belong: it is an ordinary class-based CLI that
+    // was swept in by the same regex, which switched every module-level check off across 40 files —
+    // and an `interface` sitting beside a class in one of its own guards is how that was noticed.
+    // Removed and measured: with it enforced, every bucket is still 0. It needed no exemption at all.
+    if (/^(reactor|next-build-codegen|typescript-multiple-inheritance)\//.test(p)) return true;
     if (/(^|\/)(bin|server)\.ts$/.test(p)) return true;
     if (/(^|\/)[a-z0-9-]*-?entry(\.[a-z]+)?\.tsx?$/.test(p)) return true;
     if (/\.config\.(ts|mjs|js)$/.test(p)) return true;
@@ -88,10 +108,19 @@ export class OopGuard {
     return false;
   }
 
-  /** The baseline area a scanned package key belongs to. */
+  /**
+   * The area a scanned package key belongs to.
+   *
+   * Keys arrive as `plugins/<slug>`, `themes/<slug>`, `appearance/<slug>` or a bare framework package
+   * name, so the head segment names the extension tree when there is one and the framework otherwise.
+   * This used to read the keys of a baseline map, which made the list of areas a side effect of a
+   * debt table — delete the table and the areas went with it.
+   */
+  private static readonly EXTENSION_AREAS: ReadonlySet<string> = new Set(['plugins', 'themes', 'appearance']);
+
   static areaOf(packageKey: string): string {
     const head = packageKey.split('/')[0];
-    return head in OopGuardBaselines.VIOLATION_BASELINE && head !== 'framework' ? head : 'framework';
+    return OopGuard.EXTENSION_AREAS.has(head) ? head : 'framework';
   }
 
   /**
@@ -106,7 +135,7 @@ export class OopGuard {
    * is now a plain `export class <Name>Plugin` whose statics carry the contract, and core's
    * `PluginModuleResolverService` lifts them. A default export in a plugin entry is debt again.
    */
-  private static ownsItsDefaultExport(rel: string): boolean {
+  static ownsItsDefaultExport(rel: string): boolean {
     const path = rel.replace(/\\/g, '/');
     return /\.config\.(ts|mjs|js)$/.test(path)
       || /(^|\/)seed\.ts$/.test(path);
@@ -178,20 +207,31 @@ export class OopGuard {
   try {
     pkgs = readdirSync(OopGuard.PACKAGES_DIR);
   } catch {
-    console.error(`Cannot read packages dir: ${OopGuard.PACKAGES_DIR}`);
-    process.exit(2);
+    // THROW, never `process.exit` — see the note in `plugin-ui-hook-guard`. Exiting from inside a
+    // guard ends the whole `arch-guard ci` pass; an unreadable target is a failure, not a clean scan.
+    throw new Error(`Cannot read packages dir: ${OopGuard.PACKAGES_DIR}`);
   }
   
   // Build the full scan list FIRST: (area, package, files). Scanning whole package dirs — not four
   // hardcoded roots — so nothing outside src/app/components/lib can hide.
   const targets: Array<{ label: string; files: string[] }> = [];
-  for (const pkg of pkgs) {
+  for (const pkg of OopGuard.includesFramework() ? pkgs : []) {
     if (OopGuardBaselines.EXEMPT_PACKAGES.has(pkg)) continue;
     const files: string[] = [];
     OopGuard.walk(path.join(OopGuard.PACKAGES_DIR, pkg), files);
     if (files.length) targets.push({ label: pkg, files });
   }
-  for (const { area, dir } of OopGuard.EXTRA_AREAS) {
+  for (const { area, dir } of OopGuard.extraAreas()) {
+    // A TREE's direct subdirectories are its extensions (`plugins/<slug>`); a single extension IS the
+    // package. Walking a scoped extension's subdirectories instead would relabel `src` and `tests` as
+    // packages, which is not cosmetic: the allowlists and exemptions are keyed on the extension, so
+    // none of them would match and the count explodes — 530 reported for one plugin that has 15.
+    if (GuardScope.isExtension(OopGuard.REPO_ROOT)) {
+      const files: string[] = [];
+      OopGuard.walk(dir, files);
+      if (files.length) targets.push({ label: `${area}/${path.basename(dir)}`, files });
+      continue;
+    }
     let subdirs: string[] = [];
     try { subdirs = readdirSync(dir); } catch { continue; }
     for (const name of subdirs) {
@@ -228,143 +268,7 @@ export class OopGuard {
     }
   }
   
-  for (const { label: pkg, files } of targets) {
-    const bucket: Record<string, any> = {
-      violations: [] as string[], warnings: [] as string[], enumDebt: [] as string[], ifaceDebt: [] as string[],
-      exportDebt: [] as string[], clientDebt: [] as string[], orphanIface: [] as string[],
-      defaultExport: [] as string[], topLevel: [] as string[], typeAlias: [] as string[], propsGeneric: [] as string[],
-      defaultClass: [] as string[], moduleDecl: [] as string[], enumPlacement: [] as string[],
-      typesFile: [] as string[], files: 0,
-    };
-    perPackage.set(pkg, bucket);
-    const allow = OopGuardBaselines.ALLOW_PACKAGES.has(pkg);
-    for (const file of files) {
-      const rel = path.relative(OopGuard.PACKAGES_DIR, file);
-      const raw = readFileSync(file, 'utf8');
-      // Build OUTPUT that happens to sit beside source, because the tool demands that exact path
-      // (next-build-codegen writes `proxy.ts` for Next's middleware). Its `export const` bindings are generated on
-      // purpose — holding them to the source rules would report the very thing the generator exists to
-      // keep out of source.
-      if (raw.startsWith('// GENERATED by @fromcode119/')) continue;
-      bucket.files += 1;
-      const src = OopGuard.stripComments(raw);
-      const found: string[] = [];
-      // `Bridge` (reactor) IS the sanctioned hook boundary: its `read()` is the one place a hook may be
-      // called so everything above it stays a class. A file whose component extends Bridge is therefore
-      // reported as a warning, not a violation — the same standing the old hand-written shims had, but
-      // structural (grep-able, self-maintaining) instead of a hand-kept path allowlist.
-      const isReactorBridge = /class\s+\w+\s+extends\s+Bridge\b/.test(src);
-      if (OopGuardPatterns.REACT_IMPORT.test(src)) found.push(`${rel}: non-type import from 'react'`);
-      if (OopGuardPatterns.BUILTIN_HOOK.test(src)) found.push(`${rel}: React hook call`);
-      else if (file.endsWith('.tsx') && OopGuardPatterns.CUSTOM_HOOK.test(src)) found.push(`${rel}: custom hook invocation (use<X>())`);
-      if (OopGuardPatterns.RAW_REACT.test(src)) found.push(`${rel}: raw React escape hatch (createElement/forwardRef/createContext/memo/…)`);
-      // Next route files (page/layout/route/loading/error/not-found/template/default/global-error) MUST
-      // default-export a component and async server components can't be classes — the thin function shim there
-      // is framework-required, so skip the OopGuardPatterns.FC check for them (hooks / raw-React are still flagged).
-      const isNextRouteFile = /(^|\/)(page|layout|route|loading|error|not-found|template|default|global-error)\.(tsx|ts)$/.test(rel);
-      if (file.endsWith('.tsx') && !isNextRouteFile && OopGuardPatterns.FC.test(src)) found.push(`${rel}: 'export const/function <Capitalized>' or React.FC (function component)`);
-      // Soft-warn only.
-      if (OopGuardPatterns.PROPS_GENERIC.test(src)) bucket.warnings.push(`${rel}: <Props, State> generic — @prop/@state should carry it [soft]`);
-      // Enum-debt (non-fatal): closed-string unions that must become reactor Enums.
-      for (const m of src.matchAll(OopGuardPatterns.NAMED_STRING_UNION)) bucket.enumDebt.push(`${rel}: named union '${m[1]}'`);
-      for (const m of src.matchAll(OopGuardPatterns.INLINE_STRING_UNION)) bucket.enumDebt.push(`${rel}: inline union ${m[0].trim().slice(0, 48)}`);
-      // Interface-debt (non-fatal): non-`I`-prefixed names + >1 interface per file.
-      const ifaces = [...src.matchAll(OopGuardPatterns.INTERFACE_DECL)].map((m) => m[1]);
-      for (const nm of ifaces) if (!/^I[A-Z]/.test(nm)) bucket.ifaceDebt.push(`${rel}: interface '${nm}' not I-prefixed`);
-      // Generated files (next-build-codegen RoutePlugin output) are build artifacts, not authored source — their
-      // `export default function` IS the Next bridge. The authored `*.class.*` sibling is what counts.
-      const isGenerated = /^\/\/ GENERATED by (@fromcode119\/)?next-build-codegen/m.test(raw.slice(0, 200));
-      // Strip template literals / block comments so codegen TEMPLATES aren't counted as real exports.
-      const codeOnly = src.replace(/`(?:\\[\s\S]|[^`\\])*`/g, '``').replace(/\/\*[\s\S]*?\*\//g, '');
-      if (!isGenerated) for (const m of codeOnly.matchAll(OopGuardPatterns.EXPORT_FUNC)) bucket.exportDebt.push(`${rel}: export ${m[1] ? 'default ' : ''}function ${m[2] || '(anonymous)'}`);
-      if (!isGenerated) for (const m of codeOnly.matchAll(OopGuardPatterns.EXPORT_CONST)) bucket.exportDebt.push(`${rel}: export const ${m[1]}`);
-      // A `*.types.ts` / `*.interfaces.ts` BAG is the retired convention: a data record is a class, a
-      // behavioural contract is `interfaces/<name>.interface.ts`, and a genuinely type-level construct
-      // (`DeepReadonly`, a `z.infer`) gets its OWN descriptively-named file. The suffix itself is the smell.
-      if (/\.(types|interfaces)(\.internal)?\.tsx?$/.test(rel)) {
-        bucket.typesFile.push(`${rel}: a *.types.ts bag — split into interfaces/ or a purpose-named file`);
-      }
-      // An enum file belongs in an `enums/` directory — 204 of them already were, and the ten that were
-      // not had to be pointed out by hand. Placement is a property of the path, so this needs no parsing.
-      if (/\.enums?\.tsx?$/.test(rel) && path.basename(path.dirname(rel)) !== 'enums') {
-        bucket.enumPlacement.push(`${rel}: enum file outside an enums/ directory`);
-      }
-      // Anything declared OUTSIDE a class. Skipped for generated output, for the packages that ARE the
-      // non-OOP glue layer (reactor/next-build-codegen/typescript-multiple-inheritance/arch-guard), and for process ENTRY POINTS, whose whole job is
-      // a top-level call — there is no class for `APIServer.bootstrap()` to live in.
-      if (!isGenerated && !OopGuard.isGlueOrEntry(rel) && !OopGuardBaselines.LOAD_BEARING_TYPES.has(rel.replace(/\\/g, '/'))) {
-        for (const m of codeOnly.matchAll(OopGuardPatterns.MODULE_DECL)) {
-          bucket.moduleDecl.push(`${rel}: module-level ${m[2]} '${m[3]}' outside a class`);
-        }
-        for (const m of codeOnly.matchAll(OopGuardPatterns.MODULE_DESTRUCTURE)) {
-          bucket.moduleDecl.push(`${rel}: module-level ${m[2]} ${m[3]}…${m[3] === '{' ? '}' : ']'} destructuring outside a class`);
-        }
-        // A module that exports NOTHING exists only for its side effects — that is structurally a
-        // bundle entry (`tracker.ts` self-registers a plugin client and returns nothing), and there is
-        // no class form for it. Detected from content rather than a path allowlist, so it stays
-        // self-maintaining; a file that gains an export is measured again from that moment.
-        if (/^export\s/m.test(codeOnly)) {
-          for (const m of codeOnly.matchAll(OopGuardPatterns.MODULE_CALL)) {
-            bucket.moduleDecl.push(`${rel}: module-level call '${m[1]}(…)' outside a class`);
-          }
-        }
-      }
-      // `'use client'` belongs to the `.client.` FILENAME, injected by next-build-codegen at build time — never source.
-      if (OopGuardPatterns.USE_CLIENT_LITERAL.test(raw)) bucket.clientDebt.push(`${rel}: 'use client' literal in source`);
-      // An interface no class implements is a data record, not a contract — model it as a class.
-      for (const m of codeOnly.matchAll(OopGuardPatterns.INTERFACE_DECL)) {
-        // A DATA SHAPE is an interface and needs no implementor — that is the convention, not a defect.
-        // Only a BEHAVIOURAL contract (declares methods) that nothing implements is worth reporting.
-        if (implementedNames.has(m[1])) continue;
-        const at = codeOnly.indexOf('{', m.index);
-        if (at === -1) continue;
-        let depth = 0, end = -1;
-        for (let k = at; k < codeOnly.length; k++) {
-          if (codeOnly[k] === '{') depth++;
-          else if (codeOnly[k] === '}') { depth--; if (depth === 0) { end = k; break; } }
-        }
-        if (end === -1) continue;
-        const ibody = codeOnly.slice(at + 1, end);
-        // A METHOD is `foo(): T` — a callback FIELD (`onClick: () => void`) is data, not a contract.
-        // Counting the latter flagged every props interface in the tree as an unimplemented contract.
-        const hasMethods = /^\s*\w+\??\s*\([^)]*\)\s*:/m.test(ibody);
-        // 1 occurrence == only its own declaration, so nothing anywhere uses it.
-        const dead = (usageCount.get(m[1]) ?? 0) <= 1;
-        if (hasMethods && dead) bucket.orphanIface.push(`${rel}: interface ${m[1]} is declared and never used`);
-      }
-      // A build-tool entry generated by next-build-codegen is glue, not authored source — skip every authored-code rule.
-      const isNextorGenerated = /^\/\/ GENERATED by @fromcode119\/next-build-codegen/m.test(raw.slice(0, 200));
-      if (!isGenerated && !isNextorGenerated) {
-        for (const m of codeOnly.matchAll(OopGuard.componentGenerics())) {
-          // An abstract base that FORWARDS its own type parameters (`class X<P, S> extends Reactor<P, S>`)
-          // is the mechanism by which subclasses get typed props — not debt. Only a CONCRETE component
-          // naming concrete <Props, State> is.
-          // Match on `abstract class` alone: a generic parameter list may itself contain `>`
-          // (`<P = Record<string, unknown>>`), so a `<[^>]*>` lookback stops at the first inner `>`.
-          const head = codeOnly.slice(Math.max(0, (m.index ?? 0) - 200), m.index ?? 0);
-          if (/\babstract\s+class\s+\w+\s*<[\s\S]*$/.test(head)) continue;
-          bucket.propsGeneric.push(`${rel}: '${m[0].trim()}…' generics (use @prop/@state)`);
-        }
-        for (const m of codeOnly.matchAll(OopGuardPatterns.EXPORT_DEFAULT_CLASS)) bucket.defaultClass.push(`${rel}: 'export default class' (generate the default via next-build-codegen)`);
-        if (OopGuardPatterns.EXPORT_DEFAULT_EXPR.test(codeOnly) && !OopGuard.ownsItsDefaultExport(rel)) {
-          bucket.defaultExport.push(`${rel}: 'export default <expression>' (generate it via next-build-codegen)`);
-        }
-        for (const m of codeOnly.matchAll(OopGuardPatterns.TOP_LEVEL_BINDING)) bucket.topLevel.push(`${rel}: module-level '${m[0].trim().slice(0, 40)}' (move into the class)`);
-        for (const m of codeOnly.matchAll(OopGuardPatterns.TYPE_ALIAS)) bucket.typeAlias.push(`${rel}: type alias '${m[1]}' (interface, or reactor Enum)`);
-      }
-      if (ifaces.length > 1) bucket.ifaceDebt.push(`${rel}: ${ifaces.length} interfaces in one file (split one-per-file)`);
-      if (!found.length) continue;
-      // Normalize BOTH client-boundary conventions so allowlist entries (kept under the plain path) keep
-      // matching: the `.client` filename infix (X.tsx -> X.client.tsx) and the `view/` folder that those
-      // client modules now live in (a/b.client.tsx -> a/view/b.client.tsx). Without the second, moving a
-      // file into `view/` silently revokes its exemption and it reappears as a "new" violation.
-      const relKey = rel.replace(/\.client\.(tsx|ts)$/, '.$1').replace(/(^|\/)view\/([^/]+)$/, '$1$2');
-      if (allow) bucket.warnings.push(...found.map((v) => `${v} [bridge — allowlisted]`));
-      else if (isReactorBridge) bucket.warnings.push(...found.map((v) => `${v} [reactor Bridge — the sanctioned hook boundary]`));
-      else if (OopGuardBaselines.ALLOW_FILES.has(rel) || OopGuardBaselines.ALLOW_FILES.has(relKey)) bucket.warnings.push(...found.map((v) => `${v} [allowlisted — hook API / false positive]`));
-      else bucket.violations.push(...found);
-    }
-  }
+    OopGuardFileScanner.collect(targets, perPackage, implementedNames, usageCount);
   
   
     return perPackage;

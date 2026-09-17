@@ -2,7 +2,7 @@ import type { IPluginDefaultPageContractBackfillAssociationMaps } from '@core/de
 import type { IPluginDefaultPageContractBackfillAssociationRecord } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-association-record.interface';
 import type { IPluginDefaultPageContractBackfillPlanEntry } from '@core/default-page-contract/interfaces/plugin-default-page-contract-backfill-plan-entry.interface';
 import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
-import { BaseService } from '@core/services/base-service';
+import { PluginDefaultPageEntryFactory } from '@core/services/default-page-contract/plugin-default-page-entry-factory';
 import { PluginDefaultPageBackfillMatchingService } from '@core/services/default-page-contract/plugin-default-page-backfill-matching-service';
 import { PluginDefaultPageContractBackfillAction } from '@core/default-page-contract/enums/plugin-default-page-contract-backfill-action.enum';
 import { PluginDefaultPageContractBackfillStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-backfill-status.enum';
@@ -11,7 +11,7 @@ import { PluginDefaultPageContractMaterializationMode } from '@core/default-page
 
 /** Builds a single backfill plan entry from a resolved contract plus candidate-page and
  * association maps. Extracted from PluginDefaultPageBackfillService; behavior is unchanged. */
-export class PluginDefaultPageBackfillEntryFactory extends BaseService {
+export class PluginDefaultPageBackfillEntryFactory extends PluginDefaultPageEntryFactory {
   constructor(private readonly matchingService: PluginDefaultPageBackfillMatchingService) {
     super();
   }
@@ -235,22 +235,6 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
     };
   }
 
-  private createReasons(existingReasons: string[], fallbackReason: string): string[] {
-    const normalized = Array.from(
-      new Set(
-        (existingReasons || [])
-          .map((reason) => String(reason || '').trim())
-          .filter(Boolean),
-      ),
-    );
-
-    if (normalized.length) {
-      return normalized;
-    }
-
-    return [fallbackReason];
-  }
-
   appendReason(existingReasons: string[], nextReason: string): string[] {
     return Array.from(
       new Set(
@@ -285,17 +269,4 @@ export class PluginDefaultPageBackfillEntryFactory extends BaseService {
     return left !== undefined && right !== undefined && String(left) === String(right);
   }
 
-  private isRuntimeParameterizedContract(contract: IResolvedPluginDefaultPageContract): boolean {
-    return contract.materializationMode === PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT && this.hasPathParameters(contract.effectiveSlug);
-  }
-
-  private hasPathParameters(value: string): boolean {
-    return String(value || '')
-      .trim()
-      .split('?')[0]
-      .split('#')[0]
-      .split('/')
-      .filter(Boolean)
-      .some((segment) => segment.startsWith(':'));
-  }
 }

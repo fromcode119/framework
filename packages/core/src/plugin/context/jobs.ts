@@ -30,7 +30,9 @@ export class JobsContextProxy {
     const redisPrefix = `redis:${plugin.manifest.slug}:`;
     const redisTarget = (manager.jobs as any).redis || {};
     return new Proxy(redisTarget, {
-      get: (target: any, prop: string) => {
+      // A Proxy `get` trap can be invoked with a symbol (e.g. `Symbol.iterator`), not just a string,
+      // despite the narrower parameter type below — the check is real, not decorative.
+      get: (target: any, prop: string | symbol) => {
         if (prop === 'global') {
           if (!hasCapability('redis:global')) handleViolation('redis:global');
           return target;

@@ -1,3 +1,4 @@
+import { TenantColumnSource } from '@core/tenant/provisioning/enums/tenant-column-source.enum';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { NamingStrategy, PhysicalTableNameUtils, TableResolver, TenantColumn } from '@fromcode119/database';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
@@ -8,12 +9,17 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+import { TableVisitState } from '@core/tenant/provisioning/enums/table-visit-state.enum';
 
 /**
  * Which tables hold tenant data on THIS platform, and what they look like.
  *
+ * It ASKS the driver rather than querying a catalog. This class used to hold five raw
+ * `information_schema` / `pg_constraint` statements, which made a CORE class work against exactly
+ * one database while presenting itself as neutral — see `ISchemaIntrospection`.
+ *
  * Discovery is the platform's own, not a hand-kept list: on a multi-tenant deployment the tables
- * carrying a tenant policy (`pg_policies`, exactly the set the RLS sweep maintains); on a
+ * carrying a tenant policy (exactly the set the isolation sweep maintains); on a
  * single-tenant deployment about to adopt itself as tenant #1 — where the sweep has REMOVED every
  * policy — the tables carrying a `tenant_id` column. A list in code would have gone stale the day a
  * plugin added a table, and a table missing from an export is a table silently lost on import.
@@ -28,6 +34,9 @@ export class TenantTableCatalog {
     SystemConstants.TABLE.TENANT_THEMES,
     SystemConstants.TABLE.TENANT_MEMBERSHIPS,
   ];
+
+  /** Always written by the inserter, so never reported as a column a row must supply. */
+  private static readonly ALWAYS_SUPPLIED = ['id', TenantColumn.NAME];
 
   /** Carries `tenant_id` but is never data to move: a session belongs to a login, not to a site. */
   private static readonly EXCLUDED = new Set<string>(['_system_sessions', SystemConstants.TABLE.TENANTS, ...TenantTableCatalog.CONFIG_TABLES]);
@@ -57,18 +66,20 @@ export class TenantTableCatalog {
 
   /** Tables carrying the column, policy or not — the adoption case, and the export of a source that never had policies. */
   async byColumn(): Promise<TenantTableDescriptor[]> {
-    const rows = await this.db.queryRaw(
-      "SELECT table_name FROM information_schema.columns WHERE column_name = $1 AND table_schema = current_schema()",
-      [TenantColumn.NAME],
-    );
-    const tables = [...new Set(rows.map((row) => String(row.table_name)))].filter((table) => !TenantTableCatalog.EXCLUDED.has(table));
+    const named = await this.db.introspection.tablesWithColumn(TenantColumn.NAME);
+    const tables = named.filter((table) => !TenantTableCatalog.EXCLUDED.has(table));
     return this.describe(tables);
   }
 
   /** Full descriptors for a named set of tables, in dependency order (a table after the tables it points at). */
   async describe(tables: string[]): Promise<TenantTableDescriptor[]> {
     const wanted = new Set(tables);
-    const [columns, serials, foreignKeys, required] = await Promise.all([this.readColumns(tables), this.readSerials(tables), this.readForeignKeys(tables), this.readRequiredColumns(tables)]);
+    const [columns, serials, foreignKeys, required] = await Promise.all([
+      this.db.introspection.columnTypes(tables),
+      this.db.introspection.serialSequences(tables),
+      this.readForeignKeys(tables),
+      this.db.introspection.requiredColumns(tables, TenantTableCatalog.ALWAYS_SUPPLIED),
+    ]);
     const schemaReferences = this.schemaReferences(wanted, columns);
 
     const descriptors = tables.map((table) => {
@@ -80,79 +91,13 @@ export class TenantTableCatalog {
     return TenantTableCatalog.inDependencyOrder(descriptors);
   }
 
-  private async readColumns(tables: string[]): Promise<Map<string, Record<string, string>>> {
-    const out = new Map<string, Record<string, string>>();
-    if (tables.length === 0) return out;
-    const rows = await this.db.queryRaw(
-      'SELECT table_name, column_name, data_type FROM information_schema.columns '
-      + 'WHERE table_schema = current_schema() AND table_name = ANY($1) ORDER BY table_name, ordinal_position',
-      [tables],
-    );
-    for (const row of rows) {
-      const table = String(row.table_name);
-      const types = out.get(table) ?? {};
-      types[String(row.column_name)] = String(row.data_type);
-      out.set(table, types);
-    }
-    return out;
-  }
-
-  /** table → the columns declared NOT NULL with no default (excluding id/tenant_id, which the inserter always supplies). */
-  private async readRequiredColumns(tables: string[]): Promise<Map<string, Set<string>>> {
-    const out = new Map<string, Set<string>>();
-    if (tables.length === 0) return out;
-    const rows = await this.db.queryRaw(
-      "SELECT table_name, column_name FROM information_schema.columns "
-      + "WHERE table_schema = current_schema() AND is_nullable = 'NO' AND column_default IS NULL "
-      + "AND column_name NOT IN ('id', 'tenant_id') AND table_name = ANY($1)",
-      [tables],
-    );
-    for (const row of rows) {
-      const table = String(row.table_name);
-      const set = out.get(table) ?? new Set<string>();
-      set.add(String(row.column_name));
-      out.set(table, set);
-    }
-    return out;
-  }
-
-  /** table → sequence name, for every table whose `id` default is a `nextval(...)`. */
-  private async readSerials(tables: string[]): Promise<Map<string, string>> {
-    const out = new Map<string, string>();
-    if (tables.length === 0) return out;
-    const rows = await this.db.queryRaw(
-      "SELECT table_name, pg_get_serial_sequence(quote_ident(table_name), 'id') AS sequence FROM information_schema.columns "
-      + "WHERE table_schema = current_schema() AND column_name = 'id' AND table_name = ANY($1) AND column_default LIKE 'nextval(%'",
-      [tables],
-    );
-    for (const row of rows) {
-      const sequence = String(row.sequence ?? '').replace(/^public\./, '').replace(/^"|"$/g, '');
-      if (sequence) out.set(String(row.table_name), sequence);
-    }
-    return out;
-  }
-
+  /** table → references, mapped from the FOREIGN KEYs the driver reports. */
   private async readForeignKeys(tables: string[]): Promise<Map<string, TenantColumnReference[]>> {
     const out = new Map<string, TenantColumnReference[]>();
-    if (tables.length === 0) return out;
-    // pg_catalog, NOT information_schema: `constraint_column_usage` lists only constraints on tables the
-    // CURRENT ROLE OWNS, and the api runs as the non-owner app role — so it saw no foreign key at all,
-    // every table looked independent, and an import inserted `media` before `media_folders`.
-    const rows = await this.db.queryRaw(
-      'SELECT rel.relname AS table_name, att.attname AS column_name, ref.relname AS target_table '
-      + 'FROM pg_constraint con '
-      + 'JOIN pg_class rel ON rel.oid = con.conrelid '
-      + 'JOIN pg_class ref ON ref.oid = con.confrelid '
-      + 'JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace '
-      + 'JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = ANY (con.conkey) '
-      + "WHERE con.contype = 'f' AND nsp.nspname = current_schema() AND rel.relname = ANY($1)",
-      [tables],
-    );
-    for (const row of rows) {
-      const table = String(row.table_name);
-      const list = out.get(table) ?? [];
-      list.push(new TenantColumnReference(table, String(row.column_name), String(row.target_table), 'fk'));
-      out.set(table, list);
+    for (const key of await this.db.introspection.foreignKeys(tables)) {
+      const list = out.get(key.table) ?? [];
+      list.push(new TenantColumnReference(key.table, key.column, key.targetTable, TenantColumnSource.FK));
+      out.set(key.table, list);
     }
     return out;
   }
@@ -184,14 +129,14 @@ export class TenantTableCatalog {
           if (!field.relationTo || Array.isArray(field.relationTo)) continue; // polymorphic: no single target to resolve
           const target = TenantTableCatalog.resolveTarget(String(field.relationTo), pluginSlug, columns);
           if (!target) continue;
-          TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, 'schema', [], !!field.hasMany, !!field.required));
+          TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, TenantColumnSource.SCHEMA, [], !!field.hasMany, !!field.required));
           continue;
         }
         if ((type === FieldType.ARRAY || type === FieldType.GROUP) && field.fields) {
           for (const nested of TenantTableCatalog.collectNestedReferences(field.fields, [])) {
             const target = TenantTableCatalog.resolveTarget(nested.relationTo, pluginSlug, columns);
             if (!target) continue;
-            TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, 'schema', nested.path, nested.hasMany, nested.required));
+            TenantTableCatalog.pushReference(out, new TenantColumnReference(table, column, target, TenantColumnSource.SCHEMA, nested.path, nested.hasMany, nested.required));
           }
         }
       }
@@ -259,15 +204,15 @@ export class TenantTableCatalog {
   static inDependencyOrder(descriptors: TenantTableDescriptor[]): TenantTableDescriptor[] {
     const byName = new Map(descriptors.map((d) => [d.name, d]));
     const ordered: TenantTableDescriptor[] = [];
-    const state = new Map<string, 'visiting' | 'done'>();
+    const state = new Map<string, TableVisitState>();
     const visit = (name: string): void => {
-      if (state.get(name) === 'done') return;
+      if (state.get(name) === TableVisitState.DONE) return;
       const descriptor = byName.get(name);
       if (!descriptor) return;
-      if (state.get(name) === 'visiting') return; // a cycle: whichever came first goes first
-      state.set(name, 'visiting');
+      if (state.get(name) === TableVisitState.VISITING) return; // a cycle: whichever came first goes first
+      state.set(name, TableVisitState.VISITING);
       for (const dependency of descriptor.dependsOn) visit(dependency);
-      state.set(name, 'done');
+      state.set(name, TableVisitState.DONE);
       ordered.push(descriptor);
     };
     for (const descriptor of [...descriptors].sort((a, b) => a.name.localeCompare(b.name))) visit(descriptor.name);

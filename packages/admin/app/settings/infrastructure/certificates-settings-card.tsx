@@ -48,7 +48,7 @@ export class CertificatesSettingsCard extends AdminComponent {
   @bound private onDirectory(value: string): void { this.directory = value; }
   @bound private onContact(e: ChangeEvent<HTMLInputElement>): void { this.contactEmail = e.target.value; }
   @bound private onAddresses(e: ChangeEvent<HTMLTextAreaElement>): void { this.addresses = e.target.value; }
-  @bound private useDetected(addresses: string): void { this.addresses = addresses; }
+  @bound private applyDetected(addresses: string): void { this.addresses = addresses; }
   @bound private onCloudflareToken(e: ChangeEvent<HTMLInputElement>): void { this.cloudflareTokenInput = e.target.value; }
 
   /**
@@ -149,7 +149,7 @@ export class CertificatesSettingsCard extends AdminComponent {
 
           <div>
             <label className={label}>Public addresses of this platform</label>
-            <PlatformAddressSuggestion candidates={this.candidates} onUse={this.useDetected} />
+            <PlatformAddressSuggestion candidates={this.candidates} onUse={this.applyDetected} />
             <TextArea
               value={this.addresses}
               onChange={this.onAddresses}

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
-import type { ITenantPolicySpec } from '@database/interfaces/tenant-isolation.interface';
+import { PostgresTenantPolicyRenderer } from '@database/dialects/postgres/tenant/postgres-tenant-policy-renderer';
+import { JournalPolicySpec } from '@database/tenant/policies/journal-policy-spec';
+import { PlatformKeysVisiblePolicySpec } from '@database/tenant/policies/platform-keys-visible-policy-spec';
+import { SharedReadPolicySpec } from '@database/tenant/policies/shared-read-policy-spec';
+import { TenantSettingsPolicySpec } from '@database/tenant/policies/tenant-settings-policy-spec';
+import { UnownedReadPolicySpec } from '@database/tenant/policies/unowned-read-policy-spec';
+import type { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
 
 /**
  * What the driver RENDERS from a bespoke policy declaration.
@@ -9,20 +14,15 @@ import type { ITenantPolicySpec } from '@database/interfaces/tenant-isolation.in
  * they did too — every one of them is preserved, because each is a rule that was got wrong once.
  * Core's own test now asserts the declarations (`tenant-bespoke-policies.test.ts`).
  */
-describe('TenantIsolationSql.bespokePolicyStatements', () => {
-  const render = (spec: ITenantPolicySpec) => TenantIsolationSql.bespokePolicyStatements(spec);
-  const sqlFor = (spec: ITenantPolicySpec) => render(spec).join('\n');
+describe('bespoke tenant policies, as Postgres DDL', () => {
+  const render = (spec: TenantPolicySpec) => spec.render(new PostgresTenantPolicyRenderer());
+  const sqlFor = (spec: TenantPolicySpec) => render(spec).join('\n');
 
-  const MEDIA: ITenantPolicySpec = { table: 'media', kind: 'shared-read', sharedColumn: 'shared' };
-  const META: ITenantPolicySpec = {
-    table: '_system_meta',
-    kind: 'platform-keys-visible',
-    keyColumn: 'key',
-    platformKeys: ['maintenance_mode', 'site_url'],
-  };
-  const JOURNAL: ITenantPolicySpec = { table: '_system_logs', kind: 'journal' };
-  const SETTINGS: ITenantPolicySpec = { table: '_system_plugin_settings', kind: 'tenant-settings' };
-  const UNOWNED: ITenantPolicySpec = { table: '_system_email_suppressions', kind: 'unowned-read' };
+  const MEDIA = new SharedReadPolicySpec('media', 'shared');
+  const META = new PlatformKeysVisiblePolicySpec('_system_meta', 'key', ['maintenance_mode', 'site_url']);
+  const JOURNAL = new JournalPolicySpec('_system_logs');
+  const SETTINGS = new TenantSettingsPolicySpec('_system_plugin_settings');
+  const UNOWNED = new UnownedReadPolicySpec('_system_email_suppressions');
 
   it('gives a shared-read table FOUR per-command policies, because WITH CHECK does not govern DELETE', () => {
     const sql = sqlFor(MEDIA);
@@ -134,12 +134,12 @@ describe('TenantIsolationSql.bespokePolicyStatements', () => {
   });
 
   it('refuses a table name that is not a plain identifier, rather than building the DDL', () => {
-    expect(() => render({ ...MEDIA, table: 'media"; DROP TABLE users; --' })).toThrow(/not a plain SQL identifier/);
+    expect(() => render(new SharedReadPolicySpec('media"; DROP TABLE users; --', 'shared'))).toThrow(/not a plain SQL identifier/);
   });
 
   it('refuses a settings key that is not a safe literal', () => {
     // These come from a compile-time registry today, but a policy body is the last place to rely on
     // that: the key is interpolated, not parameterised.
-    expect(() => render({ ...META, platformKeys: ["x' OR '1'='1"] })).toThrow(/not a safe policy literal/);
+    expect(() => render(new PlatformKeysVisiblePolicySpec('_system_meta', 'key', ["x' OR '1'='1"]))).toThrow(/not a safe policy literal/);
   });
 });

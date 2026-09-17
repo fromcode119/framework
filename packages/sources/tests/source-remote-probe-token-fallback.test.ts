@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SourcesRouter } from '@sources/http/sources-router';
+import { SourceRemoteProbeHandlers } from '@sources/http/source-remote-probe-handlers';
 
 /**
  * The edit dialog posts a BLANK token by design — a stored secret is never sent to the browser — so
@@ -11,9 +11,9 @@ import { SourcesRouter } from '@sources/http/sources-router';
  * These tests pin the precedence, because getting it backwards is silent: a freshly typed token is
  * the operator REPLACING one, so it must win over what is stored.
  */
-describe('SourcesRouter — which credential a remote read uses', () => {
+describe('SourceRemoteProbeHandlers — which credential a remote read uses', () => {
   let buildService: any;
-  let router: any;
+  let probes: any;
 
   const STORED_URL = 'https://github.com/fromcode119/plugin-forms.git';
   const request = (body: Record<string, unknown>): any => ({ body });
@@ -25,12 +25,11 @@ describe('SourcesRouter — which credential a remote read uses', () => {
       resolveStoredToken: vi.fn(async (identity: any, gitUrl: string) =>
         (identity?.slug === 'forms' && gitUrl === STORED_URL ? 'stored-token' : undefined)),
     };
-    router = Object.create(SourcesRouter.prototype);
-    router.buildService = buildService;
+    probes = new SourceRemoteProbeHandlers(buildService) as any;
   });
 
   it('uses the stored token when the form posts a blank one for a known source', async () => {
-    const token = await router.resolveRequestToken(request({ type: 'plugin', slug: 'forms', gitSecret: '' }), STORED_URL);
+    const token = await probes.token(request({ type: 'plugin', slug: 'forms', gitSecret: '' }), STORED_URL);
 
     expect(token).toBe('stored-token');
     expect(buildService.resolveStoredToken).toHaveBeenCalledWith(
@@ -40,21 +39,21 @@ describe('SourcesRouter — which credential a remote read uses', () => {
   });
 
   it('prefers a freshly typed token, because typing one means replacing it', async () => {
-    const token = await router.resolveRequestToken(request({ type: 'plugin', slug: 'forms', gitSecret: 'typed-token' }), STORED_URL);
+    const token = await probes.token(request({ type: 'plugin', slug: 'forms', gitSecret: 'typed-token' }), STORED_URL);
 
     expect(token).toBe('typed-token');
     expect(buildService.resolveStoredToken).not.toHaveBeenCalled();
   });
 
   it('has no credential for a source that does not exist yet', async () => {
-    const token = await router.resolveRequestToken(request({}), 'https://github.com/org/repo.git');
+    const token = await probes.token(request({}), 'https://github.com/org/repo.git');
 
     expect(token).toBeUndefined();
     expect(buildService.resolveStoredToken).not.toHaveBeenCalled();
   });
 
   it('treats a whitespace-only token as no token, not as a replacement', async () => {
-    const token = await router.resolveRequestToken(request({ type: 'plugin', slug: 'forms', gitSecret: '   ' }), STORED_URL);
+    const token = await probes.token(request({ type: 'plugin', slug: 'forms', gitSecret: '   ' }), STORED_URL);
 
     expect(token).toBe('stored-token');
   });
@@ -65,7 +64,7 @@ describe('SourcesRouter — which credential a remote read uses', () => {
    * display, leaving the server by another door.
    */
   it('refuses to release a stored token to a repository it was not stored against', async () => {
-    const token = await router.resolveRequestToken(
+    const token = await probes.token(
       request({ type: 'plugin', slug: 'forms', gitSecret: '' }),
       'https://attacker.example.com/collect.git',
     );

@@ -6,6 +6,8 @@ import { LeakedInterfaceCopyGuard } from '../leaked-interface-copy-guard';
 import { TypeofGuard } from '../typeof-guard';
 import { EnvCheckGuard } from '../env-check-guard';
 import { ArchorCommand } from './arch-guard-command';
+import { GuardScope } from './guard-scope';
+import { GuardTarget } from './guard-target';
 
 /**
  * `arch-guard convention-guard [--detail]` — two ratcheted conventions the compiler cannot see:
@@ -20,13 +22,12 @@ import { ArchorCommand } from './arch-guard-command';
 export class ConventionGuardCommand extends ArchorCommand {
   readonly summary = 'Hardcoded copy + typeof type-guards, ratcheted per area [--detail].';
 
+  /** Reports by default so a migration can ratchet; the build ran it at `error` and CI does too. */
+  readonly ciEnv = { FRAMEWORK_CONVENTION_MODE: 'error' };
+
+  /** Whichever trees this run covers — see {@link GuardScope}. */
   private roots(repoRoot: string): { area: string; dir: string }[] {
-    return [
-      { area: 'plugins', dir: path.join(repoRoot, 'plugins') },
-      { area: 'themes', dir: path.join(repoRoot, 'themes') },
-      { area: 'appearance', dir: path.join(repoRoot, 'appearance') },
-      { area: 'framework', dir: path.join(repoRoot, 'framework', 'Source', 'packages') },
-    ];
+    return GuardScope.areas(repoRoot);
   }
 
   run(argv: string[]): number {
@@ -42,14 +43,8 @@ export class ConventionGuardCommand extends ArchorCommand {
       console.log(`\n${name}:`);
       for (const area of Object.keys(counts).sort()) {
         const count = counts[area];
-        const baseline = guard.BASELINE[area] ?? 0;
-        const verdict = count > baseline
-          ? `ABOVE baseline ${baseline} (+${count - baseline} NEW)`
-          : count < baseline
-            ? `below baseline ${baseline} — LOWER it to ${count}`
-            : `at baseline ${baseline}`;
-        console.log(`  ${area}: ${count} — ${verdict}`);
-        if (count > baseline) failed = true;
+        console.log(`  ${area}: ${count}${count > GuardTarget.COUNT ? ' — MUST BE 0' : ' — clean'}`);
+        if (count > GuardTarget.COUNT) failed = true;
       }
       if (detail) {
         for (const { file, hits: lines } of hits.slice(0, 40)) {
@@ -66,14 +61,8 @@ export class ConventionGuardCommand extends ArchorCommand {
       const perArea = classOnly.counts[bucket];
       for (const area of Object.keys(perArea).sort()) {
         const count = perArea[area];
-        const baseline = ClassOnlyGuard.BASELINE[bucket][area] ?? 0;
-        const verdict = count > baseline
-          ? `ABOVE baseline ${baseline} (+${count - baseline} NEW)`
-          : count < baseline
-            ? `below baseline ${baseline} - LOWER it to ${count}`
-            : `at baseline ${baseline}`;
-        console.log(`  ${area}: ${count} - ${verdict}`);
-        if (count > baseline) failed = true;
+        console.log(`  ${area}: ${count}${count > GuardTarget.COUNT ? ' - MUST BE 0' : ' - clean'}`);
+        if (count > GuardTarget.COUNT) failed = true;
       }
     }
     if (detail) {

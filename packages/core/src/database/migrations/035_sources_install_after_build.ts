@@ -1,5 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { ColumnGuard } from '../helpers/column-guard';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
 
 /**
  * A build can install what it produced, and updating something already running is a separate yes.

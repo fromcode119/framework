@@ -6,6 +6,7 @@ import path from 'path';
 import { BackupService, PluginManager, PluginState, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
 import { ArchiveUploadRequestParser } from '@api/controllers/archive-upload-request-parser';
+import { ArchiveTreeInspector } from '@api/controllers/plugins/archive-tree-inspector';
 
 /**
  * Archive inspection/extraction, upload-request parsing, asset serving and
@@ -133,7 +134,7 @@ export class PluginArchiveSupport {
   async inspectPluginArchive(filePath: string, originalFilename?: string) {
     const extractedDir = await this.extractArchiveToTemporaryDirectory(filePath, originalFilename, ExtensionKind.PLUGIN);
     try {
-      const manifestPath = this.findManifestPath(extractedDir, 'manifest.json');
+      const manifestPath = ArchiveTreeInspector.findManifest(extractedDir, 'manifest.json');
       if (!manifestPath) {
         throw new Error('Invalid plugin package: manifest.json not found.');
       }
@@ -158,11 +159,11 @@ export class PluginArchiveSupport {
         version: String(manifest?.version || ''),
         description: String(manifest?.description || ''),
         author: String(manifest?.author || ''),
-        files: this.countFiles(extractedDir),
+        files: ArchiveTreeInspector.countFiles(extractedDir),
         dependencies: this.formatDependencyMap(manifest?.dependencies),
         peerDependencies: this.formatDependencyMap(manifest?.peerDependencies),
-        hasUiBundle: this.directoryContainsSegment(extractedDir, 'ui'),
-        hasServerCode: this.directoryContainsFilePattern(extractedDir, /(^|\/)index\.(js|ts)$/i),
+        hasUiBundle: ArchiveTreeInspector.containsDirectory(extractedDir, 'ui'),
+        hasServerCode: ArchiveTreeInspector.containsFile(extractedDir, /(^|\/)index\.(js|ts)$/i),
         existingVersion: existing?.manifest?.version || null,
         action: existing ? 'update' : 'install',
       };
@@ -186,68 +187,6 @@ export class PluginArchiveSupport {
       fs.rmSync(tempDir, { recursive: true, force: true });
       throw error;
     }
-  }
-
-  private findManifestPath(rootDir: string, filename: string): string | null {
-    const directPath = path.join(rootDir, filename);
-    if (fs.existsSync(directPath)) {
-      return directPath;
-    }
-
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) {
-        continue;
-      }
-      const found = this.findManifestPath(path.join(rootDir, entry.name), filename);
-      if (found) {
-        return found;
-      }
-    }
-
-    return null;
-  }
-
-  private directoryContainsSegment(rootDir: string, segment: string): boolean {
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      const absolutePath = path.join(rootDir, entry.name);
-      if (entry.isDirectory()) {
-        if (entry.name === segment || this.directoryContainsSegment(absolutePath, segment)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  private directoryContainsFilePattern(rootDir: string, pattern: RegExp): boolean {
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      const absolutePath = path.join(rootDir, entry.name);
-      if (entry.isDirectory()) {
-        if (this.directoryContainsFilePattern(absolutePath, pattern)) {
-          return true;
-        }
-        continue;
-      }
-
-      const normalizedPath = absolutePath.replace(/\\/g, '/');
-      if (pattern.test(normalizedPath)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private countFiles(rootDir: string): number {
-    let count = 0;
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      const absolutePath = path.join(rootDir, entry.name);
-      if (entry.isDirectory()) {
-        count += this.countFiles(absolutePath);
-      } else if (entry.isFile()) {
-        count += 1;
-      }
-    }
-    return count;
   }
 
   private formatDependencyMap(value: unknown): string[] {

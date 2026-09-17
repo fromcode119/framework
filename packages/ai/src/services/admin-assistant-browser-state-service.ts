@@ -2,6 +2,7 @@ import { BrowserStateClient, RuntimeConstants } from '@fromcode119/core/client';
 import { Platform } from '@fromcode119/react-class-components';
 import { AssistantConstants } from '@ai/constants/assistant.constants';
 import type { IAdminAssistantUiPreferences } from '@ai/services/interfaces/admin-assistant-ui-preferences.interface';
+import { ChatMode } from '@ai/enums/chat-mode.enum';
 
 export class AdminAssistantBrowserStateService {
   private static readonly THEME_STORAGE_KEY = 'theme';
@@ -129,8 +130,15 @@ export class AdminAssistantBrowserStateService {
     }, {} as Record<string, string>);
   }
 
-  private normalizeChatMode(value: unknown): '' | 'auto' | 'plan' | 'agent' {
-    return value === 'auto' || value === 'plan' || value === 'agent' ? value : '';
+  /**
+   * A stored chat mode, as the VALUE `ChatMode` owns — or `''` for "nothing stored".
+   *
+   * `''` is not a mode and is deliberately not a member: it is the absence of one, and the caller
+   * treats it as "fall back to the default". Modelling it as an enum member would make "unset" a
+   * choice an operator could appear to have made.
+   */
+  private normalizeChatMode(value: unknown): string {
+    return String(ChatMode.find(value)?.value ?? '');
   }
 
   private normalizeSidebarOpen(primaryValue: unknown, legacyValue: unknown): boolean | null {

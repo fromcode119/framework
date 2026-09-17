@@ -10,15 +10,20 @@ import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import { SourceProviders } from '@sources/providers/source-providers';
 import { GitBranchPolicy } from '@sources/providers/git/git-branch-policy';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
+import { BuildSourceMapper } from '@sources/sources/build-source-mapper';
 
 export class BuildSourceService {
   private readonly buildsSlug = SourcesCollectionRegistry.BUILDS;
   private readonly logger = new Logger({ namespace: 'BuildSourceService' });
 
+  private readonly mapper: BuildSourceMapper;
+
   constructor(
     private readonly db: any,
     private readonly secretService: BuildSourceSecretService
-  ) {}
+  ) {
+    this.mapper = new BuildSourceMapper(secretService);
+  }
 
   async createSource(input: IBuildSourceInput): Promise<IBuildSourceSummary> {
     const identity = BuildSourceIdentity.parse(input.type, input.slug);
@@ -208,131 +213,44 @@ export class BuildSourceService {
     return this.sanitizeSource(refreshed);
   }
 
-  private encryptSecret(secret: string | undefined): string {
-    return this.secretService.encrypt(secret || '');
+  /** @see BuildSourceMapper.encryptSecret */
+  encryptSecret(...args: Parameters<BuildSourceMapper["encryptSecret"]>): ReturnType<BuildSourceMapper["encryptSecret"]> {
+    return this.mapper.encryptSecret(...args);
   }
 
-  private hydrateSource(source: IBuildSourceRecord): IBuildSourceRecord {
-    const storedSecret = this.readStoredSecret(source);
-    return {
-      ...this.normalizeSourceRecord(source),
-      gitSecret: storedSecret ? this.secretService.decrypt(storedSecret) : '',
-    };
+  /** @see BuildSourceMapper.hydrateSource */
+  hydrateSource(...args: Parameters<BuildSourceMapper["hydrateSource"]>): ReturnType<BuildSourceMapper["hydrateSource"]> {
+    return this.mapper.hydrateSource(...args);
   }
 
-  private normalizeBranch(branch: string | undefined): string {
-    return GitBranchPolicy.assertAllowed(branch);
+  /** @see BuildSourceMapper.normalizeBranch */
+  normalizeBranch(...args: Parameters<BuildSourceMapper["normalizeBranch"]>): ReturnType<BuildSourceMapper["normalizeBranch"]> {
+    return this.mapper.normalizeBranch(...args);
   }
 
-  /**
-   * The ONLY place a git URL enters this plugin's storage. Validation happens here — before the
-   * value is persisted — so a rejected URL can never be re-read from the database and handed to
-   * `git` on a later build. See {@link GitUrlPolicy} for what "allowed" means and why.
-   */
-  private normalizeGitUrl(gitUrl: string | undefined): string {
-    return GitUrlPolicy.assertAllowed(gitUrl);
+  /** @see BuildSourceMapper.normalizeGitUrl */
+  normalizeGitUrl(...args: Parameters<BuildSourceMapper["normalizeGitUrl"]>): ReturnType<BuildSourceMapper["normalizeGitUrl"]> {
+    return this.mapper.normalizeGitUrl(...args);
   }
 
-  private normalizeType(type: ExtensionScope | string | undefined): ExtensionScope {
-    return ExtensionScope.resolve(type);
+  /** @see BuildSourceMapper.normalizeType */
+  normalizeType(...args: Parameters<BuildSourceMapper["normalizeType"]>): ReturnType<BuildSourceMapper["normalizeType"]> {
+    return this.mapper.normalizeType(...args);
   }
 
-  private readStoredSecret(source: IBuildSourceRecord): string {
-    const gitSecret = typeof source.git_secret === 'string'
-      ? source.git_secret.trim()
-      : (typeof source.gitSecret === 'string' ? source.gitSecret.trim() : '');
-    if (gitSecret) {
-      return gitSecret;
-    }
-
-    const gitToken = typeof source.git_token === 'string'
-      ? source.git_token.trim()
-      : (typeof source.gitToken === 'string' ? source.gitToken.trim() : '');
-    return gitToken;
+  /** @see BuildSourceMapper.readStoredSecret */
+  readStoredSecret(...args: Parameters<BuildSourceMapper["readStoredSecret"]>): ReturnType<BuildSourceMapper["readStoredSecret"]> {
+    return this.mapper.readStoredSecret(...args);
   }
 
-  private sanitizeSource(source: IBuildSourceRecord): IBuildSourceSummary {
-    const normalized = this.normalizeSourceRecord(source);
-    const { gitSecret: _gitSecret, gitToken: _gitToken, ...rest } = normalized;
-    return {
-      ...rest,
-      hasGitSecret: Boolean(this.readStoredSecret(source)),
-      usesEnvToken: Boolean(process.env.GITHUB_TOKEN?.trim()),
-    };
+  /** @see BuildSourceMapper.sanitizeSource */
+  sanitizeSource(...args: Parameters<BuildSourceMapper["sanitizeSource"]>): ReturnType<BuildSourceMapper["sanitizeSource"]> {
+    return this.mapper.sanitizeSource(...args);
   }
 
-  /**
-   * A boolean column, whichever spelling the driver handed back.
-   *
-   * Postgres returns a real boolean; SQLite returns 0/1; an API payload may send the string "true".
-   * `Boolean("false")` is `true`, so the string case has to be named rather than coerced.
-   */
-  private static readFlag(...candidates: unknown[]): boolean {
-    for (const candidate of candidates) {
-      if (candidate === undefined || candidate === null) continue;
-      if (typeof candidate === 'string') return candidate.trim().toLowerCase() === 'true';
-      return Boolean(candidate);
-    }
-    return false;
+  /** @see BuildSourceMapper.normalizeSourceRecord */
+  normalizeSourceRecord(...args: Parameters<BuildSourceMapper["normalizeSourceRecord"]>): ReturnType<BuildSourceMapper["normalizeSourceRecord"]> {
+    return this.mapper.normalizeSourceRecord(...args);
   }
 
-  private normalizeSourceRecord(source: IBuildSourceRecord): IBuildSourceRecord {
-    const id = typeof source.id === 'number' || typeof source.id === 'string'
-      ? source.id
-      : undefined;
-    const gitUrl = typeof source.git_url === 'string'
-      ? source.git_url
-      : (typeof source.gitUrl === 'string' ? source.gitUrl : '');
-    const lastBuildAt = typeof source.last_build_at === 'string'
-      ? source.last_build_at
-      : (typeof source.lastBuildAt === 'string' ? source.lastBuildAt : undefined);
-    const lastBuildStatus = typeof source.last_build_status === 'string'
-      ? source.last_build_status
-      : (typeof source.lastBuildStatus === 'string' ? source.lastBuildStatus : undefined);
-    const lastCommitSha = typeof source.last_commit_sha === 'string'
-      ? source.last_commit_sha
-      : (typeof source.lastCommitSha === 'string' ? source.lastCommitSha : undefined);
-    const lastError = typeof source.last_error === 'string'
-      ? source.last_error
-      : (typeof source.lastError === 'string' ? source.lastError : undefined);
-    const fileName = typeof source.file_name === 'string'
-      ? source.file_name
-      : (typeof source.fileName === 'string' ? source.fileName : undefined);
-    const version = typeof source.version === 'string' ? source.version : undefined;
-
-    // READ path: values are passed through as stored, never re-validated. A row written before the
-    // transport allow-list existed must still be listable in the admin — the refusal belongs at the
-    // point of EXECUTION (BuildService asserts before it invokes git), not at the point of display,
-    // where throwing would blank the whole sources list instead of naming the offending row.
-    return {
-      id,
-      // Named explicitly, like every field above: this object is built by hand, so anything not
-      // listed is silently dropped on the way to the admin — which is how a new column comes to
-      // exist in the database and never appear on the screen that writes it.
-      // Snake FIRST, like every field above. These are the real COLUMN names, and this service now
-      // reads through the framework's raw database manager, which does not denormalize — that was a
-      // plugin-context convenience, and Sources is not a plugin. Reading only the camel spelling made
-      // "Build automatically" come back false for a source whose `auto_build` was true: the toggle
-      // saved, the timer honoured the column, and the screen said it was off.
-      autoBuild: BuildSourceService.readFlag(source.auto_build, source.autoBuild),
-      autoUpdate: BuildSourceService.readFlag(source.auto_update, source.autoUpdate),
-      // A row written before the column existed reads NULL. The migration states TRUE for every
-      // such row, so a null here means the migration has not run yet — and the build path reads the
-      // same column, so both agree either way.
-      installAfterBuild: BuildSourceService.readFlag(source.install_after_build, source.installAfterBuild),
-      branch: (source.branch || '').trim() || GitBranchPolicy.DEFAULT_BRANCH,
-      provider: SourceProviders.normalize(source.provider),
-      changelog: typeof source.changelog === 'string' ? source.changelog : '',
-      fileName,
-      gitSecret: this.readStoredSecret(source),
-      gitUrl: gitUrl.trim(),
-      lastBuildAt,
-      lastBuildStatus,
-      lastCommitSha,
-      lastError,
-      slug: (source.slug || '').trim(),
-      type: this.normalizeType(source.type),
-      version,
-    };
-  }
 }

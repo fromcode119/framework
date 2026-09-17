@@ -24,14 +24,29 @@ export class ClassOnlyGuard {
   /** Two or more quoted lowercase-ish members joined by `|` — an inline enum in all but name. */
   private static readonly INLINE_UNION = /'[a-z0-9_-]+'\s*\|\s*'[a-z0-9_-]+'/g;
 
+  /**
+   * `Pick<Foo, 'a' | 'b'>` and its relatives, whose quoted list is PROPERTY NAMES of a type that
+   * already exists — the opposite of an undeclared one.
+   *
+   * These were counted as inline unions and were two thirds of the matches: most of the number was a
+   * component saying which of its own props it accepts. A ratchet whose count is mostly noise is a
+   * ratchet nobody can drive to zero, so this is a correction to what the rule MEANS, not an
+   * exemption from it.
+   *
+   * ONE level of nesting is allowed (`Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'value'>`)
+   * and the span may cross lines, because `Pick<…>` lists are routinely wrapped. The span is blanked
+   * rather than deleted, so line numbers and the template-literal tracking below are unaffected, and a
+   * line carrying both a `Pick` and a real union still reports the real one.
+   */
+  private static readonly KEY_SELECTION =
+    /\b(?:Pick|Omit|Exclude|Extract|Record)\s*<[^<>]*(?:<[^<>]*>[^<>]*)*>/g;
+
+  /** A comment anywhere on the line — leading `//`, a trailing one, or a single-line `/** … *\/`. */
+  private static readonly COMMENT = /\/\*.*?\*\/|\/\/.*$/g;
+
   /** A `function` at column 0 — i.e. not a method, not nested. */
   private static readonly MODULE_FN = /^(export\s+)?(async\s+)?function\s+/;
 
-  static readonly BASELINE: Readonly<Record<string, Record<string, number>>> = {
-    inlineUnion: { plugins: 457, themes: 42, framework: 35, appearance: 15 },
-    typesFile: { plugins: 70, themes: 0, framework: 0, appearance: 0 },
-    moduleFn: { plugins: 16, themes: 0, framework: 0, appearance: 0 },
-  };
 
   private static isBuildOutput(full: string): boolean {
     const p = full.replace(/\\/g, '/');
@@ -62,6 +77,8 @@ export class ClassOnlyGuard {
     if (/\.types\.ts$/.test(file)) counts.typesFile += 1;
     let source: string;
     try { source = readFileSync(file, 'utf8'); } catch { return counts; }
+    // Blanked, never removed: every offset and line stays where it was.
+    source = source.replace(ClassOnlyGuard.KEY_SELECTION, (span) => span.replace(/[^\n]/g, ' '));
     // Track template-literal depth by counting unescaped backticks. Generated-script builders emit whole
     // programs inside a template — `analytics-tracker-builder.ts` contains `function getDeviceContext(){`
     // as EMITTED BROWSER TEXT, not as a module function. Counting it made the number untrustworthy, and a
@@ -73,7 +90,9 @@ export class ClassOnlyGuard {
       if (ticks % 2 === 1) inTemplate = !inTemplate;
       if (wasInTemplate) continue;
       if (/^\s*(\*|\/\/)/.test(line)) continue;
-      const unions = line.match(ClassOnlyGuard.INLINE_UNION);
+      // A union inside a comment is DOCUMENTATION — including a trailing `// 'a' | 'b' etc`, which the
+      // leading-comment test above cannot see.
+      const unions = line.replace(ClassOnlyGuard.COMMENT, '').match(ClassOnlyGuard.INLINE_UNION);
       if (unions) counts.inlineUnion += unions.length;
       if (ClassOnlyGuard.MODULE_FN.test(line)) counts.moduleFn += 1;
     }

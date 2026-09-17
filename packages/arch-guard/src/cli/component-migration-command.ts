@@ -14,6 +14,10 @@ import { FrameworkRoot } from './framework-root';
 export class ComponentMigrationCommand extends ArchorCommand {
   readonly summary = 'Convert <Props,State> components to @prop/@state [<path> --apply].';
 
+  /** A codemod: it REWRITES source. CI must never run it — a check that edits the tree it is
+   *  checking cannot be trusted to have checked anything. */
+  readonly runsInCi = false;
+
   run(argv: string[]): number {
     const framework = FrameworkRoot.find();
     const repo = FrameworkRoot.repo();

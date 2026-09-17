@@ -43,13 +43,32 @@ export class ReactiveMetadata {
     return out;
   }
 
+  /**
+   * Every prototype whose metadata applies to `instance`.
+   *
+   * The real chain, PLUS the bases a multiple-inheritance mixin folded in. A mixin copies its second
+   * and later bases onto one prototype rather than chaining them, so `getPrototypeOf` alone finds
+   * only the first — and a component written as `class X extends A, B` lost every `@state` declared
+   * in B, with no error and no re-render. The mixer publishes what it folded in under a well-known
+   * symbol; this reads it when present and ignores it otherwise, so neither package depends on the
+   * other.
+   */
   private static protoChain(instance: object): object[] {
     const chain: object[] = [];
-    let proto = Object.getPrototypeOf(instance);
-    while (proto && proto !== Object.prototype) {
-      chain.push(proto);
-      proto = Object.getPrototypeOf(proto);
-    }
+    const seen = new Set<object>();
+    const visit = (proto: object | null): void => {
+      while (proto && proto !== Object.prototype) {
+        if (seen.has(proto)) return;
+        seen.add(proto);
+        chain.push(proto);
+        const mixed = (proto.constructor as any)?.[Symbol.for('typor.mixedBases')];
+        if (Array.isArray(mixed)) {
+          for (const base of mixed) visit(base?.prototype ?? null);
+        }
+        proto = Object.getPrototypeOf(proto);
+      }
+    };
+    visit(Object.getPrototypeOf(instance));
     return chain;
   }
 }

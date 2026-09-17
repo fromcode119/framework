@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SystemConstants } from '@fromcode119/core';
-import { SystemSettingsController } from '@api/controllers/system/system-settings-controller';
+import { SystemSettingsWriter } from '@api/controllers/system/system-settings-writer';
 
 /**
  * Every key the General settings page sends must be writable.
@@ -15,10 +15,10 @@ import { SystemSettingsController } from '@api/controllers/system/system-setting
  * `writable` is declared beside `scope`. These cases stay because they name the keys that actually
  * burned us, and they would still fail if a key were marked unwritable by mistake.
  */
-describe('SystemSettingsController — writable settings keys', () => {
+describe('SystemSettingsWriter — writable settings keys', () => {
   // Reaches the private accessor rather than a copy of the list: the point is what the CONTROLLER
   // will accept, not what the registry says in isolation.
-  const writable = (SystemSettingsController as any).writableKeys() as Set<string>;
+  const writable = SystemSettingsWriter.writableKeys() as Set<string>;
 
   it.each([
     ['admin_search_indexing', SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING],

@@ -1,6 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { PortableColumnTypes } from '../helpers/portable-column-types';
-import { Logger } from '../../logging';
+import { PortableColumnTypes } from '@core/database/helpers/portable-column-types';
+import { Logger } from '@core/logging';
 
 /**
  * Somewhere to keep a TLS certificate.

@@ -4,19 +4,27 @@ import path from 'node:path';
 /**
  * The file-size rule, applied to EVERY extension root rather than to plugins only.
  *
- * The limits have been documented since the beginning (`.ts` ≤ 300, `.tsx` ≤ 200) and 154 files break
- * them, four of them over 700 lines. The reason is not that anyone disagreed with the rule: it is that
- * the only thing checking it — the plugin-architecture guard — scans `../../plugins` and nothing else,
- * defaults to warn, and is not part of `build`. So the framework's own packages, the themes and the
- * appearances have never been measured at all, and a rule nothing measures is a preference.
+ * The limit has been documented since the beginning and 154 files broke it, four of them over 700
+ * lines. The reason was not that anyone disagreed with the rule: the only thing checking it — the
+ * plugin-architecture guard — scans `../../plugins` and nothing else, defaults to warn, and is not
+ * part of `build`. So the framework's own packages, the themes and the appearances had never been
+ * measured at all, and a rule nothing measures is a preference.
  *
- * This measures all four roots and is a RATCHET: the count may fall, never rise. Splitting a file
- * lowers the baseline; adding a long one fails the build. That is the same shape as the app-typecheck
- * gate, and it is deliberately not a big-bang refactor — 154 files cannot be split safely at once.
+ * This measures all four roots, and the target is 0 — no baselines, no per-area quotas.
  */
 export class FileSizeGuard {
-  static readonly TS_MAX_LINES = 300;
-  static readonly TSX_MAX_LINES = 200;
+  /**
+   * ONE limit for both extensions, set by the operator: "300-350 is ok".
+   *
+   * `.tsx` was held to 200 on the theory that markup is denser than logic. It is not — a component's
+   * JSX is one element per line where a service packs a whole clause onto one, so the stricter limit
+   * was measuring line-length convention rather than how much a file does, and it made the `.tsx`
+   * target the only one nobody could reach. Raised to match `.ts` on 2026-09-17.
+   */
+  static readonly MAX_LINES = 300;
+
+  static readonly TS_MAX_LINES = FileSizeGuard.MAX_LINES;
+  static readonly TSX_MAX_LINES = FileSizeGuard.MAX_LINES;
 
   /**
    * The point where a file stops being merely over-length and becomes unreadable.
@@ -61,12 +69,50 @@ export class FileSizeGuard {
   static findOversized(root: string): Array<{ file: string; lines: number; codeLines: number; limit: number }> {
     const found: Array<{ file: string; lines: number; codeLines: number; limit: number }> = [];
     FileSizeGuard.walk(root, (filePath) => {
+      if (FileSizeGuard.declaresNothing(filePath)) return;
       const limit = FileSizeGuard.limitFor(filePath);
       const lines = FileSizeGuard.countLines(filePath);
       if (lines > limit) found.push({ file: filePath, lines, codeLines: FileSizeGuard.countCodeLines(filePath), limit });
     });
     return found.sort((left, right) => right.lines - left.lines);
   }
+
+  /**
+   * A module that DECLARES nothing — only imports, re-exports and comments.
+   *
+   * A barrel is the case: `core/src/index.ts` is 416 lines of `export { X } from './x'` and nothing
+   * else. The limit exists because a long file is hard to hold in your head, and that cost comes from
+   * LOGIC — branches, state, methods that reach each other. A list of names has none of it, and no
+   * one has ever been confused by the four-hundredth export in a barrel the way they are by the
+   * four-hundredth line of a class.
+   *
+   * WHY THIS IS NOT AN EXEMPTION LIST. The obvious version — skip files called `index.ts` — is a
+   * NAME standing in for a property, which is the mistake this codebase keeps finding in its own
+   * guards: it would also skip an `index.ts` that had quietly grown logic, and it would not skip the
+   * published entry points (`core/shared`, `reactor/lang`) that are barrels under another name. This
+   * reads what the file IS. Add one function to a barrel and it is measured again from that moment,
+   * with nothing to update.
+   *
+   * A `export const x = …` is a declaration and counts; `export { x } from './x'` does not.
+   */
+  static declaresNothing(filePath: string): boolean {
+    let content: string;
+    try { content = fs.readFileSync(filePath, 'utf8'); } catch { return false; }
+    const code = content
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('//'));
+    if (!code.length) return false;
+    return code.every((line) => FileSizeGuard.IMPORT_OR_REEXPORT.test(line) || FileSizeGuard.CONTINUATION.test(line));
+  }
+
+  /** `import …`, `export … from '…'`, `export type { … }` — a line that moves a name, not one that makes one. */
+  private static readonly IMPORT_OR_REEXPORT =
+    /^(?:import\b|export\s+(?:type\s+)?(?:\*|\{)|export\s+(?:type\s+)?\{[^}]*\}\s+from\b|export\s+\*)/;
+
+  /** The middle of a multi-line import/export list: bare names, commas, braces. */
+  private static readonly CONTINUATION = /^(?:[A-Za-z_$][\w$]*\s*(?:as\s+[A-Za-z_$][\w$]*\s*)?,?|\}?\s*from\s+['"][^'"]+['"];?|[{}],?|,)$/;
 
   /**
    * Lines that are neither blank nor comment — the logic you actually have to hold in your head.

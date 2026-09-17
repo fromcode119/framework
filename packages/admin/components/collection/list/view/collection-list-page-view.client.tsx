@@ -1,7 +1,7 @@
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
-import { Reactor, prop, ref, state } from '@fromcode119/react-class-components';
+import {Reactor, prop, ref, state, Platform} from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 
 import { AdminServices } from '@/lib/admin-services';
@@ -14,6 +14,7 @@ import { CollectionListPageService } from '@/components/collection/list/page-ser
 import { CollectionListPageLifecycle } from '@/components/collection/list/view/collection-list-page-lifecycle.client';
 import { CollectionListPageViewModelBuilder } from '@/components/collection/list/view/collection-list-page-view-model.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
+import { RecordOperations } from '@/components/collection/list/record-operations';
 
 export class CollectionListPageView extends Reactor {
   @prop declare pluginSlug: string;
@@ -33,7 +34,7 @@ export class CollectionListPageView extends Reactor {
   @state loadError = '';
   @state search = '';
   @state debouncedSearch = '';
-  @state page = typeof window === 'undefined'
+  @state page = !Platform.hasWindow
     ? 1
     : CollectionListUtils.parsePageQueryValue(new URLSearchParams(window.location.search).get('page'));
   @state sort = '-createdAt';
@@ -88,7 +89,7 @@ export class CollectionListPageView extends Reactor {
     const page = targetPage ?? this.page;
     this.updateState('loading', true);
     try {
-      const result = await CollectionListPageService.fetchCollectionData({
+      const result = await RecordOperations.fetchCollectionData({
         resolvedSlug, targetPage: page, pageSize: this.pageSize,
         search: this.debouncedSearch, sort: this.sort,
         statusFilter: this.statusFilter, fieldFilters: this.fieldFilters
@@ -110,7 +111,7 @@ export class CollectionListPageView extends Reactor {
     const collection = AdminCollectionUtils.resolveCollection(this.collections, this.pluginSlug, this.slug);
     const resolvedSlug = collection?.slug || this.slug;
     try {
-      await CollectionListPageService.exportRecords(resolvedSlug, format, ids);
+      await RecordOperations.exportRecords(resolvedSlug, format, ids);
     } catch (error: any) {
       alert(`Export failed: ${error?.message || 'Unknown error'}`);
     }

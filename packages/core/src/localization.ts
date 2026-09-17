@@ -36,7 +36,7 @@ export class LocalizationUtils {
       browserState.readLocalString(storageKey),
       browserState.readCookie(storageKey),
       EnvUtils.isBrowser() ? String(document.documentElement.lang || '').trim() : '',
-      typeof navigator !== 'undefined' ? String(navigator.language || '').trim() : '',
+      EnvUtils.isBrowser() ? String(navigator.language || '').trim() : '',
       String(options.defaultLocale || '').trim(),
     ];
 
@@ -130,7 +130,7 @@ export class LocalizationUtils {
 
     if (LocalizationUtils.isLocaleMap(value)) {
       const preferredLocale = LocalizationUtils.normalizeLocaleCode(
-        options.preferredLocale || (typeof navigator !== 'undefined' ? navigator.language : ''),
+        options.preferredLocale || (EnvUtils.isBrowser() ? navigator.language : ''),
       );
       const fallbackLocale = LocalizationUtils.normalizeLocaleCode(options.fallbackLocale || 'en');
       const preferredShort = preferredLocale.split('-')[0];

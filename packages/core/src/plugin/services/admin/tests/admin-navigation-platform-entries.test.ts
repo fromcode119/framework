@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AdminSystemNavigationMetadataService } from '../admin-system-navigation-metadata-service';
+import { AdminSystemNavigationMetadataService } from '@core/plugin/services/admin/admin-system-navigation-metadata-service';
 
 /**
  * The settings entries that belong to the PLATFORM, asserted on the real metadata.

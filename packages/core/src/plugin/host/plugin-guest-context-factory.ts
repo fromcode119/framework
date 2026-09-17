@@ -10,6 +10,7 @@ import { PluginGuestLocals } from '@core/plugin/host/plugin-guest-locals';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
+import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 
 /**
  * The `PluginContext` an isolated plugin receives: the same shape as in-process, every namespace an
@@ -47,7 +48,7 @@ export class PluginGuestContextFactory {
       // own to bind, so it cannot do this itself. Same mechanism as a scheduled task.
       tenants: {
         forEach: (work: () => Promise<void>) =>
-          register({ kind: 'tenants-for-each', handlerId: this.handlers.keep('tenants', work) }) as Promise<number>,
+          register({ kind: String(PluginGuestRegistrationKind.TENANTS_FOR_EACH.value), handlerId: this.handlers.keep('tenants', work) }) as Promise<number>,
         current: () => remote.call('context', [{ name: 'tenants' }, { name: 'current', args: [] }]),
         isMultiSite: () => remote.call('context', [{ name: 'tenants' }, { name: 'isMultiSite', args: [] }]),
         // Forwarded like the two above, and it has to be: an isolated plugin has no tenant resolver
@@ -58,7 +59,7 @@ export class PluginGuestContextFactory {
       },
       jobs: {
         add: (name: string, data: unknown, options?: unknown) => remote.call('context', [{ name: 'jobs' }, { name: 'add', args: PluginGuestRemote.portable([name, data, options]) }]),
-        worker: (processor: (...args: any[]) => unknown, options?: Record<string, unknown>) => register({ kind: 'job-worker', handlerId: this.handlers.keep('job', processor), options: options ?? {} }),
+        worker: (processor: (...args: any[]) => unknown, options?: Record<string, unknown>) => register({ kind: String(PluginGuestRegistrationKind.JOB_WORKER.value), handlerId: this.handlers.keep('job', processor), options: options ?? {} }),
       },
       mcp: { registerTools: (tools: Array<Record<string, any>>) => this.registerTools(tools, register) },
       migrations: { run: (migrations: unknown) => this.runMigrations(migrations) },
@@ -95,10 +96,10 @@ export class PluginGuestContextFactory {
     const remote = this.remote;
     const handlers = this.handlers;
     return {
-      on: (event: string, handler: (...args: any[]) => unknown) => { void register({ kind: 'hook', event, handlerId: handlers.keep('hook', handler) }); },
+      on: (event: string, handler: (...args: any[]) => unknown) => { void register({ kind: String(PluginGuestRegistrationKind.HOOK.value), event, handlerId: handlers.keep('hook', handler) }); },
       off: (event: string, handler: unknown) => {
         const id = handlers.idOf(handler);
-        if (id) { handlers.forget(id); void register({ kind: 'hook-off', event, handlerId: id }); }
+        if (id) { handlers.forget(id); void register({ kind: String(PluginGuestRegistrationKind.HOOK_OFF.value), event, handlerId: id }); }
       },
       emit: (event: string, payload: unknown) => { void remote.call('context', [{ name: 'hooks' }, { name: 'emit', args: PluginGuestRemote.portable([event, payload]) }]); },
       call: (event: string, payload: unknown) => remote.call('context', [{ name: 'hooks' }, { name: 'call', args: PluginGuestRemote.portable([event, payload]) }]),
@@ -214,7 +215,7 @@ export class PluginGuestContextFactory {
       emit: (event: string, payload: unknown) => { void remote.call('context', [{ name: 'plugins' }, { name: 'emit', args: PluginGuestRemote.portable([event, payload]) }]); },
       // `context.plugins.on` is the PLATFORM bus (`plugins:ready` fires with no tenant), not the tenant-gated
       // `context.hooks.on`: routed through the gate, an isolated plugin never heard plugins:ready at all.
-      on: (event: string, handler: (...args: any[]) => unknown) => { void register({ kind: 'plugins-on', event, handlerId: this.handlers.keep('hook', handler) }); },
+      on: (event: string, handler: (...args: any[]) => unknown) => { void register({ kind: String(PluginGuestRegistrationKind.PLUGINS_ON.value), event, handlerId: this.handlers.keep('hook', handler) }); },
     };
   }
 
@@ -234,7 +235,7 @@ export class PluginGuestContextFactory {
     const remote = this.remote;
     return {
       register: (name: string, schedule: string, handler: (...args: any[]) => unknown, options: Record<string, unknown> = {}) =>
-        register({ kind: 'scheduler', name, schedule, options: PluginGuestRemote.portable([options])[0] as Record<string, unknown>, handlerId: this.handlers.keep('scheduler', handler) }),
+        register({ kind: String(PluginGuestRegistrationKind.SCHEDULER.value), name, schedule, options: PluginGuestRemote.portable([options])[0] as Record<string, unknown>, handlerId: this.handlers.keep('scheduler', handler) }),
       runNow: (name: string) => remote.call('context', [{ name: 'scheduler' }, { name: 'runNow', args: [name] }]),
       schedule: (name: string, when: unknown, data: unknown) => remote.call('context', [{ name: 'scheduler' }, { name: 'schedule', args: PluginGuestRemote.portable([name, when, data]) }]),
     };
@@ -245,7 +246,7 @@ export class PluginGuestContextFactory {
       const { handler, ...definition } = tool;
       return { ...(PluginGuestRemote.portable([definition])[0] as Record<string, unknown>), handlerId: this.handlers.keep('mcp-tool', handler) };
     });
-    return register({ kind: 'mcp-tools', tools: list });
+    return register({ kind: String(PluginGuestRegistrationKind.MCP_TOOLS.value), tools: list });
   }
 
   /** Migrations run HERE (they are code) against a DDL stand-in whose statements the host executes on the owner connection. */

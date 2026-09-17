@@ -1,8 +1,5 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
-import { AdminComponent } from '@/components/view/admin-component.client';
-import { bound, prop, state } from '@fromcode119/react-class-components';
-
 import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
@@ -10,175 +7,15 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { Download, GitBranch, History, Pencil, Play, Trash2 } from 'lucide-react';
 import { BuildStatusBadge } from '@/app/sources/build-status-badge';
 import { BuildChangelog } from '@/app/sources/build-changelog';
-import { SourcesApi } from '@/app/sources/sources-api';
+import { BuildSourceListItemActions } from '@/app/sources/build-source-list-item-actions';
 
-export class BuildSourceListItem extends AdminComponent {
-  declare props: {
-    build: any; deletingKey: string | null; onDelete: (build: any) => void;
-    onEdit: (build: any) => void; onTrigger: (build: any) => void; triggerKey: string | null;
-  };
-  @prop declare build: any;
-  @prop declare deletingKey: string | null;
-  @prop declare onDelete: (build: any) => void;
-  @prop declare onEdit: (build: any) => void;
-  @prop declare onTrigger: (build: any) => void;
-  @prop declare triggerKey: string | null;
-
-  @state downloading = false;
-  /** null until asked for: this is one request per row, and most rows are never expanded. */
-  @state versions: { installed: string | null; built: string | null; available: string[] } | null = null;
-  @state versionsOpen = false;
-  @state loadingVersions = false;
-  @state installing: string | null = null;
-  @state versionError = '';
-  @state chosenVersion = '';
-  /** Mirrors the source's own setting so the toggle reflects a save without refetching the list. */
-  @state autoUpdating: boolean | null = null;
-  @state savingAutoUpdate = false;
-
-  /** This row's identity. A slug alone matches the plugin AND the theme that share it. */
-  get identityKey(): string {
-    return `${String(this.build?.type ?? '')}/${String(this.build?.slug ?? '')}`;
-  }
-
-  /**
-   * Fetches the package through the authenticated client and hands the browser the bytes.
-   *
-   * The archive is made when it is asked for, so this can take a moment on the first press — the
-   * button says so rather than appearing to do nothing.
-   */
-  @bound
-  async download(): Promise<void> {
-    if (typeof window === 'undefined' || this.downloading) return;
-    this.downloading = true;
-    try {
-      const { blob, filename } = await SourcesApi.downloadPackage(String(this.build.type ?? ''), this.build.slug);
-      const objectUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = objectUrl;
-      link.download = filename;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
-    } finally {
-      this.downloading = false;
-    }
-  }
-
-  /**
-   * Opens the version list, fetching it the first time.
-   *
-   * Not part of the polled list payload: it reads the staging directory of every source on the box,
-   * and the list refreshes on a timer. One row, when asked.
-   */
-  @bound
-  async toggleVersions(): Promise<void> {
-    this.versionsOpen = !this.versionsOpen;
-    if (!this.versionsOpen || this.versions || this.loadingVersions) return;
-
-    this.loadingVersions = true;
-    this.versionError = '';
-    try {
-      await this.loadVersions();
-    } finally {
-      this.loadingVersions = false;
-    }
-  }
-
-  /** Puts the chosen version in place, then shows what is installed now rather than assuming. */
-  @bound
-  async installChosen(): Promise<void> {
-    const version = this.chosenVersion;
-    if (!version || this.installing) return;
-
-    this.installing = version;
-    this.versionError = '';
-    try {
-      const answer = await SourcesApi.installVersion(String(this.build.type ?? ''), this.build.slug, version);
-      this.versions = {
-        installed: answer?.installed ?? null,
-        built: answer?.built ?? null,
-        available: Array.isArray(answer?.available) ? answer.available : (this.versions?.available ?? []),
-      };
-    } catch (err: any) {
-      this.versionError = String(err?.message || 'Could not install that version.');
-      // A FAILED install is exactly when the snapshot must be refreshed rather than kept. An install
-      // can fail after the package is already in place — the plugin's own init throwing, say — and the
-      // stale snapshot then still names the old version as installed, which disables the button that
-      // would put it back. The one moment a rollback is needed is the one moment it was unavailable.
-      await this.loadVersions();
-    } finally {
-      this.installing = null;
-    }
-  }
-
-  /** Reads the three facts fresh. Separate from the toggle so both open and failure can call it. */
-  private async loadVersions(): Promise<void> {
-    try {
-      const answer = await SourcesApi.versions(String(this.build.type ?? ''), this.build.slug);
-      this.versions = {
-        installed: answer?.installed ?? null,
-        built: answer?.built ?? null,
-        available: Array.isArray(answer?.available) ? answer.available : [],
-      };
-      if (!this.chosenVersion || !this.versions.available.includes(this.chosenVersion)) {
-        this.chosenVersion = this.versions.available[0] ?? '';
-      }
-    } catch {
-      // Leave whatever is on screen: a failed refresh must not blank the panel the operator is reading.
-    }
-  }
-
-  /**
-   * Turns automatic updating on or off for this source, from the screen that is about versions.
-   *
-   * The same setting lives in Edit, where it is the second half of a pair and reads as
-   * "Update if already installed" — accurate, and findable only by someone who already knows the
-   * chain. This is where an operator looks when asking "keep this current", so it is offered here too,
-   * writing the same field. Switching it ON also sets `installAfterBuild`, because the installer is
-   * only reached inside that branch and the flag alone does nothing.
-   */
-  @bound
-  async toggleAutoUpdate(next: boolean): Promise<void> {
-    if (this.savingAutoUpdate) return;
-    this.savingAutoUpdate = true;
-    this.versionError = '';
-    try {
-      await SourcesApi.update(String(this.build.type ?? ''), this.build.slug, next
-        ? { autoUpdate: true, installAfterBuild: true }
-        : { autoUpdate: false });
-      this.autoUpdating = next;
-    } catch (err: any) {
-      this.versionError = String(err?.message || 'Could not change automatic updating.');
-    } finally {
-      this.savingAutoUpdate = false;
-    }
-  }
-
-  /** The source's setting, or the local override once it has been changed here. */
-  get autoUpdateEnabled(): boolean {
-    return this.autoUpdating ?? Boolean(this.build?.autoUpdate);
-  }
-
-  /**
-   * What this source has produced, in the terms the operator asked for it.
-   *
-   * It used to read the ARCHIVE's filename and say "waiting for first successful build" when there
-   * was none — which became a lie the moment a build stopped writing an archive: the build had
-   * succeeded, and the screen said it had not happened. The package is the thing; the zip is a
-   * download somebody may never ask for.
-   */
-  get packageLabel(): string {
-    if (this.build.fileName) return `Archive: ${this.build.fileName}`;
-    const version = String(this.build.version || '').trim();
-    if (version && this.build.lastBuildStatus === 'success') {
-      return `Package: ${this.build.slug} ${version} — built and ready`;
-    }
-    return 'Package: waiting for first successful build';
-  }
-
+/**
+ * One source in the Sources list.
+ *
+ * The top of the chain: the markup. What the row knows and what it can do live in the links below —
+ * see `BuildSourceListItemState`.
+ */
+export class BuildSourceListItem extends BuildSourceListItemActions {
   render(): ReactNode {
     // Offered for any source that has built something. Gated on the VERSION, not on a filename:
     // a build stages a package directory and writes no archive, so gating on a file meant the

@@ -8,6 +8,8 @@ import { GitBranchPolicy } from '@sources/providers/git/git-branch-policy';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
 import { BuildErrorRedactionService } from '@sources/packaging/build-error-redaction-service';
 import { ExtensionManifestReader } from '@sources/packaging/extension-manifest-reader';
+import { GitCommandRunner } from '@sources/providers/git/git-command-runner';
+import { GitErrorReader } from '@sources/providers/git/git-error-reader';
 
 /**
  * Handles git operations for marketplace source repositories.
@@ -25,11 +27,13 @@ import { ExtensionManifestReader } from '@sources/packaging/extension-manifest-r
  * argv is world-readable via `ps` / `/proc/<pid>/cmdline` on the host.
  */
 export class GitSyncService {
-  private static readonly execFileAsync = promisify(execFile);
 
   private readonly logger = new Logger({ namespace: 'GitSyncService' });
 
+  private readonly git: GitCommandRunner;
+
   constructor(private sourceDir: string) {
+    this.git = new GitCommandRunner(this.logger);
     fs.mkdirSync(this.sourceDir, { recursive: true });
   }
 
@@ -40,7 +44,7 @@ export class GitSyncService {
     const safeUrl = GitUrlPolicy.assertAllowed(gitUrl);
     const safeBranch = GitBranchPolicy.assertAllowed(branch);
     const targetDir = path.join(this.sourceDir, type, slug);
-    this.logger.debug(`[GitSyncService.sync] slug=${slug} tokenPresent=${!!this.resolveToken(token)}`);
+    this.logger.debug(`[GitSyncService.sync] slug=${slug} tokenPresent=${!!this.git.resolveToken(token)}`);
 
     if (this.isGitRepo(targetDir)) {
       await this.pull(targetDir, safeUrl, safeBranch, token);
@@ -58,7 +62,7 @@ export class GitSyncService {
     if (!this.isGitRepo(targetDir)) return null;
 
     try {
-      const { stdout } = await GitSyncService.execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: targetDir });
+      const { stdout } = await GitCommandRunner.execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: targetDir });
       return stdout.trim();
     } catch {
       return null;
@@ -123,7 +127,7 @@ export class GitSyncService {
         token,
         safeUrl,
       );
-      return GitSyncService.parseBranchRefs(stdout);
+      return GitErrorReader.parseBranchRefs(stdout);
     } catch (err) {
       this.logger.error(`Branch listing failed for ${safeUrl}: ${String(err)}`);
       // A repository with no branches is the ONLY thing an empty list may mean. Everything else —
@@ -131,7 +135,7 @@ export class GitSyncService {
       // different problem with a different fix, and all of them used to arrive here as "no
       // branches", which reads as a fact about the repository. Git's own words, redacted, say more
       // than any sentence this class could invent.
-      throw new Error(GitSyncService.explain(err));
+      throw new Error(GitErrorReader.explain(err));
     }
   }
 
@@ -152,13 +156,13 @@ export class GitSyncService {
        * cannot resolve — the changelog would be empty every single time. Deepening is done HERE
        * rather than by cloning deeper, so the cost lands only on a build that actually wants one.
        */
-      await GitSyncService.execFileAsync(
+      await GitCommandRunner.execFileAsync(
         'git',
         ['fetch', `--deepen=${GitSyncService.CHANGELOG_DEPTH}`, '--quiet'],
         { cwd: targetDir, timeout: 60000 },
       ).catch(() => undefined);
 
-      const { stdout } = await GitSyncService.execFileAsync(
+      const { stdout } = await GitCommandRunner.execFileAsync(
         'git',
         // `--no-merges`: a merge commit's subject is "Merge pull request #12", which describes the
         // act of merging rather than what changed.
@@ -185,55 +189,7 @@ export class GitSyncService {
   private static readonly CHANGELOG_DEPTH = 200;
 
   /** What git says when a repository needs credentials it was not given. */
-  static readonly NEEDS_TOKEN_MESSAGE =
-    'This repository is private, or does not exist. Add a personal access token with read access to it.';
-
   /** Git's reason, stripped of anything secret and cut to the line that carries the meaning. */
-  private static explain(error: unknown): string {
-    if (GitSyncService.isMissingGit(error)) return GitSyncService.MISSING_GIT_MESSAGE;
-
-    /**
-     * `could not read Username for 'https://github.com': terminal prompts disabled` is git asking
-     * for credentials on a machine with no terminal. It is the single most likely failure an
-     * operator will hit — a private repository, no token yet — and as raw git output it reads like
-     * a fault in the server rather than a missing field on the form.
-     */
-    if (GitSyncService.needsCredentials(error)) return GitSyncService.NEEDS_TOKEN_MESSAGE;
-
-    const redacted = BuildErrorRedactionService.redact((error as any)?.stderr || (error as any)?.message || error);
-    const meaningful = redacted
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line !== '' && !line.startsWith('Command failed:'))
-      .pop();
-
-    return meaningful || 'The repository could not be read.';
-  }
-
-  /** The message the admin shows when the host has no git; stated once, used by both call paths. */
-  static readonly MISSING_GIT_MESSAGE = 'git is not installed on this server, so repositories cannot be read.';
-
-  private static needsCredentials(error: unknown): boolean {
-    const text = String((error as any)?.stderr || (error as any)?.message || error);
-    return text.includes('could not read Username')
-      || text.includes('Authentication failed')
-      || text.includes('Repository not found');
-  }
-
-  private static isMissingGit(error: unknown): boolean {
-    return String((error as any)?.code || '') === 'ENOENT' || String(error).includes('spawn git ENOENT');
-  }
-
-  /** `<sha>\trefs/heads/<name>` per line. Names are returned as the remote spells them. */
-  private static parseBranchRefs(stdout: string): string[] {
-    return stdout
-      .split('\n')
-      .map((line) => line.split('\t')[1] || '')
-      .filter((ref) => ref.startsWith('refs/heads/'))
-      .map((ref) => ref.slice('refs/heads/'.length).trim())
-      .filter((name) => name !== '');
-  }
-
   /**
    * What the repository says it is, without adding it as a source.
    *
@@ -259,106 +215,24 @@ export class GitSyncService {
     }
   }
 
-  private async clone(gitUrl: string, branch: string, targetDir: string, token?: string): Promise<void> {
-    fs.mkdirSync(path.dirname(targetDir), { recursive: true });
-
-    if (fs.existsSync(targetDir)) {
-      fs.rmSync(targetDir, { recursive: true, force: true });
-    }
-
-    // `--` before the positional repository/directory pair: without it a repository value beginning
-    // with `-` is parsed as an option, and `--upload-pack=<cmd>` executes `<cmd>`.
-    await this.runGit(
-      ['clone', '--depth', '1', '--branch', branch, '--quiet', '--', gitUrl, targetDir],
-      { timeout: 120000 },
-      token,
-      gitUrl,
-    );
+  /** @see GitCommandRunner.clone */
+  clone(...args: Parameters<GitCommandRunner["clone"]>): ReturnType<GitCommandRunner["clone"]> {
+    return this.git.clone(...args);
   }
 
-  private async pull(targetDir: string, gitUrl: string, branch: string, token?: string): Promise<void> {
-    try {
-      await this.runGit(['remote', 'set-url', 'origin', gitUrl], { cwd: targetDir }, undefined, gitUrl);
-      await this.runGit(
-        ['fetch', '--depth', '1', '--', 'origin', branch],
-        { cwd: targetDir, timeout: 60000 },
-        token,
-        gitUrl,
-      );
-      await this.runGit(['reset', '--hard', `origin/${branch}`, '--'], { cwd: targetDir });
-    } catch (err) {
-      this.logger.warn(`Pull failed, retrying with fresh clone: ${err}`);
-      await this.clone(gitUrl, branch, targetDir, token);
-    }
+  /** @see GitCommandRunner.pull */
+  pull(...args: Parameters<GitCommandRunner["pull"]>): ReturnType<GitCommandRunner["pull"]> {
+    return this.git.pull(...args);
   }
 
-  /**
-   * Single invocation point for `git`. Owns the hardened environment and the credential lifetime:
-   * the token is written to a 0600 config file that exists only for the duration of the call, so it
-   * never appears in argv and never lands in a shared git config.
-   */
-  private async runGit(
-    args: string[],
-    options: { cwd?: string; timeout?: number },
-    token?: string,
-    repositoryUrl?: string,
-  ): Promise<{ stdout: string; stderr: string }> {
-    const credentialFile = this.writeCredentialConfig(token, repositoryUrl);
-
-    try {
-      return await GitSyncService.execFileAsync('git', args, {
-        ...options,
-        env: {
-          ...process.env,
-          GIT_TERMINAL_PROMPT: '0',
-          // Never inherit a system/global config that could re-enable a disallowed transport or add
-          // an insteadOf rewrite. When a credential file exists it is the ONLY global config.
-          GIT_CONFIG_NOSYSTEM: '1',
-          GIT_CONFIG_GLOBAL: credentialFile || os.devNull,
-        },
-      }) as { stdout: string; stderr: string };
-    } finally {
-      if (credentialFile) {
-        // Remove the whole private directory, not just the file — the token must not outlive the call.
-        fs.rmSync(path.dirname(credentialFile), { force: true, recursive: true });
-      }
-    }
+  /** @see GitCommandRunner.runGit */
+  runGit(...args: Parameters<GitCommandRunner["runGit"]>): ReturnType<GitCommandRunner["runGit"]> {
+    return this.git.runGit(...args);
   }
 
-  /**
-   * Write the Authorization header into a private git config file and return its path, or null when
-   * there is no token or the repository is not one we are willing to send it to.
-   */
-  private writeCredentialConfig(token: string | undefined, repositoryUrl: string | undefined): string | null {
-    const activeToken = this.resolveToken(token);
-    if (!activeToken || !repositoryUrl?.startsWith('https://github.com/')) {
-      return null;
-    }
-
-    const basicAuthValue = Buffer.from(`x-access-token:${activeToken}`).toString('base64');
-    const filePath = path.join(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'fc-build-git-')),
-      'config',
-    );
-    fs.writeFileSync(filePath, `[http]\n\textraHeader = Authorization: Basic ${basicAuthValue}\n`, { mode: 0o600 });
-    return filePath;
+  /** @see GitCommandRunner.isGitRepo */
+  isGitRepo(...args: Parameters<GitCommandRunner["isGitRepo"]>): ReturnType<GitCommandRunner["isGitRepo"]> {
+    return this.git.isGitRepo(...args);
   }
 
-  private resolveToken(token?: string): string | null {
-    const directToken = token?.trim();
-    if (directToken) {
-      return directToken;
-    }
-
-    const envToken = process.env.GITHUB_TOKEN?.trim();
-    if (envToken) {
-      return envToken;
-    }
-
-    return null;
-  }
-
-  private isGitRepo(dir: string): boolean {
-    return fs.existsSync(path.join(dir, '.git'));
-  }
 }

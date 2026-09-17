@@ -11,7 +11,10 @@ import type { IAssistantPromptProfile } from '@ai/admin-assistant-runtime/interf
 import type { IAssistantPromptCopy } from '@ai/admin-assistant-runtime/interfaces/assistant-prompt-copy.interface';
 
 export interface IAdminAssistantRuntimeOptions {
-  aiClient?: IAssistantClient | null;
+  // `Partial` because this ultimately flows in from `resolveAssistantClientFromRequest`'s
+  // `client: any`, which is not guaranteed to actually implement `chat` — the `typeof
+  // aiClient.chat !== 'function'` "is configured" guards below are real narrowing, not decoration.
+  aiClient?: Partial<IAssistantClient> | null;
   getCollections: () => IAssistantCollectionContext[];
   getPlugins?: () => IAssistantPluginContext[];
   getThemes?: () => IAssistantThemeContext[];
@@ -58,7 +61,10 @@ export interface IAdminAssistantRuntimeOptions {
   ) => Promise<any>;
   getSetting: (key: string) => Promise<IAssistantSettingValue>;
   upsertSetting: (key: string, value: string, group: string) => Promise<void>;
-  resolveAdditionalTools?: (context: { dryRun: boolean }) => Promise<IMcpToolDefinition[]> | IMcpToolDefinition[];
+  // `Partial` because this ultimately merges in plugin-hook-supplied tools (`assistant:tools:extend`),
+  // which are not guaranteed to satisfy the contract — the bridge builders validate every entry
+  // (`typeof tool.handler !== 'function'`) before trusting it as a real `IMcpToolDefinition`.
+  resolveAdditionalTools?: (context: { dryRun: boolean }) => Promise<Array<Partial<IMcpToolDefinition>>> | Array<Partial<IMcpToolDefinition>>;
   resolveAdditionalPromptLines?: (context: {
     collections: IAssistantCollectionContext[];
     tools: IAssistantToolSummary[];

@@ -53,7 +53,9 @@ export class JsonCompressionMiddleware extends BaseMiddleware {
     const secrets = JsonCompressionMiddleware.cookieSecrets(req);
     const originalJson = res.json.bind(res);
     res.json = ((body: unknown) => {
-      const payload = JSON.stringify(body);
+      // `JSON.stringify` is typed as always returning `string`, but it returns `undefined` at
+      // runtime for `undefined`/a function/a symbol — this check is real, not decorative.
+      const payload = JSON.stringify(body) as string | undefined;
       if (
         typeof payload !== 'string' ||
         Buffer.byteLength(payload) < JsonCompressionMiddleware.MIN_COMPRESS_BYTES ||

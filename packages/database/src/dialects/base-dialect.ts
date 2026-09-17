@@ -12,6 +12,12 @@ import { NamingStrategy } from '@database/naming-strategy';
 import type { DialectColumnNormalizer } from '@database/dialects/dialect-column-normalizer';
 import type { IJoinClause } from '@database/interfaces/join-clause.interface';
 import { OrderByBuilder } from '@database/dialects/order-by-builder';
+import type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
+import { BlindSchemaIntrospection } from '@database/introspection/blind-schema-introspection';
+import { SqlPredicateRenderer } from '@database/dialects/sql-predicate-renderer';
+import { JoinedQueryBuilder } from '@database/dialects/joined-query-builder';
+import { RawStatementBuilder } from '@database/dialects/raw-statement-builder';
+import { DialectCapabilityDefaults } from '@database/dialects/dialect-capability-defaults';
 
 /**
  * BaseDialect - Shared utilities for database dialect implementations
@@ -19,134 +25,92 @@ import { OrderByBuilder } from '@database/dialects/order-by-builder';
  * Provides common helper methods used across Postgres, MySQL, and SQLite dialects.
  * This reduces code duplication while allowing each dialect to maintain its specific implementation.
  */
-export abstract class BaseDialect {
+export abstract class BaseDialect extends DialectCapabilityDefaults {
   protected orderByBuilder = new OrderByBuilder();
 
   /**
-   * Marks this connection as the PLATFORM's own — the one that runs migrations and schema sync.
+   * How one comparison becomes SQL. Composed rather than inherited — `SqlPredicateRenderer` says why
+   * a base class could not express this.
    *
-   * Such a connection is never serving a tenant request, and it legitimately writes deployment-level
-   * rows (schema fingerprints and the like) that belong to no tenant. Default is a no-op: a driver
-   * without row-level security has nothing to mark.
+   * Arrow closures, so a SUBCLASS override still wins: Postgres overriding `getParamPlaceholder` is
+   * what runs, because `this` is resolved when the closure is called.
    */
-  markAsPlatformConnection(): void {
-    // no-op
-  }
+  protected readonly predicates = new SqlPredicateRenderer({
+    quoteIdentifier: (name) => this.quoteIdentifier(name),
+    getParamPlaceholder: (index) => this.getParamPlaceholder(index),
+    normalizeParamValue: (value) => this.normalizeParamValue(value),
+    comparisonColumn: (comparison, quotedColumn) => this.comparisonColumn(comparison, quotedColumn),
+    equalityColumnExpression: (quotedColumn, value) => this.equalityColumnExpression(quotedColumn, value),
+    patternColumnExpression: (quotedColumn) => this.patternColumnExpression(quotedColumn),
+    getLikeOperator: () => this.getLikeOperator(),
+    resolveColumn: (column, tableOrName) => this.resolveColumn(column, tableOrName),
+    drizzlePatternColumn: (column) => this.drizzlePatternColumn(column),
+  });
 
   /**
-   * Whether this driver can actually isolate tenants. Default FALSE.
-   *
-   * The default is deliberately the refusing one. An earlier version of this class returned a
-   * permissive passthrough, which meant any driver that did not override it — MySQL, and every
-   * future driver — silently ran with NO isolation and no error: every tenant reading every other
-   * tenant's rows, looking perfectly healthy. A base class must not hand out a security property
-   * nobody implemented.
+   * Joined SELECTs — see {@link JoinedQueryBuilder}. Composed for the same reason predicates are,
+   * and it needs only two things from this dialect.
    */
-  supportsTenantIsolation(): boolean {
-    return false;
+  protected readonly joinedQueries = new JoinedQueryBuilder(
+    (name) => this.quoteIdentifier(name),
+    (comparison, quotedColumn, values) => this.renderPredicate(comparison, quotedColumn, values),
+  );
+
+  /** Raw-text statements — see {@link RawStatementBuilder}. */
+  protected readonly rawStatements = new RawStatementBuilder({
+    quoteIdentifier: (name) => this.quoteIdentifier(name),
+    getParamPlaceholder: (index) => this.getParamPlaceholder(index),
+    getLikeOperator: () => this.getLikeOperator(),
+    patternColumnExpression: (quotedColumn) => this.patternColumnExpression(quotedColumn),
+    dayBucketExpression: (quotedColumn) => this.dayBucketExpression(quotedColumn),
+    renderPredicate: (comparison, quotedColumn, values) => this.renderPredicate(comparison, quotedColumn, values),
+  });
+
+  /** @see RawStatementBuilder.buildGroupCountSQL */
+  protected buildGroupCountSQL(...args: Parameters<RawStatementBuilder['buildGroupCountSQL']>): ReturnType<RawStatementBuilder['buildGroupCountSQL']> {
+    return this.rawStatements.buildGroupCountSQL(...args);
   }
 
-  /**
-   * The refusing implementation, for the same reason `supportsTenantIsolation` defaults to false: a
-   * base class must not hand out a security property nobody implemented. A driver with row-level
-   * security overrides this with a real one.
-   */
-  readonly tenantIsolation: ITenantIsolation = new RefusingTenantIsolation(this.constructor.name);
-
-  /**
-   * No catalog to interrogate and no way to add the constraint after the fact, so this REPORTS
-   * rather than throwing — nothing is unsafe about a driver that cannot reconcile a declared unique,
-   * unlike isolation, where silence would be mistaken for protection.
-   */
-  async ensureDeclaredUnique(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
-    return SchemaReconcileOutcome.unsupported(
-      `${this.constructor.name}: this driver cannot reconcile a declared UNIQUE on an existing column.`,
-    );
+  /** @see RawStatementBuilder.buildRawFilterSQL */
+  protected buildRawFilterSQL(...args: Parameters<RawStatementBuilder['buildRawFilterSQL']>): ReturnType<RawStatementBuilder['buildRawFilterSQL']> {
+    return this.rawStatements.buildRawFilterSQL(...args);
   }
 
-  /**
-   * No catalog to read, so nothing is claimed about the column.
-   *
-   * Zero rows would be a LIE that reads as "safe to drop" — the one answer that must never be
-   * invented. A driver that cannot count says so by refusing.
-   */
-  async columnStats(_table: string, _column: string): Promise<IColumnStats> {
-    throw new Error(
-      `${this.constructor.name}: this driver cannot report column statistics, so there is nothing to `
-      + 'show an operator deciding whether a column is safe to drop. Refusing rather than reporting zero.',
-    );
+  /** @see JoinedQueryBuilder.buildJoinedSQL */
+  protected buildJoinedSQL(...args: Parameters<JoinedQueryBuilder['buildJoinedSQL']>): ReturnType<JoinedQueryBuilder['buildJoinedSQL']> {
+    return this.joinedQueries.buildJoinedSQL(...args);
   }
 
-  /** Irreversible, so a driver without an implementation refuses rather than silently doing nothing. */
-  async dropColumn(_table: string, _column: string): Promise<void> {
-    throw new Error(`${this.constructor.name}: this driver cannot drop a column.`);
+  /** @see JoinedQueryBuilder.processJoinedRows */
+  protected processJoinedRows(rows: any[], joins: IJoinClause[]): any[] {
+    return this.joinedQueries.processJoinedRows(rows, joins);
   }
 
-  /** Same contract as `ensureDeclaredUnique`: a driver that cannot answer REPORTS rather than throws. */
-  async ensureDeclaredNullable(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
-    return SchemaReconcileOutcome.unsupported(
-      `${this.constructor.name}: this driver cannot relax a NOT NULL on an existing column.`,
-    );
+  /** @see SqlPredicateRenderer.buildWhereConditions */
+  protected buildWhereConditions(where: any, tableOrName?: any): any[] {
+    return this.predicates.buildWhereConditions(where, tableOrName);
   }
 
-  /**
-   * Runs `fn` with every statement bound to `tenantId`.
-   *
-   * Overridden per driver by its isolation strategy — Postgres holds a pooled client with
-   * `app.tenant_id` set (see TenantConnectionScope); a separate-database driver would bind that
-   * tenant's connection. A driver that has not implemented one REFUSES rather than running `fn`
-   * unisolated.
-   *
-   * This is never reached on a single-tenant deployment: TenantMode leaves tenancy off entirely, so
-   * no tenant scope is opened and drivers without a strategy keep working exactly as before.
-   */
-  async withTenant<T>(_tenantId: string, _fn: () => Promise<T>): Promise<T> {
-    throw new Error(
-      `${this.constructor.name}: this driver has no tenant isolation strategy, so a tenant-scoped `
-      + 'request cannot be served safely. Refusing rather than running the query unisolated.',
-    );
+  /** @see SqlPredicateRenderer.buildRawWhereClause */
+  protected buildRawWhereClause(where: any): { sql: string; values: any[] } {
+    return this.predicates.buildRawWhereClause(where);
   }
 
-  /** No row-level security here, so there is nothing to lift: `fn` runs as is. */
-  async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> {
-    return fn();
+  /** @see SqlPredicateRenderer.renderPredicate */
+  protected renderPredicate(comparison: WhereComparison, quotedColumn: string, values: any[]): string {
+    return this.predicates.renderPredicate(comparison, quotedColumn, values);
   }
 
-  /**
-   * A driver that cannot serialise callers REFUSES, exactly as `withTenant` does.
-   *
-   * Running `fn` anyway would look like it worked and quietly permit the race the caller asked to be
-   * protected from — and the first caller of this is first-administrator creation, where losing that
-   * race means two administrators nobody intended.
-   */
-  async withExclusiveLock<T>(name: string, _fn: () => Promise<T>): Promise<T> {
-    throw new Error(
-      `${this.constructor.name}: this driver has no exclusive-lock strategy, so "${name}" cannot be `
-      + 'serialised. Refusing rather than running it unprotected.',
-    );
+  /** @see SqlPredicateRenderer.drizzleSearchCondition */
+  protected drizzleSearchCondition(search?: { columns: string[]; value: string }): any {
+    return this.predicates.drizzleSearchCondition(search);
   }
 
-  /**
-   * A driver with no login system reports that, rather than throwing.
-   *
-   * Unlike `withExclusiveLock` above — where carrying on unprotected would permit the race the caller
-   * asked to be prevented — there is nothing unsafe about a database that has no roles to create. SQLite
-   * is the case: its access boundary is the database file's permissions, and it also cannot isolate
-   * tenants, so a deployment that needs a least-privilege runtime role is already refused elsewhere.
-   */
-  async provisionRoles(_plan: DatabaseRolePlan): Promise<DatabaseRoleOutcome> {
-    return DatabaseRoleOutcome.unsupported(
-      `${this.constructor.name}: this driver has no login system, so there are no roles to provision. `
-      + 'Access is controlled outside the database.',
-    );
+  /** @see SqlPredicateRenderer.drizzlePatternCondition */
+  protected drizzlePatternCondition(column: any, comparison: WhereComparison): any {
+    return this.predicates.drizzlePatternCondition(column, comparison);
   }
 
-  /** Nothing to grant where there are no roles to grant to. */
-  async grantRuntimePrivileges(_role: string): Promise<DatabaseRoleOutcome> {
-    return DatabaseRoleOutcome.unsupported(
-      `${this.constructor.name}: this driver has no login system, so there are no privileges to grant.`,
-    );
-  }
 
   /**
    * Normalize parameter values for database queries
@@ -156,38 +120,6 @@ export abstract class BaseDialect {
     return NamingStrategy.normalizeParamValue(value);
   }
 
-  /**
-   * Build WHERE clause conditions from a plain object
-   * Converts { id: 1, status: 'active' } into drizzle condition array
-   *
-   * Keys are canonical camelCase field names; `resolveColumn` maps each to the real column (see there).
-   * Pass `tableOrName` whenever the caller has a drizzle table object so its declared columns win.
-   */
-  protected buildWhereConditions(where: any, tableOrName?: any): any[] {
-    if (typeof where !== 'object' || where === null) return [];
-    if (Object.getPrototypeOf(where) !== Object.prototype) return [];
-
-    // Same parse as the raw-SQL path, so `{ createdAt: { gte, lte } }` means the same range whether the
-    // caller reached a drizzle table object or a string table name.
-    return WhereClauseParser.parse(where).map((comparison) => {
-      const column = this.resolveColumn(comparison.column, tableOrName);
-      // Same null rule as the raw-SQL paths: absence is IS NULL / IS NOT NULL, never `= NULL`.
-      if (comparison.value === null) {
-        if (comparison.operator === 'eq') return isNull(column);
-        if (comparison.operator === 'ne') return isNotNull(column);
-        throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}"). Only eq/ne accept null, as IS NULL / IS NOT NULL.`);
-      }
-      if (comparison.isSet) {
-        // Drizzle's own inArray/notInArray REJECT an empty list at runtime. An empty set is a real
-        // thing to ask for, though — "any of the ids this page selected", where the page selected
-        // none — so it renders as the constant it means, rather than throwing at the call site.
-        if (comparison.values.length === 0) return comparison.operator === 'in' ? sql`1 = 0` : sql`1 = 1`;
-        return comparison.operator === 'in' ? inArray(column, comparison.values) : notInArray(column, comparison.values);
-      }
-      if (comparison.isPattern) return this.drizzlePatternCondition(column, comparison);
-      return BaseDialect.DRIZZLE_OPERATORS[comparison.operator](column, comparison.value);
-    });
-  }
 
   /**
    * The left-hand column expression for one predicate, given the caller's already-quoted column.
@@ -211,89 +143,15 @@ export abstract class BaseDialect {
     return quotedColumn;
   }
 
-  /**
-   * The predicate for a null operand. Only equality has a meaning against absence; a range against
-   * null is a call-site bug and raises rather than matching nothing.
-   */
-  private static nullPredicate(comparison: { operator: string; column: string }): string {
-    if (comparison.operator === 'eq') return 'IS NULL';
-    if (comparison.operator === 'ne') return 'IS NOT NULL';
-    throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}"). Only eq/ne accept null, as IS NULL / IS NOT NULL.`);
-  }
 
-  /**
-   * The ONE place a `where` predicate becomes SQL on the raw-string paths.
-   *
-   * Every raw builder below used to inline the same `column operator placeholder` line, which
-   * quietly assumed every operator takes exactly one operand and one placeholder. That assumption is
-   * why `in` could not exist: callers wanting "any of these statuses" had to fetch rows and filter
-   * them in memory, which is slower and — past the fetch limit — silently WRONG. It also let the
-   * three copies drift: the join builder had never grown the null handling the other two have, so a
-   * `{ deletedAt: null }` filter on a joined query emitted `= NULL` and matched nothing. Routing all
-   * three through here is what fixed that, and what stops the next divergence.
-   *
-   * `values` is appended to in step with the placeholders, so operands stay parameterised: nothing a
-   * caller supplies is ever interpolated into the SQL string.
-   */
-  protected renderPredicate(comparison: WhereComparison, quotedColumn: string, values: any[]): string {
-    if (comparison.isSet) return this.renderSetPredicate(comparison, quotedColumn, values);
-    if (comparison.isPattern) return this.renderPatternPredicate(comparison, quotedColumn, values);
-    // `= NULL` is never true in SQL, so a null operand would make the predicate match NOTHING —
-    // silently. Null is a real operand meaning absence; it becomes IS NULL / IS NOT NULL, param-free.
-    if (comparison.value === null) return `${quotedColumn} ${BaseDialect.nullPredicate(comparison)}`;
-    values.push(this.normalizeParamValue(comparison.value));
-    return `${this.comparisonColumn(comparison, quotedColumn)} ${comparison.sqlOperator} ${this.getParamPlaceholder(values.length)}`;
-  }
 
-  /** `col IN ($1, $2, …)` — one placeholder per element, never an interpolated list. */
-  private renderSetPredicate(comparison: WhereComparison, quotedColumn: string, values: any[]): string {
-    const operands = comparison.values;
-    // `IN ()` is a syntax error, so the empty set renders as the constant it MEANS: `in: []` matches
-    // no row, `notIn: []` excludes none. Emitting nothing instead would drop the filter and return
-    // every row — the failure mode this layer has been bitten by before.
-    if (operands.length === 0) return comparison.operator === 'in' ? '1 = 0' : '1 = 1';
-    // A NULL inside a set never matches under IN (and silently voids NOT IN entirely), so it is a
-    // call-site bug rather than a filter — the same rule as a range against null.
-    if (operands.some((operand) => operand === null || operand === undefined)) {
-      throw new Error(`Invalid where clause for column "${comparison.column}": "${comparison.operator}" cannot contain null. Ask for absence with { ${comparison.column}: null } instead.`);
-    }
-    const placeholders = operands.map((operand) => {
-      values.push(this.normalizeParamValue(operand));
-      return this.getParamPlaceholder(values.length);
-    });
-    return `${quotedColumn} ${WhereComparison.SET_OPERATORS[comparison.operator]} (${placeholders.join(', ')})`;
-  }
 
-  /** `col LIKE $1 ESCAPE '!'` — the operand carries the wildcards, the caller's text never does. */
-  private renderPatternPredicate(comparison: WhereComparison, quotedColumn: string, values: any[]): string {
-    if (comparison.value === null || comparison.value === undefined) {
-      throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}").`);
-    }
-    values.push(comparison.likePattern);
-    return `${this.patternColumnExpression(quotedColumn)} ${this.getLikeOperator()} ${this.getParamPlaceholder(values.length)} ESCAPE '${WhereComparison.LIKE_ESCAPE}'`;
-  }
-
-  /**
-   * The drizzle equivalent of `renderPatternPredicate`.
-   *
-   * Drizzle's `like`/`ilike` helpers emit no ESCAPE clause, so a pattern built through them would let
-   * a user's own `%` act as a wildcard. This keeps the escape character the raw paths use, and asks
-   * the dialect for the same operator (Postgres answers ILIKE), so a search means one thing whether
-   * the caller reached a typed table or a table name.
-   */
-  protected drizzlePatternCondition(column: any, comparison: WhereComparison): any {
-    return sql`${this.drizzlePatternColumn(column)} ${sql.raw(this.getLikeOperator())} ${comparison.likePattern} ESCAPE ${sql.raw(`'${WhereComparison.LIKE_ESCAPE}'`)}`;
-  }
 
   /** The drizzle twin of {@link patternColumnExpression} — Postgres casts, everyone else does not. */
   protected drizzlePatternColumn(column: any): any {
     return column;
   }
 
-  /** Canonical operator name -> drizzle condition builder, keyed exactly like WhereComparison. */
-  private static readonly DRIZZLE_OPERATORS: Record<string, (column: any, value: any) => any> = {
-    eq, ne, gt, gte, lt, lte,
-  };
 
   /**
    * Build ORDER BY clause from various formats
@@ -311,33 +169,6 @@ export abstract class BaseDialect {
   }
 
   /**
-   * Build raw SQL WHERE clause for string-based queries
-   * Returns SQL string and parameter values array
-   */
-  protected buildRawWhereClause(where: any): { sql: string; values: any[] } {
-    if (!where || typeof where !== 'object' || Object.getPrototypeOf(where) !== Object.prototype) {
-      return { sql: '', values: [] };
-    }
-
-    const comparisons = WhereClauseParser.parse(where);
-    if (comparisons.length === 0) {
-      return { sql: '', values: [] };
-    }
-
-    // Rendered by the shared `renderPredicate`, because three paths emitting different predicates from
-    // one parse is exactly the drift the shared parser exists to prevent.
-    const values: any[] = [];
-    const conditions = comparisons.map(
-      (comparison) => this.renderPredicate(comparison, this.quoteIdentifier(comparison.column), values),
-    );
-
-    return {
-      sql: ` WHERE ${conditions.join(' AND ')}`,
-      values
-    };
-  }
-
-  /**
    * Returns the SQL LIKE operator string for this dialect.
    * Postgres overrides this to return 'ILIKE' for case-insensitive matching.
    */
@@ -351,47 +182,6 @@ export abstract class BaseDialect {
    */
   protected dayBucketExpression(quotedColumn: string): string {
     return `substr(${quotedColumn}, 1, 10)`;
-  }
-
-  /**
-   * COUNT(*) grouped by columns — real SQL aggregation for a string-named table.
-   *
-   * This is the primitive that lets an analytics screen ask "how many per outcome / per file / per
-   * day" as ONE query instead of paging every row into application memory and counting there. Group
-   * columns pass through the same identifier sanitiser as everything else; the optional `dateBucket`
-   * groups a timestamp column by calendar day using the dialect's own expression.
-   *
-   * Returns one row per group: the grouped columns (day under `day`), plus `count`. Ordered by count
-   * descending, because every caller so far wants the biggest groups first; an `orderBy` option can
-   * arrive when a caller genuinely needs another order.
-   */
-  protected buildGroupCountSQL(
-    tableName: string,
-    options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },
-  ): { sql: string; values: any[] } {
-    const groupExpressions: string[] = [];
-    const selectExpressions: string[] = [];
-
-    for (const column of options.groupBy ?? []) {
-      const quoted = this.quoteIdentifier(column);
-      groupExpressions.push(quoted);
-      selectExpressions.push(quoted);
-    }
-    if (options.dateBucket) {
-      const expression = this.dayBucketExpression(this.quoteIdentifier(options.dateBucket.column));
-      groupExpressions.push(expression);
-      selectExpressions.push(`${expression} AS "day"`);
-    }
-    if (groupExpressions.length === 0) {
-      throw new Error('groupCount needs at least one groupBy column or a dateBucket.');
-    }
-
-    const { sql: whereSql, values } = this.buildRawFilterSQL(options.where);
-    let sqlStr = `SELECT ${selectExpressions.join(', ')}, COUNT(*) AS "count" FROM "${tableName}"${whereSql}`
-      + ` GROUP BY ${groupExpressions.join(', ')} ORDER BY COUNT(*) DESC`;
-    if (options.limit) sqlStr += ` LIMIT ${Math.max(1, Math.floor(options.limit))}`;
-
-    return { sql: sqlStr, values };
   }
 
   /**
@@ -461,63 +251,6 @@ export abstract class BaseDialect {
   }
 
   /**
-   * Build a combined WHERE clause from exact matches (where) and LIKE search (search).
-   * Exact conditions are ANDed; search columns are OR-ed and ANDed with the rest.
-   * Uses getParamPlaceholder() so it works across dialects.
-   */
-  protected buildRawFilterSQL(
-    where: any,
-    search?: { columns: string[]; value: string }
-  ): { sql: string; values: any[] } {
-    const conditions: string[] = [];
-    const values: any[] = [];
-
-    // A `where` that is an object but NOT a plain object cannot be parsed on this raw-SQL path — the
-    // only supported shape is `{ column: value }` / `{ column: { gte, lte } }`. Silently skipping it
-    // drops the filter ENTIRELY and turns the query into "every row", which is the most dangerous
-    // failure this layer has: it is invisible at the call site and reads as a successful query.
-    // It shipped exactly that way — WorkflowService passed a drizzle `and(ne(...), lte(...))`
-    // expression with a STRING table name, so every scheduler tick re-published every row of every
-    // workflow-enabled collection. Fail loudly instead; drizzle expressions belong on the typed-table
-    // path, which handles them.
-    if (where && typeof where === 'object' && Object.getPrototypeOf(where) !== Object.prototype) {
-      throw new Error(
-        'Unsupported `where` for a raw-SQL (string table) query: expected a plain object such as ' +
-        '{ status: { ne: "published" } }. A drizzle expression (and/eq/ne/lte/…) is only supported ' +
-        'when the table is passed as a typed table object, not as a table NAME.'
-      );
-    }
-
-    if (where && typeof where === 'object') {
-      for (const comparison of WhereClauseParser.parse(where)) {
-        conditions.push(this.renderPredicate(comparison, this.quoteIdentifier(comparison.column), values));
-      }
-    }
-
-    if (search && search.columns.length > 0 && search.value) {
-      // The searcher's own `%` and `_` are LITERAL characters, not wildcards. Unescaped, a visitor
-      // typing "%" matched every row and one typing "50%" matched far more than they asked for.
-      const pattern = `%${WhereComparison.escapeLikeOperand(search.value)}%`;
-      const likeOp = this.getLikeOperator();
-      const likeParts: string[] = [];
-      for (const col of search.columns) {
-        values.push(pattern);
-        // Snake-cased for the same reason the `where` keys above are: the physical column is
-        // snake_case, and a verbatim camelCase identifier silently degrades to a string literal.
-        // Callers reaching here through `find` have already had these names validated against the
-        // table's real columns (see DialectColumnNormalizer.resolveColumnsForTable).
-        likeParts.push(`${this.patternColumnExpression(this.quoteIdentifier(col))} ${likeOp} ${this.getParamPlaceholder(values.length)} ESCAPE '${WhereComparison.LIKE_ESCAPE}'`);
-      }
-      conditions.push(`(${likeParts.join(' OR ')})`);
-    }
-
-    if (conditions.length === 0) return { sql: '', values: [] };
-    return { sql: ` WHERE ${conditions.join(' AND ')}`, values };
-  }
-
-  // ─── Join support ────────────────────────────────────────────────────────────
-
-  /**
    * Dialect hook: the column expression a pattern operator matches against.
    *
    * Base is the column itself, which is right wherever LIKE accepts any column type. Postgres does
@@ -526,25 +259,6 @@ export abstract class BaseDialect {
    */
   protected patternColumnExpression(quotedColumn: string): string {
     return quotedColumn;
-  }
-
-  /**
-   * The drizzle twin of the OR-ed LIKE group `buildRawFilterSQL` appends, so `count` can apply the
-   * SAME search `find` did.
-   *
-   * It could not, until now: `count` accepted only `where`, so a searched list showed the total of
-   * the UNSEARCHED table — "1 of 240 results" under a list of one. A total that does not describe the
-   * list beside it is a lie the operator has no way to spot.
-   */
-  protected drizzleSearchCondition(search?: { columns: string[]; value: string }): any {
-    if (!search || search.columns.length === 0 || !search.value) return null;
-    const pattern = `%${WhereComparison.escapeLikeOperand(search.value)}%`;
-    const escapeClause = sql.raw(`ESCAPE '${WhereComparison.LIKE_ESCAPE}'`);
-    const likeOperator = sql.raw(this.getLikeOperator());
-    const parts = search.columns.map(
-      (column) => sql`${sql.raw(this.patternColumnExpression(this.quoteIdentifier(column)))} ${likeOperator} ${pattern} ${escapeClause}`,
-    );
-    return parts.length === 1 ? parts[0] : or(...parts);
   }
 
   /**
@@ -563,109 +277,4 @@ export abstract class BaseDialect {
     throw new Error('executeRawSelect is not implemented for this dialect');
   }
 
-  /**
-   * Build a parameterised SELECT … FROM … JOIN … WHERE … ORDER … SQL string
-   * that works with the dialect's placeholder style (? or $n).
-   */
-  protected buildJoinedSQL(
-    tableName: string,
-    joins: IJoinClause[],
-    options: { where?: any; limit?: number; offset?: number; orderBy?: any; columns?: Record<string, boolean> }
-  ): { sql: string; values: any[] } {
-    const { where, limit, offset, orderBy, columns } = options;
-
-    // SELECT clause
-    const selectParts: string[] = [];
-    if (columns && Object.keys(columns).length > 0) {
-      for (const [k, v] of Object.entries(columns)) {
-        if (v) selectParts.push(`"t0".${this.quoteIdentifier(k)}`);
-      }
-    } else {
-      selectParts.push('"t0".*');
-    }
-    for (let i = 0; i < joins.length; i++) {
-      const alias = `t${i + 1}`;
-      for (const col of joins[i].columns) {
-        // The AS alias keeps the caller's spelling — `processJoinedRows` turns it back into the result
-        // key, so snake-casing it here would silently rename every joined field. Safe to interpolate:
-        // `quoteIdentifier` above has already rejected anything that is not a plain identifier.
-        selectParts.push(`"${alias}".${this.quoteIdentifier(col)} AS "j${i}__${col}"`);
-      }
-    }
-
-    let sqlStr = `SELECT ${selectParts.join(', ')} FROM "${tableName}" "t0"`;
-
-    // JOIN clauses
-    for (let i = 0; i < joins.length; i++) {
-      const join = joins[i];
-      const alias = `t${i + 1}`;
-      const joinType = join.type === JoinType.LEFT ? 'LEFT JOIN' : 'INNER JOIN';
-      sqlStr += ` ${joinType} "${join.table}" "${alias}" ON "t0".${this.quoteIdentifier(join.on.from)} = "${alias}".${this.quoteIdentifier(join.on.to)}`;
-    }
-
-    // WHERE clause (main table columns only)
-    const values: any[] = [];
-    if (where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-      const comparisons = WhereClauseParser.parse(where);
-      if (comparisons.length > 0) {
-        const conditions = comparisons.map(
-          (comparison) => this.renderPredicate(comparison, `"t0".${this.quoteIdentifier(comparison.column)}`, values),
-        );
-        sqlStr += ` WHERE ${conditions.join(' AND ')}`;
-      }
-    }
-
-    // ORDER BY
-    if (orderBy) {
-      if (typeof orderBy === 'string') {
-        const parts = this.orderByBuilder.parseOrderByString(orderBy);
-        if (parts.length > 0) {
-          const clauses = parts
-            .map((part) => `"t0".${this.quoteIdentifier(part.column)} ${part.direction}`);
-          sqlStr += ` ORDER BY ${clauses.join(', ')}`;
-        }
-      } else if (typeof orderBy === 'object' && !Array.isArray(orderBy)) {
-        const clauses = Object.entries(orderBy)
-          .map(([k, v]) => `"t0".${this.quoteIdentifier(k)} ${this.orderByBuilder.normalizeOrderDirection(v)}`);
-        sqlStr += ` ORDER BY ${clauses.join(', ')}`;
-      }
-    }
-
-    if (limit) sqlStr += ` LIMIT ${limit}`;
-    if (offset) sqlStr += ` OFFSET ${offset}`;
-
-    return { sql: sqlStr, values };
-  }
-
-  /**
-   * Post-process raw rows from a joined query.
-   * Columns prefixed with "j{n}__" are extracted and either merged flat or
-   * nested under join.as (if specified).
-   */
-  protected processJoinedRows(rows: any[], joins: IJoinClause[]): any[] {
-    return rows.map(row => {
-      const result: any = {};
-      const joinData: Record<number, any> = {};
-      for (let i = 0; i < joins.length; i++) joinData[i] = {};
-
-      for (const [key, value] of Object.entries(row)) {
-        const m = key.match(/^j(\d+)__(.+)$/);
-        if (m) {
-          joinData[Number(m[1])][m[2]] = value;
-        } else {
-          result[key] = value;
-        }
-      }
-
-      for (let i = 0; i < joins.length; i++) {
-        if (joins[i].as) {
-          result[joins[i].as!] = joinData[i];
-        } else {
-          Object.assign(result, joinData[i]);
-        }
-      }
-
-      return result;
-    });
-  }
 }

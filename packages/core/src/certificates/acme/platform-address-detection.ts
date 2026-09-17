@@ -1,5 +1,6 @@
 import { Resolver } from 'dns/promises';
 import { PlatformAddressCandidate } from '@core/certificates/acme/platform-address-candidate';
+import { DnsRecordFamily } from '@core/certificates/acme/enums/dns-record-family.enum';
 
 /**
  * What this platform's own hostnames resolve to — offered to the operator, never stored on their
@@ -34,15 +35,16 @@ export class PlatformAddressDetection {
     for (const host of hosts) {
       const name = String(host || '').trim().toLowerCase();
       if (!name) continue;
-      const candidate = new PlatformAddressCandidate(name, await this.resolve('resolve4', name), await this.resolve('resolve6', name));
+      const candidate = new PlatformAddressCandidate(name, await this.resolve(DnsRecordFamily.IPV4, name), await this.resolve(DnsRecordFamily.IPV6, name));
       if (candidate.hasAnswer) candidates.push(candidate);
     }
     return candidates;
   }
 
-  private async resolve(method: 'resolve4' | 'resolve6', host: string): Promise<string[]> {
+  private async resolve(family: DnsRecordFamily, host: string): Promise<string[]> {
     try {
-      const answers = await this.resolver[method](host);
+      // The family's `.value` IS the resolver method's name — see DnsRecordFamily.
+      const answers = await (this.resolver as Record<string, (h: string) => Promise<string[]>>)[String(family.value)](host);
       return (Array.isArray(answers) ? answers : []).map((address) => String(address));
     } catch {
       return [];

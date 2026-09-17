@@ -7,13 +7,14 @@ import { BackupService } from '@core/management/backup-service';
 import { BackupCatalogService } from '@core/management/backup-catalog-service';
 import { BackupRestoreGuardService } from '@core/management/backup-restore-guard-service';
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
+import { FrameworkRootLocator } from '@core/config/framework-root-locator';
 
 describe('BackupRestoreGuardService', () => {
   const temporaryDirectories: string[] = [];
 
   afterEach(() => {
     delete process.env.FROMCODE_PROJECT_ROOT;
-    (ProjectPaths as any).cachedRoot = null;
+    FrameworkRootLocator.forget();
 
     for (const directoryPath of temporaryDirectories) {
       if (fs.existsSync(directoryPath)) {

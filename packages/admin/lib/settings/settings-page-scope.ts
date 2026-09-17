@@ -1,4 +1,5 @@
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { SettingsScope } from '@/lib/settings/enums/settings-scope.enum';
 
 /**
  * How ONE settings page's own key set fares in the current scope.
@@ -45,13 +46,13 @@ export class SettingsPageScope {
   /**
    * Where do the keys this page is NOT showing live?
    *
-   * `'site'` — they are per-site settings and no site is selected. `'platform'` — they are the
+   * `SITE` — they are per-site settings and no site is selected. `PLATFORM` — they are the
    * platform's and this screen is inside a site. `null` — nothing is hidden.
    */
-  get hiddenBelongTo(): 'site' | 'platform' | null {
+  get hiddenBelongTo(): SettingsScope | null {
     const hidden = this.hiddenKeys;
     if (hidden.length === 0) return null;
-    return this.locks.isSiteScope() ? 'platform' : 'site';
+    return this.locks.isSiteScope() ? SettingsScope.PLATFORM : SettingsScope.SITE;
   }
 
   /**
@@ -79,7 +80,7 @@ export class SettingsPageScope {
     if (!belongsTo) return '';
     const what = options.describeHidden ? `Site settings (${options.describeHidden})` : 'These settings';
 
-    if (belongsTo === 'site') {
+    if (belongsTo === SettingsScope.SITE) {
       return `${what} are set inside each site — choose one from the site menu.`;
     }
     const platformWhat = options.describeHidden ? `Platform settings (${options.describeHidden})` : 'Platform settings on this page';

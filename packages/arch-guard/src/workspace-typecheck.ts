@@ -88,7 +88,7 @@ export class WorkspaceTypecheck {
     // `@plugin` is the exact same story for plugins, and its absence made this whole check meaningless:
     // every plugin resolves its OWN source through `@plugin/...` (build-plugins.sh passes
     // `--alias:@plugin=<plugin root>` to both the backend and UI builds), so an unmapped alias turned
-    // every internal import into TS2307. Measured on `subscriptions`: 200 errors, 199 of them TS2307
+    // every internal import into TS2307. Measured on one plugin: 200 errors, 199 of them TS2307
     // "Cannot find module '@plugin/…'" — adding this line took it to 1. It maps to the plugin ROOT, not
     // `./src`, because the specifiers already carry the `src/` segment (`@plugin/src/services/x`).
     const options = {

@@ -93,7 +93,7 @@ export type { ICollectionListPathOptions } from '@core/collections/interfaces/co
 export { HookEventUtils } from '@core/hook-events';
 // CollectionHookPhase is an Enum CLASS — a VALUE export, or plugins cannot reach `.BEFORE_CREATE` and
 // are forced back to raw strings. Only the events interface is type-only.
-export { CollectionHookPhase } from '@core/collections/interfaces/collection-hook-events.interface';
+export { CollectionHookPhase } from '@core/enums/collection-hook-phase.enum';
 export type { ICollectionHookEvents } from '@core/collections/interfaces/collection-hook-events.interface';
 export { PaginationUtils } from '@core/pagination';
 export type { IPaginationInput } from '@core/interfaces/pagination-input.interface';
@@ -197,7 +197,7 @@ export { AdminScope } from '@core/enums/admin-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';
 
 // Browser-safe: these carry only labels and identity, and depend on nothing but the Enum base.
-export { AcmeDirectory } from '@core/certificates/acme/acme-directory.enum';
+export { AcmeDirectory } from '@core/certificates/acme/enums/acme-directory.enum';
 // The wizard's driver list and phase. Both are plain `Enum` values with no server reach, and the
 // admin needs them to render the first-run screen before any of the server-only code could load.
 export { DatabaseDriverChoice } from '@core/security/enums/database-driver-choice.enum';
@@ -234,3 +234,5 @@ export { SnapshotType } from '@core/management/enums/snapshot-type.enum';
 // setting — two classes meant the admin's PATH could never equal the frontend's PATH.
 export { LocaleUrlStrategy } from '@core/enums/locale-url-strategy.enum';
 export { TwoFactorMethod } from '@core/enums/two-factor-method.enum';
+export { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-import-id-mode.enum';
+export { PluginIsolationMode } from '@core/plugin/host/enums/plugin-isolation-mode.enum';

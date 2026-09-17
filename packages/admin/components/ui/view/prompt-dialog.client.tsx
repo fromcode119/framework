@@ -2,7 +2,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { PromptInputType } from '@/components/ui/enums/prompt-input-type.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
-import { prop, state, ref, bound } from '@fromcode119/react-class-components';
+import {prop, state, ref, bound, Platform} from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
@@ -28,7 +28,7 @@ export class PromptDialog extends AdminComponent {
   @state value = this.defaultValue ?? '';
 
   private syncOpenState(): void {
-    if (typeof document === 'undefined') return;
+    if (!Platform.isBrowser) return;
     if (this.isOpen) {
       document.body.style.overflow = 'hidden';
       this.value = this.defaultValue ?? '';
@@ -49,7 +49,7 @@ export class PromptDialog extends AdminComponent {
   }
 
   componentWillUnmount(): void {
-    if (typeof document !== 'undefined') document.body.style.overflow = 'unset';
+    if (Platform.isBrowser) document.body.style.overflow = 'unset';
   }
 
   @bound private handleSubmit(e?: FormEvent): void {

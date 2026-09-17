@@ -48,6 +48,7 @@ export class PluginMigrationsCompiler {
         outfile: outputFile,
         alias: this.toolchain.selfAlias(sourceDir),
         external: this.toolchain.nodeExternals(),
+      plugins: [BuildToolchain.denyFrameworkInternals()],
         sourcemap: true,
         minify: false,
         logLevel: 'warning',
