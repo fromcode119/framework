@@ -1,4 +1,4 @@
-import { EnvUtils } from '@core/utils/env-utils';
+import { EnvUtils } from '@fromcode119/core/utils/env-utils';
 import type { ReactNode } from 'react';
 import { state, bound } from '@fromcode119/react-class-components';
 import { ApiVersionUtils, ApplicationUrlUtils, FileRoutePaths } from '@fromcode119/core/client';

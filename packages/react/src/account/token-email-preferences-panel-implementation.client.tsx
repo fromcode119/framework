@@ -1,4 +1,4 @@
-import { EnvUtils } from '@core/utils/env-utils';
+import { EnvUtils } from '@fromcode119/core/utils/env-utils';
 import { RouteConstants } from '@fromcode119/core/client';
 import { AccountEmailPreferencesPanel } from '@react/account/email-preferences-panel';
 import { TokenEmailPreferencesPanel } from '@react/account/token-email-preferences-panel.client';

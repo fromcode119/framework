@@ -1,3 +1,4 @@
+export { ServerAppUrlReader } from '@api/server/server-app-url-reader';
 export { ServerAuthSetup } from '@api/server/server-auth-setup';
 export { ApiBootstrapService } from '@api/server/api-bootstrap-service';
 export { ServerCorsSetup } from '@api/server/server-cors-setup';
@@ -6,4 +7,5 @@ export { ServerMiddlewareSetup } from '@api/server/server-middleware-setup';
 export { ServerRoutesSetup } from '@api/server/server-routes-setup';
 export { ServerSettingsService } from '@api/server/server-settings-service';
 export { ServerUploadsConfigService } from '@api/server/server-uploads-config-service';
+export { ServerUploadsStaticSetup } from '@api/server/server-uploads-static-setup';
 export { TenantUploadsStatic } from '@api/server/tenant-uploads-static';

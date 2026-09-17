@@ -4,7 +4,7 @@ import type { IPluginDefaultPageContractMaterializationPageMatch } from '@core/d
 import type { IPluginDefaultPageContractMaterializationPlanEntry } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-plan-entry.interface';
 import type { IPluginDefaultPageContractMaterializationPlanInput } from '@core/default-page-contract/interfaces/plugin-default-page-contract-materialization-plan-input.interface';
 import type { IResolvedPluginDefaultPageContract } from '@core/default-page-contract/interfaces/resolved-plugin-default-page-contract.interface';
-import { BaseService } from '@core/services/base-service';
+import { PluginDefaultPageEntryFactory } from '@core/services/default-page-contract/plugin-default-page-entry-factory';
 import { SeedPageService } from '@core/services/seed-page-service';
 import { PluginDefaultPageContractMaterializationAction } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-action.enum';
 import { PluginDefaultPageContractMaterializationStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-status.enum';
@@ -17,7 +17,7 @@ import { PluginDefaultPageContractMaterializationPageMatchSource } from '@core/d
  * {@link PluginDefaultPageMaterializationService}; match priorities, reasons and payload
  * shapes are unchanged.
  */
-export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
+export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultPageEntryFactory {
   constructor(private readonly seedPageService: SeedPageService) {
     super();
   }
@@ -247,39 +247,9 @@ export class PluginDefaultPageMaterializationEntryFactory extends BaseService {
     };
   }
 
-  private createReasons(existingReasons: string[], fallbackReason: string): string[] {
-    const normalized = Array.from(
-      new Set(
-        (existingReasons || [])
-          .map((reason) => String(reason || '').trim())
-          .filter(Boolean),
-      ),
-    );
-
-    if (normalized.length) {
-      return normalized;
-    }
-
-    return [fallbackReason];
-  }
-
   private normalizeOptionalString(value?: string): string | undefined {
     const normalized = String(value || '').trim();
     return normalized || undefined;
-  }
-
-  private isRuntimeParameterizedContract(contract: IResolvedPluginDefaultPageContract): boolean {
-    return contract.materializationMode === PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT && this.hasPathParameters(contract.effectiveSlug);
-  }
-
-  private hasPathParameters(value: string): boolean {
-    return String(value || '')
-      .trim()
-      .split('?')[0]
-      .split('#')[0]
-      .split('/')
-      .filter(Boolean)
-      .some((segment) => segment.startsWith(':'));
   }
 
   /**

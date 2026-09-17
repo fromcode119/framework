@@ -2,6 +2,7 @@ import { FactualQueryHelpers } from '@ai/admin-assistant-runtime/runtime/factual
 import { FactualQueryToolService } from '@ai/admin-assistant-runtime/runtime/factual-query-tool-service';
 import type { IRuntimeContext } from '@ai/admin-assistant-runtime/runtime/interfaces/runtime-context.interface';
 import type { IAssistantSessionEntityMemory } from '@ai/admin-assistant-runtime/interfaces/assistant-session-entity-memory.interface';
+import { FactualMemory } from '@ai/admin-assistant-runtime/runtime/factual-memory';
 
 export class FactualQueryService {
   static async resolveReply(
@@ -70,7 +71,7 @@ export class FactualQueryService {
       }
     }
 
-    const metricReply = FactualQueryService.formatMemoryReply(message, factualMemory);
+    const metricReply = FactualMemory.formatMemoryReply(message, factualMemory);
     if (!metricReply) {
       return null;
     }
@@ -186,7 +187,7 @@ export class FactualQueryService {
     if (/\baccess\b/i.test(message) && !/\b(how much|total|summary|stats|count|number|report|overview|revenue|sales|earnings|income|profit|refunds?|transactions?|wallet|balance|orders?|metrics?|amount)\b/i.test(message)) {
       return {
         message: `Yes. I can access data through a read-only plugin tool${rangeText ? ` for ${rangeText}` : ''}.`,
-        memory: FactualQueryService.buildFactualMemory(toolName, toolInput, outputObject, '', []),
+        memory: FactualMemory.buildFactualMemory(toolName, toolInput, outputObject, '', []),
       };
     }
 
@@ -217,7 +218,7 @@ export class FactualQueryService {
         : '';
       return {
         message: `${intro}${primaryText}${secondaryText}`.trim(),
-        memory: FactualQueryService.buildFactualMemory(toolName, toolInput, outputObject, primary.path, primitiveEntries),
+        memory: FactualMemory.buildFactualMemory(toolName, toolInput, outputObject, primary.path, primitiveEntries),
       };
     }
 
@@ -228,7 +229,7 @@ export class FactualQueryService {
       if (methods.length > 0) {
         return {
           message: `I can inspect this plugin. Available public methods include ${methods.slice(0, 5).join(', ')}.`,
-          memory: FactualQueryService.buildFactualMemory(toolName, toolInput, outputObject, '', primitiveEntries),
+          memory: FactualMemory.buildFactualMemory(toolName, toolInput, outputObject, '', primitiveEntries),
         };
       }
     }
@@ -237,74 +238,14 @@ export class FactualQueryService {
     if (keys.length > 0) {
       return {
         message: `I found data from a read-only tool. Available fields include ${keys.join(', ')}.`,
-        memory: FactualQueryService.buildFactualMemory(toolName, toolInput, outputObject, '', primitiveEntries),
+        memory: FactualMemory.buildFactualMemory(toolName, toolInput, outputObject, '', primitiveEntries),
       };
     }
 
     return {
       message: `I found data through ${FactualQueryHelpers.humanizeToolName(toolName)}.`,
-      memory: FactualQueryService.buildFactualMemory(toolName, toolInput, outputObject, '', primitiveEntries),
+      memory: FactualMemory.buildFactualMemory(toolName, toolInput, outputObject, '', primitiveEntries),
     };
   }
 
-  private static buildFactualMemory(
-    toolName: string,
-    toolInput: Record<string, unknown> | undefined,
-    output: Record<string, unknown>,
-    primaryMetricPath: string,
-    primitiveEntries: Array<{ path: string; value: string | number | boolean }>,
-  ): IAssistantSessionEntityMemory['factual'] {
-    const range = output?.range && typeof output.range === 'object' ? output.range as Record<string, unknown> : {};
-    return {
-      tool: toolName,
-      input: toolInput && typeof toolInput === 'object' ? { ...toolInput } : undefined,
-      rangeLabel: String(range?.label || '').trim() || undefined,
-      rangeFrom: String(range?.from || '').trim() || undefined,
-      rangeTo: String(range?.to || '').trim() || undefined,
-      currency: String(output?.currency || '').trim() || undefined,
-      primaryMetricPath: String(primaryMetricPath || '').trim() || undefined,
-      metrics: primitiveEntries.slice(0, 24),
-    };
-  }
-
-  private static formatMemoryReply(
-    message: string,
-    factualMemory: NonNullable<IAssistantSessionEntityMemory['factual']>,
-  ): string | null {
-    const usable = (Array.isArray(factualMemory.metrics) ? factualMemory.metrics : [])
-      .filter((entry): entry is { path: string; value: number } => typeof entry?.value === 'number' && Number.isFinite(entry.value));
-    // The +14 "stick with what we were just discussing" bonus is for a VAGUE follow-up ("and last
-    // month?"). If the message names any metric's own leaf token it is not vague, and the bonus was
-    // strong enough to beat a direct hit — "what is the total?" against a stored
-    // `primaryMetricPath: summary.transactionCount` answered with the transaction count (4+14) instead
-    // of total revenue (12). `summary` is excluded: it is the container every path shares, not a name.
-    const messageTokens = FactualQueryHelpers.tokenize(message);
-    const namesAMetric = usable.some((entry) => FactualQueryHelpers
-      .tokenize(String(entry.path || '').split('.').pop() || '')
-      .some((token) => token !== 'summary' && messageTokens.includes(token)));
-    const metrics = usable
-      .map((entry) => ({
-        ...entry,
-        score: FactualQueryHelpers.scoreNumericEntry(entry.path, message)
-          + (!namesAMetric && !FactualQueryHelpers.hasSpecificMetricSubject(message) && entry.path === String(factualMemory.primaryMetricPath || '').trim() ? 14 : 0),
-      }))
-      .sort((left, right) => right.score - left.score || left.path.localeCompare(right.path));
-    if (metrics.length === 0) return null;
-    const primary = metrics[0];
-    if (primary.score < 6) return null;
-    const secondary = FactualQueryHelpers.hasSpecificMetricSubject(message)
-      ? metrics.find((entry) => entry.path !== primary.path && entry.value !== primary.value && entry.score >= 4) || null
-      : null;
-    const rangeText = FactualQueryHelpers.formatRange({
-      label: factualMemory.rangeLabel,
-      from: factualMemory.rangeFrom,
-      to: factualMemory.rangeTo,
-    });
-    const intro = rangeText ? `For ${rangeText}, ` : '';
-    const primaryText = `${FactualQueryHelpers.humanizePath(primary.path)} is ${FactualQueryHelpers.formatValue(primary.path, primary.value, factualMemory.currency)}.`;
-    const secondaryText = secondary
-      ? ` ${FactualQueryHelpers.humanizePath(secondary.path)} is ${FactualQueryHelpers.formatValue(secondary.path, secondary.value, factualMemory.currency)}.`
-      : '';
-    return `${intro}${primaryText}${secondaryText}`.trim();
-  }
 }

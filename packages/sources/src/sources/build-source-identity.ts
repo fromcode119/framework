@@ -38,6 +38,15 @@ export class BuildSourceIdentity {
     return new BuildSourceIdentity(scope, BuildSlugPolicy.assertAllowed(slug as string | undefined));
   }
 
+  /** The same parse, where the caller has its own answer for "that names no source". */
+  static parseOrNull(type: unknown, slug: unknown): BuildSourceIdentity | null {
+    try {
+      return BuildSourceIdentity.parse(type, slug);
+    } catch {
+      return null;
+    }
+  }
+
   /** The filter every read and write uses, so the pair is never half-applied. */
   get where(): { slug: string; type: string } {
     return { slug: this.slug, type: String(this.type.value) };

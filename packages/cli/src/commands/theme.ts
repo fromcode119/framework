@@ -6,6 +6,7 @@ import archiver from 'archiver';
 import * as esbuild from 'esbuild';
 import { CliUtils } from '@cli/utils';
 import { ThemeSeedCommandService } from '@cli/services/theme-seed-command-service';
+import { ThemeScaffoldFiles } from '@cli/commands/theme-scaffold-files';
 
 export class ThemeCommands {
   static registerThemeCommands(program: Command) {
@@ -84,30 +85,8 @@ export class ThemeCommands {
 
           await fs.writeJson(path.join(themePath, 'theme.json'), themeJson, { spaces: 2 });
 
-          await fs.writeFile(path.join(themePath, 'src/styles/theme.css'), `
-:root {
-  --primary: ${colors.primary};
-  --secondary: ${colors.secondary};
-}
-`.trim() + '\n');
-
-          await fs.writeFile(path.join(themePath, 'src/theme-boot.ts'), `
-/**
- * Everything this theme does when it boots. The generated entry (\`theme-entry.generated.jsx\`) hands in
- * the component maps built from theme.json's "build.components" / "build.eagerComponents" globs — both
- * empty until this theme declares real layouts or block renderers there.
- */
-export class ThemeBoot {
-  static start(renderers: Record<string, () => Promise<unknown>>, eagerRenderers: Record<string, unknown>): void {
-    // Nothing declared yet. Once "build" lists layout/renderer globs, register them here — e.g.
-    // \`ThemeOverrideRegistrar.registerThemeBlockRenderers('${slug}', { ...renderers, ...eagerRenderers }, '${slug}.')\`
-    // for CMS block renderers, and \`ContextBridge.registerTheme('${slug}', { layouts, defaultLayout })\`
-    // once real layout components exist (see \`themes/fromcode/src/theme-boot.ts\` for a worked example).
-    void renderers;
-    void eagerRenderers;
-  }
-}
-`.trim() + '\n');
+          await fs.writeFile(path.join(themePath, 'src/styles/theme.css'), ThemeScaffoldFiles.css(colors));
+          await fs.writeFile(path.join(themePath, 'src/theme-boot.ts'), ThemeScaffoldFiles.themeBoot(slug));
 
           console.log(chalk.green('\nTheme scaffolded successfully!'));
 

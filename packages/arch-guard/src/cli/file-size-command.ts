@@ -49,7 +49,9 @@ export class FileSizeCommand extends ArchorCommand {
         + `${count > GuardTarget.COUNT ? ' — MUST BE 0' : ' — clean'}`);
 
       if (list) {
-        for (const entry of (unreadable.length ? unreadable : oversized).slice(0, 20)) {
+        // Every offender, not a top-N slice: the target is 0, so a truncated list hides work that
+        // still has to be done, and an "unreadable first" view hid the 300-line files entirely.
+        for (const entry of oversized) {
           const flag = entry.lines >= FileSizeGuard.UNREADABLE_LINES ? '!' : ' ';
           const dense = entry.codeLines >= FileSizeGuard.UNREADABLE_LINES ? '*' : ' ';
           console.log(`    ${flag} ${String(entry.lines).padStart(5)} raw ${String(entry.codeLines).padStart(5)} code${dense} (max ${entry.limit})  ${path.relative(framework, entry.file)}`);

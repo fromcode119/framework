@@ -15,7 +15,7 @@ import { ErrorResponseMiddleware } from '@api/middlewares/error-response-middlew
 import { RateLimitMiddleware } from '@api/middlewares/rate-limit-middleware';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from '@api/services/graph-ql-service';
-import { ApiBootstrapService, ServerCorsSetup, ServerAuthSetup, ServerMaintenanceService, ServerMiddlewareSetup, ServerRoutesSetup, ServerSettingsService, ServerUploadsConfigService, TenantUploadsStatic } from '@api/server/index';
+import { ApiBootstrapService, ServerCorsSetup, ServerAuthSetup, ServerMaintenanceService, ServerMiddlewareSetup, ServerAppUrlReader, ServerRoutesSetup, ServerSettingsService, ServerUploadsConfigService, ServerUploadsStaticSetup } from '@api/server/index';
 import { WebhookRouteUtils } from '@api/utils/webhook-route-utils';
 
 export class APIServer {
@@ -124,30 +124,8 @@ export class APIServer {
 
     // Let ApplicationUrlUtils resolve the app URLs from the DB-backed settings, so a URL changed in
     // admin Settings propagates to links, emails and PDFs — not only to CORS. Reads the same sync
-    // settings cache CORS uses.
-    //
-    // NOTE: the resolver is SETTING-first, not env-first — a stale "env always wins" comment lived
-    // here and is what made `site_url` an invisible source of app URLs. It matters because the
-    // frontend resolves from `frontend_url` OR `site_url`, so this reader answers with a URL even on
-    // a deployment that runs no frontend. Anything choosing where to send a CREDENTIAL must use
-    // `ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment`, which deliberately ignores this.
-    ApplicationUrlUtils.registerAppUrlSettingsReader((app: string) => {
-      if (app === ApplicationUrlUtils.ADMIN_APP) {
-        return this.settingsCache.get(SystemConstants.META_KEY.ADMIN_URL) || null;
-      }
-      if (app === ApplicationUrlUtils.FRONTEND_APP) {
-        return this.settingsCache.get(SystemConstants.META_KEY.FRONTEND_URL)
-          || this.settingsCache.get(SystemConstants.META_KEY.SITE_URL)
-          || null;
-      }
-      if (app === ApplicationUrlUtils.API_APP) {
-        // Was env-only, which made the api the one platform host an operator could not change without
-        // editing a deployment's `.env` and redeploying — while admin/frontend, the same kind of
-        // value, were a field in Settings. Setting-first now, like its siblings; env is the fallback.
-        return this.settingsCache.get(SystemConstants.META_KEY.API_URL) || null;
-      }
-      return null;
-    });
+    // settings cache CORS uses. See ServerAppUrlReader.
+    ServerAppUrlReader.register(this.settingsCache);
 
     this.corsSetup.setup();
 
@@ -164,28 +142,13 @@ export class APIServer {
 
     this.routesSetup = new ServerRoutesSetup(this.app, this.pluginRouter, this.manager, this.themeManager, this.auth, this.mediaManager, this.restController, this.graphQLService, () => this.maintenanceService.getStatus(), this.logger, this.settingsCache);
 
-    const uploadsConfig = ServerUploadsConfigService.resolve((this.manager as any).projectRoot || process.cwd(), this.mediaManager);
+    const uploadsConfig = ServerUploadsStaticSetup.mount(
+      this.app,
+      (this.manager as any).db,
+      (this.manager as any).projectRoot || process.cwd(),
+      this.mediaManager,
+    );
     this.logger.info(`Serving static uploads from: ${uploadsConfig.uploadDir} at ${uploadsConfig.publicPath}`);
-    const uploadsStaticOptions = {
-      maxAge: '30d',
-      // SVG is an active document format: serve it with an explicit type and a
-      // CSP that blocks script/object/frame execution (defense in depth on top
-      // of the upload-time MediaSvgSanitizer).
-      setHeaders: (res: express.Response, filePath: string) => {
-        if (filePath.toLowerCase().endsWith('.svg')) {
-          res.setHeader('Content-Type', 'image/svg+xml');
-          res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'");
-        }
-      },
-    };
-    // Per-SITE, with the shared parent behind it for files written before sites had their own
-    // directory. See TenantUploadsStatic for why the tenant is resolved from the host here rather
-    // than read from the request context.
-    const uploadsStatic = new TenantUploadsStatic((this.manager as any).db, uploadsStaticOptions).middleware();
-    this.app.use(uploadsConfig.publicPath, uploadsStatic);
-    if (uploadsConfig.publicPath !== ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL) {
-      this.app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, uploadsStatic);
-    }
 
     const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT || '10mb';
     const formBodyLimit = process.env.API_FORM_BODY_LIMIT || jsonBodyLimit;

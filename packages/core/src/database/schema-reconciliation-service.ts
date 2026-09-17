@@ -5,6 +5,7 @@ import { TenantMode } from '@core/tenant/tenant-mode';
 import { RequestContextUtils } from '@core/context/request-context';
 import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 import type { IPendingSchemaDrop } from '@core/database/interfaces/pending-schema-drop.interface';
+import { PendingSchemaDropStore } from '@core/database/pending-schema-drop-store';
 
 /**
  * The CONTRACT half of expand/contract, which this framework has never had.
@@ -28,10 +29,12 @@ import type { IPendingSchemaDrop } from '@core/database/interfaces/pending-schem
 export class SchemaReconciliationService {
   private static readonly logger = new Logger({ namespace: 'schema-reconciliation' });
 
-  /** One row per proposal, under the platform's own `_system_meta` row. */
-  private static readonly KEY_PREFIX = 'schema_orphan:';
 
-  constructor(private readonly db: IDatabaseManager) {}
+  private readonly drops: PendingSchemaDropStore;
+
+  constructor(private readonly db: IDatabaseManager) {
+    this.drops = new PendingSchemaDropStore(db);
+  }
 
   /**
    * Record what this table has that nothing declares.
@@ -54,10 +57,10 @@ export class SchemaReconciliationService {
     if (plan.undeclaredColumns.length === 0) return;
 
     for (const column of plan.undeclaredColumns) {
-      await this.remember({
+      await this.drops.remember({
         table: plan.tableName,
         column,
-        firstSeenAt: (await this.existing(plan.tableName, column))?.firstSeenAt || new Date().toISOString(),
+        firstSeenAt: (await this.drops.existing(plan.tableName, column))?.firstSeenAt || new Date().toISOString(),
         // Recorded per finding rather than globally: the queue outlives this boot, and an entry
         // approved months later must still carry the conditions it was found under.
         inactivePluginsAtScan: inactivePlugins,
@@ -191,7 +194,7 @@ export class SchemaReconciliationService {
     for (const entry of await this.pending()) {
       if (failedTables.has(entry.table)) continue;
       if (foundKeys.has(`${entry.table}.${entry.column}`)) continue;
-      await this.forgetOne(entry.table, entry.column);
+      await this.drops.forgetOne(entry.table, entry.column);
       SchemaReconciliationService.logger.info(
         `${entry.table}.${entry.column} is declared again or already gone; removed from the review list.`,
       );
@@ -201,10 +204,10 @@ export class SchemaReconciliationService {
   /** The recorded queue, names only — no counting, no scopes. */
   async pending(): Promise<IPendingSchemaDrop[]> {
     const rows = await this.db.withPlatformAdmin(async () =>
-      this.db.find(SystemConstants.TABLE.META, { where: { key: { startsWith: SchemaReconciliationService.KEY_PREFIX } }, limit: 500 }),
+      this.db.find(SystemConstants.TABLE.META, { where: { key: { startsWith: PendingSchemaDropStore.KEY_PREFIX } }, limit: 500 }),
     );
     return (rows || [])
-      .map((row: any) => SchemaReconciliationService.parse(row?.value))
+      .map((row: any) => PendingSchemaDropStore.parse(row?.value))
       .filter((entry): entry is IPendingSchemaDrop => entry !== null);
   }
 
@@ -228,74 +231,14 @@ export class SchemaReconciliationService {
     }
 
     await this.db.withPlatformAdmin(async () => this.db.dropColumn(table, column));
-    await this.forgetOne(table, column);
+    await this.drops.forgetOne(table, column);
 
     SchemaReconciliationService.logger.warn(
       `Dropped ${table}.${column} on approval — `
-      + `${SchemaReconciliationService.describe(entry)}. First seen ${entry.firstSeenAt}.`,
+      + `${PendingSchemaDropStore.describe(entry)}. First seen ${entry.firstSeenAt}.`,
     );
     return entry;
   }
 
-  private async forgetOne(table: string, column: string): Promise<void> {
-    await this.db.withPlatformAdmin(async () =>
-      this.db.delete(SystemConstants.TABLE.META, { key: SchemaReconciliationService.keyFor(table, column) }),
-    );
-  }
 
-  private async existing(table: string, column: string): Promise<IPendingSchemaDrop | null> {
-    const row: any = await this.db.withPlatformAdmin(async () =>
-      this.db.findOne(SystemConstants.TABLE.META, { key: SchemaReconciliationService.keyFor(table, column) }),
-    );
-    return SchemaReconciliationService.parse(row?.value);
-  }
-
-  /**
-   * Written as the PLATFORM's row, never a tenant's.
-   *
-   * One plugin copy per platform and one shared schema, so a column cannot exist for one site and
-   * not another: there is exactly one queue. `withPlatformAdmin` is what makes the write legal —
-   * `_system_meta` refuses a tenant-less row unless the connection carries the platform marker.
-   */
-  private async remember(entry: IPendingSchemaDrop): Promise<void> {
-    const key = SchemaReconciliationService.keyFor(entry.table, entry.column);
-    const value = JSON.stringify(entry);
-
-    await this.db.withPlatformAdmin(async () => {
-      const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
-      if (existing) {
-        await this.db.update(SystemConstants.TABLE.META, { key }, { value });
-        return;
-      }
-      await this.db.insert(SystemConstants.TABLE.META, {
-        key,
-        value,
-        description: `Undeclared column awaiting a decision: ${entry.table}.${entry.column}`,
-        group: 'Schema Reconciliation',
-      });
-    });
-  }
-
-  /** What the column held, in words, for the one permanent record of an irreversible act. */
-  private static describe(entry: IPendingSchemaDrop): string {
-    if (entry.rows === undefined) {
-      // Never silently "0": the counts being unavailable is itself what the record must say.
-      return 'its contents could NOT be counted';
-    }
-    return `${entry.nonEmpty} of ${entry.rows} row(s) held a value (${entry.nonNull} non-null)`;
-  }
-
-  private static keyFor(table: string, column: string): string {
-    return `${SchemaReconciliationService.KEY_PREFIX}${table}.${column}`;
-  }
-
-  private static parse(value: unknown): IPendingSchemaDrop | null {
-    try {
-      const parsed = JSON.parse(String(value ?? ''));
-      if (!parsed?.table || !parsed?.column) return null;
-      return parsed as IPendingSchemaDrop;
-    } catch {
-      return null;
-    }
-  }
 }

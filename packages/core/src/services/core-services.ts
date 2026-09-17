@@ -22,12 +22,8 @@ import type { PluginEntityRecordsRegistryService } from '@core/services/entity-r
 import type { EntityRecordsResolutionService } from '@core/services/entity-records/entity-records-resolution-service';
 import { ServerServiceRegistry } from '@core/services/server-service-registry';
 import { ServerServiceKey } from '@core/services/server-service-key';
-import { LayoutDiagnosticService } from '@core/plugin/layout/layout-diagnostic-service';
-import { LayoutLifecycleService } from '@core/plugin/layout/layout-lifecycle-service';
-import { LayoutResolutionService } from '@core/plugin/layout/layout-resolution-service';
 import { LayoutRuntimeBridgeService } from '@core/plugin/layout/layout-runtime-bridge-service';
-import { PluginLayoutRegistryService } from '@core/plugin/layout/plugin-layout-registry-service';
-import { ThemeLayoutOverrideRegistryService } from '@core/theme/theme-layout-override-registry-service';
+import { CoreDesignServices } from '@core/services/core-design-services';
 import type { CatalogContributionRegistry } from '@core/marketplace/contributions/catalog-contribution-registry';
 
 /**
@@ -69,12 +65,7 @@ export class CoreServices {
   private _collection: CollectionService | null = null;
   private _collectionIdentity: CollectionIdentityService | null = null;
   private _entityValueParser: EntityValueParserService | null = null;
-  private _defaultDesignDiagnostic: LayoutDiagnosticService | null = null;
-  private _defaultDesignLifecycle: LayoutLifecycleService | null = null;
-  private _defaultDesignRegistry: PluginLayoutRegistryService | null = null;
-  private _defaultDesignResolution: LayoutResolutionService | null = null;
-  private _defaultDesignRuntimeBridge: LayoutRuntimeBridgeService | null = null;
-  private _themeDesignOverrides: ThemeLayoutOverrideRegistryService | null = null;
+  private _design: CoreDesignServices | null = null;
 
   private constructor() {
     // Private constructor for singleton pattern
@@ -148,61 +139,13 @@ export class CoreServices {
     return this._entityValueParser;
   }
 
-  get defaultDesignRegistry(): PluginLayoutRegistryService {
-    if (!this._defaultDesignRegistry) {
-      this._defaultDesignRegistry = new PluginLayoutRegistryService();
-    }
-    return this._defaultDesignRegistry;
-  }
-
-  get themeDesignOverrides(): ThemeLayoutOverrideRegistryService {
-    if (!this._themeDesignOverrides) {
-      this._themeDesignOverrides = new ThemeLayoutOverrideRegistryService();
-    }
-    return this._themeDesignOverrides;
-  }
-
-  get defaultDesignResolution(): LayoutResolutionService {
-    if (!this._defaultDesignResolution) {
-      this._defaultDesignResolution = new LayoutResolutionService(
-        this.defaultDesignRegistry,
-        this.themeDesignOverrides,
-      );
-    }
-    return this._defaultDesignResolution;
-  }
-
-  get defaultDesignDiagnostic(): LayoutDiagnosticService {
-    if (!this._defaultDesignDiagnostic) {
-      this._defaultDesignDiagnostic = new LayoutDiagnosticService(
-        this.defaultDesignRegistry,
-        this.defaultDesignResolution,
-      );
-    }
-    return this._defaultDesignDiagnostic;
-  }
-
-  get defaultDesignLifecycle(): LayoutLifecycleService {
-    if (!this._defaultDesignLifecycle) {
-      this._defaultDesignLifecycle = new LayoutLifecycleService(
-        this.defaultDesignRegistry,
-        this.themeDesignOverrides,
-      );
-    }
-    return this._defaultDesignLifecycle;
+  /** The default-page design graph — see CoreDesignServices for why it is one object, not six. */
+  private get design(): CoreDesignServices {
+    return (this._design ??= new CoreDesignServices());
   }
 
   get defaultDesignRuntimeBridge(): LayoutRuntimeBridgeService {
-    if (!this._defaultDesignRuntimeBridge) {
-      this._defaultDesignRuntimeBridge = new LayoutRuntimeBridgeService(
-        this.defaultDesignRegistry,
-        this.themeDesignOverrides,
-        this.defaultDesignResolution,
-        this.defaultDesignDiagnostic,
-        this.defaultDesignLifecycle,
-      );
-    }
-    return this._defaultDesignRuntimeBridge;
+    return this.design.runtimeBridge;
   }
 
   get defaultPageContracts(): PluginDefaultPageContractRegistryService {

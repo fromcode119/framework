@@ -1,4 +1,4 @@
-import { EnvUtils } from '@core/utils/env-utils';
+import { EnvUtils } from '@fromcode119/core/utils/env-utils';
 /**
  * Copy for the framework's OWN surfaces, resolved without a theme, a plugin or the context provider.
  *

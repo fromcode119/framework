@@ -16,6 +16,7 @@ import { WorkspaceMapService } from '@ai/admin-assistant-runtime/runtime/workspa
 import { OrchestratorActionUtils } from '@ai/admin-assistant-runtime/runtime/orchestrator-action-utils';
 import { OrchestratorListingUtils } from '@ai/admin-assistant-runtime/runtime/orchestrator-listing-utils';
 import { AssistantRuntimeCapabilities } from '@ai/admin-assistant-runtime/assistant-runtime-capabilities';
+import { ListingFieldResolver } from '@ai/admin-assistant-runtime/runtime/listing-field-resolver';
 
 export class OrchestratorFinalizeUtils {
   static async finalizeChatLike(
@@ -57,7 +58,7 @@ export class OrchestratorFinalizeUtils {
         });
         const docs = Array.isArray(listed?.docs) ? listed.docs : [];
         const availableFields = OrchestratorListingUtils.collectCollectionFieldNames(collectionContext, docs);
-        const targetIndex = OrchestratorListingUtils.resolveTargetRowIndex(message, docs, listingMemory);
+        const targetIndex = ListingFieldResolver.resolveTargetRowIndex(message, docs, listingMemory);
         const record = docs[targetIndex] || docs[0] || null;
         const requestedField = OrchestratorListingUtils.resolveRequestedFieldHint(message, availableFields);
         const resolvedField =
@@ -66,12 +67,12 @@ export class OrchestratorFinalizeUtils {
             ? String(listingMemory.lastSelectedField || '').trim()
             : '');
         const fieldHint = resolvedField || requestedField.query || '';
-        const picked = OrchestratorListingUtils.pickFieldFromRecord(record, resolvedField, availableFields);
+        const picked = ListingFieldResolver.pickFieldFromRecord(record, resolvedField, availableFields);
         const reply = !record
           ? `\`${collectionContext.slug}\` currently has no records to inspect.`
           : !picked
             ? `I found a record in \`${collectionContext.slug}\`, but it has no scalar fields I can read directly.`
-            : requestedField.explicit && fieldHint && !OrchestratorListingUtils.fieldMatchesHint(picked.key, fieldHint)
+            : requestedField.explicit && fieldHint && !ListingFieldResolver.fieldMatchesHint(picked.key, fieldHint)
               ? `I couldn't find a "${fieldHint}" field on that record. Closest available value is ${picked.key}: ${picked.value}`
               : `For \`${collectionContext.slug}\`, record ${targetIndex + 1} ${picked.key}: ${picked.value}`;
         const ui = ResponseBuilder.buildUiHintsBase({ hasActions: false, selectedSkill: context.selectedSkill });
@@ -134,7 +135,7 @@ export class OrchestratorFinalizeUtils {
           ? Number((listed as any).totalDocs)
           : docs.length;
         const toLine = (doc: any, index: number): string => {
-          const picked = OrchestratorListingUtils.pickFieldFromRecord(doc, '', availableFields);
+          const picked = ListingFieldResolver.pickFieldFromRecord(doc, '', availableFields);
           if (!picked) return `- Record ${index + 1}`;
           return `- ${picked.key}: ${picked.value}`;
         };
@@ -149,7 +150,7 @@ export class OrchestratorFinalizeUtils {
           : `\`${collectionContext.slug}\` currently has no records.`;
         const ui = ResponseBuilder.buildUiHintsBase({ hasActions: false, selectedSkill: context.selectedSkill });
         const firstRow = docs[0] || null;
-        const firstField = OrchestratorListingUtils.pickFieldFromRecord(firstRow, '', availableFields)?.key || undefined;
+        const firstField = ListingFieldResolver.pickFieldFromRecord(firstRow, '', availableFields)?.key || undefined;
         return OrchestratorActionUtils.finalize(deps, {
           planId,
           goal: message,

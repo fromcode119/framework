@@ -4,10 +4,11 @@ import express from 'express';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { TenantPluginGuard } from '@api/middlewares/tenant-plugin-guard';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
-import * as path from 'path';
-import * as fs from 'fs';
-import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager, SystemConstants} from '@fromcode119/core';
+import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager} from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
+import { AcmeChallengeStore, AcmeCloudflareTokenStore, CertificateStoreService } from '@fromcode119/core';
+import { CoreVersionResolver } from '@api/server/core-version-resolver';
+import { SourcesModuleMount } from '@api/server/sources-module-mount';
 import { MediaManager } from '@fromcode119/media';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { ApiConfig } from '@api/config/api-config';
@@ -20,9 +21,6 @@ import { ThemeRouter } from '@api/routes/themes/theme-router';
 import { ThemeAssetRouter } from '@api/routes/themes/theme-asset-router';
 import { MarketplaceRouter } from '@api/routes/marketplace';
 import { AppearanceRouter } from '@api/routes/appearances';
-import { SourcesModule } from '@fromcode119/sources';
-import { AcmeChallengeStore, AcmeCloudflareTokenStore, CertificateStoreService, PlatformSettingsService, SecretService } from '@fromcode119/core';
-import { CoreServices } from '@fromcode119/core';
 import { SystemRouter } from '@api/routes/system-router';
 import { TenantAdminRouter } from '@api/routes/tenant-admin-router';
 import { SitePreviewRouter } from '@api/routes/site-preview-router';
@@ -69,31 +67,6 @@ export class ServerRoutesSetup {
     private readonly settingsCache: Map<string, string> = new Map(),
   ) {}
 
-  /**
-   * Resolve the framework CORE version, read fresh on each call so a core update is reflected
-   * without restarting. Walks up from `@fromcode119/core`'s resolved entry to its own
-   * package.json (its `exports` map blocks a direct subpath require of package.json), matching on
-   * `name === '@fromcode119/core'` so it never reports the root/app package.json by mistake.
-   */
-  private resolveCoreVersion(): string {
-    const readPkg = (file: string): { name?: string; version?: string } | null => {
-      try {
-        if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, 'utf8'));
-      } catch {}
-      return null;
-    };
-    const readVersion = (file: string): string | null => readPkg(file)?.version ?? null;
-    // The framework ROOT package (@fromcode119/framework) is the canonical engine version, and now the
-    // ONLY package that carries one: workspace packages dropped theirs, because a number stamped into
-    // 26 files every release described nothing any of them had changed. Matched by NAME, so a stray
-    // package.json in the working directory cannot masquerade as it.
-    for (const rootCandidate of [path.resolve(process.cwd(), 'package.json'), path.resolve(process.cwd(), '../../package.json')]) {
-      const rootPkg = readPkg(rootCandidate);
-      if (rootPkg?.name === '@fromcode119/framework' && rootPkg?.version) return rootPkg.version;
-    }
-    return readVersion(path.resolve(process.cwd(), '../../package.json')) || '0.0.0';
-  }
-
   async setupRoutes() {
     // The canonical in-plugin collection write path: `context.collections.update()` forwards here,
     // so a plugin write goes through the SAME controller an admin save does — access policy,
@@ -106,7 +79,7 @@ export class ServerRoutesSetup {
       });
     });
 
-    const healthHandler = async (req: any, res: any) => res.json({ status: 'ok', version: this.resolveCoreVersion(), maintenance: await this.getMaintenanceStatus(), bypass: !!(req.user?.roles?.includes('admin')) });
+    const healthHandler = async (req: any, res: any) => res.json({ status: 'ok', version: CoreVersionResolver.resolve(), maintenance: await this.getMaintenanceStatus(), bypass: !!(req.user?.roles?.includes('admin')) });
     this.app.get(ApiConfig.getInstance().probeRoutes.HEALTH, healthHandler);
     this.app.get(ApiConfig.getInstance().probeRoutes.READY, healthHandler);
     this.app.get(`${ApiVersionUtils.API_BASE_PATH}${ApiConfig.getInstance().probeRoutes.HEALTH}`, healthHandler);
@@ -142,57 +115,8 @@ export class ServerRoutesSetup {
     vApi.use(THEMES, themeAssetRouter);
     vApi.use(THEMES, new ThemeRouter(this.themeManager, this.auth, platformAdmin).router);
     vApi.use(APPEARANCES, new AppearanceRouter(this.auth, platformAdmin, this.manager.db).router);
-    // Sources is framework surface, mounted like every other framework router. It used to arrive as
-    // a "plugin" the framework discovered, packed into a tarball and loaded through a capability
-    // sandbox — to build the very extensions that sandbox exists to contain.
-    vApi.use(SOURCES, SourcesModule.install({
-      // Blank resolves to `<project root>/data/sources` inside the module; the operator can point it
-      // elsewhere in Settings, and nothing here invents a path.
-      workspaceRoot: await PlatformSettingsService.resolve(
-        process.env.SOURCES_WORKSPACE_ROOT,
-        SystemConstants.META_KEY.SOURCES_WORKSPACE_ROOT,
-        '',
-      ),
-      db: this.manager.db,
-      // The installation's own encryption, for the repository tokens Sources stores. As a plugin this
-      // arrived as `context.secrets`; wiring the module without it made every stored token
-      // undecryptable — the list still rendered (it strips secrets) while pressing Build answered 500
-      // with "no encryption key is configured", which reads as a build failure rather than a missing
-      // dependency.
-      secrets: {
-        isConfigured: () => SecretService.isEncryptionAvailable(),
-        encrypt: (value: string) => SecretService.encrypt(value),
-        decrypt: (value: unknown) => SecretService.decrypt(value),
-      },
-      hooks: this.manager.hooks,
-      // PLATFORM admin, not merely `admin`. Sources clones arbitrary git repositories onto the shared
-      // container and BUILDS them, so the bare role guard let a tenant's own administrator — which is
-      // what `admin` means on a multi-tenant deployment — list every other customer's repository URL
-      // and recent commit subjects, download their built package, delete their source, and trigger a
-      // clone-and-build of a repository of their choosing on the box every customer runs on.
-      //
-      // The data is deliberately global: migration 036 dropped the tenant column and the policy from
-      // `_system_sources_builds` because Sources IS platform configuration. That decision was right;
-      // the guard was simply never raised to match it, so the table stopped being tenant-scoped while
-      // the routes stayed tenant-reachable. Every neighbouring platform router above takes
-      // `platformAdmin` for exactly this reason.
-      adminGuard: [this.auth.guard(['admin']), platformAdmin.middleware()] as any,
-      projectRoot: (this.manager as any).projectRoot,
-      installer: this.manager,
-      catalog: {
-        // `resolveArtifact` is forwarded, not dropped: an offer from Sources is a file this
-        // installation built, and its catalogue row carries only a filename. Without it the
-        // installer resolved that name against the REMOTE marketplace and 404'd on a package that
-        // had never been published there.
-        contribute: (provider, resolveArtifact) => CoreServices.getInstance().catalogContributions.register({
-          namespace: 'org.fromcode',
-          pluginSlug: 'sources',
-          list: provider as never,
-          resolveArtifact,
-        }),
-      },
-      scheduler: this.manager.scheduler,
-    }).router);
+    // Sources is framework surface, mounted like every other framework router — see SourcesModuleMount.
+    vApi.use(SOURCES, await SourcesModuleMount.router(this.manager, this.auth, platformAdmin));
     this.registerCoreExtensionRoutes(vApi);
     vApi.use(SYSTEM, new SystemRouter(this.manager, this.themeManager, this.auth, this.restController, platformAdmin).router);
     // Tenant provisioning (T4): platform admins only, on the owner connection. Mounted under SYSTEM

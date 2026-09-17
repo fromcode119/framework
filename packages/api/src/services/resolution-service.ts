@@ -1,13 +1,10 @@
 import { CoreServices, HookEventUtils, PluginManager, type IResolvedPluginDefaultPageContract, ThemeManager, SystemConstants, type ICollection, PluginState } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { ResolutionContractMatchService } from '@api/services/helpers/resolution-contract-match-service';
-import { ResolutionContractPresentationService } from '@api/services/helpers/resolution-contract-presentation-service';
-import { ResolutionContractPathService } from '@api/services/helpers/resolution-contract-path-service';
 import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-service';
+import { ExactPageContractPresenter } from '@api/services/helpers/exact-page-contract-presenter';
 import { ResolutionCollectionScanService } from '@api/services/helpers/resolution-collection-scan-service';
 import type { IResolutionScanEntry } from '@api/services/helpers/interfaces/resolution-scan-entry.interface';
-import { PluginDefaultPageContractMaterializationMode } from '@fromcode119/core';
-import { PluginDefaultPageContractResolutionStatus } from '@fromcode119/core';
 
 export class ResolutionService {
   private readonly contractMatcher: ResolutionContractMatchService;
@@ -173,10 +170,10 @@ export class ResolutionService {
       pathCandidates,
       slugCandidates: Array.from(slugCandidates),
       presentCustom: (doc, collection) =>
-        this.applyExactPageContractPresentation(doc, collection, normalizedInput, resolvedContracts),
+        ExactPageContractPresenter.apply(doc, collection, normalizedInput, resolvedContracts),
       presentSlug: (doc, collection, candidate) =>
-        ResolutionService.withResolvedSlug(
-          this.applyExactPageContractPresentation(doc, collection, normalizedInput, resolvedContracts),
+        ExactPageContractPresenter.withResolvedSlug(
+          ExactPageContractPresenter.apply(doc, collection, normalizedInput, resolvedContracts),
           candidate,
         ),
     });
@@ -241,62 +238,4 @@ export class ResolutionService {
    * so it must never be absent just because a collection marked the field hidden for its admin form.
    * Only fills a MISSING slug; never overwrites the document's own value.
    */
-  private static withResolvedSlug(doc: any, resolvedSlug: string): any {
-    if (!doc || typeof doc !== 'object') return doc;
-    const existing = String(doc.slug ?? '').trim();
-    if (existing) return doc;
-    const fallback = String(resolvedSlug ?? '').trim();
-    return fallback ? { ...doc, slug: fallback } : doc;
-  }
-
-  private applyExactPageContractPresentation(
-    doc: any,
-    collection: ICollection,
-    normalizedInput: string,
-    resolvedContracts: IResolvedPluginDefaultPageContract[],
-  ): any {
-    if (!doc || typeof doc !== 'object') {
-      return doc;
-    }
-
-    const collectionType = String(collection.shortSlug || collection.slug || '').trim();
-    if (collectionType !== 'pages') {
-      return doc;
-    }
-
-    const matchingContract = resolvedContracts.find((contract) => this.isMatchingSingletonContract(contract, normalizedInput));
-    if (!matchingContract) {
-      return doc;
-    }
-
-    if (matchingContract.effectiveThemeLayout && !doc.themeLayout && !doc.pageTemplate) {
-      return ResolutionContractPresentationService.applyToDoc(doc, matchingContract);
-    }
-
-    if (matchingContract.effectiveTitle && (!doc.title || !String(doc.title).trim()) && (!doc.name || !String(doc.name).trim())) {
-      return ResolutionContractPresentationService.applyToDoc(doc, matchingContract);
-    }
-
-    return doc;
-  }
-
-  private isMatchingSingletonContract(
-    contract: IResolvedPluginDefaultPageContract,
-    normalizedInput: string,
-  ): boolean {
-    if (!contract.install || contract.status !== PluginDefaultPageContractResolutionStatus.READY) {
-      return false;
-    }
-
-    if (contract.materializationMode !== PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT) {
-      return false;
-    }
-
-    const matchingPattern = ResolutionContractPathService.findMatchingPattern(contract, normalizedInput);
-    if (!matchingPattern) {
-      return false;
-    }
-
-    return !ResolutionContractPathService.hasPathParameters(matchingPattern);
-  }
 }
