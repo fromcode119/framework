@@ -2,6 +2,7 @@ import path from 'node:path';
 import { AppTypecheck } from '../app-typecheck';
 import { ArchorCommand } from './arch-guard-command';
 import { FrameworkRoot } from './framework-root';
+import { GuardTarget } from './guard-target';
 
 /**
  * `arch-guard app-typecheck` — real `tsc --noEmit` for the Next apps.
@@ -16,7 +17,8 @@ export class AppTypecheckCommand extends ArchorCommand {
   readonly summary = 'Real tsc --noEmit for the Next apps (next build does NOT check types).';
 
   /** Pre-existing debt only. LOWER as it is paid off; never raise to make a build pass. */
-  static readonly BASELINES: Readonly<Record<string, number>> = { admin: 0, frontend: 0 };
+  /** The two Next apps this checks. What each is allowed: nothing — see GuardTarget. */
+  static readonly APPS = ['admin', 'frontend'] as const;
 
   run(_argv: string[]): number {
     const framework = FrameworkRoot.find();
@@ -29,22 +31,17 @@ export class AppTypecheckCommand extends ArchorCommand {
     let failed = false;
     console.log('App typecheck (real tsc — next build does NOT check types):');
     try {
-      for (const [app, baseline] of Object.entries(AppTypecheckCommand.BASELINES)) {
+      for (const app of AppTypecheckCommand.APPS) {
         const count = AppTypecheck.countErrors(framework, `packages/${app}/tsconfig.json`);
-        console.log(`  ${app}: ${count} errors (baseline ${baseline})`);
-        if (count > baseline) {
-          failed = true;
-          console.error(`  ${app}: ${count} type errors — ABOVE baseline ${baseline} (+${count - baseline} NEW).`);
-        } else if (count < baseline) {
-          console.log(`  ${app}: below baseline — LOWER it to ${count}.`);
-        }
+        console.log(`  ${app}: ${count} errors${count > GuardTarget.COUNT ? ' — MUST BE 0' : ''}`);
+        if (count > GuardTarget.COUNT) failed = true;
       }
     } finally {
       restore();
     }
 
     if (failed && mode === 'error') {
-      console.error('\nApp typecheck FAILED — you introduced new type errors. Fix them, or explain why the baseline must change.');
+      console.error('\nApp typecheck FAILED — the app must typecheck with zero errors.');
       return 1;
     }
     console.log(`\nApp typecheck ${failed ? 'reported issues' : 'passed'} (mode=${mode}).`);

@@ -31,16 +31,6 @@ export class EnvCheckGuard {
   private static readonly EXEMPT_PACKAGES = new Set(['react-class-components', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
 
   /** Pre-existing debt, counted 2026-09-09. LOWER as it is paid off; never raise. */
-  static readonly BASELINE: Readonly<Record<string, number>> = {
-    plugins: 31,
-    themes: 34,
-    // 19 -> 5: the admin's dialogs, the collection list, the scaffold services and the react package
-    // now ask `Platform.isBrowser` / `EnvUtils.isBrowser()`. What remains is `database`, which sits
-    // BELOW core and cannot import EnvUtils without inverting the layering — and a data package
-    // depending on a React one to ask about `window` would be worse than the check it replaced.
-    framework: 5,
-    appearance: 6,
-  };
 
 
   /**

@@ -1,6 +1,7 @@
 import { WorkspaceTypecheck } from '../workspace-typecheck';
 import { ArchorCommand } from './arch-guard-command';
 import { FrameworkRoot } from './framework-root';
+import { GuardTarget } from './guard-target';
 
 /**
  * `arch-guard workspace-check` — type-check every authored area (plugins, themes, appearances).
@@ -31,7 +32,6 @@ export class WorkspaceCheckCommand extends ArchorCommand {
    * provider-state unions into shared reactor `Enum` classes: the enum's declared type made one
    * previously-invisible mismatch a compile error the conversion then fixed.
    */
-  static readonly BASELINES: Readonly<Record<string, number>> = { plugins: 118, themes: 19, appearance: 0 };
 
   run(argv: string[]): number {
     const framework = FrameworkRoot.find();
@@ -51,12 +51,8 @@ export class WorkspaceCheckCommand extends ArchorCommand {
         if (!detail || (only && slug !== only)) continue;
         for (const message of messages) console.log(`      ${message}`);
       }
-      const baseline = WorkspaceCheckCommand.BASELINES[area] ?? 0;
-      const verdict = total > baseline ? `ABOVE baseline ${baseline} (+${total - baseline} NEW)`
-        : total < baseline ? `below baseline ${baseline} — LOWER it to ${total}`
-        : `at baseline ${baseline}`;
-      console.log(`  → ${area}: ${total} — ${verdict}\n`);
-      if (total > baseline) failed = true;
+      console.log(`  → ${area}: ${total}${total > GuardTarget.COUNT ? ' — MUST BE 0' : ' — clean'}\n`);
+      if (total > GuardTarget.COUNT) failed = true;
     }
     if (failed && mode === 'error') {
       console.error('arch-guard workspace typecheck FAILED — a broken `implements` must never reach runtime.');

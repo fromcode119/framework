@@ -43,15 +43,6 @@ export class TypeofGuard {
    */
   private static readonly EXEMPT_PACKAGES = new Set(['react-class-components', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
 
-  static readonly BASELINE: Readonly<Record<string, number>> = {
-    // Re-measured once the guard stopped counting `'object'`/`'symbol'` narrowing, which has no fix
-    // to apply. Every number here is a LOWER one; each remaining hit is a string/number/boolean/
-    // function check with a real alternative.
-    plugins: 394,
-    themes: 41,
-    framework: 585,
-    appearance: 19,
-  };
 
 
   /**

@@ -27,11 +27,6 @@ export class ClassOnlyGuard {
   /** A `function` at column 0 — i.e. not a method, not nested. */
   private static readonly MODULE_FN = /^(export\s+)?(async\s+)?function\s+/;
 
-  static readonly BASELINE: Readonly<Record<string, Record<string, number>>> = {
-    inlineUnion: { plugins: 457, themes: 42, framework: 35, appearance: 15 },
-    typesFile: { plugins: 70, themes: 0, framework: 0, appearance: 0 },
-    moduleFn: { plugins: 16, themes: 0, framework: 0, appearance: 0 },
-  };
 
   private static isBuildOutput(full: string): boolean {
     const p = full.replace(/\\/g, '/');

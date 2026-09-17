@@ -99,10 +99,19 @@ export class OopGuard {
     return false;
   }
 
-  /** The baseline area a scanned package key belongs to. */
+  /**
+   * The area a scanned package key belongs to.
+   *
+   * Keys arrive as `plugins/<slug>`, `themes/<slug>`, `appearance/<slug>` or a bare framework package
+   * name, so the head segment names the extension tree when there is one and the framework otherwise.
+   * This used to read the keys of a baseline map, which made the list of areas a side effect of a
+   * debt table — delete the table and the areas went with it.
+   */
+  private static readonly EXTENSION_AREAS: ReadonlySet<string> = new Set(['plugins', 'themes', 'appearance']);
+
   static areaOf(packageKey: string): string {
     const head = packageKey.split('/')[0];
-    return head in OopGuardBaselines.VIOLATION_BASELINE && head !== 'framework' ? head : 'framework';
+    return OopGuard.EXTENSION_AREAS.has(head) ? head : 'framework';
   }
 
   /**

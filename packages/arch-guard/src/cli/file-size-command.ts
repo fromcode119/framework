@@ -3,11 +3,12 @@ import { FileSizeGuard } from '../file-size-guard';
 import { ArchorCommand } from './arch-guard-command';
 import { FrameworkRoot } from './framework-root';
 import { GuardScope } from './guard-scope';
+import { GuardTarget } from './guard-target';
 
 /**
  * `arch-guard file-size` — the documented `.ts` ≤ 300 / `.tsx` ≤ 200 limits, measured on every root.
  *
- *   arch-guard file-size              # error mode (default) — fails ABOVE baseline
+ *   arch-guard file-size              # error mode (default) — fails on ANY file over the target
  *   arch-guard file-size --list       # print the oversized files, longest first
  *   FILE_SIZE_MODE=warn arch-guard …  # report only
  */
@@ -19,23 +20,11 @@ export class FileSizeCommand extends ArchorCommand {
    * OVER TARGET (`.ts` > 300 / `.tsx` > 200). Pre-existing debt, counted 2026-09-09. LOWER as it is paid
    * off; never raise to make a build pass — a raise is the rule being deleted one number at a time.
    */
-  static readonly BASELINES: Readonly<Record<string, number>> = {
-    framework: 92,
-    plugins: 39,
-    themes: 15,
-    appearance: 4,
-  };
 
   /**
    * UNREADABLE (≥ 400 lines). This is the bucket that has to reach ZERO — it is tracked apart from the
    * target because they are different problems: 320 lines is untidy, 620 cannot be read at all.
    */
-  static readonly UNREADABLE_BASELINES: Readonly<Record<string, number>> = {
-    framework: 9,
-    plugins: 6,
-    themes: 4,
-    appearance: 0,
-  };
 
   run(argv: string[]): number {
     const framework = FrameworkRoot.find();
@@ -46,17 +35,7 @@ export class FileSizeCommand extends ArchorCommand {
     console.log(`File size (.ts ≤ ${FileSizeGuard.TS_MAX_LINES}, .tsx ≤ ${FileSizeGuard.TSX_MAX_LINES}):`);
 
     const repoRoot = FrameworkRoot.repo();
-    // Guarding ONE extension reads the numbers that extension declares about itself; guarding a tree
-    // uses the framework's record of its own debt. An extension that declares nothing has a baseline
-    // of zero, which is where a repository with no stated debt belongs.
-    const extension = GuardScope.isExtension(repoRoot);
     for (const { area: name, dir } of GuardScope.areas(repoRoot)) {
-      const baseline = extension
-        ? GuardScope.declaredBaseline(dir, 'fileSize', 'overTarget')
-        : FileSizeCommand.BASELINES[name] ?? 0;
-      const unreadableBaseline = extension
-        ? GuardScope.declaredBaseline(dir, 'fileSize', 'unreadable')
-        : FileSizeCommand.UNREADABLE_BASELINES[name] ?? 0;
       const oversized = FileSizeGuard.findOversized(dir);
       const unreadable = oversized.filter((entry) => entry.lines >= FileSizeGuard.UNREADABLE_LINES);
       const count = oversized.length;
@@ -64,10 +43,10 @@ export class FileSizeCommand extends ArchorCommand {
       // Reported, never enforced: how many of the "unreadable" files hold 400+ lines of actual CODE.
       // The rest are over the line on COMMENTS, which this codebase deliberately has a lot of.
       const denseCount = unreadable.filter((entry) => entry.codeLines >= FileSizeGuard.UNREADABLE_LINES).length;
-      console.log(`  ${name}: ${count} over target (baseline ${baseline})`
-        + `, of which ${unreadable.length} unreadable ≥${FileSizeGuard.UNREADABLE_LINES} (baseline ${unreadableBaseline})`
+      console.log(`  ${name}: ${count} over target`
+        + `, of which ${unreadable.length} unreadable ≥${FileSizeGuard.UNREADABLE_LINES}`
         + `${unreadable.length ? ` [${denseCount} by CODE lines]` : ''}`
-        + `${count > baseline || unreadable.length > unreadableBaseline ? ' — ABOVE' : count < baseline || unreadable.length < unreadableBaseline ? ' — below, lower it' : ' — at baseline'}`);
+        + `${count > GuardTarget.COUNT ? ' — MUST BE 0' : ' — clean'}`);
 
       if (list) {
         for (const entry of (unreadable.length ? unreadable : oversized).slice(0, 20)) {
@@ -76,14 +55,14 @@ export class FileSizeCommand extends ArchorCommand {
           console.log(`    ${flag} ${String(entry.lines).padStart(5)} raw ${String(entry.codeLines).padStart(5)} code${dense} (max ${entry.limit})  ${path.relative(framework, entry.file)}`);
         }
       }
-      if (count > baseline || unreadable.length > unreadableBaseline) failed = true;
+      if (count > GuardTarget.COUNT) failed = true;
     }
 
     if (!failed) {
       console.log('File size passed.');
       return 0;
     }
-    console.log(`\nA file grew past its limit. Split it — do not raise the baseline.`);
+    console.log(`\nA file is past its limit. Split it.`);
     return mode === 'error' ? 1 : 0;
   }
 }

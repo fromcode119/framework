@@ -45,9 +45,6 @@ export class LeakedInterfaceCopyGuard {
     'react-class-components', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard',
   ]);
 
-  static readonly BASELINE: Readonly<Record<string, number>> = {
-    plugins: 0, themes: 0, framework: 0, appearance: 0,
-  };
 
   /** `ui`/`ui-ssr` at an extension ROOT is build output; `src/ui` is source. */
   private static isBuildOutput(full: string): boolean {

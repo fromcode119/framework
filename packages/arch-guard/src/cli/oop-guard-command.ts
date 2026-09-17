@@ -1,8 +1,7 @@
 import { OopGuard } from '../oop-guard-rules/oop-guard';
 import { OopGuardBaselines } from '../oop-guard-rules/oop-guard-baselines';
 import { ArchorCommand } from './arch-guard-command';
-import { FrameworkRoot } from './framework-root';
-import { GuardScope } from './guard-scope';
+import { GuardTarget } from './guard-target';
 
 /**
  * `arch-guard oop-guard` — report (or enforce) the OOP conventions across every area.
@@ -34,7 +33,7 @@ export class OopGuardCommand extends ArchorCommand {
       console.error('These buckets were driven to zero and are enforced. Run --list <bucket> for the offenders.');
     }
     if (overBaseline.length) {
-      console.error(`\nViolations ABOVE baseline: ${overBaseline.join(', ')} — run --list violations.`);
+      console.error(`\nMUST BE 0: ${overBaseline.join(', ')} — run --list <bucket> for the offenders.`);
     }
     if (mode === 'error' && (overBaseline.length || regressed.length)) {
       console.error('\nFramework OOP check FAILED (mode=error).');
@@ -83,37 +82,29 @@ export class OopGuardCommand extends ArchorCommand {
   }
 
   /**
-   * The ratcheted buckets, printed per area. Returns the areas that are ABOVE their baseline —
-   * a non-empty result is what fails the build in error mode.
+   * Every enforced bucket, printed per area. Returns the areas that are not at zero — a non-empty
+   * result is what fails the build in error mode.
    */
   private static ratchets(perPackage: Map<string, any>): string[] {
-    const buckets: ReadonlyArray<readonly [string, string, Record<string, number>, string]> = [
-      ['violations', 'Violations per area', OopGuardBaselines.VIOLATION_BASELINE, ''],
-      ['moduleDecl', 'Module-level declarations per area', OopGuardBaselines.MODULE_DECL_BASELINE, ' moduleDecl'],
-      ['typesFile', '*.types.ts bags per area', OopGuardBaselines.TYPES_FILE_BASELINE, ' typesFile'],
-      ['typeAlias', 'export type aliases per area', OopGuardBaselines.TYPE_ALIAS_BASELINE, ' typeAlias'],
-      ['exportDebt', 'module-level export const/function per area', OopGuardBaselines.EXPORT_DEBT_BASELINE, ' exportDebt'],
+    const buckets: ReadonlyArray<readonly [string, string, string]> = [
+      ['violations', 'Violations per area', ''],
+      ['moduleDecl', 'Module-level declarations per area', ' moduleDecl'],
+      ['typesFile', '*.types.ts bags per area', ' typesFile'],
+      ['typeAlias', 'export type aliases per area', ' typeAlias'],
+      ['exportDebt', 'module-level export const/function per area', ' exportDebt'],
     ];
     const overBaseline: string[] = [];
-    const repoRoot = FrameworkRoot.repo();
-    // Guarding ONE extension asks that extension what it has declared about itself; guarding a tree
-    // uses the framework's record. An extension declaring nothing has a baseline of zero.
-    const scopedDir = GuardScope.isExtension(repoRoot) ? GuardScope.areas(repoRoot)[0]?.dir ?? '' : '';
 
-    for (const [key, heading, baselines, label] of buckets) {
-      const perArea = new Map(Object.keys(baselines).map((a) => [a, 0]));
+    for (const [key, heading, label] of buckets) {
+      const perArea = new Map<string, number>();
       for (const [pkg, b] of perPackage) {
         const area = OopGuard.areaOf(pkg);
         perArea.set(area, (perArea.get(area) ?? 0) + b[key].length);
       }
-      console.log(`${heading} (ratcheted — may fall, never rise):`);
+      console.log(`${heading} (must be 0):`);
       for (const [area, count] of perArea) {
-        const baseline = scopedDir
-          ? GuardScope.declaredBaseline(scopedDir, 'oopGuard', key)
-          : baselines[area];
-        const note = count > baseline ? ' ← ABOVE BASELINE' : (count < baseline ? ' ← lower the baseline' : '');
-        console.log(`  ${area}: ${count} (baseline ${baseline})${note}`);
-        if (count > baseline) overBaseline.push(`${area}${label}: ${count} > ${baseline}`);
+        console.log(`  ${area}: ${count}${count > GuardTarget.COUNT ? ' ← MUST BE 0' : ''}`);
+        if (count > GuardTarget.COUNT) overBaseline.push(`${area}${label}: ${count}`);
       }
     }
     return overBaseline;

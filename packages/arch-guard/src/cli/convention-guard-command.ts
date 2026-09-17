@@ -7,6 +7,7 @@ import { TypeofGuard } from '../typeof-guard';
 import { EnvCheckGuard } from '../env-check-guard';
 import { ArchorCommand } from './arch-guard-command';
 import { GuardScope } from './guard-scope';
+import { GuardTarget } from './guard-target';
 
 /**
  * `arch-guard convention-guard [--detail]` — two ratcheted conventions the compiler cannot see:
@@ -42,14 +43,8 @@ export class ConventionGuardCommand extends ArchorCommand {
       console.log(`\n${name}:`);
       for (const area of Object.keys(counts).sort()) {
         const count = counts[area];
-        const baseline = guard.BASELINE[area] ?? 0;
-        const verdict = count > baseline
-          ? `ABOVE baseline ${baseline} (+${count - baseline} NEW)`
-          : count < baseline
-            ? `below baseline ${baseline} — LOWER it to ${count}`
-            : `at baseline ${baseline}`;
-        console.log(`  ${area}: ${count} — ${verdict}`);
-        if (count > baseline) failed = true;
+        console.log(`  ${area}: ${count}${count > GuardTarget.COUNT ? ' — MUST BE 0' : ' — clean'}`);
+        if (count > GuardTarget.COUNT) failed = true;
       }
       if (detail) {
         for (const { file, hits: lines } of hits.slice(0, 40)) {
@@ -66,14 +61,8 @@ export class ConventionGuardCommand extends ArchorCommand {
       const perArea = classOnly.counts[bucket];
       for (const area of Object.keys(perArea).sort()) {
         const count = perArea[area];
-        const baseline = ClassOnlyGuard.BASELINE[bucket][area] ?? 0;
-        const verdict = count > baseline
-          ? `ABOVE baseline ${baseline} (+${count - baseline} NEW)`
-          : count < baseline
-            ? `below baseline ${baseline} - LOWER it to ${count}`
-            : `at baseline ${baseline}`;
-        console.log(`  ${area}: ${count} - ${verdict}`);
-        if (count > baseline) failed = true;
+        console.log(`  ${area}: ${count}${count > GuardTarget.COUNT ? ' - MUST BE 0' : ' - clean'}`);
+        if (count > GuardTarget.COUNT) failed = true;
       }
     }
     if (detail) {

@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { AliasEmitRewrite } from '../alias-emit-rewrite';
 import { TyporSyntaxPlugin } from '../tsmi-syntax-plugin';
 import { SourceWalk } from './source-walk';
+import { StaleEmitPrune } from '../stale-emit-prune';
 import { TyporCommand } from './tsmi-command';
 import { WorkspaceRoot } from './workspace-root';
 
@@ -59,10 +60,35 @@ export class BuildCommand extends TyporCommand {
       const run = spawnSync(tsc, argv, { encoding: 'utf8', cwd: process.cwd() });
       process.stdout.write((run.stdout || '') + (run.stderr || ''));
       console.log(`[typescript-multiple-inheritance] tsc ${argv.join(' ')} (${originals.size} file(s) rewritten: extended syntax / package alias)`);
+      // tsc only writes, so output for a deleted module stays in dist and keeps shipping. Prune AFTER
+      // a successful build only: a failed one may have emitted nothing, and pruning then would delete
+      // the last working output over a typo.
+      if ((run.status ?? 0) === 0) BuildCommand.pruneStaleEmit(argv);
       return run.status ?? 0;
     } finally {
       // ALWAYS restore, even on crash/interrupt — source must never be left rewritten.
       for (const [file, source] of originals) writeFileSync(file, source, 'utf8');
+    }
+  }
+
+  /**
+   * Remove emitted files whose source is gone, for whichever project this invocation built.
+   *
+   * Never fails the build: a prune that cannot run leaves stale output, which is the state the build
+   * was already in, while a throw here would break a build that actually succeeded.
+   */
+  private static pruneStaleEmit(argv: string[]): void {
+    const at = argv.findIndex((arg) => arg === '-p' || arg === '--project');
+    const project = at >= 0 && at + 1 < argv.length
+      ? path.resolve(process.cwd(), argv[at + 1])
+      : path.join(process.cwd(), 'tsconfig.json');
+    try {
+      const removed = StaleEmitPrune.apply(project);
+      if (removed.length) {
+        console.log(`[typescript-multiple-inheritance] pruned ${removed.length} stale output file(s) whose source no longer exists.`);
+      }
+    } catch {
+      // See the doc above: stale output is the status quo, a thrown error is a regression.
     }
   }
 

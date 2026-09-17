@@ -3,6 +3,7 @@ import { PluginUiTypecheck } from '../plugin-ui-typecheck';
 import { ArchorCommand } from './arch-guard-command';
 import { GuardScope } from './guard-scope';
 import { FrameworkRoot } from './framework-root';
+import { GuardTarget } from './guard-target';
 
 /**
  * `arch-guard plugin-ui-types` — real `tsc --noEmit` for every plugin's admin UI.
@@ -48,25 +49,16 @@ export class PluginUiTypesCommand extends ArchorCommand {
     console.log('Plugin UI typecheck (real tsc — Vite/esbuild do NOT check types):');
     let failed = false;
     for (const slug of selected) {
-      // The plugin's OWN declared number, from `arch-guard.json` in its repository — the framework
-      // holds no per-plugin ledger. Absent means zero, which is what a plugin claiming no debt means.
-      const baseline = GuardScope.declaredBaseline(path.join(repo, 'plugins', slug), 'pluginUiTypes');
       const found = PluginUiTypecheck.report(framework, repo, slug);
-      console.log(`  ${slug}: ${found.length} errors (baseline ${baseline})`);
-
-      if (found.length > baseline) {
+      console.log(`  ${slug}: ${found.length} errors${found.length > GuardTarget.COUNT ? ' — MUST BE 0' : ''}`);
+      if (found.length > GuardTarget.COUNT) {
         failed = true;
-        console.error(`  ${slug}: ABOVE baseline ${baseline} (+${found.length - baseline} NEW):`);
         console.error(PluginUiTypesCommand.trim(found));
-      } else if (found.length < baseline) {
-        console.log(`  ${slug}: below baseline — LOWER it to ${found.length}.`);
-      } else if (argv.length && found.length) {
-        console.log(PluginUiTypesCommand.trim(found));
       }
     }
 
     if (failed && mode === 'error') {
-      console.error('\nPlugin UI typecheck FAILED — you introduced new type errors. Fix them; do not raise the baseline.');
+      console.error('\nPlugin UI typecheck FAILED — a plugin UI must typecheck with zero errors.');
       return 1;
     }
     console.log(`\nPlugin UI typecheck ${failed ? 'reported issues' : 'passed'} (mode=${mode}).`);

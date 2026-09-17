@@ -67,29 +67,6 @@ export class GuardScope {
     return !GuardScope.all(repoRoot).some((entry) => entry.dir === only?.dir);
   }
 
-  /**
-   * A number an extension declares about ITSELF, from `arch-guard.json` in its own root.
-   *
-   * Absent means ZERO — a repository that has declared no debt is asserting it has none, and a guard
-   * that silently invented an allowance would be the baseline problem all over again. The framework
-   * therefore holds no per-extension numbers; it reads what the extension states.
-   *
-   *   { "fileSize": { "overTarget": 12, "unreadable": 0 } }
-   */
-  static declaredBaseline(dir: string, ...keys: string[]): number {
-    let config: unknown;
-    try {
-      config = JSON.parse(fs.readFileSync(path.join(dir, 'arch-guard.json'), 'utf8'));
-    } catch {
-      return 0;
-    }
-    let node: unknown = config;
-    for (const key of keys) {
-      if (!node || typeof node !== 'object') return 0;
-      node = (node as Record<string, unknown>)[key];
-    }
-    return typeof node === 'number' && Number.isFinite(node) ? node : 0;
-  }
 
   /**
    * Which area a directory belongs to, from the tree that holds it.

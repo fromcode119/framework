@@ -36,12 +36,6 @@ export class OopGuardBaselines {
    * `appearance/…`); everything else is a framework package. LOWER a number when you fix violations;
    * never raise one to make a build pass.
    */
-  static readonly VIOLATION_BASELINE: Record<string, number> = {
-    framework: 0,
-    plugins: 2,
-    themes: 1,
-    appearance: 0,
-  };
 
 
   /**
@@ -58,12 +52,6 @@ export class OopGuardBaselines {
    * Per-area ceilings for `typesFile` — `*.types.ts` / `*.interfaces.ts` bags. Framework is at ZERO and
    * enforced; the extension areas are ratcheted.
    */
-  static readonly TYPES_FILE_BASELINE: Record<string, number> = {
-    framework: 0,
-    plugins: 0,
-    themes: 0,
-    appearance: 0,
-  };
 
 
   /**
@@ -75,12 +63,6 @@ export class OopGuardBaselines {
    * whose aliases genuinely cannot be anything else are named in LOAD_BEARING_TYPES with the reason,
    * and are not counted here; that list is the whole allowance.
    */
-  static readonly TYPE_ALIAS_BASELINE: Record<string, number> = {
-    framework: 0,
-    plugins: 9,
-    themes: 1,
-    appearance: 0,
-  };
 
 
   /**
@@ -92,22 +74,8 @@ export class OopGuardBaselines {
    * literals first, so a scaffolded `export const slots = …` inside a backtick is the generated
    * plugin's code, not this package's.
    */
-  static readonly EXPORT_DEBT_BASELINE: Record<string, number> = {
-    framework: 0,
-    plugins: 6,
-    themes: 1,
-    appearance: 0,
-  };
 
 
-  static readonly MODULE_DECL_BASELINE: Record<string, number> = {
-    framework: 0,
-    // Re-set when `isTypeLevelOnly` was retired: the bucket now counts EVERY module-level `type`, not
-    // only object shapes and string unions, so these are the same debt measured more strictly.
-    plugins: 0,
-    themes: 0,
-    appearance: 1,
-  };
 
 
   /**

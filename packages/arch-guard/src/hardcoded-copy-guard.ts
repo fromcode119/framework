@@ -38,16 +38,6 @@ export class HardcodedCopyGuard {
     'i18n', 'seeds', 'tests', '__tests__',
   ]);
 
-  static readonly BASELINE: Readonly<Record<string, number>> = {
-    // Re-measured once the guard stopped counting punctuation as language. The framework is CLEAN —
-    // it is English-only by design, and every one of its 496 findings was an English sentence with an
-    // em dash or a curly apostrophe in it. What remains in plugins and themes is genuinely
-    // untranslated copy.
-    plugins: 698,
-    themes: 419,
-    framework: 0,
-    appearance: 3,
-  };
 
 
   /**
