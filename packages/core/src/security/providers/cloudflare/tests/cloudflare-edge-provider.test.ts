@@ -8,6 +8,10 @@ describe('CloudflareEdgeProvider', () => {
     expect(provider.trustedIpHeader).toBe('cf-connecting-ip');
   });
 
+  it('declares the settings key its ranges lived under before the generic per-provider shape existed', () => {
+    expect(new CloudflareEdgeProvider().legacyRangesKey).toBe('rate_limit_cloudflare_edge_ranges');
+  });
+
   it('ships its published edge ranges as [address, prefix] tuples', () => {
     const provider = new CloudflareEdgeProvider();
     expect(provider.defaultRanges.length).toBeGreaterThan(0);

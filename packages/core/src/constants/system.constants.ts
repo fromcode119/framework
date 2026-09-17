@@ -338,17 +338,18 @@ export class SystemConstants {
    */
   RATE_LIMIT_INTERNAL_CLIENTS: 'rate_limit_internal_clients',
   /**
-   * Additional Cloudflare edge IP ranges/CIDR blocks an operator has declared, on top of the
-   * hardcoded default ranges `CloudflareEdgeProvider` ships with. A hop landing on one of these
-   * ranges is trusted to set that provider's `trustedIpHeader` (`CF-Connecting-IP`) — see
-   * {@link NetworkAddressUtils.resolveClientIp}. Seeded from that same hardcoded list so the setting
-   * starts equal to what the code already trusts; an operator extends it, without a deploy, the day
-   * Cloudflare publishes a range this platform's code does not know about yet.
+   * Additional edge-provider IP ranges/CIDR blocks an operator has declared, on top of each
+   * registered provider's own hardcoded default ranges. A hop landing on one of these ranges is
+   * trusted to set that provider's `trustedIpHeader` — see {@link NetworkAddressUtils.resolveClientIp}.
    *
-   * This is the Cloudflare provider's OWN settings row — a future edge provider registered in
-   * `NetworkEdgeProviderRegistry` declares its own key here the same way, rather than sharing this one.
+   * ONE generic key for every provider registered in `NetworkEdgeProviderRegistry`, not a key per
+   * vendor: the stored value is JSON keyed by each provider's own `key` (e.g. `{"cloudflare":"..."}`).
+   * Seeded from the hardcoded ranges every registered provider already ships with, so the setting
+   * starts equal to what the code already trusts; an operator extends a provider's entry, without a
+   * deploy, the day that provider publishes a range this platform's code does not know about yet. A
+   * second provider needs no new key here — only a new entry in the same JSON object.
    */
-  RATE_LIMIT_CLOUDFLARE_EDGE_RANGES: 'rate_limit_cloudflare_edge_ranges',
+  RATE_LIMIT_EDGE_PROVIDER_RANGES: 'rate_limit_edge_provider_ranges',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
   /**
    * Physical table names whose plugin `context.db` writes are NOT recorded in the audit log
