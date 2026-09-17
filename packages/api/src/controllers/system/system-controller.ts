@@ -14,16 +14,17 @@ import { SystemMetadataController } from '@api/controllers/system/system-metadat
 import { SystemScimController } from '@api/controllers/system/system-scim-controller';
 import { SystemWebhooksController } from '@api/controllers/system/system-webhooks-controller';
 import { SystemNotificationsController } from '@api/controllers/system/system-notifications-controller';
+import { SystemAccountRoutes } from '@api/controllers/system/system-account-routes';
 
-export class SystemController extends BaseController {
-  private readonly adminController: SystemAdminController;
+export class SystemController extends SystemAccountRoutes {
+  protected readonly adminController: SystemAdminController;
   private readonly integrationController: SystemIntegrationController;
-  private readonly runtimeController: SystemRuntimeController;
-  private readonly userController: SystemUserController;
+  protected readonly runtimeController: SystemRuntimeController;
+  protected readonly userController: SystemUserController;
   private readonly peopleController: SystemPeopleController;
   private readonly deployController: SystemDeployController;
-  private readonly settingsController: SystemSettingsController;
-  private readonly metadataController: SystemMetadataController;
+  protected readonly settingsController: SystemSettingsController;
+  protected readonly metadataController: SystemMetadataController;
   private readonly scimController: SystemScimController;
   private readonly webhooksController: SystemWebhooksController;
   private readonly notificationsController: SystemNotificationsController;
@@ -254,103 +255,4 @@ export class SystemController extends BaseController {
     return this.runtimeController.getAuditLogs(req, res);
   }
 
-  async getRoles(req: Request, res: Response) {
-    return this.userController.getRoles(req, res);
-  }
-
-  async saveRole(req: Request, res: Response) {
-    return this.userController.saveRole(req, res);
-  }
-
-  async getRole(req: Request, res: Response) {
-    return this.userController.getRole(req, res);
-  }
-
-  async deleteRole(req: Request, res: Response) {
-    return this.userController.deleteRole(req, res);
-  }
-
-  async getPermissions(req: Request, res: Response) {
-    return this.userController.getPermissions(req, res);
-  }
-
-  async savePermission(req: Request, res: Response) {
-    return this.userController.savePermission(req, res);
-  }
-
-  async getUsers(req: Request, res: Response) {
-    return this.userController.getUsers(req, res);
-  }
-
-  async saveUser(req: Request, res: Response) {
-    return this.userController.saveUser(req, res);
-  }
-
-  async getUser(req: Request, res: Response) {
-    return this.userController.getUser(req, res);
-  }
-
-  async deleteUser(req: Request, res: Response) {
-    return this.userController.deleteUser(req, res);
-  }
-
-  async saveUserRoles(req: Request, res: Response) {
-    return this.userController.saveUserRoles(req, res);
-  }
-
-  async transferOwnership(req: Request, res: Response) {
-    return this.userController.transferOwnership(req, res);
-  }
-
-  async checkUpdate(req: Request, res: Response) {
-    return this.runtimeController.checkUpdate(req, res);
-  }
-
-  async applyUpdate(req: Request, res: Response) {
-    return this.runtimeController.applyUpdate(req, res);
-  }
-
-  async getDataSources(req: Request, res: Response) {
-    return this.runtimeController.getDataSources(req, res);
-  }
-
-  async queryDataSource(req: Request, res: Response) {
-    return this.runtimeController.queryDataSource(req, res);
-  }
-
-  async getI18n(req: Request, res: Response) {
-    return this.runtimeController.getI18n(req, res);
-  }
-
-  async resolveSlug(req: Request, res: Response) {
-    return this.runtimeController.resolveSlug(req, res);
-  }
-
-  async getEvents(req: Request, res: Response) {
-    return this.runtimeController.getEvents(req, res);
-  }
-
-  async sendTestTelemetryEmail(req: Request, res: Response) {
-    return this.runtimeController.sendTestTelemetryEmail(req, res);
-  }
-
-  async getTwoFactorStatus(req: Request, res: Response) {
-    return this.userController.getTwoFactorStatus(req, res);
-  }
-
-  async setup2FA(req: Request, res: Response) {
-    return this.userController.setup2FA(req, res);
-  }
-
-  async verify2FA(req: Request, res: Response) {
-    return this.userController.verify2FA(req, res);
-  }
-
-  async regenerateRecoveryCodes(req: Request, res: Response) {
-    return this.userController.regenerateRecoveryCodes(req, res);
-  }
-
-  async disable2FA(req: Request, res: Response) {
-    return this.userController.disable2FA(req, res);
-  }
 }
