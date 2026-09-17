@@ -3,11 +3,9 @@ import { SettingScope } from '@core/settings/enums/setting-scope.enum';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { NetworkAddressUtils } from '@core/security/network-address-utils';
 import { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
-import type { SystemSettingKey } from '@core/settings/system-setting-registry.types';
-import type { SystemSettingDescriptor } from '@core/settings/system-setting-registry.interfaces';
+import type { ISystemSettingDescriptor, SystemSettingKey } from '@core/settings/interfaces/system-setting-descriptor.interface';
 
-export type { SystemSettingKey } from '@core/settings/system-setting-registry.types';
-export type { SystemSettingDescriptor } from '@core/settings/system-setting-registry.interfaces';
+export type { ISystemSettingDescriptor, SystemSettingKey } from '@core/settings/interfaces/system-setting-descriptor.interface';
 
 /**
  * The single place a system setting's SCOPE is declared.
@@ -18,7 +16,7 @@ export type { SystemSettingDescriptor } from '@core/settings/system-setting-regi
  * and `sources_workspace_root` shipped broken: the write landed under whichever tenant the request
  * carried, the platform-only reader never found it, and nothing on the page or in a log said so.
  *
- * `Record<SystemSettingKey, SystemSettingDescriptor>` makes that specific bug a compile error: every
+ * `Record<SystemSettingKey, ISystemSettingDescriptor>` makes that specific bug a compile error: every
  * value `META_KEY` declares must have an entry here, or the file does not build.
  *
  * MUST NOT import `TenantMode` or `PlatformSettingsService` — scope belongs to the setting, mode
@@ -27,7 +25,7 @@ export type { SystemSettingDescriptor } from '@core/settings/system-setting-regi
 export class SystemSettingRegistry {
   private static readonly KEY = SystemConstants.META_KEY;
 
-  private static readonly REGISTRY: Record<SystemSettingKey, SystemSettingDescriptor> = {
+  private static readonly REGISTRY: Record<SystemSettingKey, ISystemSettingDescriptor> = {
     [SystemSettingRegistry.KEY.EMAIL_PROFILES]: { scope: SettingScope.SITE, writable: false, exposed: false },
     [SystemSettingRegistry.KEY.EMAIL_PROVIDER]: { scope: SettingScope.SITE, writable: false, exposed: false },
     [SystemSettingRegistry.KEY.EMAIL_PLATFORM_FALLBACK]: { scope: SettingScope.SITE, writable: false, exposed: true },
@@ -312,7 +310,7 @@ export class SystemSettingRegistry {
   private static exposedKeysCache: Set<string> | null = null;
 
   /** The descriptor for a declared key. Throws for anything not in `META_KEY` — never guesses. */
-  static describe(key: SystemSettingKey): SystemSettingDescriptor {
+  static describe(key: SystemSettingKey): ISystemSettingDescriptor {
     const descriptor = SystemSettingRegistry.REGISTRY[key];
     if (!descriptor) {
       throw new Error(`SystemSettingRegistry: "${key}" is not a declared system setting.`);
@@ -336,7 +334,7 @@ export class SystemSettingRegistry {
    * scope MISMATCH, not to police every string that reaches the settings store.
    */
   static isDeclaredSiteScoped(key: string): boolean {
-    const descriptor = (SystemSettingRegistry.REGISTRY as Record<string, SystemSettingDescriptor>)[key];
+    const descriptor = (SystemSettingRegistry.REGISTRY as Record<string, ISystemSettingDescriptor>)[key];
     return Boolean(descriptor) && !descriptor.scope.isPlatform;
   }
 

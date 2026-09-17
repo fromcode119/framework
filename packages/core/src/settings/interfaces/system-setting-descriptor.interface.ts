@@ -1,6 +1,10 @@
 import { SettingScope } from '@core/settings/enums/setting-scope.enum';
+import { SystemConstants } from '@core/constants/system.constants';
 
-export interface SystemSettingDescriptor {
+/** Every declared `_system_meta` key, derived from `META_KEY` so a new key with no descriptor here is a compile error. */
+export type SystemSettingKey = typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY];
+
+export interface ISystemSettingDescriptor {
   /**
    * Who this setting's value is FOR — see {@link SettingScope}. Decided by WHO READS it: boot,
    * background/cron work, and platform infrastructure (URLs, certificates, isolation, SSR, maintenance,
