@@ -25,12 +25,29 @@ export class EnvCheckGuard {
   ]);
 
   /**
-   * `reactor` / `next-build-codegen` / `typescript-multiple-inheritance` / `arch-guard` are the standalone layer that confines raw JS/TS mechanics —
-   * a runtime type check is sometimes genuinely their job, and they cannot import the SDK to avoid it.
+   * `reactor` / `next-build-codegen` / `typor` are the standalone layer that confines raw JS/TS
+   * mechanics — asking the environment a question is sometimes genuinely their job, and they cannot
+   * import the SDK to avoid it. `arch-guard` was in this list too and did not belong: it is a Node
+   * CLI that never asks, and with it enforced the count is unchanged.
    */
-  private static readonly EXEMPT_PACKAGES = new Set(['react-class-components', 'next-build-codegen', 'typescript-multiple-inheritance', 'arch-guard']);
+  private static readonly EXEMPT_PACKAGES = new Set(['react-class-components', 'next-build-codegen', 'typescript-multiple-inheritance']);
 
-  /** Pre-existing debt, counted 2026-09-09. LOWER as it is paid off; never raise. */
+  /**
+   * The file that DEFINES the answer, and test scaffolding.
+   *
+   * `EnvUtils.isBrowser()` IS `typeof document !== 'undefined'` — that line is the one place the
+   * codebase is allowed to write it, and reporting it means telling the definition to call itself.
+   * `Platform` is the same for the React side.
+   *
+   * A `*.setup.ts` is the same category as the `*.test.ts` already skipped below: it is scaffolding
+   * that runs BEFORE the app, polyfilling jsdom, and it cannot import the app to ask.
+   */
+  private static isDefinitionOrScaffolding(full: string): boolean {
+    const p = full.replace(/\\/g, '/');
+    return /\/core\/src\/utils\/env-utils\.ts$/.test(p)
+      || /\/react-class-components\/src\/platform\.ts$/.test(p)
+      || /\.setup\.tsx?$/.test(p);
+  }
 
 
   /**
@@ -53,7 +70,8 @@ export class EnvCheckGuard {
       if (isDir) {
         if (EnvCheckGuard.SKIP_DIR.has(entry) || EnvCheckGuard.EXEMPT_PACKAGES.has(entry) || EnvCheckGuard.isBuildOutput(full)) continue;
         EnvCheckGuard.files(full, out);
-      } else if (/\.tsx?$/.test(entry) && !/\.d\.ts$/.test(entry) && !/\.test\.tsx?$/.test(entry)) {
+      } else if (/\.tsx?$/.test(entry) && !/\.d\.ts$/.test(entry) && !/\.test\.tsx?$/.test(entry)
+                 && !EnvCheckGuard.isDefinitionOrScaffolding(full)) {
         out.push(full);
       }
     }
