@@ -7,6 +7,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { ThemeState } from '@core/theme/enums/theme-state.enum';
 import type { Logger } from '@core/logging';
+import { ThemeManagerState } from '@core/theme/theme-manager-state';
 
 /**
  * Finds the themes that exist on disk, and works out which one is active.
@@ -15,24 +16,13 @@ import type { Logger } from '@core/logging';
  * directories a site installs into. A tenant's own copy shadows a platform theme of the same slug,
  * because a site that installed one meant to use it.
  *
- * Split out of `ThemeManager` (541 lines). It owns no state: the manifest map is passed BY REFERENCE
- * and the active slug through a setter, the same way `ThemeConfigService` already took that map.
- * That is what keeps ONE manager holding one truth about what is installed, instead of two objects
- * with two maps that drift apart.
+ * A BASE of `ThemeManager`, not a collaborator. It was briefly the latter, and the cost showed: seven
+ * constructor callbacks existed only to reach the manager's own fields, and the manifest map had to
+ * be passed by reference so the two objects did not end up with two maps that drift. As a base there
+ * is one object and one map — `this` IS the manager, and the shared state is declared once in
+ * `ThemeManagerState`.
  */
-export class ThemeDiscoveryService {
-  constructor(
-    private readonly db: any,
-    private readonly logger: Logger,
-    private readonly themes: Map<string, IThemeManifest>,
-    /** A GETTER, not the value: the manager owns the root and tests relocate it after construction.
-     *  Captured by value, a relocation was silently ignored and discovery kept reading the old path. */
-    private readonly themesRoot: () => string,
-    private readonly setActiveTheme: (slug: string | null) => void,
-    private readonly materializeDefaultPages: () => Promise<void>,
-    private readonly resolveThemeDirectory: (slug: string) => string,
-  ) {}
-
+export abstract class ThemeDiscovery extends ThemeManagerState {
   /**
    * Every installed theme: the platform's, directly under the root, and each site's own under
    * `tenants/<siteId>/`.
@@ -48,14 +38,14 @@ export class ThemeDiscoveryService {
    * expected is the worse failure.
    */
   async discoverThemes() {
-    this.logger.info(`Scanning for themes in ${this.themesRoot()}...`);
+    this.logger.info(`Scanning for themes in ${this.themesRoot}...`);
     this.themes.clear();
-    if (!fs.existsSync(this.themesRoot())) { fs.mkdirSync(this.themesRoot(), { recursive: true }); return; }
+    if (!fs.existsSync(this.themesRoot)) { fs.mkdirSync(this.themesRoot, { recursive: true }); return; }
 
-    for (const dir of fs.readdirSync(this.themesRoot())) {
+    for (const dir of fs.readdirSync(this.themesRoot)) {
       if (dir.startsWith('.')) continue;
       if (ProjectPaths.isTenantArtifactsDir(dir)) continue;
-      this.loadDiscoveredTheme(path.join(this.themesRoot(), dir), dir);
+      this.loadDiscoveredTheme(path.join(this.themesRoot, dir), dir);
     }
     this.discoverTenantThemes();
   }
@@ -71,7 +61,7 @@ export class ThemeDiscoveryService {
    * site that cannot be read is logged and skipped while the rest carry on.
    */
   private discoverTenantThemes(): void {
-    const tenantsRoot = ProjectPaths.tenantArtifactsRoot(this.themesRoot());
+    const tenantsRoot = ProjectPaths.tenantArtifactsRoot(this.themesRoot);
     if (!fs.existsSync(tenantsRoot)) return;
 
     let tenantIds: string[] = [];
@@ -150,7 +140,7 @@ export class ThemeDiscoveryService {
     try {
       const row = await this.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value });
       if (row) {
-        this.setActiveTheme(row.slug);
+        this.activeTheme = row.slug;
         this.logger.info(`Active theme set to: ${row.slug}`);
         // Boot has no tenant. On a multi-tenant deployment default pages are tenant-scoped rows, so
         // materializing here would write orphans no tenant can see (T0 §8.8's shape) — each tenant's
