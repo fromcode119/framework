@@ -1,6 +1,7 @@
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { GuestEntryPort } from '@core/process/guest-entry-port';
 import { ProcessEntry } from '@core/process/process-entry';
+import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
 
 /**
  * A guest for the launcher tests: answers every request with what it was asked and its own view of
@@ -17,7 +18,7 @@ export class EchoGuestFixture {
       if (type === 'exit') process.exit(Number(payload?.code) || 0);
       return { type, payload, pid: process.pid, envKeys: Object.keys(process.env), uid: process.getuid?.() ?? null };
     });
-    port.on('disconnect', () => process.exit(0));
+    port.on(MessagePortEvent.DISCONNECT, () => process.exit(0));
     console.log('echo-guest up');
   }
 }

@@ -1,4 +1,6 @@
 import { randomUUID } from 'crypto';
+import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
+import type { IMessagePort } from '@core/process/interfaces/message-port.interface';
 
 /**
  * Request/response over a Node IPC channel (`process.send` / `child.send`), in both directions.
@@ -19,10 +21,10 @@ export class PluginChannel {
   private closed = false;
 
   constructor(
-    private readonly transport: { send: (message: unknown) => void; on: (event: 'message' | 'disconnect', listener: (...args: any[]) => void) => unknown },
+    private readonly transport: Pick<IMessagePort, 'send' | 'on'>,
   ) {
-    transport.on('message', (message: any) => this.receive(message));
-    transport.on('disconnect', () => this.close(new Error('channel disconnected')));
+    transport.on(MessagePortEvent.MESSAGE, (message: any) => this.receive(message));
+    transport.on(MessagePortEvent.DISCONNECT, () => this.close(new Error('channel disconnected')));
   }
 
   /** Answers the peer's requests. `handler` receives `(type, payload)` and its result is the reply. */

@@ -1,6 +1,7 @@
 import { PluginGuest } from '@core/plugin/host/plugin-guest';
 import { GuestEntryPort } from '@core/process/guest-entry-port';
 import { ProcessEntry } from '@core/process/process-entry';
+import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
 
 /**
  * Entry of a plugin's process. Started by `PluginHost` through whichever launcher the deployment has —
@@ -13,7 +14,7 @@ export class PluginGuestMain {
     const port = await GuestEntryPort.connect();
     const guest = new PluginGuest(port);
     void guest;
-    port.on('disconnect', () => process.exit(0));
+    port.on(MessagePortEvent.DISCONNECT, () => process.exit(0));
     process.on('unhandledRejection', (reason) => {
       console.error('plugin-guest: unhandled rejection', reason instanceof Error ? reason.stack : reason);
     });

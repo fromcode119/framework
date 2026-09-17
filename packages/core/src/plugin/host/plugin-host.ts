@@ -29,6 +29,7 @@ import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginHostGuestBridge } from '@core/plugin/host/plugin-host-guest-bridge';
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
+import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 
 /**
  * One isolated plugin, from the host's side: its process, its channel, its tokens, its stand-ins.
@@ -134,7 +135,7 @@ export class PluginHost extends PluginHostGuestBridge {
     this.guest = guest;
     this.socketPath = path.join(guest.socketDir, PluginHostState.ROUTES_SOCKET);
     this.proxy.retarget(this.socketPath);
-    guest.onOutput((stream, line) => (stream === 'stderr' ? this.logger.warn(line) : this.logger.info(line)));
+    guest.onOutput((stream, line) => (stream === GuestOutputStream.STDERR ? this.logger.warn(line) : this.logger.info(line)));
     this.channel = new PluginChannel(guest.port);
     this.channel.serve((type, payload) => this.serve(type, payload));
     this.channel.onNotify((type, payload) => this.notified(type, payload));

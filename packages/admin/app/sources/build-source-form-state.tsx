@@ -4,6 +4,7 @@ import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-sour
 import { AdminComponent } from '@/components/view/admin-component.client';
 import type { IBuildSourceFormProps } from '@/app/sources/interfaces/build-source-form-props.interface';
 import type { IBuildSourceFormState } from '@/app/sources/interfaces/build-source-form-state.interface';
+import { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
 
 /**
  * What the add/edit source form holds, and what each field should say about itself.
@@ -60,7 +61,7 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
   }
 
   protected get isEdit(): boolean {
-    return this.props.mode === 'edit';
+    return this.props.mode === SourceEditorMode.EDIT;
   }
 
   protected get hasStoredToken(): boolean {

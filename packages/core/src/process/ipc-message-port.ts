@@ -1,4 +1,5 @@
 import type { IMessagePort } from '@core/process/interfaces/message-port.interface';
+import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
 
 /**
  * Node's own IPC channel as an {@link IMessagePort}: `child.send`/`child.on` on the parent's side,
@@ -25,8 +26,8 @@ export class IpcMessagePort implements IMessagePort {
     this.peer.send?.(message);
   }
 
-  on(event: 'message' | 'disconnect', listener: (...args: any[]) => void): this {
-    this.peer.on(event, listener);
+  on(event: MessagePortEvent, listener: (...args: any[]) => void): this {
+    this.peer.on(String(event.value), listener);
     return this;
   }
 

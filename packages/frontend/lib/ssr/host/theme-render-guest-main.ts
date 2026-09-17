@@ -1,4 +1,4 @@
-import { GuestEntryPort, ProcessEntry } from '@fromcode119/core/process';
+import { GuestEntryPort, MessagePortEvent, ProcessEntry } from '@fromcode119/core/process';
 import { ThemeRenderGuest } from '@/lib/ssr/host/theme-render-guest';
 
 /**
@@ -12,7 +12,7 @@ export class ThemeRenderGuestMain {
     const port = await GuestEntryPort.connect();
     const guest = new ThemeRenderGuest(port);
     void guest;
-    port.on('disconnect', () => process.exit(0));
+    port.on(MessagePortEvent.DISCONNECT, () => process.exit(0));
     process.on('unhandledRejection', (reason) => {
       console.error('render-guest: unhandled rejection', reason instanceof Error ? reason.stack : reason);
     });

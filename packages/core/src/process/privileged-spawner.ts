@@ -7,6 +7,8 @@ import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.int
 import type { IGuestProcessSpec } from '@core/process/interfaces/guest-process-spec.interface';
 import type { IMessagePort } from '@core/process/interfaces/message-port.interface';
 import type { ISpawnerPrepared } from '@core/process/interfaces/spawner-prepared.interface';
+import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
+import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 
 /**
  * The one process that keeps root after the app gives it up — and does exactly three things with it:
@@ -25,7 +27,7 @@ export class PrivilegedSpawner {
     this.channel = new PluginChannel(port);
     this.channel.serve((type, payload) => this.handle(type, payload));
     this.channel.onNotify((type, payload) => { if (type === 'kill') this.kill(String(payload?.id ?? ''), payload?.signal); });
-    port.on('disconnect', () => this.shutdown());
+    port.on(MessagePortEvent.DISCONNECT, () => this.shutdown());
   }
 
   private async handle(type: string, payload: any): Promise<unknown> {
@@ -88,8 +90,8 @@ export class PrivilegedSpawner {
     });
     if (!child.pid) throw new Error(`spawner: could not start guest "${id}"`);
     this.children.set(id, child);
-    const out = new LineSplitter((line) => this.channel.notify('output', { id, stream: 'stdout', line }));
-    const err = new LineSplitter((line) => this.channel.notify('output', { id, stream: 'stderr', line }));
+    const out = new LineSplitter((line) => this.channel.notify('output', { id, stream: String(GuestOutputStream.STDOUT.value), line }));
+    const err = new LineSplitter((line) => this.channel.notify('output', { id, stream: String(GuestOutputStream.STDERR.value), line }));
     child.stdout?.on('data', (chunk: Buffer) => out.push(chunk));
     child.stderr?.on('data', (chunk: Buffer) => err.push(chunk));
     child.on('exit', (code, signal) => {
@@ -98,7 +100,7 @@ export class PrivilegedSpawner {
       if (this.children.get(id) === child) this.children.delete(id);
       this.channel.notify('exit', { id, pid: child.pid, code, signal });
     });
-    child.on('error', (error) => this.channel.notify('output', { id, stream: 'stderr', line: `spawn error: ${error.message}` }));
+    child.on('error', (error) => this.channel.notify('output', { id, stream: String(GuestOutputStream.STDERR.value), line: `spawn error: ${error.message}` }));
     return { pid: child.pid };
   }
 

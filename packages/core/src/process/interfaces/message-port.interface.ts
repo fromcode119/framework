@@ -1,3 +1,5 @@
+import type { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
+
 /**
  * One end of a message pipe between two processes — Node IPC (a forked child) or a framed Unix
  * socket (a process the privileged spawner started, which is no child of ours). `PluginChannel` and
@@ -5,7 +7,7 @@
  */
 export interface IMessagePort {
   send(message: unknown): void;
-  on(event: 'message' | 'disconnect', listener: (...args: any[]) => void): unknown;
+  on(event: MessagePortEvent, listener: (...args: any[]) => void): unknown;
   close(): void;
   readonly isClosed: boolean;
 }
