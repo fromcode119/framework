@@ -3,13 +3,14 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { ProjectPaths } from '@core/config/paths';
+import { FrameworkRootLocator } from '@core/config/framework-root-locator';
 
 describe('ProjectPaths repository helpers', () => {
   const temporaryDirectories: string[] = [];
 
   afterEach(() => {
     delete process.env.FROMCODE_PROJECT_ROOT;
-    (ProjectPaths as any).cachedRoot = null;
+    FrameworkRootLocator.forget();
 
     for (const directoryPath of temporaryDirectories) {
       if (fs.existsSync(directoryPath)) {

@@ -5,6 +5,7 @@ import path from 'path';
 import { ProjectPaths } from '@core/config/paths';
 import { BackupService } from '@core/management/backup-service';
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
+import { FrameworkRootLocator } from '@core/config/framework-root-locator';
 
 describe('BackupService', () => {
   const temporaryDirectories: string[] = [];
@@ -14,7 +15,7 @@ describe('BackupService', () => {
     delete process.env.DATABASE_URL;
     delete process.env.DB_DIALECT;
     delete process.env.FROMCODE_PROJECT_ROOT;
-    (ProjectPaths as any).cachedRoot = null;
+    FrameworkRootLocator.forget();
 
     for (const directoryPath of temporaryDirectories) {
       if (fs.existsSync(directoryPath)) {
