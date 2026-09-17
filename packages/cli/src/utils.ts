@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import * as readline from 'readline';
 import chalk from 'chalk';
-import { DatabaseFactory, DatabaseManager } from '@fromcode119/database';
+import { DatabaseConnectionUrls, DatabaseFactory, DatabaseManager } from '@fromcode119/database';
 import { ProjectPaths, DiscoveryService, MarketplaceCatalogService } from '@fromcode119/core';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 
@@ -57,6 +57,23 @@ export class CliUtils {
 
   static async getDatabase(): Promise<DatabaseManager> {
     const url = process.env.DATABASE_URL;
+    if (!url) throw new Error('DATABASE_URL is not defined. Please check your .env file.');
+    const db = DatabaseFactory.create(url);
+    await db.connect();
+    return db;
+  }
+
+  /**
+   * The connection DDL runs on — migrations and rollbacks.
+   *
+   * `DATABASE_URL` is the REQUEST path, which on a tenant-isolated deployment is deliberately a
+   * non-owner role with no CREATE on the schema: `db migrate` connected as that role and could only
+   * ever fail with "permission denied for schema public" wherever the two roles are actually
+   * separated. `DatabaseConnectionUrls.migration()` falls back to `DATABASE_URL`, so a single-role
+   * install behaves exactly as before.
+   */
+  static async getSchemaDatabase(): Promise<DatabaseManager> {
+    const url = DatabaseConnectionUrls.migration();
     if (!url) throw new Error('DATABASE_URL is not defined. Please check your .env file.');
     const db = DatabaseFactory.create(url);
     await db.connect();

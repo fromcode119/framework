@@ -22,6 +22,13 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('per-tenant settings and media sharing
 
   const PLATFORM_KEY = 'iso_platform_setting';
   const ACME_KEY = 'iso_acme_setting';
+  /**
+   * A key the POLICY declares as platform-level — the readable-across-tenants case below needs one,
+   * and which keys those are is fixed in migration 023 rather than in application code.
+   */
+  const DECLARED_PLATFORM_KEY = 'maintenance_mode';
+  /** True when this run created the declared row itself, and must therefore remove it again. */
+  let seededDeclaredKey = false;
 
   beforeAll(async () => {
     admin = new Pool({ connectionString: ownerUrl });
@@ -48,6 +55,21 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('per-tenant settings and media sharing
         'INSERT INTO "_system_meta" ("key","value","tenant_id") VALUES ($1,$2,NULL)',
         [PLATFORM_KEY, 'platform'],
       );
+      // The declared platform row is SEEDED AT API BOOT, not by a migration, so a database that has
+      // only been migrated — which is what CI has — does not carry one and the read below would find
+      // nothing. Created only when it is genuinely absent, and removed again only in that case: on a
+      // real deployment this is a live deployment setting and the suite must not touch it.
+      const existing = await seed.query(
+        'SELECT 1 FROM "_system_meta" WHERE "key" = $1 AND "tenant_id" IS NULL',
+        [DECLARED_PLATFORM_KEY],
+      );
+      seededDeclaredKey = existing.rowCount === 0;
+      if (seededDeclaredKey) {
+        await seed.query(
+          'INSERT INTO "_system_meta" ("key","value","tenant_id") VALUES ($1,$2,NULL)',
+          [DECLARED_PLATFORM_KEY, 'false'],
+        );
+      }
       await seed.query("SELECT set_config('app.platform_admin','off',false)");
 
       await seed.query("SELECT set_config('app.tenant_id','t1',false)");
@@ -73,6 +95,12 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('per-tenant settings and media sharing
     try {
       await cleanup.query("SELECT set_config('app.platform_admin','on',false)");
       await cleanup.query('DELETE FROM "_system_meta" WHERE "key" = $1', [PLATFORM_KEY]);
+      if (seededDeclaredKey) {
+        await cleanup.query(
+          'DELETE FROM "_system_meta" WHERE "key" = $1 AND "tenant_id" IS NULL',
+          [DECLARED_PLATFORM_KEY],
+        );
+      }
       await cleanup.query("SELECT set_config('app.platform_admin','off',false)");
       await cleanup.query("SELECT set_config('app.tenant_id','t1',false)");
       await cleanup.query('DELETE FROM "_system_meta" WHERE "key" = $1', [ACME_KEY]);
@@ -110,14 +138,16 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('per-tenant settings and media sharing
    * resolve to two visible rows — so an arbitrary platform row is now invisible, which is the
    * behaviour these two cases pin from both directions.
    *
-   * Read-only on purpose: `maintenance_mode` is a real deployment setting, and a test that wrote one
-   * would be reconfiguring the machine it runs on.
+   * Read-only WHEREVER THE ROW EXISTS: `maintenance_mode` is a real deployment setting, and a test
+   * that wrote one would be reconfiguring the machine it runs on. `beforeAll` creates it only on a
+   * database that has none — a freshly migrated one, because the row is seeded at API boot rather
+   * than by a migration — and removes only what it created.
    */
   it('a DECLARED platform key is readable by every tenant', async () => {
     for (const tenant of ['t1', 't2']) {
       const rows = await asTenant(tenant, async (c) =>
         (await c.query('SELECT "value" FROM "_system_meta" WHERE "key" = $1 AND "tenant_id" IS NULL',
-          ['maintenance_mode'])).rows);
+          [DECLARED_PLATFORM_KEY])).rows);
       expect(rows).toHaveLength(1);
     }
   });

@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { MigrationManager, Seeder, DatabaseConnectionFileService, DatabaseRoleBootstrapService } from '@fromcode119/core';
+import { AppRoleGrantService, MigrationManager, Seeder, DatabaseConnectionFileService, DatabaseRoleBootstrapService } from '@fromcode119/core';
 import { DatabaseFactory } from '@fromcode119/database';
 import { CliUtils } from '@cli/utils';
 
@@ -107,10 +107,16 @@ export class DatabaseCommands {
       .action(async () => {
         try {
           console.log(chalk.blue('\nRunning migrations...'));
-          const database = await CliUtils.getDatabase();
+          const database = await CliUtils.getSchemaDatabase();
           const migrationManager = new MigrationManager(database);
 
           await migrationManager.migrate();
+          // Exactly what PluginManagerInitService does immediately after migrating, on the same owner
+          // connection: whatever DDL just ran created tables the runtime role has no rights to yet, and
+          // Postgres attaches default privileges to the role that CREATED the object. Without this a
+          // migration run from the CLI leaves the app answering "permission denied" on the new tables.
+          // A no-op unless the deployment actually separates the two roles.
+          await AppRoleGrantService.apply(database as never);
 
           console.log(chalk.green('✔ Migrations completed successfully.'));
           process.exit(0);
@@ -129,7 +135,7 @@ export class DatabaseCommands {
       .action(async () => {
         try {
           console.log(chalk.blue('\nRolling back migrations...'));
-          const database = await CliUtils.getDatabase();
+          const database = await CliUtils.getSchemaDatabase();
           const migrationManager = new MigrationManager(database);
 
           await migrationManager.rollback();
