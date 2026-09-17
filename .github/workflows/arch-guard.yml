@@ -42,12 +42,17 @@ jobs:
     steps:
       # The guards resolve a repo root holding `framework/Source` beside `plugins/`, `themes/` and
       # `appearance/`, so both checkouts go to the paths that reproduce it.
+      # `framework/Source`, not `framework`: this repository's ROOT is the framework's `Source`
+      # directory — `packages/`, the Dockerfile and `package-lock.json` sit at the top of it. Checking
+      # it out to `framework` put every one of them one level above where the rest of this job looks,
+      # so `cache-dependency-path` resolved nothing and the run died at setup-node before a single
+      # guard ran. Nothing caught it because this workflow had never executed until now.
       - name: Check out the framework
         uses: actions/checkout@v5
         with:
           repository: ${{ github.event_name == 'workflow_call' && 'fromcode119/framework' || github.repository }}
           ref: ${{ github.event_name == 'workflow_call' && inputs.framework-ref || github.ref }}
-          path: framework
+          path: framework/Source
 
       - name: Check out the extension
         if: ${{ github.event_name == 'workflow_call' }}
