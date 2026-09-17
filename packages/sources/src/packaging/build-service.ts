@@ -20,6 +20,9 @@ import { PackageArchiver } from '@sources/packaging/package-archiver';
 import { ArtifactDigestService } from '@sources/packaging/artifact-digest-service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { BuiltPackageService } from '@sources/packaging/built-package-service';
+import { SourceRepositoryService } from '@sources/packaging/source-repository-service';
+import { SourceBuildRunner } from '@sources/packaging/source-build-runner';
 
 /**
  * Orchestrates the full build pipeline: read from DB → git sync →
@@ -47,14 +50,37 @@ export class BuildService {
       packageBuilder,
       (identity, fileName, digest) => this.buildSourceService.recordArchive(identity, fileName, digest),
     );
+    this.builtPackages = new BuiltPackageService(
+      db,
+      this.logger,
+      this.buildsSlug,
+      packageBuilder,
+      this.packageDownloads,
+      installer,
+    );
+    this.repository = new SourceRepositoryService(providers, buildSourceService);
     this.builtPackageInstaller = new BuiltPackageInstaller(
       installer,
       (identity, message) => this.buildSourceService.recordAutoUpdateFailure(identity, message),
+    );
+    this.buildRunner = new SourceBuildRunner(
+      db,
+      this.logger,
+      this.buildsSlug,
+      packageBuilder,
+      this.builtPackageInstaller,
+      emitPackageBuilt,
+      (entry) => this.providerFor(entry),
+      (...args: any[]) => (this.resolveSourceDirectory as any)(...args),
+      (...args: any[]) => (this.resolvePackageArtifact as any)(...args),
     );
   }
 
   private readonly builtPackageInstaller: BuiltPackageInstaller;
   private readonly packageDownloads: PackageDownloadService;
+  private readonly builtPackages: BuiltPackageService;
+  private readonly repository: SourceRepositoryService;
+  private readonly buildRunner: SourceBuildRunner;
 
   /** The provider a row names, or null when this installation does not have it. */
   private providerFor(entry: { provider?: unknown }): ISourceProvider | null {
@@ -157,153 +183,39 @@ export class BuildService {
     return this.buildSourceService.getSanitizedSource(identity);
   }
 
-  async resolvePackageDownloadPath(identity: BuildSourceIdentity): Promise<string | null> {
-    const artifact = await this.resolvePackageArtifact(identity);
-    return artifact?.downloadPath || null;
+  /** @see BuiltPackageService.resolvePackageArtifact */
+  resolvePackageArtifact(...args: Parameters<BuiltPackageService["resolvePackageArtifact"]>): ReturnType<BuiltPackageService["resolvePackageArtifact"]> {
+    return this.builtPackages.resolvePackageArtifact(...args);
   }
 
-  /**
-   * Where a built package IS, for something about to open it.
-   *
-   * Deliberately separate from `resolvePackageDownloadPath`: that one answers with the route a
-   * browser would fetch, and the two were confused once already — an installer opened `/themes/x.zip`
-   * as a file and failed with EACCES on a directory it had no business writing to.
-   */
-  async resolvePackageFilePath(identity: BuildSourceIdentity): Promise<string | null> {
-    const artifact = await this.resolvePackageArtifact(identity);
-    return artifact?.filePath || null;
+  /** @see BuiltPackageService.listVersions */
+  listVersions(...args: Parameters<BuiltPackageService["listVersions"]>): ReturnType<BuiltPackageService["listVersions"]> {
+    return this.builtPackages.listVersions(...args);
   }
 
-  /**
-   * Everything known about a built package: where it is staged, and where a download would come from.
-   *
-   * Keyed on the recorded VERSION rather than a filename, because a build no longer produces a file
-   * — it produces a staged directory whose location the builder owns. The archive exists only once
-   * somebody has asked to download it.
-   */
-  async resolvePackageArtifact(identity: BuildSourceIdentity): Promise<IBuiltPackageArtifact | null> {
-    const entry = await this.db.findOne(this.buildsSlug, identity.where);
-    if (!entry) {
-      return null;
-    }
-
-    const resolvedType = identity.type;
-    const version = CoercionUtils.toString(entry.version).trim();
-    const fileName = CoercionUtils.toString(entry.file_name ?? entry.fileName).trim() || null;
-
-    return {
-      // The digest recorded when an archive was last written. An installer that fetches the archive
-      // MUST re-hash it and compare — it is the only value in the exchange that did not travel
-      // inside the package. Empty means no archive has been written, and a caller must refuse
-      // rather than assume.
-      artifactSha256: CoercionUtils.toString(entry.artifactSha256),
-      // The route that produces a download. It zips the staged package on request; nothing serves a
-      // file that may not exist.
-      downloadPath: `/sources/${String(identity.type.value)}/${identity.slug}/package`,
-      // The package itself. Asked of the builder rather than rebuilt from the kind's name: joining
-      // `/themes/<file>` onto the process's cwd once named `/app/themes/<file>` for an archive that
-      // lives in the WORKSPACE. Null when no successful build has recorded a version.
-      stagedDir: version ? this.packageBuilder.stagingDirFor(resolvedType, identity.slug, version) : null,
-      // The archive, if one has been written. Core only ever has this.
-      filePath: fileName ? path.join(this.packageBuilder.outputDirFor(resolvedType), fileName) : null,
-      fileName,
-      type: resolvedType,
-      version: version || undefined,
-    };
+  /** @see BuiltPackageService.installVersion */
+  installVersion(...args: Parameters<BuiltPackageService["installVersion"]>): ReturnType<BuiltPackageService["installVersion"]> {
+    return this.builtPackages.installVersion(...args);
   }
 
-  /**
-   * What is RUNNING, what was last BUILT, and everything still installable.
-   *
-   * Three different facts that the screen used to collapse into one. A source reported the version it
-   * last built and nothing else, so an installation could report "built 0.1.31" for weeks while
-   * 0.1.20 served every request — the two are recorded in different places and nothing compared them.
-   *
-   * `available` is read from disk rather than from any record: a build clears its own version's
-   * staging directory and leaves every other, so the versions this installation can still put in
-   * place are simply the ones that are still there.
-   */
-  async listVersions(identity: BuildSourceIdentity): Promise<{
-    installed: string | null;
-    built: string | null;
-    available: string[];
-  }> {
-    const entry = await this.db.findOne(this.buildsSlug, identity.where);
-    const built = CoercionUtils.toString(entry?.version).trim() || null;
-    const installed = this.installer
-      ? await this.installer.installedExtensionVersion(identity.slug, identity.type)
-      : null;
-
-    return {
-      installed,
-      built,
-      available: this.packageBuilder.listStagedVersions(identity.type, identity.slug),
-    };
+  /** @see BuiltPackageService.resolveInstallablePackagePath */
+  resolveInstallablePackagePath(...args: Parameters<BuiltPackageService["resolveInstallablePackagePath"]>): ReturnType<BuiltPackageService["resolveInstallablePackagePath"]> {
+    return this.builtPackages.resolveInstallablePackagePath(...args);
   }
 
-  /**
-   * Puts a SPECIFIC staged version in place — the way back to an older build.
-   *
-   * Deliberately not routed through `BuiltPackageInstaller`: that one exists to decide whether a
-   * FRESH build may install itself, and answers to `installAfterBuild` and `autoUpdate`. This is an
-   * operator pressing a button about a version that already exists, so those two settings have
-   * nothing to say about it — consulting them would make the control silently do nothing on a source
-   * configured not to auto-install, which is most of them.
-   *
-   * Refuses a version it cannot find on disk rather than installing the newest as a courtesy: the
-   * request named a version, and quietly installing a different one is the worst outcome available.
-   */
-  async installVersion(identity: BuildSourceIdentity, version: string): Promise<{ installed: string }> {
-    const wanted = CoercionUtils.toString(version).trim();
-    if (!wanted) throw new Error('No version was given.');
-    if (!this.installer) throw new Error('No installer is wired; this deployment cannot install packages.');
-    if (identity.type === ExtensionScope.CORE) {
-      // Core replaces the running project root. Whatever swapping its version means, it is not this
-      // button, and answering the request would be worse than refusing it.
-      throw new Error('Core cannot be switched to another version from here.');
-    }
-
-    const available = this.packageBuilder.listStagedVersions(identity.type, identity.slug);
-    if (!available.includes(wanted)) {
-      throw new Error(`Version "${wanted}" is not staged for ${identity.key}. Available: ${available.join(', ') || 'none'}.`);
-    }
-
-    const stagedDir = this.packageBuilder.stagingDirFor(identity.type, identity.slug, wanted);
-    // `activate: false` — installing a theme is not choosing it. Putting a version back must not also
-    // switch the site onto it; that is a separate decision the operator makes on the Themes screen.
-    await this.installer.installExtensionDirectory(stagedDir, identity.type, { activate: false });
-    this.logger.info(`Installed ${identity.key} version ${wanted} from ${stagedDir}.`);
-
-    return { installed: wanted };
+  /** @see BuiltPackageService.archivePackage */
+  archivePackage(...args: Parameters<BuiltPackageService["archivePackage"]>): ReturnType<BuiltPackageService["archivePackage"]> {
+    return this.builtPackages.archivePackage(...args);
   }
 
-  /**
-   * The built package as something an installer can OPEN — an archive when one was written, the staged
-   * directory otherwise.
-   *
-   * `resolvePackageFilePath` answers only with the archive, and a build no longer writes one: it stages
-   * a directory and the zip is produced when somebody presses Download. So on any installation where
-   * nobody had downloaded a package, that method answered null for every source, the catalogue reported
-   * "offered by this installation but its package could not be found", and the admin's Update button
-   * failed for every locally built plugin. Measured on production: `file_name` was empty for all 20.
-   *
-   * The staged directory is a first-class answer rather than a consolation — the installer already
-   * branches on `isDirectory()` and installs one directly. Existence is checked here so that a missing
-   * package is reported as missing, instead of throwing `ENOENT` inside the caller's `statSync`.
-   */
-  async resolveInstallablePackagePath(identity: BuildSourceIdentity): Promise<string | null> {
-    const artifact = await this.resolvePackageArtifact(identity);
-    if (!artifact) return null;
-
-    for (const candidate of [artifact.filePath, artifact.stagedDir]) {
-      if (candidate && fs.existsSync(candidate)) return candidate;
-    }
-    return null;
+  /** @see BuiltPackageService.resolvePackageDownloadPath */
+  resolvePackageDownloadPath(...args: Parameters<BuiltPackageService["resolvePackageDownloadPath"]>): ReturnType<BuiltPackageService["resolvePackageDownloadPath"]> {
+    return this.builtPackages.resolvePackageDownloadPath(...args);
   }
 
-  /** The built package as a downloadable archive, made on request. See PackageDownloadService. */
-  async archivePackage(identity: BuildSourceIdentity): Promise<{ filePath: string; fileName: string } | null> {
-    return this.packageDownloads.archive(identity, await this.resolvePackageArtifact(identity));
+  /** @see BuiltPackageService.resolvePackageFilePath */
+  resolvePackageFilePath(...args: Parameters<BuiltPackageService["resolvePackageFilePath"]>): ReturnType<BuiltPackageService["resolvePackageFilePath"]> {
+    return this.builtPackages.resolvePackageFilePath(...args);
   }
 
   async createSource(input: any): Promise<any> {
@@ -322,112 +234,9 @@ export class BuildService {
     return this.buildSourceService.updateSource(identity, input);
   }
 
-  private async buildOne(type: ExtensionScope, entry: any): Promise<IBuildResult> {
-    const { slug, gitUrl, branch } = entry;
-    const gitToken = entry.gitSecret;
-
-    // A stored row is untrusted input. It may predate the transport allow-list, or have been written
-    // through a path that skipped it, so the URL is re-asserted immediately before anything runs git.
-    // Refusing here rather than inside GitSyncService means the refusal is recorded on the build row
-    // and shown in the admin, instead of surfacing as an opaque git failure.
-    try {
-      GitUrlPolicy.assertAllowed(gitUrl);
-    } catch (err: any) {
-      const message = String(err?.message || err);
-      await this.upsertBuildRecord(slug, type, gitUrl, branch, {
-        last_build_at: new Date().toISOString(),
-        last_build_status: 'failed',
-        last_error: message,
-      });
-      return { slug, type, success: false, error: message };
-    }
-
-    this.logger.info(`Starting build pipeline for ${slug} (${branch})`);
-
-    await this.upsertBuildRecord(slug, type, gitUrl, branch, { last_build_status: 'building', last_error: '' });
-
-    try {
-      const provider = this.providerFor(entry);
-      if (!provider) {
-        throw new Error(
-          `"${slug}" is tracked with the provider "${SourceProviders.normalize(entry.provider)}", which this `
-          + 'installation does not have. Nothing was fetched — building it with a different provider would '
-          + 'fetch source the operator never pointed at.',
-        );
-      }
-      const fetched = await provider.fetch({
-        location: gitUrl, ref: branch, secret: gitToken, slug, kind: this.resolveSourceDirectory(type),
-      });
-      const sourceDir = fetched.directory;
-      const commitSha = fetched.revision || 'unknown';
-      // Read BEFORE building: what changed is the range between what was last built and what is
-      // about to be, and the record still holds the previous revision at this point.
-      const changelog = await provider.changesSince({ directory: sourceDir, previousRevision: String(entry.lastCommitSha || '') });
-      const pkg = await this.packageBuilder.build(sourceDir, type);
-
-      this.emitPackageBuilt({
-        type,
-        slug: pkg.slug,
-        version: pkg.version,
-        fileName: pkg.fileName,
-        manifest: pkg.manifest,
-        artifactSha256: pkg.artifactSha256,
-      });
-      await this.upsertBuildRecord(slug, type, gitUrl, branch, {
-        last_commit_sha: commitSha,
-        last_build_at: new Date().toISOString(),
-        last_build_status: 'success',
-        last_error: '',
-        version: pkg.version,
-        // A build stages a package directory and writes no archive, so any archive NAMED here
-        // belongs to an earlier build of this source. Cleared rather than left: the filename carries
-        // the version, a rebuild of the same version reuses it, and a stale row would hand a
-        // download a package built before the commit that was just built. Core is the exception —
-        // it produces an archive and nothing else.
-        file_name: pkg.fileName ?? null,
-        artifactSha256: pkg.artifactSha256 ?? null,
-        changelog: changelog.join('\n'),
-      });
-
-      // Every successful build, manual or scheduled, offers itself to the installer. What happens
-      // next is the source's own two settings; this is just the one place a build ends.
-      if (BuiltPackageInstaller.readFlag(entry.installAfterBuild ?? entry.install_after_build)) {
-        const identity = BuildSourceIdentity.parse(type, slug);
-        await this.builtPackageInstaller.install(
-          identity,
-          await this.resolvePackageArtifact(identity),
-          { ...entry, type, version: pkg.version },
-        );
-      }
-
-      return { slug, type, success: true, version: pkg.version, fileName: pkg.fileName, changelog: changelog.join('\n') };
-    } catch (err: any) {
-      // git and npm routinely echo the remote URL and registry URLs, either of which can carry a
-      // credential. This message is persisted AND rendered verbatim in the admin, so it is redacted
-      // before it is stored or returned.
-      const errorMsg = BuildErrorRedactionService.redact(err?.message || String(err));
-      await this.upsertBuildRecord(slug, type, gitUrl, branch, {
-        last_build_at: new Date().toISOString(),
-        last_build_status: 'failed',
-        last_error: errorMsg.substring(0, 2000),
-      });
-      return { slug, type, success: false, error: errorMsg };
-    }
-  }
-
-  /**
-   * Writes a build's progress onto its own row.
-   *
-   * The lookup carries the kind: by slug alone, building a theme found — and stamped its status,
-   * version and error onto — a plugin that happened to share the name.
-   */
-  private async upsertBuildRecord(slug: string, type: ExtensionScope, gitUrl: string, branch: string, updates: Record<string, any>): Promise<void> {
-    const existing = await this.db.findOne(this.buildsSlug, { slug, type: String(type.value) });
-    if (existing) {
-      await this.db.update(this.buildsSlug, { id: existing.id }, updates);
-    } else {
-      await this.db.insert(this.buildsSlug, { slug, type: type.value, git_url: gitUrl, branch, ...updates });
-    }
+  /** @see SourceBuildRunner.buildOne */
+  private async buildOne(...args: Parameters<SourceBuildRunner["buildOne"]>): ReturnType<SourceBuildRunner["buildOne"]> {
+    return this.buildRunner.buildOne(...args);
   }
 
   /**
@@ -436,59 +245,24 @@ export class BuildService {
    * Goes through the same git service as every other remote call, so the URL allow-list applies
    * here too — this endpoint must not become a way to make the server contact arbitrary hosts.
    */
-  /**
-   * The token stored against an existing source, for a form that is EDITING one.
-   *
-   * The stored secret is never sent to the browser, so the edit dialog posts a blank token. Without
-   * this, reading a private repository's branches failed for want of credentials the server already
-   * had, and the field said "No branches could be read" — a statement about the repository for what
-   * was really a statement about the request.
-   *
-   * The token is released ONLY for the repository it was stored against. A caller chooses both the
-   * slug and the URL, so without that check "read the branches of <attacker's host>, as source
-   * <yours>" would hand somebody else's host a working credential — the stored secret would leave
-   * the server after all, just not through the field that refuses to show it.
-   */
-  async resolveStoredToken(identity: BuildSourceIdentity, gitUrl: string): Promise<string | undefined> {
-    const entry = await this.buildSourceService.getRawSource(identity);
-    if (!entry?.gitSecret) return undefined;
-    return BuildService.sameRepository(entry.gitUrl, gitUrl) ? entry.gitSecret : undefined;
+  /** @see SourceRepositoryService.resolveStoredToken */
+  resolveStoredToken(...args: Parameters<SourceRepositoryService["resolveStoredToken"]>): ReturnType<SourceRepositoryService["resolveStoredToken"]> {
+    return this.repository.resolveStoredToken(...args);
   }
 
-  /**
-   * Whether two URLs name the same repository, for the purpose of releasing a credential.
-   *
-   * Deliberately strict: case and a trailing slash or `.git` are noise git itself ignores, and
-   * nothing else is forgiven. A looser comparison here is a credential leak, so anything it cannot
-   * prove identical is treated as a different repository.
-   */
-  private static sameRepository(stored: string, requested: string): boolean {
-    // Trailing slashes come off FIRST: "repo.git/" must reach "repo", and stripping `.git` before
-    // the slash leaves "repo.git", which then matches nothing.
-    const normalize = (value: string): string =>
-      String(value || '').trim().toLowerCase().replace(/\/+$/, '').replace(/\.git$/, '').replace(/\/+$/, '');
-    const left = normalize(stored);
-    return left.length > 0 && left === normalize(requested);
+  /** @see SourceRepositoryService.listBranches */
+  listBranches(...args: Parameters<SourceRepositoryService["listBranches"]>): ReturnType<SourceRepositoryService["listBranches"]> {
+    return this.repository.listBranches(...args);
   }
 
-  async listBranches(gitUrl: string, token?: string): Promise<string[]> {
-    const provider = this.providers(SourceProviders.defaultKey());
-    return provider ? provider.listRefs({ location: gitUrl, secret: token }) : [];
+  /** @see SourceRepositoryService.inspectSource */
+  inspectSource(...args: Parameters<SourceRepositoryService["inspectSource"]>): ReturnType<SourceRepositoryService["inspectSource"]> {
+    return this.repository.inspectSource(...args);
   }
 
-  /** What the repository declares itself to be — slug and type — so the form never asks for them. */
-  async inspectSource(gitUrl: string, branch: string, token?: string): Promise<Record<string, unknown> | null> {
-    const provider = this.providers(SourceProviders.defaultKey());
-    return provider ? provider.inspect({ location: gitUrl, ref: branch, secret: token }) : null;
+  /** @see SourceRepositoryService.resolveSourceDirectory */
+  resolveSourceDirectory(...args: Parameters<SourceRepositoryService["resolveSourceDirectory"]>): ReturnType<SourceRepositoryService["resolveSourceDirectory"]> {
+    return this.repository.resolveSourceDirectory(...args);
   }
 
-  private resolveSourceDirectory(type: ExtensionScope): string {
-    if (type === ExtensionScope.CORE) {
-      return 'core';
-    }
-    if (type === ExtensionScope.APPEARANCE) {
-      return 'appearances';
-    }
-    return type === ExtensionScope.THEME ? 'themes' : 'plugins';
-  }
 }

@@ -1,7 +1,7 @@
 import { ExtensionScope } from '@fromcode119/core';
 import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { BuildService } from '@sources/packaging/build-service';
+import { BuiltPackageService } from '@sources/packaging/built-package-service';
 import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
 
 /**
@@ -15,7 +15,7 @@ import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
  * only what it last built, so an installation could say "built 0.1.31" for weeks while 0.1.20 served
  * every request and no screen compared the two.
  */
-describe('BuildService — versions', () => {
+describe('BuiltPackageService — versions', () => {
   const identity = BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms') as BuildSourceIdentity;
   let service: any;
   let staged: string[];
@@ -26,7 +26,7 @@ describe('BuildService — versions', () => {
     staged = ['0.1.31', '0.1.9', '0.1.20'];
     installed = '0.1.20';
     installCalls = [];
-    service = Object.create(BuildService.prototype);
+    service = Object.create(BuiltPackageService.prototype);
     service.buildsSlug = SourcesCollectionRegistry.BUILDS;
     service.logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     service.packageBuilder = {

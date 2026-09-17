@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExtensionScope } from '@fromcode119/core';
-import { BuildService } from '@sources/packaging/build-service';
+import { SourceRepositoryService } from '@sources/packaging/source-repository-service';
 import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 
 /**
@@ -10,7 +10,7 @@ import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
  * nothing beyond that is forgiven. Anything it cannot prove identical is a different repository,
  * because the cost of a false match is somebody else's host receiving a working token.
  */
-describe('BuildService — releasing a stored token', () => {
+describe('SourceRepositoryService — releasing a stored token', () => {
   const STORED = 'https://github.com/fromcode119/plugin-forms.git';
   let service: any;
 
@@ -21,7 +21,7 @@ describe('BuildService — releasing a stored token', () => {
   };
 
   beforeEach(() => {
-    service = Object.create(BuildService.prototype);
+    service = Object.create(SourceRepositoryService.prototype);
     withStored(STORED, 'stored-token');
   });
 
