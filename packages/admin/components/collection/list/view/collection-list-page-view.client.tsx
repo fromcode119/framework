@@ -14,6 +14,7 @@ import { CollectionListPageService } from '@/components/collection/list/page-ser
 import { CollectionListPageLifecycle } from '@/components/collection/list/view/collection-list-page-lifecycle.client';
 import { CollectionListPageViewModelBuilder } from '@/components/collection/list/view/collection-list-page-view-model.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
+import { RecordOperations } from '@/components/collection/list/record-operations';
 
 export class CollectionListPageView extends Reactor {
   @prop declare pluginSlug: string;
@@ -88,7 +89,7 @@ export class CollectionListPageView extends Reactor {
     const page = targetPage ?? this.page;
     this.updateState('loading', true);
     try {
-      const result = await CollectionListPageService.fetchCollectionData({
+      const result = await RecordOperations.fetchCollectionData({
         resolvedSlug, targetPage: page, pageSize: this.pageSize,
         search: this.debouncedSearch, sort: this.sort,
         statusFilter: this.statusFilter, fieldFilters: this.fieldFilters
@@ -110,7 +111,7 @@ export class CollectionListPageView extends Reactor {
     const collection = AdminCollectionUtils.resolveCollection(this.collections, this.pluginSlug, this.slug);
     const resolvedSlug = collection?.slug || this.slug;
     try {
-      await CollectionListPageService.exportRecords(resolvedSlug, format, ids);
+      await RecordOperations.exportRecords(resolvedSlug, format, ids);
     } catch (error: any) {
       alert(`Export failed: ${error?.message || 'Unknown error'}`);
     }

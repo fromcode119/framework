@@ -6,6 +6,7 @@ import { AdminServices } from '@/lib/admin-services';
 
 import { CollectionListPageService } from '@/components/collection/list/page-service';
 import { StickyColumnLayout } from '@/components/ui/sticky-column-layout';
+import { RecordOperations } from '@/components/collection/list/record-operations';
 
 export class CollectionListPageActions {
   private static readonly adminServices = AdminServices.getInstance();
@@ -83,7 +84,7 @@ export class CollectionListPageActions {
     const reader = new FileReader();
     reader.onload = async (loadEvent) => {
       try {
-        const result = await CollectionListPageService.importRecordsFromText(resolvedSlug, loadEvent.target?.result as string);
+        const result = await RecordOperations.importRecordsFromText(resolvedSlug, loadEvent.target?.result as string);
         alert(`Imported ${result.success} records successfully. ${result.errors.length} errors.`);
         window.location.reload();
       } catch (error: any) {
@@ -113,7 +114,7 @@ export class CollectionListPageActions {
     if (!selectedIds.length) return;
     setLoading(true);
     try {
-      await CollectionListPageService.updateBulkStatus(resolvedSlug, selectedIds, newStatus);
+      await RecordOperations.updateBulkStatus(resolvedSlug, selectedIds, newStatus);
       setSelectedIds([]);
       await fetchData(page);
     } catch {
@@ -155,7 +156,7 @@ export class CollectionListPageActions {
     if (!deleteDialogState) return;
     setDeleteLoading(true);
     try {
-      const removedCount = await CollectionListPageService.deleteRecords(resolvedSlug, deleteDialogState);
+      const removedCount = await RecordOperations.deleteRecords(resolvedSlug, deleteDialogState);
       if (deleteDialogState.mode === 'single') {
         setSelectedIds((prev) => prev.filter((selectedId) => selectedId !== deleteDialogState.id));
         if (quickEditExpandedId === deleteDialogState.id) {
@@ -165,7 +166,7 @@ export class CollectionListPageActions {
       } else {
         setSelectedIds([]);
       }
-      const targetPage = CollectionListPageService.resolveTargetPage({ total, removedCount, pageSize, page });
+      const targetPage = RecordOperations.resolveTargetPage({ total, removedCount, pageSize, page });
       if (targetPage !== page) setPage(targetPage);
       await fetchData(targetPage);
     } catch {
@@ -208,7 +209,7 @@ export class CollectionListPageActions {
     setQuickEditExpandedId(rowId);
     setQuickEditLoadingId(rowId);
     try {
-      const record = await CollectionListPageService.fetchQuickEditRecord(resolvedSlug, rowId);
+      const record = await RecordOperations.fetchQuickEditRecord(resolvedSlug, rowId);
       setQuickEditData(record || {});
       setQuickEditInitialData(record || {});
     } catch (error: any) {
@@ -245,12 +246,12 @@ export class CollectionListPageActions {
     setQuickEditSavingId(quickEditExpandedId);
     setQuickEditStatus(null);
     try {
-      const payload = CollectionListPageService.resolveQuickEditPayload(quickEditData, quickEditInitialData);
+      const payload = RecordOperations.resolveQuickEditPayload(quickEditData, quickEditInitialData);
       if (!Object.keys(payload).length) {
         setQuickEditStatus({ type: NotificationType.SUCCESS, message: 'No changes to save.' });
         return;
       }
-      await CollectionListPageService.saveQuickEditRecord(resolvedSlug, quickEditExpandedId, payload);
+      await RecordOperations.saveQuickEditRecord(resolvedSlug, quickEditExpandedId, payload);
       setQuickEditStatus({ type: NotificationType.SUCCESS, message: 'Record updated successfully.' });
       setQuickEditInitialData({ ...quickEditData });
       await fetchData(page);
