@@ -32,6 +32,8 @@ export type { IColumnStats } from '@database/interfaces/column-stats.interface';
 export type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
 export type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-unique-rule.interface';
 export type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+export type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
+export type { IForeignKeyReference } from '@database/interfaces/foreign-key-reference.interface';
 export { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
 export { SharedReadPolicySpec } from '@database/tenant/policies/shared-read-policy-spec';
 export { PlatformKeysVisiblePolicySpec } from '@database/tenant/policies/platform-keys-visible-policy-spec';

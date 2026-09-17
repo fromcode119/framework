@@ -10,24 +10,27 @@ function table(name: string, refs: Array<[string, string]> = [], types: Record<s
   return new TenantTableDescriptor(name, types, true, `${name}_id_seq`, refs.map(([column, target]) => new TenantColumnReference(name, column, target, 'fk')));
 }
 
-/** A minimal `IDatabaseManager` that answers the four introspection queries `describe()` issues. */
+/**
+ * A minimal `IDatabaseManager` answering what `describe()` asks of the driver.
+ *
+ * It implements the CONTRACT now. The previous version matched on SQL text — `sql.includes('pg_constraint')`,
+ * `sql.includes('ordinal_position')` — which is a stub that only works while core writes Postgres by
+ * hand, and would have kept passing against any other driver while the real thing returned nothing.
+ */
 function fakeDb(columnsByTable: Record<string, Record<string, string>>): IDatabaseManager {
   return {
-    queryRaw: async (sql: string, params?: unknown[]) => {
-      if (sql.includes('pg_constraint')) return [];
-      if (sql.includes('is_nullable')) return [];
-      if (sql.includes('pg_get_serial_sequence')) return [];
-      if (sql.includes('ordinal_position')) {
-        const tables = (params?.[0] as string[]) ?? [];
-        const rows: Array<{ table_name: string; column_name: string; data_type: string }> = [];
-        for (const t of tables) {
-          for (const [column, type] of Object.entries(columnsByTable[t] ?? {})) {
-            rows.push({ table_name: t, column_name: column, data_type: type });
-          }
+    introspection: {
+      tablesWithColumn: async () => Object.keys(columnsByTable),
+      columnTypes: async (tables: string[]) => {
+        const out = new Map<string, Record<string, string>>();
+        for (const name of tables) {
+          if (columnsByTable[name]) out.set(name, columnsByTable[name]);
         }
-        return rows;
-      }
-      return [];
+        return out;
+      },
+      requiredColumns: async () => new Map<string, Set<string>>(),
+      serialSequences: async () => new Map<string, string>(),
+      foreignKeys: async () => [],
     },
   } as unknown as IDatabaseManager;
 }

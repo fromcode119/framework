@@ -12,6 +12,8 @@ import { NamingStrategy } from '@database/naming-strategy';
 import type { DialectColumnNormalizer } from '@database/dialects/dialect-column-normalizer';
 import type { IJoinClause } from '@database/interfaces/join-clause.interface';
 import { OrderByBuilder } from '@database/dialects/order-by-builder';
+import type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
+import { BlindSchemaIntrospection } from '@database/introspection/blind-schema-introspection';
 
 /**
  * BaseDialect - Shared utilities for database dialect implementations
@@ -53,11 +55,22 @@ export abstract class BaseDialect {
    */
   readonly tenantIsolation: ITenantIsolation = new RefusingTenantIsolation(this.constructor.name);
 
+  readonly introspection: ISchemaIntrospection = new BlindSchemaIntrospection();
+
   /**
    * No catalog to interrogate and no way to add the constraint after the fact, so this REPORTS
    * rather than throwing — nothing is unsafe about a driver that cannot reconcile a declared unique,
    * unlike isolation, where silence would be mistaken for protection.
    */
+  /**
+   * Nothing, by default. Re-typing a column in place is not portable — SQLite cannot do it at all —
+   * and a driver silently doing nothing is the honest answer here: the builder emits the key
+   * correctly now, so only databases created by the old builder carry the broken shape.
+   */
+  async repairTextIdPrimaryKey(_table: string): Promise<void> {
+    return undefined;
+  }
+
   async ensureDeclaredUnique(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
     return SchemaReconcileOutcome.unsupported(
       `${this.constructor.name}: this driver cannot reconcile a declared UNIQUE on an existing column.`,

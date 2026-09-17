@@ -1,6 +1,7 @@
 import { TenantColumn } from '@database/tenant/tenant-column';
 import { PostgresTenantPolicyRenderer } from '@database/dialects/postgres/tenant/postgres-tenant-policy-renderer';
 import { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
+import { SqlIdentifier } from '@database/dialects/postgres/sql-identifier';
 
 /**
  * The tenant-scoping DDL, in ONE place because it is security-critical and easy to get subtly wrong.
@@ -24,7 +25,6 @@ export class TenantIsolationSql {
   static readonly SETTING = 'app.tenant_id';
   static readonly PLATFORM_ADMIN_SETTING = 'app.platform_admin';
 
-  private static readonly IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
   /** The tenant match used by both USING and WITH CHECK. Empty/unset resolves to NULL, never a match. */
   static predicate(): string {
@@ -44,7 +44,7 @@ export class TenantIsolationSql {
    * before there are any tenants changes no behaviour and loses no rows.
    */
   static columnStatementsFor(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     return [
       `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT `
         + `DEFAULT ${TenantIsolationSql.currentTenantExpression()}`,
@@ -62,7 +62,7 @@ export class TenantIsolationSql {
    * reporting.
    */
   static enforcementStatementsFor(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     const predicate = TenantIsolationSql.predicate();
     return [
       `ALTER TABLE "${name}" ENABLE ROW LEVEL SECURITY`,
@@ -105,9 +105,9 @@ export class TenantIsolationSql {
    * and recreates the policy, so the transition works in both directions.
    */
   static removalStatementsFor(table: string, policies: string[]): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     return [
-      ...policies.map((policy) => `DROP POLICY IF EXISTS "${TenantIsolationSql.assertIdentifier(policy)}" ON "${name}"`),
+      ...policies.map((policy) => `DROP POLICY IF EXISTS "${SqlIdentifier.assert(policy, 'TenantIsolationSql')}" ON "${name}"`),
       `ALTER TABLE "${name}" NO FORCE ROW LEVEL SECURITY`,
       `ALTER TABLE "${name}" DISABLE ROW LEVEL SECURITY`,
     ];
@@ -161,16 +161,16 @@ export class TenantIsolationSql {
    * tenant_id IS a value — the platform row; content tables have no such row.)
    */
   static scopeUniqueConstraintStatement(table: string, constraint: string, columns: string[]): string {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const con = TenantIsolationSql.assertIdentifier(constraint);
-    const cols = [...columns, TenantColumn.NAME].map((column) => `"${TenantIsolationSql.assertIdentifier(column)}"`).join(', ');
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    const con = SqlIdentifier.assert(constraint, 'TenantIsolationSql');
+    const cols = [...columns, TenantColumn.NAME].map((column) => `"${SqlIdentifier.assert(column, 'TenantIsolationSql')}"`).join(', ');
     return `ALTER TABLE "${name}" DROP CONSTRAINT "${con}", ADD CONSTRAINT "${con}" UNIQUE (${cols})`;
   }
 
   static scopeUniqueIndexStatements(table: string, index: string, columns: string[]): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const idx = TenantIsolationSql.assertIdentifier(index);
-    const cols = [...columns, TenantColumn.NAME].map((column) => `"${TenantIsolationSql.assertIdentifier(column)}"`).join(', ');
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    const idx = SqlIdentifier.assert(index, 'TenantIsolationSql');
+    const cols = [...columns, TenantColumn.NAME].map((column) => `"${SqlIdentifier.assert(column, 'TenantIsolationSql')}"`).join(', ');
     return [`DROP INDEX IF EXISTS "${idx}"`, `CREATE UNIQUE INDEX "${idx}" ON "${name}" (${cols})`];
   }
 
@@ -199,20 +199,20 @@ export class TenantIsolationSql {
    * from CREATE TABLE.
    */
   static addUniqueConstraintStatement(table: string, column: string): string {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const col = TenantIsolationSql.assertIdentifier(column);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    const col = SqlIdentifier.assert(column, 'TenantIsolationSql');
     return `ALTER TABLE "${name}" ADD CONSTRAINT "${name}_${col}_key" UNIQUE ("${col}")`;
   }
 
   /** Assigns rows that predate tenancy to an owner. Never invents one — the caller names the tenant. */
   static backfillStatement(table: string): string {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     return `UPDATE "${name}" SET "${TenantColumn.NAME}" = $1 WHERE "${TenantColumn.NAME}" IS NULL`;
   }
 
   /** Counts rows that predate tenancy and are therefore invisible to every tenant. */
   static unassignedCountStatement(table: string): string {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     return `SELECT count(*)::int AS unassigned FROM "${name}" WHERE "${TenantColumn.NAME}" IS NULL`;
   }
 
@@ -258,8 +258,8 @@ export class TenantIsolationSql {
    * must widen READS and nothing else.
    */
   static sharedReadStatements(table: string, sharedColumn: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const shared = TenantIsolationSql.assertIdentifier(sharedColumn);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    const shared = SqlIdentifier.assert(sharedColumn, 'TenantIsolationSql');
     const current = TenantIsolationSql.currentTenantExpression();
     const own = `"${TenantColumn.NAME}" = ${current}`;
     const names = [`${name}_tenant_isolation`, `${name}_tenant_select`, `${name}_tenant_insert`,
@@ -292,7 +292,7 @@ export class TenantIsolationSql {
    * rows that predate scoping WITHOUT making new rows platform-wide.
    */
   static unownedReadStatements(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     const current = TenantIsolationSql.currentTenantExpression();
     const own = `"${TenantColumn.NAME}" = ${current}`;
     const unowned = `"${TenantColumn.NAME}" IS NULL`;
@@ -318,9 +318,9 @@ export class TenantIsolationSql {
    * keeps a deployment with no tenants reading all of its own settings.
    */
   static platformKeysVisibleStatements(table: string, keyColumn: string, platformKeys: string[]): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
-    const key = TenantIsolationSql.assertIdentifier(keyColumn);
-    const keys = platformKeys.map((entry) => `'${TenantIsolationSql.assertLiteral(entry)}'`).join(', ');
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    const key = SqlIdentifier.assert(keyColumn, 'TenantIsolationSql');
+    const keys = platformKeys.map((entry) => `'${SqlIdentifier.assertLiteral(entry, 'TenantIsolationSql')}'`).join(', ');
     const current = TenantIsolationSql.currentTenantExpression();
     const own = `"${TenantColumn.NAME}" = ${current}`;
     return [
@@ -367,7 +367,7 @@ export class TenantIsolationSql {
    * and an honest signal that their owner is unknown rather than a quiet leak.
    */
   static journalStatements(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     const current = TenantIsolationSql.currentTenantExpression();
     const own = `"${TenantColumn.NAME}" = ${current}`;
     const platform = `current_setting('${TenantIsolationSql.PLATFORM_ADMIN_SETTING}', true) = 'on'`;
@@ -386,7 +386,7 @@ export class TenantIsolationSql {
 
   /** Per tenant with no shared keys: a plugin's configuration is never platform-level. */
   static tenantSettingsStatements(table: string): string[] {
-    const name = TenantIsolationSql.assertIdentifier(table);
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     const current = TenantIsolationSql.currentTenantExpression();
     const own = `"${TenantColumn.NAME}" = ${current}`;
     return [
@@ -411,13 +411,6 @@ export class TenantIsolationSql {
     return `nullif(current_setting('${TenantIsolationSql.SETTING}', true), '')`;
   }
 
-  private static assertIdentifier(name: string): string {
-    const trimmed = String(name ?? '').trim();
-    if (!TenantIsolationSql.IDENTIFIER.test(trimmed)) {
-      throw new Error(`TenantIsolationSql: "${trimmed}" is not a plain SQL identifier; refusing to build DDL.`);
-    }
-    return trimmed;
-  }
 
   /**
    * A settings KEY is interpolated into the policy body, so it is checked too.

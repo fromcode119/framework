@@ -5,6 +5,7 @@ import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import type { IColumnStats } from '@database/interfaces/column-stats.interface';
+import type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
 
 /**
  * Interface representing a database manager that provides access to Drizzle ORM
@@ -99,6 +100,14 @@ export interface IDatabaseManager {
   readonly tenantIsolation: ITenantIsolation;
 
   /**
+   * What the database says about its own tables — columns, types, sequences, foreign keys.
+   *
+   * Core needs the answers to build a tenant export; the SQL that produces them belongs to the
+   * driver. A driver that cannot introspect reports nothing rather than throwing.
+   */
+  readonly introspection: ISchemaIntrospection;
+
+  /**
    * Enforces a UNIQUE that a field DECLARES on a column that already exists.
    *
    * Not tenancy — it is ordinary schema reconciliation, and it reports rather than throws: a table
@@ -106,6 +115,16 @@ export interface IDatabaseManager {
    * refuse the boot. A driver that cannot answer says `unsupported`.
    */
   ensureDeclaredUnique(table: string, column: string): Promise<SchemaReconcileOutcome>;
+
+  /**
+   * Re-keys a table whose `id` was created as TEXT back to an integer primary key.
+   *
+   * A driver that cannot ALTER a column type in place does nothing — SQLite is the case, and a
+   * database carrying the broken shape there has to be re-created. Callers do NOT test the dialect
+   * name: the operation belongs to the driver, which is why it is declared here rather than written
+   * out by every migration that needs it.
+   */
+  repairTextIdPrimaryKey(table: string): Promise<void>;
 
   /**
    * Relaxes a NOT NULL the schema no longer declares.

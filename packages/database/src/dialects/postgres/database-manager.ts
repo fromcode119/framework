@@ -25,6 +25,9 @@ import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.int
 import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 
 import { PostgresRoleProvisioner } from '@database/dialects/postgres/role-provisioner';
+import { PostgresTextIdPrimaryKeyRepair } from '@database/dialects/postgres/text-id-primary-key-repair';
+import type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
+import { PostgresSchemaIntrospector } from '@database/dialects/postgres/schema-introspector';
 
 export class PostgresDatabaseManager extends BaseDialect implements IDatabaseManager {
   private pool: Pool;
@@ -70,6 +73,12 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
 
   private readonly columns =
     new PostgresColumnInspector((sqlText, values) => this.queryRaw(sqlText, values));
+
+  private readonly textIdRepair =
+    new PostgresTextIdPrimaryKeyRepair((sqlText, values) => this.queryRaw(sqlText, values));
+
+  public readonly introspection: ISchemaIntrospection =
+    new PostgresSchemaIntrospector((sqlText, values) => this.queryRaw(sqlText, values));
 
   // Standard operators
   public readonly like = ilike;
@@ -126,6 +135,12 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
   /** Reconciles a declared UNIQUE against the Postgres catalog. */
   async ensureDeclaredUnique(table: string, column: string): Promise<SchemaReconcileOutcome> {
     return this.declaredUniques.ensure(table, column);
+  }
+
+  /** Re-keys a TEXT `id` back to an integer primary key. Idempotent; see the repair class. */
+  async repairTextIdPrimaryKey(table: string): Promise<void> {
+    if (!(await this.tableExists(table))) return;
+    await this.textIdRepair.repair(table);
   }
 
   /** Drops a NOT NULL the schema no longer declares. Never adds one. */
