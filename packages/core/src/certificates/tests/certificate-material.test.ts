@@ -1,5 +1,5 @@
 import { execFileSync } from 'child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -25,6 +25,36 @@ describe('CertificateMaterial — what may be stored as a certificate', () => {
     execFileSync('openssl', args, { cwd: dir, stdio: 'pipe' });
   };
 
+  /**
+   * An ALREADY-EXPIRED certificate, without `req -not_before/-not_after`.
+   *
+   * Those two options arrived in OpenSSL 3.2. This suite was written on a machine that had one and
+   * ran nowhere else, so the day it first ran in CI — on 3.0 — `beforeAll` threw and took all eleven
+   * cases with it. `openssl ca` has taken `-startdate`/`-enddate` since long before either, so this
+   * is the portable way to ask for a validity window in the past: mint a CSR, then sign it with the
+   * same key acting as its own CA.
+   */
+  const signExpired = (): void => {
+    writeFileSync(join(dir, 'ca.cnf'),
+      '[ca]\ndefault_ca = fc\n\n[fc]\n'
+      + `dir = ${dir}\ndatabase = $dir/index.txt\nserial = $dir/serial\nnew_certs_dir = $dir\n`
+      + 'certificate = $dir/expired.crt\nprivate_key = $dir/expired.key\n'
+      + 'default_md = sha256\npolicy = anything\nemail_in_dn = no\nrand_serial = no\n'
+      + 'copy_extensions = copy\nunique_subject = no\n\n[anything]\ncommonName = optional\n', 'utf8');
+    writeFileSync(join(dir, 'index.txt'), '', 'utf8');
+    writeFileSync(join(dir, 'serial'), '01\n', 'utf8');
+
+    // A self-signed placeholder first: `openssl ca` needs an issuer certificate to exist before it
+    // will sign anything, and this one is replaced by its own expired reissue on the next line.
+    openssl(['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', 'expired.key', '-out', 'expired.crt',
+      '-days', '1', '-subj', '/CN=site.test', '-addext', 'subjectAltName=DNS:site.test']);
+    openssl(['req', '-new', '-key', 'expired.key', '-out', 'expired.csr',
+      '-subj', '/CN=site.test', '-addext', 'subjectAltName=DNS:site.test']);
+    openssl(['ca', '-batch', '-config', 'ca.cnf', '-selfsign', '-keyfile', 'expired.key',
+      '-in', 'expired.csr', '-out', 'expired.crt', '-notext',
+      '-startdate', '20200101000000Z', '-enddate', '20200102000000Z']);
+  };
+
   beforeAll(() => {
     // A missing openssl must FAIL, never skip: a skipped test here is a hole nobody sees again.
     execFileSync('openssl', ['version'], { stdio: 'pipe' });
@@ -33,9 +63,7 @@ describe('CertificateMaterial — what may be stored as a certificate', () => {
     openssl(['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', 'good.key', '-out', 'good.crt',
       '-days', '30', '-subj', '/CN=site.test', '-addext', 'subjectAltName=DNS:site.test,DNS:*.wild.test']);
     openssl(['genrsa', '-out', 'other.key', '2048']);
-    openssl(['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', 'expired.key', '-out', 'expired.crt',
-      '-not_before', '20200101000000Z', '-not_after', '20200102000000Z',
-      '-subj', '/CN=site.test', '-addext', 'subjectAltName=DNS:site.test']);
+    signExpired();
   });
 
   afterAll(() => {

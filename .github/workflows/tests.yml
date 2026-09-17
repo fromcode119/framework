@@ -90,6 +90,13 @@ jobs:
         working-directory: framework/Source
         run: npm run build:packages
 
+      # The storefront runtime bundle is a build ARTIFACT, and `frontend-runtime-bundle.test.ts`
+      # deliberately fails when it has not been built — it guards the bundle's contents and its size
+      # ratchet, neither of which means anything against a stale or absent file.
+      - name: Build the storefront runtime bundle
+        working-directory: framework/Source
+        run: npm run build:frontend-runtime
+
       # `atlantis db` — the roles and migrations below run through the framework's own commands rather
       # than a SQL fixture kept beside them, so what CI sets up cannot drift from what a deployment does.
       - name: Build the CLI
