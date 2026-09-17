@@ -72,9 +72,14 @@ jobs:
         working-directory: framework/Source
         run: npm ci
 
+      # `build:tooling` first: arch-guard imports typor's `build` entry (it reuses the same TypeScript
+      # program the workspace typecheck builds), and typor is consumed as its BUILT output. A fresh
+      # checkout has no `dist`, so building arch-guard alone failed on a module that exists in source.
       - name: Build the guards
         working-directory: framework/Source
-        run: npm run build --workspace=@fromcode119/arch-guard
+        run: |
+          npm run build:tooling
+          npm run build --workspace=@fromcode119/arch-guard
 
       # `--scope` decides the subject, never the rules. Unquoted interpolation is avoided: the area and
       # name are passed as environment values so a caller cannot inject shell through them.
