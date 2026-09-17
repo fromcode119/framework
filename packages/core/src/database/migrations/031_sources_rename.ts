@@ -1,6 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
-import { Logger } from '../../logging';
+import { DialectHelper } from '@core/database/helpers/dialect';
+import { Logger } from '@core/logging';
 
 /**
  * "Build server" becomes Sources, and its data comes with it.

@@ -1,6 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
-import { Logger } from '../../logging';
+import { DialectHelper } from '@core/database/helpers/dialect';
+import { Logger } from '@core/logging';
 
 /**
  * A build source is identified by its KIND and its slug, not by its slug alone.

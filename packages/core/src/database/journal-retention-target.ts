@@ -1,4 +1,4 @@
-import { SystemConstants } from '../constants/system.constants';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /** What a journal-retention sweep needs to know about one table. */
 export interface IJournalRetentionTarget {

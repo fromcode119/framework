@@ -1,5 +1,5 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
  * The framework now owns the Sources table, because Sources is no longer a plugin.

@@ -1,6 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { ColumnGuard } from '../helpers/column-guard';
-import { DialectHelper } from '../helpers/dialect';
+import { ColumnGuard } from '@core/database/helpers/column-guard';
+import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
  * Records WHICH provider fetches each source.

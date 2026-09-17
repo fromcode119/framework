@@ -1,6 +1,6 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
-import { DialectHelper } from '../helpers/dialect';
-import { Logger } from '../../logging';
+import { DialectHelper } from '@core/database/helpers/dialect';
+import { Logger } from '@core/logging';
 
 /**
  * A site may be a COPY, and a copy must not reach the outside world.

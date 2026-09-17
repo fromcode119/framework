@@ -1,6 +1,6 @@
 import { BaseMigration, IDatabaseManager } from '@fromcode119/database';
-import { SystemConstants } from '../../constants/system.constants';
-import { Logger } from '../../logging';
+import { SystemConstants } from '@core/constants/system.constants';
+import { Logger } from '@core/logging';
 
 /**
  * The columns the retention sweeps actually filter on.
