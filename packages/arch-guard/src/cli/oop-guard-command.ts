@@ -1,6 +1,8 @@
 import { OopGuard } from '../oop-guard-rules/oop-guard';
 import { OopGuardBaselines } from '../oop-guard-rules/oop-guard-baselines';
 import { ArchorCommand } from './arch-guard-command';
+import { FrameworkRoot } from './framework-root';
+import { GuardScope } from './guard-scope';
 
 /**
  * `arch-guard oop-guard` — report (or enforce) the OOP conventions across every area.
@@ -91,6 +93,10 @@ export class OopGuardCommand extends ArchorCommand {
       ['typesFile', '*.types.ts bags per area', OopGuardBaselines.TYPES_FILE_BASELINE, ' typesFile'],
     ];
     const overBaseline: string[] = [];
+    const repoRoot = FrameworkRoot.repo();
+    // Guarding ONE extension asks that extension what it has declared about itself; guarding a tree
+    // uses the framework's record. An extension declaring nothing has a baseline of zero.
+    const scopedDir = GuardScope.isExtension(repoRoot) ? GuardScope.areas(repoRoot)[0]?.dir ?? '' : '';
 
     for (const [key, heading, baselines, label] of buckets) {
       const perArea = new Map(Object.keys(baselines).map((a) => [a, 0]));
@@ -100,7 +106,9 @@ export class OopGuardCommand extends ArchorCommand {
       }
       console.log(`${heading} (ratcheted — may fall, never rise):`);
       for (const [area, count] of perArea) {
-        const baseline = baselines[area];
+        const baseline = scopedDir
+          ? GuardScope.declaredBaseline(scopedDir, 'oopGuard', key)
+          : baselines[area];
         const note = count > baseline ? ' ← ABOVE BASELINE' : (count < baseline ? ' ← lower the baseline' : '');
         console.log(`  ${area}: ${count} (baseline ${baseline})${note}`);
         if (count > baseline) overBaseline.push(`${area}${label}: ${count} > ${baseline}`);

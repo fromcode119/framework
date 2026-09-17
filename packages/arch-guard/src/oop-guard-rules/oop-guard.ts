@@ -204,6 +204,16 @@ export class OopGuard {
     if (files.length) targets.push({ label: pkg, files });
   }
   for (const { area, dir } of OopGuard.extraAreas()) {
+    // A TREE's direct subdirectories are its extensions (`plugins/<slug>`); a single extension IS the
+    // package. Walking a scoped extension's subdirectories instead would relabel `src` and `tests` as
+    // packages, which is not cosmetic: the allowlists and exemptions are keyed on the extension, so
+    // none of them would match and the count explodes — 530 reported for one plugin that has 15.
+    if (GuardScope.isExtension(OopGuard.REPO_ROOT)) {
+      const files: string[] = [];
+      OopGuard.walk(dir, files);
+      if (files.length) targets.push({ label: `${area}/${path.basename(dir)}`, files });
+      continue;
+    }
     let subdirs: string[] = [];
     try { subdirs = readdirSync(dir); } catch { continue; }
     for (const name of subdirs) {
