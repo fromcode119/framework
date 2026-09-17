@@ -6,6 +6,7 @@ import { LeakedInterfaceCopyGuard } from '../leaked-interface-copy-guard';
 import { TypeofGuard } from '../typeof-guard';
 import { EnvCheckGuard } from '../env-check-guard';
 import { ArchorCommand } from './arch-guard-command';
+import { GuardScope } from './guard-scope';
 
 /**
  * `arch-guard convention-guard [--detail]` — two ratcheted conventions the compiler cannot see:
@@ -23,13 +24,9 @@ export class ConventionGuardCommand extends ArchorCommand {
   /** Reports by default so a migration can ratchet; the build ran it at `error` and CI does too. */
   readonly ciEnv = { FRAMEWORK_CONVENTION_MODE: 'error' };
 
+  /** Whichever trees this run covers — see {@link GuardScope}. */
   private roots(repoRoot: string): { area: string; dir: string }[] {
-    return [
-      { area: 'plugins', dir: path.join(repoRoot, 'plugins') },
-      { area: 'themes', dir: path.join(repoRoot, 'themes') },
-      { area: 'appearance', dir: path.join(repoRoot, 'appearance') },
-      { area: 'framework', dir: path.join(repoRoot, 'framework', 'Source', 'packages') },
-    ];
+    return GuardScope.areas(repoRoot);
   }
 
   run(argv: string[]): number {

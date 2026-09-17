@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { GuardScope } from '../cli/guard-scope';
 import { OopGuardBaselines } from './oop-guard-baselines';
 import { OopGuardPatterns } from './oop-guard-patterns';
 
@@ -19,11 +20,21 @@ export class OopGuard {
   // framework. Scanning only `packages/` is why 86 bare exports and every `'use client'` literal outside
   // the framework went unreported. Each area is scanned as a set of "packages" (its direct subdirectories).
   static readonly REPO_ROOT = path.resolve(process.cwd(), '..', '..');
-  static readonly EXTRA_AREAS = [
-    { area: 'plugins', dir: path.join(OopGuard.REPO_ROOT, 'plugins') },
-    { area: 'themes', dir: path.join(OopGuard.REPO_ROOT, 'themes') },
-    { area: 'appearance', dir: path.join(OopGuard.REPO_ROOT, 'appearance') },
-  ];
+  /**
+   * The non-framework trees this run covers, and whether the framework's own packages are in it.
+   *
+   * A method rather than a constant because the answer depends on {@link GuardScope}: the framework's
+   * CI guards the framework, and an extension guards itself from its own repository. Unscoped, this is
+   * all three areas exactly as before.
+   */
+  static extraAreas(): { area: string; dir: string }[] {
+    return GuardScope.areas(OopGuard.REPO_ROOT).filter((entry) => entry.area !== 'framework');
+  }
+
+  /** Is the framework's own `packages/` part of this run? */
+  static includesFramework(): boolean {
+    return GuardScope.areas(OopGuard.REPO_ROOT).some((entry) => entry.area === 'framework');
+  }
   static readonly MODE = process.env.FRAMEWORK_OOP_MODE === 'error' ? 'error' : 'warn';
 
   static isGlueOrEntry(rel: string): boolean {
@@ -186,13 +197,13 @@ export class OopGuard {
   // Build the full scan list FIRST: (area, package, files). Scanning whole package dirs — not four
   // hardcoded roots — so nothing outside src/app/components/lib can hide.
   const targets: Array<{ label: string; files: string[] }> = [];
-  for (const pkg of pkgs) {
+  for (const pkg of OopGuard.includesFramework() ? pkgs : []) {
     if (OopGuardBaselines.EXEMPT_PACKAGES.has(pkg)) continue;
     const files: string[] = [];
     OopGuard.walk(path.join(OopGuard.PACKAGES_DIR, pkg), files);
     if (files.length) targets.push({ label: pkg, files });
   }
-  for (const { area, dir } of OopGuard.EXTRA_AREAS) {
+  for (const { area, dir } of OopGuard.extraAreas()) {
     let subdirs: string[] = [];
     try { subdirs = readdirSync(dir); } catch { continue; }
     for (const name of subdirs) {

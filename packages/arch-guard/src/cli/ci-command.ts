@@ -1,6 +1,7 @@
 import { ArchorCommand } from './arch-guard-command';
 import { GuardRegistry } from './guard-registry';
 import { GuardRun } from './guard-run';
+import { GuardScope } from './guard-scope';
 
 /**
  * `arch-guard ci` — every guard, one pass, one exit code.
@@ -29,6 +30,8 @@ export class CiCommand extends ArchorCommand {
   readonly runsInCi = false;
 
   run(argv: string[]): number {
+    const scope = CiCommand.requestedScope(argv);
+    if (scope) process.env[GuardScope.ENV] = scope;
     const only = CiCommand.requestedNames(argv);
     const runs = CiCommand.selected(only).map((entry) => GuardRun.execute(entry[0], entry[1]));
 
@@ -38,6 +41,21 @@ export class CiCommand extends ArchorCommand {
     }
 
     return CiCommand.report(runs);
+  }
+
+  /**
+   * `--scope framework` / `--scope <dir>` — which tree this run covers.
+   *
+   * The framework's CI guards the framework; a plugin, theme or appearance guards itself from its own
+   * repository with the same binary pointed at its own directory. Passing it as a flag simply sets
+   * what {@link GuardScope} reads, so a guard invoked directly behaves identically.
+   */
+  private static requestedScope(argv: string[]): string {
+    for (const [index, arg] of argv.entries()) {
+      if (arg === '--scope') return String(argv[index + 1] ?? '').trim();
+      if (arg.startsWith('--scope=')) return arg.slice('--scope='.length).trim();
+    }
+    return '';
   }
 
   /** `--only a,b` / `--only a --only b`, for reproducing one guard's CI result locally. */
