@@ -28,9 +28,10 @@ import { PostgresRoleProvisioner } from '@database/dialects/postgres/role-provis
 import { PostgresTextIdPrimaryKeyRepair } from '@database/dialects/postgres/text-id-primary-key-repair';
 import type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
 import { PostgresSchemaIntrospector } from '@database/dialects/postgres/schema-introspector';
+import { PostgresCrudOperations } from '@database/dialects/postgres/postgres-crud-operations';
 
-export class PostgresDatabaseManager extends BaseDialect implements IDatabaseManager {
-  private pool: Pool;
+export class PostgresDatabaseManager extends PostgresCrudOperations implements IDatabaseManager {
+  protected pool: Pool;
 
   /**
    * The connection this statement must run on.
@@ -40,7 +41,7 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
    * tenant resolver itself) take the pool path deliberately; they run as the owner and must be able
    * to see across tenants.
    */
-  private get executor(): { query: (text: any, values?: any[]) => Promise<any> } {
+  protected get executor(): { query: (text: any, values?: any[]) => Promise<any> } {
     return (TenantConnectionScope.currentClient(this.pool) as any) ?? this.pool;
   }
 
@@ -50,15 +51,15 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
    * while the scope holds its own — ten concurrent scopes, ten held clients, and every such
    * statement waits for an eleventh that never comes (the column normalizer had exactly this bug).
    */
-  private get orm(): any {
+  protected get orm(): any {
     const client = TenantConnectionScope.currentClient(this.pool);
     return client ? drizzle(client as any) : this.drizzle;
   }
   public readonly drizzle: any;
   public readonly dialect = 'postgres' as const;
-  private normalizer: PostgresColumnNormalizer;
-  private schemaBuilder: PostgresSchemaBuilder;
-  private reader: PostgresReadOperations;
+  protected normalizer: PostgresColumnNormalizer;
+  protected schemaBuilder: PostgresSchemaBuilder;
+  protected reader: PostgresReadOperations;
   private readonly roles = new PostgresRoleProvisioner((sqlText, values) => this.queryRaw(sqlText, values));
 
   /** Row-level security, on the same connection every other statement of this manager takes. */
@@ -241,166 +242,4 @@ export class PostgresDatabaseManager extends BaseDialect implements IDatabaseMan
     return PostgresTimestampPredicate.equalityColumn(quotedColumn, value);
   }
 
-  async find(tableOrName: any, options: any = {}): Promise<any[]> {
-    return this.reader.find(tableOrName, options);
-  }
-
-  async findOne(tableOrName: any, where: any): Promise<any | null> {
-    const results = await this.find(tableOrName, { where, limit: 1 });
-    return results[0] || null;
-  }
-
-  async insert(tableOrName: any, data: any): Promise<any> {
-    if (typeof tableOrName === 'string') {
-      const tableName = tableOrName;
-      const columns = Object.keys(data || {});
-      if (!columns.length) {
-        const result = await this.executor.query(`INSERT INTO "${tableName}" DEFAULT VALUES RETURNING *`);
-        return result.rows[0] || null;
-      }
-      const identifiers = columns.map((column) => `"${NamingStrategy.toSnakeCase(column)}"`).join(', ');
-      const placeholders = columns.map((_, index) => this.getParamPlaceholder(index + 1)).join(', ');
-      const values = await Promise.all(
-        columns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, data[column]))
-      );
-      const result = await this.executor.query(
-        `INSERT INTO "${tableName}" (${identifiers}) VALUES (${placeholders}) RETURNING *`,
-        values
-      );
-      return result.rows[0] || null;
-    }
-    const [result] = await this.orm.insert(tableOrName).values(data).returning();
-    return result;
-  }
-
-  async update(tableOrName: any, where: any, data: any): Promise<any> {
-    if (typeof tableOrName === 'string') {
-      const tableName = tableOrName;
-      const setColumns = Object.keys(data || {});
-      const whereColumns = Object.keys(where || {});
-      if (!setColumns.length) throw new Error(`No update fields provided for table "${tableName}"`);
-      if (!whereColumns.length) throw new Error(`Unsafe update blocked: missing where clause for table "${tableName}"`);
-
-      const setClause = setColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`).join(', ');
-      // Equality on a Date operand compares at the driver's read-back precision — see
-      // PostgresTimestampPredicate; this is what keeps `update(table, { id, updatedAt }, …)`
-      // optimistic locks matching the row they just read.
-      const whereClause = whereColumns.map((column, index) => `${this.equalityColumnExpression(`"${NamingStrategy.toSnakeCase(column)}"`, where[column])} = ${this.getParamPlaceholder(setColumns.length + index + 1)}`).join(' AND ');
-
-      const setValues = await Promise.all(
-        setColumns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, data[column]))
-      );
-      const whereValues = await Promise.all(
-        whereColumns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, where[column]))
-      );
-      const values = [...setValues, ...whereValues];
-
-      const result = await this.executor.query(`UPDATE "${tableName}" SET ${setClause} WHERE ${whereClause} RETURNING *`, values);
-      return result.rows[0] || null;
-    }
-
-    const conditions = this.buildWhereConditions(where, tableOrName);
-    const [result] = await this.orm
-      .update(tableOrName)
-      .set(data)
-      .where(and(...conditions))
-      .returning();
-    return result;
-  }
-
-  async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
-    const { target, set } = options;
-    const query = this.orm.insert(tableOrName).values(data).onConflictDoUpdate({
-      target: typeof target === 'string' ? (tableOrName as any)[target] : target,
-      set
-    }).returning();
-    const [result] = await query;
-    return result;
-  }
-
-  async delete(tableOrName: any, where: any): Promise<boolean> {
-    if (typeof tableOrName === 'string') {
-      const tableName = tableOrName;
-      const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, where);
-      const { sql: whereClause, values } = this.buildRawWhereClause(normalizedWhere);
-      if (!whereClause) throw new Error(`Unsafe delete blocked: missing where clause for table "${tableName}"`);
-
-      const result = await this.executor.query(`DELETE FROM "${tableName}"${whereClause} RETURNING *`, values);
-      return (result.rowCount || 0) > 0;
-    }
-
-    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where, tableOrName);
-    let query = this.orm.delete(tableOrName);
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
-      query = query.where(where);
-    } else {
-      throw new Error('Unsafe delete blocked: missing where clause');
-    }
-    const result = await query.returning();
-    return result.length > 0;
-  }
-
-  protected getParamPlaceholder(index: number): string {
-    return `$${index}`;
-  }
-
-  protected async executeRawSelect(sqlStr: string, values: any[]): Promise<any[]> {
-    const result = await this.executor.query(sqlStr, values);
-    return result.rows;
-  }
-
-  async queryRaw(sqlText: string, values: unknown[] = []): Promise<Array<Record<string, unknown>>> {
-    const result = await this.executor.query(sqlText, values);
-    return (result?.rows ?? []) as Array<Record<string, unknown>>;
-  }
-
-  async count(tableOrName: any, options: any = {}): Promise<number> {
-    return this.reader.count(tableOrName, options);
-  }
-
-  /** COUNT(*) per group — SQL aggregation, so analytics never page rows into memory to count them. */
-  async groupCount(
-    tableName: string,
-    options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },
-  ): Promise<Array<Record<string, unknown>>> {
-    return this.reader.groupCount(tableName, options);
-  }
-
-  // Schema Management
-  async getTables(): Promise<string[]> {
-    const query = sql`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`;
-    const result: any = await this.execute(query);
-    return result.rows.map((r: any) => r.table_name);
-  }
-
-  async tableExists(tableName: string): Promise<boolean> {
-    const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
-    const result: any = await this.execute(query);
-    return (result.rows[0]?.total || 0) > 0;
-  }
-
-  async getColumns(tableName: string): Promise<string[]> {
-    const result: any = await this.execute(sql`SELECT column_name FROM information_schema.columns WHERE table_name = ${tableName}`);
-    return result.rows.map((r: any) => r.column_name.toLowerCase());
-  }
-
-  async createTable(collection: ISchemaCollection): Promise<void> {
-    await this.schemaBuilder.createTable(collection);
-  }
-
-  async addColumn(tableName: string, field: ISchemaField): Promise<void> {
-    await this.schemaBuilder.addColumn(tableName, field);
-  }
-
-  async ensureMigrationTable(tableName: string): Promise<void> {
-    await this.schemaBuilder.ensureMigrationTable(tableName);
-  }
-
-  async resetDatabase(): Promise<void> {
-    await this.execute(sql`DROP SCHEMA public CASCADE`);
-    await this.execute(sql`CREATE SCHEMA public`);
-  }
 }
