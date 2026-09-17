@@ -5,16 +5,19 @@ import { ArchiveUploadSessionService, BaseController, ThemeManager, Logger } fro
 import fs from 'fs';
 import { ThemeArchiveSupport } from '@api/controllers/themes/theme-archive-support';
 import { CoercionUtils, CoreServices } from '@fromcode119/core';
+import { ThemeUploadController } from '@api/controllers/themes/theme-upload-controller';
 
 export class ThemeController extends BaseController {
-  private static readonly ALLOWED_ARCHIVE_EXTENSIONS = ['.zip', '.tar.gz', '.tgz'];
 
   private logger = new Logger({ namespace: 'theme-controller' });
   private archiveSupport: ThemeArchiveSupport;
 
+  private readonly uploads: ThemeUploadController;
+
   constructor(private manager: ThemeManager) {
     super();
     this.archiveSupport = new ThemeArchiveSupport(manager);
+    this.uploads = new ThemeUploadController(manager, this.logger, this.archiveSupport);
   }
 
   async list(req: Request, res: Response) {
@@ -117,148 +120,44 @@ export class ThemeController extends BaseController {
     );
   }
 
-  async upload(req: any, res: Response) {
-    if (!req.file) return res.status(400).json({ error: 'No file' });
-
-    try {
-      const manifest = await this.manager.installFromZip(req.file.path);
-      res.json({ success: true, manifest });
-    } catch (err: any) {
-      this.logger.error(`Failed to upload theme: ${err.message}`);
-      res.status(500).json({ error: err.message });
-    } finally {
-      if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-    }
+  /** @see ThemeUploadController.upload */
+  upload(...args: Parameters<ThemeUploadController["upload"]>): ReturnType<ThemeUploadController["upload"]> {
+    return this.uploads.upload(...args);
   }
 
-  /**
-   * A SITE uploading its OWN theme.
-   *
-   * Separate from {@link upload}, which installs onto the shared container for every site. The
-   * refusals live in the installer, and each of them is a 4xx the operator can act on rather than a
-   * 500: "your package contains server code", "that slug is taken", "you are over your quota" are all
-   * things the person uploading can fix, and reporting them as server errors would say the opposite.
-   */
-  async uploadMine(req: any, res: Response) {
-    if (!req.file) return res.status(400).json({ error: 'no_file', message: 'Choose a .zip or .tar.gz theme package to upload.' });
-
-    const tenantId = String((req as any).tenantId || '').trim();
-    if (!tenantId) {
-      return res.status(400).json({
-        error: 'site_required',
-        message: 'A theme belongs to one site. Choose a site first — with none selected there is nowhere to put it.',
-      });
-    }
-
-    try {
-      const manifest = await this.manager.installForTenant(req.file.path, tenantId);
-      res.json({ success: true, manifest, serverRendering: false });
-    } catch (err: any) {
-      const message = String(err?.message || 'The theme could not be installed.');
-      this.logger.warn(`Site "${tenantId}" could not upload a theme: ${message}`);
-      res.status(ThemeController.refusalStatus(message)).json({ error: 'theme_rejected', message });
-    } finally {
-      if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-    }
+  /** @see ThemeUploadController.uploadMine */
+  uploadMine(...args: Parameters<ThemeUploadController["uploadMine"]>): ReturnType<ThemeUploadController["uploadMine"]> {
+    return this.uploads.uploadMine(...args);
   }
 
-  /** A SITE removing one of its OWN themes. The manager refuses anything it does not own. */
-  async deleteMine(req: Request, res: Response) {
-    const slug = CoercionUtils.toString(req.params.slug);
-    const tenantId = String((req as any).tenantId || '').trim();
-    if (!tenantId) {
-      return res.status(400).json({ error: 'site_required', message: 'Choose a site first.' });
-    }
-
-    try {
-      await this.manager.removeTenantTheme(slug, tenantId);
-      res.json({ success: true });
-    } catch (err: any) {
-      const message = String(err?.message || 'The theme could not be removed.');
-      res.status(ThemeController.refusalStatus(message)).json({ error: 'theme_not_removed', message });
-    }
+  /** @see ThemeUploadController.deleteMine */
+  deleteMine(...args: Parameters<ThemeUploadController["deleteMine"]>): ReturnType<ThemeUploadController["deleteMine"]> {
+    return this.uploads.deleteMine(...args);
   }
 
-  /**
-   * Which 4xx a refusal is, read from what the installer actually refused.
-   *
-   * A taken slug is a CONFLICT and nothing the uploader can retry their way out of; everything else
-   * here is a malformed or oversized package, which is a bad request. Both are the caller's to fix,
-   * so neither is a 500 — a server error would tell an operator to look at logs that say nothing is
-   * wrong.
-   */
-  private static refusalStatus(message: string): number {
-    if (/already taken/i.test(message)) return 409;
-    if (/does not belong to this site|not installed/i.test(message)) return 404;
-    return 400;
+  /** @see ThemeUploadController.inspectUpload */
+  inspectUpload(...args: Parameters<ThemeUploadController["inspectUpload"]>): ReturnType<ThemeUploadController["inspectUpload"]> {
+    return this.uploads.inspectUpload(...args);
   }
 
-  async inspectUpload(req: any, res: Response) {
-    if (!req.file) return res.status(400).json({ error: 'No file' });
-
-    try {
-      const info = await this.archiveSupport.inspectThemeArchive(req.file.path, req.file.originalname);
-      res.json({ success: true, info });
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Invalid theme archive' });
-    } finally {
-      if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-    }
+  /** @see ThemeUploadController.startUploadSession */
+  startUploadSession(...args: Parameters<ThemeUploadController["startUploadSession"]>): ReturnType<ThemeUploadController["startUploadSession"]> {
+    return this.uploads.startUploadSession(...args);
   }
 
-  async startUploadSession(req: Request, res: Response) {
-    try {
-      const payload = this.archiveSupport.readUploadSessionRequest(req.body);
-      res.status(201).json({
-        success: true,
-        ...ArchiveUploadSessionService.startSession(
-          payload.originalFilename,
-          payload.totalSizeBytes,
-          payload.totalChunks,
-          ThemeController.ALLOWED_ARCHIVE_EXTENSIONS,
-        ),
-      });
-    } catch (err: any) {
-      res.status(err?.statusCode || 400).json({ error: err.message || 'Could not start upload session.' });
-    }
+  /** @see ThemeUploadController.uploadChunk */
+  uploadChunk(...args: Parameters<ThemeUploadController["uploadChunk"]>): ReturnType<ThemeUploadController["uploadChunk"]> {
+    return this.uploads.uploadChunk(...args);
   }
 
-  async uploadChunk(req: any, res: Response) {
-    try {
-      const payload = this.archiveSupport.readChunkUploadRequest(req);
-      const result = ArchiveUploadSessionService.appendChunk(payload.uploadId, payload.filePath, payload.chunkIndex, payload.totalChunks);
-      res.status(201).json({ success: true, ...result });
-    } catch (err: any) {
-      res.status(err?.statusCode || 400).json({ error: err.message || 'Could not upload theme package chunk.' });
-    }
+  /** @see ThemeUploadController.inspectStagedUpload */
+  inspectStagedUpload(...args: Parameters<ThemeUploadController["inspectStagedUpload"]>): ReturnType<ThemeUploadController["inspectStagedUpload"]> {
+    return this.uploads.inspectStagedUpload(...args);
   }
 
-  async inspectStagedUpload(req: Request, res: Response) {
-    try {
-      const uploadId = this.archiveSupport.readUploadId(req.body);
-      const uploadedArchive = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
-      const info = await this.archiveSupport.inspectThemeArchive(uploadedArchive.filePath, uploadedArchive.originalFilename);
-      res.json({ success: true, uploadId, info });
-    } catch (err: any) {
-      res.status(err?.statusCode || 400).json({ error: err.message || 'Invalid theme archive' });
-    }
-  }
-
-  async completeStagedUpload(req: Request, res: Response) {
-    let uploadId = '';
-    try {
-      uploadId = this.archiveSupport.readUploadId(req.body);
-      const uploadedArchive = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
-      const manifest = await this.manager.installFromZip(uploadedArchive.filePath);
-      res.json({ success: true, manifest });
-    } catch (err: any) {
-      this.logger.error(`Failed to upload theme: ${err.message}`);
-      res.status(err?.statusCode || 500).json({ error: err.message || 'Could not install theme package.' });
-    } finally {
-      if (uploadId) {
-        ArchiveUploadSessionService.discardSession(uploadId);
-      }
-    }
+  /** @see ThemeUploadController.completeStagedUpload */
+  completeStagedUpload(...args: Parameters<ThemeUploadController["completeStagedUpload"]>): ReturnType<ThemeUploadController["completeStagedUpload"]> {
+    return this.uploads.completeStagedUpload(...args);
   }
 
   async activate(req: Request, res: Response) {

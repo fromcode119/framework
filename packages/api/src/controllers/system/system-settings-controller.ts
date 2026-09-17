@@ -6,6 +6,7 @@ import { PersonalDataErasureService } from '@fromcode119/core';
 import { Logger } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { SystemSettingRegistry } from '@fromcode119/core';
+import { SystemSettingsWriter } from '@api/controllers/system/system-settings-writer';
 
 /**
  * Reading and writing PLATFORM settings, including which keys a tenant admin may write at all.
@@ -18,49 +19,11 @@ import { SystemSettingRegistry } from '@fromcode119/core';
 export class SystemSettingsController {
   private readonly logger = new Logger({ namespace: 'system-settings' });
 
-  constructor(private readonly runtime: SystemControllerRuntime) {}
+  private readonly writer: SystemSettingsWriter;
 
-  /**
-   * Which keys this PUT may accept, DERIVED from the registry rather than listed here.
-   *
-   * This was a hand-written set, and omitting a key did not merely lose that key — the whole PUT
-   * answered 400 and NOTHING on the page saved. It is the same failure mode as scope being an
-   * omission, one layer up, so it has the same answer: declare it once, next to the scope, and
-   * derive. Verified identical to the list it replaces (69 keys, no difference either way).
-   */
-  private static writableKeys(): Set<string> {
-    return SystemSettingRegistry.writableKeys();
+  constructor(private readonly runtime: SystemControllerRuntime) {
+    this.writer = new SystemSettingsWriter(runtime);
   }
-
-
-  /**
-   * The requested audit window when it is positive and below the floor, or `null` when there is
-   * nothing to refuse. Empty and 0 mean KEEP FOREVER and are always fine.
-   */
-  private static auditWindowBelowFloor(payload: Record<string, unknown>): number | null {
-    const key = SystemConstants.META_KEY.AUDIT_RETENTION_DAYS;
-    if (!(key in payload)) return null;
-    const requested = Math.floor(CoercionUtils.toNumber(payload[key], 0));
-    if (requested <= 0 || requested >= SystemConstants.AUDIT_RETENTION_MIN_DAYS) return null;
-    return requested;
-  }
-
-  /** Single-tenant: every admin is the platform. Multi-tenant: only a flagged account. */
-  /** The platform row (`tenant_id IS NULL`) of a platform key, upserted under the platform-admin marker. Returns the previous value. */
-  private async writePlatformSetting(key: string, value: string, timestamp: Date): Promise<string | undefined> {
-    return this.runtime.db.withPlatformAdmin(async () => {
-      const table = SystemConstants.TABLE.META;
-      const rows = await this.runtime.db.queryRaw(`SELECT "value" FROM "${table}" WHERE "key" = $1 AND "tenant_id" IS NULL LIMIT 1`, [key]);
-      const previous = rows[0] ? String(rows[0].value ?? '') : undefined;
-      await this.runtime.db.queryRaw(
-        `INSERT INTO "${table}" ("key", "value", "updated_at", "tenant_id") VALUES ($1, $2, $3, NULL) `
-        + 'ON CONFLICT ("key", "tenant_id") DO UPDATE SET "value" = EXCLUDED."value", "updated_at" = EXCLUDED."updated_at"',
-        [key, value, timestamp],
-      );
-      return previous;
-    });
-  }
-
 
   /**
    * The declared, operator-visible system settings. `_system_meta` is a key/value scratch space, not a
@@ -145,7 +108,7 @@ export class SystemSettingsController {
         return res.status(400).json({ error: 'Settings payload must be an object.' });
       }
 
-      const unknownKeys = Object.keys(payload).filter((k) => !SystemSettingsController.writableKeys().has(k));
+      const unknownKeys = Object.keys(payload).filter((k) => !SystemSettingsWriter.writableKeys().has(k));
       if (unknownKeys.length > 0) {
         return res.status(400).json({ error: `Unknown or read-only settings key(s): ${unknownKeys.join(', ')}` });
       }
@@ -157,7 +120,7 @@ export class SystemSettingsController {
       // than the six months that record is expected to survive would let the platform quietly break a
       // commitment its own code makes. Silently storing 180 when the operator asked for 30 would be
       // worse than refusing: they would believe they had 30. Keeping forever (empty) stays allowed.
-      const auditFloor = SystemSettingsController.auditWindowBelowFloor(preparedPayload);
+      const auditFloor = SystemSettingsWriter.auditWindowBelowFloor(preparedPayload);
       if (auditFloor !== null) {
         return res.status(400).json({
           error: 'audit_retention_below_minimum',
@@ -225,7 +188,7 @@ export class SystemSettingsController {
         // the tenant-scoped write below, which lands in THAT site's row — the override itself.
         const writesPlatformRow = platformOnlyKeys.has(key) || (inheritedKeys.has(key) && !tenantBound);
         if (asPlatform && writesPlatformRow) {
-          previousValue = await this.writePlatformSetting(key, serializedValue, timestamp);
+          previousValue = await this.writer.writePlatformSetting(key, serializedValue, timestamp);
         } else {
           // Address THIS SCOPE'S row, not merely the key.
           //
@@ -276,68 +239,9 @@ export class SystemSettingsController {
   }
 
 
-  private async prepareSettingsPayload(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
-    const nextPayload = { ...payload };
-    if (!this.hasPrimaryDomainChange(payload) && !(SystemConstants.META_KEY.DOMAIN_ALIASES in payload)) {
-      return nextPayload;
-    }
-
-    const currentSettings = await this.readCurrentDomainSettings();
-    const mergedAliases = ApplicationDomainSettingsUtils.mergeDomainAliasesForPrimaryChange({
-      currentAliases:
-        SystemConstants.META_KEY.DOMAIN_ALIASES in payload
-          ? payload[SystemConstants.META_KEY.DOMAIN_ALIASES]
-          : currentSettings.domainAliases,
-      previousValues: [
-        currentSettings.siteUrl,
-        currentSettings.frontendUrl,
-        currentSettings.adminUrl,
-        currentSettings.platformDomain,
-      ],
-      nextValues: [
-        nextPayload[SystemConstants.META_KEY.SITE_URL] ?? currentSettings.siteUrl,
-        nextPayload[SystemConstants.META_KEY.FRONTEND_URL] ?? currentSettings.frontendUrl,
-        nextPayload[SystemConstants.META_KEY.ADMIN_URL] ?? currentSettings.adminUrl,
-        nextPayload[SystemConstants.META_KEY.PLATFORM_DOMAIN] ?? currentSettings.platformDomain,
-      ],
-    });
-
-    if (mergedAliases.length > 0 || SystemConstants.META_KEY.DOMAIN_ALIASES in payload) {
-      nextPayload[SystemConstants.META_KEY.DOMAIN_ALIASES] = mergedAliases;
-    }
-
-    return nextPayload;
+  /** @see SystemSettingsWriter.prepareSettingsPayload */
+  private prepareSettingsPayload(...args: Parameters<SystemSettingsWriter["prepareSettingsPayload"]>): ReturnType<SystemSettingsWriter["prepareSettingsPayload"]> {
+    return this.writer.prepareSettingsPayload(...args);
   }
 
-
-  private hasPrimaryDomainChange(payload: Record<string, unknown>): boolean {
-    return [
-      SystemConstants.META_KEY.SITE_URL,
-      SystemConstants.META_KEY.FRONTEND_URL,
-      SystemConstants.META_KEY.ADMIN_URL,
-      SystemConstants.META_KEY.PLATFORM_DOMAIN,
-    ].some((key) => key in payload);
-  }
-
-
-  private async readCurrentDomainSettings(): Promise<Record<string, string>> {
-    const keys = [
-      SystemConstants.META_KEY.SITE_URL,
-      SystemConstants.META_KEY.FRONTEND_URL,
-      SystemConstants.META_KEY.ADMIN_URL,
-      SystemConstants.META_KEY.PLATFORM_DOMAIN,
-      SystemConstants.META_KEY.DOMAIN_ALIASES,
-    ];
-    const settings = await Promise.all(
-      keys.map((key) => this.runtime.db.findOne(SystemConstants.TABLE.META, { key })),
-    );
-
-    return {
-      siteUrl: String(settings[0]?.value || ''),
-      frontendUrl: String(settings[1]?.value || ''),
-      adminUrl: String(settings[2]?.value || ''),
-      platformDomain: String(settings[3]?.value || ''),
-      domainAliases: String(settings[4]?.value || ''),
-    };
-  }
 }
