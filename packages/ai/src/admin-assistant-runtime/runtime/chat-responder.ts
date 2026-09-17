@@ -22,14 +22,17 @@ export class ChatResponder {
   message: string,
   agentMode: ContextLevel,
 ): Promise<IChatReply> {
-      const aiClient = context.options.aiClient;
-      if (!aiClient?.chat) {
+      const { chat } = context.options.aiClient ?? {};
+      if (!chat) {
         // The classifier can already answer some turns on its own (arithmetic, a clarification it
         // scripted) and hands that over as `intent.quickAnswer`. WITH a model we only hint with it —
         // see `appendClassifierHint` below — but with no model it is the answer, and saying "the AI
         // model is unavailable" while holding it is just dropping it on the floor.
         return ChatResponder.buildQuickReply(intent);
       }
+      // The client as the rest of this function needs it: `chat`, proven present above. Built rather
+      // than asserted, because `options.aiClient` is declared `Partial` for exactly that reason.
+      const aiClient = { chat };
 
       const { profile, copy } = await ChatHelpers.resolvePromptInput(context);
       const provider = String(context.input?.provider || '').trim().toLowerCase();

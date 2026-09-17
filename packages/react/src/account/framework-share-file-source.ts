@@ -1,6 +1,7 @@
 import { ApiVersionUtils, ApplicationUrlUtils, FileRoutePaths, SdkClient } from '@fromcode119/core/client';
 import type { IAccountFileGroup } from '@react/account/interfaces/account-file-group.interface';
 import type { IAccountFileSourceContext } from '@react/account/interfaces/account-file-source-context.interface';
+import { AccountBadgeTone } from '@react/account/enums/account-badge-tone.enum';
 
 /**
  * The framework's own contribution: files an operator sent this person directly.
@@ -33,7 +34,7 @@ export class FrameworkShareFileSource {
       // would be worse.
       badge: remaining === null || remaining === undefined
         ? undefined
-        : { label: context.t('account.files.remaining', { count: remaining }), tone: 'warning' as const },
+        : { label: context.t('account.files.remaining', { count: remaining }), tone: AccountBadgeTone.WARNING },
       files: (share?.files || []).map((file: any) => ({
         id: file.id,
         name: String(file.name || ''),

@@ -1,5 +1,6 @@
 import { Resolver } from 'dns/promises';
 import { DnsPreflightResult } from '@core/certificates/acme/dns-preflight-result';
+import { DnsRecordFamily } from '@core/certificates/acme/enums/dns-record-family.enum';
 
 /**
  * Does this host actually point at us — asked BEFORE a certificate is ever ordered.
@@ -44,8 +45,8 @@ export class DnsPreflight {
       return DnsPreflightResult.notPointingHere(host, [], [], [], 'No platform address is declared');
     }
 
-    const ipv4 = await this.resolve('resolve4', host);
-    const ipv6 = await this.resolve('resolve6', host);
+    const ipv4 = await this.resolve(DnsRecordFamily.IPV4, host);
+    const ipv6 = await this.resolve(DnsRecordFamily.IPV6, host);
     const observed = [...ipv4, ...ipv6];
 
     if (!observed.length) {
@@ -64,9 +65,10 @@ export class DnsPreflight {
   }
 
   /** One family. A name with no record of that type is an empty answer, never an error. */
-  private async resolve(method: 'resolve4' | 'resolve6', host: string): Promise<string[]> {
+  private async resolve(family: DnsRecordFamily, host: string): Promise<string[]> {
     try {
-      const answers = await this.resolver[method](host);
+      // The family's `.value` IS the resolver method's name — see DnsRecordFamily.
+      const answers = await (this.resolver as Record<string, (h: string) => Promise<string[]>>)[String(family.value)](host);
       return (Array.isArray(answers) ? answers : []).map((address) => String(address));
     } catch {
       // ENOTFOUND / ENODATA are the ordinary answers for "no record of this type", not failures.

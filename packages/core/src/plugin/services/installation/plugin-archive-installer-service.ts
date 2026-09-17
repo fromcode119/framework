@@ -7,6 +7,7 @@ import { BackupService } from '@core/management/backup-service';
 import { SafeArchive } from '@core/security/safe-archive';
 import { PluginPackageValidator } from '@core/plugin/services/installation/plugin-package-validator';
 import { PluginDependencyInstallerService } from '@core/plugin/services/installation/plugin-dependency-installer-service';
+import { PluginDirectoryAction } from '@core/plugin/services/installation/enums/plugin-directory-action.enum';
 
 /**
  * PluginArchiveInstallerService
@@ -36,13 +37,13 @@ export class PluginArchiveInstallerService {
   }
 
   /** Throws when `dir` is a git checkout — an archive install or a delete must never destroy source. */
-  static refuseSourceCheckout(dir: string, slug: string, action: 'replace' | 'delete'): void {
+  static refuseSourceCheckout(dir: string, slug: string, action: PluginDirectoryAction): void {
     // An EMPTY path must never be checked: `path.join('', '.git')` is the process's working directory,
     // which is the framework checkout itself — every plugin without a recorded path looked like source.
     if (!String(dir || '').trim()) return;
     if (!fs.existsSync(path.join(dir, '.git'))) return;
     throw new Error(
-      `Refusing to ${action} plugin "${slug}": its directory is a git checkout (source), not an installed package. `
+      `Refusing to ${String(action.value)} plugin "${slug}": its directory is a git checkout (source), not an installed package. `
       + 'Update or remove a source plugin through its repository, not from the admin.',
     );
   }
@@ -151,7 +152,7 @@ export class PluginArchiveInstallerService {
       // plugins folder), not an installed artifact. Replacing it with a packed archive deletes the
       // TypeScript, the tests and the repository metadata — which happened once, from an admin
       // upload over a mounted repo. Source is updated from its repository, never from a package.
-      PluginArchiveInstallerService.refuseSourceCheckout(targetDir, manifest.slug, 'replace');
+      PluginArchiveInstallerService.refuseSourceCheckout(targetDir, manifest.slug, PluginDirectoryAction.REPLACE);
       await BackupService.create(manifest.slug, targetDir, BackupSectionKey.PLUGINS);
       fs.rmSync(targetDir, { recursive: true, force: true });
     }

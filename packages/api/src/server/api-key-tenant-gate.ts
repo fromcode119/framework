@@ -5,6 +5,7 @@ import { McpTokenLookupService } from '@api/controllers/mcp/mcp-token-lookup-ser
 import { McpTokenStore } from '@api/controllers/mcp/mcp-token-store';
 import { McpRouteUtils } from '@api/utils/mcp-route-utils';
 import { TenantRequestBinder } from '@api/server/tenant-request-binder';
+import { ApiKeyRefusalReason } from '@api/services/request/enums/api-key-refusal-reason.enum';
 
 /**
  * Api-key tenancy for the request pipeline. The token decides the site; `x-fc-site` only picks
@@ -27,11 +28,11 @@ export class ApiKeyTenantGate {
         if (!tenant) {
           // The sites list is HOW an all-sites token learns what to name; it is the one token route
           // that runs without a site. Nothing tenant-scoped is reachable from it.
-          if (reason === 'site_required' && McpRouteUtils.isSitesPath(String(req.path || ''))) {
+          if (reason === String(ApiKeyRefusalReason.SITE_REQUIRED.value) && McpRouteUtils.isSitesPath(String(req.path || ''))) {
             RequestContextUtils.storage.run({ locale }, () => next());
             return;
           }
-          res.status(ApiKeyTenantGate.STATUS[reason ?? 'invalid_token']).json({ error: reason, siteHeader: McpWirePaths.SITE_HEADER });
+          res.status(ApiKeyTenantGate.STATUS[reason ?? String(ApiKeyRefusalReason.INVALID_TOKEN.value)]).json({ error: reason, siteHeader: McpWirePaths.SITE_HEADER });
           return;
         }
         if (!tenant.isActive) {

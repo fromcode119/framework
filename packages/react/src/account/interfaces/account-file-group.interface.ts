@@ -1,4 +1,5 @@
 import type { IAccountFile } from '@react/account/interfaces/account-file.interface';
+import { AccountBadgeTone } from '@react/account/enums/account-badge-tone.enum';
 
 /**
  * One heading with its files — a lesson, an order, a share.
@@ -17,6 +18,6 @@ export interface IAccountFileGroup {
    * Optional state marker — a drip lock, an expiring link. Kept generic so the panel needs no
    * knowledge of what any plugin's states mean.
    */
-  badge?: { label: string; tone?: 'neutral' | 'warning' };
+  badge?: { label: string; tone?: AccountBadgeTone };
   files: IAccountFile[];
 }

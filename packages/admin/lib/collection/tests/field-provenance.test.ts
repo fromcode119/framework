@@ -1,5 +1,6 @@
 import { FieldProvenance } from '@/lib/collection/field-provenance';
 import type { IFieldFallbackRule } from '@/lib/collection/interfaces/field-fallback-rule.interface';
+import { FieldProvenanceKind } from '@/lib/collection/enums/field-provenance-kind.enum';
 
 /**
  * These cases are the real product-6 configuration that shipped a delivery promise nobody set:
@@ -35,12 +36,12 @@ describe('FieldProvenance', () => {
 
   it('reports the record’s own value when the field is filled in', () => {
     const p = FieldProvenance.resolve(leadTimeMinRules, 7, { madeToOrder: true }, settings, HREF, SCHEMA);
-    expect(p?.kind).toBe('own');
+    expect(p?.kind).toBe(FieldProvenanceKind.OWN);
   });
 
   it('names the setting a made-to-order product actually inherits from', () => {
     const p = FieldProvenance.resolve(leadTimeMinRules, '', { madeToOrder: true }, settings, HREF, SCHEMA);
-    expect(p?.kind).toBe('inherited');
+    expect(p?.kind).toBe(FieldProvenanceKind.INHERITED);
     expect(p?.effectiveValue).toBe('10');
     expect(p?.settingLabel).toContain('Made-to-order lead time');
     expect(p?.settingsHref).toBe(HREF);
@@ -48,7 +49,7 @@ describe('FieldProvenance', () => {
 
   it('switches to the dispatch setting when the product is NOT made to order', () => {
     const p = FieldProvenance.resolve(leadTimeMinRules, '', { madeToOrder: false }, settings, HREF, SCHEMA);
-    expect(p?.kind).toBe('inherited');
+    expect(p?.kind).toBe(FieldProvenanceKind.INHERITED);
     expect(p?.effectiveValue).toBe('1');
     expect(p?.settingLabel).toContain('In-stock dispatch');
   });
@@ -68,13 +69,13 @@ describe('FieldProvenance', () => {
   it('says nothing is shown when the setting it points at is ALSO blank', () => {
     // Claiming "inherits from X" while X is empty would be a second invented promise.
     const p = FieldProvenance.resolve(leadTimeMinRules, '', { madeToOrder: false }, { standardDispatchMinDays: '' }, HREF, SCHEMA);
-    expect(p?.kind).toBe('none');
+    expect(p?.kind).toBe(FieldProvenanceKind.NONE);
     expect(p?.emptyMeans).toBe('No delivery window is shown for this product.');
   });
 
   it('treats a real 0 as a value the operator set, not as absent', () => {
     const p = FieldProvenance.resolve(leadTimeMinRules, 0, { madeToOrder: true }, settings, HREF, SCHEMA);
-    expect(p?.kind).toBe('own');
+    expect(p?.kind).toBe(FieldProvenanceKind.OWN);
   });
 
   it('returns null for a field that declares no fallback at all', () => {
@@ -84,7 +85,7 @@ describe('FieldProvenance', () => {
   it('accepts a single rule as well as a list', () => {
     const single: IFieldFallbackRule = { settingKey: 'leadTimeDefaultMinDays' };
     const p = FieldProvenance.resolve(single, '', {}, settings, HREF, SCHEMA);
-    expect(p?.kind).toBe('inherited');
+    expect(p?.kind).toBe(FieldProvenanceKind.INHERITED);
     expect(p?.effectiveValue).toBe('10');
   });
 });

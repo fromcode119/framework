@@ -64,7 +64,8 @@ export class ResolvedContentMetadata {
         images,
       },
       twitter: {
-        card: (head.twitterCard as 'summary_large_image' | 'summary') || 'summary_large_image',
+        // The card vocabulary is Next's, taken from its own metadata type rather than restated.
+        card: (head.twitterCard || 'summary_large_image') as NonNullable<Metadata['twitter']> extends { card: infer C } ? C : never,
         title: ogTitle,
         description: ogDescription,
         images,

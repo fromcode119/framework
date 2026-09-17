@@ -3,6 +3,7 @@ import { state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { TimezoneUtils } from '@/lib/timezone';
+import { MediaActivityRangeMode } from '@/app/media/enums/media-activity-range-mode.enum';
 
 /**
  * Which window of media activity is being looked at, and what came back for it.
@@ -19,7 +20,7 @@ export abstract class MediaActivityPanelState extends AdminComponent {
   @state protected loadError = '';
   @state protected days = 30;
   /** 'preset' follows `days`; 'custom' follows the two picked instants below. */
-  @state protected rangeMode: 'preset' | 'custom' = 'preset';
+  @state protected rangeMode: MediaActivityRangeMode = MediaActivityRangeMode.PRESET;
   /** Full instants as the DateTimePicker emits them; turned into calendar days only when querying. */
   @state protected fromIso = '';
   @state protected toIso = '';
@@ -31,7 +32,7 @@ export abstract class MediaActivityPanelState extends AdminComponent {
 
   /** The coherent custom window, or null while it is half-picked. */
   protected customWindow(): { from: string; to: string } | null {
-    if (this.rangeMode !== 'custom') return null;
+    if (this.rangeMode !== MediaActivityRangeMode.CUSTOM) return null;
     const from = MediaActivityPanelState.pickedDay(this.fromIso);
     const to = MediaActivityPanelState.pickedDay(this.toIso);
     return from && to && to >= from ? { from, to } : null;

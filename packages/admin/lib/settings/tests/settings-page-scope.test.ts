@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { SettingsScope } from '@/lib/settings/enums/settings-scope.enum';
 
 /** A plain stub, not a `vi.fn()` — vitest v4 fails a test whose spy recorded a throw. */
 let get: (...args: unknown[]) => unknown = () => null;
@@ -35,7 +36,7 @@ describe('SettingsPageScope', () => {
 
     expect(scope.isEmpty).toBe(true);
     expect(scope.visibleKeys).toEqual([]);
-    expect(scope.hiddenBelongTo).toBe('site');
+    expect(scope.hiddenBelongTo).toBe(SettingsScope.SITE);
     expect(scope.notice({ canManagePlatform: true })).toContain('inside each site');
   });
 
@@ -58,7 +59,7 @@ describe('SettingsPageScope', () => {
     const site = await siteScope(mixed);
     expect(site.isEmpty).toBe(false);
     expect(site.visibleKeys).toEqual(SITE_KEYS);
-    expect(site.hiddenBelongTo).toBe('platform');
+    expect(site.hiddenBelongTo).toBe(SettingsScope.PLATFORM);
   });
 
   it('sends only what this scope owns', async () => {

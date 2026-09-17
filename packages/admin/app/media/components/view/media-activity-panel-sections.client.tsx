@@ -9,6 +9,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { MediaActivityLabels } from '@/app/media/media-activity-labels';
 import { PluginTrendChart } from '@/components/plugin-dashboard/view/plugin-trend-chart.client';
 import { MediaActivityPanelActions } from '@/app/media/components/view/media-activity-panel-actions.client';
+import { MediaActivityRangeMode } from '@/app/media/enums/media-activity-range-mode.enum';
 
 /**
  * The sections this panel is built from, one method each.
@@ -24,7 +25,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
    * has these controls precisely so every screen offers the same ones.
    */
   protected renderRange(dark: boolean): ReactNode {
-    const custom = this.rangeMode === 'custom';
+    const custom = this.rangeMode === MediaActivityRangeMode.CUSTOM;
 
     return (
       <div className="flex flex-wrap items-center gap-2">

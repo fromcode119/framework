@@ -2,6 +2,7 @@ import { bound } from '@fromcode119/react-class-components';
 import { MediaShareController } from '@/app/media/media-share-controller';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { MediaActivityPanelState } from '@/app/media/components/view/media-activity-panel-state.client';
+import { MediaActivityRangeMode } from '@/app/media/enums/media-activity-range-mode.enum';
 
 /**
  * Fetching activity for the current window, and paging further back through it.
@@ -54,10 +55,10 @@ export abstract class MediaActivityPanelActions extends MediaActivityPanelState 
   @bound protected async handleRangeMode(value: string): Promise<void> {
     if (value === 'custom') {
       // Switching to custom only reveals the pickers; nothing reloads until the window is coherent.
-      this.rangeMode = 'custom';
+      this.rangeMode = MediaActivityRangeMode.CUSTOM;
       return;
     }
-    this.patch({ rangeMode: 'preset', days: Number(value), fromIso: '', toIso: '' });
+    this.patch({ rangeMode: MediaActivityRangeMode.PRESET, days: Number(value), fromIso: '', toIso: '' });
     await this.load();
   }
 }

@@ -24,7 +24,9 @@ export class ThemeAssetsView {
           as: (link.as || 'fetch') as NonNullable<Parameters<typeof preload>[1]>['as'],
           type: link.type || undefined,
           crossOrigin: link.crossOrigin || undefined,
-          fetchPriority: (link.fetchPriority || undefined) as 'high' | 'low' | 'auto' | undefined,
+          // React already names the allowed values for this DOM attribute; restating them here was a
+          // fourth copy of a list the DOM owns.
+          fetchPriority: (link.fetchPriority || undefined) as NonNullable<Parameters<typeof preload>[1]>['fetchPriority'],
         } as Parameters<typeof preload>[1]);
       }
       if (model.lcpPreload) {

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { CertificateNoticeTone } from '@/app/certificates/enums/certificate-notice-tone.enum';
 
 /**
  * The three facts this screen must state rather than imply.
@@ -22,7 +23,7 @@ export class CertificateStatusNotices extends AdminComponent {
     return this.theme === ThemeMode.DARK;
   }
 
-  private notice(tone: 'good' | 'warn' | 'bad' | 'muted', body: ReactNode): ReactNode {
+  private notice(tone: CertificateNoticeTone, body: ReactNode): ReactNode {
     const dark = this.isDark;
     const tones: Record<string, string> = {
       good: dark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-700',
@@ -30,18 +31,18 @@ export class CertificateStatusNotices extends AdminComponent {
       bad: dark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-700',
       muted: dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500',
     };
-    return <p className={`text-xs leading-snug rounded-lg px-3 py-2 mb-3 ${tones[tone]}`}>{body}</p>;
+    return <p className={`text-xs leading-snug rounded-lg px-3 py-2 mb-3 ${tones[String(tone.value)]}`}>{body}</p>;
   }
 
   /** What the platform's own edge reports — never inferred from a row existing. */
   private renderEdge(): ReactNode {
     if (!this.edge) {
-      return this.notice('muted', 'The platform gateway could not be reached, so what is actually serving these certificates is unknown.');
+      return this.notice(CertificateNoticeTone.MUTED, 'The platform gateway could not be reached, so what is actually serving these certificates is unknown.');
     }
     if (this.edge.tls === true) {
-      return this.notice('good', `This platform’s gateway is terminating TLS and currently holds ${String(this.edge.certificates ?? 0)} certificate(s).`);
+      return this.notice(CertificateNoticeTone.GOOD, `This platform’s gateway is terminating TLS and currently holds ${String(this.edge.certificates ?? 0)} certificate(s).`);
     }
-    return this.notice('warn',
+    return this.notice(CertificateNoticeTone.WARN,
       'This deployment’s gateway is not terminating TLS, so stored certificates are not being served by anything here. '
       + 'Something in front of the platform holds the certificates it serves.');
   }
@@ -50,16 +51,16 @@ export class CertificateStatusNotices extends AdminComponent {
   private renderAutomation(): ReactNode {
     if (!this.automation) return null;
     if (this.automation.isAvailable !== true) {
-      return this.notice('muted', `Automatic certificates are off. ${String(this.automation.blockedReason || '')}`);
+      return this.notice(CertificateNoticeTone.MUTED, `Automatic certificates are off. ${String(this.automation.blockedReason || '')}`);
     }
 
     const authority = String(this.automation.directoryLabel || '');
     if (this.automation.isTestAuthority === true) {
-      return this.notice('warn',
+      return this.notice(CertificateNoticeTone.WARN,
         `Automatic certificates come from ${authority}. Certificates from a staging authority are NOT trusted by `
         + 'browsers — use it to test the flow, not to serve a site.');
     }
-    return this.notice('muted', `Automatic certificates come from ${authority}.`);
+    return this.notice(CertificateNoticeTone.MUTED, `Automatic certificates come from ${authority}.`);
   }
 
   render(): ReactNode {
@@ -68,7 +69,7 @@ export class CertificateStatusNotices extends AdminComponent {
         {this.renderEdge()}
         {this.renderAutomation()}
         {!this.encryptionAvailable
-          ? this.notice('bad', 'No SECRET_KEY is configured on this server, so a private key cannot be stored. Uploading is disabled until one is set.')
+          ? this.notice(CertificateNoticeTone.BAD, 'No SECRET_KEY is configured on this server, so a private key cannot be stored. Uploading is disabled until one is set.')
           : null}
       </>
     );

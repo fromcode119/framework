@@ -2,6 +2,7 @@ import { PluginArchiveInstallerService } from '@core/plugin/services/installatio
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { SystemConstants } from '@core/constants/system.constants';
+import { PluginDirectoryAction } from '@core/plugin/services/installation/enums/plugin-directory-action.enum';
 
 /**
  * Taking a plugin OUT: disabling it, and deleting it entirely.
@@ -74,7 +75,7 @@ export class PluginTeardownService {
     }
     if (plugin) {
       // Never `rm -rf` a developer's mounted source checkout from the admin (see PluginArchiveInstallerService).
-      PluginArchiveInstallerService.refuseSourceCheckout(String(plugin.path || ''), slug, 'delete');
+      PluginArchiveInstallerService.refuseSourceCheckout(String(plugin.path || ''), slug, PluginDirectoryAction.DELETE);
       const dependents = Array.from(this.manager.plugins.values()).filter((p: any) =>
         p.manifest.dependencies && p.manifest.dependencies[slug]
       );

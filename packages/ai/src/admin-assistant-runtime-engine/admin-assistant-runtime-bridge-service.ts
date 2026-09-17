@@ -11,7 +11,9 @@ export class AdminAssistantRuntimeBridgeService {
     if (Array.isArray(extraTools)) {
       for (const tool of extraTools) {
         if (!tool || typeof tool !== 'object' || !tool.tool || typeof tool.handler !== 'function') continue;
-        tools.push(tool);
+        // Rebuilt from the two members the check just proved are there, rather than asserted: the
+        // hook's tools arrive as `Partial`, and this is the line that makes one a real definition.
+        tools.push({ ...tool, tool: tool.tool, handler: tool.handler });
       }
     }
 

@@ -9,6 +9,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+import { TableVisitState } from '@core/tenant/provisioning/enums/table-visit-state.enum';
 
 /**
  * Which tables hold tenant data on THIS platform, and what they look like.
@@ -203,15 +204,15 @@ export class TenantTableCatalog {
   static inDependencyOrder(descriptors: TenantTableDescriptor[]): TenantTableDescriptor[] {
     const byName = new Map(descriptors.map((d) => [d.name, d]));
     const ordered: TenantTableDescriptor[] = [];
-    const state = new Map<string, 'visiting' | 'done'>();
+    const state = new Map<string, TableVisitState>();
     const visit = (name: string): void => {
-      if (state.get(name) === 'done') return;
+      if (state.get(name) === TableVisitState.DONE) return;
       const descriptor = byName.get(name);
       if (!descriptor) return;
-      if (state.get(name) === 'visiting') return; // a cycle: whichever came first goes first
-      state.set(name, 'visiting');
+      if (state.get(name) === TableVisitState.VISITING) return; // a cycle: whichever came first goes first
+      state.set(name, TableVisitState.VISITING);
       for (const dependency of descriptor.dependsOn) visit(dependency);
-      state.set(name, 'done');
+      state.set(name, TableVisitState.DONE);
       ordered.push(descriptor);
     };
     for (const descriptor of [...descriptors].sort((a, b) => a.name.localeCompare(b.name))) visit(descriptor.name);
