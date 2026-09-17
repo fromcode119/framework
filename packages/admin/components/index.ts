@@ -2,6 +2,9 @@ export * from '@/components/media/view/media-picker.client';
 export * from '@/components/ui/view/button.client';
 export * from '@/components/ui/view/input.client';
 export * from '@/components/ui/view/select.client';
+// `Select.options` is typed `IOption[]`; like `Column` below, a caller outside this package could not
+// name it and fell back to `Record<string, unknown>[]`.
+export type { IOption } from '@/components/ui/interfaces/option.interface';
 export * from '@/components/ui/view/text-area.client';
 export * from '@/components/ui/view/localized-field.client';
 export * from '@/components/ui/tag-field/view/index.client';
@@ -13,6 +16,10 @@ export * from '@/components/ui/view/card.client';
 export * from '@/components/ui/view/badge.client';
 export * from '@/components/ui/view/stat-card.client';
 export * from '@/components/ui/view/data-table.client';
+// `DataTable.columns` is typed `Column<T>[]`, so a caller outside this package could not name the
+// type it must pass and fell back to `unknown[]` — which type-checks nothing and is what let two
+// plugin tables declare column lists the table could never accept.
+export { Column } from '@/components/ui/column';
 export * from '@/components/ui/view/confirm-dialog.client';
 export * from '@/components/ui/view/prompt-dialog.client';
 export * from '@/components/ui/date-time-picker/view/index.client';

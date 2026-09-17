@@ -21,7 +21,7 @@ export class Select extends Reactor {
   static contextType = ThemeContext.context;
   declare context: IThemeContextType | undefined;
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<Select, 'value' | 'onChange' | 'options' | 'placeholder' | 'disabled' | 'theme' | 'className' | 'triggerClassName' | 'label' | 'searchable' | 'size' | 'onSearchChange' | 'clearable' | 'onCreateOption' | 'createOptionLabel' | 'onDeleteOption'>;
+  declare props: Pick<Select, 'value' | 'onChange' | 'options' | 'placeholder' | 'disabled' | 'theme' | 'className' | 'triggerClassName' | 'label' | 'searchable' | 'size' | 'onSearchChange' | 'clearable' | 'isLoading' | 'onCreateOption' | 'createOptionLabel' | 'onDeleteOption'>;
 
   @prop declare value: string;
   @prop declare onChange: (value: string) => void;
@@ -36,6 +36,16 @@ export class Select extends Reactor {
   @prop declare size?: FieldSize;
   @prop declare onSearchChange?: (value: string) => void;
   @prop declare clearable?: boolean;
+  /**
+   * The options are still being fetched.
+   *
+   * Every select whose options come from a request needs this, and six plugin fields were already
+   * passing `isLoading` to a component that did not declare it — React dropped the prop silently, so
+   * each of those fields rendered as an ordinary EMPTY select while its request was in flight, which
+   * reads as "there is nothing to choose" rather than "not yet". Spelled and rendered like
+   * `Button.isLoading`: the control is inert and a spinner stands where the affordance would be.
+   */
+  @prop declare isLoading?: boolean;
   /**
    * Makes the select creatable: when the typed text matches no option, the menu offers to create it and
    * hands the text here. The owner creates the option and updates `options`; this select does not hold a
@@ -139,7 +149,9 @@ export class Select extends Reactor {
   render(): ReactNode {
     const { value, onChange, options, label, onSearchChange } = this;
     const placeholder = this.placeholder ?? 'Select an option...';
-    const disabled = this.disabled ?? false;
+    const isLoading = this.isLoading ?? false;
+    // Loading is a form of disabled: there is nothing to pick yet, so the trigger must not open.
+    const disabled = (this.disabled ?? false) || isLoading;
     const theme = this.theme ?? this.context?.theme ?? ThemeMode.LIGHT;
     const className = this.className ?? '';
     const triggerClassName = this.triggerClassName ?? '';
@@ -184,9 +196,13 @@ export class Select extends Reactor {
           </span>
 
           <span className={`relative z-10 ml-2 flex flex-shrink-0 items-center ${canClear ? 'pr-5' : ''}`}>
-            <span className={`transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : chevronThemeClasses}`}>
-              <FrameworkIcons.Down size={14} />
-            </span>
+            {isLoading ? (
+              <div className={`h-3.5 w-3.5 animate-spin rounded-full border-2 ${isDarkTheme ? 'border-slate-700 border-t-slate-400' : 'border-slate-200 border-t-slate-400'}`} />
+            ) : (
+              <span className={`transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : chevronThemeClasses}`}>
+                <FrameworkIcons.Down size={14} />
+              </span>
+            )}
           </span>
 
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/[0.03] to-indigo-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
