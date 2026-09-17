@@ -1,4 +1,5 @@
 import type { AbstractConstructor } from './abstract-constructor';
+import type { UnionToIntersection } from './union-to-intersection';
 import type { IConstructor } from './interfaces/constructor.interface';
 
 /**
@@ -45,31 +46,28 @@ export class Typor {
   }
 
   /**
-   * Compose two or more classes into one. See the class doc for resolution order.
+   * Compose ANY NUMBER of classes into one. See the class doc for resolution order.
    *
-   * The instance and static shapes are written INLINE rather than as named `type` aliases. Both are
-   * type-level OPERATORS — a conditional with `infer`, and a mapped `Omit` — which have no class or
-   * interface form, so naming them only added two `type` declarations to a package that otherwise has
-   * none. Inlining is the remedy the conventions prescribe for exactly this case.
+   * One variadic signature rather than a hand-written overload per arity. It used to be three
+   * overloads — two, three and four bases — which meant five was a type error for no reason anyone
+   * could act on: a class large enough to want splitting is exactly the class likely to want more
+   * than four parts.
+   *
+   * `T[number]` indexes the tuple of bases, which yields a UNION; `UnionToIntersection` turns that
+   * into the intersection the result actually has.
+   *
+   * The static side is `UnionToIntersection<T[number]>` — the base types WHOLE, not `Omit`-ed. The
+   * `Omit<A, 'prototype'>` this used to do is what made the documented claim about static types false:
+   * measured before the change, a class extending a mixin of two bases could not see either base's
+   * statics at the type level, while the runtime had them both. Omitting `prototype` was meant to
+   * avoid a conflict between the bases' prototypes; intersecting them instead gives `prototype: A & B`,
+   * which is the honest type and costs nothing.
    */
-  static mixin<A extends AbstractConstructor, B extends AbstractConstructor>(
-    a: A, b: B,
-  ): IConstructor<
-    (A extends AbstractConstructor<infer I> ? I : never) & (B extends AbstractConstructor<infer I> ? I : never)
-  > & Omit<A, 'prototype'> & Omit<B, 'prototype'>;
-  static mixin<A extends AbstractConstructor, B extends AbstractConstructor, C extends AbstractConstructor>(
-    a: A, b: B, c: C,
-  ): IConstructor<
-    (A extends AbstractConstructor<infer I> ? I : never) & (B extends AbstractConstructor<infer I> ? I : never)
-    & (C extends AbstractConstructor<infer I> ? I : never)
-  > & Omit<A, 'prototype'> & Omit<B, 'prototype'> & Omit<C, 'prototype'>;
-  static mixin<A extends AbstractConstructor, B extends AbstractConstructor, C extends AbstractConstructor, D extends AbstractConstructor>(
-    a: A, b: B, c: C, d: D,
-  ): IConstructor<
-    (A extends AbstractConstructor<infer I> ? I : never) & (B extends AbstractConstructor<infer I> ? I : never)
-    & (C extends AbstractConstructor<infer I> ? I : never) & (D extends AbstractConstructor<infer I> ? I : never)
-  > & Omit<A, 'prototype'> & Omit<B, 'prototype'> & Omit<C, 'prototype'> & Omit<D, 'prototype'>;
-  static mixin(...bases: AbstractConstructor[]): IConstructor {
+  static mixin<T extends AbstractConstructor[]>(
+    ...bases: T
+  ): IConstructor<UnionToIntersection<T[number] extends AbstractConstructor<infer I> ? I : never>>
+    & UnionToIntersection<T[number]>;
+  static mixin(...bases: AbstractConstructor[]): any {
     const [first, ...rest] = bases;
     if (!first) throw new TypeError('Typor.mixin needs at least one base class.');
     // `abstract` is a COMPILE-TIME marker with no runtime existence, so a single abstract base is a
