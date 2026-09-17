@@ -118,7 +118,14 @@ export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason
 export { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';
 export { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 export { ThemeState } from '@core/theme/enums/theme-state.enum';
-export { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
+// `PluginPackageLayout` is deliberately NOT here. It imports `fs` and `path` and computes `UI_DIR`
+// in a static field initializer, which a bundler cannot prove is side-effect-free — so exporting it
+// from this barrel put it in the STOREFRONT RUNTIME BUNDLE, where `path` resolves to the browser
+// build's stub and `(void 0).join('src','ui')` threw the moment the script was evaluated. Nothing
+// imported it through this entry; it arrived as a passenger of the barrel itself. Server and build
+// callers take it from `@fromcode119/core`, which is where it has always been exported too.
+//
+// `ThemePackageLayout` stays: it touches neither module and resolves names from values it is given.
 export { ThemePackageLayout } from '@core/theme/theme-package-layout';
 export { Plugins } from '@core/plugin/plugins';
 export { PluginsFacade } from '@core/plugin/plugins-facade';
