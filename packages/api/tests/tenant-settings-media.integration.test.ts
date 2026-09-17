@@ -101,17 +101,51 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('per-tenant settings and media sharing
     expect(seen).toHaveLength(0);
   });
 
-  it('a platform-level setting is readable by every tenant', async () => {
+  /**
+   * The platform row is visible only for the DECLARED platform keys.
+   *
+   * This pair used to assert that a tenant could read ANY platform-level row, and it had never run:
+   * both cases need the two connection URLs, and without them the file skips. The policy has since
+   * been narrowed to the key list `SystemSettingRegistry` derives, precisely so one key can never
+   * resolve to two visible rows — so an arbitrary platform row is now invisible, which is the
+   * behaviour these two cases pin from both directions.
+   *
+   * Read-only on purpose: `maintenance_mode` is a real deployment setting, and a test that wrote one
+   * would be reconfiguring the machine it runs on.
+   */
+  it('a DECLARED platform key is readable by every tenant', async () => {
     for (const tenant of ['t1', 't2']) {
       const rows = await asTenant(tenant, async (c) =>
-        (await c.query('SELECT "value" FROM "_system_meta" WHERE "key" = $1', [PLATFORM_KEY])).rows);
+        (await c.query('SELECT "value" FROM "_system_meta" WHERE "key" = $1 AND "tenant_id" IS NULL',
+          ['maintenance_mode'])).rows);
       expect(rows).toHaveLength(1);
     }
   });
 
+  it('an UNDECLARED platform key is invisible to a tenant — one key, one visible row', async () => {
+    for (const tenant of ['t1', 't2']) {
+      const rows = await asTenant(tenant, async (c) =>
+        (await c.query('SELECT "value" FROM "_system_meta" WHERE "key" = $1', [PLATFORM_KEY])).rows);
+      expect(rows).toHaveLength(0);
+    }
+  });
+
+  /**
+   * Two different refusals, and the difference matters.
+   *
+   * An UPDATE of a row the tenant cannot see touches nothing — `USING` hid it, so there is no row to
+   * refuse. An INSERT of a platform row is refused outright by `WITH CHECK`, because the tenant is
+   * naming a row it may not create. Asserting only the first would let the second quietly become
+   * allowed.
+   */
   it('a tenant CANNOT write a platform-level setting without the platform-admin marker', async () => {
+    const update = await asTenant('t1', async (c) =>
+      c.query('UPDATE "_system_meta" SET "value" = $1 WHERE "key" = $2', ['hijacked', PLATFORM_KEY]));
+    expect(update.rowCount).toBe(0);
+
     await expect(asTenant('t1', async (c) =>
-      c.query('UPDATE "_system_meta" SET "value" = $1 WHERE "key" = $2', ['hijacked', PLATFORM_KEY]),
+      c.query('INSERT INTO "_system_meta" ("key","value","tenant_id") VALUES ($1,$2,NULL)',
+        ['iso_forged_platform_setting', 'forged']),
     )).rejects.toThrow(/row-level security/i);
   });
 
