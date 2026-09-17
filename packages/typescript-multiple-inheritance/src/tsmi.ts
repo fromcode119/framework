@@ -36,6 +36,21 @@ import type { IConstructor } from './interfaces/constructor.interface';
  * controllers and ThemeManager are both built that way on purpose.
  */
 export class Typor {
+  /**
+   * The bases a mixed class folded in, published on the class itself.
+   *
+   * A mixin COPIES the second and later bases onto one prototype; it does not chain them. Anything
+   * that walks `getPrototypeOf` to find per-class metadata therefore sees only the first base and
+   * silently misses the rest. reactor is exactly such a consumer: `@state` registers against the
+   * declaring prototype, and a component split as `extends A, B` lost every state field declared in
+   * B — no error, just a field that never re-rendered.
+   *
+   * `Symbol.for` rather than an import, deliberately: typor must not depend on reactor, and reactor
+   * must not depend on typor. Whoever needs the extra prototypes looks for this well-known symbol and
+   * ignores it when absent.
+   */
+  static readonly MIXED_BASES = Symbol.for('typor.mixedBases');
+
   /** Copy own property descriptors (methods, getters, setters) from `source` onto `target`. */
   private static copyMembers(target: object, source: object): void {
     for (const key of Reflect.ownKeys(source)) {
@@ -86,6 +101,10 @@ export class Typor {
         }
       }
     };
+
+    // Publish what was folded in, so a consumer walking the prototype chain can find the bases that
+    // are not on it. See MIXED_BASES.
+    Object.defineProperty(Mixed, Typor.MIXED_BASES, { value: bases, enumerable: false });
 
     for (const base of rest) {
       Typor.copyMembers(Mixed.prototype, base.prototype);
