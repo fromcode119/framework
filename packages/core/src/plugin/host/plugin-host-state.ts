@@ -11,6 +11,12 @@ import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-sett
 /**
  * Everything a `PluginHost` holds, declared once for both halves.
  *
+ * EVERY field here must be assigned in `PluginHost`'s constructor, including the ones whose starting
+ * value is `null`, `false` or `0`. `declare` emits NOTHING, so a field initialiser moved up here
+ * simply stops running and the compiler says nothing: `tokens` became `undefined`, `invoke()` called
+ * `this.tokens.mint(...)`, and twelve plugins failed `onInit` on a local boot, each reported as its
+ * own unrelated-looking "failed to register". `arch-guard declared-fields` now refuses this.
+ *
  * `declare` only — the host owns the real fields and assigns them in its constructor. A `declare`d
  * field carrying an initialiser would simply never run.
  */

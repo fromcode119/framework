@@ -57,12 +57,11 @@ import { PluginManagerQueryService } from '@core/plugin/services/runtime/plugin-
 import type { IScaffoldPluginInput } from '@core/plugin/services/interfaces/scaffold-plugin-input.interface';
 import type { IScaffoldPluginResult } from '@core/plugin/services/interfaces/scaffold-plugin-result.interface';
 import { PluginManagerApi } from '@core/plugin/plugin-manager-api';
-import { PluginManagerExtensions } from '@core/plugin/plugin-manager-extensions';
 
-export class PluginManager extends PluginManagerExtensions, PluginManagerApi implements IPluginManagerInterface {
+export class PluginManager extends PluginManagerApi implements IPluginManagerInterface {
   /**
-   * The fields live in {@link PluginManagerState}, declared once for both halves. Only what cannot
-   * be declared there stays here: the static, and the getters that forward to `integrations`.
+   * The fields live in {@link PluginManagerState}, declared once for the whole chain. Only what
+   * cannot be declared there stays here: the static, and the getters that forward to `integrations`.
    */
   /** Emitted after `discoverPlugins()` has registered and enabled the whole boot set. */
   static readonly PLUGINS_READY_EVENT = 'plugins:ready';

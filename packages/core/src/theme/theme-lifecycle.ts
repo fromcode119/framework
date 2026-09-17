@@ -3,7 +3,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantThemeAccess } from '@core/theme/tenant-theme-access';
 import { TenantThemeStateService } from '@core/theme/tenant-theme-state-service';
-import { ThemeManagerState } from '@core/theme/theme-manager-state';
+import { ThemeDiscovery } from '@core/theme/theme-discovery';
 import { ThemeState } from '@core/theme/enums/theme-state.enum';
 
 /**
@@ -14,12 +14,12 @@ import { ThemeState } from '@core/theme/enums/theme-state.enum';
  * REFUSES when there is none rather than guessing which site was meant. Disable and delete face the
  * same question in reverse: a theme a site is using cannot simply vanish.
  *
- * One of the two halves `ThemeManager` is composed from (`extends ThemeDiscovery, ThemeLifecycle`).
- * Discovery and lifecycle are INDEPENDENT — neither is a kind of the other — so they are siblings
- * over the shared `ThemeManagerState` rather than a chain that would have to invent an order. That is what keeps these files small without a
- * constructor taking thirteen arguments, or an untyped `manager: any` passed around.
+ * A link in `ThemeManager`'s chain, above `ThemeDiscovery`: lifecycle acts on themes discovery has
+ * found. Both work over the fields declared once in `ThemeManagerState`, which is what keeps these
+ * files small without a constructor taking thirteen arguments, or an untyped `manager: any` passed
+ * around.
  */
-export abstract class ThemeLifecycle extends ThemeManagerState {
+export abstract class ThemeLifecycle extends ThemeDiscovery {
   /**
    * Run a theme's declared INITIAL content (its `seeds` file) for the site this request is bound to.
    * On a multi-site platform the install-time seed runs untenanted and can write no site's rows, so a

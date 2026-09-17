@@ -63,7 +63,20 @@ export class PluginHost extends PluginHostGuestBridge {
     this.manager = manager;
     this.projectRoot = projectRoot;
     this.identity = identity;
+    // EVERY declared field is assigned here, `null`/`false`/`0` included — see PluginHostState.
     this.logger = new Logger({ namespace: `plugin-host:${slug}` });
+    this.tokens = new PluginInvocationTokens();
+    this.socketPath = '';
+    this.guest = null;
+    this.channel = null;
+    this.context = null;
+    this.describeResult = null;
+    this.restarts = 0;
+    this.stopping = false;
+    this.restarting = false;
+    this.healthyTimer = null;
+    this.wasEnabled = false;
+    this.initDeferred = false;
     this.settings = settings;
     this.limits = settings.forPlugin(manifest.sandbox);
     this.proxy = new PluginHostHttpProxy('');

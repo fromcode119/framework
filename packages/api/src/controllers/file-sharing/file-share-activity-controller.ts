@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { CoercionUtils, FileActivityService, FileGrantRepository } from '@fromcode119/core';
+import { BaseController, CoercionUtils, FileActivityService, FileGrantRepository } from '@fromcode119/core';
 
 /**
  * The operator's side: compose a send, see who has opened it, withdraw it.
@@ -13,13 +13,21 @@ import { CoercionUtils, FileActivityService, FileGrantRepository } from '@fromco
  * What happened to a share: the per-share event log and the cross-share overview.
  *
  * Split out of FileShareAdminController (421 lines) 2026-09-09. Needs only the repository (and the
- * activity service), never the mailer or the plugin manager, so it is a plain class routed by FilesRouter.
+ * activity service), never the mailer or the plugin manager.
+ *
+ * It extends `BaseController` for ONE reason, and it is not ceremony: FilesRouter registers these
+ * methods by reference (`this.activityController.activityOverview`), so an unbound method reaches
+ * Express with no `this` and every call reads `this.activity` off undefined. As a plain class it did
+ * exactly that — Media → Activity answered 500 with "Cannot read properties of undefined (reading
+ * 'activity')" for both routes. BaseController binds the prototype once in its constructor.
  */
-export class FileShareActivityController {
+export class FileShareActivityController extends BaseController {
   constructor(
     private readonly activity: FileActivityService,
     private readonly grants: FileGrantRepository,
-  ) {}
+  ) {
+    super();
+  }
 
   /**
    * What actually happened to a share.

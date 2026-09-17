@@ -7,7 +7,7 @@ import type { IScaffoldPluginResult } from '@core/plugin/services/interfaces/sca
 import type { ThemeManager } from '@core/theme/theme-manager';
 import { PluginContext } from '@core/plugin/plugin-context';
 import { PluginContextFactory } from '@core/plugin/context';
-import { PluginManagerState } from '@core/plugin/plugin-manager-state';
+import { PluginManagerExtensions } from '@core/plugin/plugin-manager-extensions';
 /**
  * The surface everything else calls the plugin manager THROUGH.
  *
@@ -18,7 +18,7 @@ import { PluginManagerState } from '@core/plugin/plugin-manager-state';
  *
  * One half of `PluginManager` (`extends PluginManagerExtensions, PluginManagerApi`).
  */
-export abstract class PluginManagerApi extends PluginManagerState {
+export abstract class PluginManagerApi extends PluginManagerExtensions {
   /**
    * Materialize the default pages of every plugin the CURRENT site runs (call inside that site's
    * tenant scope). This is what gives a newly created site its /shop, /login and friends — the boot

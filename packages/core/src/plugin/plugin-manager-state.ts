@@ -34,16 +34,16 @@ import { WebhookService } from '@core/webhook/webhook-service';
 import { WorkflowService } from '@core/plugin/services/workflow-service';
 
 /**
- * Everything `PluginManager` holds, declared once for the halves that work on it.
+ * Everything `PluginManager` holds, declared once for the whole chain that works on it.
  *
- * `declare` throughout: these emit NOTHING. The manager is composed from several behaviour halves
- * (`extends A, B`), and a mixin copies methods onto one prototype chain — a field both declared and
- * initialised in more than one half would be constructed more than once. The manager owns the real
- * fields and their construction; each half says only that they exist and what shape they are.
+ * `declare` throughout: these emit NOTHING. `PluginManagerState` → `PluginManagerExtensions` →
+ * `PluginManagerApi` → `PluginManager`, and only the leaf owns the real fields and their
+ * construction; each link above says only that they exist and what shape they are. A field both
+ * declared AND initialised at two levels would be constructed twice.
  *
  * Visibility is carried across as it was: what was public on the manager stays public here, because
  * plugins and the api reach `manager.db`, `manager.hooks`, `manager.plugins` and the rest by name.
- * What was private becomes protected — the halves need it, nothing outside does.
+ * What was private becomes protected — the links need it, nothing outside does.
  */
 export abstract class PluginManagerState {
   public declare audit: AuditManager;

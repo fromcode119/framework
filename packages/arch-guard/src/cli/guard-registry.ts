@@ -1,4 +1,5 @@
 import { AppTypecheckCommand } from './app-typecheck-command';
+import { ExtendedExtendsCommand } from './extended-extends-command';
 import { FileSizeCommand } from './file-size-command';
 import { AppearanceBoundaryCommand } from './appearance-boundary-command';
 import { ClientViewMoveCommand } from './client-view-move-command';
@@ -7,6 +8,7 @@ import { ConventionGuardCommand } from './convention-guard-command';
 import { CoreBoundaryCommand } from './core-boundary-command';
 import { FrameworkDomainCommand } from './framework-domain-command';
 import { BlockFieldConformanceCommand } from './block-field-conformance-command';
+import { DeclaredFieldAssignmentCommand } from './declared-field-assignment-command';
 import { DependencyOverridesCommand } from './dependency-overrides-command';
 import { DialectSqlConfinementCommand } from './dialect-sql-confinement-command';
 import { DbFindWhereCommand } from './db-find-where-command';
@@ -49,8 +51,10 @@ export class GuardRegistry {
     ['convention-guard', ConventionGuardCommand],
     ['core-boundary', CoreBoundaryCommand],
     ['db-find-where', DbFindWhereCommand],
+    ['declared-fields', DeclaredFieldAssignmentCommand],
     ['dependency-overrides', DependencyOverridesCommand],
     ['dialect-sql-confinement', DialectSqlConfinementCommand],
+    ['extended-extends', ExtendedExtendsCommand],
     ['file-size', FileSizeCommand],
     ['framework-domain', FrameworkDomainCommand],
     ['block-field-conformance', BlockFieldConformanceCommand],

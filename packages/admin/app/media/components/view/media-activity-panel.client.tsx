@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { MediaActivityPanelSections } from '@/app/media/components/view/media-activity-panel-sections.client';
 
@@ -44,7 +45,14 @@ export class MediaActivityPanel extends MediaActivityPanelSections {
           {this.renderRange(dark)}
         </div>
 
-        {this.loading ? <Loader /> : (
+        {this.loadError ? (
+          <LoadErrorPanel
+            title="Activity could not be loaded"
+            message={this.loadError}
+            onRetry={this.retryLoad}
+            isRetrying={this.loading}
+          />
+        ) : this.loading ? <Loader /> : (
           <>
             {this.renderTotals()}
             {this.renderTrend(dark)}

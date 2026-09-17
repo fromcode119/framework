@@ -9,11 +9,11 @@ import type { ThemeInstallerService } from '@core/theme/theme-installer-service'
  * The state every half of ThemeManager works on, declared once.
  *
  * `declare` on purpose: these emit NOTHING. The manager is assembled from several behaviour bases
- * through `extends A, B`, and a mixin copies methods onto one prototype chain — so a field declared
- * and initialised in more than one base would be constructed more than once. The manager owns the
- * real fields and their initialisation; each base says only that they exist and what shape they are.
+ * through `ThemeManagerState` → `ThemeDiscovery` → `ThemeLifecycle` → `ThemeManager`, and only the
+ * leaf owns the real fields and their initialisation; each link above says only that they exist and
+ * what shape they are. A field declared AND initialised at two levels would be built twice.
  *
- * This is what lets the halves be small files without passing thirteen constructor arguments between
+ * This is what lets the links be small files without passing thirteen constructor arguments between
  * them, or handing each other `manager: any` and losing every type on the way through.
  */
 export abstract class ThemeManagerState {
@@ -29,7 +29,7 @@ export abstract class ThemeManagerState {
   protected declare pluginManager?: any;
 
   /**
-   * Declared here because both halves call them and each is implemented in the other.
+   * Declared here because links in the chain call each other's work in both directions.
    *
    * Visibility MATTERS and is not uniform: `discoverThemes`, `activateTheme` and
    * `getActiveThemeManifest` are public API — `IPluginManagerInterface` requires the last one public,

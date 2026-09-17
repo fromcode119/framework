@@ -15,6 +15,8 @@ import { TimezoneUtils } from '@/lib/timezone';
 export abstract class MediaActivityPanelState extends AdminComponent {
   @state protected data: any = null;
   @state protected loading = true;
+  /** Why the window could not be read. Empty when it was read, or has not been asked for yet. */
+  @state protected loadError = '';
   @state protected days = 30;
   /** 'preset' follows `days`; 'custom' follows the two picked instants below. */
   @state protected rangeMode: 'preset' | 'custom' = 'preset';

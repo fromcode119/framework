@@ -44,6 +44,11 @@ export class TenantAdminService extends TenantArchiveAdmin {
     this.catalog = new BackupCatalogService();
     this.audit = new SystemBackupRepository(manager.db);
     this.appearances = new AppearanceManager(new Logger({ namespace: 'appearance' }));
+    // Assigned HERE, like every other declared field. It carried its own initialiser before the
+    // split; moved onto the state base as `declare` that initialiser stopped running, so every
+    // `this.gateway.notify()` — after creating, importing, renaming or deleting a site — threw
+    // instead of reloading the platform gateway's host map.
+    this.gateway = new GatewayReloadClient();
     this.lookup = new TenantLookup(this.registry);
     this.membersService = new TenantMembersService(this.db, this.memberships, this.lookup);
     this.pagesService = new TenantPagesService(this.db, manager, themeManager, this.lookup);
