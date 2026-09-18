@@ -8,6 +8,7 @@ import type { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
 import { StructuredDataScriptsView } from '@/components/structured-data-scripts';
 import { StorefrontDocumentContract } from '@/lib/document/storefront-document-contract';
 import { SitePreviewBannerView } from '@/lib/document/site-preview-banner-view';
+import { SiteBannersView } from '@/lib/document/site-banners-view';
 
 /**
  * The whole islands document as one synchronous React tree, rendered to static markup by
@@ -43,7 +44,7 @@ export class DocumentView {
         <body>
           {/* FIRST in the body, ahead of the theme and ahead of any plugin injection, so nothing a
               theme renders can sit above it or paint over it. */}
-          <SitePreviewBannerView.render visible={preview} />
+          <SiteBannersView.render bars={[SitePreviewBannerView.render({ visible: preview })]} />
           {bodyStartInjections}
           <div id={StorefrontDocumentContract.ROOT_ID} dangerouslySetInnerHTML={{ __html: markup?.bodyHtml || '' }} />
           <StructuredDataScriptsView.render schema={schema} />
