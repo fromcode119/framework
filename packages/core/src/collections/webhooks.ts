@@ -73,11 +73,14 @@ export class WebhooksCollection {
         }
       },
       {
+          // Visible, not hidden: `lastStatus` above already tells the operator a delivery failed, and
+          // this is the only field that says WHY — the response body, or the thrown error's message
+          // (`WebhookService`). Hiding it left "status 500" on screen with the explanation withheld.
           name: 'lastResponse',
           type: FieldType.TEXTAREA,
           admin: {
               readOnly: true,
-              hidden: true
+              description: 'Body returned by the last delivery attempt, or the error if the request itself failed. Written by the webhook service on every attempt.'
           }
       }
     ],
