@@ -1,7 +1,5 @@
-import path from 'path';
 import fs from 'fs-extra';
 import * as readline from 'readline';
-import chalk from 'chalk';
 import { DatabaseConnectionUrls, DatabaseFactory, DatabaseManager } from '@fromcode119/database';
 import { ProjectPaths, DiscoveryService, MarketplaceCatalogService } from '@fromcode119/core';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
@@ -14,11 +12,7 @@ export class CliUtils {
     'cli.status.new_version': '\nA newer version of Fromcode Atlantis is available: {{version}}',
     'cli.status.update_hint': 'Use "atlantis core update" to apply the update.',
     'cli.status.latest': '\nYou are running the latest version of Fromcode Atlantis.',
-    'cli.build.no_ui': 'No ui directory found for {{type}} {{slug}}. Skipping build.',
-    'cli.build.no_entry': 'No entry point found in {{dir}} (index.ts/js{{extra}})',
-    'cli.build.compiling': 'Compiling {{type}}: {{in}} -> {{out}}',
-    'cli.build.starting': '\nBuilding UI for {{type}} {{slug}}...',
-    'cli.build.success': 'Build completed successfully!',
+    'cli.build.starting': '\nBuilding {{type}} {{slug}}...',
     'cli.pack.starting': '\nPacking {{slug}} v{{version}}...',
     'cli.pack.success': '\nPacked successfully!',
     'cli.install.fetching': '\nFetching {{type}} info for {{slug}}...',
@@ -99,35 +93,4 @@ export class CliUtils {
     return text;
   }
 
-  static async compileStyles(uiDir: string): Promise<void> {
-    const sass = require('sass');
-    const less = require('less');
-    const sassEntries = [
-      { in: 'theme.scss', out: 'theme.css' },
-      { in: 'index.scss', out: 'index.css' },
-      { in: 'style.scss', out: 'style.css' },
-    ];
-    for (const entry of sassEntries) {
-      const fullInPath = path.join(uiDir, entry.in);
-      if (fs.existsSync(fullInPath)) {
-        console.log(chalk.gray(`Compiling SCSS: ${entry.in} -> ${entry.out}`));
-        const result = sass.compile(fullInPath);
-        await fs.writeFile(path.join(uiDir, entry.out), result.css);
-      }
-    }
-    const lessEntries = [
-      { in: 'theme.less', out: 'theme.css' },
-      { in: 'index.less', out: 'index.css' },
-      { in: 'style.less', out: 'style.css' },
-    ];
-    for (const entry of lessEntries) {
-      const fullInPath = path.join(uiDir, entry.in);
-      if (fs.existsSync(fullInPath)) {
-        console.log(chalk.gray(`Compiling Less: ${entry.in} -> ${entry.out}`));
-        const content = await fs.readFile(fullInPath, 'utf8');
-        const result = await less.render(content);
-        await fs.writeFile(path.join(uiDir, entry.out), result.css);
-      }
-    }
-  }
 }
