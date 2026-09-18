@@ -98,7 +98,16 @@ export class TenantImportPlanner {
 
     const users = await this.planUsers(reader);
     const files = this.planFiles(reader);
-    if (files.colliding > 0) warnings.push(`${files.colliding} file name(s) already exist in the uploads directory and will be stored under a suffixed name.`);
+    // What it MEANS for the operator's files, not what the importer will do to them. The old wording
+    // named the mechanism ("stored under a suffixed name") and left the only question that matters
+    // unanswered: is something of mine about to be overwritten. Nothing is.
+    if (files.colliding > 0) {
+      warnings.push(
+        `${files.colliding} of the archive's files have names that are already in the uploads directory. `
+        + `Nothing is overwritten — the files already there are left exactly as they are, and the archive's `
+        + `copies are saved alongside them under a suffixed name.`,
+      );
+    }
 
     return new TenantImportPlan(reader.manifest, tables, plugins, theme, users, files, blockers, warnings);
   }
