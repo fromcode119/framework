@@ -60,6 +60,15 @@ export class TenantImportPlan {
      * is never asked to weigh a stale export-time note against a live one in the same list.
      */
     readonly exportWarnings: string[] = [],
+    /**
+     * Rows of `_system_meta` the executor's row filter will drop because their key is a platform
+     * key (`TenantBespokePolicies.platformKeys()`) — a tenant cannot own a deployment truth. The
+     * table itself is still imported; only these rows of it are not, so the id-mode accounting above
+     * never counts them.
+     */
+    readonly metaRowsExcluded: number = 0,
+    /** Rows of `_system_plugin_settings` the executor will drop: settings of a plugin this platform does not have. */
+    readonly pluginSettingsRowsExcluded: number = 0,
   ) {}
 
   get canExecute(): boolean {
@@ -81,6 +90,8 @@ export class TenantImportPlan {
       blockers: this.blockers,
       warnings: this.warnings,
       exportWarnings: this.exportWarnings,
+      metaRowsExcluded: this.metaRowsExcluded,
+      pluginSettingsRowsExcluded: this.pluginSettingsRowsExcluded,
       canExecute: this.canExecute,
     };
   }

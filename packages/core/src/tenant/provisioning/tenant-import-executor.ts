@@ -92,7 +92,7 @@ export class TenantImportExecutor {
     // `users` is always in the remap (accounts are matched by email, never by id), but that is not a
     // re-numbering the operator needs to hear about — only content tables are listed.
     const renumbered = remap.remappedTables.filter((table) => table !== SystemConstants.TABLE.USERS);
-    return new TenantImportResult(tenant, inserted, renumbered, members, plugins, theme, warnings);
+    return new TenantImportResult(tenant, inserted, renumbered, members, plugins, theme, warnings, plan.exportWarnings);
   }
 
   private async importTable(

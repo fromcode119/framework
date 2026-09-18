@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TenantImportCli } from '@api/cli/tenant-import-cli';
 
 /**
@@ -39,5 +39,34 @@ describe('tenant-import CLI arguments', () => {
   it('passes an explicit production import through untouched', () => {
     const overrides = (TenantImportCli as any).overrides(parse(['--environment', 'production']));
     expect(overrides).toEqual({ environment: 'production' });
+  });
+});
+
+describe('tenant-import CLI human-readable report', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('prints export warnings under their own label, distinct from decision warnings — not just in --json', async () => {
+    // Regression: after `warnings` split into `warnings` (this import's decisions) and
+    // `exportWarnings` (written into the archive at export time), the human-readable report kept
+    // looping over `plan.warnings` alone and never read `exportWarnings` at all.
+    const { TenantImportPlan } = await import('@fromcode119/core');
+    const plan = new TenantImportPlan(
+      { tenant: {}, toJSON: () => ({}) } as any,
+      [], [], null,
+      { total: 0, existing: 0, toCreate: 0 },
+      { count: 0, bytes: 0, colliding: 0 },
+      [],
+      ['a decision this import makes'],
+      ['a note written into the archive at export time'],
+    );
+    const lines: string[] = [];
+    vi.spyOn(console, 'log').mockImplementation((line: string) => { lines.push(line); });
+
+    (TenantImportCli as any).report(plan, false);
+
+    expect(lines).toContain('[tenant-import] warning: a decision this import makes');
+    expect(lines).toContain('[tenant-import] export warning: a note written into the archive at export time');
   });
 });

@@ -177,6 +177,23 @@ describe('TenantTableCatalog.describe — owning plugin and label', () => {
     expect(descriptor.pluginSlug).toBe('alpha');
     expect(descriptor.label).toBeNull();
   });
+
+  it('longest-prefix-matches a multi-token plugin slug against the known slugs passed in, instead of truncating at the first underscore', async () => {
+    // "alpha" is ALSO a real, single-token slug here — the naive `PhysicalTableNameUtils.parse`
+    // split would answer it for "fcp_alpha_beta_widgets" too. Only the real slug list lets the
+    // longer, correct match ("alpha_beta") win.
+    const db = fakeDb({ fcp_alpha_beta_widgets: { id: 'integer', tenant_id: 'text' } });
+    const catalog = new TenantTableCatalog(db, [], ['alpha', 'alpha_beta']);
+    const [descriptor] = await catalog.describe(['fcp_alpha_beta_widgets']);
+    expect(descriptor.pluginSlug).toBe('alpha_beta');
+  });
+
+  it('answers null, never a guess, when a known slug list is given but none of it matches', async () => {
+    const db = fakeDb({ fcp_gamma_delta_widgets: { id: 'integer', tenant_id: 'text' } });
+    const catalog = new TenantTableCatalog(db, [], ['alpha']);
+    const [descriptor] = await catalog.describe(['fcp_gamma_delta_widgets']);
+    expect(descriptor.pluginSlug).toBeNull();
+  });
 });
 
 describe('TenantTableDescriptor', () => {

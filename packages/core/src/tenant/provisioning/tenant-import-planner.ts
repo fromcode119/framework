@@ -5,9 +5,11 @@ import type { IDatabaseManager } from '@fromcode119/database';
 import { PhysicalTableNameUtils } from '@fromcode119/database';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
+import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
 import { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
+import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-owning-plugin-resolver';
 import { TenantRegistryService } from '@core/tenant/provisioning/tenant-registry-service';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
@@ -48,6 +50,13 @@ export class TenantImportPlanner {
       blockers.push(String(error?.message || error));
     }
 
+    // The archive's own plugins are the REAL slugs to check a skipped table's physical name
+    // against — `PhysicalTableNameUtils.parse` splits at the first underscore, which is wrong for a
+    // multi-token slug (`logistics_econt` truncates to `logistics`). With no plugins named at all
+    // (an archive written before that field existed) there is nothing real to check against, so the
+    // naive split remains the best available guess rather than nothing.
+    const knownPluginSlugs = reader.manifest.plugins.map((plugin) => plugin.slug);
+
     const byName = new Map(this.tables.map((table) => [table.name, table]));
     const tables: TenantImportPlan['tables'] = [];
     for (const archived of reader.manifest.tables) {
@@ -63,7 +72,9 @@ export class TenantImportPlanner {
           // No destination descriptor exists for a skipped table, so there is no collection to ask —
           // but the physical name itself (`fcp_<slug>_...`) still says which plugin would have owned
           // it, which is exactly what "install and enable the plugin that owns it" (below) needs said.
-          pluginSlug: PhysicalTableNameUtils.parse(archived.name)?.pluginSlug ?? null,
+          pluginSlug: knownPluginSlugs.length > 0
+            ? TenantOwningPluginResolver.resolve(archived.name, knownPluginSlugs)
+            : (PhysicalTableNameUtils.parse(archived.name)?.pluginSlug ?? null),
           label: null,
         });
         if (archived.rows > 0) {
@@ -110,7 +121,39 @@ export class TenantImportPlanner {
     const files = this.planFiles(reader);
     if (files.colliding > 0) warnings.push(`${files.colliding} file name(s) already exist in the uploads directory and will be stored under a suffixed name.`);
 
-    return new TenantImportPlan(reader.manifest, tables, plugins, theme, users, files, blockers, warnings, exportWarnings);
+    // Two more classes of row the EXECUTOR drops at run time (`TenantImportExecutor.rowFilter`)
+    // that the id-mode/column accounting above never sees, because the table itself is still
+    // imported — only some of its rows are not. Both are knowable now, from the same inputs the
+    // executor uses, so the preview's "left behind" summary can count them rather than miss them.
+    const platformKeys = new Set(TenantBespokePolicies.platformKeys());
+    const metaRowsExcluded = await TenantImportPlanner.countExcludedRows(
+      reader, tables, SystemConstants.TABLE.META, (row) => platformKeys.has(String(row.key ?? '')),
+    );
+    const installedPluginSlugs = new Set(this.installed.plugins.keys());
+    const pluginSettingsRowsExcluded = await TenantImportPlanner.countExcludedRows(
+      reader, tables, SystemConstants.TABLE.PLUGIN_SETTINGS, (row) => !installedPluginSlugs.has(String(row.plugin_slug ?? '')),
+    );
+
+    return new TenantImportPlan(
+      reader.manifest, tables, plugins, theme, users, files, blockers, warnings, exportWarnings,
+      metaRowsExcluded, pluginSettingsRowsExcluded,
+    );
+  }
+
+  /** How many rows of `tableName` the executor's own row filter would drop — 0 when the table is skipped or empty. */
+  private static async countExcludedRows(
+    reader: TenantArchiveReader,
+    tables: TenantImportPlan['tables'],
+    tableName: string,
+    excluded: (row: Record<string, unknown>) => boolean,
+  ): Promise<number> {
+    const table = tables.find((entry) => entry.name === tableName);
+    if (!table || table.mode === String(TenantImportIdMode.SKIP.value) || table.rows === 0) return 0;
+    let count = 0;
+    for await (const row of reader.rows(tableName)) {
+      if (excluded(row)) count += 1;
+    }
+    return count;
   }
 
   private async planTable(

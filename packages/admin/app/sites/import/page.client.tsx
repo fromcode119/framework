@@ -165,6 +165,15 @@ export class ImportSitePageClient extends AdminComponent {
                 {(result.remappedTables ?? []).length ? ` Re-numbered: ${result.remappedTables.join(', ')}.` : ' Every id was preserved.'}
               </p>
               {(result.warnings ?? []).length ? <ul className="fc-sites__warnings">{result.warnings.map((w: string) => <li key={w}>{w}</li>)}</ul> : null}
+              {(result.exportWarnings ?? []).length ? (
+                <details className="fc-import-plan__warnings">
+                  <summary>From the export ({result.exportWarnings.length})</summary>
+                  <p className="fc-import-plan__rule">
+                    Written into the archive when it was exported. They describe what the archive held, not a decision this import made.
+                  </p>
+                  <ul className="fc-sites__warnings">{result.exportWarnings.map((w: string) => <li key={w}>{w}</li>)}</ul>
+                </details>
+              ) : null}
               <div className="fc-sites__actions">
                 <Button href={AdminConstants.ROUTES.SITES.DETAIL(String(result.tenant?.id ?? ''))} icon={<FrameworkIcons.Settings size={14} />}>Open the site</Button>
               </div>
