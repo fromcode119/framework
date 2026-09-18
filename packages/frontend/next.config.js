@@ -3,6 +3,13 @@ const { NextConfigEnv } = require('../../config/next-config-env');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Next's dev server 403s `/_next/*` for any Host not listed here, and the page still streams — so a
+  // blocked storefront paints its server-rendered shell and never hydrates, with nothing in the
+  // browser console to say why. Every SITE is its own host and is created in the admin long after
+  // this file is read, which is why the list is derived (COOKIE_DOMAIN expanded to `**.<domain>`)
+  // rather than written down. The admin has carried this since 2026-09-08; the storefront — where
+  // there are far more hosts — never did, because it had no dev server to block.
+  allowedDevOrigins: NextConfigEnv.getAllowedDevOrigins(),
   reactStrictMode: true,
   // `.client` is the client-boundary filename convention: a CLIENT route entry is `page.client.tsx` /
   // `layout.client.tsx` (directive stamped in by scripts/stamp-client-src.mjs), a SERVER one stays `page.tsx`.
@@ -40,6 +47,13 @@ const nextConfig = {
     // with --webpack, so without this the dev server would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
     config.module.rules.unshift({
+      // PRE loader, for the reason the admin's identical rule records: webpack runs pre-loaders before
+      // every normal loader whatever the rule order, whereas a normal rule sitting FIRST in the list
+      // runs LAST (loaders execute right-to-left). Without it Next reads the source unstamped and every
+      // route answers 405 "No HTTP methods exported" — source declaring only `export class` never
+      // becomes a route. The admin was fixed in 2026-09-07; this copy was not, because the storefront
+      // had no dev server for it to break.
+      enforce: 'pre',
       test: /[\\/](app|components|lib|hooks|src)[\\/].*\.(ts|tsx)$/,
       exclude: /[\\/]node_modules[\\/]/,
       use: [
