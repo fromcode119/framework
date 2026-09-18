@@ -11,6 +11,12 @@ export class TenantImportResult {
     readonly pluginsEnabled: string[],
     readonly themeActivated: string | null,
     readonly warnings: string[],
+    /**
+     * Written into the archive at EXPORT time, describing what it holds — never a decision this
+     * import made. Carried through from `TenantImportPlan.exportWarnings` so the post-import screen
+     * does not lose the archive's own notes the preview already showed.
+     */
+    readonly exportWarnings: string[] = [],
   ) {}
 
   get totalRows(): number {
@@ -27,6 +33,7 @@ export class TenantImportResult {
       pluginsEnabled: this.pluginsEnabled,
       themeActivated: this.themeActivated,
       warnings: this.warnings,
+      exportWarnings: this.exportWarnings,
     };
   }
 }

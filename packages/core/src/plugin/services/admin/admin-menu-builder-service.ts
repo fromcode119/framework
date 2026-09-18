@@ -1,6 +1,7 @@
 import { NavGroupStrategy } from '@core/enums/nav-group-strategy.enum';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
+import { CollectionLabelUtils } from '@core/collections/collection-label-utils';
 import { Logger } from '@core/logging';
 import { CoreServices } from '@core/services';
 import { AdminRouteUtils } from '@core/plugin/services/admin/admin-route-utils';
@@ -121,7 +122,7 @@ export class AdminMenuBuilderService {
             return;
           }
 
-          const label = col.displayName || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1);
+          const label = CollectionLabelUtils.labelFor(col, shortSlug);
 
           const isExplicitlyHandled = rawMenuItems.some(m => {
              if (m.pluginSlug !== slug) return false;

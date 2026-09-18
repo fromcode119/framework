@@ -143,6 +143,61 @@ describe('TenantTableCatalog.inDependencyOrder', () => {
   });
 });
 
+describe('TenantTableCatalog.describe — owning plugin and label', () => {
+  it('uses the collection\'s displayName as the label when one was declared', async () => {
+    const collection = fakeCollection({ slug: 'fcp_alpha_orders', shortSlug: 'orders', displayName: 'Orders' });
+    const db = fakeDb({ fcp_alpha_orders: { id: 'integer', tenant_id: 'text' } });
+    const catalog = new TenantTableCatalog(db, [{ collection, pluginSlug: 'alpha' }]);
+    const [descriptor] = await catalog.describe(['fcp_alpha_orders']);
+    expect(descriptor.pluginSlug).toBe('alpha');
+    expect(descriptor.label).toBe('Orders');
+  });
+
+  it('falls back to the capitalized short slug when no displayName was declared', async () => {
+    const collection = fakeCollection({ slug: 'fcp_beta_redirects', shortSlug: 'redirects' });
+    const db = fakeDb({ fcp_beta_redirects: { id: 'integer', tenant_id: 'text' } });
+    const catalog = new TenantTableCatalog(db, [{ collection, pluginSlug: 'beta' }]);
+    const [descriptor] = await catalog.describe(['fcp_beta_redirects']);
+    expect(descriptor.pluginSlug).toBe('beta');
+    expect(descriptor.label).toBe('Redirects');
+  });
+
+  it('leaves pluginSlug and label null for a framework table no collection owns', async () => {
+    const db = fakeDb({ _system_audit_logs: { id: 'integer', tenant_id: 'text' } });
+    const catalog = new TenantTableCatalog(db, []);
+    const [descriptor] = await catalog.describe(['_system_audit_logs']);
+    expect(descriptor.pluginSlug).toBeNull();
+    expect(descriptor.label).toBeNull();
+  });
+
+  it('recovers the owning plugin from the physical name alone when no collection was passed at all', async () => {
+    const db = fakeDb({ fcp_alpha_orders: { id: 'integer', tenant_id: 'text' } });
+    const catalog = new TenantTableCatalog(db, []);
+    const [descriptor] = await catalog.describe(['fcp_alpha_orders']);
+    expect(descriptor.pluginSlug).toBe('alpha');
+    expect(descriptor.label).toBeNull();
+  });
+
+  it('longest-prefix-matches a multi-token, HYPHENATED plugin slug against the known slugs passed in, instead of truncating at the first underscore', async () => {
+    // "alpha" is ALSO a real, single-token slug here — the naive `PhysicalTableNameUtils.parse`
+    // split would answer it for "fcp_alpha_beta_widgets" too. Real plugin slugs are hyphenated
+    // (`alpha-beta`), while the physical table name is always snake-cased — only comparing the
+    // SNAKE form of each known slug lets the longer, correct match ("alpha-beta") win, and the
+    // resolver must hand back the slug in its original (hyphenated) spelling.
+    const db = fakeDb({ fcp_alpha_beta_widgets: { id: 'integer', tenant_id: 'text' } });
+    const catalog = new TenantTableCatalog(db, [], ['alpha', 'alpha-beta']);
+    const [descriptor] = await catalog.describe(['fcp_alpha_beta_widgets']);
+    expect(descriptor.pluginSlug).toBe('alpha-beta');
+  });
+
+  it('answers null, never a guess, when a known slug list is given but none of it matches', async () => {
+    const db = fakeDb({ fcp_gamma_delta_widgets: { id: 'integer', tenant_id: 'text' } });
+    const catalog = new TenantTableCatalog(db, [], ['alpha']);
+    const [descriptor] = await catalog.describe(['fcp_gamma_delta_widgets']);
+    expect(descriptor.pluginSlug).toBeNull();
+  });
+});
+
 describe('TenantTableDescriptor', () => {
   it('knows its JSON and boolean columns from the catalog types', () => {
     const d = table('fcp_zeta_pages', [], { id: 'integer', content: 'jsonb', meta: 'json', published: 'boolean', title: 'text', tenant_id: 'text' });

@@ -1,7 +1,8 @@
 import { AsyncLocalStorage } from 'async_hooks';
 import type { Pool, PoolClient } from 'pg';
 import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
-import { TenantScopeStore, PlatformPool } from '@database/tenant/tenant-scope-store';
+import { PlatformPool } from '@database/tenant/platform-pool';
+import { TenantScopeStore } from '@database/tenant/tenant-scope-store';
 import { LazyTenantClient } from '@database/tenant/lazy-tenant-client';
 import { OneShotTenantClient } from '@database/tenant/one-shot-tenant-client';
 

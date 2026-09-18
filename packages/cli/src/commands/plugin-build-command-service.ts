@@ -3,19 +3,24 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import { spawn } from 'child_process';
-import * as esbuild from 'esbuild';
 import { IPluginManifest } from '@fromcode119/core';
 import { CliUtils } from '@cli/utils';
 import { PluginDependencyCommandService } from '@cli/services/plugin-dependency-command-service';
+import { PluginBuildCommandService } from '@cli/services/plugin-build-command-service';
 
-export class PluginBuildCommandService {
+/**
+ * Plugin operational commands that are NOT build: `list`, `deps-install(-all)`, `test`, plus
+ * registering `build`/`dev`, whose own logic lives in `services/plugin-build-command-service.ts` (the
+ * same split #100 made for themes — build+watch is a program in its own right).
+ */
+export class PluginOpsCommandService {
   static register(plugin: Command, dependencyService: PluginDependencyCommandService): void {
-    PluginBuildCommandService.registerList(plugin);
-    PluginBuildCommandService.registerDepsInstall(plugin, dependencyService);
-    PluginBuildCommandService.registerDepsInstallAll(plugin, dependencyService);
-    PluginBuildCommandService.registerTest(plugin, dependencyService);
-    PluginBuildCommandService.registerDev(plugin);
-    PluginBuildCommandService.registerBuild(plugin, dependencyService);
+    PluginOpsCommandService.registerList(plugin);
+    PluginOpsCommandService.registerDepsInstall(plugin, dependencyService);
+    PluginOpsCommandService.registerDepsInstallAll(plugin, dependencyService);
+    PluginOpsCommandService.registerTest(plugin, dependencyService);
+    PluginOpsCommandService.registerDev(plugin);
+    PluginOpsCommandService.registerBuild(plugin);
   }
 
   private static registerList(plugin: Command): void {
@@ -141,156 +146,14 @@ export class PluginBuildCommandService {
     plugin
       .command('dev <slug>')
       .description('Start plugin in development mode (watch assets)')
-      .action(async (slug) => {
-        console.log(chalk.blue(`\nStarting development mode for plugin: ${chalk.bold(slug)}...`));
-        const build = spawn('atlantis', ['plugin', 'build', slug, '--watch'], { stdio: 'inherit', shell: true });
-        build.on('exit', (code) => process.exit(code || 0));
-      });
+      .action(async (slug) => { await PluginBuildCommandService.build(slug, { watch: true }); });
   }
 
-  private static registerBuild(plugin: Command, dependencyService: PluginDependencyCommandService): void {
+  private static registerBuild(plugin: Command): void {
     plugin
       .command('build <slug>')
       .description('Build plugin UI assets')
       .option('-w, --watch', 'Watch for changes', false)
-      .action(async (slug, options) => {
-        try {
-          const pluginsDir = CliUtils.getPluginsDir();
-          const pluginDir = path.join(pluginsDir, slug);
-          if (!fs.existsSync(pluginDir)) {
-            console.error(chalk.red(`Plugin directory not found: ${pluginDir}`));
-            return;
-          }
-          const uiDir = path.join(pluginDir, 'ui');
-          if (!fs.existsSync(uiDir)) {
-            console.log(chalk.yellow(`No ui directory found for plugin ${slug}. Skipping build.`));
-            return;
-          }
-          const entryPoints = [
-            path.join(uiDir, 'index.ts'),
-            path.join(uiDir, 'index.js'),
-            path.join(uiDir, 'main.ts'),
-            path.join(uiDir, 'main.js')
-          ].filter(p => fs.existsSync(p));
-          if (entryPoints.length === 0) {
-            console.error(chalk.red(CliUtils.t('cli.build.noEntry', { dir: uiDir, extra: ', main.ts/js' })));
-            return;
-          }
-          const outDir = uiDir;
-          const outFile = path.join(outDir, 'bundle.js');
-
-          console.log(chalk.blue(CliUtils.t('cli.build.starting', { type: 'plugin UI', slug })));
-
-          await CliUtils.compileStyles(uiDir);
-
-          console.log(chalk.gray(`Entry: ${entryPoints[0]}`));
-          console.log(chalk.gray(`Output: ${outFile}`));
-
-          const external = await PluginBuildCommandService.resolveUiExternals(pluginDir);
-          const buildOptions = PluginBuildCommandService.createUiBuildOptions(entryPoints[0], outFile, external);
-
-          if (options.watch) {
-            const ctx = await esbuild.context(buildOptions);
-            await ctx.watch();
-            console.log(chalk.green('UI build started in watch mode...'));
-          } else {
-            await esbuild.build(buildOptions);
-            console.log(chalk.green('UI build completed successfully!'));
-          }
-
-          await PluginBuildCommandService.buildBackend(pluginDir, slug, dependencyService);
-
-        } catch (error) {
-          console.error(chalk.red('Error building plugin:'), error);
-        }
-      });
-  }
-
-  private static async resolveUiExternals(pluginDir: string): Promise<string[]> {
-    let external = ['react', 'react-dom', '@fromcode119/react', '@fromcode119/sdk', '@fromcode119/admin', '@fromcode119/admin/components', 'lucide-react', 'react/jsx-runtime'];
-    const manifestPath = path.join(pluginDir, 'manifest.json');
-    if (fs.existsSync(manifestPath)) {
-      try {
-        const manifest = await fs.readJson(manifestPath);
-        if (manifest.runtimeModules) {
-          const extraModules = Array.isArray(manifest.runtimeModules)
-            ? manifest.runtimeModules
-            : Object.keys(manifest.runtimeModules);
-          external = [...new Set([...external, ...extraModules])];
-        }
-      } catch (e) { }
-    }
-    return external;
-  }
-
-  private static createUiBuildOptions(entryPoint: string, outFile: string, external: string[]): esbuild.BuildOptions {
-    return {
-      entryPoints: [entryPoint],
-      bundle: true,
-      minify: true,
-      sourcemap: true,
-      format: 'esm',
-      platform: 'browser',
-      target: ['es2020'],
-      outfile: outFile,
-      loader: {
-        '.tsx': 'tsx',
-        '.ts': 'ts',
-        '.jsx': 'jsx',
-        '.js': 'js',
-        '.css': 'css',
-        '.svg': 'dataurl',
-        '.png': 'dataurl',
-        '.jpg': 'dataurl'
-      },
-      jsx: 'transform',
-      jsxFactory: 'React.createElement',
-      jsxFragment: 'React.Fragment',
-      external
-    };
-  }
-
-  private static async buildBackend(
-    pluginDir: string,
-    slug: string,
-    dependencyService: PluginDependencyCommandService,
-  ): Promise<void> {
-    const backendEntry = [
-      path.join(pluginDir, 'index.ts'),
-      path.join(pluginDir, 'index.js')
-    ].find(p => fs.existsSync(p));
-
-    if (backendEntry && backendEntry.endsWith('.ts')) {
-      console.log(chalk.blue(CliUtils.t('cli.build.starting', { type: 'plugin backend', slug })));
-
-      const backendExternal = await dependencyService.getBackendExternalModules(pluginDir);
-
-      await esbuild.build({
-        entryPoints: [backendEntry],
-        bundle: true,
-        platform: 'node',
-        format: 'cjs',
-        outfile: path.join(pluginDir, 'index.js'),
-        external: [
-          '@fromcode119/sdk',
-          '@fromcode119/core',
-          '@fromcode119/database',
-          '@fromcode119/media',
-          '@fromcode119/email',
-          '@fromcode119/cache',
-          '@fromcode119/scheduler',
-          'express',
-          'knex',
-          'drizzle-orm',
-          'pg',
-          ...backendExternal
-        ],
-        sourcemap: true,
-        minify: false,
-        logLevel: 'info',
-      });
-
-      console.log(chalk.green('Backend build completed successfully!'));
-    }
+      .action(async (slug, options) => { await PluginBuildCommandService.build(slug, { watch: options.watch }); });
   }
 }

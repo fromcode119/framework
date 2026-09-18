@@ -13,7 +13,7 @@ import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-s
 import { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
 import { SchemaManager } from '@core/database/schema-manager';
 
-import { ManifestValidator } from '@core/management/manifest';
+import { ManifestValidator } from '@core/management/manifest-validator';
 import { Seeder } from '@core/database/seeder';
 import { PluginFailureIsolationService } from '@core/plugin/services/runtime/plugin-failure-isolation-service';
 import { PluginCollectionActivationService } from '@core/plugin/services/plugin-collection-activation-service';

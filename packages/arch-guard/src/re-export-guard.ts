@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { PublishedEntries } from './published-entries';
 
 /**
  * Only a BARREL re-exports someone else's declarations.
@@ -22,6 +23,11 @@ import path from 'node:path';
  * guard hardcoded `index.ts|client.ts|server.ts` and reported three published entry points as
  * offenders — a name list standing in for a property, which is the mistake this codebase keeps
  * finding in its own code. The package says what it publishes; read that instead.
+ *
+ * That derivation now lives in {@link PublishedEntries}, shared with {@link SingleExportModuleGuard} —
+ * both guards need the same answer to "is this file allowed to carry more than one export because
+ * it's a barrel", and two copies of the same `package.json` walk is the duplication this codebase's
+ * own "no scaffolding" rule exists to stop.
  */
 export class ReExportGuard {
   private static readonly SKIP_DIR = new Set([
@@ -35,50 +41,6 @@ export class ReExportGuard {
    * is the file owning its own surface.
    */
   private static readonly RE_EXPORT = /^export\s+(?:type\s+)?(?:\{[^}]*\}|\*(?:\s+as\s+\w+)?)\s+from\s+['"][^'"]+['"]/gm;
-
-  /**
-   * The source files this package publishes as entry points.
-   *
-   * `exports` names BUILT paths (`./dist/shared.js`), so each is mapped back to the source beside it.
-   * Both `.ts` and `.tsx` are offered because the map cannot say which the author wrote.
-   */
-  private static publishedEntries(packageDir: string): Set<string> {
-    const entries = new Set<string>();
-    let manifest: any;
-    try {
-      manifest = JSON.parse(readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
-    } catch {
-      return entries;
-    }
-    const collect = (node: unknown): void => {
-      if (typeof node === 'string') {
-        const match = /^\.\/dist\/(.+)\.(?:js|cjs|mjs|d\.ts)$/.exec(node);
-        if (!match) return;
-        for (const extension of ['.ts', '.tsx']) {
-          entries.add(path.join(packageDir, 'src', `${match[1]}${extension}`));
-        }
-        return;
-      }
-      if (node && typeof node === 'object') for (const value of Object.values(node)) collect(value);
-    };
-    collect(manifest.exports);
-    collect(manifest.main);
-    collect(manifest.types);
-    return entries;
-  }
-
-  /** Every package root under a scanned tree — the directories that own a `package.json`. */
-  private static packages(dir: string, out: string[] = []): string[] {
-    let entries: string[];
-    try { entries = readdirSync(dir); } catch { return out; }
-    if (entries.includes('package.json')) out.push(dir);
-    for (const entry of entries) {
-      if (ReExportGuard.SKIP_DIR.has(entry)) continue;
-      const full = path.join(dir, entry);
-      if (statSync(full, { throwIfNoEntry: false })?.isDirectory()) ReExportGuard.packages(full, out);
-    }
-    return out;
-  }
 
   private static files(dir: string, out: string[] = []): string[] {
     let entries: string[];
@@ -98,8 +60,8 @@ export class ReExportGuard {
   static scan(roots: readonly { area: string; dir: string }[]): Array<{ file: string; lines: string[] }> {
     const offenders: Array<{ file: string; lines: string[] }> = [];
     for (const { dir } of roots) {
-      for (const packageDir of ReExportGuard.packages(dir)) {
-        const published = ReExportGuard.publishedEntries(packageDir);
+      for (const packageDir of PublishedEntries.packages(dir)) {
+        const published = PublishedEntries.of(packageDir);
         for (const file of ReExportGuard.files(packageDir)) {
           if (published.has(file)) continue;
           let source: string;

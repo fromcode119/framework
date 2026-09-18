@@ -53,9 +53,16 @@ export class TenantArchiveWriter {
           if (written) tables.push(written);
         }
         if (absent.length) {
+          // MEANING FIRST, then the names. This was a bare list of up to seventy physical table
+          // names — most of them belonging to products the source has never run — and an operator
+          // reading it before replacing a live shop could not tell whether it described something
+          // lost. It does not: a table the source does not have held no rows to export. Saying that
+          // in the first sentence is the difference between a warning and a wall of text. The names
+          // stay, because which tables they were is exactly what someone checking would want.
           warnings.push(
-            `${absent.length} table(s) this platform declares do not exist in the source and were skipped: `
-            + `${absent.join(', ')}.`,
+            `Nothing was lost: ${absent.length} of the tables this platform knows about do not exist on the `
+            + `source at all, so there was nothing in them to export. They belong to plugins the source `
+            + `does not run. For reference, they were: ${absent.join(', ')}.`,
           );
         }
         const users = await new TenantArchiveUsersExport(this.source).writeTo(path.join(staging, TenantArchiveLayout.USERS));

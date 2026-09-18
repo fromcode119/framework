@@ -14,7 +14,7 @@ export { watch } from './watch.decorator';
 export { state } from './state.decorator';
 export { prop } from './prop.decorator';
 export { ref } from './ref.decorator';
-export type { Ref } from './ref.decorator';
+export type { Ref } from './interfaces/ref.interface';
 export { template } from './template.decorator';
 export { Platform } from './platform';
 export { ReactPrimitives } from './react-primitives';

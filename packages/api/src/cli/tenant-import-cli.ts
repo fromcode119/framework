@@ -53,6 +53,10 @@ export class TenantImportCli {
       );
       const registry = new TenantRegistryService(db, TenantResolverService.shared(db));
 
+      // What this platform already has, read BEFORE the catalog so its plugin slugs — the real
+      // ones, not a guess — can recover an unmatched table's owner from its physical name.
+      const installed = await TenantImportCli.installed(db);
+
       // WHICH tables hold tenant data is the platform's own answer, discovered from its policies —
       // the same source the export CLI uses. There are no registered collections in a CLI process (no
       // plugin host is running), so `catalog` finds every FOREIGN KEY reference from the database but
@@ -60,11 +64,11 @@ export class TenantImportCli {
       // no constraint to discover them by. The planner is told this explicitly (`hasSchemaReferences`)
       // rather than guessing from an empty result, so it can refuse a remap it cannot re-point instead
       // of silently importing exactly the defect this importer exists to prevent.
-      const catalog = new TenantTableCatalog(db);
+      const catalog = new TenantTableCatalog(db, [], installed.plugins.keys());
       const tables = await catalog.byPolicy();
       if (tables.length === 0) throw new Error('This platform has no tenant tables at all; boot it once so the schema exists.');
 
-      const planner = new TenantImportPlanner(db, registry, tables, await TenantImportCli.installed(db), uploadsDir, catalog.hasSchemaReferences);
+      const planner = new TenantImportPlanner(db, registry, tables, installed, uploadsDir, catalog.hasSchemaReferences);
       const plan = await planner.plan(reader, identity);
 
       TenantImportCli.report(plan, args.json);
@@ -127,6 +131,9 @@ export class TenantImportCli {
       console.log(`[tenant-import] plugin not installed here: ${plugin.slug} (archive ${plugin.archiveVersion})`);
     }
     for (const warning of plan.warnings) console.log(`[tenant-import] warning: ${warning}`);
+    // Written into the archive at EXPORT time, not a decision this import makes — printed under its
+    // own label so it never reads as one more thing THIS run decided.
+    for (const warning of plan.exportWarnings) console.log(`[tenant-import] export warning: ${warning}`);
     for (const blocker of plan.blockers) console.error(`[tenant-import] BLOCKER: ${blocker}`);
   }
 

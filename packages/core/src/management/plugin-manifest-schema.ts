@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 
 /**
  * Plugin Manifest Schema (Zod)
@@ -126,51 +125,4 @@ export class PluginManifestSchema {
   seeds: z.string().optional(),
   collections: z.union([z.array(z.string()), z.string()]).optional(),
 }).passthrough();
-}
-
-/**
- * Registry Plugin Manifest Schema
- * Extended schema for plugins listed in the registry
- */
-export class RegistryPluginSchema {
-  static readonly schema = PluginManifestSchema.schema.extend({
-    downloadUrl: z.string(),
-    publicKey: z.string().optional(),
-    screenshots: z.array(z.string().url()).optional().default([]),
-    changelog: z.string().optional(),
-    publisherId: z.string().optional(),
-    published: z.boolean().default(true),
-    downloads: z.number().int().min(0).optional().default(0),
-    rating: z.number().min(0).max(5).optional(),
-  });
-}
-
-/**
- * Registry Manifest Schema
- * Schema for the main registry.json file
- */
-export class RegistryManifestSchema {
-  static readonly schema = z.object({
-    version: z.string(),
-    lastUpdated: z.string(),
-    plugins: z.array(RegistryPluginSchema.schema),
-  });
-}
-
-export class ManifestValidator {
-  static validate(manifest: unknown): IPluginManifest {
-    return PluginManifestSchema.schema.parse(manifest) as unknown as IPluginManifest;
-  }
-
-  static safeValidate(manifest: unknown): { success: true; data: IPluginManifest } | { success: false; errors: z.ZodIssue[] } {
-    const result = PluginManifestSchema.schema.safeParse(manifest);
-    if (result.success) {
-      return { success: true, data: result.data as unknown as IPluginManifest };
-    }
-    return { success: false, errors: result.error.issues };
-  }
-
-  static validateRegistry(manifest: unknown): z.infer<typeof RegistryManifestSchema.schema> {
-    return RegistryManifestSchema.schema.parse(manifest);
-  }
 }

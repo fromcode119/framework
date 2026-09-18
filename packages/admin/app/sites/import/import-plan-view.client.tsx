@@ -3,6 +3,8 @@ import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { ImportPlanSummary } from '@/app/sites/import/import-plan-summary.client';
+import { ImportPlanTables } from '@/app/sites/import/import-plan-tables.client';
 import { TenantImportIdMode } from '@fromcode119/core/client';
 
 
@@ -16,42 +18,19 @@ import { TenantImportIdMode } from '@fromcode119/core/client';
  * nothing.
  *
  * The rule behind each mode is generic — it comes from a literal in the planner — so it is stated
- * ONCE, as the group's heading. What is left in a row is only what differs between rows: the counts,
- * the two id numbers, and the columns whose values do not survive.
+ * ONCE, as the group's heading (`ImportPlanTables`). What is left in a row is only what differs
+ * between rows: the counts, the two id numbers, and the columns whose values do not survive.
  *
  * Nothing is hidden that has an effect (Rule Zero). Every table with rows keeps its own line, and
  * every dropped or un-re-pointed column is listed in full — those are the irreversible per-column
- * effects and this screen is the only place they appear. The one thing folded is the NAMES of empty
- * tables: an empty table writes nothing, loses nothing and re-numbers nothing, and its count stays
- * on screen unfolded. Groups render even when empty, so "nothing is skipped" is a visible fact
- * rather than an absence the operator has to infer.
+ * effects and this screen is the only place they appear. The empty group's own count is always on
+ * screen, and its table names open by default rather than behind a click: an operator asking "which
+ * 62?" should not have to find the disclosure triangle first, only whether to close it. Groups
+ * render even when empty, so "nothing is skipped" is a visible fact rather than an absence the
+ * operator has to infer.
  */
 export class ImportPlanView extends PureReactor {
   @prop declare plan: Record<string, any>;
-
-  /** One `<code>` per name so the row wraps BETWEEN names instead of clipping through one. */
-  private static columns(label: string, names: string[]): ReactNode {
-    if (!names.length) return null;
-    return (
-      <span className="fc-import-plan__cols">
-        <span className="fc-import-plan__cols-label">{label}</span>
-        {names.map((name) => <code key={name}>{name}</code>)}
-      </span>
-    );
-  }
-
-  private static lost(table: IImportPlanTable): ReactNode {
-    const json = ImportPlanView.columns('JSON not re-pointed', table.opaqueJsonColumns);
-    const dropped = ImportPlanView.columns('Dropped', table.droppedColumns);
-    if (!json && !dropped) return null;
-    return <>{json}{dropped}</>;
-  }
-
-  /** The positive counterpart of `lost`'s "JSON not re-pointed": what the remap WILL follow. */
-  private static repointed(table: IImportPlanTable): ReactNode {
-    const labels = table.repointedReferences.map((ref) => `${ref.path.length ? `${ref.column}[].${ref.path.join('.')}` : ref.column} → ${ref.targetTable}`);
-    return ImportPlanView.columns('Re-pointed', labels);
-  }
 
   /**
    * A short list reads as a list; ninety lines read as nothing.
@@ -75,15 +54,22 @@ export class ImportPlanView extends PureReactor {
     );
   }
 
-  private static group(title: string, count: number, rule: string, body: ReactNode): ReactNode {
+  /**
+   * Written into the archive at EXPORT time — what it holds, not what THIS import decides. Always
+   * folded, whatever the count: unlike the import warnings above, these carry no effect the operator
+   * needs to weigh before deciding, so there is no threshold at which showing them unfolded earns its
+   * place. Rendered verbatim — this screen does not parse or shorten a note it did not write.
+   */
+  private static exportWarnings(list: string[]): ReactNode {
+    if (!list.length) return null;
     return (
-      <section className="fc-import-plan__group">
-        <span className="fc-site-form__label">
-          {title} <span className="fc-import-plan__count">{count}</span>
-        </span>
-        <p className="fc-import-plan__rule">{rule}</p>
-        {count === 0 ? <span className="fc-sites__none">none</span> : body}
-      </section>
+      <details className="fc-import-plan__warnings">
+        <summary>From the export ({list.length})</summary>
+        <p className="fc-import-plan__rule">
+          Written into the archive when it was exported. They describe what the archive holds, not what this import decides; everything this import will do is stated above.
+        </p>
+        <ul className="fc-sites__warnings">{list.map((w) => <li key={w}>{w}</li>)}</ul>
+      </details>
     );
   }
 
@@ -100,19 +86,23 @@ export class ImportPlanView extends PureReactor {
     const skipped = withRows.filter((t) => t.mode === String(TenantImportIdMode.SKIP.value)).sort(byRows);
     const remapped = withRows.filter((t) => t.mode === String(TenantImportIdMode.REMAP.value)).sort(byRows);
     const kept = withRows.filter((t) => t.mode === String(TenantImportIdMode.PRESERVE.value)).sort(byRows);
-    const skippedRows = skipped.reduce((sum, t) => sum + t.rows, 0);
+    // What actually ARRIVES — every row with somewhere to go. `withRows` alone double-counts: it
+    // still includes the SKIP-mode tables, which are exactly what "Left behind" counts separately.
+    const arriving = withRows.filter((t) => t.mode !== String(TenantImportIdMode.SKIP.value));
 
     return (
       <div className="fc-import-plan">
         <p className="fc-sites__text">
           Archive of <strong>{manifest.tenant?.slug}</strong> ({manifest.source === 'single-tenant' ? 'a single-tenant deployment' : 'a site'}), exported {manifest.exportedAt} from framework {manifest.frameworkVersion || '?'}.
-          {' '}{plan.users?.total ?? 0} people: {plan.users?.existing ?? 0} already have accounts here, {plan.users?.toCreate ?? 0} will be created.
-          {' '}{plan.files?.count ?? 0} files{plan.files?.colliding ? ` (${plan.files.colliding} renamed)` : ''}.
+          {' '}{plan.users.total} people: {plan.users.existing} already have accounts here, {plan.users.toCreate} will be created.
+          {' '}{plan.files.count} files{plan.files.colliding ? ` (${plan.files.colliding} renamed)` : ''}.
         </p>
 
         {(plan.blockers ?? []).length ? (
           <ul className="fc-sites__blockers">{plan.blockers.map((b: string) => <li key={b}>{b}</li>)}</ul>
         ) : null}
+
+        <ImportPlanSummary plan={plan} arriving={arriving} skipped={skipped} remapped={remapped} />
 
         <div className="fc-import-plan__inventory">
           <div>
@@ -136,75 +126,10 @@ export class ImportPlanView extends PureReactor {
           </div>
         </div>
 
-        <div className="fc-import-plan__tables">
-          {ImportPlanView.group(
-            'Not imported', skipped.length,
-            `The plugin that owns each of these is not installed or not enabled here, so there is nowhere to put the rows — ${skippedRows.toLocaleString()} row(s) in total. Install and enable it, then import again, to keep them.`,
-            <table className="fc-import-plan__table">
-              <thead><tr><th>Table</th><th className="fc-import-plan__num">Rows</th></tr></thead>
-              <tbody>
-                {skipped.map((table) => (
-                  <tr key={table.name}>
-                    <td data-label="Table"><code>{table.name}</code></td>
-                    <td data-label="Rows" className="fc-import-plan__num">{table.rows.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>,
-          )}
-
-          {ImportPlanView.group(
-            'Re-numbered', remapped.length,
-            'The archive’s lowest id is at or below the highest id this platform has already handed out for that table, so its rows get new ids and every reference to them is re-pointed.',
-            <table className="fc-import-plan__table">
-              <thead><tr><th>Table</th><th className="fc-import-plan__num">Rows</th><th className="fc-import-plan__num">Lowest id</th><th className="fc-import-plan__num">Handed out here</th><th>Re-pointed</th><th>Not carried over</th></tr></thead>
-              <tbody>
-                {remapped.map((table) => (
-                  <tr key={table.name}>
-                    <td data-label="Table"><code>{table.name}</code></td>
-                    <td data-label="Rows" className="fc-import-plan__num">{table.rows.toLocaleString()}</td>
-                    <td data-label="Lowest id" className="fc-import-plan__num">{table.minId?.toLocaleString()}</td>
-                    <td data-label="Handed out here" className="fc-import-plan__num">{table.taken?.toLocaleString()}</td>
-                    <td data-label="Re-pointed">{ImportPlanView.repointed(table)}</td>
-                    <td data-label="Not carried over">{ImportPlanView.lost(table)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>,
-          )}
-
-          {ImportPlanView.group(
-            'Ids kept', kept.length,
-            'Either the table has no serial id and its rows are keyed naturally, or every id in the archive is already above the highest this platform has handed out.',
-            <table className="fc-import-plan__table">
-              <thead><tr><th>Table</th><th className="fc-import-plan__num">Rows</th><th>Why</th><th className="fc-import-plan__num">Handed out here</th><th>Not carried over</th></tr></thead>
-              <tbody>
-                {kept.map((table) => (
-                  <tr key={table.name}>
-                    <td data-label="Table"><code>{table.name}</code></td>
-                    <td data-label="Rows" className="fc-import-plan__num">{table.rows.toLocaleString()}</td>
-                    <td data-label="Why">{table.basis === 'naturalKey' ? 'natural key' : 'all ids above'}</td>
-                    <td data-label="Handed out here" className="fc-import-plan__num">{table.taken === null ? '' : table.taken.toLocaleString()}</td>
-                    <td data-label="Not carried over">{ImportPlanView.lost(table)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>,
-          )}
-
-          {ImportPlanView.group(
-            'Empty', empty.length,
-            'No rows in the archive, so nothing is written, lost or re-numbered for these.',
-            <details className="fc-import-plan__empty">
-              <summary>Table names</summary>
-              <span className="fc-import-plan__cols">
-                {empty.map((table) => <code key={table.name}>{table.name}</code>)}
-              </span>
-            </details>,
-          )}
-        </div>
+        <ImportPlanTables skipped={skipped} remapped={remapped} kept={kept} empty={empty} />
 
         {ImportPlanView.warnings(plan.warnings ?? [])}
+        {ImportPlanView.exportWarnings(plan.exportWarnings ?? [])}
       </div>
     );
   }
