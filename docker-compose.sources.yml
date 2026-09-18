@@ -70,6 +70,54 @@ services:
         limits:
           memory: 4G
 
+  # The STOREFRONT had no dev loop at all. This file covered admin and api, so `frontend` ran the
+  # BAKED image with no source mounts and no watcher: every framework change to the storefront — a
+  # component, the runtime bundle, the SSR shell — needed a full `docker compose build frontend`
+  # (~5-10 min), and the only quicker way in was `docker cp` into the running container.
+  #
+  # That cost is why the storefront runtime bundle could throw on load for weeks without anyone
+  # noticing: looking at the result of a change was a ten-minute round trip, so nobody looked.
+  #
+  # PRECONDITION: `packages/frontend/public` is mounted, and `public/fc-runtime` is gitignored BUILD
+  # output. On a fresh checkout that directory is empty, and mounting an empty one hides the image's
+  # baked copy — the storefront then serves no runtime at all. Run `npm run build:frontend-runtime`
+  # once before bringing this up. The upside is the point: after that, rebuilding the bundle on the
+  # host is visible immediately, with no copy into the container.
+  frontend:
+    command: ["npm", "run", "dev", "--workspace=@fromcode119/frontend"]
+    environment:
+      - NODE_ENV=development
+      # Next's dev server watches the mounted tree; polling is what makes that work across a bind mount.
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      # The four package sources the storefront's webpack aliases compile from `src` — the same list
+      # `config/next-config-env.js` declares. Without them a change to core, react or the sdk is
+      # invisible here however many times it is rebuilt.
+      - ./packages/react-class-components/src:/app/packages/react-class-components/src
+      - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
+      - ./packages/core/src:/app/packages/core/src
+      - ./packages/react/src:/app/packages/react/src
+      - ./packages/sdk/src:/app/packages/sdk/src
+      - ./packages/database/src:/app/packages/database/src
+      # Both halves of the config, for the reason the admin block above records: mounting
+      # next.config.js without `config/` runs the shared half from the image's baked copy, which is
+      # how the dev-origin fix stayed invisible for a round.
+      - ./packages/frontend/next.config.js:/app/packages/frontend/next.config.js
+      - ./config:/app/config
+      - ./packages/frontend/app:/app/packages/frontend/app
+      - ./packages/frontend/components:/app/packages/frontend/components
+      - ./packages/frontend/lib:/app/packages/frontend/lib
+      - ./packages/frontend/runtime:/app/packages/frontend/runtime
+      - ./packages/frontend/build:/app/packages/frontend/build
+      - ./packages/frontend/public:/app/packages/frontend/public
+    deploy:
+      resources:
+        # Same ceiling as the admin: under `next dev` this is a compiler, not just a server, and the
+        # base file's limit was sized for `next start`.
+        limits:
+          memory: 4G
+
   api:
     command: ["npm", "run", "dev", "--workspace=@fromcode119/api"]
     environment:

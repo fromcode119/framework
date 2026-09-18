@@ -1,5 +1,3 @@
-import { createRequire } from 'node:module';
-
 /**
  * `react-dom/server` for the islands document, resolved through `createRequire` exactly as
  * `ThemeSsrRuntime` resolves it: Next refuses a static `react-dom/server` import anywhere in an App
@@ -13,6 +11,13 @@ export class DocumentMarkupRenderer {
   /** Renders `component` (a static view function) with `props` to static HTML — element and renderer from the ONE React. */
   static render(component: unknown, props: Record<string, unknown>): string {
     if (!DocumentMarkupRenderer.react) {
+      // `createRequire` via `process.getBuiltinModule`, NOT a static `node:module` import: webpack
+      // bundles the static one and hands back a shim that is not callable, so `next dev` answered
+      // every storefront page with a 500 — "appRequire is not a function". `getBuiltinModule` is an
+      // ordinary property read that no bundler rewrites, and returns the real builtin on the Node 22
+      // this ships on. The require itself has to stay: Next refuses a static `react-dom/server`
+      // import anywhere in an App Router graph, which is the whole reason this class exists.
+      const { createRequire } = process.getBuiltinModule('node:module');
       const appRequire = createRequire(`${process.cwd()}/`);
       const react = appRequire('react') as { createElement: (type: unknown, props: unknown) => unknown };
       const reactDomServer = appRequire('react-dom/server') as { renderToStaticMarkup: (element: unknown) => string };
