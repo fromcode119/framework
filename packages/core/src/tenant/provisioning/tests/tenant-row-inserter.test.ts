@@ -111,4 +111,40 @@ describe('TenantRowInserter — declared-path re-pointing', () => {
     await rowInserter.insert({ id: 1, siblings: [7] });
     expect(JSON.parse(inserted().siblings as string)).toEqual([7]);
   });
+
+  // Regression: PR #47 widened repointAt's string-decode branch to arrays, but only ever returned
+  // the PARSED result — a `text` destination column that stored a JSON array as a STRING got a
+  // live JS array back, which the pg driver then serialised as a Postgres ARRAY LITERAL
+  // ({"{\"...\"}"}) instead of JSON. This is the corruption measured on the live platform.
+  it('re-points ids inside a JSON array stored in a TEXT column, and keeps it a STRING', async () => {
+    const ref = new TenantColumnReference(TABLE, 'items', TABLE, 'schema', ['page'], false, false);
+    const remap = new TenantIdRemap();
+    remap.markRemapped(TABLE);
+    remap.set(TABLE, 1, 101);
+    remap.set(TABLE, 7, 107);
+    const { inserter: rowInserter, inserted } = inserter(descriptor([ref], { items: 'text' }), remap);
+    await rowInserter.insert({ id: 1, items: '[{"label":"Home","page":7}]' });
+    const written = inserted().items;
+    expect(typeof written).toBe('string');
+    expect(JSON.parse(written as string)).toEqual([{ label: 'Home', page: 107 }]);
+  });
+
+  // Regression, other route into the same bug: a JSONB SOURCE column landing in a TEXT destination
+  // arrives as a live JS array, never a string, so repointAt's string branch never runs. encode()
+  // must still refuse to hand the driver a bare array/object for a text column.
+  it('stringifies a live array landing in a TEXT destination (jsonb source -> text destination)', async () => {
+    const remap = new TenantIdRemap();
+    const { inserter: rowInserter, inserted } = inserter(descriptor([], { levelRates: 'text' }), remap);
+    await rowInserter.insert({ id: 1, levelRates: [{ level: 1, rate: 10 }] });
+    const written = inserted().levelRates;
+    expect(typeof written).toBe('string');
+    expect(JSON.parse(written as string)).toEqual([{ level: 1, rate: 10 }]);
+  });
+
+  it('does not double-encode a value that is already a string for a TEXT destination', async () => {
+    const remap = new TenantIdRemap();
+    const { inserter: rowInserter, inserted } = inserter(descriptor([], { note: 'text' }), remap);
+    await rowInserter.insert({ id: 1, note: 'plain text, not json' });
+    expect(inserted().note).toBe('plain text, not json');
+  });
 });
