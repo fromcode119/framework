@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
+
 export class PromptDialog extends AdminComponent {
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;

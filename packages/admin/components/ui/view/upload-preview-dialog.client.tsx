@@ -6,6 +6,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 import { AdminClass } from '@/lib/admin-class';
+
 export class UploadPreviewDialog extends PureReactor {
   @prop declare isOpen: boolean;
   @prop declare title: string;
