@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { SitePreviewBannerStylesheet } from '@/lib/document/site-preview-banner-stylesheet';
 
 /**
  * Says out loud that this site sends nothing, to everyone looking at it.
@@ -20,14 +19,11 @@ export class SiteEnvironmentBannerView {
   static render({ visible }: { visible: boolean }): ReactNode {
     if (!visible) return null;
     return (
-      <>
-        <style dangerouslySetInnerHTML={{ __html: SitePreviewBannerStylesheet.css() }} />
-        <div className="fc-site-preview" role="status">
-          <span className="fc-site-preview__dot" aria-hidden="true" />
-          <span>Non-production site — nothing leaves it.</span>
-          <span className="fc-site-preview__note">No email, payment, shipment or scheduled job will be sent.</span>
-        </div>
-      </>
+      <div className="fc-site-preview fc-site-preview--non-production" role="status">
+        <span className="fc-site-preview__dot" aria-hidden="true" />
+        <span>Non-production site — nothing leaves it.</span>
+        <span className="fc-site-preview__note">No email, payment, shipment or scheduled job will be sent.</span>
+      </div>
     );
   }
 }

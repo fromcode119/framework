@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { SitePreviewBannerStylesheet } from '@/lib/document/site-preview-banner-stylesheet';
 
 /**
  * Says out loud that this site is not published, to the one person looking at it.
@@ -19,14 +18,11 @@ export class SitePreviewBannerView {
   static render({ visible }: { visible: boolean }): ReactNode {
     if (!visible) return null;
     return (
-      <>
-        <style dangerouslySetInnerHTML={{ __html: SitePreviewBannerStylesheet.css() }} />
-        <div className="fc-site-preview" role="status">
-          <span className="fc-site-preview__dot" aria-hidden="true" />
-          <span>Not published — only you can see this.</span>
-          <span className="fc-site-preview__note">Visitors get a holding page.</span>
-        </div>
-      </>
+      <div className="fc-site-preview fc-site-preview--unpublished" role="status">
+        <span className="fc-site-preview__dot" aria-hidden="true" />
+        <span>Not published — only you can see this.</span>
+        <span className="fc-site-preview__note">Visitors get a holding page.</span>
+      </div>
     );
   }
 }

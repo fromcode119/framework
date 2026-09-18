@@ -15,6 +15,7 @@ import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
 import { ColorSchemeBootScript } from '@/lib/color-scheme-boot-script';
 import { SitePreviewBannerView } from '@/lib/document/site-preview-banner-view';
 import { SiteEnvironmentBannerView } from '@/lib/document/site-environment-banner-view';
+import { SiteBannersView } from '@/lib/document/site-banners-view';
 import { SiteVisibilityVerdict } from '@/lib/document/site-visibility-verdict';
 
 export class FrontendRootLayoutRoute {
@@ -46,8 +47,10 @@ export class FrontendRootLayoutRoute {
           {headElements}
         </head>
         <body>
-          <SitePreviewBannerView.render visible={preview} />
-          <SiteEnvironmentBannerView.render visible={nonProduction} />
+          <SiteBannersView.render bars={[
+            SitePreviewBannerView.render({ visible: preview }),
+            SiteEnvironmentBannerView.render({ visible: nonProduction }),
+          ]} />
           {bodyStartElements}
           {/* The plugin runtime (provider stack + loader) is code-split behind this gate and arrives
               AFTER the paint — see StorefrontRuntimeGate. It renders `children` untouched until then,
