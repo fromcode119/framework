@@ -6,6 +6,7 @@ import { FulfilledThenable } from '@/lib/fulfilled-thenable';
 import { PluginNotFound } from '@/components/plugins/view/plugin-not-found.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { prop, state } from '@fromcode119/react-class-components';
 import { PluginRouteResolver } from '@/lib/plugin-route-resolver';
 
@@ -72,7 +73,8 @@ export class PluginRootRoute extends AdminComponent {
       return (
         <Slot
           name={pageSlot}
-          fallback={<Slot name={`admin.plugin.${pluginSlug}.content`} />}
+          fallback={<Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} />}
+          errorFallback={PluginMountErrorFallback.render}
         />
       );
     }

@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { Slot } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { prop, state } from '@fromcode119/react-class-components';
 
 /**
@@ -88,6 +89,7 @@ export class NestedEntityRoute extends AdminComponent {
         name={slotName}
         props={{ id: this.id, pluginSlug: this.pluginSlug, entitySlug: this.slug, subSlug: this.subSlug }}
         fallback={loader}
+        errorFallback={PluginMountErrorFallback.render}
       />
     );
   }

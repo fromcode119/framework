@@ -2,6 +2,7 @@ import { Reactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react/slot';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import type { IPluginContextValue } from '@fromcode119/react';
+import { PluginMountErrorBoundary } from '@fromcode119/react';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
@@ -105,15 +106,21 @@ export class HomeClient extends Reactor {
       const shouldBypassDefaultContent = ContentRenderingUtils.shouldBypassDefaultContent(LayoutComponent, normalizedContent);
 
       return (
-        <LayoutComponent page={normalizedContent}>
-          {!shouldBypassDefaultContent ? this.renderContent(normalizedContent) : null}
-        </LayoutComponent>
+        <PluginMountErrorBoundary slotName="theme-layout" componentName={selectedLayoutName}>
+          <LayoutComponent page={normalizedContent}>
+            {!shouldBypassDefaultContent ? this.renderContent(normalizedContent) : null}
+          </LayoutComponent>
+        </PluginMountErrorBoundary>
       );
     }
 
     if (this.forcedLayout && themeLayouts?.[this.forcedLayout]) {
       const ForcedLayoutComponent = themeLayouts[this.forcedLayout];
-      return <ForcedLayoutComponent />;
+      return (
+        <PluginMountErrorBoundary slotName="theme-layout" componentName={this.forcedLayout}>
+          <ForcedLayoutComponent />
+        </PluginMountErrorBoundary>
+      );
     }
 
     return <StarterHero />;

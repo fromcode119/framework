@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { Reactor, prop } from '@fromcode119/react-class-components';
 import { CoreServices } from '@fromcode119/core/client';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
+import { PluginMountErrorBoundary } from '@fromcode119/react';
 import { DefaultPageDesignRendererUtils } from '@/app/default-page-design-renderer-utils';
 
 export class DefaultPageDesignRenderer extends Reactor {
@@ -37,6 +38,10 @@ export class DefaultPageDesignRenderer extends Reactor {
       return null;
     }
 
-    return <Component content={this.content} entry={this.entry} />;
+    return (
+      <PluginMountErrorBoundary slotName="default-page-design" componentName={targetKey}>
+        <Component content={this.content} entry={this.entry} />
+      </PluginMountErrorBoundary>
+    );
   }
 }

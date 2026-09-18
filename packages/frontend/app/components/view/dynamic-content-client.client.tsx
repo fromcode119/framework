@@ -3,6 +3,7 @@ import { Reactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react/slot';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import type { IPluginContextValue } from '@fromcode119/react';
+import { PluginMountErrorBoundary } from '@fromcode119/react';
 import { ContentRenderingUtils } from '@/lib/content-rendering-utils';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
@@ -90,8 +91,10 @@ export class DynamicContentClient extends Reactor {
       ? null
       : ContentRenderingUtils.buildRenderableContent(normalizedContent);
     const hasDefaultPageDesign = Boolean(normalizedContent?.recipe);
+    const selectedLayoutName = ResolvedContentShape.resolveLayoutName(normalizedContent) || this.declaredDefaultLayout;
 
     return (
+    <PluginMountErrorBoundary slotName="theme-layout" componentName={selectedLayoutName}>
     <LayoutComponent page={normalizedContent}>
       {!shouldBypassDefaultContent ? (
         <div className="w-full" style={{ minHeight: '100svh' }}>
@@ -112,6 +115,7 @@ export class DynamicContentClient extends Reactor {
         </div>
       ) : null}
     </LayoutComponent>
+    </PluginMountErrorBoundary>
   );
   }
 }

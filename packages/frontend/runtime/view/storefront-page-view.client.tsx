@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { Reactor, prop } from '@fromcode119/react-class-components';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import type { IPluginContextValue } from '@fromcode119/react';
+import { PluginMountErrorBoundary } from '@fromcode119/react';
 import { PassthroughLayout } from '@/components/view/passthrough-layout.client';
 import type { FrontendRuntimeConfig } from '@/runtime/frontend-runtime-config';
 import { StorefrontPageTree } from '@/runtime/view/storefront-page-tree.client';
@@ -31,9 +32,11 @@ export class StorefrontPageView extends Reactor {
     const { config } = this;
     const Layout = this.layout;
     return (
-      <Layout page={config.content}>
-        <StorefrontPageTree content={config.content} className={config.pageKind.contentClassName} style={config.pageKind.contentStyle} notFoundPath={config.pageKind.isNotFound ? config.notFoundPath : undefined} />
-      </Layout>
+      <PluginMountErrorBoundary slotName="theme-layout" componentName={config.resolvedLayoutName || config.declaredDefaultLayout}>
+        <Layout page={config.content}>
+          <StorefrontPageTree content={config.content} className={config.pageKind.contentClassName} style={config.pageKind.contentStyle} notFoundPath={config.pageKind.isNotFound ? config.notFoundPath : undefined} />
+        </Layout>
+      </PluginMountErrorBoundary>
     );
   }
 }

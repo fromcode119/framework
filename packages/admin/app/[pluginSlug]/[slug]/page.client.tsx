@@ -8,6 +8,7 @@ import { PluginNotFound } from '@/components/plugins/view/plugin-not-found.clien
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { prop, state } from '@fromcode119/react-class-components';
 
 export class CollectionListRoute extends AdminComponent {
@@ -106,7 +107,8 @@ export class CollectionListRoute extends AdminComponent {
       return (
         <Slot
           name={resolvedPageSlot}
-          fallback={<Slot name={`admin.plugin.${pluginSlug}.content`} />}
+          fallback={<Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} />}
+          errorFallback={PluginMountErrorFallback.render}
         />
       );
     }
