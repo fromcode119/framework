@@ -32,6 +32,10 @@ export class PluginsManagerResolver implements IPluginApiResolver {
    */
   static isResolvable(plugin: ILoadedPlugin, tenantId: string | null): boolean {
     if (PluginState.resolve(plugin.state) !== PluginState.ACTIVE || !plugin.publicAPI) return false;
+    // An isolated plugin's guest can be dead or mid-relaunch while `state` and `publicAPI` (a stub
+    // Proxy created once at registration) both stay unchanged — `isRunning` is the only field that
+    // actually tracks the process. Absent means in-process, which is always running.
+    if (plugin.isRunning && !plugin.isRunning()) return false;
     const tenant = String(tenantId ?? '').trim();
     if (!tenant) return true;
     if (!TenantMode.isEnabled()) return true;

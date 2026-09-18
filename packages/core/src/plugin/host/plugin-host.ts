@@ -193,6 +193,11 @@ export class PluginHost extends PluginHostGuestBridge {
       };
     }
     stubs.publicAPI = this.lazyPublicApi();
+    // Function VALUE, not a getter — see the comment on `ILoadedPlugin.isRunning`. `host` (not
+    // `this`) is captured so the closure keeps working after this object is spread into the loaded
+    // plugin record; each call still reads the host's current state.
+    const host = this;
+    stubs.isRunning = () => host.isRunning;
     return stubs;
   }
 
