@@ -239,17 +239,6 @@ export class SystemSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'false', description: "Enable two-factor authentication.", group: "security" },
     },
-    // Rate limiting is enforced by a single PLATFORM-wide bucket (admin-bootstrap-rate-limit-utils.ts),
-    // keyed per-IP with no tenant component — the limiter mounts before the tenant binder, so there is
-    // no per-site enforcement for a SITE-scoped override to control. These six keys must be PLATFORM:
-    // a SITE scope here would let the admin edit a value the runtime never reads (Rule Zero).
-    //
-    // Seed values measured on a real storefront page load: 21 API calls per page view count against
-    // the anonymous bucket (66 further calls are correctly bypassed as UI assets). At the previous
-    // 100/15min that is ~4 page views before 429 — the reported bug. At 600/min that is ~28 page views
-    // per minute per IP. The window drop from 15 minutes to 1 minute matters independently of the max:
-    // this is a FIXED-window limiter, so tripping it at a 15-minute window locks a visitor out for up
-    // to 15 minutes; a 1-minute window recovers in at most a minute.
     [SystemConstants.META_KEY.RATE_LIMIT_MAX]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: '600', description: "Maximum anonymous requests per rate-limit window per IP (window set by Rate Limit Window, default one minute).", group: "security" },

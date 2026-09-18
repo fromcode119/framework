@@ -10,6 +10,25 @@ import { CoercionUtils, EnvUtils, NetworkAddressUtils, NetworkEdgeProviderRegist
  * no admin control produced. If a relaxed development budget is wanted, the operator raises the
  * declared setting; there is no hidden branch.
  *
+ * WHY THESE KEYS ARE PLATFORM-SCOPED, NOT PER-SITE. Enforcement is a single platform-wide bucket:
+ * `AdminBootstrapRateLimitUtils.resolveKey` keys on IP (or IP + token) with NO tenant component, and
+ * the limiter is mounted before the tenant binder runs, so at the moment the budget is chosen there is
+ * no site to scope to. The settings cache these values come from is filled by an UNTENANTED read, which
+ * under the `_system_meta` policy sees only the platform row.
+ *
+ * So a SITE-scoped rate-limit key is a control that writes a value nothing reads. It was exactly that
+ * for as long as it existed: one deployment had a site row of 500 while the platform row enforced the
+ * seeded 100, and another had its site rows cleared to empty strings with no effect whatsoever. The
+ * declaration is PLATFORM and not INHERITED for the same reason — INHERITED would publish a per-site
+ * override in the admin that this code cannot honour.
+ *
+ * WHERE THE SEEDED NUMBERS COME FROM. Measured on a real storefront page render: 87 API calls, of
+ * which 66 are correctly bypassed as UI assets, leaving 21 counted against the anonymous bucket. At the
+ * old 100 per 15 minutes that is about four page views before a visitor is refused. The window is as
+ * important as the maximum: this is a FIXED window, so tripping it at 900000ms locked a visitor out for
+ * up to a quarter of an hour, which is what made it read as "everything is gone" rather than "slow
+ * down". At 600 per 60000ms a visitor gets roughly 28 page views a minute and recovers within one.
+ *
  * The DEFAULT_* values are READ FROM THE DECLARATION — `SystemSettingRegistry`, where each of these
  * settings states its own seeded default beside its scope. They used to be literals here that the
  * seed imported; now the seed and this resolver read the same declaration, so the number exists in
