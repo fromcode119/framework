@@ -20,7 +20,10 @@ import { CliUtils } from '@cli/utils';
  */
 export class ThemeBuildCommandService {
   /** Debounce for the watcher: an editor save arrives as several events. */
-  private static readonly REBUILD_DEBOUNCE_MS = 120;
+  private static readonly REBUILD_DEBOUNCE_MS = 200;
+
+  /** Build INPUT the compiler writes into the watched `src/`, so a watcher must ignore it. */
+  private static readonly GENERATED_ENTRY_FILE = 'theme-entry.generated.jsx';
 
   /** The theme's directory, or null once it has reported why it cannot be used. */
   private static async resolve(slug: string): Promise<{ themeDir: string; compiler: ThemeBundleCompilerType } | null> {
@@ -93,11 +96,11 @@ export class ThemeBuildCommandService {
         rebuildTimer = setTimeout(() => { void rebuild(); }, ThemeBuildCommandService.REBUILD_DEBOUNCE_MS);
       };
 
-      // The compiler writes into the theme's own `ui/`, so rebuilding on a change there would rebuild
-      // for ever.
+      // `ThemeBundleCompiler.build` writes `src/theme-entry.generated.jsx` as build INPUT and removes
+      // it again in its `finally` — two events inside the very directory being watched. Without this
+      // filter every rebuild schedules another rebuild of itself and the loop never settles.
       const onSourceEvent = (_event: string, filename: string | Buffer | null): void => {
-        const name = String(filename ?? '');
-        if (name.startsWith('ui/') || name.includes(`${path.sep}ui${path.sep}`)) return;
+        if (filename && path.basename(String(filename)) === ThemeBuildCommandService.GENERATED_ENTRY_FILE) return;
         scheduleRebuild();
       };
 
