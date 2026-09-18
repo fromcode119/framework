@@ -33,7 +33,7 @@ export * from '@core/interfaces/live-blocks-snapshot.interface';
 export * from '@core/interfaces/loaded-plugin.interface';
 export * from '@core/interfaces/logger-options.interface';
 export * from '@core/marketplace/interfaces/marketplace-data.interface';
-export * from '@core/marketplace/interfaces/marketplace-plugin.interface';
+export * from '@core/marketplace/marketplace-plugin';
 export * from '@core/marketplace/interfaces/marketplace-theme.interface';
 export * from '@core/interfaces/menu-item-manifest.interface';
 export * from '@core/interfaces/middleware-config.interface';

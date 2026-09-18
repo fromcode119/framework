@@ -354,7 +354,10 @@ export { SiteTransferBundleService } from '@core/management/site-transfer-bundle
 export type { ISiteTransferBundleManifest } from '@core/management/interfaces/site-transfer-bundle-manifest.interface';
 export type { ISiteTransferBundleOptions } from '@core/management/interfaces/site-transfer-bundle-options.interface';
 export type { ISiteTransferBundleResult } from '@core/management/interfaces/site-transfer-bundle-result.interface';
-export { ManifestValidator, PluginManifestSchema, RegistryPluginSchema, RegistryManifestSchema } from '@core/management/manifest';
+export { ManifestValidator } from '@core/management/manifest-validator';
+export { PluginManifestSchema } from '@core/management/plugin-manifest-schema';
+export { RegistryPluginSchema } from '@core/management/registry-plugin-schema';
+export { RegistryManifestSchema } from '@core/management/registry-manifest-schema';
 export { MigrationCoordinator } from '@core/management/migration-coordinator';
 export { HotReloadService } from '@core/management/hot-reload-service';
 export { SystemUpdateService } from '@core/management/system-update-service';
