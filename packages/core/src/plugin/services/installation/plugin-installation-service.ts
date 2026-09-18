@@ -14,6 +14,7 @@ import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plu
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 
 export class PluginInstallationService {
   constructor(
@@ -188,7 +189,15 @@ export class PluginInstallationService {
 
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as IPluginManifest;
     const pluginPath = path.dirname(manifestPath);
+
     await this.runPluginMigrations(slug, pluginPath, manifest, options.progressReporter);
+
+    // A HOT install/update (no api restart) registers this manifest directly, bypassing the
+    // boot-time directory scanner — fills `ui.*` in from what landed on disk (manifest.json may not
+    // declare `ui.frontendEntry`). Runs AFTER runPluginMigrations, not before: resolve() also
+    // backfills `manifest.migrations` from an on-disk dist/migrations dir when undeclared, which
+    // would make this hot path run every plugin's migrations on first install — out of scope here.
+    PluginPackageLayout.resolve(pluginPath, manifest);
 
     if (existingPlugin && existingPlugin.state !== PluginState.ERROR) {
       const desiredState = options.enable === true
