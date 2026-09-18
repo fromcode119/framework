@@ -58,6 +58,11 @@ export class SdkExportSourceBuilder {
     'SystemConstants',
     'ClientRuntimeConstants',
     'CookieConstants',
+    // `IBrowserCookieOptions.sameSite` is typed as this enum, so any plugin that writes a cookie
+    // through `BrowserStateClient` — privacy's consent store, mlm's referral attribution — imports it
+    // as a VALUE. It was missing here, and both storefront bundles died on load with
+    // "does not provide an export named 'CookieSameSite'": no consent banner, no referral capture.
+    'CookieSameSite',
     'RuntimeConstants',
     'RouteConstants',
     'AccountRouteUtils',
