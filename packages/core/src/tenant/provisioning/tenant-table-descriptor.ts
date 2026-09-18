@@ -69,4 +69,22 @@ export class TenantTableDescriptor {
     const type = String(dataType ?? '').toLowerCase();
     return type === 'json' || type === 'jsonb';
   }
+
+  /**
+   * Every `information_schema` `data_type` in which an empty string is a VALUE, not an absence.
+   *
+   * Declared once because it was spelled inline twice and the copies had already drifted — the row
+   * inserter tested only `text` and `character varying`, so a `char(n)` column looked non-textual
+   * and its empty strings were rewritten to NULL or to the column's empty default. Silent data loss
+   * on import, from a hand-written list standing in for a property.
+   *
+   * These are the SQL-standard spellings this column reports, not Postgres' internal names:
+   * `varchar` appears as `character varying`, `char` as `character`, and `bpchar` never appears.
+   * `citext` reports its own name and is a character type by definition, so it is listed rather than
+   * omitted for not being in use today.
+   */
+  static isCharacterType(dataType: string | undefined): boolean {
+    const type = String(dataType ?? '').toLowerCase();
+    return type === 'text' || type === 'character varying' || type === 'character' || type === 'citext';
+  }
 }
