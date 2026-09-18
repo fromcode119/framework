@@ -19,7 +19,7 @@ describe('PluginInstallationService.finalizeInstalledPlugin — hot install layo
   let root: string;
   let pluginsRoot: string;
   let pluginPath: string;
-  const slug = 'privacy';
+  const slug = 'sample-widget';
 
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'hot-install-layout-test-'));
@@ -27,11 +27,11 @@ describe('PluginInstallationService.finalizeInstalledPlugin — hot install layo
     pluginPath = path.join(pluginsRoot, slug);
     fs.mkdirSync(pluginPath, { recursive: true });
 
-    // The package ships a storefront bundle but declares NO `ui` block — exactly what a hot-installed
-    // build package looks like when the manifest only ever named `loadStrategy` (finance, lms, privacy).
+    // The package ships a storefront bundle but declares NO `ui` block — the shape a hot-installed
+    // build package has when its manifest never named one, or named only `loadStrategy`.
     fs.writeFileSync(
       path.join(pluginPath, 'manifest.json'),
-      JSON.stringify({ slug, name: 'Privacy', version: '0.1.31' }),
+      JSON.stringify({ slug, name: 'Sample Widget', version: '0.1.31' }),
     );
     fs.mkdirSync(path.join(pluginPath, 'src', 'ui'), { recursive: true });
     fs.writeFileSync(path.join(pluginPath, 'src', 'ui', 'frontend.js'), '// built storefront bundle\n');
@@ -66,7 +66,7 @@ describe('PluginInstallationService.finalizeInstalledPlugin — hot install layo
       slug,
       path: pluginPath,
       state: PluginState.ACTIVE,
-      manifest: { slug, name: 'Privacy', version: '0.1.30' },
+      manifest: { slug, name: 'Sample Widget', version: '0.1.30' },
       approvedCapabilities: [],
     } as unknown as ILoadedPlugin;
     const plugins = new Map<string, ILoadedPlugin>([[slug, existing]]);
@@ -96,7 +96,7 @@ describe('PluginInstallationService.finalizeInstalledPlugin — hot install layo
       slug,
       path: pluginPath,
       state: PluginState.ACTIVE,
-      manifest: { slug, name: 'Privacy', version: '0.1.30' },
+      manifest: { slug, name: 'Sample Widget', version: '0.1.30' },
       approvedCapabilities: [],
     } as unknown as ILoadedPlugin;
     const plugins = new Map<string, ILoadedPlugin>([[slug, existing]]);
