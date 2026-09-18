@@ -122,7 +122,17 @@ export class TenantRowInserter {
   private repointAt(reference: TenantColumnReference, path: string[], value: unknown): unknown {
     if (value === null || value === undefined) return value;
     if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
-      try { return this.repointAt(reference, path, JSON.parse(value)); } catch { return value; }
+      // The column stores JSON as TEXT (a `text`/`character varying` destination — a plugin's own
+      // JSON-shaped column declared as plain text rather than jsonb) — its storage shape is a
+      // string, not the importer's to change. Parse to walk it, re-point ids inside, then serialise
+      // back to a string so a text column still receives a string. `encode()` guards the same shape for any
+      // value that reaches it as a live object/array instead of a string (a jsonb SOURCE column
+      // landing in a text destination never hits this string branch at all), but that is a
+      // different path into the same bug — see `encode`.
+      let parsed: unknown;
+      try { parsed = JSON.parse(value); } catch { return value; }
+      const result = this.repointAt(reference, path, parsed);
+      return result === TenantRowInserter.DROPPED ? TenantRowInserter.DROPPED : JSON.stringify(result);
     }
     if (Array.isArray(value)) {
       return value
@@ -209,6 +219,16 @@ export class TenantRowInserter {
       if (typeof value === 'boolean') return value;
       const text = String(value).trim().toLowerCase();
       return text === '1' || text === 'true' || text === 't';
+    }
+    // A `text`/`character varying` destination can still receive a live object or array — a jsonb
+    // SOURCE column arrives already parsed (SQLite/Postgres both hand back the parsed value for a
+    // json/jsonb column), and `repoint` above never touches it because it was never a string to
+    // begin with. Handed to the driver as-is, an array serialises as a Postgres ARRAY LITERAL
+    // (`{"{...}"}`) instead of JSON, and a plain object fails outright. The column's storage shape
+    // is JSON text either way, so stringify it here — this is the one place a value of the wrong
+    // JS shape for its destination still gets fixed, regardless of which import path produced it.
+    if ((type === 'text' || type === 'character varying') && value !== null && typeof value === 'object') {
+      return JSON.stringify(value);
     }
     return value;
   }
