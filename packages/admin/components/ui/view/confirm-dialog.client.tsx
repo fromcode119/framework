@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
+
 export class ConfirmDialog extends PureReactor {
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;
