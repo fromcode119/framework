@@ -20,4 +20,8 @@ export interface IImportPlanTable {
   opaqueJsonColumns: string[];
   repointedReferences: Array<{ column: string; path: string[]; targetTable: string }>;
   droppedColumns: string[];
+  /** The plugin that owns this table on this platform, `null` for a framework table or an unmatched one. */
+  pluginSlug: string | null;
+  /** The collection's human label; `null` when none was found, so the physical table name stands alone. */
+  label: string | null;
 }

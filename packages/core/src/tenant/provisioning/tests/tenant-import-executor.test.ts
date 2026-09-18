@@ -95,3 +95,51 @@ describe('TenantImportExecutor — ids are allocated for every table before any 
     expect(bRow.link).toBe(bases.fcp_widgets_a_id_seq + 1);
   });
 });
+
+/**
+ * Export warnings (written into the archive at export time) used to be merged into `warnings` and
+ * so reached the post-import result screen for free. Splitting them into their own
+ * `plan.exportWarnings` left `TenantImportResult` with nowhere to carry them — this is the executor
+ * half of that fix; `page.client.tsx` renders `result.exportWarnings` in its own section.
+ */
+describe('TenantImportExecutor — export warnings carry through to the result', () => {
+  it('puts plan.exportWarnings on the result, kept apart from the decision warnings', async () => {
+    const db = {
+      withTenant: vi.fn(async (_tenantId: string, fn: () => Promise<void>) => fn()),
+      queryRaw: vi.fn(async (sql: string) => {
+        if (sql === 'BEGIN' || sql === 'COMMIT' || sql === 'ROLLBACK') return [];
+        return [];
+      }),
+    } as unknown as IDatabaseManager;
+
+    const manifest = new TenantArchiveManifest(
+      1, '2026-01-01T00:00:00.000Z', '0.0.0', 'tenant',
+      { id: 'export-warn-co', slug: 'export-warn-co', primaryHost: 'export-warn-co.test', hostAliases: [], state: 'active', kind: 'site', appearance: '' },
+      [], null, [], 0, { count: 0, bytes: 0 }, [],
+    );
+    const reader = {
+      manifest,
+      rows: async function* rows() { /* none */ },
+      users: async function* users() { /* none */ },
+      fileNames: () => [],
+      filePath: () => null,
+      close: () => undefined,
+    } as unknown as TenantArchiveReader;
+
+    const registry = {
+      create: vi.fn(async () => ({ id: 'tenant-2', slug: 'export-warn-co' })),
+      remove: vi.fn(async () => undefined),
+    } as unknown as TenantRegistryService;
+
+    const identity = TenantIdentity.from({ id: 'tenant-2', slug: 'export-warn-co', primaryHost: 'export-warn-co.test', kind: 'site' });
+    const plan = new TenantImportPlan(
+      manifest, [], [], null, { total: 0, existing: 0, toCreate: 0 }, { count: 0, bytes: 0, colliding: 0 },
+      [], ['a decision this import makes'], ['written into the archive at export time'],
+    );
+
+    const result = await new TenantImportExecutor(db, registry, [], '/tmp/fc-executor-test-uploads').execute(reader, identity, plan);
+
+    expect(result.warnings).toEqual(['a decision this import makes']);
+    expect(result.exportWarnings).toEqual(['written into the archive at export time']);
+  });
+});

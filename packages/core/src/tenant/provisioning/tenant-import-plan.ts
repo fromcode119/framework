@@ -43,6 +43,10 @@ export class TenantImportPlan {
       repointedReferences: Array<{ column: string; path: string[]; targetTable: string }>;
       /** Archive columns this platform's table does not have; their values are dropped. */
       droppedColumns: string[];
+      /** The plugin that owns this table on THIS platform, `null` for a framework table or an unmatched one. */
+      pluginSlug: string | null;
+      /** The collection's human label, `null` when none was found — the operator then sees the physical name alone. */
+      label: string | null;
     }>,
     readonly plugins: Array<{ slug: string; archiveVersion: string; installedVersion: string | null; enabled: boolean }>,
     readonly theme: { slug: string; archiveVersion: string; installedVersion: string | null } | null,
@@ -50,6 +54,21 @@ export class TenantImportPlan {
     readonly files: { count: number; bytes: number; colliding: number },
     readonly blockers: string[],
     readonly warnings: string[],
+    /**
+     * Written into the archive at EXPORT time, describing what it holds — never what THIS import
+     * decides. Kept separate from `warnings` (which are decisions this import makes) so the operator
+     * is never asked to weigh a stale export-time note against a live one in the same list.
+     */
+    readonly exportWarnings: string[] = [],
+    /**
+     * Rows of `_system_meta` the executor's row filter will drop because their key is a platform
+     * key (`TenantBespokePolicies.platformKeys()`) — a tenant cannot own a deployment truth. The
+     * table itself is still imported; only these rows of it are not, so the id-mode accounting above
+     * never counts them.
+     */
+    readonly metaRowsExcluded: number = 0,
+    /** Rows of `_system_plugin_settings` the executor will drop: settings of a plugin this platform does not have. */
+    readonly pluginSettingsRowsExcluded: number = 0,
   ) {}
 
   get canExecute(): boolean {
@@ -70,6 +89,9 @@ export class TenantImportPlan {
       files: this.files,
       blockers: this.blockers,
       warnings: this.warnings,
+      exportWarnings: this.exportWarnings,
+      metaRowsExcluded: this.metaRowsExcluded,
+      pluginSettingsRowsExcluded: this.pluginSettingsRowsExcluded,
       canExecute: this.canExecute,
     };
   }

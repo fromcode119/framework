@@ -17,6 +17,14 @@ export class TenantTableDescriptor {
     readonly references: TenantColumnReference[],
     /** Columns declared NOT NULL with no default on THIS platform: a null (or cleared reference) needs a value. */
     readonly requiredColumns: Set<string> = new Set(),
+    /**
+     * The plugin that owns this table, when one does. `null` for a framework (`_system_*`) table, and
+     * for a table discovered with no collection host at all (the CLI import path runs no plugin host
+     * and passes no collections) — never a guess, so the preview can say "platform" rather than blank.
+     */
+    readonly pluginSlug: string | null = null,
+    /** The collection's human label (`ICollection.displayName`, or its capitalized short slug), when a matching collection was found. `null` when none was — the preview then falls back to the physical table name. */
+    readonly label: string | null = null,
   ) {}
 
   get columns(): string[] {

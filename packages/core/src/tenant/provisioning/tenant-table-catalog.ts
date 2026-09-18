@@ -1,12 +1,14 @@
 import { TenantColumnSource } from '@core/tenant/provisioning/enums/tenant-column-source.enum';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { NamingStrategy, PhysicalTableNameUtils, TableResolver, TenantColumn } from '@fromcode119/database';
+import { CollectionLabelUtils } from '@core/collections/collection-label-utils';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { INestedFieldReference } from '@core/tenant/provisioning/interfaces/nested-field-reference.interface';
 import { FieldType } from '@core/enums/field-type.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
+import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-owning-plugin-resolver';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 import { TableVisitState } from '@core/tenant/provisioning/enums/table-visit-state.enum';
@@ -46,15 +48,25 @@ export class TenantTableCatalog {
 
   private readonly collections: Array<{ collection: ICollection; pluginSlug: string }>;
 
+  /**
+   * Real plugin slugs known independently of `collections` — a CLI process reads them from the
+   * `_system_plugins` table (no plugin host runs there, so `collections` is empty) while the admin
+   * has them from `collections` itself. Used ONLY as the fallback below, to longest-prefix-match a
+   * physical name against something real rather than trust its naive first-underscore split.
+   */
+  private readonly knownPluginSlugs: string[];
+
   constructor(
     private readonly db: IDatabaseManager,
     collections: Iterable<{ collection: ICollection; pluginSlug: string }> = [],
+    knownPluginSlugs: Iterable<string> = [],
   ) {
     // Materialized once: `collections` may be a Map's `.values()`, a single-use iterator that a
     // second `for...of` (this class calls `schemaReferences` from `describe`, which callers may
     // invoke more than once against one catalog instance) would silently see as empty.
     this.collections = [...collections];
     this.hasSchemaReferences = this.collections.length > 0;
+    this.knownPluginSlugs = [...new Set([...knownPluginSlugs, ...this.collections.map((entry) => entry.pluginSlug)])];
   }
 
   /** Tables under a tenant policy right now — the multi-tenant case. */
@@ -81,14 +93,39 @@ export class TenantTableCatalog {
       this.db.introspection.requiredColumns(tables, TenantTableCatalog.ALWAYS_SUPPLIED),
     ]);
     const schemaReferences = this.schemaReferences(wanted, columns);
+    const owners = this.owners();
 
     const descriptors = tables.map((table) => {
       const types = columns.get(table) ?? {};
       const references = [...(foreignKeys.get(table) ?? []), ...(schemaReferences.get(table) ?? [])]
         .filter((ref) => Object.prototype.hasOwnProperty.call(types, ref.column));
-      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set());
+      const owner = owners.get(table);
+      // No collection matched this table — either it is framework-owned (`_system_*`, no plugin at
+      // all) or this catalog was built with no collections (the CLI import path runs no plugin host).
+      // Longest-prefix match against the REAL slugs this catalog knows recovers the owner without
+      // `PhysicalTableNameUtils.parse`'s naive first-underscore split, which is wrong for a
+      // multi-token slug (`alpha-beta` truncates to `alpha`). With no real slugs known at
+      // all (no collections AND none passed in), that naive split remains the best available guess.
+      const pluginSlug = owner?.pluginSlug
+        ?? (this.knownPluginSlugs.length > 0
+          ? TenantOwningPluginResolver.resolve(table, this.knownPluginSlugs)
+          : (PhysicalTableNameUtils.parse(table)?.pluginSlug ?? null));
+      const label = owner?.label ?? null;
+      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set(), pluginSlug, label);
     });
     return TenantTableCatalog.inDependencyOrder(descriptors);
+  }
+
+  /** Physical table name → owning plugin + human label, from the registered collections (same derivation as `schemaReferences`). */
+  private owners(): Map<string, { pluginSlug: string; label: string }> {
+    const out = new Map<string, { pluginSlug: string; label: string }>();
+    for (const { collection, pluginSlug } of this.collections) {
+      const table = String(collection.tableName || collection.slug || '').trim();
+      if (!table) continue;
+      const shortSlug = String(collection.shortSlug || collection.slug || '').toLowerCase();
+      out.set(table, { pluginSlug, label: CollectionLabelUtils.labelFor(collection, shortSlug) });
+    }
+    return out;
   }
 
   /** table → references, mapped from the FOREIGN KEYs the driver reports. */

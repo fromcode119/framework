@@ -435,6 +435,9 @@ html.dark {
 .fc-sites__grant-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .fc-sites__grant-row > *:first-child { flex: 1 1 260px; max-width: 360px; }
 .fc-import-plan { display: flex; flex-direction: column; gap: 12px; }
+/* The three-line "what happens" summary, ahead of the inventory and the mode groups. */
+.fc-import-plan__summary { display: flex; flex-direction: column; gap: 4px; }
+.fc-import-plan__summary p { margin: 0; }
 .fc-import-plan__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .fc-import-plan__item { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 4px; }
 .fc-import-plan__tables { display: flex; flex-direction: column; gap: 18px; }
@@ -454,6 +457,8 @@ html.dark {
 .fc-import-plan__cols { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
 .fc-import-plan__cols + .fc-import-plan__cols { margin-top: 4px; }
 .fc-import-plan__cols code { overflow-wrap: anywhere; }
+/* The physical table name trailing a row's human label — secondary to it, not a second label. */
+.fc-import-plan__table-physical { opacity: 0.6; font-size: 11px; margin-left: 4px; }
 /* Enough room for the longest table name to stay on one line; the group scrolls if the rest cannot fit. */
 .fc-import-plan__table td:first-child, .fc-import-plan__table th:first-child { min-width: 24ch; white-space: nowrap; }
 .fc-import-plan__cols-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }

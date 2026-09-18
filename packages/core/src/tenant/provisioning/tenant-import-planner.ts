@@ -2,11 +2,15 @@ import { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-impor
 import fs from 'fs';
 import path from 'path';
 import type { IDatabaseManager } from '@fromcode119/database';
+import { PhysicalTableNameUtils } from '@fromcode119/database';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
+import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
 import { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
+import { TenantInstalledPluginSlugs } from '@core/tenant/provisioning/tenant-installed-plugin-slugs';
+import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-owning-plugin-resolver';
 import { TenantRegistryService } from '@core/tenant/provisioning/tenant-registry-service';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
@@ -35,13 +39,24 @@ export class TenantImportPlanner {
 
   async plan(reader: TenantArchiveReader, identity: TenantIdentity): Promise<TenantImportPlan> {
     const blockers: string[] = [];
-    const warnings: string[] = [...reader.manifest.warnings.map((w) => `Export warning: ${w}`)];
+    const warnings: string[] = [];
+    // Written into the archive when it was exported — what it holds, not what THIS import decides.
+    // Kept apart from `warnings` (below) rather than merged in with an `Export warning:` prefix, so an
+    // operator reading the decisions this import makes never has to sort a live one from a stale note.
+    const exportWarnings: string[] = [...reader.manifest.warnings];
 
     try {
       await this.registry.assertAvailable(identity);
     } catch (error: any) {
       blockers.push(String(error?.message || error));
     }
+
+    // The archive's own plugins are the REAL slugs to check a skipped table's physical name
+    // against — `PhysicalTableNameUtils.parse` splits at the first underscore, which is wrong for a
+    // multi-token slug (`alpha-beta` truncates to `alpha`). With no plugins named at all
+    // (an archive written before that field existed) there is nothing real to check against, so the
+    // naive split remains the best available guess rather than nothing.
+    const knownPluginSlugs = reader.manifest.plugins.map((plugin) => plugin.slug);
 
     const byName = new Map(this.tables.map((table) => [table.name, table]));
     const tables: TenantImportPlan['tables'] = [];
@@ -55,6 +70,13 @@ export class TenantImportPlanner {
         tables.push({
           name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.SKIP.value), basis: 'noTable',
           minId: null, taken: null, opaqueJsonColumns: [], repointedReferences: [], droppedColumns: [],
+          // No destination descriptor exists for a skipped table, so there is no collection to ask —
+          // but the physical name itself (`fcp_<slug>_...`) still says which plugin would have owned
+          // it, which is exactly what "install and enable the plugin that owns it" (below) needs said.
+          pluginSlug: knownPluginSlugs.length > 0
+            ? TenantOwningPluginResolver.resolve(archived.name, knownPluginSlugs)
+            : (PhysicalTableNameUtils.parse(archived.name)?.pluginSlug ?? null),
+          label: null,
         });
         if (archived.rows > 0) {
           warnings.push(
@@ -109,7 +131,44 @@ export class TenantImportPlanner {
       );
     }
 
-    return new TenantImportPlan(reader.manifest, tables, plugins, theme, users, files, blockers, warnings);
+    // Two more classes of row the EXECUTOR drops at run time (`TenantImportExecutor.rowFilter`)
+    // that the id-mode/column accounting above never sees, because the table itself is still
+    // imported — only some of its rows are not. Both are knowable now, from the same inputs the
+    // executor uses, so the preview's "left behind" summary can count them rather than miss them.
+    const platformKeys = new Set(TenantBespokePolicies.platformKeys());
+    const metaRowsExcluded = await TenantImportPlanner.countExcludedRows(
+      reader, tables, SystemConstants.TABLE.META, (row) => platformKeys.has(String(row.key ?? '')),
+    );
+    // The executor's own rowFilter checks `_system_plugins` directly (`TenantInstalledPluginSlugs`),
+    // never the plugin host's in-memory loaded set — a plugin whose row exists but failed to load
+    // (or was installed by another process since this one booted) is still "installed" for that
+    // filter, so the preview must read the same table or it could count rows the executor would
+    // actually keep.
+    const installedPluginSlugs = await TenantInstalledPluginSlugs.read(this.db);
+    const pluginSettingsRowsExcluded = await TenantImportPlanner.countExcludedRows(
+      reader, tables, SystemConstants.TABLE.PLUGIN_SETTINGS, (row) => !installedPluginSlugs.has(String(row.plugin_slug ?? '')),
+    );
+
+    return new TenantImportPlan(
+      reader.manifest, tables, plugins, theme, users, files, blockers, warnings, exportWarnings,
+      metaRowsExcluded, pluginSettingsRowsExcluded,
+    );
+  }
+
+  /** How many rows of `tableName` the executor's own row filter would drop — 0 when the table is skipped or empty. */
+  private static async countExcludedRows(
+    reader: TenantArchiveReader,
+    tables: TenantImportPlan['tables'],
+    tableName: string,
+    excluded: (row: Record<string, unknown>) => boolean,
+  ): Promise<number> {
+    const table = tables.find((entry) => entry.name === tableName);
+    if (!table || table.mode === String(TenantImportIdMode.SKIP.value) || table.rows === 0) return 0;
+    let count = 0;
+    for await (const row of reader.rows(tableName)) {
+      if (excluded(row)) count += 1;
+    }
+    return count;
   }
 
   private async planTable(
@@ -128,6 +187,7 @@ export class TenantImportPlanner {
       return {
         name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.PRESERVE.value), basis: 'naturalKey',
         minId: null, taken: null, opaqueJsonColumns: [], repointedReferences: [], droppedColumns,
+        pluginSlug: destination.pluginSlug, label: destination.label,
       };
     }
     const decision = await TenantImportPlanner.decideIds(this.db, destination, reader);
@@ -141,6 +201,8 @@ export class TenantImportPlanner {
       opaqueJsonColumns: decision.mode === TenantImportIdMode.REMAP ? opaqueJsonColumns : [],
       repointedReferences: decision.mode === TenantImportIdMode.REMAP ? repointedReferences : [],
       droppedColumns,
+      pluginSlug: destination.pluginSlug,
+      label: destination.label,
     };
   }
 
