@@ -24,6 +24,7 @@ import { PluginUiHookfreeCommand } from './plugin-ui-hookfree-command';
 import { PluginUiTypesCommand } from './plugin-ui-types-command';
 import { McpToolSchemaCommand } from './mcp-tool-schema-command';
 import { OneContractPerFileCommand } from './one-contract-per-file-command';
+import { SdkRuntimeExportsCommand } from './sdk-runtime-exports-command';
 import { SdkBoundaryCommand } from './sdk-boundary-command';
 import { SrcArtifactsCommand } from './src-artifacts-command';
 import { ThemeOverrideBoundaryCommand } from './theme-override-boundary-command';
@@ -67,6 +68,7 @@ export class GuardRegistry {
     ['plugin-raw-sql', PluginRawSqlCommand],
     ['plugin-ui-hookfree', PluginUiHookfreeCommand],
     ['plugin-ui-types', PluginUiTypesCommand],
+    ['sdk-runtime-exports', SdkRuntimeExportsCommand],
     ['re-exports', ReExportCommand],
     ['request-coercion', RequestCoercionCommand],
     ['mcp-tool-schemas', McpToolSchemaCommand],
