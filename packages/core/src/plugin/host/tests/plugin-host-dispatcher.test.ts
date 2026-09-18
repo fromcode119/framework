@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
 import { PluginHostDispatcher } from '@core/plugin/host/plugin-host-dispatcher';
 import { PluginInvocationTokens } from '@core/plugin/host/plugin-invocation-tokens';
+import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
 import { RequestContextUtils } from '@core/context/request-context';
 
 function dispatcher() {
@@ -42,5 +43,32 @@ describe('PluginHostDispatcher', () => {
     const { dispatcher: d, tokens, context, scopes } = dispatcher();
     await d.dispatch(context, { root: 'context', steps: [{ name: 'db' }, { name: 'find', args: ['t'] }], token: tokens.mint('scheduler', undefined) });
     expect(scopes).toEqual([]);
+  });
+
+  /**
+   * `plugins.namespace('org.x').widget.registerProvider(...)` when `widget` is not resolvable (its
+   * guest is down): `PluginsManagerResolver.resolve()` now answers `undefined` for that property
+   * instead of handing back a stub whose methods are all `undefined`. The dispatcher must classify
+   * the resulting missing property as "peer not there" and throw `PluginPeerUnavailableError`, never
+   * the generic `"registerProvider" is not callable` that used to reach the operator as a failure.
+   */
+  it('classifies a call into an unresolved peer as peer-unavailable, not "is not callable"', async () => {
+    const { dispatcher: d, tokens } = dispatcher();
+    const token = tokens.mint('hook', undefined);
+    const context: any = { plugins: { namespace: (_ns: string) => ({ widget: undefined }) } };
+    const call = { root: 'context', steps: [{ name: 'plugins' }, { name: 'namespace', args: ['org.x'] }, { name: 'widget' }, { name: 'registerProvider', args: [{}] }], token };
+
+    await expect(d.dispatch(context, call)).rejects.toBeInstanceOf(PluginPeerUnavailableError);
+    await expect(d.dispatch(context, call)).rejects.toMatchObject({ code: 'peer_unavailable', peer: 'widget' });
+  });
+
+  it('still throws the plain "is not callable" error for a real fault unrelated to peer resolution', async () => {
+    const { dispatcher: d, tokens } = dispatcher();
+    const token = tokens.mint('hook', undefined);
+    const context: any = { db: { find: 'not-a-function' } };
+    const call = { root: 'context', steps: [{ name: 'db' }, { name: 'find', args: ['t'] }], token };
+
+    await expect(d.dispatch(context, call)).rejects.toThrow('"find" is not callable');
+    await expect(d.dispatch(context, call)).rejects.not.toBeInstanceOf(PluginPeerUnavailableError);
   });
 });
