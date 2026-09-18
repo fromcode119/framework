@@ -239,29 +239,40 @@ export class SystemSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'false', description: "Enable two-factor authentication.", group: "security" },
     },
+    // Rate limiting is enforced by a single PLATFORM-wide bucket (admin-bootstrap-rate-limit-utils.ts),
+    // keyed per-IP with no tenant component — the limiter mounts before the tenant binder, so there is
+    // no per-site enforcement for a SITE-scoped override to control. These six keys must be PLATFORM:
+    // a SITE scope here would let the admin edit a value the runtime never reads (Rule Zero).
+    //
+    // Seed values measured on a real storefront page load: 21 API calls per page view count against
+    // the anonymous bucket (66 further calls are correctly bypassed as UI assets). At the previous
+    // 100/15min that is ~4 page views before 429 — the reported bug. At 600/min that is ~28 page views
+    // per minute per IP. The window drop from 15 minutes to 1 minute matters independently of the max:
+    // this is a FIXED-window limiter, so tripping it at a 15-minute window locks a visitor out for up
+    // to 15 minutes; a 1-minute window recovers in at most a minute.
     [SystemConstants.META_KEY.RATE_LIMIT_MAX]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: '100', description: "Maximum requests per window per IP.", group: "security" },
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '600', description: "Maximum anonymous requests per rate-limit window per IP (window set by Rate Limit Window, default one minute).", group: "security" },
     },
     [SystemConstants.META_KEY.RATE_LIMIT_MAX_AUTHENTICATED]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: '5000', description: "Maximum requests per window for signed-in requests (counted per IP + token).", group: "security" },
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '2000', description: "Maximum requests per rate-limit window for signed-in requests (counted per IP + token; window set by Rate Limit Window, default one minute).", group: "security" },
     },
     [SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: '20000', description: "Maximum requests per window for internal server-to-server calls (the storefront renderer), counted per calling service address.", group: "security" },
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '20000', description: "Maximum requests per rate-limit window for internal server-to-server calls (the storefront renderer), counted per calling service address (window set by Rate Limit Window, default one minute).", group: "security" },
     },
     [SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: NetworkAddressUtils.PRIVATE_RANGES_TEXT, description: "Addresses/CIDR blocks that count as internal service callers (the storefront renderer, workers). Clear it and nothing is internal: every anonymous caller falls back to the public limit.", group: "security" },
     },
     [SystemConstants.META_KEY.RATE_LIMIT_EDGE_PROVIDER_RANGES]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: () => SystemSettingSeedDefaults.edgeProviderRangesDefault(), description: "Each registered edge provider's published IP ranges, trusted to set that provider's real-visitor header (e.g. Cloudflare's CF-Connecting-IP). JSON, keyed by the provider's own key (\"cloudflare\", ...). Seeded with the ranges built into the code; extend a provider's entry if it publishes a new range before the platform is updated. Never remove a range here to reduce trust — that requires a code change.", group: "security" },
     },
     [SystemConstants.META_KEY.RATE_LIMIT_WINDOW]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: '900000', description: "Rate limit window in milliseconds.", group: "security" },
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '60000', description: "Rate limit window in milliseconds. Fixed-window: tripping the limit locks a caller out for up to this long, so keep it short.", group: "security" },
     },
     [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,

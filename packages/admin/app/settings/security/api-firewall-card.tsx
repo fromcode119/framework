@@ -87,7 +87,7 @@ export class ApiFirewallCard extends PureReactor {
           settingKey={SystemConstants.META_KEY.RATE_LIMIT_WINDOW}
           icon={FrameworkIcons.Clock}
           title="Rate Limit Window (milliseconds)"
-          description="Every counter above resets after this window elapses. Example: 900000 is 15 minutes. Changing it restarts the counters."
+          description="Every counter above resets after this window elapses. Example: 60000 is one minute. Fixed-window: a caller who trips a limit is locked out for up to this long, so keep it short. Changing it restarts the counters."
           min={1000}
           max={86400000}
         />
