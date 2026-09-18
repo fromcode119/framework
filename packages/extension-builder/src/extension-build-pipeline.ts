@@ -219,8 +219,20 @@ export class ExtensionBuildPipeline {
 
   private static async compileMigrations(workspace: ExtensionWorkspace, slug: string): Promise<BuildStepResult> {
     const step = 'plugin-migrations-compiler';
-    if (!fs.existsSync(path.join(workspace.sourceDir, 'migrations'))) {
-      return BuildStepResult.skipped(step, 'no migrations/');
+    // `src/migrations`, which is where every plugin actually keeps them. This guard named a
+    // TOP-LEVEL `migrations/` that no plugin has ever had, so the step reported "no migrations/" and
+    // was skipped for every plugin on every pack — 124 migration sources across 19 plugins, zero
+    // compiled output, for as long as the guard has existed. Nothing broke visibly because plugin
+    // TABLES come from the collection schema rather than from migrations; what was lost was the data
+    // transforms layered on top, silently.
+    //
+    // The compiler's own `manifest.migrations` check stays as it is. That one is NOT a bug: it is how
+    // a plugin says where its compiled migrations go, and therefore how it opts in to running them at
+    // all. Making it default would turn this fix into a platform-wide event, compiling and then
+    // running every one of those 124 on the next install. Opting in per plugin keeps that a reviewed
+    // decision rather than a side effect of repairing a path.
+    if (!fs.existsSync(path.join(workspace.sourceDir, 'src', 'migrations'))) {
+      return BuildStepResult.skipped(step, 'no src/migrations/');
     }
     try {
       const manifestPath = path.join(workspace.sourceDir, 'manifest.json');
