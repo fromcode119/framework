@@ -52,6 +52,7 @@ export { AuthShell } from '@react/auth/auth-shell';
 export { AuthShellImplementation } from '@react/auth/auth-shell-implementation';
 export { AuthMode } from '@react/auth/enums/auth-mode.enum';
 export { Override } from '@react/view/override.client';
+export { PluginMountErrorBoundary } from '@react/view/plugin-mount-error-boundary';
 export { NotFoundBody } from '@react/view/not-found-body';
 export { PluginUsageTracker } from '@react/plugin-usage-tracker';
 export { RecordsHub } from '@react/records-hub';

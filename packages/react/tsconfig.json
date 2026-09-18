@@ -9,5 +9,6 @@
   "references": [
     { "path": "../sdk" }
   ],
-  "include": ["src/**/*", "src/**/*.json"]
+  "include": ["src/**/*", "src/**/*.json"],
+  "exclude": ["**/tests/**", "**/*.test.ts", "**/*.test.tsx"]
 }

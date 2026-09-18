@@ -6,6 +6,7 @@ import { prop, state } from '@fromcode119/react-class-components';
 import { AdminPathUtils } from '@/lib/admin-path';
 import Link from 'next/link';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 
 export class DynamicPluginPage extends AdminComponent {
   @prop declare params: Promise<{ path: string[] }>;
@@ -70,14 +71,14 @@ export class DynamicPluginPage extends AdminComponent {
     return (
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
         <div className="space-y-8">
-          <Slot name={pageSlot} fallback={
+          <Slot name={pageSlot} errorFallback={PluginMountErrorFallback.render} fallback={
              <div className="space-y-8">
                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 rounded-xl flex items-center gap-3 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
                  <FrameworkIcons.Package size={14} />
                  Showing default workspace view for <strong>{pluginSlug}</strong>. Register a component for <code>{pageSlot}</code> to customize this page.
                </div>
 
-               <Slot name={`admin.plugin.${pluginSlug}.content`} fallback={
+               <Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} fallback={
                  <div className="min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center">
                     <FrameworkIcons.Info className="text-slate-300 dark:text-slate-700 mb-4" size={48} />
                     <h3 className={`text-lg font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-800'}`}>

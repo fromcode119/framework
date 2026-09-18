@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Reactor, prop } from '@fromcode119/react-class-components';
 import { OverridesContext } from '@react/context/overrides-context';
 import { PluginUsageTracker } from '@react/plugin-usage-tracker';
+import { PluginMountErrorBoundary } from '@react/view/plugin-mount-error-boundary';
 
 /**
  * Renders a plugin- or theme-registered replacement for a named surface, falling back to the children
@@ -56,10 +57,18 @@ export class Override extends Reactor {
 
           try {
             PluginUsageTracker.record(item.pluginSlug);
-            return React.createElement(item.component, {
-              ...this.overrideProps,
-              key: `${item.pluginSlug}-${this.name}`,
-            }, content);
+            const componentName = (item.component as any)?.displayName || (item.component as any)?.name || this.name;
+            return (
+              <PluginMountErrorBoundary
+                slotName={this.name}
+                pluginSlug={item.pluginSlug}
+                componentName={componentName}
+                renderFallback={() => <>{content}</>}
+                key={`${item.pluginSlug}-${this.name}`}
+              >
+                {React.createElement(item.component, this.overrideProps, content)}
+              </PluginMountErrorBoundary>
+            );
           } catch (error) {
             console.error(`[Override] Runtime error in override component "${this.name}":`, error);
             return <>{content}</>;

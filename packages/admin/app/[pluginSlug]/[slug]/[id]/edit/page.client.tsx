@@ -3,6 +3,7 @@ import { Slot } from '@fromcode119/react';
 import { CollectionEditPage } from '@/components/collection/view/collection-edit-page.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { prop, state } from '@fromcode119/react-class-components';
 
 export class CollectionEditSubRoute extends AdminComponent {
@@ -51,7 +52,7 @@ export class CollectionEditSubRoute extends AdminComponent {
     }
 
     if (hasEditSlot) {
-      return <Slot name={editSlot} props={{ id, pluginSlug, entitySlug: slug }} />;
+      return <Slot name={editSlot} props={{ id, pluginSlug, entitySlug: slug }} errorFallback={PluginMountErrorFallback.render} />;
     }
 
     // Manifest declares the slot but the bundle hasn't yet registered its component.

@@ -223,6 +223,28 @@ export default defineConfig({
       {
         esbuild,
         plugins: [typorPlugin],
+        resolve: { alias: { ...sharedAlias } },
+        test: {
+          // `packages/react` matched NO project's include glob, so it had zero collected tests — the
+          // same dark-by-omission problem as the other packages noted above. Its suites render real
+          // components (e.g. an error boundary catching an actual lifecycle throw), which needs a
+          // jsdom environment and the same DOM setup (`@testing-library/jest-dom` matchers,
+          // `window.matchMedia`) as `admin-dom` below — a `.tsx` suite using `toBeInTheDocument()`
+          // fails without it. Tests live under `packages/react/tests/`, matching the `packages/core`
+          // and `packages/api` convention (never inside `src/`, which would break that package's own
+          // TypeScript compilation — see `packages/react/tsconfig.json`'s test exclude).
+          name: 'react-dom',
+          root: frameworkRoot,
+          environment: 'jsdom',
+          globals: true,
+          setupFiles: [glob('vitest.setup.dom.ts')],
+          include: [glob('packages/react/tests/**/*.test.ts'), glob('packages/react/tests/**/*.test.tsx')],
+          exclude: ['**/node_modules/**', '**/dist/**'],
+        },
+      },
+      {
+        esbuild,
+        plugins: [typorPlugin],
         resolve: { alias: { ...sharedAlias, '@/': `${path.resolve(frameworkRoot, 'packages/admin')}/` } },
         test: {
           name: 'admin',
