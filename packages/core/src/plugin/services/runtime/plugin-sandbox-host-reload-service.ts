@@ -1,14 +1,7 @@
 import { Logger } from '@core/logging';
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
 import type { ISandboxHostReloadResult } from '@core/plugin/interfaces/sandbox-host-reload-result.interface';
-
-/** What `PluginHostRegistry` needs to expose for a sandbox save to react to — narrow on purpose so this stays testable without a real registry. */
-export interface IPluginSandboxHostAccess {
-  get(slug: string): unknown | null;
-  isIsolated(sandbox: unknown): Promise<boolean>;
-  reload(slug: string, manifest: Record<string, unknown>): Promise<boolean>;
-  stop(slug: string): Promise<void>;
-}
+import type { IPluginSandboxHostAccess } from '@core/plugin/interfaces/plugin-sandbox-host-access.interface';
 
 /**
  * What happens to an isolated plugin's PROCESS once an operator saves its sandbox config.
