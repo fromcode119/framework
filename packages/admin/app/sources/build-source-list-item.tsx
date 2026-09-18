@@ -37,7 +37,7 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
           <GitBranch size={14} />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               {/*
                 * ONE line of identity, not five. Twenty sources at 132px each was 2,678px of list in
@@ -47,17 +47,16 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                 */}
               <div className="flex min-w-0 items-baseline gap-2">
                 <h4 className="truncate text-[13px] font-semibold text-slate-900 dark:text-white">{this.build.slug}</h4>
-                <span className="shrink-0 text-[10px] uppercase tracking-wide text-slate-400">{this.build.type}</span>
-                <span className="truncate text-[11px] text-slate-500 dark:text-slate-400" title={this.packageLabel}>
+                <span className="shrink-0 text-[10px] uppercase tracking-wide text-slate-600 dark:text-slate-400">{this.build.type}</span>
+                <span className="truncate text-[11px] text-slate-600 dark:text-slate-400" title={this.packageLabel}>
                   {this.build.branch || 'main'}
                   {this.build.version ? ` · v${this.build.version}` : ' · no build yet'}
                   {this.build.autoBuild ? ' · auto' : ''}
                 </span>
               </div>
-              <p className="truncate text-[11px] text-slate-400" title={`${repositoryLabel}\n${tokenLabel}`}>
+              <p className="truncate text-[11px] text-slate-600 dark:text-slate-400" title={`${repositoryLabel}\n${tokenLabel}`}>
                 {repositoryShort}
               </p>
-              <BuildChangelog changelog={this.build.changelog} version={this.build.version} />
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <BuildStatusBadge status={this.build.lastBuildStatus} />
@@ -90,7 +89,7 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                 Edit
               </Button>
               <Button
-                className="text-slate-400 hover:text-rose-600"
+                className="text-slate-600 hover:text-rose-600 dark:text-slate-400"
                 disabled={this.deletingKey === this.identityKey}
                 icon={<Trash2 size={12} className={this.deletingKey === this.identityKey ? 'animate-spin' : ''} />}
                 onClick={() => this.onDelete(this.build)}
@@ -100,6 +99,7 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
               </Button>
             </div>
           </div>
+          <BuildChangelog changelog={this.build.changelog} version={this.build.version} />
           {this.versionsOpen ? (
             <div className="mt-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] dark:border-slate-800 dark:bg-slate-900/40">
               {this.loadingVersions ? (
@@ -178,12 +178,12 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                       >
                         {this.installing ? `Installing v${this.installing}…` : 'Install'}
                       </Button>
-                      <span className="text-slate-400">
+                      <span className="text-slate-600 dark:text-slate-400">
                         Every version this installation still has staged. Installing an older one replaces the running code; it does not activate a theme.
                       </span>
                     </div>
                   ) : (
-                    <span className="text-slate-400">
+                    <span className="text-slate-600 dark:text-slate-400">
                       No packages are staged for this source yet — build it once and its versions appear here.
                     </span>
                   )}
