@@ -29,6 +29,24 @@ describe('SystemSettingRegistry', () => {
   });
 
   /**
+   * Rate limiting is enforced by ONE platform-wide bucket, keyed per-IP with no tenant component —
+   * there is no per-site limiter for a SITE-scoped key to control. A SITE scope here writes a row the
+   * runtime never reads: inside a site the save is silently discarded; from platform scope (no site
+   * selected) it is refused outright. Both shipped — production stayed on the boot-seeded defaults.
+   * This must stay PLATFORM.
+   */
+  it('keeps every rate-limit key PLATFORM-scoped, so a saved value is what the limiter actually reads', () => {
+    const platform = SystemSettingRegistry.platformKeys();
+
+    expect(platform).toContain(SystemConstants.META_KEY.RATE_LIMIT_MAX);
+    expect(platform).toContain(SystemConstants.META_KEY.RATE_LIMIT_MAX_AUTHENTICATED);
+    expect(platform).toContain(SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL);
+    expect(platform).toContain(SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS);
+    expect(platform).toContain(SystemConstants.META_KEY.RATE_LIMIT_EDGE_PROVIDER_RANGES);
+    expect(platform).toContain(SystemConstants.META_KEY.RATE_LIMIT_WINDOW);
+  });
+
+  /**
    * The seeded defaults moved here from the api's boot seed. A thunk is how the few values that are
    * only knowable at boot (the app URLs, read from the environment) are declared, so the resolved
    * list must contain strings and nothing else — a function reaching the database would be written
