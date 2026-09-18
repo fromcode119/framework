@@ -2,6 +2,8 @@ import { SystemLocaleField } from '@/components/collection/fields/view/system-lo
 import { SystemLocalesField } from '@/components/collection/fields/view/system-locales-field.client';
 import { CountryField } from '@/components/collection/fields/view/country-field.client';
 import { ThemeLayoutField } from '@/components/collection/fields/view/theme-layout-field.client';
+import { StructuredReadOnlyField } from '@/components/collection/fields/view/structured-read-only-field.client';
+import { AddressField } from '@/components/collection/fields/view/address-field.client';
 
 /**
  * Owns the framework's built-in collection field components and registers them into the live
@@ -16,6 +18,8 @@ export class AdminFieldComponentBootstrapService {
     SystemLocalesField,
     CountryField,
     ThemeLayoutField,
+    StructuredReadOnlyField,
+    AddressField,
   };
 
   static register(registerFieldComponent?: (name: string, component: any) => void): void {
