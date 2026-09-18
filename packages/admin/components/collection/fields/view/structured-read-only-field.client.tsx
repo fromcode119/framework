@@ -1,3 +1,4 @@
+import { StructuredNodeKind } from '@/components/collection/fields/enums/structured-node-kind.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
@@ -67,19 +68,19 @@ export class StructuredReadOnlyField extends Reactor {
     const isLarge = StructuredReadOnlyFieldService.isLargePayload(node);
     const filterLower = isLarge ? this.filterText.trim().toLowerCase() : '';
 
-    if (node.kind === 'empty') {
+    if (node.kind === StructuredNodeKind.EMPTY) {
       return <p className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nothing recorded yet.</p>;
     }
 
-    if (node.kind === 'array-table') {
+    if (node.kind === StructuredNodeKind.ARRAY_TABLE) {
       return <StructuredReadOnlyTable node={node} isDark={isDark} />;
     }
 
-    if (node.kind === 'scalar') {
+    if (node.kind === StructuredNodeKind.SCALAR) {
       return <StructuredReadOnlyRow label="value" node={node} depth={1} isDark={isDark} filterLower={filterLower} />;
     }
 
-    const rows = node.kind === 'object'
+    const rows = node.kind === StructuredNodeKind.OBJECT
       ? (node.entries ?? []).map((entry) => (
         <StructuredReadOnlyRow key={entry.key} label={entry.key} node={entry.node} depth={1} defaultCollapsed={isLarge} isDark={isDark} filterLower={filterLower} />
       ))
@@ -111,7 +112,7 @@ export class StructuredReadOnlyField extends Reactor {
       <div className="space-y-2">
         {this.renderProvenance(isDark)}
         {this.renderBody(isDark)}
-        {node.kind !== 'empty' ? (
+        {node.kind !== StructuredNodeKind.EMPTY ? (
           <button
             type="button"
             onClick={this.handleCopy}

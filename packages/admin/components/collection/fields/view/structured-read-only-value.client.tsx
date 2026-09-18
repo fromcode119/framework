@@ -1,3 +1,4 @@
+import { StructuredNodeKind } from '@/components/collection/fields/enums/structured-node-kind.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
@@ -17,7 +18,7 @@ export class StructuredReadOnlyValue extends PureReactor {
     const { node, isDark } = this;
     const monoClass = `font-mono text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`;
 
-    if (node.kind === 'empty') {
+    if (node.kind === StructuredNodeKind.EMPTY) {
       return <span className={isDark ? 'text-slate-600' : 'text-slate-300'}>—</span>;
     }
 

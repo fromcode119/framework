@@ -1,4 +1,5 @@
-import type { IStructuredEntry } from './structured-entry.interface';
+import { StructuredNodeKind } from '@/components/collection/fields/enums/structured-node-kind.enum';
+import type { IStructuredEntry } from '@/components/collection/fields/interfaces/structured-entry.interface';
 
 /**
  * A normalised node in the row tree `StructuredReadOnlyFieldService` builds out of an arbitrary
@@ -6,15 +7,15 @@ import type { IStructuredEntry } from './structured-entry.interface';
  * or a table); `scalar` and `empty` render inline.
  */
 export interface IStructuredNode {
-  kind: 'object' | 'array' | 'array-table' | 'scalar' | 'empty';
-  /** Set only when `kind === 'scalar'`. */
+  kind: StructuredNodeKind;
+  /** Set only when `kind === StructuredNodeKind.SCALAR`. */
   scalarValue?: unknown;
-  /** Set only when `kind === 'object'`. */
+  /** Set only when `kind === StructuredNodeKind.OBJECT`. */
   entries?: IStructuredEntry[];
-  /** Set when `kind === 'array'` or `'array-table'` — every item, in order. */
+  /** Set when `kind === StructuredNodeKind.ARRAY` or `'array-table'` — every item, in order. */
   items?: IStructuredNode[];
-  /** Set only when `kind === 'array-table'` — the union of keys across the array's objects. */
+  /** Set only when `kind === StructuredNodeKind.ARRAY_TABLE` — the union of keys across the array's objects. */
   tableColumns?: string[];
-  /** Set only when `kind === 'array-table'` — one row per array item, keyed by column. */
+  /** Set only when `kind === StructuredNodeKind.ARRAY_TABLE` — one row per array item, keyed by column. */
   tableRows?: Record<string, IStructuredNode>[];
 }

@@ -1,10 +1,7 @@
+import { StructuredNodeKind } from '@/components/collection/fields/enums/structured-node-kind.enum';
 import { CoercionUtils } from '@fromcode119/core/client';
 import type { IStructuredEntry } from '@/components/collection/fields/interfaces/structured-entry.interface';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
-
-const IMAGE_EXTENSION_PATTERN = /\.(jpe?g|png|webp|gif|avif)$/i;
-const LARGE_TOP_LEVEL_KEY_THRESHOLD = 25;
-const LARGE_LEAF_VALUE_THRESHOLD = 150;
 
 /**
  * Pure normalisation for `StructuredReadOnlyField`: turns an arbitrary field value (object, array,
@@ -13,6 +10,13 @@ const LARGE_LEAF_VALUE_THRESHOLD = 150;
  * unit tested without mounting anything.
  */
 export class StructuredReadOnlyFieldService {
+  /** What counts as an image URL when deciding to render a thumbnail rather than the raw string. */
+  private static readonly IMAGE_EXTENSION_PATTERN = /\.(jpe?g|png|webp|gif|avif)$/i;
+  /** Above this many top-level keys the tree renders collapsed, so a big blob does not fill the page. */
+  private static readonly LARGE_TOP_LEVEL_KEY_THRESHOLD = 25;
+  /** Above this many characters a leaf value is truncated with the full text behind a title. */
+  private static readonly LARGE_LEAF_VALUE_THRESHOLD = 150;
+
   /** Defensively resolve the raw field value into real data. A JSON string parses; a plain string stays a string. */
   static parse(raw: unknown): unknown {
     if (typeof raw !== 'string') return raw;
@@ -23,26 +27,26 @@ export class StructuredReadOnlyFieldService {
 
   /** Classify an already-parsed value into a row-tree node. */
   static classify(value: unknown): IStructuredNode {
-    if (value === null || value === undefined) return { kind: 'empty' };
+    if (value === null || value === undefined) return { kind: StructuredNodeKind.EMPTY };
     if (Array.isArray(value)) return StructuredReadOnlyFieldService.classifyArray(value);
     if (typeof value === 'object') return StructuredReadOnlyFieldService.classifyObject(value as Record<string, unknown>);
-    return { kind: 'scalar', scalarValue: value };
+    return { kind: StructuredNodeKind.SCALAR, scalarValue: value };
   }
 
   private static classifyObject(value: Record<string, unknown>): IStructuredNode {
     const keys = Object.keys(value);
-    if (keys.length === 0) return { kind: 'empty' };
+    if (keys.length === 0) return { kind: StructuredNodeKind.EMPTY };
     const entries: IStructuredEntry[] = keys.map((key) => ({ key, node: StructuredReadOnlyFieldService.classify(value[key]) }));
-    return { kind: 'object', entries };
+    return { kind: StructuredNodeKind.OBJECT, entries };
   }
 
   private static classifyArray(value: unknown[]): IStructuredNode {
-    if (value.length === 0) return { kind: 'empty' };
+    if (value.length === 0) return { kind: StructuredNodeKind.EMPTY };
     const items = value.map((item) => StructuredReadOnlyFieldService.classify(item));
     const table = StructuredReadOnlyFieldService.buildTable(items);
     return table
-      ? { kind: 'array-table', items, tableColumns: table.columns, tableRows: table.rows }
-      : { kind: 'array', items };
+      ? { kind: StructuredNodeKind.ARRAY_TABLE, items, tableColumns: table.columns, tableRows: table.rows }
+      : { kind: StructuredNodeKind.ARRAY, items };
   }
 
   /**
@@ -51,8 +55,8 @@ export class StructuredReadOnlyFieldService {
    * ordinary indexed rows instead.
    */
   private static buildTable(items: IStructuredNode[]): { columns: string[]; rows: Record<string, IStructuredNode>[] } | null {
-    if (items.length === 0 || !items.every((item) => item.kind === 'object')) return null;
-    const isFlat = items.every((item) => (item.entries ?? []).every((entry) => entry.node.kind === 'scalar' || entry.node.kind === 'empty'));
+    if (items.length === 0 || !items.every((item) => item.kind === StructuredNodeKind.OBJECT)) return null;
+    const isFlat = items.every((item) => (item.entries ?? []).every((entry) => entry.node.kind === StructuredNodeKind.SCALAR || entry.node.kind === StructuredNodeKind.EMPTY));
     if (!isFlat) return null;
 
     const columns: string[] = [];
@@ -65,7 +69,7 @@ export class StructuredReadOnlyFieldService {
     const rows = items.map((item) => {
       const row: Record<string, IStructuredNode> = {};
       columns.forEach((column) => {
-        row[column] = item.entries?.find((entry) => entry.key === column)?.node ?? { kind: 'empty' };
+        row[column] = item.entries?.find((entry) => entry.key === column)?.node ?? { kind: StructuredNodeKind.EMPTY };
       });
       return row;
     });
@@ -75,22 +79,22 @@ export class StructuredReadOnlyFieldService {
 
   /** Top-level key/item count — the "(n keys)" a group label shows. */
   static topLevelCount(node: IStructuredNode): number {
-    if (node.kind === 'object') return node.entries?.length ?? 0;
-    if (node.kind === 'array' || node.kind === 'array-table') return node.items?.length ?? 0;
+    if (node.kind === StructuredNodeKind.OBJECT) return node.entries?.length ?? 0;
+    if (node.kind === StructuredNodeKind.ARRAY || node.kind === StructuredNodeKind.ARRAY_TABLE) return node.items?.length ?? 0;
     return 0;
   }
 
   /** Total scalar leaf count across the whole tree, for the large-payload heuristic. */
   static leafCount(node: IStructuredNode): number {
-    if (node.kind === 'scalar') return 1;
-    if (node.kind === 'object') return (node.entries ?? []).reduce((sum, entry) => sum + StructuredReadOnlyFieldService.leafCount(entry.node), 0);
-    if (node.kind === 'array' || node.kind === 'array-table') return (node.items ?? []).reduce((sum, item) => sum + StructuredReadOnlyFieldService.leafCount(item), 0);
+    if (node.kind === StructuredNodeKind.SCALAR) return 1;
+    if (node.kind === StructuredNodeKind.OBJECT) return (node.entries ?? []).reduce((sum, entry) => sum + StructuredReadOnlyFieldService.leafCount(entry.node), 0);
+    if (node.kind === StructuredNodeKind.ARRAY || node.kind === StructuredNodeKind.ARRAY_TABLE) return (node.items ?? []).reduce((sum, item) => sum + StructuredReadOnlyFieldService.leafCount(item), 0);
     return 0;
   }
 
   static isLargePayload(node: IStructuredNode): boolean {
-    return StructuredReadOnlyFieldService.topLevelCount(node) > LARGE_TOP_LEVEL_KEY_THRESHOLD
-      || StructuredReadOnlyFieldService.leafCount(node) > LARGE_LEAF_VALUE_THRESHOLD;
+    return StructuredReadOnlyFieldService.topLevelCount(node) > StructuredReadOnlyFieldService.LARGE_TOP_LEVEL_KEY_THRESHOLD
+      || StructuredReadOnlyFieldService.leafCount(node) > StructuredReadOnlyFieldService.LARGE_LEAF_VALUE_THRESHOLD;
   }
 
   static isLink(value: unknown): value is string {
@@ -98,17 +102,17 @@ export class StructuredReadOnlyFieldService {
   }
 
   static isImageLink(value: unknown): boolean {
-    return StructuredReadOnlyFieldService.isLink(value) && IMAGE_EXTENSION_PATTERN.test((value as string).trim());
+    return StructuredReadOnlyFieldService.isLink(value) && StructuredReadOnlyFieldService.IMAGE_EXTENSION_PATTERN.test((value as string).trim());
   }
 
   /** Whether `key`, or anything under `node`, matches the (already lower-cased) filter text. */
   static matchesFilter(key: string, node: IStructuredNode, filterLower: string): boolean {
     if (!filterLower) return true;
     if (key.toLowerCase().includes(filterLower)) return true;
-    if (node.kind === 'object') {
+    if (node.kind === StructuredNodeKind.OBJECT) {
       return (node.entries ?? []).some((entry) => StructuredReadOnlyFieldService.matchesFilter(entry.key, entry.node, filterLower));
     }
-    if (node.kind === 'array' || node.kind === 'array-table') {
+    if (node.kind === StructuredNodeKind.ARRAY || node.kind === StructuredNodeKind.ARRAY_TABLE) {
       return (node.items ?? []).some((item, index) => StructuredReadOnlyFieldService.matchesFilter(`[${index}]`, item, filterLower));
     }
     return false;

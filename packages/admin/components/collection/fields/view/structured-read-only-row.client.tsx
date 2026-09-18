@@ -1,3 +1,4 @@
+import { StructuredNodeKind } from '@/components/collection/fields/enums/structured-node-kind.enum';
 import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -47,8 +48,8 @@ export class StructuredReadOnlyRow extends Reactor {
 
   private renderGroupChildren(): ReactNode {
     const { node, depth, defaultCollapsed, isDark, filterLower } = this;
-    if (node.kind === 'array-table') return <StructuredReadOnlyTable node={node} isDark={isDark} />;
-    if (node.kind === 'object') {
+    if (node.kind === StructuredNodeKind.ARRAY_TABLE) return <StructuredReadOnlyTable node={node} isDark={isDark} />;
+    if (node.kind === StructuredNodeKind.OBJECT) {
       return (node.entries ?? []).map((entry) => (
         <StructuredReadOnlyRow key={entry.key} label={entry.key} node={entry.node} depth={depth + 1} defaultCollapsed={defaultCollapsed} isDark={isDark} filterLower={filterLower} />
       ));
@@ -63,7 +64,7 @@ export class StructuredReadOnlyRow extends Reactor {
     const forcedOpen = Boolean(filterLower);
     const expanded = forcedOpen || this.isExpanded;
     const count = StructuredReadOnlyFieldService.topLevelCount(node);
-    const isIndexed = node.kind === 'array' || node.kind === 'array-table';
+    const isIndexed = node.kind === StructuredNodeKind.ARRAY || node.kind === StructuredNodeKind.ARRAY_TABLE;
     const countLabel = `${count} ${isIndexed ? (count === 1 ? 'item' : 'items') : (count === 1 ? 'key' : 'keys')}`;
 
     return (
@@ -86,6 +87,6 @@ export class StructuredReadOnlyRow extends Reactor {
   render(): ReactNode {
     const { label, node, filterLower } = this;
     if (filterLower && !StructuredReadOnlyFieldService.matchesFilter(label, node, filterLower)) return null;
-    return node.kind === 'scalar' || node.kind === 'empty' ? this.renderScalarRow() : this.renderGroupRow();
+    return node.kind === StructuredNodeKind.SCALAR || node.kind === StructuredNodeKind.EMPTY ? this.renderScalarRow() : this.renderGroupRow();
   }
 }
