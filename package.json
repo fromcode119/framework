@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/framework",
-  "version": "0.2.127",
+  "version": "0.2.128",
   "private": true,
   "workspaces": [
     "packages/*"
