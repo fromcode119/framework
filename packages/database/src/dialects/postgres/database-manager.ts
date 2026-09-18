@@ -19,7 +19,7 @@ import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tena
 import { PostgresDeclaredUniqueReconciler } from '@database/dialects/postgres/declared-unique-reconciler';
 import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgres/declared-nullability-reconciler';
 import { PostgresColumnInspector } from '@database/dialects/postgres/column-inspector';
-import { PlatformPool } from '@database/tenant/tenant-scope-store';
+import { PlatformPool } from '@database/tenant/platform-pool';
 import type { IColumnStats } from '@database/interfaces/column-stats.interface';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';

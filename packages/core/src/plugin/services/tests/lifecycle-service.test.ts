@@ -3,7 +3,7 @@ import fs from 'fs';
 
 vi.mock('@core/security/integrity-service', () => ({ IntegrityService: { verifyPluginIntegrity: vi.fn().mockResolvedValue(true) } }));
 vi.mock('@core/security/plugin-signature-service', () => ({ PluginSignatureService: { isEnforced: vi.fn().mockReturnValue(false), verify: vi.fn().mockReturnValue(true) } }));
-vi.mock('@core/management/manifest', () => ({ ManifestValidator: { validate: vi.fn() } }));
+vi.mock('@core/management/manifest-validator', () => ({ ManifestValidator: { validate: vi.fn() } }));
 vi.mock('@core/security/plugin-permissions-service', () => ({ PluginPermissionsService: { ensure: vi.fn() } }));
 vi.mock('uuid', () => ({ v4: vi.fn().mockReturnValue('test-uuid') }));
 vi.mock('@core/database/seeder', () => ({
