@@ -68,7 +68,7 @@ export class ClientLayoutHeader extends AdminComponent {
               so only a degraded state carries colour. */}
           <div className="flex items-center gap-2">
             <div className={`h-1.5 w-1.5 rounded-full ${apiStatus === ApiStatus.ONLINE ? 'bg-emerald-500' : apiStatus === ApiStatus.OFFLINE ? 'bg-rose-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
-            <span className={`text-[11px] font-medium ${apiStatus === ApiStatus.OFFLINE ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'}`}>
+            <span className={`text-[11px] font-medium ${apiStatus === ApiStatus.OFFLINE ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
               {apiStatus === ApiStatus.ONLINE ? 'Online' : apiStatus === ApiStatus.OFFLINE ? 'Offline' : 'Connecting'}
             </span>
           </div>

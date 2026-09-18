@@ -36,7 +36,7 @@ export class BuildChangelog extends AdminComponent {
 
     return (
       <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/60">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-400">
           {this.version ? `What changed in v${this.version}` : 'What changed'}
         </p>
         <ul className="mt-1 space-y-0.5">
@@ -47,7 +47,7 @@ export class BuildChangelog extends AdminComponent {
           ))}
         </ul>
         {remaining > 0 ? (
-          <p className="mt-1 text-[11px] text-slate-400">and {remaining} more</p>
+          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">and {remaining} more</p>
         ) : null}
       </div>
     );
