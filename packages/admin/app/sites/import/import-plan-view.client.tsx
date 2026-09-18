@@ -21,10 +21,11 @@ import { TenantImportIdMode } from '@fromcode119/core/client';
  *
  * Nothing is hidden that has an effect (Rule Zero). Every table with rows keeps its own line, and
  * every dropped or un-re-pointed column is listed in full — those are the irreversible per-column
- * effects and this screen is the only place they appear. The one thing folded is the NAMES of empty
- * tables: an empty table writes nothing, loses nothing and re-numbers nothing, and its count stays
- * on screen unfolded. Groups render even when empty, so "nothing is skipped" is a visible fact
- * rather than an absence the operator has to infer.
+ * effects and this screen is the only place they appear. The empty group's own count is always on
+ * screen, and its table names open by default rather than behind a click: an operator asking "which
+ * 62?" should not have to find the disclosure triangle first, only whether to close it. Groups
+ * render even when empty, so "nothing is skipped" is a visible fact rather than an absence the
+ * operator has to infer.
  */
 export class ImportPlanView extends PureReactor {
   @prop declare plan: Record<string, any>;
@@ -38,6 +39,12 @@ export class ImportPlanView extends PureReactor {
         {names.map((name) => <code key={name}>{name}</code>)}
       </span>
     );
+  }
+
+  /** The row's first cell: its human label, followed by the physical table name muted in `<code>`. */
+  private static rowLabel(table: IImportPlanTable): ReactNode {
+    if (!table.label) return <code>{table.name}</code>;
+    return <>{table.label} <code className="fc-import-plan__table-physical">{table.name}</code></>;
   }
 
   private static lost(table: IImportPlanTable): ReactNode {
@@ -75,6 +82,59 @@ export class ImportPlanView extends PureReactor {
     );
   }
 
+  /**
+   * Written into the archive at EXPORT time — what it holds, not what THIS import decides. Always
+   * folded, whatever the count: unlike the import warnings above, these carry no effect the operator
+   * needs to weigh before deciding, so there is no threshold at which showing them unfolded earns its
+   * place. Rendered verbatim — this screen does not parse or shorten a note it did not write.
+   */
+  private static exportWarnings(list: string[]): ReactNode {
+    if (!list.length) return null;
+    return (
+      <details className="fc-import-plan__warnings">
+        <summary>From the export ({list.length})</summary>
+        <p className="fc-import-plan__rule">
+          Written into the archive when it was exported. They describe what the archive holds, not what this import decides; everything this import will do is stated above.
+        </p>
+        <ul className="fc-sites__warnings">{list.map((w) => <li key={w}>{w}</li>)}</ul>
+      </details>
+    );
+  }
+
+  /** The empty group's table names, grouped by owning plugin (`platform` for a framework table or an unmatched one). */
+  private static emptyByPlugin(tables: IImportPlanTable[]): ReactNode {
+    const order: string[] = [];
+    const groups = new Map<string, IImportPlanTable[]>();
+    for (const table of tables) {
+      const key = table.pluginSlug ?? 'platform';
+      if (!groups.has(key)) {
+        groups.set(key, []);
+        order.push(key);
+      }
+      groups.get(key)!.push(table);
+    }
+    order.sort((a, b) => {
+      if (a === 'platform') return b === 'platform' ? 0 : 1;
+      if (b === 'platform') return -1;
+      return a.localeCompare(b);
+    });
+    return (
+      <span className="fc-import-plan__cols">
+        {order.map((key, groupIndex) => (
+          <span key={key}>
+            <strong>{key}</strong> — {groups.get(key)!.map((table, i) => (
+              <span key={table.name}>
+                {table.label ? table.label : <code>{table.name}</code>}
+                {i < groups.get(key)!.length - 1 ? ', ' : ''}
+              </span>
+            ))}
+            {groupIndex < order.length - 1 ? ' · ' : ''}
+          </span>
+        ))}
+      </span>
+    );
+  }
+
   private static group(title: string, count: number, rule: string, body: ReactNode): ReactNode {
     return (
       <section className="fc-import-plan__group">
@@ -102,6 +162,34 @@ export class ImportPlanView extends PureReactor {
     const kept = withRows.filter((t) => t.mode === String(TenantImportIdMode.PRESERVE.value)).sort(byRows);
     const skippedRows = skipped.reduce((sum, t) => sum + t.rows, 0);
 
+    // "What happens" — the three questions an operator has before deciding, answered from data the
+    // groups below already carry. Never a second source of truth for a number the groups also show;
+    // this just adds up what is already there.
+    const rowsArriving = withRows.reduce((sum, t) => sum + t.rows, 0);
+    const files = plan.files ?? null;
+    const users = plan.users ?? null;
+    const arrives = `${rowsArriving.toLocaleString()} row(s) across ${withRows.length.toLocaleString()} table(s)`
+      + (files ? `, ${files.count.toLocaleString()} file(s)` : '')
+      + (users ? `, and ${users.total.toLocaleString()} people (${users.existing.toLocaleString()} already have an account here, ${users.toCreate.toLocaleString()} will be created)` : '')
+      + '.';
+
+    const droppedTables = withRows.filter((t) => t.droppedColumns.length > 0);
+    const droppedColumnsTotal = droppedTables.reduce((sum, t) => sum + t.droppedColumns.length, 0);
+    const leftBehindParts: string[] = [];
+    if (skippedRows > 0) leftBehindParts.push(`${skippedRows.toLocaleString()} row(s) across ${skipped.length.toLocaleString()} table(s) whose plugin is not installed or enabled here`);
+    if (droppedTables.length > 0) leftBehindParts.push(`${droppedColumnsTotal.toLocaleString()} column(s) across ${droppedTables.length.toLocaleString()} table(s) this platform's schema does not have`);
+    const leftBehind = leftBehindParts.length ? `${leftBehindParts.join('; ')}. See the groups below for the detail.` : 'nothing.';
+
+    let filesClause = '';
+    if (files && files.count > 0) {
+      if (files.colliding === files.count) {
+        filesClause = ' Every file in the archive is already here by name. If this archive was imported before, these will be a second copy of each.';
+      } else if (files.colliding > 0) {
+        filesClause = ` ${files.colliding.toLocaleString()} of ${files.count.toLocaleString()} file(s) are already here by name and will be saved alongside them under a suffixed name.`;
+      }
+    }
+    const alreadyHere = `Nothing is replaced. ${remapped.length.toLocaleString()} table(s) get re-numbered ids.${filesClause}`;
+
     return (
       <div className="fc-import-plan">
         <p className="fc-sites__text">
@@ -113,6 +201,13 @@ export class ImportPlanView extends PureReactor {
         {(plan.blockers ?? []).length ? (
           <ul className="fc-sites__blockers">{plan.blockers.map((b: string) => <li key={b}>{b}</li>)}</ul>
         ) : null}
+
+        <div className="fc-import-plan__summary">
+          <span className="fc-site-form__label">What happens</span>
+          <p className="fc-sites__text"><strong>Arrives</strong> — {arrives}</p>
+          <p className="fc-sites__text"><strong>Left behind</strong> — {leftBehind}</p>
+          <p className="fc-sites__text"><strong>Already here</strong> — {alreadyHere}</p>
+        </div>
 
         <div className="fc-import-plan__inventory">
           <div>
@@ -145,7 +240,7 @@ export class ImportPlanView extends PureReactor {
               <tbody>
                 {skipped.map((table) => (
                   <tr key={table.name}>
-                    <td data-label="Table"><code>{table.name}</code></td>
+                    <td data-label="Table">{ImportPlanView.rowLabel(table)}</td>
                     <td data-label="Rows" className="fc-import-plan__num">{table.rows.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -161,7 +256,7 @@ export class ImportPlanView extends PureReactor {
               <tbody>
                 {remapped.map((table) => (
                   <tr key={table.name}>
-                    <td data-label="Table"><code>{table.name}</code></td>
+                    <td data-label="Table">{ImportPlanView.rowLabel(table)}</td>
                     <td data-label="Rows" className="fc-import-plan__num">{table.rows.toLocaleString()}</td>
                     <td data-label="Lowest id" className="fc-import-plan__num">{table.minId?.toLocaleString()}</td>
                     <td data-label="Handed out here" className="fc-import-plan__num">{table.taken?.toLocaleString()}</td>
@@ -181,7 +276,7 @@ export class ImportPlanView extends PureReactor {
               <tbody>
                 {kept.map((table) => (
                   <tr key={table.name}>
-                    <td data-label="Table"><code>{table.name}</code></td>
+                    <td data-label="Table">{ImportPlanView.rowLabel(table)}</td>
                     <td data-label="Rows" className="fc-import-plan__num">{table.rows.toLocaleString()}</td>
                     <td data-label="Why">{table.basis === 'naturalKey' ? 'natural key' : 'all ids above'}</td>
                     <td data-label="Handed out here" className="fc-import-plan__num">{table.taken === null ? '' : table.taken.toLocaleString()}</td>
@@ -194,17 +289,16 @@ export class ImportPlanView extends PureReactor {
 
           {ImportPlanView.group(
             'Empty', empty.length,
-            'No rows in the archive, so nothing is written, lost or re-numbered for these.',
-            <details className="fc-import-plan__empty">
-              <summary>Table names</summary>
-              <span className="fc-import-plan__cols">
-                {empty.map((table) => <code key={table.name}>{table.name}</code>)}
-              </span>
+            `${empty.length.toLocaleString()} table(s) in the archive carry no rows, so nothing is written, lost or re-numbered for them.`,
+            <details className="fc-import-plan__empty" open>
+              <summary>Which tables</summary>
+              {ImportPlanView.emptyByPlugin(empty)}
             </details>,
           )}
         </div>
 
         {ImportPlanView.warnings(plan.warnings ?? [])}
+        {ImportPlanView.exportWarnings(plan.exportWarnings ?? [])}
       </div>
     );
   }

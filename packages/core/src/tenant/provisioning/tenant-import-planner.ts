@@ -2,6 +2,7 @@ import { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-impor
 import fs from 'fs';
 import path from 'path';
 import type { IDatabaseManager } from '@fromcode119/database';
+import { PhysicalTableNameUtils } from '@fromcode119/database';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
@@ -35,7 +36,11 @@ export class TenantImportPlanner {
 
   async plan(reader: TenantArchiveReader, identity: TenantIdentity): Promise<TenantImportPlan> {
     const blockers: string[] = [];
-    const warnings: string[] = [...reader.manifest.warnings.map((w) => `Export warning: ${w}`)];
+    const warnings: string[] = [];
+    // Written into the archive when it was exported — what it holds, not what THIS import decides.
+    // Kept apart from `warnings` (below) rather than merged in with an `Export warning:` prefix, so an
+    // operator reading the decisions this import makes never has to sort a live one from a stale note.
+    const exportWarnings: string[] = [...reader.manifest.warnings];
 
     try {
       await this.registry.assertAvailable(identity);
@@ -55,6 +60,11 @@ export class TenantImportPlanner {
         tables.push({
           name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.SKIP.value), basis: 'noTable',
           minId: null, taken: null, opaqueJsonColumns: [], repointedReferences: [], droppedColumns: [],
+          // No destination descriptor exists for a skipped table, so there is no collection to ask —
+          // but the physical name itself (`fcp_<slug>_...`) still says which plugin would have owned
+          // it, which is exactly what "install and enable the plugin that owns it" (below) needs said.
+          pluginSlug: PhysicalTableNameUtils.parse(archived.name)?.pluginSlug ?? null,
+          label: null,
         });
         if (archived.rows > 0) {
           warnings.push(
@@ -100,7 +110,7 @@ export class TenantImportPlanner {
     const files = this.planFiles(reader);
     if (files.colliding > 0) warnings.push(`${files.colliding} file name(s) already exist in the uploads directory and will be stored under a suffixed name.`);
 
-    return new TenantImportPlan(reader.manifest, tables, plugins, theme, users, files, blockers, warnings);
+    return new TenantImportPlan(reader.manifest, tables, plugins, theme, users, files, blockers, warnings, exportWarnings);
   }
 
   private async planTable(
@@ -119,6 +129,7 @@ export class TenantImportPlanner {
       return {
         name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.PRESERVE.value), basis: 'naturalKey',
         minId: null, taken: null, opaqueJsonColumns: [], repointedReferences: [], droppedColumns,
+        pluginSlug: destination.pluginSlug, label: destination.label,
       };
     }
     const decision = await TenantImportPlanner.decideIds(this.db, destination, reader);
@@ -132,6 +143,8 @@ export class TenantImportPlanner {
       opaqueJsonColumns: decision.mode === TenantImportIdMode.REMAP ? opaqueJsonColumns : [],
       repointedReferences: decision.mode === TenantImportIdMode.REMAP ? repointedReferences : [],
       droppedColumns,
+      pluginSlug: destination.pluginSlug,
+      label: destination.label,
     };
   }
 

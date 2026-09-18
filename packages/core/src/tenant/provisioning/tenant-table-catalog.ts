@@ -1,6 +1,7 @@
 import { TenantColumnSource } from '@core/tenant/provisioning/enums/tenant-column-source.enum';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { NamingStrategy, PhysicalTableNameUtils, TableResolver, TenantColumn } from '@fromcode119/database';
+import { CollectionLabelUtils } from '@core/collections/collection-label-utils';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { INestedFieldReference } from '@core/tenant/provisioning/interfaces/nested-field-reference.interface';
@@ -81,14 +82,34 @@ export class TenantTableCatalog {
       this.db.introspection.requiredColumns(tables, TenantTableCatalog.ALWAYS_SUPPLIED),
     ]);
     const schemaReferences = this.schemaReferences(wanted, columns);
+    const owners = this.owners();
 
     const descriptors = tables.map((table) => {
       const types = columns.get(table) ?? {};
       const references = [...(foreignKeys.get(table) ?? []), ...(schemaReferences.get(table) ?? [])]
         .filter((ref) => Object.prototype.hasOwnProperty.call(types, ref.column));
-      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set());
+      const owner = owners.get(table);
+      // No collection matched this table — either it is framework-owned (`_system_*`, no plugin at
+      // all) or this catalog was built with no collections (the CLI import path runs no plugin host).
+      // `PhysicalTableNameUtils.parse` still recovers the owning plugin from the `fcp_<slug>_...` name
+      // itself, so a SKIP/empty table on that path is not left looking ownerless when it has an owner.
+      const pluginSlug = owner?.pluginSlug ?? PhysicalTableNameUtils.parse(table)?.pluginSlug ?? null;
+      const label = owner?.label ?? null;
+      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set(), pluginSlug, label);
     });
     return TenantTableCatalog.inDependencyOrder(descriptors);
+  }
+
+  /** Physical table name → owning plugin + human label, from the registered collections (same derivation as `schemaReferences`). */
+  private owners(): Map<string, { pluginSlug: string; label: string }> {
+    const out = new Map<string, { pluginSlug: string; label: string }>();
+    for (const { collection, pluginSlug } of this.collections) {
+      const table = String(collection.tableName || collection.slug || '').trim();
+      if (!table) continue;
+      const shortSlug = String(collection.shortSlug || collection.slug || '').toLowerCase();
+      out.set(table, { pluginSlug, label: CollectionLabelUtils.labelFor(collection, shortSlug) });
+    }
+    return out;
   }
 
   /** table → references, mapped from the FOREIGN KEYs the driver reports. */

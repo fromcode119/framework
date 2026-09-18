@@ -1,6 +1,7 @@
 import { FieldPosition } from '@core/enums/field-position.enum';
 import { NamingStrategy } from '@fromcode119/database/naming-strategy';
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
+import { CollectionLabelUtils } from '@core/collections/collection-label-utils';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { ICollectionInput } from '@core/collections/interfaces/collection-input.interface';
@@ -61,7 +62,7 @@ export class PluginEntityRegistrationService {
         shortSlug,
         unprefixedSlug: inputSlug,
         pluginSlug,
-        displayName: collection.displayName || shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1),
+        displayName: CollectionLabelUtils.labelFor(collection, shortSlug),
       },
     };
   }

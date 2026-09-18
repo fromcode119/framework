@@ -43,6 +43,10 @@ export class TenantImportPlan {
       repointedReferences: Array<{ column: string; path: string[]; targetTable: string }>;
       /** Archive columns this platform's table does not have; their values are dropped. */
       droppedColumns: string[];
+      /** The plugin that owns this table on THIS platform, `null` for a framework table or an unmatched one. */
+      pluginSlug: string | null;
+      /** The collection's human label, `null` when none was found — the operator then sees the physical name alone. */
+      label: string | null;
     }>,
     readonly plugins: Array<{ slug: string; archiveVersion: string; installedVersion: string | null; enabled: boolean }>,
     readonly theme: { slug: string; archiveVersion: string; installedVersion: string | null } | null,
@@ -50,6 +54,12 @@ export class TenantImportPlan {
     readonly files: { count: number; bytes: number; colliding: number },
     readonly blockers: string[],
     readonly warnings: string[],
+    /**
+     * Written into the archive at EXPORT time, describing what it holds — never what THIS import
+     * decides. Kept separate from `warnings` (which are decisions this import makes) so the operator
+     * is never asked to weigh a stale export-time note against a live one in the same list.
+     */
+    readonly exportWarnings: string[] = [],
   ) {}
 
   get canExecute(): boolean {
@@ -70,6 +80,7 @@ export class TenantImportPlan {
       files: this.files,
       blockers: this.blockers,
       warnings: this.warnings,
+      exportWarnings: this.exportWarnings,
       canExecute: this.canExecute,
     };
   }
