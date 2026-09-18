@@ -13,9 +13,17 @@ function fakeRegistry(): TenantRegistryService {
   return { assertAvailable: vi.fn(async () => undefined) } as unknown as TenantRegistryService;
 }
 
-function fakeDb(): IDatabaseManager {
+/**
+ * `pluginSlugs` backs `TenantInstalledPluginSlugs.read` — the same `_system_plugins` table the
+ * executor's rowFilter reads, never the plugin host's in-memory loaded set.
+ */
+function fakeDb(pluginSlugs: string[] = []): IDatabaseManager {
   return {
     findOne: vi.fn(async () => null),
+    queryRaw: vi.fn(async (sql: string) => {
+      if (sql.includes(`FROM "${SystemConstants.TABLE.PLUGINS}"`)) return pluginSlugs.map((slug) => ({ slug }));
+      return [];
+    }),
   } as unknown as IDatabaseManager;
 }
 
@@ -78,20 +86,23 @@ describe('TenantImportPlanner.plan — pluginSlug and label pass through onto pl
     expect(plan.tables[0].label).toBeNull();
   });
 
-  it('longest-prefix-matches a multi-token plugin slug against the archive\'s own plugins, instead of truncating at the first underscore', async () => {
+  it('longest-prefix-matches a multi-token, HYPHENATED plugin slug against the archive\'s own plugins, instead of truncating at the first underscore', async () => {
     // "alpha" is ALSO a real, single-token slug here — the naive `PhysicalTableNameUtils.parse`
-    // split would answer it for "fcp_alpha_beta_widgets" too. Only a real slug list lets the
-    // longer, correct match ("alpha_beta") win.
+    // split would answer it for "fcp_alpha_beta_widgets" too. Real plugin slugs are hyphenated
+    // (`alpha-beta`), while the physical table name is always snake-cased
+    // (`NamingStrategy.toSnakeIdentifier`) — only comparing the SNAKE form of each known slug lets
+    // the longer, correct match ("alpha-beta") win, and the resolver must hand back the slug in its
+    // original (hyphenated) spelling, not the snake form.
     const manifest = manifestWith(
       [{ name: 'fcp_alpha_beta_widgets', rows: 5, columns: ['id'], hasSerialId: true }],
       [],
-      [{ slug: 'alpha', version: '1.0.0' }, { slug: 'alpha_beta', version: '1.0.0' }],
+      [{ slug: 'alpha', version: '1.0.0' }, { slug: 'alpha-beta', version: '1.0.0' }],
     );
     const identity = TenantIdentity.from({ id: 'alpha-co', slug: 'alpha-co', primaryHost: 'alpha-co.test', kind: 'site' });
     const plan = await new TenantImportPlanner(fakeDb(), fakeRegistry(), [], { plugins: new Map(), themes: new Map() }, '/tmp/fc-planner-test-uploads').plan(fakeReader(manifest), identity);
 
     expect(plan.tables).toHaveLength(1);
-    expect(plan.tables[0].pluginSlug).toBe('alpha_beta');
+    expect(plan.tables[0].pluginSlug).toBe('alpha-beta');
   });
 
   it('answers null, never a guess, when no real plugin slug is a matching prefix', async () => {
@@ -130,8 +141,10 @@ describe('TenantImportPlanner.plan — runtime-only exclusions counted at plan t
       [SystemConstants.TABLE.PLUGIN_SETTINGS]: [{ id: 1, plugin_slug: 'alpha', value: 'x' }, { id: 2, plugin_slug: 'beta', value: 'y' }],
     });
     const identity = TenantIdentity.from({ id: 'alpha-co', slug: 'alpha-co', primaryHost: 'alpha-co.test', kind: 'site' });
-    const installed = { plugins: new Map([['alpha', '1.0.0']]), themes: new Map() };
-    const plan = await new TenantImportPlanner(fakeDb(), fakeRegistry(), [metaTable, pluginSettingsTable], installed, '/tmp/fc-planner-test-uploads').plan(reader, identity);
+    // "alpha" is installed per `_system_plugins` (the table the executor's rowFilter itself reads);
+    // `installed.plugins` is left EMPTY on purpose, to prove the exclusion count no longer reads it.
+    const installed = { plugins: new Map(), themes: new Map() };
+    const plan = await new TenantImportPlanner(fakeDb(['alpha']), fakeRegistry(), [metaTable, pluginSettingsTable], installed, '/tmp/fc-planner-test-uploads').plan(reader, identity);
 
     expect(plan.metaRowsExcluded).toBe(1);
     expect(plan.pluginSettingsRowsExcluded).toBe(1);

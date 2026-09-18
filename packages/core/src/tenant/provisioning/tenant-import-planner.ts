@@ -9,6 +9,7 @@ import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
 import { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
+import { TenantInstalledPluginSlugs } from '@core/tenant/provisioning/tenant-installed-plugin-slugs';
 import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-owning-plugin-resolver';
 import { TenantRegistryService } from '@core/tenant/provisioning/tenant-registry-service';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
@@ -52,7 +53,7 @@ export class TenantImportPlanner {
 
     // The archive's own plugins are the REAL slugs to check a skipped table's physical name
     // against — `PhysicalTableNameUtils.parse` splits at the first underscore, which is wrong for a
-    // multi-token slug (`logistics_econt` truncates to `logistics`). With no plugins named at all
+    // multi-token slug (`alpha-beta` truncates to `alpha`). With no plugins named at all
     // (an archive written before that field existed) there is nothing real to check against, so the
     // naive split remains the best available guess rather than nothing.
     const knownPluginSlugs = reader.manifest.plugins.map((plugin) => plugin.slug);
@@ -129,7 +130,12 @@ export class TenantImportPlanner {
     const metaRowsExcluded = await TenantImportPlanner.countExcludedRows(
       reader, tables, SystemConstants.TABLE.META, (row) => platformKeys.has(String(row.key ?? '')),
     );
-    const installedPluginSlugs = new Set(this.installed.plugins.keys());
+    // The executor's own rowFilter checks `_system_plugins` directly (`TenantInstalledPluginSlugs`),
+    // never the plugin host's in-memory loaded set — a plugin whose row exists but failed to load
+    // (or was installed by another process since this one booted) is still "installed" for that
+    // filter, so the preview must read the same table or it could count rows the executor would
+    // actually keep.
+    const installedPluginSlugs = await TenantInstalledPluginSlugs.read(this.db);
     const pluginSettingsRowsExcluded = await TenantImportPlanner.countExcludedRows(
       reader, tables, SystemConstants.TABLE.PLUGIN_SETTINGS, (row) => !installedPluginSlugs.has(String(row.plugin_slug ?? '')),
     );

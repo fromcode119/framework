@@ -15,6 +15,7 @@ import { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
 import { TenantImportPlanner } from '@core/tenant/provisioning/tenant-import-planner';
 import { TenantImportResult } from '@core/tenant/provisioning/tenant-import-result';
 import { TenantImportUsers } from '@core/tenant/provisioning/tenant-import-users';
+import { TenantInstalledPluginSlugs } from '@core/tenant/provisioning/tenant-installed-plugin-slugs';
 import { TenantRegistryService } from '@core/tenant/provisioning/tenant-registry-service';
 import { TenantRowInserter } from '@core/tenant/provisioning/tenant-row-inserter';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
@@ -150,8 +151,7 @@ export class TenantImportExecutor {
   }
 
   private async installedPluginSlugs(): Promise<Set<string>> {
-    const rows = await this.db.queryRaw(`SELECT slug FROM ${TenantSql.identifier(SystemConstants.TABLE.PLUGINS)}`);
-    return new Set(rows.map((row) => String(row.slug)));
+    return TenantInstalledPluginSlugs.read(this.db);
   }
 
   private async grantMemberships(reader: TenantArchiveReader, tenant: TenantRecord, remap: TenantIdRemap): Promise<number> {

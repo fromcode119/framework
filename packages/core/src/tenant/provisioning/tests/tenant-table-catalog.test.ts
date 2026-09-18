@@ -178,14 +178,16 @@ describe('TenantTableCatalog.describe — owning plugin and label', () => {
     expect(descriptor.label).toBeNull();
   });
 
-  it('longest-prefix-matches a multi-token plugin slug against the known slugs passed in, instead of truncating at the first underscore', async () => {
+  it('longest-prefix-matches a multi-token, HYPHENATED plugin slug against the known slugs passed in, instead of truncating at the first underscore', async () => {
     // "alpha" is ALSO a real, single-token slug here — the naive `PhysicalTableNameUtils.parse`
-    // split would answer it for "fcp_alpha_beta_widgets" too. Only the real slug list lets the
-    // longer, correct match ("alpha_beta") win.
+    // split would answer it for "fcp_alpha_beta_widgets" too. Real plugin slugs are hyphenated
+    // (`alpha-beta`), while the physical table name is always snake-cased — only comparing the
+    // SNAKE form of each known slug lets the longer, correct match ("alpha-beta") win, and the
+    // resolver must hand back the slug in its original (hyphenated) spelling.
     const db = fakeDb({ fcp_alpha_beta_widgets: { id: 'integer', tenant_id: 'text' } });
-    const catalog = new TenantTableCatalog(db, [], ['alpha', 'alpha_beta']);
+    const catalog = new TenantTableCatalog(db, [], ['alpha', 'alpha-beta']);
     const [descriptor] = await catalog.describe(['fcp_alpha_beta_widgets']);
-    expect(descriptor.pluginSlug).toBe('alpha_beta');
+    expect(descriptor.pluginSlug).toBe('alpha-beta');
   });
 
   it('answers null, never a guess, when a known slug list is given but none of it matches', async () => {

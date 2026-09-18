@@ -95,7 +95,7 @@ export class ImportPlanView extends PureReactor {
         <p className="fc-sites__text">
           Archive of <strong>{manifest.tenant?.slug}</strong> ({manifest.source === 'single-tenant' ? 'a single-tenant deployment' : 'a site'}), exported {manifest.exportedAt} from framework {manifest.frameworkVersion || '?'}.
           {' '}{plan.users?.total ?? 0} people: {plan.users?.existing ?? 0} already have accounts here, {plan.users?.toCreate ?? 0} will be created.
-          {' '}{plan.files?.count ?? 0} files{plan.files?.colliding ? ` (${plan.files.colliding} renamed)` : ''}.
+          {' '}{plan.files.count} files{plan.files.colliding ? ` (${plan.files.colliding} renamed)` : ''}.
         </p>
 
         {(plan.blockers ?? []).length ? (

@@ -19,7 +19,13 @@ export class ImportPlanSummary extends PureReactor {
 
   render(): ReactNode {
     const { plan, arriving, skipped, remapped } = this;
-    const rowsArriving = arriving.reduce((sum, t) => sum + t.rows, 0);
+    const metaRowsExcluded: number = plan.metaRowsExcluded ?? 0;
+    const pluginSettingsRowsExcluded: number = plan.pluginSettingsRowsExcluded ?? 0;
+    // `arriving` already excludes SKIPPED tables, but a non-skipped table's own `rows` count still
+    // includes the platform-key / uninstalled-plugin-settings rows the executor's rowFilter drops at
+    // import time (`_system_meta`, `_system_plugin_settings`) — those are counted in "Left behind"
+    // below, so they must not also be counted here or the same rows appear in both totals.
+    const rowsArriving = arriving.reduce((sum, t) => sum + t.rows, 0) - metaRowsExcluded - pluginSettingsRowsExcluded;
     const skippedRows = skipped.reduce((sum, t) => sum + t.rows, 0);
     const arrives = `${rowsArriving.toLocaleString()} row(s) across ${arriving.length.toLocaleString()} table(s).`;
 
@@ -27,8 +33,6 @@ export class ImportPlanSummary extends PureReactor {
     const droppedColumnsTotal = droppedTables.reduce((sum, t) => sum + t.droppedColumns.length, 0);
     const opaqueJsonTables = remapped.filter((t) => t.opaqueJsonColumns.length > 0);
     const opaqueJsonColumnsTotal = opaqueJsonTables.reduce((sum, t) => sum + t.opaqueJsonColumns.length, 0);
-    const metaRowsExcluded: number = plan.metaRowsExcluded ?? 0;
-    const pluginSettingsRowsExcluded: number = plan.pluginSettingsRowsExcluded ?? 0;
 
     const leftBehindParts: string[] = [];
     if (skippedRows > 0) leftBehindParts.push(`${skippedRows.toLocaleString()} row(s) across ${skipped.length.toLocaleString()} table(s) whose plugin is not installed or enabled here`);

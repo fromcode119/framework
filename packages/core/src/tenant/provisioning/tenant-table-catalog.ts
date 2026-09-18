@@ -104,7 +104,7 @@ export class TenantTableCatalog {
       // all) or this catalog was built with no collections (the CLI import path runs no plugin host).
       // Longest-prefix match against the REAL slugs this catalog knows recovers the owner without
       // `PhysicalTableNameUtils.parse`'s naive first-underscore split, which is wrong for a
-      // multi-token slug (`logistics_econt` truncates to `logistics`). With no real slugs known at
+      // multi-token slug (`alpha-beta` truncates to `alpha`). With no real slugs known at
       // all (no collections AND none passed in), that naive split remains the best available guess.
       const pluginSlug = owner?.pluginSlug
         ?? (this.knownPluginSlugs.length > 0
