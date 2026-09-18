@@ -3,9 +3,9 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
 import archiver from 'archiver';
-import * as esbuild from 'esbuild';
 import { CliUtils } from '@cli/utils';
 import { ThemeSeedCommandService } from '@cli/services/theme-seed-command-service';
+import { ThemeBuildCommandService } from '@cli/services/theme-build-command-service';
 import { ThemeScaffoldFiles } from '@cli/commands/theme-scaffold-files';
 
 export class ThemeCommands {
@@ -125,112 +125,12 @@ export class ThemeCommands {
     theme
       .command('build <slug>')
       .description('Build theme assets')
-      .action(async (slug) => {
-        try {
-          const themesDir = path.join(CliUtils.getProjectRoot(), 'themes');
-          const themeDir = path.join(themesDir, slug);
-          if (!fs.existsSync(themeDir)) {
-            console.error(chalk.red(`Theme directory not found: ${themeDir}`));
-            return;
-          }
-
-          const uiDir = path.join(themeDir, 'ui');
-          const entryFile = path.join(uiDir, 'index.ts');
-          const outFile = path.join(uiDir, 'bundle.js');
-
-          if (!fs.existsSync(entryFile)) {
-            console.error(chalk.red(`Entry file not found: ${entryFile}`));
-            return;
-          }
-
-          console.log(chalk.blue(`\nBuilding theme: ${chalk.bold(slug)}...`));
-
-          await CliUtils.compileStyles(uiDir);
-
-          await esbuild.build({
-            entryPoints: [entryFile],
-            bundle: true,
-            minify: true,
-            sourcemap: true,
-            format: 'esm',
-            platform: 'browser',
-            target: ['es2020'],
-            outfile: outFile,
-            loader: {
-              '.css': 'css',
-              '.svg': 'dataurl',
-              '.png': 'dataurl'
-            },
-            external: ['react', 'react-dom', '@fromcode119/react', 'lucide-react']
-          });
-
-          console.log(chalk.green('Theme build completed successfully!'));
-
-        } catch (error) {
-          console.error(chalk.red('Error building theme:'), error);
-        }
-      });
+      .action(async (slug) => { await ThemeBuildCommandService.build(slug); });
 
     theme
       .command('dev <slug>')
-      .description('Run theme development mode with watch/rebuild')
-      .action(async (slug) => {
-        try {
-          const themesDir = path.join(CliUtils.getProjectRoot(), 'themes');
-          const themeDir = path.join(themesDir, slug);
-          if (!fs.existsSync(themeDir)) {
-            console.error(chalk.red(`Theme directory not found: ${themeDir}`));
-            return;
-          }
-
-          const uiDir = path.join(themeDir, 'ui');
-          const entryFile = path.join(uiDir, 'index.ts');
-          const outFile = path.join(uiDir, 'bundle.js');
-
-          if (!fs.existsSync(entryFile)) {
-            console.error(chalk.red(`Entry file not found: ${entryFile}`));
-            return;
-          }
-
-          console.log(chalk.blue(`\n🚀 Starting Theme Development Mode: ${chalk.bold(slug)}`));
-          console.log(chalk.gray('Watching for changes in:'), uiDir);
-
-          const ctx = await esbuild.context({
-            entryPoints: [entryFile],
-            bundle: true,
-            minify: false,
-            sourcemap: 'inline',
-            format: 'esm',
-            platform: 'browser',
-            target: ['es2020'],
-            outfile: outFile,
-            loader: {
-              '.css': 'css',
-              '.svg': 'dataurl',
-              '.png': 'dataurl'
-            },
-            external: ['react', 'react-dom'],
-            plugins: [{
-              name: 'rebuild-logger',
-              setup(build) {
-                build.onEnd(result => {
-                  if (result.errors.length > 0) {
-                    console.log(chalk.red('❌ Build failed with errors'));
-                  } else {
-                    console.log(chalk.green(`✓ Rebuilt theme ${slug} at ${new Date().toLocaleTimeString()}`));
-                  }
-                });
-              }
-            }]
-          });
-
-          await ctx.watch();
-          console.log(chalk.gray('Keep this terminal open, or press Ctrl+C to stop.'));
-
-        } catch (error) {
-          console.error(chalk.red('Error in theme dev mode:'), error);
-        }
-      });
+      .description('Run theme development mode: rebuild on every change under src/')
+      .action(async (slug) => { await ThemeBuildCommandService.dev(slug); });
 
     theme
       .command('pack <slug>')
