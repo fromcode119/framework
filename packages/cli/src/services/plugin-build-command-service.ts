@@ -141,11 +141,32 @@ export class PluginBuildCommandService {
     console.log(chalk.gray('Watching for changes in:'), path.join(pluginDir, 'src'));
 
     let rebuildTimer: NodeJS.Timeout | null = null;
+    let settleTimer: NodeJS.Timeout | null = null;
     let building = false;
     let rebuildQueued = false;
-    // Set the instant a build finishes; `manifest.json`/backend-entry events up to
-    // `REBUILD_SETTLE_MS` after that are that build's own echo, not an operator edit.
+    // Set the instant a build finishes; `manifest.json` events up to `REBUILD_SETTLE_MS` after that
+    // are, MOST of the time, the build's own stamper echo — but the window alone cannot tell an echo
+    // apart from a genuine operator edit that happens to land inside it, so `lastStampedManifest`
+    // (below) makes that call on content, not timing. The backend entry (`index.ts`) is never written
+    // by a build — only `index.js` is — so it needs no such window; it watches like any other source
+    // file below.
     let settledAt = 0;
+    // The exact bytes the integrity-stamper just wrote, captured right after each build. An incoming
+    // manifest event that still matches this is the stamper's own echo — real content, but nothing an
+    // operator changed — and is dropped for good, the same as before. One that differs is a genuine
+    // edit: still deferred while suppressed, but via `pendingManifestEdit` rather than discarded, so it
+    // causes a rebuild once the window closes instead of vanishing.
+    let lastStampedManifest: string | null = null;
+    let pendingManifestEdit = false;
+    const manifestPath = path.join(pluginDir, 'manifest.json');
+
+    const readManifest = (): string | null => {
+      try {
+        return fs.readFileSync(manifestPath, 'utf8');
+      } catch {
+        return null;
+      }
+    };
 
     const rebuild = async (): Promise<void> => {
       if (building) {
@@ -164,8 +185,16 @@ export class PluginBuildCommandService {
       } catch (error) {
         console.log(chalk.red(`✗ Build failed: ${error}`));
       } finally {
+        lastStampedManifest = readManifest();
         building = false;
         settledAt = Date.now() + PluginBuildCommandService.REBUILD_SETTLE_MS;
+        if (settleTimer) clearTimeout(settleTimer);
+        settleTimer = setTimeout(() => {
+          if (pendingManifestEdit) {
+            pendingManifestEdit = false;
+            scheduleRebuild();
+          }
+        }, PluginBuildCommandService.REBUILD_SETTLE_MS);
         if (rebuildQueued) {
           rebuildQueued = false;
           await rebuild();
@@ -183,10 +212,18 @@ export class PluginBuildCommandService {
       scheduleRebuild();
     };
 
-    // A build in flight (or just finished) is the only thing that touches `manifest.json`/the
-    // backend entry from OUR side; anything the operator types arrives outside that window.
-    const onOwnedFileEvent = (): void => {
-      if (building || Date.now() < settledAt) return;
+    // A build in flight (or just finished) is the most likely thing touching `manifest.json` from OUR
+    // side (the integrity-stamper step) — but an operator edit can still land in that same window, so
+    // content decides which this is, not just the window. An event whose content still matches what
+    // the last build stamped is that build's own echo and is dropped; anything else is real and is
+    // deferred (never discarded) until the window closes.
+    const onManifestEvent = (): void => {
+      const current = readManifest();
+      if (current !== null && current === lastStampedManifest) return;
+      if (building || Date.now() < settledAt) {
+        pendingManifestEdit = true;
+        return;
+      }
       scheduleRebuild();
     };
 
@@ -195,14 +232,30 @@ export class PluginBuildCommandService {
     const watchers: fs.FSWatcher[] = [];
     const srcDir = path.join(pluginDir, 'src');
     if (fs.existsSync(srcDir)) watchers.push(fs.watch(srcDir, { recursive: true }, onSourceEvent));
-    const manifestPath = path.join(pluginDir, 'manifest.json');
-    if (fs.existsSync(manifestPath)) watchers.push(fs.watch(manifestPath, onOwnedFileEvent));
+
+    // `manifest.json` and the backend entry are watched by NAME on the plugin's root directory,
+    // rather than each getting its own `fs.watch` on the file itself. A single-file watch tracks the
+    // inode, not the name — many editors save by writing a temp file and renaming it over the
+    // original (atomic rename-replace), which swaps the inode under the watch and silently stops it
+    // from firing again after that one save. Watching the directory and filtering by filename survives
+    // that: the rename still produces a directory entry for the same name. Everything else at the
+    // plugin root (`index.js`, `dist/`, `package.json`, …) is ignored by the filter below.
     const backendEntry = path.join(pluginDir, PluginPackageLayout.SERVER_ENTRY_SOURCE);
-    if (fs.existsSync(backendEntry)) watchers.push(fs.watch(backendEntry, onOwnedFileEvent));
+    const backendEntryName = path.basename(backendEntry);
+    const onRootEvent = (_event: string, filename: string | Buffer | null): void => {
+      if (!filename) return;
+      const name = path.basename(String(filename));
+      if (name === 'manifest.json') onManifestEvent();
+      else if (name === backendEntryName) onSourceEvent(_event, filename);
+    };
+    if (fs.existsSync(manifestPath) || fs.existsSync(backendEntry)) {
+      watchers.push(fs.watch(pluginDir, onRootEvent));
+    }
 
     const stop = (): void => {
       watchers.forEach((watcher) => watcher.close());
       if (rebuildTimer) clearTimeout(rebuildTimer);
+      if (settleTimer) clearTimeout(settleTimer);
       process.exit(0);
     };
     process.on('SIGINT', stop);
