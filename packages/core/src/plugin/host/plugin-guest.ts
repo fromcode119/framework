@@ -33,6 +33,7 @@ export class PluginGuest {
   private boot: IPluginGuestBoot | null = null;
   private contract: Record<string, any> = {};
   private context: PluginContext | null = null;
+  private contextFactory: PluginGuestContextFactory | null = null;
 
   constructor(transport: ConstructorParameters<typeof PluginChannel>[0]) {
     this.channel = new PluginChannel(transport);
@@ -59,7 +60,8 @@ export class PluginGuest {
     PluginGuestCoreBridge.install(this.channel, this.remote, this.handlers);
 
     this.http = new PluginGuestHttp(boot.socketPath, this.remote, boot.socketMode);
-    this.context = new PluginGuestContextFactory(this.channel, this.remote, this.handlers, this.http, this.state, boot).create();
+    this.contextFactory = new PluginGuestContextFactory(this.channel, this.remote, this.handlers, this.http, this.state, boot);
+    this.context = this.contextFactory.create();
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const rawModule = require(path.resolve(boot.entryPath));
@@ -98,7 +100,13 @@ export class PluginGuest {
     if (invocation.kind === String(PluginInvocationKind.LIFECYCLE.value)) {
       const hook = this.contract[String(invocation.name)];
       if (typeof hook !== 'function') return undefined;
-      return hook(context, ...(invocation.args ?? []));
+      const result = await hook(context, ...(invocation.args ?? []));
+      // A plugin registers its translations from synchronous on-init code, which returns long before
+      // the fire-and-forget forward to the host lands. Waiting here means the RPC response the host
+      // is awaiting — and with it, the plugin being reported active — carries that guarantee instead
+      // of racing the first request against an i18n map that is still empty.
+      await this.contextFactory?.locals?.flush();
+      return result;
     }
     if (invocation.kind === String(PluginInvocationKind.PUBLIC_API.value)) {
       const fn = this.contract.publicAPI?.[String(invocation.name)];

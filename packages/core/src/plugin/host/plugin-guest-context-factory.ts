@@ -19,6 +19,11 @@ import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-gues
  * forwarding stand-in on the host. Guards are local functions; routes go through the guest's Express.
  */
 export class PluginGuestContextFactory {
+  /** The synchronous-answering locals `create()` built — `PluginGuest` awaits `locals.flush()` after
+   *  each lifecycle hook so a forwarded i18n registration lands at the host before the plugin is
+   *  reported active. Null until `create()` runs. */
+  locals: PluginGuestLocals | null = null;
+
   constructor(
     private readonly channel: PluginChannel,
     private readonly remote: PluginGuestRemote,
@@ -33,6 +38,7 @@ export class PluginGuestContextFactory {
     const ctx = (name: string) => remote.ref('context', [{ name }]);
     const register = (payload: IPluginGuestRegistration) => this.channel.request('register', payload, 30_000);
     const locals = new PluginGuestLocals(this.boot, this.remote);
+    this.locals = locals;
     const context: Record<string, unknown> = {
       db: this.database([{ name: 'db' }]),
       api: new PluginGuestApiFactory(this.channel, this.handlers, this.http, this.boot).create(),

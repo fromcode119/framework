@@ -4,6 +4,7 @@ import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
+import type { ITranslationMap } from '@core/interfaces/translation-map.interface';
 
 /**
  * The parts of the context that must answer SYNCHRONOUSLY and therefore live in the guest.
@@ -18,13 +19,39 @@ export class PluginGuestLocals {
   readonly i18n: ReturnType<typeof I18nContextProxy.createI18nProxy>;
   readonly paths: PluginPathContextProxy;
 
+  /**
+   * One promise per translation registration forwarded to the host, so `flush()` can wait for all of
+   * them. Registration runs inside synchronous on-init plugin code, so the forward itself is
+   * fire-and-forget over the remote channel — tracked here rather than awaited on the spot.
+   */
+  private readonly pendingI18nForwards: Promise<unknown>[] = [];
+
   constructor(boot: IPluginGuestBoot, remote: PluginGuestRemote) {
     const plugin = { manifest: boot.manifest, path: boot.pluginDir } as unknown as ILoadedPlugin;
+    const localI18n = new I18nManager(boot.defaultLocale);
+    // `getI18n` (system-runtime-controller) reads translations from ONE place: the host's own
+    // `I18nManager`, filled only by `context.i18n.registerTranslations` running in-process. An
+    // isolated plugin's on-init runs in THIS process instead, against `localI18n`, so the host's map
+    // never saw a single key — the storefront asked for a Bulgarian button and got `{}`. This bridge
+    // keeps `registerTranslations` answering the local manager (so `t()`/`translateOrFallback` stay
+    // synchronous) AND forwards the exact same (locale, translations) pair to the host's
+    // `context.i18n.registerTranslations(locale, translations)` two-argument form — the one that
+    // namespaces under this plugin's own slug, exactly as a non-isolated boot would have produced.
+    const i18nBridge = {
+      registerTranslations: (locale: string, namespace: string, translations: ITranslationMap) => {
+        localI18n.registerTranslations(locale, namespace, translations);
+        this.pendingI18nForwards.push(remote.ref('context', [{ name: 'i18n' }]).registerTranslations(locale, translations));
+      },
+      translate: (key: string, params?: Record<string, any>, locale?: string) => localI18n.translate(key, params, locale),
+      translateOrFallback: (key: string, fallback: string, params?: Record<string, any>, locale?: string) =>
+        localI18n.translateOrFallback(key, fallback, params, locale),
+      getDefaultLocale: () => localI18n.getDefaultLocale(),
+    };
     // Only what the two proxies read: translations, the active theme (for theme-scoped keys and
     // theme template reads, answered by the host), and a log sink. Capability checks stay on the
     // host, where every real call is gated; these locals touch nothing but the plugin's own files.
     const manager: any = {
-      i18n: new I18nManager(boot.defaultLocale),
+      i18n: i18nBridge,
       themeManager: null,
       db: remote.ref('context', [{ name: 'db' }]),
       writeLog: async () => undefined,
@@ -41,5 +68,14 @@ export class PluginGuestLocals {
 
   get t(): (key: string, params?: Record<string, unknown>, locale?: string) => string {
     return (key, params, locale) => this.i18n.t(key, params, locale);
+  }
+
+  /**
+   * Waits for every translation forward started so far. Called once after a lifecycle hook returns
+   * (`PluginGuest.run`), so the RPC response the host is awaiting — and therefore the plugin being
+   * reported active — does not land before the host's i18n map actually has the plugin's keys in it.
+   */
+  async flush(): Promise<void> {
+    await Promise.allSettled(this.pendingI18nForwards);
   }
 }
