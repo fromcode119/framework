@@ -176,6 +176,13 @@ export class PluginBuildCommandService {
       building = true;
       try {
         const steps = await PluginBuildCommandService.runPipeline(pluginDir, slug);
+        // CAPTURED HERE, not in `finally`. The stamper is the last thing the pipeline does before it
+        // returns (`ExtensionBuildPipeline` stamps the source dir, then returns for a non-pack build),
+        // so this is the first instant the file is settled. Reading it after `report` and the console
+        // line instead left a window of however long a terminal takes to draw — and an operator edit
+        // landing in it was recorded as "what the build stamped", which made their own bytes the echo
+        // signature and dropped the very next event. Their edit then never rebuilt.
+        lastStampedManifest = readManifest();
         PluginBuildCommandService.report(steps);
         if (steps.some((s) => s.failed)) {
           console.log(chalk.red(`✗ Build failed for plugin ${slug}`));
@@ -185,7 +192,10 @@ export class PluginBuildCommandService {
       } catch (error) {
         console.log(chalk.red(`✗ Build failed: ${error}`));
       } finally {
-        lastStampedManifest = readManifest();
+        // Deliberately NOT re-read here. On a thrown build the stamp may never have happened, and
+        // leaving the previous signature in place means the next manifest event compares unequal and
+        // REBUILDS. When it cannot be certain, this errs towards doing the work rather than dropping
+        // an edit — the failure this whole mechanism exists to avoid.
         building = false;
         settledAt = Date.now() + PluginBuildCommandService.REBUILD_SETTLE_MS;
         if (settleTimer) clearTimeout(settleTimer);
