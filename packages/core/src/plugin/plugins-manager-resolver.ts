@@ -32,6 +32,14 @@ export class PluginsManagerResolver implements IPluginApiResolver {
    */
   static isResolvable(plugin: ILoadedPlugin, tenantId: string | null): boolean {
     if (PluginState.resolve(plugin.state) !== PluginState.ACTIVE || !plugin.publicAPI) return false;
+    // A plugin whose process is DOWN is absent, not present-and-broken. Neither check above can see
+    // that: the record is a spread copy of the host's stubs, so `state` stays ACTIVE and `publicAPI`
+    // stays a truthy lazy proxy for the whole of a restart — while that proxy returns `undefined`
+    // for every method, because the guest has not described itself yet. The caller then walked a
+    // present target to a missing method and was told `"<method>" is not callable`, which reads as
+    // a broken peer and, for a boot registration, was recorded as a failure the operator saw. Asked
+    // here so the host walk and the guest's own peer snapshot cannot disagree.
+    if (plugin.isRunning && !plugin.isRunning()) return false;
     const tenant = String(tenantId ?? '').trim();
     if (!tenant) return true;
     if (!TenantMode.isEnabled()) return true;

@@ -193,6 +193,9 @@ export class PluginHost extends PluginHostGuestBridge {
       };
     }
     stubs.publicAPI = this.lazyPublicApi();
+    // Carried so the resolver can tell "this peer is DOWN" from "this peer is broken" — see
+    // `ILoadedPlugin.isRunning` for why it must survive the registry's spread as a function.
+    stubs.isRunning = () => this.isRunning;
     return stubs;
   }
 
