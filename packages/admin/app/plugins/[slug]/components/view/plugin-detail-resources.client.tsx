@@ -8,12 +8,24 @@ import { FrameworkIcons } from '@fromcode119/react';
 import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
 
 export class PluginDetailResources extends PureReactor {
+  /** The EFFECTIVE platform default in force right now, or `null` before it has loaded — never the
+   *  shipped constant, which drifts from this the moment an operator sets Settings → Infrastructure
+   *  → Plugin Isolation to something else. */
+  @prop declare isolationDefaults: { memoryMb: number; timeoutMs: number } | null;
   @prop declare onSandboxSettingsChange: (value: IPluginSandboxSettings) => void;
   @prop declare sandboxSettings: IPluginSandboxSettings;
   @prop declare theme: ThemeMode;
 
   render(): ReactNode {
-    const { onSandboxSettingsChange, sandboxSettings, theme } = this;
+    const { isolationDefaults, onSandboxSettingsChange, sandboxSettings, theme } = this;
+    // Matches the sibling "Blank uses the platform default" fields on Settings → Infrastructure →
+    // Plugin Isolation (page-cards.client.tsx): a floor above zero, so the operator cannot save a
+    // value the runtime (`PluginIsolationSettings.forPlugin`, `> 0 ? n : platformDefault`) would
+    // silently treat as "no limit set" while the form still shows it as configured.
+    const MEMORY_MIN_MB = 64;
+    const TIMEOUT_MIN_MS = 1000;
+    const memoryPlaceholder = isolationDefaults ? `Default ${isolationDefaults.memoryMb}` : 'Platform default';
+    const timeoutPlaceholder = isolationDefaults ? `Default ${isolationDefaults.timeoutMs}` : 'Platform default';
     return (
       <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card title="Sandbox Isolation Policy" className={`border-0 p-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
@@ -33,20 +45,20 @@ export class PluginDetailResources extends PureReactor {
                 <div className={`p-2.5 rounded-xl h-fit ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}><FrameworkIcons.Zap size={20} /></div>
                 <div>
                   <h3 className={`font-semibold text-sm ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>Memory Heap Limit</h3>
-                  <p className="text-sm text-slate-500 mt-1 max-w-sm">Maximum RAM allocated to the V8 isolate. (MB)</p>
+                  <p className="text-sm text-slate-500 mt-1 max-w-sm">Maximum RAM allocated to the V8 isolate. (MB) Blank uses the platform default (Settings → Infrastructure → Plugin Isolation).</p>
                 </div>
               </div>
-              <NumberStepper min={0} value={sandboxSettings.memoryLimit} disabled={!sandboxSettings.enabled} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, memoryLimit: Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : 128 })} />
+              <NumberStepper min={MEMORY_MIN_MB} value={sandboxSettings.memoryLimit} placeholder={memoryPlaceholder} disabled={!sandboxSettings.enabled} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, memoryLimit: v === '' ? null : (Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : null) })} />
             </div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex gap-4">
                 <div className={`p-2.5 rounded-xl h-fit ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}><FrameworkIcons.Clock size={20} /></div>
                 <div>
                   <h3 className={`font-semibold text-sm ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>Execution Timeout</h3>
-                  <p className="text-sm text-slate-500 mt-1 max-w-sm">Kill plugin execution if it takes longer than this. (ms)</p>
+                  <p className="text-sm text-slate-500 mt-1 max-w-sm">Kill plugin execution if it takes longer than this. (ms) Blank uses the platform default (Settings → Infrastructure → Plugin Isolation).</p>
                 </div>
               </div>
-              <NumberStepper min={0} value={sandboxSettings.timeout} disabled={!sandboxSettings.enabled} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, timeout: Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : 1000 })} />
+              <NumberStepper min={TIMEOUT_MIN_MS} value={sandboxSettings.timeout} placeholder={timeoutPlaceholder} disabled={!sandboxSettings.enabled} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, timeout: v === '' ? null : (Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : null) })} />
             </div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
               <div className="flex gap-4">

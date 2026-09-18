@@ -1,8 +1,9 @@
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import type { IAdminPluginMetadata } from '@/app/interfaces/admin-plugin-metadata.interface';
-import { LoadedPluginHydration } from '@fromcode119/core/client';
+import { LoadedPluginHydration, SystemConstants } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
@@ -11,10 +12,15 @@ import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plu
 import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
 
 export class PluginDetailPageService {
+  /**
+   * No memory/timeout number here: an operator who never set a limit sees an EMPTY field with the
+   * platform's own default (Settings → Infrastructure → Plugin Isolation) as its placeholder, never
+   * a number nobody configured for this plugin.
+   */
   static readonly DEFAULT_SANDBOX_SETTINGS: IPluginSandboxSettings = {
     enabled: true,
-    memoryLimit: 128,
-    timeout: 1000,
+    memoryLimit: null,
+    timeout: null,
     allowNative: false,
   };
 
@@ -66,20 +72,26 @@ export class PluginDetailPageService {
     return AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LOGS(slug));
   }
 
+  /**
+   * Read from `plugin.manifest.sandbox` — the field the API actually serializes; `plugin.sandbox`
+   * (top-level) is never populated by anything, so reading it always fell through to the invented
+   * 128/1000 defaults below and the operator's real saved limits never reached this screen.
+   */
   static createSandboxSettings(plugin: ILoadedPlugin): IPluginSandboxSettings {
-    if (plugin.sandbox === false) {
+    const sandbox = plugin.manifest?.sandbox;
+    if (sandbox === false) {
       return {
         ...PluginDetailPageService.DEFAULT_SANDBOX_SETTINGS,
         enabled: false,
       };
     }
 
-    if (plugin.sandbox && typeof plugin.sandbox === 'object') {
+    if (sandbox && typeof sandbox === 'object') {
       return {
         enabled: true,
-        memoryLimit: plugin.sandbox.memoryLimit || 128,
-        timeout: plugin.sandbox.timeout || 1000,
-        allowNative: plugin.sandbox.allowNative || false,
+        memoryLimit: typeof sandbox.memoryLimit === 'number' ? sandbox.memoryLimit : null,
+        timeout: typeof sandbox.timeout === 'number' ? sandbox.timeout : null,
+        allowNative: sandbox.allowNative || false,
       };
     }
 
@@ -98,7 +110,14 @@ export class PluginDetailPageService {
     await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled });
   }
 
-  static async saveSandbox(slug: string, sandboxSettings: IPluginSandboxSettings): Promise<IPluginSandboxSettings | false> {
+  /**
+   * Saves the sandbox row and reports what happened to the RUNNING plugin, which is not always the
+   * same thing: the write can succeed while the change still needs an API restart to take effect
+   * (flipping isolation on or off), or — for a live reload of an already-isolated plugin — the save
+   * can succeed while the reload itself failed and the guest may now be down. Neither of those is a
+   * failed save, so both are reported through the result, not thrown.
+   */
+  static async saveSandbox(slug: string, sandboxSettings: IPluginSandboxSettings): Promise<{ restartRequired: boolean; restartFailed?: boolean; reason?: string }> {
     const payload = sandboxSettings.enabled
       ? {
           memoryLimit: sandboxSettings.memoryLimit,
@@ -107,8 +126,28 @@ export class PluginDetailPageService {
         }
       : { enabled: false };
 
-    await AdminApi.post(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${slug}/sandbox`, payload);
-    return sandboxSettings.enabled ? sandboxSettings : false;
+    const response = await AdminApi.post(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${slug}/sandbox`, payload);
+    return {
+      restartRequired: Boolean(response?.restartRequired),
+      restartFailed: Boolean(response?.restartFailed),
+      reason: response?.reason ? String(response.reason) : undefined,
+    };
+  }
+
+  /**
+   * The EFFECTIVE plugin isolation memory/timeout in force right now — `_system_meta` when the
+   * operator set one (Settings → Infrastructure → Plugin Isolation), the shipped constant otherwise.
+   * Mirrors `PluginIsolationSettings.read` on the server: never the constant alone, or a plugin
+   * running on a platform-configured 512MB would still be told its blank field means 256.
+   */
+  static async fetchIsolationDefaults(): Promise<{ memoryMb: number; timeoutMs: number } | null> {
+    const response = await AdminSystemSettingsClient.getAll();
+    const memoryRaw = Number(response?.plugin_isolation_memory_mb);
+    const timeoutRaw = Number(response?.plugin_isolation_timeout_ms);
+    return {
+      memoryMb: memoryRaw > 0 ? memoryRaw : SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT,
+      timeoutMs: timeoutRaw > 0 ? timeoutRaw : SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT,
+    };
   }
 
   static async deletePlugin(slug: string): Promise<void> {

@@ -32,6 +32,7 @@ export class PluginDetailView extends AdminComponent {
   @prop declare isSaving: boolean;
   @prop declare isUpdating: boolean;
   @prop declare installOperation: IPluginInstallOperation | null;
+  @prop declare isolationDefaults: { memoryMb: number; timeoutMs: number } | null;
   @prop declare loadingLogs: boolean;
   @prop declare logs: IPluginLogEntry[];
   @prop declare marketplaceItem: IPluginMarketplaceItem | null;
@@ -119,7 +120,7 @@ export class PluginDetailView extends AdminComponent {
               </div>
             )}
             {activeTab === PluginDetailTab.PERMISSIONS && <PluginDetailPermissions plugin={plugin} theme={theme} />}
-            {activeTab === PluginDetailTab.RESOURCES && <PluginDetailResources onSandboxSettingsChange={this.onSandboxSettingsChange} sandboxSettings={this.sandboxSettings} theme={theme} />}
+            {activeTab === PluginDetailTab.RESOURCES && <PluginDetailResources isolationDefaults={this.isolationDefaults} onSandboxSettingsChange={this.onSandboxSettingsChange} sandboxSettings={this.sandboxSettings} theme={theme} />}
           </div>
           <PluginDetailSidebar activeTab={activeTab} canManage={PlatformAccess.canManagePlatform(this.auth.user)} onOpenDefinition={this.onOpenDefinition} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onTabChange={this.onTabChange} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
         </div>
