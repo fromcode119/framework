@@ -17,6 +17,8 @@ export interface IPluginDetailPageModel {
   handleToggle: () => Promise<void>;
   handleUpdate: () => Promise<void>;
   isDeleting: boolean;
+  /** The effective platform default (Settings → Infrastructure → Plugin Isolation), or `null` until fetched. */
+  isolationDefaults: { memoryMb: number; timeoutMs: number } | null;
   isSaving: boolean;
   isUpdating: boolean;
   installOperation: IPluginInstallOperation | null;

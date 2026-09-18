@@ -49,7 +49,7 @@ describe('PluginInstallationService.finalizeInstalledPlugin — hot install layo
       {} as never,
       {} as never,
       { migrate: vi.fn(async () => undefined) } as never,
-      { savePluginState: vi.fn(async () => undefined) } as never,
+      { savePluginState: vi.fn(async () => undefined), loadInstalledPluginsState: vi.fn(async () => ({})) } as never,
       { scheduleRestart: vi.fn() } as never,
       plugins,
       pluginsRoot,

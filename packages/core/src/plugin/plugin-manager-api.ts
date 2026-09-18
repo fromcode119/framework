@@ -5,9 +5,11 @@ import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.in
 import type { IScaffoldPluginInput } from '@core/plugin/services/interfaces/scaffold-plugin-input.interface';
 import type { IScaffoldPluginResult } from '@core/plugin/services/interfaces/scaffold-plugin-result.interface';
 import type { ThemeManager } from '@core/theme/theme-manager';
+import type { ISandboxHostReloadResult } from '@core/plugin/interfaces/sandbox-host-reload-result.interface';
 import { PluginContext } from '@core/plugin/plugin-context';
 import { PluginContextFactory } from '@core/plugin/context';
 import { PluginManagerExtensions } from '@core/plugin/plugin-manager-extensions';
+import { PluginSandboxHostReloadService } from '@core/plugin/services/runtime/plugin-sandbox-host-reload-service';
 /**
  * The surface everything else calls the plugin manager THROUGH.
  *
@@ -55,8 +57,15 @@ export abstract class PluginManagerApi extends PluginManagerExtensions {
     await this.runtimeState.savePluginConfig(slug, config);
   }
 
-  async saveSandboxConfig(slug: string, config: any) {
+  async saveSandboxConfig(slug: string, config: any): Promise<ISandboxHostReloadResult> {
     await this.runtimeState.saveSandboxConfig(slug, config);
+    // An isolated plugin runs in its OWN process — a saved memory/timeout limit only reaches it once
+    // that process is restarted on the new settings, or it stays a dead-until-restart control. Whether
+    // that means an in-place reload or a scheduled API restart depends on which of the three isolation
+    // transitions this save is; `PluginSandboxHostReloadService` is the one place that decides.
+    const plugin = this.plugins.get(slug);
+    if (!plugin) return { restartRequired: false };
+    return new PluginSandboxHostReloadService(this.pluginHosts, this.logger).apply(slug, plugin.manifest as unknown as Record<string, unknown>);
   }
 
   public getHeadInjections(slug: string): any[] {

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { Logger } from '@core/logging';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { ProjectPaths } from '@core/config/paths';
-import { ManifestNormalizer } from '@core/manifest-normalizer';
+import { InstalledPluginManifestService } from '@core/plugin/services/installation/installed-plugin-manifest-service';
 import { PluginDependencyInstallerService } from '@core/plugin/services/installation/plugin-dependency-installer-service';
 import { PluginModuleResolverService } from '@core/plugin/services/installation/plugin-module-resolver-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
@@ -154,18 +154,10 @@ export class PluginDirectoryScannerService {
         if (fs.existsSync(manifestPath)) {
           let manifest: any;
           try {
-            const manifestContent = fs.readFileSync(manifestPath, 'utf8');
-            manifest = ManifestNormalizer.plugin(JSON.parse(manifestContent), pluginPath);
-
-            // Normalize slug to lowercase early to avoid casing issues throughout the system
-            if (manifest.slug) {
-              manifest.slug = manifest.slug.toLowerCase();
-            }
-
-            // Stamped from the directory, and stamped AFTER the manifest is parsed, so a package that
-            // declares an `ownerTenantId` of its own cannot keep it. Absent means the platform's.
-            if (rootOwnerTenantId) manifest.ownerTenantId = rootOwnerTenantId;
-            else delete manifest.ownerTenantId;
+            // Read + normalize (category default, version fallback, lowercased slug, stamped
+            // ownerTenantId) the same way a hot install/update finalizes one — see
+            // InstalledPluginManifestService for why the two must not diverge.
+            manifest = InstalledPluginManifestService.read(pluginPath, rootOwnerTenantId);
 
             // Fill the build-output paths (server entry, UI bundles, migrations dir) from the package
             // layout so a manifest never has to restate what the build already decided. Anything the
@@ -213,15 +205,11 @@ export class PluginDirectoryScannerService {
                 if (!isBundledRoot) await this.dependencyInstaller.ensureInstalled(pluginPath);
                 const savedPluginState = existingPlugins.get(manifest.slug as string);
                 const persistedState = installedState[(manifest.slug as string).toLowerCase()];
-                const hasPersistedSandboxConfig = persistedState && Object.prototype.hasOwnProperty.call(persistedState, 'sandboxConfig') && persistedState.sandboxConfig !== undefined;
-                const savedSandboxConfig = hasPersistedSandboxConfig
-                  ? persistedState.sandboxConfig
-                  : savedPluginState?.manifest?.sandbox;
-                // `{}` in the registry says nothing about the plugin; a manifest's `sandbox: false` / `reason` must win over it.
-                const meaningfulSaved = savedSandboxConfig !== undefined && !(savedSandboxConfig && typeof savedSandboxConfig === 'object' && Object.keys(savedSandboxConfig).length === 0);
-                const effectiveSandboxConfig = meaningfulSaved ? savedSandboxConfig : manifest.sandbox;
-                // Default to sandbox enabled unless explicitly set to false.
-                manifest.sandbox = effectiveSandboxConfig !== undefined ? effectiveSandboxConfig : true;
+                const effectiveSandboxConfig = InstalledPluginManifestService.applyPersistedSandbox(
+                  manifest,
+                  persistedState,
+                  savedPluginState?.manifest?.sandbox,
+                );
 
                 // T5: an ISOLATED plugin is never required into this process. Its own process loads it
                 // and reports which lifecycle hooks and public-API functions it has; what is staged

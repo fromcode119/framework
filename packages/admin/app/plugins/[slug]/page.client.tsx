@@ -33,6 +33,7 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
         isSaving={model.isSaving}
         isUpdating={model.isUpdating}
         installOperation={model.installOperation}
+        isolationDefaults={model.isolationDefaults}
         loadingLogs={model.loadingLogs}
         logs={model.logs}
         marketplaceItem={model.marketplaceItem}

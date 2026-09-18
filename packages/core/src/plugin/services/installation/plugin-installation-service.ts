@@ -15,6 +15,7 @@ import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-s
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
+import { InstalledPluginManifestService } from '@core/plugin/services/installation/installed-plugin-manifest-service';
 
 export class PluginInstallationService {
   constructor(
@@ -94,9 +95,8 @@ export class PluginInstallationService {
   }
 
   /**
-   * Installs a plugin from a package directory, then finalises it exactly as an archive install
-   * does — migrations, state, discovery, enable. The half after the files land is identical, and
-   * sharing it is what stops a plugin from working only when it arrived as a zip.
+   * Installs a plugin from a package directory, then finalises it exactly as an archive install does
+   * — migrations, state, discovery, enable — so a plugin does not only work when it arrived as a zip.
    */
   async installPluginDirectory(
     packageDir: string,
@@ -115,9 +115,8 @@ export class PluginInstallationService {
 
   /**
    * Updates every installed plugin the marketplace has a NEWER version of, then schedules ONE
-   * runtime restart at the end — the per-plugin path restarts after each replace, which made
-   * updating N plugins cost N restarts. A plugin that fails is reported and skipped; the rest of
-   * the batch still lands, and the single restart still happens for whatever was replaced.
+   * runtime restart at the end instead of one per plugin. A failure is reported and skipped;
+   * the rest of the batch still lands, and the single restart still covers what was replaced.
    */
   async updateAllFromMarketplace(
     options: { progressReporter?: IPluginInstallProgressReporter } = {},
@@ -137,8 +136,7 @@ export class PluginInstallationService {
     }
 
     for (const [index, entry] of updates.entries()) {
-      // The admin shows this message VERBATIM as the live progress label — lead with the countdown
-      // so the operator watches it decrease (7, 6, 5…) instead of guessing how far along it is.
+      // Shown VERBATIM as the live progress label — lead with the countdown (7, 6, 5…).
       const remaining = updates.length - index;
       options.progressReporter?.({
         phase: 'updating-plugin',
@@ -187,19 +185,25 @@ export class PluginInstallationService {
       throw new Error(`Installed plugin manifest not found for "${slug}".`);
     }
 
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as IPluginManifest;
     const pluginPath = path.dirname(manifestPath);
+    // Same normalization InstalledPluginManifestService gives the boot scanner: category/version,
+    // lowercased slug, ownerTenantId stamped from the directory rather than the manifest's own.
+    const manifest = InstalledPluginManifestService.read(pluginPath);
 
     await this.runPluginMigrations(slug, pluginPath, manifest, options.progressReporter);
 
-    // A HOT install/update (no api restart) registers this manifest directly, bypassing the
-    // boot-time directory scanner — fills `ui.*` in from what landed on disk (manifest.json may not
-    // declare `ui.frontendEntry`). Runs AFTER runPluginMigrations, not before: resolve() also
-    // backfills `manifest.migrations` from an on-disk dist/migrations dir when undeclared, which
-    // would make this hot path run every plugin's migrations on first install — out of scope here.
+    // Fills `ui.*` in from what landed on disk — see PR #110. Runs AFTER runPluginMigrations:
+    // resolve() also backfills `manifest.migrations` from an on-disk dist/migrations dir when
+    // undeclared, which would run every plugin's migrations on first install if it ran first.
     PluginPackageLayout.resolve(pluginPath, manifest);
 
     if (existingPlugin && existingPlugin.state !== PluginState.ERROR) {
+      // A hot install/update used to revert the operator's saved sandbox limits and plugin settings
+      // to the shipped defaults — apply the same rules the boot scanner already does.
+      const persistedState = (await this.registry.loadInstalledPluginsState())[slug.toLowerCase()];
+      InstalledPluginManifestService.applyPersistedSandbox(manifest, persistedState, existingPlugin.manifest?.sandbox);
+      InstalledPluginManifestService.carryRuntimeState(manifest, existingPlugin);
+
       const desiredState = options.enable === true
         ? PluginState.ACTIVE
         : options.enable === false
@@ -213,9 +217,8 @@ export class PluginInstallationService {
         manifest.version,
       );
 
-      // T5: an ISOLATED plugin is its own process — start a new one on the new files and the update is
-      // live, with every other plugin and every request in flight untouched. Only a plugin that runs
-      // inside the api process still needs the api restarted to load new code.
+      // T5: an isolated plugin is its own process — swap in a new one on the new files, live. Only a
+      // plugin that runs inside the api process still needs the api restarted to load new code.
       if (await this.reloadHost(slug, manifest)) {
         existingPlugin.manifest = manifest;
         options.progressReporter?.({
@@ -228,8 +231,7 @@ export class PluginInstallationService {
 
       if (options.deferRestart) {
         this.restartOwed = true;
-        // A batch driver replaces several plugins and restarts ONCE at the end — restarting here
-        // would kill the API mid-batch and abort every remaining update.
+        // A batch driver restarts ONCE at the end; restarting here would abort the rest of the batch.
         options.progressReporter?.({
           phase: 'plugin-replaced',
           message: `Plugin "${slug}" was replaced. Restart deferred to the end of the batch.`,

@@ -48,6 +48,7 @@ export class PluginDetailPageController {
     const [logs, setLogs] = useState<IPluginLogEntry[]>([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [sandboxSettings, setSandboxSettings] = useState<IPluginSandboxSettings>(PluginDetailPageService.DEFAULT_SANDBOX_SETTINGS);
+    const [isolationDefaults, setIsolationDefaults] = useState<{ memoryMb: number; timeoutMs: number } | null>(null);
     const { theme } = ThemeHooks.useTheme();
 
     useEffect(() => {
@@ -100,6 +101,22 @@ export class PluginDetailPageController {
 
       checkUpdates();
     }, [slug, refreshVersion, canManagePlatform]);
+
+    // The sandbox tab's placeholders assert this is what a blank memory/timeout field resolves to;
+    // that is only true for the platform's ACTUAL setting, which only a platform admin's own sandbox
+    // route can read (site admins never reach this — the sandbox tab itself is platform-only).
+    useEffect(() => {
+      const loadIsolationDefaults = async () => {
+        if (!canManagePlatform) return;
+        try {
+          setIsolationDefaults(await PluginDetailPageService.fetchIsolationDefaults());
+        } catch (error) {
+          console.error('[PluginDetailPage] Failed to fetch plugin isolation defaults:', error);
+        }
+      };
+
+      loadIsolationDefaults();
+    }, [canManagePlatform]);
 
     useEffect(() => {
       setActiveTab(PluginDetailPageService.parseTab(searchParams.get('tab')));
@@ -170,15 +187,25 @@ export class PluginDetailPageController {
       if (!plugin) return;
       setIsSaving(true);
       try {
-        const nextSandbox = await PluginDetailPageService.saveSandbox(plugin.manifest.slug, sandboxSettings);
-        setPlugin({ ...plugin, sandbox: nextSandbox });
-        notify(
-        NotificationType.SUCCESS,
-          'Resources Updated',
-          sandboxSettings.enabled
-            ? `Sandbox limits for ${plugin.manifest.name} updated.`
-            : `Sandbox disabled for ${plugin.manifest.name}.`,
-        );
+        const { restartRequired, restartFailed, reason } = await PluginDetailPageService.saveSandbox(plugin.manifest.slug, sandboxSettings);
+        // No optimistic write to `plugin` here: the admin reads sandbox state from
+        // `plugin.manifest.sandbox`, and `triggerRefresh` below re-fetches the plugin (and this
+        // page's own `sandboxSettings`) from the server, which is the only place that value lives.
+        if (restartFailed) {
+          // The row IS saved — do not call this a failure — but the live reload attempt killed the
+          // guest and it did not come back up. Surface the reason; do not schedule a retry ourselves.
+          notify(NotificationType.ERROR, 'Restart Failed', `Sandbox limits for ${plugin.manifest.name} were saved, but its process failed to restart on them: ${reason || 'unknown error'}`);
+        } else if (restartRequired) {
+          notify(NotificationType.INFO, 'Restart Required', `Sandbox settings for ${plugin.manifest.name} were saved, but an API restart is needed before they take effect.`);
+        } else {
+          notify(
+            NotificationType.SUCCESS,
+            'Resources Updated',
+            sandboxSettings.enabled
+              ? `Sandbox limits for ${plugin.manifest.name} updated.`
+              : `Sandbox disabled for ${plugin.manifest.name}.`,
+          );
+        }
         triggerRefresh();
       } catch (error: any) {
         console.error('[PluginDetailPage] Save sandbox error:', error);
@@ -221,6 +248,7 @@ export class PluginDetailPageController {
       handleUpdate,
       installOperation,
       isDeleting,
+      isolationDefaults,
       isSaving,
       isUpdating,
       loading,

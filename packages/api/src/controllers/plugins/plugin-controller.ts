@@ -184,8 +184,10 @@ export class PluginController extends BaseController {
   async saveSandboxConfig(req: Request, res: Response) {
     const slug = CoercionUtils.toString(req.params.slug);
     try {
-      await (this.manager as any).saveSandboxConfig(slug, req.body);
-      res.json({ success: true });
+      // The write throwing is a real 500; whether the RUNNING plugin picked up the change (still
+      // pending a restart, or reloaded-but-failed-to-boot) is a non-fatal outcome reported alongside success.
+      const result = await (this.manager as any).saveSandboxConfig(slug, req.body);
+      res.json({ success: true, ...result });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
