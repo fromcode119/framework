@@ -32,9 +32,34 @@ export class FrontendRuntimeAssetManifest {
     return FrontendRuntimeAssetManifest.cachedFile;
   }
 
+  /**
+   * Where the manifest can be, most specific first.
+   *
+   * `process.cwd()` alone was wrong in the built image and right in dev, which is the worst way to be
+   * wrong: `next dev` runs from `packages/frontend`, so the manifest was found on every developer's
+   * machine, while the container starts the app from `/app` (`app-launcher-main.js --app frontend`)
+   * and looked for `/app/public/fc-runtime/manifest.json`, which does not exist — the file is at
+   * `/app/packages/frontend/public/...`. Not finding it is SILENT by design: the page still serves,
+   * statically, with no runtime injector. So every storefront on the platform rendered header and
+   * footer, requested not one plugin bundle, and logged nothing at all.
+   */
+  private static manifestCandidates(): string[] {
+    const tail = ['public', RuntimeAssetConstants.SEGMENT, 'manifest.json'];
+    return [
+      join(process.cwd(), ...tail),
+      join(process.cwd(), 'packages', 'frontend', ...tail),
+    ];
+  }
+
   private static readRuntimeFile(): string {
-    const manifestPath = join(process.cwd(), 'public', RuntimeAssetConstants.SEGMENT, 'manifest.json');
-    if (!existsSync(manifestPath)) return '';
+    const manifestPath = FrontendRuntimeAssetManifest.manifestCandidates().find((candidate) => existsSync(candidate));
+    if (!manifestPath) {
+      // Loud, because the failure it causes is not: a storefront with no islands looks like a page
+      // that simply has no content.
+      console.error('[frontend] no runtime manifest found; the storefront will serve with NO plugin'
+        + ` runtime. Looked in: ${FrontendRuntimeAssetManifest.manifestCandidates().join(', ')}`);
+      return '';
+    }
     try {
       const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as Record<string, { file?: string; isEntry?: boolean }>;
       const entry = Object.values(manifest).find((chunk) => chunk?.isEntry && chunk.file);
