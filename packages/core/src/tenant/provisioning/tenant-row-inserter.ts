@@ -198,7 +198,7 @@ export class TenantRowInserter {
     // SQLite has no types: it stored '' where a value was absent, in columns Postgres types as date,
     // timestamp, integer, numeric or boolean — each of which REJECTS ''. An empty string in any
     // non-text column is "no value" and becomes NULL (a NOT NULL such column was already backfilled).
-    if (value === '' && type && type !== 'text' && type !== 'character varying' && !TenantTableDescriptor.isJsonType(type)) {
+    if (value === '' && type && !TenantTableDescriptor.isCharacterType(type) && !TenantTableDescriptor.isJsonType(type)) {
       return this.table.requiredColumns.has(column) ? this.table.emptyValueFor(column) : null;
     }
     if (TenantTableDescriptor.isJsonType(type)) {

@@ -148,3 +148,39 @@ describe('TenantRowInserter — declared-path re-pointing', () => {
     expect(inserted().note).toBe('plain text, not json');
   });
 });
+
+/**
+ * An empty string is a VALUE in a character column and an ABSENCE everywhere else — so which types
+ * count as "character" decides whether data survives the import. The predicate used to be spelled
+ * inline here as `text` or `character varying`, while the id repair spelled the same property with
+ * `character` included. `char(n)` therefore looked non-textual and its empty strings were rewritten.
+ */
+describe('TenantRowInserter — empty strings by column type', () => {
+  it("keeps '' in a character(n) column, where it is a value rather than an absence", async () => {
+    const { inserter: rowInserter, inserted } = inserter(
+      descriptor([], { code: 'character' }),
+      new TenantIdRemap(),
+    );
+    await rowInserter.insert({ id: 1, code: '' });
+    expect(inserted().code).toBe('');
+  });
+
+  it("keeps '' in text and character varying", async () => {
+    const { inserter: rowInserter, inserted } = inserter(
+      descriptor([], { note: 'text', label: 'character varying' }),
+      new TenantIdRemap(),
+    );
+    await rowInserter.insert({ id: 1, note: '', label: '' });
+    expect(inserted().note).toBe('');
+    expect(inserted().label).toBe('');
+  });
+
+  it("still nulls '' in a NON-character column, which is what the rule is for", async () => {
+    const { inserter: rowInserter, inserted } = inserter(
+      descriptor([], { due_at: 'date' }),
+      new TenantIdRemap(),
+    );
+    await rowInserter.insert({ id: 1, due_at: '' });
+    expect(inserted().due_at).toBeNull();
+  });
+});
