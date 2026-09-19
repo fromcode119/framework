@@ -102,6 +102,19 @@ export class ImportPlanView extends PureReactor {
 
         <ImportPlanSummary plan={plan} arriving={arriving} skipped={skipped} remapped={remapped} />
 
+        {/*
+          * Folded, not removed. Everything the import will do stays reachable — that is Rule Zero —
+          * but it is machinery: which ids move, which columns this platform no longer has, which
+          * kinds carry nothing. The person deciding whether to press the button needs the sentences
+          * above; the person debugging an import needs this, and opens it.
+          */}
+        <details className="fc-import-plan__detail">
+          <summary>
+            Technical detail
+            <span className="fc-import-plan__detail-count">
+              {(plan.plugins ?? []).length.toLocaleString()} plugin(s) · {plan.theme ? '1 theme · ' : ''}{(skipped.length + remapped.length + kept.length + empty.length).toLocaleString()} kind(s) of record
+            </span>
+          </summary>
         <div className="fc-import-plan__inventory">
           <div>
             <span className="fc-site-form__label">Plugins</span>
@@ -124,14 +137,7 @@ export class ImportPlanView extends PureReactor {
           </div>
         </div>
 
-        {/*
-          * Folded, not removed. Everything the import will do stays reachable — that is Rule Zero —
-          * but it is machinery: which ids move, which columns this platform no longer has, which
-          * kinds carry nothing. The person deciding whether to press the button needs the sentences
-          * above; the person debugging an import needs this, and opens it.
-          */}
-        <details className="fc-import-plan__detail">
-          <summary>Technical detail — every kind of record ({(skipped.length + remapped.length + kept.length + empty.length).toLocaleString()})</summary>
+
           <ImportPlanTables
             skipped={skipped} remapped={remapped} kept={kept} empty={empty}
             metaRowsExcluded={plan.metaRowsExcluded ?? 0} pluginSettingsRowsExcluded={plan.pluginSettingsRowsExcluded ?? 0}

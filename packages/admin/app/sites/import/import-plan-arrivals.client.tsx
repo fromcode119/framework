@@ -139,22 +139,14 @@ export class ImportPlanArrivals extends PureReactor {
         <span className="fc-site-form__label">Everything comes across</span>
         {items.length === 0 && platformRecords.length === 0 ? <span className="fc-sites__none">nothing</span> : null}
         {items.length > 0 ? (
-          <p className="fc-import-plan__arrival-list">
-            {items.flatMap((item, i): ReactNode[] => {
-              const nodes: ReactNode[] = [
-                <span key={item.key} className="fc-import-plan__arrival-item">
-                  <strong>{item.count.toLocaleString()}</strong> {item.label}
-                </span>,
-              ];
-              // Its own flex item, not trailing text inside one — flex strips a collapsible space at a
-              // line-box edge, which is exactly what swallowed this separator's leading space when it
-              // used to live as `' · '` inside the item's own `<span>`.
-              if (i < items.length - 1) {
-                nodes.push(<span key={`${item.key}-sep`} className="fc-import-plan__arrival-sep" aria-hidden="true">&middot;</span>);
-              }
-              return nodes;
-            })}
-          </p>
+          <div className="fc-import-plan__tiles">
+            {items.map((item) => (
+              <div key={item.key} className="fc-import-plan__tile">
+                <span className="fc-import-plan__tile-count">{item.count.toLocaleString()}</span>
+                <span className="fc-import-plan__tile-label">{item.label}</span>
+              </div>
+            ))}
+          </div>
         ) : null}
         {platformRecords.length > 0 ? this.renderPlatformRecordsDetail() : null}
         {otherKinds > 0 ? (
