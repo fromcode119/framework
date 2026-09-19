@@ -18,7 +18,7 @@ function table(name: string, refs: Array<[string, string]> = [], types: Record<s
  * `sql.includes('ordinal_position')` — which is a stub that only works while core writes Postgres by
  * hand, and would have kept passing against any other driver while the real thing returned nothing.
  */
-function fakeDb(columnsByTable: Record<string, Record<string, string>>): IDatabaseManager {
+function fakeDb(columnsByTable: Record<string, Record<string, string>>, naturalKeysByTable: Record<string, string[]> = {}): IDatabaseManager {
   return {
     introspection: {
       tablesWithColumn: async () => Object.keys(columnsByTable),
@@ -32,6 +32,13 @@ function fakeDb(columnsByTable: Record<string, Record<string, string>>): IDataba
       requiredColumns: async () => new Map<string, Set<string>>(),
       serialSequences: async () => new Map<string, string>(),
       foreignKeys: async () => [],
+      naturalKeyColumns: async (tables: string[]) => {
+        const out = new Map<string, string[]>();
+        for (const name of tables) {
+          if (naturalKeysByTable[name]) out.set(name, naturalKeysByTable[name]);
+        }
+        return out;
+      },
     },
   } as unknown as IDatabaseManager;
 }
@@ -195,6 +202,25 @@ describe('TenantTableCatalog.describe — owning plugin and label', () => {
     const catalog = new TenantTableCatalog(db, [], ['alpha']);
     const [descriptor] = await catalog.describe(['fcp_gamma_delta_widgets']);
     expect(descriptor.pluginSlug).toBeNull();
+  });
+});
+
+describe('TenantTableCatalog.describe — natural key columns', () => {
+  it('carries a natural key the introspection reports, for a table with no serial id', async () => {
+    const db = fakeDb(
+      { _system_meta: { key: 'text', value: 'text', tenant_id: 'text' } },
+      { _system_meta: ['key'] },
+    );
+    const catalog = new TenantTableCatalog(db);
+    const [descriptor] = await catalog.describe(['_system_meta']);
+    expect(descriptor.naturalKeyColumns).toEqual(['key']);
+  });
+
+  it('reports no natural key when the introspection found none', async () => {
+    const db = fakeDb({ fcp_widgets_items: { id: 'integer', tenant_id: 'text' } });
+    const catalog = new TenantTableCatalog(db);
+    const [descriptor] = await catalog.describe(['fcp_widgets_items']);
+    expect(descriptor.naturalKeyColumns).toEqual([]);
   });
 });
 
