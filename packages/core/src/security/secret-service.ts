@@ -16,6 +16,15 @@ export class SecretService {
     return String(value || '').startsWith(SecretService.ENCRYPTED_PREFIX);
   }
 
+  /**
+   * Whether a blob of text carries an encrypted value ANYWHERE inside it — a stored settings row
+   * holds its secrets nested in JSON, so `isEncryptedValue` on the row's own value never sees them.
+   * The marker stays private; callers ask this rather than repeating the literal.
+   */
+  static carriesEncryptedValue(text: unknown): boolean {
+    return String(text ?? '').includes(SecretService.ENCRYPTED_PREFIX);
+  }
+
   static encrypt(value: string): string {
     const normalizedValue = String(value || '');
     if (!normalizedValue) {
