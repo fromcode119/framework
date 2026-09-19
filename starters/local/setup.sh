@@ -8,7 +8,7 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ENV_FILE="$SCRIPT_DIR/.env"
 ENV_EXAMPLE="$SCRIPT_DIR/.env.example"
 
-echo "=== Fromcode local dev setup ==="
+echo "=== Atlantis local dev setup ==="
 
 # ── 1. Copy .env if missing ───────────────────────────────────────────────────
 if [ ! -f "$ENV_FILE" ]; then

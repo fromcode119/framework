@@ -33,7 +33,7 @@ export class ThemeBundleCompiler {
   private static readonly STAGED_SOURCES = [
     'theme-vite-config.ts',
     'theme-ssr-vite-config.ts',
-    'fromcode-theme-overrides-plugin.ts',
+    'atlantis-theme-overrides-plugin.ts',
     'theme-entry-generator.ts',
   ];
 

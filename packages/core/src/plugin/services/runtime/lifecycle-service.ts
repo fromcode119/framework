@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { Logger } from '@core/logging';
 import { PluginArchiveInstallerService } from '@core/plugin/services/installation/plugin-archive-installer-service';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
-import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import type { IAtlantisPlugin } from '@core/interfaces/atlantis-plugin.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { NotificationsContextProxy } from '@core/plugin/context/notifications';
@@ -69,7 +69,7 @@ export class LifecycleService {
     return this.seedRunner.materializeDefaultPagesFinalPass();
   }
 
-  async register(plugin: IFromcodePlugin, pluginPath?: string): Promise<void> {
+  async register(plugin: IAtlantisPlugin, pluginPath?: string): Promise<void> {
     const slug = plugin.manifest.slug;
     const existingEntry = this.manager.plugins.get(slug);
     

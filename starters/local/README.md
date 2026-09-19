@@ -1,4 +1,4 @@
-# Fromcode — App Starter
+# Atlantis — App Starter
 
 Zero Docker. Zero Postgres. Zero Redis. SQLite + local disk only.
 
@@ -9,7 +9,7 @@ All services run behind a single reverse proxy — one browser tab, one URL:
 
 ## Quick start (inside the framework monorepo)
 
-This starter lives at `starters/local/` inside the Fromcode repository.
+This starter lives at `starters/local/` inside the Atlantis repository.
 Until `@fromcode119/*` packages are published to npm, the scripts run the
 framework packages directly using `npm run --prefix`.
 

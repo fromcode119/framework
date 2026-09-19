@@ -4,7 +4,7 @@ import { PluginBootHealthReporter } from '@core/plugin/services/runtime/plugin-b
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
-import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import type { IAtlantisPlugin } from '@core/interfaces/atlantis-plugin.interface';
 
 /**
  * What state a plugin should come back in, given what the registry saved and what the plugin now
@@ -37,7 +37,7 @@ export class PluginRegistrationState {
   /** Resolve the state and any held reason for `slug`, applying every rule above in order. */
   async resolve(
     slug: string,
-    plugin: IFromcodePlugin,
+    plugin: IAtlantisPlugin,
     registryData: Record<string, any>,
   ): Promise<{ state: PluginState; heldReason: PluginHeldReason | undefined; saved: any }> {
     const normSlug = slug.toLowerCase();
@@ -105,7 +105,7 @@ export class PluginRegistrationState {
           try {
             const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
             await notifications.notifyAdmins({
-              subject: `[Fromcode] Auto-approved new capabilities for "${slug}"`,
+              subject: `[Atlantis] Auto-approved new capabilities for "${slug}"`,
               text: `"${slug}" gained capabilities [${diff.added.join(', ')}] and was auto-approved (AUTO_APPROVE_PLUGIN_CAPABILITIES on, plugin trusted). Review in Admin -> Plugins if unexpected.`,
             });
           } catch { /* best-effort */ }

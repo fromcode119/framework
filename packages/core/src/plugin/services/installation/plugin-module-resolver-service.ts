@@ -1,4 +1,4 @@
-import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import type { IAtlantisPlugin } from '@core/interfaces/atlantis-plugin.interface';
 
 /**
  * PluginModuleResolverService
@@ -25,7 +25,7 @@ import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface
  */
 export class PluginModuleResolverService {
   /** The keys a plugin entry may contribute — everything else on the class is the plugin's own business. */
-  private static readonly CONTRACT_KEYS: readonly (keyof IFromcodePlugin)[] = [
+  private static readonly CONTRACT_KEYS: readonly (keyof IAtlantisPlugin)[] = [
     'manifest',
     'onInstall',
     'onInit',

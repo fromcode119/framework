@@ -3,7 +3,7 @@ import { DependencyIssueKind } from '@core/plugin/services/enums/dependency-issu
 import path from 'path';
 import semver from 'semver';
 import { Logger } from '@core/logging';
-import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import type { IAtlantisPlugin } from '@core/interfaces/atlantis-plugin.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 
@@ -35,10 +35,10 @@ export class DiscoveryService {
     return this.scanner.discoverPlugins(existingPlugins, installedState);
   }
 
-  public resolveDependencies(plugins: IFromcodePlugin[]): IFromcodePlugin[] {
+  public resolveDependencies(plugins: IAtlantisPlugin[]): IAtlantisPlugin[] {
     const adj: Map<string, string[]> = new Map();
     const inDegree: Map<string, number> = new Map();
-    const pluginMap: Map<string, IFromcodePlugin> = new Map();
+    const pluginMap: Map<string, IAtlantisPlugin> = new Map();
 
     plugins.forEach(p => {
       pluginMap.set(p.manifest.slug, p);
@@ -66,7 +66,7 @@ export class DiscoveryService {
       if (degree === 0) queue.push(slug);
     });
 
-    const result: IFromcodePlugin[] = [];
+    const result: IAtlantisPlugin[] = [];
     const processed = new Set<string>();
 
     while (queue.length > 0) {
