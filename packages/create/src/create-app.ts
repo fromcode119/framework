@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
 import * as path from 'path';
+import { GeneratedEnvFile } from './generated-env-file';
 
 /**
  * The `create-atlantis` bin: scaffolds a new Fromcode project (API, Admin and, by default,
@@ -40,7 +41,7 @@ export class CreateApp {
   }
 
   /** Process entry: scaffold a new project into `./<project-name>`. */
-  static run(): void {
+  static main(): void {
     // ─── Argument parsing ────────────────────────────────────────────────────────
 
     const rawArgs = process.argv.slice(2);
@@ -183,35 +184,7 @@ export class CreateApp {
 
     // ─── .env (from the shared template) ─────────────────────────────────────────
 
-    const envContent = [
-      '# Fromcode environment config — edit JWT_SECRET before going live',
-      '# See .env.example for all available options',
-      '',
-      'DB_DIALECT=sqlite',
-      localMode
-        ? `DATABASE_URL=file:${path.join(dest, 'data', 'app.db')}`
-        : 'DATABASE_URL=file:./data/app.db',
-      '',
-      '# Replace with a real random string before exposing the app',
-      'JWT_SECRET=CHANGE_ME_JWT_SECRET_MIN_32_CHARS',
-      '',
-      'REDIS_URL=',
-      '',
-      'NEXT_PUBLIC_API_URL=http://localhost:3000',
-      'NEXT_PUBLIC_ADMIN_BASE_PATH=/admin',
-      'API_URL=http://localhost:4000',
-      '',
-      'PROXY_PORT=3000',
-      'API_PORT=4000',
-      'ADMIN_PORT=3001',
-      '# FRONTEND_PORT=3002',
-      '',
-      'NODE_ENV=development',
-      localMode
-        ? 'MARKETPLACE_URL=off'
-        : '# MARKETPLACE_URL=https://marketplace.fromcode.com',
-      '',
-    ].join('\n');
+    const envContent = GeneratedEnvFile.contents(dest, localMode);
 
     fs.writeFileSync(path.join(dest, '.env'), envContent, 'utf8');
 
@@ -297,6 +270,15 @@ export class CreateApp {
     console.log('  Then open: http://localhost:3000/admin');
     console.log('');
   }
+  /**
+   * Runs on class initialisation.
+   *
+   * A bare `CreateApp.main()` after the class would be a module-level call, which this codebase
+   * does not allow in an entry file. `ProcessEntry` is the framework's decorator for exactly
+   * this, but importing it here pulls the whole of core into a standalone binary — measured at
+   * 1.66 MB against 3.7 KB — so the entry stays dependency-free and self-starts instead.
+   */
+  static {
+    CreateApp.main();
+  }
 }
-
-CreateApp.run();

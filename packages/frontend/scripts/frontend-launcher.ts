@@ -51,7 +51,7 @@ export class FrontendLauncher {
   }
 
   /** Process entry: replace this process with Next's, and carry its exit code back out. */
-  static start(): void {
+  static main(): void {
     const child = spawn(process.execPath, FrontendLauncher.argumentsFor(FrontendLauncher.resolveNextBinary()), {
       cwd: FrontendLauncher.packageDirectory,
       stdio: 'inherit',
@@ -59,6 +59,15 @@ export class FrontendLauncher {
     });
     child.on('exit', (code) => process.exit(code ?? 0));
   }
+  /**
+   * Runs on class initialisation.
+   *
+   * A bare `FrontendLauncher.main()` after the class would be a module-level call, which this codebase
+   * does not allow in an entry file. `ProcessEntry` is the framework's decorator for exactly
+   * this, but importing it here pulls the whole of core into a standalone binary — measured at
+   * 1.66 MB against 3.7 KB — so the entry stays dependency-free and self-starts instead.
+   */
+  static {
+    FrontendLauncher.main();
+  }
 }
-
-FrontendLauncher.start();

@@ -11,8 +11,8 @@
   ],
   "scripts": {
     "build": "npm run build:index && npm run build:proxy",
-    "build:index": "../../node_modules/.bin/esbuild src/create-app.ts --bundle --format=cjs --platform=node --charset=utf8 --outfile=dist/index.js",
-    "build:proxy": "../../node_modules/.bin/esbuild src/proxy.ts --format=cjs --platform=node --charset=utf8 --outfile=template/proxy.js"
+    "build:index": "../../node_modules/.bin/esbuild src/create-app.ts --bundle --format=cjs --platform=node --charset=utf8 --tsconfig-raw='{\"compilerOptions\":{\"experimentalDecorators\":true,\"useDefineForClassFields\":false}}' --outfile=dist/index.js",
+    "build:proxy": "../../node_modules/.bin/esbuild src/proxy.ts --bundle --external:http-proxy --format=cjs --platform=node --charset=utf8 --tsconfig-raw='{\"compilerOptions\":{\"experimentalDecorators\":true,\"useDefineForClassFields\":false}}' --outfile=template/proxy.js"
   },
   "publishConfig": {
     "access": "public",
