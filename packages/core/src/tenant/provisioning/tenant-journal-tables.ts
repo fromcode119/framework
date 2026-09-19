@@ -17,7 +17,12 @@ export class TenantJournalTables {
   static from(collections: Array<{ collection: ICollection }>): Set<string> {
     const out = new Set<string>(TenantBespokePolicies.journalTables());
     for (const { collection } of collections) {
-      if (!(collection.admin?.disableCreate && collection.admin?.disableEdit)) continue;
+      // `system: true` marks the framework's OWN collections — settings, users, the media registry.
+      // "Global Settings" is one, and with telemetry filtered out it led the list ahead of a shop's
+      // orders: the platform's plumbing presented as though it were the shop's.
+      const declared = collection.system === true
+        || (collection.admin?.disableCreate === true && collection.admin?.disableEdit === true);
+      if (!declared) continue;
       const table = String(collection.tableName || collection.slug || '').trim();
       if (table) out.add(table);
     }
