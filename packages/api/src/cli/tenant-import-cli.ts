@@ -81,7 +81,17 @@ export class TenantImportCli {
         return 0;
       }
 
-      const result = await new TenantImportExecutor(db, registry, tables, uploadsDir).execute(reader, identity, plan);
+      // Same as the export: from the environment, never a flag.
+      const transitPassphrase = String(process.env.TENANT_TRANSIT_PASSPHRASE || '').trim() || null;
+      if (reader.manifest.secretsSealed && !transitPassphrase) {
+        // Refuse rather than land credentials nobody can read — the failure this whole mechanism
+        // exists to end is an integration that behaves as though it were never configured.
+        throw new Error(
+          'This archive\'s secrets were sealed for transit, and TENANT_TRANSIT_PASSPHRASE is not set. '
+          + 'Set it to the passphrase the export used, or the credentials will arrive unreadable.',
+        );
+      }
+      const result = await new TenantImportExecutor(db, registry, tables, uploadsDir, transitPassphrase).execute(reader, identity, plan);
       console.log(`[tenant-import] imported "${result.tenant.slug}": ${result.totalRows} row(s), ${result.remappedTables.length} table(s) re-numbered.`);
       console.log(`[tenant-import] the site arrives ${identity.environment} and private — publish it from Sites when you mean to.`);
       return 0;
