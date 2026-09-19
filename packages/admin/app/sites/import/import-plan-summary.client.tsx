@@ -95,11 +95,14 @@ export class ImportPlanSummary extends PureReactor {
    * block whatever it said. A mark per line separates "this is fine" from "check this" without
    * colouring a whole section.
    */
-  private static note(reassuring: boolean, title: string, body: string): ReactNode {
+  private static note(reassuring: boolean, title: string, body: string, more: string[] = []): ReactNode {
     return (
       <div className="fc-import-plan__note" key={`${title}-${body}`}>
         <span className={`fc-import-plan__note-mark fc-import-plan__note-mark--${reassuring ? 'ok' : 'info'}`} aria-hidden="true">{reassuring ? '\u2713' : 'i'}</span>
-        <span className="fc-sites__text"><strong>{title}</strong> — {body}</span>
+        <span className="fc-sites__text">
+          <strong>{title}</strong> — {body}
+          {more.map((line) => <span key={line} className="fc-import-plan__note-more">{line}</span>)}
+        </span>
       </div>
     );
   }
@@ -123,7 +126,9 @@ export class ImportPlanSummary extends PureReactor {
             this.plan.manifest?.secretsSealed ? 'Your settings come with it' : 'Your settings need a password',
             this.settingsSentence,
           )}
-          {this.worthKnowing.map((line) => ImportPlanSummary.note(false, 'Worth checking after', line))}
+          {this.worthKnowing.length > 0
+            ? ImportPlanSummary.note(false, 'Worth checking after', this.worthKnowing[0], this.worthKnowing.slice(1))
+            : null}
         </div>
       </div>
     );

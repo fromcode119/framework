@@ -415,6 +415,7 @@ html.dark {
 .fc-import-plan__tile-count { font-size: 19px; font-weight: 600; line-height: 1.2; }
 .fc-import-plan__tile-label { font-size: 12px; color: var(--muted-foreground); }
 /* One marker per line, so the three statements read as a list without becoming a bullet wall. */
+.fc-import-plan__note-more { display: block; margin-top: 4px; }
 .fc-import-plan__notes { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; }
 .fc-import-plan__note-mark--ok { background: var(--success-muted, #e8f5ee); color: var(--success, #137a4d); }
 .fc-import-plan__note-mark--info { background: var(--warning-muted, #fdf3e3); color: var(--warning, #8a5a00); }
