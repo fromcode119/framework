@@ -26,6 +26,11 @@ class IgnoredSources {
       // fileURLToPath, not `url.pathname`: this checkout's path contains a space, and the raw
       // pathname keeps it percent-encoded — git then spawns against a directory that does not exist.
       encoding: 'utf8', cwd: resolve(dirname(fileURLToPath(import.meta.url)), '..'),
+      // `.next` and `node_modules` alone put ~76,000 paths and 4.6 MB through this pipe, and
+      // execFileSync's default maxBuffer is 1 MB — so the gate did not report a violation, it
+      // THREW ENOBUFS, which reads as a broken build step rather than as an unchecked one. A gate
+      // that fails to run is worse than one that fails: this was wired into `npm run build`.
+      maxBuffer: 64 * 1024 * 1024,
     }).split('\n').filter(Boolean);
 
     const offenders = files.filter((f) => IgnoredSources.SOURCE.test(f)

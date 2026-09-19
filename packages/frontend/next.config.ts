@@ -1,5 +1,5 @@
-const path = require('path');
-const { NextConfigEnv } = require('../../config/next-config-env');
+import path from 'node:path';
+import { NextConfigEnv, type NextWebpackConfig, type NextWebpackContext } from '../../config/next-config-env';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -42,7 +42,7 @@ const nextConfig = {
   images: {
     remotePatterns: NextConfigEnv.getRemoteImagePatterns(),
   },
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config: NextWebpackConfig, { dev, isServer }: NextWebpackContext) => {
     // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above. `next dev` runs
     // with --webpack, so without this the dev server would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
@@ -97,8 +97,8 @@ const nextConfig = {
     // replacement module. The list is the shared one in config/next-config-env.js.
     config.resolve.fallback = { ...config.resolve.fallback };
     for (const [name, fallback] of Object.entries(NextConfigEnv.getNodeBuiltinFallbacks())) {
-      if (fallback === false) config.resolve.fallback[name] = false;
-      else config.resolve.alias[name] = fallback;
+      if (typeof fallback === 'string') config.resolve.alias[name] = fallback;
+      else config.resolve.fallback[name] = false;
     }
 
     if (dev && !isServer) {
@@ -148,4 +148,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

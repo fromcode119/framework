@@ -7,6 +7,11 @@
  *
  * Requires the CJS bundle: bundlers load their loaders in a CommonJS context.
  */
+
+/**
+ * Stays CommonJS for the same reason as `tsmi-loader.cjs`: a bundler loads it through Node's CJS
+ * resolver at build time, before anything can transpile TypeScript.
+ */
 const { RouteExportPlugin, ClientDirectivePlugin } = require('./dist/index.cjs');
 
 module.exports = function nextorSourceContractLoader(source) {
