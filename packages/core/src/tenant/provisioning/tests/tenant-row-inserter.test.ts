@@ -7,11 +7,13 @@ import { TenantRowInserter } from '@core/tenant/provisioning/tenant-row-inserter
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 
 /** Captures every INSERT and decodes it back into a column → value record, by column NAME. */
-function fakeDb(): { db: IDatabaseManager; inserted: () => Record<string, unknown> } {
+function fakeDb(): { db: IDatabaseManager; inserted: () => Record<string, unknown>; lastSql: () => string } {
   let last: Record<string, unknown> = {};
+  let sql = '';
   const db = {
-    queryRaw: vi.fn(async (sql: string, params: unknown[] = []) => {
-      const match = /INSERT INTO "[^"]+" \(([^)]+)\)/.exec(sql);
+    queryRaw: vi.fn(async (statement: string, params: unknown[] = []) => {
+      sql = statement;
+      const match = /INSERT INTO "[^"]+" \(([^)]+)\)/.exec(statement);
       if (match) {
         const columns = match[1].split(',').map((c) => c.trim().replace(/"/g, ''));
         last = Object.fromEntries(columns.map((column, index) => [column, params[index]]));
@@ -19,7 +21,7 @@ function fakeDb(): { db: IDatabaseManager; inserted: () => Record<string, unknow
       return [];
     }),
   } as unknown as IDatabaseManager;
-  return { db, inserted: () => last };
+  return { db, inserted: () => last, lastSql: () => sql };
 }
 
 const TABLE = 'fcp_widgets_items';
@@ -34,9 +36,9 @@ function descriptor(references: TenantColumnReference[], columns: Record<string,
   );
 }
 
-function inserter(table: TenantTableDescriptor, remap: TenantIdRemap, warnings: string[] = []): { inserter: TenantRowInserter; inserted: () => Record<string, unknown> } {
-  const { db, inserted } = fakeDb();
-  return { inserter: new TenantRowInserter(db, table, 't1', remap, new TenantImportFiles('/tmp/fc-test-uploads'), warnings), inserted };
+function inserter(table: TenantTableDescriptor, remap: TenantIdRemap, warnings: string[] = [], tenantId = 't1'): { inserter: TenantRowInserter; inserted: () => Record<string, unknown>; lastSql: () => string } {
+  const { db, inserted, lastSql } = fakeDb();
+  return { inserter: new TenantRowInserter(db, table, tenantId, remap, new TenantImportFiles('/tmp/fc-test-uploads'), warnings), inserted, lastSql };
 }
 
 describe('TenantRowInserter — declared-path re-pointing', () => {
@@ -182,5 +184,67 @@ describe('TenantRowInserter — empty strings by column type', () => {
     );
     await rowInserter.insert({ id: 1, due_at: '' });
     expect(inserted().due_at).toBeNull();
+  });
+});
+
+/**
+ * `_system_meta` has no serial `id` — it is keyed by `key`, and its unique constraint is
+ * `("key", "tenant_id")`. A tenant importing its own settings must land OWNED by the destination
+ * tenant, a platform key must not, and a re-import must UPSERT its own row rather than fail (or
+ * silently adopt an unowned one) on the natural key it wrote last time.
+ */
+function metaDescriptor(naturalKeyColumns: string[] = ['key']): TenantTableDescriptor {
+  return new TenantTableDescriptor(
+    '_system_meta',
+    { key: 'text', value: 'text', tenant_id: 'text' },
+    false, null, [], new Set(), null, null, naturalKeyColumns,
+  );
+}
+
+describe('TenantRowInserter — _system_meta ownership and the natural-key collision', () => {
+  it('stamps a non-platform row with the destination tenant', async () => {
+    const { inserter: rowInserter, inserted } = inserter(metaDescriptor(), new TenantIdRemap(), [], 'tenant-a');
+    await rowInserter.insert({ key: 'integration_shipping_provider', value: '{"username":"abc"}' });
+    expect(inserted().tenant_id).toBe('tenant-a');
+    expect(inserted().value).toBe('{"username":"abc"}');
+  });
+
+  it('a platform key never reaches the inserter carrying a tenant (the executor filters it first), but the column would still stamp it if it did', async () => {
+    // The platform-key exclusion is the EXECUTOR's rowFilter (TenantBespokePolicies.platformKeys()),
+    // not the inserter's job — this table has no way to tell one key from another. What the inserter
+    // guarantees is that whatever row it IS given lands owned by the destination tenant.
+    const { inserter: rowInserter, inserted } = inserter(metaDescriptor(), new TenantIdRemap(), [], 'tenant-a');
+    await rowInserter.insert({ key: 'site_name', value: 'Acme' });
+    expect(inserted().tenant_id).toBe('tenant-a');
+  });
+
+  it('upserts on (key, tenant_id) rather than a plain insert, for a naturally-keyed tenant table', async () => {
+    const { inserter: rowInserter, lastSql } = inserter(metaDescriptor(), new TenantIdRemap(), [], 'tenant-a');
+    await rowInserter.insert({ key: 'integration_shipping_provider', value: 'v1' });
+    expect(lastSql()).toContain('ON CONFLICT ("key", "tenant_id")');
+    expect(lastSql()).toContain('DO UPDATE SET "value" = EXCLUDED."value"');
+  });
+
+  it('the conflict target can never match an unowned row: a real tenant_id differs from NULL', async () => {
+    // This is the guarantee, not a simulation of Postgres' own NULLS NOT DISTINCT semantics (the
+    // fake db here does not enforce constraints at all) — the conflict target this test asserts is
+    // exactly what makes that true: it always includes tenant_id, and this row's tenant_id is never
+    // null, so it can only ever conflict with a row this SAME tenant already owns.
+    const { inserter: rowInserter, lastSql } = inserter(metaDescriptor(), new TenantIdRemap(), [], 'tenant-b');
+    await rowInserter.insert({ key: 'integration_shipping_provider', value: 'v2' });
+    expect(lastSql()).toMatch(/ON CONFLICT \("key", "tenant_id"\)/);
+  });
+
+  it('falls back to a plain insert when this platform has no natural-key constraint for the table yet', async () => {
+    const { inserter: rowInserter, lastSql } = inserter(metaDescriptor([]), new TenantIdRemap(), [], 'tenant-a');
+    await rowInserter.insert({ key: 'integration_shipping_provider', value: 'v1' });
+    expect(lastSql()).not.toContain('ON CONFLICT');
+  });
+
+  it('a serial-id table never upserts, even if it happened to carry a natural key column', async () => {
+    const serialTable = new TenantTableDescriptor('fcp_widgets_items', { id: 'integer', tenant_id: 'text', slug: 'text' }, true, 'fcp_widgets_items_id_seq', [], new Set(), null, null, ['slug']);
+    const { inserter: rowInserter, lastSql } = inserter(serialTable, new TenantIdRemap(), [], 'tenant-a');
+    await rowInserter.insert({ id: 1, slug: 'about' });
+    expect(lastSql()).not.toContain('ON CONFLICT');
   });
 });

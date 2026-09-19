@@ -21,6 +21,10 @@ import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-de
  *    its own table in a `hasMany` relationship) has no such constraint and needs no deferral: every
  *    id of THIS table was allocated before the first row of it was inserted (see
  *    `TenantImportExecutor`), so the map is already complete.
+ *  - A table with no serial `id` (`_system_meta`) is UPSERTED on its natural key plus `tenant_id`
+ *    (see `upsertConflictColumns`), so re-importing an archive this tenant already imported updates
+ *    its own row instead of failing on the natural key it wrote last time — and the target, always
+ *    including `tenant_id`, can never match an unowned or another tenant's row.
  */
 export class TenantRowInserter {
   /**
@@ -87,8 +91,29 @@ export class TenantRowInserter {
 
     const columns = Object.keys(values);
     const params = columns.map((column) => this.encode(column, values[column]));
-    await this.db.queryRaw(TenantSql.insert(this.table.name, columns), params);
+    const conflictColumns = this.upsertConflictColumns(columns);
+    const statement = conflictColumns
+      ? TenantSql.upsert(this.table.name, columns, conflictColumns)
+      : TenantSql.insert(this.table.name, columns);
+    await this.db.queryRaw(statement, params);
     return typeof newId === 'number' || typeof newId === 'string' ? newId : null;
+  }
+
+  /**
+   * The natural key an UPSERT should target, so a re-import updates THIS tenant's own row instead of
+   * failing on (or silently adopting) an unrelated one — `null` when the table has a serial `id`
+   * (there is nothing to collide on but the id itself, already handled by the remap) or when this
+   * platform's schema has no constraint scoping that natural key to the tenant column yet.
+   *
+   * Requiring `tenant_id` in `values` is what makes the target safe: a conflicting row can only be
+   * one this SAME tenant already owns, never an unowned platform row (a different `tenant_id`, or
+   * none) and never another tenant's.
+   */
+  private upsertConflictColumns(columns: string[]): string[] | null {
+    if (this.table.hasSerialId || this.table.naturalKeyColumns.length === 0) return null;
+    if (!columns.includes('tenant_id')) return null;
+    if (!this.table.naturalKeyColumns.every((column) => columns.includes(column))) return null;
+    return [...this.table.naturalKeyColumns, 'tenant_id'];
   }
 
   /** Second pass for self-references, after every row of the table is in. */

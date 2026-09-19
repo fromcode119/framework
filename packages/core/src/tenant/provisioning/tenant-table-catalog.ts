@@ -86,11 +86,12 @@ export class TenantTableCatalog {
   /** Full descriptors for a named set of tables, in dependency order (a table after the tables it points at). */
   async describe(tables: string[]): Promise<TenantTableDescriptor[]> {
     const wanted = new Set(tables);
-    const [columns, serials, foreignKeys, required] = await Promise.all([
+    const [columns, serials, foreignKeys, required, naturalKeys] = await Promise.all([
       this.db.introspection.columnTypes(tables),
       this.db.introspection.serialSequences(tables),
       this.readForeignKeys(tables),
       this.db.introspection.requiredColumns(tables, TenantTableCatalog.ALWAYS_SUPPLIED),
+      this.db.introspection.naturalKeyColumns(tables, TenantColumn.NAME),
     ]);
     const schemaReferences = this.schemaReferences(wanted, columns);
     const owners = this.owners();
@@ -111,7 +112,10 @@ export class TenantTableCatalog {
           ? TenantOwningPluginResolver.resolve(table, this.knownPluginSlugs)
           : (PhysicalTableNameUtils.parse(table)?.pluginSlug ?? null));
       const label = owner?.label ?? null;
-      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set(), pluginSlug, label);
+      return new TenantTableDescriptor(
+        table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references),
+        required.get(table) ?? new Set(), pluginSlug, label, naturalKeys.get(table) ?? [],
+      );
     });
     return TenantTableCatalog.inDependencyOrder(descriptors);
   }

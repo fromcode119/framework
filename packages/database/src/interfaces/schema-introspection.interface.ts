@@ -31,4 +31,17 @@ export interface ISchemaIntrospection {
 
   /** Every FOREIGN KEY among `tables`, as plain references the caller maps to its own type. */
   foreignKeys(tables: string[]): Promise<IForeignKeyReference[]>;
+
+  /**
+   * table → the columns of a UNIQUE or PRIMARY KEY constraint that already includes `tenantColumn`,
+   * with `tenantColumn` itself removed — the columns that identify ONE tenant's row among its own,
+   * for a table with no serial `id` (`_system_meta`'s `("key", "tenant_id")`).
+   *
+   * Only a constraint that ALREADY names the tenant column qualifies: that is what makes a tenant's
+   * row distinct from an unowned one at the database level, which is exactly what an importer's
+   * upsert needs to target. A table whose natural-key constraint does not include the tenant column
+   * is a DIFFERENT, older defect (`tenantBlindUniqueConstraintsStatement` finds those, for the sweep
+   * to widen) and reports no columns here.
+   */
+  naturalKeyColumns(tables: string[], tenantColumn: string): Promise<Map<string, string[]>>;
 }

@@ -74,6 +74,43 @@ export class PostgresSchemaIntrospector implements ISchemaIntrospection {
   }
 
   /**
+   * table → the OTHER columns of a UNIQUE/PRIMARY KEY constraint that already includes
+   * `tenantColumn` — the natural key a tenant's own row is identified by, for a table with no
+   * serial `id`. `pg_constraint`/`pg_attribute`, for the same non-owner-role reason as `foreignKeys`.
+   */
+  async naturalKeyColumns(tables: string[], tenantColumn: string): Promise<Map<string, string[]>> {
+    const out = new Map<string, string[]>();
+    if (tables.length === 0) return out;
+    const rows = await this.run(
+      'SELECT rel.relname AS table_name, con.conname AS name, '
+      + 'array_agg(att.attname ORDER BY k.ord) AS columns '
+      + 'FROM pg_constraint con '
+      + 'JOIN pg_class rel ON rel.oid = con.conrelid '
+      + 'JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace '
+      + 'JOIN unnest(con.conkey) WITH ORDINALITY AS k(attnum, ord) ON true '
+      + 'JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = k.attnum '
+      + "WHERE con.contype IN ('u', 'p') AND nsp.nspname = current_schema() AND rel.relname = ANY($1) "
+      + 'AND att.attname <> $2 '
+      + 'AND EXISTS ('
+      + '  SELECT 1 FROM unnest(con.conkey) tenantkey '
+      + '  JOIN pg_attribute tenantatt ON tenantatt.attrelid = con.conrelid AND tenantatt.attnum = tenantkey '
+      + '  WHERE tenantatt.attname = $2'
+      + ') '
+      + 'GROUP BY rel.relname, con.conname',
+      [tables, tenantColumn],
+    );
+    for (const row of rows) {
+      const table = String(row.table_name);
+      const columns = (row.columns as string[] | null) ?? [];
+      // A table could carry more than one qualifying constraint; the smallest natural key is the
+      // one an upsert should target, and the first one found is kept when sizes tie.
+      const existing = out.get(table);
+      if (!existing || columns.length < existing.length) out.set(table, columns);
+    }
+    return out;
+  }
+
+  /**
    * pg_catalog, NOT information_schema: `constraint_column_usage` lists only constraints on tables
    * the CURRENT ROLE OWNS, and the api runs as the non-owner app role — so it saw no foreign key at
    * all, every table looked independent, and an import inserted `media` before `media_folders`.

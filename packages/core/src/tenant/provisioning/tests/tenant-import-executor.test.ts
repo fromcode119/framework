@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { IDatabaseManager } from '@fromcode119/database';
+import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 import { TenantArchiveManifest } from '@core/tenant/provisioning/tenant-archive-manifest';
 import type { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
@@ -141,5 +142,74 @@ describe('TenantImportExecutor — export warnings carry through to the result',
 
     expect(result.warnings).toEqual(['a decision this import makes']);
     expect(result.exportWarnings).toEqual(['written into the archive at export time']);
+  });
+});
+
+/**
+ * `_system_meta` end to end: a platform key never reaches the destination table as a tenant row (the
+ * rowFilter drops it before the inserter ever sees it), and a non-platform key — a tenant's own
+ * integration settings — lands OWNED by the destination tenant, via the upsert the row inserter now
+ * uses for this naturally-keyed table.
+ */
+describe('TenantImportExecutor — _system_meta rows land owned by the destination tenant', () => {
+  it('drops the platform-key row and stamps the tenant-owned row with the new tenant\'s id', async () => {
+    const [platformKey] = SystemSettingRegistry.platformKeys();
+    const insertedMeta: Array<{ sql: string; params: unknown[] }> = [];
+    const db = {
+      withTenant: vi.fn(async (_tenantId: string, fn: () => Promise<void>) => fn()),
+      queryRaw: vi.fn(async (sql: string, params: unknown[] = []) => {
+        if (sql === 'BEGIN' || sql === 'COMMIT' || sql === 'ROLLBACK') return [];
+        if (sql.startsWith('INSERT INTO "_system_meta"')) {
+          insertedMeta.push({ sql, params });
+          return [];
+        }
+        return [];
+      }),
+    } as unknown as IDatabaseManager;
+
+    const metaTable = new TenantTableDescriptor(
+      '_system_meta', { key: 'text', value: 'text', tenant_id: 'text' }, false, null, [], new Set(), null, null, ['key'],
+    );
+
+    const manifest = new TenantArchiveManifest(
+      1, '2026-01-01T00:00:00.000Z', '0.0.0', 'tenant',
+      { id: 'meta-co', slug: 'meta-co', primaryHost: 'meta-co.test', hostAliases: [], state: 'active', kind: 'site', appearance: '' },
+      [], null,
+      [{ name: '_system_meta', rows: 2, columns: ['key', 'value'], hasSerialId: false }],
+      0, { count: 0, bytes: 0 }, [],
+    );
+    const rowsByTable: Record<string, Array<Record<string, unknown>>> = {
+      _system_meta: [
+        { key: platformKey, value: 'a deployment truth this tenant cannot own' },
+        { key: 'integration_shipping_provider', value: '{"username":"abc"}' },
+      ],
+    };
+    const reader = {
+      manifest,
+      rows: async function* rows(table: string) { for (const row of rowsByTable[table] ?? []) yield row; },
+      users: async function* users() { /* none */ },
+      fileNames: () => [],
+      filePath: () => null,
+      close: () => undefined,
+    } as unknown as TenantArchiveReader;
+
+    const registry = {
+      create: vi.fn(async () => ({ id: 'tenant-meta-1', slug: 'meta-co' })),
+      remove: vi.fn(async () => undefined),
+    } as unknown as TenantRegistryService;
+
+    const identity = TenantIdentity.from({ id: 'tenant-meta-1', slug: 'meta-co', primaryHost: 'meta-co.test', kind: 'site' });
+    const plan = new TenantImportPlan(manifest, [], [], null, { total: 0, existing: 0, toCreate: 0 }, { count: 0, bytes: 0, colliding: 0 }, [], []);
+
+    await new TenantImportExecutor(db, registry, [metaTable], '/tmp/fc-executor-test-uploads').execute(reader, identity, plan);
+
+    // The platform key never became a row of this tenant at all.
+    expect(insertedMeta).toHaveLength(1);
+    const [meta] = insertedMeta;
+    const columns = /INSERT INTO "_system_meta" \(([^)]+)\)/.exec(meta.sql)![1].split(',').map((c) => c.trim().replace(/"/g, ''));
+    const written = Object.fromEntries(columns.map((column, index) => [column, meta.params[index]]));
+    expect(written.key).toBe('integration_shipping_provider');
+    expect(written.tenant_id).toBe('tenant-meta-1');
+    expect(meta.sql).toContain('ON CONFLICT ("key", "tenant_id")');
   });
 });
