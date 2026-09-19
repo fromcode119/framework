@@ -136,3 +136,5 @@ deploy/targets.json
 # Compiled bin entries — source is scripts/*-launcher.ts (TypeScript)
 packages/admin/dist/
 packages/frontend/dist/
+packages/create/dist/
+packages/create/template/proxy.js

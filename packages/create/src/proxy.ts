@@ -7,10 +7,14 @@
  *   /admin*   → Admin panel (ADMIN_PORT, default 3001)
  *   /*        → Frontend (FRONTEND_PORT, default 3002)
  *              if FRONTEND_PORT is not set, only /admin* is served
+ *
+ * This file is copied verbatim into every generated project as `proxy.js` and run there with
+ * plain `node` — the generated project has no TypeScript toolchain of its own. It is compiled
+ * from this source (`npm run build`) rather than hand-written, so it is typed and guarded like
+ * everything else; only the shipped copy stays `.js`.
  */
-
-const http = require('http');
-const httpProxy = require('http-proxy');
+import http = require('http');
+import httpProxy = require('http-proxy');
 
 const PROXY_PORT    = parseInt(process.env.PROXY_PORT    || '3000', 10);
 const API_PORT      = parseInt(process.env.API_PORT      || '4000', 10);
@@ -21,17 +25,17 @@ const proxy = httpProxy.createProxyServer({ ws: true });
 
 proxy.on('error', (err, _req, res) => {
   console.error('[proxy error]', err.message);
-  if (res && res.writeHead) {
-    res.writeHead(502, { 'Content-Type': 'text/plain' });
-    res.end('Service unavailable - is the target process running?');
+  if (res && (res as http.ServerResponse).writeHead) {
+    (res as http.ServerResponse).writeHead(502, { 'Content-Type': 'text/plain' });
+    (res as http.ServerResponse).end('Service unavailable - is the target process running?');
   }
 });
 
-function target(port) {
+function target(port: number): string {
   return `http://localhost:${port}`;
 }
 
-function route(url) {
+function route(url: string): string | null {
   if (url.startsWith('/api'))     return target(API_PORT);
   if (url.startsWith('/plugins')) return target(API_PORT);
   if (url.startsWith('/themes'))  return target(API_PORT);
