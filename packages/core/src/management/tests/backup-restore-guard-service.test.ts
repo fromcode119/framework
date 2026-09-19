@@ -13,7 +13,7 @@ describe('BackupRestoreGuardService', () => {
   const temporaryDirectories: string[] = [];
 
   afterEach(() => {
-    delete process.env.FROMCODE_PROJECT_ROOT;
+    delete process.env.ATLANTIS_PROJECT_ROOT;
     FrameworkRootLocator.forget();
 
     for (const directoryPath of temporaryDirectories) {
@@ -27,7 +27,7 @@ describe('BackupRestoreGuardService', () => {
   it('creates a safety snapshot and restores a plugin backup into the approved target directory', async () => {
     const frameworkRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-restore-'));
     temporaryDirectories.push(frameworkRoot);
-    process.env.FROMCODE_PROJECT_ROOT = frameworkRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
     fs.writeFileSync(path.join(frameworkRoot, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');
 
     const pluginDirectory = path.join(frameworkRoot, 'plugins', 'demo');
@@ -55,7 +55,7 @@ describe('BackupRestoreGuardService', () => {
   it('rejects mismatched backup and restore target types', async () => {
     const frameworkRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-restore-mismatch-'));
     temporaryDirectories.push(frameworkRoot);
-    process.env.FROMCODE_PROJECT_ROOT = frameworkRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
     fs.writeFileSync(path.join(frameworkRoot, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');
 
     const systemBackupPath = path.join(frameworkRoot, 'backups', 'system', 'system-2026-04-13.tar.gz');
@@ -94,7 +94,7 @@ describe('BackupRestoreGuardService', () => {
   it('rejects unsupported restore targets', async () => {
     const frameworkRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-restore-invalid-'));
     temporaryDirectories.push(frameworkRoot);
-    process.env.FROMCODE_PROJECT_ROOT = frameworkRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
     fs.writeFileSync(path.join(frameworkRoot, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');
 
     const guard = new BackupRestoreGuardService();
@@ -105,7 +105,7 @@ describe('BackupRestoreGuardService', () => {
   it('rejects forged restore execution attempts that do not present the issued preview token', async () => {
     const frameworkRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-restore-contract-'));
     temporaryDirectories.push(frameworkRoot);
-    process.env.FROMCODE_PROJECT_ROOT = frameworkRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
     fs.writeFileSync(path.join(frameworkRoot, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');
 
     const pluginDirectory = path.join(frameworkRoot, 'plugins', 'demo');

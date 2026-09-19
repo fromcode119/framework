@@ -8,7 +8,7 @@ describe('DiscoveryService', () => {
   const projectRoots: string[] = [];
 
   afterEach(() => {
-    delete process.env.FROMCODE_PROJECT_ROOT;
+    delete process.env.ATLANTIS_PROJECT_ROOT;
 
     for (const projectRoot of projectRoots.splice(0)) {
       fs.rmSync(projectRoot, { recursive: true, force: true });
@@ -46,7 +46,7 @@ describe('DiscoveryService', () => {
       ].join('\n'),
     );
 
-    process.env.FROMCODE_PROJECT_ROOT = projectRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = projectRoot;
 
     const discoveryService = new DiscoveryService(pluginsRoot, projectRoot);
     const result = await discoveryService.discoverPlugins(new Map());

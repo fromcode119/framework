@@ -27,7 +27,7 @@ a human relaying clicks.
 On a multi-site platform every token names the site it acts on. A site admin can only mint tokens for
 their own site; the platform admin may mint an **all-sites** token and pick the site per call with the
 `x-fc-site` header. The stdio server exposes two local tools, `sites.list` and `sites.select`, and
-`FROMCODE_SITE` preselects one at launch; selecting a site re-announces the tool list, because the site
+`ATLANTIS_SITE` preselects one at launch; selecting a site re-announces the tool list, because the site
 decides which plugins' tools exist. A workspace's console can also reach the hosted endpoint on its own
 domain (`https://<workspace-domain>/api/v1/mcp`).
 
@@ -58,15 +58,15 @@ configuration.
       "command": "node",
       "args": ["packages/mcp-server/dist/bin.js"],
       "env": {
-        "FROMCODE_API_URL": "http://localhost:3000/api/v1",
-        "FROMCODE_API_TOKEN": "<token from Settings → Integrations → MCP>"
+        "ATLANTIS_API_URL": "http://localhost:3000/api/v1",
+        "ATLANTIS_API_TOKEN": "<token from Settings → Integrations → MCP>"
       }
     }
   }
 }
 ```
 
-`FROMCODE_API_URL` is the FULL api base — origin plus the versioned prefix your deployment serves.
+`ATLANTIS_API_URL` is the FULL api base — origin plus the versioned prefix your deployment serves.
 
 Restart Claude Code and run `/mcp` — the fromcode server lists its tools. From there, plain requests
 ("list the vision-board image slots", "show pending orders") route through the tools automatically.

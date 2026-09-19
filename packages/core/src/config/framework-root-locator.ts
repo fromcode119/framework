@@ -23,7 +23,7 @@ export class FrameworkRootLocator {
   /**
    * Forget the discovered root, so the next lookup walks the filesystem again.
    *
-   * For tests that relocate the root — they set `FROMCODE_PROJECT_ROOT` or build a fixture tree, and
+   * For tests that relocate the root — they set `ATLANTIS_PROJECT_ROOT` or build a fixture tree, and
    * a root cached by an earlier test would otherwise answer for the new one. It is a real method
    * rather than a private field two suites reached into: `(ProjectPaths as any).cachedRoot = null`
    * silently stopped working the moment this class moved, and took four unrelated suites with it,
@@ -37,8 +37,8 @@ export class FrameworkRootLocator {
       if (FrameworkRootLocator.cachedRoot) return FrameworkRootLocator.cachedRoot;
 
       // Allow explicit override via environment variable
-      if (process.env.FROMCODE_PROJECT_ROOT) {
-        FrameworkRootLocator.cachedRoot = path.resolve(process.env.FROMCODE_PROJECT_ROOT);
+      if (process.env.ATLANTIS_PROJECT_ROOT) {
+        FrameworkRootLocator.cachedRoot = path.resolve(process.env.ATLANTIS_PROJECT_ROOT);
         return FrameworkRootLocator.cachedRoot;
       }
 

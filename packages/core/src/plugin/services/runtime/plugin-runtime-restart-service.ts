@@ -16,7 +16,7 @@ export class PluginRuntimeRestartService {
 
     this.logger.warn(`Scheduling process restart in ${this.restartDelayMs}ms: ${reason}`);
 
-    if (process.env.NODE_ENV === 'test' || process.env.FROMCODE_DISABLE_PLUGIN_RUNTIME_RESTART === 'true') {
+    if (process.env.NODE_ENV === 'test' || process.env.ATLANTIS_DISABLE_PLUGIN_RUNTIME_RESTART === 'true') {
       return;
     }
 

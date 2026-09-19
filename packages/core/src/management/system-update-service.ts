@@ -217,7 +217,7 @@ export class SystemUpdateService {
     const resolvedVersion = version || this.resolveInstalledVersion();
     // Schedule an automatic restart so the new core code is actually loaded (the running process
     // still holds the old core in memory). process.exit → the container's restart policy brings it
-    // back; honors the same FROMCODE_DISABLE_PLUGIN_RUNTIME_RESTART / test guards as plugin updates.
+    // back; honors the same ATLANTIS_DISABLE_PLUGIN_RUNTIME_RESTART / test guards as plugin updates.
     this.logger.info(`Framework Core successfully updated to v${resolvedVersion}. Scheduling restart to load it.`);
     new PluginRuntimeRestartService(this.logger).scheduleRestart(`Framework Core updated to v${resolvedVersion}.`);
     return { success: true, version: resolvedVersion };

@@ -10,18 +10,18 @@ import { McpStdioServer } from '@mcp-server/mcp-stdio-server';
  * process on the machine could read it.
  */
 export class McpServerLauncher {
-  static readonly USAGE = 'atlantis-mcp: FROMCODE_API_URL (full api base, e.g. https://api.example.com/api/v1) and FROMCODE_API_TOKEN are required. FROMCODE_SITE (a site id or host) is optional: it preselects the site an all-sites token acts on.';
+  static readonly USAGE = 'atlantis-mcp: ATLANTIS_API_URL (full api base, e.g. https://api.example.com/api/v1) and ATLANTIS_API_TOKEN are required. ATLANTIS_SITE (a site id or host) is optional: it preselects the site an all-sites token acts on.';
 
   /** Wires a ready server from the environment. Throws the usage message when either value is missing. */
   static create(env: Record<string, string | undefined>): McpStdioServer {
-    const baseUrl = String(env.FROMCODE_API_URL || '').trim();
-    const token = String(env.FROMCODE_API_TOKEN || '').trim();
+    const baseUrl = String(env.ATLANTIS_API_URL || '').trim();
+    const token = String(env.ATLANTIS_API_TOKEN || '').trim();
     if (!baseUrl || !token) {
       throw new Error(McpServerLauncher.USAGE);
     }
     // A site-bound token ignores this (the api refuses a mismatch); an all-sites token starts on it
     // instead of needing `sites.select` first.
-    const site = String(env.FROMCODE_SITE || '').trim() || null;
+    const site = String(env.ATLANTIS_SITE || '').trim() || null;
     return new McpStdioServer(new McpHttpClient(baseUrl, token, fetch, site));
   }
 

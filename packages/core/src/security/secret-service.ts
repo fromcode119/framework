@@ -2,6 +2,16 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypt
 
 export class SecretService {
   private static readonly ENCRYPTED_PREFIX = 'enc:v1:';
+  /**
+   * NOT renamed with the rest of the product, deliberately.
+   *
+   * This string is PERSISTED: a config whose secret was left untouched stores the mask itself, and
+   * `isSavedSecretMask` recognises it on the way back in so the real secret is kept rather than
+   * overwritten. Change the literal and every row already holding the old one stops being
+   * recognised — the mask itself would then be saved as if it were the secret.
+   *
+   * Renaming it needs a migration that rewrites those stored values first, not an edit here.
+   */
   private static readonly DEFAULT_SAVED_SECRET_MASK = '__FROMCODE_SAVED_SECRET__';
 
   static getSavedSecretMask(): string {

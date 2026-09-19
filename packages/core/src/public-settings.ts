@@ -82,7 +82,7 @@ export class PublicSettings {
     if (explicit) return explicit;
     if (EnvUtils.isServer()) return '';
     const w = window as any;
-    return String(w.FROMCODE_API_URL || w.Fromcode?.apiUrl || w.location?.origin || '').replace(/\/+$/, '');
+    return String(w.ATLANTIS_API_URL || w.Fromcode?.apiUrl || w.location?.origin || '').replace(/\/+$/, '');
   }
 
   private static emit(): void {

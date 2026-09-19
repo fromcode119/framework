@@ -11,7 +11,7 @@ describe('BackupCatalogService', () => {
   const temporaryDirectories: string[] = [];
 
   afterEach(() => {
-    delete process.env.FROMCODE_PROJECT_ROOT;
+    delete process.env.ATLANTIS_PROJECT_ROOT;
     FrameworkRootLocator.forget();
 
     for (const directoryPath of temporaryDirectories) {
@@ -25,7 +25,7 @@ describe('BackupCatalogService', () => {
   it('groups backups by category and resolves stable ids back to files', async () => {
     const frameworkRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-catalog-'));
     temporaryDirectories.push(frameworkRoot);
-    process.env.FROMCODE_PROJECT_ROOT = frameworkRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
     fs.writeFileSync(path.join(frameworkRoot, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');
 
     const backupsRoot = path.join(frameworkRoot, 'backups');

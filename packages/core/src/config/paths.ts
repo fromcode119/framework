@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { SystemConstants } from '@core/constants/system.constants';
+import { EnvUtils } from '@core/utils/env-utils';
 import { FrameworkRootLocator } from '@core/config/framework-root-locator';
 import { UploadPaths } from '@core/config/upload-paths';
 
@@ -155,8 +156,9 @@ export class ProjectPaths extends UploadPaths {
 
   static getPackagesDir(): string {
       // Allow explicit override via environment variable
-      if (process.env.FROMCODE_PACKAGES_DIR) {
-        return path.resolve(process.env.FROMCODE_PACKAGES_DIR);
+      const packagesDir = EnvUtils.text('ATLANTIS_PACKAGES_DIR');
+      if (packagesDir) {
+        return path.resolve(packagesDir);
       }
 
       const root = ProjectPaths.getProjectRoot();

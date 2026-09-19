@@ -9,7 +9,7 @@ describe('ProjectPaths repository helpers', () => {
   const temporaryDirectories: string[] = [];
 
   afterEach(() => {
-    delete process.env.FROMCODE_PROJECT_ROOT;
+    delete process.env.ATLANTIS_PROJECT_ROOT;
     FrameworkRootLocator.forget();
 
     for (const directoryPath of temporaryDirectories) {
@@ -31,7 +31,7 @@ describe('ProjectPaths repository helpers', () => {
     fs.mkdirSync(path.join(parentRoot, 'plugins'), { recursive: true });
     fs.mkdirSync(path.join(parentRoot, 'themes'), { recursive: true });
     fs.writeFileSync(path.join(parentRoot, 'AGENTS.md'), '# test\n', 'utf8');
-    process.env.FROMCODE_PROJECT_ROOT = frameworkRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
 
     process.chdir(frameworkRoot);
 
