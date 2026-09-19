@@ -118,7 +118,11 @@ export class ImportPlanSummary extends PureReactor {
         />
         <div className="fc-import-plan__notes">
           {ImportPlanSummary.note(true, 'Nothing here is deleted', this.alreadyHere)}
-          {ImportPlanSummary.note(true, 'Your settings come with it', this.settingsSentence)}
+          {ImportPlanSummary.note(
+            Boolean(this.plan.manifest?.secretsSealed),
+            this.plan.manifest?.secretsSealed ? 'Your settings come with it' : 'Your settings need a password',
+            this.settingsSentence,
+          )}
           {this.worthKnowing.map((line) => ImportPlanSummary.note(false, 'Worth checking after', line))}
         </div>
       </div>
