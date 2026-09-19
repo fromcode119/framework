@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "fromcode-mcp": "./dist/bin.js"
+    "atlantis-mcp": "./dist/bin.js"
   },
   "files": [
     "dist"

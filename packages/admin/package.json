@@ -5,7 +5,7 @@
   "main": "lib/index.ts",
   "types": "lib/index.ts",
   "bin": {
-    "fromcode-admin": "scripts/admin.js"
+    "atlantis-admin": "scripts/admin.js"
   },
   "files": [
     ".next",

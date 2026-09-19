@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "fromcode-api": "dist/bin.js"
+    "atlantis-api": "dist/bin.js"
   },
   "files": [
     "dist"

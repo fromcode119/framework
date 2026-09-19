@@ -1,7 +1,7 @@
 # Package Module: @fromcode119/create
 
 - Path: `packages/create`
-- Binary: `create-fromcode`
+- Binary: `create-atlantis`
 
 ## Purpose
 

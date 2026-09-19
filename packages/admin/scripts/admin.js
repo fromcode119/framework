@@ -15,7 +15,7 @@ let nextBin;
 try {
   nextBin = require.resolve('next/dist/bin/next', { paths: [pkgDir] });
 } catch {
-  console.error('[fromcode-admin] Could not resolve the "next" binary. Run: npm install inside @fromcode119/admin');
+  console.error('[atlantis-admin] Could not resolve the "next" binary. Run: npm install inside @fromcode119/admin');
   process.exit(1);
 }
 
