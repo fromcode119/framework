@@ -13,7 +13,7 @@ import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 import { TableVisitState } from '@core/tenant/provisioning/enums/table-visit-state.enum';
 import { TenantColumnFold } from '@core/tenant/provisioning/tenant-column-fold';
-import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
+import { TenantJournalTables } from '@core/tenant/provisioning/tenant-journal-tables';
 
 /**
  * Which tables hold tenant data on THIS platform, and what they look like.
@@ -96,7 +96,7 @@ export class TenantTableCatalog {
     ]);
     const schemaReferences = this.schemaReferences(wanted, columns);
     const folds = this.schemaFolds(wanted, columns);
-    const journals = this.journalTables();
+    const journals = TenantJournalTables.from(this.collections);
     const owners = this.owners();
 
     const descriptors = tables.map((table) => {
@@ -165,25 +165,6 @@ export class TenantTableCatalog {
    * the destination column actually exists here and holds JSON — folding eight values into a `text`
    * column would write a shape nothing reads.
    */
-  /**
-   * Tables whose rows are a record of what happened: the framework's own journals, plus every
-   * collection that declares `journal`. Never inferred from a name or a row count — the framework
-   * cannot tell a log from a catalogue by looking, and a guess there is magic.
-   */
-  private journalTables(): Set<string> {
-    const out = new Set<string>(TenantBespokePolicies.journalTables());
-    for (const { collection } of this.collections) {
-      // The collection ALREADY says this, and has since long before the import screen existed: a
-      // row an operator can neither create nor edit is a record of what happened, not a thing they
-      // manage. Reusing that declaration beats inventing a second one that every plugin would then
-      // have to remember to set in agreement with the first.
-      if (!(collection.admin?.disableCreate && collection.admin?.disableEdit)) continue;
-      const table = String(collection.tableName || collection.slug || '').trim();
-      if (table) out.add(table);
-    }
-    return out;
-  }
-
   private schemaFolds(wanted: Set<string>, columns: Map<string, Record<string, string>>): Map<string, TenantColumnFold[]> {
     const out = new Map<string, TenantColumnFold[]>();
     for (const { collection } of this.collections) {
