@@ -74,6 +74,9 @@ export class TenantRowInserter {
     if (Object.keys(deferredValues).length > 0) this.pendingSelfReferences.push({ id: newId, values: deferredValues });
 
     if (this.table.name === SystemConstants.TABLE.MEDIA) this.files.rewriteMediaRow(values);
+    // A renamed upload is referenced from CONTENT too, not only from the media row that owns it —
+    // a page's blocks carry `/uploads/<name>` verbatim. Every table, because any column may quote one.
+    this.files.rewriteUploadReferences(values);
 
     // A column this platform requires but the archive left null (a source that never enforced it, a
     // cleared dangling reference, a column added NOT NULL here after the export) gets the type's empty
