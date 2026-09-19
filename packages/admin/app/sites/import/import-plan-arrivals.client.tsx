@@ -83,7 +83,7 @@ export class ImportPlanArrivals extends PureReactor {
     const groups = ImportPlanGrouping.byPlugin(this.platformRecords);
     return (
       <details className="fc-import-plan__platform-records">
-        <summary>{this.platformRecordsTotal.toLocaleString()} platform record(s) across {this.platformRecords.length.toLocaleString()} table(s) — which tables</summary>
+        <summary>{this.platformRecordsTotal.toLocaleString()} record(s) with no label of their own, in {this.platformRecords.length.toLocaleString()} other kind(s) — see which</summary>
         <div className="fc-import-plan__cols">
           {groups.map((group, groupIndex) => (
             <span key={group.key}>

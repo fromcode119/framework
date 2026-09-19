@@ -79,8 +79,11 @@ describe('ImportPlanSummary -> Arrives', () => {
       />,
     );
 
-    expect(screen.getByText(/2 platform record\(s\) across 1 table\(s\)/)).not.toBeNull();
+    expect(screen.getByText(/2 record\(s\) with no label of their own, in 1 other kind\(s\)/)).not.toBeNull();
     expect(screen.getByText(/2 in total\./)).not.toBeNull();
+    // The default-visible caption must never say "table" — that is the exact wording the owner
+    // rejected three times before; the physical name only ever appears once this fold is opened.
+    expect(screen.queryByText(/\btables?\b/i)).toBeNull();
   });
 
   it('shows people in the arrival list when the archive carries any', () => {
@@ -118,5 +121,57 @@ describe('ImportPlanSummary -> Arrives', () => {
     expect(screen.getByText(/9 record\(s\) have nowhere to go until the add-on that owns them is installed here/)).not.toBeNull();
     expect(screen.queryByText(/Expand a table below/)).toBeNull();
     expect(screen.queryByText(/re-numbered/)).toBeNull();
+  });
+
+  it('says nothing about integrations when the archive carries no secret at all', () => {
+    // No prior test covered this: `manifest.secretsSealed` defaults to `false` whether or not the
+    // export even offered a passphrase, so gating on it alone would print "their passwords were
+    // locked..." for an archive with zero integrations — a claim about a setting that was never
+    // stored. The planner's own `carry a secret` warning is the only thing that actually knows.
+    render(
+      <ImportPlanSummary
+        plan={{ metaRowsExcluded: 0, pluginSettingsRowsExcluded: 0, users: emptyUsers, files: { count: 0, colliding: 0 }, warnings: [] }}
+        arriving={[]}
+        skipped={[]}
+        remapped={[]}
+      />,
+    );
+
+    expect(screen.queryByText(/Your settings/)).toBeNull();
+    expect(screen.queryByText(/integrations/i)).toBeNull();
+  });
+
+  it('states the sealed-secrets sentence only when the planner reports a secret-bearing setting', () => {
+    render(
+      <ImportPlanSummary
+        plan={{
+          metaRowsExcluded: 0, pluginSettingsRowsExcluded: 0, users: emptyUsers, files: { count: 0, colliding: 0 },
+          warnings: ['3 setting row(s) carry a secret. This archive was sealed for transit, so they are taken into this deployment\'s own key during the import.'],
+          manifest: { secretsSealed: true },
+        }}
+        arriving={[]}
+        skipped={[]}
+        remapped={[]}
+      />,
+    );
+
+    expect(screen.getByText(/Your integrations arrive configured and working — nothing to enter again\./)).not.toBeNull();
+  });
+
+  it('states the unsealed-secrets sentence when the planner reports a secret the archive could not seal', () => {
+    render(
+      <ImportPlanSummary
+        plan={{
+          metaRowsExcluded: 0, pluginSettingsRowsExcluded: 0, users: emptyUsers, files: { count: 0, colliding: 0 },
+          warnings: ['3 setting row(s) carry a secret encrypted by the deployment that exported them.'],
+          manifest: { secretsSealed: false },
+        }}
+        arriving={[]}
+        skipped={[]}
+        remapped={[]}
+      />,
+    );
+
+    expect(screen.getByText(/Open Settings.*Integrations afterwards to enter them again\./)).not.toBeNull();
   });
 });
