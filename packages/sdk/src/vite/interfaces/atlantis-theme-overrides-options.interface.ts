@@ -1,4 +1,4 @@
-export interface IFromcodeThemeOverridesOptions {
+export interface IAtlantisThemeOverridesOptions {
   /**
    * Absolute path to the theme's src directory.
    * Defaults to `process.cwd() + '/src'`.

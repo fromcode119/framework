@@ -1,12 +1,12 @@
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
-import { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import { IAtlantisPlugin } from '@core/interfaces/atlantis-plugin.interface';
 
 /**
  * Represents an installed plugin at runtime, combining manifest data with system state.
  */
-export interface ILoadedPlugin extends IFromcodePlugin {
+export interface ILoadedPlugin extends IAtlantisPlugin {
   instanceId: string;
   state: PluginState;
 

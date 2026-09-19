@@ -26,7 +26,7 @@ export * from '@core/entity/interfaces/entity-input-alias.interface';
 export * from '@core/entity/interfaces/entity-parse-options.interface';
 export * from '@core/entity/interfaces/entity-parse-result.interface';
 export * from '@core/interfaces/field.interface';
-export * from '@core/interfaces/fromcode-plugin.interface';
+export * from '@core/interfaces/atlantis-plugin.interface';
 export * from '@core/interfaces/frontend-runtime-metadata.interface';
 export * from '@core/interfaces/i18n-config.interface';
 export * from '@core/interfaces/live-blocks-snapshot.interface';

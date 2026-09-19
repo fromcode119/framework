@@ -1,7 +1,7 @@
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import { PluginContext } from '@core/plugin/plugin-context';
 
-export interface IFromcodePlugin {
+export interface IAtlantisPlugin {
   manifest: IPluginManifest;
   onInstall?: (ctx: PluginContext) => Promise<void>;
   onInit?: (ctx: PluginContext) => Promise<void>;

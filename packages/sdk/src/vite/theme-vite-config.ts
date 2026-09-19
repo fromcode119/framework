@@ -10,7 +10,7 @@ import externalGlobals from 'rollup-plugin-external-globals';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { UserConfig } from 'vite';
-import { FromcodeThemeOverridesPlugin } from './fromcode-theme-overrides-plugin';
+import { AtlantisThemeOverridesPlugin } from './atlantis-theme-overrides-plugin';
 import { ThemeEntryGenerator } from './theme-entry-generator';
 
 /**
@@ -82,7 +82,7 @@ export class ThemeViteConfig {
     return {
       plugins: [
         react({ jsxRuntime: 'automatic' }),
-        FromcodeThemeOverridesPlugin.create({ themeSlug, priority: 11 }),
+        AtlantisThemeOverridesPlugin.create({ themeSlug, priority: 11 }),
       ],
       define: { 'process.env.NODE_ENV': JSON.stringify('production') },
       // Vendor-prefix the theme's CSS in the framework build (autoprefixer) so every theme gets correct

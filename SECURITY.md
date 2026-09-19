@@ -2,13 +2,13 @@
 
 > **Important — Open Source Disclaimer**
 >
-> Fromcode is provided **as-is** under the MIT License. As an open-source project, **we make no warranties or guarantees** regarding security, fitness for purpose, or freedom from defects. By using Fromcode, you accept full responsibility for securing your own deployment. The maintainers are not liable for any damages, data breaches, or losses arising from use of this software.
+> Atlantis is provided **as-is** under the MIT License. As an open-source project, **we make no warranties or guarantees** regarding security, fitness for purpose, or freedom from defects. By using Atlantis, you accept full responsibility for securing your own deployment. The maintainers are not liable for any damages, data breaches, or losses arising from use of this software.
 >
 > We will make **best-effort** attempts to address reported vulnerabilities, but there are no SLAs, no guaranteed patch timelines, and no obligation to act on any report.
 
 ## Supported Versions
 
-Only the latest stable release of Fromcode receives best-effort security attention.
+Only the latest stable release of Atlantis receives best-effort security attention.
 
 | Version | Status          |
 |---------|-----------------|
@@ -55,7 +55,7 @@ The following are **out of scope**:
 
 ## Security Architecture
 
-Fromcode has several built-in security layers you should be aware of when researching:
+Atlantis has several built-in security layers you should be aware of when researching:
 
 - **Security Monitor** — Real-time threat detection loop (`packages/core/src/security/`)
 - **Plugin Sandboxing** — Plugins run with declared capabilities only via `SandboxManager`

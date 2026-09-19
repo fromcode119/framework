@@ -1,6 +1,6 @@
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
-import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
+import type { IAtlantisPlugin } from '@core/interfaces/atlantis-plugin.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { PluginContext } from '@core/plugin/plugin-context';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
