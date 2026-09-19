@@ -87,7 +87,7 @@ export class ImportPlanView extends PureReactor {
     const remapped = withRows.filter((t) => t.mode === String(TenantImportIdMode.REMAP.value)).sort(byRows);
     const kept = withRows.filter((t) => t.mode === String(TenantImportIdMode.PRESERVE.value)).sort(byRows);
     // What actually ARRIVES — every row with somewhere to go. `withRows` alone double-counts: it
-    // still includes the SKIP-mode tables, which are exactly what "Left behind" counts separately.
+    // still includes the SKIP-mode tables, which are exactly what "Won't come across" counts separately.
     const arriving = withRows.filter((t) => t.mode !== String(TenantImportIdMode.SKIP.value));
 
     return (

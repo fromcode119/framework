@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan-table.interface';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 /**
  * One table, in one of the three non-empty groups. The row itself says only what an operator needs
@@ -65,12 +67,12 @@ export class ImportPlanTableRow extends PureReactor {
     const dropped = table.droppedColumns.length;
     const opaque = table.opaqueJsonColumns.length;
     const excluded = this.excludedRows;
-    if (!dropped && !opaque && !excluded) return this.kind === 'skipped' ? null : <span className="fc-import-plan__chip fc-import-plan__chip--ok">nothing lost</span>;
+    if (!dropped && !opaque && !excluded) return this.kind === 'skipped' ? null : <Badge variant={BadgeVariant.SUCCESS}>nothing lost</Badge>;
     const parts: string[] = [];
     if (dropped > 0) parts.push(`${dropped.toLocaleString()} field${dropped === 1 ? '' : 's'} not carried over`);
     if (opaque > 0) parts.push(`${opaque.toLocaleString()} linked id${opaque === 1 ? '' : 's'} not updated`);
     if (excluded) parts.push(`${excluded.count.toLocaleString()} row${excluded.count === 1 ? '' : 's'} not carried over`);
-    return <span className="fc-import-plan__chip">{parts.join(', ')}</span>;
+    return <Badge variant={BadgeVariant.WARNING}>{parts.join(', ')}</Badge>;
   }
 
   /** The positive counterpart of the lost columns: what the remap WILL follow. */

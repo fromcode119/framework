@@ -7,7 +7,7 @@ import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan
  * "Arrives" must count only rows that actually land. A non-SKIP table's `rows` count (from the
  * archive manifest) still includes the platform-key / uninstalled-plugin-settings rows the
  * executor's rowFilter drops at import time (`_system_meta`, `_system_plugin_settings`) — those
- * are reported separately under "Left behind" via `metaRowsExcluded`/`pluginSettingsRowsExcluded`,
+ * are reported separately under "Won't come across" via `metaRowsExcluded`/`pluginSettingsRowsExcluded`,
  * so counting them again in "Arrives" double-counts the same rows in both totals.
  */
 const table = (overrides: Partial<IImportPlanTable>): IImportPlanTable => ({
