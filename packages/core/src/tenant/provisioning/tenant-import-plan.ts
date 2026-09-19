@@ -69,6 +69,14 @@ export class TenantImportPlan {
     readonly metaRowsExcluded: number = 0,
     /** Rows of `_system_plugin_settings` the executor will drop: settings of a plugin this platform does not have. */
     readonly pluginSettingsRowsExcluded: number = 0,
+    /**
+     * Whether this archive's secrets were sealed for transit, so the import can take them into this
+     * deployment's own key. The preview needs this to say "the credentials come across" as a fact
+     * rather than as a warning about their loss — the same screen said the opposite until it could
+     * see this, and an operator who is told to retype a courier login that would have worked is
+     * being misled by the screen that was meant to explain the import.
+     */
+    readonly secretsSealed: boolean = false,
   ) {}
 
   get canExecute(): boolean {
@@ -92,6 +100,7 @@ export class TenantImportPlan {
       exportWarnings: this.exportWarnings,
       metaRowsExcluded: this.metaRowsExcluded,
       pluginSettingsRowsExcluded: this.pluginSettingsRowsExcluded,
+      secretsSealed: this.secretsSealed,
       canExecute: this.canExecute,
     };
   }

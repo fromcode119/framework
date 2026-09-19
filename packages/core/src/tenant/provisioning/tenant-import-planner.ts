@@ -154,6 +154,7 @@ export class TenantImportPlanner {
     return new TenantImportPlan(
       reader.manifest, tables, plugins, theme, users, files, blockers, warnings, exportWarnings,
       metaRowsExcluded, pluginSettingsRowsExcluded,
+      reader.manifest.secretsSealed,
     );
   }
 
