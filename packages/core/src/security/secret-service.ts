@@ -35,12 +35,21 @@ export class SecretService {
     if (!secret) {
       throw new Error('Secret storage requires SECRET_KEY (or INTEGRATION_SECRET_KEY) to be configured on the server.');
     }
+    return SecretService.sealWith(normalizedValue, secret);
+  }
 
-    const iv = randomBytes(12);
-    const cipher = createCipheriv('aes-256-gcm', secret, iv);
-    const encrypted = Buffer.concat([cipher.update(normalizedValue, 'utf8'), cipher.final()]);
-    const tag = cipher.getAuthTag();
-    return `${SecretService.ENCRYPTED_PREFIX}${iv.toString('base64')}:${tag.toString('base64')}:${encrypted.toString('base64')}`;
+  /**
+   * Encrypts under a passphrase given here rather than the deployment's own key.
+   *
+   * A secret is encrypted with the key of the deployment holding it, so it is unreadable anywhere
+   * else — which is why credentials do not survive a move between deployments. Sealing under a
+   * passphrase both sides know lets a secret TRAVEL while never existing in the clear at rest: the
+   * archive carries ciphertext, the passphrase travels separately, and neither alone is enough.
+   */
+  static encryptWith(value: string, passphrase: string): string {
+    const normalizedValue = String(value || '');
+    if (!normalizedValue) return '';
+    return SecretService.sealWith(normalizedValue, SecretService.deriveKey(passphrase));
   }
 
   static decrypt(value: unknown): string {
@@ -57,20 +66,45 @@ export class SecretService {
     if (!secret) {
       throw new Error('Decrypting stored secrets requires SECRET_KEY (or INTEGRATION_SECRET_KEY) to be configured on the server.');
     }
+    return SecretService.openWith(normalizedValue, secret);
+  }
 
-    const payload = normalizedValue.slice(SecretService.ENCRYPTED_PREFIX.length);
+  /** Decrypts a value sealed by {@link SecretService.encryptWith} under the same passphrase. */
+  static decryptWith(value: unknown, passphrase: string): string {
+    const normalizedValue = String(value || '');
+    if (!normalizedValue) return '';
+    if (!SecretService.isEncryptedValue(normalizedValue)) return normalizedValue;
+    return SecretService.openWith(normalizedValue, SecretService.deriveKey(passphrase));
+  }
+
+  private static sealWith(value: string, key: Buffer): string {
+    const iv = randomBytes(12);
+    const cipher = createCipheriv('aes-256-gcm', key, iv);
+    const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    return `${SecretService.ENCRYPTED_PREFIX}${iv.toString('base64')}:${tag.toString('base64')}:${encrypted.toString('base64')}`;
+  }
+
+  private static openWith(value: string, key: Buffer): string {
+    const payload = value.slice(SecretService.ENCRYPTED_PREFIX.length);
     const [ivBase64, tagBase64, encryptedBase64] = payload.split(':');
     if (!ivBase64 || !tagBase64 || !encryptedBase64) {
       throw new Error('Stored secret is malformed.');
     }
-
-    const decipher = createDecipheriv('aes-256-gcm', secret, Buffer.from(ivBase64, 'base64'));
+    const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(ivBase64, 'base64'));
     decipher.setAuthTag(Buffer.from(tagBase64, 'base64'));
     const decrypted = Buffer.concat([
       decipher.update(Buffer.from(encryptedBase64, 'base64')),
       decipher.final(),
     ]);
     return decrypted.toString('utf8');
+  }
+
+  /** A passphrase becomes a key the same way the deployment's own secret does. */
+  private static deriveKey(passphrase: string): Buffer {
+    const normalized = String(passphrase || '').trim();
+    if (!normalized) throw new Error('A transfer passphrase is required to seal or open a secret for transit.');
+    return createHash('sha256').update(normalized).digest();
   }
 
   static maskIfPresent(value: unknown): string {
