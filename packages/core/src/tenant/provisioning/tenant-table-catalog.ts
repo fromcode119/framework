@@ -13,6 +13,7 @@ import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 import { TableVisitState } from '@core/tenant/provisioning/enums/table-visit-state.enum';
 import { TenantColumnFold } from '@core/tenant/provisioning/tenant-column-fold';
+import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 
 /**
  * Which tables hold tenant data on THIS platform, and what they look like.

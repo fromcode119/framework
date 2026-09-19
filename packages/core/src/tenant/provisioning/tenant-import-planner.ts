@@ -193,7 +193,7 @@ export class TenantImportPlanner {
       return {
         name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.PRESERVE.value), basis: 'naturalKey',
         minId: null, taken: null, opaqueJsonColumns: [], repointedReferences: [], droppedColumns,
-        pluginSlug: destination.pluginSlug, label: destination.label,
+        pluginSlug: destination.pluginSlug, label: destination.label, isJournal: destination.isJournal,
       };
     }
     const decision = await TenantImportPlanner.decideIds(this.db, destination, reader);
