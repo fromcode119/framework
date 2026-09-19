@@ -63,6 +63,16 @@ export class ImportPlanSummary extends PureReactor {
     return out;
   }
 
+  /**
+   * Whether the archive carries any setting with a secret at all — the planner already knows this
+   * (`TenantImportPlanner.warnUnreadableSecrets`) and says so with this exact substring in both of
+   * its warning templates; there is no separate count to gate on without inventing one, so this
+   * reuses the planner's own signal rather than keeping a second copy of the same fact.
+   */
+  private get hasSecrets(): boolean {
+    return (this.plan.warnings ?? []).some((w: string) => w.includes('carry a secret'));
+  }
+
   /** Whether the credentials arrive working, which the archive itself records. */
   private get settingsSentence(): string {
     return this.plan.manifest?.secretsSealed
@@ -101,7 +111,9 @@ export class ImportPlanSummary extends PureReactor {
           pluginSettingsRowsExcluded={plan.pluginSettingsRowsExcluded ?? 0}
         />
         <p className="fc-sites__text"><strong>Nothing here is deleted or overwritten</strong> — {this.alreadyHere}</p>
-        <p className="fc-sites__text"><strong>Your settings</strong> — {this.settingsSentence}</p>
+        {this.hasSecrets ? (
+          <p className="fc-sites__text"><strong>Your settings</strong> — {this.settingsSentence}</p>
+        ) : null}
         {this.worthKnowing.length > 0 ? (
           <div className="fc-import-plan__worth-knowing">
             <span className="fc-site-form__label">Worth knowing</span>
