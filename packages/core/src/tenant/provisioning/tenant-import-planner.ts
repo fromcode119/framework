@@ -5,6 +5,7 @@ import type { IDatabaseManager } from '@fromcode119/database';
 import { PhysicalTableNameUtils } from '@fromcode119/database';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
+import { SecretService } from '@core/security/secret-service';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
@@ -117,6 +118,7 @@ export class TenantImportPlanner {
       ? { slug: reader.manifest.theme.slug, archiveVersion: reader.manifest.theme.version, installedVersion: this.installed.themes.get(reader.manifest.theme.slug) ?? null }
       : null;
     if (theme && !theme.installedVersion) warnings.push(`Theme "${theme.slug}" is not installed here; the site renders with no theme until one is activated.`);
+    await this.warnUnreadableSecrets(reader, warnings);
 
     const users = await this.planUsers(reader);
     const files = this.planFiles(reader);
@@ -204,6 +206,25 @@ export class TenantImportPlanner {
       pluginSlug: destination.pluginSlug,
       label: destination.label,
     };
+  }
+
+  /**
+   * A secret in the archive was encrypted by the deployment that EXPORTED it, and every deployment
+   * holds its own key — so it arrives intact and still unreadable here. Saying so is the difference
+   * between an operator who re-enters one password and one who spends days on a courier that
+   * answers "no cities" because its username resolved to nothing.
+   */
+  private async warnUnreadableSecrets(reader: TenantArchiveReader, warnings: string[]): Promise<void> {
+    let rows = 0;
+    for await (const row of reader.rows(SystemConstants.TABLE.META)) {
+      if (SecretService.carriesEncryptedValue(row.value)) rows += 1;
+    }
+    if (rows === 0) return;
+    warnings.push(
+      `${rows} setting row(s) carry a secret encrypted by the deployment that exported them. `
+      + 'They are imported as they are, but this deployment has its own key and cannot read them, '
+      + 'so each affected integration stays unconfigured until its secret is set again here.',
+    );
   }
 
   /** Shared with the executor so the preview and the run decide the same way from the same numbers. */
