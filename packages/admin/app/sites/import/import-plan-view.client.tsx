@@ -124,7 +124,10 @@ export class ImportPlanView extends PureReactor {
           </div>
         </div>
 
-        <ImportPlanTables skipped={skipped} remapped={remapped} kept={kept} empty={empty} />
+        <ImportPlanTables
+          skipped={skipped} remapped={remapped} kept={kept} empty={empty}
+          metaRowsExcluded={plan.metaRowsExcluded ?? 0} pluginSettingsRowsExcluded={plan.pluginSettingsRowsExcluded ?? 0}
+        />
 
         {ImportPlanView.warnings(plan.warnings ?? [])}
         {ImportPlanView.exportWarnings(plan.exportWarnings ?? [])}

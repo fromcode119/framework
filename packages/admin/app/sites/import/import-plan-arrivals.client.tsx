@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan-table.interface';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { SystemConstants } from '@fromcode119/core/client';
 import { ImportPlanGrouping } from '@/app/sites/import/import-plan-groups';
 
 /** One line of the arrival list: a count and the human thing it counts. */
@@ -28,12 +29,15 @@ export class ImportPlanArrivals extends PureReactor {
   /** Rows with somewhere to go: `rows > 0` and not skipped. */
   @prop declare arriving: IImportPlanTable[];
   @prop declare users: { total: number; existing: number; toCreate: number };
-  @prop declare files: { count: number; bytes: number; colliding: number };
+  @prop declare files: { count: number; colliding: number };
   /**
    * A non-skipped table's own `rows` still counts the platform-key / uninstalled-plugin-settings
    * rows the executor's rowFilter drops at import time (`_system_meta`, `_system_plugin_settings`).
    * Those are counted separately under "Won't come across", so the grand total below must not count
-   * them twice.
+   * them twice — and neither may any per-table figure ABOVE the total: `_system_meta`/
+   * `_system_plugin_settings` are always unlabelled (no collection targets a framework table), so
+   * they always fall into `platformRecords` below, and that fold's own total must net them out the
+   * same way the grand total does, or the two figures on this screen would not add up.
    */
   @prop declare metaRowsExcluded: number;
   @prop declare pluginSettingsRowsExcluded: number;
@@ -46,9 +50,16 @@ export class ImportPlanArrivals extends PureReactor {
     return this.arriving.filter((table) => !table.label);
   }
 
+  /** `table.rows`, net of the executor's own exclusion for the one table (if any) this is. */
+  private netRows(table: IImportPlanTable): number {
+    if (table.name === SystemConstants.TABLE.META) return table.rows - this.metaRowsExcluded;
+    if (table.name === SystemConstants.TABLE.PLUGIN_SETTINGS) return table.rows - this.pluginSettingsRowsExcluded;
+    return table.rows;
+  }
+
   /** Every labelled table plus the two counts that are not table rows at all — people and files. */
   private get items(): IArrivalItem[] {
-    const items: IArrivalItem[] = this.labeled.map((table) => ({ key: table.name, count: table.rows, label: table.label as string }));
+    const items: IArrivalItem[] = this.labeled.map((table) => ({ key: table.name, count: this.netRows(table), label: table.label as string }));
     if (this.users.total > 0) items.push({ key: '__people', count: this.users.total, label: 'people' });
     if (this.files.count > 0) items.push({ key: '__files', count: this.files.count, label: 'files' });
     // Biggest first — the thing an operator should not have to scroll to find is the one most of the
@@ -57,8 +68,9 @@ export class ImportPlanArrivals extends PureReactor {
     return items.sort((a, b) => b.count - a.count);
   }
 
+  /** Net of exclusions, same as every other figure under "Arrives" — see the field comment above. */
   private get platformRecordsTotal(): number {
-    return this.platformRecords.reduce((sum, table) => sum + table.rows, 0);
+    return this.platformRecords.reduce((sum, table) => sum + this.netRows(table), 0);
   }
 
   /** The net row total across every arriving table, minus the rows that never actually land. */
@@ -77,7 +89,7 @@ export class ImportPlanArrivals extends PureReactor {
             <span key={group.key}>
               <strong>{group.key}</strong> — {group.tables.map((table, i) => (
                 <span key={table.name}>
-                  <code>{table.name}</code> ({table.rows.toLocaleString()})
+                  <code>{table.name}</code> ({this.netRows(table).toLocaleString()})
                   {i < group.tables.length - 1 ? ', ' : ''}
                 </span>
               ))}
@@ -99,11 +111,20 @@ export class ImportPlanArrivals extends PureReactor {
         {items.length === 0 && platformRecords.length === 0 ? <span className="fc-sites__none">nothing</span> : null}
         {items.length > 0 ? (
           <p className="fc-import-plan__arrival-list">
-            {items.map((item, i) => (
-              <span key={item.key} className="fc-import-plan__arrival-item">
-                <strong>{item.count.toLocaleString()}</strong> {item.label}{i < items.length - 1 ? ' · ' : ''}
-              </span>
-            ))}
+            {items.flatMap((item, i): ReactNode[] => {
+              const nodes: ReactNode[] = [
+                <span key={item.key} className="fc-import-plan__arrival-item">
+                  <strong>{item.count.toLocaleString()}</strong> {item.label}
+                </span>,
+              ];
+              // Its own flex item, not trailing text inside one — flex strips a collapsible space at a
+              // line-box edge, which is exactly what swallowed this separator's leading space when it
+              // used to live as `' · '` inside the item's own `<span>`.
+              if (i < items.length - 1) {
+                nodes.push(<span key={`${item.key}-sep`} className="fc-import-plan__arrival-sep" aria-hidden="true">&middot;</span>);
+              }
+              return nodes;
+            })}
           </p>
         ) : null}
         {platformRecords.length > 0 ? this.renderPlatformRecordsDetail() : null}

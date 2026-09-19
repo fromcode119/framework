@@ -6,12 +6,17 @@ import { ImportPlanArrivals } from '@/app/sites/import/import-plan-arrivals.clie
 /**
  * The three questions an operator has before deciding: what shows up, what does not, what was
  * already here. Every number in it comes from `ImportPlanTables`' own groups below (never a second
- * source of truth), and each number appears exactly once across this whole screen.
+ * source of truth) — a headline total here (e.g. "198 rows … whose plugin is not installed") is a
+ * SUM of numbers a table row below also shows on its own line, deliberately: the per-row figure is
+ * corroboration an operator can check without trusting this summary alone, not a second source the
+ * headline could drift from.
  *
  * "What arrives" is answered by `ImportPlanArrivals`, as things and counts. What follows here is the
  * two questions that are about CONSEQUENCE rather than inventory — "Won't come across" and "Already
- * here" — stated once, as totals, with "expand a table below" pointing at the per-table specifics
- * that now live behind that table's own disclosure instead of in a raw column dump on this line.
+ * here" — stated once, as totals. Most of those totals point at a specific table's own `<details>`
+ * for the exact columns/rows; a skipped table has no such disclosure (its row IS the whole story —
+ * `basis`/`minId`/`taken` are never computed for it), so `wontCarryOver` below says precisely which
+ * part is reachable by expanding a row and which is just named in the "Not imported" group as-is.
  */
 export class ImportPlanSummary extends PureReactor {
   @prop declare plan: Record<string, any>;
@@ -40,7 +45,19 @@ export class ImportPlanSummary extends PureReactor {
     if (metaRowsExcluded > 0) parts.push(`${metaRowsExcluded.toLocaleString()} setting(s) that belong to a deployment, not a site`);
     if (pluginSettingsRowsExcluded > 0) parts.push(`${pluginSettingsRowsExcluded.toLocaleString()} setting(s) for a plugin not installed here`);
     if (!parts.length) return 'nothing.';
-    return `${parts.join('; ')}. Expand a table below for exactly which.`;
+
+    // What each part above can actually show, on its own line, one click away: dropped columns,
+    // opaque JSON columns and the two excluded-row counts all land on a table that has its own
+    // `<details>`. A skipped table never does — SKIP-mode tables carry no id mechanics to disclose —
+    // so it is already named, with its row count, under "Not imported" below; there is nothing to
+    // expand there because nothing is folded.
+    const expandable = droppedTables.length > 0 || opaqueJsonTables.length > 0 || metaRowsExcluded > 0 || pluginSettingsRowsExcluded > 0;
+    const namedBelow = skippedRows > 0;
+    let trailer = '';
+    if (expandable && namedBelow) trailer = ' Expand a table below for exactly which columns or rows; a skipped table is already named, with its row count, under "Not imported".';
+    else if (expandable) trailer = ' Expand a table below for exactly which.';
+    else if (namedBelow) trailer = ' See "Not imported" below for exactly which.';
+    return `${parts.join('; ')}.${trailer}`;
   }
 
   private get alreadyHere(): string {

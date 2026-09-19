@@ -21,6 +21,9 @@ export class ImportPlanTables extends PureReactor {
   @prop declare remapped: IImportPlanTable[];
   @prop declare kept: IImportPlanTable[];
   @prop declare empty: IImportPlanTable[];
+  /** Passed straight through to every row, so the one table that has any (`_system_meta` or `_system_plugin_settings`) can say so. */
+  @prop declare metaRowsExcluded: number;
+  @prop declare pluginSettingsRowsExcluded: number;
 
   private static group(title: string, count: number, rule: string, body: ReactNode): ReactNode {
     return (
@@ -55,7 +58,7 @@ export class ImportPlanTables extends PureReactor {
   }
 
   render(): ReactNode {
-    const { skipped, remapped, kept, empty } = this;
+    const { skipped, remapped, kept, empty, metaRowsExcluded, pluginSettingsRowsExcluded } = this;
     const skippedRows = skipped.reduce((sum, t) => sum + t.rows, 0);
 
     return (
@@ -64,7 +67,12 @@ export class ImportPlanTables extends PureReactor {
           'Not imported', skipped.length,
           `The plugin that owns each of these is not installed or not enabled here, so there is nowhere to put the rows — ${skippedRows.toLocaleString()} row(s) in total. Install and enable it, then import again, to keep them.`,
           <div className="fc-import-plan__rows">
-            {skipped.map((table) => <ImportPlanTableRow key={table.name} table={table} kind="skipped" />)}
+            {skipped.map((table) => (
+              <ImportPlanTableRow
+                key={table.name} table={table} kind="skipped"
+                metaRowsExcluded={metaRowsExcluded} pluginSettingsRowsExcluded={pluginSettingsRowsExcluded}
+              />
+            ))}
           </div>,
         )}
 
@@ -72,15 +80,25 @@ export class ImportPlanTables extends PureReactor {
           'Re-numbered', remapped.length,
           'The archive’s lowest id is at or below the highest id this platform has already handed out for that table, so its rows get new ids and every reference to them is re-pointed. Expand a row for the exact ids and columns.',
           <div className="fc-import-plan__rows">
-            {remapped.map((table) => <ImportPlanTableRow key={table.name} table={table} kind="remapped" />)}
+            {remapped.map((table) => (
+              <ImportPlanTableRow
+                key={table.name} table={table} kind="remapped"
+                metaRowsExcluded={metaRowsExcluded} pluginSettingsRowsExcluded={pluginSettingsRowsExcluded}
+              />
+            ))}
           </div>,
         )}
 
         {ImportPlanTables.group(
           'Ids kept', kept.length,
-          'Either the table has no serial id and its rows are keyed naturally, or every id in the archive is already above the highest this platform has handed out.',
+          'Either the table has no serial id and its rows are keyed naturally, every id in the archive is already above the highest this platform has handed out, or none of its rows carry a numeric id to compare in the first place — in each case there is nothing to re-number.',
           <div className="fc-import-plan__rows">
-            {kept.map((table) => <ImportPlanTableRow key={table.name} table={table} kind="kept" />)}
+            {kept.map((table) => (
+              <ImportPlanTableRow
+                key={table.name} table={table} kind="kept"
+                metaRowsExcluded={metaRowsExcluded} pluginSettingsRowsExcluded={pluginSettingsRowsExcluded}
+              />
+            ))}
           </div>,
         )}
 

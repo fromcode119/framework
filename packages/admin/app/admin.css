@@ -445,8 +445,13 @@ html.dark {
 /* "Arrives" — a scannable list of counted, human-labelled things, biggest first (see
    `ImportPlanArrivals`), not the 54-row schema dump this replaced. */
 .fc-import-plan__arrivals { display: flex; flex-direction: column; gap: 4px; }
-.fc-import-plan__arrival-list { margin: 0; display: flex; flex-wrap: wrap; font-size: 13px; }
+/* `gap` (not a trailing space inside each item) carries the spacing between items: flex strips a
+   collapsible space at a line-box edge, so a trailing `' · '` INSIDE an item's own text ran into the
+   next item with no visible gap between them. The separator is its own flex item too, matching the
+   sibling `.fc-import-plan__cols` convention below. */
+.fc-import-plan__arrival-list { margin: 0; display: flex; flex-wrap: wrap; gap: 4px; font-size: 13px; }
 .fc-import-plan__arrival-item strong { font-variant-numeric: tabular-nums; }
+.fc-import-plan__arrival-sep { opacity: 0.6; }
 .fc-import-plan__arrival-total { margin: 0; font-size: 11px; color: var(--fc-text-muted, #64748b); }
 .fc-import-plan__platform-records { font-size: 12px; }
 .fc-import-plan__platform-records > summary { cursor: pointer; color: var(--fc-text-muted, #64748b); }
