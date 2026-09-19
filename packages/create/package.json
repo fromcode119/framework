@@ -3,7 +3,7 @@
   "version": "0.2.5",
   "description": "Create a new Fromcode app",
   "bin": {
-    "create-fromcode": "index.js"
+    "create-atlantis": "index.js"
   },
   "files": [
     "index.js",

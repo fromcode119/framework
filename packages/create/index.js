@@ -93,12 +93,12 @@ if (fs.existsSync(TEMPLATE_DIR)) {
 // ─── package.json ────────────────────────────────────────────────────────────
 
 const registryScripts = {
-  "dev": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=${PROXY_PORT:-3000} API_PORT=${API_PORT:-4000} ADMIN_PORT=${ADMIN_PORT:-3001} node proxy.js\" \"PORT=${API_PORT:-4000} fromcode-api\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=${ADMIN_PORT:-3001} fromcode-admin\"",
-  "dev:full": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=${PROXY_PORT:-3000} API_PORT=${API_PORT:-4000} ADMIN_PORT=${ADMIN_PORT:-3001} FRONTEND_PORT=${FRONTEND_PORT:-3002} node proxy.js\" \"PORT=${API_PORT:-4000} fromcode-api\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=${ADMIN_PORT:-3001} fromcode-admin\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} PORT=${FRONTEND_PORT:-3002} fromcode-frontend\"",
-  "dev:api": "PORT=${API_PORT:-4000} fromcode-api",
-  "start": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=${PROXY_PORT:-3000} API_PORT=${API_PORT:-4000} ADMIN_PORT=${ADMIN_PORT:-3001} node proxy.js\" \"NODE_ENV=production PORT=${API_PORT:-4000} fromcode-api\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=${ADMIN_PORT:-3001} fromcode-admin\"",
-  "start:full": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=${PROXY_PORT:-3000} API_PORT=${API_PORT:-4000} ADMIN_PORT=${ADMIN_PORT:-3001} FRONTEND_PORT=${FRONTEND_PORT:-3002} node proxy.js\" \"NODE_ENV=production PORT=${API_PORT:-4000} fromcode-api\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=${ADMIN_PORT:-3001} fromcode-admin\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} PORT=${FRONTEND_PORT:-3002} fromcode-frontend\"",
-  "start:api": "NODE_ENV=production PORT=${API_PORT:-4000} fromcode-api",
+  "dev": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=${PROXY_PORT:-3000} API_PORT=${API_PORT:-4000} ADMIN_PORT=${ADMIN_PORT:-3001} node proxy.js\" \"PORT=${API_PORT:-4000} atlantis-api\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=${ADMIN_PORT:-3001} atlantis-admin\"",
+  "dev:full": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=${PROXY_PORT:-3000} API_PORT=${API_PORT:-4000} ADMIN_PORT=${ADMIN_PORT:-3001} FRONTEND_PORT=${FRONTEND_PORT:-3002} node proxy.js\" \"PORT=${API_PORT:-4000} atlantis-api\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=${ADMIN_PORT:-3001} atlantis-admin\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} PORT=${FRONTEND_PORT:-3002} atlantis-frontend\"",
+  "dev:api": "PORT=${API_PORT:-4000} atlantis-api",
+  "start": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=${PROXY_PORT:-3000} API_PORT=${API_PORT:-4000} ADMIN_PORT=${ADMIN_PORT:-3001} node proxy.js\" \"NODE_ENV=production PORT=${API_PORT:-4000} atlantis-api\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=${ADMIN_PORT:-3001} atlantis-admin\"",
+  "start:full": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=${PROXY_PORT:-3000} API_PORT=${API_PORT:-4000} ADMIN_PORT=${ADMIN_PORT:-3001} FRONTEND_PORT=${FRONTEND_PORT:-3002} node proxy.js\" \"NODE_ENV=production PORT=${API_PORT:-4000} atlantis-api\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=${ADMIN_PORT:-3001} atlantis-admin\" \"NEXT_PUBLIC_API_URL=http://localhost:${PROXY_PORT:-3000} PORT=${FRONTEND_PORT:-3002} atlantis-frontend\"",
+  "start:api": "NODE_ENV=production PORT=${API_PORT:-4000} atlantis-api",
   "plugin:build": "atlantis plugin build",
   "plugin:dev": "atlantis plugin dev",
   "theme:build": "atlantis theme build",
@@ -251,7 +251,7 @@ if (!localMode) {
 }
 console.log(`  ✓  ${projectName}/plugins/  themes/  data/`);
 if (withFrontend) {
-  console.log(`  ✓  --frontend: fromcode-frontend included`);
+  console.log(`  ✓  --frontend: atlantis-frontend included`);
 }
 console.log('');
 console.log('Next steps:');

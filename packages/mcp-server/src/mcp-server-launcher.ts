@@ -10,7 +10,7 @@ import { McpStdioServer } from '@mcp-server/mcp-stdio-server';
  * process on the machine could read it.
  */
 export class McpServerLauncher {
-  static readonly USAGE = 'fromcode-mcp: FROMCODE_API_URL (full api base, e.g. https://api.example.com/api/v1) and FROMCODE_API_TOKEN are required. FROMCODE_SITE (a site id or host) is optional: it preselects the site an all-sites token acts on.';
+  static readonly USAGE = 'atlantis-mcp: FROMCODE_API_URL (full api base, e.g. https://api.example.com/api/v1) and FROMCODE_API_TOKEN are required. FROMCODE_SITE (a site id or host) is optional: it preselects the site an all-sites token acts on.';
 
   /** Wires a ready server from the environment. Throws the usage message when either value is missing. */
   static create(env: Record<string, string | undefined>): McpStdioServer {
@@ -31,7 +31,7 @@ export class McpServerLauncher {
       await McpServerLauncher.create(env).start();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(message.startsWith('fromcode-mcp:') ? message : `fromcode-mcp: ${message}`);
+      console.error(message.startsWith('atlantis-mcp:') ? message : `atlantis-mcp: ${message}`);
       process.exit(1);
     }
   }

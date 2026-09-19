@@ -13,7 +13,7 @@ let nextBin;
 try {
   nextBin = require.resolve('next/dist/bin/next', { paths: [pkgDir] });
 } catch {
-  console.error('[fromcode-frontend] Could not resolve the "next" binary. Run: npm install inside @fromcode119/frontend');
+  console.error('[atlantis-frontend] Could not resolve the "next" binary. Run: npm install inside @fromcode119/frontend');
   process.exit(1);
 }
 

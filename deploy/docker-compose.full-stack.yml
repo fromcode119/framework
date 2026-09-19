@@ -374,7 +374,7 @@ services:
   # step that runs before both. It writes the file only if it is missing, because the password is what
   # the existing data directory was initialised with; regenerating it would lock everyone out.
   db-secrets:
-    image: ${IMAGE_API:-fromcode-api}
+    image: ${IMAGE_API:-atlantis-api}
     build:
       context: .
       dockerfile: Dockerfile
