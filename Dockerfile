@@ -191,7 +191,7 @@ RUN npm run build:frontend > /tmp/build-frontend.log 2>&1; ec=$?; \
     echo "=== build:frontend OK ==="
 
 # Step 6: Build the storefront runtime bundle — ONE classic script under public/fc-runtime/, built by
-# Vite from the SAME alias/stub map next.config.js reads (config/next-config-env.js). Runs after
+# Vite from the SAME alias/stub map next.config.js reads (config/next-config-env.ts). Runs after
 # build:frontend because Next serves public/ from disk at runtime; nothing in .next depends on it.
 RUN npm run build:frontend-runtime > /tmp/build-frontend-runtime.log 2>&1; ec=$?; \
     tail -80 /tmp/build-frontend-runtime.log; \

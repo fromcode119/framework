@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const dotenv = require('dotenv');
+import fs from 'node:fs';
+import path from 'node:path';
+import dotenv from 'dotenv';
 
-class NextConfigEnv {
+export class NextConfigEnv {
   static initializeEnvironment() {
     if (NextConfigEnv.environmentInitialized) {
       return;
@@ -381,4 +381,3 @@ NextConfigEnv.PRIVATE_PACKAGE_ALIASES = [
   ['cli', '@cli'],
 ];
 
-module.exports = { NextConfigEnv };

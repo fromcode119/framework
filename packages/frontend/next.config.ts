@@ -1,5 +1,5 @@
-const path = require('path');
-const { NextConfigEnv } = require('../../config/next-config-env');
+import path from 'node:path';
+import { NextConfigEnv } from '../../config/next-config-env';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -148,4 +148,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

@@ -1,20 +1,17 @@
 {
   "name": "my-fromcode-app",
   "version": "0.1.0",
-  "description": "My Fromcode app — edit name/description",
+  "description": "My Fromcode app \u2014 edit name/description",
   "private": true,
   "scripts": {
     "_comment": "Scripts use --prefix to run inside the framework packages (pre-publication).",
     "_comment_published": "Once @fromcode119/* packages are on npm, replace --prefix paths with the installed bins.",
-
-    "dev:api-admin": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 node proxy.js\" \"ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run dev --prefix ../../packages/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run dev --prefix ../../packages/admin\"",
-    "dev": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 node proxy.js\" \"ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run dev --prefix ../../packages/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run dev --prefix ../../packages/admin\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 npm run dev --prefix ../../packages/frontend\"",
+    "dev:api-admin": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 ../../node_modules/.bin/tsx proxy.ts\" \"ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run dev --prefix ../../packages/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run dev --prefix ../../packages/admin\"",
+    "dev": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 ../../node_modules/.bin/tsx proxy.ts\" \"ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run dev --prefix ../../packages/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run dev --prefix ../../packages/admin\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 npm run dev --prefix ../../packages/frontend\"",
     "dev:api": "ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run dev --prefix ../../packages/api",
-
-    "start:api-admin": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 node proxy.js\" \"ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run start --prefix ../../packages/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run start --prefix ../../packages/admin\"",
-    "start": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 node proxy.js\" \"ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run start --prefix ../../packages/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run start --prefix ../../packages/admin\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 npm run start --prefix ../../packages/frontend\"",
+    "start:api-admin": "concurrently -n proxy,api,admin -c white,cyan,green \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 ../../node_modules/.bin/tsx proxy.ts\" \"ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run start --prefix ../../packages/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run start --prefix ../../packages/admin\"",
+    "start": "concurrently -n proxy,api,admin,web -c white,cyan,green,yellow \"PROXY_PORT=3000 API_PORT=4000 ADMIN_PORT=3001 FRONTEND_PORT=3002 ../../node_modules/.bin/tsx proxy.ts\" \"ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run start --prefix ../../packages/api\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=3001 npm run start --prefix ../../packages/admin\" \"NEXT_PUBLIC_API_URL=http://localhost:3000 PORT=3002 npm run start --prefix ../../packages/frontend\"",
     "start:api": "ATLANTIS_PROJECT_ROOT=../../starters/local PORT=4000 npm run start --prefix ../../packages/api",
-
     "plugin:build": "atlantis plugin build",
     "plugin:dev": "atlantis plugin dev",
     "theme:build": "atlantis theme build",

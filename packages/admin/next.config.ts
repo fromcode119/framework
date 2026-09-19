@@ -1,6 +1,6 @@
-const path = require('path');
-const fs = require('fs');
-const { NextConfigEnv } = require('../../config/next-config-env');
+import path from 'node:path';
+import fs from 'node:fs';
+import { NextConfigEnv } from '../../config/next-config-env';
 
 // Dynamically discover all extensions in the packages directory
 const packagesDir = path.resolve(__dirname, '..');
@@ -274,4 +274,4 @@ const nextConfig = {
   }
 };
 
-module.exports = nextConfig;
+export default nextConfig;

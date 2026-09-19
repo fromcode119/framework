@@ -56,8 +56,8 @@ services:
       # imports; the next.config resolves the package from that src. Both are read at startup, so they must be mounted
       # for a config or subpath change to take effect without rebuilding the image.
       - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
-      - ./packages/admin/next.config.js:/app/packages/admin/next.config.js
-      # next.config.js is only half the config: every shared decision it makes (dev origins, aliases,
+      - ./packages/admin/next.config.ts:/app/packages/admin/next.config.ts
+      # next.config.ts is only half the config: every shared decision it makes (dev origins, aliases,
       # base path) lives in config/next-config-env.js. Mounting the one without the other means a change
       # to the shared half silently runs against the image's baked copy — which is how the workspace
       # hosts stayed blocked after their fix was written.
@@ -92,7 +92,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
     volumes:
       # The four package sources the storefront's webpack aliases compile from `src` — the same list
-      # `config/next-config-env.js` declares. Without them a change to core, react or the sdk is
+      # `config/next-config-env.ts` declares. Without them a change to core, react or the sdk is
       # invisible here however many times it is rebuilt.
       - ./packages/react-class-components/src:/app/packages/react-class-components/src
       - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
@@ -103,7 +103,7 @@ services:
       # Both halves of the config, for the reason the admin block above records: mounting
       # next.config.js without `config/` runs the shared half from the image's baked copy, which is
       # how the dev-origin fix stayed invisible for a round.
-      - ./packages/frontend/next.config.js:/app/packages/frontend/next.config.js
+      - ./packages/frontend/next.config.ts:/app/packages/frontend/next.config.ts
       - ./config:/app/config
       - ./packages/frontend/app:/app/packages/frontend/app
       - ./packages/frontend/components:/app/packages/frontend/components
