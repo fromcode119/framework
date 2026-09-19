@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { CoercionUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
 /**
@@ -13,7 +14,7 @@ export class SystemNotificationsController {
   /** Per-user UI preference (saved views etc.) — always scoped to the authenticated user. */
   async getPreference(req: Request, res: Response) {
     try {
-      res.json(await this.runtime.preferences.get(Number((req as any).user?.id), String(req.params.key || '')));
+      res.json(await this.runtime.preferences.get(Number((req as any).user?.id), CoercionUtils.toString(req.params.key)));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -22,7 +23,7 @@ export class SystemNotificationsController {
 
   async setPreference(req: Request, res: Response) {
     try {
-      const result = await this.runtime.preferences.set(Number((req as any).user?.id), String(req.params.key || ''), (req.body as any)?.value);
+      const result = await this.runtime.preferences.set(Number((req as any).user?.id), CoercionUtils.toString(req.params.key), (req.body as any)?.value);
       res.status(result.success ? 200 : 400).json(result);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

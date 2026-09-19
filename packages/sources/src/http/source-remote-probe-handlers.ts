@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { CoercionUtils } from '@fromcode119/core';
 import { BuildService } from '@sources/packaging/build-service';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
 import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
@@ -28,7 +29,7 @@ export class SourceRemoteProbeHandlers {
    * which is the correct answer — it is a different repository.
    */
   private async token(req: Request, gitUrl: string): Promise<string | undefined> {
-    const posted = String(req.body?.gitSecret || '').trim();
+    const posted = CoercionUtils.toString(req.body?.gitSecret);
     if (posted) return posted;
     // Both halves, because the stored token belongs to one source and the slug names several.
     const identity = BuildSourceIdentity.parseOrNull(req.body?.type, req.body?.slug);
@@ -44,7 +45,7 @@ export class SourceRemoteProbeHandlers {
    * branches — and the form says so rather than inventing a default.
    */
   async listBranches(req: Request, res: Response): Promise<void> {
-    const gitUrl = String(req.body?.gitUrl || '').trim();
+    const gitUrl = CoercionUtils.toString(req.body?.gitUrl);
     if (!gitUrl) {
       res.status(400).json({ error: 'A repository URL is required.' });
       return;
@@ -66,8 +67,8 @@ export class SourceRemoteProbeHandlers {
    * and the form reports it instead of filling the field with something plausible.
    */
   async inspectSource(req: Request, res: Response): Promise<void> {
-    const gitUrl = String(req.body?.gitUrl || '').trim();
-    const branch = String(req.body?.branch || '').trim();
+    const gitUrl = CoercionUtils.toString(req.body?.gitUrl);
+    const branch = CoercionUtils.toString(req.body?.branch);
     if (!gitUrl || !branch) {
       res.status(400).json({ error: 'A repository URL and branch are required.' });
       return;

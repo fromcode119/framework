@@ -132,3 +132,9 @@ packages/react/src/icons/lucide-icon-names.generated.json
 # infrastructure to everyone who deploys this product. `deploy/targets.example.json` is the
 # committed shape; `fromcode deploy --host --dir` needs no file at all.
 deploy/targets.json
+
+# Compiled bin entries — source is scripts/*-launcher.ts (TypeScript)
+packages/admin/dist/
+packages/frontend/dist/
+packages/create/dist/
+packages/create/template/proxy.js

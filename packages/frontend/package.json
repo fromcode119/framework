@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "bin": {
-    "atlantis-frontend": "scripts/frontend.js"
+    "atlantis-frontend": "dist/bin.js"
   },
   "files": [
+    "dist",
     ".next",
     "public",
     "scripts",
@@ -23,10 +24,11 @@
   },
   "scripts": {
     "dev": "node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
-    "build": "node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next build",
+    "build": "npm run build:bin && node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next build",
     "start": "node ../core/dist/process/app-launcher-main.js --app frontend --hostname 0.0.0.0",
     "lint": "next lint",
-    "test": "vitest run --config ../../vitest.plugins.config.ts --project frontend"
+    "test": "vitest run --config ../../vitest.plugins.config.ts --project frontend",
+    "build:bin": "esbuild scripts/frontend-launcher.ts --bundle --format=cjs --platform=node --tsconfig-raw='{\"compilerOptions\":{\"experimentalDecorators\":true,\"useDefineForClassFields\":false}}' --outfile=dist/bin.js"
   },
   "dependencies": {
     "@fromcode119/core": "*",
