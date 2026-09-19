@@ -8,6 +8,7 @@ import type { INestedFieldReference } from '@core/tenant/provisioning/interfaces
 import { FieldType } from '@core/enums/field-type.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
+import { TenantPolymorphicReferences } from '@core/tenant/provisioning/tenant-polymorphic-references';
 import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-owning-plugin-resolver';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
@@ -95,13 +96,16 @@ export class TenantTableCatalog {
       this.db.introspection.requiredColumns(tables, TenantTableCatalog.ALWAYS_SUPPLIED),
     ]);
     const schemaReferences = this.schemaReferences(wanted, columns);
+    // A pointer whose target table is named by a sibling column on the row — invisible to both
+    // sources above, and unfollowed it leaves every such row pointing at a re-numbered id.
+    const polymorphicReferences = TenantPolymorphicReferences.forTables(wanted, columns);
     const folds = this.schemaFolds(wanted, columns);
     const journals = TenantJournalTables.from(this.collections);
     const owners = this.owners();
 
     const descriptors = tables.map((table) => {
       const types = columns.get(table) ?? {};
-      const references = [...(foreignKeys.get(table) ?? []), ...(schemaReferences.get(table) ?? [])]
+      const references = [...(foreignKeys.get(table) ?? []), ...(schemaReferences.get(table) ?? []), ...(polymorphicReferences.get(table) ?? [])]
         .filter((ref) => Object.prototype.hasOwnProperty.call(types, ref.column));
       const owner = owners.get(table);
       // No collection matched this table — either it is framework-owned (`_system_*`, no plugin at
@@ -261,7 +265,7 @@ export class TenantTableCatalog {
   private static dedupe(references: TenantColumnReference[]): TenantColumnReference[] {
     const seen = new Set<string>();
     return references.filter((ref) => {
-      const key = `${ref.column}[${ref.path.join('.')}]->${ref.targetTable}`;
+      const key = `${ref.column}[${ref.path.join('.')}]->${ref.describeTarget()}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;

@@ -78,9 +78,15 @@ export class TenantTableDescriptor {
     return this.hasColumn('tenant_id');
   }
 
-  /** Every table this one points at, itself excluded — the edges a dependency order is built from. */
+  /**
+   * Every table this one points at, itself excluded — the edges a dependency order is built from.
+   *
+   * A polymorphic reference contributes no edge: it names a different table on every row, so there
+   * is no one table to order this one after. It needs none — every table's ids are allocated before
+   * the first row of any table is inserted (`TenantImportExecutor`), so its remap is already there.
+   */
   get dependsOn(): string[] {
-    return [...new Set(this.references.filter((ref) => !ref.isSelfReference).map((ref) => ref.targetTable))];
+    return [...new Set(this.references.filter((ref) => !ref.isSelfReference && !ref.isPolymorphic).map((ref) => ref.targetTable))];
   }
 
   get selfReferences(): TenantColumnReference[] {

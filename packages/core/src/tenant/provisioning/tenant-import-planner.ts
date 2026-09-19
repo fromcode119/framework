@@ -188,7 +188,9 @@ export class TenantImportPlanner {
     const opaqueJsonColumns = destination.jsonColumns.filter((column) => archived.columns.includes(column) && !followed.has(column));
     const repointedReferences = destination.references
       .filter((ref) => archived.columns.includes(ref.column))
-      .map((ref) => ({ column: ref.column, path: ref.path, targetTable: ref.targetTable }));
+      // A polymorphic reference has no one target to name, so it names the column that names one —
+      // the preview then says what will be followed rather than showing an empty arrow.
+      .map((ref) => ({ column: ref.column, path: ref.path, targetTable: ref.describeTarget() }));
     if (!destination.hasSerialId || !destination.idSequence) {
       return {
         name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.PRESERVE.value), basis: 'naturalKey',
