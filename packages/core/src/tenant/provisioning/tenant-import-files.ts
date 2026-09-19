@@ -41,6 +41,54 @@ export class TenantImportFiles {
     }
   }
 
+  /**
+   * Rewrites every reference to a RENAMED upload, anywhere in a row's values.
+   *
+   * `rewriteMediaRow` fixes the `media` row that owns the file, but the file's name is also written
+   * into CONTENT — a page's blocks hold `/uploads/<name>` directly, and the uploads directory is
+   * shared by every site on the platform. Left alone, an imported page keeps pointing at the
+   * original name, which now belongs to whichever site uploaded it first: not a broken link, the
+   * wrong picture.
+   *
+   * Only a name this import actually renamed is touched, and only where it stands as a whole
+   * filename — bounded on the left by a path/quote/delimiter and not running into a longer name on
+   * the right — so a value that merely contains similar text is returned byte-for-byte.
+   */
+  rewriteUploadReferences(values: Record<string, unknown>): void {
+    if (this.renamed.size === 0) return;
+    for (const key of Object.keys(values)) {
+      values[key] = this.rewriteValue(values[key]);
+    }
+  }
+
+  private rewriteValue(value: unknown): unknown {
+    if (typeof value === 'string') return this.rewriteText(value);
+    if (Array.isArray(value)) return value.map((entry) => this.rewriteValue(entry));
+    if (value && typeof value === 'object' && !Buffer.isBuffer(value) && !(value instanceof Date)) {
+      const walked: Record<string, unknown> = {};
+      for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+        walked[key] = this.rewriteValue(entry);
+      }
+      return walked;
+    }
+    return value;
+  }
+
+  private rewriteText(text: string): string {
+    let rewritten = text;
+    for (const [from, to] of this.renamed) {
+      if (!rewritten.includes(from)) continue;
+      rewritten = rewritten.replace(TenantImportFiles.boundedName(from), (_match, before: string) => `${before}${to}`);
+    }
+    return rewritten;
+  }
+
+  /** The name as a whole filename: after a path separator, quote or delimiter, and not a prefix of a longer one. */
+  private static boundedName(name: string): RegExp {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|[/"'(=,\\s])${escaped}(?![A-Za-z0-9._-])`, 'g');
+  }
+
   get renamedCount(): number {
     return this.renamed.size;
   }
