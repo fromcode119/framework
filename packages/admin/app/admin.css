@@ -435,54 +435,59 @@ html.dark {
 .fc-sites__grant-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .fc-sites__grant-row > *:first-child { flex: 1 1 260px; max-width: 360px; }
 .fc-import-plan { display: flex; flex-direction: column; gap: 12px; }
-/* The three-line "what happens" summary, ahead of the inventory and the mode groups. */
-.fc-import-plan__summary { display: flex; flex-direction: column; gap: 4px; }
+/* The headline: what arrives, what won't come across, what was already here — ahead of the
+   inventory and the four mode groups below it. */
+.fc-import-plan__summary { display: flex; flex-direction: column; gap: 8px; }
 .fc-import-plan__summary p { margin: 0; }
 .fc-import-plan__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .fc-import-plan__item { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 4px; }
+
+/* "Arrives" — a scannable list of counted, human-labelled things, biggest first (see
+   `ImportPlanArrivals`), not the 54-row schema dump this replaced. */
+.fc-import-plan__arrivals { display: flex; flex-direction: column; gap: 4px; }
+.fc-import-plan__arrival-list { margin: 0; display: flex; flex-wrap: wrap; font-size: 13px; }
+.fc-import-plan__arrival-item strong { font-variant-numeric: tabular-nums; }
+.fc-import-plan__arrival-total { margin: 0; font-size: 11px; color: var(--fc-text-muted, #64748b); }
+.fc-import-plan__platform-records { font-size: 12px; }
+.fc-import-plan__platform-records > summary { cursor: pointer; color: var(--fc-text-muted, #64748b); }
+.fc-import-plan__platform-records > .fc-import-plan__cols { margin-top: 6px; }
+
 .fc-import-plan__tables { display: flex; flex-direction: column; gap: 18px; }
-/* Scrolls the TABLE, not the page: a squeezed id column is unreadable, and a name broken mid-word
-   (`_system_audit` / `_logs`) reads as a different table than the one it is. */
-.fc-import-plan__group { display: flex; flex-direction: column; gap: 6px; overflow-x: auto; }
-/* The rule behind a whole group, said once here instead of repeated down a Why column. */
+.fc-import-plan__group { display: flex; flex-direction: column; gap: 6px; }
+/* The rule behind a whole group, said once here instead of repeated down every row. */
 .fc-import-plan__rule { margin: 0; font-size: 12px; line-height: 1.5; color: var(--fc-text-muted, #64748b); max-width: 90ch; }
 .fc-import-plan__count { font-variant-numeric: tabular-nums; opacity: 0.7; }
-.fc-import-plan__table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.fc-import-plan__table th, .fc-import-plan__table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid rgba(100, 116, 139, 0.15); vertical-align: top; }
-.fc-import-plan__table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
-/* Ids and counts line up only if they are right-aligned and never wrap. */
-.fc-import-plan__table th.fc-import-plan__num, .fc-import-plan__table td.fc-import-plan__num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-/* A column list wraps BETWEEN names; `anywhere` is the escape hatch for one name longer than the cell.
-   Without it a long identifier clipped mid-word, which is how the table broke at narrow widths. */
-.fc-import-plan__cols { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
+
+/* One table per row, its mechanics folded behind its own disclosure (`ImportPlanTableRow`) instead
+   of being first-class columns — this is what used to be `LOWEST ID` / `HANDED OUT HERE` as a table
+   header. A row list wraps naturally at any width, so there is no separate phone layout to keep in
+   sync with it. */
+.fc-import-plan__rows { display: flex; flex-direction: column; }
+.fc-import-plan__row { border-bottom: 1px solid rgba(100, 116, 139, 0.15); padding: 6px 0; }
+.fc-import-plan__row-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; font-size: 12px; }
+.fc-import-plan__row-label { flex: 1 1 24ch; min-width: 0; overflow-wrap: anywhere; }
+.fc-import-plan__row-rows { font-variant-numeric: tabular-nums; color: var(--fc-text-muted, #64748b); white-space: nowrap; }
+.fc-import-plan__chip { font-size: 11px; padding: 1px 6px; border-radius: 999px; background: rgba(217, 119, 6, 0.12); color: #92400e; white-space: nowrap; }
+.fc-import-plan__chip--ok { background: rgba(22, 163, 74, 0.1); color: #166534; }
+.fc-import-plan__row-detail { margin-top: 6px; padding-left: 4px; }
+.fc-import-plan__row-detail > summary { font-size: 11px; cursor: pointer; color: var(--fc-text-muted, #64748b); }
+.fc-import-plan__row-mechanics { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 0; font-size: 12px; }
+.fc-import-plan__row-mechanics > div { display: flex; gap: 6px; }
+.fc-import-plan__row-mechanics dt { color: var(--fc-text-muted, #64748b); }
+.fc-import-plan__row-mechanics dt::after { content: ':'; }
+.fc-import-plan__row-mechanics dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+/* A column list wraps BETWEEN names; `anywhere` is the escape hatch for one name longer than the line.
+   Without it a long identifier clipped mid-word, which is how the old table broke at narrow widths. */
+.fc-import-plan__cols { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; margin-top: 4px; }
 .fc-import-plan__cols + .fc-import-plan__cols { margin-top: 4px; }
 .fc-import-plan__cols code { overflow-wrap: anywhere; }
 /* The physical table name trailing a row's human label — secondary to it, not a second label. */
 .fc-import-plan__table-physical { opacity: 0.6; font-size: 11px; margin-left: 4px; }
-/* Enough room for the longest table name to stay on one line; the group scrolls if the rest cannot fit. */
-.fc-import-plan__table td:first-child, .fc-import-plan__table th:first-child { min-width: 24ch; white-space: nowrap; }
 .fc-import-plan__cols-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
 .fc-import-plan__empty > summary { font-size: 12px; cursor: pointer; }
 .fc-import-plan__empty > .fc-import-plan__cols { margin-top: 6px; }
 .fc-import-plan__warnings > summary { font-size: 12px; cursor: pointer; color: #92400e; }
-
-/* Phone: a 5-column table cannot shrink, so each row becomes its own labelled block. The header is
-   hidden visually but kept for assistive tech, and every cell carries its own label instead. */
-@media (max-width: 640px) {
-  .fc-import-plan__table, .fc-import-plan__table tbody, .fc-import-plan__table tr, .fc-import-plan__table td { display: block; }
-  .fc-import-plan__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .fc-import-plan__table tr { padding: 6px 0; border-bottom: 1px solid rgba(100, 116, 139, 0.15); }
-  .fc-import-plan__table td { border-bottom: 0; padding: 2px 0; }
-  .fc-import-plan__table td.fc-import-plan__num { text-align: left; }
-  .fc-import-plan__table td[data-label]::before { content: attr(data-label); display: inline-block; min-width: 9em; padding-right: 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
-  .fc-import-plan__table td:first-child::before { display: none; }
-  /* The cell already labels each run ("JSON not re-pointed", "Dropped"); a "Not carried over"
-     header above them just says it twice. */
-  .fc-import-plan__table td[data-label="Not carried over"]::before { display: none; }
-  /* Stacked, the name has the full width — let it wrap rather than scroll the group sideways. */
-  .fc-import-plan__table td:first-child, .fc-import-plan__table th:first-child { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
-  .fc-import-plan__table td:empty { display: none; }
-}
 @media (max-width: 767px) {
   .fc-sites__member, .fc-sites__grant { grid-template-columns: 1fr; }
 }

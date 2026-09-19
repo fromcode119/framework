@@ -25,6 +25,8 @@ const table = (overrides: Partial<IImportPlanTable>): IImportPlanTable => ({
   ...overrides,
 });
 
+const emptyUsers = { total: 0, existing: 0, toCreate: 0 };
+
 describe('ImportPlanSummary -> Arrives', () => {
   it('subtracts the excluded _system_meta and _system_plugin_settings rows from the arriving total', () => {
     const arriving: IImportPlanTable[] = [
@@ -34,7 +36,7 @@ describe('ImportPlanSummary -> Arrives', () => {
     ];
     render(
       <ImportPlanSummary
-        plan={{ metaRowsExcluded: 10, pluginSettingsRowsExcluded: 3, files: { count: 0, colliding: 0 } }}
+        plan={{ metaRowsExcluded: 10, pluginSettingsRowsExcluded: 3, users: emptyUsers, files: { count: 0, colliding: 0 } }}
         arriving={arriving}
         skipped={[]}
         remapped={[]}
@@ -43,20 +45,22 @@ describe('ImportPlanSummary -> Arrives', () => {
 
     // Raw sum would be 12 + 8 + 5 = 25; only 2 meta rows and 5 plugin-settings rows actually land,
     // so the true arriving total is 25 - 10 - 3 = 12.
-    expect(screen.getByText(/12 row\(s\) across 3 table\(s\)\./)).not.toBeNull();
+    expect(screen.getByText(/12 row\(s\) across 3 table\(s\) in total\./)).not.toBeNull();
   });
 
   it('counts every row when nothing is excluded', () => {
     const arriving: IImportPlanTable[] = [table({ name: 'fcp_alpha_widgets', rows: 5 })];
     render(
       <ImportPlanSummary
-        plan={{ metaRowsExcluded: 0, pluginSettingsRowsExcluded: 0, files: { count: 0, colliding: 0 } }}
+        plan={{ metaRowsExcluded: 0, pluginSettingsRowsExcluded: 0, users: emptyUsers, files: { count: 0, colliding: 0 } }}
         arriving={arriving}
         skipped={[]}
         remapped={[]}
       />,
     );
 
-    expect(screen.getByText(/5 row\(s\) across 1 table\(s\)\./)).not.toBeNull();
+    expect(screen.getByText(/5 row\(s\) across 1 table\(s\) in total\./)).not.toBeNull();
+    // The one arriving table has a human label, so it headlines the itemized list too.
+    expect(screen.getByText(/Widgets/)).not.toBeNull();
   });
 });
