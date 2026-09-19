@@ -406,6 +406,11 @@ html.dark {
 .fc-sites__blockers { color: #b91c1c; font-weight: 600; }
 .fc-sites__warnings { color: #92400e; }
 .fc-site-form { display: flex; flex-direction: column; gap: 12px; }
+/* The import plan's technical half: one fold, not fifty-seven. The summary above answers the
+   decision; this answers "what exactly", and only when asked. */
+.fc-import-plan__detail > summary { font-size: 12px; font-weight: 600; cursor: pointer; opacity: 0.75; margin-top: 8px; }
+.fc-import-plan__detail > summary:hover { opacity: 1; }
+.fc-import-plan__worth-knowing { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
 .fc-site-form__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 16px; }
 /* A field whose label wraps to two lines is taller than its neighbours, and its control used to sit
    that much lower — the row read as a broken line of inputs. Each field is a flex column stretched to

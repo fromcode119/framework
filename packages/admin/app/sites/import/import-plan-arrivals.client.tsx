@@ -101,13 +101,24 @@ export class ImportPlanArrivals extends PureReactor {
     );
   }
 
+  /**
+   * The few kinds worth naming, and a count for the rest.
+   *
+   * Every kind on one line was fifty items joined by a separator — unreadable, and it buried the six
+   * an operator recognises among forty-four they do not. The cut is by SIZE, which the plan already
+   * decided; a hand-picked order would be the hardcoded extension list Rule Zero forbids.
+   */
+  private static readonly NAMED = 6;
+
   render(): ReactNode {
-    const items = this.items;
+    const allItems = this.items;
+    const items = allItems.slice(0, ImportPlanArrivals.NAMED);
+    const otherKinds = allItems.length - items.length;
     const platformRecords = this.platformRecords;
 
     return (
       <div className="fc-import-plan__arrivals">
-        <span className="fc-site-form__label">Arrives</span>
+        <span className="fc-site-form__label">Everything comes across</span>
         {items.length === 0 && platformRecords.length === 0 ? <span className="fc-sites__none">nothing</span> : null}
         {items.length > 0 ? (
           <p className="fc-import-plan__arrival-list">
@@ -128,8 +139,10 @@ export class ImportPlanArrivals extends PureReactor {
           </p>
         ) : null}
         {platformRecords.length > 0 ? this.renderPlatformRecordsDetail() : null}
-        {this.arriving.length > 0 ? (
-          <p className="fc-import-plan__arrival-total">{this.totalRows.toLocaleString()} row(s) across {this.arriving.length.toLocaleString()} table(s) in total.</p>
+        {otherKinds > 0 ? (
+          <p className="fc-import-plan__arrival-total">…and {otherKinds.toLocaleString()} other kind(s) of record — {this.totalRows.toLocaleString()} in total.</p>
+        ) : this.arriving.length > 0 ? (
+          <p className="fc-import-plan__arrival-total">{this.totalRows.toLocaleString()} in total.</p>
         ) : null}
       </div>
     );
