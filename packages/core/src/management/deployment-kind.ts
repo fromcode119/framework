@@ -1,3 +1,5 @@
+import { EnvUtils } from '@core/utils/env-utils';
+
 /**
  * How this installation was deployed, which decides whether it can update ITSELF.
  *
@@ -15,7 +17,7 @@ export class DeploymentKind {
   static readonly IMAGE = 'image';
 
   static get current(): string {
-    return String(process.env.FROMCODE_DEPLOYMENT || '').trim().toLowerCase();
+    return EnvUtils.text('ATLANTIS_DEPLOYMENT').toLowerCase();
   }
 
   /** True when the running code came from a published image and cannot rewrite itself. */
