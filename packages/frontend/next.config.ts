@@ -1,33 +1,5 @@
 import path from 'node:path';
-import { NextConfigEnv } from '../../config/next-config-env';
-
-/**
- * The `webpack` config hook's own parameter types, described from what this file's callback actually
- * reads and writes below — Next's own `NextJsWebpackConfig`/`WebpackConfigContext` types are not part of
- * its public `next` export surface (they type `config` as `any` internally), so an honest local shape
- * stands in for them.
- */
-interface FrontendWebpackConfig {
-  module: {
-    rules: unknown[];
-  };
-  resolve: {
-    alias: Record<string, string>;
-    extensionAlias?: Record<string, string[]>;
-    symlinks?: boolean;
-    modules: string[];
-    fallback?: Record<string, string | false>;
-  };
-  watchOptions?: {
-    poll?: number;
-    aggregateTimeout?: number;
-  };
-}
-
-interface FrontendWebpackConfigContext {
-  isServer: boolean;
-  dev: boolean;
-}
+import { NextConfigEnv, type NextWebpackConfig, type NextWebpackContext } from '../../config/next-config-env';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -70,7 +42,7 @@ const nextConfig = {
   images: {
     remotePatterns: NextConfigEnv.getRemoteImagePatterns(),
   },
-  webpack: (config: FrontendWebpackConfig, { dev, isServer }: FrontendWebpackConfigContext) => {
+  webpack: (config: NextWebpackConfig, { dev, isServer }: NextWebpackContext) => {
     // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above. `next dev` runs
     // with --webpack, so without this the dev server would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
