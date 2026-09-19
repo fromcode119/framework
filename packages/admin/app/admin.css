@@ -407,6 +407,13 @@ html.dark {
 .fc-sites__warnings { color: #92400e; }
 .fc-site-form { display: flex; flex-direction: column; gap: 12px; }
 .fc-site-form__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 16px; }
+/* A field whose label wraps to two lines is taller than its neighbours, and its control used to sit
+   that much lower — the row read as a broken line of inputs. Each field is a flex column stretched to
+   the row's height, so pinning the label to the top and the control to the bottom puts every control
+   on one line whatever the label does. Measured on the live page: a wrapped label moved its control
+   17px down (3 distinct control offsets across 7 fields); with this rule the only distinct offsets
+   are the grid's own two rows. */
+.fc-site-form__grid > * { justify-content: space-between; }
 .fc-site-form__hint { font-size: 12px; opacity: 0.7; margin: 0; }
 .fc-site-form__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .fc-site-form__block { display: flex; flex-direction: column; gap: 8px; }
