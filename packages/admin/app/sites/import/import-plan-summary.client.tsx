@@ -88,6 +88,22 @@ export class ImportPlanSummary extends PureReactor {
     return `${peopleClause}Nothing already on this platform is replaced.${filesClause}`;
   }
 
+  /**
+   * One statement, with a mark that says whether it is reassurance or something to look at.
+   *
+   * The three used to be a bold run-in paragraph and an orange bullet list, which read as a warning
+   * block whatever it said. A mark per line separates "this is fine" from "check this" without
+   * colouring a whole section.
+   */
+  private static note(reassuring: boolean, title: string, body: string): ReactNode {
+    return (
+      <div className="fc-import-plan__note" key={`${title}-${body}`}>
+        <span className={`fc-import-plan__note-mark fc-import-plan__note-mark--${reassuring ? 'ok' : 'info'}`} aria-hidden="true">{reassuring ? '\u2713' : 'i'}</span>
+        <span className="fc-sites__text"><strong>{title}</strong> — {body}</span>
+      </div>
+    );
+  }
+
   render(): ReactNode {
     const { plan, arriving } = this;
 
@@ -100,16 +116,11 @@ export class ImportPlanSummary extends PureReactor {
           metaRowsExcluded={plan.metaRowsExcluded ?? 0}
           pluginSettingsRowsExcluded={plan.pluginSettingsRowsExcluded ?? 0}
         />
-        <p className="fc-sites__text"><strong>Nothing here is deleted or overwritten</strong> — {this.alreadyHere}</p>
-        <p className="fc-sites__text"><strong>Your settings</strong> — {this.settingsSentence}</p>
-        {this.worthKnowing.length > 0 ? (
-          <div className="fc-import-plan__worth-knowing">
-            <span className="fc-site-form__label">Worth knowing</span>
-            <ul className="fc-sites__warnings">
-              {this.worthKnowing.map((line) => <li key={line}>{line}</li>)}
-            </ul>
-          </div>
-        ) : null}
+        <div className="fc-import-plan__notes">
+          {ImportPlanSummary.note(true, 'Nothing here is deleted', this.alreadyHere)}
+          {ImportPlanSummary.note(true, 'Your settings come with it', this.settingsSentence)}
+          {this.worthKnowing.map((line) => ImportPlanSummary.note(false, 'Worth checking after', line))}
+        </div>
       </div>
     );
   }

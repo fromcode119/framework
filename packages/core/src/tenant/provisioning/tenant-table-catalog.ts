@@ -13,6 +13,7 @@ import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 import { TableVisitState } from '@core/tenant/provisioning/enums/table-visit-state.enum';
 import { TenantColumnFold } from '@core/tenant/provisioning/tenant-column-fold';
+import { TenantJournalTables } from '@core/tenant/provisioning/tenant-journal-tables';
 
 /**
  * Which tables hold tenant data on THIS platform, and what they look like.
@@ -95,6 +96,7 @@ export class TenantTableCatalog {
     ]);
     const schemaReferences = this.schemaReferences(wanted, columns);
     const folds = this.schemaFolds(wanted, columns);
+    const journals = TenantJournalTables.from(this.collections);
     const owners = this.owners();
 
     const descriptors = tables.map((table) => {
@@ -113,7 +115,7 @@ export class TenantTableCatalog {
           ? TenantOwningPluginResolver.resolve(table, this.knownPluginSlugs)
           : (PhysicalTableNameUtils.parse(table)?.pluginSlug ?? null));
       const label = owner?.label ?? null;
-      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set(), pluginSlug, label, folds.get(table) ?? []);
+      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set(), pluginSlug, label, folds.get(table) ?? [], journals.has(table));
     });
     return TenantTableCatalog.inDependencyOrder(descriptors);
   }

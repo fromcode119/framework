@@ -24,4 +24,6 @@ export interface IImportPlanTable {
   pluginSlug: string | null;
   /** The collection's human label; `null` when none was found, so the physical table name stands alone. */
   label: string | null;
+  /** A record of what happened rather than a thing the operator manages. */
+  isJournal: boolean;
 }

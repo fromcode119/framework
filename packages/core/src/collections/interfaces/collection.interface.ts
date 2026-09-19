@@ -69,6 +69,16 @@ export interface ICollection {
   };
   admin?: {
     useAsTitle?: string;
+    /**
+     * The operator cannot add rows here. Set together with `disableEdit` it says this collection is
+     * a record of what HAPPENED — an event log, a consent record, a visitor session — rather than
+     * something anyone manages. Collections have declared it for a long time; it is written down
+     * here because the framework now READS it: a summary that named the biggest kinds would
+     * otherwise be all telemetry and bury the handful a reader recognises.
+     */
+    disableCreate?: boolean;
+    /** The operator cannot change rows here. See `disableCreate`. */
+    disableEdit?: boolean;
     defaultColumns?: string[];
     group?: string;
     icon?: string;

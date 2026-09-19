@@ -99,7 +99,7 @@ describe('ImportPlanSummary -> Arrives', () => {
 
     // "people" alone also matches the unrelated "Already here" paragraph below, so assert the
     // arrival item's own count-and-label pairing instead of the bare word.
-    expect(screen.getByText((_, node) => node?.className === 'fc-import-plan__arrival-item' && /40\s*people/.test(node.textContent ?? ''))).not.toBeNull();
+    expect(screen.getByText((_, node) => node?.className === 'fc-import-plan__tile' && /40\s*people/.test(node.textContent ?? ''))).not.toBeNull();
     expect(screen.getByText(/35 new account\(s\) will be created/)).not.toBeNull();
   });
 

@@ -49,6 +49,13 @@ export class TenantBespokePolicies {
     return [...TenantBespokePolicies.PLATFORM_KEYS];
   }
 
+  /** The framework's own journals: rows that record what happened, which no operator manages. */
+  static journalTables(): string[] {
+    return TenantBespokePolicies.specs()
+      .filter((spec) => spec instanceof JournalPolicySpec)
+      .map((spec) => spec.table);
+  }
+
   /** Every table this class owns the policy for. The generic sweep must skip exactly these. */
   static tables(): string[] {
     return TenantBespokePolicies.specs().map((spec) => spec.table);

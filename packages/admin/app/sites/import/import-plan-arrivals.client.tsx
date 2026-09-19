@@ -9,6 +9,8 @@ interface IArrivalItem {
   key: string;
   count: number;
   label: string;
+  /** A record of what happened — counted, but never named first. */
+  isJournal: boolean;
 }
 
 /**
@@ -42,12 +44,22 @@ export class ImportPlanArrivals extends PureReactor {
   @prop declare metaRowsExcluded: number;
   @prop declare pluginSettingsRowsExcluded: number;
 
+  /**
+   * The kinds worth NAMING: those a plugin owns and has given a name of its own.
+   *
+   * Two conditions, both read from the plan, neither naming anything. A kind with no label has no
+   * word a reader would recognise. A kind with no owning plugin is the framework's own plumbing —
+   * `_system_meta` carries the label "Global Settings" and would otherwise lead the list ahead of a
+   * shop's orders, which is machinery presented as if it were the shop's. Whatever a plugin calls
+   * its records is what appears here, so a plugin written tomorrow needs no change to this file.
+   */
   private get labeled(): IImportPlanTable[] {
-    return this.arriving.filter((table) => Boolean(table.label));
+    return this.arriving.filter((table) => Boolean(table.label) && Boolean(table.pluginSlug));
   }
 
+  /** Everything else: unlabelled, or the framework's own. Counted in every total, folded for detail. */
   private get platformRecords(): IImportPlanTable[] {
-    return this.arriving.filter((table) => !table.label);
+    return this.arriving.filter((table) => !(table.label && table.pluginSlug));
   }
 
   /** `table.rows`, net of the executor's own exclusion for the one table (if any) this is. */
@@ -59,9 +71,9 @@ export class ImportPlanArrivals extends PureReactor {
 
   /** Every labelled table plus the two counts that are not table rows at all — people and files. */
   private get items(): IArrivalItem[] {
-    const items: IArrivalItem[] = this.labeled.map((table) => ({ key: table.name, count: this.netRows(table), label: table.label as string }));
-    if (this.users.total > 0) items.push({ key: '__people', count: this.users.total, label: 'people' });
-    if (this.files.count > 0) items.push({ key: '__files', count: this.files.count, label: 'files' });
+    const items: IArrivalItem[] = this.labeled.map((table) => ({ key: table.name, count: this.netRows(table), label: table.label as string, isJournal: !!table.isJournal }));
+    if (this.users.total > 0) items.push({ key: '__people', count: this.users.total, label: 'people', isJournal: false });
+    if (this.files.count > 0) items.push({ key: '__files', count: this.files.count, label: 'files', isJournal: false });
     // Biggest first — the thing an operator should not have to scroll to find is the one most of the
     // archive actually is. A hand-picked order would be exactly the hardcoded extension list Rule
     // Zero forbids; this is derived from the counts the plan already produced.
@@ -112,7 +124,13 @@ export class ImportPlanArrivals extends PureReactor {
 
   render(): ReactNode {
     const allItems = this.items;
-    const items = allItems.slice(0, ImportPlanArrivals.NAMED);
+    // A journal is a record of what happened — events, consents, sessions. It outnumbers everything
+    // a shop actually has, so naming the biggest kinds would name nothing but telemetry and bury the
+    // handful the reader recognises. It still counts in the total and still shows in full detail;
+    // it just is not named first. Which kinds those are is DECLARED by the collection that owns
+    // them, never guessed from a name or a row count.
+    const named = allItems.filter((item) => !item.isJournal);
+    const items = named.slice(0, ImportPlanArrivals.NAMED);
     const otherKinds = allItems.length - items.length;
     const platformRecords = this.platformRecords;
 
@@ -121,22 +139,14 @@ export class ImportPlanArrivals extends PureReactor {
         <span className="fc-site-form__label">Everything comes across</span>
         {items.length === 0 && platformRecords.length === 0 ? <span className="fc-sites__none">nothing</span> : null}
         {items.length > 0 ? (
-          <p className="fc-import-plan__arrival-list">
-            {items.flatMap((item, i): ReactNode[] => {
-              const nodes: ReactNode[] = [
-                <span key={item.key} className="fc-import-plan__arrival-item">
-                  <strong>{item.count.toLocaleString()}</strong> {item.label}
-                </span>,
-              ];
-              // Its own flex item, not trailing text inside one — flex strips a collapsible space at a
-              // line-box edge, which is exactly what swallowed this separator's leading space when it
-              // used to live as `' · '` inside the item's own `<span>`.
-              if (i < items.length - 1) {
-                nodes.push(<span key={`${item.key}-sep`} className="fc-import-plan__arrival-sep" aria-hidden="true">&middot;</span>);
-              }
-              return nodes;
-            })}
-          </p>
+          <div className="fc-import-plan__tiles">
+            {items.map((item) => (
+              <div key={item.key} className="fc-import-plan__tile">
+                <span className="fc-import-plan__tile-count">{item.count.toLocaleString()}</span>
+                <span className="fc-import-plan__tile-label">{item.label}</span>
+              </div>
+            ))}
+          </div>
         ) : null}
         {platformRecords.length > 0 ? this.renderPlatformRecordsDetail() : null}
         {otherKinds > 0 ? (

@@ -47,6 +47,8 @@ export class TenantImportPlan {
       pluginSlug: string | null;
       /** The collection's human label, `null` when none was found — the operator then sees the physical name alone. */
       label: string | null;
+      /** A record of what happened rather than a thing the operator manages — not named first in a summary. */
+      isJournal: boolean;
     }>,
     readonly plugins: Array<{ slug: string; archiveVersion: string; installedVersion: string | null; enabled: boolean }>,
     readonly theme: { slug: string; archiveVersion: string; installedVersion: string | null } | null,
