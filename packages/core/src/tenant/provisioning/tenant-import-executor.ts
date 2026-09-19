@@ -41,6 +41,8 @@ export class TenantImportExecutor {
     private readonly registry: TenantRegistryService,
     private readonly tables: TenantTableDescriptor[],
     private readonly uploadsDir: string,
+    /** The passphrase this archive's secrets were sealed under, when it carries any — see {@link TenantArchiveManifest.secretsSealed}. */
+    private readonly transitPassphrase: string | null = null,
   ) {}
 
   async execute(reader: TenantArchiveReader, identity: TenantIdentity, plan: TenantImportPlan): Promise<TenantImportResult> {
@@ -105,7 +107,7 @@ export class TenantImportExecutor {
     installedPlugins: Set<string>,
     warnings: string[],
   ): Promise<number> {
-    const inserter = new TenantRowInserter(this.db, table, tenant.id, remap, files, warnings);
+    const inserter = new TenantRowInserter(this.db, table, tenant.id, remap, files, warnings, this.transitPassphrase);
     const skipRow = TenantImportExecutor.rowFilter(table, installedPlugins);
     let count = 0;
     let skipped = 0;

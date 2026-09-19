@@ -43,7 +43,7 @@ export class ThemeDataPrefetcher {
     // THE TENANT, and the reason this whole mechanism was dead. A server-to-server fetch reaches the
     // API as `Host: api:3000`, and on a multi-tenant deployment the API routes by host — so every
     // prefetch resolved no site and was refused. Nothing failed loudly: the payload came back empty,
-    // no `__FROMCODE_PAGE_PREFETCH__` script was emitted, and every consumer quietly fell through to
+    // no `__ATLANTIS_PAGE_PREFETCH__` script was emitted, and every consumer quietly fell through to
     // its client fetch. The navigation menus have been arriving one round trip late ever since, and
     // any consumer WITHOUT a fallback would simply have rendered nothing.
     const forwardedHeaders = await ServerApiUtils.buildForwardedAuthHeaders();

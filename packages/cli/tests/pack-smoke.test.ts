@@ -57,11 +57,11 @@ describe('atlantis pack produces an archive', () => {
     }
     writeFixture();
 
-    // `FROMCODE_PROJECT_ROOT` is what decides where `plugins/` is read from and where `dist/` is
+    // `ATLANTIS_PROJECT_ROOT` is what decides where `plugins/` is read from and where `dist/` is
     // written, so the whole run happens inside the temp directory and touches no checkout.
     const output = execFileSync(process.execPath, [bin, 'pack', 'plugin', slug], {
       cwd: frameworkRoot,
-      env: { ...process.env, FROMCODE_PROJECT_ROOT: projectRoot },
+      env: { ...process.env, ATLANTIS_PROJECT_ROOT: projectRoot },
       encoding: 'utf8',
       timeout: 300_000,
     });

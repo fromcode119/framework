@@ -23,7 +23,7 @@ describe('SetupDatabaseService', () => {
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-setup-db-'));
     fs.mkdirSync(path.join(root, 'data'), { recursive: true });
-    vi.stubEnv('FROMCODE_PROJECT_ROOT', root);
+    vi.stubEnv('ATLANTIS_PROJECT_ROOT', root);
     FrameworkRootLocator.forget();
     vi.stubEnv('DATABASE_URL', '');
     vi.stubEnv('DATABASE_MIGRATION_URL', '');

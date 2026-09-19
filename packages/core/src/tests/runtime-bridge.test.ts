@@ -23,7 +23,7 @@ describe('RuntimeBridge', () => {
     vi.stubGlobal('document', {});
     vi.stubGlobal('window', {
       location: { origin: 'http://admin.framework.local' },
-      FROMCODE_API_URL: 'http://api.framework.local',
+      ATLANTIS_API_URL: 'http://api.framework.local',
     });
 
     expect(RuntimeBridge.resolveApiBaseUrl()).toBe('http://admin.framework.local');

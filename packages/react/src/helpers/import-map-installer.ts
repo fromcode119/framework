@@ -75,7 +75,7 @@ export class ImportMapInstaller {
   private static applyServerModules(imports: Record<string, string>, args: IRuntimeBridgeInstallArgs): void {
     const currentServerModules = args.stabilityRef.current.serverRuntimeModules;
     if (!currentServerModules) return;
-    const base = (args.stabilityRef.current as any).apiUrl || (window as any).FROMCODE_API_URL || '';
+    const base = (args.stabilityRef.current as any).apiUrl || (window as any).ATLANTIS_API_URL || '';
     Object.entries(currentServerModules).forEach(([name, config]: [string, any]) => {
       if (ImportMapInstaller.RESERVED_IMPORT_NAMES.has(name)) {
         return;

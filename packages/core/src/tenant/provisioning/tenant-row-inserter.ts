@@ -6,6 +6,7 @@ import { TenantIdRemap } from '@core/tenant/provisioning/tenant-id-remap';
 import { TenantImportFiles } from '@core/tenant/provisioning/tenant-import-files';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+import { SecretTransitResealer } from '@core/security/secret-transit-resealer';
 
 /**
  * Turns one archived row into one INSERT on the destination table.
@@ -44,6 +45,12 @@ export class TenantRowInserter {
     private readonly remap: TenantIdRemap,
     private readonly files: TenantImportFiles,
     private readonly warnings: string[] = [],
+    /**
+     * The passphrase the export sealed its secrets under. Given one, each secret is taken back into
+     * THIS deployment's key as the row is written, so an integration works the moment the import
+     * finishes instead of needing its credentials typed again.
+     */
+    private readonly transitPassphrase: string | null = null,
   ) {
     this.deferredSelfReferences = table.selfReferences.filter((ref) => ref.source === TenantColumnSource.FK);
   }
@@ -54,6 +61,14 @@ export class TenantRowInserter {
     for (const column of Object.keys(row)) {
       if (column === 'tenant_id' || !this.table.hasColumn(column)) continue;
       values[column] = row[column];
+    }
+    // After the copy loop: the loop writes the archive's own value for a destination column, and a
+    // fold must not be clobbered by the null it wrote for a column the old schema never filled.
+    this.foldLegacyColumns(row, values);
+    if (this.transitPassphrase) {
+      for (const column of Object.keys(values)) {
+        values[column] = SecretTransitResealer.openFromTransit(values[column], this.transitPassphrase);
+      }
     }
     if (this.table.hasTenantColumn) values.tenant_id = this.tenantId;
 
@@ -74,6 +89,9 @@ export class TenantRowInserter {
     if (Object.keys(deferredValues).length > 0) this.pendingSelfReferences.push({ id: newId, values: deferredValues });
 
     if (this.table.name === SystemConstants.TABLE.MEDIA) this.files.rewriteMediaRow(values);
+    // A renamed upload is referenced from CONTENT too, not only from the media row that owns it —
+    // a page's blocks carry `/uploads/<name>` verbatim. Every table, because any column may quote one.
+    this.files.rewriteUploadReferences(values);
 
     // A column this platform requires but the archive left null (a source that never enforced it, a
     // cleared dangling reference, a column added NOT NULL here after the export) gets the type's empty
@@ -89,6 +107,31 @@ export class TenantRowInserter {
     const params = columns.map((column) => this.encode(column, values[column]));
     await this.db.queryRaw(TenantSql.insert(this.table.name, columns), params);
     return typeof newId === 'number' || typeof newId === 'string' ? newId : null;
+  }
+
+  /**
+   * Folds an older schema's columns into the field that replaced them.
+   *
+   * A deployment that stored an address as eight flat columns still carries the address — it just
+   * carries it in the shape of its day, and the destination has no such columns, so every one of
+   * them would otherwise be discarded by the loop below. The claim comes from the collection
+   * (`IField.legacyColumns`), never from a guess about a column's name.
+   *
+   * The archive's own value for the destination column wins: if the export already wrote the field,
+   * that is the newer truth and the legacy columns are the shadow of it. Empty legacy values are not
+   * folded, so an all-empty set leaves the column null rather than writing a husk of empty keys.
+   */
+  private foldLegacyColumns(row: Record<string, unknown>, values: Record<string, unknown>): void {
+    for (const fold of this.table.folds) {
+      if (values[fold.column] !== null && values[fold.column] !== undefined) continue;
+      const folded: Record<string, unknown> = {};
+      for (const [column, key] of Object.entries(fold.legacy)) {
+        const value = row[column];
+        if (value === null || value === undefined || value === '') continue;
+        folded[key] = value;
+      }
+      if (Object.keys(folded).length > 0) values[fold.column] = folded;
+    }
   }
 
   /** Second pass for self-references, after every row of the table is in. */

@@ -54,7 +54,7 @@ export class PluginGuest {
   /** Loads the plugin and reports which lifecycle hooks and public-API functions it has. */
   private async start(boot: IPluginGuestBoot): Promise<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }> {
     this.boot = boot;
-    process.env.FROMCODE_PROJECT_ROOT = boot.projectRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = boot.projectRoot;
     process.chdir(boot.projectRoot);
     PluginGuest.shareFrameworkModules(boot.projectRoot);
     PluginGuestCoreBridge.install(this.channel, this.remote, this.handlers);

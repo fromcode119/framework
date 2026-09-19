@@ -179,7 +179,7 @@ services:
       # the documented "leave the token blank and GITHUB_TOKEN is used" fallback could never work in
       # a container: the variable existed on the host and nowhere the plugin could see it.
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
-      - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__FROMCODE_SAVED_SECRET__}
+      - INTEGRATION_SECRET_MASK=${INTEGRATION_SECRET_MASK:-__ATLANTIS_SAVED_SECRET__}
       # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
       # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
       # the deployment environment; the SAME value reaches all three services from there. Unset means those

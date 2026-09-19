@@ -12,6 +12,7 @@ import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-own
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 import { TableVisitState } from '@core/tenant/provisioning/enums/table-visit-state.enum';
+import { TenantColumnFold } from '@core/tenant/provisioning/tenant-column-fold';
 
 /**
  * Which tables hold tenant data on THIS platform, and what they look like.
@@ -93,6 +94,7 @@ export class TenantTableCatalog {
       this.db.introspection.requiredColumns(tables, TenantTableCatalog.ALWAYS_SUPPLIED),
     ]);
     const schemaReferences = this.schemaReferences(wanted, columns);
+    const folds = this.schemaFolds(wanted, columns);
     const owners = this.owners();
 
     const descriptors = tables.map((table) => {
@@ -111,7 +113,7 @@ export class TenantTableCatalog {
           ? TenantOwningPluginResolver.resolve(table, this.knownPluginSlugs)
           : (PhysicalTableNameUtils.parse(table)?.pluginSlug ?? null));
       const label = owner?.label ?? null;
-      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set(), pluginSlug, label);
+      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set(), pluginSlug, label, folds.get(table) ?? []);
     });
     return TenantTableCatalog.inDependencyOrder(descriptors);
   }
@@ -153,6 +155,33 @@ export class TenantTableCatalog {
    * plugin itself uses for its own slug (`<plugin>-<entity>`, from within that same plugin) —
    * `resolveTarget` tries all three.
    */
+  /**
+   * Destination columns that ABSORB an older schema's columns, from `IField.legacyColumns`.
+   *
+   * Read exactly as a relationship is: a generic property on a declared field. The framework learns
+   * that some field claims some older column names; it never learns whose. A claim is kept only when
+   * the destination column actually exists here and holds JSON — folding eight values into a `text`
+   * column would write a shape nothing reads.
+   */
+  private schemaFolds(wanted: Set<string>, columns: Map<string, Record<string, string>>): Map<string, TenantColumnFold[]> {
+    const out = new Map<string, TenantColumnFold[]>();
+    for (const { collection } of this.collections) {
+      const table = String(collection.tableName || collection.slug || '').trim();
+      if (!wanted.has(table)) continue;
+      for (const field of collection.fields ?? []) {
+        const legacy = field.legacyColumns;
+        if (!legacy || Object.keys(legacy).length === 0) continue;
+        const column = NamingStrategy.toSnakeCase(field.name);
+        const type = columns.get(table)?.[column];
+        if (!type || !TenantTableDescriptor.isJsonType(type)) continue;
+        const existing = out.get(table) ?? [];
+        existing.push(new TenantColumnFold(column, { ...legacy }));
+        out.set(table, existing);
+      }
+    }
+    return out;
+  }
+
   private schemaReferences(wanted: Set<string>, columns: Map<string, Record<string, string>>): Map<string, TenantColumnReference[]> {
     const out = new Map<string, TenantColumnReference[]>();
     for (const { collection, pluginSlug } of this.collections) {

@@ -45,7 +45,7 @@ describe('ImportPlanSummary -> Arrives', () => {
 
     // Raw sum would be 12 + 8 + 5 = 25; only 2 meta rows and 5 plugin-settings rows actually land,
     // so the true arriving total is 25 - 10 - 3 = 12.
-    expect(screen.getByText(/12 row\(s\) across 3 table\(s\) in total\./)).not.toBeNull();
+    expect(screen.getByText(/12 in total\./)).not.toBeNull();
   });
 
   it('counts every row when nothing is excluded', () => {
@@ -59,7 +59,7 @@ describe('ImportPlanSummary -> Arrives', () => {
       />,
     );
 
-    expect(screen.getByText(/5 row\(s\) across 1 table\(s\) in total\./)).not.toBeNull();
+    expect(screen.getByText(/5 in total\./)).not.toBeNull();
     // The one arriving table has a human label, so it headlines the itemized list too.
     expect(screen.getByText(/Widgets/)).not.toBeNull();
   });
@@ -80,7 +80,7 @@ describe('ImportPlanSummary -> Arrives', () => {
     );
 
     expect(screen.getByText(/2 platform record\(s\) across 1 table\(s\)/)).not.toBeNull();
-    expect(screen.getByText(/2 row\(s\) across 1 table\(s\) in total\./)).not.toBeNull();
+    expect(screen.getByText(/2 in total\./)).not.toBeNull();
   });
 
   it('shows people in the arrival list when the archive carries any', () => {
@@ -103,7 +103,7 @@ describe('ImportPlanSummary -> Arrives', () => {
     expect(screen.getByText(/35 new account\(s\) will be created/)).not.toBeNull();
   });
 
-  it('never says "expand a table below" for a skipped table, which has no disclosure to expand', () => {
+  it('tells the operator what to do about records with nowhere to go, without naming a table', () => {
     const skipped: IImportPlanTable[] = [table({ name: 'fcp_gamma_orders', rows: 9, mode: 'skip', basis: 'noTable', label: null })];
     render(
       <ImportPlanSummary
@@ -114,7 +114,9 @@ describe('ImportPlanSummary -> Arrives', () => {
       />,
     );
 
-    expect(screen.getByText(/Not imported/)).not.toBeNull();
-    expect(screen.queryByText(/Expand a table below for exactly which\.$/)).toBeNull();
+    // The consequence, in the shop's words — and never the mechanics that used to lead the screen.
+    expect(screen.getByText(/9 record\(s\) have nowhere to go until the add-on that owns them is installed here/)).not.toBeNull();
+    expect(screen.queryByText(/Expand a table below/)).toBeNull();
+    expect(screen.queryByText(/re-numbered/)).toBeNull();
   });
 });
