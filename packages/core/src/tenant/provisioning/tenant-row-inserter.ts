@@ -6,6 +6,7 @@ import { TenantIdRemap } from '@core/tenant/provisioning/tenant-id-remap';
 import { TenantImportFiles } from '@core/tenant/provisioning/tenant-import-files';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+import { SecretTransitResealer } from '@core/security/secret-transit-resealer';
 
 /**
  * Turns one archived row into one INSERT on the destination table.
@@ -44,6 +45,12 @@ export class TenantRowInserter {
     private readonly remap: TenantIdRemap,
     private readonly files: TenantImportFiles,
     private readonly warnings: string[] = [],
+    /**
+     * The passphrase the export sealed its secrets under. Given one, each secret is taken back into
+     * THIS deployment's key as the row is written, so an integration works the moment the import
+     * finishes instead of needing its credentials typed again.
+     */
+    private readonly transitPassphrase: string | null = null,
   ) {
     this.deferredSelfReferences = table.selfReferences.filter((ref) => ref.source === TenantColumnSource.FK);
   }
@@ -58,6 +65,11 @@ export class TenantRowInserter {
     // After the copy loop: the loop writes the archive's own value for a destination column, and a
     // fold must not be clobbered by the null it wrote for a column the old schema never filled.
     this.foldLegacyColumns(row, values);
+    if (this.transitPassphrase) {
+      for (const column of Object.keys(values)) {
+        values[column] = SecretTransitResealer.openFromTransit(values[column], this.transitPassphrase);
+      }
+    }
     if (this.table.hasTenantColumn) values.tenant_id = this.tenantId;
 
     const newId = this.table.hasColumn('id') ? this.remap.resolve(this.table.name, row.id) : null;

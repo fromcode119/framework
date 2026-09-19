@@ -24,6 +24,15 @@ export class TenantArchiveManifest {
     readonly users: number,
     readonly files: { count: number; bytes: number },
     readonly warnings: string[],
+    /**
+     * Whether the secrets in this archive were RESEALED for transit.
+     *
+     * A secret is encrypted with the key of the deployment that held it, so it is unreadable
+     * anywhere else. When an export is given a transit passphrase the secrets are resealed under it,
+     * and the import needs the same passphrase to take them into its own key. Saying so here is what
+     * lets an import refuse clearly instead of quietly landing credentials nobody can read.
+     */
+    readonly secretsSealed: boolean = false,
   ) {}
 
   get tableNames(): string[] {
@@ -47,6 +56,7 @@ export class TenantArchiveManifest {
       users: this.users,
       files: this.files,
       warnings: this.warnings,
+      secretsSealed: this.secretsSealed,
     };
   }
 
@@ -93,6 +103,7 @@ export class TenantArchiveManifest {
       CoercionUtils.toNumber(input.users),
       { count: CoercionUtils.toNumber(input.files?.count), bytes: CoercionUtils.toNumber(input.files?.bytes) },
       Array.isArray(input.warnings) ? input.warnings.map((w: unknown) => CoercionUtils.toString(w)) : [],
+      CoercionUtils.toBoolean(input.secretsSealed, false),
     );
   }
 }
