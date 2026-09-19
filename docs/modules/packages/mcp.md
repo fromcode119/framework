@@ -1,15 +1,15 @@
-# Package Module: @fromcode119/database
+# Package Module: @fromcode119/mcp
 
-- Path: `packages/database`
+- Path: `packages/mcp`
 
 ## Purpose
 
-Database abstraction and persistence layer helpers used by API/plugins.
+MCP schema, registry and bridge primitives, shared by the MCP server and by every client that speaks to it.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode119/database`
-- `npm run dev --workspace=@fromcode119/database`
+- `npm run build
+dev --workspace=@fromcode119/mcp`
 
 ## Integration Notes
 
@@ -19,6 +19,6 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Related Docs
 
-- [Architecture](../../architecture.md)
 - [Module index](../README.md)
+- [Architecture](../../architecture.md)
 - [Plugin development guide](../../plugin-development-guide.md)

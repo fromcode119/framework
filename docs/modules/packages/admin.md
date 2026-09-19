@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/admin
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/admin`
+- Path: `packages/admin`
 
 ## Purpose
 
@@ -22,6 +21,6 @@ Admin control panel application (Next.js) for managing collections, plugins, set
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

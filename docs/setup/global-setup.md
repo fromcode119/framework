@@ -1,11 +1,17 @@
 # Global Setup Guide
 
-This guide documents the standard local setup for the full Fromcode stack using local domains (`*.framework.local`), Docker services, and workspace scripts.
+> **Maintainer environment — not a recommended install path.** This describes the multi-hostname
+> `*.framework.local` setup used when developing the framework itself. It needs hosts entries and an
+> external reverse proxy, and it is deliberately not linked from the documentation index. If you are
+> installing or evaluating Atlantis, use the [Quick Start](../../README.md#-quick-start) or the
+> [installation guide](../installation.md) instead.
+
+This guide documents the local setup for the full Atlantis stack using local domains (`*.framework.local`), Docker services, and workspace scripts.
 
 ## 1. Requirements
 
 - Node.js `22+`
-- npm `11+`
+- npm `10+` (the version bundled with Node 22)
 - Docker + Docker Compose
 - Local DNS/hosts entries for:
   - `api.framework.local`
@@ -15,14 +21,21 @@ This guide documents the standard local setup for the full Fromcode stack using 
 
 ## 2. Repository Layout
 
-- Framework runtime: `framework/Source`
-- Shared plugins: `plugins`
-- Shared themes: `themes`
-- Prebuilt/theme source examples: `prebuilt`, `themes/snapbilt-theme`
+Paths below are relative to the repository root — the directory this clone sits in. Every command in
+this guide runs from there.
+
+- Framework runtime: `packages/` (core, api, admin, frontend, cli, …)
+- Local dev starter and proxy: `starters/local/`
+- Plugin mount point: `plugins/` — **empty in a fresh clone.** It is gitignored and populated by
+  installing plugins, or by checking out plugin repositories into it. Plugins are separate products
+  and are not part of this repository.
+- Theme mount point: `themes/` — same arrangement as `plugins/`.
+
+`PLUGINS_DIR` and `THEMES_DIR` name these roots for every service; see section 3.
 
 ## 3. Environment Configuration
 
-From `framework/Source`:
+From the repository root:
 
 ```bash
 cp .env.example .env
@@ -47,14 +60,20 @@ second, host-side variable to override them with.
 
 ## 4. Start the Stack
 
-From `framework/Source`:
+From the repository root:
 
 ```bash
+docker compose up -d db
 npm install
 npm run dev
 ```
 
-This starts all workspace dev servers and uses Docker Compose services (`db`, `redis`, etc.) according to `docker-compose.yml`.
+`npm run dev` runs each workspace's own dev server (`npm run dev --workspaces --if-present`). It does
+**not** start the Docker services — bring `db` up first, or the api exits on its first connection
+attempt.
+
+There is no bundled Redis. `REDIS_URL` is empty by default and the cache runs in-process; point it at
+a Redis you run yourself only if you want a shared one.
 
 ## 5. Service URLs
 
@@ -64,7 +83,7 @@ This starts all workspace dev servers and uses Docker Compose services (`db`, `r
 
 ## 6. Build Commands
 
-From `framework/Source`:
+From the repository root:
 
 ```bash
 npm run build
@@ -117,5 +136,5 @@ When testing content-heavy modules (CMS, forms, ecommerce, mlm, etc.):
 
 - Module index: `docs/modules/README.md`
 - Per-package docs: `docs/modules/packages`
-- Plugin docs: each plugin's own `README.md` (e.g. `plugins/cms/README.md`)
-- Theme docs: each theme's own `README.md` (e.g. `themes/blog/README.md`)
+- Plugin docs: each installed plugin ships its own `README.md` under `plugins/<slug>/`
+- Theme docs: each installed theme ships its own `README.md` under `themes/<slug>/`

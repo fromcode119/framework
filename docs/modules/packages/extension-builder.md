@@ -1,15 +1,16 @@
-# Package Module: @fromcode119/database
+# Package Module: @fromcode119/extension-builder
 
-- Path: `packages/database`
+- Path: `packages/extension-builder`
 
 ## Purpose
 
-Database abstraction and persistence layer helpers used by API/plugins.
+Builds plugins, themes and appearances — the build pipeline, the SSR dependency closure, and integrity stamping.
+
+Node-only build tooling, never imported by application code, and never by a plugin: a plugin reaches it through `context.extensions`.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode119/database`
-- `npm run dev --workspace=@fromcode119/database`
+- `npm run build --workspace=@fromcode119/extension-builder`
 
 ## Integration Notes
 
@@ -19,6 +20,6 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Related Docs
 
-- [Architecture](../../architecture.md)
 - [Module index](../README.md)
+- [Architecture](../../architecture.md)
 - [Plugin development guide](../../plugin-development-guide.md)

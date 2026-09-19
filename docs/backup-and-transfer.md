@@ -42,7 +42,7 @@ The migration also maps all three permissions to the `admin` role.
 The supported runtime path is the framework CLI surface:
 
 ```bash
-npm run fromcode -- system site-transfer-bundle --label demo-transfer
+npm run atlantis -- system site-transfer-bundle --label demo-transfer
 ```
 
 The thin wrapper script delegates to the same CLI runtime:

@@ -1,6 +1,6 @@
 # API Reference
 
-The Fromcode Framework provides a comprehensive REST and GraphQL API for interacting with system resources and plugin data.
+Atlantis provides a comprehensive REST and GraphQL API for interacting with system resources and plugin data.
 
 ## Authentication
 
@@ -92,7 +92,7 @@ context.hooks.on('socket:message:my-plugin:action', ({ ws, payload }) => {
 ## Management Services
 
 ### System Update Service
-Used to check and apply updates to the Fromcode Core.
+Used to check and apply updates to the Atlantis Core.
 - **Service**: `SystemUpdateService` (available in `@fromcode119/core`)
 - **Key Methods**:
     - `checkUpdate()`: Compares current `package.json` version with the Marketplace Hub.

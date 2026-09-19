@@ -1,15 +1,15 @@
-# Package Module: @fromcode119/database
+# Package Module: @fromcode119/queue
 
-- Path: `packages/database`
+- Path: `packages/queue`
 
 ## Purpose
 
-Database abstraction and persistence layer helpers used by API/plugins.
+Background job queue — BullMQ or an in-process adapter behind one API, chosen by configuration.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode119/database`
-- `npm run dev --workspace=@fromcode119/database`
+- `npm run build
+dev --workspace=@fromcode119/queue`
 
 ## Integration Notes
 
@@ -19,6 +19,6 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Related Docs
 
-- [Architecture](../../architecture.md)
 - [Module index](../README.md)
+- [Architecture](../../architecture.md)
 - [Plugin development guide](../../plugin-development-guide.md)

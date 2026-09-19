@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/next
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/next`
+- Path: `packages/next`
 
 ## Purpose
 
@@ -20,6 +19,6 @@ Next.js integration helpers for framework runtime composition.
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

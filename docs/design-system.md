@@ -1,9 +1,9 @@
-# Fromcode Framework: Brutalist-Soft Design System
+# Atlantis: Brutalist-Soft Design System
 
 **Version**: 1.0.0  
 **Last Updated**: February 17, 2026
 
-This document defines the official design language for all Fromcode plugin UIs, based on the "Brutalist-Soft" aesthetic established in the CMS, Ecommerce, Finance, and Analytics plugins.
+This document defines the official design language for all Atlantis plugin UIs, based on the "Brutalist-Soft" aesthetic established in the CMS, Ecommerce, Finance, and Analytics plugins.
 
 ---
 

@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/email
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/email`
+- Path: `packages/email`
 
 ## Purpose
 
@@ -20,6 +19,6 @@ Email transport abstraction and provider drivers used by auth/forms/system notif
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

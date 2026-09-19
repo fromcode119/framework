@@ -2,8 +2,7 @@
   "name": "@fromcode119/cli",
   "version": "0.2.5",
   "bin": {
-    "atlantis": "dist/bin.js",
-    "fromcode": "dist/bin.js"
+    "atlantis": "dist/bin.js"
   },
   "scripts": {
     "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build",

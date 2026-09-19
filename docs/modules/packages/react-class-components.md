@@ -1,15 +1,15 @@
-# Package Module: @fromcode119/database
+# Package Module: @fromcode119/react-class-components
 
-- Path: `packages/database`
+- Path: `packages/react-class-components`
 
 ## Purpose
 
-Database abstraction and persistence layer helpers used by API/plugins.
+Class-based OOP primitives for React apps - a typed Reactor base component, @bound / @watch / @state decorators, and a method-bearing Enum base. React-only, zero framework dependencies, reusable in any project.
+
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode119/database`
-- `npm run dev --workspace=@fromcode119/database`
+- `npm run build --workspace=@fromcode119/react-class-components`
 
 ## Integration Notes
 
@@ -19,6 +19,6 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Related Docs
 
-- [Architecture](../../architecture.md)
 - [Module index](../README.md)
+- [Architecture](../../architecture.md)
 - [Plugin development guide](../../plugin-development-guide.md)

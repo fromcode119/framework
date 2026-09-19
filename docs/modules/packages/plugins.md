@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/plugins
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/plugins`
+- Path: `packages/plugins`
 
 ## Purpose
 
@@ -20,6 +19,6 @@ Shared plugin framework utilities and contracts for plugin runtime code.
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

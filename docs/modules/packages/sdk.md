@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/sdk
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/sdk`
+- Path: `packages/sdk`
 
 ## Purpose
 
@@ -20,6 +19,6 @@ Developer SDK for creating framework plugins with typed helpers and lifecycle AP
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

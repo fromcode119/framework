@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/frontend
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/frontend`
+- Path: `packages/frontend`
 
 ## Purpose
 
@@ -22,6 +21,6 @@ Public-facing frontend (Next.js) that resolves CMS/plugin content and renders th
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

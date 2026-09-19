@@ -1,6 +1,6 @@
-# Minimal fromcode Project
+# Minimal Atlantis Project
 
-This is a minimal fromcode project scaffolded with the `fromcode create` CLI.
+This is a minimal Atlantis project scaffolded with the `npm create fromcode` scaffolder.
 
 ## Getting Started
 

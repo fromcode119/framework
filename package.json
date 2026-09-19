@@ -2,6 +2,7 @@
   "name": "@fromcode119/framework",
   "version": "0.2.127",
   "private": true,
+  "license": "MIT",
   "workspaces": [
     "packages/*"
   ],
@@ -47,9 +48,8 @@
     "test": "npm run test --workspaces --if-present",
     "test:framework": "npm run build:frontend-icons && vitest run --config vitest.plugins.config.ts",
     "atlantis": "tsx packages/cli/src/bin.ts",
-    "fromcode": "tsx packages/cli/src/bin.ts",
-    "bundle:site-transfer": "npm run fromcode -- system site-transfer-bundle",
-    "seed:theme": "npm run fromcode -- theme seed",
+    "bundle:site-transfer": "npm run atlantis -- system site-transfer-bundle",
+    "seed:theme": "npm run atlantis -- theme seed",
     "start:all": "concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\" \"PORT=3002 npm run start --workspace=@fromcode119/frontend\"",
     "start:api-admin": "concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\"",
     "start:all:test-shared": "PLUGINS_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/plugins' THEMES_DIR='/Users/kristian/Work/Clients/Fromcode 119/Domains/fromcode.com/Source/themes' concurrently \"PORT=3000 npm run start --workspace=@fromcode119/api\" \"PORT=3001 npm run start --workspace=@fromcode119/admin\" \"PORT=3002 npm run start --workspace=@fromcode119/frontend\"",
