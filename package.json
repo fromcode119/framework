@@ -69,6 +69,7 @@
     "check:middleware-glue": "node packages/next-build-codegen/dist/next-build-codegen-cli.cjs verify-middleware packages/admin && node packages/next-build-codegen/dist/next-build-codegen-cli.cjs verify-middleware packages/frontend",
     "check:vite-glue": "node packages/next-build-codegen/dist/next-build-codegen-cli.cjs verify-vite-config packages/sdk/src/vite/theme.config.ts packages/sdk/src/vite/theme-ssr.config.ts packages/sdk/src/vite/plugin-ui.config.ts packages/sdk/src/vite/plugin-ui-ssr.config.ts packages/sdk/src/tailwind/plugin-ui.config.ts packages/frontend/build/frontend-runtime.config.ts",
     "check:conventions": "node packages/arch-guard/dist/arch-guard-cli.cjs convention-guard",
+    "check:rendered-copy": "node packages/arch-guard/dist/arch-guard-cli.cjs rendered-copy",
     "check:conventions:detail": "node packages/arch-guard/dist/arch-guard-cli.cjs convention-guard --detail",
     "check:conventions:error": "FRAMEWORK_CONVENTION_MODE=error node packages/arch-guard/dist/arch-guard-cli.cjs convention-guard",
     "check:mcp-tool-schemas": "node packages/arch-guard/dist/arch-guard-cli.cjs mcp-tool-schemas",

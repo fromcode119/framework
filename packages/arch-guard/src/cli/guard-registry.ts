@@ -5,6 +5,7 @@ import { AppearanceBoundaryCommand } from './appearance-boundary-command';
 import { ClientViewMoveCommand } from './client-view-move-command';
 import { ComponentMigrationCommand } from './component-migration-command';
 import { ConventionGuardCommand } from './convention-guard-command';
+import { RenderedCopyCommand } from './rendered-copy-command';
 import { CoreBoundaryCommand } from './core-boundary-command';
 import { FrameworkDomainCommand } from './framework-domain-command';
 import { BlockFieldConformanceCommand } from './block-field-conformance-command';
@@ -52,6 +53,7 @@ export class GuardRegistry {
     ['component-migration', ComponentMigrationCommand],
     ['convention-guard', ConventionGuardCommand],
     ['core-boundary', CoreBoundaryCommand],
+    ['rendered-copy', RenderedCopyCommand],
     ['db-find-where', DbFindWhereCommand],
     ['declared-fields', DeclaredFieldAssignmentCommand],
     ['dependency-overrides', DependencyOverridesCommand],
