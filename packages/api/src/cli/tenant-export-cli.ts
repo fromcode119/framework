@@ -50,7 +50,12 @@ export class TenantExportCli {
     if (tables.length === 0) throw new Error('The destination platform has no tenant tables at all; boot it once so the schema exists.');
     console.log(`[tenant-export] ${tables.length} tenant table(s) according to the destination platform.`);
 
-    const writer = new TenantArchiveWriter(TenantArchiveSource.singleTenant(source, uploadsDir), tables);
+    // The passphrase comes from the ENVIRONMENT, never a flag: an argument is visible in shell
+    // history and to anyone running `ps`, and this one is what makes the archive's secrets readable.
+    const transitPassphrase = String(process.env.TENANT_TRANSIT_PASSPHRASE || '').trim() || null;
+    if (transitPassphrase) console.log('[tenant-export] secrets will be sealed for transit; the import needs the same TENANT_TRANSIT_PASSPHRASE.');
+    else console.log('[tenant-export] TENANT_TRANSIT_PASSPHRASE is not set: secrets travel as they are and will NOT be readable on another deployment.');
+    const writer = new TenantArchiveWriter(TenantArchiveSource.singleTenant(source, uploadsDir), tables, transitPassphrase);
     const result = await writer.write({
       tenant: { id: identity.id, slug: identity.slug, primaryHost: identity.primaryHost, hostAliases: identity.hostAliases, state: identity.state, kind: identity.kind.value, appearance: identity.appearance },
       plugins: await TenantExportCli.activePlugins(source),

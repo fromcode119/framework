@@ -26,6 +26,7 @@ Every Atlantis installation as a Model Context Protocol server: security model, 
 Framework package documentation index.
 
 ### [Backup And Site Transfer](./backup-and-transfer.md)
+- [Migrating a site onto the platform](./migrating-a-site-onto-the-platform.md) — a single-tenant deployment becomes one site here: what travels, what does not, and how its credentials survive the move.
 Operator guide for the system backup API, constrained restore flow, and site-transfer bundle CLI.
 
 ### [Certificates and TLS](./certificates-and-tls.md)
