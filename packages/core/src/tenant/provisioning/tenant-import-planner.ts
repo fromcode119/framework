@@ -178,7 +178,10 @@ export class TenantImportPlanner {
     archived: { name: string; rows: number; columns: string[]; hasSerialId: boolean },
     destination: TenantTableDescriptor,
   ): Promise<TenantImportPlan['tables'][number]> {
-    const droppedColumns = archived.columns.filter((column) => !destination.hasColumn(column));
+    // A column this platform no longer has is NOT automatically lost: a field may have claimed it
+    // (`IField.legacyColumns`), in which case the inserter folds its value into that field. Only a
+    // column nothing claims is genuinely dropped, and only that is worth telling the operator about.
+    const droppedColumns = archived.columns.filter((column) => !destination.hasColumn(column) && !destination.foldsColumn(column));
     // A JSON column the schema declares as a relationship IS followed by the remap; the rest are opaque.
     const followed = new Set(destination.references.map((ref) => ref.column));
     const opaqueJsonColumns = destination.jsonColumns.filter((column) => archived.columns.includes(column) && !followed.has(column));
