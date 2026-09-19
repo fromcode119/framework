@@ -5,9 +5,10 @@
   "main": "lib/index.ts",
   "types": "lib/index.ts",
   "bin": {
-    "atlantis-admin": "scripts/admin.js"
+    "atlantis-admin": "dist/bin.js"
   },
   "files": [
+    "dist",
     ".next",
     "public",
     "scripts",
@@ -27,11 +28,12 @@
   "scripts": {
     "build:sw": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs esbuild service-worker/service-worker.ts --bundle --format=iife --global-name=AdminServiceWorkerModule --target=es2020 --tsconfig=tsconfig.json \"--footer:js=AdminServiceWorkerModule.AdminServiceWorker.register();\" --outfile=public/sw.js",
     "typecheck:sw": "tsc --noEmit -p service-worker/tsconfig.json",
-    "build": "npm run build:sw && node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next build",
+    "build": "npm run build:bin && npm run build:sw && node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next build",
     "prepack": "npm run build:sw",
     "dev": "node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
     "start": "node ../core/dist/process/app-launcher-main.js --app admin --hostname 0.0.0.0",
-    "test": "vitest run --config ../../vitest.plugins.config.ts --project admin --project admin-dom"
+    "test": "vitest run --config ../../vitest.plugins.config.ts --project admin --project admin-dom",
+    "build:bin": "esbuild scripts/admin-launcher.ts --bundle --format=cjs --platform=node --outfile=dist/bin.js"
   },
   "dependencies": {
     "@fromcode119/core": "*",
