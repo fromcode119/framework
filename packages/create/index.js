@@ -11,8 +11,8 @@ const localMode = rawArgs.includes('--local');
 const args = rawArgs.filter(a => !a.startsWith('--'));
 const withFrontend = true; // Always include frontend by default
 const workspaceRoot = path.resolve(__dirname, '..', '..');
-const localWorkspaceRoot = process.env.ATLANTIS_WORKSPACE_ROOT
-  ? path.resolve(process.env.ATLANTIS_WORKSPACE_ROOT)
+const localWorkspaceRoot = process.env.FROMCODE_WORKSPACE_ROOT
+  ? path.resolve(process.env.FROMCODE_WORKSPACE_ROOT)
   : workspaceRoot;
 const localWorkspaceRootEscaped = localWorkspaceRoot
   .replace(/\\/g, '\\\\')
@@ -108,18 +108,18 @@ const registryScripts = {
 };
 
 const localScripts = {
-  "dev": `concurrently -n proxy,api,admin -c white,cyan,green "PROXY_PORT=\${PROXY_PORT:-3000} API_PORT=\${API_PORT:-4000} ADMIN_PORT=\${ADMIN_PORT:-3001} node proxy.js" "ATLANTIS_PROJECT_ROOT=\\"$PWD\\" PORT=\${API_PORT:-4000} npm run dev --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=\${ADMIN_PORT:-3001} npm run dev --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/admin\\""`,
-  "dev:full": `concurrently -n proxy,api,admin,web -c white,cyan,green,yellow "PROXY_PORT=\${PROXY_PORT:-3000} API_PORT=\${API_PORT:-4000} ADMIN_PORT=\${ADMIN_PORT:-3001} FRONTEND_PORT=\${FRONTEND_PORT:-3002} node proxy.js" "ATLANTIS_PROJECT_ROOT=\\"$PWD\\" PORT=\${API_PORT:-4000} npm run dev --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=\${ADMIN_PORT:-3001} npm run dev --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/admin\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} PORT=\${FRONTEND_PORT:-3002} npm run dev --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/frontend\\""`,
-  "dev:api": `ATLANTIS_PROJECT_ROOT="$PWD" PORT=\${API_PORT:-4000} npm run dev --prefix "\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api"`,
-  "start": `concurrently -n proxy,api,admin -c white,cyan,green "PROXY_PORT=\${PROXY_PORT:-3000} API_PORT=\${API_PORT:-4000} ADMIN_PORT=\${ADMIN_PORT:-3001} node proxy.js" "ATLANTIS_PROJECT_ROOT=\\"$PWD\\" PORT=\${API_PORT:-4000} npm run start --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=\${ADMIN_PORT:-3001} npm run start --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/admin\\""`,
-  "start:full": `concurrently -n proxy,api,admin,web -c white,cyan,green,yellow "PROXY_PORT=\${PROXY_PORT:-3000} API_PORT=\${API_PORT:-4000} ADMIN_PORT=\${ADMIN_PORT:-3001} FRONTEND_PORT=\${FRONTEND_PORT:-3002} node proxy.js" "ATLANTIS_PROJECT_ROOT=\\"$PWD\\" PORT=\${API_PORT:-4000} npm run start --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=\${ADMIN_PORT:-3001} npm run start --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/admin\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} PORT=\${FRONTEND_PORT:-3002} npm run start --prefix \\"\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/frontend\\""`,
-  "start:api": `ATLANTIS_PROJECT_ROOT="$PWD" PORT=\${API_PORT:-4000} npm run start --prefix "\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api"`,
-  "plugin:build": `npm run atlantis --prefix "\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- plugin build`,
-  "plugin:dev": `npm run atlantis --prefix "\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- plugin dev`,
-  "theme:build": `npm run atlantis --prefix "\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- theme build`,
-  "theme:dev": `npm run atlantis --prefix "\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- theme dev`,
-  "db:migrate": `npm run atlantis --prefix "\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- db:migrate`,
-  "db:reset": `npm run atlantis --prefix "\${ATLANTIS_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- db:reset`,
+  "dev": `concurrently -n proxy,api,admin -c white,cyan,green "PROXY_PORT=\${PROXY_PORT:-3000} API_PORT=\${API_PORT:-4000} ADMIN_PORT=\${ADMIN_PORT:-3001} node proxy.js" "FROMCODE_PROJECT_ROOT=\\"$PWD\\" PORT=\${API_PORT:-4000} npm run dev --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=\${ADMIN_PORT:-3001} npm run dev --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/admin\\""`,
+  "dev:full": `concurrently -n proxy,api,admin,web -c white,cyan,green,yellow "PROXY_PORT=\${PROXY_PORT:-3000} API_PORT=\${API_PORT:-4000} ADMIN_PORT=\${ADMIN_PORT:-3001} FRONTEND_PORT=\${FRONTEND_PORT:-3002} node proxy.js" "FROMCODE_PROJECT_ROOT=\\"$PWD\\" PORT=\${API_PORT:-4000} npm run dev --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=\${ADMIN_PORT:-3001} npm run dev --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/admin\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} PORT=\${FRONTEND_PORT:-3002} npm run dev --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/frontend\\""`,
+  "dev:api": `FROMCODE_PROJECT_ROOT="$PWD" PORT=\${API_PORT:-4000} npm run dev --prefix "\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api"`,
+  "start": `concurrently -n proxy,api,admin -c white,cyan,green "PROXY_PORT=\${PROXY_PORT:-3000} API_PORT=\${API_PORT:-4000} ADMIN_PORT=\${ADMIN_PORT:-3001} node proxy.js" "FROMCODE_PROJECT_ROOT=\\"$PWD\\" PORT=\${API_PORT:-4000} npm run start --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=\${ADMIN_PORT:-3001} npm run start --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/admin\\""`,
+  "start:full": `concurrently -n proxy,api,admin,web -c white,cyan,green,yellow "PROXY_PORT=\${PROXY_PORT:-3000} API_PORT=\${API_PORT:-4000} ADMIN_PORT=\${ADMIN_PORT:-3001} FRONTEND_PORT=\${FRONTEND_PORT:-3002} node proxy.js" "FROMCODE_PROJECT_ROOT=\\"$PWD\\" PORT=\${API_PORT:-4000} npm run start --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} NEXT_PUBLIC_ADMIN_BASE_PATH=/admin PORT=\${ADMIN_PORT:-3001} npm run start --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/admin\\"" "NEXT_PUBLIC_API_URL=http://localhost:\${PROXY_PORT:-3000} PORT=\${FRONTEND_PORT:-3002} npm run start --prefix \\"\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/frontend\\""`,
+  "start:api": `FROMCODE_PROJECT_ROOT="$PWD" PORT=\${API_PORT:-4000} npm run start --prefix "\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}/packages/api"`,
+  "plugin:build": `npm run atlantis --prefix "\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- plugin build`,
+  "plugin:dev": `npm run atlantis --prefix "\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- plugin dev`,
+  "theme:build": `npm run atlantis --prefix "\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- theme build`,
+  "theme:dev": `npm run atlantis --prefix "\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- theme dev`,
+  "db:migrate": `npm run atlantis --prefix "\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- db:migrate`,
+  "db:reset": `npm run atlantis --prefix "\${FROMCODE_WORKSPACE_ROOT:-${localWorkspaceRootEscaped}}" -- db:reset`,
 };
 
 const pkgDeps = localMode
@@ -227,7 +227,7 @@ if (localMode) {
     'Override the workspace location if needed:',
     '',
     '```bash',
-    'ATLANTIS_WORKSPACE_ROOT=/absolute/path/to/framework/Source npm run dev',
+    'FROMCODE_WORKSPACE_ROOT=/absolute/path/to/framework/Source npm run dev',
     '```',
     '',
   ].join('\n');
