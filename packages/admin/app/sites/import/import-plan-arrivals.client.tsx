@@ -44,12 +44,22 @@ export class ImportPlanArrivals extends PureReactor {
   @prop declare metaRowsExcluded: number;
   @prop declare pluginSettingsRowsExcluded: number;
 
+  /**
+   * The kinds worth NAMING: those a plugin owns and has given a name of its own.
+   *
+   * Two conditions, both read from the plan, neither naming anything. A kind with no label has no
+   * word a reader would recognise. A kind with no owning plugin is the framework's own plumbing —
+   * `_system_meta` carries the label "Global Settings" and would otherwise lead the list ahead of a
+   * shop's orders, which is machinery presented as if it were the shop's. Whatever a plugin calls
+   * its records is what appears here, so a plugin written tomorrow needs no change to this file.
+   */
   private get labeled(): IImportPlanTable[] {
-    return this.arriving.filter((table) => Boolean(table.label));
+    return this.arriving.filter((table) => Boolean(table.label) && Boolean(table.pluginSlug));
   }
 
+  /** Everything else: unlabelled, or the framework's own. Counted in every total, folded for detail. */
   private get platformRecords(): IImportPlanTable[] {
-    return this.arriving.filter((table) => !table.label);
+    return this.arriving.filter((table) => !(table.label && table.pluginSlug));
   }
 
   /** `table.rows`, net of the executor's own exclusion for the one table (if any) this is. */
