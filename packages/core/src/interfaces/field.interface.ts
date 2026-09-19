@@ -1,3 +1,4 @@
+import type { IJsonFieldReference } from '@core/interfaces/json-field-reference.interface';
 import { ConditionOperator } from '@core/enums/condition-operator.enum';
 import { CodeLanguage } from '@core/enums/code-language.enum';
 import { FieldWidth } from '@core/enums/field-width.enum';
@@ -38,6 +39,15 @@ export interface IField {
    * the only thing that can still find legacy data, so it is not normalised.
    */
   legacyColumns?: Record<string, string>;
+
+  /**
+   * Where ids live inside THIS field's JSON document — see {@link IJsonFieldReference}.
+   *
+   * Only for a `json` field. A `relationship` field already declares its target, and an
+   * `array`/`group` field's sub-fields declare theirs; this is for the documents that declare
+   * nothing and would otherwise carry a source deployment's ids across an import unchanged.
+   */
+  jsonReferences?: IJsonFieldReference[];
   admin?: {
     hidden?: boolean;
     readOnly?: boolean;

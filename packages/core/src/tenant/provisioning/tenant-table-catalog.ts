@@ -8,6 +8,8 @@ import type { INestedFieldReference } from '@core/tenant/provisioning/interfaces
 import { FieldType } from '@core/enums/field-type.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
+import { TenantJsonReferences } from '@core/tenant/provisioning/tenant-json-references';
+import { TenantSchemaFolds } from '@core/tenant/provisioning/tenant-schema-folds';
 import { TenantPolymorphicReferences } from '@core/tenant/provisioning/tenant-polymorphic-references';
 import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-owning-plugin-resolver';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
@@ -99,13 +101,17 @@ export class TenantTableCatalog {
     // A pointer whose target table is named by a sibling column on the row — invisible to both
     // sources above, and unfollowed it leaves every such row pointing at a re-numbered id.
     const polymorphicReferences = TenantPolymorphicReferences.forTables(wanted, columns);
-    const folds = this.schemaFolds(wanted, columns);
+    // Ids a `json` field declared inside its own document — opaque to the walk until it says where.
+    const jsonReferences = TenantJsonReferences.forCollections(
+      this.collections, wanted, columns, (relationTo, pluginSlug) => TenantTableCatalog.resolveTarget(relationTo, pluginSlug, columns),
+    );
+    const folds = TenantSchemaFolds.forCollections(this.collections, wanted, columns);
     const journals = TenantJournalTables.from(this.collections);
     const owners = this.owners();
 
     const descriptors = tables.map((table) => {
       const types = columns.get(table) ?? {};
-      const references = [...(foreignKeys.get(table) ?? []), ...(schemaReferences.get(table) ?? []), ...(polymorphicReferences.get(table) ?? [])]
+      const references = [...(foreignKeys.get(table) ?? []), ...(schemaReferences.get(table) ?? []), ...(jsonReferences.get(table) ?? []), ...(polymorphicReferences.get(table) ?? [])]
         .filter((ref) => Object.prototype.hasOwnProperty.call(types, ref.column));
       const owner = owners.get(table);
       // No collection matched this table — either it is framework-owned (`_system_*`, no plugin at
@@ -161,33 +167,6 @@ export class TenantTableCatalog {
    * plugin itself uses for its own slug (`<plugin>-<entity>`, from within that same plugin) —
    * `resolveTarget` tries all three.
    */
-  /**
-   * Destination columns that ABSORB an older schema's columns, from `IField.legacyColumns`.
-   *
-   * Read exactly as a relationship is: a generic property on a declared field. The framework learns
-   * that some field claims some older column names; it never learns whose. A claim is kept only when
-   * the destination column actually exists here and holds JSON — folding eight values into a `text`
-   * column would write a shape nothing reads.
-   */
-  private schemaFolds(wanted: Set<string>, columns: Map<string, Record<string, string>>): Map<string, TenantColumnFold[]> {
-    const out = new Map<string, TenantColumnFold[]>();
-    for (const { collection } of this.collections) {
-      const table = String(collection.tableName || collection.slug || '').trim();
-      if (!wanted.has(table)) continue;
-      for (const field of collection.fields ?? []) {
-        const legacy = field.legacyColumns;
-        if (!legacy || Object.keys(legacy).length === 0) continue;
-        const column = NamingStrategy.toSnakeCase(field.name);
-        const type = columns.get(table)?.[column];
-        if (!type || !TenantTableDescriptor.isJsonType(type)) continue;
-        const existing = out.get(table) ?? [];
-        existing.push(new TenantColumnFold(column, { ...legacy }));
-        out.set(table, existing);
-      }
-    }
-    return out;
-  }
-
   private schemaReferences(wanted: Set<string>, columns: Map<string, Record<string, string>>): Map<string, TenantColumnReference[]> {
     const out = new Map<string, TenantColumnReference[]>();
     for (const { collection, pluginSlug } of this.collections) {
