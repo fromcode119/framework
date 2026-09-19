@@ -29,6 +29,15 @@ export interface IField {
   showTime?: boolean; // For date/datetime
   fields?: IField[]; // For array/group fields
   inputAliases?: string[];
+  /**
+   * Columns an OLDER schema used for what this field now holds, as `archive column -> key in this
+   * field`. An import folds them in rather than dropping them: a deployment that stored an address
+   * as eight flat columns still carries the address, it just carries it in the shape of its day.
+   *
+   * The left side is the physical, snake_case column as the archive wrote it — the legacy name is
+   * the only thing that can still find legacy data, so it is not normalised.
+   */
+  legacyColumns?: Record<string, string>;
   admin?: {
     hidden?: boolean;
     readOnly?: boolean;
