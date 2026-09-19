@@ -1,6 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { NextConfigEnv } from '../../config/next-config-env';
+import type { AdminWebpackConfig, AdminWebpackConfigContext } from './next.config.interfaces';
 
 // Dynamically discover all extensions in the packages directory
 const packagesDir = path.resolve(__dirname, '..');
@@ -151,7 +152,7 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config, { isServer, dev }) => {
+  webpack: (config: AdminWebpackConfig, { isServer, dev }: AdminWebpackConfigContext) => {
     // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above. `next dev` runs
     // with --webpack, so without this the dev server would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.

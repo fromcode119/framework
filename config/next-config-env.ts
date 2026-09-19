@@ -2,7 +2,37 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 
+/**
+ * One uniform alias record (every field present, empty when unused) so a consumer of `getSourceAliases`
+ * sees ONE object type instead of a union of literal shapes. See `sourceAlias` below.
+ */
+interface SourceAlias {
+  specifier: string;
+  dir: string;
+  entry: string;
+  file: string;
+  subpathsOnly: boolean;
+}
+
+/** Input shape accepted by `sourceAlias`: only `specifier` is required, the rest default to empty. */
+interface SourceAliasInput {
+  specifier: string;
+  dir?: string;
+  entry?: string;
+  file?: string;
+  subpathsOnly?: boolean;
+}
+
+/** A resolved `next/image` remote pattern candidate, before Next's own richer `RemotePattern` shape. */
+interface RemotePatternCandidate {
+  protocol: string;
+  hostname: string;
+}
+
 export class NextConfigEnv {
+  static environmentInitialized: boolean;
+  static PRIVATE_PACKAGE_ALIASES: Array<[string, string]>;
+
   static initializeEnvironment() {
     if (NextConfigEnv.environmentInitialized) {
       return;
@@ -79,7 +109,7 @@ export class NextConfigEnv {
    * A single-host deployment sets no cookie domain, or sets one that is a bare hostname rather than a
    * suffix; then there are no extra sites to allow and this contributes nothing.
    */
-  static expandSiteDomainCandidates(value) {
+  static expandSiteDomainCandidates(value: string | undefined) {
     const domain = String(value || '').trim().replace(/^\.+/, '').replace(/\.+$/, '').toLowerCase();
     if (!domain || !domain.includes('.')) return [];
     return [domain, `**.${domain}`];
@@ -99,8 +129,8 @@ export class NextConfigEnv {
     return NextConfigEnv.uniqueByKey(
       candidates
         .map((value) => NextConfigEnv.toRemotePattern(value))
-        .filter(Boolean),
-      (pattern) => `${pattern.protocol}//${pattern.hostname}`,
+        .filter((pattern): pattern is RemotePatternCandidate => pattern !== null),
+      (pattern: RemotePatternCandidate) => `${pattern.protocol}//${pattern.hostname}`,
     );
   }
 
@@ -134,8 +164,8 @@ export class NextConfigEnv {
    * `dir/<sub>`; `{ specifier, file }` is an exact single-file mapping; `subpathsOnly: true` marks a
    * prefix that only ever appears with a subpath (`@core/…`, `@/…`).
    */
-  static getSourceAliases(frontendDir) {
-    const src = (pkg) => path.resolve(frontendDir, '..', pkg, 'src');
+  static getSourceAliases(frontendDir: string): SourceAlias[] {
+    const src = (pkg: string) => path.resolve(frontendDir, '..', pkg, 'src');
     const alias = NextConfigEnv.sourceAlias;
     const publicPackages = [
       alias({ specifier: '@fromcode119/react', dir: src('react'), entry: 'index.ts' }),
@@ -148,7 +178,7 @@ export class NextConfigEnv {
       alias({ specifier: '@fromcode119/database/physical-table-name-utils', file: path.join(src('database'), 'physical-table-name-utils.ts') }),
       alias({ specifier: '@fromcode119/database/naming-strategy', file: path.join(src('database'), 'naming-strategy.ts') }),
     ];
-    const privatePrefixes = NextConfigEnv.PRIVATE_PACKAGE_ALIASES.map(([pkg, prefix]) =>
+    const privatePrefixes = NextConfigEnv.PRIVATE_PACKAGE_ALIASES.map(([pkg, prefix]: [string, string]) =>
       alias({ specifier: prefix, dir: src(pkg), subpathsOnly: true }),
     );
     return [
@@ -162,7 +192,7 @@ export class NextConfigEnv {
    * One uniform alias record (every field present, empty when unused) so a TypeScript consumer of this
    * JS module sees ONE object type instead of a union of literal shapes.
    */
-  static sourceAlias({ specifier, dir = '', entry = '', file = '', subpathsOnly = false }) {
+  static sourceAlias({ specifier, dir = '', entry = '', file = '', subpathsOnly = false }: SourceAliasInput): SourceAlias {
     return { specifier, dir, entry, file, subpathsOnly };
   }
 
@@ -238,15 +268,15 @@ export class NextConfigEnv {
   }
 
   /** `getSourceAliases` in turbopack `resolveAlias` shape (paths relative to the project dir). */
-  static toTurbopackResolveAlias(aliases, frontendDir) {
-    const rel = (target) => {
+  static toTurbopackResolveAlias(aliases: SourceAlias[], frontendDir: string): Record<string, string> {
+    const rel = (target: string) => {
       const relative = path.relative(frontendDir, target).replace(/\\/g, '/');
       // `path.relative(dir, dir)` is '' — the frontend's own `@` prefix — which must render as `.`
       // (`'@/*': './*'`), not as `./` + `/*` = the malformed `.//*`.
       if (!relative) return '.';
       return relative.startsWith('.') ? relative : `./${relative}`;
     };
-    const out = {};
+    const out: Record<string, string> = {};
     for (const alias of aliases) {
       if (alias.file) {
         out[alias.specifier] = rel(alias.file);
@@ -268,8 +298,8 @@ export class NextConfigEnv {
    * for one round. The exact key is emitted BEFORE the prefix key so the bare specifier resolves to the
    * entry file, not to the directory.
    */
-  static toWebpackResolveAlias(aliases) {
-    const out = {};
+  static toWebpackResolveAlias(aliases: SourceAlias[]): Record<string, string> {
+    const out: Record<string, string> = {};
     for (const alias of aliases) {
       if (alias.file) {
         out[`${alias.specifier}$`] = alias.file;
@@ -281,14 +311,14 @@ export class NextConfigEnv {
     return out;
   }
 
-  static parseCommaSeparatedValues(value) {
+  static parseCommaSeparatedValues(value: string | undefined) {
     return String(value || '')
       .split(',')
       .map((entry) => entry.trim())
       .filter(Boolean);
   }
 
-  static expandOriginCandidates(value) {
+  static expandOriginCandidates(value: string | undefined) {
     const raw = String(value || '').trim();
     if (!raw) return [];
 
@@ -304,7 +334,7 @@ export class NextConfigEnv {
     return [raw.replace(/\/+$/, '')];
   }
 
-  static toRemotePattern(value) {
+  static toRemotePattern(value: string | undefined): RemotePatternCandidate | null {
     const raw = String(value || '').trim();
     if (!raw) return null;
 
@@ -319,7 +349,7 @@ export class NextConfigEnv {
     }
   }
 
-  static deriveBasePathFromUrl(value, defaultPath = '') {
+  static deriveBasePathFromUrl(value: string | undefined, defaultPath = '') {
     const raw = String(value || '').trim();
     if (!raw) return NextConfigEnv.normalizePathPrefix(defaultPath);
 
@@ -337,20 +367,20 @@ export class NextConfigEnv {
     }
   }
 
-  static normalizePathPrefix(value) {
+  static normalizePathPrefix(value: string | undefined) {
     const raw = String(value || '').trim();
     if (!raw || raw === '/') return '';
     const withLeadingSlash = raw.startsWith('/') ? raw : `/${raw}`;
     return withLeadingSlash.replace(/\/+$/, '').replace(/\/{2,}/g, '/');
   }
 
-  static unique(values) {
+  static unique(values: string[]) {
     return Array.from(new Set(values.filter(Boolean)));
   }
 
-  static uniqueByKey(values, getKey) {
-    const seen = new Set();
-    const output = [];
+  static uniqueByKey<T>(values: T[], getKey: (value: T) => string | null | undefined) {
+    const seen = new Set<string>();
+    const output: T[] = [];
 
     for (const value of values) {
       const key = getKey(value);

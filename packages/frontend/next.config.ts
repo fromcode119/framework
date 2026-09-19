@@ -1,6 +1,34 @@
 import path from 'node:path';
 import { NextConfigEnv } from '../../config/next-config-env';
 
+/**
+ * The `webpack` config hook's own parameter types, described from what this file's callback actually
+ * reads and writes below — Next's own `NextJsWebpackConfig`/`WebpackConfigContext` types are not part of
+ * its public `next` export surface (they type `config` as `any` internally), so an honest local shape
+ * stands in for them.
+ */
+interface FrontendWebpackConfig {
+  module: {
+    rules: unknown[];
+  };
+  resolve: {
+    alias: Record<string, string>;
+    extensionAlias?: Record<string, string[]>;
+    symlinks?: boolean;
+    modules: string[];
+    fallback?: Record<string, string | false>;
+  };
+  watchOptions?: {
+    poll?: number;
+    aggregateTimeout?: number;
+  };
+}
+
+interface FrontendWebpackConfigContext {
+  isServer: boolean;
+  dev: boolean;
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Next's dev server 403s `/_next/*` for any Host not listed here, and the page still streams — so a
@@ -42,7 +70,7 @@ const nextConfig = {
   images: {
     remotePatterns: NextConfigEnv.getRemoteImagePatterns(),
   },
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config: FrontendWebpackConfig, { dev, isServer }: FrontendWebpackConfigContext) => {
     // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above. `next dev` runs
     // with --webpack, so without this the dev server would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
@@ -97,8 +125,8 @@ const nextConfig = {
     // replacement module. The list is the shared one in config/next-config-env.js.
     config.resolve.fallback = { ...config.resolve.fallback };
     for (const [name, fallback] of Object.entries(NextConfigEnv.getNodeBuiltinFallbacks())) {
-      if (fallback === false) config.resolve.fallback[name] = false;
-      else config.resolve.alias[name] = fallback;
+      if (typeof fallback === 'string') config.resolve.alias[name] = fallback;
+      else config.resolve.fallback[name] = false;
     }
 
     if (dev && !isServer) {
