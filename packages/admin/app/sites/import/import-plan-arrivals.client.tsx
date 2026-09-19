@@ -9,6 +9,8 @@ interface IArrivalItem {
   key: string;
   count: number;
   label: string;
+  /** A record of what happened — counted, but never named first. */
+  isJournal: boolean;
 }
 
 /**
@@ -59,9 +61,9 @@ export class ImportPlanArrivals extends PureReactor {
 
   /** Every labelled table plus the two counts that are not table rows at all — people and files. */
   private get items(): IArrivalItem[] {
-    const items: IArrivalItem[] = this.labeled.map((table) => ({ key: table.name, count: this.netRows(table), label: table.label as string }));
-    if (this.users.total > 0) items.push({ key: '__people', count: this.users.total, label: 'people' });
-    if (this.files.count > 0) items.push({ key: '__files', count: this.files.count, label: 'files' });
+    const items: IArrivalItem[] = this.labeled.map((table) => ({ key: table.name, count: this.netRows(table), label: table.label as string, isJournal: !!table.isJournal }));
+    if (this.users.total > 0) items.push({ key: '__people', count: this.users.total, label: 'people', isJournal: false });
+    if (this.files.count > 0) items.push({ key: '__files', count: this.files.count, label: 'files', isJournal: false });
     // Biggest first — the thing an operator should not have to scroll to find is the one most of the
     // archive actually is. A hand-picked order would be exactly the hardcoded extension list Rule
     // Zero forbids; this is derived from the counts the plan already produced.
@@ -112,7 +114,13 @@ export class ImportPlanArrivals extends PureReactor {
 
   render(): ReactNode {
     const allItems = this.items;
-    const items = allItems.slice(0, ImportPlanArrivals.NAMED);
+    // A journal is a record of what happened — events, consents, sessions. It outnumbers everything
+    // a shop actually has, so naming the biggest kinds would name nothing but telemetry and bury the
+    // handful the reader recognises. It still counts in the total and still shows in full detail;
+    // it just is not named first. Which kinds those are is DECLARED by the collection that owns
+    // them, never guessed from a name or a row count.
+    const named = allItems.filter((item) => !item.isJournal);
+    const items = named.slice(0, ImportPlanArrivals.NAMED);
     const otherKinds = allItems.length - items.length;
     const platformRecords = this.platformRecords;
 

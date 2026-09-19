@@ -78,6 +78,7 @@ export class TenantImportPlanner {
             ? TenantOwningPluginResolver.resolve(archived.name, knownPluginSlugs)
             : (PhysicalTableNameUtils.parse(archived.name)?.pluginSlug ?? null),
           label: null,
+          isJournal: false,
         });
         if (archived.rows > 0) {
           warnings.push(
@@ -208,6 +209,7 @@ export class TenantImportPlanner {
       droppedColumns,
       pluginSlug: destination.pluginSlug,
       label: destination.label,
+      isJournal: destination.isJournal,
     };
   }
 

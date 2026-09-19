@@ -28,6 +28,12 @@ export class TenantTableDescriptor {
     readonly label: string | null = null,
     /** Destination columns that absorb an older schema's columns — see {@link TenantColumnFold}. */
     readonly folds: TenantColumnFold[] = [],
+    /**
+     * A record of what happened rather than a thing the operator manages (`ICollection.journal`), or
+     * a framework journal. It counts in every total; it is simply not one of the kinds a summary
+     * names first, because telemetry outnumbers everything and would fill that list.
+     */
+    readonly isJournal: boolean = false,
   ) {}
 
   /** Whether some field has claimed this archive column, so dropping it would lose data that has a home. */
