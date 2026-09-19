@@ -78,7 +78,7 @@ export class TenantRowInserter {
     const deferredSet = new Set<TenantColumnReference>(this.deferredSelfReferences);
     for (const reference of this.table.references) {
       if (deferredSet.has(reference) || !(reference.column in values)) continue;
-      values[reference.column] = this.repoint(reference, values[reference.column]);
+      values[reference.column] = this.repoint(this.resolveTarget(reference, values), values[reference.column]);
     }
     const deferredValues: Record<string, unknown> = {};
     for (const reference of this.deferredSelfReferences) {
@@ -146,6 +146,22 @@ export class TenantRowInserter {
   }
 
   /**
+   * The reference to follow for THIS row.
+   *
+   * A fixed reference is itself. A polymorphic one names no table until the row is read: the table
+   * comes from the sibling column the declaration points at. When that column is empty, or names a
+   * table this import never re-numbered, `null` is returned and the value is left exactly as the
+   * archive wrote it — the alternative, resolving against a table that was never remapped, would be
+   * a no-op at best and a rewrite against the wrong map at worst.
+   */
+  private resolveTarget(reference: TenantColumnReference, values: Record<string, unknown>): TenantColumnReference | null {
+    if (!reference.isPolymorphic) return reference;
+    const target = String(values[reference.targetTableColumn as string] ?? '').trim();
+    if (!target || !this.remap.isRemapped(target)) return null;
+    return new TenantColumnReference(reference.table, reference.column, target, reference.source, reference.path, reference.hasMany, reference.required);
+  }
+
+  /**
    * A reference is a bare id in a plain column, but a `relationship` field the schema declares may be
    * STORED as JSON — a scalar id, `{ id }`, or a list of either (CMS keeps `parent`, `featuredImage`
    * that way), or nested below `reference.path` (a `hasMany` array, or an `array`/`group` sub-field —
@@ -155,7 +171,9 @@ export class TenantRowInserter {
    * `group` the field declared, because the archive's JSON is the ground truth for shape, the schema
    * only for where an id lives in it.
    */
-  private repoint(reference: TenantColumnReference, value: unknown): unknown {
+  private repoint(reference: TenantColumnReference | null, value: unknown): unknown {
+    // No target for this row (see `resolveTarget`) — nothing to follow, so nothing changes.
+    if (reference === null) return value;
     const result = this.repointAt(reference, reference.path, value);
     // DROPPED only survives past the top when nothing above it was an array to filter it out of — a
     // plain scalar column with a dangling id, exactly today's `null` behaviour.
