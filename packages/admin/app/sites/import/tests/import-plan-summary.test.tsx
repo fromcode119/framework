@@ -79,8 +79,11 @@ describe('ImportPlanSummary -> Arrives', () => {
       />,
     );
 
-    expect(screen.getByText(/2 platform record\(s\) across 1 table\(s\)/)).not.toBeNull();
+    expect(screen.getByText(/2 record\(s\) with no label of their own, in 1 other kind\(s\)/)).not.toBeNull();
     expect(screen.getByText(/2 in total\./)).not.toBeNull();
+    // The default-visible caption must never say "table" — that is the exact wording the owner
+    // rejected three times before; the physical name only ever appears once this fold is opened.
+    expect(screen.queryByText(/\btables?\b/i)).toBeNull();
   });
 
   it('shows people in the arrival list when the archive carries any', () => {
