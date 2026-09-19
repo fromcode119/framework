@@ -1,15 +1,16 @@
-# Package Module: @fromcode119/database
+# Package Module: @fromcode119/sources
 
-- Path: `packages/database`
+- Path: `packages/sources`
 
 ## Purpose
 
-Database abstraction and persistence layer helpers used by API/plugins.
+Build sources — connect a git provider, build a plugin, theme or appearance from it, and publish the resulting package into the catalog.
+
+Also owns update checks and the build artifact/download hooks behind the admin's Sources screen.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode119/database`
-- `npm run dev --workspace=@fromcode119/database`
+- `npm run build --workspace=@fromcode119/sources`
 
 ## Integration Notes
 
@@ -19,6 +20,6 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Related Docs
 
-- [Architecture](../../architecture.md)
 - [Module index](../README.md)
+- [Architecture](../../architecture.md)
 - [Plugin development guide](../../plugin-development-guide.md)

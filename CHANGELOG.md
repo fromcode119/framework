@@ -130,8 +130,8 @@ These were legacy duplicates maintained for backward compatibility. All function
 
 ### 📚 Documentation
 
-- Added comprehensive [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) with step-by-step examples
-- Updated [DEPRECATION_AUDIT.md](./DEPRECATION_AUDIT.md) with Phase 8 completion details
+- Added comprehensive the class-based architecture migration guide with step-by-step examples
+- Updated DEPRECATION_AUDIT.md with Phase 8 completion details
 - Added JSDoc deprecation notices to all removed functions (in v1.x releases)
 
 ### 🐛 Fixed
@@ -175,7 +175,7 @@ These were legacy duplicates maintained for backward compatibility. All function
 ### 🚀 Upgrade Guide
 
 **For Plugin Developers**:
-1. Read [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)
+1. Read the class-based architecture migration guide
 2. Replace all router setup functions with Router classes
 3. Replace all middleware factories with Middleware classes  
 4. Replace all loose utilities with `AdminServices.getInstance()`
@@ -209,9 +209,9 @@ These were legacy duplicates maintained for backward compatibility. All function
 
 ### 🔗 Links
 
-- [Migration Guide](./MIGRATION_GUIDE.md)
-- [Deprecation Audit](./DEPRECATION_AUDIT.md)
-- [AGENTS.md - Architecture Rules](./AGENTS.md)
+- Migration Guide (removed — see git history)
+- Deprecation Audit
+- [Contributing & Architecture Rules](./CONTRIBUTING.md)
 
 ---
 

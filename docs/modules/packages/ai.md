@@ -1,15 +1,18 @@
-# Package Module: @fromcode119/database
+# Package Module: @fromcode119/ai
 
-- Path: `packages/database`
+- Path: `packages/ai`
 
 ## Purpose
 
-Database abstraction and persistence layer helpers used by API/plugins.
+Admin Assistant runtime — LLM clients, the request classifier, and the MCP tool packs the assistant is allowed to call.
+
+The assistant is a framework capability rather than a plugin: it answers about whatever is installed, so it cannot live inside any one of them.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode119/database`
-- `npm run dev --workspace=@fromcode119/database`
+- `npm run build
+dev
+test --workspace=@fromcode119/ai`
 
 ## Integration Notes
 
@@ -19,6 +22,6 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Related Docs
 
-- [Architecture](../../architecture.md)
 - [Module index](../README.md)
+- [Architecture](../../architecture.md)
 - [Plugin development guide](../../plugin-development-guide.md)

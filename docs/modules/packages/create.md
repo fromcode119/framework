@@ -1,15 +1,17 @@
-# Package Module: @fromcode119/database
+# Package Module: @fromcode119/create
 
-- Path: `packages/database`
+- Path: `packages/create`
+- Binary: `create-fromcode`
 
 ## Purpose
 
-Database abstraction and persistence layer helpers used by API/plugins.
+The `npm create` scaffolder for a new Atlantis app.
+
+It writes a project that depends on the published packages rather than a checkout of this repository.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode119/database`
-- `npm run dev --workspace=@fromcode119/database`
+This package declares no scripts of its own; it is consumed through its `bin` entry.
 
 ## Integration Notes
 
@@ -19,6 +21,6 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Related Docs
 
-- [Architecture](../../architecture.md)
 - [Module index](../README.md)
+- [Architecture](../../architecture.md)
 - [Plugin development guide](../../plugin-development-guide.md)

@@ -1,15 +1,15 @@
-# Package Module: @fromcode119/database
+# Package Module: @fromcode119/next-build-codegen
 
-- Path: `packages/database`
+- Path: `packages/next-build-codegen`
+- Binary: `next-build-codegen`
 
 ## Purpose
 
-Database abstraction and persistence layer helpers used by API/plugins.
+Next.js + build integration for @fromcode119/react-class-components — `.client` directive injection and the Registry-resolved JSX template compiler. Keeps react-class-components pure React; all build/Next-specific machinery lives here.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode119/database`
-- `npm run dev --workspace=@fromcode119/database`
+- `npm run build --workspace=@fromcode119/next-build-codegen`
 
 ## Integration Notes
 
@@ -19,6 +19,6 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Related Docs
 
-- [Architecture](../../architecture.md)
 - [Module index](../README.md)
+- [Architecture](../../architecture.md)
 - [Plugin development guide](../../plugin-development-guide.md)

@@ -1,15 +1,17 @@
-# Package Module: @fromcode119/database
+# Package Module: @fromcode119/mcp-server
 
-- Path: `packages/database`
+- Path: `packages/mcp-server`
+- Binary: `fromcode-mcp`
 
 ## Purpose
 
-Database abstraction and persistence layer helpers used by API/plugins.
+The standalone Model Context Protocol server binary — stdio transport plus a Streamable HTTP client.
+
+Every installation can act as an MCP server for AI agents; see the [MCP server guide](../../mcp-server.md) for the security model and tool surface.
 
 ## Workspace Commands
 
-- `npm run build --workspace=@fromcode119/database`
-- `npm run dev --workspace=@fromcode119/database`
+- `npm run build --workspace=@fromcode119/mcp-server`
 
 ## Integration Notes
 
@@ -19,6 +21,6 @@ Database abstraction and persistence layer helpers used by API/plugins.
 
 ## Related Docs
 
-- [Architecture](../../architecture.md)
 - [Module index](../README.md)
+- [Architecture](../../architecture.md)
 - [Plugin development guide](../../plugin-development-guide.md)

@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/cli
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/cli`
+- Path: `packages/cli`
 
 ## Purpose
 
@@ -20,6 +19,6 @@ Framework CLI package used for local tooling and automation commands.
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

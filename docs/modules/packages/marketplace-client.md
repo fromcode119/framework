@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/marketplace-client
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/marketplace-client`
+- Path: `packages/marketplace-client`
 
 ## Purpose
 
@@ -20,6 +19,6 @@ Marketplace client utilities for discovering/installing external plugins/themes.
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

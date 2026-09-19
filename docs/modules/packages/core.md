@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/core
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/core`
+- Path: `packages/core`
 
 ## Purpose
 
@@ -10,8 +9,8 @@ Kernel runtime (plugin manager, sandbox execution, hooks lifecycle, extension lo
 ## Workspace Commands
 
 - `npm run build --workspace=@fromcode119/core`
-- `npm run postbuild --workspace=@fromcode119/core`
 - `npm run dev --workspace=@fromcode119/core`
+- `npm run test --workspace=@fromcode119/core`
 
 ## Integration Notes
 
@@ -21,6 +20,6 @@ Kernel runtime (plugin manager, sandbox execution, hooks lifecycle, extension lo
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

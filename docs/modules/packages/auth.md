@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/auth
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/auth`
+- Path: `packages/auth`
 
 ## Purpose
 
@@ -20,6 +19,6 @@ Authentication and authorization primitives shared across runtime modules.
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

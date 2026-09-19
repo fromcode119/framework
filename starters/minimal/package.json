@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "fromcode dev",
-    "build": "atlantis build",
-    "start": "fromcode start",
+    "dev": "fromcode-api",
+    "start": "NODE_ENV=production fromcode-api",
     "plugin:create": "atlantis plugin create"
   },
   "dependencies": {

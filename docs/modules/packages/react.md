@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/react
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/react`
+- Path: `packages/react`
 
 ## Purpose
 
@@ -20,6 +19,6 @@ Shared React components/slot system used by admin/frontend/plugin UIs.
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)

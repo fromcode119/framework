@@ -1,7 +1,6 @@
 # Package Module: @fromcode119/media
 
-- Version: `0.1.0`
-- Path: `framework/Source/packages/media`
+- Path: `packages/media`
 
 ## Purpose
 
@@ -20,6 +19,6 @@ Media domain utilities for file metadata and media collection integration.
 
 ## Related Docs
 
-- [Global setup](../../setup/global-setup.md)
+- [Architecture](../../architecture.md)
 - [Module index](../README.md)
 - [Plugin development guide](../../plugin-development-guide.md)
