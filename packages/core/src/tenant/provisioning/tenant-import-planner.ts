@@ -223,6 +223,14 @@ export class TenantImportPlanner {
       if (SecretService.carriesEncryptedValue(row.value)) rows += 1;
     }
     if (rows === 0) return;
+    if (reader.manifest.secretsSealed) {
+      warnings.push(
+        `${rows} setting row(s) carry a secret. This archive was sealed for transit, so they are `
+        + 'taken into this deployment\'s own key during the import and each integration works as soon '
+        + 'as it finishes — provided the import is given the same passphrase the export used.',
+      );
+      return;
+    }
     warnings.push(
       `${rows} setting row(s) carry a secret encrypted by the deployment that exported them. `
       + 'They are imported as they are, but this deployment has its own key and cannot read them, '

@@ -11,6 +11,7 @@ import { TenantArchiveSource } from '@core/tenant/provisioning/tenant-archive-so
 import { TenantArchiveUsersExport } from '@core/tenant/provisioning/tenant-archive-users-export';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+import { SecretTransitResealer } from '@core/security/secret-transit-resealer';
 
 /**
  * Writes one tenant — or one whole single-tenant deployment — into a portable archive.
@@ -28,7 +29,17 @@ import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-de
 export class TenantArchiveWriter {
   private static readonly PAGE = 500;
 
-  constructor(private readonly source: TenantArchiveSource, private readonly tables: TenantTableDescriptor[]) {}
+  constructor(
+    private readonly source: TenantArchiveSource,
+    private readonly tables: TenantTableDescriptor[],
+    /**
+     * Seals every secret in the export under this passphrase instead of leaving it under the source
+     * deployment's key, which no other deployment can read. Without one the credentials still
+     * travel, and still arrive unusable — the manifest then says so rather than letting an operator
+     * find out from an integration that behaves as if it were never configured.
+     */
+    private readonly transitPassphrase: string | null = null,
+  ) {}
 
   async write(input: {
     tenant: TenantArchiveManifest['tenant'];
@@ -79,6 +90,7 @@ export class TenantArchiveWriter {
           users,
           files,
           warnings,
+          !!this.transitPassphrase,
         );
       });
 
@@ -115,6 +127,9 @@ export class TenantArchiveWriter {
         for (const row of page) {
           const clean: Record<string, unknown> = {};
           for (const column of columns) clean[column] = TenantArchiveWriter.portable(row[column]);
+          if (this.transitPassphrase) {
+            for (const column of columns) clean[column] = SecretTransitResealer.sealForTransit(clean[column], this.transitPassphrase);
+          }
           if (table.name === SystemConstants.TABLE.MEDIA) TenantArchiveWriter.collectMediaFiles(clean, mediaFiles);
           fs.writeSync(out, `${JSON.stringify(clean)}\n`);
           rows += 1;
