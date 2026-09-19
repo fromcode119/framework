@@ -11,23 +11,23 @@ import { TenantImportIdMode } from '@fromcode119/core/client';
 /**
  * The import plan, as something an operator can actually read before deciding. Presentational.
  *
- * This was one flat table over all 133 entries with a `Why` column of server-written prose. Roughly
- * forty rows carried the SAME sentence, differing only in two numbers, restating the badge already
- * on the row; a skipped table printed all 25 of its column names as prose; half the rows said "No
- * rows."; and at phone width the column clipped mid-word. So the page said everything and showed
- * nothing.
+ * This went through two shapes before this one. First it was one flat table over all 133 entries
+ * with a `Why` column of server-written prose — forty rows repeating the same sentence, a skipped
+ * table's 25 column names spelled out as prose, half the rows saying "No rows.". That became four
+ * grouped tables with the prose gone, which fixed the repetition but still LED with the same thing:
+ * physical table names, `LOWEST ID`, `HANDED OUT HERE` — a database engineer's proof of correctness,
+ * put in front of an operator who only wants to know what they get and what they lose.
  *
- * The rule behind each mode is generic — it comes from a literal in the planner — so it is stated
- * ONCE, as the group's heading (`ImportPlanTables`). What is left in a row is only what differs
- * between rows: the counts, the two id numbers, and the columns whose values do not survive.
+ * This shape leads with that answer instead (`ImportPlanSummary` → `ImportPlanArrivals`): what
+ * arrives, as counted, human-labelled things, biggest first; what will not come across, stated once
+ * as totals; what was already here. The four mode groups (`ImportPlanTables`) still exist below —
+ * Rule Zero forbids hiding anything with an effect — but each table's id mechanics and exact dropped
+ * columns now sit behind that ROW's own disclosure (`ImportPlanTableRow`) rather than being the row.
  *
- * Nothing is hidden that has an effect (Rule Zero). Every table with rows keeps its own line, and
- * every dropped or un-re-pointed column is listed in full — those are the irreversible per-column
- * effects and this screen is the only place they appear. The empty group's own count is always on
- * screen, and its table names open by default rather than behind a click: an operator asking "which
- * 62?" should not have to find the disclosure triangle first, only whether to close it. Groups
- * render even when empty, so "nothing is skipped" is a visible fact rather than an absence the
- * operator has to infer.
+ * Nothing is hidden that has an effect. Every table with rows keeps its own line and every dropped or
+ * un-re-pointed column is still listed in full, one click away. The empty group's table names still
+ * open by default rather than behind a click — an operator asking "which 62?" should not have to find
+ * the disclosure triangle first, only whether to close it.
  */
 export class ImportPlanView extends PureReactor {
   @prop declare plan: Record<string, any>;
@@ -87,15 +87,13 @@ export class ImportPlanView extends PureReactor {
     const remapped = withRows.filter((t) => t.mode === String(TenantImportIdMode.REMAP.value)).sort(byRows);
     const kept = withRows.filter((t) => t.mode === String(TenantImportIdMode.PRESERVE.value)).sort(byRows);
     // What actually ARRIVES — every row with somewhere to go. `withRows` alone double-counts: it
-    // still includes the SKIP-mode tables, which are exactly what "Left behind" counts separately.
+    // still includes the SKIP-mode tables, which are exactly what "Won't come across" counts separately.
     const arriving = withRows.filter((t) => t.mode !== String(TenantImportIdMode.SKIP.value));
 
     return (
       <div className="fc-import-plan">
         <p className="fc-sites__text">
           Archive of <strong>{manifest.tenant?.slug}</strong> ({manifest.source === 'single-tenant' ? 'a single-tenant deployment' : 'a site'}), exported {manifest.exportedAt} from framework {manifest.frameworkVersion || '?'}.
-          {' '}{plan.users.total} people: {plan.users.existing} already have accounts here, {plan.users.toCreate} will be created.
-          {' '}{plan.files.count} files{plan.files.colliding ? ` (${plan.files.colliding} renamed)` : ''}.
         </p>
 
         {(plan.blockers ?? []).length ? (
@@ -126,7 +124,10 @@ export class ImportPlanView extends PureReactor {
           </div>
         </div>
 
-        <ImportPlanTables skipped={skipped} remapped={remapped} kept={kept} empty={empty} />
+        <ImportPlanTables
+          skipped={skipped} remapped={remapped} kept={kept} empty={empty}
+          metaRowsExcluded={plan.metaRowsExcluded ?? 0} pluginSettingsRowsExcluded={plan.pluginSettingsRowsExcluded ?? 0}
+        />
 
         {ImportPlanView.warnings(plan.warnings ?? [])}
         {ImportPlanView.exportWarnings(plan.exportWarnings ?? [])}
