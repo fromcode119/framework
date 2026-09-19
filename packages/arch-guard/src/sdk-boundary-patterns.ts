@@ -45,8 +45,8 @@ export class SdkBoundaryPatterns {
     // resolver / ApplicationUrlUtils. Hardcoding one of OUR hosts is caught by the host rules below.
     { regex: /\/api\/v\d+\//g, label: 'hardcoded versioned API path', skipInAbsoluteUrl: true },
     { regex: /api\.framework\.local/g, label: 'hardcoded api.framework.local host' },
-    { regex: /__FROMCODE_API_URL/g, label: 'legacy __FROMCODE_API_URL bridge usage' },
-    { regex: /FROMCODE_API_URL/g, label: 'direct FROMCODE_API_URL bridge usage' },
+    { regex: /__ATLANTIS_API_URL/g, label: 'legacy __ATLANTIS_API_URL bridge usage' },
+    { regex: /ATLANTIS_API_URL/g, label: 'direct ATLANTIS_API_URL bridge usage' },
     // READING the variable is the violation — the URL comes from `ApplicationUrlUtils`, which is the
     // whole point of the rule. A test ASSIGNING it is arranging the world the code under test runs
     // in, the way a fixture sets any other environment value; there is no other way to simulate a

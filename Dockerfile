@@ -121,7 +121,7 @@ RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && 
 # Declares how this installation was deployed. The in-place updater cannot work from an image — the
 # code is a read-only layer, and the next `compose up` would restore it anyway — so the admin says so
 # instead of offering a button that fails on a permissions error.
-ENV FROMCODE_DEPLOYMENT=image
+ENV ATLANTIS_DEPLOYMENT=image
 
 FROM base AS builder
 ARG NEXT_PUBLIC_API_URL=http://localhost:3000

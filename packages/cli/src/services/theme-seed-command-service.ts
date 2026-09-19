@@ -111,11 +111,11 @@ export class ThemeSeedCommandService {
     }
 
     if (!options.theme) {
-      options.theme = String(process.env.FROMCODE_THEME || '').trim();
+      options.theme = String(process.env.ATLANTIS_THEME || '').trim();
     }
 
     if (!options.containerName) {
-      options.containerName = String(process.env.FROMCODE_API_CONTAINER || '').trim();
+      options.containerName = String(process.env.ATLANTIS_API_CONTAINER || '').trim();
     }
 
     if (!options.databaseUrl) {
@@ -128,7 +128,7 @@ export class ThemeSeedCommandService {
   static resolveThemeRoot(frameworkRoot: any, options: any): any {
     const input = String(options.theme || '').trim();
     if (!input) {
-      throw new Error('[framework] Missing theme argument. Use --theme <slug|path> or set FROMCODE_THEME.');
+      throw new Error('[framework] Missing theme argument. Use --theme <slug|path> or set ATLANTIS_THEME.');
     }
 
     const directPath = path.resolve(input);
@@ -234,9 +234,9 @@ export class ThemeSeedCommandService {
         '  npm run seed:theme -- --theme <absolute-or-relative-theme-path>',
         '  npm run seed:theme -- --theme <theme-slug> --container <api-container-name>',
         '  npm run seed:theme -- --theme <theme-slug> --database-url <database-url>',
-        '  FROMCODE_THEME=<theme-slug> npm run seed:theme',
-        '  FROMCODE_THEME=<theme-slug> DATABASE_URL=<database-url> npm run seed:theme',
-        '  FROMCODE_THEME=<theme-slug> FROMCODE_API_CONTAINER=<api-container-name> npm run seed:theme',
+        '  ATLANTIS_THEME=<theme-slug> npm run seed:theme',
+        '  ATLANTIS_THEME=<theme-slug> DATABASE_URL=<database-url> npm run seed:theme',
+        '  ATLANTIS_THEME=<theme-slug> ATLANTIS_API_CONTAINER=<api-container-name> npm run seed:theme',
       ].join('\n'),
     );
     process.stdout.write('\n');

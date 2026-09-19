@@ -11,7 +11,7 @@ describe('SiteTransferBundleService', () => {
   const temporaryDirectories: string[] = [];
 
   afterEach(() => {
-    delete process.env.FROMCODE_PROJECT_ROOT;
+    delete process.env.ATLANTIS_PROJECT_ROOT;
     FrameworkRootLocator.forget();
 
     for (const directoryPath of temporaryDirectories) {
@@ -27,7 +27,7 @@ describe('SiteTransferBundleService', () => {
     const frameworkRoot = path.join(repositoryRoot, 'framework', 'Source');
     temporaryDirectories.push(repositoryRoot);
 
-    process.env.FROMCODE_PROJECT_ROOT = frameworkRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
 
     fs.mkdirSync(frameworkRoot, { recursive: true });
     fs.mkdirSync(path.join(frameworkRoot, 'artifacts'), { recursive: true });
@@ -65,7 +65,7 @@ describe('SiteTransferBundleService', () => {
     const frameworkRoot = path.join(repositoryRoot, 'framework', 'Source');
     temporaryDirectories.push(repositoryRoot);
 
-    process.env.FROMCODE_PROJECT_ROOT = frameworkRoot;
+    process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
 
     fs.mkdirSync(path.join(frameworkRoot, 'public', 'uploads'), { recursive: true });
     fs.mkdirSync(path.join(frameworkRoot, 'artifacts'), { recursive: true });
