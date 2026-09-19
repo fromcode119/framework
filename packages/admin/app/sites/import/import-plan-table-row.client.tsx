@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { ImportPlanRowKind } from '@/app/sites/import/enums/import-plan-row-kind.enum';
 
 /**
  * One table, in one of the three non-empty groups. The row itself says only what an operator needs
@@ -20,7 +21,7 @@ import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 export class ImportPlanTableRow extends PureReactor {
   @prop declare table: IImportPlanTable;
   /** Which group the row belongs to — decides what mechanics (if any) its disclosure can show. */
-  @prop declare kind: 'skipped' | 'remapped' | 'kept';
+  @prop declare kind: ImportPlanRowKind;
   /**
    * The plan's own excluded-row totals, passed straight through from `ImportPlanArrivals`'/
    * `ImportPlanSummary`'s source (`plan.metaRowsExcluded`/`plan.pluginSettingsRowsExcluded`) rather
@@ -67,7 +68,7 @@ export class ImportPlanTableRow extends PureReactor {
     const dropped = table.droppedColumns.length;
     const opaque = table.opaqueJsonColumns.length;
     const excluded = this.excludedRows;
-    if (!dropped && !opaque && !excluded) return this.kind === 'skipped' ? null : <Badge variant={BadgeVariant.SUCCESS}>nothing lost</Badge>;
+    if (!dropped && !opaque && !excluded) return this.kind === ImportPlanRowKind.SKIPPED ? null : <Badge variant={BadgeVariant.SUCCESS}>nothing lost</Badge>;
     const parts: string[] = [];
     if (dropped > 0) parts.push(`${dropped.toLocaleString()} field${dropped === 1 ? '' : 's'} not carried over`);
     if (opaque > 0) parts.push(`${opaque.toLocaleString()} linked id${opaque === 1 ? '' : 's'} not updated`);
@@ -99,10 +100,10 @@ export class ImportPlanTableRow extends PureReactor {
   private renderDetail(): ReactNode {
     const table = this.table;
     const rows: ReactNode[] = [];
-    if (this.kind === 'remapped') {
+    if (this.kind === ImportPlanRowKind.REMAPPED) {
       rows.push(<div key="minId"><dt>Lowest id in the archive</dt><dd>{table.minId?.toLocaleString()}</dd></div>);
       rows.push(<div key="taken"><dt>Already handed out here</dt><dd>{table.taken?.toLocaleString()}</dd></div>);
-    } else if (this.kind === 'kept') {
+    } else if (this.kind === ImportPlanRowKind.KEPT) {
       rows.push(<div key="why"><dt>Why the id was kept</dt><dd>{ImportPlanTableRow.keptReason(table.basis)}</dd></div>);
       if (table.taken !== null) rows.push(<div key="taken"><dt>Already handed out here</dt><dd>{table.taken.toLocaleString()}</dd></div>);
     }
@@ -110,7 +111,7 @@ export class ImportPlanTableRow extends PureReactor {
     if (excluded) {
       rows.push(<div key="excluded"><dt>Rows not carried over</dt><dd>{excluded.count.toLocaleString()} row(s) {excluded.reason}</dd></div>);
     }
-    const repointed = this.kind === 'remapped' ? this.repointed : null;
+    const repointed = this.kind === ImportPlanRowKind.REMAPPED ? this.repointed : null;
     const lost = this.lost;
     if (!rows.length && !repointed && !lost) return null;
     return (
@@ -125,14 +126,14 @@ export class ImportPlanTableRow extends PureReactor {
 
   render(): ReactNode {
     const table = this.table;
-    const detail = this.kind === 'skipped' ? null : this.renderDetail();
+    const detail = this.kind === ImportPlanRowKind.SKIPPED ? null : this.renderDetail();
 
     return (
       <div className="fc-import-plan__row">
         <div className="fc-import-plan__row-summary">
           <span className="fc-import-plan__row-label">{this.rowLabel}</span>
           <span className="fc-import-plan__row-rows">{table.rows.toLocaleString()} row(s)</span>
-          {this.kind === 'skipped' ? null : this.lossChip}
+          {this.kind === ImportPlanRowKind.SKIPPED ? null : this.lossChip}
         </div>
         {detail}
       </div>

@@ -3,6 +3,7 @@ import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ImportPlanTableRow } from '@/app/sites/import/import-plan-table-row.client';
 import { ImportPlanGrouping } from '@/app/sites/import/import-plan-groups';
+import { ImportPlanRowKind } from '@/app/sites/import/enums/import-plan-row-kind.enum';
 
 /**
  * The four groups an operator can check every table against: not imported, re-numbered, ids kept,
@@ -69,7 +70,7 @@ export class ImportPlanTables extends PureReactor {
           <div className="fc-import-plan__rows">
             {skipped.map((table) => (
               <ImportPlanTableRow
-                key={table.name} table={table} kind="skipped"
+                key={table.name} table={table} kind={ImportPlanRowKind.SKIPPED}
                 metaRowsExcluded={metaRowsExcluded} pluginSettingsRowsExcluded={pluginSettingsRowsExcluded}
               />
             ))}
@@ -82,7 +83,7 @@ export class ImportPlanTables extends PureReactor {
           <div className="fc-import-plan__rows">
             {remapped.map((table) => (
               <ImportPlanTableRow
-                key={table.name} table={table} kind="remapped"
+                key={table.name} table={table} kind={ImportPlanRowKind.REMAPPED}
                 metaRowsExcluded={metaRowsExcluded} pluginSettingsRowsExcluded={pluginSettingsRowsExcluded}
               />
             ))}
@@ -95,7 +96,7 @@ export class ImportPlanTables extends PureReactor {
           <div className="fc-import-plan__rows">
             {kept.map((table) => (
               <ImportPlanTableRow
-                key={table.name} table={table} kind="kept"
+                key={table.name} table={table} kind={ImportPlanRowKind.KEPT}
                 metaRowsExcluded={metaRowsExcluded} pluginSettingsRowsExcluded={pluginSettingsRowsExcluded}
               />
             ))}

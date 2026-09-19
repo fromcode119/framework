@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ImportPlanTableRow } from '@/app/sites/import/import-plan-table-row.client';
 import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan-table.interface';
+import { ImportPlanRowKind } from '@/app/sites/import/enums/import-plan-row-kind.enum';
 
 /**
  * `_system_meta`/`_system_plugin_settings` are the only two tables the executor's own rowFilter ever
@@ -30,7 +31,7 @@ describe('ImportPlanTableRow -> loss chip', () => {
     render(
       <ImportPlanTableRow
         table={table({ name: '_system_meta', rows: 12, label: null, pluginSlug: null, basis: 'naturalKey' })}
-        kind="kept"
+        kind={ImportPlanRowKind.KEPT}
         metaRowsExcluded={10}
         pluginSettingsRowsExcluded={0}
       />,
@@ -44,7 +45,7 @@ describe('ImportPlanTableRow -> loss chip', () => {
     render(
       <ImportPlanTableRow
         table={table({ name: '_system_plugin_settings', rows: 8, label: null, pluginSlug: null, basis: 'naturalKey' })}
-        kind="kept"
+        kind={ImportPlanRowKind.KEPT}
         metaRowsExcluded={0}
         pluginSettingsRowsExcluded={3}
       />,
@@ -59,7 +60,7 @@ describe('ImportPlanTableRow -> loss chip', () => {
     render(
       <ImportPlanTableRow
         table={table({ name: 'fcp_alpha_widgets', rows: 5 })}
-        kind="kept"
+        kind={ImportPlanRowKind.KEPT}
         metaRowsExcluded={10}
         pluginSettingsRowsExcluded={3}
       />,
@@ -74,7 +75,7 @@ describe('ImportPlanTableRow -> why the id was kept (basis)', () => {
     render(
       <ImportPlanTableRow
         table={table({ basis: 'empty', taken: 40 })}
-        kind="kept"
+        kind={ImportPlanRowKind.KEPT}
         metaRowsExcluded={0}
         pluginSettingsRowsExcluded={0}
       />,
@@ -88,7 +89,7 @@ describe('ImportPlanTableRow -> why the id was kept (basis)', () => {
     render(
       <ImportPlanTableRow
         table={table({ basis: 'aboveSequence', taken: 40 })}
-        kind="kept"
+        kind={ImportPlanRowKind.KEPT}
         metaRowsExcluded={0}
         pluginSettingsRowsExcluded={0}
       />,
