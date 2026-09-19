@@ -124,10 +124,19 @@ export class ImportPlanView extends PureReactor {
           </div>
         </div>
 
-        <ImportPlanTables
-          skipped={skipped} remapped={remapped} kept={kept} empty={empty}
-          metaRowsExcluded={plan.metaRowsExcluded ?? 0} pluginSettingsRowsExcluded={plan.pluginSettingsRowsExcluded ?? 0}
-        />
+        {/*
+          * Folded, not removed. Everything the import will do stays reachable — that is Rule Zero —
+          * but it is machinery: which ids move, which columns this platform no longer has, which
+          * kinds carry nothing. The person deciding whether to press the button needs the sentences
+          * above; the person debugging an import needs this, and opens it.
+          */}
+        <details className="fc-import-plan__detail">
+          <summary>Technical detail — every kind of record ({(skipped.length + remapped.length + kept.length + empty.length).toLocaleString()})</summary>
+          <ImportPlanTables
+            skipped={skipped} remapped={remapped} kept={kept} empty={empty}
+            metaRowsExcluded={plan.metaRowsExcluded ?? 0} pluginSettingsRowsExcluded={plan.pluginSettingsRowsExcluded ?? 0}
+          />
+        </details>
 
         {ImportPlanView.warnings(plan.warnings ?? [])}
         {ImportPlanView.exportWarnings(plan.exportWarnings ?? [])}

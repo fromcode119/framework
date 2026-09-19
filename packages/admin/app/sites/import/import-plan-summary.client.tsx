@@ -27,41 +27,51 @@ export class ImportPlanSummary extends PureReactor {
   /** Rows whose ids get re-numbered. */
   @prop declare remapped: IImportPlanTable[];
 
-  private get wontCarryOver(): string {
+  /**
+   * What an operator should go and LOOK at afterwards, in the words of someone who runs a shop.
+   *
+   * Not a column-by-table tally: the same field name repeated across a dozen tables is one fact
+   * about this platform's schema, and an id inside a stored blob means "a link may point at the old
+   * thing", not "an opaque JSON column". Each sentence is one consequence, rendered only when the
+   * plan actually reports it, and every figure in it is a sum of rows the table below also shows.
+   */
+  private get worthKnowing(): string[] {
     const { plan, skipped, arriving, remapped } = this;
-    const metaRowsExcluded: number = plan.metaRowsExcluded ?? 0;
-    const pluginSettingsRowsExcluded: number = plan.pluginSettingsRowsExcluded ?? 0;
+    const out: string[] = [];
+
     const skippedRows = skipped.reduce((sum, t) => sum + t.rows, 0);
+    if (skippedRows > 0) {
+      out.push(`${skippedRows.toLocaleString()} record(s) have nowhere to go until the add-on that owns them is installed here. Install it, then import again, and they come across too.`);
+    }
+
+    const opaqueTables = remapped.filter((t) => t.opaqueJsonColumns.length > 0);
+    if (opaqueTables.length > 0) {
+      out.push('Some links stored inside page content and product descriptions still point at their old numbering. Worth a look at related products and page links afterwards.');
+    }
 
     const droppedTables = arriving.filter((t) => t.droppedColumns.length > 0);
-    const droppedColumnsTotal = droppedTables.reduce((sum, t) => sum + t.droppedColumns.length, 0);
-    const opaqueJsonTables = remapped.filter((t) => t.opaqueJsonColumns.length > 0);
-    const opaqueJsonColumnsTotal = opaqueJsonTables.reduce((sum, t) => sum + t.opaqueJsonColumns.length, 0);
+    if (droppedTables.length > 0) {
+      out.push('A few older fields have no home on this platform any more and are not carried. The records themselves arrive; open the detail below for exactly which fields.');
+    }
 
-    const parts: string[] = [];
-    if (skippedRows > 0) parts.push(`${skippedRows.toLocaleString()} row(s) in ${skipped.length.toLocaleString()} table(s) whose plugin is not installed or enabled here`);
-    if (droppedTables.length > 0) parts.push(`${droppedColumnsTotal.toLocaleString()} old field(s) on ${droppedTables.length.toLocaleString()} table(s) this platform no longer has a column for`);
-    if (opaqueJsonTables.length > 0) parts.push(`${opaqueJsonColumnsTotal.toLocaleString()} linked id(s) inside a JSON field on ${opaqueJsonTables.length.toLocaleString()} table(s) that will not be updated to the new numbering`);
-    if (metaRowsExcluded > 0) parts.push(`${metaRowsExcluded.toLocaleString()} setting(s) that belong to a deployment, not a site`);
-    if (pluginSettingsRowsExcluded > 0) parts.push(`${pluginSettingsRowsExcluded.toLocaleString()} setting(s) for a plugin not installed here`);
-    if (!parts.length) return 'nothing.';
+    const metaRowsExcluded: number = plan.metaRowsExcluded ?? 0;
+    const pluginSettingsRowsExcluded: number = plan.pluginSettingsRowsExcluded ?? 0;
+    if (metaRowsExcluded + pluginSettingsRowsExcluded > 0) {
+      out.push('Settings that belong to a whole installation rather than to one shop stay as this platform has them.');
+    }
 
-    // What each part above can actually show, on its own line, one click away: dropped columns,
-    // opaque JSON columns and the two excluded-row counts all land on a table that has its own
-    // `<details>`. A skipped table never does — SKIP-mode tables carry no id mechanics to disclose —
-    // so it is already named, with its row count, under "Not imported" below; there is nothing to
-    // expand there because nothing is folded.
-    const expandable = droppedTables.length > 0 || opaqueJsonTables.length > 0 || metaRowsExcluded > 0 || pluginSettingsRowsExcluded > 0;
-    const namedBelow = skippedRows > 0;
-    let trailer = '';
-    if (expandable && namedBelow) trailer = ' Expand a table below for exactly which columns or rows; a skipped table is already named, with its row count, under "Not imported".';
-    else if (expandable) trailer = ' Expand a table below for exactly which.';
-    else if (namedBelow) trailer = ' See "Not imported" below for exactly which.';
-    return `${parts.join('; ')}.${trailer}`;
+    return out;
+  }
+
+  /** Whether the credentials arrive working, which the archive itself records. */
+  private get settingsSentence(): string {
+    return this.plan.manifest?.secretsSealed
+      ? 'Your integrations arrive configured and working — nothing to enter again.'
+      : 'Your integrations arrive, but their passwords were locked to the installation they came from. Open Settings \u2192 Integrations afterwards to enter them again.';
   }
 
   private get alreadyHere(): string {
-    const { plan, remapped } = this;
+    const { plan } = this;
     const users = plan.users;
     const files = plan.files;
 
@@ -72,11 +82,10 @@ export class ImportPlanSummary extends PureReactor {
 
     let filesClause = '';
     if (files.count > 0) {
-      if (files.colliding === files.count) filesClause = ' Every file in the archive is already here by name — if this archive was imported before, these will be a second copy of each.';
-      else if (files.colliding > 0) filesClause = ` ${files.colliding.toLocaleString()} of ${files.count.toLocaleString()} file(s) are already here by name and will be saved alongside them under a suffixed name.`;
+      if (files.colliding > 0) filesClause = ' Files whose name is already taken are saved alongside, never replacing what is here, and everything that pointed at them is updated to match.';
     }
 
-    return `${peopleClause}Nothing already on this platform is replaced. ${remapped.length.toLocaleString()} table(s) get re-numbered ids.${filesClause}`;
+    return `${peopleClause}Nothing already on this platform is replaced.${filesClause}`;
   }
 
   render(): ReactNode {
@@ -91,8 +100,16 @@ export class ImportPlanSummary extends PureReactor {
           metaRowsExcluded={plan.metaRowsExcluded ?? 0}
           pluginSettingsRowsExcluded={plan.pluginSettingsRowsExcluded ?? 0}
         />
-        <p className="fc-sites__text"><strong>Won&rsquo;t come across</strong> — {this.wontCarryOver}</p>
-        <p className="fc-sites__text"><strong>Already here</strong> — {this.alreadyHere}</p>
+        <p className="fc-sites__text"><strong>Nothing here is deleted or overwritten</strong> — {this.alreadyHere}</p>
+        <p className="fc-sites__text"><strong>Your settings</strong> — {this.settingsSentence}</p>
+        {this.worthKnowing.length > 0 ? (
+          <div className="fc-import-plan__worth-knowing">
+            <span className="fc-site-form__label">Worth knowing</span>
+            <ul className="fc-sites__warnings">
+              {this.worthKnowing.map((line) => <li key={line}>{line}</li>)}
+            </ul>
+          </div>
+        ) : null}
       </div>
     );
   }
