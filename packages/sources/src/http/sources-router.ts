@@ -76,7 +76,7 @@ export class SourcesRouter extends BaseRouter {
     if (!identity) {
       res.status(404).json({
         success: false,
-        error: `"${String(req.params.type ?? '')}/${String(req.params.slug ?? '')}" does not name a source.`,
+        error: `"${CoercionUtils.toString(req.params.type)}/${CoercionUtils.toString(req.params.slug)}" does not name a source.`,
       });
       return null;
     }

@@ -64,7 +64,7 @@ export class AuthControllerSecurity extends AuthControllerEmailChange {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const name = CoercionUtils.toString(req.body?.name);
-    const expiresInDays = Number.parseInt(String(req.body?.expiresInDays || ''), 10);
+    const expiresInDays = Number.parseInt(CoercionUtils.toString(req.body?.expiresInDays), 10);
     const scopes = Array.isArray(req.body?.scopes) ? req.body.scopes.map((v: any) => String(v || '').trim()).filter(Boolean) : [];
 
     if (!name) return res.status(400).json({ error: 'Token name is required' });

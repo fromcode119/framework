@@ -1,4 +1,5 @@
 import express from 'express';
+import { CoercionUtils } from '@fromcode119/core';
 import { AcmeChallengeStore, RouteConstants } from '@fromcode119/core';
 
 /**
@@ -30,7 +31,7 @@ export class AcmeChallengeRouter {
     // Never cached: a token is answered once, by one authority, within seconds of being published.
     res.setHeader('Cache-Control', 'no-store');
 
-    const keyAuthorization = await this.challenges.find(String(req.params.token ?? ''));
+    const keyAuthorization = await this.challenges.find(CoercionUtils.toString(req.params.token));
     if (!keyAuthorization) {
       res.status(404).type('text/plain').send('Not found');
       return;
