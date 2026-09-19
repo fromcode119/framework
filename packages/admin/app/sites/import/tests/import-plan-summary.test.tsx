@@ -79,7 +79,10 @@ describe('ImportPlanSummary -> Arrives', () => {
       />,
     );
 
-    expect(screen.getByText(/2 platform record\(s\) across 1 table\(s\)/)).not.toBeNull();
+    // The netting is what this guards — 2, not the raw 5 — and the caption must carry no jargon,
+    // because a summary renders while its details is collapsed.
+    expect(screen.getByText(/2 more the platform keeps for you/)).not.toBeNull();
+    expect(screen.queryByText(/\btables?\b|\brecord\(s\)/i)).toBeNull();
     expect(screen.getByText(/2 in total\./)).not.toBeNull();
   });
 
