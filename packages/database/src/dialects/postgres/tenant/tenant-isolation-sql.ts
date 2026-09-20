@@ -204,6 +204,32 @@ export class TenantIsolationSql {
     return `ALTER TABLE "${name}" ADD CONSTRAINT "${name}_${col}_key" UNIQUE ("${col}")`;
   }
 
+  /**
+   * Makes the ownership column REQUIRED, so an unowned row stops being writable at all.
+   *
+   * The difference between reporting the fault and preventing it. The column is added nullable — it
+   * has to be, to land on a populated table — and its default is the current tenant, which is NULL
+   * outside a tenant scope. So an insert made with no site bound wrote a row no site could ever read,
+   * and nothing refused it: 20 rows across 8 tables on a live platform, invisible from the moment they
+   * were written. With NOT NULL that insert FAILS at the database instead. Row-level security stops a
+   * site reading another site's row; this stops a row belonging to nobody being created at all.
+   *
+   * It is refused while such rows still exist, which is correct — the constraint is the thing that
+   * tells you, and the fix is to give those rows an owner or remove them.
+   */
+  static requireOwnerStatement(table: string): string {
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    return `ALTER TABLE "${name}" ALTER COLUMN "${TenantColumn.NAME}" SET NOT NULL`;
+  }
+
+  /** Whether the ownership column is already required — a catalog read, so the ALTER is not re-run every boot. */
+  static ownerRequiredStatement(table: string): string {
+    const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
+    return 'SELECT a.attnotnull AS required FROM pg_attribute a JOIN pg_class t ON t.oid = a.attrelid '
+      + `JOIN pg_namespace n ON n.oid = t.relnamespace WHERE n.nspname = 'public' AND t.relname = '${name}' `
+      + `AND a.attname = '${TenantColumn.NAME}' AND a.attnum > 0 LIMIT 1`;
+  }
+
   /** Assigns rows that predate tenancy to an owner. Never invents one — the caller names the tenant. */
   static backfillStatement(table: string): string {
     const name = SqlIdentifier.assert(table, 'TenantIsolationSql');

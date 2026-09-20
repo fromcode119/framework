@@ -120,3 +120,61 @@ describe('RefusingTenantIsolation', () => {
       .rejects.toThrow(/SqliteDatabaseManager/);
   });
 });
+
+/**
+ * Isolation stops a site reading another site's rows. This is the other half: a row belonging to
+ * NOBODY should not be writable at all.
+ *
+ * The column is added nullable — it has to be, to land on a populated table — and its default is the
+ * current tenant, which is NULL outside a tenant scope. So anything inserting without a site bound
+ * wrote a row no site could ever read, and nothing refused it. Twenty such rows across eight tables
+ * were found on a live platform, written by seeding that ran outside a scope.
+ */
+describe('PostgresTenantIsolation.requireOwner', () => {
+  const fakeRun = (answers: { required?: unknown; alterFails?: boolean } = {}) => {
+    const ran: string[] = [];
+    const run = async (statement: string) => {
+      ran.push(statement);
+      if (statement.includes('attnotnull')) return [{ required: answers.required }];
+      if (statement.includes('SET NOT NULL') && answers.alterFails) throw new Error('contains null values');
+      return [];
+    };
+    return { ran, run };
+  };
+
+  it('requires an owner on a table that does not yet', async () => {
+    const { ran, run } = fakeRun({ required: false });
+
+    expect(await new PostgresTenantIsolation(run as any).requireOwner('fcp_cms_pages')).toBe(true);
+    expect(ran.some((s) => s.includes('ALTER COLUMN "tenant_id" SET NOT NULL'))).toBe(true);
+  });
+
+  /** A catalog read every boot is fine; an ALTER on 184 tables every boot is not. */
+  it('does not re-run the alter once the column is already required', async () => {
+    const { ran, run } = fakeRun({ required: true });
+
+    expect(await new PostgresTenantIsolation(run as any).requireOwner('fcp_cms_pages')).toBe(true);
+    expect(ran.some((s) => s.includes('SET NOT NULL'))).toBe(false);
+  });
+
+  /**
+   * Reported, never fatal. The rows are unreachable, not corrupt, and taking the platform down over
+   * data nobody can read helps no one — the constraint is the thing that says so.
+   */
+  it('answers false, rather than throwing, while unowned rows still exist', async () => {
+    const { run } = fakeRun({ required: false, alterFails: true });
+
+    await expect(new PostgresTenantIsolation(run as any).requireOwner('fcp_cms_pages')).resolves.toBe(false);
+  });
+
+  /**
+   * Postgres hands `attnotnull` back as `'t'` through some drivers and `true` through others. Reading
+   * only one of them would re-run the ALTER on every table on every boot.
+   */
+  it('reads the catalog answer in either shape the driver returns it', async () => {
+    const { ran, run } = fakeRun({ required: 't' });
+
+    expect(await new PostgresTenantIsolation(run as any).requireOwner('fcp_cms_pages')).toBe(true);
+    expect(ran.some((s) => s.includes('SET NOT NULL'))).toBe(false);
+  });
+});

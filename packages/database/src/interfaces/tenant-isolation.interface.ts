@@ -75,6 +75,18 @@ export interface ITenantIsolation {
    */
   keysPerTenant(table: string): Promise<boolean>;
 
+  /**
+   * Make the ownership column REQUIRED, so a row belonging to nobody cannot be written.
+   *
+   * Returns whether the table now refuses one. `false` means it still holds unowned rows — the
+   * constraint is what reports that, and the answer is to give them an owner or remove them.
+   *
+   * Isolation stops a site reading another site's rows. This is the other half: without it, anything
+   * inserting outside a tenant scope silently writes a row no site can ever read, because the column
+   * defaults to the current tenant and that is NULL outside a scope.
+   */
+  requireOwner(table: string): Promise<boolean>;
+
   /** Rows with no owner — invisible to every tenant, so they must be said out loud. */
   countUnassigned(table: string): Promise<number>;
 
