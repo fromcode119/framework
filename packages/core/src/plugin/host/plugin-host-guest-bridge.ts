@@ -67,7 +67,18 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     const out: Record<string, string[]> = {};
     const tenantId = String(store?.tenantId ?? '').trim() || null;
     for (const plugin of this.manager.plugins.values()) {
-      if (!PluginsManagerResolver.isResolvable(plugin, tenantId)) continue;
+      const refusal = PluginsManagerResolver.refusalReason(plugin, tenantId);
+      if (refusal) {
+        // A withheld peer used to leave no trace at all. The caller saw only an absence — a courier
+        // search that answered "no cities" having asked nobody — and which of three conditions
+        // withheld it could only be guessed at from outside the process. Say it once per snapshot,
+        // and only for a plugin that HAS a public API: the rest are not peers in the first place and
+        // would bury the one line that matters.
+        // The HOST's own logger, not `this.context.logger`: the context is null until the guest has
+        // one, and the plugin-facing logger has no debug level.
+        if (plugin.publicAPI) this.logger.debug(`peer withheld — ${refusal}`);
+        continue;
+      }
       // Own property names, not `Object.keys`: a class of static methods enumerates as nothing.
       out[`${String(plugin.manifest.namespace || '').trim()}:${plugin.manifest.slug}`] = PluginGuest.functionNames(plugin.publicAPI);
     }
