@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PluginGuestContextFactory } from '@core/plugin/host/plugin-guest-context-factory';
+import { PluginGuestPeerNamespace } from '@core/plugin/host/plugin-guest-peer-namespace';
 
 /**
  * An isolated plugin has to be able to ask "is that plugin here?" and get the truth.
@@ -14,9 +14,10 @@ describe('an isolated plugin asking for a peer', () => {
   const remote = { ref: vi.fn(() => ({ marker: 'remote-chain' })) } as any;
   const peers = (present: string[]) => ({
     hasPeer: (namespace: string, slug: string) => present.includes(`${namespace}:${slug}`),
+    peerKeys: () => [...present],
   });
   const namespaceOf = (present: string[]): Record<string, unknown> =>
-    (PluginGuestContextFactory as any).peerNamespace('org.fromcode', peers(present), remote);
+    PluginGuestPeerNamespace.build('org.fromcode', peers(present), remote);
 
   it('hands back a callable reference for a peer that is running', () => {
     const found = namespaceOf(['org.fromcode:ecommerce']).ecommerce;
