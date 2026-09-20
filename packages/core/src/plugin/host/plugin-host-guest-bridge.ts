@@ -70,13 +70,17 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
       const refusal = PluginsManagerResolver.refusalReason(plugin, tenantId);
       if (refusal) {
         // A withheld peer used to leave no trace at all. The caller saw only an absence — a courier
-        // search that answered "no cities" having asked nobody — and which of three conditions
-        // withheld it could only be guessed at from outside the process. Say it once per snapshot,
-        // and only for a plugin that HAS a public API: the rest are not peers in the first place and
-        // would bury the one line that matters.
+        // search that answered "no cities" having asked nobody — and which condition withheld it
+        // could only be guessed at from outside the process.
+        //
+        // EVERY refusal is said, including "exposes no public API". Filtering on `publicAPI` to keep
+        // the noise down silenced exactly that reason, so a plugin missing its API looked identical
+        // to one that was never a peer — which is the shape of the failure this line exists for. A
+        // debug level is where the volume belongs, not a filter that can hide the answer.
+        //
         // The HOST's own logger, not `this.context.logger`: the context is null until the guest has
         // one, and the plugin-facing logger has no debug level.
-        if (plugin.publicAPI) this.logger.debug(`peer withheld — ${refusal}`);
+        this.logger.debug(`peer withheld — ${refusal}`);
         continue;
       }
       // Own property names, not `Object.keys`: a class of static methods enumerates as nothing.
