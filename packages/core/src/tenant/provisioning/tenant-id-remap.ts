@@ -50,4 +50,14 @@ export class TenantIdRemap {
   get remappedTables(): string[] {
     return [...this.remapped].sort();
   }
+
+  /**
+   * Every `oldId -> newId` this run made for one table, so the map can be written down.
+   *
+   * A copy, not the live map: the caller persists these while the import is still finishing, and a
+   * consumer iterating the internal Map while `set` is called would be reading a moving target.
+   */
+  entriesFor(table: string): Array<[string, string]> {
+    return [...(this.tables.get(table) ?? new Map<string, string>()).entries()];
+  }
 }
