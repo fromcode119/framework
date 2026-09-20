@@ -33,6 +33,7 @@ import { SdkRuntimeExportsCommand } from './sdk-runtime-exports-command';
 import { SdkBoundaryCommand } from './sdk-boundary-command';
 import { SingleExportModuleCommand } from './single-export-module-command';
 import { SrcArtifactsCommand } from './src-artifacts-command';
+import { SsrStaticImportCommand } from './ssr-static-import-command';
 import { ThemeOverrideBoundaryCommand } from './theme-override-boundary-command';
 import { WorkspaceCheckCommand } from './workspace-check-command';
 import { ArchorCommand } from './arch-guard-command';
@@ -86,6 +87,7 @@ export class GuardRegistry {
     ['sdk-boundary', SdkBoundaryCommand],
     ['single-export-module', SingleExportModuleCommand],
     ['src-artifacts', SrcArtifactsCommand],
+    ['ssr-static-imports', SsrStaticImportCommand],
     ['theme-override-boundary', ThemeOverrideBoundaryCommand],
     ['workspace-check', WorkspaceCheckCommand],
   ]);

@@ -39,6 +39,7 @@
     "check:snake-translation-keys": "node packages/arch-guard/dist/arch-guard-cli.cjs snake-translation-keys",
     "check:i18n-keys": "node packages/arch-guard/dist/arch-guard-cli.cjs i18n-keys",
     "check:json-field-controls": "node packages/arch-guard/dist/arch-guard-cli.cjs json-field-controls",
+    "check:ssr-static-imports": "node packages/arch-guard/dist/arch-guard-cli.cjs ssr-static-imports",
     "check:app-typecheck": "node packages/arch-guard/dist/arch-guard-cli.cjs app-typecheck",
     "check:app-typecheck:warn": "APP_TYPECHECK_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs app-typecheck",
     "check:plugin-architecture:warn": "ARCH_LEGACY_MODE=warn ARCH_LAYER_MODE=warn ARCH_SIZE_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
