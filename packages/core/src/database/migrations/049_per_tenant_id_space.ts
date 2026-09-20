@@ -10,30 +10,24 @@ import { Logger } from '@core/logging';
  * already belongs to somebody else, and the importer has no choice: it hands out fresh numbers and
  * rewrites every reference that pointed at the old ones.
  *
- * That rewrite is the whole problem. It is only correct while the catalog of references is complete,
- * and twice it was not — a pointer whose target table is named by a sibling column, and an id
- * declared inside a `json` document. Rows kept numbers belonging to another site's records, and the
- * repair had to reconstruct, by hand and out of band, a mapping the importer had already computed
- * and discarded.
+ * That rewrite is the whole problem. It is correct only while the catalog of references is complete,
+ * and twice it was not — a pointer whose target table is named by a sibling column, and an id inside
+ * a `json` document. Rows kept numbers belonging to another site's records, and the repair had to
+ * reconstruct, by hand, a mapping the importer had computed and discarded.
  *
- * Widening the key to `(tenant_id, id)` removes the reason to renumber at all. Nothing to rewrite,
- * so nothing to miss.
+ * Widening the key to `(tenant_id, id)` removes the reason to renumber. Nothing to rewrite, so
+ * nothing to miss.
  *
- * WHY THIS COSTS NO DATA CHANGE. Ids are globally unique today, which means they are ALREADY unique
- * within each site — every existing row satisfies the new key before this runs. This adds a column
- * to a constraint; it does not renumber anything, and it cannot collide.
+ * WHY THIS COSTS NO DATA CHANGE. Ids are globally unique today, so they are ALREADY unique within
+ * each site — every existing row satisfies the new key before this runs. It adds a column to a
+ * constraint; it renumbers nothing and cannot collide. The sequence is untouched.
  *
- * The sequence stays exactly as it is. New rows keep drawing from it and keep getting globally
- * distinct numbers; that is now a coincidence rather than a requirement, which is the point. What
- * changes is only that an INSERT naming its own id no longer has to be unique across sites.
+ * NOT applied to `_system_*`: platform configuration, read across sites by design, which is why it
+ * carries no row-level security. An import never inserts into it.
  *
- * NOT applied to `_system_*`. Those are platform configuration — certificates, sessions, plugin and
- * theme bindings — read across sites by the platform admin by design, which is why they carry no
- * row-level security. An import never inserts into them, so they have nothing to gain and a
- * cross-site read to lose.
- *
- * The table list is DERIVED, not written down: tenant-scoped, row-level security on, and a primary
- * key of `id` alone. A hand-listed set goes stale the first time a plugin adds a collection.
+ * The table list is DERIVED — tenant-scoped, row-level security on, primary key of `id` alone. A
+ * hand-listed set goes stale the first time a plugin adds a collection. And a table that cannot take
+ * the key is left with the one it has, rather than failing the whole migration: see `widenOne`.
  */
 export class PerTenantIdSpaceMigration extends BaseMigration {
   readonly version = 49;
@@ -60,53 +54,123 @@ export class PerTenantIdSpaceMigration extends BaseMigration {
   ] as const;
 
   async up(db: IDatabaseManager): Promise<void> {
-    const { logger } = PerTenantIdSpaceMigration;
-
     await DialectHelper.executeForDialect(db.dialect, {
-      postgres: async () => {
-        const tables = await PerTenantIdSpaceMigration.widenable(db);
-        if (!tables.length) {
-          logger.info('Every tenant-scoped table already keys on (tenant_id, id); nothing to widen.');
-          return;
-        }
-
-        // The five composite references are dropped first and rebuilt last: a foreign key pins the
-        // unique constraint it points at, so the parent's key cannot be replaced while they hold it.
-        for (const key of PerTenantIdSpaceMigration.COMPOSITE_KEYS) {
-          if (!(await PerTenantIdSpaceMigration.tableExists(db, key.child))) continue;
-          await db.execute(sql.raw(`ALTER TABLE ${key.child} DROP CONSTRAINT IF EXISTS ${key.constraint}`));
-        }
-
-        for (const table of tables) {
-          const constraint = await PerTenantIdSpaceMigration.primaryKeyName(db, table);
-          if (constraint) await db.execute(sql.raw(`ALTER TABLE ${table} DROP CONSTRAINT ${constraint}`));
-          await db.execute(sql.raw(`ALTER TABLE ${table} ADD PRIMARY KEY (tenant_id, id)`));
-        }
-
-        // An id is still looked up on its own — by the reference walk, by a plugin reading a row it
-        // was handed — and the widened key no longer serves that, because `id` is now its second
-        // column. This index is what keeps those reads from turning into scans.
-        for (const table of tables) {
-          await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS idx_${table}_id ON ${table} (id)`));
-        }
-
-        await PerTenantIdSpaceMigration.restoreForeignKeys(db);
-
-        logger.info(`Widened ${tables.length} table(s) to (tenant_id, id); an import can now keep its own ids.`);
-      },
+      postgres: async () => PerTenantIdSpaceMigration.widenAll(db),
 
       // SQLite cannot alter a primary key — it would mean rebuilding every table — and it is
       // single-site by definition here (no row-level security, so no second site to collide with).
       // There is nothing for this migration to fix there.
       sqlite: async () => {
-        logger.info('SQLite is single-site, so ids never collide across sites; nothing to widen.');
+        PerTenantIdSpaceMigration.logger.info('SQLite is single-site, so ids never collide across sites; nothing to widen.');
       },
 
       // MySQL has no row-level security either, so it is single-site for the same reason.
       mysql: async () => {
-        logger.info('MySQL is single-site here, so ids never collide across sites; nothing to widen.');
+        PerTenantIdSpaceMigration.logger.info('MySQL is single-site here, so ids never collide across sites; nothing to widen.');
       },
     });
+  }
+
+  /**
+   * The whole Postgres change. Every table that CAN take the key gets it; the rest keep the one they
+   * have, and are named.
+   *
+   * NO SURROUNDING TRANSACTION, deliberately. Outside a tenant scope this manager runs each statement
+   * on whatever client the POOL hands it — `executor` is the pool and `orm` is the pool-wide Drizzle
+   * — so a `BEGIN` issued here would wrap nothing and would strand an open transaction on one pooled
+   * client. Atomicity is bought per statement instead, which is where it is actually needed.
+   *
+   * It is IDEMPOTENT for the same reason. `widenable` only returns tables still keyed on `id` alone,
+   * so a run that dies half way is continued by the next one rather than confused by it, and the
+   * references are restored from what the parents turn out to be, not from what this run did.
+   */
+  private static async widenAll(db: IDatabaseManager): Promise<void> {
+    const { logger } = PerTenantIdSpaceMigration;
+
+    const candidates = await PerTenantIdSpaceMigration.widenable(db);
+
+    // READ BEFORE DROPPING. Four of the five cascade on delete and one nulls the reference, and
+    // rebuilding them without that silently turns "deleting a person removes their addresses" into
+    // "deleting a person is refused". Taken from the catalog rather than written down here, so a
+    // deployment that chose different actions keeps its own.
+    const actions = await PerTenantIdSpaceMigration.referentialActions(db);
+
+    if (!candidates.length) {
+      logger.info('Every tenant-scoped table already keys on (tenant_id, id); nothing to widen.');
+      await PerTenantIdSpaceMigration.restoreForeignKeys(db, actions);
+      return;
+    }
+
+    // The five composite references are dropped first and rebuilt last: a foreign key pins the unique
+    // constraint it points at, so the parent's key cannot be replaced while they hold it.
+    for (const key of PerTenantIdSpaceMigration.COMPOSITE_KEYS) {
+      if (!(await PerTenantIdSpaceMigration.tableExists(db, key.child))) continue;
+      await db.execute(sql.raw(`ALTER TABLE ${key.child} DROP CONSTRAINT IF EXISTS ${key.constraint}`));
+    }
+
+    const widened: string[] = [];
+    const refused = new Map<string, string>();
+    for (const table of candidates) {
+      const reason = await PerTenantIdSpaceMigration.widenOne(db, table);
+      if (reason) refused.set(table, reason); else widened.push(table);
+    }
+
+    await PerTenantIdSpaceMigration.restoreForeignKeys(db, actions);
+
+    logger.info(`Widened ${widened.length} table(s) to (tenant_id, id); an import can now keep its own ids.`);
+    if (refused.size) PerTenantIdSpaceMigration.reportRefused(refused);
+  }
+
+  /**
+   * Widen ONE table, or report why it cannot be — attempted rather than predicted, in ONE statement.
+   *
+   * Predicting does not work here, and the reason is worth stating. A table holding rows with no
+   * owner cannot take this key: the ownership column becomes a key column, and a key column cannot be
+   * null. But this runs as the schema OWNER, which is deliberately NOSUPERUSER and NOBYPASSRLS, and
+   * these tables FORCE row-level security — so `SELECT ... WHERE tenant_id IS NULL` returns NOTHING,
+   * every time, because the isolation predicate is strict equality and NULL matches in no scope.
+   * `ALTER TABLE` is not subject to that. Rehearsed against the real schema, the check read clean and
+   * the alter then failed.
+   *
+   * ONE statement carrying BOTH actions is what makes a failure harmless: Postgres applies an
+   * `ALTER TABLE` atomically, so the table either comes out widened or keeps exactly the key it had.
+   * Two statements would leave it with none at all, which is the state nothing else in the system
+   * expects and no later run would repair.
+   *
+   * Attempting also covers reasons nobody anticipated — two sites already sharing an id, say — and
+   * reports the database's own words rather than a guess at them.
+   */
+  private static async widenOne(db: IDatabaseManager, table: string): Promise<string | null> {
+    try {
+      const constraint = await PerTenantIdSpaceMigration.primaryKeyName(db, table);
+      const drop = constraint ? `DROP CONSTRAINT ${constraint}, ` : '';
+      await db.execute(sql.raw(`ALTER TABLE ${table} ${drop}ADD PRIMARY KEY (tenant_id, id)`));
+
+      // An id is still looked up on its own — by the reference walk, by a plugin reading a row it was
+      // handed — and the widened key no longer serves that, because `id` is now its second column.
+      // This index is what keeps those reads from turning into scans.
+      await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS idx_${table}_id ON ${table} (id)`));
+      return null;
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error);
+    }
+  }
+
+  /**
+   * Say which tables were left behind and why: a migration that quietly does less than its name is
+   * how a half-applied schema goes unnoticed.
+   *
+   * Measured on the real platform: 20 rows with no owner across 8 tables, left by an adoption that
+   * stamped only the tables which already had the column. Those keep the shared key and go on
+   * renumbering on import — correct, and the path this migration exists to avoid.
+   */
+  private static reportRefused(refused: Map<string, string>): void {
+    PerTenantIdSpaceMigration.logger.warn(
+      `${refused.size} table(s) did NOT get their own id space and keep the shared key: `
+      + `${[...refused].map(([table, why]) => `${table} (${why})`).join('; ')}. `
+      + 'An import still renumbers those, which is correct but is the expensive path. The usual cause '
+      + 'is rows with no owner, which cannot be keyed on — give them an owner and re-running completes it.',
+    );
   }
 
   /**
@@ -129,6 +193,7 @@ export class PerTenantIdSpaceMigration extends BaseMigration {
           );
         }
         logger.warn('Narrowing the key back to (id); an import will renumber again from here on.');
+        const actions = await PerTenantIdSpaceMigration.referentialActions(db);
         for (const key of PerTenantIdSpaceMigration.COMPOSITE_KEYS) {
           if (!(await PerTenantIdSpaceMigration.tableExists(db, key.child))) continue;
           await db.execute(sql.raw(`ALTER TABLE ${key.child} DROP CONSTRAINT IF EXISTS ${key.constraint}`));
@@ -138,7 +203,7 @@ export class PerTenantIdSpaceMigration extends BaseMigration {
           if (constraint) await db.execute(sql.raw(`ALTER TABLE ${table} DROP CONSTRAINT ${constraint}`));
           await db.execute(sql.raw(`ALTER TABLE ${table} ADD PRIMARY KEY (id)`));
         }
-        await PerTenantIdSpaceMigration.restoreForeignKeys(db);
+        await PerTenantIdSpaceMigration.restoreForeignKeys(db, actions);
       },
       sqlite: async () => undefined,
       mysql: async () => undefined,
@@ -159,7 +224,7 @@ export class PerTenantIdSpaceMigration extends BaseMigration {
    * So the parent is asked, after the widening, and each key is rebuilt to match. The same routine
    * serves the rollback, where every parent has narrowed back and every key comes out single-column.
    */
-  private static async restoreForeignKeys(db: IDatabaseManager): Promise<void> {
+  private static async restoreForeignKeys(db: IDatabaseManager, actions: Map<string, string>): Promise<void> {
     const perTenant = new Set(await PerTenantIdSpaceMigration.widened(db));
 
     for (const key of PerTenantIdSpaceMigration.COMPOSITE_KEYS) {
@@ -171,9 +236,38 @@ export class PerTenantIdSpaceMigration extends BaseMigration {
         `ALTER TABLE ${key.child} ADD CONSTRAINT ${key.constraint} `
         + (composite
           ? `FOREIGN KEY (tenant_id, ${key.column}) REFERENCES ${key.parent} (tenant_id, id)`
-          : `FOREIGN KEY (${key.column}) REFERENCES ${key.parent} (id)`),
+          : `FOREIGN KEY (${key.column}) REFERENCES ${key.parent} (id)`)
+        + (actions.get(key.constraint) ?? ''),
       ));
     }
+  }
+
+  /**
+   * What each of the five references does on DELETE and on UPDATE, as the clause that recreates it.
+   *
+   * Read from the catalog, not written down: these actions are part of how the product behaves —
+   * removing a person removes their addresses, removing a folder unfiles its media — and a rebuild
+   * that drops them turns those deletes into refusals without anything saying so. A deployment whose
+   * actions differ from ours keeps its own.
+   *
+   * An absent entry means NO ACTION, which is Postgres's default and needs no clause.
+   */
+  private static async referentialActions(db: IDatabaseManager): Promise<Map<string, string>> {
+    const WORDS: Record<string, string> = { r: 'RESTRICT', c: 'CASCADE', n: 'SET NULL', d: 'SET DEFAULT' };
+    const names = PerTenantIdSpaceMigration.COMPOSITE_KEYS.map((key) => `'${key.constraint}'`).join(', ');
+
+    const rows = await db.queryRaw(
+      `SELECT conname AS name, confdeltype::text AS del, confupdtype::text AS upd
+         FROM pg_constraint WHERE contype = 'f' AND conname IN (${names})`,
+    );
+
+    const found = new Map<string, string>();
+    for (const row of rows) {
+      const clause = (WORDS[String(row.del)] ? ` ON DELETE ${WORDS[String(row.del)]}` : '')
+        + (WORDS[String(row.upd)] ? ` ON UPDATE ${WORDS[String(row.upd)]}` : '');
+      if (clause) found.set(String(row.name), clause);
+    }
+    return found;
   }
 
   private static async tableExists(db: IDatabaseManager, table: string): Promise<boolean> {
