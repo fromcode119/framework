@@ -113,8 +113,9 @@ export class SitesClient {
     return AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS_IMPORT_PREVIEW, { uploadId, tenant });
   }
 
-  static async executeImport(uploadId: string, tenant: Record<string, unknown>): Promise<Record<string, any>> {
-    return AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS_IMPORT_EXECUTE, { uploadId, tenant });
+  /** `transitPassphrase` is required only when the archive says its secrets were sealed for transit. */
+  static async executeImport(uploadId: string, tenant: Record<string, unknown>, transitPassphrase = ''): Promise<Record<string, any>> {
+    return AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS_IMPORT_EXECUTE, { uploadId, tenant, transitPassphrase });
   }
 
   static async adopt(tenant: Record<string, unknown>): Promise<Record<string, any>> {
