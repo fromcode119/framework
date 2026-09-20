@@ -1,8 +1,8 @@
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import type { Alias, UserConfig } from 'vite';
-import { NextConfigEnvironment } from '../../../config/next-config-environment';
-import { NextConfigAliases } from '../../../config/next-config-aliases';
+import { NextConfigEnvironment } from '../../../../config/next-config-environment';
+import { NextConfigAliases } from '../../../../config/next-config-aliases';
 // Relative on purpose, like the line above: Vite loads this config with its own bundler, before any
 // alias applies, and the constants file carries no imports of its own.
 // `@fromcode119/core/constants/*` — core's own narrow public export, NOT its private `@core/*` alias
@@ -40,9 +40,9 @@ export class FrontendRuntimeViteConfig {
   /** Global the IIFE assigns its (unused) export to; Vite demands a name for the iife format. */
   private static readonly GLOBAL_NAME = '__fromcodeStorefrontRuntime';
 
-  /** `packages/frontend` — this file lives in `packages/frontend/build`. */
+  /** `packages/frontend` — this file lives in `packages/frontend/lib/bundling`, two levels down. */
   private static get frontendDir(): string {
-    return path.resolve(__dirname, '..');
+    return path.resolve(__dirname, '..', '..');
   }
 
   private static get entryFile(): string {

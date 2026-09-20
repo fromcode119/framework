@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { LucideIconNodeEmitter } from './lucide-icon-node-emitter';
+import { LucideIconNodeEmitter } from '@/lib/bundling/lucide-icon-node-emitter';
 
 /**
  * `tsx lucide-icon-node-emitter-cli.ts <namesFile> <publicDir…>` — the `build:frontend-icons` script.
@@ -19,6 +19,14 @@ export class LucideIconNodeEmitterCli {
     console.log(`[frontend-icons] lucide-react ${result.version}: ${result.count} icon modules -> ${result.dirs.map((dir) => path.relative(process.cwd(), dir)).join(', ')}; names -> ${path.relative(process.cwd(), path.resolve(namesFile))}`);
     return 0;
   }
-}
 
-LucideIconNodeEmitterCli.main(process.argv.slice(2)).then((code) => process.exit(code));
+  /**
+   * Runs on class initialisation, so nothing sits at module level — the same shape the two launchers
+   * use. It was a bare bottom-of-file call, and no guard saw it: the file lived in a directory named
+   * `build`, which the scanners skip as output. The name hid it, exactly as a directory named `build`
+   * once hid nine source files from git.
+   */
+  static {
+    LucideIconNodeEmitterCli.main(process.argv.slice(2)).then((code) => process.exit(code));
+  }
+}

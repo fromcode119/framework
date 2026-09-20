@@ -5,7 +5,7 @@ import { gzipSync } from 'node:zlib';
 // @ts-ignore -- jsdom ships no declaration file in this workspace; the test uses two members of it.
 import { JSDOM, VirtualConsole } from 'jsdom';
 import { describe, expect, it } from 'vitest';
-import { FrontendRuntimeViteConfig } from '@/build/frontend-runtime-vite-config';
+import { FrontendRuntimeViteConfig } from '@/lib/bundling/frontend-runtime-vite-config';
 
 /**
  * Guards the built storefront runtime bundle (`npm run build:frontend-runtime`):
