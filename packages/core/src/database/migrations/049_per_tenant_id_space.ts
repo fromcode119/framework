@@ -73,6 +73,7 @@ export class PerTenantIdSpaceMigration extends BaseMigration {
         // The five composite references are dropped first and rebuilt last: a foreign key pins the
         // unique constraint it points at, so the parent's key cannot be replaced while they hold it.
         for (const key of PerTenantIdSpaceMigration.COMPOSITE_KEYS) {
+          if (!(await PerTenantIdSpaceMigration.tableExists(db, key.child))) continue;
           await db.execute(sql.raw(`ALTER TABLE ${key.child} DROP CONSTRAINT IF EXISTS ${key.constraint}`));
         }
 
@@ -89,12 +90,7 @@ export class PerTenantIdSpaceMigration extends BaseMigration {
           await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS idx_${table}_id ON ${table} (id)`));
         }
 
-        for (const key of PerTenantIdSpaceMigration.COMPOSITE_KEYS) {
-          await db.execute(sql.raw(
-            `ALTER TABLE ${key.child} ADD CONSTRAINT ${key.constraint} `
-            + `FOREIGN KEY (tenant_id, ${key.column}) REFERENCES ${key.parent} (tenant_id, id)`,
-          ));
-        }
+        await PerTenantIdSpaceMigration.restoreForeignKeys(db);
 
         logger.info(`Widened ${tables.length} table(s) to (tenant_id, id); an import can now keep its own ids.`);
       },
@@ -134,6 +130,7 @@ export class PerTenantIdSpaceMigration extends BaseMigration {
         }
         logger.warn('Narrowing the key back to (id); an import will renumber again from here on.');
         for (const key of PerTenantIdSpaceMigration.COMPOSITE_KEYS) {
+          if (!(await PerTenantIdSpaceMigration.tableExists(db, key.child))) continue;
           await db.execute(sql.raw(`ALTER TABLE ${key.child} DROP CONSTRAINT IF EXISTS ${key.constraint}`));
         }
         for (const table of await PerTenantIdSpaceMigration.widened(db)) {
@@ -141,16 +138,59 @@ export class PerTenantIdSpaceMigration extends BaseMigration {
           if (constraint) await db.execute(sql.raw(`ALTER TABLE ${table} DROP CONSTRAINT ${constraint}`));
           await db.execute(sql.raw(`ALTER TABLE ${table} ADD PRIMARY KEY (id)`));
         }
-        for (const key of PerTenantIdSpaceMigration.COMPOSITE_KEYS) {
-          await db.execute(sql.raw(
-            `ALTER TABLE ${key.child} ADD CONSTRAINT ${key.constraint} `
-            + `FOREIGN KEY (${key.column}) REFERENCES ${key.parent} (id)`,
-          ));
-        }
+        await PerTenantIdSpaceMigration.restoreForeignKeys(db);
       },
       sqlite: async () => undefined,
       mysql: async () => undefined,
     });
+  }
+
+  /**
+   * Puts the five references back, each in the shape its PARENT can actually accept.
+   *
+   * They were dropped so the parent's key could be replaced — a foreign key pins the unique
+   * constraint it points at — and rebuilding them all as composite was wrong: only a parent that was
+   * actually widened has a `(tenant_id, id)` unique constraint to point at. Which parents those are
+   * depends on the database, not on this file: the widening set is derived (tenant-scoped, row-level
+   * security on), and a deployment that has not adopted tenancy yet has none of it. On a fresh
+   * install that difference is the whole run, and asserting the composite shape there fails with
+   * "there is no unique constraint matching the given keys".
+   *
+   * So the parent is asked, after the widening, and each key is rebuilt to match. The same routine
+   * serves the rollback, where every parent has narrowed back and every key comes out single-column.
+   */
+  private static async restoreForeignKeys(db: IDatabaseManager): Promise<void> {
+    const perTenant = new Set(await PerTenantIdSpaceMigration.widened(db));
+
+    for (const key of PerTenantIdSpaceMigration.COMPOSITE_KEYS) {
+      if (!(await PerTenantIdSpaceMigration.tableExists(db, key.child))) continue;
+      if (!(await PerTenantIdSpaceMigration.tableExists(db, key.parent))) continue;
+
+      const composite = perTenant.has(key.parent) && await PerTenantIdSpaceMigration.hasTenantColumn(db, key.child);
+      await db.execute(sql.raw(
+        `ALTER TABLE ${key.child} ADD CONSTRAINT ${key.constraint} `
+        + (composite
+          ? `FOREIGN KEY (tenant_id, ${key.column}) REFERENCES ${key.parent} (tenant_id, id)`
+          : `FOREIGN KEY (${key.column}) REFERENCES ${key.parent} (id)`),
+      ));
+    }
+  }
+
+  private static async tableExists(db: IDatabaseManager, table: string): Promise<boolean> {
+    const rows = await db.queryRaw(
+      `SELECT 1 AS present FROM pg_class t JOIN pg_namespace n ON n.oid = t.relnamespace
+        WHERE n.nspname = 'public' AND t.relkind = 'r' AND t.relname = '${table}' LIMIT 1`,
+    );
+    return rows.length > 0;
+  }
+
+  private static async hasTenantColumn(db: IDatabaseManager, table: string): Promise<boolean> {
+    const rows = await db.queryRaw(
+      `SELECT 1 AS present FROM pg_attribute a JOIN pg_class t ON t.oid = a.attrelid
+         JOIN pg_namespace n ON n.oid = t.relnamespace
+        WHERE n.nspname = 'public' AND t.relname = '${table}' AND a.attname = 'tenant_id' AND a.attnum > 0 LIMIT 1`,
+    );
+    return rows.length > 0;
   }
 
   /** Tenant-scoped, row-level security on, primary key of `id` alone — the tables this applies to. */
