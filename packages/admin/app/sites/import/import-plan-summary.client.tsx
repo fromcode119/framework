@@ -1,65 +1,58 @@
 import type { ReactNode } from 'react';
-import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan-table.interface';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { ImportPlanRecord } from '@/app/sites/import/import-plan-record';
 import { ImportPlanArrivals } from '@/app/sites/import/import-plan-arrivals.client';
+import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.enum';
 
 /**
  * The three questions an operator has before deciding: what shows up, what does not, what was
- * already here. Every number in it comes from `ImportPlanTables`' own groups below (never a second
- * source of truth) — a headline total here (e.g. "198 rows … whose plugin is not installed") is a
- * SUM of numbers a table row below also shows on its own line, deliberately: the per-row figure is
- * corroboration an operator can check without trusting this summary alone, not a second source the
- * headline could drift from.
+ * already here. Every number in it comes from the same `ImportPlanRecord` list the detail panel
+ * below reads (never a second source of truth), so a headline total here is a SUM of figures a row
+ * below also shows on its own line — corroboration an operator can check, not a figure that could
+ * drift from the one beside it.
  *
  * "What arrives" is answered by `ImportPlanArrivals`, as things and counts. What follows here is the
- * two questions that are about CONSEQUENCE rather than inventory — "Won't come across" and "Already
- * here" — stated once, as totals. Most of those totals point at a specific table's own `<details>`
- * for the exact columns/rows; a skipped table has no such disclosure (its row IS the whole story —
- * `basis`/`minId`/`taken` are never computed for it), so `wontCarryOver` below says precisely which
- * part is reachable by expanding a row and which is just named in the "Not imported" group as-is.
+ * questions about CONSEQUENCE rather than inventory, each as its own card: a run-in paragraph gave
+ * one sentence of reassurance and four of homework the same weight, so the reader had to parse the
+ * block to find out whether there was anything to do.
  */
 export class ImportPlanSummary extends PureReactor {
   @prop declare plan: Record<string, any>;
-  /** Rows with somewhere to go: `rows > 0` and NOT skipped. */
-  @prop declare arriving: IImportPlanTable[];
-  /** Rows with nowhere to go: `rows > 0` and skipped (the plugin that owns them is not installed/enabled). */
-  @prop declare skipped: IImportPlanTable[];
-  /** Rows whose ids get re-numbered. */
-  @prop declare remapped: IImportPlanTable[];
+  /** Every kind in the archive, already classified. */
+  @prop declare records: ImportPlanRecord[];
+  /** Those with rows and somewhere to put them. */
+  @prop declare arriving: ImportPlanRecord[];
 
   /**
    * What an operator should go and LOOK at afterwards, in the words of someone who runs a shop.
    *
    * Not a column-by-table tally: the same field name repeated across a dozen tables is one fact
    * about this platform's schema, and an id inside a stored blob means "a link may point at the old
-   * thing", not "an opaque JSON column". Each sentence is one consequence, rendered only when the
-   * plan actually reports it, and every figure in it is a sum of rows the table below also shows.
+   * thing", not "an opaque JSON column". Each line is one consequence, rendered only when the plan
+   * actually reports it, and every figure in it is a sum of rows the detail panel also shows.
    */
   private get worthKnowing(): string[] {
-    const { plan, skipped, arriving, remapped } = this;
+    const { plan, records } = this;
     const out: string[] = [];
 
-    const skippedRows = skipped.reduce((sum, t) => sum + t.rows, 0);
+    const skipped = records.filter((record) => record.outcome === ImportPlanOutcome.NONE);
+    const skippedRows = skipped.reduce((sum, record) => sum + record.table.rows, 0);
     if (skippedRows > 0) {
       out.push(`${skippedRows.toLocaleString()} record(s) have nowhere to go until the add-on that owns them is installed here. Install it, then import again, and they come across too.`);
     }
-
-    const opaqueTables = remapped.filter((t) => t.opaqueJsonColumns.length > 0);
-    if (opaqueTables.length > 0) {
+    // Only where the ids actually moved: an un-followed id on a table whose numbering was kept still
+    // points at the row it always did, so telling the operator to go and check it is homework for
+    // nothing — see `ImportPlanRecord.hasUnfollowedLinks`.
+    if (this.arriving.some((record) => record.hasUnfollowedLinks)) {
       out.push('Some links stored inside page content and product descriptions still point at their old numbering. Worth a look at related products and page links afterwards.');
     }
-
-    const droppedTables = arriving.filter((t) => t.droppedColumns.length > 0);
-    if (droppedTables.length > 0) {
+    if (this.arriving.some((record) => record.table.droppedColumns.length > 0)) {
       out.push('A few older fields have no home on this platform any more and are not carried. The records themselves arrive; open the detail below for exactly which fields.');
     }
-
-    const metaRowsExcluded: number = plan.metaRowsExcluded ?? 0;
-    const pluginSettingsRowsExcluded: number = plan.pluginSettingsRowsExcluded ?? 0;
-    if (metaRowsExcluded + pluginSettingsRowsExcluded > 0) {
+    const excluded = (plan.metaRowsExcluded ?? 0) + (plan.pluginSettingsRowsExcluded ?? 0);
+    if (excluded > 0) {
       out.push('Settings that belong to a whole installation rather than to one shop stay as this platform has them.');
     }
-
     return out;
   }
 
@@ -78,7 +71,7 @@ export class ImportPlanSummary extends PureReactor {
   private get settingsSentence(): string {
     return this.settingsArrive
       ? 'Your integrations arrive configured and working — nothing to enter again.'
-      : 'Your integrations arrive, but their passwords were locked to the installation they came from. Open Settings \u2192 Integrations afterwards to enter them again.';
+      : 'Your integrations arrive, but their passwords were locked to the installation they came from. Open Settings → Integrations afterwards to enter them again.';
   }
 
   private get alreadyHere(): string {
@@ -92,53 +85,59 @@ export class ImportPlanSummary extends PureReactor {
     const peopleClause = peopleParts.length ? `${peopleParts.join('; ')}. ` : '';
 
     let filesClause = '';
-    if (files.count > 0) {
-      if (files.colliding > 0) filesClause = ' Files whose name is already taken are saved alongside, never replacing what is here, and everything that pointed at them is updated to match.';
+    if (files.count > 0 && files.colliding > 0) {
+      filesClause = ' Files whose name is already taken are saved alongside, never replacing what is here, and everything that pointed at them is updated to match.';
     }
 
     return `${peopleClause}Nothing already on this platform is replaced.${filesClause}`;
   }
 
   /**
-   * One statement, with a mark that says whether it is reassurance or something to look at.
+   * One card per statement, with a mark that says whether it is reassurance or something to do.
    *
-   * The three used to be a bold run-in paragraph and an orange bullet list, which read as a warning
-   * block whatever it said. A mark per line separates "this is fine" from "check this" without
-   * colouring a whole section.
+   * These were three run-in paragraphs in a single column. A card each separates "this is fine" from
+   * "check this" at a glance, and gives the homework list room to be a list instead of four
+   * sentences hanging off the end of the third paragraph.
    */
   private static note(reassuring: boolean, title: string, body: string, more: string[] = []): ReactNode {
     return (
-      <div className="fc-import-plan__note" key={`${title}-${body}`}>
-        <span className={`fc-import-plan__note-mark fc-import-plan__note-mark--${reassuring ? 'ok' : 'info'}`} aria-hidden="true">{reassuring ? '\u2713' : 'i'}</span>
-        <span className="fc-sites__text">
-          <strong>{title}</strong> — {body}
-          {more.map((line) => <span key={line} className="fc-import-plan__note-more">{line}</span>)}
-        </span>
+      <div className={`fc-import-plan__note fc-import-plan__note--${reassuring ? 'ok' : 'act'}`} key={title}>
+        <div className="fc-import-plan__note-head">
+          <span className="fc-import-plan__note-mark" aria-hidden="true">{reassuring ? '✓' : '!'}</span>
+          <b>{title}</b>
+        </div>
+        {more.length ? (
+          <ul className="fc-import-plan__note-list">
+            <li>{body}</li>
+            {more.map((line) => <li key={line}>{line}</li>)}
+          </ul>
+        ) : <p className="fc-import-plan__note-body">{body}</p>}
       </div>
     );
   }
 
   render(): ReactNode {
-    const { plan, arriving } = this;
+    const { plan } = this;
+    const worthKnowing = this.worthKnowing;
 
     return (
       <div className="fc-import-plan__summary">
         <ImportPlanArrivals
-          arriving={arriving}
+          records={this.records}
+          arriving={this.arriving}
           users={plan.users}
           files={plan.files}
-          metaRowsExcluded={plan.metaRowsExcluded ?? 0}
-          pluginSettingsRowsExcluded={plan.pluginSettingsRowsExcluded ?? 0}
         />
+        <span className="fc-site-form__label">Before you press it</span>
         <div className="fc-import-plan__notes">
-          {ImportPlanSummary.note(true, 'Nothing here is deleted', this.alreadyHere)}
+          {ImportPlanSummary.note(true, 'Nothing here is replaced', this.alreadyHere)}
           {ImportPlanSummary.note(
             this.settingsArrive,
             this.settingsArrive ? 'Your settings come with it' : 'Your settings need a password',
             this.settingsSentence,
           )}
-          {this.worthKnowing.length > 0
-            ? ImportPlanSummary.note(false, 'Worth checking after', this.worthKnowing[0], this.worthKnowing.slice(1))
+          {worthKnowing.length > 0
+            ? ImportPlanSummary.note(false, 'Check after importing', worthKnowing[0], worthKnowing.slice(1))
             : null}
         </div>
       </div>
