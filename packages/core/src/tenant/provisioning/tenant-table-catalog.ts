@@ -9,13 +9,11 @@ import { FieldType } from '@core/enums/field-type.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
 import { TenantJsonReferences } from '@core/tenant/provisioning/tenant-json-references';
-import { TenantSchemaFolds } from '@core/tenant/provisioning/tenant-schema-folds';
 import { TenantPolymorphicReferences } from '@core/tenant/provisioning/tenant-polymorphic-references';
 import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-owning-plugin-resolver';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 import { TableVisitState } from '@core/tenant/provisioning/enums/table-visit-state.enum';
-import { TenantColumnFold } from '@core/tenant/provisioning/tenant-column-fold';
 import { TenantJournalTables } from '@core/tenant/provisioning/tenant-journal-tables';
 
 /**
@@ -105,7 +103,6 @@ export class TenantTableCatalog {
     const jsonReferences = TenantJsonReferences.forCollections(
       this.collections, wanted, columns, (relationTo, pluginSlug) => TenantTableCatalog.resolveTarget(relationTo, pluginSlug, columns),
     );
-    const folds = TenantSchemaFolds.forCollections(this.collections, wanted, columns);
     const journals = TenantJournalTables.from(this.collections);
     const owners = this.owners();
 
@@ -125,7 +122,7 @@ export class TenantTableCatalog {
           ? TenantOwningPluginResolver.resolve(table, this.knownPluginSlugs)
           : (PhysicalTableNameUtils.parse(table)?.pluginSlug ?? null));
       const label = owner?.label ?? null;
-      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set(), pluginSlug, label, folds.get(table) ?? [], journals.has(table));
+      return new TenantTableDescriptor(table, types, serials.has(table), serials.get(table) ?? null, TenantTableCatalog.dedupe(references), required.get(table) ?? new Set(), pluginSlug, label, journals.has(table));
     });
     return TenantTableCatalog.inDependencyOrder(descriptors);
   }

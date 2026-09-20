@@ -1,5 +1,4 @@
 import { TenantColumnReference } from '@core/tenant/provisioning/tenant-column-reference';
-import { TenantColumnFold } from '@core/tenant/provisioning/tenant-column-fold';
 
 /**
  * What the provisioning code needs to know about one tenant table on THIS platform: its columns and
@@ -26,8 +25,6 @@ export class TenantTableDescriptor {
     readonly pluginSlug: string | null = null,
     /** The collection's human label (`ICollection.displayName`, or its capitalized short slug), when a matching collection was found. `null` when none was — the preview then falls back to the physical table name. */
     readonly label: string | null = null,
-    /** Destination columns that absorb an older schema's columns — see {@link TenantColumnFold}. */
-    readonly folds: TenantColumnFold[] = [],
     /**
      * A record of what happened rather than a thing the operator manages (`ICollection.journal`), or
      * a framework journal. It counts in every total; it is simply not one of the kinds a summary
@@ -36,10 +33,6 @@ export class TenantTableDescriptor {
     readonly isJournal: boolean = false,
   ) {}
 
-  /** Whether some field has claimed this archive column, so dropping it would lose data that has a home. */
-  foldsColumn(column: string): boolean {
-    return this.folds.some((fold) => column in fold.legacy);
-  }
 
   get columns(): string[] {
     return Object.keys(this.columnTypes);
