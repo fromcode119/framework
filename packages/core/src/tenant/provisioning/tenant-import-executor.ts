@@ -9,6 +9,7 @@ import { PluginTenantStateService } from '@core/plugin/tenant/plugin-tenant-stat
 import { TenantThemeStateService } from '@core/theme/tenant-theme-state-service';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdRemap } from '@core/tenant/provisioning/tenant-id-remap';
+import { TenantIdRemapStore } from '@core/tenant/provisioning/tenant-id-remap-store';
 import { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
 import { TenantImportFiles } from '@core/tenant/provisioning/tenant-import-files';
 import { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
@@ -95,6 +96,12 @@ export class TenantImportExecutor {
     // `users` is always in the remap (accounts are matched by email, never by id), but that is not a
     // re-numbering the operator needs to hear about — only content tables are listed.
     const renumbered = remap.remappedTables.filter((table) => table !== SystemConstants.TABLE.USERS);
+
+    // AFTER the rows are committed, and deliberately outside the transaction above: the data is
+    // already correct, and the map is what makes a LATER correction possible. Failing an import that
+    // succeeded, because its receipt could not be filed, would trade a real success for a paper one.
+    await new TenantIdRemapStore(this.db).record(tenant.id, remap);
+
     return new TenantImportResult(tenant, inserted, renumbered, members, plugins, theme, warnings, plan.exportWarnings);
   }
 
