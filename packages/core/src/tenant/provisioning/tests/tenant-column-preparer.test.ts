@@ -27,10 +27,10 @@ describe('TenantColumnPreparer — giving scoped tables their column before adop
   };
 
   it('prepares a plugin content table', async () => {
-    const { db } = dbWith(['fcp_cms_pages']);
+    const { db } = dbWith(['fcp_orbit_pages']);
 
     expect(await new TenantColumnPreparer(db).ensureColumns()).toBe(1);
-    expect(db.tenantIsolation.addTenantColumn).toHaveBeenCalledWith('fcp_cms_pages');
+    expect(db.tenantIsolation.addTenantColumn).toHaveBeenCalledWith('fcp_orbit_pages');
   });
 
   it('prepares the framework tables that hold a tenant\'s own content', async () => {
@@ -53,14 +53,14 @@ describe('TenantColumnPreparer — giving scoped tables their column before adop
   });
 
   it('asks for the COLUMN only — never for enforcement', async () => {
-    const { db, prepared } = dbWith(['fcp_cms_pages', 'fcp_cms_posts']);
+    const { db, prepared } = dbWith(['fcp_orbit_pages', 'fcp_orbit_posts']);
 
     await new TenantColumnPreparer(db).ensureColumns();
 
     // One call per scoped table, and `addTenantColumn` is the half that does NOT enable row-level
     // security. Enforcing here would hide every row on a deployment that has no tenants yet — the
     // documented reason the boot sweep refuses to isolate anything until a tenant exists.
-    expect(prepared).toEqual(['fcp_cms_pages', 'fcp_cms_posts']);
+    expect(prepared).toEqual(['fcp_orbit_pages', 'fcp_orbit_posts']);
     expect(Object.keys(db.tenantIsolation)).toEqual(['addTenantColumn']);
   });
 });

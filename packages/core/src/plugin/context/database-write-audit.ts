@@ -5,7 +5,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 
 /**
  * Audits plugin `context.db` writes — one row per CALL, naming the target table (and, when the
- * where already carries it, the record id): `fcp_ecommerce_products/8`. The method travels in the
+ * where already carries it, the record id): `fcp_acme_products/8`. The method travels in the
  * row's metadata. Payload values never reach the audit trail (PII).
  *
  * The whole path is fire-and-forget: the exclusion check and the audit insert run behind the

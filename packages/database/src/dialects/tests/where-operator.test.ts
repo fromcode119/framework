@@ -30,15 +30,15 @@ describe('where operators', () => {
 
     const manager = new SqliteDatabaseManager(dbPath);
     await manager.execute(
-      'CREATE TABLE "fcp_analytics_events" (' +
+      'CREATE TABLE "fcp_vane_events" (' +
         '"id" INTEGER PRIMARY KEY AUTOINCREMENT, ' +
         '"created_at" TEXT, ' +
         '"event_type" TEXT, ' +
         '"metadata" JSON)'
     );
-    await manager.insert('fcp_analytics_events', { createdAt: '2026-01-05', eventType: 'pageview', metadata: { a: 1 } });
-    await manager.insert('fcp_analytics_events', { createdAt: '2026-02-10', eventType: 'pageview', metadata: { a: 2 } });
-    await manager.insert('fcp_analytics_events', { createdAt: '2026-03-20', eventType: 'click', metadata: { a: 3 } });
+    await manager.insert('fcp_vane_events', { createdAt: '2026-01-05', eventType: 'pageview', metadata: { a: 1 } });
+    await manager.insert('fcp_vane_events', { createdAt: '2026-02-10', eventType: 'pageview', metadata: { a: 2 } });
+    await manager.insert('fcp_vane_events', { createdAt: '2026-03-20', eventType: 'click', metadata: { a: 3 } });
 
     const statements: string[] = [];
     const sqlite: any = (manager as any).sqlite;
@@ -58,7 +58,7 @@ describe('where operators', () => {
     it('emits a bounded range for { gte, lte } and returns only the rows inside it', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_analytics_events', {
+      const rows = await manager.find('fcp_vane_events', {
         where: { createdAt: { gte: '2026-01-01', lte: '2026-02-28' } },
       });
 
@@ -73,7 +73,7 @@ describe('where operators', () => {
 
       for (const [operator, sqlOperator] of cases) {
         const { manager, statements } = await seedManager();
-        await manager.find('fcp_analytics_events', { where: { createdAt: { [operator]: '2026-02-01' } } });
+        await manager.find('fcp_vane_events', { where: { createdAt: { [operator]: '2026-02-01' } } });
         expect(whereSql(statements)).toContain(`"created_at" ${sqlOperator} ?`);
       }
     });
@@ -81,7 +81,7 @@ describe('where operators', () => {
     it('ANDs a range with an equality on another column', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_analytics_events', {
+      const rows = await manager.find('fcp_vane_events', {
         where: { eventType: 'pageview', createdAt: { gte: '2026-02-01' } },
       });
 
@@ -92,7 +92,7 @@ describe('where operators', () => {
     it('combines a range with a resolved search', async () => {
       const { manager, statements } = await seedManager();
 
-      await manager.find('fcp_analytics_events', {
+      await manager.find('fcp_vane_events', {
         where: { createdAt: { gte: '2026-01-01' } },
         search: { columns: ['eventType'], value: 'click' },
       });
@@ -103,7 +103,7 @@ describe('where operators', () => {
     it('still treats a JSON literal object as equality, not as operators', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_analytics_events', { where: { metadata: { a: 2 } } });
+      const rows = await manager.find('fcp_vane_events', { where: { metadata: { a: 2 } } });
 
       expect(whereSql(statements)).toContain('"metadata" = ?');
       expect(rows).toHaveLength(1);
@@ -112,7 +112,7 @@ describe('where operators', () => {
     it('does not stringify the operator object into an equality', async () => {
       const { manager, statements } = await seedManager();
 
-      await manager.find('fcp_analytics_events', { where: { createdAt: { gte: '2026-01-01' } } });
+      await manager.find('fcp_vane_events', { where: { createdAt: { gte: '2026-01-01' } } });
 
       expect(whereSql(statements)).not.toContain('"created_at" = ?');
     });
@@ -180,7 +180,7 @@ describe('where operators', () => {
       const { manager } = await seedManager();
 
       await expect(
-        manager.find('fcp_analytics_events', { where: { createdAt: { gte: '2026-01-01', bogus: 'y' } } })
+        manager.find('fcp_vane_events', { where: { createdAt: { gte: '2026-01-01', bogus: 'y' } } })
       ).rejects.toThrow(/mixes operators/);
     });
 
@@ -197,7 +197,7 @@ describe('where operators', () => {
     it('counts only the rows inside the range', async () => {
       const { manager } = await seedManager();
 
-      const total = await manager.count('fcp_analytics_events', {
+      const total = await manager.count('fcp_vane_events', {
         where: { createdAt: { gte: '2026-01-01', lte: '2026-02-28' } },
       });
 
@@ -207,7 +207,7 @@ describe('where operators', () => {
     it('does not count the whole table when a range is given', async () => {
       const { manager } = await seedManager();
 
-      const total = await manager.count('fcp_analytics_events', { where: { createdAt: { gte: '2026-03-01' } } });
+      const total = await manager.count('fcp_vane_events', { where: { createdAt: { gte: '2026-03-01' } } });
 
       expect(total).toBe(1);
     });

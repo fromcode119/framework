@@ -7,12 +7,12 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run check:ignored-sources && npm run check:workspace-typecheck && npm run check:src-artifacts && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:dependency-overrides && npm run check:mcp-tool-schemas && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && npm run check:file-size && node packages/typescript-multiple-inheritance/dist/tsmi-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run build:sdk-types && npm run build:frontend-icons && npm run check:app-typecheck && npm run check:plugin-ui-types && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend-runtime",
+    "build": "npm run check:script-paths && npm run check:ignored-sources && npm run check:workspace-typecheck && npm run check:src-artifacts && npm run check:sdk-boundary && npm run check:plugin-ui-hookfree && npm run check:db-find-where && npm run check:dependency-overrides && npm run check:mcp-tool-schemas && npm run check:appearance-boundary && npm run check:imports:error && npm run check:framework-oop:error && npm run check:middleware-glue && npm run check:vite-glue && npm run check:conventions:error && npm run check:file-size && node packages/typescript-multiple-inheritance/dist/tsmi-cli.cjs build -b && cp -r packages/api/src/controllers/auth/email-templates/templates packages/api/dist/controllers/auth/email-templates/ && npm run build:sdk-types && npm run build:frontend-icons && npm run check:app-typecheck && npm run check:plugin-ui-types && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:admin && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend && NEXT_PUBLIC_API_URL=http://localhost:3000 npm run build:frontend-runtime",
     "build:api": "npm run build --workspace=@fromcode119/api",
     "build:admin": "npm run build --workspace=@fromcode119/admin",
     "build:frontend": "npm run build --workspace=@fromcode119/frontend",
-    "build:frontend-runtime": "node packages/next-build-codegen/dist/next-build-codegen-cli.cjs vite-config packages/frontend/build/frontend-runtime-vite-config FrontendRuntimeViteConfig packages/frontend/build/frontend-runtime.config.ts && (vite build --config packages/frontend/build/frontend-runtime.config.ts; ec=$?; node packages/next-build-codegen/dist/next-build-codegen-cli.cjs verify-vite-config --clean packages/frontend/build/frontend-runtime.config.ts >/dev/null; exit $ec) && npm run build:frontend-icons",
-    "build:frontend-icons": "tsx packages/frontend/build/lucide-icon-node-emitter-cli.ts packages/react/src/icons/lucide-icon-names.generated.json packages/frontend/public packages/admin/public",
+    "build:frontend-runtime": "node packages/next-build-codegen/dist/next-build-codegen-cli.cjs vite-config packages/frontend/lib/bundling/frontend-runtime-vite-config FrontendRuntimeViteConfig packages/frontend/lib/bundling/frontend-runtime.config.ts && (vite build --config packages/frontend/lib/bundling/frontend-runtime.config.ts; ec=$?; node packages/next-build-codegen/dist/next-build-codegen-cli.cjs verify-vite-config --clean packages/frontend/lib/bundling/frontend-runtime.config.ts >/dev/null; exit $ec) && npm run build:frontend-icons",
+    "build:frontend-icons": "tsx --tsconfig packages/frontend/tsconfig.json packages/frontend/lib/bundling/lucide-icon-node-emitter-cli.ts packages/react/src/icons/lucide-icon-names.generated.json packages/frontend/public packages/admin/public",
     "build:tooling": "npm run build --workspace=@fromcode119/react-class-components && npm run build --workspace=@fromcode119/typescript-multiple-inheritance && npm run build --workspace=@fromcode119/next-build-codegen",
     "build:runtime": "node packages/typescript-multiple-inheritance/dist/tsmi-cli.cjs build -b packages/api && npm run copy:templates --workspace=@fromcode119/api",
     "build:libs": "npm run build --workspace=@fromcode119/react && npm run build --workspace=@fromcode119/sdk && npm run build --workspace=@fromcode119/ai && npm run build --workspace=@fromcode119/extension-builder",
@@ -35,6 +35,11 @@
     "check:framework-oop:error": "TSMI_COMPONENT_BASES=AdminComponent,PluginComponent,ThemeComponent FRAMEWORK_OOP_MODE=error node packages/arch-guard/dist/arch-guard-cli.cjs oop-guard",
     "check:plugin-raw-sql": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-raw-sql",
     "check:dialect-sql-confinement": "node packages/arch-guard/dist/arch-guard-cli.cjs dialect-sql-confinement",
+    "check:snake-property-access": "node packages/arch-guard/dist/arch-guard-cli.cjs snake-property-access",
+    "check:snake-translation-keys": "node packages/arch-guard/dist/arch-guard-cli.cjs snake-translation-keys",
+    "check:i18n-keys": "node packages/arch-guard/dist/arch-guard-cli.cjs i18n-keys",
+    "check:json-field-controls": "node packages/arch-guard/dist/arch-guard-cli.cjs json-field-controls",
+    "check:ssr-static-imports": "node packages/arch-guard/dist/arch-guard-cli.cjs ssr-static-imports",
     "check:app-typecheck": "node packages/arch-guard/dist/arch-guard-cli.cjs app-typecheck",
     "check:app-typecheck:warn": "APP_TYPECHECK_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs app-typecheck",
     "check:plugin-architecture:warn": "ARCH_LEGACY_MODE=warn ARCH_LAYER_MODE=warn ARCH_SIZE_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
@@ -67,7 +72,7 @@
     "check:imports:error": "ARCHOR_IMPORTS_MODE=error node packages/arch-guard/dist/arch-guard-cli.cjs imports",
     "migrate:components": "node packages/arch-guard/dist/arch-guard-cli.cjs component-migration",
     "check:middleware-glue": "node packages/next-build-codegen/dist/next-build-codegen-cli.cjs verify-middleware packages/admin && node packages/next-build-codegen/dist/next-build-codegen-cli.cjs verify-middleware packages/frontend",
-    "check:vite-glue": "node packages/next-build-codegen/dist/next-build-codegen-cli.cjs verify-vite-config packages/sdk/src/vite/theme.config.ts packages/sdk/src/vite/theme-ssr.config.ts packages/sdk/src/vite/plugin-ui.config.ts packages/sdk/src/vite/plugin-ui-ssr.config.ts packages/sdk/src/tailwind/plugin-ui.config.ts packages/frontend/build/frontend-runtime.config.ts",
+    "check:vite-glue": "node packages/next-build-codegen/dist/next-build-codegen-cli.cjs verify-vite-config packages/sdk/src/vite/theme.config.ts packages/sdk/src/vite/theme-ssr.config.ts packages/sdk/src/vite/plugin-ui.config.ts packages/sdk/src/vite/plugin-ui-ssr.config.ts packages/sdk/src/tailwind/plugin-ui.config.ts packages/frontend/lib/bundling/frontend-runtime.config.ts",
     "check:conventions": "node packages/arch-guard/dist/arch-guard-cli.cjs convention-guard",
     "check:rendered-copy": "node packages/arch-guard/dist/arch-guard-cli.cjs rendered-copy",
     "check:conventions:detail": "node packages/arch-guard/dist/arch-guard-cli.cjs convention-guard --detail",
@@ -77,7 +82,8 @@
     "check:plugin-ui-types": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-types",
     "check:plugin-ui-types:warn": "PLUGIN_UI_TYPES_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-types",
     "build:sdk-types": "cd packages/sdk && node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs dts-bundle -p tsconfig.declarations.json --dist dist",
-    "check:ignored-sources": "node_modules/.bin/tsx scripts/check-ignored-sources.ts"
+    "check:script-paths": "node packages/arch-guard/dist/arch-guard-cli.cjs script-paths",
+    "check:ignored-sources": "node packages/arch-guard/dist/arch-guard-cli.cjs ignored-sources"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",

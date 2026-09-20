@@ -17,7 +17,7 @@ import { PendingSchemaDropStore } from '@core/database/pending-schema-drop-store
  *
  * WHY THIS PROPOSES RATHER THAN ACTS. Dropping a column is irreversible and the right answer is not
  * derivable from the schema. `invoice_date` duplicated `created_at` and was safe to drop;
- * `products.weight_kg` had moved into `dimensions.weight` and was not; `fcp_ecommerce_carts.token`
+ * `products.weight_kg` had moved into `dimensions.weight` and was not; `fcp_acme_carts.token`
  * is undeclared, non-null on every row, and a live capability secret. A reaper that dropped empty
  * columns would have taken `token` on a fresh site, where it is empty at exactly the moment anything
  * looked. So this records what it found, with the row counts beside it, and a platform admin decides.
@@ -176,7 +176,7 @@ export class SchemaReconciliationService {
    *
    * Without this the queue only ever grows, and a stale entry is not merely noise — it is the harm
    * this feature exists to prevent, deferred. Measured: an early build judged each table at its own
-   * sync moment and recorded six SEO columns on `fcp_cms_pages` that the SEO plugin actively
+   * sync moment and recorded six SEO columns on `fcp_orbit_pages` that the SEO plugin actively
    * declares. Once the detection was corrected they stopped being reported, but they SAT IN THE
    * QUEUE, where an operator would eventually have approved dropping a live column.
    *

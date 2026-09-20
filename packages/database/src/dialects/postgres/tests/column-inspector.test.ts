@@ -22,7 +22,7 @@ describe('PostgresColumnInspector.stats — the statement', () => {
   it('NEVER uses max(), which does not exist for jsonb or boolean', async () => {
     const { issued, run } = capture();
 
-    await new PostgresColumnInspector(run).stats('fcp_ecommerce_products', 'license_product');
+    await new PostgresColumnInspector(run).stats('fcp_acme_products', 'license_product');
 
     // `max(jsonb)` and `max(boolean)` are hard errors in Postgres, and the schema builder maps
     // json/relationship/upload/richText to JSONB and boolean/checkbox to BOOLEAN — so a sample
@@ -73,8 +73,8 @@ describe('PostgresColumnInspector.stats — the statement', () => {
   it('drop emits exactly one DROP COLUMN and nothing else', async () => {
     const { issued, run } = capture();
 
-    await new PostgresColumnInspector(run).drop('fcp_hub_clients', 'custom_rates');
+    await new PostgresColumnInspector(run).drop('fcp_quill_clients', 'custom_rates');
 
-    expect(issued).toEqual(['ALTER TABLE "fcp_hub_clients" DROP COLUMN IF EXISTS "custom_rates"']);
+    expect(issued).toEqual(['ALTER TABLE "fcp_quill_clients" DROP COLUMN IF EXISTS "custom_rates"']);
   });
 });

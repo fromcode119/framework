@@ -279,6 +279,7 @@ export { TenantArchiveManifest } from '@core/tenant/provisioning/tenant-archive-
 export { TenantArchiveLayout } from '@core/tenant/provisioning/tenant-archive-layout';
 export { TenantImportPlanner } from '@core/tenant/provisioning/tenant-import-planner';
 export { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
+export { StandaloneImportExecutor } from '@core/tenant/provisioning/standalone-import-executor';
 export { TenantImportExecutor } from '@core/tenant/provisioning/tenant-import-executor';
 export { TenantImportResult } from '@core/tenant/provisioning/tenant-import-result';
 export { TenantEraser } from '@core/tenant/provisioning/tenant-eraser';

@@ -104,7 +104,7 @@ export class RecentEditsService {
   /**
    * A collection's own words for itself, in the order an operator would recognise. Falls through to
    * the prettified table name, because plugin collections are frequently registered with the table
-   * name AS the slug — taking `slug` on trust printed "fcp_hub_documents" in the console.
+   * name AS the slug — taking `slug` on trust printed "fcp_quill_documents" in the console.
    */
   private static labelOf(collection: Record<string, any>): string {
     const candidates = [
@@ -121,7 +121,7 @@ export class RecentEditsService {
     return '';
   }
 
-  /** `fcp_hub_documents` → `Documents`; `blogPosts` → `Blog posts`. */
+  /** `fcp_quill_documents` → `Documents`; `blogPosts` → `Blog posts`. */
   private static prettify(value: string): string {
     const words = String(value || '')
       .replace(/^fcp_[a-z0-9]+_/i, '')

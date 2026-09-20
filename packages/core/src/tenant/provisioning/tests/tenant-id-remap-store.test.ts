@@ -41,11 +41,11 @@ describe('TenantIdRemapStore', () => {
 
   it('records one row per mapping, for the tables that were actually remapped', async () => {
     const db = fakeDb();
-    const remap = remapOf('fcp_ecommerce_orders', [['157', '554'], ['158', '555']]);
+    const remap = remapOf('fcp_acme_orders', [['157', '554'], ['158', '555']]);
 
     expect(await new TenantIdRemapStore(db).record('acme', remap)).toBe(2);
-    expect(db.executed.join(' ')).toContain("('acme', 'fcp_ecommerce_orders', '157', '554')");
-    expect(db.executed.join(' ')).toContain("('acme', 'fcp_ecommerce_orders', '158', '555')");
+    expect(db.executed.join(' ')).toContain("('acme', 'fcp_acme_orders', '157', '554')");
+    expect(db.executed.join(' ')).toContain("('acme', 'fcp_acme_orders', '158', '555')");
   });
 
   /**
@@ -55,7 +55,7 @@ describe('TenantIdRemapStore', () => {
   it('says nothing about a table whose ids were preserved', async () => {
     const db = fakeDb();
     const remap = new TenantIdRemap();
-    remap.set('fcp_cms_pages', '1', '1');
+    remap.set('fcp_orbit_pages', '1', '1');
 
     expect(await new TenantIdRemapStore(db).record('acme', remap)).toBe(0);
     expect(db.executed).toHaveLength(0);
@@ -76,13 +76,13 @@ describe('TenantIdRemapStore', () => {
 
   it('answers what an old id became', async () => {
     const store = new TenantIdRemapStore(fakeDb([{ new_id: '554' }]));
-    expect(await store.resolve('acme', 'fcp_ecommerce_orders', '157')).toBe('554');
+    expect(await store.resolve('acme', 'fcp_acme_orders', '157')).toBe('554');
   });
 
   /** An id the archive never carried has no answer, and `null` is that answer — not the id itself. */
   it('answers null for an id it never saw, rather than echoing it back', async () => {
     const store = new TenantIdRemapStore(fakeDb([]));
-    expect(await store.resolve('acme', 'fcp_ecommerce_orders', '999')).toBeNull();
+    expect(await store.resolve('acme', 'fcp_acme_orders', '999')).toBeNull();
   });
 
   /**
@@ -91,22 +91,22 @@ describe('TenantIdRemapStore', () => {
    */
   it('prefers the most recent import when a tenant was imported more than once', async () => {
     const db = fakeDb([{ new_id: '900' }]);
-    await new TenantIdRemapStore(db).resolve('acme', 'fcp_ecommerce_orders', '157');
+    await new TenantIdRemapStore(db).resolve('acme', 'fcp_acme_orders', '157');
     expect(db.executed.join(' ')).toContain('ORDER BY imported_at DESC');
   });
 
   it('rebuilds a usable TenantIdRemap from what was recorded', async () => {
     const db = fakeDb([
-      { table_name: 'fcp_ecommerce_orders', old_id: '157', new_id: '554' },
-      { table_name: 'fcp_ecommerce_orders', old_id: '158', new_id: '555' },
+      { table_name: 'fcp_acme_orders', old_id: '157', new_id: '554' },
+      { table_name: 'fcp_acme_orders', old_id: '158', new_id: '555' },
     ]);
 
     const remap = await new TenantIdRemapStore(db).load('acme');
 
-    expect(remap.isRemapped('fcp_ecommerce_orders')).toBe(true);
-    expect(remap.resolve('fcp_ecommerce_orders', '157')).toBe('554');
+    expect(remap.isRemapped('fcp_acme_orders')).toBe(true);
+    expect(remap.resolve('fcp_acme_orders', '157')).toBe('554');
     // Unchanged for an id it never carried — the same contract the in-flight map has.
-    expect(remap.resolve('fcp_ecommerce_orders', '999')).toBe('999');
+    expect(remap.resolve('fcp_acme_orders', '999')).toBe('999');
   });
 
   /**

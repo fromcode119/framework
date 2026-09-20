@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { StandaloneImportExecutor } from '@fromcode119/core';
 import { TenantAdminState } from '@api/services/tenants/tenant-admin-state';
 import { TenantMembersService } from '@api/services/tenants/tenant-members-service';
 import { TenantPagesService } from '@api/services/tenants/tenant-pages-service';
@@ -150,6 +151,49 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
 
   protected tenantTableCatalog(): TenantTableCatalog {
     return new TenantTableCatalog(this.db, this.manager.registeredCollections.values());
+  }
+
+  /**
+   * Restores an archive into THIS deployment while it still has no sites.
+   *
+   * The gap this closes: a fresh install's Sites screen offers one thing, "adopt this deployment as a
+   * site", and nothing that puts a site's DATA here. So taking a site off the platform onto its own
+   * box meant dropping to a shell for the one step in the middle, on a machine whose admin was
+   * already running and already authenticated.
+   *
+   * WHICH TABLES come from the archive, not from this deployment's policies. A tenant-less deployment
+   * has no policies to ask — that is what makes it tenant-less — so the platform's usual answer to
+   * "which tables hold tenant data" is unavailable here. The archive already lists what it carries.
+   *
+   * Rows land with NO owner, which is what every row of a deployment with no sites looks like. The
+   * sequence afterwards is `adopt`, which stamps them with the new site and asks for the restart that
+   * turns tenancy on. That ordering is the whole reason this does not create a tenant itself: creating
+   * one here would turn tenancy on with the rows still unowned, and they would be invisible to the
+   * very site that just claimed them.
+   */
+  async restoreStandalone(archivePath: string, actor: Record<string, unknown>, transitPassphrase: string | null = null): Promise<{ tables: number; rows: number; warnings: string[] }> {
+    const reader = await TenantArchiveReader.open(archivePath);
+    try {
+      if (reader.manifest.secretsSealed && !transitPassphrase) {
+        throw new Error('This archive\'s secrets were sealed for transit. Enter the passphrase the export used, or the credentials arrive unreadable.');
+      }
+
+      const named = reader.manifest.tables.map((table) => table.name);
+      const tables = await this.tenantTableCatalog().describe(named);
+      const missing = named.filter((name) => !tables.some((table) => table.name === name));
+      if (missing.length) {
+        throw new Error(`This deployment has no table named ${missing.slice(0, 3).join(', ')}${missing.length > 3 ? `, and ${missing.length - 3} more` : ''}. Boot it once so every plugin creates its schema, then restore.`);
+      }
+
+      const warnings: string[] = [];
+      const inserted = await new StandaloneImportExecutor(this.db, tables, this.uploadsDir, transitPassphrase).execute(reader, warnings);
+      const rows = Object.values(inserted).reduce((sum, count) => sum + count, 0);
+
+      await this.record('tenant.restore-standalone', reader.manifest.tenant?.slug ?? 'archive', actor, { archive: path.basename(archivePath), rows, tables: Object.keys(inserted).length });
+      return { tables: Object.keys(inserted).length, rows, warnings };
+    } finally {
+      reader.close();
+    }
   }
 
   protected async tables(): Promise<TenantTableDescriptor[]> {

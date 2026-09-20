@@ -265,7 +265,7 @@ export class SystemSettingDescriptors {
     },
     [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'fcp_analytics_events, fcp_analytics_sessions', description: "Physical table names (comma separated) whose plugin database writes are NOT recorded in the audit log. Seeded with the high-volume analytics tables so telemetry does not drown the trail; clear it and every plugin write is audited.", group: "security" },
+      seed: { value: '', description: "Physical table names (comma separated) whose plugin database writes are NOT recorded in the audit log. Empty means every plugin write is audited. Name a high-volume table here — telemetry, event streams — when its writes would otherwise drown the trail. Seeded empty on purpose: which tables those are depends on what is installed, so it is yours to state.", group: "security" },
     },
 
     // Routing & Features

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 // @ts-ignore -- untyped deep import (lucide ships no declaration for its ESM table); only its keys are read.
 import dynamicIconImports from 'lucide-react/dist/esm/dynamicIconImports.js';
 import lucideIconNames from '@fromcode119/react/icons/lucide-icon-names.generated.json';
-import { LucideIconNodeEmitter } from '@/build/lucide-icon-node-emitter';
+import { LucideIconNodeEmitter } from '@/lib/bundling/lucide-icon-node-emitter';
 
 /**
  * Drift guard for the generated Lucide artefacts (`npm run build:frontend-icons`):

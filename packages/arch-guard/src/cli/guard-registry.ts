@@ -1,5 +1,7 @@
 import { AppTypecheckCommand } from './app-typecheck-command';
 import { ExtendedExtendsCommand } from './extended-extends-command';
+import { DomainTransportFallbackCommand } from './domain-transport-fallback-command';
+import { ExtensionNameCommand } from './extension-name-command';
 import { FileSizeCommand } from './file-size-command';
 import { AppearanceBoundaryCommand } from './appearance-boundary-command';
 import { ClientViewMoveCommand } from './client-view-move-command';
@@ -15,7 +17,12 @@ import { DialectSqlConfinementCommand } from './dialect-sql-confinement-command'
 import { DbFindWhereCommand } from './db-find-where-command';
 import { ReExportCommand } from './re-export-command';
 import { RequestCoercionCommand } from './request-coercion-command';
+import { I18nKeyResolutionCommand } from './i18n-key-resolution-command';
+import { IgnoredSourceCommand } from './ignored-source-command';
 import { ImportsCommand } from './imports-command';
+import { JsonFieldControlCommand } from './json-field-control-command';
+import { SnakePropertyAccessCommand } from './snake-property-access-command';
+import { SnakeTranslationKeyCommand } from './snake-translation-key-command';
 import { InterfacePrefixCommand } from './interface-prefix-command';
 import { OopGuardCommand } from './oop-guard-command';
 import { PluginAliasCommand } from './plugin-alias-command';
@@ -26,9 +33,11 @@ import { PluginUiTypesCommand } from './plugin-ui-types-command';
 import { McpToolSchemaCommand } from './mcp-tool-schema-command';
 import { OneContractPerFileCommand } from './one-contract-per-file-command';
 import { SdkRuntimeExportsCommand } from './sdk-runtime-exports-command';
+import { ScriptPathCommand } from './script-path-command';
 import { SdkBoundaryCommand } from './sdk-boundary-command';
 import { SingleExportModuleCommand } from './single-export-module-command';
 import { SrcArtifactsCommand } from './src-artifacts-command';
+import { SsrStaticImportCommand } from './ssr-static-import-command';
 import { ThemeOverrideBoundaryCommand } from './theme-override-boundary-command';
 import { WorkspaceCheckCommand } from './workspace-check-command';
 import { ArchorCommand } from './arch-guard-command';
@@ -58,6 +67,13 @@ export class GuardRegistry {
     ['declared-fields', DeclaredFieldAssignmentCommand],
     ['dependency-overrides', DependencyOverridesCommand],
     ['dialect-sql-confinement', DialectSqlConfinementCommand],
+    ['domain-transport-fallback', DomainTransportFallbackCommand],
+    ['extension-names', ExtensionNameCommand],
+    ['i18n-keys', I18nKeyResolutionCommand],
+    ['ignored-sources', IgnoredSourceCommand],
+    ['json-field-controls', JsonFieldControlCommand],
+    ['snake-property-access', SnakePropertyAccessCommand],
+    ['snake-translation-keys', SnakeTranslationKeyCommand],
     ['extended-extends', ExtendedExtendsCommand],
     ['file-size', FileSizeCommand],
     ['framework-domain', FrameworkDomainCommand],
@@ -75,9 +91,11 @@ export class GuardRegistry {
     ['re-exports', ReExportCommand],
     ['request-coercion', RequestCoercionCommand],
     ['mcp-tool-schemas', McpToolSchemaCommand],
+    ['script-paths', ScriptPathCommand],
     ['sdk-boundary', SdkBoundaryCommand],
     ['single-export-module', SingleExportModuleCommand],
     ['src-artifacts', SrcArtifactsCommand],
+    ['ssr-static-imports', SsrStaticImportCommand],
     ['theme-override-boundary', ThemeOverrideBoundaryCommand],
     ['workspace-check', WorkspaceCheckCommand],
   ]);

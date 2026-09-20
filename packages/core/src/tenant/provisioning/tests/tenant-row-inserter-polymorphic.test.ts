@@ -10,8 +10,8 @@ import { TenantRowInserter } from '@core/tenant/provisioning/tenant-row-inserter
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 
 const VERSIONS = SystemConstants.TABLE.RECORD_VERSIONS;
-const PRODUCTS = 'fcp_ecommerce_products';
-const PAGES = 'fcp_cms_pages';
+const PRODUCTS = 'fcp_acme_products';
+const PAGES = 'fcp_orbit_pages';
 
 function fakeDb(): { db: IDatabaseManager; inserted: () => Record<string, unknown> } {
   let last: Record<string, unknown> = {};

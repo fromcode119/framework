@@ -4,7 +4,7 @@ import { NamespacedPluginsFacade } from '@core/plugin/namespaced-plugins-facade'
 
 describe('NamespacedPluginsFacade', () => {
   const namespace = 'org.fromcode';
-  const financeApi = {
+  const lumenApi = {
     async getCapabilities() {
       return {
         walletsEnabled: true,
@@ -22,7 +22,7 @@ describe('NamespacedPluginsFacade', () => {
       return targetNamespace === namespace && slug === 'gamma';
     },
     resolve(targetNamespace: string, slug: string) {
-      return targetNamespace === namespace && slug === 'gamma' ? financeApi : null;
+      return targetNamespace === namespace && slug === 'gamma' ? lumenApi : null;
     },
   };
 

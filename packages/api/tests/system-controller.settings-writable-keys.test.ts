@@ -89,12 +89,12 @@ describe('SystemAdminController.updateSettings — measurement_system', () => {
     const res = createRes();
 
     await controller.updateSettings(
-      { body: { [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: 'fcp_analytics_events' }, user: { id: 1 } } as any,
+      { body: { [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: 'fcp_vane_events' }, user: { id: 1 } } as any,
       res,
     );
 
     expect(res.status).not.toHaveBeenCalledWith(400);
-    expect(meta.rows.get(SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES)).toBe('fcp_analytics_events');
+    expect(meta.rows.get(SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES)).toBe('fcp_vane_events');
     expect(SystemSettingsExposureUtils.isExposable(SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES)).toBe(true);
   });
 

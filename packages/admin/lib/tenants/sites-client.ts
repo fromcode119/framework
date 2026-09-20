@@ -118,6 +118,16 @@ export class SitesClient {
     return AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS_IMPORT_EXECUTE, { uploadId, tenant, transitPassphrase });
   }
 
+  /**
+   * Restores an archive into THIS deployment while it still has no sites.
+   *
+   * The rows land with no owner, which is what a deployment with no sites looks like. `adopt` is the
+   * step after: it stamps them with the new site and asks for the restart that turns tenancy on.
+   */
+  static async restoreStandalone(uploadId: string, transitPassphrase = ''): Promise<{ tables: number; rows: number; warnings: string[] }> {
+    return AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS_IMPORT_STANDALONE, { uploadId, transitPassphrase });
+  }
+
   static async adopt(tenant: Record<string, unknown>): Promise<Record<string, any>> {
     return AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS_ADOPT, tenant);
   }

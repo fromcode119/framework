@@ -119,7 +119,7 @@ export class ModuleConstantFold {
     const className = cls.name.text;
 
     // Names the class already declares. A module const that the class re-exposes
-    // (`static canonicalCmsBlocks = canonicalCmsBlocks;`) would otherwise be folded in ON TOP of that
+    // (`static canonicalBlocks = canonicalBlocks;`) would otherwise be folded in ON TOP of that
     // member — a duplicate identifier whose initialiser then refers to itself.
     const declared = new Set(cls.members
       .filter((m) => m.name && ts.isIdentifier(m.name))

@@ -41,6 +41,7 @@ export class TenantAdminRouter extends BaseRouter {
     this.post(S.TENANTS_IMPORT_CHUNK, admin, platform, this.chunkUpload.single('chunk'), this.controller.uploadImportChunk);
     this.post(S.TENANTS_IMPORT_PREVIEW, admin, platform, this.controller.previewImport);
     this.post(S.TENANTS_IMPORT_EXECUTE, admin, platform, this.controller.executeImport);
+    this.post(S.TENANTS_IMPORT_STANDALONE, admin, platform, this.controller.restoreStandalone);
     this.post(S.TENANTS_ADOPT, admin, platform, this.controller.adopt);
     this.get(S.TENANTS_ID, admin, platform, this.controller.get);
     this.patch(S.TENANTS_ID, admin, platform, this.controller.update);

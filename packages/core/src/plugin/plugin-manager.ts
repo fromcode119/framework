@@ -217,7 +217,7 @@ export class PluginManager extends PluginManagerApi implements IPluginManagerInt
     this.hooks.emit(PluginManager.PLUGINS_READY_EVENT, { plugins: active });
 
     // AFTER `plugins:ready`, not before. A plugin declares a field conditionally on a PEER
-    // (`if (licensingApi) fields.push(...)`), and a peer is only resolvable once it has booted — so
+    // (`if (peerApi) fields.push(...)`), and a peer is only resolvable once it has booted — so
     // a sweep that runs earlier sees a field that is genuinely declared, by an ACTIVE plugin, as
     // undeclared. That finding would carry an EMPTY `inactivePluginsAtScan`, which is documented to
     // mean "the picture was complete" — a false positive with its safety caveat missing, which is

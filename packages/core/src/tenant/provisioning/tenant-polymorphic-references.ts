@@ -26,7 +26,7 @@ import { TenantColumnSource } from '@core/tenant/provisioning/enums/tenant-colum
 export class TenantPolymorphicReferences {
   /**
    * `_system_record_versions.ref_collection` stores the physical table name of the record the
-   * snapshot belongs to (`fcp_ecommerce_products`), so the remap of that table is directly
+   * snapshot belongs to (`fcp_acme_products`), so the remap of that table is directly
    * addressable once the row is in hand.
    */
   private static readonly DECLARED: ReadonlyArray<{ table: string; column: string; targetTableColumn: string }> = [

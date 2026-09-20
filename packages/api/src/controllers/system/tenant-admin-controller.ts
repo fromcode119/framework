@@ -170,6 +170,26 @@ export class TenantAdminController extends BaseController {
     }
   }
 
+  /**
+   * Restore an archive into a deployment that has no sites yet.
+   *
+   * Platform-admin guarded like every other route here — it is NOT part of the unauthenticated setup
+   * flow. By the time anyone can reach this an administrator exists, which is the trust boundary this
+   * needs; an endpoint that writes a whole database has no business being open before one does.
+   */
+  async restoreStandalone(req: Request, res: Response): Promise<void> {
+    try {
+      const body = TenantAdminController.body(req);
+      const uploadId = CoercionUtils.toString(body.uploadId);
+      const upload = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
+      const result = await this.service.restoreStandalone(upload.filePath, this.actor(req), TenantAdminController.passphrase(req));
+      ArchiveUploadSessionService.discardSession(uploadId);
+      res.status(201).json(result);
+    } catch (error) {
+      this.fail(res, error);
+    }
+  }
+
   async adopt(req: Request, res: Response): Promise<void> {
     try {
       res.status(201).json(await this.service.adopt(TenantAdminController.identity(TenantAdminController.body(req)), this.actor(req)));

@@ -4,7 +4,7 @@ import request from 'supertest';
 import { AsyncRouteGuard, BaseRouter, Logger } from '@fromcode119/core';
 import { ErrorResponseMiddleware } from '@api/middlewares/error-response-middleware';
 
-/** A plugin's own domain error — the shape `CmsApiError` has. */
+/** A plugin's own domain error — the shape a plugin's own ApiError has. */
 class DomainError extends Error {
   status: number;
 

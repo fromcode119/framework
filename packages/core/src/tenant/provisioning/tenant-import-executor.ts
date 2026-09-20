@@ -15,6 +15,7 @@ import { TenantImportFiles } from '@core/tenant/provisioning/tenant-import-files
 import { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
 import { TenantImportPlanner } from '@core/tenant/provisioning/tenant-import-planner';
 import { TenantImportResult } from '@core/tenant/provisioning/tenant-import-result';
+import { TenantImportRowFilter } from '@core/tenant/provisioning/tenant-import-row-filter';
 import { TenantImportUsers } from '@core/tenant/provisioning/tenant-import-users';
 import { TenantInstalledPluginSlugs } from '@core/tenant/provisioning/tenant-installed-plugin-slugs';
 import { TenantRegistryService } from '@core/tenant/provisioning/tenant-registry-service';
@@ -149,14 +150,7 @@ export class TenantImportExecutor {
    * read them).
    */
   private static rowFilter(table: TenantTableDescriptor, installedPlugins: Set<string>): (row: Record<string, unknown>) => boolean {
-    if (table.name === SystemConstants.TABLE.META) {
-      const platform = new Set(TenantBespokePolicies.platformKeys());
-      return (row) => platform.has(String(row.key ?? ''));
-    }
-    if (table.name === SystemConstants.TABLE.PLUGIN_SETTINGS) {
-      return (row) => !installedPlugins.has(String(row.plugin_slug ?? ''));
-    }
-    return () => false;
+    return TenantImportRowFilter.forTable(table, installedPlugins);
   }
 
   private async installedPluginSlugs(): Promise<Set<string>> {

@@ -6,8 +6,8 @@ import { TenantJsonReferences } from '@core/tenant/provisioning/tenant-json-refe
 import { TenantRowInserter } from '@core/tenant/provisioning/tenant-row-inserter';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 
-const ORDERS = 'fcp_ecommerce_orders';
-const PRODUCTS = 'fcp_ecommerce_products';
+const ORDERS = 'fcp_acme_orders';
+const PRODUCTS = 'fcp_acme_products';
 const COLUMNS: Record<string, string> = { id: 'integer', tenant_id: 'text', items: 'jsonb', metadata: 'jsonb', notes: 'text' };
 
 function collection(fields: unknown[]): { collection: never; pluginSlug: string } {

@@ -28,9 +28,6 @@ Framework package documentation index.
 ### [Backup And Site Transfer](./backup-and-transfer.md)
 Operator guide for the system backup API, constrained restore flow, and site-transfer bundle CLI.
 
-### [Migrating a site onto the platform](./migrating-a-site-onto-the-platform.md)
-A single-tenant deployment becomes one site here: the order of operations, what travels and what does not, how its credentials survive the move, and the traps already paid for.
-
 ### [Certificates and TLS](./certificates-and-tls.md)
 How the platform serves HTTPS: uploading a certificate, where keys are stored, expiry warnings, and the vendor-neutral contract an edge proxy consumes.
 

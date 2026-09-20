@@ -74,7 +74,7 @@ describe('SchemaManager.recordUndeclaredColumns — what may be audited', () => 
       ensureDeclaredNullable: async () => ({ state: 'satisfied', reason: '' }),
     } as any;
 
-    await new SchemaManager(db).syncCollection({ slug: 'fcp_cms_pages', fields: [] } as any);
+    await new SchemaManager(db).syncCollection({ slug: 'fcp_orbit_pages', fields: [] } as any);
 
     expect(insertedWhileWrapped).toBe(true);
   });
