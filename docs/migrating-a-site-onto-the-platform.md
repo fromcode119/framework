@@ -87,6 +87,43 @@ Export without it and the secrets still travel, still unreadable; the export say
 says so, and each integration needs its credential entered again. Import an archive that WAS sealed
 without setting it and the import refuses rather than landing credentials nobody can read.
 
+## Cutover — the one step nothing automates
+
+Everything above produces a COPY. The site is on the platform, holding its real content, and serving
+nobody: it is marked private and non-production, and the host it claims is a staging name. That is
+deliberate — a private site REFUSES the public, so a copy that claimed the live domain early would
+replace the real site with that refusal the moment DNS moved.
+
+The refresh tool never performs this step and never introduces the live host. Cutover is a decision
+about somebody's live shop, taken once, at a time somebody chose.
+
+**Check these first.** Each is a fact you can read, not a judgement:
+
+```sql
+-- the copy exists, is still fenced off, and holds real content
+SELECT id, visibility, environment FROM _system_tenants WHERE id = '<slug>';
+SELECT primary_host, host_aliases FROM _system_tenants WHERE id = '<slug>';
+```
+
+Expect `private` / `non-production`, a primary host that is the STAGING name, and no aliases. Then
+count a few tables for that `tenant_id` and compare them with the source; the refresh tool's `verify`
+stage does this across every numeric column and refuses when the sums differ.
+
+Confirm the live site is still served by the old deployment, and that the platform is healthy, before
+changing anything.
+
+**The change itself** is four fields on the site, in Sites → the site: `primaryHost` becomes the live
+domain, `hostAliases` gains the `www` form if it has one, `visibility` becomes public and
+`environment` becomes production. Then, and only then, DNS moves to the platform.
+
+Order matters in one direction only: the site must be able to answer for the live host BEFORE DNS
+sends anyone there. The reverse — moving DNS first — points the world at a platform that does not yet
+recognise the name.
+
+**Rolling back** is moving DNS back. The old deployment is untouched by any of this and keeps serving
+throughout; nothing in the refresh or the import writes to it. That is what makes the cutover
+reversible in practice, and it stays true only while the old box is left alone.
+
 ## What to expect, and why
 
 - **Ids are kept.** Each site has its own id space — a table's primary key names the site as well as
