@@ -33,6 +33,7 @@ import { PluginUiTypesCommand } from './plugin-ui-types-command';
 import { McpToolSchemaCommand } from './mcp-tool-schema-command';
 import { OneContractPerFileCommand } from './one-contract-per-file-command';
 import { SdkRuntimeExportsCommand } from './sdk-runtime-exports-command';
+import { ScriptPathCommand } from './script-path-command';
 import { SdkBoundaryCommand } from './sdk-boundary-command';
 import { SingleExportModuleCommand } from './single-export-module-command';
 import { SrcArtifactsCommand } from './src-artifacts-command';
@@ -90,6 +91,7 @@ export class GuardRegistry {
     ['re-exports', ReExportCommand],
     ['request-coercion', RequestCoercionCommand],
     ['mcp-tool-schemas', McpToolSchemaCommand],
+    ['script-paths', ScriptPathCommand],
     ['sdk-boundary', SdkBoundaryCommand],
     ['single-export-module', SingleExportModuleCommand],
     ['src-artifacts', SrcArtifactsCommand],
