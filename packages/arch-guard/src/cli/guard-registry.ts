@@ -15,7 +15,11 @@ import { DialectSqlConfinementCommand } from './dialect-sql-confinement-command'
 import { DbFindWhereCommand } from './db-find-where-command';
 import { ReExportCommand } from './re-export-command';
 import { RequestCoercionCommand } from './request-coercion-command';
+import { I18nKeyResolutionCommand } from './i18n-key-resolution-command';
 import { ImportsCommand } from './imports-command';
+import { JsonFieldControlCommand } from './json-field-control-command';
+import { SnakePropertyAccessCommand } from './snake-property-access-command';
+import { SnakeTranslationKeyCommand } from './snake-translation-key-command';
 import { InterfacePrefixCommand } from './interface-prefix-command';
 import { OopGuardCommand } from './oop-guard-command';
 import { PluginAliasCommand } from './plugin-alias-command';
@@ -58,6 +62,10 @@ export class GuardRegistry {
     ['declared-fields', DeclaredFieldAssignmentCommand],
     ['dependency-overrides', DependencyOverridesCommand],
     ['dialect-sql-confinement', DialectSqlConfinementCommand],
+    ['i18n-keys', I18nKeyResolutionCommand],
+    ['json-field-controls', JsonFieldControlCommand],
+    ['snake-property-access', SnakePropertyAccessCommand],
+    ['snake-translation-keys', SnakeTranslationKeyCommand],
     ['extended-extends', ExtendedExtendsCommand],
     ['file-size', FileSizeCommand],
     ['framework-domain', FrameworkDomainCommand],
