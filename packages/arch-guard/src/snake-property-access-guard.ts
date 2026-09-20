@@ -9,8 +9,8 @@ import { SourceTree } from './source-tree';
  * simply unreachable, which is why it survives: nothing fails when it is wrong.
  *
  * PROPERTY ACCESS only, never string literals. A snake_case key inside a third-party payload is
- * correct and common — Stripe's `amount_refunded`, an Econt office's `city_name` — so the rule is
- * about a line reading BOTH spellings of one field, not about the existence of a snake name.
+ * correct and common — a payment processor's `amount_refunded`, a courier's `city_name` — so the
+ * rule is about a line reading BOTH spellings of one field, not about the existence of a snake name.
  *
  * Reports, never gates. Two findings stand today and both are the legitimate third-party case; a
  * rule that cannot tell those from a real duplicate has no business failing a build.
@@ -22,7 +22,7 @@ export class SnakePropertyAccessGuard {
    * The line with every string literal blanked out.
    *
    * The rule is about PROPERTY ACCESS, and a dotted path inside a quoted string is not one. An i18n
-   * key like `'ecommerce.fields.currency_overrides.remove_row'` sitting on the same line as a
+   * key like `'shop.fields.currency_overrides.remove_row'` sitting on the same line as a
    * `this.removeRow(index)` call reads, to a naive regex, as the same field spelled two ways. It is
    * not — and that single shape accounted for most of 115 reported hits when this rule was first run
    * over the whole tree, having previously only ever seen a fraction of it.

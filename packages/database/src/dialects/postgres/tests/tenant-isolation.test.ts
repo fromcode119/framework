@@ -145,7 +145,7 @@ describe('PostgresTenantIsolation.requireOwner', () => {
   it('requires an owner on a table that does not yet', async () => {
     const { ran, run } = fakeRun({ required: false });
 
-    expect(await new PostgresTenantIsolation(run as any).requireOwner('fcp_cms_pages')).toBe(true);
+    expect(await new PostgresTenantIsolation(run as any).requireOwner('tenant_records')).toBe(true);
     expect(ran.some((s) => s.includes('ALTER COLUMN "tenant_id" SET NOT NULL'))).toBe(true);
   });
 
@@ -153,7 +153,7 @@ describe('PostgresTenantIsolation.requireOwner', () => {
   it('does not re-run the alter once the column is already required', async () => {
     const { ran, run } = fakeRun({ required: true });
 
-    expect(await new PostgresTenantIsolation(run as any).requireOwner('fcp_cms_pages')).toBe(true);
+    expect(await new PostgresTenantIsolation(run as any).requireOwner('tenant_records')).toBe(true);
     expect(ran.some((s) => s.includes('SET NOT NULL'))).toBe(false);
   });
 
@@ -164,7 +164,7 @@ describe('PostgresTenantIsolation.requireOwner', () => {
   it('answers false, rather than throwing, while unowned rows still exist', async () => {
     const { run } = fakeRun({ required: false, alterFails: true });
 
-    await expect(new PostgresTenantIsolation(run as any).requireOwner('fcp_cms_pages')).resolves.toBe(false);
+    await expect(new PostgresTenantIsolation(run as any).requireOwner('tenant_records')).resolves.toBe(false);
   });
 
   /**
@@ -174,7 +174,7 @@ describe('PostgresTenantIsolation.requireOwner', () => {
   it('reads the catalog answer in either shape the driver returns it', async () => {
     const { ran, run } = fakeRun({ required: 't' });
 
-    expect(await new PostgresTenantIsolation(run as any).requireOwner('fcp_cms_pages')).toBe(true);
+    expect(await new PostgresTenantIsolation(run as any).requireOwner('tenant_records')).toBe(true);
     expect(ran.some((s) => s.includes('SET NOT NULL'))).toBe(false);
   });
 });
