@@ -74,7 +74,9 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
         // withheld it could only be guessed at from outside the process. Say it once per snapshot,
         // and only for a plugin that HAS a public API: the rest are not peers in the first place and
         // would bury the one line that matters.
-        if (plugin.publicAPI) this.context.logger.debug(`[plugin-host:${this.slug}] peer withheld — ${refusal}`);
+        // The HOST's own logger, not `this.context.logger`: the context is null until the guest has
+        // one, and the plugin-facing logger has no debug level.
+        if (plugin.publicAPI) this.logger.debug(`peer withheld — ${refusal}`);
         continue;
       }
       // Own property names, not `Object.keys`: a class of static methods enumerates as nothing.
