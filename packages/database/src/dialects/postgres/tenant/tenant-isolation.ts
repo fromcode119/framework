@@ -1,4 +1,5 @@
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
+import { TenantOwnershipSql } from '@database/dialects/postgres/tenant/tenant-ownership-sql';
 import { TenantColumn } from '@database/tenant/tenant-column';
 import type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
 import type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-unique-rule.interface';
@@ -92,17 +93,30 @@ export class PostgresTenantIsolation implements ITenantIsolation {
    * only once.
    */
   async requireOwner(table: string): Promise<boolean> {
-    const current = await this.run(TenantIsolationSql.ownerRequiredStatement(table));
+    const current = await this.run(TenantOwnershipSql.ownerRequiredStatement(table));
     const required = current?.[0]?.required;
     if (required === true || required === 't') return true;
 
     try {
-      await this.run(TenantIsolationSql.requireOwnerStatement(table));
+      await this.run(TenantOwnershipSql.requireOwnerStatement(table));
       return true;
     } catch {
       // Unowned rows are present. The caller reports it; failing a boot over it would take the
       // platform down for data that is merely unreachable.
       return false;
+    }
+  }
+
+  async distinctOwners(table: string): Promise<string[]> {
+    const { relax, owners, restore } = TenantOwnershipSql.distinctOwnerStatements(table);
+    await this.run(relax);
+    try {
+      const rows = await this.run(owners);
+      return (rows ?? []).map((row: any) => String(row.owner));
+    } finally {
+      // Restored whatever happened. Leaving FORCE off would let the OWNER read across sites from then
+      // on, which is a different and worse fault than the one being checked for.
+      await this.run(restore);
     }
   }
 

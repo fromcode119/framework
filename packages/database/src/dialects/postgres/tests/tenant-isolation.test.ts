@@ -178,3 +178,53 @@ describe('PostgresTenantIsolation.requireOwner', () => {
     expect(ran.some((s) => s.includes('SET NOT NULL'))).toBe(false);
   });
 });
+
+/**
+ * Before isolation is REMOVED, the deployment has to know whose data it is removing it from.
+ *
+ * "No tenants" is not "one customer's data": deleting a site removes its row, not its rows. And the
+ * question cannot be asked directly — measured as the real owner role, with FORCE on and no site
+ * bound, a count over the table returns 0 rows and 0 owners while the table actually holds two. FORCE
+ * is what makes the policy apply to the owner as well, so it comes off for the read and goes back on.
+ */
+describe('PostgresTenantIsolation.distinctOwners', () => {
+  const recording = (owners: string[] = [], fails = false) => {
+    const ran: string[] = [];
+    const run = async (statement: string) => {
+      ran.push(statement);
+      if (statement.includes('SELECT DISTINCT')) {
+        if (fails) throw new Error('nope');
+        return owners.map((owner) => ({ owner }));
+      }
+      return [];
+    };
+    return { ran, run };
+  };
+
+  it('reads the owners with FORCE lifted, and puts it back', async () => {
+    const { ran, run } = recording(['site-a', 'site-b']);
+
+    expect(await new PostgresTenantIsolation(run as any).distinctOwners('pages')).toEqual(['site-a', 'site-b']);
+    expect(ran[0]).toContain('NO FORCE ROW LEVEL SECURITY');
+    expect(ran[ran.length - 1]).toContain('FORCE ROW LEVEL SECURITY');
+    expect(ran[ran.length - 1]).not.toContain('NO FORCE');
+  });
+
+  /**
+   * Leaving FORCE off would let the owner read across every site from then on — a worse fault than
+   * the one being checked for, and a silent one.
+   */
+  it('puts FORCE back even when the read throws', async () => {
+    const { ran, run } = recording([], true);
+
+    await expect(new PostgresTenantIsolation(run as any).distinctOwners('pages')).rejects.toThrow();
+    expect(ran[ran.length - 1]).toContain('FORCE ROW LEVEL SECURITY');
+    expect(ran[ran.length - 1]).not.toContain('NO FORCE');
+  });
+
+  it('answers empty for a table no site owns rows in', async () => {
+    const { run } = recording([]);
+
+    expect(await new PostgresTenantIsolation(run as any).distinctOwners('pages')).toEqual([]);
+  });
+});

@@ -92,6 +92,22 @@ export class SchemaTenantIsolationService {
     }
     if (byTable.size === 0) return;
 
+    // "No tenants" is not the same as "one customer's data". Deleting a site removes its ROW, not its
+    // rows, so a deployment can reach zero tenants with its tables still holding several customers'
+    // records — and dropping row-level security then makes every one of them readable by whoever is
+    // at the admin. An empty-looking site is recoverable by creating a tenant; showing one customer
+    // another's records is not.
+    const owners = await this.ownersStillPresent([...byTable.keys()]);
+    if (owners.size > 1) {
+      this.logger.error(
+        `Deployment has NO tenants, but its tables still hold rows belonging to ${owners.size} different `
+        + `sites (${[...owners].sort().join(', ')}). REFUSING to remove tenant isolation: without it every `
+        + 'one of those sites\' records would be readable together. The site will read empty until a '
+        + 'tenant exists again — create one, or remove the data that belongs to the sites that are gone.',
+      );
+      return;
+    }
+
     this.logger.warn(
       `Deployment has NO tenants, but ${byTable.size} table(s) still carry tenant isolation. `
       + 'On a tenant-less deployment no tenant is bound to the connection, so those policies match '
@@ -104,6 +120,31 @@ export class SchemaTenantIsolationService {
         this.logger.warn(`Could not remove tenant isolation from "${table}": ${error?.message || error}`);
       });
     }
+  }
+
+  /**
+   * Which sites still own rows, across the tables that are about to lose their isolation.
+   *
+   * Stops at two, because two is already the answer — the question is only ever "is this more than one
+   * customer's data", and on a platform-sized schema there is no reason to scan every remaining table
+   * to learn something the second one already proved.
+   *
+   * A table that cannot be counted is skipped rather than treated as safe: the decision this feeds is
+   * whether to REMOVE a protection, so an unknown must never read as "no other owner".
+   */
+  private async ownersStillPresent(tables: string[]): Promise<Set<string>> {
+    const found = new Set<string>();
+
+    for (const table of tables) {
+      try {
+        for (const owner of await this.db.tenantIsolation.distinctOwners(table)) found.add(owner);
+        if (found.size > 1) break;
+      } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
+        this.logger.warn(`Could not read the sites owning rows in "${table}": ${error?.message || error}`);
+      }
+    }
+
+    return found;
   }
 
   /**

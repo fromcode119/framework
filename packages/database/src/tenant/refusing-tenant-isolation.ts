@@ -58,6 +58,10 @@ export class RefusingTenantIsolation implements ITenantIsolation {
     return this.refuse('require an owner on every row of', table);
   }
 
+  async distinctOwners(table: string): Promise<string[]> {
+    return this.refuse('count the sites owning rows in', table);
+  }
+
   async countUnassigned(table: string): Promise<number> {
     return this.refuse('count unassigned rows in', table);
   }
