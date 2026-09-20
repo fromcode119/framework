@@ -48,16 +48,56 @@ export class GuardScope {
    */
   static areas(repoRoot: string): { area: string; dir: string }[] {
     const scope = String(process.env[GuardScope.ENV] ?? '').trim();
-    if (!scope) return GuardScope.all(repoRoot);
+    if (!scope) return GuardScope.onDisk(GuardScope.all(repoRoot), 'the default sweep');
 
     const byName = GuardScope.all(repoRoot).filter((entry) => entry.area === scope);
-    if (byName.length) return byName;
+    if (byName.length) return GuardScope.onDisk(byName, `${GuardScope.ENV}="${scope}"`);
 
     const dir = path.resolve(scope);
     if (!fs.statSync(dir, { throwIfNoEntry: false })?.isDirectory()) {
       throw new Error(`[arch-guard] ${GuardScope.ENV}="${scope}" is neither an area nor a directory.`);
     }
     return [{ area: GuardScope.areaOf(dir, repoRoot), dir }];
+  }
+
+  /**
+   * The entries that exist — and a HARD FAILURE when the framework's own source is not among them.
+   *
+   * Every guard here reports per area, and an area with no files reports `0 — clean`. So a run
+   * pointed at a directory that does not exist does not fail: it PASSES, for the same reason an
+   * empty room has nothing wrong with it. That is indistinguishable from real success in the log,
+   * which is the one thing a guard must never be.
+   *
+   * It is not hypothetical. `repoRoot` is derived as `cwd/../..`, which only resolves when the
+   * command runs from `framework/Source`. From a git worktree it resolves one level short, every
+   * framework path becomes `framework/framework/Source/...`, and all eight guards report clean. A
+   * 448-line file planted in `config/` to test exactly this went undetected, and the green that
+   * followed would have been trusted.
+   *
+   * The two kinds of absence are not the same, so they are not treated the same:
+   *
+   *  - `packages/` and `config/` are the framework's OWN source. If they are missing, the
+   *    invocation is wrong — wrong cwd, wrong root — and nothing it reports means anything. Throw.
+   *  - `plugins/`, `themes/` and `appearance/` are extension trees that legitimately are not
+   *    checked out beside a standalone framework clone. Absent is a fact about that checkout, not
+   *    an error, so they are skipped quietly.
+   *
+   * Asking for an area BY NAME is different again: naming `plugins` when there is no `plugins/`
+   * is a broken request, and `context` says which invocation to blame.
+   */
+  private static onDisk(entries: { area: string; dir: string }[], context: string): { area: string; dir: string }[] {
+    const exists = (dir: string): boolean => fs.statSync(dir, { throwIfNoEntry: false })?.isDirectory() === true;
+    const missing = entries.filter((entry) => !exists(entry.dir));
+    const fatal = missing.filter((entry) => entry.area === 'framework' || entries.length === 1);
+
+    if (fatal.length) {
+      throw new Error(
+        `[arch-guard] ${context} resolved to ${fatal.length} director${fatal.length === 1 ? 'y' : 'ies'} that do not exist:\n`
+        + fatal.map((entry) => `  ${entry.area}: ${entry.dir}`).join('\n')
+        + '\nNothing would be scanned, and every guard would report clean. Run from framework/Source.',
+      );
+    }
+    return entries.filter((entry) => exists(entry.dir));
   }
 
   /**
