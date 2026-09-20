@@ -6,6 +6,7 @@ import { PhysicalTableNameUtils } from '@fromcode119/database';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import { SecretService } from '@core/security/secret-service';
+import { SecretTransitResealer } from '@core/security/secret-transit-resealer';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
@@ -119,7 +120,7 @@ export class TenantImportPlanner {
       ? { slug: reader.manifest.theme.slug, archiveVersion: reader.manifest.theme.version, installedVersion: this.installed.themes.get(reader.manifest.theme.slug) ?? null }
       : null;
     if (theme && !theme.installedVersion) warnings.push(`Theme "${theme.slug}" is not installed here; the site renders with no theme until one is activated.`);
-    await this.warnUnreadableSecrets(reader, warnings);
+    const secretsArrive = await this.warnUnreadableSecrets(reader, warnings);
 
     const users = await this.planUsers(reader);
     const files = this.planFiles(reader);
@@ -154,7 +155,7 @@ export class TenantImportPlanner {
 
     return new TenantImportPlan(
       reader.manifest, tables, plugins, theme, users, files, blockers, warnings, exportWarnings,
-      metaRowsExcluded, pluginSettingsRowsExcluded,
+      metaRowsExcluded, pluginSettingsRowsExcluded, secretsArrive,
     );
   }
 
@@ -221,25 +222,39 @@ export class TenantImportPlanner {
    * between an operator who re-enters one password and one who spends days on a courier that
    * answers "no cities" because its username resolved to nothing.
    */
-  private async warnUnreadableSecrets(reader: TenantArchiveReader, warnings: string[]): Promise<void> {
+  private async warnUnreadableSecrets(reader: TenantArchiveReader, warnings: string[]): Promise<boolean> {
     let rows = 0;
+    let readable = true;
     for await (const row of reader.rows(SystemConstants.TABLE.META)) {
-      if (SecretService.carriesEncryptedValue(row.value)) rows += 1;
+      if (!SecretService.carriesEncryptedValue(row.value)) continue;
+      rows += 1;
+      // Asked, not assumed. An archive exported and re-imported on the same platform shares a key,
+      // and its secrets open here perfectly well — telling that operator to re-enter every password
+      // is worse than saying nothing.
+      if (readable && !SecretTransitResealer.readableHere(row.value)) readable = false;
     }
-    if (rows === 0) return;
+    if (rows === 0) return true;
     if (reader.manifest.secretsSealed) {
       warnings.push(
         `${rows} setting row(s) carry a secret. This archive was sealed for transit, so they are `
         + 'taken into this deployment\'s own key during the import and each integration works as soon '
         + 'as it finishes — provided the import is given the same passphrase the export used.',
       );
-      return;
+      return true;
+    }
+    if (readable) {
+      warnings.push(
+        `${rows} setting row(s) carry a secret. This deployment's own key opens them, so each `
+        + 'integration arrives configured and working.',
+      );
+      return true;
     }
     warnings.push(
       `${rows} setting row(s) carry a secret encrypted by the deployment that exported them. `
       + 'They are imported as they are, but this deployment has its own key and cannot read them, '
       + 'so each affected integration stays unconfigured until its secret is set again here.',
     );
+    return false;
   }
 
   /** Shared with the executor so the preview and the run decide the same way from the same numbers. */
