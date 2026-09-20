@@ -1,4 +1,4 @@
-// Barrel for the `@fromcode119/database` browser alias (config/next-config-env.js `getServerOnlyStubPackages`):
+// Barrel for the `@fromcode119/database` browser alias (config/next-config-aliases.ts `getServerOnlyStubPackages`):
 // every value the browser-compiled core sources import from the package, as an empty class each.
 export { BaseMigration } from '@core/browser-stubs/database/base-migration';
 export { NamingStrategy } from '@core/browser-stubs/database/naming-strategy';

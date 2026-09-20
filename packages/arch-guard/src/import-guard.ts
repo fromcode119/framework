@@ -211,6 +211,10 @@ export class ImportGuard {
   static scan(repoRoot: string, framework: string): { broken: string[]; style: string[] } {
     const areas = [
       path.join(framework, 'packages'),
+      // `config/` sits beside `packages/`, not under it — the blind spot that let next-config-env.ts
+      // grow to 448 lines before anything measured it. Scanned unconditionally, like the rest of this
+      // list: this guard predates `GuardScope` scoping and always covers the whole framework tree.
+      path.join(framework, 'config'),
       path.join(repoRoot, 'plugins'),
       path.join(repoRoot, 'themes'),
       path.join(repoRoot, 'appearance'),

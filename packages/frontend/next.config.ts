@@ -1,5 +1,8 @@
 import path from 'node:path';
-import { NextConfigEnv, type NextWebpackConfig, type NextWebpackContext } from '../../config/next-config-env';
+import { NextConfigEnvironment } from '../../config/next-config-environment';
+import { NextConfigAliases } from '../../config/next-config-aliases';
+import type { INextWebpackConfig } from '../../config/interfaces/next-webpack-config.interface';
+import type { INextWebpackContext } from '../../config/interfaces/next-webpack-context.interface';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -9,7 +12,7 @@ const nextConfig = {
   // this file is read, which is why the list is derived (COOKIE_DOMAIN expanded to `**.<domain>`)
   // rather than written down. The admin has carried this since 2026-09-08; the storefront — where
   // there are far more hosts — never did, because it had no dev server to block.
-  allowedDevOrigins: NextConfigEnv.getAllowedDevOrigins(),
+  allowedDevOrigins: NextConfigEnvironment.getAllowedDevOrigins(),
   reactStrictMode: true,
   // `.client` is the client-boundary filename convention: a CLIENT route entry is `page.client.tsx` /
   // `layout.client.tsx` (directive stamped in by scripts/stamp-client-src.mjs), a SERVER one stays `page.tsx`.
@@ -35,14 +38,14 @@ const nextConfig = {
         ],
       },
     },
-    // ONE list, shared with the standalone runtime bundle build (config/next-config-env.js). Never add
+    // ONE list, shared with the standalone runtime bundle build (config/next-config-environment.ts and config/next-config-aliases.ts). Never add
     // an alias here directly.
-    resolveAlias: NextConfigEnv.toTurbopackResolveAlias(NextConfigEnv.getSourceAliases(__dirname), __dirname),
+    resolveAlias: NextConfigAliases.toTurbopackResolveAlias(NextConfigAliases.getSourceAliases(__dirname), __dirname),
   },
   images: {
-    remotePatterns: NextConfigEnv.getRemoteImagePatterns(),
+    remotePatterns: NextConfigEnvironment.getRemoteImagePatterns(),
   },
-  webpack: (config: NextWebpackConfig, { dev, isServer }: NextWebpackContext) => {
+  webpack: (config: INextWebpackConfig, { dev, isServer }: INextWebpackContext) => {
     // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above. `next dev` runs
     // with --webpack, so without this the dev server would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
@@ -64,15 +67,15 @@ const nextConfig = {
     });
 
     // Package -> source aliases (incl. `@` -> this dir): the ONE list shared with the standalone runtime
-    // bundle build, from config/next-config-env.js. Never add an alias here directly.
+    // bundle build, from config/next-config-environment.ts and config/next-config-aliases.ts. Never add an alias here directly.
     Object.assign(
       config.resolve.alias,
-      NextConfigEnv.toWebpackResolveAlias(NextConfigEnv.getSourceAliases(__dirname)),
+      NextConfigAliases.toWebpackResolveAlias(NextConfigAliases.getSourceAliases(__dirname)),
     );
 
     // Stub out all server-only @fromcode119 packages (and express) for ALL Next.js builds.
     // The frontend app never runs these directly — all data access goes via the API server.
-    for (const [pkg, stub] of Object.entries(NextConfigEnv.getServerOnlyStubFiles())) {
+    for (const [pkg, stub] of Object.entries(NextConfigAliases.getServerOnlyStubFiles())) {
       config.resolve.alias[`${pkg}$`] = stub;
     }
 
@@ -94,9 +97,9 @@ const nextConfig = {
     // Polyfill/stub Node.js built-ins that core/src server-only code imports.
     // admin/frontend never execute this code — all server logic runs in the API server.
     // `false` provides an empty module so webpack doesn't crash; a string (async_hooks) is a
-    // replacement module. The list is the shared one in config/next-config-env.js.
+    // replacement module. The list is the shared one in config/next-config-environment.ts and config/next-config-aliases.ts.
     config.resolve.fallback = { ...config.resolve.fallback };
-    for (const [name, fallback] of Object.entries(NextConfigEnv.getNodeBuiltinFallbacks())) {
+    for (const [name, fallback] of Object.entries(NextConfigAliases.getNodeBuiltinFallbacks())) {
       if (typeof fallback === 'string') config.resolve.alias[name] = fallback;
       else config.resolve.fallback[name] = false;
     }

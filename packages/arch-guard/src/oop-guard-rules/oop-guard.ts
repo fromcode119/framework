@@ -36,6 +36,21 @@ export class OopGuard {
   static includesFramework(): boolean {
     return GuardScope.areas(OopGuard.REPO_ROOT).some((entry) => entry.area === 'framework');
   }
+
+  /**
+   * Framework-area roots OTHER than `packages/` itself — today just `config/`.
+   *
+   * `GuardScope` can name more than one directory under the same `'framework'` area (see its own
+   * comment on the `config/` entry); this walks each of those directly as a single pseudo-package,
+   * the same way `extraAreas` treats a scoped single extension, rather than PACKAGES_DIR's
+   * one-subdirectory-per-package split (framework packages are `packages/<pkg>`, `config/` has no
+   * such subdirectories of its own to enumerate).
+   */
+  static extraFrameworkDirs(): string[] {
+    return GuardScope.areas(OopGuard.REPO_ROOT)
+      .filter((entry) => entry.area === 'framework' && entry.dir !== OopGuard.PACKAGES_DIR)
+      .map((entry) => entry.dir);
+  }
   static readonly MODE = process.env.FRAMEWORK_OOP_MODE === 'error' ? 'error' : 'warn';
 
   static isGlueOrEntry(rel: string): boolean {
@@ -220,6 +235,11 @@ export class OopGuard {
     const files: string[] = [];
     OopGuard.walk(path.join(OopGuard.PACKAGES_DIR, pkg), files);
     if (files.length) targets.push({ label: pkg, files });
+  }
+  for (const dir of OopGuard.includesFramework() ? OopGuard.extraFrameworkDirs() : []) {
+    const files: string[] = [];
+    OopGuard.walk(dir, files);
+    if (files.length) targets.push({ label: path.basename(dir), files });
   }
   for (const { area, dir } of OopGuard.extraAreas()) {
     // A TREE's direct subdirectories are its extensions (`plugins/<slug>`); a single extension IS the
