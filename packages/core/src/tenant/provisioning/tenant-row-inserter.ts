@@ -11,7 +11,8 @@ import { SecretTransitResealer } from '@core/security/secret-transit-resealer';
 /**
  * Turns one archived row into one INSERT on the destination table.
  *
- *  - `tenant_id` is stamped with the destination tenant (never copied: the archive omits it).
+ *  - `tenant_id` is stamped with the destination tenant (never copied: the archive omits it), or
+ *    left alone entirely when the destination has no tenants.
  *  - `id` is kept, or replaced through the remap when the table was re-numbered.
  *  - Reference columns are re-pointed through the remap of the table they target.
  *  - Columns the destination lacks are dropped; JSON columns are stringified; booleans that arrive
@@ -41,7 +42,14 @@ export class TenantRowInserter {
   constructor(
     private readonly db: IDatabaseManager,
     private readonly table: TenantTableDescriptor,
-    private readonly tenantId: string,
+    /**
+     * Which site owns the rows, or NULL when the destination has no sites.
+     *
+     * A deployment with no tenants is the product's other shape — one site, no isolation, and on a
+     * fresh install no `tenant_id` column at all. Stamping an owner there would either fail or invent
+     * one, so a null owner writes no ownership and lets the column's own default stand.
+     */
+    private readonly tenantId: string | null,
     private readonly remap: TenantIdRemap,
     private readonly files: TenantImportFiles,
     private readonly warnings: string[] = [],
@@ -67,7 +75,7 @@ export class TenantRowInserter {
         values[column] = SecretTransitResealer.openFromTransit(values[column], this.transitPassphrase);
       }
     }
-    if (this.table.hasTenantColumn) values.tenant_id = this.tenantId;
+    if (this.table.hasTenantColumn && this.tenantId !== null) values.tenant_id = this.tenantId;
 
     const newId = this.table.hasColumn('id') ? this.remap.resolve(this.table.name, row.id) : null;
     if (this.table.hasColumn('id')) values.id = newId;
