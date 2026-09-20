@@ -15,7 +15,7 @@ const nextConfig = {
   allowedDevOrigins: NextConfigEnvironment.getAllowedDevOrigins(),
   reactStrictMode: true,
   // `.client` is the client-boundary filename convention: a CLIENT route entry is `page.client.tsx` /
-  // `layout.client.tsx` (directive stamped in by scripts/stamp-client-src.mjs), a SERVER one stays `page.tsx`.
+  // `layout.client.tsx` (directive stamped in at build time), a SERVER one stays `page.tsx`.
   // Listing `client.tsx`/`client.ts` here makes Next recognize `page.client.tsx` as the route `page`, so no
   // one-line re-export wrapper file is needed. A dir has EITHER page.tsx OR page.client.tsx, never both.
   pageExtensions: ['client.tsx', 'client.ts', 'tsx', 'ts', 'jsx', 'js'],

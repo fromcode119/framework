@@ -18,6 +18,7 @@ import { DbFindWhereCommand } from './db-find-where-command';
 import { ReExportCommand } from './re-export-command';
 import { RequestCoercionCommand } from './request-coercion-command';
 import { I18nKeyResolutionCommand } from './i18n-key-resolution-command';
+import { IgnoredSourceCommand } from './ignored-source-command';
 import { ImportsCommand } from './imports-command';
 import { JsonFieldControlCommand } from './json-field-control-command';
 import { SnakePropertyAccessCommand } from './snake-property-access-command';
@@ -68,6 +69,7 @@ export class GuardRegistry {
     ['domain-transport-fallback', DomainTransportFallbackCommand],
     ['extension-names', ExtensionNameCommand],
     ['i18n-keys', I18nKeyResolutionCommand],
+    ['ignored-sources', IgnoredSourceCommand],
     ['json-field-controls', JsonFieldControlCommand],
     ['snake-property-access', SnakePropertyAccessCommand],
     ['snake-translation-keys', SnakeTranslationKeyCommand],

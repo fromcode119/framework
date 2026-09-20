@@ -39,7 +39,7 @@ class AdminNextConfig {
     NEXT_PUBLIC_FRAMEWORK_VERSION: require('../../package.json').version,
   },
   // `.client` filename convention: a CLIENT route entry is `page.client.tsx` / `layout.client.tsx` (directive
-  // stamped by scripts/stamp-client-src.mjs); a SERVER route stays `page.tsx`. Listing `client.tsx`/`client.ts`
+  // directive stamped at build time); a SERVER route stays `page.tsx`. Listing `client.tsx`/`client.ts`
   // makes Next treat `page.client.tsx` as the route `page` — so no one-line re-export wrapper is needed.
   pageExtensions: ['client.tsx', 'client.ts', 'tsx', 'ts', 'jsx', 'js'],
   // serverExternalPackages intentionally omitted — all server-only @fromcode119/* packages

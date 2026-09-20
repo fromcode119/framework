@@ -82,7 +82,7 @@
     "check:plugin-ui-types": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-types",
     "check:plugin-ui-types:warn": "PLUGIN_UI_TYPES_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-types",
     "build:sdk-types": "cd packages/sdk && node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs dts-bundle -p tsconfig.declarations.json --dist dist",
-    "check:ignored-sources": "node_modules/.bin/tsx scripts/check-ignored-sources.ts"
+    "check:ignored-sources": "node packages/arch-guard/dist/arch-guard-cli.cjs ignored-sources"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1",
