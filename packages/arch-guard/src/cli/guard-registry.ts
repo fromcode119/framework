@@ -1,5 +1,6 @@
 import { AppTypecheckCommand } from './app-typecheck-command';
 import { ExtendedExtendsCommand } from './extended-extends-command';
+import { DomainTransportFallbackCommand } from './domain-transport-fallback-command';
 import { ExtensionNameCommand } from './extension-name-command';
 import { FileSizeCommand } from './file-size-command';
 import { AppearanceBoundaryCommand } from './appearance-boundary-command';
@@ -64,6 +65,7 @@ export class GuardRegistry {
     ['declared-fields', DeclaredFieldAssignmentCommand],
     ['dependency-overrides', DependencyOverridesCommand],
     ['dialect-sql-confinement', DialectSqlConfinementCommand],
+    ['domain-transport-fallback', DomainTransportFallbackCommand],
     ['extension-names', ExtensionNameCommand],
     ['i18n-keys', I18nKeyResolutionCommand],
     ['json-field-controls', JsonFieldControlCommand],

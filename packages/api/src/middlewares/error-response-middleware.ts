@@ -5,7 +5,7 @@ import { AsyncRouteGuard, EnvUtils, Logger } from '@fromcode119/core';
  * The single place that turns an error reaching Express's error channel into an HTTP response.
  *
  * Two rules, and they are not the same rule:
- *  - An error that CARRIES a client status (a domain error such as `CmsApiError(404, …)`) answers with
+ *  - An error that CARRIES a client status (a domain error such as `a plugin's own ApiError(404, …)`) answers with
  *    that status and its own message. Carrying a 4xx is the author stating the message is for the
  *    caller.
  *  - Anything else — an unrecognised throw, or an error carrying a 5xx — answers 500 with a generic
