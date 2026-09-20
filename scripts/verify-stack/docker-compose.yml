@@ -1,0 +1,131 @@
+# Isolated VERIFY stack — a separate Compose PROJECT (`fcverify`) that runs the EXISTING framework images
+# (framework-api:latest, framework-frontend:latest) against their OWN PostgreSQL, their own redis and
+# their own network, with NO Traefik labels and host ports bound to 127.0.0.1 only.
+#
+# POSTGRES, NOT SQLITE, and multi-tenant — because that is what is deployed. SQLite has no tenant
+# isolation strategy, so `TenantMode.configure` refuses to boot with any tenant row and the stack can
+# only run single-tenant there. Verifying single-tenant SQLite proves nothing about a multi-tenant
+# Postgres deployment: row-level security never runs, and a theme seed takes the untenanted install
+# path instead of the tenant-scoped one. The three roles below mirror the shared stack exactly —
+# a superuser that is spent once on role creation, a schema owner for migrations, and a NON-owner,
+# NON-superuser application login, which is the only one RLS actually applies to.
+#
+# It never touches the `framework` project: not its containers, not its .env, not app.db, not the
+# shared redis. Drive it through ./verify-stack.sh (up | seed | down | status), which derives the two
+# env files under $VERIFY_STATE_DIR/env from `docker compose config --format json` of the framework
+# project (read-only) with every *.framework.local URL rewritten to the loopback origins below.
+#
+# Required shell variables (verify-stack.sh exports them): SOURCE_ROOT, VERIFY_STATE_DIR,
+# VERIFY_API_PORT (default 3999), VERIFY_FRONTEND_PORT (default 3998).
+name: fcverify
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      # The image makes POSTGRES_USER a SUPERUSER, so nothing else uses it: the api entrypoint spends
+      # it once per boot on `db bootstrap-roles` to create the owner and app logins, then unsets it.
+      - POSTGRES_USER=fcverify
+      - POSTGRES_PASSWORD=fcverify_local_only
+      - POSTGRES_DB=fcverify
+    volumes:
+      - fcverify_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fcverify -d fcverify"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    networks: [fcverify]
+
+  redis:
+    image: redis:7-alpine
+    networks: [fcverify]
+
+  api:
+    image: ${VERIFY_API_IMAGE:-framework-api:verify}
+    command: npm run start --workspace=@fromcode119/api
+    env_file:
+      - path: ${VERIFY_STATE_DIR}/env/api.env
+        required: true
+    ports:
+      - "127.0.0.1:${VERIFY_API_PORT:-3999}:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "marketplace.framework.local:host-gateway"
+    volumes:
+      # Own data: the SQLite file, uploads and private storage live in the state dir, never in ./data.
+      # The image bakes the checkout's `.env` (whatever database the shared stack currently uses) and the
+      # loader lets that file win over the container environment — mask it, this stack's env_file is the truth.
+      - ${VERIFY_STATE_DIR}/env/empty.env:/app/.env:ro
+      - ${VERIFY_STATE_DIR}/data:/app/data
+      - ${VERIFY_STATE_DIR}/uploads:/app/public/uploads
+      - ${VERIFY_STATE_DIR}/storage-private:/app/storage/private
+      # Extension roots: the SAME host checkout the framework project mounts, so a freshly packed
+      # theme/plugin is what gets verified. Read-only where the api tolerates it (see README).
+      - ${SOURCE_ROOT}/plugins:/app/plugins:${VERIFY_EXT_MOUNT_MODE:-ro}
+      - ${SOURCE_ROOT}/themes:/app/themes:${VERIFY_EXT_MOUNT_MODE:-ro}
+      - ${SOURCE_ROOT}/appearance:/app/appearance:ro
+    depends_on:
+      redis:
+        condition: service_started
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [fcverify]
+
+  frontend:
+    image: ${VERIFY_FRONTEND_IMAGE:-framework-frontend:verify}
+    command: npm run start --workspace=@fromcode119/frontend
+    env_file:
+      - path: ${VERIFY_STATE_DIR}/env/frontend.env
+        required: true
+    ports:
+      - "127.0.0.1:${VERIFY_FRONTEND_PORT:-3998}:3000"
+    volumes:
+      - ${SOURCE_ROOT}/themes:/app/themes:ro
+      - ${SOURCE_ROOT}/plugins:/app/plugins:ro
+    depends_on: [api]
+    # The api asks the frontend to exit-and-restart after a settings change; the policy brings it back.
+    restart: unless-stopped
+    networks: [fcverify]
+
+  # A second frontend on the SAME images and env but with the islands flag forced OFF — the head-parity
+  # and visible-text gates compare the two documents side by side (127.0.0.1:3996 vs :3998).
+  frontend-approuter:
+    image: ${VERIFY_FRONTEND_IMAGE:-framework-frontend:verify}
+    command: npm run start --workspace=@fromcode119/frontend
+    env_file:
+      - path: ${VERIFY_STATE_DIR}/env/frontend.env
+        required: true
+    environment:
+      - STOREFRONT_DOCUMENT_ISLANDS=
+    ports:
+      - "127.0.0.1:${VERIFY_FRONTEND_APPROUTER_PORT:-3996}:3000"
+    volumes:
+      - ${SOURCE_ROOT}/themes:/app/themes:ro
+      - ${SOURCE_ROOT}/plugins:/app/plugins:ro
+    depends_on: [api]
+    restart: unless-stopped
+    networks: [fcverify]
+
+  admin:
+    image: ${VERIFY_ADMIN_IMAGE:-framework-admin:verify}
+    command: npm run start --workspace=@fromcode119/admin
+    env_file:
+      - path: ${VERIFY_STATE_DIR}/env/admin.env
+        required: true
+    ports:
+      - "127.0.0.1:${VERIFY_ADMIN_PORT:-3997}:3000"
+    volumes:
+      - ${SOURCE_ROOT}/themes:/app/themes:ro
+      - ${SOURCE_ROOT}/plugins:/app/plugins:ro
+    depends_on: [api]
+    restart: unless-stopped
+    networks: [fcverify]
+
+networks:
+  fcverify: {}
+
+volumes:
+  # Owned by THIS compose project, so `down -v` on it never touches the shared stack's data.
+  fcverify_pgdata:
