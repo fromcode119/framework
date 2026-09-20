@@ -27,6 +27,34 @@ export class SecretTransitResealer {
     return SecretTransitResealer.walk(value, (secret) => SecretService.encrypt(SecretService.decryptWith(secret, passphrase)));
   }
 
+  /**
+   * Whether EVERY secret inside `value` opens with this deployment's own key.
+   *
+   * An archive's secrets are readable here whenever the export and the import share a key — the
+   * ordinary case when a site is exported and re-imported on the same platform. Without this, the
+   * only thing a preview could say was whether the archive had been SEALED for transit, and an
+   * unsealed one was reported as unreadable on the assumption that the keys differ. That assumption
+   * is wrong exactly when it matters most to the operator, who is then sent to re-enter passwords
+   * that already work.
+   *
+   * A failed open is the answer, not an error: a wrong key fails the GCM auth tag, and a deployment
+   * with no key configured cannot read them either. Both mean "not readable here". Plaintext never
+   * leaves this method.
+   */
+  static readableHere(value: unknown): boolean {
+    let readable = true;
+    SecretTransitResealer.walk(value, (secret) => {
+      if (!readable) return secret;
+      try {
+        SecretService.decrypt(secret);
+      } catch {
+        readable = false;
+      }
+      return secret;
+    });
+    return readable;
+  }
+
   /** How many secrets a value carries — for reporting a count without ever naming or showing one. */
   static count(value: unknown): number {
     let found = 0;

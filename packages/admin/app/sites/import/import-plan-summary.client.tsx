@@ -63,9 +63,20 @@ export class ImportPlanSummary extends PureReactor {
     return out;
   }
 
-  /** Whether the credentials arrive working, which the archive itself records. */
+  /**
+   * Whether the credentials arrive working — the PLAN's measured answer, not the archive's own note.
+   *
+   * `manifest.secretsSealed` is written at export time and cannot know the key of the platform
+   * reading it. An archive exported and re-imported on the same platform is never sealed and its
+   * secrets open fine, so reading the manifest alone told that operator to go and re-enter every
+   * password that already worked. `plan.secretsArrive` is the import actually trying to open them.
+   */
+  private get settingsArrive(): boolean {
+    return this.plan.secretsArrive !== false;
+  }
+
   private get settingsSentence(): string {
-    return this.plan.manifest?.secretsSealed
+    return this.settingsArrive
       ? 'Your integrations arrive configured and working — nothing to enter again.'
       : 'Your integrations arrive, but their passwords were locked to the installation they came from. Open Settings \u2192 Integrations afterwards to enter them again.';
   }
@@ -122,8 +133,8 @@ export class ImportPlanSummary extends PureReactor {
         <div className="fc-import-plan__notes">
           {ImportPlanSummary.note(true, 'Nothing here is deleted', this.alreadyHere)}
           {ImportPlanSummary.note(
-            Boolean(this.plan.manifest?.secretsSealed),
-            this.plan.manifest?.secretsSealed ? 'Your settings come with it' : 'Your settings need a password',
+            this.settingsArrive,
+            this.settingsArrive ? 'Your settings come with it' : 'Your settings need a password',
             this.settingsSentence,
           )}
           {this.worthKnowing.length > 0

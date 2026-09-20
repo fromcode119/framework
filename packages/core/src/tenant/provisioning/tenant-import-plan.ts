@@ -71,6 +71,17 @@ export class TenantImportPlan {
     readonly metaRowsExcluded: number = 0,
     /** Rows of `_system_plugin_settings` the executor will drop: settings of a plugin this platform does not have. */
     readonly pluginSettingsRowsExcluded: number = 0,
+    /**
+     * Whether the integrations will actually work after the import — MEASURED here, by opening the
+     * archive's secrets with this deployment's key, not inferred from the archive.
+     *
+     * `manifest.secretsSealed` cannot answer this. It is written at export time and says only that
+     * the secrets were resealed under a transit passphrase; it knows nothing about the key on the
+     * platform reading it. An archive exported and re-imported on the SAME platform is not sealed
+     * and its secrets open perfectly well, so deciding from the manifest alone sends that operator
+     * to re-enter every password that already works. True when there are no secrets at all.
+     */
+    readonly secretsArrive: boolean = true,
   ) {}
 
   get canExecute(): boolean {
@@ -84,6 +95,7 @@ export class TenantImportPlan {
   toJSON(): Record<string, unknown> {
     return {
       manifest: this.manifest.toJSON(),
+      secretsArrive: this.secretsArrive,
       tables: this.tables,
       plugins: this.plugins,
       theme: this.theme,
