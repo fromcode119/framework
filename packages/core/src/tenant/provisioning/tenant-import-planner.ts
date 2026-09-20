@@ -1,5 +1,4 @@
 import { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-import-id-mode.enum';
-import { TenantImportIdBasis } from '@core/tenant/provisioning/enums/tenant-import-id-basis.enum';
 import fs from 'fs';
 import path from 'path';
 import type { IDatabaseManager } from '@fromcode119/database';
@@ -11,6 +10,9 @@ import { SecretTransitResealer } from '@core/security/secret-transit-resealer';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
+import { TenantImportIdBasis } from '@core/tenant/provisioning/enums/tenant-import-id-basis.enum';
+import { TenantImportIdDecision } from '@core/tenant/provisioning/tenant-import-id-decision';
+import type { ITenantImportIdDecision } from '@core/tenant/provisioning/interfaces/tenant-import-id-decision.interface';
 import { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
 import { TenantInstalledPluginSlugs } from '@core/tenant/provisioning/tenant-installed-plugin-slugs';
 import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-owning-plugin-resolver';
@@ -260,73 +262,11 @@ export class TenantImportPlanner {
   /**
    * Shared with the executor so the preview and the run decide the same way from the same numbers.
    *
-   * An archive keeps its own ids. It used not to be able to: every site's rows shared one table
-   * keyed on `id` alone, so an incoming order 157 collided with whoever already held 157, and the
-   * only way in was to hand out fresh numbers and rewrite every reference that pointed at the old
-   * ones. Migration 049 widened that key to `(tenant_id, id)`, and the collision it was avoiding no
-   * longer exists — a destination site is created by this very import and holds no rows at all.
-   *
-   * Renumbering was never the goal; it was the price of the shared key, and it was expensive. The
-   * rewrite it forces is only correct while the catalog of references is complete, and twice it was
-   * not — a pointer whose target table is named by a sibling column, and an id declared inside a
-   * `json` document. Rows kept numbers belonging to another site's records, and putting them right
-   * meant reconstructing, by hand, a mapping the importer had computed and thrown away.
-   *
-   * Nothing is renumbered now, so there is nothing to rewrite and nothing for a catalog to miss.
-   *
-   * `taken` and `minId` are still measured and still reported. They no longer decide anything, but
-   * they are what an operator is shown about the ids arriving, and a number that stops being
-   * gathered is a number nobody notices going wrong.
-   *
-   * The sequence is still advanced past the highest imported id afterwards — see the executor. That
-   * matters MORE now, not less: preserved ids sit wherever the source left them, and a row created
-   * after the import must not be handed one of them.
+   * The reasoning lives in `TenantImportIdDecision`; this is the name the executor and the tests
+   * already call, kept so the decision has one entry point rather than two.
    */
-  static async decideIds(db: IDatabaseManager, table: TenantTableDescriptor, reader: TenantArchiveReader): Promise<{ mode: TenantImportIdMode; basis: string; taken: number; minId: number | null }> {
-    const state = (await db.queryRaw(TenantSql.sequenceState(table.idSequence as string)))[0] ?? {};
-    const taken = state.is_called === true || state.is_called === 't' ? Number(state.last_value ?? 0) : 0;
-    let minId: number | null = null;
-    for await (const row of reader.rows(table.name)) {
-      const id = Number(row.id);
-      if (Number.isFinite(id) && (minId === null || id < minId)) minId = id;
-    }
-    if (minId === null) return { mode: TenantImportIdMode.PRESERVE, basis: String(TenantImportIdBasis.EMPTY.value), taken, minId };
-
-    if (await TenantImportPlanner.keysPerTenant(db, table.name)) {
-      return { mode: TenantImportIdMode.PRESERVE, basis: String(TenantImportIdBasis.PER_TENANT_KEY.value), taken, minId };
-    }
-
-    // The key here is still `id` alone, so the numbers are shared with every other site and the old
-    // rules apply unchanged: an archive that starts above what this platform has handed out cannot
-    // collide and is let through; anything else has to be renumbered.
-    if (minId > taken) return { mode: TenantImportIdMode.PRESERVE, basis: String(TenantImportIdBasis.ABOVE_SEQUENCE.value), taken, minId };
-    return { mode: TenantImportIdMode.REMAP, basis: String(TenantImportIdBasis.BELOW_SEQUENCE.value), taken, minId };
-  }
-
-  /**
-   * Whether this table gives each site its own id space, asked of the live catalog.
-   *
-   * Not assumed from migration 049 having run. It widens the tables that are tenant-scoped AND carry
-   * row-level security, which is most of them and not all of them — and a table it left alone still
-   * shares one pool of numbers, where keeping the archive's ids would collide with somebody else's
-   * rows. Reading the schema is what keeps the two paths honest about which one a table is on.
-   *
-   * Cached for the life of the process, which is safe for a narrow reason: only a MIGRATION changes a
-   * table's primary key, and migrations run at boot before anything can import. The planner asks once
-   * per table and the executor asks again for the same table, so preview and execution read the same
-   * answer — the property the two of them re-deriving the decision depends on.
-   */
-  private static readonly perTenantKey = new Map<string, boolean>();
-
-  private static async keysPerTenant(db: IDatabaseManager, table: string): Promise<boolean> {
-    // A driver with no tenant isolation has no second site to collide with, so the question does not
-    // arise — and asking anyway would REFUSE rather than answer, which is the point of that default.
-    if (!db.supportsTenantIsolation()) return false;
-    const known = TenantImportPlanner.perTenantKey.get(table);
-    if (known !== undefined) return known;
-    const keyed = await db.tenantIsolation.keysPerTenant(table);
-    TenantImportPlanner.perTenantKey.set(table, keyed);
-    return keyed;
+  static async decideIds(db: IDatabaseManager, table: TenantTableDescriptor, reader: TenantArchiveReader): Promise<ITenantImportIdDecision> {
+    return TenantImportIdDecision.decide(db, table, reader);
   }
 
   private async planUsers(reader: TenantArchiveReader): Promise<{ total: number; existing: number; toCreate: number }> {
