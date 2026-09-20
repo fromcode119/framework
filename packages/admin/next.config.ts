@@ -1,6 +1,9 @@
 import path from 'node:path';
 import fs from 'node:fs';
-import { NextConfigEnv, type NextWebpackConfig, type NextWebpackContext } from '../../config/next-config-env';
+import { NextConfigEnvironment } from '../../config/next-config-environment';
+import { NextConfigAliases } from '../../config/next-config-aliases';
+import type { INextWebpackConfig } from '../../config/interfaces/next-webpack-config.interface';
+import type { INextWebpackContext } from '../../config/interfaces/next-webpack-context.interface';
 
 // Dynamically discover all extensions in the packages directory
 const packagesDir = path.resolve(__dirname, '..');
@@ -8,12 +11,12 @@ const extensions = fs.readdirSync(packagesDir).filter(name => {
   const ext = path.join(packagesDir, name);
   return fs.statSync(ext).isDirectory() && !['core', 'react', 'sdk', 'api', 'admin', 'auth', 'media', 'cache', 'database', 'scheduler'].includes(name);
 });
-const adminBasePath = NextConfigEnv.getAdminBasePath();
+const adminBasePath = NextConfigEnvironment.getAdminBasePath();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: adminBasePath,
-  allowedDevOrigins: NextConfigEnv.getAllowedDevOrigins(),
+  allowedDevOrigins: NextConfigEnvironment.getAllowedDevOrigins(),
   reactStrictMode: true,
   env: {
     // The version the console SHOWS, read from the root package.json this build came from — the same
@@ -68,7 +71,7 @@ const nextConfig = {
     },
   },
   images: {
-    remotePatterns: NextConfigEnv.getRemoteImagePatterns(),
+    remotePatterns: NextConfigEnvironment.getRemoteImagePatterns(),
   },
   async redirects() {
     if (!adminBasePath) {
@@ -151,7 +154,7 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config: NextWebpackConfig, { isServer, dev }: NextWebpackContext) => {
+  webpack: (config: INextWebpackConfig, { isServer, dev }: INextWebpackContext) => {
     // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above. `next dev` runs
     // with --webpack, so without this the dev server would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
@@ -180,11 +183,11 @@ const nextConfig = {
     // through the API server via HTTP. core/src statically imports from these
     // packages; we replace them with a no-op proxy so webpack doesn't chase
     // server-only imports (drizzle-orm, pg, nodemailer, ffmpeg, etc.).
-    for (const [pkg, stub] of Object.entries(NextConfigEnv.getServerOnlyStubFiles())) {
+    for (const [pkg, stub] of Object.entries(NextConfigAliases.getServerOnlyStubFiles())) {
       config.resolve.alias[`${pkg}$`] = stub;
     }
     // async_hooks: `RequestContext` instantiates an AsyncLocalStorage at class-evaluation time.
-    config.resolve.alias['async_hooks'] = NextConfigEnv.getNodeBuiltinFallbacks().async_hooks;
+    config.resolve.alias['async_hooks'] = NextConfigAliases.getNodeBuiltinFallbacks().async_hooks;
 
     config.resolve.alias['@fromcode119/react$'] = path.resolve(__dirname, '../react/src/index.ts');
     config.resolve.alias['@fromcode119/core$'] = path.resolve(__dirname, '../core/src/client.ts');

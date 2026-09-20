@@ -1,7 +1,8 @@
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import type { Alias, UserConfig } from 'vite';
-import { NextConfigEnv } from '../../../config/next-config-env';
+import { NextConfigEnvironment } from '../../../config/next-config-environment';
+import { NextConfigAliases } from '../../../config/next-config-aliases';
 // Relative on purpose, like the line above: Vite loads this config with its own bundler, before any
 // alias applies, and the constants file carries no imports of its own.
 // `@fromcode119/core/constants/*` — core's own narrow public export, NOT its private `@core/*` alias
@@ -21,8 +22,9 @@ import { RuntimeAssetConstants } from '@fromcode119/core/constants/runtime-asset
  *
  * Resolution is the whole risk (STOREFRONT-PERF-BASELINE.md, "islands step 2 — backed out": a second
  * hand-copied alias/stub list drifted and the bundle pulled server code). So this config owns NO list:
- * every alias, server-only stub and Node built-in fallback is read from `config/next-config-env.js`,
- * the same module `next.config.js` reads, and only ADAPTED to Vite's option shape here.
+ * every alias, server-only stub and Node built-in fallback is read from `config/next-config-aliases.ts`
+ * (environment lookups from `config/next-config-environment.ts`), the same modules `next.config.js`
+ * reads, and only ADAPTED to Vite's option shape here.
  *
  * The framework names no UI library: theme and plugin bundles remain separate artifacts loaded at
  * runtime through the registry / import map, exactly as today.
@@ -64,7 +66,7 @@ export class FrontendRuntimeViteConfig {
    * and would turn `@fromcode119/react/x` into `…/index.tsx` (the bug vitest.plugins.config.ts records).
    */
   private static get sourceAliases(): Alias[] {
-    const entries = NextConfigEnv.getSourceAliases(FrontendRuntimeViteConfig.frontendDir);
+    const entries = NextConfigAliases.getSourceAliases(FrontendRuntimeViteConfig.frontendDir);
     const files: Alias[] = [];
     const dirs: Alias[] = [];
     for (const entry of entries) {
@@ -80,7 +82,7 @@ export class FrontendRuntimeViteConfig {
   /** Server-only packages -> the shared no-op stub (bare specifier only, like webpack's `$`). */
   private static get serverOnlyStubAliases(): Alias[] {
     const dir = FrontendRuntimeViteConfig.frontendDir;
-    return Object.entries(NextConfigEnv.getServerOnlyStubFiles() as Record<string, string>).map(([specifier, stub]) => ({
+    return Object.entries(NextConfigAliases.getServerOnlyStubFiles() as Record<string, string>).map(([specifier, stub]) => ({
       find: new RegExp(`^${FrontendRuntimeViteConfig.escape(specifier)}$`),
       replacement: stub,
     }));
@@ -93,8 +95,8 @@ export class FrontendRuntimeViteConfig {
    */
   private static get nodeBuiltinAliases(): Alias[] {
     const dir = FrontendRuntimeViteConfig.frontendDir;
-    const empty = NextConfigEnv.getEmptyModuleFile();
-    return Object.entries(NextConfigEnv.getNodeBuiltinFallbacks()).map(([name, fallback]) => ({
+    const empty = NextConfigAliases.getEmptyModuleFile();
+    return Object.entries(NextConfigAliases.getNodeBuiltinFallbacks()).map(([name, fallback]) => ({
       find: new RegExp(`^(node:)?${FrontendRuntimeViteConfig.escape(name)}$`),
       replacement: fallback === false ? empty : String(fallback),
     }));
@@ -102,10 +104,10 @@ export class FrontendRuntimeViteConfig {
 
   static create(): UserConfig {
     // The SAME environment `next.config.js` builds under: the framework's root `.env` / `.env.local`
-    // (loaded by `NextConfigEnv`, explicit shell variables win). Without this a standalone
+    // (loaded by `NextConfigEnvironment`, explicit shell variables win). Without this a standalone
     // `npm run build:frontend-runtime` baked an EMPTY public API URL where `next build` baked the
     // configured one — two bundles of the same graph disagreeing about where the API lives.
-    NextConfigEnv.initializeEnvironment();
+    NextConfigEnvironment.initializeEnvironment();
     const frontendDir = FrontendRuntimeViteConfig.frontendDir;
     return {
       root: frontendDir,

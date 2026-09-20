@@ -28,6 +28,13 @@ export class GuardScope {
       { area: 'themes', dir: path.join(repoRoot, 'themes') },
       { area: 'appearance', dir: path.join(repoRoot, 'appearance') },
       { area: 'framework', dir: path.join(repoRoot, 'framework', 'Source', 'packages') },
+      // `config/` configures the framework (the Next apps' shared env/alias resolution) but sits
+      // beside `packages/`, not under it — a blind spot that let next-config-env.ts grow to 448
+      // lines, five contracts deep, before anything measured it. A second entry under the SAME
+      // 'framework' area, not a fifth area: every guard here accumulates counts per `area` name
+      // (see e.g. HardcodedCopyGuard.scan), so this folds into the existing framework totals rather
+      // than inventing a new bucket to baseline.
+      { area: 'framework', dir: path.join(repoRoot, 'framework', 'Source', 'config') },
     ];
   }
 

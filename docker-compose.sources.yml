@@ -58,7 +58,7 @@ services:
       - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
       - ./packages/admin/next.config.ts:/app/packages/admin/next.config.ts
       # next.config.ts is only half the config: every shared decision it makes (dev origins, aliases,
-      # base path) lives in config/next-config-env.js. Mounting the one without the other means a change
+      # base path) lives in config/next-config-environment.ts and config/next-config-aliases.ts. Mounting the one without the other means a change
       # to the shared half silently runs against the image's baked copy — which is how the workspace
       # hosts stayed blocked after their fix was written.
       - ./config:/app/config
@@ -92,7 +92,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
     volumes:
       # The four package sources the storefront's webpack aliases compile from `src` — the same list
-      # `config/next-config-env.ts` declares. Without them a change to core, react or the sdk is
+      # `config/next-config-aliases.ts` declares. Without them a change to core, react or the sdk is
       # invisible here however many times it is rebuilt.
       - ./packages/react-class-components/src:/app/packages/react-class-components/src
       - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
