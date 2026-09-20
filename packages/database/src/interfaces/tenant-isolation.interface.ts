@@ -87,6 +87,16 @@ export interface ITenantIsolation {
    */
   requireOwner(table: string): Promise<boolean>;
 
+  /**
+   * Which sites this table's rows belong to (at most a handful — the question is only ever whether
+   * it is more than one).
+   *
+   * Asked before isolation is removed. A deployment can reach zero tenants while its tables still
+   * hold several customers' records — deleting a site removes its row, not its rows — and dropping
+   * row-level security then makes every one of them readable by whoever is at the admin.
+   */
+  distinctOwners(table: string): Promise<string[]>;
+
   /** Rows with no owner — invisible to every tenant, so they must be said out loud. */
   countUnassigned(table: string): Promise<number>;
 
