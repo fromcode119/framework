@@ -12,6 +12,7 @@ import { SitesClient } from '@/lib/tenants/sites-client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
 import { ImportPlanView } from '@/app/sites/import/import-plan-view.client';
+import { ImportStepDone } from '@/app/sites/import/import-step-done.client';
 import { FileDropzone } from '@/components/ui/view/file-dropzone.client';
 
 /**
@@ -20,6 +21,10 @@ import { FileDropzone } from '@/components/ui/view/file-dropzone.client';
  * The preview is not optional. It is the only place the operator learns which tables will be
  * re-numbered, which plugins/themes are missing here, which people already have accounts — before a
  * row is written. Execute is enabled only after a preview with no blockers.
+ *
+ * Each step collapses to one line once it is answered, so the plan — the one thing that needs
+ * reading — is not pushed below two screens of spent form. Reopening a step clears the plan, because
+ * a plan describes the archive and identity it was made from and nothing else.
  */
 export class ImportSitePageClient extends AdminComponent {
   @state file: File | null = null;
@@ -29,6 +34,7 @@ export class ImportSitePageClient extends AdminComponent {
   @state plan: Record<string, any> | null = null;
   @state result: Record<string, any> | null = null;
   @state busy = false;
+  @state editingIdentity = false;
 
   @bound onFile(file: File | null): void {
     this.file = file;
@@ -38,11 +44,20 @@ export class ImportSitePageClient extends AdminComponent {
     this.uploadPercent = 0;
     this.plan = null;
     this.result = null;
+    this.editingIdentity = false;
   }
 
   @bound onChange(values: SiteFormValues): void {
     this.values = values;
     this.plan = null;
+  }
+
+  @bound editIdentity(): void {
+    this.editingIdentity = true;
+  }
+
+  @bound replaceArchive(): void {
+    this.onFile(null);
   }
 
   @bound
@@ -81,6 +96,7 @@ export class ImportSitePageClient extends AdminComponent {
     this.busy = true;
     try {
       this.plan = await SitesClient.previewImport(this.uploadId, this.values.toIdentity());
+      this.editingIdentity = false;
     } catch (err: any) {
       this.notify(NotificationType.ERROR, 'Preview failed', err?.message || 'The import could not be planned.');
     } finally {
@@ -106,8 +122,115 @@ export class ImportSitePageClient extends AdminComponent {
     this.runtime.notify.addNotification({ title, message, type });
   }
 
-  render(): ReactNode {
+  /** What the collapsed identity line says it was answered with — the values the plan was made from. */
+  private get identityValue(): string {
+    const values = this.values;
+    return [values.slug, values.primaryHost, values.environment].filter(Boolean).join(' · ');
+  }
+
+  private renderArchiveStep(): ReactNode {
+    if (this.uploadId && !this.result) {
+      return <ImportStepDone title="Archive" value={`${this.file?.name ?? 'archive'} — read`} actionLabel="Replace" onAction={this.replaceArchive} />;
+    }
+    if (this.result) return null;
+    return (
+      <Card title="1. Archive">
+        <div className="fc-sites__upload">
+          <FileDropzone
+            accept=".tar.gz,.tgz"
+            file={this.file}
+            onSelect={this.onFile}
+            percent={this.uploadPercent}
+            busy={this.busy && !this.uploadId}
+            disabled={this.uploadId !== null}
+            hint="A .tar.gz archive exported from this platform, or written by the tenant-export CLI."
+          />
+          <div className="fc-sites__actions">
+            <Button onClick={this.upload} isLoading={this.busy && !this.uploadId} disabled={!this.file || this.uploadId !== null} icon={<FrameworkIcons.Upload size={14} />}>
+              Upload and read
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  private renderIdentityStep(): ReactNode {
+    if (!this.uploadId || this.result) return null;
+    // Collapsed only once a plan exists for these values: with no plan there is nothing below to
+    // read, so hiding the form would leave the operator on a page with nothing to do.
+    if (this.plan && !this.editingIdentity) {
+      return <ImportStepDone title="Identity" value={this.identityValue} actionLabel="Edit" onAction={this.editIdentity} />;
+    }
+    return (
+      <Card title="2. Identity on this platform">
+        <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} isNew />
+        <div className="fc-sites__actions">
+          <Button variant={ButtonVariant.OUTLINE} onClick={this.preview} isLoading={this.busy} icon={<FrameworkIcons.Eye size={14} />}>Preview</Button>
+        </div>
+      </Card>
+    );
+  }
+
+  private renderPlan(): ReactNode {
+    const plan = this.plan;
+    if (!plan || this.result) return null;
+    const blockers: string[] = plan.blockers ?? [];
+    return (
+      <Card className="fc-import-card" noPadding>
+        <div className="fc-import-card__head">
+          <div>
+            <div className="fc-import-card__title">What this import will do</div>
+          </div>
+          <span className={`fc-import-card__pill fc-import-card__pill--${plan.canExecute ? 'ready' : 'blocked'}`}>
+            <span className="fc-import-card__pill-dot" aria-hidden="true" />
+            {plan.canExecute ? 'Ready to import' : `${blockers.length} blocker(s)`}
+          </span>
+        </div>
+        <div className="fc-import-card__body">
+          <ImportPlanView plan={plan} />
+        </div>
+        <div className="fc-import-card__foot">
+          <span className="fc-import-card__foot-text">
+            {plan.canExecute
+              ? <>Creates <b>{this.values.slug}</b> as a {this.values.environment} site. Nothing already on this platform is touched.</>
+              : <>Resolve the blocker(s) above, then preview again.</>}
+          </span>
+          <Button onClick={this.execute} isLoading={this.busy} disabled={!plan.canExecute} icon={<FrameworkIcons.Download size={14} />}>
+            Import this site
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  private renderResult(): ReactNode {
     const result = this.result;
+    if (!result) return null;
+    return (
+      <Card title="Imported">
+        <p className="fc-sites__text">
+          <strong>{result.tenant?.slug}</strong> — {result.totalRows} rows, {result.members} members, plugins {(result.pluginsEnabled ?? []).join(', ') || 'none'}, theme {result.themeActivated ?? 'none'}.
+          {(result.remappedTables ?? []).length ? ` Re-numbered: ${result.remappedTables.join(', ')}.` : ' Every id was preserved.'}
+        </p>
+        {(result.warnings ?? []).length ? <ul className="fc-sites__warnings">{result.warnings.map((w: string) => <li key={w}>{w}</li>)}</ul> : null}
+        {(result.exportWarnings ?? []).length ? (
+          <details className="fc-import-plan__warnings">
+            <summary>From the export ({result.exportWarnings.length})</summary>
+            <p className="fc-import-plan__rule">
+              Written into the archive when it was exported. They describe what the archive held, not a decision this import made.
+            </p>
+            <ul className="fc-sites__warnings">{result.exportWarnings.map((w: string) => <li key={w}>{w}</li>)}</ul>
+          </details>
+        ) : null}
+        <div className="fc-sites__actions">
+          <Button href={AdminConstants.ROUTES.SITES.DETAIL(String(result.tenant?.id ?? ''))} icon={<FrameworkIcons.Settings size={14} />}>Open the site</Button>
+        </div>
+      </Card>
+    );
+  }
+
+  render(): ReactNode {
     return (
       <div className="fc-sites">
         <CompactPageHeader
@@ -118,68 +241,12 @@ export class ImportSitePageClient extends AdminComponent {
           backHref={AdminConstants.ROUTES.SITES.ROOT}
         />
         <div className="fc-sites__body">
-        <div className="fc-sites__stack">
-          <Card title="1. Archive">
-            <div className="fc-sites__upload">
-              <FileDropzone
-                accept=".tar.gz,.tgz"
-                file={this.file}
-                onSelect={this.onFile}
-                percent={this.uploadPercent}
-                busy={this.busy && !this.uploadId}
-                disabled={this.uploadId !== null}
-                hint="A .tar.gz archive exported from this platform, or written by the tenant-export CLI."
-              />
-              <div className="fc-sites__actions">
-                <Button onClick={this.upload} isLoading={this.busy && !this.uploadId} disabled={!this.file || this.uploadId !== null} icon={<FrameworkIcons.Upload size={14} />}>
-                  {this.uploadId ? 'Uploaded' : 'Upload and read'}
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          {this.uploadId && !result ? (
-            <Card title="2. Identity on this platform">
-              <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} isNew />
-              <div className="fc-sites__actions">
-                <Button variant={ButtonVariant.OUTLINE} onClick={this.preview} isLoading={this.busy} icon={<FrameworkIcons.Eye size={14} />}>Preview</Button>
-              </div>
-            </Card>
-          ) : null}
-
-          {this.plan && !result ? (
-            <Card title="3. What the import will do">
-              <ImportPlanView plan={this.plan} />
-              <div className="fc-sites__actions">
-                <Button onClick={this.execute} isLoading={this.busy} disabled={!this.plan.canExecute} icon={<FrameworkIcons.Download size={14} />}>
-                  {this.plan.canExecute ? 'Import this site' : 'Resolve the blockers first'}
-                </Button>
-              </div>
-            </Card>
-          ) : null}
-
-          {result ? (
-            <Card title="Imported">
-              <p className="fc-sites__text">
-                <strong>{result.tenant?.slug}</strong> — {result.totalRows} rows, {result.members} members, plugins {(result.pluginsEnabled ?? []).join(', ') || 'none'}, theme {result.themeActivated ?? 'none'}.
-                {(result.remappedTables ?? []).length ? ` Re-numbered: ${result.remappedTables.join(', ')}.` : ' Every id was preserved.'}
-              </p>
-              {(result.warnings ?? []).length ? <ul className="fc-sites__warnings">{result.warnings.map((w: string) => <li key={w}>{w}</li>)}</ul> : null}
-              {(result.exportWarnings ?? []).length ? (
-                <details className="fc-import-plan__warnings">
-                  <summary>From the export ({result.exportWarnings.length})</summary>
-                  <p className="fc-import-plan__rule">
-                    Written into the archive when it was exported. They describe what the archive held, not a decision this import made.
-                  </p>
-                  <ul className="fc-sites__warnings">{result.exportWarnings.map((w: string) => <li key={w}>{w}</li>)}</ul>
-                </details>
-              ) : null}
-              <div className="fc-sites__actions">
-                <Button href={AdminConstants.ROUTES.SITES.DETAIL(String(result.tenant?.id ?? ''))} icon={<FrameworkIcons.Settings size={14} />}>Open the site</Button>
-              </div>
-            </Card>
-          ) : null}
-        </div>
+          <div className="fc-sites__stack">
+            {this.renderArchiveStep()}
+            {this.renderIdentityStep()}
+            {this.renderPlan()}
+            {this.renderResult()}
+          </div>
         </div>
       </div>
     );

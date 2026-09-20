@@ -24,6 +24,24 @@
   --fc-warning: #d97706;
   --fc-danger: #e11d48;
 
+  /* Status TINTS: a soft surface, a border, and text that reads on it.
+   *
+   * Declared for BOTH schemes, because a literal hex tint is the one thing that cannot adapt — an
+   * amber `#fffbeb` panel is a near-white block on a `#020617` page, which is exactly what the import
+   * plan's "check after importing" card became in dark mode. Anything that needs a coloured panel
+   * uses these rather than writing the hex again. */
+  --fc-success-soft: #ecfdf5;
+  --fc-success-soft-border: #a7f3d0;
+  --fc-success-strong: #047857;
+  --fc-warning-soft: #fffbeb;
+  --fc-warning-soft-border: #fde68a;
+  --fc-warning-mark: #fef3c7;
+  --fc-warning-strong: #92400e;
+  --fc-danger-soft: #fff1f2;
+  --fc-danger-soft-border: #fecdd3;
+  --fc-danger-mark: #fecdd3;
+  --fc-danger-strong: #9f1239;
+
   /* shadcn-compatible semantic contract. Values are supplied by the active theme at runtime.
    *
    * COLOUR VALUES, not the bare `H S% L%` triplets shadcn ships with. Components consume these
@@ -73,6 +91,19 @@
  * --primary/…) get dark values even when no frontend theme has injected its mapping.
  */
 html.dark {
+  /* The tints, inverted: a dark wash of the same hue with light text on it. Same names, so no
+     component needs a dark-mode rule of its own. */
+  --fc-success-soft: #052e22;
+  --fc-success-soft-border: #14532d;
+  --fc-success-strong: #6ee7b7;
+  --fc-warning-soft: #2a1d05;
+  --fc-warning-soft-border: #78350f;
+  --fc-warning-mark: #451a03;
+  --fc-warning-strong: #fcd34d;
+  --fc-danger-soft: #2b0b12;
+  --fc-danger-soft-border: #7f1d1d;
+  --fc-danger-mark: #4c0519;
+  --fc-danger-strong: #fda4af;
   --fc-surface: #0f172a;
   --fc-surface-muted: #1e293b;
   --fc-canvas: #020617;
@@ -283,7 +314,7 @@ html.dark {
 .fc-site__trigger:disabled { opacity: 0.6; cursor: progress; }
 /* Nothing chosen yet: the eyebrow turns amber so the state reads at a glance, before the words do. */
 .fc-site__trigger--unset { border-style: dashed; }
-.fc-site__trigger--unset .fc-site__eyebrow { color: var(--fc-warning-text, #b45309); }
+.fc-site__trigger--unset .fc-site__eyebrow { color: var(--fc-warning-text, var(--fc-warning-strong)); }
 
 .fc-site__text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .fc-site__eyebrow {
@@ -329,7 +360,7 @@ html.dark {
   flex: none; padding: 0 5px; border-radius: 999px;
   font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
   line-height: 15px; white-space: nowrap;
-  background: var(--fc-warning-surface, #fde68a); color: var(--fc-warning-text, #713f12);
+  background: var(--fc-warning-surface, var(--fc-warning-soft-border)); color: var(--fc-warning-text, #713f12);
 }
 
 .fc-site__manage { display: flex; align-items: center; gap: 6px; margin-top: 4px; padding: 8px 12px; border-top: 1px solid rgba(100, 116, 139, 0.15); font-size: 12px; font-weight: 600; text-decoration: none; color: inherit; opacity: 0.85; }
@@ -354,7 +385,7 @@ html.dark {
 .fc-sites__none { font-size: 12px; opacity: 0.55; font-style: italic; }
 .fc-sites__export { font-size: 12px; font-variant-numeric: tabular-nums; }
 .fc-sites__text { font-size: 13px; line-height: 1.55; margin: 0 0 8px; }
-.fc-sites__text--warn { color: #b45309; }
+.fc-sites__text--warn { color: var(--fc-warning-strong); }
 .fc-sites__members { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .fc-sites__member { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(100, 116, 139, 0.15); }
 .fc-sites__member:last-child { border-bottom: 0; }
@@ -403,28 +434,46 @@ html.dark {
 }
 .fc-sites__danger { border-color: rgba(220, 38, 38, 0.35); }
 .fc-sites__warnings, .fc-sites__blockers { margin: 8px 0; padding-left: 18px; font-size: 12px; line-height: 1.5; }
-.fc-sites__blockers { color: #b91c1c; font-weight: 600; }
-.fc-sites__warnings { color: #92400e; }
+.fc-sites__blockers { color: var(--fc-danger-strong); font-weight: 600; }
+.fc-sites__warnings { color: var(--fc-warning-strong); }
 .fc-site-form { display: flex; flex-direction: column; gap: 12px; }
-/* The import plan's technical half: one fold, not fifty-seven. The summary above answers the
-   decision; this answers "what exactly", and only when asked. */
-/* Counts as tiles, not a run-on line: a number and the word for it, six across, wrapping on a
-   narrow screen. The old line joined every kind with a separator and read as one long sentence. */
-.fc-import-plan__tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin: 8px 0 10px; }
-.fc-import-plan__tile { background: var(--muted, #f4f5f7); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
-.fc-import-plan__tile-count { font-size: 19px; font-weight: 600; line-height: 1.2; }
+/* Counts as tiles, not a run-on line: a number and the word for it, wrapping on a narrow screen.
+   The old line joined every kind with a separator and read as one long sentence. */
+.fc-import-plan__tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); gap: 8px; margin: 8px 0 4px; }
+.fc-import-plan__tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px; display: flex; flex-direction: column; gap: 3px; text-align: left; }
+.fc-import-plan__tile-count { font-size: 21px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .fc-import-plan__tile-label { font-size: 12px; color: var(--muted-foreground); }
-/* One marker per line, so the three statements read as a list without becoming a bullet wall. */
-.fc-import-plan__note-more { display: block; margin-top: 4px; }
-.fc-import-plan__notes { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; }
-.fc-import-plan__note-mark--ok { background: var(--success-muted, #e8f5ee); color: var(--success, #137a4d); }
-.fc-import-plan__note-mark--info { background: var(--warning-muted, #fdf3e3); color: var(--warning, #8a5a00); }
-.fc-import-plan__note { display: flex; gap: 10px; align-items: flex-start; }
-.fc-import-plan__note-mark { flex: 0 0 17px; width: 17px; height: 17px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; margin-top: 2px; }
-.fc-import-plan__detail-count { font-weight: 400; color: var(--muted-foreground); margin-left: 8px; font-size: 12px; }
-.fc-import-plan__detail > summary { font-size: 12px; font-weight: 600; cursor: pointer; opacity: 0.75; margin-top: 8px; }
-.fc-import-plan__detail > summary:hover { opacity: 1; }
-.fc-import-plan__worth-knowing { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+/* The kinds with no human name, as one more count in the same row rather than a line of prose under
+   it — it IS one more count, and reading it as a sentence made it look like a footnote. */
+.fc-import-plan__tile--rest { background: var(--muted); border-style: dashed; cursor: pointer; font: inherit; color: inherit; }
+.fc-import-plan__tile--rest .fc-import-plan__tile-count { color: var(--muted-foreground); }
+.fc-import-plan__tile--rest:hover { border-color: var(--muted-foreground); }
+.fc-import-plan__platform-detail { margin-top: 8px; }
+.fc-import-plan__arrivals-head { display: flex; align-items: baseline; gap: 8px; }
+.fc-import-plan__arrivals-total { font-size: 12px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+
+/* One CARD per statement. These were three run-in paragraphs in one column, which gave a sentence of
+   reassurance and four of homework the same weight — the reader had to parse the block to find out
+   whether there was anything to do. */
+.fc-import-plan__notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; align-items: start; margin-top: 6px; }
+.fc-import-plan__note { border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; background: var(--card); }
+.fc-import-plan__note-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.fc-import-plan__note-head b { font-size: 12.5px; font-weight: 600; }
+.fc-import-plan__note-mark { flex: 0 0 20px; width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+.fc-import-plan__note-body { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--muted-foreground); }
+.fc-import-plan__note-list { margin: 0; padding-left: 16px; font-size: 12.5px; line-height: 1.55; color: var(--muted-foreground); }
+.fc-import-plan__note-list li + li { margin-top: 3px; }
+.fc-import-plan__note--ok .fc-import-plan__note-mark { background: var(--fc-success-soft); color: var(--fc-success-strong); }
+.fc-import-plan__note--act { border-color: var(--fc-warning-soft-border); background: var(--fc-warning-soft); }
+.fc-import-plan__note--act .fc-import-plan__note-mark { background: var(--fc-warning-mark); color: var(--fc-warning-strong); }
+.fc-import-plan__note--act .fc-import-plan__note-body,
+.fc-import-plan__note--act .fc-import-plan__note-list { color: var(--fc-warning-strong); }
+
+/* Blockers DO stop the import, so they are never folded and never a bare list — they are the first
+   thing in the card and they say what to do. */
+.fc-import-plan__blockers { border: 1px solid var(--fc-danger-soft-border); background: var(--fc-danger-soft); border-radius: 10px; padding: 13px 14px; }
+.fc-import-plan__blockers b { font-size: 12.5px; color: var(--fc-danger-strong); }
+.fc-import-plan__blockers ul { margin: 6px 0 0; padding-left: 17px; font-size: 12.5px; line-height: 1.6; color: var(--fc-danger-strong); }
 .fc-site-form__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 16px; }
 /* A field whose label wraps to two lines is taller than its neighbours, and its control used to sit
    that much lower — the row read as a broken line of inputs. Each field is a flex column stretched to
@@ -460,63 +509,125 @@ html.dark {
 .fc-sites__grant-label { display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground); margin-bottom: 8px; }
 .fc-sites__grant-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .fc-sites__grant-row > *:first-child { flex: 1 1 260px; max-width: 360px; }
-.fc-import-plan { display: flex; flex-direction: column; gap: 12px; }
-/* The headline: what arrives, what won't come across, what was already here — ahead of the
-   inventory and the four mode groups below it. */
-.fc-import-plan__summary { display: flex; flex-direction: column; gap: 8px; }
+.fc-import-plan { display: flex; flex-direction: column; gap: 14px; }
+.fc-import-plan__summary { display: flex; flex-direction: column; gap: 6px; }
 .fc-import-plan__summary p { margin: 0; }
-.fc-import-plan__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.fc-import-plan__item { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 4px; }
+.fc-import-plan__arrivals { display: flex; flex-direction: column; gap: 2px; }
+.fc-import-plan__rule { margin: 0; font-size: 12px; line-height: 1.5; color: var(--muted-foreground); max-width: 90ch; }
+.fc-import-plan__warnings > summary { font-size: 12px; cursor: pointer; color: var(--fc-warning-strong); }
 
-/* "Arrives" — a scannable list of counted, human-labelled things, biggest first (see
-   `ImportPlanArrivals`), not the 54-row schema dump this replaced. */
-.fc-import-plan__arrivals { display: flex; flex-direction: column; gap: 4px; }
-/* `gap` (not a trailing space inside each item) carries the spacing between items: flex strips a
-   collapsible space at a line-box edge, so a trailing `' · '` INSIDE an item's own text ran into the
-   next item with no visible gap between them. The separator is its own flex item too, matching the
-   sibling `.fc-import-plan__cols` convention below. */
-.fc-import-plan__arrival-list { margin: 0; display: flex; flex-wrap: wrap; gap: 4px; font-size: 13px; }
-.fc-import-plan__arrival-item strong { font-variant-numeric: tabular-nums; }
-.fc-import-plan__arrival-sep { opacity: 0.6; }
-.fc-import-plan__arrival-total { margin: 0; font-size: 11px; color: var(--fc-text-muted, #64748b); }
-.fc-import-plan__platform-records { font-size: 12px; }
-.fc-import-plan__platform-records > summary { cursor: pointer; color: var(--fc-text-muted, #64748b); }
-.fc-import-plan__platform-records > .fc-import-plan__cols { margin-top: 6px; }
+/* ── The plan card: a header that answers "can I press it", a body, and the action on a strip of its
+   own. The button used to sit inline under the last fold, where a page three screens tall hid it. ── */
+.fc-import-card { overflow: hidden; }
+.fc-import-card__head { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.fc-import-card__title { font-size: 13px; font-weight: 600; }
+.fc-import-card__body { padding: 16px; }
+.fc-import-card__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; background: var(--muted); border-top: 1px solid var(--border); }
+.fc-import-card__foot-text { flex: 1 1 260px; font-size: 12.5px; color: var(--muted-foreground); }
+.fc-import-card__pill { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
+.fc-import-card__pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.fc-import-card__pill--ready { background: var(--fc-success-soft); color: var(--fc-success-strong); }
+.fc-import-card__pill--blocked { background: var(--fc-danger-soft); color: var(--fc-danger-strong); }
 
-.fc-import-plan__tables { display: flex; flex-direction: column; gap: 18px; }
-.fc-import-plan__group { display: flex; flex-direction: column; gap: 6px; }
-/* The rule behind a whole group, said once here instead of repeated down every row. */
-.fc-import-plan__rule { margin: 0; font-size: 12px; line-height: 1.5; color: var(--fc-text-muted, #64748b); max-width: 90ch; }
-.fc-import-plan__count { font-variant-numeric: tabular-nums; opacity: 0.7; }
+/* ── A finished step, as one line. ── */
+.fc-import-step { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 13px; }
+.fc-import-step__tick { flex: 0 0 18px; width: 18px; height: 18px; border-radius: 50%; background: var(--fc-success-soft); color: var(--fc-success-strong); display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.fc-import-step__title { font-weight: 600; }
+.fc-import-step__value { color: var(--muted-foreground); min-width: 0; overflow-wrap: anywhere; }
+.fc-import-step__action { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--primary); background: none; border: 0; padding: 0; cursor: pointer; }
+.fc-import-step__action:hover { text-decoration: underline; }
 
-/* One table per row, its mechanics folded behind its own disclosure (`ImportPlanTableRow`) instead
-   of being first-class columns — this is what used to be `LOWEST ID` / `HANDED OUT HERE` as a table
-   header. A row list wraps naturally at any width, so there is no separate phone layout to keep in
-   sync with it. */
-.fc-import-plan__rows { display: flex; flex-direction: column; }
-.fc-import-plan__row { border-bottom: 1px solid rgba(100, 116, 139, 0.15); padding: 6px 0; }
-.fc-import-plan__row-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; font-size: 12px; }
-.fc-import-plan__row-label { flex: 1 1 24ch; min-width: 0; overflow-wrap: anywhere; }
-.fc-import-plan__row-rows { font-variant-numeric: tabular-nums; color: var(--fc-text-muted, #64748b); white-space: nowrap; }
-.fc-import-plan__row-detail { margin-top: 6px; padding-left: 4px; }
-.fc-import-plan__row-detail > summary { font-size: 11px; cursor: pointer; color: var(--fc-text-muted, #64748b); }
-.fc-import-plan__row-mechanics { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 0; font-size: 12px; }
-.fc-import-plan__row-mechanics > div { display: flex; gap: 6px; }
-.fc-import-plan__row-mechanics dt { color: var(--fc-text-muted, #64748b); }
-.fc-import-plan__row-mechanics dt::after { content: ':'; }
-.fc-import-plan__row-mechanics dd { margin: 0; font-variant-numeric: tabular-nums; }
+/* ── Full detail: four chips, one panel. Three stacked `<details>` at the foot of the card each gave
+   no clue how much was inside, so the decision to open one could not be made before opening it. ── */
+.fc-import-detail { border-top: 1px solid var(--border); padding-top: 12px; }
+.fc-import-detail__head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.fc-import-detail__title { margin: 0; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-foreground); }
+.fc-import-detail__hint { font-size: 12px; color: var(--muted-foreground); }
+.fc-import-detail__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fc-import-detail__chip { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--muted-foreground); border: 1px solid var(--border); background: var(--card); border-radius: 8px; padding: 7px 11px; cursor: pointer; }
+.fc-import-detail__chip:hover { color: var(--foreground); }
+.fc-import-detail__chip-count { font-variant-numeric: tabular-nums; background: var(--muted); border-radius: 5px; padding: 1px 6px; font-size: 11px; }
+.fc-import-detail__chip-caret { font-size: 9px; opacity: 0.7; }
+.fc-import-detail__chip--warn { color: var(--fc-warning-strong); border-color: var(--fc-warning-soft-border); background: var(--fc-warning-soft); }
+.fc-import-detail__chip--warn .fc-import-detail__chip-count { background: var(--fc-warning-mark); }
+.fc-import-detail__chip--open { color: var(--primary); border-color: var(--primary); background: var(--muted); }
+.fc-import-detail__panel { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); overflow: hidden; }
+.fc-import-detail__rule { margin: 0; padding: 12px 14px; font-size: 12.5px; line-height: 1.55; color: var(--muted-foreground); border-bottom: 1px solid var(--border); }
+.fc-import-detail__notes { margin: 0; padding: 0; list-style: none; }
+.fc-import-detail__notes li { display: flex; gap: 9px; padding: 9px 14px; font-size: 12.5px; line-height: 1.55; border-bottom: 1px solid var(--border); }
+.fc-import-detail__notes li:last-child { border-bottom: 0; }
+.fc-import-detail__note-mark { flex: 0 0 17px; width: 17px; height: 17px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+.fc-import-detail__note-mark--warn { background: var(--fc-warning-mark); color: var(--fc-warning-strong); }
+.fc-import-detail__note-mark--info { background: var(--muted); color: var(--primary); }
 
-/* A column list wraps BETWEEN names; `anywhere` is the escape hatch for one name longer than the line.
-   Without it a long identifier clipped mid-word, which is how the old table broke at narrow widths. */
-.fc-import-plan__cols { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; margin-top: 4px; }
-.fc-import-plan__cols + .fc-import-plan__cols { margin-top: 4px; }
-.fc-import-plan__cols code { overflow-wrap: anywhere; }
-/* The physical table name trailing a row's human label — secondary to it, not a second label. */
-.fc-import-plan__table-physical { opacity: 0.6; font-size: 11px; margin-left: 4px; }
-.fc-import-plan__cols-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
-.fc-import-plan__empty > summary { font-size: 12px; cursor: pointer; }
-.fc-import-plan__empty > .fc-import-plan__cols { margin-top: 6px; }
-.fc-import-plan__warnings > summary { font-size: 12px; cursor: pointer; color: #92400e; }
+/* ── Every kind of record, grouped by the ANSWER: does not come across, comes across with something
+   missing, comes across in full. The four mode groups this replaced were three-quarters about ids,
+   which an operator cannot see — every reference moves with a re-numbering. ── */
+.fc-import-rec__intro { margin: 0; padding: 12px 14px; font-size: 12.5px; line-height: 1.55; color: var(--muted-foreground); border-bottom: 1px solid var(--border); }
+.fc-import-rec__bar { padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--muted); }
+.fc-import-rec__search { width: 100%; border: 1px solid var(--border); border-radius: 7px; padding: 6px 10px; font-size: 12.5px; background: var(--card); color: var(--foreground); }
+.fc-import-rec__group { display: flex; align-items: center; gap: 9px; padding: 11px 14px; background: var(--muted); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.fc-import-rec__group-mark { flex: 0 0 19px; width: 19px; height: 19px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+.fc-import-rec__group b { font-size: 12.5px; font-weight: 600; }
+.fc-import-rec__group-count { margin-left: auto; font-size: 11.5px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.fc-import-rec__group--ok .fc-import-rec__group-mark { background: var(--fc-success-soft); color: var(--fc-success-strong); }
+.fc-import-rec__group--part { background: var(--fc-warning-soft); border-color: var(--fc-warning-soft-border); }
+.fc-import-rec__group--part .fc-import-rec__group-mark { background: var(--fc-warning-mark); color: var(--fc-warning-strong); }
+.fc-import-rec__group--part b { color: var(--fc-warning-strong); }
+.fc-import-rec__group--no { background: var(--fc-danger-soft); border-color: var(--fc-danger-soft-border); }
+.fc-import-rec__group--no .fc-import-rec__group-mark { background: var(--fc-danger-soft-border); color: var(--fc-danger-strong); }
+.fc-import-rec__group--no b { color: var(--fc-danger-strong); }
+
+/* A row is a glance: what it is, how many, whether it comes across. */
+.fc-import-rec__row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 14px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.fc-import-rec__row--flat { cursor: default; }
+.fc-import-rec__row:not(.fc-import-rec__row--flat):hover { background: var(--muted); }
+.fc-import-rec__name { font-size: 13px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-import-rec__count { font-size: 12.5px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fc-import-rec__say { font-size: 12px; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+.fc-import-rec__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: 0 0 6px; }
+.fc-import-rec__say--ok { color: var(--fc-success-strong); }
+.fc-import-rec__say--part { color: var(--fc-warning-strong); }
+.fc-import-rec__say--no { color: var(--fc-danger-strong); }
+
+/* An opened row: sentences, then the mechanics behind a button that says what they are. */
+.fc-import-rec__detail { padding: 13px 14px 15px; border-bottom: 1px solid var(--border); background: var(--muted); }
+.fc-import-rec__line { margin: 0 0 8px; font-size: 12.5px; line-height: 1.6; max-width: 72ch; }
+.fc-import-rec__line:last-of-type { margin-bottom: 0; }
+.fc-import-rec__line--warn { color: var(--fc-warning-strong); }
+.fc-import-rec__techwrap { margin-top: 10px; }
+.fc-import-rec__tech { font-size: 11.5px; font-weight: 600; color: var(--muted-foreground); background: none; border: 1px solid var(--border); border-radius: 7px; padding: 5px 10px; cursor: pointer; }
+.fc-import-rec__tech:hover { color: var(--foreground); }
+/* ONE type scale. Label left in the body font, value right, mono only where it is a literal
+   identifier — a bordered pill per value was four borders and three greys in a 40px box. */
+.fc-import-rec__techbox { margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); padding: 9px 12px 11px; }
+.fc-import-rec__dl { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 0 16px; margin: 0; font-size: 12.5px; }
+.fc-import-rec__dl dt { padding: 6px 0; color: var(--muted-foreground); border-top: 1px solid var(--border); }
+.fc-import-rec__dl dd { margin: 0; padding: 6px 0; border-top: 1px solid var(--border); min-width: 0; overflow-wrap: anywhere; }
+.fc-import-rec__dl dt:first-of-type, .fc-import-rec__dl dt:first-of-type + dd { border-top: 0; }
+.fc-import-rec__dl ul { margin: 0; padding: 0; list-style: none; }
+.fc-import-rec__dl ul li + li { margin-top: 3px; }
+/* The admin's own mono token — a different stack here fell back to whatever the OS had, and pulled
+   the arrow glyph from yet another font mid-line. */
+.fc-import-rec__mono { font-family: var(--font-mono, monospace); font-size: 12px; }
+.fc-import-rec__lost { color: var(--fc-warning-strong); }
+
+.fc-import-rec__fold { display: flex; align-items: center; gap: 9px; padding: 11px 14px; font-size: 12.5px; color: var(--muted-foreground); cursor: pointer; border-top: 1px solid var(--border); }
+.fc-import-rec__fold-action { margin-left: auto; font-size: 11.5px; }
+.fc-import-rec__foldbox { padding: 11px 14px 14px; font-size: 12px; line-height: 1.7; color: var(--muted-foreground); }
+.fc-import-rec__foldline { margin: 0 0 4px; }
+
+/* ── Plugins and theme: the missing ones lead, because only they cost the operator anything. ── */
+.fc-import-inv__group { padding: 10px 14px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-foreground); background: var(--muted); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.fc-import-inv__group--bad { color: var(--fc-danger-strong); background: var(--fc-danger-soft); border-color: var(--fc-danger-soft-border); }
+.fc-import-inv__row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+.fc-import-inv__row:last-child { border-bottom: 0; }
+.fc-import-inv__name { min-width: 0; overflow-wrap: anywhere; }
+.fc-import-inv__ver { font-size: 11.5px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.fc-import-inv__meta { font-size: 11.5px; color: var(--muted-foreground); white-space: nowrap; }
+.fc-import-inv__badge { font-size: 11px; font-weight: 600; border-radius: 5px; padding: 2px 7px; white-space: nowrap; }
+.fc-import-inv__badge--ok { background: var(--fc-success-soft); color: var(--fc-success-strong); }
+.fc-import-inv__badge--no { background: var(--fc-danger-soft); color: var(--fc-danger-strong); }
 @media (max-width: 767px) {
   .fc-sites__member, .fc-sites__grant { grid-template-columns: 1fr; }
 }
