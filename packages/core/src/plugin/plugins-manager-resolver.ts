@@ -31,7 +31,28 @@ export class PluginsManagerResolver implements IPluginApiResolver {
    * fail at boot and succeed only on the first request to the registering plugin.
    */
   static isResolvable(plugin: ILoadedPlugin, tenantId: string | null): boolean {
-    if (PluginState.resolve(plugin.state) !== PluginState.ACTIVE || !plugin.publicAPI) return false;
+    return PluginsManagerResolver.refusalReason(plugin, tenantId) === null;
+  }
+
+  /**
+   * WHY this plugin is not resolvable, in words, or `null` when it is.
+   *
+   * The predicate itself lives here so a caller cannot drift from it; what is new is that the answer
+   * can be SAID. A peer that fails any of these simply vanished from the guest's snapshot, and a
+   * cross-plugin call then failed in a way that named neither the peer nor the reason: a courier
+   * search answered "no cities" having asked nobody, and the only way to tell which of three
+   * conditions rejected it was to reason about in-memory state from outside the process.
+   *
+   * Each branch below is a distinct operator-visible situation — not installed, crashed, or not
+   * enabled for this site — and they call for different actions, which is exactly why collapsing
+   * them into one `false` was expensive.
+   */
+  static refusalReason(plugin: ILoadedPlugin, tenantId: string | null): string | null {
+    const slug = String(plugin.manifest?.slug ?? '').trim();
+    if (PluginState.resolve(plugin.state) !== PluginState.ACTIVE) {
+      return `plugin "${slug}" is ${String(plugin.state ?? 'unknown')}, not active`;
+    }
+    if (!plugin.publicAPI) return `plugin "${slug}" exposes no public API`;
     // A plugin whose process is DOWN is absent, not present-and-broken. Neither check above can see
     // that: the record is a spread copy of the host's stubs, so `state` stays ACTIVE and `publicAPI`
     // stays a truthy lazy proxy for the whole of a restart — while that proxy returns `undefined`
@@ -39,11 +60,16 @@ export class PluginsManagerResolver implements IPluginApiResolver {
     // present target to a missing method and was told `"<method>" is not callable`, which reads as
     // a broken peer and, for a boot registration, was recorded as a failure the operator saw. Asked
     // here so the host walk and the guest's own peer snapshot cannot disagree.
-    if (plugin.isRunning && !plugin.isRunning()) return false;
+    if (plugin.isRunning && !plugin.isRunning()) {
+      return `plugin "${slug}" is active but its isolated process is not running`;
+    }
     const tenant = String(tenantId ?? '').trim();
-    if (!tenant) return true;
-    if (!TenantMode.isEnabled()) return true;
-    return PluginTenantAccess.enabledSlugsFor(tenant).has(String(plugin.manifest?.slug ?? '').trim());
+    if (!tenant) return null;
+    if (!TenantMode.isEnabled()) return null;
+    if (!PluginTenantAccess.enabledSlugsFor(tenant).has(slug)) {
+      return `plugin "${slug}" is not enabled for site "${tenant}"`;
+    }
+    return null;
   }
 
   resolve(namespace: string, slug: string): unknown {
