@@ -45,6 +45,9 @@ export class PluginGuest {
     switch (type) {
       case 'boot': return this.start(payload as IPluginGuestBoot);
       case 'invoke': return this.invoke(payload as IPluginInvocation);
+      // Routes this guest serves arrive on its socket, not through `invoke`, so they carry no
+      // envelope. The host pushes the snapshot here instead, and only when it has changed.
+      case 'peers': { this.state.update(payload as Pick<IPluginInvocation, 'peers' | 'enabledPlugins'>); return true; }
       case 'stop': return this.stop();
       case 'ping': return 'pong';
       default: throw new Error(`guest: unknown message "${type}"`);

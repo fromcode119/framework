@@ -115,7 +115,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     this.channel?.close(new Error(`plugin "${this.slug}" process exited (${signal ?? code})`));
     this.channel = null;
     this.guest = null;
-    this.describeResult = null;
+    this.describeResult = null; this.sentPeerSignature = '';
     this.tokens.revokeAll();
     if (this.stopping || this.restarting) return;
     void this.restart(`process exited (${signal ?? code})`);
@@ -142,7 +142,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
 
   /** Kill (if alive), start again, re-init (and re-enable when it was enabled). Shared by restart and reload. */
   protected async relaunch(): Promise<void> {
-    if (this.guest) { this.guest.kill('SIGKILL'); this.guest = null; this.channel?.close(); this.channel = null; this.describeResult = null; }
+    if (this.guest) { this.guest.kill('SIGKILL'); this.guest = null; this.channel?.close(); this.channel = null; this.describeResult = null; this.sentPeerSignature = ''; }
     await this.start();
     if (this.context) {
       this.registrations.resetForRestart(this.context);
@@ -170,7 +170,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     }
     const delayMs = 1000 * 2 ** (this.restarts - 1);
     this.logger.warn(`${reason}; restarting in ${delayMs} ms (attempt ${this.restarts}/${PluginHostState.MAX_RESTARTS}).`);
-    if (this.guest) { this.guest.kill('SIGKILL'); this.guest = null; this.channel?.close(); this.channel = null; this.describeResult = null; }
+    if (this.guest) { this.guest.kill('SIGKILL'); this.guest = null; this.channel?.close(); this.channel = null; this.describeResult = null; this.sentPeerSignature = ''; }
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     try {
       await this.relaunch();
@@ -181,5 +181,37 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
       this.restarting = false;
       void this.restart('restart failed');
     }
+  }
+
+  /**
+   * A guest learns which peers it may call from the envelope of an invocation. An HTTP request does
+   * not travel that way — it goes straight to the guest's socket — so a guest that serves routes used
+   * to answer them against whatever snapshot its last LIFECYCLE call left behind: the one taken at
+   * BOOT, which excludes every sibling that had not finished loading yet. Logistics booted about a
+   * second before logistics-econt and so could never see it, and Econt city search answered an empty
+   * list for every query, for the life of the process.
+   *
+   * The snapshot is therefore refreshed before each forwarded request. Peers are tenant-dependent and
+   * a guest holds exactly one snapshot, so the comparison is against what was last SENT rather than
+   * against any single tenant's view: when it already matches, nothing crosses and the request costs
+   * what it did before.
+   */
+  protected async syncPeers(store: IRequestStore | undefined): Promise<void> {
+    if (!this.channel || this.channel.isClosed) return;
+    const peers = this.peers(store);
+    const enabledPlugins = this.enabledPlugins(store);
+    const signature = PluginHostGuestBridge.peerSignature(peers, enabledPlugins);
+    if (signature === this.sentPeerSignature) return;
+    await this.channel.request('peers', { peers, enabledPlugins }, this.limits.timeoutMs);
+    this.sentPeerSignature = signature;
+  }
+
+  /** Records what an invocation envelope already told the guest, so `syncPeers` does not repeat it. */
+  protected rememberPeerSignature(peers: Record<string, string[]>, enabledPlugins: string[]): void {
+    this.sentPeerSignature = PluginHostGuestBridge.peerSignature(peers, enabledPlugins);
+  }
+
+  private static peerSignature(peers: Record<string, string[]>, enabledPlugins: string[]): string {
+    return JSON.stringify([Object.keys(peers).sort(), [...enabledPlugins].sort()]);
   }
 }

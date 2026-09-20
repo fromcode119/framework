@@ -69,7 +69,8 @@ export class PluginHost extends PluginHostGuestBridge {
     this.logger = new Logger({ namespace: `plugin-host:${slug}` });
     this.tokens = new PluginInvocationTokens();
     this.socketPath = ''; this.guest = null; this.channel = null; this.context = null;
-    this.describeResult = null; this.restarts = 0; this.stopping = false; this.restarting = false;
+    this.describeResult = null;
+    this.sentPeerSignature = ''; this.restarts = 0; this.stopping = false; this.restarting = false;
     this.healthyTimer = null; this.wasEnabled = false; this.initDeferred = false;
     this.settings = settings;
     this.limits = settings.forPlugin(manifest.sandbox);
@@ -238,6 +239,7 @@ export class PluginHost extends PluginHostGuestBridge {
     this.channel?.close();
     this.channel = null;
     this.describeResult = null;
+    this.sentPeerSignature = '';
     this.tokens.revokeAll();
   }
 
@@ -256,6 +258,7 @@ export class PluginHost extends PluginHostGuestBridge {
         peers: this.peers(store),
         enabledPlugins: this.enabledPlugins(store),
       };
+      this.rememberPeerSignature(invocation.peers, invocation.enabledPlugins);
       // About to wait on another process: hand the request's database connection back first. Held
       // through the wait, ten such waits emptied the pool and the guest's own calls then queued behind
       // them — a deadlock until the deadline. The next statement on this side takes a fresh one.
@@ -276,6 +279,7 @@ export class PluginHost extends PluginHostGuestBridge {
       const target = targetPath ?? PluginHost.pluginPath(this.slug, `${req.baseUrl || ''}${req.url || ''}`) ?? req.url;
       // Same reason as in `invoke`: the guest serves this request for as long as it likes; the api's
       // connection must not sit idle in the meantime.
+      await this.syncPeers(store);
       await TenantConnectionScope.releaseCurrent();
       await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), targetPath: target, originalUrl }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
     } finally {
