@@ -19,9 +19,17 @@ import { AuditOutcome, BackupService, CoercionUtils, PluginState, PluginTenantSt
  * is separated because it is the half that touches the filesystem and can destroy data.
  */
 export abstract class TenantArchiveAdmin extends TenantAdminState {
-  async exportTenant(id: string, actor: Record<string, unknown>): Promise<{ archivePath: string; backup: unknown; manifest: unknown }> {
+  /**
+   * `transitPassphrase` seals the archive's secrets so they survive the move to another deployment.
+   *
+   * Without one the credentials still travel, but encrypted under THIS deployment's key, which the
+   * destination does not have — the integration then behaves exactly as if it had never been
+   * configured. The admin could not supply one at all until now, so every archive it produced was
+   * unsealed and every operator moving a site between deployments had to re-enter every password.
+   */
+  async exportTenant(id: string, actor: Record<string, unknown>, transitPassphrase: string | null = null): Promise<{ archivePath: string; backup: unknown; manifest: unknown }> {
     const tenant = await this.requireTenant(id);
-    const result = await this.writeArchive(tenant);
+    const result = await this.writeArchive(tenant, transitPassphrase);
     await this.record('tenant.export', tenant.slug, actor, { id: tenant.id, archive: path.basename(result.archivePath), rows: result.manifest.totalRows });
     return { archivePath: result.archivePath, backup: this.catalog.resolveByPath(result.archivePath), manifest: result.manifest.toJSON() };
   }
@@ -50,13 +58,19 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
     }
   }
 
-  async executeImport(archivePath: string, identityInput: Record<string, unknown>, actor: Record<string, unknown>): Promise<TenantImportResult> {
+  /** `transitPassphrase` must be the one the EXPORT used, when the archive says its secrets were sealed. */
+  async executeImport(archivePath: string, identityInput: Record<string, unknown>, actor: Record<string, unknown>, transitPassphrase: string | null = null): Promise<TenantImportResult> {
     const reader = await TenantArchiveReader.open(archivePath);
     try {
       const identity = TenantImportIdentity.resolve(reader.manifest.tenant as unknown as Record<string, unknown>, identityInput);
       const tables = await this.tables();
       const plan = await this.planner(tables).plan(reader, identity);
-      const result = await new TenantImportExecutor(this.db, this.registry, tables, this.uploadsDir).execute(reader, identity, plan);
+      // Refuse rather than land credentials nobody can read — the same guard the CLI applies. The
+      // failure this exists to end is an integration that behaves as though it were never configured.
+      if (reader.manifest.secretsSealed && !transitPassphrase) {
+        throw new Error('This archive\'s secrets were sealed for transit. Enter the passphrase the export used, or the credentials arrive unreadable.');
+      }
+      const result = await new TenantImportExecutor(this.db, this.registry, tables, this.uploadsDir, transitPassphrase).execute(reader, identity, plan);
       await this.record('tenant.import', result.tenant.slug, actor, { id: result.tenant.id, archive: path.basename(archivePath), rows: result.totalRows, remapped: result.remappedTables });
     await this.gateway.notify();
       return result;
@@ -109,7 +123,7 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
     };
   }
 
-  protected async writeArchive(tenant: TenantRecord): Promise<{ archivePath: string; manifest: TenantArchiveManifest }> {
+  protected async writeArchive(tenant: TenantRecord, transitPassphrase: string | null = null): Promise<{ archivePath: string; manifest: TenantArchiveManifest }> {
     const tables = await this.tables();
     const source = TenantArchiveSource.tenant(this.db, tenant.id, this.uploadsDir);
     const enabled = await new PluginTenantStateService(this.db).listEnabled(tenant.id);
@@ -118,7 +132,7 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
     const themeVersion = this.installed().themes.find((theme) => theme.slug === choice.activeSlug)?.version ?? '';
     const outputPath = path.join(BackupService.getBackupsDirectory(SystemConstants.BACKUPS.TENANTS_SUBDIR), TenantArchiveLayout.archiveName(tenant.slug, new Date()));
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-    return new TenantArchiveWriter(source, tables).write({
+    return new TenantArchiveWriter(source, tables, transitPassphrase).write({
       tenant: { id: tenant.id, slug: tenant.slug, primaryHost: tenant.primaryHost, hostAliases: tenant.hostAliases, state: tenant.state, kind: tenant.kind.value, appearance: tenant.appearance },
       plugins: enabled.map((slug) => ({ slug, version: installed.get(slug) ?? '' })),
       theme: choice.activeSlug ? { slug: choice.activeSlug, version: themeVersion, config: choice.config } : null,

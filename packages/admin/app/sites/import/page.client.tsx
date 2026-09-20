@@ -35,6 +35,8 @@ export class ImportSitePageClient extends AdminComponent {
   @state result: Record<string, any> | null = null;
   @state busy = false;
   @state editingIdentity = false;
+  /** Only ever asked for, and only ever sent, when the archive says its secrets were sealed. */
+  @state transitPassphrase = '';
 
   @bound onFile(file: File | null): void {
     this.file = file;
@@ -109,7 +111,7 @@ export class ImportSitePageClient extends AdminComponent {
     if (!this.uploadId || !this.plan?.canExecute) return;
     this.busy = true;
     try {
-      this.result = await SitesClient.executeImport(this.uploadId, this.values.toIdentity());
+      this.result = await SitesClient.executeImport(this.uploadId, this.values.toIdentity(), this.transitPassphrase);
       this.notify(NotificationType.INFO, 'Site imported', `${this.result?.tenant?.primaryHost} is live for routing — no restart needed.`);
     } catch (err: any) {
       this.notify(NotificationType.ERROR, 'Import failed', err?.message || 'Nothing was imported.');
@@ -190,6 +192,7 @@ export class ImportSitePageClient extends AdminComponent {
         <div className="fc-import-card__body">
           <ImportPlanView plan={plan} />
         </div>
+        {this.renderPassphrase(plan)}
         <div className="fc-import-card__foot">
           <span className="fc-import-card__foot-text">
             {plan.canExecute
@@ -201,6 +204,38 @@ export class ImportSitePageClient extends AdminComponent {
           </Button>
         </div>
       </Card>
+    );
+  }
+
+  /**
+   * Asked for ONLY when the archive says its secrets were sealed.
+   *
+   * An unsealed archive needs nothing typed — its secrets either open with this deployment's own key
+   * or they do not, and the summary already says which. Showing an always-on password box would ask
+   * every operator for something almost none of them have.
+   */
+  private renderPassphrase(plan: Record<string, any>): ReactNode {
+    if (!plan?.manifest?.secretsSealed) return null;
+    return (
+      <div className="fc-import-card__passphrase">
+        <label className="fc-import-card__passphrase-label" htmlFor="fc-transit-passphrase">
+          Archive passphrase
+        </label>
+        <input
+          id="fc-transit-passphrase"
+          type="password"
+          autoComplete="off"
+          className="fc-import-card__passphrase-input"
+          value={this.transitPassphrase}
+          placeholder="The passphrase the export used"
+          onChange={(event) => { this.transitPassphrase = event.target.value; }}
+        />
+        <span className="fc-import-card__passphrase-hint">
+          This archive&rsquo;s settings were locked for the move. Enter the same passphrase the export
+          used and they arrive working; without it the import stops rather than leaving you with
+          integrations nobody can read.
+        </span>
+      </div>
     );
   }
 

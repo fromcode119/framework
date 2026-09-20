@@ -92,9 +92,19 @@ export class TenantAdminController extends BaseController {
     }
   }
 
+  /**
+   * The passphrase that seals an archive's secrets for transit, off the request body.
+   *
+   * Empty becomes `null` rather than an empty string: `''` would seal under a key derived from
+   * nothing, which is not a secret, and would read as "sealed" to every later check.
+   */
+  private static passphrase(req: Request): string | null {
+    return CoercionUtils.toString(TenantAdminController.body(req).transitPassphrase).trim() || null;
+  }
+
   async exportTenant(req: Request, res: Response): Promise<void> {
     try {
-      const result = await this.service.exportTenant(CoercionUtils.toString(req.params.id), this.actor(req));
+      const result = await this.service.exportTenant(CoercionUtils.toString(req.params.id), this.actor(req), TenantAdminController.passphrase(req));
       res.status(201).json({ backup: result.backup, manifest: result.manifest });
     } catch (error) {
       this.fail(res, error);
@@ -152,7 +162,7 @@ export class TenantAdminController extends BaseController {
       const body = TenantAdminController.body(req);
       const uploadId = CoercionUtils.toString(body.uploadId);
       const upload = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
-      const result = await this.service.executeImport(upload.filePath, TenantAdminController.identity(body), this.actor(req));
+      const result = await this.service.executeImport(upload.filePath, TenantAdminController.identity(body), this.actor(req), TenantAdminController.passphrase(req));
       ArchiveUploadSessionService.discardSession(uploadId);
       res.status(201).json(result.toJSON());
     } catch (error) {
