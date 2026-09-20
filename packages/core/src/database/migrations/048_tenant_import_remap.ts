@@ -26,6 +26,12 @@ import { Logger } from '@core/logging';
  * by replaying what the importer actually did, derived from the import rather than reconstructed
  * from guesses about it.
  *
+ * SINCE MIGRATION 049 this covers much less ground, and that is the point. Most tables now key on
+ * `(tenant_id, id)`, so an import keeps its ids and there is no map to record — `TenantIdRemapStore`
+ * skips a table in "preserve" mode entirely. What remains is the tables 049 does not widen, which
+ * still share one pool of numbers and still renumber when the ranges overlap. Those are exactly the
+ * ones a missed reference could still strand, so they are exactly the ones worth recording.
+ *
  * NOT a general audit log. It answers exactly one question — "this row says 7; which row is that
  * now?" — and it is scoped, indexed and pruned for that. `imported_at` carries the run so a tenant
  * imported twice keeps both answers in order, most recent last.

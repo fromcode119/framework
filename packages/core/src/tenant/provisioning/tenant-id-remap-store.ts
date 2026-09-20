@@ -11,6 +11,10 @@ import { TenantIdRemap } from '@core/tenant/provisioning/tenant-id-remap';
  *
  * Recording it turns that from an out-of-band reconstruction into a query. It does not make the
  * import more correct; it makes a later correction possible at all.
+ *
+ * Migration 049 removed most of the exposure rather than this doing it: a table keyed on
+ * `(tenant_id, id)` keeps its ids, has no map, and is skipped here. This covers what is left — the
+ * tables that still share one pool of numbers and still renumber.
  */
 export class TenantIdRemapStore {
   static readonly TABLE = '_system_tenant_import_remap';
