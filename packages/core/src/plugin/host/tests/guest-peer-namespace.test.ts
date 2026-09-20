@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PluginGuestContextFactory } from '@core/plugin/host/plugin-guest-context-factory';
+import { PluginGuestPeerNamespace } from '@core/plugin/host/plugin-guest-peer-namespace';
 
 /**
  * `context.plugins.namespace(ns)` inside an ISOLATED plugin.
@@ -15,9 +15,13 @@ import { PluginGuestContextFactory } from '@core/plugin/host/plugin-guest-contex
  */
 describe('the guest namespace proxy', () => {
   const build = (peers: string[]) => {
-    const state = { hasPeer: (_ns: string, slug: string) => peers.includes(slug) };
+    const state = {
+      hasPeer: (_ns: string, slug: string) => peers.includes(slug),
+      peerKeys: () => peers.map((slug) => `org.fromcode:${slug}`),
+    };
     const remote = { ref: vi.fn((root: string, chain: unknown[]) => ({ __ref: true, root, chain })) };
-    return (PluginGuestContextFactory as any).peerNamespace('org.fromcode', state, remote) as any;
+    // Moved out of PluginGuestContextFactory when that file passed its size limit; same behaviour.
+    return PluginGuestPeerNamespace.build('org.fromcode', state, remote) as any;
   };
 
   it('answers has() as a METHOD, synchronously', () => {
