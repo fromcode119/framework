@@ -21,8 +21,15 @@ import { PluginPackageLayout } from '@fromcode119/core';
  * loads it through jiti, so the entry stays TypeScript — no hand-written `.cjs` in the framework.
  */
 export class PluginUiTailwindConfig {
-  /** The admin's config, whose THEME this inherits so `bg-primary` means the same in both. */
-  private static readonly ADMIN_CONFIG = path.join('..', '..', '..', 'admin', 'tailwind.config.js');
+  /**
+   * The admin's config, whose THEME this inherits so `bg-primary` means the same in both.
+   *
+   * Extensionless on purpose. It was `tailwind.config.js` until that file became TypeScript, and the
+   * hardcoded extension then resolved to nothing: every plugin's stylesheet failed to build, and said
+   * so as "tailwind exited 1" with an unrelated first line of stderr. Letting the loader pick the
+   * extension is what stops a rename doing that again.
+   */
+  private static readonly ADMIN_CONFIG = path.join('..', '..', '..', 'admin', 'tailwind.config');
 
   /**
    * Build output that lives beside the sources; scanning it re-finds the same classes.
@@ -86,14 +93,21 @@ export class PluginUiTailwindConfig {
   }
 
   /**
-   * The admin's config is CommonJS (`module.exports`) because Next.js requires it in that shape, so
-   * it is read through `createRequire` rather than imported. Anchored on `__filename`, not
-   * `import.meta.url`: this file is compiled to CommonJS by the SDK build (where `import.meta` is a
-   * hard TS1343 error and broke the admin image) and is also loaded by Tailwind through jiti —
-   * `__filename` exists in both.
+   * Reads the admin's config, whatever shape it is in.
+   *
+   * It used to be CommonJS and `createRequire` was enough. It is TypeScript now, which Node's own
+   * require cannot load at all — so this goes through jiti, which Tailwind already carries and
+   * already uses to load THIS file. Anchored on `__filename`, not `import.meta.url`: this file is
+   * compiled to CommonJS by the SDK build (where `import.meta` is a hard TS1343 error that broke the
+   * admin image) and is also loaded by Tailwind through jiti — `__filename` exists in both.
+   *
+   * `default` is unwrapped because a TypeScript config exports that way and a CommonJS one does not;
+   * taking whichever is there keeps this working across another change of shape.
    */
   private static adminConfig(): Record<string, any> {
     const require_ = createRequire(__filename);
-    return require_(PluginUiTailwindConfig.ADMIN_CONFIG) as Record<string, any>;
+    const load = require_('jiti')(__filename) as (id: string) => Record<string, any>;
+    const loaded = load(PluginUiTailwindConfig.ADMIN_CONFIG);
+    return (loaded?.default ?? loaded) as Record<string, any>;
   }
 }
