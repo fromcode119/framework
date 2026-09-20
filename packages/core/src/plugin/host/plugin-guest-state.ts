@@ -20,6 +20,11 @@ export class PluginGuestState {
     return Object.prototype.hasOwnProperty.call(this.peers, `${namespace}:${slug}`);
   }
 
+  /** Every peer this guest currently knows, as `namespace:slug` — for saying what it looked among. */
+  peerKeys(): string[] {
+    return Object.keys(this.peers);
+  }
+
   peerFunctions(namespace: string, slug: string): string[] {
     return this.peers[`${namespace}:${slug}`] ?? [];
   }
