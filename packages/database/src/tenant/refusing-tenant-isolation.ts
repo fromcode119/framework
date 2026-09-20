@@ -54,6 +54,10 @@ export class RefusingTenantIsolation implements ITenantIsolation {
     return this.refuse('read the primary key of', table);
   }
 
+  async requireOwner(table: string): Promise<boolean> {
+    return this.refuse('require an owner on every row of', table);
+  }
+
   async countUnassigned(table: string): Promise<number> {
     return this.refuse('count unassigned rows in', table);
   }

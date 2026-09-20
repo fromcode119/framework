@@ -83,6 +83,29 @@ export class PostgresTenantIsolation implements ITenantIsolation {
     return keyed === true || keyed === 't';
   }
 
+  /**
+   * Attempted, not predicted. A `SELECT ... WHERE tenant_id IS NULL` cannot answer this: the caller is
+   * NOSUPERUSER and NOBYPASSRLS and the table FORCEs row-level security, so unowned rows are hidden
+   * from it while `ALTER TABLE` sees them perfectly well. The ALTER is the only honest question.
+   *
+   * Skipped when the column is already required, so this is a catalog read on every boot but an ALTER
+   * only once.
+   */
+  async requireOwner(table: string): Promise<boolean> {
+    const current = await this.run(TenantIsolationSql.ownerRequiredStatement(table));
+    const required = current?.[0]?.required;
+    if (required === true || required === 't') return true;
+
+    try {
+      await this.run(TenantIsolationSql.requireOwnerStatement(table));
+      return true;
+    } catch {
+      // Unowned rows are present. The caller reports it; failing a boot over it would take the
+      // platform down for data that is merely unreachable.
+      return false;
+    }
+  }
+
   async countUnassigned(table: string): Promise<number> {
     const rows = await this.run(TenantIsolationSql.unassignedCountStatement(table));
     return Number(rows?.[0]?.unassigned ?? 0);

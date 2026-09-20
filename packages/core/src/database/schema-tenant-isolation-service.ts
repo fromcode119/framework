@@ -131,6 +131,34 @@ export class SchemaTenantIsolationService {
   }
 
   /**
+   * Make an unowned row impossible to write, rather than merely reporting one after the fact.
+   *
+   * The warning above is the old answer and it is not enough on its own: it runs at the one moment a
+   * table is first isolated, and never again. A row written without a site bound AFTER that — by
+   * seeding, a script, a job, anything running outside a tenant scope — gets the column's default,
+   * which is the current tenant, which is NULL there. Nothing refuses it and nothing reports it,
+   * because from that point on row-level security hides it from the very query that would count it.
+   * That is exactly how 20 rows across 8 tables came to sit on a live platform unnoticed.
+   *
+   * NOT NULL turns that write into an error at the database. It also has to come AFTER enforcement:
+   * the constraint can only be added once the table holds no unowned rows, and a table that still
+   * does says so here — which is a statement about data, not a reason to fail a boot. The next boot
+   * applies it for free once the rows are dealt with.
+   */
+  private async requireAnOwner(tableName: string): Promise<void> {
+    try {
+      if (await this.db.tenantIsolation.requireOwner(tableName)) return;
+      this.logger.warn(
+        `${tableName}: every row must name a site, but this table still holds rows that do not, so `
+        + 'the constraint could not be applied. Those rows are invisible to every site — give them an '
+        + 'owner or remove them, and the next boot will close the table to unowned writes.',
+      );
+    } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
+      this.logger.warn(`${tableName}: could not require an owner on every row: ${error?.message || error}`);
+    }
+  }
+
+  /**
    * A UNIQUE rule written for one site must hold PER site once the table is shared.
    *
    * `fcp_cms_pages.slug UNIQUE` meant "one /about per site"; on a shared table it means one /about
@@ -194,6 +222,7 @@ export class SchemaTenantIsolationService {
       await this.warnAboutUnassignedRows(tableName);
       await this.scopeUniqueConstraints(tableName);
       await this.db.tenantIsolation.enforceIsolation(tableName);
+      await this.requireAnOwner(tableName);
     } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
       // 42710 = duplicate_object. The statements drop the policy first so this should not happen,
       // but the driver wraps the pg error, so the code is checked down the cause chain rather than
