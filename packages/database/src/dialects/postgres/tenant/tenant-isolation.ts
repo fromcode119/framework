@@ -77,6 +77,12 @@ export class PostgresTenantIsolation implements ITenantIsolation {
     await this.run(TenantIsolationSql.scopeUniqueConstraintStatement(table, constraint, columns));
   }
 
+  async keysPerTenant(table: string): Promise<boolean> {
+    const rows = await this.run(TenantIsolationSql.perTenantKeyStatement(), [table]);
+    const keyed = rows?.[0]?.keyed;
+    return keyed === true || keyed === 't';
+  }
+
   async countUnassigned(table: string): Promise<number> {
     const rows = await this.run(TenantIsolationSql.unassignedCountStatement(table));
     return Number(rows?.[0]?.unassigned ?? 0);

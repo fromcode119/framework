@@ -13,7 +13,7 @@ const table = (overrides: Partial<IImportPlanTable>): IImportPlanTable => ({
   name: 'fcp_alpha_widgets',
   rows: 10,
   mode: 'preserve',
-  basis: 'aboveSequence',
+  basis: 'perTenantKey',
   minId: null,
   taken: 4,
   opaqueJsonColumns: [],
@@ -94,6 +94,8 @@ describe('ImportPlanRecord -> what the operator reads', () => {
     expect(new ImportPlanRecord(table({ mode: 'remap', minId: 1, taken: 1204 }), 0).idMechanics)
       .toBe('Re-numbered — the archive starts at 1, this platform has handed out 1,204');
     expect(new ImportPlanRecord(table({ basis: 'naturalKey' }), 0).idMechanics).toMatch(/keyed naturally/);
+    expect(new ImportPlanRecord(table({ basis: 'perTenantKey' }), 0).idMechanics).toMatch(/its own numbering/);
+    expect(new ImportPlanRecord(table({ basis: 'aboveSequence', taken: 1204 }), 0).idMechanics).toMatch(/already above/);
     expect(new ImportPlanRecord(table({ mode: 'skip' }), 0).idMechanics).toBe('Not planned — the table is skipped');
   });
 

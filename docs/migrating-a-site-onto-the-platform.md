@@ -89,12 +89,19 @@ without setting it and the import refuses rather than landing credentials nobody
 
 ## What to expect, and why
 
-- **Ids change.** Where the destination has already handed out the numbers an archive uses, rows get
-  new ids and every reference to them is re-pointed. Display numbers an operator sees — an order
-  number, an invoice series — are their own fields and do not change.
-- **Ids inside free-form JSON do not change.** A declared relationship is re-pointed; an id buried in
-  a `metadata` blob nothing declares cannot be told from any other number. The preview names the
-  columns.
+- **Ids are kept.** Each site has its own id space — a table's primary key names the site as well as
+  the id — so an archive's order 157 arrives as order 157 no matter who else already holds that
+  number. The preview says so per kind, under "Kept".
+- **A few tables still renumber.** Where a table's key is still the id alone, the numbers are shared
+  with every other site, and rows whose ids overlap what this destination has already handed out get
+  new ones, with every declared reference to them re-pointed. The preview names those kinds and shows
+  both figures — where the archive starts, and how many this platform has handed out.
+- **When something IS renumbered, ids inside free-form JSON are not.** A declared relationship is
+  re-pointed; an id buried in a `metadata` blob nothing declares cannot be told from any other number.
+  The preview names those columns. On a kind whose ids were kept there is nothing to re-point and
+  nothing to miss — which is the reason for keeping them.
+- **Display numbers do not change either way** — an order number, an invoice series. They are their
+  own fields, not the row id.
 - **Uploads are shared and flat.** A file whose name is already taken is stored under a suffixed
   name, never overwriting, and every reference to it — including inside page content — is rewritten
   to match.
