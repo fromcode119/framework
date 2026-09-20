@@ -66,7 +66,10 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
   protected peers(store: IRequestStore | undefined): Record<string, string[]> {
     const out: Record<string, string[]> = {};
     const tenantId = String(store?.tenantId ?? '').trim() || null;
+    let walked = 0;
+    let offered = 0;
     for (const plugin of this.manager.plugins.values()) {
+      walked += 1;
       const refusal = PluginsManagerResolver.refusalReason(plugin, tenantId);
       if (refusal) {
         // A withheld peer used to leave no trace at all. The caller saw only an absence — a courier
@@ -85,7 +88,18 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
       }
       // Own property names, not `Object.keys`: a class of static methods enumerates as nothing.
       out[`${String(plugin.manifest.namespace || '').trim()}:${plugin.manifest.slug}`] = PluginGuest.functionNames(plugin.publicAPI);
+      offered += 1;
     }
+    /**
+     * What this snapshot WALKED, not only what it kept.
+     *
+     * A peer can be missing three ways and only two of them leave a trace: refused (logged above) or
+     * mis-keyed (visible in the guest's own list). The third — never in `manager.plugins` at all — is
+     * silent from both ends, and on a live site that is where a courier plugin went: present in the
+     * health count, running its own scheduler, and absent from every peer snapshot with no refusal
+     * recorded anywhere. The walked count is what tells those apart in one line.
+     */
+    this.logger.debug(`peer snapshot: walked ${walked} plugin(s), offered ${offered} — ${Object.keys(out).join(', ') || '(none)'}`);
     return out;
   }
 
