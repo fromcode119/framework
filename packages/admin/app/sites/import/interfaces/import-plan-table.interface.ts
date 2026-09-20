@@ -14,7 +14,13 @@ export interface IImportPlanTable {
    * JSON by the time the admin sees it. The vocabulary is owned once, by the enum.
    */
   mode: string;
-  basis: 'noTable' | 'naturalKey' | 'empty' | 'aboveSequence' | 'belowSequence';
+  /**
+   * A `TenantImportIdBasis` VALUE, as the plan sends it — WHY the mode was chosen.
+   *
+   * The vocabulary is owned once, by the enum, for the same reason `mode` is: a second copy of the
+   * list here is what let it go stale when the per-tenant key arrived.
+   */
+  basis: string;
   minId: number | null;
   taken: number | null;
   opaqueJsonColumns: string[];

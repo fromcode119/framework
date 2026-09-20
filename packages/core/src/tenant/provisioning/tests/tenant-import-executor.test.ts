@@ -38,6 +38,12 @@ describe('TenantImportExecutor — ids are allocated for every table before any 
 
     const db = {
       withTenant: vi.fn(async (_tenantId: string, fn: () => Promise<void>) => fn()),
+      // Deliberately a table whose key is still `id` alone: this test is about what the executor does
+      // when it DOES have to renumber — allocate every id up front, then repoint the references,
+      // including one pointing at a table the dependency order has not reached yet. On a per-tenant
+      // key there is nothing to renumber and nothing here would be exercised.
+      supportsTenantIsolation: () => true,
+      tenantIsolation: { keysPerTenant: vi.fn(async () => false) },
       queryRaw: vi.fn(async (sql: string, params: unknown[] = []) => {
         if (sql === 'BEGIN' || sql === 'COMMIT' || sql === 'ROLLBACK') return [];
         const seqMatch = /"(fcp_widgets_[ab]_id_seq)"/.exec(sql);
@@ -106,6 +112,8 @@ describe('TenantImportExecutor — export warnings carry through to the result',
   it('puts plan.exportWarnings on the result, kept apart from the decision warnings', async () => {
     const db = {
       withTenant: vi.fn(async (_tenantId: string, fn: () => Promise<void>) => fn()),
+      supportsTenantIsolation: () => true,
+      tenantIsolation: { keysPerTenant: vi.fn(async () => false) },
       queryRaw: vi.fn(async (sql: string) => {
         if (sql === 'BEGIN' || sql === 'COMMIT' || sql === 'ROLLBACK') return [];
         return [];

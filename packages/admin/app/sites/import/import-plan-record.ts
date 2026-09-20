@@ -1,6 +1,6 @@
 import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan-table.interface';
 import type { IImportPlanSentence } from '@/app/sites/import/interfaces/import-plan-sentence.interface';
-import { SystemConstants, TenantImportIdMode } from '@fromcode119/core/client';
+import { SystemConstants, TenantImportIdBasis, TenantImportIdMode } from '@fromcode119/core/client';
 import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.enum';
 
 /**
@@ -167,9 +167,12 @@ export class ImportPlanRecord {
     const { minId, taken, basis } = this.table;
     if (this.isSkipped) return 'Not planned — the table is skipped';
     if (this.isRemapped) return `Re-numbered — the archive starts at ${minId?.toLocaleString()}, this platform has handed out ${taken?.toLocaleString()}`;
-    if (basis === 'naturalKey') return 'Kept — the table has no serial id; rows are keyed naturally';
-    if (basis === 'empty') return 'Kept — no row here carries a numeric id to compare';
-    if (basis === 'noTable') return 'Kept — this platform has no such table to compare against';
+    if (basis === String(TenantImportIdBasis.NATURAL_KEY.value)) return 'Kept — the table has no serial id; rows are keyed naturally';
+    if (basis === String(TenantImportIdBasis.EMPTY.value)) return 'Kept — no row here carries a numeric id to compare';
+    if (basis === String(TenantImportIdBasis.NO_TABLE.value)) return 'Kept — this platform has no such table to compare against';
+    if (basis === String(TenantImportIdBasis.PER_TENANT_KEY.value)) {
+      return 'Kept — this site has its own numbering here, so the archive’s ids cannot clash with another site’s';
+    }
     return `Kept — every id in the archive is already above what this platform has handed out${taken === null ? '' : ` (${taken.toLocaleString()})`}`;
   }
 

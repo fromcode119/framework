@@ -159,3 +159,102 @@ describe('TenantImportPlanner.plan — runtime-only exclusions counted at plan t
     expect(plan.pluginSettingsRowsExcluded).toBe(0);
   });
 });
+
+/**
+ * Which id path a table takes, and WHY.
+ *
+ * An import used to renumber whenever the archive's ids overlapped what this platform had handed
+ * out, because every site's rows shared one key on `id` alone. Renumbering forces every reference to
+ * be rewritten, and that is only correct while the catalog of references is complete — twice it was
+ * not, and rows ended up holding numbers that belonged to another site's records.
+ *
+ * Migration 049 widens the key to `(tenant_id, id)`, which removes the collision and therefore the
+ * reason to renumber. The decision is read from the LIVE catalog rather than assumed from the
+ * migration having run: it widens the tables that are tenant-scoped and carry row-level security,
+ * which is most of them and not all of them, and a table it left alone still shares one pool of
+ * numbers. These tests are about the two paths staying honest about which one a table is on.
+ *
+ * Each test uses its own table name because the answer is cached per table for the process — a
+ * property the planner and executor rely on to reach the same decision from the same inputs.
+ */
+describe('TenantImportPlanner.decideIds', () => {
+  /** A platform that has handed out `taken` ids, and whose key for `table` is or is not per-tenant. */
+  const platform = (taken: number, keyedPerTenant: boolean, isCalled = true): IDatabaseManager => ({
+    // Asked through the DRIVER, not as SQL text: the catalog query is Postgres-only and lives in the
+    // dialect that owns it, which is why this fakes a capability rather than a statement.
+    supportsTenantIsolation: () => true,
+    tenantIsolation: { keysPerTenant: vi.fn(async () => keyedPerTenant) },
+    queryRaw: vi.fn(async (sql: string) => {
+      if (sql.includes('last_value')) return [{ last_value: taken, is_called: isCalled }];
+      return [];
+    }),
+  } as unknown as IDatabaseManager);
+
+  const descriptor = (name: string) => new TenantTableDescriptor(name, { id: 'integer' }, true, `${name}_id_seq`, []);
+
+  const archive = (name: string, ids: number[]) => fakeReader(
+    manifestWith([{ name, rows: ids.length, columns: ['id'], hasSerialId: true }], []),
+    { [name]: ids.map((id) => ({ id })) },
+  );
+
+  it('keeps the archive ids when the table gives each site its own id space', async () => {
+    const name = 'fcp_a_orders';
+    const decision = await TenantImportPlanner.decideIds(platform(1204, true), descriptor(name), archive(name, [157, 158]));
+
+    expect(String(decision.mode.value)).toBe('preserve');
+    expect(decision.basis).toBe('perTenantKey');
+    // Still measured and still reported, even though they no longer decide anything: they are what
+    // the operator is shown, and a number that stops being gathered is one nobody notices going wrong.
+    expect(decision.minId).toBe(157);
+    expect(decision.taken).toBe(1204);
+  });
+
+  /**
+   * The case that used to be the ONLY safe way to keep ids, and still is wherever the key was not
+   * widened: the ranges simply do not touch.
+   */
+  it('keeps them on a shared key too, when every arriving id sits above what this platform handed out', async () => {
+    const name = 'fcp_b_orders';
+    const decision = await TenantImportPlanner.decideIds(platform(100, false), descriptor(name), archive(name, [157, 158]));
+
+    expect(String(decision.mode.value)).toBe('preserve');
+    expect(decision.basis).toBe('aboveSequence');
+  });
+
+  /**
+   * The expensive path, kept reachable ON PURPOSE. A table the migration did not widen shares one
+   * pool of numbers with every other site, so an overlapping archive still has to be renumbered —
+   * silently preserving there would write this site's rows over somebody else's ids.
+   */
+  it('renumbers when the key is still shared and the ranges overlap', async () => {
+    const name = 'fcp_c_orders';
+    const decision = await TenantImportPlanner.decideIds(platform(1204, false), descriptor(name), archive(name, [157, 158]));
+
+    expect(String(decision.mode.value)).toBe('remap');
+    expect(decision.basis).toBe('belowSequence');
+  });
+
+  /** Nothing numeric arrived, so neither key shape has anything to say about it. */
+  it('has nothing to decide when no row carries a numeric id', async () => {
+    const name = 'fcp_d_orders';
+    const decision = await TenantImportPlanner.decideIds(platform(1204, false), descriptor(name), archive(name, []));
+
+    expect(String(decision.mode.value)).toBe('preserve');
+    expect(decision.basis).toBe('empty');
+    expect(decision.minId).toBeNull();
+  });
+
+  /**
+   * A sequence that has never been called holds `last_value = 1` and `is_called = false` — it has
+   * handed out NOTHING. Reading that `1` as "one id taken" would renumber an archive starting at 1
+   * against an empty platform.
+   */
+  it('reads an untouched sequence as nothing handed out, not as one', async () => {
+    const name = 'fcp_e_orders';
+    const decision = await TenantImportPlanner.decideIds(platform(1, false, false), descriptor(name), archive(name, [1, 2]));
+
+    expect(decision.taken).toBe(0);
+    expect(String(decision.mode.value)).toBe('preserve');
+    expect(decision.basis).toBe('aboveSequence');
+  });
+});

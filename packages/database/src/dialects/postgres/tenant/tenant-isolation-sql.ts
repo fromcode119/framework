@@ -216,6 +216,28 @@ export class TenantIsolationSql {
     return `SELECT count(*)::int AS unassigned FROM "${name}" WHERE "${TenantColumn.NAME}" IS NULL`;
   }
 
+  /**
+   * Whether this table's PRIMARY KEY names the ownership column — i.e. whether each site has its own
+   * id space here, or they all share one pool of numbers.
+   *
+   * An import asks this to decide whether it may keep the ids its archive arrives with. It is asked
+   * of the live catalog rather than assumed from a migration having run: the migration that widens
+   * these keys covers the tables that are tenant-scoped AND carry row-level security, which is most
+   * of them and not all of them, and a table it left alone still shares its numbers with every other
+   * site.
+   *
+   * `to_regclass` rather than `::regclass`: a table this deployment does not have answers NULL, and
+   * the question is then simply false. The cast would raise instead, which is not an error — it is an
+   * answer.
+   */
+  static perTenantKeyStatement(): string {
+    return 'SELECT EXISTS ('
+      + 'SELECT 1 FROM pg_index i '
+      + `JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attname = '${TenantColumn.NAME}' `
+      + 'WHERE i.indrelid = to_regclass(quote_ident($1)) AND i.indisprimary AND a.attnum = ANY(i.indkey)'
+      + ') AS keyed';
+  }
+
   /** Parameterised; `false` = session scope, so it survives across statements on a held client. */
   static setTenantStatement(): string {
     return `SELECT set_config('${TenantIsolationSql.SETTING}', $1, false)`;

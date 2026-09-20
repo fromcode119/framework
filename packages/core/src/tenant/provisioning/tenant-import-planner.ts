@@ -10,6 +10,9 @@ import { SecretTransitResealer } from '@core/security/secret-transit-resealer';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
+import { TenantImportIdBasis } from '@core/tenant/provisioning/enums/tenant-import-id-basis.enum';
+import { TenantImportIdDecision } from '@core/tenant/provisioning/tenant-import-id-decision';
+import type { ITenantImportIdDecision } from '@core/tenant/provisioning/interfaces/tenant-import-id-decision.interface';
 import { TenantImportPlan } from '@core/tenant/provisioning/tenant-import-plan';
 import { TenantInstalledPluginSlugs } from '@core/tenant/provisioning/tenant-installed-plugin-slugs';
 import { TenantOwningPluginResolver } from '@core/tenant/provisioning/tenant-owning-plugin-resolver';
@@ -70,7 +73,7 @@ export class TenantImportPlanner {
         // preview to print 25 names for a table whose only possible action is "install the plugin".
         // The rows that are lost are counted in `warnings` below, which is where that fact belongs.
         tables.push({
-          name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.SKIP.value), basis: 'noTable',
+          name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.SKIP.value), basis: String(TenantImportIdBasis.NO_TABLE.value),
           minId: null, taken: null, opaqueJsonColumns: [], repointedReferences: [], droppedColumns: [],
           // No destination descriptor exists for a skipped table, so there is no collection to ask —
           // but the physical name itself (`fcp_<slug>_...`) still says which plugin would have owned
@@ -192,7 +195,8 @@ export class TenantImportPlanner {
       .map((ref) => ({ column: ref.column, path: ref.path, targetTable: ref.describeTarget() }));
     if (!destination.hasSerialId || !destination.idSequence) {
       return {
-        name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.PRESERVE.value), basis: 'naturalKey',
+        name: archived.name, rows: archived.rows, mode: String(TenantImportIdMode.PRESERVE.value),
+        basis: String(TenantImportIdBasis.NATURAL_KEY.value),
         minId: null, taken: null, opaqueJsonColumns: [], repointedReferences: [], droppedColumns,
         pluginSlug: destination.pluginSlug, label: destination.label, isJournal: destination.isJournal,
       };
@@ -255,18 +259,14 @@ export class TenantImportPlanner {
     return false;
   }
 
-  /** Shared with the executor so the preview and the run decide the same way from the same numbers. */
-  static async decideIds(db: IDatabaseManager, table: TenantTableDescriptor, reader: TenantArchiveReader): Promise<{ mode: TenantImportIdMode; basis: 'empty' | 'aboveSequence' | 'belowSequence'; taken: number; minId: number | null }> {
-    const state = (await db.queryRaw(TenantSql.sequenceState(table.idSequence as string)))[0] ?? {};
-    const taken = state.is_called === true || state.is_called === 't' ? Number(state.last_value ?? 0) : 0;
-    let minId: number | null = null;
-    for await (const row of reader.rows(table.name)) {
-      const id = Number(row.id);
-      if (Number.isFinite(id) && (minId === null || id < minId)) minId = id;
-    }
-    if (minId === null) return { mode: TenantImportIdMode.PRESERVE, basis: 'empty', taken, minId };
-    if (minId > taken) return { mode: TenantImportIdMode.PRESERVE, basis: 'aboveSequence', taken, minId };
-    return { mode: TenantImportIdMode.REMAP, basis: 'belowSequence', taken, minId };
+  /**
+   * Shared with the executor so the preview and the run decide the same way from the same numbers.
+   *
+   * The reasoning lives in `TenantImportIdDecision`; this is the name the executor and the tests
+   * already call, kept so the decision has one entry point rather than two.
+   */
+  static async decideIds(db: IDatabaseManager, table: TenantTableDescriptor, reader: TenantArchiveReader): Promise<ITenantImportIdDecision> {
+    return TenantImportIdDecision.decide(db, table, reader);
   }
 
   private async planUsers(reader: TenantArchiveReader): Promise<{ total: number; existing: number; toCreate: number }> {

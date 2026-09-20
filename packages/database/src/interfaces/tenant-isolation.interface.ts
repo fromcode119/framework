@@ -64,6 +64,17 @@ export interface ITenantIsolation {
   /** The named primitive, for a migration that already knows the constraint it wrote. */
   scopeUniqueConstraint(table: string, constraint: string, columns: string[]): Promise<void>;
 
+  /**
+   * Whether this table's PRIMARY KEY names the ownership column, so each site has its own id space.
+   *
+   * An import asks before deciding whether it may keep the ids its archive arrives with. Keeping them
+   * on a table whose key is still `id` alone would collide with another site's rows; renumbering
+   * instead means rewriting every reference, which is only correct while the catalog of references is
+   * complete — and twice it was not. So the answer has to come from the schema, not from an
+   * assumption about which migrations have run.
+   */
+  keysPerTenant(table: string): Promise<boolean>;
+
   /** Rows with no owner — invisible to every tenant, so they must be said out loud. */
   countUnassigned(table: string): Promise<number>;
 

@@ -32,7 +32,8 @@ export class TenantImportPlan {
        * `mode` had already said, and nothing could render the numbers on their own. The sentence is
        * generic by construction; it belongs once, above the group. `minId`/`taken` are what differ.
        */
-      basis: 'noTable' | 'naturalKey' | 'empty' | 'aboveSequence' | 'belowSequence';
+      /** A `TenantImportIdBasis` VALUE, carried as a string for the same reason `mode` is. */
+      basis: string;
       /** Lowest id in the archive. `null` when the table has no serial id, or no rows. */
       minId: number | null;
       /** Highest id this platform has already handed out for this table. `null` with no serial id. */
