@@ -62,9 +62,6 @@ export class TenantRowInserter {
       if (column === 'tenant_id' || !this.table.hasColumn(column)) continue;
       values[column] = row[column];
     }
-    // After the copy loop: the loop writes the archive's own value for a destination column, and a
-    // fold must not be clobbered by the null it wrote for a column the old schema never filled.
-    this.foldLegacyColumns(row, values);
     if (this.transitPassphrase) {
       for (const column of Object.keys(values)) {
         values[column] = SecretTransitResealer.openFromTransit(values[column], this.transitPassphrase);
@@ -109,30 +106,6 @@ export class TenantRowInserter {
     return typeof newId === 'number' || typeof newId === 'string' ? newId : null;
   }
 
-  /**
-   * Folds an older schema's columns into the field that replaced them.
-   *
-   * A deployment that stored an address as eight flat columns still carries the address — it just
-   * carries it in the shape of its day, and the destination has no such columns, so every one of
-   * them would otherwise be discarded by the loop below. The claim comes from the collection
-   * (`IField.legacyColumns`), never from a guess about a column's name.
-   *
-   * The archive's own value for the destination column wins: if the export already wrote the field,
-   * that is the newer truth and the legacy columns are the shadow of it. Empty legacy values are not
-   * folded, so an all-empty set leaves the column null rather than writing a husk of empty keys.
-   */
-  private foldLegacyColumns(row: Record<string, unknown>, values: Record<string, unknown>): void {
-    for (const fold of this.table.folds) {
-      if (values[fold.column] !== null && values[fold.column] !== undefined) continue;
-      const folded: Record<string, unknown> = {};
-      for (const [column, key] of Object.entries(fold.legacy)) {
-        const value = row[column];
-        if (value === null || value === undefined || value === '') continue;
-        folded[key] = value;
-      }
-      if (Object.keys(folded).length > 0) values[fold.column] = folded;
-    }
-  }
 
   /** Second pass for self-references, after every row of the table is in. */
   async finishSelfReferences(): Promise<void> {
