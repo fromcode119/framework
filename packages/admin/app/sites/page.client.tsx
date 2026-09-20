@@ -13,6 +13,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { SiteRecord } from '@/lib/tenants/site-record';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SitesClient } from '@/lib/tenants/sites-client';
+import { RestoreSiteCard } from '@/app/sites/components/view/restore-site-card.client';
 import { AdoptSiteCard } from '@/app/sites/components/view/adopt-site-card.client';
 import { SitesTable } from '@/app/sites/components/view/sites-table.client';
 import { AdminClass } from '@/lib/admin-class';
@@ -163,6 +164,8 @@ export class SitesPageClient extends AdminComponent {
 
         {this.canManagePlatform && this.loading ? <Loader label="Loading sites…" /> : null}
         {this.canManagePlatform && !this.loading && this.error ? <LoadErrorPanel title="Sites unavailable" message={this.error} onRetry={this.load} /> : null}
+
+        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <RestoreSiteCard onRestored={this.load} /> : null}
 
         {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <AdoptSiteCard onAdopted={this.load} /> : null}
 

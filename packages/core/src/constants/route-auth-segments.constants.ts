@@ -166,6 +166,7 @@ export class RouteAuthSegments {
   TENANTS_IMPORT_CHUNK: '/import/chunk',
   TENANTS_IMPORT_PREVIEW: '/import/preview',
   TENANTS_IMPORT_EXECUTE: '/import/execute',
+  TENANTS_IMPORT_STANDALONE: '/import/standalone',
   TENANTS_ADOPT: '/adopt',
   ADMIN_BACKUPS: '/admin/backups',
   ADMIN_BACKUPS_CREATE_SYSTEM: '/admin/backups/system',

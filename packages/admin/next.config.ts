@@ -5,16 +5,30 @@ import { NextConfigAliases } from '../../config/next-config-aliases';
 import type { INextWebpackConfig } from '../../config/interfaces/next-webpack-config.interface';
 import type { INextWebpackContext } from '../../config/interfaces/next-webpack-context.interface';
 
-// Dynamically discover all extensions in the packages directory
-const packagesDir = path.resolve(__dirname, '..');
-const extensions = fs.readdirSync(packagesDir).filter(name => {
-  const ext = path.join(packagesDir, name);
-  return fs.statSync(ext).isDirectory() && !['core', 'react', 'sdk', 'api', 'admin', 'auth', 'media', 'cache', 'database', 'scheduler'].includes(name);
-});
-const adminBasePath = NextConfigEnvironment.getAdminBasePath();
+/** The admin's Next configuration, as a class. Not exported: the one export is the config Next reads. */
+class AdminNextConfig {
+  /** Packages that are the framework itself, never an extension the admin transpiles. */
+  private static readonly FRAMEWORK_PACKAGES = ['core', 'react', 'sdk', 'api', 'admin', 'auth', 'media', 'cache', 'database', 'scheduler'];
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+  private static get packagesDir(): string {
+    return path.resolve(__dirname, '..');
+  }
+
+  /** Every extension package beside the framework's own, discovered rather than listed. */
+  private static get extensions(): string[] {
+    const root = AdminNextConfig.packagesDir;
+    return fs.readdirSync(root).filter((name) => {
+      const candidate = path.join(root, name);
+      return fs.statSync(candidate).isDirectory() && !AdminNextConfig.FRAMEWORK_PACKAGES.includes(name);
+    });
+  }
+
+  /** @type {import('next').NextConfig} */
+  static create(): Record<string, unknown> {
+    const adminBasePath = NextConfigEnvironment.getAdminBasePath();
+    const extensions = AdminNextConfig.extensions;
+
+    return {
   basePath: adminBasePath,
   allowedDevOrigins: NextConfigEnvironment.getAllowedDevOrigins(),
   reactStrictMode: true,
@@ -272,9 +286,11 @@ const nextConfig = {
 
     return config;
   },
-  typescript: {
-    ignoreBuildErrors: true,
+    typescript: {
+      ignoreBuildErrors: true,
+    }
+    };
   }
-};
+}
 
-export default nextConfig;
+export default AdminNextConfig.create();
