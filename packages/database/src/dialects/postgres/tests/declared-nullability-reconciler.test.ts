@@ -21,10 +21,10 @@ describe('PostgresDeclaredNullabilityReconciler', () => {
   it('drops the NOT NULL when the column is NOT NULL and the schema says optional', async () => {
     const { issued, run } = recorder([{ is_nullable: 'NO', is_primary_key: false }]);
 
-    const outcome = await new PostgresDeclaredNullabilityReconciler(run).relax('fcp_finance_payment_methods', 'notes');
+    const outcome = await new PostgresDeclaredNullabilityReconciler(run).relax('fcp_lumen_payment_methods', 'notes');
 
     expect(outcome.state).toBe(SchemaReconcileState.CHANGED);
-    expect(issued[1].text).toBe('ALTER TABLE "fcp_finance_payment_methods" ALTER COLUMN "notes" DROP NOT NULL');
+    expect(issued[1].text).toBe('ALTER TABLE "fcp_lumen_payment_methods" ALTER COLUMN "notes" DROP NOT NULL');
   });
 
   it('does nothing when the column is already nullable — the overwhelmingly common case', async () => {

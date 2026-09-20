@@ -39,7 +39,7 @@ export class AuditTrailCard extends PureReactor {
             className="w-80"
             value={this.settings[SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES] ?? ''}
             onChange={this.setExcludedTables}
-            placeholder="fcp_analytics_events, fcp_analytics_sessions"
+            placeholder="fcp_telemetry_events, fcp_telemetry_sessions"
           />
         </SettingRow>
       </Card>

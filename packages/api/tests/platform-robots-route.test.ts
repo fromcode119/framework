@@ -19,7 +19,7 @@ describe('TenantExemptRouteUtils.isPlatformRobotsRoute', () => {
 
   it('does NOT match a tenant or versioned path that ends in robots.txt', () => {
     expect(isRobots('/api/v1/robots.txt')).toBe(false);
-    expect(isRobots('/api/v1/plugins/seo/robots.txt')).toBe(false);
+    expect(isRobots('/api/v1/plugins/crate/robots.txt')).toBe(false);
     expect(isRobots('/api/v1/pages/robots.txt')).toBe(false);
     expect(isRobots('/sitemap.xml')).toBe(false);
   });

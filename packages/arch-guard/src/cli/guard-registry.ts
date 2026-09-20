@@ -1,5 +1,6 @@
 import { AppTypecheckCommand } from './app-typecheck-command';
 import { ExtendedExtendsCommand } from './extended-extends-command';
+import { ExtensionNameCommand } from './extension-name-command';
 import { FileSizeCommand } from './file-size-command';
 import { AppearanceBoundaryCommand } from './appearance-boundary-command';
 import { ClientViewMoveCommand } from './client-view-move-command';
@@ -63,6 +64,7 @@ export class GuardRegistry {
     ['declared-fields', DeclaredFieldAssignmentCommand],
     ['dependency-overrides', DependencyOverridesCommand],
     ['dialect-sql-confinement', DialectSqlConfinementCommand],
+    ['extension-names', ExtensionNameCommand],
     ['i18n-keys', I18nKeyResolutionCommand],
     ['json-field-controls', JsonFieldControlCommand],
     ['snake-property-access', SnakePropertyAccessCommand],

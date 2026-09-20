@@ -3,7 +3,7 @@
  *
  * The counts are the whole point. An operator looking at
  *
- *     fcp_finance_invoices
+ *     fcp_lumen_invoices
  *       + issued_at        added
  *       ? invoice_date     46 of 46 rows · sample 2026-05-15 07:58:15
  *

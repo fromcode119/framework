@@ -14,7 +14,7 @@ describe('SchemaReconciliationService', () => {
   afterEach(() => vi.restoreAllMocks());
 
   const planFor = (columns: string[]) => ({
-    tableName: 'fcp_finance_invoices',
+    tableName: 'fcp_lumen_invoices',
     undeclaredColumns: columns,
   } as any);
 
@@ -48,13 +48,13 @@ describe('SchemaReconciliationService', () => {
 
     expect(written).toHaveLength(1);
     const entry = JSON.parse(written[0].value);
-    expect(entry).toMatchObject({ table: 'fcp_finance_invoices', column: 'invoice_date' });
+    expect(entry).toMatchObject({ table: 'fcp_lumen_invoices', column: 'invoice_date' });
     expect(entry.firstSeenAt).toBeTruthy();
   });
 
   it('shows no counts when counting throws, rather than zeros', async () => {
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(false);
-    const pending = { table: 'fcp_hub_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
+    const pending = { table: 'fcp_quill_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
     const { db } = dbWith({ rows: 1, nonNull: 1, nonEmpty: 1, sample: 'x' }, [{ key: 'schema_orphan:x', value: JSON.stringify(pending) }]);
     db.columnStats = vi.fn(async () => { throw new Error('permission denied'); });
 
@@ -85,14 +85,14 @@ describe('SchemaReconciliationService', () => {
 
   it('drops a column that IS on the list, and forgets it afterwards', async () => {
     const pending = {
-      table: 'fcp_finance_invoices', column: 'invoice_date',
+      table: 'fcp_lumen_invoices', column: 'invoice_date',
       rows: 46, nonNull: 46, sample: 'x', firstSeenAt: '2026-09-15T00:00:00.000Z',
     };
     const { db, dropped } = dbWith({ rows: 46, nonNull: 46, nonEmpty: 46, sample: 'x' }, [{ key: 'schema_orphan:x', value: JSON.stringify(pending) }]);
 
-    const entry = await new SchemaReconciliationService(db).approve('fcp_finance_invoices', 'invoice_date');
+    const entry = await new SchemaReconciliationService(db).approve('fcp_lumen_invoices', 'invoice_date');
 
-    expect(dropped).toEqual(['fcp_finance_invoices.invoice_date']);
+    expect(dropped).toEqual(['fcp_lumen_invoices.invoice_date']);
     expect(entry.nonNull).toBe(46);
   });
 
@@ -100,7 +100,7 @@ describe('SchemaReconciliationService', () => {
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(false);
     const { db, written } = dbWith({ rows: 1, nonNull: 1, nonEmpty: 1, sample: 'x' });
     db.findOne = async () => ({
-      value: JSON.stringify({ table: 'fcp_finance_invoices', column: 'invoice_date', firstSeenAt: '2026-01-01T00:00:00.000Z' }),
+      value: JSON.stringify({ table: 'fcp_lumen_invoices', column: 'invoice_date', firstSeenAt: '2026-01-01T00:00:00.000Z' }),
     });
 
     await new SchemaReconciliationService(db).record(planFor(['invoice_date']));
@@ -124,7 +124,7 @@ describe('SchemaReconciliationService', () => {
 
   it('counts on the READ path, summed across EVERY tenant', async () => {
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
-    const pending = { table: 'fcp_hub_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
+    const pending = { table: 'fcp_quill_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
     const { db } = dbWith({ rows: 5, nonNull: 4, nonEmpty: 3, sample: 'rate' }, [{ key: 'schema_orphan:x', value: JSON.stringify(pending) }]);
 
     const [entry] = await new SchemaReconciliationService(db).pendingWithCounts();
@@ -138,7 +138,7 @@ describe('SchemaReconciliationService', () => {
     // A suspended or unreachable tenant counted as zero is how live data gets approved for deletion.
     // A partial total is worse than none, because nothing downstream can tell them apart.
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
-    const pending = { table: 'fcp_hub_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
+    const pending = { table: 'fcp_quill_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
     const { db } = dbWith({ rows: 5, nonNull: 4, nonEmpty: 3, sample: 'rate' }, [{ key: 'schema_orphan:x', value: JSON.stringify(pending) }]);
     let call = 0;
     db.columnStats = vi.fn(async () => {
@@ -156,7 +156,7 @@ describe('SchemaReconciliationService', () => {
   it('leaves the counts ABSENT when they cannot be trusted, rather than showing zero', async () => {
     // A zero reads as "safe to drop". Absent must render as "not counted".
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
-    const pending = { table: 'fcp_hub_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
+    const pending = { table: 'fcp_quill_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
     const { db } = dbWith({ rows: 0, nonNull: 0, nonEmpty: 0, sample: '' }, [{ key: 'schema_orphan:x', value: JSON.stringify(pending) }]);
     // A deployment that reports no tenants at all describes nothing, whatever the column holds.
     db.find = async (table: string) => (table === '_system_tenants' ? [] : [{ key: 'schema_orphan:x', value: JSON.stringify(pending) }]);
@@ -189,8 +189,8 @@ describe('SchemaReconciliationService', () => {
   });
 
   it('prunes an entry the sweep no longer finds — a stale one would be approved eventually', async () => {
-    const stale = { table: 'fcp_cms_pages', column: 'og_title', firstSeenAt: '2026-09-15T00:00:00.000Z' };
-    const live = { table: 'fcp_hub_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
+    const stale = { table: 'fcp_orbit_pages', column: 'og_title', firstSeenAt: '2026-09-15T00:00:00.000Z' };
+    const live = { table: 'fcp_quill_clients', column: 'custom_rates', firstSeenAt: '2026-09-15T00:00:00.000Z' };
     const deleted: any[] = [];
     const { db } = dbWith({ rows: 0, nonNull: 0, nonEmpty: 0, sample: '' }, [
       { key: 'schema_orphan:a', value: JSON.stringify(stale) },
@@ -198,20 +198,20 @@ describe('SchemaReconciliationService', () => {
     ]);
     db.delete = async (_t: string, where: any) => { deleted.push(where.key); return true; };
 
-    await new SchemaReconciliationService(db).prune(new Set(), new Set(['fcp_hub_clients.custom_rates']));
+    await new SchemaReconciliationService(db).prune(new Set(), new Set(['fcp_quill_clients.custom_rates']));
 
-    expect(deleted).toEqual(['schema_orphan:fcp_cms_pages.og_title']);
+    expect(deleted).toEqual(['schema_orphan:fcp_orbit_pages.og_title']);
   });
 
   it('NEVER prunes a table whose audit FAILED', async () => {
     // No fresh answer is not the same as "no longer a finding". Forgetting on that basis would
     // quietly discard real debt the moment one collection failed to plan.
-    const entry = { table: 'fcp_cms_pages', column: 'og_title', firstSeenAt: '2026-09-15T00:00:00.000Z' };
+    const entry = { table: 'fcp_orbit_pages', column: 'og_title', firstSeenAt: '2026-09-15T00:00:00.000Z' };
     const deleted: any[] = [];
     const { db } = dbWith({ rows: 0, nonNull: 0, nonEmpty: 0, sample: '' }, [{ key: 'schema_orphan:a', value: JSON.stringify(entry) }]);
     db.delete = async (_t: string, where: any) => { deleted.push(where.key); return true; };
 
-    await new SchemaReconciliationService(db).prune(new Set(['fcp_cms_pages']), new Set());
+    await new SchemaReconciliationService(db).prune(new Set(['fcp_orbit_pages']), new Set());
 
     expect(deleted).toEqual([]);
   });

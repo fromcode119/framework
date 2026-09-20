@@ -27,7 +27,7 @@ describe('SqliteDatabaseManager — numbers bound at TEXT columns', () => {
     dbPaths.push(dbPath);
     const manager = new SqliteDatabaseManager(dbPath);
     await manager.execute(
-      'CREATE TABLE "fcp_tagiqx_memberships" (' +
+      'CREATE TABLE "fcp_pixel_memberships" (' +
         '"id" INTEGER PRIMARY KEY AUTOINCREMENT, ' +
         '"user_id" TEXT, "company_id" TEXT, "department_id" TEXT, "role" TEXT, "score" REAL)'
     );
@@ -36,17 +36,17 @@ describe('SqliteDatabaseManager — numbers bound at TEXT columns', () => {
 
   it('updating one field leaves untouched numeric-looking TEXT values byte-identical', async () => {
     const manager = await makeManager();
-    await manager.insert('fcp_tagiqx_memberships', {
+    await manager.insert('fcp_pixel_memberships', {
       userId: '5', companyId: '4', departmentId: '1', role: 'member',
     });
 
     // The admin edit form re-sends the whole record; the entity parser has already turned the
     // untouched relationship ids into JS numbers by the time they reach the database layer.
-    await manager.update('fcp_tagiqx_memberships', { id: 1 }, {
+    await manager.update('fcp_pixel_memberships', { id: 1 }, {
       userId: 5, companyId: 4, departmentId: 1, role: 'admin',
     });
 
-    const row = await manager.findOne('fcp_tagiqx_memberships', { id: 1 });
+    const row = await manager.findOne('fcp_pixel_memberships', { id: 1 });
     expect(row.role).toBe('admin');
     expect(row.user_id).toBe('5');
     expect(row.company_id).toBe('4');
@@ -55,20 +55,20 @@ describe('SqliteDatabaseManager — numbers bound at TEXT columns', () => {
 
   it('inserting a number into a TEXT column stores the canonical string, not a REAL rendering', async () => {
     const manager = await makeManager();
-    const row = await manager.insert('fcp_tagiqx_memberships', { userId: 7, role: 'member' });
+    const row = await manager.insert('fcp_pixel_memberships', { userId: 7, role: 'member' });
     expect(row.user_id).toBe('7');
   });
 
   it('leaves numbers alone for non-text columns', async () => {
     const manager = await makeManager();
-    const row = await manager.insert('fcp_tagiqx_memberships', { userId: '5', role: 'member', score: 2.5 });
+    const row = await manager.insert('fcp_pixel_memberships', { userId: '5', role: 'member', score: 2.5 });
     expect(row.score).toBe(2.5);
   });
 
   it('matches TEXT rows when the where value arrives as a number', async () => {
     const manager = await makeManager();
-    await manager.insert('fcp_tagiqx_memberships', { userId: '5', role: 'member' });
-    const row = await manager.findOne('fcp_tagiqx_memberships', { userId: 5 });
+    await manager.insert('fcp_pixel_memberships', { userId: '5', role: 'member' });
+    const row = await manager.findOne('fcp_pixel_memberships', { userId: 5 });
     expect(row?.user_id).toBe('5');
   });
 });

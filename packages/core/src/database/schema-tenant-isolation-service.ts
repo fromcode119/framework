@@ -202,7 +202,7 @@ export class SchemaTenantIsolationService {
   /**
    * A UNIQUE rule written for one site must hold PER site once the table is shared.
    *
-   * `fcp_cms_pages.slug UNIQUE` meant "one /about per site"; on a shared table it means one /about
+   * `fcp_orbit_pages.slug UNIQUE` meant "one /about per site"; on a shared table it means one /about
    * across every customer — the second tenant is refused, and importing a whole site collides on its
    * first category. Found through the import (T4), it is a T0 gap: every such constraint and
    * stand-alone unique index becomes `(cols…, tenant_id)`. Discovered from the catalog each boot, so a

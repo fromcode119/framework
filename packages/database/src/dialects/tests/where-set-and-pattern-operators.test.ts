@@ -29,12 +29,12 @@ describe('set and pattern where operators', () => {
 
     const manager = new SqliteDatabaseManager(dbPath);
     await manager.execute(
-      'CREATE TABLE "fcp_hub_candidates" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "full_name" TEXT, "status" TEXT)'
+      'CREATE TABLE "fcp_quill_candidates" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "full_name" TEXT, "status" TEXT)'
     );
-    await manager.insert('fcp_hub_candidates', { fullName: 'Ann Petrova', status: 'INTERVIEW' });
-    await manager.insert('fcp_hub_candidates', { fullName: 'Boris Ivanov', status: 'OFFER' });
-    await manager.insert('fcp_hub_candidates', { fullName: 'Clara Nash', status: 'REJECTED' });
-    await manager.insert('fcp_hub_candidates', { fullName: '100% Match', status: 'NEW' });
+    await manager.insert('fcp_quill_candidates', { fullName: 'Ann Petrova', status: 'INTERVIEW' });
+    await manager.insert('fcp_quill_candidates', { fullName: 'Boris Ivanov', status: 'OFFER' });
+    await manager.insert('fcp_quill_candidates', { fullName: 'Clara Nash', status: 'REJECTED' });
+    await manager.insert('fcp_quill_candidates', { fullName: '100% Match', status: 'NEW' });
 
     const statements: string[] = [];
     const sqlite: any = (manager as any).sqlite;
@@ -56,7 +56,7 @@ describe('set and pattern where operators', () => {
     it('matches any value in the set with one placeholder per element', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_hub_candidates', {
+      const rows = await manager.find('fcp_quill_candidates', {
         where: { status: { in: ['INTERVIEW', 'OFFER'] } },
       });
 
@@ -67,7 +67,7 @@ describe('set and pattern where operators', () => {
     it('excludes every value in the set for notIn', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_hub_candidates', {
+      const rows = await manager.find('fcp_quill_candidates', {
         where: { status: { notIn: ['REJECTED', 'NEW'] } },
       });
 
@@ -78,7 +78,7 @@ describe('set and pattern where operators', () => {
     it('keeps placeholder numbering correct when a set is followed by another predicate', async () => {
       const { manager, statements } = await seedManager();
 
-      const rows = await manager.find('fcp_hub_candidates', {
+      const rows = await manager.find('fcp_quill_candidates', {
         where: { status: { in: ['INTERVIEW', 'OFFER'] }, fullName: 'Boris Ivanov' },
       });
 
@@ -88,28 +88,28 @@ describe('set and pattern where operators', () => {
 
     it('matches nothing for an empty in, and everything for an empty notIn', async () => {
       const empty = await seedManager();
-      const noneRows = await empty.manager.find('fcp_hub_candidates', { where: { status: { in: [] } } });
+      const noneRows = await empty.manager.find('fcp_quill_candidates', { where: { status: { in: [] } } });
       expect(whereSql(empty.statements)).toContain('1 = 0');
       expect(noneRows).toHaveLength(0);
 
       const all = await seedManager();
-      const allRows = await all.manager.find('fcp_hub_candidates', { where: { status: { notIn: [] } } });
+      const allRows = await all.manager.find('fcp_quill_candidates', { where: { status: { notIn: [] } } });
       expect(whereSql(all.statements)).toContain('1 = 1');
       expect(allRows).toHaveLength(4);
     });
 
     it('matches a substring, a prefix and a suffix', async () => {
       const contains = await seedManager();
-      const containsRows = await contains.manager.find('fcp_hub_candidates', { where: { fullName: { contains: 'ris Iva' } } });
+      const containsRows = await contains.manager.find('fcp_quill_candidates', { where: { fullName: { contains: 'ris Iva' } } });
       expect(whereSql(contains.statements)).toContain(`"full_name" LIKE ? ESCAPE '!'`);
       expect(names(containsRows)).toEqual(['Boris Ivanov']);
 
       const starts = await seedManager();
-      expect(names(await starts.manager.find('fcp_hub_candidates', { where: { fullName: { startsWith: 'Ann' } } })))
+      expect(names(await starts.manager.find('fcp_quill_candidates', { where: { fullName: { startsWith: 'Ann' } } })))
         .toEqual(['Ann Petrova']);
 
       const ends = await seedManager();
-      expect(names(await ends.manager.find('fcp_hub_candidates', { where: { fullName: { endsWith: 'Nash' } } })))
+      expect(names(await ends.manager.find('fcp_quill_candidates', { where: { fullName: { endsWith: 'Nash' } } })))
         .toEqual(['Clara Nash']);
     });
 
@@ -117,7 +117,7 @@ describe('set and pattern where operators', () => {
       const { manager } = await seedManager();
 
       // Without escaping, `%` is "anything" and this would return all four rows.
-      const rows = await manager.find('fcp_hub_candidates', { where: { fullName: { contains: '100%' } } });
+      const rows = await manager.find('fcp_quill_candidates', { where: { fullName: { contains: '100%' } } });
 
       expect(names(rows)).toEqual(['100% Match']);
     });
@@ -125,8 +125,8 @@ describe('set and pattern where operators', () => {
     it('counts through the same operators', async () => {
       const { manager } = await seedManager();
 
-      expect(await manager.count('fcp_hub_candidates', { where: { status: { in: ['INTERVIEW', 'OFFER'] } } })).toBe(2);
-      expect(await manager.count('fcp_hub_candidates', { where: { fullName: { contains: 'a' } } })).toBe(4);
+      expect(await manager.count('fcp_quill_candidates', { where: { status: { in: ['INTERVIEW', 'OFFER'] } } })).toBe(2);
+      expect(await manager.count('fcp_quill_candidates', { where: { fullName: { contains: 'a' } } })).toBe(4);
     });
 
     it('counts the SEARCHED rows, not the whole table', async () => {
@@ -135,10 +135,10 @@ describe('set and pattern where operators', () => {
       // `count` used to accept only `where`, so a searched list was captioned with the unsearched
       // total — "1 of 4" under a list of one, with nothing to show the caption was wrong.
       const search = { columns: ['fullName'], value: 'Ivanov' };
-      const rows = await manager.find('fcp_hub_candidates', { search });
+      const rows = await manager.find('fcp_quill_candidates', { search });
 
       expect(rows).toHaveLength(1);
-      expect(await manager.count('fcp_hub_candidates', { search })).toBe(1);
+      expect(await manager.count('fcp_quill_candidates', { search })).toBe(1);
     });
 
     it('counts a search combined with a where the same way find filters it', async () => {
@@ -146,8 +146,8 @@ describe('set and pattern where operators', () => {
 
       const options = { where: { status: { in: ['OFFER', 'REJECTED'] } }, search: { columns: ['fullName'], value: 'a' } };
 
-      expect(await manager.count('fcp_hub_candidates', options))
-        .toBe((await manager.find('fcp_hub_candidates', options)).length);
+      expect(await manager.count('fcp_quill_candidates', options))
+        .toBe((await manager.find('fcp_quill_candidates', options)).length);
     });
 
     it('treats a wildcard typed into the search box as a literal', async () => {
@@ -155,8 +155,8 @@ describe('set and pattern where operators', () => {
 
       // Unescaped, `%` is "anything" and this returned the whole table. Escaped it means the
       // character itself, so it finds the one row whose name actually contains a per-cent sign.
-      expect(await manager.count('fcp_hub_candidates', { search: { columns: ['fullName'], value: '%' } })).toBe(1);
-      expect(await manager.count('fcp_hub_candidates', { search: { columns: ['fullName'], value: '100%' } })).toBe(1);
+      expect(await manager.count('fcp_quill_candidates', { search: { columns: ['fullName'], value: '%' } })).toBe(1);
+      expect(await manager.count('fcp_quill_candidates', { search: { columns: ['fullName'], value: '100%' } })).toBe(1);
     });
   });
 
@@ -188,7 +188,7 @@ describe('set and pattern where operators', () => {
     });
 
     it('parameterises every operand — no caller value reaches the SQL string', () => {
-      const injection = "x'); DROP TABLE fcp_hub_candidates; --";
+      const injection = "x'); DROP TABLE fcp_quill_candidates; --";
       const { sql, values } = probe().buildWhere({ status: { in: [injection] }, fullName: { contains: injection } });
 
       expect(sql).not.toContain('DROP TABLE');
@@ -200,14 +200,14 @@ describe('set and pattern where operators', () => {
     it('refuses a null inside a set rather than silently matching nothing', async () => {
       const { manager } = await seedManager();
 
-      await expect(manager.find('fcp_hub_candidates', { where: { status: { in: ['NEW', null] } } }))
+      await expect(manager.find('fcp_quill_candidates', { where: { status: { in: ['NEW', null] } } }))
         .rejects.toThrow(/cannot contain null/);
     });
 
     it('refuses a null pattern', async () => {
       const { manager } = await seedManager();
 
-      await expect(manager.find('fcp_hub_candidates', { where: { fullName: { contains: null } } }))
+      await expect(manager.find('fcp_quill_candidates', { where: { fullName: { contains: null } } }))
         .rejects.toThrow(/cannot take null/);
     });
   });

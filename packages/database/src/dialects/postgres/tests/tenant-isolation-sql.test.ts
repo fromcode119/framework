@@ -14,7 +14,7 @@ describe('TenantIsolationSql', () => {
   });
 
   it('columnStatementsFor adds the column and its index and NEVER enables row-level security', () => {
-    const statements = TenantIsolationSql.columnStatementsFor('fcp_cms_pages').join(' ');
+    const statements = TenantIsolationSql.columnStatementsFor('fcp_orbit_pages').join(' ');
 
     expect(statements).toContain('ADD COLUMN IF NOT EXISTS');
     expect(statements).toContain('CREATE INDEX IF NOT EXISTS');

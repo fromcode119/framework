@@ -4,7 +4,7 @@ import type { IAttentionProviderRegistration } from '@core/services/attention/in
  * Registry of "needs you" providers.
  *
  * The framework must not know what an order or a form submission is — that is the domain-agnostic
- * rule, and a dashboard that hardcoded `fcp_ecommerce_orders` would break it on the first install
+ * rule, and a dashboard that hardcoded `fcp_acme_orders` would break it on the first install
  * without commerce. Plugins register what THEY consider unfinished; core only collects.
  *
  * Registration is idempotent per canonical key, so a plugin re-init replaces rather than stacks.

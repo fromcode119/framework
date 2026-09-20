@@ -40,7 +40,7 @@ describe('StandaloneImportExecutor', () => {
    * sites releases them at its next boot; saying that is the useful answer.
    */
   it('refuses a destination that still carries tenant isolation, naming what to do', async () => {
-    const policies = [{ table: 'fcp_cms_pages', policy: 'p1' }, { table: 'users', policy: 'p2' }];
+    const policies = [{ table: 'fcp_orbit_pages', policy: 'p1' }, { table: 'users', policy: 'p2' }];
     const executor = new StandaloneImportExecutor(db(0, policies), [], '/tmp/uploads');
 
     await expect(executor.execute(reader())).rejects.toThrow(/still carry tenant isolation/);
