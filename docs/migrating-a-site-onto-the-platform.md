@@ -54,6 +54,22 @@ Postgres or SQLite; the archive is what makes the source's dialect stop matterin
 6. **Publish**, when you are satisfied — the environment and visibility are the two switches on the
    site's own page, and the only steps a customer can see.
 
+## Importing it again
+
+An import refuses while a site of that id already exists, so a second run means removing the first
+one. That used to need the admin, which put one manual click in the middle of an otherwise headless
+pipeline. It no longer does:
+
+```bash
+node dist/cli/tenant-delete.js --id acme --confirm acme            # preview: writes NOTHING
+node dist/cli/tenant-delete.js --id acme --confirm acme --execute  # exports, then deletes
+```
+
+`--confirm` takes the site's own slug and is checked before anything is read or written, so a
+mistyped `--id` cannot delete the wrong site. The site is **always exported first** — the eraser
+refuses to run without an archive on disk, and that archive is the only way back.
+
+
 ## Credentials
 
 A secret is encrypted with the key of the deployment holding it, so a copied credential is
