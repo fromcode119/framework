@@ -127,27 +127,51 @@ describe('generatePreviewUrl', () => {
 });
 
 describe('supportsPreview', () => {
-  it('returns true only for collections with a slug field', () => {
+  it('needs a DECLARED public route, not merely a slug field', () => {
+    // The bug this replaces: a slug field alone was read as proof of a public page, so staff,
+    // tax classes and shipping zones all advertised `<site>/<slug>` — a URL nothing serves.
     expect(
       AdminCollectionUtils.supportsPreview({
-        slug: 'pages',
+        slug: 'appointment-staff',
         fields: [{ name: 'slug', type: 'text' }]
       } as any)
-    ).toBe(true);
+    ).toBe(false);
 
     expect(
       AdminCollectionUtils.supportsPreview({
+        slug: 'pages',
+        admin: { previewPrefixSettingsKey: 'pagesPrefix' },
+        fields: [{ name: 'slug', type: 'text' }]
+      } as any)
+    ).toBe(true);
+  });
+
+  it('accepts an explicit opt-in for a collection served at the site root', () => {
+    expect(
+      AdminCollectionUtils.supportsPreview({
+        slug: 'landing',
+        admin: { preview: true },
+        fields: [{ name: 'slug', type: 'text' }]
+      } as any)
+    ).toBe(true);
+  });
+
+  it('still needs a slug to build a path from, however it was declared', () => {
+    expect(
+      AdminCollectionUtils.supportsPreview({
         slug: 'inventory',
+        admin: { preview: true },
         fields: [{ name: 'sku', type: 'text' }]
       } as any)
     ).toBe(false);
   });
 
-  it('respects explicit preview disablement', () => {
+  it('respects explicit preview disablement, which outranks every opt-in', () => {
+    // The 17 collections that already carry this opt-out must keep behaving identically.
     expect(
       AdminCollectionUtils.supportsPreview({
         slug: 'pages',
-        admin: { preview: false },
+        admin: { preview: false, previewPrefixSettingsKey: 'pagesPrefix' },
         fields: [{ name: 'slug', type: 'text' }]
       } as any)
     ).toBe(false);

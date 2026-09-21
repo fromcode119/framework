@@ -6,13 +6,33 @@ import { ICollection, CollectionIdentityService } from '@fromcode119/core/client
 export class AdminCollectionUtils {
   private static readonly collectionIdentityService = new CollectionIdentityService();
 
+  /**
+   * Whether this collection's records have a PUBLIC PAGE the operator can be shown a link to.
+   *
+   * A `slug` field is NOT that proof, and used to be treated as it: every collection with a slug —
+   * staff, tax classes, shipping zones, marketplace listings — got a "Preview & Permalink" card
+   * advertising `<site>/<slug>`, a URL built from a hardcoded `/:slug` fallback that nothing serves.
+   * Seventeen collections had each added `admin.preview: false` to silence it one at a time, and the
+   * eleven that had not were still showing operators a link that 404s.
+   *
+   * So the public page must be DECLARED: either `admin.previewPrefixSettingsKey` (the setting that
+   * holds the route's prefix — what every collection with a real detail page already sets) or an
+   * explicit `admin.preview: true` for one that serves at the site root with no prefix setting.
+   * `admin.preview: false` still wins outright, so the existing opt-outs keep working.
+   */
   static supportsPreview(collection?: ICollection | null): boolean {
-    if (!collection || (collection.admin as any)?.preview === false) {
+    const admin = collection?.admin as any;
+    if (!collection || admin?.preview === false) {
       return false;
     }
 
-    return Array.isArray((collection as any).fields)
+    const hasSlug = Array.isArray((collection as any).fields)
       && (collection as any).fields.some((field: any) => field?.name === 'slug');
+    if (!hasSlug) {
+      return false;
+    }
+
+    return admin?.preview === true || Boolean(admin?.previewPrefixSettingsKey);
   }
 
   static getCollectionPrefix(collection: ICollection, pluginSettings?: Record<string, any>): string {
