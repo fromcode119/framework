@@ -84,6 +84,7 @@ export class CertificateHost {
       platform_admin: 'Admin console',
       platform_api: 'API',
       platform_frontend: 'Platform storefront',
+      unrouted: 'Not served here',
     };
     return labels[this.role] ?? this.role;
   }
