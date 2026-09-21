@@ -168,6 +168,10 @@ export class CertificateRecord {
       certificatePem: this.certificatePem,
       privateKeyPem: SecretService.decrypt(this.privateKeyEnc),
       notAfter: this.notAfter?.toISOString() ?? null,
+      // Whether this certificate also covers `*.<host>`. The terminator cannot infer it — the
+      // material would have to be parsed on every handshake — and without it a wildcard the
+      // operator explicitly ordered served only the bare name it was ordered for.
+      wildcard: this.wildcard,
     };
   }
 
