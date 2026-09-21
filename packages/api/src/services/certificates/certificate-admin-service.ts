@@ -211,7 +211,7 @@ export class CertificateAdminService {
     const stored = new Map((await this.certificates.list()).map((record) => [record.host, record]));
 
     const rows = [...served.values()]
-      .map((host) => new CertificateHostEntry(host.host, host.role, host.tenantId, host.tenantSlug, stored.get(host.host) ?? null));
+      .map((host) => CertificateHostEntry.forServedHost(host.host, host.role, host.tenantId, host.tenantSlug, stored));
 
     // A stored certificate for a host the platform does not serve is still a certificate this
     // platform holds — with its private key, and renewing itself on a schedule. Built from served

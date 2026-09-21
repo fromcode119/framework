@@ -78,6 +78,18 @@ export class CertificateHostTable extends AdminComponent {
       // more than it knows. When its own gateway is not terminating, something in front of it is —
       // and that something holds the certificate this platform has no row for. Saying "cannot be
       // served over HTTPS" there is flatly contradicted by the browser that just loaded the host.
+      // A WILDCARD stored elsewhere may already cover this host — `*.example.com` lives on the
+      // `example.com` row — and the gateway serves it from there. Saying "nothing stored" would be
+      // true of this row and false of the host, and would invite a second certificate for a name
+      // that already has one. Name where it lives, so the operator can go to it.
+      if (entry.coveredByHost) {
+        return (
+          <span className={`text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+            Served by the wildcard on {entry.coveredByHost}{entry.coveredByExpiryDate ? ` · until ${entry.coveredByExpiryDate}` : ''}
+          </span>
+        );
+      }
+
       return (
         <span className={`text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
           {this.terminatesTls

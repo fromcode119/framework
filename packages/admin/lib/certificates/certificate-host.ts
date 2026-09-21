@@ -13,6 +13,10 @@ export class CertificateHost {
   private constructor(
     readonly host: string,
     readonly role: string,
+    /** The host whose WILDCARD covers this one, when it has no certificate of its own. */
+    readonly coveredByHost: string,
+    /** That wildcard's expiry, since this row carries no certificate of its own to read one from. */
+    readonly coveredByNotAfter: string,
     readonly isPlatformHost: boolean,
     readonly tenantId: string,
     readonly tenantSlug: string,
@@ -36,6 +40,8 @@ export class CertificateHost {
     return new CertificateHost(
       CoercionUtils.toString(bag.host),
       CoercionUtils.toString(bag.role),
+      CoercionUtils.toString(bag.coveredByHost ?? ''),
+      CoercionUtils.toString(bag.coveredByNotAfter ?? ''),
       bag.isPlatformHost === true,
       CoercionUtils.toString(bag.tenantId ?? ''),
       CoercionUtils.toString(bag.tenantSlug ?? ''),
@@ -104,6 +110,11 @@ export class CertificateHost {
   }
 
   /** The date an operator reads, or '' when there is nothing to date. */
+  /** The cover's expiry as a date, for a host served by somebody else's wildcard. */
+  get coveredByExpiryDate(): string {
+    return this.coveredByNotAfter ? this.coveredByNotAfter.slice(0, 10) : '';
+  }
+
   get expiryDate(): string {
     return this.notAfter ? this.notAfter.slice(0, 10) : '';
   }

@@ -1,4 +1,4 @@
-import { CertificateHostRole, CertificateRecord, CertificateState } from '@fromcode119/core';
+import { CertificateHostRole, CertificateRecord, CertificateState, WildcardHostCoverage } from '@fromcode119/core';
 
 /**
  * One row of the certificates screen: a host the platform serves, and whatever certificate it has.
@@ -15,11 +15,51 @@ export class CertificateHostEntry {
     readonly tenantId: string | null,
     readonly tenantSlug: string | null,
     readonly certificate: CertificateRecord | null,
+    /**
+     * The WILDCARD certificate covering this host, when it has none of its own.
+     *
+     * Without it the screen said "cannot be served over HTTPS by this platform" about a host the
+     * gateway was serving perfectly well from a wildcard — wrong, and an invitation to order a
+     * second certificate for a name that already had one.
+     */
+    readonly coveredBy: CertificateRecord | null = null,
   ) {}
 
-  /** The state of this host, which is NO_CERTIFICATE when nothing is stored for it. */
+  /**
+   * One served host's row, resolving what will actually serve it.
+   *
+   * Its own stored certificate wins. Failing that, a WILDCARD stored elsewhere may cover it —
+   * `*.fromcode.com` lives on the `fromcode.com` row — and `WildcardHostCoverage` is the SAME rule
+   * the gateway applies at handshake time, shared deliberately so this screen cannot disagree with
+   * what is served. Only a wildcard that actually HAS material counts; one still being ordered
+   * serves nothing yet and must not be reported as cover.
+   */
+  static forServedHost(
+    host: string,
+    role: CertificateHostRole,
+    tenantId: string | null,
+    tenantSlug: string | null,
+    stored: Map<string, CertificateRecord>,
+  ): CertificateHostEntry {
+    const own = stored.get(host) ?? null;
+    if (own) return new CertificateHostEntry(host, role, tenantId, tenantSlug, own);
+
+    const parent = stored.get(WildcardHostCoverage.parentOf(host));
+    const cover = parent?.wildcard && parent.hasMaterial ? parent : null;
+    return new CertificateHostEntry(host, role, tenantId, tenantSlug, null, cover);
+  }
+
+  /**
+   * The state of this host. Its own certificate answers first; a wildcard covering it answers next,
+   * because that is what the gateway will actually serve. NO_CERTIFICATE only when neither exists.
+   */
   get state(): CertificateState {
-    return this.certificate?.state ?? CertificateState.NO_CERTIFICATE;
+    return this.certificate?.state ?? this.coveredBy?.state ?? CertificateState.NO_CERTIFICATE;
+  }
+
+  /** The certificate that will actually be served for this host, whosever row it lives on. */
+  get effective(): CertificateRecord | null {
+    return this.certificate ?? this.coveredBy;
   }
 
   toJson(): Record<string, unknown> {
@@ -33,8 +73,14 @@ export class CertificateHostEntry {
       state: this.state.value,
       tone: this.state.tone,
       needsAttention: this.state.needsAttention,
-      daysRemaining: this.certificate?.daysRemaining ?? null,
+      daysRemaining: this.effective?.daysRemaining ?? null,
       certificate: this.certificate ? this.certificate.toAdminJson() : null,
+      // The host whose wildcard covers this one, or null. Named rather than implied: an operator
+      // must be able to see WHERE the certificate serving this host actually lives, and go to it.
+      coveredByHost: this.certificate ? null : (this.coveredBy?.host ?? null),
+      // The cover's own expiry, because this row has no `certificate` to read one from and a
+      // "Served by the wildcard on x · until" with nothing after it is worse than saying nothing.
+      coveredByNotAfter: this.certificate ? null : (this.coveredBy?.notAfter?.toISOString() ?? null),
     };
   }
   /**
