@@ -185,15 +185,30 @@ export class RestWriteController {
       SystemMetaCollectionGuard.ensureWritableKey(collection, req.params.id);
       const primaryKey = collection.primaryKey || 'id';
       const recordId = this.runtime.requireRecordIdentifier(collection, req.params.id);
+
+      // `beforeDelete` is declared in the hook vocabulary and on ICollection, and NOTHING dispatched
+      // it — the delete path only emitted the past-tense `deleted` notification. That dead contract
+      // has already cost once: CMS listened on beforeDelete/afterDelete, never heard anything, and
+      // ecommerce's product->page references were left dangling when a page was removed.
+      //
+      // It has to fire here, BEFORE the row goes, because that is the only moment a listener can still
+      // read what it is about to lose — an order's number, say, to check what it leaves behind. After
+      // the delete there is nothing left to look at, and the `deleted` payload carries only the id.
+      const doomed = await this.runtime.db.findOne(this.runtime.resolveWriteTarget(collection), { [primaryKey]: recordId });
+      if (doomed) await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_DELETE, doomed);
+
       const success = await this.runtime.db.delete(this.runtime.resolveWriteTarget(collection), {
         [primaryKey]: recordId,
       });
 
       if (success) {
         this.runtime.logger.info(`Deleted record in ${collection.slug} : ${req.params.id}`);
+        // The past-tense notification keeps its existing shape and audience; listeners that only need
+        // to know it happened (CMS) are untouched.
         this.runtime.emitCollectionEvent(collection, 'deleted', {
           id: recordId,
         });
+        await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_DELETE, { id: recordId });
       }
 
       if (!res) {
