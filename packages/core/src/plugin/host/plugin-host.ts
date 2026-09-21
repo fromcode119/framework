@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { PluginHostPublicApi } from '@core/plugin/host/plugin-host-public-api';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import path from 'path';
 import { TenantConnectionScope } from '@fromcode119/database';
@@ -193,7 +194,7 @@ export class PluginHost extends PluginHostGuestBridge {
         return this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: key, args: extra }, RequestContextUtils.storage.getStore());
       };
     }
-    stubs.publicAPI = this.lazyPublicApi();
+    stubs.publicAPI = PluginHostPublicApi.lazy(this);
     // Carried so the resolver can tell "this peer is DOWN" from "this peer is broken" — see
     // `ILoadedPlugin.isRunning` for why it must survive the registry's spread as a function.
     stubs.isRunning = () => this.isRunning;
@@ -206,22 +207,6 @@ export class PluginHost extends PluginHostGuestBridge {
     return !!this.channel && !this.channel.isClosed && !!this.describeResult;
   }
 
-  /** Another plugin's `context.plugins.namespace(...).<slug>.fn()`: the keys are known once the guest has described itself. */
-  private lazyPublicApi(): Record<string, unknown> {
-    const host = this;
-    return new Proxy({}, {
-      get(_target, prop) {
-        if (typeof prop !== 'string') return undefined;
-        if (!host.describeResult?.publicApiKeys.includes(prop)) return undefined;
-        return (...args: unknown[]) => host.invoke({ kind: String(PluginInvocationKind.PUBLIC_API.value), name: prop, args }, RequestContextUtils.storage.getStore());
-      },
-      ownKeys() { return host.describeResult?.publicApiKeys ?? []; },
-      getOwnPropertyDescriptor(_target, prop) {
-        if (typeof prop === 'string' && host.describeResult?.publicApiKeys.includes(prop)) return { enumerable: true, configurable: true, value: undefined };
-        return undefined;
-      },
-    });
-  }
 
   bindContext(ctx: PluginContext): void {
     this.context = ctx;
