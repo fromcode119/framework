@@ -63,6 +63,25 @@ describe('PluginHost peer sync on forwarded requests', () => {
     expect(Object.keys(sent[1].payload.peers)).toContain('org.fromcode:logistics-econt');
   });
 
+  it('sends again when a peer that was still loading gains its methods', async () => {
+    // The key set never changes here — only the function names do. A signature over keys alone
+    // matched, the refresh was skipped, and the guest kept a peer it could see but not call.
+    const sent: Array<{ type: string; payload: any }> = [];
+    let peers: Record<string, string[]> = { 'org.fromcode:logistics-econt': [] };
+    const instance = host(sent, peers, ['logistics-econt']);
+    instance.peers = () => peers;
+
+    await instance.syncPeers(undefined);
+    expect(sent).toHaveLength(1);
+    expect(sent[0].payload.peers['org.fromcode:logistics-econt']).toEqual([]);
+
+    peers = { 'org.fromcode:logistics-econt': ['searchCities', 'searchOffices'] };
+    await instance.syncPeers(undefined);
+
+    expect(sent).toHaveLength(2);
+    expect(sent[1].payload.peers['org.fromcode:logistics-econt']).toContain('searchCities');
+  });
+
   it('says nothing to a channel that is gone', async () => {
     const sent: Array<{ type: string; payload: any }> = [];
     const instance = host(sent, {}, []);
