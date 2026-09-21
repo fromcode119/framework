@@ -1,4 +1,5 @@
 import { CertificateBundleEntry } from '@core/certificates/certificate-bundle-entry';
+import { WildcardHostCoverage } from '@core/certificates/wildcard-host-coverage';
 
 /**
  * Every certificate the platform holds, keyed by the exact host it serves — the shape whatever
@@ -51,31 +52,18 @@ export class CertificateBundle {
    * wildcard. Only when there is no exact row does a wildcard parent answer, and only one label up.
    */
   find(host: string): CertificateBundleEntry | undefined {
-    const normalized = CertificateBundle.normalize(host);
+    const normalized = WildcardHostCoverage.normalize(host);
     if (!normalized) return undefined;
 
     const exact = this.byHost.get(normalized);
     if (exact) return exact;
 
-    const parent = CertificateBundle.parentOf(normalized);
+    const parent = WildcardHostCoverage.parentOf(normalized);
     if (!parent) return undefined;
     const covering = this.byHost.get(parent);
     return covering?.wildcard ? covering : undefined;
   }
 
-  /** The host one label up, or '' when there is none worth trying. */
-  private static parentOf(host: string): string {
-    const dot = host.indexOf('.');
-    if (dot < 0) return '';
-    const parent = host.slice(dot + 1);
-    // A parent must still be a real domain. Without this, `a.com` would look up `com` — and a
-    // wildcard row for a public suffix must never be able to answer for anything under it.
-    return parent.includes('.') ? parent : '';
-  }
-
-  private static normalize(host: string): string {
-    return String(host || '').trim().toLowerCase().replace(/\.$/, '').replace(/:\d+$/, '');
-  }
 
   get size(): number {
     return this.byHost.size;

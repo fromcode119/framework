@@ -220,6 +220,7 @@ export { CertificateBundle } from '@core/certificates/certificate-bundle';
 export { CertificateBundleEntry } from '@core/certificates/certificate-bundle-entry';
 export { CertificateMaterial } from '@core/certificates/certificate-material';
 export { CertificateRecord } from '@core/certificates/certificate-record';
+export { WildcardHostCoverage } from '@core/certificates/wildcard-host-coverage';
 export { CertificateStoreService } from '@core/certificates/certificate-store-service';
 export { AcmeAccountStore } from '@core/certificates/acme/acme-account-store';
 export { AcmeChallengeStore } from '@core/certificates/acme/acme-challenge-store';
