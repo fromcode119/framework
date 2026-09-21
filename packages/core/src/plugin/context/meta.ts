@@ -1,9 +1,11 @@
+import { Logger } from '@core/logging';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
-import { PerTenantRun } from '@core/tenant/per-tenant-run';
 
 export class MetaContextProxy {
+  private static readonly logger = new Logger({ namespace: 'plugin-tenancy' });
+
   /**
    * Creates a read-only meta store proxy for plugins.
    * Plugins should use context.meta.get(key) instead of querying the system meta table directly.
@@ -32,18 +34,35 @@ export class MetaContextProxy {
           }
         };
 
-        // Inside a request there is a tenant and this is one write. At BOOT there is none, and
-        // `_system_meta` is tenant-scoped: the row's `tenant_id` defaults to NULL and the policy
-        // checks `tenant_id = current_setting(...)`, so NULL = NULL is not TRUE and the write is
-        // refused. Plugins setting a default in `onInit` were failing on every boot, each reporting
-        // it separately, and the value then existed only for tenants that reached the code inside a
-        // request. A boot-time write applies to every tenant — this is a per-SITE store.
+        // Inside a request there is a tenant and this is one write.
         if (RequestContextUtils.storage.getStore()) return write();
-        await PerTenantRun.forEach({
-          label: `meta:set:${normalizedKey}`,
-          db: manager.db as any,
-          work: write,
-        });
+
+        /**
+         * At BOOT there is no tenant, and this used to fan the value out to EVERY tenant.
+         *
+         * Paired with `get`, which has no tenancy at all, that corrupts data. An unscoped read sees
+         * only rows with no owner — the policy's first branch is `tenant_id = current_setting(...)`,
+         * which matches nothing when the setting is empty — so the classic `get` → merge → `set`
+         * that every seed does reads a blank, merges into a blank, and writes that blank over each
+         * site's real value.
+         *
+         * It happened: Econt credentials transferred into vselenskiportal88 were present, then empty
+         * after the next restart, with the row's `updated_at` unchanged so nothing looked like it had
+         * written. Any plugin seeding config in `onInit` could blank it for every customer at once.
+         *
+         * The fan-out is also no longer needed. It predates the per-site replay: the framework now
+         * runs `onInit` again once per site with registration suppressed (`PluginSiteDataReplay`), and
+         * that pass has both a request store and a bound connection, so this same call lands there as
+         * a single correctly scoped write. Skipping here — and saying so — matches what
+         * `UntenantedBootAccess` already does for `context.db`, so a plugin author sees one rule.
+         */
+        MetaContextProxy.logger.warn(
+          `skipped context.meta.set("${normalizedKey}") outside a request: this deployment serves `
+          + 'several sites and this code path has no site, so the value would be written to all of '
+          + 'them from an unscoped read. The framework runs this hook AGAIN, once per site, where the '
+          + 'read and the write both see that site — so the work still happens; this pass is the '
+          + 'registration one.',
+        );
       },
 
       /**
