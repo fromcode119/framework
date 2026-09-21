@@ -37,4 +37,24 @@ export class CertificateHostEntry {
       certificate: this.certificate ? this.certificate.toAdminJson() : null,
     };
   }
+  /**
+   * The order the Certificates screen reads in: soonest expiry first, because that is the only
+   * question an operator actually has — what is about to break. Hosts with nothing stored come
+   * after everything that can expire, and among those the platform's own come first, since losing
+   * the admin host locks everybody out of the screen they would use to fix it.
+   */
+  static byUrgency(left: CertificateHostEntry, right: CertificateHostEntry): number {
+    const leftExpiry = left.certificate?.notAfter?.getTime() ?? null;
+    const rightExpiry = right.certificate?.notAfter?.getTime() ?? null;
+
+    if (leftExpiry !== null && rightExpiry !== null) {
+      return leftExpiry === rightExpiry ? left.host.localeCompare(right.host) : leftExpiry - rightExpiry;
+    }
+    if (leftExpiry !== null) return -1;
+    if (rightExpiry !== null) return 1;
+
+    if (left.role.isPlatform !== right.role.isPlatform) return left.role.isPlatform ? -1 : 1;
+    return left.host.localeCompare(right.host);
+  }
+
 }

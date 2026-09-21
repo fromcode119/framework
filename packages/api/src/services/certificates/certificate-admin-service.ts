@@ -226,23 +226,9 @@ export class CertificateAdminService {
       rows.push(new CertificateHostEntry(host, CertificateHostRole.UNROUTED, record.tenantId, record.tenantId, record));
     }
 
-    return rows.sort((left, right) => CertificateAdminService.compare(left, right));
+    return rows.sort((left, right) => CertificateHostEntry.byUrgency(left, right));
   }
 
-  /** Soonest expiry first; then hosts with nothing stored, the platform's own first. */
-  private static compare(left: CertificateHostEntry, right: CertificateHostEntry): number {
-    const leftExpiry = left.certificate?.notAfter?.getTime() ?? null;
-    const rightExpiry = right.certificate?.notAfter?.getTime() ?? null;
-
-    if (leftExpiry !== null && rightExpiry !== null) {
-      return leftExpiry === rightExpiry ? left.host.localeCompare(right.host) : leftExpiry - rightExpiry;
-    }
-    if (leftExpiry !== null) return -1;
-    if (rightExpiry !== null) return 1;
-
-    if (left.role.isPlatform !== right.role.isPlatform) return left.role.isPlatform ? -1 : 1;
-    return left.host.localeCompare(right.host);
-  }
 
   /**
    * Every host this platform answers for, keyed by host.
