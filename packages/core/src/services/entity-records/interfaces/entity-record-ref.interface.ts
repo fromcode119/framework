@@ -1,3 +1,5 @@
+import type { IEntityRecordSubject } from '@core/services/entity-records/interfaces/entity-record-subject.interface';
+
 /**
  * Entity Records — a framework-owned "what records does this person have?" registry.
  *
@@ -11,9 +13,18 @@
  * runs the registered providers; each plugin owns how its records map to items.
  */
 
-/** How a person is referenced when asking providers for their records. */
+/**
+ * What records are being asked about.
+ *
+ * Either a PERSON (the original use: Person 360) or a SUBJECT — any other record that can identify
+ * itself with correlation keys. The two never mix: a person provider must not dump a customer's whole
+ * history onto one of their orders, so the resolution service runs person providers for person refs
+ * and key-matched providers for subject refs, and never the other way round.
+ */
 export interface IEntityRecordRef {
   personId?: number | string | null;
   userId?: number | string | null;
   email?: string | null;
+  /** Present when the question is "what relates to THIS record?" rather than "to this person?". */
+  subject?: IEntityRecordSubject | null;
 }

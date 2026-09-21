@@ -192,6 +192,10 @@ export class AdminConstants {
     PERSON_CREATE_USER: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_CREATE_USER, { id })),
     PEOPLE_SUGGEST: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_SUGGEST),
     PERSON_RECORDS: (id: string | number) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID_RECORDS, { id })),
+    /** Records RELATED to one record. `keys` is a JSON object of correlation keys the subject offers. */
+    RECORD_LINKS: (kind: string, id: string | number, keys: Record<string, string>) => AdminConstants.v(
+      `${SystemConstants.API_PATH.SYSTEM.ADMIN_RECORD_LINKS}?kind=${encodeURIComponent(kind)}&id=${encodeURIComponent(String(id))}&keys=${encodeURIComponent(JSON.stringify(keys))}`,
+    ),
     METADATA: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PLUGINS),
     INTEGRATIONS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS),
     INTEGRATION: (type: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_TYPE, { type }),

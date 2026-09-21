@@ -3,20 +3,30 @@ import type { IEntityRecordGroup } from '@core/services/entity-records/interface
 import type { IEntityRecordItem } from '@core/services/entity-records/interfaces/entity-record-item.interface';
 import type { IEntityRecordRef } from '@core/services/entity-records/interfaces/entity-record-ref.interface';
 import type { IEntityRecordsResult } from '@core/services/entity-records/interfaces/entity-records-result.interface';
+import type { IEntityRecordSubject } from '@core/services/entity-records/interfaces/entity-record-subject.interface';
 
 /**
- * Runs every registered entity-record provider for a person reference and
- * aggregates the results into one grouped, newest-first timeline.
+ * Runs the registered entity-record providers a reference is ALLOWED to reach, and aggregates their
+ * results into one grouped, newest-first timeline.
  *
- * A provider that throws is isolated: its error is collected and the others still
- * return — one misbehaving plugin can never break a person's records view.
+ * Two kinds of question, and they are kept strictly apart:
+ *
+ * - a PERSON ref reaches providers that declared no `matchKeys` ("what does this person have?");
+ * - a SUBJECT ref reaches providers that declared a `matchKey` the subject actually offers ("what
+ *   relates to THIS record?").
+ *
+ * Never both. An order subject carries the customer's email, so letting person providers see it would
+ * put that customer's entire invoice history on one order — right-looking, completely wrong.
+ *
+ * A provider that throws is isolated: its error is collected and the others still return — one
+ * misbehaving plugin can never break the view.
  */
 export class EntityRecordsResolutionService {
   constructor(private readonly registry: PluginEntityRecordsRegistryService) {}
 
   async resolve(ref: IEntityRecordRef): Promise<IEntityRecordsResult> {
     const safeRef = this.normalizeRef(ref);
-    const providers = this.registry.list();
+    const providers = this.selectProviders(safeRef);
     const items: IEntityRecordItem[] = [];
     const usedProviders: string[] = [];
     const errors: IEntityRecordsResult['errors'] = [];
@@ -57,11 +67,45 @@ export class EntityRecordsResolutionService {
   }
 
   private normalizeRef(ref: IEntityRecordRef): IEntityRecordRef {
+    const subject = this.normalizeSubject(ref?.subject);
+    // A subject ref carries NO person fields. They would only be there to be matched on, and matching
+    // them is exactly the leak this split exists to prevent.
+    if (subject) return { personId: null, userId: null, email: null, subject };
     return {
       personId: ref?.personId ?? null,
       userId: ref?.userId ?? null,
       email: ref?.email ? String(ref.email).trim().toLowerCase() : null,
+      subject: null,
     };
+  }
+
+  /** Keys with an empty value are dropped: a provider matching on one would answer for everything. */
+  private normalizeSubject(value: unknown): IEntityRecordSubject | null {
+    const raw = value as IEntityRecordSubject | null | undefined;
+    const kind = String(raw?.kind ?? '').trim();
+    const id = String(raw?.id ?? '').trim();
+    if (!kind || !id) return null;
+    const keys: Record<string, string> = {};
+    for (const [name, keyValue] of Object.entries(raw?.keys ?? {})) {
+      const cleanName = String(name ?? '').trim();
+      const cleanValue = String(keyValue ?? '').trim();
+      if (cleanName && cleanValue) keys[cleanName] = cleanValue;
+    }
+    return { kind, id, keys };
+  }
+
+  /**
+   * Which providers this ref may reach. Key NAMES are compared; the framework never reads a value and
+   * never interprets what a key or a subject kind means.
+   */
+  private selectProviders(ref: IEntityRecordRef) {
+    const subject = ref.subject;
+    if (!subject) return this.registry.list().filter((provider) => !provider.matchKeys?.length);
+    const offered = Object.keys(subject.keys);
+    if (!offered.length) return [];
+    return this.registry
+      .list()
+      .filter((provider) => (provider.matchKeys ?? []).some((key) => offered.includes(key)));
   }
 
   private normalizeItem(raw: IEntityRecordItem, fallbackGroup: string): IEntityRecordItem | null {
