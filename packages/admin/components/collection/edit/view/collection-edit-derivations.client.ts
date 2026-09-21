@@ -33,10 +33,21 @@ export class CollectionEditDerivations {
       || services.localization.resolveLocalizedText(formData.title, preferredLocale)
       || services.localization.resolveLocalizedText(formData.name, preferredLocale);
 
+    /**
+     * `admin.disableCreate` / `admin.disableEdit` say the operator cannot add or change rows here — an
+     * event log, a consent record, a planned job the scheduler owns. Eleven collections declared it and
+     * the admin READ only the first, to hide one button on the list: `/<plugin>/<slug>/new` still served
+     * a full create form, and the edit form still saved. Marking every field read-only is what makes the
+     * declaration true. The row stays VISIBLE — an operator must be able to see what the runtime wrote —
+     * and the existing password-gated override remains the one deliberate way past it.
+     */
+    const locked = !isNew && (collection?.admin as any)?.disableEdit === true;
+    const lockField = (field: any) => (locked ? { ...field, admin: { ...(field.admin || {}), readOnly: true } } : field);
+
     const sidebarFields = (collection?.fields || []).filter((f: IField) =>
       FieldPosition.resolve(f.admin?.position) === FieldPosition.SIDEBAR && !f.admin?.hidden && f.name !== 'customPermalink' &&
       services.validation.evaluateCondition(f.admin?.condition, formData, f.name));
-    const sidebarFieldSections = CollectionEditDerivations.groupSidebar(sidebarFields);
+    const sidebarFieldSections = CollectionEditDerivations.groupSidebar(sidebarFields.map(lockField));
 
     const mainFields = (collection?.fields || []).filter((field: IField) => {
       if (field.admin?.hidden || FieldPosition.resolve(field.admin?.position) === FieldPosition.SIDEBAR) return false;
@@ -47,7 +58,7 @@ export class CollectionEditDerivations {
       }
       return true;
     });
-    const mainFieldSections = CollectionEditDerivations.groupMain(mainFields);
+    const mainFieldSections = CollectionEditDerivations.groupMain(mainFields.map(lockField));
     const standardMainFieldSections = mainFieldSections.filter((s: any) => !s.fields.some((f: any) => f?.admin?.sectionLayout === 'full'));
     const fullWidthMainFieldSections = mainFieldSections.filter((s: any) => s.fields.some((f: any) => f?.admin?.sectionLayout === 'full'));
     const navSections = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((s: any) => ({ key: s.key, title: s.title || 'Content' }));
@@ -64,7 +75,7 @@ export class CollectionEditDerivations {
     const hasSidebarFields = sidebarFields.length > 0;
 
     return {
-      collection, resolvedSlug, isNew, preferredLocale, sourceField, sourceValue, resolvedTitleValue,
+      collection, resolvedSlug, isNew, locked, preferredLocale, sourceField, sourceValue, resolvedTitleValue,
       sidebarFieldSections, standardMainFieldSections, fullWidthMainFieldSections, navSections,
       statusOptions, currentStatusValue: String(formData?.status || '').trim(),
       currentRevIndex: self.state.selectedRevision ? self.state.revisions.findIndex((r: any) => r.id === self.state.selectedRevision.id) : -1,
