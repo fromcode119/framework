@@ -22,6 +22,12 @@ export interface ICollection {
   workflow?: boolean;   // Optional: enable draft/review/publish workflow
   priority?: number;    // Optional: for sorting in the menu
   system?: boolean;      // Optional: mark as system collection
+  /**
+   * Declares this collection as the provider of a named entity (`'order'`, `'product'`), so other
+   * plugins can point a relationship at it with `relationToEntity` without naming this plugin or its
+   * collection. The key is shared vocabulary owned by nobody, like `email`.
+   */
+  entity?: string;
   fields: IField[];
   indexes?: {
     name?: string;

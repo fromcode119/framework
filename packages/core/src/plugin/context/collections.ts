@@ -8,10 +8,13 @@ import { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { PluginRegistry } from '@fromcode119/plugins';
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { PluginEntityRegistrationService } from '@core/plugin/services/plugin-entity-registration-service';
+import { PluginEntityProviderRegistry } from '@core/services/entities/plugin-entity-provider-registry';
 import { CollectionWriteBridge } from '@core/plugin/collection-write-bridge';
 
 export class CollectionsContextProxy {
   private static readonly entityRegistration = new PluginEntityRegistrationService();
+  /** Who provides `order`, `product`, … so a consumer never has to name another plugin's collection. */
+  static readonly entityProviders = new PluginEntityProviderRegistry();
 
   static createCollectionsProxy(
   plugin: ILoadedPlugin,
@@ -35,6 +38,17 @@ export class CollectionsContextProxy {
             );
           }
           const modifiedCollection = CollectionsContextProxy.entityRegistration.applyFrameworkFields(registration.collection);
+
+          // Both directions, because registration order is not guaranteed: this collection may PROVIDE
+          // an entity others are already waiting on, and may CONSUME one whose provider has not booted
+          // yet. Providing drains the waiters; consuming parks anything still unknown.
+          CollectionsContextProxy.entityProviders.registerProvider(modifiedCollection, plugin.manifest.slug);
+          const unresolved = CollectionsContextProxy.entityProviders.resolveConsumer(modifiedCollection, plugin.manifest.slug);
+          if (unresolved.length) {
+            rootLogger.info(
+              `Collection "${modifiedCollection.slug}" in plugin "${plugin.manifest.slug}" waits for entity provider(s): ${unresolved.join(', ')}`
+            );
+          }
           const prefixedSlug = registration.physicalSlug;
           const shortSlug = registration.shortSlug;
 
