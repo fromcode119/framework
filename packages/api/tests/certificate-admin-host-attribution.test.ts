@@ -11,9 +11,14 @@ const tenant = (slug: string, primaryHost: string, aliases: string[] = []): Tena
   id: slug, slug, primary_host: primaryHost, host_aliases: JSON.stringify(aliases), state: 'active', visibility: 'public',
 });
 
+// Stubs in CONSTRUCTOR ORDER: certificates, tenants, cloudflareTokens, reload, edgeStatus. They were
+// previously shifted by one — `notify` sat in the token-store slot and `read` in the reload slot,
+// which went unnoticed only because neither was called on these paths and `edgeStatus` silently fell
+// back to the real client.
 const service = (tenants: TenantRecord[]): CertificateAdminService => new CertificateAdminService(
   { list: async () => [] } as never,
   { list: async () => tenants } as never,
+  { readCiphertext: async () => '' } as never,
   { notify: async () => undefined } as never,
   { read: async () => ({ tls: false }) } as never,
 );

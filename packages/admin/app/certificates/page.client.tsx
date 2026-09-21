@@ -7,6 +7,7 @@ import { CompactPageHeader } from '@/components/ui/view/compact-page-header.clie
 import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { CertificateHost } from '@/lib/certificates/certificate-host';
+import { CertificateDnsTokenCard } from '@/app/certificates/components/certificate-dns-token-card.client';
 import { CertificateHostTable } from '@/app/certificates/components/certificate-host-table.client';
 import { CertificateStatusNotices } from '@/app/certificates/components/certificate-status-notices.client';
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
@@ -162,6 +163,16 @@ export class CertificatesPageClient extends AdminComponent {
             onAutomateWildcard={this.automateWildcard}
           />
         </Card>
+
+        {/*
+          Only inside a site: the token belongs to whoever owns the DNS, and a site's domain usually
+          lives in the customer's own Cloudflare account. In platform scope the same control already
+          lives in Settings -> Infrastructure, and showing a second copy of it here would be two
+          places writing one value.
+        */}
+        {this.scope?.isSite ? (
+          <CertificateDnsTokenCard automation={this.automation} onChanged={this.load} />
+        ) : null}
         </div>
 
         <CertificateUploadDialog
