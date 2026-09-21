@@ -224,6 +224,15 @@ services:
       # mounted into its container.
       - db_secrets:/run/fromcode-db:ro
       - ../public/uploads:/app/public/uploads
+      # PRIVATE uploads, and the reason they are a SEPARATE mount from the line above: the default
+      # deliberately sits OUTSIDE `public/`, because the uploads dir is handed to `express.static`
+      # before cookies, CSRF, auth and the rate limiter run — anything under it is anonymous and
+      # unthrottled by construction (see `SystemConstants.STORAGE.DEFAULT_PRIVATE_SUBDIR`).
+      #
+      # Unmounted, the api still WRITES there — inside the container. Those files then vanish on the
+      # next image upgrade and no host-level backup can ever see them, with nothing reporting it.
+      # The path matches the framework's own default, so no STORAGE_PRIVATE_DIR override is needed.
+      - ../storage/private:/app/storage/private
       # Writable working space for anything that needs a scratch directory on disk rather than in the
       # database — the build agent clones repositories here, backups are staged here. The image has no
       # such directory and the app user cannot create one under /app, so a plugin that asked for it
