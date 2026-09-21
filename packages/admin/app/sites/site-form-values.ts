@@ -8,6 +8,8 @@ export class SiteFormValues {
     readonly idFollowsSlug: boolean,
     readonly primaryHost: string,
     readonly hostAliases: string,
+    /** Host -> role, for hosts where the operator chose one. Absent means this site's default. */
+    readonly hostRoles: Record<string, string>,
     readonly state: string,
     readonly adminEmail: string,
     readonly theme: string,
@@ -29,11 +31,11 @@ export class SiteFormValues {
     // A new site is PRODUCTION: every site created through this form is a real one, and a shop born
     // silently muted would not be noticed until a customer said an order confirmation never arrived.
     // The import path sets `non-production` explicitly instead of relying on this.
-    return new SiteFormValues('', '', true, '', '', 'active', '', '', [], 'site', 'private', 'production', '', '');
+    return new SiteFormValues('', '', true, '', '', {}, 'active', '', '', [], 'site', 'private', 'production', '', '');
   }
 
   static fromSite(site: SiteRecord): SiteFormValues {
-    return new SiteFormValues(site.slug, site.id, false, site.primaryHost, site.hostAliases.join(', '), site.state, '', site.theme ?? '', site.plugins, site.kind, site.visibility, site.environment, site.appearance, '');
+    return new SiteFormValues(site.slug, site.id, false, site.primaryHost, site.hostAliases.join(', '), site.hostRoles, site.state, '', site.theme ?? '', site.plugins, site.kind, site.visibility, site.environment, site.appearance, '');
   }
 
   get isWorkspace(): boolean {
@@ -47,6 +49,7 @@ export class SiteFormValues {
       patch.idFollowsSlug ?? this.idFollowsSlug,
       patch.primaryHost ?? this.primaryHost,
       patch.hostAliases ?? this.hostAliases,
+      patch.hostRoles ?? this.hostRoles,
       patch.state ?? this.state,
       patch.adminEmail ?? this.adminEmail,
       patch.theme ?? this.theme,
@@ -56,6 +59,14 @@ export class SiteFormValues {
       patch.environment ?? this.environment,
       patch.appearance ?? this.appearance,
       patch.preset ?? this.preset,
+    );
+  }
+
+  /** The declared roles, narrowed to the hosts currently in the form. */
+  get declaredRoles(): Record<string, string> {
+    const hosts = new Set([this.primaryHost.trim().toLowerCase(), ...this.aliasList.map((h) => h.toLowerCase())]);
+    return Object.fromEntries(
+      Object.entries(this.hostRoles).filter(([host]) => hosts.has(host.toLowerCase())),
     );
   }
 
@@ -78,6 +89,9 @@ export class SiteFormValues {
       slug: this.slug.trim(),
       primaryHost: this.primaryHost.trim(),
       hostAliases: this.aliasList,
+      // Only roles for hosts that still exist: a role left behind by a removed host would describe
+      // nothing, and would spring back to life the day somebody re-used that name.
+      hostRoles: this.declaredRoles,
       state: this.state,
       visibility: this.visibility,
       environment: this.environment,

@@ -55,6 +55,7 @@ export class TenantRegistryService {
       slug: identity.slug,
       primary_host: identity.primaryHost,
       host_aliases: JSON.stringify(identity.hostAliases),
+      host_roles: JSON.stringify(identity.hostRoles),
       state: identity.state,
       kind: identity.kind.value,
       visibility: String(identity.visibility.value),
@@ -70,7 +71,7 @@ export class TenantRegistryService {
   }
 
   /** The kind never changes after creation (it decides routing and login); the appearance of a workspace may. */
-  async update(id: string, patch: { slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown }): Promise<TenantRecord> {
+  async update(id: string, patch: { slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown; hostRoles?: unknown }): Promise<TenantRecord> {
     const current = await this.get(id);
     if (!current) throw new Error(`Tenant "${id}" does not exist.`);
     const identity = TenantIdentity.from({
@@ -86,12 +87,17 @@ export class TenantRegistryService {
       // Unstated means UNCHANGED here too — editing a host must not quietly re-arm a sandbox.
       environment: patch.environment ?? current.environment.value,
       appearance: patch.appearance ?? current.appearance,
+      // Unstated means UNCHANGED, like visibility and environment above.
+      hostRoles: patch.hostRoles ?? current.hostRoles,
     });
     await this.assertAvailable(identity, current.id);
     await this.db.update(SystemConstants.TABLE.TENANTS, { id: current.id }, {
       slug: identity.slug,
       primary_host: identity.primaryHost,
       host_aliases: JSON.stringify(identity.hostAliases),
+      // Written, like every other resolved field — see the note below about `visibility`, which was
+      // carried this far and dropped, leaving its control dead for months.
+      host_roles: JSON.stringify(identity.hostRoles),
       state: identity.state,
       // Resolved above and then NEVER WRITTEN. The Sites form's "Visible to" dropdown sent a value on
       // every save, the identity carried it here, and this statement dropped it on the floor — so a

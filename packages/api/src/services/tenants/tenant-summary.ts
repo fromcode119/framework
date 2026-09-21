@@ -44,6 +44,8 @@ export class TenantSummary {
   static tenantJson(tenant: TenantRecord): Record<string, unknown> {
     return {
       id: tenant.id, slug: tenant.slug, primaryHost: tenant.primaryHost, hostAliases: tenant.hostAliases,
+      // Host -> role, for the hosts where the operator chose one. Absent means the tenant default.
+      hostRoles: tenant.hostRoles,
       state: tenant.state, isActive: tenant.isActive, kind: tenant.kind.value,
       // Both the stored value and what it MEANS. The admin shows a badge and a banner from these, and
       // deriving "is this site hidden" from the string at three call sites is how they drift apart.

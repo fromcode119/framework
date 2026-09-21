@@ -8,6 +8,8 @@ export class SiteRecord {
     readonly slug: string,
     readonly primaryHost: string,
     readonly hostAliases: string[],
+    /** Host -> role, where the operator chose one. Absent means this site's default. */
+    readonly hostRoles: Record<string, string>,
     readonly state: string,
     readonly memberCount: number,
     readonly plugins: string[],
@@ -65,6 +67,7 @@ export class SiteRecord {
       CoercionUtils.toString(input.slug),
       CoercionUtils.toString(input.primaryHost),
       Array.isArray(input.hostAliases) ? input.hostAliases.map((h: unknown) => CoercionUtils.toString(h)) : [],
+      SiteRecord.roles(input.hostRoles),
       CoercionUtils.toString(input.state) || 'active',
       CoercionUtils.toNumber(input.memberCount),
       Array.isArray(input.plugins) ? input.plugins.map((p: unknown) => CoercionUtils.toString(p)) : [],
@@ -85,6 +88,16 @@ export class SiteRecord {
         sizeBytes: CoercionUtils.toNumber(e?.sizeBytes),
         modifiedAt: CoercionUtils.toString(e?.modifiedAt),
       })) : [],
+    );
+  }
+
+  /** Host -> role, as the api sends it. Anything that is not a plain object reads as "none declared". */
+  private static roles(value: unknown): Record<string, string> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .map(([host, role]) => [CoercionUtils.toString(host).toLowerCase(), CoercionUtils.toString(role)])
+        .filter(([host, role]) => host.length > 0 && role.length > 0),
     );
   }
 

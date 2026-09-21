@@ -4,7 +4,12 @@ import { TenantRouteMap } from '@core/tenant/tenant-route-map';
 import { GatewayTarget } from '@core/tenant/gateway-target';
 
 const site = TenantRecord.from({ id: 'acme', slug: 'acme', primary_host: 'acme.test', host_aliases: '["www.acme.test","api.acme.test"]', state: 'active', kind: 'site' });
-const workspace = TenantRecord.from({ id: 'workspace-a', slug: 'workspace-a', primary_host: 'workspace-a.test', host_aliases: '["api.workspace-a.test"]', state: 'suspended', kind: 'workspace', appearance: 'workspace-a' });
+const workspace = TenantRecord.from({
+  id: 'workspace-a', slug: 'workspace-a', primary_host: 'workspace-a.test',
+  host_aliases: '["api.workspace-a.test"]', state: 'suspended', kind: 'workspace', appearance: 'workspace-a',
+  // DECLARED, not inferred from the name. See the test below for why the name alone no longer counts.
+  host_roles: '{"api.workspace-a.test":"api"}',
+});
 
 describe('TenantRouteMap', () => {
   const map = TenantRouteMap.build([site, workspace], { admin: 'https://admin.platform.test', api: 'api.platform.test', frontend: 'http://frontend.platform.test:3000' });
@@ -16,8 +21,16 @@ describe('TenantRouteMap', () => {
     expect(map.resolve('workspace-a.test')?.tenantId).toBe('workspace-a');
   });
 
-  it('sends any api. alias to the api, whatever the kind', () => {
-    expect(map.resolve('api.acme.test')?.target).toBe(GatewayTarget.API);
+  /**
+   * The rule this replaced read the hostname: anything starting `api.` went to the api. A shop alias
+   * called `api.shop.com` therefore stopped serving the shop, silently, with nothing on any screen
+   * saying why. The name now means nothing on its own.
+   */
+  it('does NOT send a host to the api just because it is called api.', () => {
+    expect(map.resolve('api.acme.test')?.target).toBe(GatewayTarget.FRONTEND);
+  });
+
+  it('sends a DECLARED api host to the api, whatever the tenant kind', () => {
     expect(map.resolve('api.workspace-a.test')?.target).toBe(GatewayTarget.API);
   });
 

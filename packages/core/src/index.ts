@@ -205,6 +205,7 @@ export type { IPluginApiResolver } from '@core/plugin/interfaces/plugin-api-reso
 // Context
 export { RequestContextUtils } from '@core/context/request-context';
 export { TenantRecord } from '@core/tenant/tenant-record';
+export { TenantHostRole } from '@core/tenant/tenant-host-role';
 export { TenantKind } from '@core/tenant/tenant-kind';
 export { TenantResolutionRefusal } from '@core/tenant/tenant-resolution-refusal';
 export { TenantKindPreset } from '@core/tenant/provisioning/tenant-kind-preset';
