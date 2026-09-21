@@ -99,7 +99,12 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
      * health count, running its own scheduler, and absent from every peer snapshot with no refusal
      * recorded anywhere. The walked count is what tells those apart in one line.
      */
-    this.logger.debug(`peer snapshot: walked ${walked} plugin(s), offered ${offered} — ${Object.keys(out).join(', ') || '(none)'}`);
+    // The COUNT per peer, not just its name. A peer offered with zero functions is one the caller
+    // can see and cannot call: `has()` answers true, every method is undefined, and nothing is
+    // refused or logged anywhere. Without this number that state is indistinguishable from a
+    // healthy snapshot, which is exactly how logistics held logistics-econt for days.
+    const described = Object.entries(out).map(([key, fns]) => `${key}(${fns.length})`).join(', ');
+    this.logger.debug(`peer snapshot: walked ${walked} plugin(s), offered ${offered} — ${described || '(none)'}`);
     return out;
   }
 
