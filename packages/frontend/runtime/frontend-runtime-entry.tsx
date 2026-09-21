@@ -74,7 +74,7 @@ export class FrontendRuntimeEntry {
     }
 
     FrontendRuntimeEntry.mountAssets(config, apiUrl);
-    const preloaded = await StorefrontBundleLoader.loadEager(config.activeTheme, config.plugins, apiUrl);
+    const preloaded = await StorefrontBundleLoader.loadEager(config.activeTheme, config.plugins, apiUrl, config.usedPlugins);
     const registrations = PreBootRegistrationSeed.consume(window as unknown as Record<string, any>);
     // Every code-split renderer resolved before hydration — see OverrideLoaderWarmup.
     await OverrideLoaderWarmup.warm(registrations.overrides);
