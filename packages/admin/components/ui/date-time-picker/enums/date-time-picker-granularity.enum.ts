@@ -2,13 +2,20 @@ import { Enum } from '@fromcode119/react-class-components';
 
 /**
  * What a {@link DateTimePicker} lets the operator pick — and therefore what it emits:
- * a full instant (ISO), a calendar day (`YYYY-MM-DD`), a month (`YYYY-MM`) or a year (`YYYY`).
+ * a full instant (ISO), a calendar day (`YYYY-MM-DD`), a month (`YYYY-MM`), a year (`YYYY`)
+ * or a wall-clock time of day (`HH:mm`).
  */
 export class DateTimePickerGranularity extends Enum {
   static readonly DATETIME = new DateTimePickerGranularity('datetime');
   static readonly DATE = new DateTimePickerGranularity('date');
   static readonly MONTH = new DateTimePickerGranularity('month');
   static readonly YEAR = new DateTimePickerGranularity('year');
+  /**
+   * A time of day with no date attached — opening hours, a shift start, a daily cut-off.
+   * The value is a literal `HH:mm` in the operator's own wall clock: it names a position in
+   * the day, not an instant, so it is never converted through a timezone.
+   */
+  static readonly TIME = new DateTimePickerGranularity('time');
 
   private constructor(value: string) {
     super(value);
@@ -19,6 +26,11 @@ export class DateTimePickerGranularity extends Enum {
     return this === DateTimePickerGranularity.DATETIME || this === DateTimePickerGranularity.DATE;
   }
 
+  /** Time of day carries no date at all, so none of the date machinery applies to it. */
+  get isTimeOfDay(): boolean {
+    return this === DateTimePickerGranularity.TIME;
+  }
+
   /** Expand a stored coarse value to a full date literal so the shared parsing can read it. */
   expandValue(value: string): string {
     if (this === DateTimePickerGranularity.YEAR && /^\d{4}$/.test(value)) return `${value}-01-01`;
@@ -26,7 +38,7 @@ export class DateTimePickerGranularity extends Enum {
     return value;
   }
 
-  /** Render a stored value the way the operator picked it (`2026`, `08.2026`, …). */
+  /** Render a stored value the way the operator picked it (`2026`, `08.2026`, `09:00`, …). */
   formatValue(value: string): string {
     if (this === DateTimePickerGranularity.YEAR) return value.slice(0, 4);
     if (this === DateTimePickerGranularity.MONTH) {

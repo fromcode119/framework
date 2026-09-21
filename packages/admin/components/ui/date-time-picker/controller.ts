@@ -2,6 +2,7 @@ import { TimePart } from '@/components/ui/date-time-picker/enums/time-part.enum'
 import { TimezoneUtils } from '@/lib/timezone';
 import type { IDateTimePickerCoords } from '@/components/ui/date-time-picker/interfaces/date-time-picker-coords.interface';
 import type { IDateTimePickerProps } from '@/components/ui/date-time-picker/interfaces/date-time-picker-props.interface';
+import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 
 /**
  * Holds the non-render logic for {@link DateTimePicker}: viewport positioning, date
@@ -31,14 +32,21 @@ export class DateTimePickerController {
       : undefined;
   }
 
-  static computeCoords(rect: DOMRect, showTime: boolean | undefined): IDateTimePickerCoords {
-    const popoverWidth = 340;
+  static computeCoords(
+    rect: DOMRect,
+    showTime: boolean | undefined,
+    granularity?: DateTimePickerGranularity,
+  ): IDateTimePickerCoords {
+    const isTime = Boolean(granularity?.isTimeOfDay);
+    const popoverWidth = isTime ? 260 : 340;
     // Estimates only, used to pick a side to open on. They were 460/380 while the popover actually
     // rendered 869px tall, so "will it fit below?" was answered against a number nothing measured and
     // the picker opened downwards off the bottom of the screen. These match the compacted chrome, and
     // the popover itself is clamped to `calc(100vh - 24px)` with internal scroll, so being wrong again
     // costs a scroll rather than an unreachable Apply button.
-    const popoverHeight = showTime !== false ? 560 : 430;
+    // The time-only popover is two steppers and two buttons — measuring it as a calendar would
+    // flip it upwards off the top of the screen next to a field low on the page.
+    const popoverHeight = isTime ? 210 : showTime !== false ? 560 : 430;
     const viewportPadding = 12;
     const maxLeft = Math.max(viewportPadding, window.innerWidth - popoverWidth - viewportPadding);
     const preferredLeft = rect.left;
