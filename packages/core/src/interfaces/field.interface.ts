@@ -21,6 +21,12 @@ export interface IField {
   defaultValue?: any;
   options?: { label: string; value: any }[]; // For select type
   relationTo?: string | string[]; // For relationship/upload type
+  /**
+   * A relationship to whichever collection REGISTERED itself as this entity's provider, instead of a
+   * hardcoded `relationTo: '<other-plugin>-<collection>'`. The framework substitutes the provider's
+   * slug into `relationTo`, so the searchable control, the list display and every join are unchanged.
+   */
+  relationToEntity?: string;
   hasMany?: boolean; // For relationship
   min?: number; // For number
   max?: number; // For number
