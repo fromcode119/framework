@@ -210,25 +210,25 @@ export class CertificateAdminService {
     const served = await this.servedHosts();
     const stored = new Map((await this.certificates.list()).map((record) => [record.host, record]));
 
-    return [...served.values()]
-      .map((host) => new CertificateHostEntry(host.host, host.role, host.tenantId, host.tenantSlug, stored.get(host.host) ?? null))
-      .sort((left, right) => CertificateAdminService.compare(left, right));
-  }
+    const rows = [...served.values()]
+      .map((host) => new CertificateHostEntry(host.host, host.role, host.tenantId, host.tenantSlug, stored.get(host.host) ?? null));
 
-  /** Soonest expiry first; then hosts with nothing stored, the platform's own first. */
-  private static compare(left: CertificateHostEntry, right: CertificateHostEntry): number {
-    const leftExpiry = left.certificate?.notAfter?.getTime() ?? null;
-    const rightExpiry = right.certificate?.notAfter?.getTime() ?? null;
-
-    if (leftExpiry !== null && rightExpiry !== null) {
-      return leftExpiry === rightExpiry ? left.host.localeCompare(right.host) : leftExpiry - rightExpiry;
+    // A stored certificate for a host the platform does not serve is still a certificate this
+    // platform holds — with its private key, and renewing itself on a schedule. Built from served
+    // hosts alone, the list simply dropped it: nothing on any screen said it existed, and the only
+    // way to remove one was a database row. That is a key the operator cannot point at.
+    //
+    // It is not a hypothetical. A wildcard is stored against the name it was ordered for, which for
+    // `*.example.com` is `example.com` — a name the platform may hold a certificate for while
+    // serving only its subdomains. Removing a domain from a site leaves one behind the same way.
+    for (const [host, record] of stored) {
+      if (served.has(host)) continue;
+      rows.push(new CertificateHostEntry(host, CertificateHostRole.UNROUTED, record.tenantId, record.tenantId, record));
     }
-    if (leftExpiry !== null) return -1;
-    if (rightExpiry !== null) return 1;
 
-    if (left.role.isPlatform !== right.role.isPlatform) return left.role.isPlatform ? -1 : 1;
-    return left.host.localeCompare(right.host);
+    return rows.sort((left, right) => CertificateHostEntry.byUrgency(left, right));
   }
+
 
   /**
    * Every host this platform answers for, keyed by host.

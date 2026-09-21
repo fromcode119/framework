@@ -25,6 +25,17 @@ export class CertificateHostRole extends Enum {
   /** The platform's default storefront host, where one is configured. */
   static readonly PLATFORM_FRONTEND = new CertificateHostRole('platform_frontend', 'certificates.role.platformFrontend');
 
+  /**
+   * A host the platform holds a certificate for but does NOT route.
+   *
+   * It exists so such a certificate is visible at all. The list is otherwise built from served hosts,
+   * so a stored certificate for anything else — a domain removed from a site, or one covering
+   * subdomains without being served itself — was held, renewed and never shown, with its private key
+   * and no way to see or remove it from the admin. A key the operator cannot point at is exactly
+   * what this platform does not allow.
+   */
+  static readonly UNROUTED = new CertificateHostRole('unrouted', 'certificates.role.unrouted');
+
   private constructor(value: string, readonly translationKey: string) {
     super(value);
   }
@@ -37,6 +48,13 @@ export class CertificateHostRole extends Enum {
 
   /** Whether this host belongs to the platform itself rather than to one site. */
   get isPlatform(): boolean {
-    return this !== CertificateHostRole.PRIMARY && this !== CertificateHostRole.ALIAS;
+    return this !== CertificateHostRole.PRIMARY
+      && this !== CertificateHostRole.ALIAS
+      && this !== CertificateHostRole.UNROUTED;
+  }
+
+  /** Whether the platform actually answers on this host. False means the certificate outlives its use. */
+  get isRouted(): boolean {
+    return this !== CertificateHostRole.UNROUTED;
   }
 }
