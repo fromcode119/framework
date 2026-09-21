@@ -3,6 +3,7 @@ import { TenantState } from '@core/enums/tenant-state.enum';
 import { TenantVisibility } from '@core/enums/tenant-visibility.enum';
 import { TenantEnvironment } from '@core/enums/tenant-environment.enum';
 import { TenantKind } from '@core/tenant/tenant-kind';
+import { TenantHostRole } from '@core/tenant/tenant-host-role';
 
 /**
  * One tenant.
@@ -24,10 +25,18 @@ export class TenantRecord {
   readonly environment: TenantEnvironment;
   /** Workspace only: the appearance its domain is locked to; `''` = the default console. */
   readonly appearance: string;
+  /**
+   * What each host answers with, where the operator has said. Host -> role.
+   *
+   * A host absent from this map takes the tenant's own default. Nothing is ever inferred from the
+   * NAME of a host — see {@link TenantHostRole} for the magic this replaced.
+   */
+  readonly hostRoles: Readonly<Record<string, string>>;
 
   private constructor(input: {
     id: string; slug: string; primaryHost: string; hostAliases: string[]; state: string; kind: TenantKind;
     visibility: TenantVisibility; environment: TenantEnvironment; appearance: string;
+    hostRoles: Record<string, string>;
   }) {
     this.id = input.id;
     this.slug = input.slug;
@@ -38,15 +47,28 @@ export class TenantRecord {
     this.visibility = input.visibility;
     this.environment = input.environment;
     this.appearance = input.appearance;
+    this.hostRoles = Object.freeze({ ...input.hostRoles });
   }
 
   get isWorkspace(): boolean {
     return this.kind.isWorkspace;
   }
 
-  /** The `api.` aliases: hosts the gateway sends to the api, for device and app traffic. */
+  /**
+   * What this host answers with: the declared role, or this tenant's own default.
+   *
+   * THE HOSTNAME IS NEVER READ. A host used to become the api by starting with `api.`, which meant a
+   * shop alias called `api.shop.com` silently stopped serving the shop and nothing said why. The
+   * role is now something an operator sets and can see.
+   */
+  roleFor(host: string): TenantHostRole {
+    const normalized = String(host ?? '').trim().toLowerCase();
+    return TenantHostRole.find(this.hostRoles[normalized]) ?? TenantHostRole.defaultFor(this.isWorkspace);
+  }
+
+  /** The hosts DECLARED to answer as the api, for device and app traffic. */
   apiHosts(): string[] {
-    return this.hosts().filter((host) => host.startsWith('api.'));
+    return this.hosts().filter((host) => this.roleFor(host) === TenantHostRole.API);
   }
 
   get isActive(): boolean {
@@ -104,6 +126,7 @@ export class TenantRecord {
       // would go unnoticed for days.
       environment: TenantEnvironment.find(row?.environment) ?? TenantEnvironment.PRODUCTION,
       appearance: CoercionUtils.toString(row?.appearance),
+      hostRoles: TenantRecord.parseHostRoles(row?.host_roles),
     });
   }
 
@@ -121,6 +144,38 @@ export class TenantRecord {
       return parsed.map((entry) => CoercionUtils.toString(entry));
     } catch {
       return [];
+    }
+  }
+
+  /**
+   * The declared host roles, host -> role. JSONB on some dialects, JSON text on others.
+   *
+   * A role nobody recognises is DROPPED rather than kept: an unknown value would otherwise fall
+   * through `roleFor` to the default anyway, and keeping it in the map would show the operator a
+   * setting that does nothing. Hosts are lower-cased here so the lookup never has to guess.
+   */
+  private static parseHostRoles(value: unknown): Record<string, string> {
+    const source = TenantRecord.readRoleObject(value);
+    const roles: Record<string, string> = {};
+
+    for (const [host, role] of Object.entries(source)) {
+      const key = CoercionUtils.toString(host).trim().toLowerCase();
+      const member = TenantHostRole.find(role);
+      if (key && member) roles[key] = String(member.value);
+    }
+
+    return roles;
+  }
+
+  private static readRoleObject(value: unknown): Record<string, unknown> {
+    if (value && typeof value === 'object' && !Array.isArray(value)) return value as Record<string, unknown>;
+    const raw = CoercionUtils.toString(value);
+    if (!raw) return {};
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+    } catch {
+      return {};
     }
   }
 }

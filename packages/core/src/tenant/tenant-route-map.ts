@@ -1,4 +1,5 @@
 import { GatewayTarget } from '@core/tenant/gateway-target';
+import { TenantHostRole } from '@core/tenant/tenant-host-role';
 import { TenantRoute } from '@core/tenant/tenant-route';
 import type { TenantRecord } from '@core/tenant/tenant-record';
 
@@ -36,11 +37,22 @@ export class TenantRouteMap {
     platformHost(platform.frontend, GatewayTarget.FRONTEND);
     for (const tenant of tenants) {
       for (const host of tenant.hosts()) {
-        const target = host.startsWith('api.') ? GatewayTarget.API : (tenant.isWorkspace ? GatewayTarget.ADMIN : GatewayTarget.FRONTEND);
+        // The DECLARED role, never the hostname. A host used to become the api by starting with
+        // `api.`, so a shop alias called `api.shop.com` silently stopped serving the shop with
+        // nothing on any screen saying so. `roleFor` answers from what the operator set, falling
+        // back to the tenant's own kind.
+        const target = TenantRouteMap.targetFor(tenant.roleFor(host));
         routes.push(new TenantRoute(host, target, tenant.id));
       }
     }
     return new TenantRouteMap(routes, setup);
+  }
+
+  /** One declared role, as the upstream the gateway proxies to. */
+  private static targetFor(role: TenantHostRole): GatewayTarget {
+    if (role === TenantHostRole.API) return GatewayTarget.API;
+    if (role === TenantHostRole.ADMIN) return GatewayTarget.ADMIN;
+    return GatewayTarget.FRONTEND;
   }
 
   static fromJson(raw: unknown): TenantRouteMap {

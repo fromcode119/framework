@@ -4,6 +4,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { RuntimeLocationUtils, ThemeMode } from '@fromcode119/core/client';
 import { PureReactor, bound, prop, state } from '@fromcode119/react-class-components';
+import { SiteHostsFields } from '@/app/sites/components/view/site-hosts-fields.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
@@ -39,14 +40,6 @@ export class SiteForm extends PureReactor {
 
   @bound onId(e: ChangeEvent<HTMLInputElement>): void {
     this.emit({ id: e.target.value, idFollowsSlug: false });
-  }
-
-  @bound onPrimaryHost(e: ChangeEvent<HTMLInputElement>): void {
-    this.emit({ primaryHost: e.target.value });
-  }
-
-  @bound onAliases(e: ChangeEvent<HTMLInputElement>): void {
-    this.emit({ hostAliases: e.target.value });
   }
 
   @bound onAdminEmail(e: ChangeEvent<HTMLInputElement>): void {
@@ -180,8 +173,7 @@ export class SiteForm extends PureReactor {
           {this.isNew
             ? <Input label="Id" value={values.id} onChange={this.onId} placeholder="acme" />
             : null}
-          <Input label="Primary host" value={values.primaryHost} onChange={this.onPrimaryHost} placeholder="acme.example.com" />
-          <Input label="Host aliases" value={values.hostAliases} onChange={this.onAliases} placeholder="www.acme.example.com, shop.acme.example.com" />
+          <SiteHostsFields values={values} onChange={this.emit} />
           {this.isNew ? (
             <Input label="First administrator (email of an existing account)" value={values.adminEmail} onChange={this.onAdminEmail} placeholder="owner@acme.example.com" />
           ) : (

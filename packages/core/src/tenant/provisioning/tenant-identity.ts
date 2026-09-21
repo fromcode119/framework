@@ -1,5 +1,6 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { TenantKind } from '@core/tenant/tenant-kind';
+import { TenantHostRole } from '@core/tenant/tenant-host-role';
 import { TenantVisibility } from '@core/enums/tenant-visibility.enum';
 import { TenantEnvironment } from '@core/enums/tenant-environment.enum';
 
@@ -28,6 +29,13 @@ export class TenantIdentity {
     readonly visibility: TenantVisibility,
     readonly environment: TenantEnvironment,
     readonly appearance: string,
+    /**
+     * What each host answers with, where the operator chose. Host -> role.
+     *
+     * Only hosts this tenant actually has, and only roles that name something. A role for a host
+     * that was just removed would sit in the row for ever, describing nothing.
+     */
+    readonly hostRoles: Record<string, string>,
   ) {}
 
   /** Every host this tenant answers on, primary first, deduped. */
@@ -35,7 +43,7 @@ export class TenantIdentity {
     return [...new Set([this.primaryHost, ...this.hostAliases])];
   }
 
-  static from(input: { id?: unknown; slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; kind?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown }): TenantIdentity {
+  static from(input: { id?: unknown; slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; kind?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown; hostRoles?: unknown }): TenantIdentity {
     const slug = CoercionUtils.toKey(input.slug);
     if (!TenantIdentity.SLUG.test(slug)) {
       throw new Error(`Tenant slug "${slug}" must be lowercase letters, digits and dashes, starting with a letter or digit.`);
@@ -68,7 +76,42 @@ export class TenantIdentity {
     // `non-production` explicitly rather than relying on a default.
     const environment = TenantEnvironment.find(input.environment) ?? TenantEnvironment.PRODUCTION;
     const appearance = TenantIdentity.appearanceFor(kind, input.appearance);
-    return new TenantIdentity(id, slug, primaryHost, aliases, state, kind, visibility, environment, appearance);
+    const hostRoles = TenantIdentity.rolesFor([primaryHost, ...aliases], input.hostRoles);
+    return new TenantIdentity(id, slug, primaryHost, aliases, state, kind, visibility, environment, appearance, hostRoles);
+  }
+
+  /**
+   * The declared roles, kept to hosts this tenant actually has.
+   *
+   * A role for a host that has just been removed would sit in the row for ever describing nothing,
+   * and would come back to life the day somebody re-added that name — a setting nobody chose, which
+   * is the whole class of problem this field exists to end. A role that names nothing is dropped for
+   * the same reason: it would read as a choice and behave as the default.
+   */
+  private static rolesFor(hosts: string[], value: unknown): Record<string, string> {
+    const known = new Set(hosts);
+    const source = TenantIdentity.roleObject(value);
+    const roles: Record<string, string> = {};
+
+    for (const [rawHost, rawRole] of Object.entries(source)) {
+      const host = CoercionUtils.toString(rawHost).trim().toLowerCase();
+      const role = TenantHostRole.find(rawRole);
+      if (known.has(host) && role) roles[host] = String(role.value);
+    }
+
+    return roles;
+  }
+
+  private static roleObject(value: unknown): Record<string, unknown> {
+    if (value && typeof value === 'object' && !Array.isArray(value)) return value as Record<string, unknown>;
+    const raw = CoercionUtils.toString(value);
+    if (!raw) return {};
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {};
+    } catch {
+      return {};
+    }
   }
 
   /** A workspace names its appearance (`''` = the default console); a site has none and may not pass one. */
