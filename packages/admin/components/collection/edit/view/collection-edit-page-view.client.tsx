@@ -10,6 +10,7 @@ import { EditFooter } from '@/components/collection/edit/view/edit-footer.client
 import { EditPageBody } from '@/components/collection/edit/edit-page-body';
 import { EditPageDialogs } from '@/components/collection/edit/edit-page-dialogs';
 import { EditCollectionNotFound } from '@/components/collection/edit/edit-collection-not-found';
+import { CollectionCreateDisabled } from '@/components/collection/edit/collection-create-disabled';
 import { CollectionEditPageLifecycle } from '@/components/collection/edit/view/collection-edit-page-lifecycle.client';
 import { CollectionEditPageViewModelBuilder } from '@/components/collection/edit/view/collection-edit-page-view-model.client';
 
@@ -99,6 +100,19 @@ export class CollectionEditPageView extends Reactor {
     const edit = CollectionEditPageViewModelBuilder.build(this);
     const collection = edit.collection;
     if (!collection) return <EditCollectionNotFound theme={edit.theme} slug={slug} pluginSlug={pluginSlug} />;
+
+    // `admin.disableCreate` is a statement about who writes these rows, not a hint for one button on the
+    // list page. Serving the create form here let a typed URL forge a record the runtime is supposed to own.
+    if (edit.isNew && (collection.admin as any)?.disableCreate === true) {
+      return (
+        <CollectionCreateDisabled
+          theme={edit.theme}
+          title={String(collection.displayName || collection.slug || slug)}
+          description={(collection.admin as any)?.description}
+          listHref={`/${pluginSlug}/${slug}`}
+        />
+      );
+    }
 
     return (
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
