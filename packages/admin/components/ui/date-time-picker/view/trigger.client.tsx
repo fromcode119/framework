@@ -37,7 +37,9 @@ export class DateTimePickerTrigger extends PureReactor {
         className={`${UiFieldUtils.getFieldClasses(size, `cursor-pointer flex items-center justify-between transition-all duration-150 ${isOpen ? 'ring-2 ring-indigo-500/50' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <div className="flex items-center gap-2.5">
-           <FrameworkIcons.Calendar size={17} className={`transition-colors ${isOpen ? 'text-indigo-500' : 'text-slate-400'}`} />
+           {this.granularity.isTimeOfDay
+             ? <FrameworkIcons.Clock size={17} className={`transition-colors ${isOpen ? 'text-indigo-500' : 'text-slate-400'}`} />
+             : <FrameworkIcons.Calendar size={17} className={`transition-colors ${isOpen ? 'text-indigo-500' : 'text-slate-400'}`} />}
            <span className={`tracking-tight ${!value ? 'text-slate-400 font-normal' : 'font-medium'}`}>
              {value && !this.granularity.usesCalendar
                ? this.granularity.formatValue(value)

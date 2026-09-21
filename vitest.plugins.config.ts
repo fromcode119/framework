@@ -284,7 +284,10 @@ export default defineConfig({
           root: frameworkRoot,
           environment: 'node',
           globals: true,
-          include: [glob('packages/frontend/tests/**/*.test.ts')],
+          // `.tsx` too: the frontend's tests render components, and a `.test.tsx` dropped in here was
+          // collected by nothing at all — `passthrough-layout.test.tsx` sat dark. A test that does not
+          // run is worse than no test, because the suite still reports green.
+          include: [glob('packages/frontend/tests/**/*.test.ts'), glob('packages/frontend/tests/**/*.test.tsx')],
         },
       },
     ],

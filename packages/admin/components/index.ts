@@ -24,6 +24,9 @@ export * from '@/components/ui/view/confirm-dialog.client';
 export * from '@/components/ui/view/prompt-dialog.client';
 export * from '@/components/ui/date-time-picker/view/index.client';
 export { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
+// `HH:mm` arithmetic, exposed so a plugin comparing or ordering two picked times uses the SAME
+// parsing the picker emits instead of hand-rolling a split(':').
+export { TimeOfDayUtils } from '@/components/ui/date-time-picker/time-of-day-utils';
 export * from '@/components/ui/view/color-picker.client';
 export * from '@/components/ui/view/code-editor.client';
 export * from '@/components/ui/view/visual-menu-field.client';

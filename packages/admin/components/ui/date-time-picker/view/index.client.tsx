@@ -9,6 +9,7 @@ import { DateTimePickerTrigger } from '@/components/ui/date-time-picker/view/tri
 import { DateTimePickerController } from '@/components/ui/date-time-picker/controller';
 import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 import { DateTimePickerGranularPopover } from '@/components/ui/date-time-picker/view/granular-popover.client';
+import { DateTimePickerTimePopover } from '@/components/ui/date-time-picker/view/time-popover.client';
 import type { IDateTimePickerCoords } from '@/components/ui/date-time-picker/interfaces/date-time-picker-coords.interface';
 
 export class DateTimePicker extends AdminComponent {
@@ -20,6 +21,8 @@ export class DateTimePicker extends AdminComponent {
   @prop declare placeholder?: string;
   @prop declare className?: string;
   @prop declare size?: FieldSize;
+  /** TIME granularity only: how far one press of the minute stepper moves. Defaults to 5. */
+  @prop declare minuteStep?: number;
 
   @ref declare containerRef: Ref<HTMLDivElement>;
   @ref declare popoverRef: Ref<HTMLDivElement>;
@@ -39,12 +42,23 @@ export class DateTimePicker extends AdminComponent {
   }
 
   private get expandedValue(): string | undefined {
+    // A `HH:mm` is not a date. Handing it to the date parsing yields an Invalid Date that renders
+    // as the placeholder, so the trigger would show "Select time..." over a value that IS set.
+    if (this.resolvedGranularity.isTimeOfDay) return undefined;
     return this.value ? this.resolvedGranularity.expandValue(this.value) : this.value;
   }
 
   @bound private handleGranularPick(year: number, monthIndex: number | null): void {
     this.onChange(monthIndex === null ? String(year) : `${year}-${String(monthIndex + 1).padStart(2, '0')}`);
     this.isOpen = false;
+  }
+
+  @bound private handleTimePick(next: string): void {
+    this.onChange(next);
+  }
+
+  @bound private clearTime(): void {
+    this.onChange(null);
   }
 
   private get zonedParts() {
@@ -62,7 +76,7 @@ export class DateTimePicker extends AdminComponent {
   @bound private updatePosition(): void {
     if (this.containerRef.current) {
       const rect = this.containerRef.current.getBoundingClientRect();
-      this.coords = DateTimePickerController.computeCoords(rect, this.showTime);
+      this.coords = DateTimePickerController.computeCoords(rect, this.showTime, this.resolvedGranularity);
     }
   }
 
@@ -184,7 +198,8 @@ export class DateTimePicker extends AdminComponent {
 
   render(): ReactNode {
     const showTime = this.showTime ?? true;
-    const placeholder = this.placeholder ?? 'Select date...';
+    const isTime = this.resolvedGranularity.isTimeOfDay;
+    const placeholder = this.placeholder ?? (isTime ? 'Select time...' : 'Select date...');
     const className = this.className ?? '';
     const size = this.size ?? FieldSize.MD;
 
@@ -204,7 +219,20 @@ export class DateTimePicker extends AdminComponent {
         onClear={this.clearValue}
       />
 
-      {this.isOpen && !this.resolvedGranularity.usesCalendar && (
+      {this.isOpen && isTime && (
+        <DateTimePickerTimePopover
+          theme={this.theme}
+          value={this.value}
+          minuteStep={this.minuteStep ?? 5}
+          coords={this.coords}
+          popoverRef={this.popoverRef}
+          onChange={this.handleTimePick}
+          onClear={this.clearTime}
+          onClose={this.close}
+        />
+      )}
+
+      {this.isOpen && !isTime && !this.resolvedGranularity.usesCalendar && (
         <DateTimePickerGranularPopover
           theme={this.theme}
           granularity={this.resolvedGranularity}
