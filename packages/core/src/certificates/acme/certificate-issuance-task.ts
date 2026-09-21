@@ -1,5 +1,7 @@
 import { AcmeAccountStore } from '@core/certificates/acme/acme-account-store';
 import { AcmeChallengeStore } from '@core/certificates/acme/acme-challenge-store';
+import { AcmeCloudflareTokenStore } from '@core/certificates/acme/dns/acme-cloudflare-token-store';
+import { AcmeDnsTokenResolver } from '@core/certificates/acme/dns/acme-dns-token-resolver';
 import { CertificateIssuanceService } from '@core/certificates/acme/certificate-issuance-service';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 
@@ -22,6 +24,7 @@ export class CertificateIssuanceTask {
       new CertificateStoreService(this.db),
       new AcmeAccountStore(this.db),
       new AcmeChallengeStore(this.db),
+      new AcmeDnsTokenResolver(new AcmeCloudflareTokenStore(this.db)),
     );
     await service.sweep();
   }

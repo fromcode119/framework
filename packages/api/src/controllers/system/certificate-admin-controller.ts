@@ -91,11 +91,15 @@ export class CertificateAdminController extends BaseController {
     }
   }
 
-  /** Store or clear the Cloudflare API token. Responds with whether one is now configured, never the value. */
+  /** Store or clear the Cloudflare API token for this scope. Responds with whether one is now configured, never the value. */
   async setCloudflareToken(req: Request, res: Response): Promise<void> {
     try {
       const body = (req.body ?? {}) as Record<string, unknown>;
-      res.json(await this.service.setCloudflareToken(body.token));
+      // The token is saved to the scope the request is standing in: a bound request writes THAT
+      // site's own credential, an unbound one the platform's. Never a client-supplied tenant id —
+      // that would let a caller store a credential against somebody else's site.
+      const boundTenantId = CoercionUtils.toString((req as any).tenantId ?? '');
+      res.json(await this.service.setCloudflareToken(body.token, boundTenantId || null));
     } catch (error) {
       this.fail(res, error);
     }

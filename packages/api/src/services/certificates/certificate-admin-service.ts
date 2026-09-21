@@ -1,8 +1,9 @@
 import {
-  AcmeChallengeType, AcmeCloudflareTokenStore, AdminScope, ApplicationUrlUtils, CertificateAutomationUnavailableError,
+  AcmeChallengeType, AcmeCloudflareTokenStore, AcmeDnsTokenResolver, AdminScope, ApplicationUrlUtils, CertificateAutomationUnavailableError,
   CertificateHostRole, CertificateRecord, CertificateRejection, CertificateSource, AcmeSettings, CertificateStoreService,
   CertificateValidationError, PlatformAddressDetection, SecretService, TenantRegistryService,
 } from '@fromcode119/core';
+import { CertificateAutomationStatus } from '@api/services/certificates/certificate-automation-status';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { CertificateHostEntry } from '@api/services/certificates/certificate-host-entry';
 import { GatewayTlsStatusClient } from '@api/services/certificates/gateway-tls-status-client';
@@ -19,13 +20,22 @@ import { GatewayTlsStatusClient } from '@api/services/certificates/gateway-tls-s
  * keep correct than two that can disagree about which half changed.
  */
 export class CertificateAdminService {
+  /** Which token answers for a host's owner — its own, else the platform's. */
+  private readonly dnsTokens: AcmeDnsTokenResolver;
+
+  /** Whether automatic issuance is possible for a given scope, and why not when it is not. */
+  private readonly automationStatus: CertificateAutomationStatus;
+
   constructor(
     private readonly certificates: CertificateStoreService,
     private readonly tenants: TenantRegistryService,
     private readonly cloudflareTokens: AcmeCloudflareTokenStore,
     private readonly reload: GatewayReloadClient = new GatewayReloadClient(),
     private readonly edgeStatus: GatewayTlsStatusClient = new GatewayTlsStatusClient(),
-  ) {}
+  ) {
+    this.dnsTokens = new AcmeDnsTokenResolver(this.cloudflareTokens);
+    this.automationStatus = new CertificateAutomationStatus(this.dnsTokens);
+  }
 
   /**
    * Every served host with its certificate, plus the two facts that decide whether this screen can
@@ -39,7 +49,7 @@ export class CertificateAdminService {
       encryptionAvailable: SecretService.isEncryptionAvailable(),
       warningDays: [...CertificateRecord.WARNING_DAYS],
       edge,
-      automation: await this.automation(edge),
+      automation: await this.automationStatus.describe(edge, null),
       // Nothing narrows this read, so the caller must be told that plainly rather than infer it from
       // an absent field. The admin's subtitle reads this to say whose hosts these are.
       scope: AdminScope.PLATFORM,
@@ -55,7 +65,7 @@ export class CertificateAdminService {
       encryptionAvailable: SecretService.isEncryptionAvailable(),
       warningDays: [...CertificateRecord.WARNING_DAYS],
       edge,
-      automation: await this.automation(edge),
+      automation: await this.automationStatus.describe(edge, tenantId),
       scope: AdminScope.SITE,
     };
   }
@@ -73,29 +83,6 @@ export class CertificateAdminService {
     return served ? served.tenantId : undefined;
   }
 
-  /**
-   * Whether the platform can obtain certificates itself, and when it cannot, why.
-   *
-   * Both halves have to be true and neither can be guessed: an authority the operator named, and
-   * this deployment's own gateway doing the terminating. The admin prints the reason rather than
-   * offering a control that would spend a rate limit to produce something nothing serves.
-   */
-  private async automation(edge: Record<string, unknown> | null): Promise<Record<string, unknown>> {
-    const settings = await AcmeSettings.load();
-    const terminatesTls = edge?.tls === true;
-    const blocked = !settings.isConfigured
-      ? settings.missingReason
-      : (terminatesTls ? '' : 'This deployment\'s gateway is not terminating TLS, so a certificate it obtained would not be served by anything here.');
-
-    return {
-      ...settings.toJson(),
-      terminatesTls,
-      isAvailable: blocked.length === 0,
-      blockedReason: blocked,
-      // The DNS-01/wildcard variant needs everything AUTOMATIC needs, PLUS a saved Cloudflare token.
-      dnsWildcardAvailable: blocked.length === 0 && settings.isCloudflareConfigured,
-    };
-  }
 
   /**
    * Store a pasted certificate for a host this platform serves.
@@ -144,20 +131,31 @@ export class CertificateAdminService {
       throw new CertificateAutomationUnavailableError('The DNS-01 wildcard variant only applies to the Automatic source.');
     }
 
+    // Resolved from the host itself, never from the caller's ambient scope: the record must be
+    // stamped with the site that actually owns the host, because that is what decides whose
+    // Cloudflare token its DNS-01 orders will use. `undefined` (a host the platform does not serve)
+    // becomes null — the same "belongs to no site" the platform's own hostnames have.
+    const owner = (await this.hostTenantId(host)) ?? null;
+
     if (source.isPlatformManaged) {
       const edge = await this.edgeStatus.read();
-      const automation = await this.automation(edge);
+      const automation = await this.automationStatus.describe(edge, owner);
       if (automation.isAvailable !== true) {
         throw new CertificateAutomationUnavailableError(String(automation.blockedReason || 'Automatic issuance is not available on this deployment.'));
       }
       if (dnsWildcard && automation.isCloudflareConfigured !== true) {
-        throw new CertificateAutomationUnavailableError('No Cloudflare API token is saved, so DNS-01/wildcard issuance is not available. Add one under Settings → Certificates.');
+        throw new CertificateAutomationUnavailableError(
+          owner
+            ? 'No Cloudflare API token is saved for this site, and the platform has none either, so DNS-01/wildcard issuance is not available. Add one under this site\'s Certificates screen.'
+            : 'No Cloudflare API token is saved, so DNS-01/wildcard issuance is not available. Add one under Settings → Certificates.',
+        );
       }
     }
 
     const updated = await this.certificates.setSource(host, source, {
       challenge: dnsWildcard ? AcmeChallengeType.DNS_01 : AcmeChallengeType.HTTP_01,
       wildcard: dnsWildcard,
+      tenantId: owner,
     });
     if (updated) await this.reload.notify();
     return updated;
@@ -170,10 +168,14 @@ export class CertificateAdminService {
    * is now configured, the same shape as `automation()`. A blank value clears it, which is how the
    * feature is switched back off.
    */
-  async setCloudflareToken(token: unknown): Promise<{ isCloudflareConfigured: boolean }> {
-    await this.cloudflareTokens.set(String(token ?? ''));
-    const settings = await AcmeSettings.load();
-    return { isCloudflareConfigured: settings.isCloudflareConfigured };
+  async setCloudflareToken(token: unknown, tenantId: string | null = null): Promise<Record<string, unknown>> {
+    await this.cloudflareTokens.set(String(token ?? ''), tenantId);
+    const resolved = await this.dnsTokens.resolve(tenantId);
+    return {
+      isCloudflareConfigured: resolved.isConfigured,
+      cloudflareTokenScope: String(resolved.scope.value),
+      isCloudflareTokenInherited: resolved.isPlatformFallback && tenantId !== null,
+    };
   }
 
   /** Forget a host's certificate. The host keeps routing; it simply has nothing to serve over TLS. */

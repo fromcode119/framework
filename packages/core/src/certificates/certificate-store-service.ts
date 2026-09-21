@@ -98,7 +98,7 @@ export class CertificateStoreService {
   async setSource(
     host: string,
     source: CertificateSource,
-    options: { challenge?: AcmeChallengeType; wildcard?: boolean } = {},
+    options: { challenge?: AcmeChallengeType; wildcard?: boolean; tenantId?: string | null } = {},
   ): Promise<CertificateRecord | null> {
     const normalized = CertificateStoreService.normalizeHost(host);
     if (!normalized) return null;
@@ -106,6 +106,12 @@ export class CertificateStoreService {
       source: String(source.value),
       challenge: (options.challenge ?? AcmeChallengeType.HTTP_01).value,
       wildcard: options.wildcard ?? false,
+      // The owning site, stamped HERE because this is where a record is usually born. `upload` and
+      // `storeIssued` have always stamped it; choosing "Automatic" in the admin did not, so every
+      // record created that way was left unowned — and an unowned record cannot resolve its owner's
+      // Cloudflare token, which is the whole of per-site DNS-01. Undefined leaves it alone, so this
+      // never blanks an owner that a previous write established.
+      ...(options.tenantId === undefined ? {} : { tenant_id: options.tenantId || null }),
     });
     return this.find(normalized);
   }

@@ -11,6 +11,7 @@ import { CertificateState } from '@core/enums/certificate-state.enum';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 import { ChallengeReachabilityProbe } from '@core/certificates/acme/challenge-reachability-probe';
 import { CloudflareDnsProvider } from '@core/certificates/acme/providers/cloudflare/cloudflare-dns-provider';
+import { AcmeDnsTokenResolver } from '@core/certificates/acme/dns/acme-dns-token-resolver';
 import { CloudflareZonePreflight } from '@core/certificates/acme/dns/cloudflare-zone-preflight';
 import { DnsPreflight } from '@core/certificates/acme/dns-preflight';
 import type { IDnsChallengeProvider } from '@core/certificates/acme/interfaces/dns-challenge-provider.interface';
@@ -37,6 +38,12 @@ export class CertificateIssuanceService {
     private readonly store: CertificateStoreService,
     private readonly accounts: AcmeAccountStore,
     private readonly challenges: AcmeChallengeStore,
+    /**
+     * Whose Cloudflare token each host's DNS-01 order uses — its owner's, else the platform's.
+     * Required rather than defaulted: it needs the database handle this service does not hold, and
+     * a default would have to be the platform-only read this exists to replace.
+     */
+    private readonly dnsTokens: AcmeDnsTokenResolver,
     private readonly preflight: DnsPreflight = DnsPreflight.system(),
     private readonly probe: ChallengeReachabilityProbe | null = null,
     private readonly adapter: AcmeClientAdapter | null = null,
@@ -131,11 +138,16 @@ export class CertificateIssuanceService {
    * token can even see the zone.
    */
   private async attemptDns01(record: CertificateRecord, settings: AcmeSettings): Promise<void> {
-    if (!settings.isCloudflareConfigured) {
+    // The host's OWNER first, the platform only as a fallback — a customer's zone lives in the
+    // customer's Cloudflare account, so the credential that can write into it is usually theirs.
+    const resolved = await this.dnsTokens.resolve(record.tenantId);
+    if (!resolved.isConfigured) {
       // Not the authority's fault and not counted against its budget — this never reached it.
       await this.store.recordFailure(
         record.host,
-        'No Cloudflare API token is configured, so DNS-01 issuance cannot proceed.',
+        record.tenantId
+          ? 'No Cloudflare API token is configured for this site, and the platform has none either, so DNS-01 issuance cannot proceed.'
+          : 'No Cloudflare API token is configured for the platform, so DNS-01 issuance cannot proceed.',
         record.attemptsInWindow,
         CertificateIssuanceBackoff.after(CertificateIssuanceBackoff.UNREACHABLE_RECHECK_MS),
       );
@@ -144,16 +156,16 @@ export class CertificateIssuanceService {
 
     let cloudflareToken: string;
     try {
-      // A decrypt, not a field read — `isCloudflareConfigured` above only proved ciphertext EXISTS,
-      // never that it still decrypts. A rotated SECRET_KEY makes this throw; left uncaught, that
+      // A decrypt, not a field read — `isConfigured` above only proved ciphertext EXISTS, never
+      // that it still decrypts. A rotated SECRET_KEY makes this throw; left uncaught, that
       // exception would escape `attemptDns01` entirely, skip `recordFailure`, and leave the host with
       // no `lastError`/`nextAttemptAt` — perpetually "due" and silently starving every other host's
       // renewal slot. The message must say which of the two is wrong: absent vs. undecryptable.
-      cloudflareToken = settings.cloudflareToken;
+      cloudflareToken = resolved.token;
     } catch (error: any) {
       await this.store.recordFailure(
         record.host,
-        `The saved Cloudflare API token could not be decrypted (check SECRET_KEY): ${error?.message || error}`,
+        `${resolved.description} could not be decrypted (check SECRET_KEY): ${error?.message || error}`,
         record.attemptsInWindow,
         CertificateIssuanceBackoff.after(CertificateIssuanceBackoff.UNREACHABLE_RECHECK_MS),
       );
@@ -163,9 +175,12 @@ export class CertificateIssuanceService {
     const dnsProvider = this.dnsProviderFactory(cloudflareToken);
     const reason = await new CloudflareZonePreflight(dnsProvider).check(record.host);
     if (reason) {
+      // WHICH token was tried is the whole fix here: the same "cannot see zone" sentence means
+      // "widen this site's token" for its own, and "this site needs its own token" for the
+      // platform fallback. Without it the operator is left guessing at somebody else's account.
       await this.store.recordFailure(
         record.host,
-        reason,
+        `${reason} (tried ${resolved.description})`,
         record.attemptsInWindow,
         CertificateIssuanceBackoff.after(CertificateIssuanceBackoff.UNREACHABLE_RECHECK_MS),
       );

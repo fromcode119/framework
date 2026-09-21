@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AcmeAccountStore } from '@core/certificates/acme/acme-account-store';
 import { AcmeChallengeStore } from '@core/certificates/acme/acme-challenge-store';
+import { AcmeCloudflareTokenStore } from '@core/certificates/acme/dns/acme-cloudflare-token-store';
+import { AcmeDnsTokenResolver } from '@core/certificates/acme/dns/acme-dns-token-resolver';
 import { CertificateIssuanceService } from '@core/certificates/acme/certificate-issuance-service';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
@@ -17,6 +19,7 @@ import { SystemConstants } from '@core/constants/system.constants';
  */
 describe('CertificateIssuanceService — attemptDns01 survives an undecryptable Cloudflare token', () => {
   let rows: Array<Record<string, any>>;
+  let meta: Array<Record<string, any>>;
 
   /** Same minimal raw-manager fake used by the other issuance transition tests. */
   class FakeDb {
@@ -33,10 +36,20 @@ describe('CertificateIssuanceService — attemptDns01 survives an undecryptable 
       return row;
     }
     async delete(): Promise<void> { /* unused here */ }
+    async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> { return fn(); }
+    async withTenant<T>(_tenantId: string, fn: () => Promise<T>): Promise<T> { return fn(); }
   }
+
+  /** The token now comes from the scoped store, not from platform settings. */
+  const resolver = () => new AcmeDnsTokenResolver(new AcmeCloudflareTokenStore(new FakeDb(meta)));
 
   beforeEach(() => {
     rows = [];
+    meta = [{
+      key: SystemConstants.META_KEY.CERTIFICATE_ACME_CLOUDFLARE_TOKEN,
+      tenant_id: null,
+      value: 'enc:v1:garbage',
+    }];
     rows.push({
       host: 'shop.test', tenant_id: 't1', source: 'automatic', state: 'waiting_for_dns',
       challenge: 'dns-01', wildcard: true,
@@ -67,6 +80,7 @@ describe('CertificateIssuanceService — attemptDns01 survives an undecryptable 
       store,
       new AcmeAccountStore(new FakeDb([])),
       new AcmeChallengeStore(new FakeDb([])),
+      resolver(),
     );
 
     await service.sweep();
@@ -80,6 +94,7 @@ describe('CertificateIssuanceService — attemptDns01 survives an undecryptable 
   });
 
   it('is distinct from the "no token configured" message when there is truly no ciphertext', async () => {
+    meta = [];
     PlatformSettingsService.registerAccessor(async (key: string) => {
       const values: Record<string, string> = {
         [SystemConstants.META_KEY.CERTIFICATE_ACME_DIRECTORY]: 'https://acme.example/directory',
@@ -93,6 +108,7 @@ describe('CertificateIssuanceService — attemptDns01 survives an undecryptable 
       store,
       new AcmeAccountStore(new FakeDb([])),
       new AcmeChallengeStore(new FakeDb([])),
+      resolver(),
     );
 
     await service.sweep();
