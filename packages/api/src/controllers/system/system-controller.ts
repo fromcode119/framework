@@ -9,6 +9,7 @@ import { SystemIntegrationController } from '@api/controllers/system/system-inte
 import { SystemRuntimeController } from '@api/controllers/system/system-runtime-controller';
 import { SystemUserController } from '@api/controllers/system/system-user-controller';
 import { SystemPeopleController } from '@api/controllers/system/system-people-controller';
+import { SystemRecordLinksController } from '@api/controllers/system/system-record-links-controller';
 import { SystemSettingsController } from '@api/controllers/system/system-settings-controller';
 import { SystemMetadataController } from '@api/controllers/system/system-metadata-controller';
 import { SystemScimController } from '@api/controllers/system/system-scim-controller';
@@ -22,6 +23,7 @@ export class SystemController extends SystemAccountRoutes {
   protected readonly runtimeController: SystemRuntimeController;
   protected readonly userController: SystemUserController;
   private readonly peopleController: SystemPeopleController;
+  private readonly recordLinksController: SystemRecordLinksController;
   private readonly deployController: SystemDeployController;
   protected readonly settingsController: SystemSettingsController;
   protected readonly metadataController: SystemMetadataController;
@@ -42,6 +44,7 @@ export class SystemController extends SystemAccountRoutes {
     this.runtimeController = new SystemRuntimeController(runtime);
     this.userController = new SystemUserController(runtime);
     this.peopleController = new SystemPeopleController(runtime);
+    this.recordLinksController = new SystemRecordLinksController();
     this.deployController = new SystemDeployController(runtime);
     this.settingsController = new SystemSettingsController(runtime);
     this.metadataController = new SystemMetadataController(runtime);
@@ -69,6 +72,10 @@ export class SystemController extends SystemAccountRoutes {
 
   async getRecordsByRef(req: Request, res: Response) {
     return this.peopleController.getRecordsByRef(req, res);
+  }
+
+  async getRecordLinks(req: Request, res: Response) {
+    return this.recordLinksController.getRecordLinks(req, res);
   }
 
   async savePerson(req: Request, res: Response) {

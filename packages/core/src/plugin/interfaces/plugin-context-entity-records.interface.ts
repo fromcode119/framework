@@ -17,6 +17,12 @@ export interface IPluginContextEntityRecords {
   registerProvider(input: {
     key: string;
     label: string;
+    /**
+     * Correlation keys this provider understands (`['orderNumber']`). Declared → the provider answers
+     * about SUBJECTS offering one of them and never about a person. Omitted → it is a person provider,
+     * which is what every provider written before subjects existed is.
+     */
+    matchKeys?: string[];
     resolve: (ref: IEntityRecordRef) => Promise<IEntityRecordItem[]>;
   }): any;
   unregister(key: string): void;

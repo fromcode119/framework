@@ -4,9 +4,10 @@ import type { IRegisteredEntityRecordProvider } from '@core/services/entity-reco
 /**
  * Registry of entity-record providers.
  *
- * Plugins register a provider (keyed by namespace + slug + key) that returns the
- * records they own for a given person. The framework stays plugin-agnostic: it only
- * stores the providers and hands them to the resolution service.
+ * Plugins register a provider (keyed by namespace + slug + key) that returns the records they own for
+ * a given person, or — when it declares `matchKeys` — for any SUBJECT that can identify itself with one
+ * of those correlation keys. The framework stays plugin-agnostic: it only stores the providers and
+ * hands them to the resolution service, and never interprets a key name or a subject kind.
  *
  * Registration is idempotent per canonical key — re-registering the same provider
  * replaces the previous one, so a plugin re-init never stacks duplicates.
@@ -60,8 +61,20 @@ export class PluginEntityRecordsRegistryService {
       pluginSlug,
       key,
       label: label || key,
+      matchKeys: PluginEntityRecordsRegistryService.normalizeMatchKeys(registration.matchKeys),
       resolve: registration.resolve,
       canonicalKey: `${namespace}:${pluginSlug}:${key}`,
     };
+  }
+
+  /** Opaque key NAMES only — the framework never reads a key's value or attaches meaning to either. */
+  private static normalizeMatchKeys(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+    const out: string[] = [];
+    for (const raw of value) {
+      const key = String(raw ?? '').trim();
+      if (key && !out.includes(key)) out.push(key);
+    }
+    return out;
   }
 }

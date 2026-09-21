@@ -108,6 +108,11 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
     this.post(RouteConstants.SEGMENTS.ADMIN_USERS_OWNERSHIP, this.auth.requirePermission('users:manage'),
       this.controller.transferOwnership);
 
+    // "What relates to this record?" — subject-keyed, so it sits beside the people routes rather than
+    // under them. Same `users:view` permission: it reads records the viewer can already open.
+    this.get(RouteConstants.SEGMENTS.ADMIN_RECORD_LINKS, this.auth.requirePermission('users:view'),
+      this.controller.getRecordLinks);
+
     // People management (unified identity model): list people, promote a person to a login account.
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE, this.auth.requirePermission('users:view'),
       this.controller.getPeople);

@@ -7,6 +7,7 @@ import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { EditPageSectionNav } from '@/components/collection/edit/view/edit-page-section-nav.client';
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
+import { CollectionRecordLinksPanel } from '@/components/collection/edit/collection-record-links-panel.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
 import { EditViewModeRail } from '@/components/collection/edit/view/edit-view-mode-rail.client';
@@ -119,6 +120,17 @@ export class EditPageBody extends PureReactor {
               handlePatch={handlePatch}
               handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
             />
+            {/* Only renders when the collection declared `admin.recordLinks` and this record can offer
+                at least one of those correlation keys. A new record can offer none. */}
+            {!isNew && (
+              <CollectionRecordLinksPanel
+                collection={collection}
+                formData={formData}
+                recordId={String(id)}
+                theme={theme}
+                navigate={(href: string) => edit.router?.push(href)}
+              />
+            )}
           </div>
 
           {renderSidebar && (

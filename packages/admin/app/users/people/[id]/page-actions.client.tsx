@@ -2,6 +2,7 @@ import type { FormEvent } from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IRecordsHubItem } from '@fromcode119/react';
+import { RecordsHubOpenItem } from '@/lib/records-hub-open-item';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { bound } from '@fromcode119/react-class-components';
 import { PersonEditPageState } from '@/app/users/people/[id]/page-state.client';
@@ -124,26 +125,6 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
 
   /** Open a hub record: navigate to its admin page (href) or download its document (downloadUrl). */
   protected async openRecord(item: IRecordsHubItem): Promise<void> {
-    if (item.downloadUrl) {
-      try {
-        const res: any = await AdminApi.get(item.downloadUrl);
-        const base64 = String(res?.base64 ?? res?.file?.base64 ?? '');
-        if (base64) {
-          const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-          const url = URL.createObjectURL(new Blob([bytes], { type: res?.mimeType || 'application/pdf' }));
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = String(res?.filename || res?.fileName || `${item.title}.pdf`);
-          document.body.appendChild(a); a.click(); a.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 4000);
-          return;
-        }
-        if (res?.url) { window.open(String(res.url), '_blank', 'noopener'); return; }
-      } catch { /* fall through to href */ }
-    }
-    if (item.href) {
-      if (/^https?:\/\//i.test(item.href)) window.open(item.href, '_blank', 'noopener');
-      else this.router?.push(item.href);
-    }
+    await RecordsHubOpenItem.open(item, (href) => this.router?.push(href));
   }
 }

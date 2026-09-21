@@ -77,6 +77,22 @@ export interface ICollection {
      * otherwise be all telemetry and bury the handful a reader recognises.
      */
     disableCreate?: boolean;
+    /**
+     * Declares this collection's records as a SUBJECT other plugins can contribute records about, and
+     * turns on the related-records panel on the edit page.
+     *
+     * `kind` is an opaque string the declaring plugin owns. `keys` maps a CORRELATION KEY NAME — shared
+     * vocabulary like `orderNumber`, the same way `email` is shared — to the field on this record that
+     * carries it. The framework interprets neither: it hands them to whichever providers declared they
+     * understand one of those key names, so a transaction, a shipment and a scheduled job can appear on
+     * an order without the admin, or any of those plugins, knowing what an order is.
+     */
+    recordLinks?: {
+      kind: string;
+      keys: Record<string, string>;
+      title?: string;
+      emptyHint?: string;
+    };
     /** The operator cannot change rows here. See `disableCreate`. */
     disableEdit?: boolean;
     defaultColumns?: string[];
