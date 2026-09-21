@@ -15,11 +15,20 @@ import type { RuntimeModuleRef } from '@/app/runtime-module-ref';
  *
  * A bundle that fails to import is logged and skipped, as `PluginLoader.loadModule` does; the page then
  * takes the hydrator's fallback path if that bundle owned the layout or the content slot.
+ *
+ * ONE exception to "idle plugins are not loaded here": a plugin whose components the SERVER actually
+ * mounted (`usedPlugins`). Its markup is already on the page, so its registrations are part of the tree
+ * being hydrated — waiting for browser idle meant the server had painted the section and the client's
+ * first render had not, which is a hydration mismatch and a full re-mount of the page. The home page did
+ * this on every load through the theme's social-proof testimonials section. `loadStrategy: 'idle'` is
+ * the author saying "not needed up front"; the server having rendered it says otherwise for THIS page.
  */
 export class StorefrontBundleLoader {
-  static async loadEager(theme: any, plugins: any[], apiUrl: string): Promise<Set<string>> {
+  static async loadEager(theme: any, plugins: any[], apiUrl: string, usedPlugins: string[] = []): Promise<Set<string>> {
+    const used = new Set((usedPlugins || []).map((slug) => String(slug)));
     const themeRef = PluginLoaderMountService.themeRuntimeModule(theme, apiUrl);
-    const pluginRefs = PluginLoaderMountService.pluginRuntimeModules(plugins, apiUrl).filter((ref) => !ref.idle);
+    const pluginRefs = PluginLoaderMountService.pluginRuntimeModules(plugins, apiUrl)
+      .filter((ref) => !ref.idle || used.has(ref.pluginSlug));
     const refs = themeRef ? [themeRef, ...pluginRefs] : pluginRefs;
     refs.forEach(StorefrontBundleLoader.preload);
 

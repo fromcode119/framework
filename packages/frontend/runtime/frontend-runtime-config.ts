@@ -39,6 +39,13 @@ export class FrontendRuntimeConfig {
   /** Idle plugins whose bundle this page never needs (`PluginBundlePolicy`); the loader skips them. */
   readonly skipPlugins: string[];
 
+  /**
+   * Plugins whose components the SERVER render mounted. Their registrations are a precondition for
+   * hydrating the server tree in place, so the loader evaluates them before hydration even when the
+   * plugin declares `loadStrategy: 'idle'`.
+   */
+  readonly usedPlugins: string[];
+
   /** The document locale's server translations (`/system/i18n?locale=`). */
   readonly translations: Record<string, unknown>;
 
@@ -53,6 +60,7 @@ export class FrontendRuntimeConfig {
     this.frontend = raw.frontend && typeof raw.frontend === 'object' ? (raw.frontend as Record<string, any>) : {};
     this.translations = raw.translations && typeof raw.translations === 'object' ? (raw.translations as Record<string, unknown>) : {};
     this.skipPlugins = Array.isArray(raw.skipPlugins) ? raw.skipPlugins.map((slug) => CoercionUtils.toString(slug)).filter(Boolean) : [];
+    this.usedPlugins = Array.isArray(raw.usedPlugins) ? raw.usedPlugins.map((slug) => CoercionUtils.toString(slug)).filter(Boolean) : [];
   }
 
   /** The config element's JSON, or null when the document carries none (nothing to hydrate). */

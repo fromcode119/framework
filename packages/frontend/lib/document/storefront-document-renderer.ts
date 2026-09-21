@@ -165,6 +165,13 @@ export class StorefrontDocumentRenderer {
     const runtimeConfig = {
       apiUrl: ServerApiPaths.buildPublicApiBaseUrl(),
       skipPlugins,
+      // The plugins whose components this render actually MOUNTED. `skipPlugins` is the inverse and
+      // answers "whose bundle can this page never need"; this answers "whose registrations does the
+      // browser need BEFORE it hydrates", which is not the same question. An idle plugin the server
+      // mounted is not skippable — but it still loaded on browser idle, i.e. after hydration, so the
+      // server had painted its section and the client's first render could not. The runtime loads
+      // these eagerly instead.
+      usedPlugins: markup?.usedPlugins ?? [],
       locale,
       content,
       layoutName: args.layoutName,
