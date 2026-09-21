@@ -202,6 +202,7 @@ Expiry states are **derived from the certificate's own dates at read time**, nev
 | `SECRET_KEY` | Encrypts private keys at rest. Without it, uploading is disabled |
 | `INTERNAL_SERVICE_SECRET` | Gates every internal endpoint. Without it they answer nothing |
 | `GATEWAY_TLS_PORT` | Opt in to the gateway terminating TLS. Unset = unchanged behaviour |
+| `GATEWAY_TLS_PUBLISH` | Where that listener is published on the host. Loopback by default, so setting `GATEWAY_TLS_PORT` alone terminates TLS the internet cannot reach — set this to `0.0.0.0:443` when the gateway IS the edge |
 | `GATEWAY_CERTIFICATES_TTL_MS` | How often the gateway refreshes its copy (default 60s) |
 
 **Not built yet:** automatic issuance (ACME), DNS pre-checks, renewal of platform-issued certificates,

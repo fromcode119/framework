@@ -75,6 +75,18 @@ services:
     # is here only so a bare deployment can still be curled locally.
     ports:
       - ${GATEWAY_PORT:-127.0.0.1:8085}:3000
+      # The HTTPS side of the same ingress, and it only does anything once GATEWAY_TLS_PORT above is
+      # set — without that the gateway never opens a TLS listener and this mapping reaches nothing.
+      #
+      # It exists because the opt-in was unreachable without it: an operator could set
+      # GATEWAY_TLS_PORT exactly as `docs/certificates-and-tls.md` describes, watch the gateway log
+      # that it is terminating TLS, and still have nothing answer from outside — the listener was
+      # inside the container with no way through. The feature read as switched on and was not.
+      #
+      # LOOPBACK BY DEFAULT, for the same reason as the port above: on a host where a reverse proxy
+      # already holds 443, publishing here would put the gateway in FRONT of that proxy's TLS and
+      # access policy. Set it to `0.0.0.0:443` only when the gateway IS the edge.
+      - ${GATEWAY_TLS_PUBLISH:-127.0.0.1:8443}:${GATEWAY_TLS_PORT:-3443}
     networks:
       - proxy
       - framework
