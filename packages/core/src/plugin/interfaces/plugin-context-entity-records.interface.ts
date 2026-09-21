@@ -25,5 +25,11 @@ export interface IPluginContextEntityRecords {
     matchKeys?: string[];
     resolve: (ref: IEntityRecordRef) => Promise<IEntityRecordItem[]>;
   }): any;
+  /**
+   * Ask what relates to a subject — the same question the admin's related-records panel asks. Lets a
+   * plugin find out whether anything still answers for something its own record names, without
+   * querying, or naming, whoever owns it.
+   */
+  resolve(ref: IEntityRecordRef): Promise<any>;
   unregister(key: string): void;
 }

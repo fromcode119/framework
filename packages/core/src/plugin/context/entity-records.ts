@@ -1,6 +1,7 @@
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { CoreServices } from '@core/services/core-services';
 import type { IEntityRecordProviderRegistration } from '@core/services/entity-records/interfaces/entity-record-provider-registration.interface';
+import type { IEntityRecordRef } from '@core/services/entity-records/interfaces/entity-record-ref.interface';
 
 /**
  * Plugin-facing facade over the framework's entity-records registry.
@@ -33,6 +34,16 @@ export class EntityRecordsContextProxy {
           matchKeys: input?.matchKeys,
           resolve: input?.resolve,
         });
+      },
+
+      /**
+       * The other side of the registry: ask what relates to a subject, the same question the admin's
+       * related-records panel asks over HTTP. A plugin holding a record that names something — an
+       * invoice naming an order — can find out whether anything still answers for it, without
+       * querying, or naming, whoever owns that thing.
+       */
+      resolve(ref: IEntityRecordRef) {
+        return CoreServices.getInstance().entityRecordsResolution.resolve(ref);
       },
 
       unregister(key: string) {
