@@ -211,7 +211,18 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     this.sentPeerSignature = PluginHostGuestBridge.peerSignature(peers, enabledPlugins);
   }
 
+  /**
+   * The whole snapshot, not just who is in it. A peer's FUNCTION NAMES change after the key set has
+   * settled: a sibling that is still `loading` when the snapshot is taken has no `describeResult`
+   * yet, so `lazyPublicApi`'s `ownKeys` answers `[]` and it is offered with an empty method list.
+   * When it finishes loading the key set is identical, so a key-only signature matched and the
+   * refresh was skipped — the guest kept the empty list for the life of the process.
+   *
+   * That is how `logistics` held `logistics-econt` as a peer it could see but not call:
+   * `providerApi.searchCities` was undefined, and the city search answered nothing.
+   */
   private static peerSignature(peers: Record<string, string[]>, enabledPlugins: string[]): string {
-    return JSON.stringify([Object.keys(peers).sort(), [...enabledPlugins].sort()]);
+    const named = Object.keys(peers).sort().map((key) => [key, [...(peers[key] ?? [])].sort()]);
+    return JSON.stringify([named, [...enabledPlugins].sort()]);
   }
 }
