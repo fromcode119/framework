@@ -13,6 +13,13 @@ export * from '@/components/ui/view/switch.client';
 export * from '@/components/ui/view/page-heading.client';
 export * from '@/components/ui/view/compact-page-header.client';
 export * from '@/components/ui/view/card.client';
+// The record-screen panel and the read-only fact grid. Both were rebuilt inside individual plugins —
+// four different panel headers and three copies of the locked fact surface on ONE order screen —
+// because the panels that need them live in different plugins and a plugin may not import another
+// plugin's components. They belong here for the same reason the field renderer does.
+export * from '@/components/ui/view/admin-panel.client';
+export * from '@/components/ui/view/admin-fact-grid.client';
+export type { IAdminFact } from '@/components/ui/interfaces/admin-fact.interface';
 export * from '@/components/ui/view/badge.client';
 export * from '@/components/ui/view/stat-card.client';
 export * from '@/components/ui/view/data-table.client';

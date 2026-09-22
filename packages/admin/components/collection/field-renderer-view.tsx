@@ -73,6 +73,8 @@ export class FieldRendererView extends FieldRendererViewLocale {
           localeSwitcher={this.localeSwitcherProp}
           record={this.record}
           onPatch={this.onPatch}
+          onRequestReadOnlyOverride={this.requestReadOnlyOverrideForField}
+          readOnlyOverrideGranted={this.readOnlyOverrideGranted ?? false}
         />
 
         <FieldRendererFooter

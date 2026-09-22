@@ -39,6 +39,23 @@ export abstract class FieldRendererViewAccess extends FieldRendererViewState {
     this.onReadOnlyOverrideRequest({ name: this.field.name, label: this.label });
   }
 
+  /**
+   * Request the unlock for a NAMED field rather than this one.
+   *
+   * A component that merges several fields into one control (an order's amounts) is hosted by a field
+   * that is itself editable — otherwise the host arrives `disabled` and freezes the editable parts. So
+   * the host's own `canRequestReadOnlyOverride` is false, and routing its unlock through
+   * `requestReadOnlyOverride` made the button a no-op that reported nothing.
+   *
+   * Naming the target is safe because the unlock is record-scoped and the SERVER is the authority on
+   * which fields may be overridden: `CollectionFieldGuard.isReadOnlyOverrideable` still refuses a
+   * field declared `readOnlyOverride: 'never'`, whatever the admin asks for.
+   */
+  @bound protected requestReadOnlyOverrideForField(target: { name: string; label: string }): void {
+    if (this.disabled || !this.onReadOnlyOverrideRequest || !target?.name) return;
+    this.onReadOnlyOverrideRequest(target);
+  }
+
   @bound protected wrapWithReadOnlyOverride(node: ReactNode, roundedClass: string = 'rounded-lg'): ReactNode {
     if (!this.canRequestReadOnlyOverride) return node;
     return (

@@ -14,4 +14,6 @@ export interface IFieldCustomComponentProps {
   record?: Record<string, any>;
   onPatch?: (partial: Record<string, any>) => void;
   wrapWithReadOnlyOverride: (node: React.ReactNode, roundedClass?: string) => React.ReactNode;
+  onRequestReadOnlyOverride: (target: { name: string; label: string }) => void;
+  readOnlyOverrideGranted: boolean;
 }

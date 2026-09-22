@@ -16,6 +16,26 @@ export interface ICollectionField {
     handlesLocalization?: boolean;
     readOnly?: boolean;
     hidden?: boolean;
+    /**
+     * The name of the SIBLING field whose component renders this one's control.
+     *
+     * The standard renderer skips this field so the value is not drawn twice, but — unlike
+     * `hidden` — the control still exists and this says where. Use it when several fields form one
+     * thing an operator reads together (an order's amounts, a date range) and a single component
+     * edits them through the reactive `record`/`onPatch` props.
+     *
+     * The named field must be on the same form and must declare `admin.component`; otherwise the
+     * value has no control at all, which is the Rule Zero failure `hidden` causes.
+     */
+    renderedBy?: string;
+    /**
+     * Suppress the field's own label row.
+     *
+     * For a control that prints its own heading — a summary that already names each line it holds —
+     * where the renderer's label would be the same word twice, stacked. Read by the field header and
+     * declared here because an option that only exists at its read site is one nobody can find.
+     */
+    hideLabel?: boolean;
     position?: FieldPosition;
     description?: string;
     sourceCollection?: string;

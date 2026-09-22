@@ -28,6 +28,10 @@ export class FieldControlRenderer extends PureReactor {
   @prop declare resolvedCurrentText: string;
   @prop declare updateValue: (value: any) => void;
   @prop declare wrapWithReadOnlyOverride: (node: ReactNode, roundedClass?: string) => ReactNode;
+  /** Handed to CUSTOM components so a control that merges several read-only fields can offer the
+   *  same deliberate unlock the built-in ones do, instead of silently dropping the capability. */
+  @prop declare onRequestReadOnlyOverride: (target: { name: string; label: string }) => void;
+  @prop declare readOnlyOverrideGranted: boolean;
   @prop declare theme: ThemeMode;
   @prop declare collectionSlug: string;
   @prop declare pluginSettings?: Record<string, any>;
@@ -52,6 +56,8 @@ export class FieldControlRenderer extends PureReactor {
       resolvedCurrentText,
       updateValue,
       wrapWithReadOnlyOverride,
+      onRequestReadOnlyOverride,
+      readOnlyOverrideGranted,
       theme,
       collectionSlug,
       pluginSettings,
@@ -91,6 +97,8 @@ export class FieldControlRenderer extends PureReactor {
           isFieldReadOnly={isFieldReadOnly}
           record={record}
           onPatch={onPatch}
+          onRequestReadOnlyOverride={onRequestReadOnlyOverride}
+          readOnlyOverrideGranted={readOnlyOverrideGranted}
           wrapWithReadOnlyOverride={wrapWithReadOnlyOverride}
         />
       ) : field.type === 'relationship' && field.relationTo === 'media' ? (
