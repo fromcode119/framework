@@ -1,6 +1,7 @@
 import { TextualFieldKind } from '@/components/collection/enums/textual-field-kind.enum';
 import type React from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field-value.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { Input } from '@/components/ui/view/input.client';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
@@ -25,14 +26,25 @@ export class FieldTextualControl extends PureReactor {
   @prop declare isLocalizedField: boolean;
   @prop declare shouldInlineLocaleSwitcher: boolean;
   @prop declare localeSwitcher: (compact?: boolean) => React.ReactNode;
+  /** The field's description — shown in the read-only lock bar instead of as a line below. */
+  @prop declare resolvedFieldDescription?: string;
   @prop declare wrapWithReadOnlyOverride: (node: React.ReactNode, roundedClass?: string) => React.ReactNode;
 
   render(): React.ReactNode {
     const {
       kind, currentValue, resolvedCurrentText, updateValue, isFieldReadOnly, errors,
-      label, isLocalizedField, shouldInlineLocaleSwitcher, localeSwitcher, wrapWithReadOnlyOverride
+      label, isLocalizedField, shouldInlineLocaleSwitcher, localeSwitcher, wrapWithReadOnlyOverride,
+      resolvedFieldDescription
     } = this;
     const switcher = isLocalizedField && shouldInlineLocaleSwitcher;
+
+    // Same rule as the text input: a value the operator cannot change is DISPLAYED, not offered in a
+    // box that looks typeable. Password keeps its own control — a masked field must never print its
+    // value as text — and a localized field keeps the input, because its value is per-locale and the
+    // switcher belongs with it.
+    if (isFieldReadOnly && kind !== TextualFieldKind.PASSWORD && !isLocalizedField) {
+      return <ReadOnlyFieldValue provenance={resolvedFieldDescription} value={typeof currentValue === 'string' ? currentValue : resolvedCurrentText} />;
+    }
 
     if (kind === TextualFieldKind.TEXTAREA) {
       return wrapWithReadOnlyOverride(
@@ -41,7 +53,7 @@ export class FieldTextualControl extends PureReactor {
             value={typeof currentValue === 'string' ? currentValue : resolvedCurrentText}
             onChange={(e) => updateValue(e.target.value)}
             disabled={isFieldReadOnly}
-            placeholder={`Enter ${label}...`}
+            placeholder={isFieldReadOnly ? 'Not set' : `Enter ${label}...`}
             error={errors?.[0]}
             inputClassName={switcher ? 'pr-16' : ''}
           />

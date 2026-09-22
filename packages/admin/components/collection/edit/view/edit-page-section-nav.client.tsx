@@ -9,6 +9,19 @@ export class EditPageSectionNav extends Reactor {
   /** Gap left below the sticky headers when scrolling a section into view. */
   private static readonly MARGIN = 8;
 
+  /**
+   * The fixed save bar's height, so the rail can stop above it.
+   *
+   * That bar is `bg-white/80` over `backdrop-blur-3xl`: 80% opaque, not opaque. Anything behind it
+   * shows through rather than being covered, so a rail that merely painted UNDER it still had its
+   * lower dots visibly floating across the bar. Sitting under a translucent thing is not the same as
+   * being hidden by it.
+   */
+  private static stickyFooterHeight(): number {
+    const footer = document.querySelector('[data-edit-footer]') as HTMLElement | null;
+    return footer ? footer.offsetHeight : 0;
+  }
+
   private static stickyHeaderHeight(): number {
     // Global header is h-16 = 64px, always at top
     // EditHeader is sticky top-0 but its bottom edge = its offsetHeight
@@ -26,6 +39,8 @@ export class EditPageSectionNav extends Reactor {
   // props are not wired when field initialisers run, so seed this once mounted (see componentDidMount)
   @state activeKey = '';
   @state stickyTop = 130;
+  /** Height available to the rail: viewport minus the sticky header above and the fixed bar below. */
+  @state availableHeight = 0;
 
   private stickyTopValue = 130;
   private measureTimer?: ReturnType<typeof setTimeout>;
@@ -34,6 +49,10 @@ export class EditPageSectionNav extends Reactor {
     const h = EditPageSectionNav.stickyHeaderHeight();
     this.stickyTopValue = h;
     this.stickyTop = h;
+    this.availableHeight = Math.max(
+      0,
+      window.innerHeight - h - EditPageSectionNav.stickyFooterHeight() - EditPageSectionNav.MARGIN,
+    );
   }
 
   @bound private handleScroll(): void {
@@ -55,6 +74,9 @@ export class EditPageSectionNav extends Reactor {
     this.measure();
     this.measureTimer = setTimeout(this.measure, 200);
     this.onUnmount(() => { if (this.measureTimer) clearTimeout(this.measureTimer); });
+    // The available height is derived from `window.innerHeight`, so it goes stale on resize — and a
+    // stale cap is the same bug again, just at a different window size.
+    this.listen(window, 'resize', this.measure, { passive: true });
     if (this.sections.length > 0) {
       this.listen(window, 'scroll', this.handleScroll, { passive: true });
       this.handleScroll();
@@ -89,9 +111,18 @@ export class EditPageSectionNav extends Reactor {
 
     return (
     // Outer: self-stretch fills full row height so CSS sticky has room to operate
-    <div ref={this.navRef} className="hidden lg:block select-none self-stretch" style={{ width: 20, zIndex: 200, position: 'relative' }}>
+    // z-30: above the page content it floats over, BELOW the fixed save bar (z-100). It used to be
+    // 200, so the rail painted OVER that bar and its lower dots sat across the Discard/Commit
+    // controls — no amount of capping its height or making the bar opaque could fix that, because the
+    // rail was simply in front.
+    <div ref={this.navRef} className="hidden lg:block select-none self-stretch" style={{ width: 20, zIndex: 30, position: 'relative' }}>
       {/* CSS sticky — no JS transform needed; overflow-x-clip on <main> allows this */}
-      <div className="flex flex-col items-center gap-1 pt-1" style={{ position: 'sticky', top: stickyTop }}>
+      {/* Capped and clipped: the rail never extends into the band the fixed save bar occupies,
+          because that bar is translucent and would show the dots through itself. */}
+      <div
+        className="flex flex-col items-center gap-1 overflow-hidden pt-1"
+        style={{ position: 'sticky', top: stickyTop, maxHeight: this.availableHeight ? `${this.availableHeight}px` : undefined }}
+      >
         {/* Up arrow */}
         <button
           onClick={() => hasPrev && scrollToSection(sections[activeIndex - 1].key)}

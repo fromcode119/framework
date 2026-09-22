@@ -186,12 +186,110 @@ describe('./field-renderer', () => {
       />
     );
 
-    fireEvent.click(screen.getByLabelText('Override read-only field Invoice Number'));
+    // The affordance is the header's "Unlock edit" control. It used to be an invisible overlay laid
+    // across the whole field, which said nothing the header did not and swallowed every click inside
+    // the value — links, copy buttons, a table's scroll. What must not regress is the CAPABILITY.
+    fireEvent.click(screen.getByTitle('Unlock "Invoice Number" to edit'));
 
     expect(onReadOnlyOverrideRequest).toHaveBeenCalledWith({
       name: 'invoiceNumber',
       label: 'Invoice Number'
     });
+  });
+
+  it('shows a read-only value as text rather than in an input', () => {
+    render(
+      <FieldRenderer
+        field={{ name: 'trackingNumber', type: 'text', label: 'Tracking Number', admin: { readOnly: true } } as any}
+        value="1051234567890"
+        onChange={vi.fn()}
+        theme={ThemeMode.LIGHT}
+        collectionSlug="orders"
+        onReadOnlyOverrideRequest={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('1051234567890')).toBeInTheDocument();
+    expect(document.querySelector('input')).toBeNull();
+  });
+
+  /**
+   * The provenance belongs in the lock bar, not in a line below the field AS WELL. Printed in both
+   * places it is the same sentence twice on one field, a few pixels apart.
+   */
+  it('shows who writes a read-only value once, in the lock bar', () => {
+    render(
+      <FieldRenderer
+        field={{
+          name: 'trackingNumber',
+          type: 'text',
+          label: 'Tracking Number',
+          admin: { readOnly: true, description: 'Set by the logistics plugin.' },
+        } as any}
+        value=""
+        onChange={vi.fn()}
+        theme={ThemeMode.LIGHT}
+        collectionSlug="orders"
+        onReadOnlyOverrideRequest={vi.fn()}
+      />
+    );
+
+    expect(screen.getAllByText('Set by the logistics plugin.')).toHaveLength(1);
+  });
+
+  it('keeps the description below an EDITABLE field, where there is no bar to carry it', () => {
+    render(
+      <FieldRenderer
+        field={{
+          name: 'internalNote',
+          type: 'text',
+          label: 'Internal Note',
+          admin: { description: 'Only staff can see this.' },
+        } as any}
+        value=""
+        onChange={vi.fn()}
+        theme={ThemeMode.LIGHT}
+        collectionSlug="orders"
+      />
+    );
+
+    expect(screen.getByText('Only staff can see this.')).toBeInTheDocument();
+  });
+
+  it('does not lay a click-catching overlay over the value', () => {
+    render(
+      <FieldRenderer
+        field={{ name: 'invoiceNumber', type: 'text', label: 'Invoice Number', admin: { readOnly: true } } as any}
+        value="INV-001"
+        onChange={vi.fn()}
+        theme={ThemeMode.LIGHT}
+        collectionSlug="invoices"
+        onReadOnlyOverrideRequest={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByLabelText('Override read-only field Invoice Number')).not.toBeInTheDocument();
+  });
+
+  it('does not tell the operator to type into a field they cannot type into', () => {
+    render(
+      <FieldRenderer
+        field={{ name: 'trackingNumber', type: 'text', label: 'Tracking Number', admin: { readOnly: true } } as any}
+        value=""
+        onChange={vi.fn()}
+        theme={ThemeMode.LIGHT}
+        collectionSlug="orders"
+        onReadOnlyOverrideRequest={vi.fn()}
+      />
+    );
+
+    // A read-only field renders no input at all now — it shows the value, or "Not set" when there is
+    // none. The old behaviour printed `Enter Tracking Number...` inside a disabled box: an
+    // instruction the operator could not follow, in a control that looked exactly like the editable
+    // ones beside it.
+    expect(screen.queryByPlaceholderText('Enter Tracking Number...')).not.toBeInTheDocument();
+    expect(screen.getByText('Not set')).toBeInTheDocument();
+    expect(document.querySelector('input')).toBeNull();
   });
 
   it('keeps read-only fields locked when the schema explicitly disables override', () => {
@@ -206,6 +304,7 @@ describe('./field-renderer', () => {
       />
     );
 
-    expect(screen.queryByLabelText('Override read-only field Invoice Number')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Unlock "Invoice Number" to edit')).not.toBeInTheDocument();
+    expect(screen.getByText('Read only')).toBeInTheDocument();
   });
 });

@@ -27,6 +27,8 @@ export class FieldControlRenderer extends PureReactor {
   @prop declare currentValue: any;
   @prop declare resolvedCurrentText: string;
   @prop declare updateValue: (value: any) => void;
+  /** Forwarded to read-only controls, which show it in their lock bar. */
+  @prop declare resolvedFieldDescription?: string;
   @prop declare wrapWithReadOnlyOverride: (node: ReactNode, roundedClass?: string) => ReactNode;
   /** Handed to CUSTOM components so a control that merges several read-only fields can offer the
    *  same deliberate unlock the built-in ones do, instead of silently dropping the capability. */
@@ -56,6 +58,7 @@ export class FieldControlRenderer extends PureReactor {
       resolvedCurrentText,
       updateValue,
       wrapWithReadOnlyOverride,
+      resolvedFieldDescription,
       onRequestReadOnlyOverride,
       readOnlyOverrideGranted,
       theme,
@@ -130,6 +133,7 @@ export class FieldControlRenderer extends PureReactor {
         )
       ) : (field.type === 'textarea' || field.type === 'richText') ? (
         <FieldTextualControl
+          resolvedFieldDescription={resolvedFieldDescription}
           kind={TextualFieldKind.TEXTAREA}
           field={field}
           currentValue={currentValue}
@@ -145,6 +149,7 @@ export class FieldControlRenderer extends PureReactor {
         />
       ) : field.type === 'json' ? (
         <FieldTextualControl
+          resolvedFieldDescription={resolvedFieldDescription}
           kind={TextualFieldKind.JSON}
           field={field}
           currentValue={currentValue}
@@ -173,6 +178,7 @@ export class FieldControlRenderer extends PureReactor {
         )
       ) : field.type === 'password' || (field.name === 'password' && isNew) ? (
         <FieldTextualControl
+          resolvedFieldDescription={resolvedFieldDescription}
           kind={TextualFieldKind.PASSWORD}
           field={field}
           currentValue={currentValue}
@@ -252,6 +258,7 @@ export class FieldControlRenderer extends PureReactor {
         )
       ) : (
         <FieldTextInput
+          resolvedFieldDescription={resolvedFieldDescription}
           field={field}
           currentValue={currentValue}
           resolvedCurrentText={resolvedCurrentText}

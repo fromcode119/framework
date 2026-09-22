@@ -24,6 +24,18 @@ export class FieldRendererView extends FieldRendererViewLocale {
     }
   }
 
+  /**
+   * Whether the control itself already shows the description, as a read-only lock bar does.
+   *
+   * Printing it in both places puts the same sentence twice on one field, a few pixels apart. The
+   * conditions mirror the two controls that render `ReadOnlyFieldValue`.
+   */
+  private get showsProvenanceInline(): boolean {
+    const kind = String(this.field.type || '');
+    const textual = ['text', 'number', 'textarea', 'richText', 'email', 'url'].includes(kind);
+    return this.isFieldReadOnly && textual && !this.isLocalizedField;
+  }
+
   render(): ReactElement {
     const fieldComponents = (this.plugins as any).fieldComponents || {};
     const isLocalizedField = this.isLocalizedField;
@@ -56,6 +68,7 @@ export class FieldRendererView extends FieldRendererViewLocale {
           currentValue={currentValue}
           resolvedCurrentText={resolvedCurrentText}
           updateValue={this.updateValue}
+          resolvedFieldDescription={resolvedFieldDescription}
           wrapWithReadOnlyOverride={this.wrapWithReadOnlyOverride}
           theme={this.theme}
           collectionSlug={this.collectionSlug}
@@ -79,7 +92,7 @@ export class FieldRendererView extends FieldRendererViewLocale {
 
         <FieldRendererFooter
           field={this.field}
-          resolvedFieldDescription={resolvedFieldDescription}
+          resolvedFieldDescription={this.showsProvenanceInline ? '' : resolvedFieldDescription}
           errors={this.errors}
           provenance={this.provenance}
         />
