@@ -37,12 +37,24 @@ export class EditFooter extends PureReactor {
     this.setChangeSummary('');
   }
 
+  /**
+   * OPAQUE, not translucent.
+   *
+   * This bar was `bg-white/80` over `backdrop-blur-3xl`. A z-index of 100 puts it above the page, but
+   * above a translucent thing is still visible THROUGH it — the section-nav dots showed across the
+   * bar, and so would anything else that happened to scroll behind it. Chasing the geometry of each
+   * offender is endless; a bar that actually covers what it sits on ends the whole class.
+   */
   render(): ReactNode {
     return (
-      <div className={`fixed bottom-0 left-0 right-0 z-[100] border-t py-3 backdrop-blur-3xl transition-all duration-300 ${
+      // `data-edit-footer` so anything sticky in the content column can measure this bar, the way the
+      // section nav already measures `data-edit-header`. The bar is 80% opaque over a 64px blur, so
+      // whatever sits behind it stays faintly VISIBLE rather than being hidden — the section-nav dots
+      // were showing through it.
+      <div data-edit-footer className={`fixed bottom-0 left-0 right-0 z-[100] border-t py-3 transition-all duration-300 ${
         this.theme === ThemeMode.DARK
-          ? 'bg-slate-950/80 border-slate-800/50 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]'
-          : 'bg-white/80 border-slate-100 shadow-lg'
+          ? 'bg-slate-950 border-slate-800/50 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]'
+          : 'bg-white border-slate-100 shadow-lg'
       }`}>
         {/* Two nested boxes, deliberately. This bar is `fixed`, so it escapes the content column and has
             to clear the sidebar itself — that is the OUTER pl-20/lg:pl-64. The page gutter then has to

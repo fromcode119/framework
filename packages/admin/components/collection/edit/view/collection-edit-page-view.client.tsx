@@ -37,8 +37,17 @@ export class CollectionEditPageView extends Reactor {
     this.advancedView = next;
   }
 
+  /**
+   * The unlock is per RECORD, not per field: confirming once unlocks every overrideable read-only
+   * field on this record. `readOnlyOverrideFields` stays as the list of what was unlocked — the API
+   * uses it to allow system fields through the parser — but it is no longer what authorizes the save.
+   */
   @state readOnlyOverrideFields: Record<string, true> = {};
-  @state readOnlyOverridePassword = '';
+  /**
+   * A short-lived scoped GRANT, never the password. The account password used to live here for the
+   * life of the page and ride along in every save payload.
+   */
+  @state readOnlyOverrideGrant = '';
   @state readOnlyOverrideTarget: { name: string; label: string } | null = null;
   @state readOnlyOverridePasswordTarget: { name: string; label: string } | null = null;
   @state readOnlyOverrideVerifying = false;

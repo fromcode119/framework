@@ -7,6 +7,8 @@ export interface IFieldControlRendererProps {
   resolvedCurrentText: string;
   updateValue: (value: any) => void;
   wrapWithReadOnlyOverride: (node: React.ReactNode, roundedClass?: string) => React.ReactNode;
+  onRequestReadOnlyOverride: (target: { name: string; label: string }) => void;
+  readOnlyOverrideGranted: boolean;
   theme: ThemeMode;
   collectionSlug: string;
   pluginSettings?: Record<string, any>;

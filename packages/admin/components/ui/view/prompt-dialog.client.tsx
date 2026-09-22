@@ -70,7 +70,11 @@ export class PromptDialog extends AdminComponent {
     const confirmLabel = this.confirmLabel ?? 'Confirm';
     const cancelLabel = this.cancelLabel ?? 'Cancel';
     const isLoading = this.isLoading ?? false;
-    const inputType = this.inputType ?? PromptInputType.TEXT;
+    // RESOLVED, never read straight off the prop. Callers pass the raw literal (`inputType="password"`),
+    // and a string has no `.value` — so `type={inputType.value}` was `undefined`, React omitted the
+    // attribute entirely, and the input fell back to `text`. The read-only override dialog asked for
+    // the operator's account password and showed every character of it on screen.
+    const inputType = PromptInputType.resolve(this.inputType ?? PromptInputType.TEXT);
     const { onClose, title, description, icon } = this;
     const theme = this.theme;
     const value = this.value;

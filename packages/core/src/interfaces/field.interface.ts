@@ -65,6 +65,27 @@ export interface IField {
     handlesLocalization?: boolean;
     /** Declared as a literal by collections; compare with `FieldWidth.resolve()`, never `===`. */
     width?: FieldWidth | string;
+    /**
+     * The SIBLING field whose component renders this field's control.
+     *
+     * The admin's standard renderer skips a field that declares it, so several fields an operator
+     * reads as one thing — an order's amounts, a date range — can be edited by a single component
+     * through the reactive `record`/`onPatch` props.
+     *
+     * It is NOT `hidden`, and must not be used as a quiet substitute for it. Hidden asserts there is
+     * no control, which Rule Zero forbids; this NAMES the control's owner, so "what edits this value?"
+     * still has a written answer. The named field must be on the same form and declare
+     * `admin.component`.
+     */
+    renderedBy?: string;
+    /**
+     * Suppress the field's own label row.
+     *
+     * For a control that prints its own heading — a summary that already names each line it holds —
+     * where the renderer's label would be the same word twice, stacked. Read by the field header and
+     * declared here because an option that only exists at its read site is one nobody can find.
+     */
+    hideLabel?: boolean;
     condition?: {
       field: string;
       operator: ConditionOperator;

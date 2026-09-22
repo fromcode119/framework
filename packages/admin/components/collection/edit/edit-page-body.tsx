@@ -27,7 +27,7 @@ export class EditPageBody extends PureReactor {
     const {
       status, setStatus, formData, setFormData, isNew, handleSubmit, saving, collection, theme,
       activeTab, setActiveTab, navSections, renderSidebar, resolvedSlug, pluginSettings, pluginSettingsSchema, fieldErrors,
-      slugWarning, slugManuallyEdited, readOnlyOverrideFields, handleInputChange, handlePatch,
+      slugWarning, slugManuallyEdited, readOnlyOverrideGranted, handleInputChange, handlePatch,
       handleReadOnlyOverrideRequest, standardMainFieldSections, fullWidthMainFieldSections,
       showPermalink, hasDisablePermalink, hasSidebarFields, sidebarFieldSections, hasBuiltInSidebarContent,
       revisions, revisionsLoading, activeVersionId, setSelectedRevision, setActiveVersionId,
@@ -115,7 +115,7 @@ export class EditPageBody extends PureReactor {
               isNew={isNew}
               slugWarning={slugWarning}
               slugManuallyEdited={slugManuallyEdited}
-              readOnlyOverrideFields={readOnlyOverrideFields}
+              readOnlyOverrideGranted={readOnlyOverrideGranted}
               handleInputChange={handleInputChange}
               handlePatch={handlePatch}
               handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
@@ -150,7 +150,7 @@ export class EditPageBody extends PureReactor {
               handleInputChange={handleInputChange}
               handlePatch={handlePatch}
               handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
-              readOnlyOverrideFields={readOnlyOverrideFields}
+              readOnlyOverrideGranted={readOnlyOverrideGranted}
               showPermalink={showPermalink}
               hasDisablePermalink={hasDisablePermalink}
               hasSidebarFields={hasSidebarFields}

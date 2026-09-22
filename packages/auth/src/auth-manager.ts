@@ -138,6 +138,16 @@ export class AuthManager {
     return this.tokens.verifyRefreshToken(token);
   }
 
+  /** @inheritdoc — delegated to AuthTokenService. */
+  async generateGrantToken(...args: Parameters<AuthTokenService['generateGrantToken']>): Promise<string> {
+    return this.tokens.generateGrantToken(...args);
+  }
+
+  /** @inheritdoc — delegated to AuthTokenService. */
+  async verifyGrantToken(...args: Parameters<AuthTokenService['verifyGrantToken']>): Promise<boolean> {
+    return this.tokens.verifyGrantToken(...args);
+  }
+
   /** @see AuthRequestGate.middleware */
   middleware(...args: Parameters<AuthRequestGate["middleware"]>): ReturnType<AuthRequestGate["middleware"]> {
     return this.gate.middleware(...args);

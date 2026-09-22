@@ -12,6 +12,30 @@ import type { ITagOption } from '@/components/ui/tag-field/interfaces/tag-option
  * keeping the React class thin without changing behavior.
  */
 export class TagFieldDataService {
+  /**
+   * Marks a reference that resolved to NOTHING.
+   *
+   * The id is kept in the label because it is the only thing left of the record — but the chip must
+   * also LOOK wrong, and a view cannot tell a broken reference from a real one by reading the text
+   * (which is user-visible, and would break the moment it is translated). So the marker is a prefix
+   * the view matches on, and `isUnresolved`/`describeUnresolved` are the only things that know it.
+   */
+  private static readonly UNRESOLVED_MARKER = '\u0000unresolved:';
+
+  static unresolvedLabel(rawValue: unknown): string {
+    return `${TagFieldDataService.UNRESOLVED_MARKER}${String(rawValue ?? '').trim()}`;
+  }
+
+  static isUnresolved(label: unknown): boolean {
+    return typeof label === 'string' && label.startsWith(TagFieldDataService.UNRESOLVED_MARKER);
+  }
+
+  /** What the operator reads: plain words, with the id that is all the record left behind. */
+  static describeUnresolved(label: string): string {
+    const id = label.slice(TagFieldDataService.UNRESOLVED_MARKER.length).trim();
+    return id ? `Deleted item (${id})` : 'Deleted item';
+  }
+
   // `value` is a raw stored record field: despite the caller's `string[] | string` prop type,
   // schema-less/legacy data can hand this a number, object, boolean, null, etc. at runtime.
   static parseTags(value: unknown, hasMany = true): any[] {
@@ -99,7 +123,12 @@ export class TagFieldDataService {
            if (doc) {
              newLabels[t] = AdminServices.getInstance().localization.resolveLabelText(doc) || t;
            } else {
-              newLabels[t] = t;
+             // The reference resolved to NOTHING. Labelling it with the raw id renders a chip reading
+             // "1", indistinguishable from a record actually named "1" — so a product pointing at a
+             // deleted category looked like a product in a category, and an operator had no way to
+             // tell. Imports and id remaps leave these behind; they hide precisely because they look
+             // like ordinary values.
+             newLabels[t] = TagFieldDataService.unresolvedLabel(t);
            }
          } catch (e: any) {
            const message = String(e?.message || '');

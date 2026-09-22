@@ -39,19 +39,35 @@ export abstract class FieldRendererViewAccess extends FieldRendererViewState {
     this.onReadOnlyOverrideRequest({ name: this.field.name, label: this.label });
   }
 
-  @bound protected wrapWithReadOnlyOverride(node: ReactNode, roundedClass: string = 'rounded-lg'): ReactNode {
-    if (!this.canRequestReadOnlyOverride) return node;
-    return (
-      <div className="relative">
-        {node}
-        <button
-          type="button"
-          onClick={this.requestReadOnlyOverride}
-          className={`absolute inset-0 z-20 ${roundedClass} border border-indigo-400/50 bg-indigo-500/[0.03] hover:bg-indigo-500/[0.06] transition-colors`}
-          title={`Override read-only field "${this.label}"`}
-          aria-label={`Override read-only field ${this.label}`}
-        />
-      </div>
-    );
+  /**
+   * Request the unlock for a NAMED field rather than this one.
+   *
+   * A component that merges several fields into one control (an order's amounts) is hosted by a field
+   * that is itself editable — otherwise the host arrives `disabled` and freezes the editable parts. So
+   * the host's own `canRequestReadOnlyOverride` is false, and routing its unlock through
+   * `requestReadOnlyOverride` made the button a no-op that reported nothing.
+   *
+   * Naming the target is safe because the unlock is record-scoped and the SERVER is the authority on
+   * which fields may be overridden: `CollectionFieldGuard.isReadOnlyOverrideable` still refuses a
+   * field declared `readOnlyOverride: 'never'`, whatever the admin asks for.
+   */
+  @bound protected requestReadOnlyOverrideForField(target: { name: string; label: string }): void {
+    if (this.disabled || !this.onReadOnlyOverrideRequest || !target?.name) return;
+    this.onReadOnlyOverrideRequest(target);
+  }
+
+  /**
+   * Returns the control untouched.
+   *
+   * This used to lay an `absolute inset-0 z-20` button over every read-only field. It said nothing the
+   * header did not already say — a read-only field always renders either an "Unlock edit" button or a
+   * "Read only" chip beside its label — while tinting the value indigo and swallowing every click
+   * inside it: links in a value, a Copy button, a filter box, the scroll of a long table.
+   *
+   * The wrapper is kept as a seam rather than deleted from thirty call sites, so the decision lives in
+   * one place if a control ever needs its own affordance again.
+   */
+  @bound protected wrapWithReadOnlyOverride(node: ReactNode, _roundedClass: string = 'rounded-lg'): ReactNode {
+    return node;
   }
 }

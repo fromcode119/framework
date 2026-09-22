@@ -39,6 +39,7 @@
     "check:snake-translation-keys": "node packages/arch-guard/dist/arch-guard-cli.cjs snake-translation-keys",
     "check:i18n-keys": "node packages/arch-guard/dist/arch-guard-cli.cjs i18n-keys",
     "check:json-field-controls": "node packages/arch-guard/dist/arch-guard-cli.cjs json-field-controls",
+    "check:rendered-by-targets": "node packages/arch-guard/dist/arch-guard-cli.cjs rendered-by-targets",
     "check:plugin-scripts": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-scripts",
     "check:loose-scripts": "node packages/arch-guard/dist/arch-guard-cli.cjs loose-scripts",
     "check:peer-surface": "node packages/arch-guard/dist/arch-guard-cli.cjs peer-surface",

@@ -11,6 +11,21 @@ export class RelationshipSelectLocalFetcher {
     this.ctx = ctx;
   }
 
+  /**
+   * The label for a reference that resolved to NOTHING.
+   *
+   * A dangling id used to render as the bare number, so a product pointing at a deleted category
+   * showed a chip reading "1" — indistinguishable from a category actually named "1", and giving the
+   * operator no hint that the link is broken. Imports and per-tenant id remaps leave these behind;
+   * they are invisible precisely because they look like ordinary values.
+   */
+  private static unresolvedLabel(rawValue: unknown): string {
+    const id = String(rawValue ?? '').trim();
+    // Plain words, not developer shorthand: this is read by whoever is looking at the record, and
+    // "Missing #8" tells them nothing about what happened to it.
+    return id ? `Deleted item (${id})` : 'Deleted item';
+  }
+
   private resolveLookupField(sourceCollectionSlug: string): string {
     const { field, collections } = this.ctx;
     const sourceCollection = (collections || []).find((entry: any) => entry.slug === sourceCollectionSlug);
@@ -83,7 +98,10 @@ export class RelationshipSelectLocalFetcher {
 
     if (!disposed()) {
       rawValueMap[currentSelectValue || currentValue] = value;
-      upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
+      upsertOption({
+        value: currentSelectValue || currentValue,
+        label: RelationshipSelectLocalFetcher.unresolvedLabel(currentValue),
+      });
     }
   }
 
@@ -119,7 +137,10 @@ export class RelationshipSelectLocalFetcher {
     } catch {
       if (!disposed() && currentValue) {
         rawValueMap[currentSelectValue || currentValue] = value;
-        upsertOption({ value: currentSelectValue || currentValue, label: currentValue });
+        upsertOption({
+          value: currentSelectValue || currentValue,
+          label: RelationshipSelectLocalFetcher.unresolvedLabel(currentValue),
+        });
       }
     }
   }

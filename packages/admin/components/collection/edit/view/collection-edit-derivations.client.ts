@@ -44,13 +44,25 @@ export class CollectionEditDerivations {
     const locked = !isNew && (collection?.admin as any)?.disableEdit === true;
     const lockField = (field: any) => (locked ? { ...field, admin: { ...(field.admin || {}), readOnly: true } } : field);
 
+    /**
+     * A field whose control is rendered by a SIBLING field's component, so the standard renderer must
+     * not draw it a second time.
+     *
+     * This is deliberately not `admin.hidden`. Hidden means "there is no control for this value",
+     * which Rule Zero forbids: the value still ships and still drives behaviour with nothing the
+     * operator can point at. `renderedBy` NAMES the field that owns the control, so the declaration
+     * stays answerable — "what edits this?" has a written answer, and anyone reading the collection
+     * can follow it.
+     */
+    const isRenderedBySibling = (field: IField) => Boolean((field.admin as any)?.renderedBy);
+
     const sidebarFields = (collection?.fields || []).filter((f: IField) =>
-      FieldPosition.resolve(f.admin?.position) === FieldPosition.SIDEBAR && !f.admin?.hidden && f.name !== 'customPermalink' &&
+      FieldPosition.resolve(f.admin?.position) === FieldPosition.SIDEBAR && !f.admin?.hidden && !isRenderedBySibling(f) && f.name !== 'customPermalink' &&
       services.validation.evaluateCondition(f.admin?.condition, formData, f.name));
     const sidebarFieldSections = CollectionEditDerivations.groupSidebar(sidebarFields.map(lockField));
 
     const mainFields = (collection?.fields || []).filter((field: IField) => {
-      if (field.admin?.hidden || FieldPosition.resolve(field.admin?.position) === FieldPosition.SIDEBAR) return false;
+      if (field.admin?.hidden || isRenderedBySibling(field) || FieldPosition.resolve(field.admin?.position) === FieldPosition.SIDEBAR) return false;
       if (!services.validation.evaluateCondition(field.admin?.condition, formData, field.name)) return false;
       if (collection?.admin?.tabs && collection.admin.tabs.length > 0) {
         const fieldTab = field.admin?.tab || collection.admin.tabs[0].name;

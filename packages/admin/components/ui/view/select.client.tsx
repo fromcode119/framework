@@ -195,7 +195,11 @@ export class Select extends Reactor {
              </div>
           </span>
 
-          <span className={`relative z-10 ml-2 flex flex-shrink-0 items-center ${canClear ? 'pr-5' : ''}`}>
+          {/* The chevron keeps its place at the right edge; the clear button sits to its LEFT. This
+              span used to gain `pr-5` when clearable, which shifted the chevron 20px inward — onto
+              exactly the `right-8` slot the clear button occupies, so the two drew on top of each
+              other. Padding moved the wrong element. */}
+          <span className="relative z-10 ml-2 flex flex-shrink-0 items-center">
             {isLoading ? (
               <div className={`h-3.5 w-3.5 animate-spin rounded-full border-2 ${isDarkTheme ? 'border-slate-700 border-t-slate-400' : 'border-slate-200 border-t-slate-400'}`} />
             ) : (
@@ -228,7 +232,7 @@ export class Select extends Reactor {
               onSearchChange?.('');
               setIsOpen(false);
             }}
-            className={`absolute top-1/2 right-8 z-20 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[11px] font-bold leading-none transition-colors ${
+            className={`absolute top-1/2 right-9 z-20 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[11px] font-bold leading-none transition-colors ${
               isDarkTheme
                 ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'

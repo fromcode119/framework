@@ -18,13 +18,13 @@ export class StructuredReadOnlyTable extends PureReactor {
     const { node, isDark, keyLabels } = this;
     const columns = node.tableColumns ?? [];
     const rows = node.tableRows ?? [];
-    const headerClass = `border-b px-0 pr-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
-    const cellClass = `px-0 pr-4 py-2.5 align-top text-[11px] ${isDark ? 'border-slate-900' : 'border-slate-100'} border-b`;
+    const headerClass = `border-b px-0 pr-5 pb-2 text-left text-[9px] font-bold uppercase tracking-[0.09em] ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
+    const cellClass = `px-0 pr-5 py-2.5 align-top text-[12px] font-medium last:pr-0 ${isDark ? 'border-slate-800' : 'border-slate-200'} border-b`;
 
     return (
-      // No border: the control around this already draws one, and nesting a second made the status
-      // history read as a table inside a table inside a card.
-      <div className="max-w-3xl overflow-x-auto">
+      // No border and no width cap: the control's own recessed panel is the frame, and a second one
+      // made the status history read as a table inside a table inside a card.
+      <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr>
@@ -35,7 +35,7 @@ export class StructuredReadOnlyTable extends PureReactor {
           </thead>
           <tbody>
             {rows.map((row, rowIndex) => (
-              <tr key={rowIndex}>
+              <tr key={rowIndex} className="last:[&>td]:border-b-0">
                 {columns.map((column) => (
                   <td key={column} className={cellClass}>
                     <StructuredReadOnlyValue node={row[column]} isDark={isDark} />

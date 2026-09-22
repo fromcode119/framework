@@ -6,6 +6,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { IDatabaseManager } from '@fromcode119/database';
 import { ApiUrlUtils } from '@api/utils/url';
 import { ApiConfig } from '@api/config/api-config';
+import { ReadOnlyOverrideGrantUtils } from '@api/utils/read-only-override-grant-utils';
 
 export class CollectionFieldGuard {
   constructor(
@@ -13,9 +14,17 @@ export class CollectionFieldGuard {
     private readonly auth?: AuthManager,
   ) {}
 
+  /**
+   * `fields` is what the client CLAIMS it is overriding — kept for the error message and the change
+   * record, never as authorization. The grant is the authorization, and it is scoped to the record.
+   *
+   * This used to carry the operator's account `password` in the record's own save payload, where it
+   * was bcrypt-compared on every write. A grant replaces it: the credential never leaves the login
+   * dialog, and a captured payload expires by itself.
+   */
   extractReadOnlyOverrideMetadata(payload: any): {
     data: Record<string, any>;
-    overrideMeta: { fields: Set<string>; password: string };
+    overrideMeta: { fields: Set<string>; grant: string };
   } {
     const data = payload && typeof payload === 'object' ? { ...payload } : {};
     const rawOverride = data._readOnlyOverride && typeof data._readOnlyOverride === 'object' ? data._readOnlyOverride : null;
@@ -23,7 +32,7 @@ export class CollectionFieldGuard {
     const fields = Array.isArray(rawOverride?.fields)
       ? rawOverride.fields.map((f: any) => String(f || '').trim()).filter(Boolean)
       : [];
-    return { data, overrideMeta: { fields: new Set(fields), password: String(rawOverride?.password || '') } };
+    return { data, overrideMeta: { fields: new Set(fields), grant: String(rawOverride?.grant || '') } };
   }
 
   isReadOnlyOverrideable(field: any): boolean {
@@ -80,7 +89,7 @@ export class CollectionFieldGuard {
     incomingData: Record<string, any>;
     existingRecord: any | null;
     req: any;
-    overrideMeta: { fields: Set<string>; password: string };
+    overrideMeta: { fields: Set<string>; grant: string };
   }) {
     const { collection, incomingData, existingRecord, req, overrideMeta } = args;
     if (!incomingData || typeof incomingData !== 'object') return;
@@ -96,20 +105,26 @@ export class CollectionFieldGuard {
         ? (existingRecord?.[name] !== undefined ? existingRecord?.[name] : existingRecord?.[snakeName])
         : undefined;
       if (!this.hasIncomingReadOnlyChange(incomingData[name], existingValue, hasExistingRecord)) continue;
+      // `readOnlyOverride: 'never'` is absolute: the record-wide grant does NOT reach it. Unlocking one
+      // field unlocks the record's OVERRIDEABLE fields, not everything declared read-only.
       if (!this.isReadOnlyOverrideable(field)) throw this.makeClientError(`Field "${field.label || name}" is read-only and cannot be modified.`);
-      if (!overrideMeta.fields.has(name)) throw this.makeClientError(`Field "${field.label || name}" requires password override confirmation.`);
       changedOverrideableFields.push(name);
     }
 
     if (!changedOverrideableFields.length) return;
-    if (!overrideMeta.password) throw this.makeClientError('Password is required for read-only field overrides.');
-    if (!this.auth) throw this.makeClientError('Password verification is unavailable.', 503);
+    if (!overrideMeta.grant) throw this.makeClientError('Unlock confirmation is required to change read-only fields.');
+    if (!this.auth) throw this.makeClientError('Unlock verification is unavailable.', 503);
     const userId = CoercionUtils.toRelationId(req?.user?.id);
     if (!userId) throw this.makeClientError('Authentication is required for read-only field overrides.', 401);
-    const user = await this.db.findOne('users', { id: userId });
-    if (!user) throw this.makeClientError('User not found.', 404);
-    const passwordMatches = await this.auth.comparePassword(String(overrideMeta.password), String(user.password || ''));
-    if (!passwordMatches) throw this.makeClientError('Current password is invalid.');
+
+    // Scoped to THIS user and THIS record: a grant minted for another record, another collection or
+    // another operator is refused rather than re-scoped to whatever this request happens to be.
+    const granted = await this.auth.verifyGrantToken(overrideMeta.grant, {
+      userId,
+      purpose: ReadOnlyOverrideGrantUtils.PURPOSE,
+      scope: ReadOnlyOverrideGrantUtils.scope(String(collection?.slug || ''), existingRecord?.id),
+    });
+    if (!granted) throw this.makeClientError('Your unlock has expired. Confirm your password again to change read-only fields.');
   }
 
   assertPermalinkNotReserved(collection: ICollection, data: Record<string, any>) {

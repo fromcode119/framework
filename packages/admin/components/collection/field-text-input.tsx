@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
+import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field-value.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 
@@ -20,14 +21,31 @@ export class FieldTextInput extends PureReactor {
   @prop declare isLocalizedField: boolean;
   @prop declare shouldInlineLocaleSwitcher: boolean;
   @prop declare localeSwitcher: (compact?: boolean) => ReactNode;
+  /** The field's description — shown in the read-only lock bar instead of as a line below. */
+  @prop declare resolvedFieldDescription?: string;
   @prop declare wrapWithReadOnlyOverride: (node: ReactNode, roundedClass?: string) => ReactNode;
 
   render(): ReactNode {
     const {
       field, currentValue, resolvedCurrentText, updateValue, isFieldReadOnly, isNew, errors,
       label, slugWarning, slugManuallyEdited, isLocalizedField, shouldInlineLocaleSwitcher,
-      localeSwitcher, wrapWithReadOnlyOverride
+      localeSwitcher, wrapWithReadOnlyOverride, resolvedFieldDescription
     } = this;
+    // A field the operator cannot edit is shown as a VALUE, not as a disabled input. A disabled input
+    // is still a white box sized for typing, in a column of boxes that accept typing — the only
+    // difference being that it ignores the cursor. Localized fields keep the input path, because
+    // their value is per-locale and the switcher belongs with it.
+    if (isFieldReadOnly && !isLocalizedField) {
+      return (
+        <ReadOnlyFieldValue
+          provenance={resolvedFieldDescription}
+          value={field.type === 'number'
+            ? (typeof currentValue === 'number' || typeof currentValue === 'string' ? currentValue : '')
+            : (typeof currentValue === 'string' ? currentValue : resolvedCurrentText)}
+        />
+      );
+    }
+
     // Number fields use the platform stepper (input + explicit +/- controls), not the bare browser input.
     if (field.type === 'number') {
       const admin = (field.admin || {}) as Record<string, any>;
@@ -37,7 +55,7 @@ export class FieldTextInput extends PureReactor {
           onChange={updateValue}
           disabled={isFieldReadOnly}
           error={errors?.[0]}
-          placeholder={`Enter ${label}...`}
+          placeholder={isFieldReadOnly ? 'Not set' : `Enter ${label}...`}
           step={admin.step ?? (field as any).step}
           min={admin.min ?? (field as any).min}
           max={admin.max ?? (field as any).max}
@@ -62,7 +80,7 @@ export class FieldTextInput extends PureReactor {
             }
             updateValue(e.target.value);
           }}
-          placeholder={`Enter ${label}...`}
+          placeholder={isFieldReadOnly ? 'Not set' : `Enter ${label}...`}
           disabled={isFieldReadOnly}
           error={errors?.[0]}
           inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}`}

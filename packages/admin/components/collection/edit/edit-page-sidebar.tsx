@@ -26,7 +26,8 @@ export class EditPageSidebar extends PureReactor {
   @prop declare handleInputChange: (name: string, value: any) => void;
   @prop declare handlePatch: (partial: Record<string, any>) => void;
   @prop declare handleReadOnlyOverrideRequest: (target: { name: string; label: string }) => void;
-  @prop declare readOnlyOverrideFields: Record<string, true>;
+  /** Record-scoped: one confirmation unlocks every overrideable read-only field on this record. */
+  @prop declare readOnlyOverrideGranted: boolean;
   @prop declare showPermalink: boolean;
   @prop declare hasDisablePermalink: boolean;
   @prop declare hasSidebarFields: boolean;
@@ -44,7 +45,7 @@ export class EditPageSidebar extends PureReactor {
     const {
       slug, id, isNew, theme, collection, resolvedSlug, formData, setFormData, handleSubmit, saving,
       pluginSettings, pluginSettingsSchema, fieldErrors, handleInputChange, handlePatch, handleReadOnlyOverrideRequest,
-      readOnlyOverrideFields, showPermalink, hasDisablePermalink, hasSidebarFields, sidebarFieldSections,
+      readOnlyOverrideGranted, showPermalink, hasDisablePermalink, hasSidebarFields, sidebarFieldSections,
       hasBuiltInSidebarContent, revisions, revisionsLoading, activeVersionId, setSelectedRevision,
       setActiveVersionId, loadMoreRevisions, hasMoreRevisions
     } = this;
@@ -103,7 +104,7 @@ export class EditPageSidebar extends PureReactor {
                     disabled={saving}
                     isNew={isNew}
                     errors={fieldErrors[field.name]}
-                    readOnlyOverrideGranted={Boolean(readOnlyOverrideFields[field.name])}
+                    readOnlyOverrideGranted={readOnlyOverrideGranted}
                     onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
                   />
                 ))}
