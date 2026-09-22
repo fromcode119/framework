@@ -18,13 +18,13 @@ export class StructuredReadOnlyTable extends PureReactor {
     const { node, isDark, keyLabels } = this;
     const columns = node.tableColumns ?? [];
     const rows = node.tableRows ?? [];
-    const headerClass = `border-b px-0 pr-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
-    const cellClass = `px-0 pr-3 py-2 align-top text-[11px] ${isDark ? 'border-slate-900' : 'border-slate-100'} border-b`;
+    const headerClass = `border-b px-0 pr-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
+    const cellClass = `px-0 pr-4 py-2.5 align-top text-[11px] ${isDark ? 'border-slate-900' : 'border-slate-100'} border-b`;
 
     return (
       // No border: the control around this already draws one, and nesting a second made the status
       // history read as a table inside a table inside a card.
-      <div className="overflow-x-auto">
+      <div className="max-w-3xl overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr>

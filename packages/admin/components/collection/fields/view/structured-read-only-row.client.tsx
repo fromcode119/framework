@@ -53,8 +53,8 @@ export class StructuredReadOnlyRow extends Reactor {
   private renderScalarRow(): ReactNode {
     const { label, node, isDark } = this;
     return (
-      <div className={`grid md:grid-cols-[minmax(180px,240px)_1fr] items-baseline gap-x-4 gap-y-1 border-b px-0 py-2 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
-        <div className={`text-[11px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`} style={{ paddingLeft: this.indent }}>
+      <div className={`grid md:grid-cols-[minmax(140px,190px)_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1 border-b px-0 py-2.5 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
+        <div className={`text-[11px] font-semibold ${isDark ? 'text-slate-300' : 'text-slate-600'}`} style={{ paddingLeft: this.indent }}>
           {StructuredReadOnlyFieldService.keyLabel(label, this.keyLabels)}
         </div>
         <div className="text-[12px]"><StructuredReadOnlyValue node={node} isDark={isDark} /></div>

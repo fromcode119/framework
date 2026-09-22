@@ -56,7 +56,7 @@ export class StructuredReadOnlyField extends Reactor {
     return (
       // A LINE, not a box. This control already sits inside the field's card, and the data below sits
       // in its own; a third border around this sentence made three nested frames for one value.
-      <div className={`flex items-center gap-2 border-b px-0 py-2 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
+      <div className={`flex max-w-3xl items-center gap-2 border-b px-0 py-2.5 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
         <FrameworkIcons.Lock size={12} className={`shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
         <p className={`flex-1 text-[11px] font-medium leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           Recorded automatically — not editable here.
@@ -118,8 +118,10 @@ export class StructuredReadOnlyField extends Reactor {
             className="mb-2"
           />
         ) : null}
-        {/* No frame here either: the field's own card is the box. Row dividers carry the structure. */}
-        <div>{rows}</div>
+        {/* Capped, because a definition list does not need the full page width. Measured on an order:
+            the row was 1202px, the label column 240px and the VALUE column 946px — holding the word
+            "true". Every row stranded a two-character value in a thousand pixels of nothing. */}
+        <div className="max-w-3xl">{rows}</div>
       </>
     );
   }
