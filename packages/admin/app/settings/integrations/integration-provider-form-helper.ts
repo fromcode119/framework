@@ -83,6 +83,8 @@ export class IntegrationProviderFormHelper {
     if (!updatedIntegration?.key) {
       throw new Error('Integration update returned an invalid response.');
     }
-    return updatedIntegration;
+    // A write answers with the same provider definitions a load does — wire strings for `type`.
+    // Without this the saved record replaces the hydrated one and the editor loses every typed control.
+    return IntegrationsPageUtils.hydrateFieldTypes([updatedIntegration])[0];
   }
 }
