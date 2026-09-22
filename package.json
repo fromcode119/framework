@@ -41,6 +41,7 @@
     "check:json-field-controls": "node packages/arch-guard/dist/arch-guard-cli.cjs json-field-controls",
     "check:plugin-scripts": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-scripts",
     "check:loose-scripts": "node packages/arch-guard/dist/arch-guard-cli.cjs loose-scripts",
+    "check:peer-surface": "node packages/arch-guard/dist/arch-guard-cli.cjs peer-surface",
     "check:block-registry-drift": "node packages/arch-guard/dist/arch-guard-cli.cjs block-registry-drift",
     "check:ssr-static-imports": "node packages/arch-guard/dist/arch-guard-cli.cjs ssr-static-imports",
     "check:app-typecheck": "node packages/arch-guard/dist/arch-guard-cli.cjs app-typecheck",
