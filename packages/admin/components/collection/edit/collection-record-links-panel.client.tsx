@@ -56,7 +56,8 @@ export class CollectionRecordLinksPanel extends PureReactor {
           emptyHint={declaration.emptyHint || 'No other plugin holds a record linked to this one yet.'}
           reloadKey={`${declaration.kind}:${this.recordId}:${Object.values(keys).join('|')}`}
           load={() => AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.RECORD_LINKS(declaration.kind, this.recordId, keys))}
-          onOpenItem={(item: IRecordsHubItem) => void RecordsHubOpenItem.open(item, this.navigate)}
+          onOpenItem={(item: IRecordsHubItem) => RecordsHubOpenItem.open(item, this.navigate)}
+          onDownloadItem={(item: IRecordsHubItem) => void RecordsHubOpenItem.download(item, this.navigate)}
         />
       </div>
     );
