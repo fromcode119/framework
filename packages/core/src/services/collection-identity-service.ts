@@ -92,6 +92,20 @@ export class CollectionIdentityService extends BaseService {
     return Array.from(candidates);
   }
 
+  /**
+   * Resolves a collection reference to the slug a collection is actually registered under.
+   *
+   * A reference that NAMES a plugin is resolved inside that plugin first. It has to be, because the
+   * candidate set for `ecommerce-categories` includes the bare tail `categories` — and `categories`
+   * is the `shortSlug` of the CMS plugin's collection too. Without the restriction the winner was
+   * whichever of the two happened to sit earlier in the registry, so a product's category reference
+   * resolved against `fcp_cms_categories`, every id 404'd, and the admin drew each one as
+   * "Deleted item (13)" over a category that existed the whole time. The field was right, the data
+   * was right, and the lookup silently crossed a plugin boundary.
+   *
+   * The unrestricted pass still runs when the restricted one finds nothing, so a bare reference like
+   * `media` — no plugin in the name — resolves exactly as before.
+   */
   resolveRegisteredSlug(
     rawSlug: string,
     collections: Array<{ slug?: string; shortSlug?: string; pluginSlug?: string; unprefixedSlug?: string }>,
@@ -102,7 +116,28 @@ export class CollectionIdentityService extends BaseService {
       return '';
     }
 
-    const pluginFilter = this.normalizeIdentifierSegment(requestedPluginSlug || '');
+    const explicitPluginFilter = this.normalizeIdentifierSegment(requestedPluginSlug || '');
+    if (explicitPluginFilter) {
+      // The caller named the plugin: never widen past it, or the filter would not be one.
+      return this.matchRegisteredSlug(rawValue, collections, explicitPluginFilter) || rawValue;
+    }
+
+    const impliedPluginFilter = this.normalizeIdentifierSegment(this.extractPluginSlug(rawValue));
+    if (impliedPluginFilter) {
+      const owned = this.matchRegisteredSlug(rawValue, collections, impliedPluginFilter);
+      if (owned) {
+        return owned;
+      }
+    }
+
+    return this.matchRegisteredSlug(rawValue, collections, '') || rawValue;
+  }
+
+  private matchRegisteredSlug(
+    rawValue: string,
+    collections: Array<{ slug?: string; shortSlug?: string; pluginSlug?: string; unprefixedSlug?: string }>,
+    pluginFilter: string,
+  ): string {
     const candidates = new Set(
       this.buildReferenceCandidates(rawValue, pluginFilter).map((candidate) => this.normalizeKey(candidate)),
     );
@@ -135,7 +170,8 @@ export class CollectionIdentityService extends BaseService {
       }
     }
 
-    return rawValue;
+    // Empty, not `rawValue`: the caller distinguishes "no collection matched" from "matched itself".
+    return '';
   }
 
   private normalizeIdentifierSegment(value: string): string {
