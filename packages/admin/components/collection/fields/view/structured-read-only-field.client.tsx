@@ -52,13 +52,25 @@ export class StructuredReadOnlyField extends Reactor {
    * writes it belongs in `admin.description`, which the field renderer already prints below every
    * field — repeating it here would show the same sentence twice on the same screen.
    */
-  private renderProvenance(isDark: boolean): ReactNode {
+  private renderProvenance(isDark: boolean, showCopy: boolean): ReactNode {
     return (
-      <div className={`flex items-start gap-2 rounded-lg border px-3 py-2 ${isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
-        <FrameworkIcons.Lock size={12} className={`mt-0.5 shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
-        <p className={`text-[11px] font-medium leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+      <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
+        <FrameworkIcons.Lock size={12} className={`shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
+        <p className={`flex-1 text-[11px] font-medium leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           Recorded automatically — not editable here.
         </p>
+        {showCopy ? (
+          // Beside the line that explains the control, not stranded under the data as a bare
+          // underlined link, which read like a developer affordance rather than an admin action.
+          <button
+            type="button"
+            onClick={this.handleCopy}
+            className={`shrink-0 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-bold transition-colors ${isDark ? 'border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700'}`}
+          >
+            <FrameworkIcons.Copy size={11} />
+            {this.copied ? 'Copied' : 'Copy JSON'}
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -98,7 +110,10 @@ export class StructuredReadOnlyField extends Reactor {
             className="mb-2"
           />
         ) : null}
-        <div>{rows}</div>
+        {/* The rows sit in a surface of their own. Loose rows separated only by hairlines read as
+            output pasted into the page — the table node beside them has always had a container, so
+            the two halves of the same control did not look like the same control. */}
+        <div className={`overflow-hidden rounded-lg border ${isDark ? 'border-slate-800 bg-slate-950/20' : 'border-slate-200 bg-white'}`}>{rows}</div>
       </>
     );
   }
@@ -110,17 +125,8 @@ export class StructuredReadOnlyField extends Reactor {
 
     return (
       <div className="space-y-2">
-        {this.renderProvenance(isDark)}
+        {this.renderProvenance(isDark, node.kind !== StructuredNodeKind.EMPTY)}
         {this.renderBody(isDark)}
-        {node.kind !== StructuredNodeKind.EMPTY ? (
-          <button
-            type="button"
-            onClick={this.handleCopy}
-            className={`text-[11px] font-bold underline underline-offset-2 ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            {this.copied ? 'Copied!' : 'Copy as JSON'}
-          </button>
-        ) : null}
       </div>
     );
   }

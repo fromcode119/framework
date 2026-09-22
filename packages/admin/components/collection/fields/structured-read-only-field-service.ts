@@ -2,6 +2,7 @@ import { StructuredNodeKind } from '@/components/collection/fields/enums/structu
 import { CoercionUtils } from '@fromcode119/core/client';
 import type { IStructuredEntry } from '@/components/collection/fields/interfaces/structured-entry.interface';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
+import { TagFieldUtils } from '@/components/ui/tag-field/utils';
 
 /**
  * Pure normalisation for `StructuredReadOnlyField`: turns an arbitrary field value (object, array,
@@ -78,6 +79,22 @@ export class StructuredReadOnlyFieldService {
   }
 
   /** Top-level key/item count — the "(n keys)" a group label shows. */
+  /**
+   * A data key as a person reads it: `changedBy` → "Changed by", `taxRatePercent` → "Tax rate
+   * percent". The raw keys were rendered verbatim in a monospace grey, which is what made this
+   * control read as a debug dump rather than part of the admin — and a table header printed
+   * `CHANGEDBY`, where uppercasing had eaten the word boundary.
+   *
+   * Only the DISPLAY changes. The value, the ordering and `Copy as JSON` all still carry the exact
+   * keys, so anyone who needs the literal name to search the code still has it.
+   */
+  static keyLabel(key: string): string {
+    const raw = String(key ?? '').trim();
+    // An array index (`[0]`) is not a word and must not be title-cased into one.
+    if (!raw || /^\[\d+\]$/.test(raw)) return raw;
+    return TagFieldUtils.toTitleCase(raw);
+  }
+
   static topLevelCount(node: IStructuredNode): number {
     if (node.kind === StructuredNodeKind.OBJECT) return node.entries?.length ?? 0;
     if (node.kind === StructuredNodeKind.ARRAY || node.kind === StructuredNodeKind.ARRAY_TABLE) return node.items?.length ?? 0;
