@@ -1,4 +1,4 @@
-import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
+import { IntegrationsPageUtils } from '@/app/settings/integrations/integrations-page-utils';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminApi } from '@/lib/api';
@@ -24,7 +24,7 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
       const sorted = docs
         .filter((doc: any) => doc && typeof doc.key === 'string')
         .sort((a: IIntegrationRecord, b: IIntegrationRecord) => a.label.localeCompare(b.label));
-      sorted.forEach((integration: any) => integration.providers?.forEach((p: any) => p.fields?.forEach((fld: any) => { fld.type = IntegrationFieldType.resolve(fld.type); })));
+      IntegrationsPageUtils.hydrateFieldTypes(sorted);
       if (!this.mounted) return;
       this.integrations = sorted;
       if (!sorted.length) {

@@ -1,5 +1,27 @@
 import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
 export class IntegrationsPageUtils {
+  /**
+   * Hydrates the wire-string `type` on every provider field of the given integration records.
+   *
+   * Provider definitions are authored server-side with `type` as a plain string, while everything
+   * downstream compares it against an {@link IntegrationFieldType} member with `===`. A record that
+   * skips this step keeps raw strings, every comparison silently answers false, and the editor
+   * degrades to plain text inputs — a password field then renders its saved-secret mask in the
+   * clear and a boolean renders the string "false".
+   *
+   * Call it at EVERY fetch boundary that produces integration records, reads and writes alike.
+   */
+  static hydrateFieldTypes<T>(integrations: T[]): T[] {
+    for (const integration of (integrations || []) as any[]) {
+      for (const provider of integration?.providers || []) {
+        for (const field of provider?.fields || []) {
+          field.type = IntegrationFieldType.resolve(field.type);
+        }
+      }
+    }
+    return integrations;
+  }
+
   static normalizeKey(value: string): string {
     return value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
   }
