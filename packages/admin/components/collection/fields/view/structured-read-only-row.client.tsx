@@ -36,11 +36,23 @@ export class StructuredReadOnlyRow extends Reactor {
     this.expandOverride = !this.isExpanded;
   }
 
+  /**
+   * Nesting is expressed by indenting the LABEL, never by wrapping children in a box.
+   *
+   * A nested group used to render inside `ml-4 border-l pl-3`, so its children started their own
+   * two-column grid at a different origin: a table inside a table, with the inner values landing in
+   * a column that lined up with nothing. One grid, one value column, indentation as the only depth
+   * cue — which is what the chevron already implies.
+   */
+  private get indent(): string {
+    return `${Math.max(0, (this.depth ?? 1) - 1) * 14}px`;
+  }
+
   private renderScalarRow(): ReactNode {
     const { label, node, isDark } = this;
     return (
-      <div className={`grid md:grid-cols-[minmax(150px,200px)_1fr] items-baseline gap-x-4 gap-y-1 border-b px-3 py-2 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
-        <div className={`text-[11px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+      <div className={`grid md:grid-cols-[minmax(180px,240px)_1fr] items-baseline gap-x-4 gap-y-1 border-b px-3 py-2 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
+        <div className={`text-[11px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`} style={{ paddingLeft: this.indent }}>
           {StructuredReadOnlyFieldService.keyLabel(label)}
         </div>
         <div className="text-[12px]"><StructuredReadOnlyValue node={node} isDark={isDark} /></div>
@@ -70,19 +82,22 @@ export class StructuredReadOnlyRow extends Reactor {
     const countLabel = `${count} ${isIndexed ? (count === 1 ? 'item' : 'items') : (count === 1 ? 'key' : 'keys')}`;
 
     return (
-      <div className={`border-b px-3 py-1 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
-        <button
-          type="button"
-          onClick={this.toggle}
-          disabled={forcedOpen}
-          className={`flex w-full items-center gap-1.5 py-1.5 text-left text-[11px] font-bold ${isDark ? 'text-slate-300 hover:text-slate-100' : 'text-slate-600 hover:text-slate-900'}`}
-        >
-          {expanded ? <FrameworkIcons.ChevronDown size={12} /> : <FrameworkIcons.ChevronRight size={12} />}
-          <span>{StructuredReadOnlyFieldService.keyLabel(label)}</span>
-          <span className={`font-normal ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>({countLabel})</span>
-        </button>
-        {expanded ? <div className={`ml-4 border-l pl-3 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>{this.renderGroupChildren()}</div> : null}
-      </div>
+      <>
+        <div className={`border-b px-3 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
+          <button
+            type="button"
+            onClick={this.toggle}
+            disabled={forcedOpen}
+            className={`flex w-full items-center gap-1.5 py-2 text-left text-[11px] font-bold ${isDark ? 'text-slate-300 hover:text-slate-100' : 'text-slate-600 hover:text-slate-900'}`}
+            style={{ paddingLeft: this.indent }}
+          >
+            {expanded ? <FrameworkIcons.ChevronDown size={12} /> : <FrameworkIcons.ChevronRight size={12} />}
+            <span>{StructuredReadOnlyFieldService.keyLabel(label)}</span>
+            <span className={`font-normal ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>({countLabel})</span>
+          </button>
+        </div>
+        {expanded ? this.renderGroupChildren() : null}
+      </>
     );
   }
 
