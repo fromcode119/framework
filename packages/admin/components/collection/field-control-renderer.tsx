@@ -17,6 +17,7 @@ import { FieldRendererUtils } from '@/components/collection/field-renderer-utils
 import { PermalinkField } from '@/components/ui/view/permalink-field.client';
 import { FieldCustomComponent } from '@/components/collection/field-custom-component';
 import { FieldSelectControl } from '@/components/collection/field-select-control';
+import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field-value.client';
 import { FieldTextInput } from '@/components/collection/field-text-input';
 import { FieldTextualControl } from '@/components/collection/field-textual-control';
 import { TextualFieldKind } from '@/components/collection/enums/textual-field-kind.enum';
@@ -191,6 +192,15 @@ export class FieldControlRenderer extends PureReactor {
           shouldInlineLocaleSwitcher={shouldInlineLocaleSwitcher}
           localeSwitcher={localeSwitcher}
           wrapWithReadOnlyOverride={wrapWithReadOnlyOverride}
+        />
+      ) : (isFieldReadOnly && ['select', 'boolean', 'checkbox', 'date', 'datetime'].includes(String(field.type))) ? (
+        /* A read-only select, toggle or date is shown as its VALUE, like every other locked field.
+           These fell through to their own disabled controls: a toggle the operator cannot flip still
+           looks flippable, and a disabled date picker still looks like a picker. The value is rendered
+           through the option LABEL or the formatted date, never the raw stored code. */
+        <ReadOnlyFieldValue
+          provenance={resolvedFieldDescription}
+          value={ReadOnlyFieldValue.describe(field, currentValue)}
         />
       ) : field.type === 'select' ? (
         <FieldSelectControl

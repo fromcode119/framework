@@ -33,7 +33,10 @@ export class FieldRendererView extends FieldRendererViewLocale {
   private get showsProvenanceInline(): boolean {
     const kind = String(this.field.type || '');
     const textual = ['text', 'number', 'textarea', 'richText', 'email', 'url'].includes(kind);
-    return this.isFieldReadOnly && textual && !this.isLocalizedField;
+    // Selects, toggles and dates render through the same value display when locked, so their
+    // description belongs in the bar too — otherwise it prints twice for those kinds only.
+    const valued = ['select', 'boolean', 'checkbox', 'date', 'datetime'].includes(kind);
+    return this.isFieldReadOnly && (textual || valued) && !this.isLocalizedField;
   }
 
   render(): ReactElement {

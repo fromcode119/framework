@@ -12,6 +12,12 @@ import type { ITagOption } from '@/components/ui/tag-field/interfaces/tag-option
  * keeping the React class thin without changing behavior.
  */
 export class TagFieldDataService {
+  /** Names a reference that resolved to nothing, so a broken link cannot pass as a value. */
+  static unresolvedLabel(rawValue: unknown): string {
+    const id = String(rawValue ?? '').trim();
+    return id ? `Missing #${id}` : 'Missing reference';
+  }
+
   // `value` is a raw stored record field: despite the caller's `string[] | string` prop type,
   // schema-less/legacy data can hand this a number, object, boolean, null, etc. at runtime.
   static parseTags(value: unknown, hasMany = true): any[] {
@@ -99,7 +105,12 @@ export class TagFieldDataService {
            if (doc) {
              newLabels[t] = AdminServices.getInstance().localization.resolveLabelText(doc) || t;
            } else {
-              newLabels[t] = t;
+             // The reference resolved to NOTHING. Labelling it with the raw id renders a chip reading
+             // "1", indistinguishable from a record actually named "1" — so a product pointing at a
+             // deleted category looked like a product in a category, and an operator had no way to
+             // tell. Imports and id remaps leave these behind; they hide precisely because they look
+             // like ordinary values.
+             newLabels[t] = TagFieldDataService.unresolvedLabel(t);
            }
          } catch (e: any) {
            const message = String(e?.message || '');

@@ -27,6 +27,41 @@ export class ReadOnlyFieldValue extends PureReactor {
    */
   @prop declare provenance?: string;
 
+  /**
+   * The human reading of a stored value, for the field kinds that are not plain text.
+   *
+   * A locked select must show the option's LABEL, not the code behind it — `cash_on_delivery` is not
+   * what the operator calls it — and a locked boolean must read Yes/No rather than `true`. Without
+   * this, routing those fields here would have traded a control that looked editable for a value that
+   * was unreadable, which is not an improvement.
+   */
+  static describe(field: any, value: unknown): string {
+    const type = String(field?.type || '');
+
+    if (type === 'boolean' || type === 'checkbox') {
+      const truthy = value === true || value === 'true' || value === 1 || value === '1';
+      return truthy ? 'Yes' : 'No';
+    }
+
+    if (type === 'date' || type === 'datetime') {
+      const raw = typeof value === 'string' || typeof value === 'number' ? value : '';
+      if (!raw) return '';
+      const parsed = new Date(raw);
+      // An unparseable date is shown verbatim rather than guessed at or blanked.
+      if (Number.isNaN(parsed.getTime())) return String(raw);
+      return type === 'datetime' ? parsed.toLocaleString() : parsed.toLocaleDateString();
+    }
+
+    if (type === 'select') {
+      const options = Array.isArray(field?.options) ? field.options : [];
+      const match = options.find((option: any) => String(option?.value ?? option) === String(value ?? ''));
+      const label = match?.label ?? match?.value ?? match;
+      return label === undefined || label === null ? String(value ?? '') : String(label);
+    }
+
+    return value === null || value === undefined ? '' : String(value);
+  }
+
   private get text(): string {
     const { value } = this;
     if (value === null || value === undefined) return '';

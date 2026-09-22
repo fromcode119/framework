@@ -256,6 +256,63 @@ describe('./field-renderer', () => {
     expect(screen.getByText('Only staff can see this.')).toBeInTheDocument();
   });
 
+  /**
+   * A locked toggle still looked flippable and a locked date still looked like a picker — the same
+   * failure the text inputs had, in the field kinds that were left behind. These assert the VALUE
+   * reads as a person would say it: an option's label, not its stored code; Yes/No, not `true`.
+   */
+  it('shows a read-only select as its option label, not its stored code', () => {
+    render(
+      <FieldRenderer
+        field={{
+          name: 'fulfillmentStatus',
+          type: 'select',
+          label: 'Fulfillment Status',
+          options: [{ value: 'awaiting_dispatch', label: 'Awaiting dispatch' }],
+          admin: { readOnly: true },
+        } as any}
+        value="awaiting_dispatch"
+        onChange={vi.fn()}
+        theme={ThemeMode.LIGHT}
+        collectionSlug="orders"
+        onReadOnlyOverrideRequest={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Awaiting dispatch')).toBeInTheDocument();
+    expect(screen.queryByText('awaiting_dispatch')).not.toBeInTheDocument();
+  });
+
+  it('shows a read-only boolean as Yes or No, not true', () => {
+    render(
+      <FieldRenderer
+        field={{ name: 'taxInclusive', type: 'boolean', label: 'Tax Inclusive', admin: { readOnly: true } } as any}
+        value
+        onChange={vi.fn()}
+        theme={ThemeMode.LIGHT}
+        collectionSlug="orders"
+        onReadOnlyOverrideRequest={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Yes')).toBeInTheDocument();
+  });
+
+  it('keeps an unparseable date verbatim rather than blanking it', () => {
+    render(
+      <FieldRenderer
+        field={{ name: 'createdDate', type: 'date', label: 'Created Date', admin: { readOnly: true } } as any}
+        value="not-a-date"
+        onChange={vi.fn()}
+        theme={ThemeMode.LIGHT}
+        collectionSlug="orders"
+        onReadOnlyOverrideRequest={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('not-a-date')).toBeInTheDocument();
+  });
+
   it('does not lay a click-catching overlay over the value', () => {
     render(
       <FieldRenderer
