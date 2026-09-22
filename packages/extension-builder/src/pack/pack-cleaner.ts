@@ -34,6 +34,19 @@ export class PackCleaner {
 
   private static readonly STRIPPED_KEY_SUFFIXES = ['.pem', '.key', '.p12', '.pfx'];
 
+  /**
+   * Local data files. A plugin ships CODE and ASSETS; a database, a dump or a log beside the source
+   * is always a local artifact, and shipping one puts whatever a developer happened to have on disk
+   * inside every install. Found the hard way: a stray 1.5MB `ruvector.db` sat untracked in a plugin
+   * and packed cleanly into its tarball, bound for production.
+   *
+   * These CANNOT be caught by reading the extension's `.gitignore`. Every file a plugin must ship is
+   * itself gitignored — `index.js`, `dist/`, `ui/bundle.js`, `ui/style.css` are all build output and
+   * none is committed — so a gitignore-respecting packer would ship an EMPTY plugin. That is the
+   * "silent, total failure" this class exists to prevent, which is why the rule is a deny-list.
+   */
+  private static readonly STRIPPED_DATA_SUFFIXES = ['.db', '.sqlite', '.sqlite3', '.dump', '.log', '.bak'];
+
   static clean(dir: string): void {
     PackCleaner.walk(dir, dir);
     PackCleaner.cleanUiSsr(dir);
@@ -72,6 +85,7 @@ export class PackCleaner {
     if (name.startsWith('._') || name.startsWith('.env.')) return true;
     if (name.startsWith('id_rsa') || name.startsWith('id_ed25519')) return true;
     if (PackCleaner.STRIPPED_KEY_SUFFIXES.some((suffix) => name.endsWith(suffix))) return true;
+    if (PackCleaner.STRIPPED_DATA_SUFFIXES.some((suffix) => name.endsWith(suffix))) return true;
     if (name.includes('.test.') || name.includes('.spec.')) return true;
     if (PackCleaner.STRIPPED_SUFFIXES.some((suffix) => name.endsWith(suffix))) return true;
 
