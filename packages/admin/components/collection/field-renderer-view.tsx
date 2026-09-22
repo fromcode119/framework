@@ -35,7 +35,7 @@ export class FieldRendererView extends FieldRendererViewLocale {
     const resolvedFieldDescription = FieldRendererUtils.resolveRenderableText(this.field.admin?.description, this.activeLocale || defaultLocale);
 
     return (
-      <div className={FieldRendererUtils.wrapperClassName(this.field, this.isFieldReadOnly, this.theme)}>
+      <div className={FieldRendererUtils.wrapperClassName(this.field)}>
         <FieldRendererHeader
           field={this.field}
           label={label}

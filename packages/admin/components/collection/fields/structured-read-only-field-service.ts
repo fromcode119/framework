@@ -88,25 +88,40 @@ export class StructuredReadOnlyFieldService {
    * Only the DISPLAY changes. The value, the ordering and `Copy as JSON` all still carry the exact
    * keys, so anyone who needs the literal name to search the code still has it.
    */
-  static keyLabel(key: string): string {
+  /**
+   * A data key as a person reads it.
+   *
+   * `overrides` is the owning plugin's own vocabulary, taken from the field's `admin.keyLabels`. It
+   * wins outright, because only the plugin knows that `codAmount` is a cash-on-delivery amount —
+   * the framework must not, and used to carry a list of commerce and finance acronyms to fake it.
+   */
+  static keyLabel(key: string, overrides?: Record<string, string>): string {
     const raw = String(key ?? '').trim();
     // An array index (`[0]`) is not a word and must not be title-cased into one.
     if (!raw || /^\[\d+\]$/.test(raw)) return raw;
+
+    const declared = overrides?.[raw];
+    if (typeof declared === 'string' && declared.trim()) return declared.trim();
+
     return StructuredReadOnlyFieldService.restoreAcronyms(TagFieldUtils.toTitleCase(raw));
   }
 
   /**
-   * Title-casing turns an acronym into a word: `codAmount` became "Cod Amount" and `cityId` became
-   * "City Id". Neither is what the operator calls it, and "Cod" reads as a fish.
+   * Title-casing turns an acronym into a word: `cityId` became "City Id", which is not what anyone
+   * calls it. Only GENERIC data vocabulary lives here.
    *
-   * Whole words only — `Idempotency` must not become `IDempotency`, and `Void` must not become
-   * `VOid`.
+   * This list used to carry COD, VAT, IBAN, BIC, SKU, EAN, AWB, UIC and GTIN — commerce, finance and
+   * logistics words, sitting in `packages/admin`, which is supposed to contain no business domain at
+   * all. A plugin's vocabulary is the plugin's: it names its own keys through
+   * `admin.keyLabels` on the field, and the framework renders whatever it is told.
+   *
+   * Whole words only, so `idempotencyKey` stays "Idempotency Key" and `avoid` stays "Avoid".
    */
-  private static readonly ACRONYMS = ['COD', 'ID', 'URL', 'URI', 'VAT', 'IBAN', 'BIC', 'SKU', 'EAN', 'AWB', 'API', 'PDF', 'UIC', 'GTIN', 'ETA'];
+  private static readonly GENERIC_ACRONYMS = ['ID', 'URL', 'URI'];
 
   private static restoreAcronyms(label: string): string {
     return label.replace(/\b[A-Za-z]+\b/g, (word) => {
-      const match = StructuredReadOnlyFieldService.ACRONYMS.find((a) => a.toLowerCase() === word.toLowerCase());
+      const match = StructuredReadOnlyFieldService.GENERIC_ACRONYMS.find((a) => a.toLowerCase() === word.toLowerCase());
       return match ?? word;
     });
   }
