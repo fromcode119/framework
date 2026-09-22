@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { StructuredReadOnlyValue } from '@/components/collection/fields/view/structured-read-only-value.client';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
+import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
 
 /**
  * Renders an `array-table` node — an array whose items are all flat objects — as an actual table
@@ -16,7 +17,7 @@ export class StructuredReadOnlyTable extends PureReactor {
     const { node, isDark } = this;
     const columns = node.tableColumns ?? [];
     const rows = node.tableRows ?? [];
-    const headerClass = `border-b px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
+    const headerClass = `border-b px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
     const cellClass = `px-3 py-2 align-top text-[11px] ${isDark ? 'border-slate-900' : 'border-slate-100'} border-b`;
 
     return (
@@ -24,7 +25,9 @@ export class StructuredReadOnlyTable extends PureReactor {
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              {columns.map((column) => <th key={column} className={headerClass}>{column}</th>)}
+              {columns.map((column) => (
+                <th key={column} className={headerClass}>{StructuredReadOnlyFieldService.keyLabel(column)}</th>
+              ))}
             </tr>
           </thead>
           <tbody>

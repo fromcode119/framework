@@ -39,8 +39,10 @@ export class StructuredReadOnlyRow extends Reactor {
   private renderScalarRow(): ReactNode {
     const { label, node, isDark } = this;
     return (
-      <div className={`grid md:grid-cols-[minmax(160px,220px)_1fr] items-baseline gap-x-3 gap-y-1 border-b py-2 ${isDark ? 'border-slate-900' : 'border-slate-100'}`}>
-        <div className={`font-mono text-[11px] font-semibold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{label}</div>
+      <div className={`grid md:grid-cols-[minmax(150px,200px)_1fr] items-baseline gap-x-4 gap-y-1 border-b px-3 py-2 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
+        <div className={`text-[11px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          {StructuredReadOnlyFieldService.keyLabel(label)}
+        </div>
         <div className="text-[12px]"><StructuredReadOnlyValue node={node} isDark={isDark} /></div>
       </div>
     );
@@ -68,7 +70,7 @@ export class StructuredReadOnlyRow extends Reactor {
     const countLabel = `${count} ${isIndexed ? (count === 1 ? 'item' : 'items') : (count === 1 ? 'key' : 'keys')}`;
 
     return (
-      <div className={`border-b py-1 ${isDark ? 'border-slate-900' : 'border-slate-100'}`}>
+      <div className={`border-b px-3 py-1 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
         <button
           type="button"
           onClick={this.toggle}
@@ -76,7 +78,7 @@ export class StructuredReadOnlyRow extends Reactor {
           className={`flex w-full items-center gap-1.5 py-1.5 text-left text-[11px] font-bold ${isDark ? 'text-slate-300 hover:text-slate-100' : 'text-slate-600 hover:text-slate-900'}`}
         >
           {expanded ? <FrameworkIcons.ChevronDown size={12} /> : <FrameworkIcons.ChevronRight size={12} />}
-          <span className="font-mono">{label}</span>
+          <span>{StructuredReadOnlyFieldService.keyLabel(label)}</span>
           <span className={`font-normal ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>({countLabel})</span>
         </button>
         {expanded ? <div className={`ml-4 border-l pl-3 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>{this.renderGroupChildren()}</div> : null}
