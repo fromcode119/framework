@@ -123,8 +123,13 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
     }
   }
 
-  /** Open a hub record: navigate to its admin page (href) or download its document (downloadUrl). */
-  protected async openRecord(item: IRecordsHubItem): Promise<void> {
-    await RecordsHubOpenItem.open(item, (href) => this.router?.push(href));
+  /** Go to a hub record's admin page. */
+  protected openRecord(item: IRecordsHubItem): void {
+    RecordsHubOpenItem.open(item, (href) => this.router?.push(href));
+  }
+
+  /** Fetch a hub record's document. Separate from opening it — a record with a PDF has both. */
+  protected async downloadRecord(item: IRecordsHubItem): Promise<void> {
+    await RecordsHubOpenItem.download(item, (href) => this.router?.push(href));
   }
 }

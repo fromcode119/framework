@@ -9,6 +9,7 @@ export class RecordsHubGroupSection extends PureReactor {
   @prop declare group: IRecordsHubGroup;
   @prop declare dark: boolean;
   @prop declare onOpenItem?: (item: IRecordsHubItem) => void;
+  @prop declare onDownloadItem?: (item: IRecordsHubItem) => void;
 
   render(): ReactNode {
     const group = this.group;
@@ -19,7 +20,7 @@ export class RecordsHubGroupSection extends PureReactor {
           <h4 className={`text-[11px] font-bold uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{group.group}</h4>
           <span className="text-[11px] font-bold text-slate-400">{group.items.length}</span>
         </div>
-        <div className="space-y-1.5">{group.items.map((item) => <RecordsHubItemRow key={`${item.kind}:${item.id}`} item={item} dark={dark} onOpenItem={this.onOpenItem} />)}</div>
+        <div className="space-y-1.5">{group.items.map((item) => <RecordsHubItemRow key={`${item.kind}:${item.id}`} item={item} dark={dark} onOpenItem={this.onOpenItem} onDownloadItem={this.onDownloadItem} />)}</div>
       </div>
     );
   }

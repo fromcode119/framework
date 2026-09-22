@@ -4,11 +4,18 @@ import { FrameworkIcons } from '@react/icons/view/framework-icons.client';
 import { LucideLazyLoader } from '@react/icons/lucide-lazy-loader';
 import type { IRecordsHubItem } from '@react/interfaces/records-hub-item.interface';
 
-/** One row of the records hub: icon, title/status/badges, trailing label + date, open/download action. */
+/**
+ * One row of the records hub: icon, title/status/badges, trailing label + date, and its actions.
+ *
+ * A record with a document gets TWO buttons, not one. There used to be a single action that resolved
+ * to the download whenever a `downloadUrl` existed, which made the record itself unreachable: an
+ * invoice row handed you the PDF and there was no way to open the invoice to edit it.
+ */
 export class RecordsHubItemRow extends PureReactor {
   @prop declare item: IRecordsHubItem;
   @prop declare dark: boolean;
   @prop declare onOpenItem?: (item: IRecordsHubItem) => void;
+  @prop declare onDownloadItem?: (item: IRecordsHubItem) => void;
 
   /**
    * Resolves a provider-supplied icon name to a component, falling back to
@@ -38,14 +45,20 @@ export class RecordsHubItemRow extends PureReactor {
     this.onOpenItem?.(this.item);
   }
 
+  @bound
+  private download(): void {
+    this.onDownloadItem?.(this.item);
+  }
+
   render(): ReactNode {
     const item = this.item;
     const dark = this.dark;
     const Icon = this.icon(item.icon);
     const trailing = this.trailing(item);
     const date = this.date(item.date);
-    const openable = Boolean(item.href || item.downloadUrl);
-    const ActionIcon = this.icon(item.downloadUrl ? 'Download' : 'ExternalLink');
+    const OpenIcon = this.icon('ExternalLink');
+    const DownloadIcon = this.icon('Download');
+    const actionClass = `shrink-0 h-8 w-8 rounded-xl flex items-center justify-center transition-colors ${dark ? 'text-slate-400 hover:bg-slate-800 hover:text-indigo-400' : 'text-slate-400 hover:bg-slate-100 hover:text-indigo-600'}`;
     return (
       <div
         className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors ${dark ? 'border-slate-800/50 bg-slate-900/30 hover:bg-slate-900/60' : 'border-slate-100 bg-white hover:bg-slate-50'}`}>
@@ -68,11 +81,14 @@ export class RecordsHubItemRow extends PureReactor {
           {trailing ? <p className={`text-[12px] font-bold tabular-nums ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{trailing}</p> : null}
           {date ? <p className="text-[10px] font-bold text-slate-400 tabular-nums">{date}</p> : null}
         </div>
-        {openable ? (
-          <button type="button" onClick={this.open}
-            className={`shrink-0 h-8 w-8 rounded-xl flex items-center justify-center transition-colors ${dark ? 'text-slate-400 hover:bg-slate-800 hover:text-indigo-400' : 'text-slate-400 hover:bg-slate-100 hover:text-indigo-600'}`}
-            aria-label={item.downloadUrl ? 'Download' : 'Open'}>
-            <ActionIcon size={15} />
+        {item.downloadUrl ? (
+          <button type="button" onClick={this.download} className={actionClass} aria-label={`Download ${item.title}`} title="Download">
+            <DownloadIcon size={15} />
+          </button>
+        ) : null}
+        {item.href ? (
+          <button type="button" onClick={this.open} className={actionClass} aria-label={`Open ${item.title}`} title="Open">
+            <OpenIcon size={15} />
           </button>
         ) : null}
       </div>

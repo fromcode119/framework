@@ -138,7 +138,8 @@ export class PersonEditPage extends PersonEditPageActions {
               emptyHint="No documents or records linked to this person yet."
               reloadKey={person.id}
               load={() => AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERSON_RECORDS(this.routeId))}
-              onOpenItem={(item: IRecordsHubItem) => void this.openRecord(item)}
+              onOpenItem={(item: IRecordsHubItem) => this.openRecord(item)}
+              onDownloadItem={(item: IRecordsHubItem) => void this.downloadRecord(item)}
             />
           </div>
         </div>

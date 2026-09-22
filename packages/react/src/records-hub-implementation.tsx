@@ -24,6 +24,7 @@ export class RecordsHubImplementation extends Reactor {
   @prop declare load: () => Promise<IRecordsHubResult>;
   /** Host handler for opening/downloading an item (href nav or authed download). */
   @prop declare onOpenItem?: (item: IRecordsHubItem) => void;
+  @prop declare onDownloadItem?: (item: IRecordsHubItem) => void;
   @prop declare theme?: ThemeMode | string;
   @prop declare title?: string;
   @prop declare emptyHint?: string;
@@ -140,7 +141,7 @@ export class RecordsHubImplementation extends Reactor {
             <p className="text-[12px] font-bold text-slate-400">{this.emptyHint || 'No records yet for this person.'}</p>
           </div>
         ) : (
-          <div className="space-y-5">{visible.map((group) => <RecordsHubGroupSection key={group.group} group={group} dark={dark} onOpenItem={this.onOpenItem} />)}</div>
+          <div className="space-y-5">{visible.map((group) => <RecordsHubGroupSection key={group.group} group={group} dark={dark} onOpenItem={this.onOpenItem} onDownloadItem={this.onDownloadItem} />)}</div>
         )}
 
         {errors.length ? (
