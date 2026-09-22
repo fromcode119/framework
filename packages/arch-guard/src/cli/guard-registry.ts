@@ -22,6 +22,7 @@ import { IgnoredSourceCommand } from './ignored-source-command';
 import { ImportsCommand } from './imports-command';
 import { JsonFieldControlCommand } from './json-field-control-command';
 import { PluginScriptCommand } from './plugin-script-command';
+import { LooseScriptCommand } from './loose-script-command';
 import { BlockRegistryDriftCommand } from './block-registry-drift-command';
 import { SnakePropertyAccessCommand } from './snake-property-access-command';
 import { SnakeTranslationKeyCommand } from './snake-translation-key-command';
@@ -75,6 +76,7 @@ export class GuardRegistry {
     ['ignored-sources', IgnoredSourceCommand],
     ['json-field-controls', JsonFieldControlCommand],
     ['plugin-scripts', PluginScriptCommand],
+    ['loose-scripts', LooseScriptCommand],
     ['block-registry-drift', BlockRegistryDriftCommand],
     ['snake-property-access', SnakePropertyAccessCommand],
     ['snake-translation-keys', SnakeTranslationKeyCommand],
