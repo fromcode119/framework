@@ -16,16 +16,20 @@ export class StructuredReadOnlyValue extends PureReactor {
 
   render(): ReactNode {
     const { node, isDark } = this;
-    const monoClass = `font-mono text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`;
+    // Mono keeps numbers and booleans scannable in a column, but they used to carry the MUTED colour
+    // too, so a real value — an amount, a tax rate — read as fainter than the strings beside it. Only
+    // absence is secondary here; a value is a value whatever its type.
+    const monoClass = `font-mono text-[11px] ${isDark ? 'text-slate-200' : 'text-slate-700'}`;
+    const absentClass = isDark ? 'text-slate-600' : 'text-slate-400';
 
     if (node.kind === StructuredNodeKind.EMPTY) {
-      return <span className={isDark ? 'text-slate-600' : 'text-slate-300'}>—</span>;
+      return <span className={absentClass}>—</span>;
     }
 
     const value = node.scalarValue;
 
     if (value === null || value === undefined) {
-      return <span className={monoClass}>null</span>;
+      return <span className={`font-mono text-[11px] ${absentClass}`}>null</span>;
     }
 
     if (typeof value === 'boolean' || typeof value === 'number') {
@@ -35,7 +39,7 @@ export class StructuredReadOnlyValue extends PureReactor {
     const text = String(value);
 
     if (!text) {
-      return <span className={isDark ? 'text-slate-600' : 'text-slate-300'}>—</span>;
+      return <span className={absentClass}>—</span>;
     }
 
     if (StructuredReadOnlyFieldService.isImageLink(text)) {

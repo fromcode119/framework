@@ -92,7 +92,23 @@ export class StructuredReadOnlyFieldService {
     const raw = String(key ?? '').trim();
     // An array index (`[0]`) is not a word and must not be title-cased into one.
     if (!raw || /^\[\d+\]$/.test(raw)) return raw;
-    return TagFieldUtils.toTitleCase(raw);
+    return StructuredReadOnlyFieldService.restoreAcronyms(TagFieldUtils.toTitleCase(raw));
+  }
+
+  /**
+   * Title-casing turns an acronym into a word: `codAmount` became "Cod Amount" and `cityId` became
+   * "City Id". Neither is what the operator calls it, and "Cod" reads as a fish.
+   *
+   * Whole words only — `Idempotency` must not become `IDempotency`, and `Void` must not become
+   * `VOid`.
+   */
+  private static readonly ACRONYMS = ['COD', 'ID', 'URL', 'URI', 'VAT', 'IBAN', 'BIC', 'SKU', 'EAN', 'AWB', 'API', 'PDF', 'UIC', 'GTIN', 'ETA'];
+
+  private static restoreAcronyms(label: string): string {
+    return label.replace(/\b[A-Za-z]+\b/g, (word) => {
+      const match = StructuredReadOnlyFieldService.ACRONYMS.find((a) => a.toLowerCase() === word.toLowerCase());
+      return match ?? word;
+    });
   }
 
   static topLevelCount(node: IStructuredNode): number {
