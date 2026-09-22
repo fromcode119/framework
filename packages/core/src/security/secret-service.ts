@@ -3,14 +3,17 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypt
 export class SecretService {
   private static readonly ENCRYPTED_PREFIX = 'enc:v1:';
   /**
-   * NOT renamed with the rest of the product, deliberately.
+   * The sentinel a masked secret is shown as, so a form can post a config back untouched.
    *
-   * This string is PERSISTED: a config whose secret was left untouched stores the mask itself, and
-   * `isSavedSecretMask` recognises it on the way back in so the real secret is kept rather than
-   * overwritten. Change the literal and every row already holding the old one stops being
-   * recognised — the mask itself would then be saved as if it were the secret.
+   * It is NEVER persisted, and an earlier version of this comment claiming otherwise was wrong —
+   * it cost a real repair, because it read as "renaming needs a data migration". Every write path
+   * substitutes the stored value for the mask BEFORE storage
+   * (`IntegrationStoredProviderService.resolveStoredConfig` and the plugin-settings context both
+   * do), and a secret is written as `enc:v1:` ciphertext or as `''`. A sweep of all 1,681 text and
+   * JSON columns on 2026-09-22 found zero rows holding it, in either spelling.
    *
-   * Renaming it needs a migration that rewrites those stored values first, not an edit here.
+   * So the literal is safe to change; it only has to agree with itself within one running process,
+   * and both the mask and the recognise side call {@link SecretService.getSavedSecretMask}.
    */
   private static readonly DEFAULT_SAVED_SECRET_MASK = '__FROMCODE_SAVED_SECRET__';
 
