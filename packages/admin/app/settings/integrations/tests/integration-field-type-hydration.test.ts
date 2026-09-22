@@ -61,3 +61,38 @@ describe('integration provider field-type hydration', () => {
     expect(records[0].providers[0].fields[0].type).toBe(IntegrationFieldType.TEXT);
   });
 });
+
+/**
+ * Changing the saved-secret mask needs no migration and no coordinated deploy.
+ *
+ * The concern would be a form rendered under the OLD mask posting it back to a server that has
+ * already moved to the NEW one — the server would not recognise it and would store the literal as
+ * if it were the secret. It cannot happen: the admin blanks every secret field on the way in and
+ * sends `''`, which the server reads as "keep what is stored". The mask travels server -> admin
+ * only, and never makes the return trip.
+ */
+describe('saved-secret mask never makes the return trip', () => {
+  const provider: any = {
+    key: 'econt',
+    fields: [
+      { name: 'username', label: 'Username', type: 'text' },
+      { name: 'password', label: 'Password', type: 'password' },
+    ],
+  };
+
+  it('blanks the secret on the way in and posts blank, whatever mask the server used', () => {
+    const hydrated: any = IntegrationsPageUtils.hydrateFieldTypes([{ providers: [provider] }])[0].providers[0];
+
+    for (const serverMask of ['__ATLANTIS_SAVED_SECRET__', '__FROMCODE_SAVED_SECRET__', '__ANY_FUTURE_MASK__']) {
+      const editor = IntegrationProviderFormHelper.buildEditorForProvider(
+        { id: 'p1', providerKey: 'econt', enabled: true, config: { username: 'a@b.c', password: serverMask } } as any,
+        hydrated,
+      );
+      const payload = IntegrationProviderFormHelper.buildSavePayload(hydrated, editor);
+
+      expect(editor.config.password).toBe('');
+      expect(payload.config.password).toBe('');
+      expect(JSON.stringify(payload)).not.toContain('SAVED_SECRET');
+    }
+  });
+});
