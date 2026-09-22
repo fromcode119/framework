@@ -17,6 +17,11 @@ import type { IApiKeyValidator } from '@auth/interfaces/api-key-validator.interf
  * registers its own validator.
  */
 export class AuthTokenService {
+  private static readonly TYPE_ACCESS = 'access';
+  private static readonly TYPE_GRANT = 'grant';
+  /** Long enough to finish an edit, short enough that a leaked grant is worth little. */
+  private static readonly GRANT_TTL = '10m';
+
   constructor(
     private readonly secret: string,
     private readonly sessionValidator: () => ISessionValidator | undefined,
@@ -72,8 +77,12 @@ export class AuthTokenService {
     try {
       const decoded = jwt.verify(token, this.secret, { algorithms: ['HS256'] }) as any;
 
-      if (decoded.type === 'refresh') {
-        throw new Error('Cannot use refresh token as access token');
+      // An ALLOWLIST, not a refusal of one known type. Every token this service mints is signed with
+      // the SAME secret, so anything else it signs — a refresh token, a short-lived grant — verifies
+      // here unless the type is checked positively. Refusing only `refresh` meant a grant token could
+      // be presented as an access token and be accepted as the full user.
+      if (decoded.type !== undefined && decoded.type !== AuthTokenService.TYPE_ACCESS) {
+        throw new Error(`Cannot use "${decoded.type}" token as access token`);
       }
 
       if (expected.tenantId && decoded.tenantId !== expected.tenantId) {
@@ -95,6 +104,57 @@ export class AuthTokenService {
       return decoded as IUser;
     } catch (err) {
       throw new Error(err instanceof Error ? err.message : 'Invalid or expired token');
+    }
+  }
+
+
+  /**
+   * A short-lived, narrowly SCOPED grant — proof that the operator re-authenticated for one specific
+   * privileged act, minted once and presented instead of the credential.
+   *
+   * It exists so a password never has to be held or replayed. The read-only override used to keep the
+   * account password in the admin's memory for the life of the page and send it again in the record
+   * body on every save; the server bcrypt-compared it each time. A grant carries no credential, dies
+   * on its own, and is refused outside the scope it was minted for.
+   *
+   * `scope` is an opaque string the CALLER composes (this package does not know what a collection or
+   * a record is). It is compared verbatim, so the caller must build it from every dimension that
+   * matters — widen the scope and you widen what one password entry authorizes.
+   */
+  async generateGrantToken(
+    claims: { userId: string | number; purpose: string; scope: string },
+    options: { expiresIn?: SignOptions['expiresIn'] } = {},
+  ): Promise<string> {
+    const payload = {
+      type: AuthTokenService.TYPE_GRANT,
+      sub: String(claims.userId),
+      purpose: String(claims.purpose),
+      scope: String(claims.scope),
+      jti: randomUUID(),
+    };
+    return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: options.expiresIn ?? AuthTokenService.GRANT_TTL });
+  }
+
+
+  /**
+   * Verifies a grant against the scope it MUST have been minted for. Every dimension is compared —
+   * a grant for another user, another purpose or another record is refused, not re-scoped to
+   * whatever the current request happens to be.
+   */
+  async verifyGrantToken(
+    token: string,
+    expected: { userId: string | number; purpose: string; scope: string },
+  ): Promise<boolean> {
+    try {
+      const decoded = jwt.verify(token, this.secret, { algorithms: ['HS256'] }) as any;
+      return (
+        decoded?.type === AuthTokenService.TYPE_GRANT &&
+        String(decoded.sub) === String(expected.userId) &&
+        String(decoded.purpose) === String(expected.purpose) &&
+        String(decoded.scope) === String(expected.scope)
+      );
+    } catch {
+      return false;
     }
   }
 

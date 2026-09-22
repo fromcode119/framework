@@ -20,6 +20,7 @@ export class CollectionEditPageViewModelBuilder {
       deleting: s.deleting,
       showDeleteConfirm: s.showDeleteConfirm, setShowDeleteConfirm: (v) => self.updateState('showDeleteConfirm', v),
       readOnlyOverrideFields: s.readOnlyOverrideFields,
+      readOnlyOverrideGranted: Boolean(s.readOnlyOverrideGrant),
       readOnlyOverrideTarget: s.readOnlyOverrideTarget, setReadOnlyOverrideTarget: (v) => self.updateState('readOnlyOverrideTarget', v),
       readOnlyOverridePasswordTarget: s.readOnlyOverridePasswordTarget, setReadOnlyOverridePasswordTarget: (v) => self.updateState('readOnlyOverridePasswordTarget', v),
       readOnlyOverrideVerifying: s.readOnlyOverrideVerifying,

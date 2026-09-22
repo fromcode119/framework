@@ -23,8 +23,8 @@ export class EditPageDialogs extends PureReactor {
           isOpen={Boolean(this.readOnlyOverrideTarget)}
           onClose={() => this.setReadOnlyOverrideTarget(null)}
           onConfirm={this.openReadOnlyOverridePasswordPrompt}
-          title="Override Generated Value?"
-          description={`"${this.readOnlyOverrideTarget?.label || 'This field'}" is read-only because it is generated automatically. Continue to unlock manual override?`}
+          title="Unlock recorded values?"
+          description={`"${this.readOnlyOverrideTarget?.label || 'This field'}" is read-only because it is recorded automatically. Confirming unlocks every read-only field on this record for editing.`}
           confirmLabel="Continue"
           cancelLabel="Cancel"
           variant="primary"
@@ -35,10 +35,10 @@ export class EditPageDialogs extends PureReactor {
           onClose={() => this.setReadOnlyOverridePasswordTarget(null)}
           onConfirm={this.handleReadOnlyOverridePasswordConfirm}
           isLoading={this.readOnlyOverrideVerifying}
-          title="Confirm With Password"
-          description={`Enter your account password to unlock "${this.readOnlyOverridePasswordTarget?.label || 'this field'}".`}
+          title="Confirm it is you"
+          description="Enter your account password to unlock this record's read-only fields. The password is exchanged for a short-lived unlock and is not stored."
           placeholder="Current password"
-          confirmLabel="Unlock Field"
+          confirmLabel="Unlock record"
           cancelLabel="Cancel"
           inputType="password"
         />

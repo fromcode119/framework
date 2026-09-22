@@ -15,6 +15,7 @@ export interface ICollectionEditPageViewModel {
   showDeleteConfirm: boolean;
   setShowDeleteConfirm: (value: boolean) => void;
   readOnlyOverrideFields: Record<string, true>;
+  readOnlyOverrideGranted: boolean;
   readOnlyOverrideTarget: { name: string; label: string } | null;
   setReadOnlyOverrideTarget: (value: { name: string; label: string } | null) => void;
   readOnlyOverridePasswordTarget: { name: string; label: string } | null;

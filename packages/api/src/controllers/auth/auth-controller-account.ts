@@ -3,6 +3,7 @@ import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerSession } from '@api/controllers/auth/auth-controller-session';
 import { CoercionUtils } from '@fromcode119/core';
 import { PersonalDataErasureService } from '@fromcode119/core';
+import { ReadOnlyOverrideGrantUtils } from '@api/utils/read-only-override-grant-utils';
 
 export class AuthControllerAccount extends AuthControllerSession {
   async verifyPassword(req: any, res: Response) {
@@ -19,7 +20,31 @@ export class AuthControllerAccount extends AuthControllerSession {
     const matches = await this.auth.comparePassword(password, String(user.password || ''));
     if (!matches) return res.status(400).json({ error: 'Current password is invalid' });
 
-    return res.json({ success: true });
+    return res.json({ success: true, ...(await this.mintRequestedGrant(req, userId)) });
+  }
+
+  /**
+   * Turns a successful re-authentication into a short-lived, scoped GRANT, so the caller never has to
+   * keep the password to prove it later.
+   *
+   * This endpoint used to answer a bare `{ success: true }` and ignore the `purpose`/`collectionSlug`/
+   * `recordId` the admin already sent it — which is why the read-only override had to hold the account
+   * password in browser memory and replay it in the record body on every save. A caller that asks for
+   * no known purpose still gets the bare answer, so the plain "confirm it is you" use keeps working.
+   */
+  private async mintRequestedGrant(req: any, userId: string | number): Promise<Record<string, unknown>> {
+    const purpose = CoercionUtils.toString(req.body?.purpose);
+    if (purpose !== ReadOnlyOverrideGrantUtils.PURPOSE) return {};
+
+    const collectionSlug = CoercionUtils.toString(req.body?.collectionSlug);
+    if (!collectionSlug) return {};
+
+    const grant = await this.auth.generateGrantToken({
+      userId,
+      purpose,
+      scope: ReadOnlyOverrideGrantUtils.scope(collectionSlug, req.body?.recordId),
+    });
+    return { grant };
   }
 
   /**

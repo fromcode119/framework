@@ -44,10 +44,15 @@ export class CollectionEditPageHandlers {
     if (!fd.customPermalink || fd.customPermalink === fd.slug) CollectionEditPageHandlers.setFieldValue(self, 'customPermalink', newSlugValue);
   }
 
+  /**
+   * What travels with the save: the scoped grant, and the field names the API needs to let system
+   * fields through its parser. The operator's PASSWORD used to be in here, re-sent in the record body
+   * on every single save and bcrypt-compared server-side each time.
+   */
   static getReadOnlyOverrideSubmitMetadata(self: any): Record<string, any> {
     const fields = Object.keys(self.state.readOnlyOverrideFields || {}).filter(Boolean);
-    if (!fields.length || !self.state.readOnlyOverridePassword) return {};
-    return { _readOnlyOverride: { fields, password: self.state.readOnlyOverridePassword } };
+    if (!fields.length || !self.state.readOnlyOverrideGrant) return {};
+    return { _readOnlyOverride: { fields, grant: self.state.readOnlyOverrideGrant } };
   }
 
   static async handleSubmit(self: any, e?: any, summary?: string): Promise<any> {
@@ -64,7 +69,7 @@ export class CollectionEditPageHandlers {
       const result = await (isNew ? AdminApi.post(url, payload) : AdminApi.put(url, payload));
       // What was just persisted becomes the new pristine baseline, so the save bar goes quiet until the
       // operator edits again instead of insisting there is still unsaved work.
-      self.setState({ readOnlyOverrideFields: {}, readOnlyOverridePassword: '', pristineFormData: { ...self.state.formData }, status: { type: NotificationType.SUCCESS, message: `Entry ${isNew ? 'created' : 'updated'} successfully` } });
+      self.setState({ readOnlyOverrideFields: {}, readOnlyOverrideGrant: '', pristineFormData: { ...self.state.formData }, status: { type: NotificationType.SUCCESS, message: `Entry ${isNew ? 'created' : 'updated'} successfully` } });
       if (!isNew) CollectionEditPageHandlers.fetchRevisions(self, 1);
       if (isNew) self.props.router.push(`/${self.props.pluginSlug}/${self.props.slug}/${result.id}`);
       return result;
@@ -197,14 +202,52 @@ export class CollectionEditPageHandlers {
     self.setState({ readOnlyOverridePasswordTarget: self.state.readOnlyOverrideTarget, readOnlyOverrideTarget: null });
   }
 
+  /** Every read-only field on this record that MAY be overridden — `'never'` fields are not among them. */
+  static overrideableReadOnlyFieldNames(self: any): string[] {
+    const { collection } = CollectionEditPageHandlers.context(self);
+    return (collection?.fields || [])
+      .filter((field: any) => field?.admin?.readOnly
+        && field?.admin?.readOnlyOverride !== false
+        && field?.admin?.readOnlyOverride !== 'never'
+        && field?.admin?.allowReadOnlyOverride !== false)
+      .map((field: any) => String(field?.name || ''))
+      .filter(Boolean);
+  }
+
+  /**
+   * Confirming the password once unlocks the WHOLE record, because that is what the operator is
+   * actually doing — they came to correct a generated record, and re-typing a password per field
+   * taught them to type it without reading the dialog.
+   *
+   * The password is exchanged for a short-lived scoped grant and then dropped: it is never held in
+   * state and never sent again. The grant is scoped to this user, this collection and this record, so
+   * it cannot be replayed against another.
+   */
   static async handleReadOnlyOverridePasswordConfirm(self: any, password: string): Promise<void> {
     const target = self.state.readOnlyOverridePasswordTarget;
     if (!target) return;
-    const { resolvedSlug, isNew } = CollectionEditPageHandlers.context(self);
+    const { collection, resolvedSlug, isNew } = CollectionEditPageHandlers.context(self);
     self.setState({ readOnlyOverrideVerifying: true });
     try {
-      await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.VERIFY_PASSWORD, { password, purpose: 'read_only_override', collectionSlug: resolvedSlug, field: target.name, recordId: isNew ? null : self.props.id });
-      self.setState((prev: any) => ({ readOnlyOverridePassword: password, readOnlyOverrideFields: { ...prev.readOnlyOverrideFields, [target.name]: true }, status: { type: NotificationType.SUCCESS, message: `${target.label} unlocked for manual override.` }, readOnlyOverridePasswordTarget: null }));
+      const response = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.VERIFY_PASSWORD, {
+        password,
+        purpose: 'read_only_override',
+        collectionSlug: collection?.slug || resolvedSlug,
+        recordId: isNew ? null : self.props.id,
+      });
+      const grant = String(response?.grant || '');
+      if (!grant) throw new Error('The server did not return an unlock grant.');
+
+      const unlocked: Record<string, true> = {};
+      for (const name of CollectionEditPageHandlers.overrideableReadOnlyFieldNames(self)) unlocked[name] = true;
+      const count = Object.keys(unlocked).length;
+
+      self.setState({
+        readOnlyOverrideGrant: grant,
+        readOnlyOverrideFields: unlocked,
+        status: { type: NotificationType.SUCCESS, message: count > 1 ? `${count} read-only fields unlocked on this record.` : `${target.label} unlocked for manual override.` },
+        readOnlyOverridePasswordTarget: null,
+      });
     } catch (err: any) {
       self.setState({ status: { type: NotificationType.ERROR, message: err?.message || 'Password verification failed' } });
     } finally {

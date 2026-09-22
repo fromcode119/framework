@@ -43,7 +43,7 @@ export class CollectionEditPageLifecycle {
 
     CollectionEditPageLifecycle.ensureDataLoaded(self, { collection, resolvedSlug, isNew, duplicateFromId });
     CollectionEditPageLifecycle.guard(self, 'override', `${self.props.id}|${isNew}|${resolvedSlug}`, () =>
-      self.setState({ readOnlyOverrideFields: {}, readOnlyOverridePassword: '', readOnlyOverrideTarget: null, readOnlyOverridePasswordTarget: null }));
+      self.setState({ readOnlyOverrideFields: {}, readOnlyOverrideGrant: '', readOnlyOverrideTarget: null, readOnlyOverridePasswordTarget: null }));
     CollectionEditPageLifecycle.guard(self, 'pluginSettings', String(collection?.pluginSlug || ''), () => {
       if (!collection?.pluginSlug) return;
       AdminApi.get(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings`)
