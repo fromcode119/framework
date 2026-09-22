@@ -21,6 +21,8 @@ import { I18nKeyResolutionCommand } from './i18n-key-resolution-command';
 import { IgnoredSourceCommand } from './ignored-source-command';
 import { ImportsCommand } from './imports-command';
 import { JsonFieldControlCommand } from './json-field-control-command';
+import { PluginScriptCommand } from './plugin-script-command';
+import { BlockRegistryDriftCommand } from './block-registry-drift-command';
 import { SnakePropertyAccessCommand } from './snake-property-access-command';
 import { SnakeTranslationKeyCommand } from './snake-translation-key-command';
 import { InterfacePrefixCommand } from './interface-prefix-command';
@@ -72,6 +74,8 @@ export class GuardRegistry {
     ['i18n-keys', I18nKeyResolutionCommand],
     ['ignored-sources', IgnoredSourceCommand],
     ['json-field-controls', JsonFieldControlCommand],
+    ['plugin-scripts', PluginScriptCommand],
+    ['block-registry-drift', BlockRegistryDriftCommand],
     ['snake-property-access', SnakePropertyAccessCommand],
     ['snake-translation-keys', SnakeTranslationKeyCommand],
     ['extended-extends', ExtendedExtendsCommand],
