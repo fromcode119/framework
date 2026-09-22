@@ -12,21 +12,24 @@ import { StructuredReadOnlyFieldService } from '@/components/collection/fields/s
 export class StructuredReadOnlyTable extends PureReactor {
   @prop declare node: IStructuredNode;
   @prop declare isDark?: boolean;
+  @prop declare keyLabels?: Record<string, string>;
 
   render(): ReactNode {
-    const { node, isDark } = this;
+    const { node, isDark, keyLabels } = this;
     const columns = node.tableColumns ?? [];
     const rows = node.tableRows ?? [];
-    const headerClass = `border-b px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
-    const cellClass = `px-3 py-2 align-top text-[11px] ${isDark ? 'border-slate-900' : 'border-slate-100'} border-b`;
+    const headerClass = `border-b px-0 pr-3 py-2 text-left text-[10px] font-bold uppercase tracking-wider ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
+    const cellClass = `px-0 pr-3 py-2 align-top text-[11px] ${isDark ? 'border-slate-900' : 'border-slate-100'} border-b`;
 
     return (
-      <div className={`overflow-x-auto rounded-lg border ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+      // No border: the control around this already draws one, and nesting a second made the status
+      // history read as a table inside a table inside a card.
+      <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr>
               {columns.map((column) => (
-                <th key={column} className={headerClass}>{StructuredReadOnlyFieldService.keyLabel(column)}</th>
+                <th key={column} className={headerClass}>{StructuredReadOnlyFieldService.keyLabel(column, keyLabels)}</th>
               ))}
             </tr>
           </thead>

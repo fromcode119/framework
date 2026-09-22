@@ -1,5 +1,4 @@
 import { FieldWidth } from '@fromcode119/core/client';
-import { ThemeMode } from '@fromcode119/core/client';
 
 /**
  * Utility class for field rendering operations.
@@ -66,10 +65,14 @@ export class FieldRendererUtils {
   }
 
   /**
-   * Computes the outer wrapper className for a rendered field: the col-span rule
-   * (wide controls span the full grid) plus the read-only framed-box styling.
+   * The outer wrapper className for a rendered field: the col-span rule, and nothing else.
+   *
+   * It used to add a framed box for every READ-ONLY field, which drew an outline inside the
+   * section's card for each locked value — and a second one inside that for a control which already
+   * draws its own panel. Locked reads as locked without it: the field carries its own "Unlock edit"
+   * control and the input renders disabled.
    */
-  static wrapperClassName(field: any, isFieldReadOnly: boolean, theme: ThemeMode): string {
+  static wrapperClassName(field: any): string {
     const colSpan =
       field.type === 'textarea' ||
       field.type === 'richText' ||
@@ -81,12 +84,10 @@ export class FieldRendererUtils {
       field.admin?.component === 'Tags'
         ? 'col-span-full' : '';
 
-    const readOnlyBox = isFieldReadOnly
-      ? theme === ThemeMode.DARK
-        ? 'rounded-xl border border-slate-800/80 bg-slate-900/20 p-2.5'
-        : 'rounded-xl border border-slate-200 bg-slate-50/70 p-2.5'
-      : '';
-
-    return `w-full ${colSpan} ${readOnlyBox}`;
+    // No box around a read-only field. It used to get `rounded-xl border bg-slate-50/70 p-2.5`,
+    // which put a frame inside the section's card for every locked value on the screen — a page of
+    // nested outlines. Locked already reads as locked without one: the field carries its own
+    // "Unlock edit" control and the input renders disabled.
+    return `w-full ${colSpan}`.trim();
   }
 }

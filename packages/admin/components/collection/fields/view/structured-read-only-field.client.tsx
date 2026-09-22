@@ -54,7 +54,9 @@ export class StructuredReadOnlyField extends Reactor {
    */
   private renderProvenance(isDark: boolean, showCopy: boolean): ReactNode {
     return (
-      <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
+      // A LINE, not a box. This control already sits inside the field's card, and the data below sits
+      // in its own; a third border around this sentence made three nested frames for one value.
+      <div className={`flex items-center gap-2 border-b px-0 py-2 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
         <FrameworkIcons.Lock size={12} className={`shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
         <p className={`flex-1 text-[11px] font-medium leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           Recorded automatically — not editable here.
@@ -75,6 +77,12 @@ export class StructuredReadOnlyField extends Reactor {
     );
   }
 
+  /** The plugin names its own keys; the framework renders whatever it is told. */
+  private get keyLabels(): Record<string, string> | undefined {
+    const declared = this.field?.admin?.keyLabels;
+    return declared && typeof declared === 'object' ? declared as Record<string, string> : undefined;
+  }
+
   private renderBody(isDark: boolean): ReactNode {
     const node = this.rootNode;
     const isLarge = StructuredReadOnlyFieldService.isLargePayload(node);
@@ -85,19 +93,19 @@ export class StructuredReadOnlyField extends Reactor {
     }
 
     if (node.kind === StructuredNodeKind.ARRAY_TABLE) {
-      return <StructuredReadOnlyTable node={node} isDark={isDark} />;
+      return <StructuredReadOnlyTable node={node} isDark={isDark} keyLabels={this.keyLabels} />;
     }
 
     if (node.kind === StructuredNodeKind.SCALAR) {
-      return <StructuredReadOnlyRow label="value" node={node} depth={1} isDark={isDark} filterLower={filterLower} />;
+      return <StructuredReadOnlyRow label="value" node={node} depth={1} isDark={isDark} filterLower={filterLower} keyLabels={this.keyLabels} />;
     }
 
     const rows = node.kind === StructuredNodeKind.OBJECT
       ? (node.entries ?? []).map((entry) => (
-        <StructuredReadOnlyRow key={entry.key} label={entry.key} node={entry.node} depth={1} defaultCollapsed={isLarge} isDark={isDark} filterLower={filterLower} />
+        <StructuredReadOnlyRow key={entry.key} label={entry.key} node={entry.node} depth={1} defaultCollapsed={isLarge} isDark={isDark} filterLower={filterLower} keyLabels={this.keyLabels} />
       ))
       : (node.items ?? []).map((item, index) => (
-        <StructuredReadOnlyRow key={index} label={`[${index}]`} node={item} depth={1} defaultCollapsed={isLarge} isDark={isDark} filterLower={filterLower} />
+        <StructuredReadOnlyRow key={index} label={`[${index}]`} node={item} depth={1} defaultCollapsed={isLarge} isDark={isDark} filterLower={filterLower} keyLabels={this.keyLabels} />
       ));
 
     return (
@@ -110,10 +118,8 @@ export class StructuredReadOnlyField extends Reactor {
             className="mb-2"
           />
         ) : null}
-        {/* The rows sit in a surface of their own. Loose rows separated only by hairlines read as
-            output pasted into the page — the table node beside them has always had a container, so
-            the two halves of the same control did not look like the same control. */}
-        <div className={`overflow-hidden rounded-lg border ${isDark ? 'border-slate-800 bg-slate-950/20' : 'border-slate-200 bg-white'}`}>{rows}</div>
+        {/* No frame here either: the field's own card is the box. Row dividers carry the structure. */}
+        <div>{rows}</div>
       </>
     );
   }
@@ -124,7 +130,10 @@ export class StructuredReadOnlyField extends Reactor {
     const node = this.rootNode;
 
     return (
-      <div className="space-y-2">
+      // NO frame of its own. The field's card is already a box; drawing another one around the same
+      // value put a box inside a box — and the table inside that made three. The provenance line's
+      // bottom border is the only separation this needs.
+      <div className="overflow-hidden">
         {this.renderProvenance(isDark, node.kind !== StructuredNodeKind.EMPTY)}
         {this.renderBody(isDark)}
       </div>

@@ -41,6 +41,23 @@ export class DateTimePicker extends AdminComponent {
     return this.showTime === false ? DateTimePickerGranularity.DATE : DateTimePickerGranularity.DATETIME;
   }
 
+  /**
+   * Whether the popover offers a time of day.
+   *
+   * GRANULARITY decides, because that is what the prop promises: "what the operator picks (and what
+   * onChange emits)". It did not — the time row, the commit and the auto-close all keyed off
+   * `showTime`, which defaults to true — so `granularity={DATE}` still rendered hour and minute
+   * steppers under a date-only field, and every caller had to remember to pass `showTime={false}`
+   * as well to get what they had already asked for.
+   *
+   * An explicit `showTime` still wins, so existing callers that pass it keep their behaviour.
+   */
+  private get showsTimeOfDay(): boolean {
+    if (typeof this.showTime === 'boolean') return this.showTime;
+    return this.resolvedGranularity === DateTimePickerGranularity.DATETIME
+      || this.resolvedGranularity.isTimeOfDay;
+  }
+
   private get expandedValue(): string | undefined {
     // A `HH:mm` is not a date. Handing it to the date parsing yields an Invalid Date that renders
     // as the placeholder, so the trigger would show "Select time..." over a value that IS set.
@@ -76,7 +93,7 @@ export class DateTimePicker extends AdminComponent {
   @bound private updatePosition(): void {
     if (this.containerRef.current) {
       const rect = this.containerRef.current.getBoundingClientRect();
-      this.coords = DateTimePickerController.computeCoords(rect, this.showTime, this.resolvedGranularity);
+      this.coords = DateTimePickerController.computeCoords(rect, this.showsTimeOfDay, this.resolvedGranularity);
     }
   }
 
@@ -123,7 +140,7 @@ export class DateTimePicker extends AdminComponent {
 
   private commitDate(selectedDate: Date, shouldClose: boolean): void {
     this.onChange(DateTimePickerController.computeCommitIso(
-      { value: this.value, showTime: this.showTime, onChange: this.onChange },
+      { value: this.value, showTime: this.showsTimeOfDay, onChange: this.onChange },
       selectedDate,
     ));
     this.visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
@@ -135,7 +152,7 @@ export class DateTimePicker extends AdminComponent {
       this.onChange(null);
       return;
     }
-    this.commitDate(selectedDate, this.showTime === false);
+    this.commitDate(selectedDate, !this.showsTimeOfDay);
   }
 
   @bound private handleTimeChange(type: TimePart, val: string): void {
@@ -163,13 +180,13 @@ export class DateTimePicker extends AdminComponent {
   @bound private applyQuickAction(dayOffset: number): void {
     const quickDate = new Date();
     quickDate.setDate(quickDate.getDate() + dayOffset);
-    this.commitDate(quickDate, this.showTime === false);
+    this.commitDate(quickDate, !this.showsTimeOfDay);
   }
 
   @bound private handleClear(): void {
     this.onChange(null);
     this.visibleMonth = new Date();
-    if (this.showTime === false) this.isOpen = false;
+    if (!this.showsTimeOfDay) this.isOpen = false;
   }
 
   @bound private toggleOpen(): void {
@@ -197,7 +214,7 @@ export class DateTimePicker extends AdminComponent {
   }
 
   render(): ReactNode {
-    const showTime = this.showTime ?? true;
+    const showTime = this.showsTimeOfDay;
     const isTime = this.resolvedGranularity.isTimeOfDay;
     const placeholder = this.placeholder ?? (isTime ? 'Select time...' : 'Select date...');
     const className = this.className ?? '';

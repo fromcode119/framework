@@ -20,6 +20,8 @@ export class StructuredReadOnlyRow extends Reactor {
   @prop declare defaultCollapsed?: boolean;
   @prop declare isDark?: boolean;
   @prop declare filterLower?: string;
+  /** The owning plugin's vocabulary for its own keys — the framework holds no domain words. */
+  @prop declare keyLabels?: Record<string, string>;
 
   @state private expandOverride?: boolean;
 
@@ -51,9 +53,9 @@ export class StructuredReadOnlyRow extends Reactor {
   private renderScalarRow(): ReactNode {
     const { label, node, isDark } = this;
     return (
-      <div className={`grid md:grid-cols-[minmax(180px,240px)_1fr] items-baseline gap-x-4 gap-y-1 border-b px-3 py-2 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
+      <div className={`grid md:grid-cols-[minmax(180px,240px)_1fr] items-baseline gap-x-4 gap-y-1 border-b px-0 py-2 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
         <div className={`text-[11px] font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`} style={{ paddingLeft: this.indent }}>
-          {StructuredReadOnlyFieldService.keyLabel(label)}
+          {StructuredReadOnlyFieldService.keyLabel(label, this.keyLabels)}
         </div>
         <div className="text-[12px]"><StructuredReadOnlyValue node={node} isDark={isDark} /></div>
       </div>
@@ -61,15 +63,15 @@ export class StructuredReadOnlyRow extends Reactor {
   }
 
   private renderGroupChildren(): ReactNode {
-    const { node, depth, defaultCollapsed, isDark, filterLower } = this;
-    if (node.kind === StructuredNodeKind.ARRAY_TABLE) return <StructuredReadOnlyTable node={node} isDark={isDark} />;
+    const { node, depth, defaultCollapsed, isDark, filterLower, keyLabels } = this;
+    if (node.kind === StructuredNodeKind.ARRAY_TABLE) return <StructuredReadOnlyTable node={node} isDark={isDark} keyLabels={keyLabels} />;
     if (node.kind === StructuredNodeKind.OBJECT) {
       return (node.entries ?? []).map((entry) => (
-        <StructuredReadOnlyRow key={entry.key} label={entry.key} node={entry.node} depth={depth + 1} defaultCollapsed={defaultCollapsed} isDark={isDark} filterLower={filterLower} />
+        <StructuredReadOnlyRow key={entry.key} label={entry.key} node={entry.node} depth={depth + 1} defaultCollapsed={defaultCollapsed} isDark={isDark} filterLower={filterLower} keyLabels={keyLabels} />
       ));
     }
     return (node.items ?? []).map((item, index) => (
-      <StructuredReadOnlyRow key={index} label={`[${index}]`} node={item} depth={depth + 1} defaultCollapsed={defaultCollapsed} isDark={isDark} filterLower={filterLower} />
+      <StructuredReadOnlyRow key={index} label={`[${index}]`} node={item} depth={depth + 1} defaultCollapsed={defaultCollapsed} isDark={isDark} filterLower={filterLower} keyLabels={keyLabels} />
     ));
   }
 
@@ -83,7 +85,7 @@ export class StructuredReadOnlyRow extends Reactor {
 
     return (
       <>
-        <div className={`border-b px-3 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
+        <div className={`border-b px-0 last:border-b-0 ${isDark ? 'border-slate-800/70' : 'border-slate-100'}`}>
           <button
             type="button"
             onClick={this.toggle}
@@ -92,7 +94,7 @@ export class StructuredReadOnlyRow extends Reactor {
             style={{ paddingLeft: this.indent }}
           >
             {expanded ? <FrameworkIcons.ChevronDown size={12} /> : <FrameworkIcons.ChevronRight size={12} />}
-            <span>{StructuredReadOnlyFieldService.keyLabel(label)}</span>
+            <span>{StructuredReadOnlyFieldService.keyLabel(label, this.keyLabels)}</span>
             <span className={`font-normal ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>({countLabel})</span>
           </button>
         </div>

@@ -8,13 +8,28 @@ describe('StructuredReadOnlyFieldService.keyLabel', () => {
     expect(StructuredReadOnlyFieldService.keyLabel('shipping_charged_separately')).toBe('Shipping Charged Separately');
   });
 
-  it('keeps acronyms as acronyms', () => {
-    // Title-casing turned these into words: "Cod Amount" reads as a fish, and "City Id" is not what
-    // the operator calls it.
-    expect(StructuredReadOnlyFieldService.keyLabel('codAmount')).toBe('COD Amount');
+  it('keeps GENERIC data acronyms as acronyms', () => {
     expect(StructuredReadOnlyFieldService.keyLabel('cityId')).toBe('City ID');
     expect(StructuredReadOnlyFieldService.keyLabel('labelUrl')).toBe('Label URL');
-    expect(StructuredReadOnlyFieldService.keyLabel('customerVatId')).toBe('Customer VAT ID');
+  });
+
+  it('holds no business vocabulary of its own', () => {
+    // COD, VAT, IBAN, SKU, AWB are commerce, finance and logistics words. They were in this list,
+    // inside packages/admin, which is supposed to contain no business domain at all.
+    expect(StructuredReadOnlyFieldService.keyLabel('codAmount')).toBe('Cod Amount');
+    expect(StructuredReadOnlyFieldService.keyLabel('vatNumber')).toBe('Vat Number');
+    expect(StructuredReadOnlyFieldService.keyLabel('skuCode')).toBe('Sku Code');
+  });
+
+  it('lets the owning plugin name its own keys', () => {
+    const labels = { codAmount: 'COD amount', taxRatePercent: 'Tax rate %' };
+
+    expect(StructuredReadOnlyFieldService.keyLabel('codAmount', labels)).toBe('COD amount');
+    expect(StructuredReadOnlyFieldService.keyLabel('taxRatePercent', labels)).toBe('Tax rate %');
+    // Anything the plugin does not name falls back to the generic title-case.
+    expect(StructuredReadOnlyFieldService.keyLabel('fullName', labels)).toBe('Full Name');
+    // A blank override is not a label.
+    expect(StructuredReadOnlyFieldService.keyLabel('fullName', { fullName: '   ' })).toBe('Full Name');
   });
 
   it('only replaces WHOLE words, so ordinary words survive', () => {
@@ -22,7 +37,6 @@ describe('StructuredReadOnlyFieldService.keyLabel', () => {
     expect(StructuredReadOnlyFieldService.keyLabel('idempotencyKey')).toBe('Idempotency Key');
     expect(StructuredReadOnlyFieldService.keyLabel('avoid')).toBe('Avoid');
     expect(StructuredReadOnlyFieldService.keyLabel('videoUrl')).toBe('Video URL');
-    expect(StructuredReadOnlyFieldService.keyLabel('codec')).toBe('Codec');
   });
 
   it('leaves an array index alone rather than title-casing it into a word', () => {
