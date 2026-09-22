@@ -13,7 +13,7 @@ describe('PluginHealthReportService.buildReport', () => {
       { slug: 'search', state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.HEALTHY },
     ]);
     expect(report.ok).toBe(false);
-    expect(report.counts).toEqual({ total: 4, active: 1, held: 1, error: 1, inactive: 1 });
+    expect(report.counts).toEqual({ total: 4, active: 1, held: 1, error: 1, inactive: 1, restartPending: 0 });
     expect(report.held[0].slug).toBe('alpha');
     expect(report.held[0].addedCapabilities).toEqual(['scheduler']);
     expect(report.error[0].slug).toBe('beta');

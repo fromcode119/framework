@@ -314,6 +314,7 @@ export { LifecycleService } from '@core/plugin/services/runtime/lifecycle-servic
 export { MiddlewareManager } from '@core/plugin/services/runtime/middleware-manager';
 export { AdminMetadataService } from '@core/plugin/services/admin/admin-metadata-service';
 export { PluginHealthReportService } from '@core/plugin/services/health/plugin-health-report-service';
+export { PluginInstalledVersionService } from '@core/plugin/services/health/plugin-installed-version-service';
 export type { IPluginHealthEntryInput } from '@core/plugin/services/interfaces/plugin-health-entry-input.interface';
 export type { IPluginHealthEntry } from '@core/plugin/services/interfaces/plugin-health-entry.interface';
 export type { IPluginHealthReport } from '@core/plugin/services/interfaces/plugin-health-report.interface';

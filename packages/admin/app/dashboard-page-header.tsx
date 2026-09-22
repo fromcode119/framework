@@ -26,6 +26,16 @@ export class DashboardPageHeader extends PureReactor {
     if (health.held > 0) {
       return <span className="text-amber-500">{health.held} plugin{health.held === 1 ? '' : 's'} held for re-approval</span>;
     }
+    // Nothing is broken, but this screen is serving an older build than the one installed, and no
+    // other surface says so. Production ran a whole release behind for over an hour with every
+    // version signal reading correct.
+    if (health.restartPending > 0) {
+      return (
+        <span className="text-sky-500">
+          {health.restartPending} plugin{health.restartPending === 1 ? '' : 's'} updated — restart to apply
+        </span>
+      );
+    }
     return <span className="text-emerald-500">{health.active} of {health.total} plugins active</span>;
   }
 

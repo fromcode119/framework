@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import { BaseController, PluginManager, Logger, CoercionUtils, PluginHealthReportService, PluginRegistryHealth, PluginState, PluginTenantAccess, SystemConstants, TenantMode } from '@fromcode119/core';
 import { PluginInstallOperationService } from '@api/services/plugin-install-operation-service';
+import { PluginHealthSupport } from '@api/controllers/plugins/plugin-health-support';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 
 export class PluginController extends BaseController {
@@ -151,15 +152,7 @@ export class PluginController extends BaseController {
     const report = PluginHealthReportService.buildReport(
       this.manager.getPlugins()
         .filter((p) => !enabledSlugs || enabledSlugs.has(p.manifest.slug))
-        .map((p) => ({
-          slug: p.manifest.slug,
-          state: p.state,
-          healthStatus: p.healthStatus,
-          heldReason: p.heldReason,
-          error: p.error,
-          manifestCapabilities: (p.manifest.capabilities as string[]) || [],
-          approvedCapabilities: p.approvedCapabilities || [],
-        })),
+        .map((p) => PluginHealthSupport.toHealthInput(p)),
     );
     res.json(report);
   }
