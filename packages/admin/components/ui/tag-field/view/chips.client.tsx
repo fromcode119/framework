@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';
+import { TagFieldDataService } from '@/components/ui/tag-field/data-service';
 
 export class TagFieldChips extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -47,16 +48,25 @@ export class TagFieldChips extends PureReactor {
     return (
       <div className={wrapperClasses}>
         {tags.map((tag: string, i: number) => {
-          const label = labels[tag] || tag;
+          const rawLabel = labels[tag] || tag;
+          // A reference whose record is GONE must not wear the same chip as a real one. It used to,
+          // so a product pointing at a deleted category showed a confident indigo chip and read as
+          // nonsense data rather than as a broken link.
+          const unresolved = TagFieldDataService.isUnresolved(rawLabel);
+          const label = unresolved ? TagFieldDataService.describeUnresolved(rawLabel) : rawLabel;
+          const chipClass = unresolved
+            ? 'group border border-dashed border-amber-400 bg-amber-50 text-amber-800 px-2 py-0.5 rounded-lg flex items-center gap-1.5 transition-all dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300'
+            : 'group bg-indigo-600 text-white px-2 py-0.5 rounded-lg flex items-center gap-1.5 shadow-md shadow-indigo-600/10 active:scale-95 transition-all';
 
           return (
             <span
               key={tag}
-              className="group bg-indigo-600 text-white px-2 py-0.5 rounded-lg flex items-center gap-1.5 shadow-md shadow-indigo-600/10 active:scale-95 transition-all"
+              className={chipClass}
+              title={unresolved ? `This reference points at a record that no longer exists (id ${tag}).` : undefined}
             >
               <div className="flex flex-col leading-tight">
                  <span className="text-[11px] font-semibold leading-none mb-0">{label}</span>
-                 {!sourceCollection && label !== tag && <span className="text-[9px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
+                 {!sourceCollection && !unresolved && label !== tag && <span className="text-[9px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
               </div>
               <button
                 type="button"

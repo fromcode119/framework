@@ -21,7 +21,9 @@ export class RelationshipSelectLocalFetcher {
    */
   private static unresolvedLabel(rawValue: unknown): string {
     const id = String(rawValue ?? '').trim();
-    return id ? `Missing #${id}` : 'Missing reference';
+    // Plain words, not developer shorthand: this is read by whoever is looking at the record, and
+    // "Missing #8" tells them nothing about what happened to it.
+    return id ? `Deleted item (${id})` : 'Deleted item';
   }
 
   private resolveLookupField(sourceCollectionSlug: string): string {
