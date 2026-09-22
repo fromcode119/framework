@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { BaseController, PluginManager, Logger, CoercionUtils, PluginHealthReportService, PluginRegistryHealth, PluginState, PluginTenantAccess, SystemConstants, TenantMode } from '@fromcode119/core';
+import { BaseController, PluginManager, Logger, CoercionUtils, PluginHealthReportService, PluginInstalledVersionService, PluginRegistryHealth, PluginState, PluginTenantAccess, SystemConstants, TenantMode } from '@fromcode119/core';
 import { PluginInstallOperationService } from '@api/services/plugin-install-operation-service';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 
@@ -159,6 +159,12 @@ export class PluginController extends BaseController {
           error: p.error,
           manifestCapabilities: (p.manifest.capabilities as string[]) || [],
           approvedCapabilities: p.approvedCapabilities || [],
+          // What this process loaded, against what is sitting next to the code right now. They drift
+          // whenever a plugin is installed under a running api, and nothing else on this screen
+          // would say so — the `version` field reports the manifest held in memory, which is the one
+          // being served and therefore always agrees with itself.
+          runningVersion: p.manifest.version as string,
+          installedVersion: PluginInstalledVersionService.onDisk(p.path),
         })),
     );
     res.json(report);

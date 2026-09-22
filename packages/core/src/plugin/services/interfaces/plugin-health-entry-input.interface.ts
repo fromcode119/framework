@@ -16,4 +16,8 @@ export interface IPluginHealthEntryInput {
   error?: string;
   manifestCapabilities?: string[];
   approvedCapabilities?: string[];
+  /** The version THIS PROCESS loaded, from the manifest it holds in memory. */
+  runningVersion?: string;
+  /** The version currently on disk. Null when it cannot be read — "cannot tell", never "changed". */
+  installedVersion?: string | null;
 }
