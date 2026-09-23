@@ -23,7 +23,7 @@ export class ThemeSettingsRenderModel {
   readonly marketplaceVersion: string | null;
   readonly activeTab: ThemeSettingsTab;
   readonly tempVariables: Record<string, string>;
-  readonly tempLayouts: Record<string, string>;
+  readonly tempDefaultLayout: string;
   readonly tempSettings: Record<string, unknown>;
   /** Settings the site has actually stored, as opposed to `settingsDefaults` from theme.json. */
   readonly storedSettings: Record<string, unknown>;
@@ -51,7 +51,7 @@ export class ThemeSettingsRenderModel {
     this.marketplaceVersion = page.marketplaceVersion;
     this.activeTab = page.activeTab;
     this.tempVariables = page.tempVariables;
-    this.tempLayouts = page.tempLayouts;
+    this.tempDefaultLayout = page.tempDefaultLayout;
     this.tempSettings = page.tempSettings;
     this.storedSettings = (page.dbConfig.settings as Record<string, unknown> | undefined) ?? {};
 

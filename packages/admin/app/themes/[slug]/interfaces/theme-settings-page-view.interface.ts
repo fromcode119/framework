@@ -24,8 +24,8 @@ export interface IThemeSettingsPageView {
   readonly activeTab: ThemeSettingsTab;
   /** Edited theme variables, keyed by variable name. Values are always strings (colors, fonts, sizes). */
   readonly tempVariables: Record<string, string>;
-  /** Edited layout mapping: core layout id → the theme layout `name` bound to it. */
-  readonly tempLayouts: Record<string, string>;
+  /** The site's default layout (a theme layout `name`); empty means the theme's own `defaultLayout`. */
+  readonly tempDefaultLayout: string;
   /** Edited theme settings. Free-form by design (a theme declares its own), hence `unknown` values. */
   readonly tempSettings: Record<string, unknown>;
   /** The site's stored theme config as loaded — tells a saved setting apart from a theme default. */
@@ -55,6 +55,6 @@ export interface IThemeSettingsPageView {
   closeResetThemeConfirm(): void;
 
   handleVariableChange(key: string, value: string): void;
-  handleLayoutChange(key: string, value: string): void;
+  handleDefaultLayoutChange(value: string): void;
   handleSettingChange(key: string, value: unknown): void;
 }

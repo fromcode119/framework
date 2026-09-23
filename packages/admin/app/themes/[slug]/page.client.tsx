@@ -45,7 +45,7 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
   @state isResetThemeConfirmOpen = false;
   @state dbConfig: Record<string, unknown> = {};
   @state tempVariables: Record<string, string> = {};
-  @state tempLayouts: Record<string, string> = {};
+  @state tempDefaultLayout = '';
   @state tempSettings: Record<string, unknown> = {};
 
   /**
@@ -121,8 +121,8 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     this.tempVariables = { ...this.tempVariables, [key]: value };
   }
 
-  handleLayoutChange(key: string, value: string): void {
-    this.tempLayouts = { ...this.tempLayouts, [key]: value };
+  handleDefaultLayoutChange(value: string): void {
+    this.tempDefaultLayout = value;
   }
 
   handleSettingChange(key: string, value: unknown): void {

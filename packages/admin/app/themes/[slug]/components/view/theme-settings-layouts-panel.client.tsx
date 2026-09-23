@@ -4,7 +4,6 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { ThemeSettingsConstants } from '@/app/themes/[slug]/components/constants/theme-settings.constants';
 import { AdminClass } from '@/lib/admin-class';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
@@ -18,7 +17,14 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
 
   render(): ReactNode {
     const page = this.page;
-    const { adminTheme, themeDetail, tempLayouts, allVarKeys } = this.model;
+    const { adminTheme, themeDetail, tempDefaultLayout, allVarKeys } = this.model;
+    const layouts = themeDetail.layouts || [];
+    const themeDefault = layouts.find((l) => l.name === themeDetail.defaultLayout);
+    const themeDefaultLabel = themeDefault?.label || themeDetail.defaultLayout || '';
+    // A saved choice the theme no longer declares is not applied by the storefront — say so here
+    // instead of showing a select that looks set but does nothing.
+    const isUnavailable = Boolean(tempDefaultLayout) && !layouts.some((l) => l.name === tempDefaultLayout);
+    const selected = layouts.find((l) => l.name === (tempDefaultLayout || themeDetail.defaultLayout));
     return (
       <>
         <Card className={`border-0 p-5 ${AdminClass.SURFACE} ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
@@ -28,46 +34,36 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
             </div>
             <div>
               <h3 className={`text-[11px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                Layout Protocols
+                Default Layout
               </h3>
-              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">Map platform layouts to theme implementations.</p>
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">Layout for pages that do not choose their own.</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {ThemeSettingsConstants.CORE_LAYOUTS.map(layout => {
-              const activeLayout = themeDetail.layouts?.find((l) => l.name === tempLayouts[layout.id]);
-              return (
-                <div key={layout.id} className={`flex flex-col p-5 rounded-xl transition-all duration-500 border ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5 focus-within:border-purple-500/30' : 'bg-white border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] focus-within:shadow-xl focus-within:shadow-purple-500/10 focus-within:border-purple-500/20'}`}>
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">{layout.label}</div>
-                      <p className="text-[9px] text-slate-400 font-medium italic leading-tight max-w-[150px]">
-                        {layout.description}
-                      </p>
-                    </div>
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${activeLayout ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-100 text-slate-400 dark:bg-slate-800'}`}>
-                      <FrameworkIcons.Box size={14} />
-                    </div>
-                  </div>
-
-                  <div className="mt-auto">
-                    <Select
-                      value={tempLayouts[layout.id] || ''}
-                      onChange={(nextValue) => page.handleLayoutChange(layout.id, String(nextValue || ''))}
-                      options={[
-                        { value: '', label: 'System Default' },
-                        ...(themeDetail.layouts?.map((l) => ({ value: l.name, label: l.label })) || [])
-                      ]}
-                      placeholder="System Default"
-                      searchable={false}
-                      theme={adminTheme}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-              );
-            })}
+          <div className={`flex flex-col p-5 rounded-xl border ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5' : 'bg-white border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)]'}`}>
+            <Select
+              value={tempDefaultLayout}
+              onChange={(nextValue) => page.handleDefaultLayoutChange(String(nextValue || ''))}
+              options={[
+                { value: '', label: themeDefaultLabel ? `Theme default (${themeDefaultLabel})` : 'Theme default (none declared)' },
+                ...(isUnavailable ? [{ value: tempDefaultLayout, label: `${tempDefaultLayout} (not in this theme)` }] : []),
+                ...layouts.map((l) => ({ value: l.name, label: l.label })),
+              ]}
+              searchable={false}
+              theme={adminTheme}
+              className="w-full"
+            />
+            {selected?.description ? (
+              <p className="text-[11px] text-slate-500 mt-2">{selected.description}</p>
+            ) : null}
+            {isUnavailable ? (
+              <p className="text-[11px] text-amber-600 mt-2">
+                This theme no longer provides &ldquo;{tempDefaultLayout}&rdquo;, so pages use the theme default until you choose another.
+              </p>
+            ) : null}
+            <p className="text-[11px] text-slate-500 mt-2">
+              A page that picks a layout in its own Layout field keeps that layout.
+            </p>
           </div>
         </Card>
 

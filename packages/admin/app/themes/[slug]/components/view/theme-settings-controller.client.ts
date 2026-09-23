@@ -32,7 +32,7 @@ export class ThemeSettingsController {
       page.themeDetail = theme;
       page.dbConfig = config;
       page.tempVariables = { ...(theme.variables || {}), ...(config.variables || {}) };
-      page.tempLayouts = config.layouts || {};
+      page.tempDefaultLayout = String(config.defaultLayout || '');
       page.tempSettings = { ...(theme.settingsDefaults || {}), ...(config.settings || {}) };
 
       const marketplace = Array.isArray(marketplaceData) ? marketplaceData : (marketplaceData.themes || []);
@@ -75,14 +75,17 @@ export class ThemeSettingsController {
   }
 
   static async handleSaveConfig(page: IThemeSettingsPageHost): Promise<void> {
-    const { themeDetail, routeSlug, dbConfig, tempVariables, tempLayouts, tempSettings } = page;
+    const { themeDetail, routeSlug, dbConfig, tempVariables, tempDefaultLayout, tempSettings } = page;
     if (!themeDetail) return;
     page.isSaving = true;
     try {
+      // `layouts` was a core-layout → theme-layout map nothing ever read; the API no longer accepts it,
+      // so a row that still carries one drops it on its next save.
+      const { layouts: _retiredLayoutMap, ...storedConfig } = dbConfig;
       await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.CONFIG(routeSlug), {
-        ...dbConfig,
+        ...storedConfig,
         variables: tempVariables,
-        layouts: tempLayouts,
+        defaultLayout: tempDefaultLayout,
         settings: tempSettings,
       });
       page.notify(NotificationType.SUCCESS, 'Configuration Saved', 'Visual protocols updated successfully.');

@@ -19,16 +19,18 @@ export class ThemeConfigService {
 
   /** The shape rules on their own, so the per-tenant path can validate without writing the platform row. */
   // `config` is an HTTP request body (see theme-controller.ts `saveConfig`), not a trusted object —
-  // the declared `{ variables?: Record<string, string> }` shape further down is what this validates,
+  // the shape `assertValidThemeConfigShape` declares is what this validates,
   // not what is guaranteed on entry.
   validateThemeConfig(slug: string, config: Record<string, unknown>): void {
     if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
     ThemeConfigService.assertValidThemeConfigShape(config);
+    ThemeConfigService.assertDeclaredLayout(this.themes.get(slug)!, config.defaultLayout);
   }
 
   async saveThemeConfig(slug: string, config: Record<string, unknown>) {
     if (!this.themes.has(slug)) throw new Error(`Theme "${slug}" not found.`);
     ThemeConfigService.assertValidThemeConfigShape(config);
+    ThemeConfigService.assertDeclaredLayout(this.themes.get(slug)!, config.defaultLayout);
     const existing = await this.db.findOne(SystemConstants.TABLE.THEMES, { slug });
     if (existing) {
       await this.db.update(SystemConstants.TABLE.THEMES, { slug }, { config: JSON.stringify(config), updated_at: new Date() });
@@ -41,18 +43,44 @@ export class ThemeConfigService {
   /**
    * The keys the theme settings page writes. `settings` holds whatever the theme declares — nested
    * objects included (a theme's email copy, form defaults) — so only its outer shape is checked here.
-   * Accepting `variables` alone made every save from that page fail, because it always sends all three.
+   * `defaultLayout` is the site's choice of layout for pages that name none; empty means the theme's
+   * own `defaultLayout`. Accepting `variables` alone made every save from that page fail.
    */
-  private static readonly CONFIG_KEYS = ['variables', 'layouts', 'settings'];
+  private static readonly CONFIG_KEYS = ['variables', 'defaultLayout', 'settings'];
 
   private static assertValidThemeConfigShape(config: Record<string, unknown>): void {
     const extraKeys = Object.keys(config).filter((k) => !ThemeConfigService.CONFIG_KEYS.includes(k));
     if (extraKeys.length > 0) throw new Error(`Unknown theme config keys: ${extraKeys.join(', ')}`);
     ThemeConfigService.assertStringMap(config.variables, 'Theme variables', 'Theme variable');
-    ThemeConfigService.assertStringMap(config.layouts, 'Theme layouts', 'Theme layout');
+    if (config.defaultLayout !== undefined && typeof config.defaultLayout !== 'string') {
+      throw new Error('Theme default layout must be a string.');
+    }
     if (config.settings !== undefined && !ThemeConfigService.isPlainObject(config.settings)) {
       throw new Error('Theme settings must be a plain object.');
     }
+  }
+
+  /** A site may only pick a layout its theme declares; anything else would render nothing. */
+  private static assertDeclaredLayout(theme: IThemeManifest, layout: unknown): void {
+    if (!layout) return;
+    if (!ThemeConfigService.declaresLayout(theme, String(layout))) {
+      throw new Error(`Theme "${theme.slug}" declares no layout named "${layout}".`);
+    }
+  }
+
+  private static declaresLayout(theme: IThemeManifest, name: string): boolean {
+    return (theme.layouts || []).some((layout) => layout.name === name);
+  }
+
+  /**
+   * The layout a page gets when it names none: the site's own choice when it still names a layout the
+   * theme declares, otherwise the theme's `defaultLayout`. A choice the theme no longer declares (a
+   * theme update dropped it) is not honoured — the admin shows it as unavailable.
+   */
+  static resolveDefaultLayout(theme: IThemeManifest, config: Record<string, unknown>): string {
+    const siteChoice = String(config.defaultLayout || '');
+    if (siteChoice && ThemeConfigService.declaresLayout(theme, siteChoice)) return siteChoice;
+    return String((theme as any).defaultLayout || '');
   }
 
   private static assertStringMap(value: unknown, what: string, entry: string): void {
@@ -92,13 +120,13 @@ export class ThemeConfigService {
       [...(Array.isArray(theme.ui?.css) ? theme.ui.css as string[] : []), String(theme.ui?.entry || '')]
     );
     return {
-      // `defaultLayout` is the theme's own declaration of which layout a page gets when it names
-      // none. Without it here the frontend and the admin both fell back to a hardcoded
+      // `defaultLayout` is the layout a page gets when it names none — the site's choice (admin theme
+      // settings), else the theme's own declaration (`resolveDefaultLayout`). Without it here the frontend and the admin both fell back to a hardcoded
       // 'DefaultLayout' literal that no theme declares — the admin then reported
       // "LAYOUT NOT FOUND IN THEME" for a layout that silently worked via a theme-side alias.
       // `dependencies`: the plugins the theme's own code calls (theme.json). The storefront reads it to keep
       // those plugins' bundles on every page even when a page renders none of their components.
-      activeTheme: { slug: theme.slug, version: (theme as any).version || '0.0.0', assetVersion, variables, ui: theme.ui, layouts: theme.layouts, defaultLayout: (theme as any).defaultLayout || '', slots: theme.slots || [], overrides: (theme as any).overrides || [], dependencies: ((theme as any).dependencies && typeof (theme as any).dependencies === 'object') ? (theme as any).dependencies : {} },
+      activeTheme: { slug: theme.slug, version: (theme as any).version || '0.0.0', assetVersion, variables, ui: theme.ui, layouts: theme.layouts, defaultLayout: ThemeConfigService.resolveDefaultLayout(theme, config), slots: theme.slots || [], overrides: (theme as any).overrides || [], dependencies: ((theme as any).dependencies && typeof (theme as any).dependencies === 'object') ? (theme as any).dependencies : {} },
       runtimeModules: finalModules,
       cssVariables: this.generateCssVariables(variables),
     };
