@@ -193,6 +193,21 @@ export class SystemRuntimeController {
     }
   }
 
+  /** Which plugin's design a storefront page shows while its content is empty — for the page editor. */
+  async getPageDesign(req: Request, res: Response) {
+    try {
+      const collection = CoercionUtils.toString(req.query.collection).trim();
+      const id = CoercionUtils.toString(req.query.id).trim();
+      if (!collection || !id) {
+        return res.status(400).json({ error: 'collection and id are required' });
+      }
+      const design = await this.runtime.resolution.findPageDesign(collection, id, (req as any).user);
+      res.json({ design });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   async getEvents(req: Request, res: Response) {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',

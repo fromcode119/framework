@@ -193,6 +193,8 @@ export class RouteAuthSegments {
   ADMIN_USERS_OWNERSHIP: '/admin/users/:id/ownership',
   /** Records RELATED to one record, rather than owned by one person. Subject-keyed, not people-keyed. */
   ADMIN_RECORD_LINKS: '/admin/record-links',
+  /** Which plugin's design a storefront page shows while its content is empty. */
+  ADMIN_PAGE_DESIGN: '/admin/page-design',
   ADMIN_PEOPLE: '/admin/people',
   ADMIN_PEOPLE_RECORDS: '/admin/people/records',
   /** Recipient suggestions. Literal path — must be registered before ADMIN_PEOPLE_ID. */
