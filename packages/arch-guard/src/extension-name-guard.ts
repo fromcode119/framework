@@ -164,6 +164,30 @@ export class ExtensionNameGuard {
   /** Files the prose tier reads: source, and the config and styles that ship beside it. */
   private static readonly NAMED_FILES = /\.(?:tsx?|[cm]?js|json|css|less)$/;
 
+  /**
+   * What the prose tier reads at the framework's ROOT, beside `packages/` and `config/`: the docs, the
+   * compose files, the Dockerfile, the env template and the root manifest. A name in a README or a
+   * deployment comment is the same leak as one in a source comment — it is the framework describing
+   * a product built on it — and those files are where several of them sat.
+   */
+  private static readonly ROOT_FILES = /\.(?:md|ya?ml|json|tsx?|[cm]?js|sh)$|^Dockerfile$|^\.env\.example$/;
+
+  /** Root directories the prose tier leaves to the area walk, or never reads. */
+  private static readonly ROOT_SKIP = new Set(['packages', 'config', 'public']);
+
+  /** Generated, and too large to be anyone's prose. */
+  private static readonly ROOT_SKIP_FILES = new Set(['package-lock.json']);
+
+  /** The files at each framework root that the area walk does not reach. */
+  private static rootFiles(framework: Array<{ dir: string }>): string[] {
+    const roots = new Set(framework.map(({ dir }) => path.dirname(dir)));
+    return [...roots].flatMap((root) => SourceTree.files(
+      root,
+      (name) => ExtensionNameGuard.ROOT_FILES.test(name) && !ExtensionNameGuard.ROOT_SKIP_FILES.has(name),
+      ExtensionNameGuard.ROOT_SKIP,
+    ));
+  }
+
   static run(): number {
     const slugs = ExtensionNameGuard.slugs();
     const owned = ExtensionNameGuard.frameworkOwned(slugs);
@@ -195,6 +219,14 @@ export class ExtensionNameGuard {
           if (word) findings.push(`${cite}  names "${word}"${body}`);
         });
       }
+    }
+
+    for (const file of ExtensionNameGuard.rootFiles(framework)) {
+      scanned++;
+      SourceTree.lines(file).forEach((line, index) => {
+        const word = names.match(line);
+        if (word) findings.push(`  ${SourceTree.cite(file)}:${index + 1}  names "${word}"\n    ${line.trim().slice(0, 110)}`);
+      });
     }
 
     console.log(slugs.length

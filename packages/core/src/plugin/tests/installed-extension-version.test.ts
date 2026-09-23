@@ -29,19 +29,19 @@ describe('the installed version of a plugin', () => {
   });
 
   it('reads the row for the slug being asked about', async () => {
-    const query = service({ slug: 'cms', version: '0.1.60' });
+    const query = service({ slug: 'gallery', version: '0.1.60' });
 
-    await query.installedExtensionVersion('cms', ExtensionScope.PLUGIN);
+    await query.installedExtensionVersion('gallery', ExtensionScope.PLUGIN);
 
-    expect((query as any).db.findOne).toHaveBeenCalledWith(SystemConstants.TABLE.PLUGINS, { slug: 'cms' });
+    expect((query as any).db.findOne).toHaveBeenCalledWith(SystemConstants.TABLE.PLUGINS, { slug: 'gallery' });
   });
 
   it('falls back to what is loaded when no row exists', async () => {
     // Discovered from disk but never recorded. Answering "not installed" would offer a fresh install
     // of something already running.
-    const query = service(null, [{ slug: 'forms', version: '0.1.31' }]);
+    const query = service(null, [{ slug: 'guestbook', version: '0.1.31' }]);
 
-    expect(await query.installedExtensionVersion('forms', ExtensionScope.PLUGIN)).toBe('0.1.31');
+    expect(await query.installedExtensionVersion('guestbook', ExtensionScope.PLUGIN)).toBe('0.1.31');
   });
 
   it('answers null when the plugin is neither recorded nor loaded', async () => {
@@ -49,10 +49,10 @@ describe('the installed version of a plugin', () => {
   });
 
   it('survives a database that cannot answer', async () => {
-    const query = service(null, [{ slug: 'forms', version: '0.1.31' }]);
+    const query = service(null, [{ slug: 'guestbook', version: '0.1.31' }]);
     (query as any).db.findOne = vi.fn(async () => { throw new Error('connection reset'); });
 
-    expect(await query.installedExtensionVersion('forms', ExtensionScope.PLUGIN)).toBe('0.1.31');
+    expect(await query.installedExtensionVersion('guestbook', ExtensionScope.PLUGIN)).toBe('0.1.31');
   });
 
   it('still answers null for CORE, which is not installed beside anything', async () => {

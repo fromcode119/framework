@@ -11,7 +11,7 @@ import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
  * because the cost of a false match is somebody else's host receiving a working token.
  */
 describe('SourceRepositoryService — releasing a stored token', () => {
-  const STORED = 'https://github.com/fromcode119/plugin-forms.git';
+  const STORED = 'https://github.com/fromcode119/plugin-guestbook.git';
   let service: any;
 
   const withStored = (gitUrl: string | null, gitSecret: string | null) => {
@@ -26,30 +26,30 @@ describe('SourceRepositoryService — releasing a stored token', () => {
   });
 
   it('releases the token for the repository it was stored against', async () => {
-    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms'), STORED)).toBe('stored-token');
+    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'guestbook'), STORED)).toBe('stored-token');
   });
 
   it.each([
-    ['a trailing slash', 'https://github.com/fromcode119/plugin-forms.git/'],
-    ['no .git suffix', 'https://github.com/fromcode119/plugin-forms'],
-    ['different case', 'HTTPS://GitHub.com/Fromcode119/Plugin-Forms.git'],
+    ['a trailing slash', 'https://github.com/fromcode119/plugin-guestbook.git/'],
+    ['no .git suffix', 'https://github.com/fromcode119/plugin-guestbook'],
+    ['different case', 'HTTPS://GitHub.com/Fromcode119/Plugin-Guestbook.git'],
   ])('still recognises the same repository with %s', async (_label, requested) => {
-    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms'), requested)).toBe('stored-token');
+    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'guestbook'), requested)).toBe('stored-token');
   });
 
   it.each([
-    ['another host', 'https://attacker.example.com/fromcode119/plugin-forms.git'],
-    ['another owner', 'https://github.com/someone-else/plugin-forms.git'],
+    ['another host', 'https://attacker.example.com/fromcode119/plugin-guestbook.git'],
+    ['another owner', 'https://github.com/someone-else/plugin-guestbook.git'],
     ['another repository', 'https://github.com/fromcode119/plugin-catalog.git'],
-    ['the host as a prefix only', 'https://github.com/fromcode119/plugin-forms.git.attacker.com'],
+    ['the host as a prefix only', 'https://github.com/fromcode119/plugin-guestbook.git.attacker.com'],
     ['an empty URL', ''],
   ])('refuses to release it to %s', async (_label, requested) => {
-    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms'), requested)).toBeUndefined();
+    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'guestbook'), requested)).toBeUndefined();
   });
 
   it('has nothing to release for a source that stores no token', async () => {
     withStored(STORED, null);
-    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms'), STORED)).toBeUndefined();
+    expect(await service.resolveStoredToken(BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'guestbook'), STORED)).toBeUndefined();
   });
 
   it('has nothing to release for a source that does not exist', async () => {

@@ -35,14 +35,14 @@ describe('CatalogContributionRegistry', () => {
 describe('CatalogEntry', () => {
   it('rejects a row with no slug or no version — neither can be compared against what is installed', () => {
     expect(CatalogEntry.from({ slug: '', version: '1.0.0' })).toBeNull();
-    expect(CatalogEntry.from({ slug: 'forms', version: '' })).toBeNull();
+    expect(CatalogEntry.from({ slug: 'guestbook', version: '' })).toBeNull();
   });
 
   /** Contributed entries must be indistinguishable downstream, or the badge and action break. */
   it('speaks the catalogue’s own shape', () => {
-    const entry = CatalogEntry.from({ slug: 'forms', version: '1.2.0', kind: 'plugin', notes: 'Fixed a thing' });
+    const entry = CatalogEntry.from({ slug: 'guestbook', version: '1.2.0', kind: 'plugin', notes: 'Fixed a thing' });
     expect(entry?.toCatalogPlugin()).toMatchObject({
-      slug: 'forms',
+      slug: 'guestbook',
       version: '1.2.0',
       releaseNotes: 'Fixed a thing',
       source: 'local',
@@ -50,6 +50,6 @@ describe('CatalogEntry', () => {
   });
 
   it('defaults an unstated kind to plugin rather than dropping the entry', () => {
-    expect(CatalogEntry.from({ slug: 'forms', version: '1.0.0' })?.kind).toBe('plugin');
+    expect(CatalogEntry.from({ slug: 'guestbook', version: '1.0.0' })?.kind).toBe('plugin');
   });
 });

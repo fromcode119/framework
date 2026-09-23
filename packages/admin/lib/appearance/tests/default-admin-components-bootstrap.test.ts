@@ -16,6 +16,6 @@ describe('DefaultAdminComponentsBootstrap', () => {
   it('makes defaults resolvable for any appearance that does not override them', () => {
     const registry = new AdminComponentRegistry();
     DefaultAdminComponentsBootstrap.register(registry);
-    expect(registry.resolve('simple', AdminComponentKeys.BUTTON)).toBe(Button);
+    expect(registry.resolve('plain', AdminComponentKeys.BUTTON)).toBe(Button);
   });
 });

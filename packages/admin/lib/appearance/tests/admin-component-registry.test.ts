@@ -16,8 +16,8 @@ describe('AdminComponentRegistry', () => {
   it('prefers an appearance override over the default for that appearance only', () => {
     const registry = new AdminComponentRegistry();
     registry.registerDefault('Button', DefaultButton);
-    registry.registerForAppearance('simple', 'Button', FancyButton);
-    expect(registry.resolve('simple', 'Button')).toBe(FancyButton);
+    registry.registerForAppearance('plain', 'Button', FancyButton);
+    expect(registry.resolve('plain', 'Button')).toBe(FancyButton);
     expect(registry.resolve('default', 'Button')).toBe(DefaultButton);
   });
 
@@ -25,8 +25,8 @@ describe('AdminComponentRegistry', () => {
     const registry = new AdminComponentRegistry();
     registry.registerDefault('Button', DefaultButton);
     registry.registerDefault('Input', DefaultInput);
-    registry.registerForAppearance('simple', 'Button', FancyButton);
-    expect(registry.resolve('simple', 'Input')).toBe(DefaultInput);
+    registry.registerForAppearance('plain', 'Button', FancyButton);
+    expect(registry.resolve('plain', 'Input')).toBe(DefaultInput);
   });
 
   it('returns undefined for an unknown primitive', () => {

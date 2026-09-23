@@ -5,7 +5,7 @@ import type { IAppearanceSurfaces } from '@/lib/appearance/interfaces/appearance
  * Decides whether a given admin path is exposed by an appearance's surface allowlist.
  *
  * Containment semantics (NOT authorization — role/permission gates still run server-side):
- *   - `surfaces` ABSENT  → allow every path (legacy passthrough appearance, e.g. `simple`).
+ *   - `surfaces` ABSENT  → allow every path (legacy passthrough appearance, e.g. `plain`).
  *   - `surfaces` PRESENT → default-deny: a path is allowed only if it is the appearance landing (`/`),
  *     one of the always-reachable safety paths, under an allowed plugin's first segment, or under an
  *     allowed framework path prefix. Everything else is blocked while that appearance is active.

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
 
 const DefaultDashboard = () => null;
-const SimpleDashboard = () => null;
+const PlainDashboard = () => null;
 
 describe('AdminPageRegistry', () => {
   it('returns undefined when no override or default is registered', () => {
@@ -19,8 +19,8 @@ describe('AdminPageRegistry', () => {
   it('prefers an appearance override over the default for that appearance only', () => {
     const registry = new AdminPageRegistry();
     registry.registerDefault('dashboard', DefaultDashboard);
-    registry.registerForAppearance('simple', 'dashboard', SimpleDashboard);
-    expect(registry.resolve('simple', 'dashboard')).toBe(SimpleDashboard);
+    registry.registerForAppearance('plain', 'dashboard', PlainDashboard);
+    expect(registry.resolve('plain', 'dashboard')).toBe(PlainDashboard);
     expect(registry.resolve('default', 'dashboard')).toBe(DefaultDashboard);
   });
 

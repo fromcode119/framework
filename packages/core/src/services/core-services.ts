@@ -214,7 +214,7 @@ export class CoreServices {
 
   /**
    * Registry of redirect resolvers (lazy-loaded). Plugins register a resolver that maps a would-be-404
-   * request path to a redirect target (e.g. an SEO plugin's retired-URL rules). The framework stays
+   * request path to a redirect target (e.g. a redirect plugin's retired-URL rules). The framework stays
    * plugin-agnostic: it only runs the resolvers and returns the first match at the routing layer.
    */
   get redirectResolvers(): RedirectResolverRegistryService {

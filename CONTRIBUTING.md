@@ -27,7 +27,7 @@ this package's `package.json`; run them from the repository root.
 | Plugin/theme code that talks to `context.db` | `npm run check:db-find-where` |
 | Plugin/theme imports | `npm run check:sdk-boundary` and `npm run audit:core-boundary` |
 | Plugin admin UI components | `npm run check:plugin-ui-hookfree` and `npm run check:plugin-ui-types` |
-| Any plugin | `npm run check:plugin-architecture` (or `:strict` for ecommerce/finance/cms) |
+| Any plugin | `npm run check:plugin-architecture` (or `:strict` to make every finding an error) |
 | Framework packages (`packages/**`) | `npm run check:framework-oop:error` |
 | Admin or frontend (`packages/admin`, `packages/frontend`) | `npm run check:app-typecheck` and `npm run build:admin` / `npm run build:frontend` — **`next build` does not type-check**, `check:app-typecheck` is the real type gate |
 | Plugin/theme logic | `node_modules/.bin/vitest run --config vitest.plugins.config.ts` (also `npm run test:framework`) |

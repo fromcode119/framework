@@ -9,7 +9,7 @@ import { PluginHostGuestBridge } from '@core/plugin/host/plugin-host-guest-bridg
  *
  * Measured on production (framework 0.2.141): the shipping plugin's snapshot was taken once, at 17:34:06,
  * listing 18 peers WITHOUT `org.fromcode:shipping-adapter`, which was still `loading` at that
- * instant. Finance — invoked through hooks, so through `invoke` — held a snapshot from 17:34:27
+ * instant. A billing plugin — invoked through hooks, so through `invoke` — held a snapshot from 17:34:27
  * that did include it. The courier's city search therefore answered `{"cities":[]}` to every query for the
  * life of the process, and the storefront told shoppers Sofia did not exist.
  */
@@ -40,7 +40,7 @@ describe('PluginHost peer sync on forwarded requests', () => {
 
   it('sends nothing more while the snapshot is unchanged', async () => {
     const sent: Array<{ type: string; payload: any }> = [];
-    const instance = host(sent, { 'org.fromcode:finance': ['quote'] }, ['finance']);
+    const instance = host(sent, { 'org.fromcode:billing': ['quote'] }, ['billing']);
 
     await instance.syncPeers(undefined);
     await instance.syncPeers(undefined);
@@ -51,12 +51,12 @@ describe('PluginHost peer sync on forwarded requests', () => {
 
   it('sends again when a sibling finishes loading', async () => {
     const sent: Array<{ type: string; payload: any }> = [];
-    let peers: Record<string, string[]> = { 'org.fromcode:finance': ['quote'] };
-    const instance = host(sent, peers, ['finance']);
+    let peers: Record<string, string[]> = { 'org.fromcode:billing': ['quote'] };
+    const instance = host(sent, peers, ['billing']);
     instance.peers = () => peers;
 
     await instance.syncPeers(undefined);
-    peers = { 'org.fromcode:finance': ['quote'], 'org.fromcode:shipping-adapter': ['searchCities'] };
+    peers = { 'org.fromcode:billing': ['quote'], 'org.fromcode:shipping-adapter': ['searchCities'] };
     await instance.syncPeers(undefined);
 
     expect(sent).toHaveLength(2);

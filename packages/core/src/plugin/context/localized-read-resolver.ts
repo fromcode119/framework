@@ -124,9 +124,9 @@ export class LocalizedReadResolver {
    * hands back a `{ collection, pluginSlug }` entry rather than the collection itself.
    *
    * Deliberately NOT cached. `CollectionsContextProxy` merges an extension INTO the already-registered
-   * collection object — that is how the SEO plugin adds its fields to products, courses, pages and
+   * collection object — that is how a metadata plugin adds its fields to products, courses, pages and
    * posts after those plugins have registered — so a cache keyed on the collection (or on its fields
-   * array) can freeze a pre-extension list and silently drop every SEO field. Filtering a field array
+   * array) can freeze a pre-extension list and silently drop every such field. Filtering a field array
    * is nothing next to the query that just ran.
    */
   private static resolveLocalizedFields(table: unknown, manager: IPluginManagerInterface): string[] {

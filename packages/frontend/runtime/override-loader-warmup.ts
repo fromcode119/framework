@@ -2,7 +2,7 @@ import type { ISlotComponent } from '@fromcode119/react/interfaces/slot-componen
 
 /**
  * Resolves every code-split override's module BEFORE `hydrateRoot`, so no block boundary suspends
- * during hydration. Measured without it: the cms body registers its blocks on mount, that update reaches
+ * during hydration. Measured without it: a content plugin's body registers its blocks on mount, that update reaches
  * boundaries whose `React.lazy` chunks are still in flight, React discards their server markup and
  * renders the null fallback until each chunk lands — every section flashes out and back in, a 0.36 layout
  * shift on the home page at desktop width. With the registrar's cached loaders answering synchronously

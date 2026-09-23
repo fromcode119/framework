@@ -78,14 +78,14 @@ export class PluginCollectionActivationService {
           return await (this.manager.themeManager as any)?.getActiveThemeDefaultPageContractOverrides?.() || [];
         },
       );
-      // Once per tenant when there is no request to borrow one from. CMS pages are tenant-scoped, so
+      // Once per tenant when there is no request to borrow one from. Content pages are tenant-scoped, so
       // materialising at boot wrote rows with a NULL `tenant_id` that row-level security refuses —
       // every site's default pages silently failed to appear, thirty refusals per boot.
       if (RequestContextUtils.storage.getStore()) {
         await service.materialize(ownerPluginSlug);
       } else {
         await PerTenantRun.forEach({
-          label: `cms:materialize-default-pages${ownerPluginSlug ? `:${ownerPluginSlug}` : ''}`,
+          label: `pages:materialize-default-pages${ownerPluginSlug ? `:${ownerPluginSlug}` : ''}`,
           db: this.manager.db as any,
           work: async () => { await service.materialize(ownerPluginSlug); },
         });

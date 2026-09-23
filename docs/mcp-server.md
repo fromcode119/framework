@@ -10,7 +10,7 @@ a human relaying clicks.
 - **Token-only access.** Tool calls authenticate with an `x-api-key` access token minted in
   **Settings → Integrations → MCP**. The raw key is shown exactly once; only its SHA-256 hash is
   stored. Session cookies are rejected on tool routes, and tokens cannot mint other tokens.
-- **Two independent gates.** A token's **scopes** (`content.*`, `ecommerce.*`, …) limit which tools
+- **Two independent gates.** A token's **scopes** (`content.*`, `<plugin>.*`, …) limit which tools
   it may *reach*; each tool's own **permission** (`content:read`, `system:view`, `system:manage`, …)
   is then checked against the calling user's roles. Scopes only ever narrow — they never grant.
 - **PII is tiered.** List projections carry no customer emails, addresses, banking or tax
@@ -38,9 +38,7 @@ domain (`https://<workspace-domain>/api/v1/mcp`).
 | `system.*`, `media.*`, `cache.*`, `deploy.*` | server time, media list/upload/replace, framework cache purge, process restart | `media.replace` always writes a **new filename** so CDNs cannot serve stale bytes; `cache.purge` reports the CDN half honestly (`cdn: false` when no credentials exist) |
 | `content.*`, `collections.*`, `settings.*`, `plugins.*`, `themes.*`, `web.*`, `backups.*` | the Admin Assistant's full toolset, exposed per request | built lazily from the live request, so they always match what the in-admin assistant can do |
 | `content.versions_*` | `versions_list` / `version_get` / `version_restore` | record version history over MCP, for every plugin's collections — list snapshots, read one, or restore it (a restore applies the full snapshot and records itself as a new version) |
-| `cms.*` | `cms.page.slots.list` / `cms.page.slots.set` | **named slots**: "the second gallery image" instead of raw block JSON; writes go through the same service the admin visual editor uses |
-| `ecommerce.*` | products list/get/**update**, orders list/get/**updateStatus** | writes run the canonical admin paths — collection hooks fire, order-status transitions are guarded (terminal states are final) |
-| `mlm.*`, `logistics.*`, `finance.*` | partners, commissions, shipments, invoices | read-only; PII-tiered projections |
+| `<plugin>.*` | whatever each installed plugin registers (see *Plugin tool packs* below) | a plugin's writes run its canonical admin paths — collection hooks fire, guarded transitions stay guarded; reads use PII-tiered projections |
 
 The list a client sees is always **live** — the scope picker and `tools/list` are derived from
 whatever is registered at that moment, so a newly installed plugin's tools appear with zero
@@ -83,8 +81,8 @@ claude mcp add --transport http fromcode https://api.<your-domain>/api/v1/mcp \
 `x-api-key` header — connecting claude.ai directly needs an OAuth layer in front of the endpoint
 (not shipped yet). Claude Code works with both transports today.
 
-Mint **one token per purpose**, scoped tight: a content-editing token gets `content.* media.* cms.*`;
-a reporting token gets `ecommerce.* finance.*`; nothing routine gets `deploy.*`. Revoking a token in
+Mint **one token per purpose**, scoped tight: a content-editing token gets `content.* media.*` plus the content plugin's scope;
+a reporting token gets only the scopes of the plugins it reports on; nothing routine gets `deploy.*`. Revoking a token in
 the admin cuts access instantly.
 
 ## Plugin tool packs
@@ -112,7 +110,7 @@ context.mcp.registerTools([
 The registry enforces the namespace boundary (a plugin can never shadow another plugin's or the
 framework's tools), a re-initialised plugin *replaces* its previous registration instead of
 colliding with it, and a tool without a schema or permission is hidden rather than callable.
-Writes that must fire collection lifecycle hooks (licensing, ledger, search listeners) go through
+Writes that must fire collection lifecycle hooks (a ledger, a search index, …) go through
 `context.collections.update(slug, id, data, { user })` — the same controller path an admin save
 takes — never through raw `context.db.update`.
 

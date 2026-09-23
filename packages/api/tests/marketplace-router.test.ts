@@ -4,8 +4,8 @@ import { MarketplaceRouter } from '@api/routes/marketplace';
 
 describe('MarketplaceRouter install route', () => {
   const manifest = {
-    slug: 'analytics',
-    name: 'Site Analytics',
+    slug: 'tracker',
+    name: 'Site Tracker',
     version: '0.1.2',
   };
 
@@ -42,7 +42,7 @@ describe('MarketplaceRouter install route', () => {
     const { app, manager } = buildApp({ platformAdminAllows: false });
 
     const response = await request(app)
-      .post('/api/v1/marketplace/install/analytics')
+      .post('/api/v1/marketplace/install/tracker')
       .send({});
 
     expect(response.status).toBe(403);
@@ -55,7 +55,7 @@ describe('MarketplaceRouter install route', () => {
     const { app, manager } = buildApp();
 
     const response = await request(app)
-      .post('/api/v1/marketplace/install/analytics')
+      .post('/api/v1/marketplace/install/tracker')
       .send({});
 
     expect(response.status).toBe(200);
@@ -64,7 +64,7 @@ describe('MarketplaceRouter install route', () => {
     // `?version=` pin, and with no pin the value is `undefined`, which is what the manager's
     // defaulted `options` parameter means anyway. The old single-argument expectation was written
     // before `?version=` existed and had simply gone stale.
-    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('analytics', { version: undefined });
+    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('tracker', { version: undefined });
     expect(manager.marketplace.downloadAndInstall).not.toHaveBeenCalled();
   });
 
@@ -72,20 +72,20 @@ describe('MarketplaceRouter install route', () => {
     const { app, manager } = buildApp();
 
     const response = await request(app)
-      .post('/api/v1/marketplace/install/analytics?version=0.1.2')
+      .post('/api/v1/marketplace/install/tracker?version=0.1.2')
       .send({});
 
     expect(response.status).toBe(200);
-    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('analytics', { version: '0.1.2' });
+    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('tracker', { version: '0.1.2' });
   });
 
   it('treats a blank ?version= as no pin rather than an empty-string version', async () => {
     const { app, manager } = buildApp();
 
     await request(app)
-      .post('/api/v1/marketplace/install/analytics?version=%20%20')
+      .post('/api/v1/marketplace/install/tracker?version=%20%20')
       .send({});
 
-    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('analytics', { version: undefined });
+    expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('tracker', { version: undefined });
   });
 });

@@ -30,7 +30,7 @@ import type { ISourcesModuleInput } from '@sources/interfaces/sources-module-inp
  * caller that already owns it.
  *
  * The one thing it keeps from the plugin era is the HOOK surface. Those events are a real contract:
- * `plugin-manager` calls them, and a plugin is exactly the kind of thing that should reach Sources
+ * the plugin-management plugin calls them, and a plugin is exactly the kind of thing that should reach Sources
  * through a published event rather than an import.
  */
 export class SourcesModule {

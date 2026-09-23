@@ -32,8 +32,8 @@ export class ThemeBoot {
   static start(renderers: Record<string, () => Promise<unknown>>, eagerRenderers: Record<string, unknown>): void {
     // Nothing declared yet. Once "build" lists layout/renderer globs, register them here — e.g.
     // \`ThemeOverrideRegistrar.registerThemeBlockRenderers('${slug}', { ...renderers, ...eagerRenderers }, '${slug}.')\`
-    // for CMS block renderers, and \`ContextBridge.registerTheme('${slug}', { layouts, defaultLayout })\`
-    // once real layout components exist (see \`themes/fromcode/src/theme-boot.ts\` for a worked example).
+    // for content block renderers, and \`ContextBridge.registerTheme('${slug}', { layouts, defaultLayout })\`
+    // once real layout components exist (any shipped theme's \`src/theme-boot.ts\` is a worked example).
     void renderers;
     void eagerRenderers;
   }

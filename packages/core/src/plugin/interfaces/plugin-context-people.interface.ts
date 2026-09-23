@@ -13,7 +13,7 @@ export interface IPluginContextPeople {
    * Erasure and export for the personal data the FRAMEWORK holds — the account, the person record,
    * sessions, roles, edit history and the journals.
    *
-   * Exposed here because a plugin may never touch a system table, so the privacy plugin cannot
+   * Exposed here because a plugin may never touch a system table, so a data-protection plugin cannot
    * honour a DSAR over `users`/`people`/`_system_*` itself. It registers these datasets and reports
    * on them; core does the writing. See `PersonalDataErasureService`.
    */

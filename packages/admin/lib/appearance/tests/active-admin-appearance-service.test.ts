@@ -17,7 +17,7 @@ describe('ActiveAdminAppearanceService.select', () => {
   });
 
   it('honors a registered tenant override', () => {
-    AdminAppearanceRegistry.shared.register({ id: 'simple', label: 'Simple' });
-    expect(ActiveAdminAppearanceService.select({ admin_appearance: 'simple' })).toBe('simple');
+    AdminAppearanceRegistry.shared.register({ id: 'plain', label: 'Plain' });
+    expect(ActiveAdminAppearanceService.select({ admin_appearance: 'plain' })).toBe('plain');
   });
 });

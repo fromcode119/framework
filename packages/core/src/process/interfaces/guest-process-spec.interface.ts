@@ -2,7 +2,7 @@ import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.int
 
 /** What it takes to start one guest process. The environment is never part of it: guests get none. */
 export interface IGuestProcessSpec {
-  /** Stable per guest (`plugin-seo`, `theme-3f9a…`); names its runtime directories. */
+  /** Stable per guest (`plugin-gallery`, `theme-3f9a…`); names its runtime directories. */
   id: string;
   /** The script to run — a built `*-main.js`, never TypeScript. */
   entryPath: string;

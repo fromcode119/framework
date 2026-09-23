@@ -5,7 +5,7 @@ import type { RedirectResolution } from '@core/services/redirect-resolution';
 /**
  * The framework's own URL-redirect rules — ONE store (`_system_redirects`), one admin surface
  * (Settings → Redirects), consulted through the same plugin-agnostic registry every other resolver
- * uses. This replaced two per-plugin copies of the identical capability (cms + seo), which raced each
+ * uses. This replaced two per-plugin copies of the identical capability (two plugins), which raced each
  * other by boot order; their rows were migrated in by `SystemRedirectsMigration`.
  *
  * Framework internals access the DB through the raw manager, so columns are snake_case here and rows
@@ -84,7 +84,7 @@ export class SystemRedirectService {
   }
 
   /**
-   * camelCase edge shape. `enabled` leaves as a real boolean — the loose flags the cms table stored
+   * camelCase edge shape. `enabled` leaves as a real boolean — the loose flags one plugin's table stored
    * (`1.0`, `'true'`) are normalized here so no consumer re-implements the coercion.
    */
   private static mapRow(row: Record<string, unknown>): Record<string, unknown> {

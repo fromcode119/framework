@@ -173,7 +173,7 @@ export class PeopleContextProxy {
       },
 
       // The framework's OWN personal data — account, person, sessions, roles, edit history, journals.
-      // Core-owned because a plugin may never touch a system table, so the privacy plugin cannot
+      // Core-owned because a plugin may never touch a system table, so a data-protection plugin cannot
       // honour a DSAR over them itself. It registers these datasets; core does the writing.
       personalData: {
         listDatasets: () => personalDataService.listDatasets(),

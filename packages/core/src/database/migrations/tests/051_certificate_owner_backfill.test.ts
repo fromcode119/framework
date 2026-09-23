@@ -12,7 +12,7 @@ import { CertificateOwnerBackfillMigration } from '@core/database/migrations/051
 describe('CertificateOwnerBackfillMigration', () => {
   const tenants = [
     { id: 'shop', primary_host: 'shop.example.com', host_aliases: '["www.shop.example.com"]' },
-    { id: 'hub', primary_host: 'hub.example.com', host_aliases: '[]' },
+    { id: 'initech', primary_host: 'initech.example.com', host_aliases: '[]' },
   ];
 
   /** A fake manager that records the updates the migration asks for. */

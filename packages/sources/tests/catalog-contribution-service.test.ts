@@ -3,10 +3,10 @@ import { CatalogContributionService } from '@sources/catalog/catalog-contributio
 
 describe('CatalogContributionService.entriesFrom', () => {
   const source = (over: Record<string, unknown> = {}): any => ({
-    slug: 'forms',
+    slug: 'guestbook',
     type: 'plugin',
     version: '1.2.0',
-    fileName: 'forms-1.2.0.tar.gz',
+    fileName: 'guestbook-1.2.0.tar.gz',
     lastBuildStatus: 'success',
     changelog: 'Add conditional fields',
     ...over,
@@ -14,7 +14,7 @@ describe('CatalogContributionService.entriesFrom', () => {
 
   it('offers a successfully built version to the catalogue', () => {
     const [entry] = CatalogContributionService.entriesFrom([source()]);
-    expect(entry).toMatchObject({ slug: 'forms', version: '1.2.0', kind: 'plugin' });
+    expect(entry).toMatchObject({ slug: 'guestbook', version: '1.2.0', kind: 'plugin' });
     expect(entry.notes).toBe('Add conditional fields');
   });
 

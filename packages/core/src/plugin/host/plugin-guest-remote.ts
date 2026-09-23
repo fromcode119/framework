@@ -93,7 +93,7 @@ export class PluginGuestRemote {
 
   /**
    * The token a call is made under: the CURRENT invocation's, when there is one. A handle a plugin
-   * built once and kept — `const finance = context.plugins.optional('…:finance')` at `onInit`, used
+   * built once and kept — `const billing = context.plugins.optional('…:billing')` at `onInit`, used
    * on every request after — would otherwise carry its birth token (long revoked) into every later
    * call and be refused as `unknown_invocation`. The captured token is only for work that runs with
    * no invocation of its own (a timer the plugin set inside one).

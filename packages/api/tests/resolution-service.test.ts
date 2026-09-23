@@ -120,7 +120,7 @@ describe('ResolutionService default page contract routing', () => {
     };
     const manager: any = {
       db: { find: vi.fn().mockResolvedValue([]) },
-      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'privacy' } }]),
+      getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'consent' } }]),
       registeredCollections: new Map([
         [
           'pages',
@@ -567,7 +567,7 @@ describe('ResolutionService default page contract routing', () => {
     expect(result).toBeNull();
   });
 
-  it('does not let path-only analytics records hijack public URLs', async () => {
+  it('does not let path-only tracker records hijack public URLs', async () => {
     const restController = {
       find: vi.fn().mockImplementation((collection: any, options: any) => {
         if (collection.slug === 'pages' && options?.query?.slug === 'courses/21-dni-kurs-za-finansovo-izobilie') {
@@ -584,16 +584,16 @@ describe('ResolutionService default page contract routing', () => {
     const manager: any = {
       db: { find: vi.fn().mockResolvedValue([]) },
       getPlugins: vi.fn().mockReturnValue([
-        { state: PluginState.ACTIVE, manifest: { slug: 'analytics' } },
+        { state: PluginState.ACTIVE, manifest: { slug: 'tracker' } },
         { state: PluginState.ACTIVE, manifest: { slug: 'upsilon' } },
       ]),
       registeredCollections: new Map([
         [
-          'analytics-events',
+          'tracker-events',
           {
-            pluginSlug: 'analytics',
+            pluginSlug: 'tracker',
             collection: {
-              slug: 'analytics-events',
+              slug: 'tracker-events',
               shortSlug: 'site-events',
               fields: [{ name: 'path' }],
             },
@@ -644,7 +644,7 @@ describe('ResolutionService default page contract routing', () => {
       doc: { id: 21, slug: '21-dni-kurs-za-finansovo-izobilie', title: '21-дневен курс' },
     });
     expect(restController.find).not.toHaveBeenCalledWith(
-      expect.objectContaining({ slug: 'analytics-events' }),
+      expect.objectContaining({ slug: 'tracker-events' }),
       expect.objectContaining({ query: expect.objectContaining({ path: '/courses/21-dni-kurs-za-finansovo-izobilie' }) }),
     );
   });

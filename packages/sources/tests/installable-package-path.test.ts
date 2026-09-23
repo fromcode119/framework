@@ -20,7 +20,7 @@ import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
  * The staged directory is a first-class answer — the installer already branches on `isDirectory()`.
  */
 describe('BuiltPackageService — the installable package', () => {
-  const identity = BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms') as BuildSourceIdentity;
+  const identity = BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'guestbook') as BuildSourceIdentity;
   let root: string;
   let service: any;
   let entry: Record<string, unknown>;
@@ -41,11 +41,11 @@ describe('BuiltPackageService — the installable package', () => {
   afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
 
   const stageDirectory = () =>
-    fs.mkdirSync(path.join(root, 'plugins', 'packages', 'forms-0.1.31'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'plugins', 'packages', 'guestbook-0.1.31'), { recursive: true });
 
   const writeArchive = () => {
     fs.mkdirSync(path.join(root, 'plugins'), { recursive: true });
-    fs.writeFileSync(path.join(root, 'plugins', 'forms-0.1.31.zip'), 'zip');
+    fs.writeFileSync(path.join(root, 'plugins', 'guestbook-0.1.31.zip'), 'zip');
   };
 
   it('answers with the staged DIRECTORY when no archive was written', async () => {
@@ -53,26 +53,26 @@ describe('BuiltPackageService — the installable package', () => {
     stageDirectory();
 
     expect(await service.resolveInstallablePackagePath(identity))
-      .toBe(path.join(root, 'plugins', 'packages', 'forms-0.1.31'));
+      .toBe(path.join(root, 'plugins', 'packages', 'guestbook-0.1.31'));
   });
 
   it('prefers the archive when one exists', async () => {
     stageDirectory();
     writeArchive();
-    entry.file_name = 'forms-0.1.31.zip';
+    entry.file_name = 'guestbook-0.1.31.zip';
 
     expect(await service.resolveInstallablePackagePath(identity))
-      .toBe(path.join(root, 'plugins', 'forms-0.1.31.zip'));
+      .toBe(path.join(root, 'plugins', 'guestbook-0.1.31.zip'));
   });
 
   it('falls back to the directory when the recorded archive is gone', async () => {
     // A pruned workspace leaves the row's filename pointing at nothing. Reporting "not found" while a
     // perfectly good staged package sits beside it is the failure this method exists to stop.
     stageDirectory();
-    entry.file_name = 'forms-0.1.31.zip';
+    entry.file_name = 'guestbook-0.1.31.zip';
 
     expect(await service.resolveInstallablePackagePath(identity))
-      .toBe(path.join(root, 'plugins', 'packages', 'forms-0.1.31'));
+      .toBe(path.join(root, 'plugins', 'packages', 'guestbook-0.1.31'));
   });
 
   it('answers null when neither exists, rather than a path that cannot be opened', async () => {

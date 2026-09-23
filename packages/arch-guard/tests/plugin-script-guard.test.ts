@@ -15,7 +15,7 @@ describe('PluginScriptGuard', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'script-guard-'));
     made.push(root);
     for (const family of ['plugins', 'themes', 'appearance']) fs.mkdirSync(path.join(root, family), { recursive: true });
-    fs.mkdirSync(path.join(root, 'plugins', 'finance', 'src'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'plugins', 'billing', 'src'), { recursive: true });
     fs.mkdirSync(path.join(root, 'themes', 'a-theme'), { recursive: true });
     const original = FrameworkRoot.repo;
     (FrameworkRoot as any).repo = () => root;
@@ -31,15 +31,15 @@ describe('PluginScriptGuard', () => {
 
   it('fails on a plugin carrying a script', () => {
     const { root, restore } = tree();
-    fs.mkdirSync(path.join(root, 'plugins', 'finance', 'scripts'));
-    fs.writeFileSync(path.join(root, 'plugins', 'finance', 'scripts', 'repair.mjs'), '// x');
+    fs.mkdirSync(path.join(root, 'plugins', 'billing', 'scripts'));
+    fs.writeFileSync(path.join(root, 'plugins', 'billing', 'scripts', 'repair.mjs'), '// x');
     try { expect(PluginScriptGuard.run()).toBe(1); } finally { restore(); }
   });
 
   /** An empty directory is still the place one reappears, so it counts. */
   it('fails on an EMPTY scripts/ directory', () => {
     const { root, restore } = tree();
-    fs.mkdirSync(path.join(root, 'plugins', 'finance', 'scripts'));
+    fs.mkdirSync(path.join(root, 'plugins', 'billing', 'scripts'));
     try { expect(PluginScriptGuard.run()).toBe(1); } finally { restore(); }
   });
 
@@ -51,7 +51,7 @@ describe('PluginScriptGuard', () => {
 
   it('does not mistake a scripts/ file for a directory', () => {
     const { root, restore } = tree();
-    fs.writeFileSync(path.join(root, 'plugins', 'finance', 'scripts'), 'not a directory');
+    fs.writeFileSync(path.join(root, 'plugins', 'billing', 'scripts'), 'not a directory');
     try { expect(PluginScriptGuard.run()).toBe(1); } finally { restore(); }
   });
 });

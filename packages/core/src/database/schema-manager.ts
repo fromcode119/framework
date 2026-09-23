@@ -63,8 +63,8 @@ export class SchemaManager {
    * Record what the database has that NOTHING declares — once, after every plugin has registered.
    *
    * NOT during `syncCollection`, and that is the whole correctness of it. A collection is extended by
-   * OTHER plugins after its own table syncs: the SEO plugin injects `ogTitle`, `canonicalUrl`,
-   * `focusKeyword` and three more into cms/pages and cms/posts from its `onInit`, and a shop
+   * OTHER plugins after its own table syncs: a metadata plugin injects `ogTitle`, `canonicalUrl`,
+   * `focusKeyword` and three more into a content plugin's pages and posts from its `onInit`, and a shop
    * plugin registers `licenseProduct` onto products at runtime. Judged at sync time, all of those look
    * undeclared — measured: 13 of 19 findings were fields a later plugin declares, including one read
    * on every order. Proposing those for removal is precisely the harm this feature exists to prevent,

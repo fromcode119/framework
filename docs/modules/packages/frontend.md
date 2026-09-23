@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Public-facing frontend (Next.js) that resolves CMS/plugin content and renders theme UI.
+Public-facing frontend (Next.js) that resolves plugin content and renders theme UI.
 
 ## Workspace Commands
 

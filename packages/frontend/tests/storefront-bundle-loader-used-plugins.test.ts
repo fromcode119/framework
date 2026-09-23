@@ -7,8 +7,8 @@ const idlePlugin = (slug: string) => ({ slug, capabilities: ['frontend'], ui: { 
 
 describe('usedPlugins reaches the runtime', () => {
   it('round-trips the plugins the server render mounted', () => {
-    const config = FrontendRuntimeConfig.fromJson({ usedPlugins: ['reviews', 'cms'], skipPlugins: ['referrals'] });
-    expect(config.usedPlugins).toEqual(['reviews', 'cms']);
+    const config = FrontendRuntimeConfig.fromJson({ usedPlugins: ['reviews', 'gallery'], skipPlugins: ['referrals'] });
+    expect(config.usedPlugins).toEqual(['reviews', 'gallery']);
     expect(config.skipPlugins).toEqual(['referrals']);
   });
 

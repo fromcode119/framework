@@ -13,13 +13,13 @@ import { CollectionIdentityService } from '@core/services/collection-identity-se
  * "Deleted item (13)" while category 13 sat in `fcp_catalog_categories` the whole time. Nothing
  * logged, and the field declaration was correct.
  *
- * The registry here is ordered CMS-first deliberately — that is the order that fails.
+ * The registry here is ordered content-first deliberately — that is the order that fails.
  */
 describe('CollectionIdentityService plugin-scoped slug resolution', () => {
   const service = new CollectionIdentityService();
 
   const collections = [
-    { slug: 'cms-categories', shortSlug: 'categories', pluginSlug: 'cms' },
+    { slug: 'content-categories', shortSlug: 'categories', pluginSlug: 'content' },
     { slug: 'catalog-categories', shortSlug: 'categories', pluginSlug: 'catalog' },
     { slug: 'media', shortSlug: 'media', pluginSlug: '' },
   ];
@@ -29,7 +29,7 @@ describe('CollectionIdentityService plugin-scoped slug resolution', () => {
   });
 
   it('resolves the other side of the same collision correctly too', () => {
-    expect(service.resolveRegisteredSlug('cms-categories', collections)).toBe('cms-categories');
+    expect(service.resolveRegisteredSlug('content-categories', collections)).toBe('content-categories');
   });
 
   it('honours the @plugin/collection spelling', () => {
@@ -43,7 +43,7 @@ describe('CollectionIdentityService plugin-scoped slug resolution', () => {
   /** An explicit plugin argument is a filter, so it must never widen to another plugin's match. */
   it('keeps an explicit plugin filter narrow', () => {
     expect(service.resolveRegisteredSlug('categories', collections, 'catalog')).toBe('catalog-categories');
-    expect(service.resolveRegisteredSlug('categories', collections, 'cms')).toBe('cms-categories');
+    expect(service.resolveRegisteredSlug('categories', collections, 'content')).toBe('content-categories');
   });
 
   /** The regression edge: a reference naming no plugin must resolve exactly as it always did. */

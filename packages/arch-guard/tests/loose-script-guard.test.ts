@@ -21,7 +21,7 @@ describe('LooseScriptGuard', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'loose-script-'));
     made.push(root);
     fs.mkdirSync(path.join(root, 'framework', 'Source', 'packages'), { recursive: true });
-    fs.mkdirSync(path.join(root, 'plugins', 'finance'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'plugins', 'billing'), { recursive: true });
     const original = FrameworkRoot.repo;
     (FrameworkRoot as any).repo = () => root;
     return { root, restore: () => { (FrameworkRoot as any).repo = original; } };
@@ -31,7 +31,7 @@ describe('LooseScriptGuard', () => {
 
   it('passes a tree with nothing runnable in it', () => {
     const { root, restore } = tree();
-    write(root, 'plugins/finance/index.ts', 'export class X {}');
+    write(root, 'plugins/billing/index.ts', 'export class X {}');
     try { expect(LooseScriptGuard.run()).toBe(0); } finally { restore(); }
   });
 
@@ -43,7 +43,7 @@ describe('LooseScriptGuard', () => {
 
   it('fails on an untyped file carrying a shebang', () => {
     const { root, restore } = tree();
-    write(root, 'plugins/finance/repair.mjs', '#!/usr/bin/env node\n');
+    write(root, 'plugins/billing/repair.mjs', '#!/usr/bin/env node\n');
     try { expect(LooseScriptGuard.run()).toBe(1); } finally { restore(); }
   });
 

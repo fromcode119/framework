@@ -34,7 +34,7 @@ export class PublicAssetUrlUtils {
     /**
    * Image optimisation, kept on this class because PLUGINS AND THEMES CALL IT BY THIS NAME.
    *
-   * `PublicAssetUrlUtils.registerImageOptimizer` is the cms plugin's entry point and
+   * `PublicAssetUrlUtils.registerImageOptimizer` is a media plugin's entry point and
    * `responsiveUploadSrcSet` is read by themes — both live in their own repositories, so moving the
    * implementation must not move the name. The logic is in {@link OptimizedImageUrlUtils}; this stays
    * as the published surface.

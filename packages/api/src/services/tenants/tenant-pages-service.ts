@@ -21,7 +21,7 @@ import {
 import { TenantLookup } from '@api/services/tenants/tenant-lookup';
 
 /**
- * Counting and materializing a tenant's CMS pages from the theme and plugin page contracts.
+ * Counting and materializing a tenant's content pages from the theme and plugin page contracts.
  *
  * Split out of TenantAdminService (481 lines) 2026-09-09; that service composes this one and delegates,
  * so the controller's surface is unchanged.

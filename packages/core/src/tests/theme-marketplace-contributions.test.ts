@@ -28,32 +28,32 @@ describe('ThemeUpdateService — what the themes marketplace offers', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('offers what this installation built, alongside the remote catalogue', async () => {
-    withContributions([{ slug: 'fromcode', version: '0.1.29', kind: 'theme', downloadUrl: 'fromcode-0.1.29.zip' }]);
+    withContributions([{ slug: 'aurora', version: '0.1.29', kind: 'theme', downloadUrl: 'aurora-0.1.29.zip' }]);
 
     const themes = await service({ themes: [{ slug: 'remote-theme', version: '1.0.0' }] }).getMarketplaceThemes();
 
-    expect(themes.map((t: any) => t.slug)).toEqual(['remote-theme', 'fromcode']);
+    expect(themes.map((t: any) => t.slug)).toEqual(['remote-theme', 'aurora']);
   });
 
   /** The same registry carries plugins; offering one here is an install that cannot work. */
   it('ignores contributed PLUGINS', async () => {
     withContributions([
-      { slug: 'forms', version: '0.1.31', kind: 'plugin' },
-      { slug: 'fromcode', version: '0.1.29', kind: 'theme' },
+      { slug: 'guestbook', version: '0.1.31', kind: 'plugin' },
+      { slug: 'aurora', version: '0.1.29', kind: 'theme' },
     ]);
 
     const themes = await service({ themes: [] }).getMarketplaceThemes();
 
-    expect(themes.map((t: any) => t.slug)).toEqual(['fromcode']);
+    expect(themes.map((t: any) => t.slug)).toEqual(['aurora']);
   });
 
   /** An unreachable marketplace must not hide what is already built and sitting on disk. */
   it('still offers local builds when the remote catalogue fails', async () => {
-    withContributions([{ slug: 'fromcode', version: '0.1.29', kind: 'theme' }]);
+    withContributions([{ slug: 'aurora', version: '0.1.29', kind: 'theme' }]);
     const failing = new ThemeUpdateService(new Map(), { fetch: async () => { throw new Error('offline'); } } as never, logger);
 
     const themes = await failing.getMarketplaceThemes();
 
-    expect(themes.map((t: any) => t.slug)).toEqual(['fromcode']);
+    expect(themes.map((t: any) => t.slug)).toEqual(['aurora']);
   });
 });

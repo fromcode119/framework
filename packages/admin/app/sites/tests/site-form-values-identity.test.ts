@@ -31,10 +31,10 @@ describe('SiteFormValues.toIdentity — what adopt and import submit', () => {
 
   it('names the appearance for a workspace, which is the one kind that has one', () => {
     const workspace = SiteFormValues.empty()
-      .with({ slug: 'console', primaryHost: 'console.example.com', kind: 'workspace', appearance: 'hub' });
+      .with({ slug: 'console', primaryHost: 'console.example.com', kind: 'workspace', appearance: 'studio' });
 
     expect(workspace.toIdentity().kind).toBe('workspace');
-    expect(workspace.toIdentity().appearance).toBe('hub');
+    expect(workspace.toIdentity().appearance).toBe('studio');
   });
 
   it('SENDS visibility and environment — both were shown and neither was submitted', () => {

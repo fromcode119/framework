@@ -101,12 +101,12 @@ npm run build:frontend
 
 ## 8. Seeding and Reset Workflow
 
-When testing content-heavy modules (CMS, forms, ecommerce, mlm, etc.):
+When testing content-heavy modules (pages, forms, catalogues, etc.):
 
 1. Reset data/migrations with your current project reset command.
 2. Re-run plugin/theme seeds.
 3. Verify the target collection schemas match the seed fields.
-4. Confirm front-end routes resolve through CMS (`/system/resolve`) without fallback mismatches.
+4. Confirm front-end routes resolve through the framework resolver (`/system/resolve`) without fallback mismatches.
 
 ## 9. Troubleshooting
 
@@ -116,7 +116,7 @@ When testing content-heavy modules (CMS, forms, ecommerce, mlm, etc.):
 - Ensure API container is healthy.
 - Check DNS resolution for `api.framework.local` from both host and container.
 
-### CMS pages return `Unknown block type`
+### Content pages return `Unknown block type`
 
 - Confirm plugin UI bundle loaded.
 - Ensure block component registry keys match stored block `type` values.
@@ -125,7 +125,7 @@ When testing content-heavy modules (CMS, forms, ecommerce, mlm, etc.):
 
 - Check plugin is installed and active.
 - Confirm required permissions are declared in plugin `manifest.json`.
-- Validate dependency plugins (for example ecommerce/logistics/mlm depend on finance).
+- Validate dependency plugins (a plugin that declares another in its `dependencies` needs it active first).
 
 ### Sandbox metrics show zero
 

@@ -44,7 +44,7 @@ export class SettingsContextProxy {
           const schema = manager.getPluginSettings(plugin.manifest.slug);
           // Merge over existing settings — `update()` is a partial update by name. Replacing
           // the whole object here would silently wipe any key the caller didn't pass (e.g. a
-          // periodic Finance/tax sync that only touches a few keys must not drop the rest).
+          // periodic billing/tax sync that only touches a few keys must not drop the rest).
           // The admin "save settings form" path uses savePluginConfig directly with the full
           // object, so clearing a field there is unaffected.
           const settingsToSave = { ...existingSettings, ...values };

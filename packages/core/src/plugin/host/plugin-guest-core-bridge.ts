@@ -61,7 +61,7 @@ export class PluginGuestCoreBridge {
         // Reads are SYNCHRONOUS in-process (`listByPlugin(...).find(...)`), so the guest answers them
         // from a mirror of the host's registry rather than a promise: primed at boot and refreshed on
         // `plugins:ready`, when every plugin has registered. A missing member here is
-        // "is not a function" in the guest — that is how the seo audit page 500'd.
+        // "is not a function" in the guest — that is how one plugin's audit page 500'd.
         list: () => [...PluginGuestCoreBridge.contracts],
         listByPlugin: (namespace: string, slug: string) => PluginGuestCoreBridge.contracts.filter(
           (contract: any) => String(contract?.namespace) === String(namespace) && String(contract?.pluginSlug) === String(slug),

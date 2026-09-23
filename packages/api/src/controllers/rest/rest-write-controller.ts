@@ -204,7 +204,7 @@ export class RestWriteController {
       if (success) {
         this.runtime.logger.info(`Deleted record in ${collection.slug} : ${req.params.id}`);
         // The past-tense notification keeps its existing shape and audience; listeners that only need
-        // to know it happened (CMS) are untouched.
+        // to know it happened (a content plugin) are untouched.
         this.runtime.emitCollectionEvent(collection, 'deleted', {
           id: recordId,
         });

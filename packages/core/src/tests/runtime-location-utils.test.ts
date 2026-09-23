@@ -21,11 +21,11 @@ describe('RuntimeLocationUtils', () => {
   });
 
   it('prefixes admin paths with the configured admin base path', () => {
-    expect(RuntimeLocationUtils.prefixBasePath('/analytics', '/control/admin')).toBe('/control/admin/analytics');
+    expect(RuntimeLocationUtils.prefixBasePath('/tracker', '/control/admin')).toBe('/control/admin/tracker');
   });
 
   it('does not double-prefix admin paths that already include the admin base path', () => {
-    expect(RuntimeLocationUtils.prefixBasePath('/control/admin/analytics', '/control/admin')).toBe('/control/admin/analytics');
+    expect(RuntimeLocationUtils.prefixBasePath('/control/admin/tracker', '/control/admin')).toBe('/control/admin/tracker');
   });
 
   /**
@@ -39,10 +39,10 @@ describe('RuntimeLocationUtils', () => {
     withAdminUrl('https://example.test/control/admin', () => {
       vi.stubGlobal('document', {});
       vi.stubGlobal('window', {
-        location: { href: 'https://example.test/control/admin/privacy/banner' },
+        location: { href: 'https://example.test/control/admin/consent/banner' },
       });
 
-      expect(RuntimeLocationUtils.toAdminPath('/privacy')).toBe('/control/admin/privacy');
+      expect(RuntimeLocationUtils.toAdminPath('/consent')).toBe('/control/admin/consent');
     });
   });
 
@@ -51,10 +51,10 @@ describe('RuntimeLocationUtils', () => {
     withAdminUrl('https://example.test/juja', () => {
       vi.stubGlobal('document', {});
       vi.stubGlobal('window', {
-        location: { href: 'https://example.test/juja/privacy/banner' },
+        location: { href: 'https://example.test/juja/consent/banner' },
       });
 
-      expect(RuntimeLocationUtils.toAdminPath('/privacy')).toBe('/juja/privacy');
+      expect(RuntimeLocationUtils.toAdminPath('/consent')).toBe('/juja/consent');
     });
   });
 
@@ -66,10 +66,10 @@ describe('RuntimeLocationUtils', () => {
     withAdminUrl('https://example.test/juja', () => {
       vi.stubGlobal('document', {});
       vi.stubGlobal('window', {
-        location: { href: 'https://console.example.test/privacy/banner' },
+        location: { href: 'https://console.example.test/consent/banner' },
       });
 
-      expect(RuntimeLocationUtils.toAdminPath('/privacy')).toBe('/privacy');
+      expect(RuntimeLocationUtils.toAdminPath('/consent')).toBe('/consent');
     });
   });
 
@@ -85,7 +85,7 @@ describe('RuntimeLocationUtils', () => {
       },
     });
 
-    expect(RuntimeLocationUtils.toAdminPath('/privacy')).toBe('/dashboard/admin/privacy');
+    expect(RuntimeLocationUtils.toAdminPath('/consent')).toBe('/dashboard/admin/consent');
 
     process.env.ADMIN_URL = originalAdminUrl;
     process.env.NEXT_PUBLIC_ADMIN_BASE_PATH = originalNextPublicAdminBasePath;

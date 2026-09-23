@@ -49,7 +49,7 @@ export class PluginGuestPeerNamespace {
      * The facade's own methods, which are NOT plugin slugs.
      *
      * `has` was previously only a Proxy TRAP — the `in` operator — while plugins call it as a
-     * METHOD. So `ns.has('finance')` looked `has` up as if it were a plugin, found no such peer,
+     * METHOD. So `ns.has('billing')` looked `has` up as if it were a plugin, found no such peer,
      * returned undefined, and threw "ns.has is not a function". That took a plugin down on every boot.
      *
      * The three that decide control flow are answered from the peer set the guest already holds, so

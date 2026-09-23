@@ -18,8 +18,8 @@ import { AdminScope, TenantMode } from '@fromcode119/core';
  * missed by that pass.
  */
 const PLUGINS = [
-  { manifest: { slug: 'cms', sandbox: true }, state: 'active', isSandboxed: true },
-  { manifest: { slug: 'seo', sandbox: false }, state: 'active', isSandboxed: false },
+  { manifest: { slug: 'gallery', sandbox: true }, state: 'active', isSandboxed: true },
+  { manifest: { slug: 'glossary', sandbox: false }, state: 'active', isSandboxed: false },
   { manifest: { slug: 'referrals', sandbox: true }, state: 'active', isSandboxed: true },
 ];
 
@@ -30,7 +30,7 @@ const SUMMARY = {
   pluginIsolation: {
     totalPlugins: 3,
     activePlugins: 3,
-    unsandboxedActivePluginSlugs: ['seo'],
+    unsandboxedActivePluginSlugs: ['glossary'],
     sandboxPolicyRuntimeMismatchSlugs: [],
   },
   integrityEnforced: true,

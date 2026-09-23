@@ -15,7 +15,7 @@ import { StringUtils } from '@core/utils/string-utils';
  * parameter, and no theme or framework site keeps a list of its own: they ask `isEditorSession()`.
  *
  * A parameter counts when it is PRESENT WITH A NON-EMPTY VALUE (`?edit=1`, never `?edit=`), which is the
- * test the cms visual editor and the theme layout shells have always applied.
+ * test a content plugin's visual editor and the theme layout shells have always applied.
  */
 export class EditorSessionParams {
   /** The framework's own marker: an operator's preview of unpublished content. */

@@ -21,8 +21,8 @@ export class ResolvedContentMetadata {
 
   /**
    * Server-side enriched metadata: merges the base (breadcrumb `other` tags) with the
-   * head-data provider plugin's resolved head data (manifest `ui.headDataPath`, e.g. the
-   * SEO plugin) so the INITIAL server HTML carries a proper
+   * head-data provider plugin's resolved head data (manifest `ui.headDataPath`, e.g. a
+   * metadata plugin) so the INITIAL server HTML carries a proper
    * title, description, Open Graph, Twitter card, canonical, and robots — not just a title.
    */
   static async buildEnriched(
@@ -162,7 +162,7 @@ export class ResolvedContentMetadata {
   /**
    * Discovers the head-data provider from `/system/frontend` plugin metadata (via the
    * per-request cached FrontendConfigCache — no extra fetch). A plugin opts in by
-   * declaring `ui.headDataPath` in its manifest (e.g. the SEO plugin's `"head-data"`);
+   * declaring `ui.headDataPath` in its manifest (e.g. a metadata plugin's `"head-data"`);
    * the first declaring plugin in the API's plugin order (`getSortedPlugins`, a
    * deterministic priority sort) wins. No plugin declaring it means head-data is
    * skipped and callers fall back to base metadata.
