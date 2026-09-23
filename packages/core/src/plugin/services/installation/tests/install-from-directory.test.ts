@@ -21,12 +21,12 @@ describe('PluginArchiveInstallerService.installFromDirectory', () => {
   let pkg: string;
   let service: any;
 
-  const manifest = { slug: 'forms', name: 'Forms', version: '0.1.31' };
+  const manifest = { slug: 'guestbook', name: 'Guestbook', version: '0.1.31' };
 
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'install-dir-test-'));
     pluginsRoot = path.join(root, 'plugins');
-    pkg = path.join(root, 'staged', 'forms-0.1.31');
+    pkg = path.join(root, 'staged', 'guestbook-0.1.31');
     fs.mkdirSync(pluginsRoot, { recursive: true });
     fs.mkdirSync(pkg, { recursive: true });
     fs.writeFileSync(path.join(pkg, 'manifest.json'), JSON.stringify(manifest));
@@ -48,8 +48,8 @@ describe('PluginArchiveInstallerService.installFromDirectory', () => {
   it('puts the package in place under the plugins root', async () => {
     const result = await service.installFromDirectory(pkg);
 
-    expect(result.slug).toBe('forms');
-    expect(fs.existsSync(path.join(pluginsRoot, 'forms', 'index.js'))).toBe(true);
+    expect(result.slug).toBe('guestbook');
+    expect(fs.existsSync(path.join(pluginsRoot, 'guestbook', 'index.js'))).toBe(true);
   });
 
   it('LEAVES the staged package where it is, so a download can still archive it', async () => {
@@ -59,9 +59,9 @@ describe('PluginArchiveInstallerService.installFromDirectory', () => {
   });
 
   it('refuses to install over a git checkout — a working tree is not an installed artifact', async () => {
-    const target = path.join(pluginsRoot, 'forms');
+    const target = path.join(pluginsRoot, 'guestbook');
     fs.mkdirSync(path.join(target, '.git'), { recursive: true });
-    fs.writeFileSync(path.join(target, 'index.ts'), 'export class FormsPlugin {}\n');
+    fs.writeFileSync(path.join(target, 'index.ts'), 'export class GuestbookPlugin {}\n');
 
     await expect(service.installFromDirectory(pkg)).rejects.toThrow();
     // The developer's source is untouched.
@@ -69,7 +69,7 @@ describe('PluginArchiveInstallerService.installFromDirectory', () => {
   });
 
   it('refuses a path that is not a directory rather than treating it as one', async () => {
-    const file = path.join(root, 'forms.zip');
+    const file = path.join(root, 'guestbook.zip');
     fs.writeFileSync(file, 'PK');
 
     await expect(service.installFromDirectory(file)).rejects.toThrow(/not a directory/);

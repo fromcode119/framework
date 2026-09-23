@@ -4,8 +4,8 @@ import { RESTController } from '@api/controllers/rest/rest-controller';
 /**
  * `beforeDelete` and `afterDelete` are declared in the hook vocabulary and on ICollection, and no
  * controller dispatched either — the delete path only emitted the past-tense `deleted` notification.
- * That dead contract already cost once: CMS listened on beforeDelete/afterDelete, heard nothing, and
- * ecommerce's product->page references were left dangling when a page was removed.
+ * That dead contract already cost once: a content plugin listened on beforeDelete/afterDelete, heard
+ * nothing, and a shop plugin's product->page references were left dangling when a page was removed.
  *
  * `beforeDelete` has to carry the RECORD, because that is the only moment a listener can still read
  * what it is about to lose — an order's number, say, to check what paperwork it leaves behind.

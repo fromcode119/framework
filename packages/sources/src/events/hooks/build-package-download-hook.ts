@@ -23,7 +23,7 @@ export class BuildPackageDownloadHook {
    *
    * BOTH halves are required. A payload carrying only a slug used to be enough, and the kind was
    * either guessed (`resolve` answers PLUGIN for anything) or left out of the lookup entirely — so
-   * "resolve tagiqx" could hand back the plugin when the caller meant the theme. A caller that does
+   * "resolve acme" could hand back the plugin when the caller meant the theme. A caller that does
    * not say which kind is asking an ambiguous question, and gets a refusal rather than a guess.
    */
   private static identityFrom(payload: unknown): BuildSourceIdentity | null {

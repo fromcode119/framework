@@ -67,9 +67,9 @@ describe('Reactor @state read-after-write', () => {
     const page = new DetailPage({});
     mount(page);
 
-    page.routeSlug = 'vselenskiportal88';
+    page.routeSlug = 'example-site';
 
-    expect(page.routeSlug).toBe('vselenskiportal88');
+    expect(page.routeSlug).toBe('example-site');
   });
 
   it('does not mutate this.state before the commit, so PureReactor still sees the change', () => {

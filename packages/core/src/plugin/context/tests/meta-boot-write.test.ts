@@ -10,7 +10,7 @@ import { RequestContextUtils } from '@core/context/request-context';
  * `set` used to pair that with a fan-out to EVERY tenant. So the `get` → merge → `set` that every
  * seed performs read a blank, merged into a blank, and wrote that blank over each site's real value.
  *
- * It happened: Econt credentials transferred into vselenskiportal88 were present, then empty after
+ * It happened: courier credentials transferred into a client site were present, then empty after
  * the next restart, with the row's `updated_at` unchanged so nothing looked like it had written.
  *
  * The per-site replay runs the same hook again WITH a store and a bound connection, so the write
@@ -39,7 +39,7 @@ describe('a boot-time meta write cannot blank every tenant', () => {
     const writes: Array<{ method: string; value: unknown }> = [];
     const meta = MetaContextProxy.createMetaProxy(managerWith(writes));
 
-    await RequestContextUtils.storage.run({ tenantId: 'vselenskiportal88' } as any, async () => {
+    await RequestContextUtils.storage.run({ tenantId: 'example-site' } as any, async () => {
       await meta.set('some_key', 'a real value');
     });
 

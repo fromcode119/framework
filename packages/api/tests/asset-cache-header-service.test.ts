@@ -31,7 +31,7 @@ describe('AssetCacheHeaderService.resolve', () => {
   it('does not mistake ordinary hyphenated names for hashes', () => {
     // The regression that made this rule explicit: `-400-latin` looked hash-like.
     expect(AssetCacheHeaderService.resolve('/t/ui/montserrat-400-latin.woff2')).toBe(AssetCacheHeaderService.PRODUCTION);
-    expect(AssetCacheHeaderService.resolve('/t/ui/vselenskiportal88-theme.css')).toBe(AssetCacheHeaderService.REVALIDATE);
+    expect(AssetCacheHeaderService.resolve('/t/ui/acme-theme.css')).toBe(AssetCacheHeaderService.REVALIDATE);
   });
 
   it('recognises a hash that itself begins with a base64url dash', () => {

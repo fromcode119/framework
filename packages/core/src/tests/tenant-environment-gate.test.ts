@@ -48,22 +48,22 @@ describe('TenantEnvironmentGate', () => {
 
   it('refuses a non-production site, names the control, and records the attempt', async () => {
     vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue('sandbox');
-    givenTenant({ id: 'sandbox', slug: 'vselenskiportal88', environment: TenantEnvironment.NON_PRODUCTION });
+    givenTenant({ id: 'sandbox', slug: 'example-site', environment: TenantEnvironment.NON_PRODUCTION });
 
-    const attempt = new TenantEnvironmentGate(db, audit).assert('email', 'real.customer@example.com', 'ecommerce');
+    const attempt = new TenantEnvironmentGate(db, audit).assert('email', 'real.customer@example.com', 'catalog');
 
     await expect(attempt).rejects.toBeInstanceOf(NonProductionRefusal);
     await attempt.catch((err: NonProductionRefusal) => {
       expect(err.effect).toBe('email');
       expect(err.target).toBe('real.customer@example.com');
       // The operator must be told which switch lifts this, not just that something was blocked.
-      expect(err.message).toContain('Sites → vselenskiportal88 → Environment');
+      expect(err.message).toContain('Sites → example-site → Environment');
     });
 
     // "What would this have sent?" is the question after a test run, so the attempt is kept.
     // DENIED, not a descriptive string: AuditOutcome.resolve defaults anything it does not recognise
     // to ALLOWED, so an invented status records a refused send as a permitted one.
-    expect(audited).toEqual([['ecommerce', 'email', 'real.customer@example.com', AuditOutcome.DENIED, { reason: 'non-production' }]]);
+    expect(audited).toEqual([['catalog', 'email', 'real.customer@example.com', AuditOutcome.DENIED, { reason: 'non-production' }]]);
   });
 
   it('refuses when the tenant cannot be resolved — fail closed', async () => {

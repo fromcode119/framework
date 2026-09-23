@@ -8,8 +8,8 @@ import { PostgresColumnNormalizer } from '@database/dialects/postgres/column-nor
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
 
 /**
- * `where` used to support ONLY equality, so a date range could not be expressed at all. The analytics
- * export wrote `where: { created_at: { gte, lte } }`; the object was JSON-stringified and compared with
+ * `where` used to support ONLY equality, so a date range could not be expressed at all. A tracking
+ * plugin's export wrote `where: { created_at: { gte, lte } }`; the object was JSON-stringified and compared with
  * `=`, matching nothing, and the CSV came back EMPTY — indistinguishable from "no data".
  *
  * These assert the generated SQL for each operator on both dialects, because Postgres and SQLite differ

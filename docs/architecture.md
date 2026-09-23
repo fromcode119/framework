@@ -67,8 +67,8 @@ API Server               Admin (Next.js)    Frontend (Next.js)
     │                       │
     ▼                       ▼
 Domain Plugins          Drizzle ORM
-(cms, ecommerce,        (SQLite / PostgreSQL)
- finance, ...)
+(content, commerce,     (SQLite / PostgreSQL)
+ billing, ...)
 ```
 
 ## Security & Identity
@@ -84,7 +84,7 @@ RBAC, MFA, sandboxing and audit logs are kernel features, not a plugin:
 | **Cryptographic Signing** | Plugin signature verification on load. Unsigned or tampered plugins are rejected. |
 | **TLS Certificates** | One record per host in `_system_certificates`. The chain is stored in the clear (every visitor is handed it); the private key is encrypted at rest with `SecretService` and leaves the store through exactly one method, reached only by a secret-gated internal endpoint that must never be published through the edge. Uploads are platform-admin only and validated — key/certificate pair, host coverage, expiry — before anything is written. See [Certificates and TLS](./certificates-and-tls.md). |
 | **Audit Logging** | Comprehensive audit trail via `AuditManager` (`_system_audit_logs`) covering admin collection mutations, MCP tool calls, plugin database writes, capability violations, and rate-limit denials. |
-| **Record Version History** | Every create/update through the admin/REST surface snapshots the record to `_system_record_versions` — for every collection of every plugin, not just CMS. Version History UI with one-click restore; also exposed over MCP (`content.versions_list` / `version_get` / `version_restore`). |
+| **Record Version History** | Every create/update through the admin/REST surface snapshots the record to `_system_record_versions` — for every collection of every plugin, not just content. Version History UI with one-click restore; also exposed over MCP (`content.versions_list` / `version_get` / `version_restore`). |
 | **JWT + API Keys** | Out-of-the-box support for JWT access tokens, refresh token rotation, and long-lived API keys. |
 | **SSO** | Single Sign-On provider integrations via the auth extension system. |
 
@@ -92,18 +92,18 @@ RBAC, MFA, sandboxing and audit logs are kernel features, not a plugin:
 
 Erasure is a kernel capability, not a plugin. The platform knows who holds personal data. The
 framework owns the register of datasets: it holds seven itself (account, person, sessions, roles,
-record versions, and the two journals) and every plugin declares its own — `ecommerce:orders`,
-`finance:invoices`, `forms:submissions`, `mlm:affiliates` — through
+record versions, and the two journals) and every plugin declares its own — `catalog:orders`,
+`billing:invoices`, `guestbook:entries`, `referrals:affiliates` — through
 `context.people.personalData.registerSource()`. A dataset declares which strategies it supports
 (`delete`, `anonymise`, `retain`) and which is its default, and the operator picks per dataset; an
 invoice stays `retain` because it is a statutory document, and the reason is stated rather than
 assumed. `eraseAll()` walks the lot, so "delete my account" reaches every plugin's rows on a site
-that installs no compliance product at all. The **Privacy** plugin runs the compliance *process*
+that installs no compliance product at all. A data-protection plugin runs the compliance *process*
 over that register — DSAR intake and deadlines, identity verification, the Art. 30 record, the Art.
 33 breach log, and a fulfilment report that refuses to close a request over a source that could not
 be reached. Registration passes method NAMES, never callbacks, so a dataset held by an isolated
 guest plugin is reached exactly like any other; and the register is narrowed to the plugins the
-requesting site actually runs, so a site without MLM is never asked to account for affiliates it
+requesting site actually runs, so a site without a referral plugin is never asked to account for affiliates it
 does not have.
 
 ## Infrastructure & Integrations
@@ -232,9 +232,9 @@ This means every class is independently instantiable, mockable, and replaceable 
 │   ├── next/               # Shared Next.js glue
 │   ├── create/             # `npm create` scaffolder for new Atlantis apps
 │   └── cli/                # Atlantis CLI tool
-├── plugins/           # 🔌 Domain plugins (cms, ecommerce, finance, logistics, ...)
+├── plugins/           # 🔌 Domain plugins (each its own repository)
 ├── themes/            # 🎨 UI themes and layout bundles
-├── appearance/        # 🎛️ Admin appearances — product consoles (nexora, tagiqx, ...)
+├── appearance/        # 🎛️ Admin appearances — product consoles (each its own repository)
 ├── deploy/            # Production compose files and the container entrypoint
 ├── starters/          # Local dev proxy and startup scripts
 ├── docker-compose.yml

@@ -13,7 +13,7 @@ export interface IPluginContextPeople {
    * Erasure and export for the personal data the FRAMEWORK holds — the account, the person record,
    * sessions, roles, edit history and the journals.
    *
-   * Exposed here because a plugin may never touch a system table, so the privacy plugin cannot
+   * Exposed here because a plugin may never touch a system table, so a data-protection plugin cannot
    * honour a DSAR over `users`/`people`/`_system_*` itself. It registers these datasets and reports
    * on them; core does the writing. See `PersonalDataErasureService`.
    */
@@ -56,7 +56,7 @@ export interface IPluginContextPeople {
    * Reusable address book on the shared `people_addresses` table. Plugins delegate their account
    * address book here instead of owning a parallel store. `ref` resolves (or, on upsert, creates)
    * the owning person from { personId } | { userId } | { email }. Plugin-specific delivery binding
-   * (e.g. Econt city/office) is stored on each address's `metadata` JSON blob. A fully anonymous
+   * (e.g. a courier's city/office) is stored on each address's `metadata` JSON blob. A fully anonymous
    * ref (no userId/email) is rejected — guest checkout address snapshots live on the order instead.
    */
   addresses: {

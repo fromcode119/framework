@@ -5,7 +5,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 /**
  * A resolved integration instance carries ONE tenant's stored configuration — a courier's credentials,
  * a payment gateway's secret. The instance cache was keyed by integration type alone, so the first
- * resolver (often the untenanted boot) served every tenant afterwards: a site with Econt credentials
+ * resolver (often the untenanted boot) served every tenant afterwards: a site with courier credentials
  * read back an empty username because the platform-level record had won the cache, and the same sharing
  * would hand one tenant another tenant's live credential.
  */

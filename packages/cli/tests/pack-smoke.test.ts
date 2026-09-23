@@ -22,7 +22,7 @@ import path from 'node:path';
  * THE SUBJECT IS A FIXTURE THIS TEST WRITES, not a plugin that happens to be checked out beside the
  * framework. It used to pack `build-server`, which was deleted when Sources became part of the
  * framework, and this suite — whose whole job is to prove the command runs — spent weeks failing on
- * a missing directory. It was then pointed at `search`, which is a different repository: the day the
+ * a missing directory. It was then pointed at a plugin, which is a different repository: the day the
  * suite first ran in CI, against a framework-only checkout, it failed the same way for the same
  * reason. A fixture cannot be deleted by someone else and needs nothing else on disk.
  */

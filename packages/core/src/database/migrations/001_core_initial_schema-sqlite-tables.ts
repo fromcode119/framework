@@ -20,7 +20,8 @@ export class InitialFrameworkSqliteTables {
             "health_status" TEXT DEFAULT 'healthy',
             "capabilities" TEXT,
             "sandbox_config" TEXT DEFAULT '{}',
-            "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
+            "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+            "held_reason" TEXT
           )
         `);
 
@@ -68,7 +69,10 @@ export class InitialFrameworkSqliteTables {
             "slug" TEXT PRIMARY KEY,
             "state" TEXT NOT NULL DEFAULT 'inactive',
             "config" TEXT,
-            "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
+            "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+            "name" TEXT,
+            "version" TEXT,
+            "created_at" TEXT
           )
         `);
 
@@ -165,6 +169,36 @@ export class InitialFrameworkSqliteTables {
             "alt" TEXT,
             "path" TEXT NOT NULL,
             "folder_id" INTEGER REFERENCES "media_folders"("id") ON DELETE SET NULL,
+            "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+            "caption" TEXT,
+            "optimized_path" TEXT,
+            "optimized_size" INTEGER,
+            "optimized_width" INTEGER,
+            "optimized_height" INTEGER
+          )
+        `);
+    await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "_system_audit_logs" (
+            "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+            "plugin_slug" TEXT NOT NULL,
+            "action" TEXT NOT NULL,
+            "resource" TEXT,
+            "status" TEXT NOT NULL,
+            "metadata" TEXT,
+            "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+    await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "_system_scheduler_tasks" (
+            "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+            "name" TEXT NOT NULL UNIQUE,
+            "plugin_slug" TEXT REFERENCES "_system_plugins"("slug") ON DELETE CASCADE,
+            "schedule" TEXT NOT NULL,
+            "type" TEXT NOT NULL DEFAULT 'cron',
+            "last_run" DATETIME,
+            "next_run" DATETIME,
+            "is_active" INTEGER NOT NULL DEFAULT 1,
             "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
             "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
           )

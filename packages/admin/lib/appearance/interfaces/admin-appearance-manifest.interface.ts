@@ -6,7 +6,7 @@ import type { IAppearanceSurfaces } from '@/lib/appearance/interfaces/appearance
  * descriptor used for registration and selection.
  */
 export interface IAdminAppearanceManifest {
-  /** Stable unique id, e.g. 'default' or 'simple'. Matches admin-appearances/<id>/ for additional appearances. */
+  /** Stable unique id, e.g. 'default' or 'plain'. Matches admin-appearances/<id>/ for additional appearances. */
   readonly id: string;
   /** Human-readable label shown in admin appearance pickers. */
   readonly label: string;

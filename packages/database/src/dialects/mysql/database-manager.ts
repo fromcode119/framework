@@ -209,6 +209,10 @@ export class MysqlDatabaseManager extends MysqlCrudOperations implements IDataba
 
   /** The SQL a drizzle statement carries, when it is a plain one we can read. Otherwise empty. */
   private static statementText(query: any): string {
+    // A plain string is the whole statement. `BaseMigration.createIndexIfMissing` passes one, and
+    // without this it reached MySQL untranslated and failed on `IF NOT EXISTS` — while documenting
+    // that this manager translated it.
+    if (typeof query === 'string') return query;
     const chunks = query?.queryChunks;
     if (!Array.isArray(chunks)) return '';
     // A statement built only from static text has no parameters to lose; one with bindings is left

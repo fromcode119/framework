@@ -33,7 +33,7 @@ export class IntegrationManager {
    * An instance carries the stored configuration of one tenant — a courier's credentials, a payment
    * gateway's secret. Keying this by type alone made it process-wide: whichever tenant (or the
    * untenanted boot) resolved a type first served every request afterwards. On this deployment that
-   * showed up as a configured Econt reading back with an empty username, because the platform-level
+   * showed up as a configured courier reading back with an empty username, because the platform-level
    * record won the cache; the same sharing would hand one tenant another tenant's live credential.
    */
   private instances: Map<string, any> = new Map();

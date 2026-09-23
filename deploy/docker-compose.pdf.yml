@@ -1,6 +1,6 @@
 # Headless Chromium for server-side HTML->PDF — ONE definition, added as an overlay.
 #
-# Plugins that print PDFs (today only numerology's booklet export) render through a separate browser
+# Plugins that print PDFs (today only one plugin's PDF export) render through a separate browser
 # service instead of a Chromium baked into the api image, where it was ~977MB that every install paid
 # for and almost none used.
 #
@@ -9,7 +9,7 @@
 #
 #   docker compose -f docker-compose.full-stack.yml -f docker-compose.pdf.yml --project-directory . up -d
 #
-# Then point the plugin at it in admin (Numerology -> Settings -> PDF renderer URL). Nothing is
+# Then point the plugin at it in admin (the plugin's Settings -> PDF renderer URL). Nothing is
 # discovered automatically:
 #
 #   ws://pdf-renderer:3000/chromium/playwright?token=<PDF_RENDERER_TOKEN>

@@ -10,7 +10,7 @@ describe('PluginHealthReportService.buildReport', () => {
       { slug: 'alpha', state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY, manifestCapabilities: ['api'], approvedCapabilities: ['api'] },
       { slug: 'alpha', state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.WARNING, heldReason: PluginHeldReason.CAPABILITY_DRIFT, manifestCapabilities: ['api', 'scheduler'], approvedCapabilities: ['api'] },
       { slug: 'beta', state: PluginState.ERROR, healthStatus: PluginRegistryHealth.ERROR, error: 'boom' },
-      { slug: 'search', state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.HEALTHY },
+      { slug: 'finder', state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.HEALTHY },
     ]);
     expect(report.ok).toBe(false);
     expect(report.counts).toEqual({ total: 4, active: 1, held: 1, error: 1, inactive: 1, restartPending: 0 });

@@ -73,7 +73,7 @@ export class PluginGuest {
 
     const contractKeys = ['onInstall', 'onInit', 'onUpdate', 'onEnable', 'onDisable', 'onUninstall'].filter((key) => typeof this.contract[key] === 'function');
     // A plugin's `publicAPI` is often a CLASS of static methods, and static methods are not
-    // enumerable — `Object.keys` saw none of them, so every peer's `finance.getCapabilities()` failed
+    // enumerable — `Object.keys` saw none of them, so every peer's `billing.getCapabilities()` failed
     // with "not callable" while the same call worked in-process. Own property names, functions only.
     const publicApiKeys = PluginGuest.functionNames(this.contract.publicAPI);
     return { contractKeys, publicApiKeys, manifest: this.contract.manifest ?? null };

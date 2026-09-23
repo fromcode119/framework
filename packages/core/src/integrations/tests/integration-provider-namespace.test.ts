@@ -4,16 +4,16 @@ import { IntegrationsContextProxy } from '@core/plugin/context/integrations';
 
 /**
  * A saved provider entry must say which plugin's namespace the provider lives in. The admin save
- * rebuilt entries field by field and dropped it, so logistics could no longer find its courier plugin
- * and every Econt office search on that site answered "not configured".
+ * rebuilt entries field by field and dropped it, so the shipping plugin could no longer find its courier plugin
+ * and every Courier office search on that site answered "not configured".
  */
 const setup = () => {
   const rows = new Map<string, any>();
   const db = { async findOne(_t: string, q: { key: string }) { return rows.get(q.key) || null; } };
-  const econt = { key: 'econt', label: 'Econt', fields: [], create: () => ({}), namespace: 'org.fromcode' };
+  const courier = { key: 'courier', label: 'Courier', fields: [], create: () => ({}), namespace: 'org.fromcode' };
   const types = new Map<string, any>([['shipping_provider', {
-    definition: { key: 'shipping_provider', label: 'Shipping', defaultProvider: 'econt', allowMultipleActiveProviders: false, providers: [econt] },
-    providers: new Map([['econt', econt]]),
+    definition: { key: 'shipping_provider', label: 'Shipping', defaultProvider: 'courier', allowMultipleActiveProviders: false, providers: [courier] },
+    providers: new Map([['courier', courier]]),
   }]]);
   const profileService = {
     normalize: (v: string) => String(v || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, ''),
@@ -31,18 +31,18 @@ describe('integration provider namespace', () => {
     const { rows, service } = setup();
     rows.set('integration_shipping_provider_providers', {
       key: 'integration_shipping_provider_providers',
-      value: JSON.stringify({ providers: [{ id: 'econt-default', providerKey: 'econt', config: {}, enabled: true }] }),
+      value: JSON.stringify({ providers: [{ id: 'courier-default', providerKey: 'courier', config: {}, enabled: true }] }),
     });
-    await service.updateStoredConfig('shipping_provider', 'econt', {}, { providerId: 'econt-default', makeActive: true, enabled: true });
+    await service.updateStoredConfig('shipping_provider', 'courier', {}, { providerId: 'courier-default', makeActive: true, enabled: true });
     const stored = JSON.parse(rows.get('integration_shipping_provider_providers').value);
-    expect(stored.providers[0]).toMatchObject({ id: 'econt-default', providerKey: 'econt', namespace: 'org.fromcode' });
+    expect(stored.providers[0]).toMatchObject({ id: 'courier-default', providerKey: 'courier', namespace: 'org.fromcode' });
   });
 
   it('reading keeps it, so the next write carries it', async () => {
     const { rows, service } = setup();
     rows.set('integration_shipping_provider_providers', {
       key: 'integration_shipping_provider_providers',
-      value: JSON.stringify({ providers: [{ id: 'econt-default', providerKey: 'econt', config: {} }] }),
+      value: JSON.stringify({ providers: [{ id: 'courier-default', providerKey: 'courier', config: {} }] }),
     });
     const read = await service.readStoredProvidersInternal('shipping_provider');
     expect(read?.[0]?.namespace).toBe('org.fromcode');
@@ -51,19 +51,19 @@ describe('integration provider namespace', () => {
   it('providers registered inline with a TYPE get the same stamp', () => {
     let registered: any = null;
     const manager: any = { integrations: { registerType: (definition: any) => { registered = definition; } } };
-    const plugin: any = { manifest: { slug: 'logistics-econt', namespace: 'org.fromcode' } };
+    const plugin: any = { manifest: { slug: 'shipping-adapter', namespace: 'org.fromcode' } };
     const proxy = IntegrationsContextProxy.createIntegrationsProxy(plugin, manager, { hasCapability: () => true, handleViolation: () => {} } as any);
-    proxy.registerType({ key: 'shipping_provider', label: 'Shipping', providers: [{ key: 'econt', label: 'Econt', create: () => ({}) }] });
-    expect(registered.providers[0]).toMatchObject({ key: 'econt', namespace: 'org.fromcode' });
+    proxy.registerType({ key: 'shipping_provider', label: 'Shipping', providers: [{ key: 'courier', label: 'Courier', create: () => ({}) }] });
+    expect(registered.providers[0]).toMatchObject({ key: 'courier', namespace: 'org.fromcode' });
     expect(registered.key).toBe('shipping_provider');
   });
 
   it('registering a provider stamps the registering plugin\'s namespace', () => {
     let registered: any = null;
     const manager: any = { integrations: { registerProvider: (_type: string, provider: any) => { registered = provider; } } };
-    const plugin: any = { manifest: { slug: 'logistics-econt', namespace: 'org.fromcode' } };
+    const plugin: any = { manifest: { slug: 'shipping-adapter', namespace: 'org.fromcode' } };
     const proxy = IntegrationsContextProxy.createIntegrationsProxy(plugin, manager, { hasCapability: () => true, handleViolation: () => {} } as any);
-    proxy.registerProvider('shipping_provider', { key: 'econt', label: 'Econt', create: () => ({}) });
-    expect(registered).toMatchObject({ key: 'econt', namespace: 'org.fromcode' });
+    proxy.registerProvider('shipping_provider', { key: 'courier', label: 'Courier', create: () => ({}) });
+    expect(registered).toMatchObject({ key: 'courier', namespace: 'org.fromcode' });
   });
 });

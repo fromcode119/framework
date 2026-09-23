@@ -7,7 +7,7 @@ import { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
  * The bug this pins: one `fc_token` under `COOKIE_DOMAIN` was shared by every console on the domain,
  * while the token inside it carries a single `tenantId` claim that each workspace host re-mints for
  * itself. Opening a second workspace therefore invalidated the first — "Token tenant mismatch: minted
- * for hub, presented to nexora" — and the client purged the session. The same shared cookie is what let
+ * for acme, presented to initech" — and the client purged the session. The same shared cookie is what let
  * a readable user cookie paint a signed-in console on a domain the account had no membership on.
  *
  * The storefront keeps the apex domain on purpose: a customer session is read by the frontend host for

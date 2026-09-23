@@ -10,7 +10,7 @@ import { TenantMode } from '@fromcode119/core';
  * they escalate with (`runAsPlatformAdmin`) passes `tenantId = null`, so it CLEARS the bound site.
  * An operator who had entered a customer's site therefore got, on that site's own dashboard, every
  * other customer's log lines plus the platform's untenanted boot lines. Observed: initech's board
- * showed "Ecommerce 36, Logistics-econt 7, Mlm 3" for plugins initech does not run.
+ * showed "Catalog 36, Shipping-adapter 7, Referrals 3" for plugins initech does not run.
  *
  * The whole-container view is a PLATFORM-SCOPE view. Inside a site, the site's own trail is the
  * answer, which is what the policy already returns when nothing escalates.

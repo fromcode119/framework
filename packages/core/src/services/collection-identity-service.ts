@@ -96,10 +96,10 @@ export class CollectionIdentityService extends BaseService {
    * Resolves a collection reference to the slug a collection is actually registered under.
    *
    * A reference that NAMES a plugin is resolved inside that plugin first. It has to be, because the
-   * candidate set for `ecommerce-categories` includes the bare tail `categories` — and `categories`
-   * is the `shortSlug` of the CMS plugin's collection too. Without the restriction the winner was
+   * candidate set for `catalog-categories` includes the bare tail `categories` — and `categories`
+   * is the `shortSlug` of a content plugin's collection too. Without the restriction the winner was
    * whichever of the two happened to sit earlier in the registry, so a product's category reference
-   * resolved against `fcp_cms_categories`, every id 404'd, and the admin drew each one as
+   * resolved against the content plugin's categories table, every id 404'd, and the admin drew each one as
    * "Deleted item (13)" over a category that existed the whole time. The field was right, the data
    * was right, and the lookup silently crossed a plugin boundary.
    *

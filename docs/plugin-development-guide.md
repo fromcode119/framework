@@ -48,12 +48,12 @@ Plugins never import directly from other plugins. All cross-plugin communication
 
 | Channel | When to Use | Example |
 |---------|-------------|---------|
-| **HTTP API** | Frontend/runtime calling a plugin's API | `Plugins.namespace('org.fromcode').finance.getOverview()` |
+| **HTTP API** | Frontend/runtime calling a plugin's API | `Plugins.namespace('org.fromcode').billing.getOverview()` |
 | **Hooks / Events** | Backend plugin notifying others | `context.hooks.on('order.created', handler)` |
 | **Database** | Backend accessing shared collections | `context.db.query.orders.findMany(...)` |
 | **Settings** | Reading global configuration | `context.settings.get()` |
 
-> All plugin runtime access is **namespace-scoped**: `Plugins.namespace('org.fromcode').finance` — never `Plugins.finance` directly.
+> All plugin runtime access is **namespace-scoped**: `Plugins.namespace('org.fromcode').billing` — never `Plugins.billing` directly.
 
 ---
 
@@ -66,7 +66,7 @@ Always use the primitive name for your collection slug. Do **not** include the p
 **❌ Wrong:**
 ```typescript
 context.collections.register({
-  slug: 'cms-posts', // Resulting table: fcp_cms_cms-posts
+  slug: 'blog-posts', // Resulting table: fcp_blog_blog-posts
   ...
 });
 ```
@@ -74,7 +74,7 @@ context.collections.register({
 **✅ Correct:**
 ```typescript
 context.collections.register({
-  slug: 'posts', // Resulting table: fcp_cms_posts
+  slug: 'posts', // Resulting table: fcp_blog_posts
   ...
 });
 ```
@@ -91,7 +91,7 @@ One plugin can extend a collection registered by another plugin. This is useful 
 In your `onInit`:
 
 ```typescript
-context.collections.extend('cms', 'posts', {
+context.collections.extend('blog', 'posts', {
   fields: [
     {
       name: 'seo_title',

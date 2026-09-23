@@ -31,11 +31,11 @@ describe('TenantAdminController.identity — the fields adopt and import read', 
 
   it('carries a workspace and its appearance', () => {
     const identity = TenantIdentity.from(project({
-      slug: 'console', primaryHost: 'console.example.com', hostAliases: [], kind: 'workspace', appearance: 'hub',
+      slug: 'console', primaryHost: 'console.example.com', hostAliases: [], kind: 'workspace', appearance: 'studio',
     }));
 
     expect(identity.kind.isWorkspace).toBe(true);
-    expect(identity.appearance).toBe('hub');
+    expect(identity.appearance).toBe('studio');
   });
 
   it('still reads the fields it always did', () => {

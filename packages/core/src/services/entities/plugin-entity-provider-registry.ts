@@ -5,7 +5,7 @@ import type { IField } from '@core/interfaces/field.interface';
  * Who provides the `order`, the `product`, the `invoice` — so a plugin can point a relationship at one
  * without naming the collection, or the plugin, that happens to own it.
  *
- * A consumer writing `relationTo: 'ecommerce-orders'` is hardcoding another plugin's slug, which this
+ * A consumer writing `relationTo: 'catalog-orders'` is hardcoding another plugin's slug, which this
  * codebase does not allow. Writing `relationToEntity: 'order'` names shared vocabulary instead — the
  * same way `email` and `orderNumber` are shared — and the framework substitutes whichever collection
  * REGISTERED itself as that entity's provider.
@@ -15,9 +15,9 @@ import type { IField } from '@core/interfaces/field.interface';
  * Replacing those relationships with opaque ids would have removed a working control to satisfy a
  * naming rule, which is a downgrade rather than a fix.
  *
- * Registration order is NOT guaranteed — lms may register before ecommerce — so a field that cannot be
- * resolved yet is parked and drained the moment its provider appears. Nothing reads a collection's
- * fields until every plugin has booted, so both paths settle before first use.
+ * Registration order is NOT guaranteed — a consumer may register before its provider — so a field
+ * that cannot be resolved yet is parked and drained the moment its provider appears. Nothing reads a
+ * collection's fields until every plugin has booted, so both paths settle before first use.
  */
 export class PluginEntityProviderRegistry {
   private readonly providers = new Map<string, { slug: string; pluginSlug: string }>();

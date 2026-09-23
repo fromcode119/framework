@@ -25,7 +25,7 @@ describe('PackCleaner', () => {
   const exists = (relative: string): boolean => fs.existsSync(path.join(dir, relative));
 
   it('strips a local database left beside the source', () => {
-    // The incident: a 1.5MB `ruvector.db` sat untracked in plugins/numerology and packed into the
+    // The incident: a 1.5MB `ruvector.db` sat untracked in a plugin's directory and packed into the
     // tarball, bound for production.
     write('ruvector.db');
     write('ui/ruvector.db');

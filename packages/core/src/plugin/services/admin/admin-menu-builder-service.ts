@@ -195,7 +195,7 @@ export class AdminMenuBuilderService {
       }
 
       // A dropdown wrapper only makes sense with 2+ children. A single-page plugin
-      // (e.g. SEO → Overview, Analytics → Overview) should be a plain link with no
+      // (a plugin whose only child is its Overview) should be a plain link with no
       // chevron — otherwise every plugin shows a redundant expand arrow.
       if (strategy === NavGroupStrategy.SECTION || items.length <= 1) {
         items.forEach(item => {

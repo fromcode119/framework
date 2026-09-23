@@ -7,7 +7,7 @@ import { SiteRecord } from '@/lib/tenants/site-record';
  * What this site amounts to, at a glance.
  *
  * The same strip the Installed Plugins page uses, for the same reason: these were previously a grey
- * run-on in the page subtitle — "29 members · 10 plugins · vselenskiportal88 · 44 pages" — which is a
+ * run-on in the page subtitle — "29 members · 10 plugins · example-site · 44 pages" — which is a
  * sentence, not something you can read at a glance. Zero pages is toned as a warning because on a
  * storefront it means every route but the home page answers 404.
  */

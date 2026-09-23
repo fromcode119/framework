@@ -7,7 +7,7 @@ export class FrontendApiBaseUrl {
    * In the BROWSER the answer is always this page's own origin, and it takes no configuration. On a
    * multi-site deployment every site is its own host, and that host is the only thing that says WHICH
    * site a call belongs to — send the browser to one shared api host and the site is gone, which is how
-   * a shop with Econt credentials ended up reading the platform's empty ones. Behind the gateway those
+   * a shop with courier credentials ended up reading the platform's empty ones. Behind the gateway those
    * paths route straight to the api; without it the storefront's own `/api` route proxies them, for
    * every method.
    *

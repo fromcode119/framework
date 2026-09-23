@@ -2,7 +2,7 @@
  * Server Component: the page's JSON-LD structured data, rendered as ld+json script blocks.
  *
  * Lives in the page BODY tree because Next's Metadata API carries no structured data — crawlers read
- * ld+json anywhere in the document. The payloads come from the head-data provider plugin (the SEO
+ * ld+json anywhere in the document. The payloads come from the head-data provider plugin (a metadata
  * plugin's schema builders), which serializes and `</script>`-escapes them itself; they are never
  * assembled from request input in this process, which is what makes the raw injection sound.
  */

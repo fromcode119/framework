@@ -11,7 +11,7 @@ export class IntegrationsContextProxy {
     const { hasCapability, handleViolation } = security;
     return {
       registerType: (definition: any) => {
-        // A type can carry its providers inline (logistics-econt registers Econt this way), so they get
+        // A type can carry its providers inline (a courier adapter registers its courier this way), so they get
         // the same namespace stamp as `registerProvider` below.
         const providers = Array.isArray(definition?.providers)
           ? definition.providers.map((provider: any) => ({ ...provider, namespace: plugin.manifest.namespace }))

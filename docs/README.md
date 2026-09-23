@@ -66,7 +66,7 @@ The Brutalist-Soft design language for Atlantis plugin UIs.
 
 ## 🚀 Concept Overview
 
-Atlantis is a **plugin-first** framework. This means the core kernel is kept minimal, handles security and data orchestration, while all functional features (CMS, E-commerce, SEO) are implemented as self-contained plugins.
+Atlantis is a **plugin-first** framework. This means the core kernel is kept minimal, handles security and data orchestration, while all functional features (content, commerce, search optimisation) are implemented as self-contained plugins.
 
 ### Key Architecture Pieces
 - **Kernel (@fromcode119/core)**: Plugin loader, hook manager, and security sandbox.

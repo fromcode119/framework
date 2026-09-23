@@ -10,12 +10,12 @@ import path from 'node:path';
  * were all the same shape — a plugin reaching past its own API to do something the framework should
  * own:
  *
- *   - finance ran `ALTER TABLE … DROP NOT NULL` for eleven columns on every boot, built by string
+ *   - one plugin ran `ALTER TABLE … DROP NOT NULL` for eleven columns on every boot, built by string
  *     interpolation, on the REQUEST connection — a non-owner, so it always failed and was swallowed.
  *     The framework reconciles a relaxed `required` now.
- *   - cms carried three catalog reads against a table that no longer exists, in a class nothing
+ *   - another carried three catalog reads against a table that no longer exists, in a class nothing
  *     called.
- *   - mlm added a UNIQUE by hand for the same reason, and the declared-UNIQUE reconcile replaced it.
+ *   - a third added a UNIQUE by hand for the same reason, and the declared-UNIQUE reconcile replaced it.
  *
  * MIGRATIONS ARE EXEMPT. A migration is DDL by nature and the repo's conventions say raw SQL there is
  * correct. That exemption is also why this guard matters: it is the line between "SQL in a frozen,

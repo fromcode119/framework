@@ -125,7 +125,7 @@ export class DynamicPageResolver {
 
   /**
    * Looks up a configured redirect rule for a would-be-404 path via the framework's OWN resolve endpoint.
-   * The framework's route resolver consults a plugin-agnostic redirect registry (an SEO plugin, a content
+   * The framework's route resolver consults a plugin-agnostic redirect registry (a redirect plugin, a content
    * table, … register into it) and returns a `redirect` resolution — so the frontend never names a plugin.
    * Returns the target + whether it's permanent (308) or temporary (307), or null when no rule matches.
    * A malformed payload resolves to null so a lookup quirk never breaks the page — but an

@@ -27,13 +27,13 @@ describe('ThemeAssets', () => {
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponseOutcome').mockResolvedValue(ServerFetchOutcome.resolved<Response>(null));
     vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(ServerFetchOutcome.resolved({
       activeTheme: {
-        slug: 'vselenskiportal88',
+        slug: 'example-theme',
         ui: {
-          entry: 'http://api.framework.local/api/v1/themes/vselenskiportal88/ui/bundle.js?v=1.0.10',
+          entry: 'http://api.framework.local/api/v1/themes/example-theme/ui/bundle.js?v=1.0.10',
           headLinks: [
             {
               rel: 'preload',
-              href: '/api/v1/themes/vselenskiportal88/ui/logo.webp',
+              href: '/api/v1/themes/example-theme/ui/logo.webp',
               as: 'image',
               type: 'image/webp',
             },
@@ -46,7 +46,7 @@ describe('ThemeAssets', () => {
     renderToStaticMarkup(await ThemeAssetsView.render());
 
     expect(preloadSpy).toHaveBeenCalledWith(
-      'http://api.framework.local/api/v1/themes/vselenskiportal88/ui/logo.webp',
+      'http://api.framework.local/api/v1/themes/example-theme/ui/logo.webp',
       expect.objectContaining({
         as: 'image',
         type: 'image/webp',

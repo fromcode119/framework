@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AdminShellRegistry } from '@/lib/appearance/admin-shell-registry';
 
-const SimpleShell = () => null;
+const PlainShell = () => null;
 
 describe('AdminShellRegistry', () => {
   it('returns undefined for an appearance with no registered shell', () => {
@@ -11,8 +11,8 @@ describe('AdminShellRegistry', () => {
 
   it('registers and resolves a shell for an appearance', () => {
     const registry = new AdminShellRegistry();
-    registry.register('simple', SimpleShell);
-    expect(registry.resolve('simple')).toBe(SimpleShell);
+    registry.register('plain', PlainShell);
+    expect(registry.resolve('plain')).toBe(PlainShell);
     expect(registry.resolve('default')).toBeUndefined();
   });
 

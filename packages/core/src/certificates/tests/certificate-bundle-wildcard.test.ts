@@ -69,7 +69,7 @@ describe('CertificateBundle — a wildcard certificate covers its subdomains', (
 
     expect(held.find('fromcode.com.evil.test')).toBeUndefined();
     expect(held.find('notfromcode.com')).toBeUndefined();
-    expect(held.find('tagiqx.com')).toBeUndefined();
+    expect(held.find('unrelated.example')).toBeUndefined();
   });
 
   /**
@@ -91,7 +91,7 @@ describe('CertificateBundle — a wildcard certificate covers its subdomains', (
   });
 
   it('a name nothing covers is still not served', () => {
-    expect(bundle(entry('fromcode.com', true)).find('tagiqx.com')).toBeUndefined();
+    expect(bundle(entry('fromcode.com', true)).find('unrelated.example')).toBeUndefined();
     expect(bundle().find('anything.test')).toBeUndefined();
   });
 });

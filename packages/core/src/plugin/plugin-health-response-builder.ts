@@ -8,7 +8,7 @@ export class PluginHealthResponseBuilder {
    * Builds the default plugin health payload shared by plugin API endpoints.
    *
    * @example
-   * const payload = PluginHealthResponseBuilder.build({ slug: 'forms', version: '1.0.0' });
+   * const payload = PluginHealthResponseBuilder.build({ slug: 'guestbook', version: '1.0.0' });
    */
   static build(plugin: IPluginHealthIdentity, options: IPluginHealthBuildOptions = {}): IPluginHealthResponse {
     const response: IPluginHealthResponse = {

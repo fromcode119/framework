@@ -54,7 +54,7 @@ describe('per-site artifact paths', () => {
   it('accepts the id shapes real tenants actually use', () => {
     withRoots('/srv/themes', '/srv/plugins');
 
-    for (const id of ['acme', 't1', 'vselenskiportal88', 'tagiqx-app', 'a_b-9']) {
+    for (const id of ['acme', 't1', 'example-site', 'widgets-app', 'a_b-9']) {
       expect(ProjectPaths.getThemesDirFor(id)).toBe(path.join('/srv/themes', 'tenants', id));
     }
   });

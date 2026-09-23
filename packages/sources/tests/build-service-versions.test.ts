@@ -16,7 +16,7 @@ import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
  * every request and no screen compared the two.
  */
 describe('BuiltPackageService — versions', () => {
-  const identity = BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'forms') as BuildSourceIdentity;
+  const identity = BuildSourceIdentity.parse(ExtensionScope.PLUGIN, 'guestbook') as BuildSourceIdentity;
   let service: any;
   let staged: string[];
   let installed: string | null;
@@ -58,7 +58,7 @@ describe('BuiltPackageService — versions', () => {
     await service.installVersion(identity, '0.1.9');
 
     expect(installCalls).toHaveLength(1);
-    expect(installCalls[0].dir).toBe('/w/plugins/packages/forms-0.1.9');
+    expect(installCalls[0].dir).toBe('/w/plugins/packages/guestbook-0.1.9');
   });
 
   it('does not ACTIVATE what it installs — putting a version back is not choosing a theme', async () => {

@@ -96,7 +96,7 @@ export class TenantImportPlanner {
     }
 
     // With no collections at all, a `schema` reference can never be found (see the constructor note)
-    // — so a table that WILL be re-numbered and carries JSON is exactly the vselenskiportal88 defect
+    // — so a table that WILL be re-numbered and carries JSON is exactly the client-import defect
     // waiting to happen again, silently, and the preview would have no way to say so either. Refusing
     // beats guessing which JSON columns would have been fine to leave opaque.
     if (!this.hasSchemaReferences) {

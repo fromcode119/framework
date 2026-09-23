@@ -17,17 +17,17 @@ describe('a plugin installed under a running api', () => {
   it('reports a restart is pending when disk is ahead of the process', () => {
     // The production case: _system_plugins, the manifest and the release tag all read 0.1.138 while
     // the admin served the 0.1.136 form, because the api had been up since before the files changed.
-    const report = PluginHealthReportService.buildReport([active('ecommerce', '0.1.136', '0.1.138')]);
+    const report = PluginHealthReportService.buildReport([active('catalog', '0.1.136', '0.1.138')]);
 
     expect(report.counts.restartPending).toBe(1);
-    expect(report.restartPending.map((e) => e.slug)).toEqual(['ecommerce']);
+    expect(report.restartPending.map((e) => e.slug)).toEqual(['catalog']);
     expect(report.entries[0].restartPending).toBe(true);
   });
 
   it('is NOT ok while a restart is pending, even with nothing held or failing', () => {
     // The whole point is that the screen is lying about what is being served. Calling that healthy
     // repeats the lie one level up.
-    const report = PluginHealthReportService.buildReport([active('ecommerce', '0.1.136', '0.1.138')]);
+    const report = PluginHealthReportService.buildReport([active('catalog', '0.1.136', '0.1.138')]);
 
     expect(report.ok).toBe(false);
     expect(report.counts.held).toBe(0);
@@ -35,7 +35,7 @@ describe('a plugin installed under a running api', () => {
   });
 
   it('says nothing when the versions match', () => {
-    const report = PluginHealthReportService.buildReport([active('ecommerce', '0.1.138', '0.1.138')]);
+    const report = PluginHealthReportService.buildReport([active('catalog', '0.1.138', '0.1.138')]);
 
     expect(report.ok).toBe(true);
     expect(report.counts.restartPending).toBe(0);
@@ -43,7 +43,7 @@ describe('a plugin installed under a running api', () => {
   });
 
   it('flags a DOWNGRADE on disk too — it is just as unserved as an upgrade', () => {
-    const report = PluginHealthReportService.buildReport([active('ecommerce', '0.1.138', '0.1.136')]);
+    const report = PluginHealthReportService.buildReport([active('catalog', '0.1.138', '0.1.136')]);
 
     expect(report.entries[0].restartPending).toBe(true);
   });

@@ -24,7 +24,7 @@ describe('PackageDownloadService', () => {
     stagedDir: staged,
     filePath: null,
     fileName: null,
-    downloadPath: '/sources/fromcode/package',
+    downloadPath: '/sources/aurora/package',
     artifactSha256: '',
     type: ExtensionScope.THEME,
     version: '0.1.29',
@@ -34,9 +34,9 @@ describe('PackageDownloadService', () => {
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'pkg-download-'));
     themesDir = path.join(root, 'themes');
-    staged = path.join(themesDir, 'packages', 'fromcode-0.1.29');
+    staged = path.join(themesDir, 'packages', 'aurora-0.1.29');
     fs.mkdirSync(staged, { recursive: true });
-    fs.writeFileSync(path.join(staged, 'theme.json'), '{"slug":"fromcode","version":"0.1.29"}');
+    fs.writeFileSync(path.join(staged, 'theme.json'), '{"slug":"aurora","version":"0.1.29"}');
 
     recorded = [];
     service = new PackageDownloadService(
@@ -48,30 +48,30 @@ describe('PackageDownloadService', () => {
   afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
 
   it('makes the archive on the first ask and records it', async () => {
-    const result = await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
+    const result = await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact());
 
-    expect(result?.fileName).toBe('fromcode-0.1.29.zip');
+    expect(result?.fileName).toBe('aurora-0.1.29.zip');
     expect(fs.existsSync(result!.filePath)).toBe(true);
     expect(recorded).toHaveLength(1);
   });
 
   it('serves the same archive again without remaking it', async () => {
-    await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
+    await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact());
     recorded = [];
 
-    await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
+    await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact());
 
     expect(recorded).toHaveLength(0);
   });
 
   it('REMAKES it when the package has been rebuilt since', async () => {
-    const first = await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
+    const first = await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact());
     // The same version rebuilt: same staged path, same archive name, newer content.
     const later = new Date(Date.now() + 60_000);
     fs.utimesSync(staged, later, later);
     recorded = [];
 
-    await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact());
+    await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact());
 
     expect(recorded).toHaveLength(1);
     expect(fs.statSync(first!.filePath).mtimeMs).toBeGreaterThanOrEqual(fs.statSync(staged).mtimeMs - 60_000);
@@ -88,7 +88,7 @@ describe('PackageDownloadService', () => {
   });
 
   it('is null when there is no package to archive, rather than an empty zip', async () => {
-    expect(await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact({ stagedDir: path.join(root, 'gone') }))).toBeNull();
-    expect(await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), null)).toBeNull();
+    expect(await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact({ stagedDir: path.join(root, 'gone') }))).toBeNull();
+    expect(await service.archive(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), null)).toBeNull();
   });
 });

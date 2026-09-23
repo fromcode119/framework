@@ -10,7 +10,7 @@ import { SystemConstants } from '@core/constants/system.constants';
  * {@link NamingStrategy.denormalizeRecord} so callers always see a single canonical (camelCase) shape.
  *
  * The `metadata` JSON column is an additive extension (migration 010) used to stash plugin-specific
- * delivery binding (Econt city/office, delivery provider) without polluting the shared columns.
+ * delivery binding (a courier's city/office, delivery provider) without polluting the shared columns.
  */
 export class PeopleAddressRepository {
   constructor(private readonly db: IAddressDb) {}

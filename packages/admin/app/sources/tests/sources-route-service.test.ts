@@ -23,7 +23,7 @@ describe('the URLs the Sources screen calls', () => {
   });
 
   it('addresses one source by KIND and slug', () => {
-    expect(sent(SourcesRouteService.one('plugin', 'cms'))).toBe('/api/v1/sources/plugin/cms');
+    expect(sent(SourcesRouteService.one('plugin', 'gallery'))).toBe('/api/v1/sources/plugin/gallery');
   });
 
   it('keeps the collection-level actions where they were', () => {
@@ -35,10 +35,10 @@ describe('the URLs the Sources screen calls', () => {
   });
 
   it('keeps the per-source actions where they were', () => {
-    expect(sent(SourcesRouteService.buildOne('plugin', 'cms'))).toBe('/api/v1/sources/plugin/cms/build');
-    expect(sent(SourcesRouteService.packageArchive('plugin', 'cms'))).toBe('/api/v1/sources/plugin/cms/package');
-    expect(sent(SourcesRouteService.versions('plugin', 'cms'))).toBe('/api/v1/sources/plugin/cms/versions');
-    expect(sent(SourcesRouteService.install('plugin', 'cms'))).toBe('/api/v1/sources/plugin/cms/install');
+    expect(sent(SourcesRouteService.buildOne('plugin', 'gallery'))).toBe('/api/v1/sources/plugin/gallery/build');
+    expect(sent(SourcesRouteService.packageArchive('plugin', 'gallery'))).toBe('/api/v1/sources/plugin/gallery/package');
+    expect(sent(SourcesRouteService.versions('plugin', 'gallery'))).toBe('/api/v1/sources/plugin/gallery/versions');
+    expect(sent(SourcesRouteService.install('plugin', 'gallery'))).toBe('/api/v1/sources/plugin/gallery/install');
   });
 
   it('encodes a kind or slug that would otherwise change the path', () => {
@@ -50,6 +50,6 @@ describe('the URLs the Sources screen calls', () => {
   it('is not double-prefixed — the composed path already carries the version', () => {
     // The guard that makes this refactor safe: `normalizeRequestPath` leaves an `/api/…` path alone.
     expect(sent(SourcesRouteService.list())).not.toContain('/api/v1/api/');
-    expect(sent(SourcesRouteService.versions('plugin', 'cms'))).not.toContain('/v1/v1/');
+    expect(sent(SourcesRouteService.versions('plugin', 'gallery'))).not.toContain('/v1/v1/');
   });
 });

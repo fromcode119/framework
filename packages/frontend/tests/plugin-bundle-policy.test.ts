@@ -7,13 +7,13 @@ const plugin = (slug: string, loadStrategy?: string) => ({ slug, capabilities: [
 describe('PluginBundlePolicy', () => {
   it('skips only idle plugins with a server bundle that the render never used and the theme does not depend on', () => {
     const skip = PluginBundlePolicy.skippable({
-      plugins: [plugin('zeta'), plugin('beta'), plugin('theta', 'idle'), plugin('alpha', 'idle'), plugin('privacy', 'idle'), plugin('analytics', 'idle'), plugin('search', 'idle')],
-      usedPlugins: ['zeta', 'privacy'],
-      withServerBundle: ['zeta', 'beta', 'theta', 'alpha', 'privacy', 'search'],
+      plugins: [plugin('zeta'), plugin('beta'), plugin('theta', 'idle'), plugin('alpha', 'idle'), plugin('consent', 'idle'), plugin('tracker', 'idle'), plugin('finder', 'idle')],
+      usedPlugins: ['zeta', 'consent'],
+      withServerBundle: ['zeta', 'beta', 'theta', 'alpha', 'consent', 'finder'],
       themeDependencies: ['theta'],
     });
-    // eager (zeta, beta) never; used (privacy) never; theme dependency (forms) never; no server bundle (analytics) never.
-    expect(skip).toEqual(['alpha', 'search']);
+    // eager (zeta, beta) never; used (consent) never; theme dependency (theta) never; no server bundle (tracker) never.
+    expect(skip).toEqual(['alpha', 'finder']);
   });
 
   it('never skips a plugin that loads no storefront runtime of its own', () => {

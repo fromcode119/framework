@@ -4,8 +4,8 @@ import { BuildSlugPolicy } from '@sources/sources/build-slug-policy';
 /**
  * WHICH source. A kind and a slug, together, because either alone names more than one thing.
  *
- * A slug is an extension's name WITHIN its kind: `tagiqx` the plugin, `tagiqx` the theme and
- * `tagiqx` the appearance are three different extensions that clone into three different
+ * A slug is an extension's name WITHIN its kind: `acme` the plugin, `acme` the theme and
+ * `acme` the appearance are three different extensions that clone into three different
  * directories, stage into three different roots and install through three different validators.
  * Sources stored them in one table keyed on the slug alone, so the second one could not be added
  * at all — and if it ever had been, `update(table, { slug }, …)` would have written BOTH rows, and

@@ -202,7 +202,7 @@ export class PluginManager extends PluginManagerApi implements IPluginManagerInt
    * Boots every plugin, then announces `plugins:ready` ONCE the whole set is registered and enabled.
    *
    * A plugin's own onInit/onEnable run inside the boot loop, so a cross-plugin registration made
-   * there (numerology → broadcasts provider) can only see the plugins that booted BEFORE it. Without
+   * there (a provider registered with a peer) can only see the plugins that booted BEFORE it. Without
    * this event plugins resorted to setTimeout polling of the namespace. The payload lists the active
    * slugs so a handler can tell which peers exist without probing.
    */

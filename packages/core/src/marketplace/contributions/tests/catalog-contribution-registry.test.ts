@@ -11,24 +11,24 @@ describe('CatalogContributionRegistry.resolveArtifact', () => {
 
   it('returns the path the contributor reports', async () => {
     const registry = new CatalogContributionRegistry();
-    registry.register(contributor({ resolveArtifact: async () => '/app/data/sources/themes/fromcode-0.1.29.zip' }));
+    registry.register(contributor({ resolveArtifact: async () => '/app/data/sources/themes/aurora-0.1.29.zip' }));
 
-    expect(await registry.resolveArtifact('fromcode', 'theme'))
-      .toBe('/app/data/sources/themes/fromcode-0.1.29.zip');
+    expect(await registry.resolveArtifact('aurora', 'theme'))
+      .toBe('/app/data/sources/themes/aurora-0.1.29.zip');
   });
 
   it('is null when the only contributor hosts nothing, so the caller never invents a location', async () => {
     const registry = new CatalogContributionRegistry();
     registry.register(contributor({ resolveArtifact: async () => null }));
 
-    expect(await registry.resolveArtifact('fromcode', 'theme')).toBeNull();
+    expect(await registry.resolveArtifact('aurora', 'theme')).toBeNull();
   });
 
   it('is null for a contributor that cannot resolve at all', async () => {
     const registry = new CatalogContributionRegistry();
     registry.register(contributor({}));
 
-    expect(await registry.resolveArtifact('fromcode', 'theme')).toBeNull();
+    expect(await registry.resolveArtifact('aurora', 'theme')).toBeNull();
   });
 
   it('keeps asking after one contributor throws', async () => {
@@ -37,10 +37,10 @@ describe('CatalogContributionRegistry.resolveArtifact', () => {
       pluginSlug: 'broken',
       resolveArtifact: async () => { throw new Error('workspace unreadable'); },
     }));
-    registry.register(contributor({ resolveArtifact: async () => '/app/data/sources/themes/fromcode-0.1.29.zip' }));
+    registry.register(contributor({ resolveArtifact: async () => '/app/data/sources/themes/aurora-0.1.29.zip' }));
 
-    expect(await registry.resolveArtifact('fromcode', 'theme'))
-      .toBe('/app/data/sources/themes/fromcode-0.1.29.zip');
+    expect(await registry.resolveArtifact('aurora', 'theme'))
+      .toBe('/app/data/sources/themes/aurora-0.1.29.zip');
   });
 
   it('refuses a blank slug without asking anyone', async () => {

@@ -109,8 +109,14 @@ export abstract class MysqlCrudOperations extends BaseDialect {
     return result.map((r: any) => Object.values(r)[0]);
   }
 
+  /**
+   * Scoped to the current schema for the same reason as {@link getColumns}: `information_schema` spans
+   * every database on the server, so unscoped this answered yes for a table that exists only in
+   * ANOTHER installation on the same server — and a migration guarded by it then ran against a table
+   * that was not there.
+   */
   async tableExists(tableName: string): Promise<boolean> {
-    const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
+    const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ${tableName}`;
     const result: any = await this.execute(query);
     return (result[0]?.total || 0) > 0;
   }

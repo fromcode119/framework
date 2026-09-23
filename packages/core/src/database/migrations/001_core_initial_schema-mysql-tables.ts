@@ -39,7 +39,8 @@ export class InitialFrameworkMysqlTables {
             "health_status" VARCHAR(64) DEFAULT 'healthy',
             "capabilities" TEXT,
             "sandbox_config" JSON,
-            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "held_reason" TEXT
           )
         `));
 
@@ -87,31 +88,39 @@ export class InitialFrameworkMysqlTables {
             "slug" ${KEY} PRIMARY KEY,
             "state" VARCHAR(64) NOT NULL DEFAULT 'inactive',
             "config" JSON,
-            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "name" TEXT,
+            "version" TEXT,
+            "created_at" DATETIME
           )
         `));
 
     await db.execute(sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_users_roles" (
-            "user_id" INT NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
-            "role_slug" ${KEY} NOT NULL REFERENCES "_system_roles"("slug") ON DELETE CASCADE,
-            PRIMARY KEY ("user_id", "role_slug")
+            "user_id" INT NOT NULL,
+            "role_slug" ${KEY} NOT NULL,
+            PRIMARY KEY ("user_id", "role_slug"),
+            FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
+            FOREIGN KEY ("role_slug") REFERENCES "_system_roles"("slug") ON DELETE CASCADE
           )
         `));
 
     await db.execute(sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_roles_permissions" (
-            "role_slug" ${KEY} NOT NULL REFERENCES "_system_roles"("slug") ON DELETE CASCADE,
-            "permission_name" ${KEY} NOT NULL REFERENCES "_system_permissions"("name") ON DELETE CASCADE,
-            PRIMARY KEY ("role_slug", "permission_name")
+            "role_slug" ${KEY} NOT NULL,
+            "permission_name" ${KEY} NOT NULL,
+            PRIMARY KEY ("role_slug", "permission_name"),
+            FOREIGN KEY ("role_slug") REFERENCES "_system_roles"("slug") ON DELETE CASCADE,
+            FOREIGN KEY ("permission_name") REFERENCES "_system_permissions"("name") ON DELETE CASCADE
           )
         `));
 
     await db.execute(sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_plugin_settings" (
-            "plugin_slug" ${KEY} PRIMARY KEY REFERENCES "_system_plugins"("slug") ON DELETE CASCADE,
+            "plugin_slug" ${KEY} PRIMARY KEY,
             "settings" JSON,
-            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY ("plugin_slug") REFERENCES "_system_plugins"("slug") ON DELETE CASCADE
           )
         `));
 
@@ -140,14 +149,15 @@ export class InitialFrameworkMysqlTables {
     await db.execute(sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_sessions" (
             "id" ${KEY} PRIMARY KEY,
-            "user_id" INT NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+            "user_id" INT NOT NULL,
             "token_id" ${KEY} UNIQUE NOT NULL,
             "user_agent" TEXT,
             "ip_address" VARCHAR(64),
             "is_revoked" BOOLEAN NOT NULL DEFAULT FALSE,
             "expires_at" TIMESTAMP NOT NULL,
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
           )
         `));
 
@@ -166,9 +176,10 @@ export class InitialFrameworkMysqlTables {
           CREATE TABLE IF NOT EXISTS "media_folders" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "name" VARCHAR(255) NOT NULL,
-            "parent_id" INT REFERENCES "media_folders"("id") ON DELETE CASCADE,
+            "parent_id" INT,
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY ("parent_id") REFERENCES "media_folders"("id") ON DELETE CASCADE
           )
         `));
 
@@ -183,9 +194,45 @@ export class InitialFrameworkMysqlTables {
             "height" INT,
             "alt" TEXT,
             "path" TEXT NOT NULL,
-            "folder_id" INT REFERENCES "media_folders"("id") ON DELETE SET NULL,
+            "folder_id" INT,
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "caption" TEXT,
+            "optimized_path" TEXT,
+            "optimized_size" INT,
+            "optimized_width" INT,
+            "optimized_height" INT,
+            FOREIGN KEY ("folder_id") REFERENCES "media_folders"("id") ON DELETE SET NULL
+          )
+        `));
+
+    // `plugin_slug` and `status` are indexed, and MySQL cannot index an unbounded column.
+    await db.execute(sql.raw(`
+          CREATE TABLE IF NOT EXISTS "_system_audit_logs" (
+            "id" INT AUTO_INCREMENT PRIMARY KEY,
+            "plugin_slug" VARCHAR(191) NOT NULL,
+            "action" VARCHAR(191) NOT NULL,
+            "resource" TEXT,
+            "status" VARCHAR(64) NOT NULL,
+            "metadata" JSON,
+            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `));
+
+    // `name` is UNIQUE and `plugin_slug` references _system_plugins, so neither can be TEXT here.
+    await db.execute(sql.raw(`
+          CREATE TABLE IF NOT EXISTS "_system_scheduler_tasks" (
+            "id" INT AUTO_INCREMENT PRIMARY KEY,
+            "name" VARCHAR(191) NOT NULL UNIQUE,
+            "plugin_slug" VARCHAR(191),
+            "schedule" VARCHAR(255) NOT NULL,
+            "type" VARCHAR(32) NOT NULL DEFAULT 'cron',
+            "last_run" TIMESTAMP NULL,
+            "next_run" TIMESTAMP NULL,
+            "is_active" BOOLEAN NOT NULL DEFAULT TRUE,
+            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY ("plugin_slug") REFERENCES "_system_plugins"("slug") ON DELETE CASCADE
           )
         `));
   }

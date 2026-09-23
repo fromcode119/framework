@@ -65,11 +65,11 @@ export class ApplicationUrlUtils {
    * boundary, not an oversight.** A server-to-server call carries `InternalServiceAuth`'s shared
    * secret, so this value decides where a credential is SENT. `readAppBaseUrlFromEnvironment` is
    * setting-first and resolves the frontend from `frontend_url` **or `site_url`** — a content/SEO
-   * setting any editor can change in the CMS, and one that stays populated on a deployment that runs
+   * setting any editor can change in the admin, and one that stays populated on a deployment that runs
    * no frontend at all (api + admin only). Through that path an operator pressing "Restart frontend"
    * would have POSTed the internal secret to whatever host that setting named, outside the
    * deployment. Where an app RUNS is deployment topology; it is declared in the deployment, not in
-   * the CMS.
+   * the admin.
    *
    * `''` therefore means "this deployment has not declared where that app is" — callers must report
    * that rather than guess, which is also what makes the control for an app you do not run render as

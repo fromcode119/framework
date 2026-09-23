@@ -26,7 +26,7 @@ describe('SchemaManager.recordUndeclaredColumns — what may be audited', () => 
 
     await manager.recordUndeclaredColumns([
       { collection: { slug: 'media', fields: [] } as any, pluginSlug: 'system' },
-      { collection: { slug: 'record-versions', fields: [], system: true } as any, pluginSlug: 'cms' },
+      { collection: { slug: 'record-versions', fields: [], system: true } as any, pluginSlug: 'content' },
     ]);
 
     expect(recorded).toEqual([]);

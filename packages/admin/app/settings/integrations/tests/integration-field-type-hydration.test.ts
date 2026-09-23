@@ -18,7 +18,7 @@ describe('integration provider field-type hydration', () => {
       label: 'Shipping Provider',
       providers: [
         {
-          key: 'econt',
+          key: 'courier',
           fields: [
             { name: 'demoMode', label: 'Use Demo API', type: 'boolean' },
             { name: 'username', label: 'Username', type: 'text' },
@@ -28,7 +28,7 @@ describe('integration provider field-type hydration', () => {
         },
       ],
       storedProviders: [
-        { id: 'p1', providerKey: 'econt', enabled: true, config: { password: '__FROMCODE_SAVED_SECRET__', username: 'a@b.c' } },
+        { id: 'p1', providerKey: 'courier', enabled: true, config: { password: '__FROMCODE_SAVED_SECRET__', username: 'a@b.c' } },
       ],
     },
   });
@@ -73,7 +73,7 @@ describe('integration provider field-type hydration', () => {
  */
 describe('saved-secret mask never makes the return trip', () => {
   const provider: any = {
-    key: 'econt',
+    key: 'courier',
     fields: [
       { name: 'username', label: 'Username', type: 'text' },
       { name: 'password', label: 'Password', type: 'password' },
@@ -85,7 +85,7 @@ describe('saved-secret mask never makes the return trip', () => {
 
     for (const serverMask of ['__ATLANTIS_SAVED_SECRET__', '__FROMCODE_SAVED_SECRET__', '__ANY_FUTURE_MASK__']) {
       const editor = IntegrationProviderFormHelper.buildEditorForProvider(
-        { id: 'p1', providerKey: 'econt', enabled: true, config: { username: 'a@b.c', password: serverMask } } as any,
+        { id: 'p1', providerKey: 'courier', enabled: true, config: { username: 'a@b.c', password: serverMask } } as any,
         hydrated,
       );
       const payload = IntegrationProviderFormHelper.buildSavePayload(hydrated, editor);

@@ -20,10 +20,17 @@ import { DialectHelper } from '@core/database/helpers/dialect';
  * `media_ids` is a JSON array rather than a junction table: a share's files are only ever read as a
  * whole, so the join would buy nothing today. The cost is that "which shares contain this file" needs a
  * scan — worth revisiting if media deletion grows an integrity check.
+ *
+ * The access log carries `share_id` as well as `grant_id`, so "what happened across every share this
+ * month" is one query rather than one per grant. Denormalised rather than joined because the log is
+ * append-only: a row's share cannot change after it is written. `created_at` is indexed because every
+ * question the activity screen asks is bounded by a date range.
+ *
+ * Versions 15–18 consolidated; a database that ran them has all four recorded and runs nothing here.
  */
 export class FileSharesAndGrantsMigration extends BaseMigration {
   readonly version = 15;
-  readonly name = 'Create _system_file_shares, _system_file_grants and _system_file_access_log';
+  readonly name = 'Private file shares, grants and their access log';
 
   async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
@@ -68,13 +75,16 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             "outcome" TEXT NOT NULL,
             "ip" TEXT,
             "user_agent" TEXT,
-            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "share_id" INTEGER
           )
         `);
         await db.execute(sql`CREATE UNIQUE INDEX IF NOT EXISTS "idx_file_grants_token_hash" ON "_system_file_grants" ("token_hash")`);
         await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_grants_share" ON "_system_file_grants" ("share_id")`);
         await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_grants_email" ON "_system_file_grants" ("email")`);
         await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_access_log_grant" ON "_system_file_access_log" ("grant_id")`);
+        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_access_log_share" ON "_system_file_access_log" ("share_id")`);
+        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_access_log_created" ON "_system_file_access_log" ("created_at")`);
       },
       mysql: async () => {
         await db.execute(sql.raw(`
@@ -117,7 +127,10 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             ip VARCHAR(64),
             user_agent TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            KEY idx_file_access_log_grant (grant_id)
+            share_id INT NULL,
+            KEY idx_file_access_log_grant (grant_id),
+            KEY idx_file_access_log_share (share_id),
+            KEY idx_file_access_log_created (created_at)
           )
         `));
       },
@@ -158,13 +171,16 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             "outcome" TEXT NOT NULL,
             "ip" TEXT,
             "user_agent" TEXT,
-            "created_at" TEXT DEFAULT CURRENT_TIMESTAMP
+            "created_at" TEXT DEFAULT CURRENT_TIMESTAMP,
+            "share_id" INTEGER
           )
         `));
         await db.execute(sql.raw(`CREATE UNIQUE INDEX IF NOT EXISTS "idx_file_grants_token_hash" ON "_system_file_grants" ("token_hash")`));
         await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_grants_share" ON "_system_file_grants" ("share_id")`));
         await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_grants_email" ON "_system_file_grants" ("email")`));
         await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_access_log_grant" ON "_system_file_access_log" ("grant_id")`));
+        await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_access_log_share" ON "_system_file_access_log" ("share_id")`));
+        await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_access_log_created" ON "_system_file_access_log" ("created_at")`));
       },
     });
   }

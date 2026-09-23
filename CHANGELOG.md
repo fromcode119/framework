@@ -170,7 +170,7 @@ These were legacy duplicates maintained for backward compatibility. All function
 - **Lines Removed**: ~150 lines of deprecated code
 - **Tests Passing**: 175/175 (100%)
 - **Breaking Changes**: Well-documented with migration paths
-- **Plugins Migrated**: 7 plugins (ecommerce, cms, finance, mlm, lms, logistics, forms)
+- **Plugins Migrated**: 7 plugins
 
 ### 🚀 Upgrade Guide
 
@@ -242,7 +242,7 @@ Initial release of the Fromcode framework.
 
 - Plugin architecture with hot-reloading
 - Theme system with dynamic loading
-- CMS, eCommerce, Finance, LMS, MLM, Logistics plugins
+- The first domain plugins
 - Admin dashboard with React + Next.js
 - PostgreSQL database with Drizzle ORM
 - API server with Express

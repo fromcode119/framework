@@ -56,7 +56,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
    * lands — with the store the dispatcher will re-enter, so the two cannot disagree by construction.
    *
    * They have disagreed twice. First on state: this listed every installed plugin with a public API,
-   * including disabled ones, so a guest was told `broadcasts` was there, its `if (!broadcasts) return`
+   * including disabled ones, so a guest was told `ledger` was there, its `if (!ledger) return`
    * guard passed, the call went out, and the host answered `cannot read "registerProvider" of null` —
    * by which point the plugin had logged success. That was fixed by filtering to ACTIVE. Then on the
    * TENANT: the snapshot still had no tenant axis while the resolver did, so during the per-site
@@ -102,7 +102,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     // The COUNT per peer, not just its name. A peer offered with zero functions is one the caller
     // can see and cannot call: `has()` answers true, every method is undefined, and nothing is
     // refused or logged anywhere. Without this number that state is indistinguishable from a
-    // healthy snapshot, which is exactly how logistics held logistics-econt for days.
+    // healthy snapshot, which is exactly how a shipping plugin held its courier adapter for days.
     const described = Object.entries(out).map(([key, fns]) => `${key}(${fns.length})`).join(', ');
     this.logger.debug(`peer snapshot: walked ${walked} plugin(s), offered ${offered} — ${described || '(none)'}`);
     return out;
@@ -154,7 +154,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
       await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onInit' }, undefined);
       if (this.wasEnabled) await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onEnable' }, undefined);
       // A fresh process has an EMPTY memory: everything its PEERS registered into it (a fulfilment
-      // provider, a search provider, a broadcasts content provider) is gone with the old one. Say
+      // provider, a search provider, a newsletter content provider) is gone with the old one. Say
       // `plugins:ready` again — the same event peers already re-register on at boot — naming the
       // plugin that came back, so they register with it once more.
       const active = [...this.manager.plugins.values()].filter((p) => PluginState.resolve(p.state) === PluginState.ACTIVE).map((p) => p.manifest.slug);
@@ -192,9 +192,9 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
    * A guest learns which peers it may call from the envelope of an invocation. An HTTP request does
    * not travel that way — it goes straight to the guest's socket — so a guest that serves routes used
    * to answer them against whatever snapshot its last LIFECYCLE call left behind: the one taken at
-   * BOOT, which excludes every sibling that had not finished loading yet. Logistics booted about a
-   * second before logistics-econt and so could never see it, and Econt city search answered an empty
-   * list for every query, for the life of the process.
+   * BOOT, which excludes every sibling that had not finished loading yet. A shipping plugin booted
+   * about a second before its courier adapter and so could never see it, and the courier's city
+   * search answered an empty list for every query, for the life of the process.
    *
    * The snapshot is therefore refreshed before each forwarded request. Peers are tenant-dependent and
    * a guest holds exactly one snapshot, so the comparison is against what was last SENT rather than
@@ -223,7 +223,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
    * When it finishes loading the key set is identical, so a key-only signature matched and the
    * refresh was skipped — the guest kept the empty list for the life of the process.
    *
-   * That is how `logistics` held `logistics-econt` as a peer it could see but not call:
+   * That is how a shipping plugin held its courier adapter as a peer it could see but not call:
    * `providerApi.searchCities` was undefined, and the city search answered nothing.
    */
   private static peerSignature(peers: Record<string, string[]>, enabledPlugins: string[]): string {
