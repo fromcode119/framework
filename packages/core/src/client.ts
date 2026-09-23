@@ -63,6 +63,7 @@ export { EditorSessionParams } from '@core/editor-session-params';
 export { StringUtils } from '@core/utils/string-utils';
 export { NumberUtils } from '@core/utils/number-utils';
 export { MeasurementSystemUtils } from '@core/utils/measurement-system-utils';
+export { TimeFormatUtils } from '@core/utils/time-format-utils';
 export { PlatformCountryUtils } from '@core/utils/platform-country-utils';
 export { PlatformCountrySource } from '@core/enums/platform-country-source.enum';
 export type { IPlatformCountry } from '@core/interfaces/platform-country.interface';
@@ -221,6 +222,7 @@ export { LayoutDiagnosticSeverity } from '@core/layout/enums/layout-diagnostic-s
 export { LayoutDiagnosticCode } from '@core/layout/enums/layout-diagnostic-code.enum';
 export { PluginHealthStatus } from '@core/enums/plugin-health-status.enum';
 export { MeasurementSystem } from '@core/enums/measurement-system.enum';
+export { TimeFormat } from '@core/enums/time-format.enum';
 export { FieldPosition } from '@core/enums/field-position.enum';
 export { EntityParseMode } from '@core/enums/entity-parse-mode.enum';
 export { ThemeSettingType } from '@core/enums/theme-setting-type.enum';

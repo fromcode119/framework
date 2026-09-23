@@ -80,6 +80,11 @@ export class SystemSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'UTC', description: "Default system timezone.", group: "General" },
     },
+    // `locale` is the declared default: a site's times follow its language (24-hour for Bulgarian).
+    [SystemConstants.META_KEY.TIME_FORMAT]: {
+      scope: SettingScope.SITE, writable: true, exposed: true,
+      seed: { value: 'locale', description: "12- or 24-hour clock; 'locale' follows the site's language.", group: "General" },
+    },
     [SystemConstants.META_KEY.ADMIN_APPEARANCE]: { scope: SettingScope.SITE, writable: true, exposed: true },
     [SystemConstants.META_KEY.ADMIN_SHADOWS]: { scope: SettingScope.SITE, writable: true, exposed: true },
     [SystemConstants.META_KEY.PLATFORM_NAME]: {

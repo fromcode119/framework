@@ -11,6 +11,8 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { Explanation } from '@/components/ui/view/explanation.client';
+import { TimezoneUtils } from '@/lib/timezone';
+import { TimeFormat, TimeFormatUtils } from '@fromcode119/core/client';
 
 export class GeneralSystemCards extends PureReactor {
   /** Which of these belong to the PLATFORM — asked of the server, never listed here. */
@@ -25,6 +27,22 @@ export class GeneralSystemCards extends PureReactor {
   @bound
   protected changeTimezone(value: string): void {
     this.setSettings((prev) => ({ ...prev, timezone: value }));
+  }
+
+  @bound
+  protected changeTimeFormat(value: string): void {
+    this.setSettings((prev) => ({ ...prev, time_format: value }));
+  }
+
+  /** The three clocks, with "follow the language" saying which one it currently resolves to. */
+  private get timeFormatOptions(): { label: string; value: string }[] {
+    const language = TimezoneUtils.siteLanguage();
+    const followed = TimeFormatUtils.languageUses12Hour(language) ? '12-hour' : '24-hour';
+    return [
+      { value: TimeFormat.LOCALE.value, label: `Follow the site language${language ? ` (${language}: ${followed})` : ` (${followed})`}` },
+      { value: TimeFormat.H24.value, label: '24-hour (16:02)' },
+      { value: TimeFormat.H12.value, label: '12-hour (4:02 PM)' },
+    ];
   }
 
   @bound
@@ -96,6 +114,23 @@ export class GeneralSystemCards extends PureReactor {
                 triggerClassName="font-bold rounded-xl"
               />
             </SettingRow>
+            {this.shown('time_format') && (
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Clock}
+                title="Time format"
+                description={'12- or 24-hour clock for times across the admin. Unset follows the site language.'}
+              >
+                <Select
+                  value={TimeFormat.resolve(settings.time_format).value}
+                  onChange={this.changeTimeFormat}
+                  options={this.timeFormatOptions}
+                  theme={theme}
+                  className="w-full md:w-80"
+                  triggerClassName="font-bold rounded-xl"
+                />
+              </SettingRow>
+            )}
           </Card>
         )}
 

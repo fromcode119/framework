@@ -107,6 +107,7 @@ export { EditorSessionParams } from '@core/editor-session-params';
 export { StringUtils } from '@core/utils/string-utils';
 export { NumberUtils } from '@core/utils/number-utils';
 export { MeasurementSystemUtils } from '@core/utils/measurement-system-utils';
+export { TimeFormatUtils } from '@core/utils/time-format-utils';
 export { PlatformCountryUtils } from '@core/utils/platform-country-utils';
 export { PlatformCountrySource } from '@core/enums/platform-country-source.enum';
 export type { IPlatformCountry } from '@core/interfaces/platform-country.interface';

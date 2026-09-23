@@ -68,7 +68,7 @@ export class ClientLayoutSidebarStateHooks {
     useLayoutEffect(() => {
       TimezoneUtils.applyDateLocaleTimezonePatch(String(settings?.timezone || ''));
       setTimezoneRenderVersion((value) => value + 1);
-    }, [settings?.timezone]);
+    }, [settings?.timezone, settings?.time_format, settings?.frontend_default_locale, settings?.default_locale]);
 
     React.useEffect(() => {
       ClientLayoutSidebarStateHooks.adminServices.uiPreference.writeSidebarMini(isMini);
