@@ -17,7 +17,7 @@ export class MigrationConsolidationGuard {
   static readonly CONSOLIDATED_THROUGH = 52;
 
   /** The last release that shipped migrations 1–52 individually. */
-  static readonly LAST_UNCONSOLIDATED_RELEASE = 'v0.2.161';
+  static readonly LAST_UNCONSOLIDATED_RELEASE = 'v0.2.162';
 
   /**
    * @param executed the rows already recorded in the migrations table (`name`, `version`).
