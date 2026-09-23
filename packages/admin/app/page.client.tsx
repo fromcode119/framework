@@ -175,7 +175,7 @@ export class AdminPage extends AdminComponent {
               report on, so it gets the steps that change that; everything else gets the working
               board. Both read the same checklist. */}
           {installation?.isFresh ? (
-            <DashboardGettingStarted steps={installation.steps || []} mode={String(installation.mode || '')} storefront={String(installation.storefront || '')} />
+            <DashboardGettingStarted steps={installation.steps || []} mode={String(installation.mode || '')} storefront={String(installation.storefront || '')} scope={installation.scope} />
           ) : (
             <>
               <DashboardNeedsYou />
