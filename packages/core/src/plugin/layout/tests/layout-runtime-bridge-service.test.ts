@@ -57,6 +57,25 @@ describe('LayoutRuntimeBridgeService', () => {
     );
   }
 
+  it('tells subscribers when a layout registers after they first resolved, and stops after unsubscribe', () => {
+    const subject = createSubject();
+    let calls = 0;
+    const unsubscribe = subject.subscribe(() => { calls += 1; });
+
+    expect(subject.resolvePageTarget(POLICY_PRIMARY_TARGET).status).not.toBe(LayoutResolutionStatus.RESOLVED);
+    subject.registerPluginDefaults({
+      namespace: TEST_NAMESPACE,
+      pluginSlug: POLICY_PLUGIN,
+      layouts: [{ namespace: TEST_NAMESPACE, pluginSlug: POLICY_PLUGIN, targetKind: 'page', targetKey: POLICY_PRIMARY_TARGET, component: PluginRenderer }],
+    } as any);
+    expect(calls).toBe(1);
+    expect(subject.resolvePageTarget(POLICY_PRIMARY_TARGET).status).toBe(LayoutResolutionStatus.RESOLVED);
+
+    unsubscribe();
+    subject.unregisterByPlugin(TEST_NAMESPACE, POLICY_PLUGIN);
+    expect(calls).toBe(1);
+  });
+
   it('prefers the highest-priority theme replacement for a page target', () => {
     const subject = createSubject();
 

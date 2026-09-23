@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { RequestContextUtils } from '@core/context/request-context';
+import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 import { CoreServices } from '@core/services/core-services';
 import { ServerCoreServices } from '@core/services/server-core-services';
 import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
@@ -516,7 +517,26 @@ describe('PluginDefaultPageMaterializationRuntimeService inside a site', () => {
     PluginTenantAccess.configure({ find: async () => [{ tenant_id: 't1', plugin_slug: 'shop-plugin', state: 'active' }] });
   });
 
-  afterEach(() => { TenantMode.reset(); PluginTenantAccess.reset(); });
+  afterEach(() => { TenantMode.reset(); PluginTenantAccess.reset(); TenantResolverService.resetShared(); });
+
+  it('materializes nothing into a workspace, which has no storefront to reach it', async () => {
+    TenantResolverService.resetShared();
+    const pages: any[] = [];
+    let metaValue = '';
+    const manager = createManager(pages, () => metaValue, (next) => { metaValue = next; });
+    const pageFind = manager.db.find;
+    manager.db.find = vi.fn(async (table: string, ...rest: any[]) => table === '_system_tenants'
+      ? [{ id: 't1', slug: 't1', primary_host: 't1.example.test', host_aliases: '[]', state: 'active', kind: 'workspace' }]
+      : pageFind(table, ...rest));
+    CoreServices.getInstance().defaultPageContracts.register(contract('shop-plugin', 'shop-index', '/shop'));
+    await PluginTenantAccess.warm('t1');
+
+    const report = await RequestContextUtils.storage.run({ locale: '', tenantId: 't1' }, () =>
+      new PluginDefaultPageMaterializationRuntimeService(manager as any).materialize());
+
+    expect(report).toBeNull();
+    expect(pages).toEqual([]);
+  });
 
   it('materializes only the contracts of plugins the site runs', async () => {
     const pages: any[] = [];

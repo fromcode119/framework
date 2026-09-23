@@ -12,6 +12,22 @@ export class DefaultPageDesignRenderer extends Reactor {
   @prop declare content?: unknown;
   @prop declare entry?: unknown;
 
+  private unsubscribe: (() => void) | null = null;
+
+  /**
+   * The design's component is registered by its plugin's storefront bundle, which for an idle plugin
+   * evaluates AFTER this first rendered. Re-render when layouts change, or the page keeps the empty
+   * box it painted before the design existed.
+   */
+  componentDidMount(): void {
+    this.unsubscribe = CoreServices.getInstance().defaultDesignRuntimeBridge.subscribe(() => this.forceUpdate());
+  }
+
+  componentWillUnmount(): void {
+    this.unsubscribe?.();
+    this.unsubscribe = null;
+  }
+
   render(): ReactNode {
     const activeTheme = (this.context as { activeTheme?: { slug?: string } } | null)?.activeTheme;
     const targetKey = DefaultPageDesignRendererUtils.resolvePageTargetKey(this.entry);

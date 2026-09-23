@@ -8,8 +8,7 @@ import type { IThemeDefaultPageContractOverride } from '@core/default-page-contr
 import { BaseService } from '@core/services/base-service';
 import { CoreServices } from '@core/services/core-services';
 import { StorefrontPagesCollection } from '@core/services/default-page-contract/storefront-pages-collection';
-import { RequestContextUtils } from '@core/context/request-context';
-import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { PluginDefaultPageMaterializationSiteScope } from '@core/services/default-page-contract/plugin-default-page-materialization-site-scope';
 import { SeedPageService } from '@core/services/seed-page-service';
 import { PluginDefaultPageBackfillAssociationService } from '@core/services/default-page-contract/plugin-default-page-backfill-association-service';
 import { PluginDefaultPageMaterializationExecutorService } from '@core/services/default-page-contract/plugin-default-page-materialization-executor-service';
@@ -24,6 +23,7 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
   private readonly executor = new PluginDefaultPageMaterializationExecutorService(this.associationService);
   private readonly seedPageService = new SeedPageService();
   private readonly associationStore: PluginDefaultPageAssociationStore;
+  private readonly siteScope: PluginDefaultPageMaterializationSiteScope;
   private readonly requiredRouteAssertion = new PluginDefaultPageRequiredRouteAssertion(this.serviceName);
 
   constructor(
@@ -32,6 +32,7 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
   ) {
     super();
     this.associationStore = new PluginDefaultPageAssociationStore(manager);
+    this.siteScope = new PluginDefaultPageMaterializationSiteScope(manager.db);
   }
 
   get serviceName(): string {
@@ -44,6 +45,11 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
    * required route — for a caller that treats the throw as a report rather than as its own failure.
    */
   async materialize(requiredRouteOwnerPluginSlug?: string): Promise<IPluginDefaultPageContractMaterializationExecutionReport | null> {
+    // A workspace has no storefront, so nothing is materialized there (see the site scope).
+    if (await this.siteScope.isWorkspace()) {
+      return null;
+    }
+
     const pagesEntry = this.findPagesCollectionEntry();
 
     if (!pagesEntry) {
@@ -61,7 +67,7 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     const preliminaryContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
       overrides,
     });
-    const resolvedContracts = PluginDefaultPageMaterializationRuntimeService.forCurrentTenant(
+    const resolvedContracts = PluginDefaultPageMaterializationSiteScope.contractsForCurrentSite(
       CoreServices.getInstance().defaultPageContractResolution.resolveAll({
         overrides,
         siteState: this.associationStore.createSiteStateSnapshot(associationSnapshot, preliminaryContracts),
@@ -100,16 +106,6 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     this.requiredRouteAssertion.assertRequiredRouteReconciliation(report, resolvedContracts, requiredRouteOwnerPluginSlug);
 
     return report;
-  }
-
-  /**
-   * Inside a SITE (a tenant in the request context) only the contracts of plugins that site runs
-   * materialize: a site without a plugin must not receive that plugin's pages. Outside a
-   * site — the single-site deployment's boot pass — every contract applies, exactly as before.
-   */
-  private static forCurrentTenant(contracts: IResolvedPluginDefaultPageContract[]): IResolvedPluginDefaultPageContract[] {
-    if (!RequestContextUtils.getTenantId()) return contracts;
-    return contracts.filter((contract) => PluginTenantAccess.isEnabledForCurrentTenant(contract.pluginSlug));
   }
 
   static isRequiredRouteFailure(error: unknown): boolean {

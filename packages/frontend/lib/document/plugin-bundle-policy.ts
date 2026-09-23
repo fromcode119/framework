@@ -10,9 +10,15 @@ import { CoercionUtils, PluginFrontendRuntimeUtils } from '@fromcode119/core/cli
  *    before the component decides what to output);
  *  - the render mounted none of its components;
  *  - the theme does not declare it as a dependency (theme code may call its API without rendering it).
+ *
+ * A `recipe` page skips NOTHING. The server renders its body as an empty box (the design's component is
+ * resolved in the browser, see `ThemeSsrContentTree`), so "the render mounted none of its components"
+ * is unknowable there — and the plugin that owns the design is exactly one the server never mounted.
+ * Skipping it left the policy pages with an empty box where the plugin's design should have painted.
  */
 export class PluginBundlePolicy {
-  static skippable(args: { plugins: any[]; usedPlugins: string[]; withServerBundle: string[]; themeDependencies: string[] }): string[] {
+  static skippable(args: { plugins: any[]; usedPlugins: string[]; withServerBundle: string[]; themeDependencies: string[]; rendersRecipe?: boolean }): string[] {
+    if (args.rendersRecipe) return [];
     const used = new Set(args.usedPlugins.map((slug) => String(slug)));
     const server = new Set(args.withServerBundle.map((slug) => String(slug)));
     const deps = new Set(args.themeDependencies.map((slug) => String(slug)));

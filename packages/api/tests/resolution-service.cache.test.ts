@@ -4,6 +4,10 @@ vi.mock('@fromcode119/core', () => ({
   RequestContextUtils: {
     getTenantId: vi.fn(() => siteContext.tenantId),
   },
+  PluginTenantAccess: {
+    warm: vi.fn(async () => undefined),
+    isEnabledForCurrentTenant: vi.fn(() => true),
+  },
   CoreServices: {
     getInstance: vi.fn(),
     reset: vi.fn(),

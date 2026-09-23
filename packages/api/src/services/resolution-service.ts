@@ -1,4 +1,4 @@
-import { CoreServices, HookEventUtils, PluginManager, type IResolvedPluginDefaultPageContract, ThemeManager, SystemConstants, type ICollection, PluginState } from '@fromcode119/core';
+import { CoreServices, HookEventUtils, PluginManager, PluginTenantAccess, RequestContextUtils, type IResolvedPluginDefaultPageContract, ThemeManager, SystemConstants, type ICollection, PluginState } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { ResolutionContractMatchService } from '@api/services/helpers/resolution-contract-match-service';
 import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-service';
@@ -208,9 +208,19 @@ export class ResolutionService {
     return '/:slug';
   }
 
+  /**
+   * Only the contracts of plugins THIS site runs, the same rule the materializer applies. Every
+   * globally active plugin's contract used to apply on every site, so a blank `/shop` on a site
+   * without the shop plugin would take that plugin's design (whose bundle the site never loads) and
+   * the contract fallback could route a path to a plugin the site does not have.
+   */
   private async resolveDefaultPageContracts() {
     const overrides = await this.themeManager.getActiveThemeDefaultPageContractOverrides();
-    return CoreServices.getInstance().defaultPageContractResolution.resolveAll({ overrides });
+    const contracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({ overrides });
+    const tenantId = RequestContextUtils.getTenantId();
+    if (!tenantId) return contracts;
+    await PluginTenantAccess.warm(tenantId);
+    return contracts.filter((contract: IResolvedPluginDefaultPageContract) => PluginTenantAccess.isEnabledForCurrentTenant(contract.pluginSlug));
   }
 
   private findResolvedCollection(
