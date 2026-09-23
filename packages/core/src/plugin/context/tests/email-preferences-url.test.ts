@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EmailContextProxy } from '@core/plugin/context/email';
 import { EmailPreferencesTokenService } from '@core/email/email-preferences-token-service';
 import { SigningSecretService } from '@core/security/signing-secret-service';
+import { SiteBaseUrl } from '@core/tenant/site-base-url';
 
 /**
  * A plugin must be able to put a preferences link in its mail WITHOUT being able to mint one.
@@ -30,6 +31,13 @@ describe('context.email.buildPreferencesUrl', () => {
     expect(url.startsWith('https://shop.example.com/unsubscribe?token=')).toBe(true);
     const token = decodeURIComponent(url.split('token=')[1]);
     expect(EmailPreferencesTokenService.resolveAddress(token, SECRET)).toBe('buyer@example.com');
+  });
+
+  /** The platform host carries no tenant; a multi-site recipient must land on THEIR site. */
+  it('builds the link on the current site host, not the platform', async () => {
+    vi.spyOn(SiteBaseUrl, 'forCurrentSite').mockResolvedValue('http://site.example.test');
+    const url = await email().buildPreferencesUrl('buyer@example.com');
+    expect(url.startsWith('http://site.example.test/unsubscribe?token=')).toBe(true);
   });
 
   it('never points at the API host', async () => {

@@ -40,6 +40,7 @@ import type { IPluginContextUsers } from '@core/plugin/interfaces/plugin-context
 import type { IPluginContextPeople } from '@core/plugin/interfaces/plugin-context-people.interface';
 import type { IPluginContextEntityRecords } from '@core/plugin/interfaces/plugin-context-entity-records.interface';
 import type { IPluginContextTenants } from '@core/plugin/interfaces/plugin-context-tenants.interface';
+import type { IPluginContextSigning } from '@core/plugin/interfaces/plugin-context-signing.interface';
 import type { IPluginContextMeta } from '@core/plugin/interfaces/plugin-context-meta.interface';
 import type { IPluginContextMedia } from '@core/plugin/interfaces/plugin-context-media.interface';
 import type { IPluginContextRecordVersions } from '@core/plugin/interfaces/plugin-context-record-versions.interface';
@@ -158,6 +159,8 @@ export class PluginContext {
    * made there is skipped or refused — `context.tenants.forEach` is how that work is expressed.
    */
   declare readonly tenants: IPluginContextTenants;
+  /** Signatures for the links this plugin hands out, on a key it never sees. See {@link IPluginContextSigning}. */
+  declare readonly signing: IPluginContextSigning;
   /**
    * Run this plugin's schema migrations on the FRAMEWORK's DDL connection.
    *

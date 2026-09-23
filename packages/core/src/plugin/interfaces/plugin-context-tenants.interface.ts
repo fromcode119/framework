@@ -26,4 +26,10 @@ export interface IPluginContextTenants {
 
   /** Whether this deployment serves more than one site. For deciding whether to fan work out. */
   isMultiSite(): Promise<boolean>;
+
+  /**
+   * The absolute base URLs of the site this code is running for — use them for any link that leaves
+   * the platform. Outside a request, or on a single-site deployment, the platform's configured URLs.
+   */
+  baseUrls(): Promise<{ frontend: string; api: string }>;
 }
