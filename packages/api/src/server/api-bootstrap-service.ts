@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SiteBaseUrl, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
+import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, RequestContextUtils, ServerCoreServices, SiteBaseUrl, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
@@ -116,6 +116,24 @@ export class ApiBootstrapService {
         tenantId: row?.tenant_id ?? null,
         value: String(row?.value ?? '').trim(),
       }));
+    });
+
+    // Each site's own `default_locale`, for `context.i18n.defaultLocale()`. Read on the tenant-bound
+    // connection the binder warms it in, so only the site's row and the platform's are visible; only
+    // the SITE's row counts — the platform's is what the caller falls back to anyway.
+    SiteLocaleAccess.configure(async (tenantId: string) => {
+      const db = (manager as any).db;
+      if (!db || !(await db.tableExists(SystemConstants.TABLE.META))) return '';
+      const rows = await db.find(SystemConstants.TABLE.META, { where: { key: SystemConstants.META_KEY.DEFAULT_LOCALE } });
+      const own = (Array.isArray(rows) ? rows : []).find((row: any) => String(row?.tenant_id ?? '') === tenantId);
+      return String(own?.value ?? '');
+    });
+    // A saved locale takes effect on the next request. The hook runs in the saving request, so a site's
+    // save drops that site's value; a platform save drops every site's.
+    manager.hooks.on('system:settings:updated', (payload: any) => {
+      const keys: string[] = Array.isArray(payload?.keys) ? payload.keys : [];
+      if (!keys.includes(SystemConstants.META_KEY.DEFAULT_LOCALE)) return;
+      SiteLocaleAccess.invalidate(RequestContextUtils.getTenantId());
     });
 
     // A changed catalogue must take effect on the NEXT request, not on the next restart. Without

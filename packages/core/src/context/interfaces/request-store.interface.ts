@@ -14,5 +14,11 @@ export interface IRequestStore {
    * from the Host header; see ServerMiddlewareSetup.
    */
   tenantId?: string;
+  /**
+   * The bound SITE's own default locale (Settings → Localization), when it has one. What
+   * `context.i18n.defaultLocale()` answers for work done on a site's behalf; absent in the platform scope
+   * and for a site that set none, where the platform's applies.
+   */
+  siteLocale?: string;
   [key: string]: any;
 }

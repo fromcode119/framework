@@ -1,5 +1,6 @@
 import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
+import { SiteLocaleAccess } from '@core/i18n/site-locale-access';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 import type { TenantRecord } from '@core/tenant/tenant-record';
@@ -62,8 +63,11 @@ export class PerTenantRun {
   ): Promise<boolean> {
     try {
       if (input.before) await input.before(tenantId);
+      // The site's own locale rides along, so a scheduled email or document for this site is written in
+      // its language, exactly as one produced during a request would be.
+      await input.db.withTenant(tenantId, () => SiteLocaleAccess.warm(tenantId));
       await RequestContextUtils.storage.run(
-        { tenantId },
+        { tenantId, siteLocale: SiteLocaleAccess.get(tenantId) || undefined },
         () => input.db.withTenant(tenantId, async () => { await input.work(); }),
       );
       return true;
