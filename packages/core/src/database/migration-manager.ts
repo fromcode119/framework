@@ -3,6 +3,7 @@ import { Logger } from '@core/logging';
 import type { ISystemMigration } from '@core/interfaces/system-migration.interface';
 import { MigrationLoader } from '@core/database/migrations';
 import { MigrationConsolidationGuard } from '@core/database/migration-consolidation-guard';
+import { MigrationTenantScope } from '@core/database/migration-tenant-scope';
 import { SystemConstants } from '@core/constants/system.constants';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 
@@ -49,7 +50,7 @@ export class MigrationManager {
         pluginSlug: this.resolvePluginSlug(migration.name),
         migrationName: migration.name,
       });
-      await migration.up(this.db, sql);
+      await migration.up(this.db, sql, new MigrationTenantScope(this.db));
       await this.db.insert(SystemConstants.TABLE.MIGRATIONS, {
         name: migration.name,
         version: migration.version,
