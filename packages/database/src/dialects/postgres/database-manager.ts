@@ -19,6 +19,7 @@ import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tena
 import { PostgresDeclaredUniqueReconciler } from '@database/dialects/postgres/declared-unique-reconciler';
 import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgres/declared-nullability-reconciler';
 import { PostgresTimestampDefaultReconciler } from '@database/dialects/postgres/timestamp-default-reconciler';
+import { PostgresPointInTimeColumnReconciler } from '@database/dialects/postgres/point-in-time-column-reconciler';
 import { PostgresColumnInspector } from '@database/dialects/postgres/column-inspector';
 import { PlatformPool } from '@database/tenant/platform-pool';
 import type { IColumnStats } from '@database/interfaces/column-stats.interface';
@@ -75,6 +76,9 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
 
   private readonly timestampDefaults =
     new PostgresTimestampDefaultReconciler((sqlText, values) => this.queryRaw(sqlText, values));
+
+  private readonly pointInTimeColumns =
+    new PostgresPointInTimeColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
 
   private readonly columns =
     new PostgresColumnInspector((sqlText, values) => this.queryRaw(sqlText, values));
@@ -156,6 +160,14 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   /** Gives a row-timestamp column its `DEFAULT CURRENT_TIMESTAMP` when it has none. Never replaces one. */
   async ensureTimestampDefault(table: string, column: string): Promise<SchemaReconcileOutcome> {
     return this.timestampDefaults.ensure(table, column);
+  }
+
+  /** Converts a TEXT date/datetime column to `timestamptz` when every value is ISO-8601. */
+  async ensurePointInTimeColumn(table: string, column: string): Promise<SchemaReconcileOutcome> {
+    const outcome = await this.pointInTimeColumns.ensure(table, column);
+    // The write normalizer caches each table's column types; a converted column must be re-read.
+    this.invalidateTableCache(table);
+    return outcome;
   }
 
   /** Counts on THIS connection — under FORCE RLS that is the bound tenant's rows only. */
