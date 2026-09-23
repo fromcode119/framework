@@ -1,4 +1,7 @@
 vi.mock('@fromcode119/core', () => ({
+  RequestContextUtils: {
+    getTenantId: vi.fn(() => undefined),
+  },
   CoreServices: {
     getInstance: vi.fn(),
     reset: vi.fn(),

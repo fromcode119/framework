@@ -1,11 +1,14 @@
-import { EnvUtils, type ICollection } from '@fromcode119/core';
+import { EnvUtils, RequestContextUtils, type ICollection } from '@fromcode119/core';
 
 /**
  * In-process caches for route resolution (`/system/resolve`) — the hottest storefront SSR path.
  *
  * Three caches, each with strict scoping (see the storefront performance audit §1.3/§resolve):
  *
- * 1. **Result LRU** — resolved-slug results keyed on `path|locale|fallback_locale|locale_mode`.
+ * 1. **Result LRU** — resolved-slug results keyed on `site|path|locale|fallback_locale|locale_mode`.
+ *    The SITE is part of the key: one api process serves every site, and the same path names a
+ *    different page on each. Keyed without it, the first site to resolve `/cookies-policy` answered
+ *    that path for every other site for the whole TTL — another site's page, served under this one.
  *    ONLY anonymous (`options.user` absent) non-preview resolutions are cached — content-resolution
  *    gates (paywall/members-only) run with the visitor's identity AFTER `resolveSlugRaw`, so the raw
  *    resolution is identity-free for anonymous visitors and gates still run per request on cache hits.
@@ -16,7 +19,7 @@ import { EnvUtils, type ICollection } from '@fromcode119/core';
  *    the TTL window otherwise.
  *
  * 2. **Permalink structure** — replaces a full `_system_meta` table scan per resolve call with a
- *    30s-TTL cached value, invalidated by the `system:settings:updated` hook (staleness window is
+ *    30s-TTL cached value per site (`_system_meta` is per site), invalidated by the `system:settings:updated` hook (staleness window is
  *    therefore hook-immediate on this instance, ≤30s across other processes).
  *
  * 3. **Collection capability flags** — `hasCustomPermalink`/`hasSlug` per collection object,
@@ -30,7 +33,7 @@ export class ResolutionCacheService {
 
   private readonly ttlMs: number;
   private readonly results = new Map<string, { value: any; expiresAt: number }>();
-  private permalink: { value: string; expiresAt: number } | null = null;
+  private readonly permalinks = new Map<string, { value: string; expiresAt: number }>();
   private readonly collectionFlags = new WeakMap<object, { hasCustomPermalink: boolean; hasSlug: boolean }>();
 
   constructor() {
@@ -51,7 +54,7 @@ export class ResolutionCacheService {
   }
 
   buildKey(normalizedInput: string, options: { locale?: string; fallback_locale?: string; locale_mode?: string }): string {
-    return [normalizedInput, options.locale || '', options.fallback_locale || '', options.locale_mode || ''].join('|');
+    return [ResolutionCacheService.siteScope(), normalizedInput, options.locale || '', options.fallback_locale || '', options.locale_mode || ''].join('|');
   }
 
   /** Returns `{ value }` on a live hit (value deep-cloned), or `null` when absent/expired. */
@@ -92,15 +95,22 @@ export class ResolutionCacheService {
   /** Clear everything (settings changed — permalink structure may have moved). */
   invalidateAll(): void {
     this.results.clear();
-    this.permalink = null;
+    this.permalinks.clear();
   }
 
   /** Permalink structure with a short TTL — replaces the per-call `_system_meta` full scan. */
   async getPermalinkStructure(loader: () => Promise<string>): Promise<string> {
-    if (this.permalink && this.permalink.expiresAt > Date.now()) return this.permalink.value;
+    const scope = ResolutionCacheService.siteScope();
+    const cached = this.permalinks.get(scope);
+    if (cached && cached.expiresAt > Date.now()) return cached.value;
     const value = await loader();
-    this.permalink = { value, expiresAt: Date.now() + ResolutionCacheService.PERMALINK_TTL_MS };
+    this.permalinks.set(scope, { value, expiresAt: Date.now() + ResolutionCacheService.PERMALINK_TTL_MS });
     return value;
+  }
+
+  /** The site this request is served for; empty for a deployment with no sites. */
+  private static siteScope(): string {
+    return String(RequestContextUtils.getTenantId() ?? '').trim();
   }
 
   /** Per-collection field-capability flags, computed once per collection object. */

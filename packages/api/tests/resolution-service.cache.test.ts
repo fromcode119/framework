@@ -1,4 +1,9 @@
+const siteContext = vi.hoisted(() => ({ tenantId: undefined as string | undefined }));
+
 vi.mock('@fromcode119/core', () => ({
+  RequestContextUtils: {
+    getTenantId: vi.fn(() => siteContext.tenantId),
+  },
   CoreServices: {
     getInstance: vi.fn(),
     reset: vi.fn(),
@@ -108,6 +113,7 @@ describe('ResolutionService anonymous result cache', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
+    siteContext.tenantId = undefined;
     if (ORIGINAL_TTL === undefined) delete process.env.RESOLVE_CACHE_TTL_MS;
     else process.env.RESOLVE_CACHE_TTL_MS = ORIGINAL_TTL;
   });
@@ -169,6 +175,40 @@ describe('ResolutionService anonymous result cache', () => {
     const afterFirst = find.mock.calls.length;
     await service.resolveSlug('/contact', { locale: 'en' });
     expect(find.mock.calls.length).toBeGreaterThan(afterFirst); // different key → fresh scan
+  });
+
+  it('keys the cache on the site, so one site never serves another site\'s page', async () => {
+    // One api process serves every site. Keyed on path+locale alone, the first site to resolve a path
+    // answered it for every other site for the whole TTL.
+    const { service, find } = buildHarness({
+      findImpl: (_collection: any, options: any) => options?.query?.slug === 'contact'
+        ? Promise.resolve({ docs: [{ id: siteContext.tenantId === 'site-a' ? 1 : 2, slug: 'contact' }] })
+        : Promise.resolve({ docs: [] }),
+    });
+
+    siteContext.tenantId = 'site-a';
+    const a = await service.resolveSlug('/contact', {});
+    siteContext.tenantId = 'site-b';
+    const b = await service.resolveSlug('/contact', {});
+    const afterB = find.mock.calls.length;
+    siteContext.tenantId = 'site-a';
+    const aAgain = await service.resolveSlug('/contact', {});
+
+    expect(a?.doc?.id).toBe(1);
+    expect(b?.doc?.id).toBe(2);
+    expect(aAgain?.doc?.id).toBe(1);
+    expect(find.mock.calls.length).toBe(afterB); // site-a's own entry is still a cache hit
+  });
+
+  it('keys the permalink-structure cache on the site', async () => {
+    const { service, metaFind } = buildHarness({ findImpl: matchContact });
+
+    siteContext.tenantId = 'site-a';
+    await service.resolveSlug('/contact', {});
+    const afterA = metaFind.mock.calls.length;
+    siteContext.tenantId = 'site-b';
+    await service.resolveSlug('/contact', {});
+    expect(metaFind.mock.calls.length).toBeGreaterThan(afterA); // site-b reads its own structure
   });
 
   it('expires cached results after RESOLVE_CACHE_TTL_MS', async () => {
