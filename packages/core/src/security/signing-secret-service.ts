@@ -37,7 +37,11 @@ export class SigningSecretService {
    * (`user:<id>:totp_secret`, `scim:token`) and deliberately absent from `SystemConstants.META_KEY`
    * so the settings-exposure allow-list can never hand them to a client.
    */
-  private static readonly ROOT_META_KEY = 'system:signing_secret';
+  /**
+   * Public for the site importer, which must not carry a root this deployment cannot open — see
+   * {@link TenantImportRowFilter}.
+   */
+  static readonly ROOT_META_KEY = 'system:signing_secret';
   private static readonly CREATED_AT_META_KEY = 'system:signing_secret_created_at';
 
   /** Domain separator, versioned so a future KDF change cannot silently validate old signatures. */
