@@ -16,6 +16,12 @@ export class RequestContextUtils {
     return trimmed.length > 0 ? trimmed : undefined;
   }
 
+  /** The bound site's own default locale, or undefined (platform scope, or the site set none). */
+  static getSiteLocale(): string | undefined {
+    const locale = String(RequestContextUtils.storage.getStore()?.siteLocale ?? '').trim();
+    return locale.length > 0 ? locale : undefined;
+  }
+
   /**
    * The current request's tenant, or a thrown error.
    *

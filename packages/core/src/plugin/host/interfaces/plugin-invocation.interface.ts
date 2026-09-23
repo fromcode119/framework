@@ -16,6 +16,8 @@ export interface IPluginInvocation {
   token: string;
   tenantId: string | null;
   locale: string;
+  /** The bound site's own default locale ('' when none) — what `context.i18n.defaultLocale()` answers. */
+  siteLocale: string;
   /** Which peer plugin APIs exist right now (`ns:slug` → function names) and which are enabled for this tenant. */
   peers: Record<string, string[]>;
   enabledPlugins: string[];
