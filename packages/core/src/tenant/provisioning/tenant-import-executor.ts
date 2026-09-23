@@ -116,7 +116,7 @@ export class TenantImportExecutor {
     warnings: string[],
   ): Promise<number> {
     const inserter = new TenantRowInserter(this.db, table, tenant.id, remap, files, warnings, this.transitPassphrase);
-    const skipRow = TenantImportExecutor.rowFilter(table, installedPlugins);
+    const skipRow = TenantImportExecutor.rowFilter(table, installedPlugins, this.transitPassphrase);
     let count = 0;
     let skipped = 0;
     let maxId = 0;
@@ -149,8 +149,12 @@ export class TenantImportExecutor {
    * own) and settings of plugins this platform does not have (their FK would fail, and nothing would
    * read them).
    */
-  private static rowFilter(table: TenantTableDescriptor, installedPlugins: Set<string>): (row: Record<string, unknown>) => boolean {
-    return TenantImportRowFilter.forTable(table, installedPlugins);
+  private static rowFilter(
+    table: TenantTableDescriptor,
+    installedPlugins: Set<string>,
+    transitPassphrase: string | null,
+  ): (row: Record<string, unknown>) => boolean {
+    return TenantImportRowFilter.forTable(table, installedPlugins, transitPassphrase ?? undefined);
   }
 
   private async installedPluginSlugs(): Promise<Set<string>> {

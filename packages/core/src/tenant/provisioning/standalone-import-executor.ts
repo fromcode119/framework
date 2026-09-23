@@ -132,7 +132,7 @@ export class StandaloneImportExecutor {
     // A null owner: this deployment has no sites, so there is no id to stamp and, on a fresh install,
     // often no column to stamp it into.
     const inserter = new TenantRowInserter(this.db, table, null, remap, files, warnings, this.transitPassphrase);
-    const skipRow = TenantImportRowFilter.forTable(table, installedPlugins);
+    const skipRow = TenantImportRowFilter.forTable(table, installedPlugins, this.transitPassphrase ?? undefined);
 
     let count = 0;
     let skipped = 0;
