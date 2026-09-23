@@ -10,6 +10,7 @@ import { PluginLoaderMountService } from '@/app/plugin-loader-mount-service';
 import { FrontendApiBaseUrl } from '@/lib/api-base-url';
 import { FrontendRuntimeConfig } from '@/runtime/frontend-runtime-config';
 import { StorefrontBundleLoader } from '@/runtime/storefront-bundle-loader';
+import { LucideIconWarmup } from '@/runtime/lucide-icon-warmup';
 import { OverrideLoaderWarmup } from '@/runtime/override-loader-warmup';
 import { StorefrontHydrator } from '@/runtime/storefront-hydrator';
 import { StorefrontRuntimeGlobals } from '@/runtime/storefront-runtime-globals';
@@ -27,7 +28,7 @@ import { StorefrontRuntimeRoot } from '@/runtime/view/storefront-runtime-root.cl
  *      CSS, variables and plugin head/CSS injections from the document's config;
  *   3. the theme bundle, then every eager plugin bundle, evaluated against that bridge;
  *   4. the seed — the queued registrations folded into the provider's initial state together with the
- *      inlined `/system/frontend` payload — then every code-split override's module resolved (warm-up), and
+ *      inlined `/system/frontend` payload — then every code-split override's module and every icon the markup draws resolved (warm-up), and
  *      inlined `/system/frontend` payload and the locale's translations — adopted by the pre-boot
  *      bridge too, so `ContextBridge.t()`/`getState()` answer from it during the hydrating render;
  *   5. `hydrateRoot(#fc-root, <StorefrontRuntimeRoot seed><StorefrontPageView/></>)`, or the
@@ -76,8 +77,10 @@ export class FrontendRuntimeEntry {
     FrontendRuntimeEntry.mountAssets(config, apiUrl);
     const preloaded = await StorefrontBundleLoader.loadEager(config.activeTheme, config.plugins, apiUrl, config.usedPlugins);
     const registrations = PreBootRegistrationSeed.consume(window as unknown as Record<string, any>);
-    // Every code-split renderer resolved before hydration — see OverrideLoaderWarmup.
-    await OverrideLoaderWarmup.warm(registrations.overrides);
+    // Every code-split renderer and every icon the server markup draws, resolved before hydration —
+    // see OverrideLoaderWarmup and LucideIconWarmup.
+    const host = document.getElementById(StorefrontHydrator.ROOT_ID);
+    await Promise.all([OverrideLoaderWarmup.warm(registrations.overrides), LucideIconWarmup.warm(host)]);
     const seed = PluginsProviderSeed.fromFrontendConfig({
       config: config.frontend,
       registrations,
@@ -94,7 +97,7 @@ export class FrontendRuntimeEntry {
       <StorefrontRuntimeRoot apiUrl={apiUrl} seed={seed} preloadedModules={preloaded} skipPlugins={config.skipPlugins}>{children}</StorefrontRuntimeRoot>
     );
     new StorefrontHydrator({
-      host: document.getElementById(StorefrontHydrator.ROOT_ID),
+      host,
       config,
       registrations,
       hydrateTree: root(<StorefrontPageView config={config} />),

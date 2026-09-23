@@ -65,7 +65,15 @@ export class ThemeWorldBuilder {
 
     // Plugins are imported AFTER the theme so a theme override, registered at the higher priority,
     // still wins — the browser load order this mirrors is the same.
-    await Promise.all(ThemeWorldBuilder.pluginEntries().map((entry) => ThemeWorldBuilder.importBundle(entry, cacheBuster)));
+    //
+    // Only the plugins THIS SITE runs. The plugins directory is shared by every site on the deployment,
+    // and the browser loads only the site's own set; importing every bundle on disk let a plugin the
+    // site does not run register its overrides here. The server then rendered that plugin's component
+    // (a contact form on a site without the forms plugin), the browser rendered the theme's fallback,
+    // and hydration failed with React #418 — leaving the page on the fallback forever.
+    const pluginEntries = ThemeWorldBuilder.pluginEntries()
+      .filter((entry) => generation.pluginSlugs.has(ThemeWorldBuilder.slugOf(entry)));
+    await Promise.all(pluginEntries.map((entry) => ThemeWorldBuilder.importBundle(entry, cacheBuster)));
     await state.warmOverrides((component) => runtime.wrapOverride(component));
     ThemeServerRegistry.publishGeneration(generation.signature, state);
     console.info(`[frontend] SSR bundles loaded for ${generation.signature} (${ThemeServerRegistry.publishedSignatures().length} resident in pid ${process.pid})`);
@@ -74,7 +82,12 @@ export class ThemeWorldBuilder {
 
   /** Slugs of the plugins that ship a server bundle here — the ones whose registrations the server render sees in full. */
   static pluginsWithServerBundle(): string[] {
-    return ThemeWorldBuilder.pluginEntries().map((entry) => basename(dirname(dirname(entry))));
+    return ThemeWorldBuilder.pluginEntries().map((entry) => ThemeWorldBuilder.slugOf(entry));
+  }
+
+  /** `plugins/<slug>/ui-ssr/entry.mjs` → `<slug>`. */
+  private static slugOf(entry: string): string {
+    return basename(dirname(dirname(entry)));
   }
 
   /** Every `plugins/<slug>/ui-ssr/entry.mjs` on disk. A plugin without one simply renders client-side. */

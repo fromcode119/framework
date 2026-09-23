@@ -51,6 +51,15 @@ describe('ThemeSsrGeneration', () => {
     expect(reversed.matches(ascending)).toBe(true);
   });
 
+  it('names the plugins the site runs, which is all its server world may import', () => {
+    const generation = ThemeSsrGeneration.from(config('1.0.434', [
+      { slug: 'zeta', version: '2.0.0' },
+      { slug: 'beta', version: '3.1.0' },
+    ]));
+    expect([...generation.pluginSlugs].sort()).toEqual(['beta', 'zeta']);
+    expect(ThemeSsrGeneration.from(config('1.0.434', [])).pluginSlugs.size).toBe(0);
+  });
+
   it('reports no theme slug when the config names none, so the render bails instead of guessing', () => {
     expect(ThemeSsrGeneration.from(null).themeSlug).toBe('');
     expect(ThemeSsrGeneration.from({}).themeSlug).toBe('');
