@@ -5,17 +5,19 @@ export class SecretService {
   /**
    * The sentinel a masked secret is shown as, so a form can post a config back untouched.
    *
-   * It is NEVER persisted, and an earlier version of this comment claiming otherwise was wrong —
-   * it cost a real repair, because it read as "renaming needs a data migration". Every write path
-   * substitutes the stored value for the mask BEFORE storage
+   * This carried the pre-rename product name long after everything else moved, because the comment
+   * here claimed the value is PERSISTED and that renaming it needs a migration rewriting stored
+   * rows. That was wrong. Every write path substitutes the stored value for the mask BEFORE storage
    * (`IntegrationStoredProviderService.resolveStoredConfig` and the plugin-settings context both
    * do), and a secret is written as `enc:v1:` ciphertext or as `''`. A sweep of all 1,681 text and
-   * JSON columns on 2026-09-22 found zero rows holding it, in either spelling.
+   * JSON columns on 2026-09-22 found zero rows holding it, in any spelling, and the admin blanks
+   * secret fields on the way in so the mask never makes the return trip either.
    *
-   * So the literal is safe to change; it only has to agree with itself within one running process,
-   * and both the mask and the recognise side call {@link SecretService.getSavedSecretMask}.
+   * It only has to agree with itself inside one running process, and both the masking and the
+   * recognising side call {@link SecretService.getSavedSecretMask} — so it is free to follow the
+   * product's naming like every other `ATLANTIS_*` name in the tree.
    */
-  private static readonly DEFAULT_SAVED_SECRET_MASK = '__FROMCODE_SAVED_SECRET__';
+  private static readonly DEFAULT_SAVED_SECRET_MASK = '__ATLANTIS_SAVED_SECRET__';
 
   static getSavedSecretMask(): string {
     return String(process.env.INTEGRATION_SECRET_MASK || '').trim() || SecretService.DEFAULT_SAVED_SECRET_MASK;
