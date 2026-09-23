@@ -9,7 +9,7 @@ import { TimeFormat } from '@core/enums/time-format.enum';
  */
 export class TimeFormatUtils {
   /** `h12` or `h23` for `Intl.DateTimeFormat`'s `hourCycle`. */
-  static hourCycle(format: unknown, siteLocale: string): 'h12' | 'h23' {
+  static hourCycle(format: unknown, siteLocale: string): Intl.DateTimeFormatOptions['hourCycle'] {
     const resolved = TimeFormat.resolve(format);
     if (resolved === TimeFormat.H12) return 'h12';
     if (resolved === TimeFormat.H24) return 'h23';

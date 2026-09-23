@@ -11,7 +11,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { Explanation } from '@/components/ui/view/explanation.client';
-import { TimezoneUtils } from '@/lib/timezone';
+import { SiteClock } from '@/lib/site-clock';
 import { TimeFormat, TimeFormatUtils } from '@fromcode119/core/client';
 
 export class GeneralSystemCards extends PureReactor {
@@ -36,7 +36,7 @@ export class GeneralSystemCards extends PureReactor {
 
   /** The three clocks, with "follow the language" saying which one it currently resolves to. */
   private get timeFormatOptions(): { label: string; value: string }[] {
-    const language = TimezoneUtils.siteLanguage();
+    const language = SiteClock.siteLanguage();
     const followed = TimeFormatUtils.languageUses12Hour(language) ? '12-hour' : '24-hour';
     return [
       { value: TimeFormat.LOCALE.value, label: `Follow the site language${language ? ` (${language}: ${followed})` : ` (${followed})`}` },
