@@ -20,7 +20,7 @@ describe('SecretTransitResealer.readableHere', () => {
   afterEach(() => { if (previous === undefined) delete process.env.SECRET_KEY; else process.env.SECRET_KEY = previous; });
 
   it('is true for a settings row this deployment encrypted itself', () => {
-    const row = JSON.stringify({ providers: [{ id: 'econt', config: { username: SecretService.encrypt('a-user'), password: SecretService.encrypt('a-pass') } }] });
+    const row = JSON.stringify({ providers: [{ id: 'courier', config: { username: SecretService.encrypt('a-user'), password: SecretService.encrypt('a-pass') } }] });
     expect(SecretTransitResealer.readableHere(row)).toBe(true);
   });
 

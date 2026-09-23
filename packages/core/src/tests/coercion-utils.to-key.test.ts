@@ -4,7 +4,7 @@ import { CoercionUtils } from '@core/utils/coercion-utils';
 describe('CoercionUtils.toKey', () => {
   it('gives the comparison form: trimmed and lower-cased', () => {
     expect(CoercionUtils.toKey('  OpenAI  ')).toBe('openai');
-    expect(CoercionUtils.toKey('ECONT')).toBe('econt');
+    expect(CoercionUtils.toKey('COURIER')).toBe('courier');
   });
 
   it('answers empty for anything with no meaningful string form, like toString does', () => {

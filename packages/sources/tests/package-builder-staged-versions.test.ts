@@ -45,9 +45,9 @@ describe('PackageBuilder — staged versions', () => {
   });
 
   it('finds a hyphenated slug’s own versions', () => {
-    stage('logistics-econt-0.1.34', 'logistics-econt-0.1.2');
+    stage('shipping-adapter-0.1.34', 'shipping-adapter-0.1.2');
 
-    expect(builder.listStagedVersions(ExtensionScope.PLUGIN, 'logistics-econt'))
+    expect(builder.listStagedVersions(ExtensionScope.PLUGIN, 'shipping-adapter'))
       .toEqual(['0.1.34', '0.1.2']);
   });
 

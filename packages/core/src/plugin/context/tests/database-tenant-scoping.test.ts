@@ -44,7 +44,7 @@ describe('context.db tenant scoping', () => {
    * exists before normalising it. That question returns no rows, so it cannot leak across tenants —
    * but the tenant injection used to demand a tenant for it anyway while the boot-access skip waved it
    * through as harmless. The two disagreeing killed gamma at boot with "No tenant in the request
-   * context", and took delta-econt down with it as a dependant.
+   * context", and took delta-shipping down with it as a dependant.
    */
   it('answers a shape question at boot, with no tenant, rather than failing the plugin', async () => {
     const manager = buildManager();

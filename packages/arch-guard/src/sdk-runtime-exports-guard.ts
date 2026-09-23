@@ -18,7 +18,7 @@ import type { ISdkRuntimeExportOffender } from './interfaces/sdk-runtime-export-
  * it is the runtime map that does not, and no compiler reads that map.
  *
  * This cost two releases on 2026-09-18. `IBrowserCookieOptions.sameSite` is typed as `CookieSameSite`,
- * so privacy's consent store and mlm's referral store both import the enum as a value; it was missing
+ * so one plugin's consent store and another's referral store import the enum as a value; it was missing
  * from the list, and both plugins shipped with dead storefront bundles.
  *
  * TWO LISTS, not one. The generated module reads each key off the runtime bridge object, so a name on
@@ -30,7 +30,7 @@ import type { ISdkRuntimeExportOffender } from './interfaces/sdk-runtime-export-
  * read, and a guard that silently scans an empty set is indistinguishable from a clean one. So this
  * reads source — which means it has to tell a VALUE import from a type one, because `import type` and
  * a name used only in a type position are both erased by esbuild and reach no import map. That
- * distinction is not cosmetic: ecommerce imports `MeasurementSystem`, which is NOT on the list and is
+ * distinction is not cosmetic: a shop plugin imports `MeasurementSystem`, which is NOT on the list and is
  * NOT a defect, because every use of it is a type annotation.
  */
 export class SdkRuntimeExportsGuard {

@@ -3,14 +3,14 @@ import { CollectionIdentityService } from '@core/services/collection-identity-se
 
 /**
  * Two plugins may name a collection the same thing, and several do: `categories` belongs to both
- * ecommerce and cms, `tags` to more than that. A reference that names its plugin must land inside
- * that plugin.
+ * a catalog plugin and a content plugin, `tags` to more than that. A reference that names its
+ * plugin must land inside that plugin.
  *
- * It did not. The candidate set for `ecommerce-categories` includes the bare tail `categories` so
- * that legacy unprefixed references keep working, and the CMS collection's `shortSlug` is exactly
- * `categories` — so the match came down to registry order. On a real catalogue CMS won: every
- * product's category id was looked up in `fcp_cms_categories`, 404'd, and rendered as
- * "Deleted item (13)" while category 13 sat in `fcp_ecommerce_categories` the whole time. Nothing
+ * It did not. The candidate set for `catalog-categories` includes the bare tail `categories` so
+ * that legacy unprefixed references keep working, and the content plugin's `shortSlug` is exactly
+ * `categories` — so the match came down to registry order. On a real catalogue the content plugin
+ * won: every product's category id was looked up in the content plugin's table, 404'd, and rendered as
+ * "Deleted item (13)" while category 13 sat in `fcp_catalog_categories` the whole time. Nothing
  * logged, and the field declaration was correct.
  *
  * The registry here is ordered CMS-first deliberately — that is the order that fails.
@@ -20,12 +20,12 @@ describe('CollectionIdentityService plugin-scoped slug resolution', () => {
 
   const collections = [
     { slug: 'cms-categories', shortSlug: 'categories', pluginSlug: 'cms' },
-    { slug: 'ecommerce-categories', shortSlug: 'categories', pluginSlug: 'ecommerce' },
+    { slug: 'catalog-categories', shortSlug: 'categories', pluginSlug: 'catalog' },
     { slug: 'media', shortSlug: 'media', pluginSlug: '' },
   ];
 
   it('resolves a prefixed reference to its OWN plugin, not to the one registered first', () => {
-    expect(service.resolveRegisteredSlug('ecommerce-categories', collections)).toBe('ecommerce-categories');
+    expect(service.resolveRegisteredSlug('catalog-categories', collections)).toBe('catalog-categories');
   });
 
   it('resolves the other side of the same collision correctly too', () => {
@@ -33,16 +33,16 @@ describe('CollectionIdentityService plugin-scoped slug resolution', () => {
   });
 
   it('honours the @plugin/collection spelling', () => {
-    expect(service.resolveRegisteredSlug('@ecommerce/categories', collections)).toBe('ecommerce-categories');
+    expect(service.resolveRegisteredSlug('@catalog/categories', collections)).toBe('catalog-categories');
   });
 
   it('honours the physical table spelling', () => {
-    expect(service.resolveRegisteredSlug('ecommerce_categories', collections)).toBe('ecommerce-categories');
+    expect(service.resolveRegisteredSlug('catalog_categories', collections)).toBe('catalog-categories');
   });
 
   /** An explicit plugin argument is a filter, so it must never widen to another plugin's match. */
   it('keeps an explicit plugin filter narrow', () => {
-    expect(service.resolveRegisteredSlug('categories', collections, 'ecommerce')).toBe('ecommerce-categories');
+    expect(service.resolveRegisteredSlug('categories', collections, 'catalog')).toBe('catalog-categories');
     expect(service.resolveRegisteredSlug('categories', collections, 'cms')).toBe('cms-categories');
   });
 
@@ -57,12 +57,12 @@ describe('CollectionIdentityService plugin-scoped slug resolution', () => {
    * hyphenated collection name that is not a plugin prefix.
    */
   it('falls back to the unrestricted pass when the implied plugin does not exist', () => {
-    const withHyphenatedName = [{ slug: 'product-tags', shortSlug: 'product-tags', pluginSlug: 'ecommerce' }];
+    const withHyphenatedName = [{ slug: 'product-tags', shortSlug: 'product-tags', pluginSlug: 'catalog' }];
     expect(service.resolveRegisteredSlug('product-tags', withHyphenatedName)).toBe('product-tags');
   });
 
   it('returns the reference unchanged when nothing matches', () => {
-    expect(service.resolveRegisteredSlug('ecommerce-widgets', collections)).toBe('ecommerce-widgets');
+    expect(service.resolveRegisteredSlug('catalog-widgets', collections)).toBe('catalog-widgets');
   });
 
   it('returns empty for an empty reference', () => {

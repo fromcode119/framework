@@ -188,8 +188,8 @@ export class RestWriteController {
 
       // `beforeDelete` is declared in the hook vocabulary and on ICollection, and NOTHING dispatched
       // it — the delete path only emitted the past-tense `deleted` notification. That dead contract
-      // has already cost once: CMS listened on beforeDelete/afterDelete, never heard anything, and
-      // ecommerce's product->page references were left dangling when a page was removed.
+      // has already cost once: a content plugin listened on beforeDelete/afterDelete, never heard
+      // anything, and a shop plugin's product->page references were left dangling when a page was removed.
       //
       // It has to fire here, BEFORE the row goes, because that is the only moment a listener can still
       // read what it is about to lose — an order's number, say, to check what it leaves behind. After

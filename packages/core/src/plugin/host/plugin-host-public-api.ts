@@ -28,7 +28,7 @@ export class PluginHostPublicApi {
        * 'function'` → skip). With no methods the portable view sends the object as PLAIN DATA, so a
        * guest awaiting another ISOLATED plugin's public API received `{}`: truthy, and empty.
        *
-       * That is why `logistics` could hold `logistics-econt` as a peer, pass every `has()` check, and
+       * That is why a shipping plugin could hold its courier adapter as a peer, pass every `has()`, and
        * still find `searchCities` undefined — and it applied to every guest-to-guest public API call
        * on the platform, not just this pair.
        */

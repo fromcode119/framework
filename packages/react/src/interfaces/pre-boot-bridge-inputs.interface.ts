@@ -10,7 +10,7 @@ export interface IPreBootBridgeInputs {
   translations: Record<string, any>;
   /** Shared with the provider seed, so a client registered at evaluation is in the live registry. */
   pluginApiStore: PluginApiRegistryStore;
-  /** Shared with the provider seed, so `on()` subscriptions made at evaluation receive live `emit()`s. */
+  /** Shared with the provider seed, so `on()` listeners registered at evaluation receive live `emit()`s. */
   events: Map<string, Set<(data: any) => void>>;
   /** The public `PluginsProvider` class (handed to bundles through the bridge). */
   PluginsProvider: unknown;

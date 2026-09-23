@@ -3,7 +3,7 @@ import type { IPluginInvocation } from '@core/plugin/host/interfaces/plugin-invo
 /**
  * What the guest knows about the platform around it, refreshed from every invocation envelope.
  *
- * `context.plugins.has/get/optional/isEnabled` are SYNCHRONOUS in the contract (`if (mlm) …`), so
+ * `context.plugins.has/get/optional/isEnabled` are SYNCHRONOUS in the contract (`if (ledger) …`), so
  * the guest cannot ask the host each time. The host therefore sends, with every piece of work, which
  * peer APIs exist and which plugins the current tenant runs; these answers come from that snapshot.
  */

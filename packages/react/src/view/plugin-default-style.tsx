@@ -17,7 +17,7 @@ import { Platform, PureReactor, prop } from '@fromcode119/react-class-components
  * defaults and strip the design's own spacing. Prepending keeps plain cascade semantics.
  */
 export class PluginDefaultStyle extends PureReactor {
-  /** Unique per surface: `<plugin>-<surface>` (`ecommerce-collection`, `forms-contact`). */
+  /** Unique per surface: `<plugin>-<surface>` (`catalog-collection`, `contact-form`). */
   @prop declare styleKey: string;
   /** The sheet's text — the plugin's `.css` file imported as text. */
   @prop declare css: string;

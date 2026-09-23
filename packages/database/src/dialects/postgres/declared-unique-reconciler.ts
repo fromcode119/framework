@@ -10,7 +10,7 @@ import type { ISqlRunner } from '@database/interfaces/sql-runner.interface';
  * ADD COLUMN. Declaring it on a column that already existed did nothing at all: the plan
  * fingerprinted it and no DDL followed. So a plugin author who added the constraint to an existing
  * field got silence, and the only way to enforce it was to issue the DDL by hand — which is exactly
- * what mlm did, on the request connection, which is not the table's owner, so it failed on every
+ * what one plugin did, on the request connection, which is not the table's owner, so it failed on every
  * boot and the uniqueness was never enforced.
  *
  * NOT tenancy, despite living beside it: this was parked with the RLS SQL only because the isolation

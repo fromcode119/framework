@@ -5,7 +5,7 @@ import { DialectHelper } from '@core/database/helpers/dialect';
 /**
  * Additive: add a `metadata` JSON column to `people_addresses`. The shared address book exposes a
  * fixed set of columns (label, full_name, address_line1/2, city, postal_code, country, phone,
- * is_default); plugin-specific delivery binding (e.g. Econt city/office, delivery provider) is stashed
+ * is_default); plugin-specific delivery binding (e.g. courier city/office, delivery provider) is stashed
  * here as a JSON blob so the shared table never grows a per-plugin column. Idempotent — runs once and
  * tolerates the column already existing.
  */

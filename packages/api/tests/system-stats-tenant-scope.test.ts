@@ -20,11 +20,11 @@ import { AdminScope, TenantMode } from '@fromcode119/core';
 const PLUGINS = [
   { manifest: { slug: 'cms', sandbox: true }, state: 'active', isSandboxed: true },
   { manifest: { slug: 'seo', sandbox: false }, state: 'active', isSandboxed: false },
-  { manifest: { slug: 'mlm', sandbox: true }, state: 'active', isSandboxed: true },
+  { manifest: { slug: 'referrals', sandbox: true }, state: 'active', isSandboxed: true },
 ];
 
 const SUMMARY = {
-  sandbox: { processes: [{ pid: 1, slug: 'mlm' }] },
+  sandbox: { processes: [{ pid: 1, slug: 'referrals' }] },
   hostMemory: { rssBytes: 123 },
   monitor: { denials: 0 },
   pluginIsolation: {

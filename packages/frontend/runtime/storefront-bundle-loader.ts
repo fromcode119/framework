@@ -20,7 +20,7 @@ import type { RuntimeModuleRef } from '@/app/runtime-module-ref';
  * mounted (`usedPlugins`). Its markup is already on the page, so its registrations are part of the tree
  * being hydrated — waiting for browser idle meant the server had painted the section and the client's
  * first render had not, which is a hydration mismatch and a full re-mount of the page. The home page did
- * this on every load through the theme's social-proof testimonials section. `loadStrategy: 'idle'` is
+ * this on every load through the theme's testimonials section. `loadStrategy: 'idle'` is
  * the author saying "not needed up front"; the server having rendered it says otherwise for THIS page.
  */
 export class StorefrontBundleLoader {

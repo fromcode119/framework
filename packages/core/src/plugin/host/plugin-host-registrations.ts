@@ -68,7 +68,7 @@ export class PluginHostRegistrations {
     // The context's `mcp` proxy clears the plugin's tools only on the FIRST registration of its
     // lifetime — right for the in-process disable/enable cycle it was written for, wrong for a guest
     // that is relaunched under the SAME context: its second boot re-registered every tool and the
-    // registry refused with "already registered", so a restarted ecommerce or finance lost its MCP
+    // registry refused with "already registered", so a restarted plugin lost its MCP
     // tools until the api restarted. The host owns the guest's registrations, so it clears them here.
     McpRegistryProvider.get().unregisterOwner(this.slug);
   }

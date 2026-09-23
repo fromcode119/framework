@@ -76,7 +76,7 @@ export class NextConfigEnvironment {
   /**
    * `.framework.local` -> `['framework.local', '**.framework.local']`. The double star is deliberate:
    * Next's matcher gives `*` exactly ONE label, so `*.framework.local` would allow
-   * `tagiqx.framework.local` and still block the workspace host `app.tagiqx.framework.local`. `**` is
+   * `acme.framework.local` and still block the workspace host `app.acme.framework.local`. `**` is
    * the recursive form (it is what Next's own built-in `**.localhost` entry uses), and the apex is
    * listed separately because a wildcard there is rejected by design.
    *

@@ -40,7 +40,7 @@ describe('SourceRepositoryService — releasing a stored token', () => {
   it.each([
     ['another host', 'https://attacker.example.com/fromcode119/plugin-forms.git'],
     ['another owner', 'https://github.com/someone-else/plugin-forms.git'],
-    ['another repository', 'https://github.com/fromcode119/plugin-ecommerce.git'],
+    ['another repository', 'https://github.com/fromcode119/plugin-catalog.git'],
     ['the host as a prefix only', 'https://github.com/fromcode119/plugin-forms.git.attacker.com'],
     ['an empty URL', ''],
   ])('refuses to release it to %s', async (_label, requested) => {

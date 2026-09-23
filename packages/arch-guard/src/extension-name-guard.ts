@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { SourceTree } from './source-tree';
 import { FrameworkRoot } from './cli/framework-root';
+import { DistinctiveNameScan } from './distinctive-name-scan';
 
 /**
  * The framework names no extension — enforced, not asked for.
@@ -10,9 +11,9 @@ import { FrameworkRoot } from './cli/framework-root';
  * A slug inside `packages/**` makes the framework know about a product built on it, and it has gone
  * wrong repeatedly: a table name in a doc comment, a fixture, a seeded setting value. Three earlier
  * attempts at a guard were abandoned, and the reason is worth writing down, because it is what shapes
- * this one: extension slugs are ORDINARY ENGLISH. `hub`, `search`, `forms`, `cms`, `marketplace`,
- * `licensing` — scanning for those words produces almost nothing but false positives, and a guard
- * that cries wolf is turned off within a day.
+ * this one: extension slugs are ORDINARY ENGLISH. `hub`, `search`, `forms`, `marketplace` — words
+ * the framework uses for its own features — scanning for those produces almost nothing but false
+ * positives, and a guard that cries wolf is turned off within a day.
  *
  * So it scans for STRUCTURE instead, the shapes a slug can only have when it is being used AS a slug:
  *
@@ -40,6 +41,11 @@ import { FrameworkRoot } from './cli/framework-root';
  *
  * The slugs are DISCOVERED from the extension directories, never listed here. A list in the framework
  * naming every extension would be the very thing this forbids.
+ *
+ * ONE MORE TIER checks PROSE, which the shapes above never see: a bare word that is a DISTINCTIVE
+ * name — not an English word — anywhere in a framework file, comment and test fixture included. Those
+ * names are held as hashes by {@link DistinctiveNameScan}, which says why. It does not depend on what
+ * is checked out beside the framework, so unlike the shapes it holds in the framework's own CI.
  *
  * IT ALSO CHECKS THE EXTENSIONS, for the neighbouring rule: an extension may name ITSELF, and must not
  * name another. That is the same fault one layer out — a theme reaching into a plugin's domain API, a
@@ -155,13 +161,11 @@ export class ExtensionNameGuard {
     return owned;
   }
 
+  /** Files the prose tier reads: source, and the config and styles that ship beside it. */
+  private static readonly NAMED_FILES = /\.(?:tsx?|[cm]?js|json|css|less)$/;
+
   static run(): number {
     const slugs = ExtensionNameGuard.slugs();
-    if (!slugs.length) {
-      console.log('No extension directories beside the framework; nothing to check against.');
-      return 0;
-    }
-
     const owned = ExtensionNameGuard.frameworkOwned(slugs);
     const checks = slugs.map((slug) => ({
       slug,
@@ -169,26 +173,33 @@ export class ExtensionNameGuard {
       patterns: ExtensionNameGuard.patterns(slug).filter((pattern, at) => !(owned.has(slug) && at === 1)),
     }));
     const framework = SourceTree.areas().filter((area) => area.area === 'framework');
+    const names = new DistinctiveNameScan();
     const findings: string[] = [];
     let scanned = 0;
 
     for (const { dir } of framework) {
-      for (const file of SourceTree.files(dir, (name) => /\.tsx?$/.test(name))) {
+      for (const file of SourceTree.files(dir, (name) => ExtensionNameGuard.NAMED_FILES.test(name))) {
         if (ExtensionNameGuard.EXEMPT.test(file)) continue;
         scanned++;
+        const shaped = /\.tsx?$/.test(file);
 
-        const lines = SourceTree.lines(file);
-        lines.forEach((line, index) => {
-          for (const { slug, patterns } of checks) {
+        SourceTree.lines(file).forEach((line, index) => {
+          const cite = `  ${SourceTree.cite(file)}:${index + 1}`;
+          const body = `\n    ${line.trim().slice(0, 110)}`;
+          for (const { slug, patterns } of shaped ? checks : []) {
             if (!patterns.some((pattern) => pattern.test(line))) continue;
-            findings.push(`  ${SourceTree.cite(file)}:${index + 1}  names "${slug}"\n    ${line.trim().slice(0, 110)}`);
+            findings.push(`${cite}  names "${slug}"${body}`);
             return;
           }
+          const word = names.match(line);
+          if (word) findings.push(`${cite}  names "${word}"${body}`);
         });
       }
     }
 
-    console.log(`Framework files scanned: ${scanned}, against ${slugs.length} extension slug(s) found on disk.`);
+    console.log(slugs.length
+      ? `Framework files scanned: ${scanned}, against ${slugs.length} extension slug(s) found on disk and the distinctive names.`
+      : `Framework files scanned: ${scanned}, against the distinctive names only — no extension directory beside the framework, so the slug shapes had nothing to match.`);
 
     const crossed = ExtensionNameGuard.extensionDirs()
       .flatMap(({ dir, self }) => ExtensionNameGuard.findingsIn(dir, checks, self));

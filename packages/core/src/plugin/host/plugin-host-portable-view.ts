@@ -5,7 +5,7 @@ import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
  *
  * The old fallback was `JSON.parse(JSON.stringify(value))`, and before that a structured clone: both
  * keep the data and drop every method. For a row that is right, but an INTEGRATION CLIENT is behaviour
- * — `context.integrations.get('shipping_provider')` handed the Econt courier client to the guest as a
+ * — `context.integrations.get('shipping_provider')` handed a courier client to the guest as a
  * lifeless copy, so the plugin's own "does this expose a request API?" check failed and every office
  * lookup, quote and waybill call died at the boundary.
  *

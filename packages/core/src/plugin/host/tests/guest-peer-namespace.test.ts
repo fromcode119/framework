@@ -7,7 +7,7 @@ import { PluginGuestPeerNamespace } from '@core/plugin/host/plugin-guest-peer-na
  * It must behave like the in-process facade, because plugin code cannot tell which world it is in.
  * `has` used to exist only as a Proxy TRAP — the `in` operator — while every caller uses it as a
  * METHOD, so `ns.has('finance')` resolved `has` as a plugin slug, found none, returned undefined and
- * threw "ns.has is not a function". That took mlm down on every boot.
+ * threw "ns.has is not a function". That took a plugin down on every boot.
  *
  * The methods that decide control flow must stay SYNCHRONOUS. A remote chain is always truthy, so
  * answering `has` with one would take the branch for a plugin that is not running — worse than the
@@ -28,7 +28,7 @@ describe('the guest namespace proxy', () => {
     const ns = build(['finance']);
 
     expect(ns.has('finance')).toBe(true);
-    expect(ns.has('broadcasts')).toBe(false);
+    expect(ns.has('ledger')).toBe(false);
   });
 
   it('never answers has() with a truthy remote chain for an absent plugin', () => {
@@ -38,7 +38,7 @@ describe('the guest namespace proxy', () => {
   it('get() is null for an absent plugin, so `if (!api) return` works in both worlds', () => {
     const ns = build(['finance']);
 
-    expect(ns.get('broadcasts')).toBeNull();
+    expect(ns.get('ledger')).toBeNull();
     expect(ns.get('finance')).toMatchObject({ __ref: true });
   });
 
@@ -48,7 +48,7 @@ describe('the guest namespace proxy', () => {
 
   it('still resolves a peer by slug, which is the common case', () => {
     expect(build(['finance']).finance).toMatchObject({ __ref: true });
-    expect(build(['finance']).broadcasts).toBeUndefined();
+    expect(build(['finance']).ledger).toBeUndefined();
   });
 
   it('does not let a facade method name shadow a plugin lookup', () => {
@@ -73,6 +73,6 @@ describe('the guest namespace proxy', () => {
 
   it('keeps the `in` operator working', () => {
     expect('finance' in build(['finance'])).toBe(true);
-    expect('broadcasts' in build(['finance'])).toBe(false);
+    expect('ledger' in build(['finance'])).toBe(false);
   });
 });

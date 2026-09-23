@@ -7,7 +7,7 @@ import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remo
  * The guest's view of anything that lives on the host: a chain of property reads and calls that is
  * sent as ONE message when it is awaited.
  *
- * `context.plugins.namespace('org.x').mlm.record(p)` reads like the in-process API and becomes four
+ * `context.plugins.namespace('org.x').ledger.record(p)` reads like the in-process API and becomes four
  * steps. Nothing is sent until the chain is awaited (`then`), so a chain can be built, passed around
  * and awaited once. The current invocation token travels with every call — from the guest's own
  * AsyncLocalStorage, filled by the runtime when the host hands it work.

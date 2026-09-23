@@ -34,10 +34,10 @@ export interface IPendingSchemaDrop {
   /**
    * Installed plugins that were NOT active when this was found.
    *
-   * A field can be declared conditionally — ecommerce declares `licenseProduct` on products only
-   * when the licensing plugin is active — so with one switched off its column looks undeclared while
-   * still holding every row it ever wrote. The operator approving a drop is the only one who knows
-   * whether a disabled plugin is coming back, and they can only know it if they are told.
+   * A field can be declared conditionally — a shop plugin declares `licenseProduct` on products only
+   * while the plugin that issues licences is active — so with one switched off its column looks
+   * undeclared while still holding every row it ever wrote. The operator approving a drop is the only
+   * one who knows whether a disabled plugin is coming back, and they can only know it if they are told.
    *
    * Empty means the declared picture was complete and the finding stands on its own.
    */

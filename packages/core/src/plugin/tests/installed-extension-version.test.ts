@@ -23,9 +23,9 @@ const service = (row: unknown, loaded: Array<{ slug: string; version: string }> 
 
 describe('the installed version of a plugin', () => {
   it('is the recorded row, not the manifest this process loaded', async () => {
-    const query = service({ slug: 'broadcasts', version: '0.1.30' }, [{ slug: 'broadcasts', version: '0.1.29' }]);
+    const query = service({ slug: 'newsletter', version: '0.1.30' }, [{ slug: 'newsletter', version: '0.1.29' }]);
 
-    expect(await query.installedExtensionVersion('broadcasts', ExtensionScope.PLUGIN)).toBe('0.1.30');
+    expect(await query.installedExtensionVersion('newsletter', ExtensionScope.PLUGIN)).toBe('0.1.30');
   });
 
   it('reads the row for the slug being asked about', async () => {

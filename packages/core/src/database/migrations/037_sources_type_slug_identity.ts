@@ -5,10 +5,10 @@ import { Logger } from '@core/logging';
 /**
  * A build source is identified by its KIND and its slug, not by its slug alone.
  *
- * `tagiqx` the plugin, `tagiqx` the theme and `tagiqx` the appearance are three different
+ * `acme` the plugin, `acme` the theme and `acme` the appearance are three different
  * extensions. They clone into three different directories, stage into three different roots and
  * install through three different validators — the disk layout has always known this. Only the
- * table did not, so adding the second one failed with "a build source with slug tagiqx already
+ * table did not, so adding the second one failed with "a build source with slug acme already
  * exists", and the operator was told to rename an extension to work around a missing index.
  *
  * Two shapes exist in the wild and this handles both. A table created by migration 032 declares

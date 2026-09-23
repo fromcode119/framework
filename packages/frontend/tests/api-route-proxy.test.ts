@@ -21,10 +21,10 @@ describe('ApiRouteProxy route', () => {
       }),
     );
 
-    const response = await FrontendApiProxyRoute.GET(new Request('http://frontend.framework.local/api/v1/themes/vselenskiportal88/ui/logo.webp?x=1'));
+    const response = await FrontendApiProxyRoute.GET(new Request('http://frontend.framework.local/api/v1/themes/example-theme/ui/logo.webp?x=1'));
 
     expect(ServerApiUtils.serverFetchInternalResponse).toHaveBeenCalledWith(
-      '/api/v1/themes/vselenskiportal88/ui/logo.webp?x=1',
+      '/api/v1/themes/example-theme/ui/logo.webp?x=1',
       expect.objectContaining({ method: 'GET', headers: expect.any(Headers) }),
     );
     expect(response.status).toBe(200);
@@ -42,10 +42,10 @@ describe('ApiRouteProxy route', () => {
       }),
     );
 
-    const response = await FrontendApiProxyRoute.HEAD(new Request('http://frontend.framework.local/api/v1/themes/vselenskiportal88/ui/logo.webp', { method: 'HEAD' }));
+    const response = await FrontendApiProxyRoute.HEAD(new Request('http://frontend.framework.local/api/v1/themes/example-theme/ui/logo.webp', { method: 'HEAD' }));
 
     expect(ServerApiUtils.serverFetchInternalResponse).toHaveBeenCalledWith(
-      '/api/v1/themes/vselenskiportal88/ui/logo.webp',
+      '/api/v1/themes/example-theme/ui/logo.webp',
       expect.objectContaining({ method: 'HEAD', headers: expect.any(Headers) }),
     );
     expect(response.status).toBe(200);

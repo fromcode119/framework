@@ -40,7 +40,7 @@ export class IntegrationResolverService {
     // AWAIT on every provider hook here and below: a hook can belong to an ISOLATED plugin, where it is
     // a stand-in that returns a promise. In-process these were synchronous, and the un-awaited promise
     // flowed on as the "config" — validation read `username` off a Promise, found nothing, and every
-    // Econt call failed with "requires field username" while the credentials sat correctly in the
+    // courier call failed with "requires field username" while the credentials sat correctly in the
     // tenant's own row.
     const envCandidate = (await runtime.definition.resolveFromEnv?.()) || null;
 

@@ -12,7 +12,7 @@ import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
  * row-level security reads as belonging to nobody, and the boot sweep says so and moves on.
  *
  * Measured on a real adoption before this existed: 20 rows across 8 tables — a site's pages, its
- * form, its shipping zones and methods, its MLM programs and tiers — all invisible to every tenant
+ * form, its shipping zones and methods, its referral programs and tiers — all invisible to every tenant
  * the moment isolation came on, while the deployment reported a successful adoption.
  *
  * Only the COLUMN and its index, never the policy. A column that is nullable and defaults to NULL

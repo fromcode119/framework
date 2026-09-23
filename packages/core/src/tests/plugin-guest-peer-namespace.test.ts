@@ -5,10 +5,10 @@ import { PluginGuestPeerNamespace } from '@core/plugin/host/plugin-guest-peer-na
  * An isolated plugin has to be able to ask "is that plugin here?" and get the truth.
  *
  * A remote reference is a lazy chain — every property returns another chain, so it is always truthy.
- * In-process, `namespace('org.fromcode').broadcasts` is undefined when broadcasts is not running, and
+ * In-process, `namespace('org.fromcode').ledger` is undefined when ledger is not running, and
  * plugins guard on exactly that. Inside a guest the guard passed for a plugin that did not exist, the
  * call went out anyway, and the host answered `cannot read "registerProvider" of null` — after the
- * plugin had logged "broadcast provider registered" and set its flag.
+ * plugin had logged "provider registered" and set its flag.
  */
 describe('an isolated plugin asking for a peer', () => {
   const remote = { ref: vi.fn(() => ({ marker: 'remote-chain' })) } as any;
@@ -20,21 +20,21 @@ describe('an isolated plugin asking for a peer', () => {
     PluginGuestPeerNamespace.build('org.fromcode', peers(present), remote);
 
   it('hands back a callable reference for a peer that is running', () => {
-    const found = namespaceOf(['org.fromcode:ecommerce']).ecommerce;
+    const found = namespaceOf(['org.fromcode:catalog']).catalog;
 
     expect(found).toBeTruthy();
     expect(remote.ref).toHaveBeenCalled();
   });
 
-  /** The whole point: `if (!broadcasts) return;` must work the same as it does in-process. */
+  /** The whole point: `if (!ledger) return;` must work the same as it does in-process. */
   it('is undefined for a peer that is not running, so the usual guard works', () => {
-    expect(namespaceOf(['org.fromcode:ecommerce']).broadcasts).toBeUndefined();
+    expect(namespaceOf(['org.fromcode:catalog']).ledger).toBeUndefined();
   });
 
   it('answers `in` truthfully too', () => {
-    const namespace = namespaceOf(['org.fromcode:ecommerce']);
+    const namespace = namespaceOf(['org.fromcode:catalog']);
 
-    expect('ecommerce' in namespace).toBe(true);
-    expect('broadcasts' in namespace).toBe(false);
+    expect('catalog' in namespace).toBe(true);
+    expect('ledger' in namespace).toBe(false);
   });
 });

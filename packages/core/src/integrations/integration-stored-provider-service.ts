@@ -40,7 +40,7 @@ export class IntegrationStoredProviderService {
     const storedConfig = this.buildStoredConfig(normalizedType, provider, config || {}, existing?.config || {});
     // AWAIT: a provider hook can belong to an ISOLATED plugin, where it is a stand-in that returns a
     // promise. In-process these were synchronous, and the un-awaited promise then flowed on as the
-    // "config" — validation read `username` off a Promise, found nothing, and every Econt call died with
+    // "config" — validation read `username` off a Promise, found nothing, and every courier call died with
     // "requires field username" while the credentials sat correctly in the tenant's own row.
     const normalizedConfig = provider.normalizeConfig
       ? await provider.normalizeConfig(this.resolveRuntimeConfig(provider, storedConfig))

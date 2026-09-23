@@ -1,7 +1,7 @@
 import { CoercionUtils, PluginFrontendRuntimeUtils } from '@fromcode119/core/client';
 
 /**
- * Which plugin storefront bundles a page can skip. Measured: the ecommerce client site loaded ten plugin
+ * Which plugin storefront bundles a page can skip. Measured: a client shop loaded ten plugin
  * bundles (~430 KB) on every page, most of them for plugins the page never rendered. A bundle is skipped
  * only when ALL of these hold, so nothing client-only can vanish:
  *  - the plugin loads on idle (`ui.loadStrategy: 'idle'`) — an eager plugin is the author saying "always";

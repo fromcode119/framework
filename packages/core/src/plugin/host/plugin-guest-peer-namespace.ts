@@ -11,8 +11,8 @@ export class PluginGuestPeerNamespace {
    * `context.plugins.namespace(ns)` for a guest, answering truthfully about who is there.
    *
    * A remote reference is a lazy chain: every property access returns another chain, so it is ALWAYS
-   * truthy. In-process, `namespace('org.fromcode').broadcasts` is `undefined` when broadcasts is not
-   * running, and plugins guard on exactly that — `if (!broadcasts) return;`. Inside a guest the same
+   * truthy. In-process, `namespace('org.fromcode').ledger` is `undefined` when ledger is not
+   * running, and plugins guard on exactly that — `if (!ledger) return;`. Inside a guest the same
    * guard passed for a plugin that did not exist, the call went out, and the HOST reported
    * `cannot read "registerProvider" of null` while the plugin had already logged success and set its
    * "registered" flag. The failure landed in the api log; the plugin believed the opposite.
@@ -50,7 +50,7 @@ export class PluginGuestPeerNamespace {
      *
      * `has` was previously only a Proxy TRAP — the `in` operator — while plugins call it as a
      * METHOD. So `ns.has('finance')` looked `has` up as if it were a plugin, found no such peer,
-     * returned undefined, and threw "ns.has is not a function". That took mlm down on every boot.
+     * returned undefined, and threw "ns.has is not a function". That took a plugin down on every boot.
      *
      * The three that decide control flow are answered from the peer set the guest already holds, so
      * they stay SYNCHRONOUS exactly as in-process. Returning a remote chain instead would be worse

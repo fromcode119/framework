@@ -171,12 +171,12 @@ describe('SchemaReconciliationService', () => {
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(false);
     const { db, written } = dbWith({ rows: 0, nonNull: 0, nonEmpty: 0, sample: '' });
 
-    // ecommerce declares `licenseProduct` on products only when licensing is ACTIVE. With it off the
+    // A shop plugin declares `licenseProduct` on products only while a licence plugin is ACTIVE. Off, the
     // column looks undeclared while still holding every licence it ever issued — and the queue
     // outlives this boot, so the condition has to travel with the entry.
-    await new SchemaReconciliationService(db).record(planFor(['license_product']), ['licensing', 'lms']);
+    await new SchemaReconciliationService(db).record(planFor(['license_product']), ['plugin-a', 'plugin-b']);
 
-    expect(JSON.parse(written[0].value).inactivePluginsAtScan).toEqual(['licensing', 'lms']);
+    expect(JSON.parse(written[0].value).inactivePluginsAtScan).toEqual(['plugin-a', 'plugin-b']);
   });
 
   it('records an empty caveat when every installed plugin was active', async () => {

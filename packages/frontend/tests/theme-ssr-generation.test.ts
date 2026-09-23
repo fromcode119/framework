@@ -13,7 +13,7 @@ import { ThemeServerRegistry } from '@/lib/ssr/theme-server-registry';
  */
 describe('ThemeSsrGeneration', () => {
   const config = (themeVersion: string, plugins: Array<{ slug: string; version: string }>) => ({
-    activeTheme: { slug: 'vselenskiportal88', version: themeVersion },
+    activeTheme: { slug: 'example-theme', version: themeVersion },
     plugins,
   });
 

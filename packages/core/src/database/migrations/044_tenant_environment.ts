@@ -6,7 +6,7 @@ import { Logger } from '@core/logging';
  * A site may be a COPY, and a copy must not reach the outside world.
  *
  * Migrating a live shop onto the platform means standing up a staging site that holds the real thing:
- * real customers, real Stripe keys, real courier credentials, real MLM payout config. Nothing stopped
+ * real customers, real Stripe keys, real courier credentials, real referral payout config. Nothing stopped
  * it emailing those customers, capturing those cards or booking those shipments — the only switches
  * were `state` (which takes the admin away too) and `visibility` (which only decides who may READ).
  *
