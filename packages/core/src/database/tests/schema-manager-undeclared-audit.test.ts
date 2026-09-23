@@ -73,6 +73,7 @@ describe('SchemaManager.recordUndeclaredColumns — what may be audited', () => 
       ensureDeclaredUnique: async () => ({ state: 'satisfied', reason: '' }),
       ensureDeclaredNullable: async () => ({ state: 'satisfied', reason: '' }),
       ensureTimestampDefault: async () => ({ state: 'satisfied', reason: '' }),
+      ensurePointInTimeColumn: async () => ({ state: 'satisfied', reason: '' }),
     } as any;
 
     await new SchemaManager(db).syncCollection({ slug: 'fcp_orbit_pages', fields: [] } as any);
