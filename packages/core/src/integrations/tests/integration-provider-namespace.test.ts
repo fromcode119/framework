@@ -48,6 +48,16 @@ describe('integration provider namespace', () => {
     expect(read?.[0]?.namespace).toBe('org.fromcode');
   });
 
+  it('providers registered inline with a TYPE get the same stamp', () => {
+    let registered: any = null;
+    const manager: any = { integrations: { registerType: (definition: any) => { registered = definition; } } };
+    const plugin: any = { manifest: { slug: 'logistics-econt', namespace: 'org.fromcode' } };
+    const proxy = IntegrationsContextProxy.createIntegrationsProxy(plugin, manager, { hasCapability: () => true, handleViolation: () => {} } as any);
+    proxy.registerType({ key: 'shipping_provider', label: 'Shipping', providers: [{ key: 'econt', label: 'Econt', create: () => ({}) }] });
+    expect(registered.providers[0]).toMatchObject({ key: 'econt', namespace: 'org.fromcode' });
+    expect(registered.key).toBe('shipping_provider');
+  });
+
   it('registering a provider stamps the registering plugin\'s namespace', () => {
     let registered: any = null;
     const manager: any = { integrations: { registerProvider: (_type: string, provider: any) => { registered = provider; } } };

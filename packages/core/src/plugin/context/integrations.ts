@@ -11,7 +11,12 @@ export class IntegrationsContextProxy {
     const { hasCapability, handleViolation } = security;
     return {
       registerType: (definition: any) => {
-        manager.integrations.registerType(definition);
+        // A type can carry its providers inline (logistics-econt registers Econt this way), so they get
+        // the same namespace stamp as `registerProvider` below.
+        const providers = Array.isArray(definition?.providers)
+          ? definition.providers.map((provider: any) => ({ ...provider, namespace: plugin.manifest.namespace }))
+          : definition?.providers;
+        manager.integrations.registerType({ ...definition, providers });
       },
       registerProvider: (typeKey: string, provider: any) => {
         // The registering plugin's namespace travels with the provider, so a saved integration entry
