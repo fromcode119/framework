@@ -28,7 +28,7 @@ describe('integration provider field-type hydration', () => {
         },
       ],
       storedProviders: [
-        { id: 'p1', providerKey: 'econt', enabled: true, config: { password: '__FROMCODE_SAVED_SECRET__', username: 'a@b.c' } },
+        { id: 'p1', providerKey: 'econt', enabled: true, config: { password: '__ATLANTIS_SAVED_SECRET__', username: 'a@b.c' } },
       ],
     },
   });
@@ -83,6 +83,7 @@ describe('saved-secret mask never makes the return trip', () => {
   it('blanks the secret on the way in and posts blank, whatever mask the server used', () => {
     const hydrated: any = IntegrationsPageUtils.hydrateFieldTypes([{ providers: [provider] }])[0].providers[0];
 
+    // Current, the pre-rename spelling, and an arbitrary future one — the admin must be indifferent.
     for (const serverMask of ['__ATLANTIS_SAVED_SECRET__', '__FROMCODE_SAVED_SECRET__', '__ANY_FUTURE_MASK__']) {
       const editor = IntegrationProviderFormHelper.buildEditorForProvider(
         { id: 'p1', providerKey: 'econt', enabled: true, config: { username: 'a@b.c', password: serverMask } } as any,
