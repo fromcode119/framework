@@ -1,6 +1,7 @@
 import { DateLocaleMethod } from '@/lib/enums/date-locale-method.enum';
 import { Platform } from '@fromcode119/react-class-components';
 import { RuntimeRegistryAccess } from '@fromcode119/core/client';
+import { SiteClock } from '@/lib/site-clock';
 import { IZonedDateParts } from '@/lib/interfaces/zoned-date-parts.interface';
 import { ITimezoneOption } from '@/lib/interfaces/timezone-option.interface';
 import { IDateLocaleFormatter } from '@/lib/interfaces/date-locale-formatter.interface';
@@ -13,6 +14,7 @@ export class TimezoneUtils {
   // format against. Four named fields rather than one anonymous-typed bag — the bag was a data shape
   // declared inline in a class file, which is the thing the conventions forbid.
   private static patchedTimezone: string | null = null;
+  private static patchedHourCycle: string | null = null;
   private static originalToLocaleString: IDateLocaleFormatter | null = null;
   private static originalToLocaleDateString: IDateLocaleFormatter | null = null;
   private static originalToLocaleTimeString: IDateLocaleFormatter | null = null;
@@ -203,12 +205,15 @@ export class TimezoneUtils {
   static applyDateLocaleTimezonePatch(preferredTimezone?: string): string {
       const timezone = TimezoneUtils.resolveSystemTimezone(preferredTimezone);
       if (!Platform.isBrowser) return timezone;
-      if (TimezoneUtils.patchedTimezone === timezone) return timezone;
+      // Keyed on the clock too: changing Settings → Time format must re-patch, not be skipped.
+      const hourCycle = SiteClock.hourCycle();
+      if (TimezoneUtils.patchedTimezone === timezone && TimezoneUtils.patchedHourCycle === (hourCycle ?? null)) return timezone;
 
       TimezoneUtils.patchLocaleMethod(DateLocaleMethod.TO_LOCALE_STRING, timezone);
       TimezoneUtils.patchLocaleMethod(DateLocaleMethod.TO_LOCALE_DATE_STRING, timezone);
       TimezoneUtils.patchLocaleMethod(DateLocaleMethod.TO_LOCALE_TIME_STRING, timezone);
       TimezoneUtils.patchedTimezone = timezone;
+      TimezoneUtils.patchedHourCycle = hourCycle ?? null;
       return timezone;
 
   }
@@ -243,13 +248,20 @@ export class TimezoneUtils {
       .join(' / ');
   }
 
+  /**
+   * The site's timezone and clock, added to whatever the caller asked for.
+   *
+   * The hour cycle comes from Settings → General → Time format: "follow the language" uses the SITE's
+   * language (a Bulgarian shop reads 16:02 even while this admin is in English), or a fixed 12/24-hour
+   * clock. A caller that sets its own `hour12`/`hourCycle` keeps it.
+   */
   private static withTimezoneOption(options: Intl.DateTimeFormatOptions | undefined, timezone: string): Intl.DateTimeFormatOptions {
-    if (!options || typeof options !== 'object' || Array.isArray(options)) {
-      return { timeZone: timezone };
-    }
-    if (options.timeZone) return options;
-    return { ...options, timeZone: timezone };
+    const base: Intl.DateTimeFormatOptions = (!options || typeof options !== 'object' || Array.isArray(options)) ? {} : options;
+    const withZone = base.timeZone ? base : { ...base, timeZone: timezone };
+    if (withZone.hour12 !== undefined || withZone.hourCycle !== undefined) return withZone;
+    return { ...withZone, hourCycle: SiteClock.hourCycle() };
   }
+
 
   private static toUtcMsFromParts(parts: IZonedDateParts): number {
     return Date.UTC(

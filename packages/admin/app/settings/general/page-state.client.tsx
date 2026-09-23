@@ -29,6 +29,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'framework_repository',
     'sources_workspace_root',
     'timezone',
+    'time_format',
   ] as const;
   protected static readonly BOOLEAN_KEYS = [
     'admin_search_indexing',
