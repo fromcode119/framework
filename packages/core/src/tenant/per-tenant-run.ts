@@ -63,12 +63,17 @@ export class PerTenantRun {
   ): Promise<boolean> {
     try {
       if (input.before) await input.before(tenantId);
-      // The site's own locale rides along, so a scheduled email or document for this site is written in
-      // its language, exactly as one produced during a request would be.
-      await input.db.withTenant(tenantId, () => SiteLocaleAccess.warm(tenantId));
       await RequestContextUtils.storage.run(
-        { tenantId, siteLocale: SiteLocaleAccess.get(tenantId) || undefined },
-        () => input.db.withTenant(tenantId, async () => { await input.work(); }),
+        { tenantId },
+        () => input.db.withTenant(tenantId, async () => {
+          // The site's own locale rides along, read inside the SAME tenant scope as the work, so a
+          // scheduled email or document for this site is written in its language — as one produced
+          // during a request would be.
+          await SiteLocaleAccess.warm(tenantId);
+          const store = RequestContextUtils.storage.getStore();
+          if (store) store.siteLocale = SiteLocaleAccess.get(tenantId) || undefined;
+          await input.work();
+        }),
       );
       return true;
     } catch (error: unknown) {
