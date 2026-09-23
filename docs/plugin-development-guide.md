@@ -74,7 +74,7 @@ context.collections.register({
 **✅ Correct:**
 ```typescript
 context.collections.register({
-  slug: 'posts', // Resulting table: fcp_cms_posts
+  slug: 'posts', // Resulting table: fcp_blog_posts
   ...
 });
 ```

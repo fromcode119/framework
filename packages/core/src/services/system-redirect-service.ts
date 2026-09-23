@@ -6,7 +6,7 @@ import type { RedirectResolution } from '@core/services/redirect-resolution';
  * The framework's own URL-redirect rules — ONE store (`_system_redirects`), one admin surface
  * (Settings → Redirects), consulted through the same plugin-agnostic registry every other resolver
  * uses. This replaced two per-plugin copies of the identical capability (two plugins), which raced each
- * other by boot order; their rows were migrated in by `SystemRedirectsMigration`.
+ * other by boot order; their rows were copied in when this store was created.
  *
  * Framework internals access the DB through the raw manager, so columns are snake_case here and rows
  * are mapped to camelCase at the edge — the API/admin never see a snake key.
