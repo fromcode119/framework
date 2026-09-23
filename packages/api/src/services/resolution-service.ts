@@ -5,11 +5,14 @@ import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-s
 import { ExactPageContractPresenter } from '@api/services/helpers/exact-page-contract-presenter';
 import { ResolutionCollectionScanService } from '@api/services/helpers/resolution-collection-scan-service';
 import type { IResolutionScanEntry } from '@api/services/helpers/interfaces/resolution-scan-entry.interface';
+import type { IPageDesign } from '@api/services/helpers/interfaces/page-design.interface';
+import { PageDesignLookupService } from '@api/services/helpers/page-design-lookup-service';
 
 export class ResolutionService {
   private readonly contractMatcher: ResolutionContractMatchService;
   private readonly cache: ResolutionCacheService;
   private readonly scanner: ResolutionCollectionScanService;
+  private readonly pageDesigns: PageDesignLookupService;
 
   constructor(
     private manager: PluginManager,
@@ -19,6 +22,7 @@ export class ResolutionService {
     this.contractMatcher = new ResolutionContractMatchService(restController);
     this.cache = new ResolutionCacheService();
     this.scanner = new ResolutionCollectionScanService((manager as any)?.db, restController, this.cache);
+    this.pageDesigns = new PageDesignLookupService(manager, restController);
     this.subscribeCacheInvalidation();
   }
 
@@ -34,6 +38,11 @@ export class ResolutionService {
     hooks.on('collection:*:deleted', () => this.cache.invalidateResults());
     hooks.on('system:settings:updated', () => this.cache.invalidateAll());
     hooks.on(HookEventUtils.HOOK_EVENTS.SYSTEM_CACHE_PURGE, () => this.cache.invalidateAll());
+  }
+
+  /** The plugin design the storefront page `id` shows while its content is empty, or null. */
+  async findPageDesign(collectionSlug: string, id: string, user: unknown): Promise<IPageDesign | null> {
+    return this.pageDesigns.find(collectionSlug, id, user, () => this.resolveDefaultPageContracts());
   }
 
   async resolveSlug(slug: string, options: {

@@ -90,6 +90,10 @@ export abstract class SystemAccountRoutes extends BaseController {
     return this.runtimeController.resolveSlug(req, res);
   }
 
+  async getPageDesign(req: Request, res: Response) {
+    return this.runtimeController.getPageDesign(req, res);
+  }
+
   async getEvents(req: Request, res: Response) {
     return this.runtimeController.getEvents(req, res);
   }

@@ -8,6 +8,7 @@ import { PermalinkInput } from '@/components/ui/view/permalink-input.client';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import { RecordInfo } from '@/components/collection/record-info';
 import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versions.client';
+import { PageDesignCard } from '@/components/collection/edit/view/page-design-card.client';
 
 export class EditPageSidebar extends PureReactor {
   @prop declare slug: string;
@@ -84,6 +85,10 @@ export class EditPageSidebar extends PureReactor {
               Click the path component to override the automatically generated slug.
             </p>
           </Card>
+        )}
+
+        {!isNew && (
+          <PageDesignCard collectionSlug={collection?.slug} recordId={id} content={formData.content} />
         )}
 
         {hasSidebarFields &&
