@@ -10,6 +10,7 @@ import { CoreServices } from '@core/services/core-services';
 import { StorefrontPagesCollection } from '@core/services/default-page-contract/storefront-pages-collection';
 import { RequestContextUtils } from '@core/context/request-context';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 import { SeedPageService } from '@core/services/seed-page-service';
 import { PluginDefaultPageBackfillAssociationService } from '@core/services/default-page-contract/plugin-default-page-backfill-association-service';
 import { PluginDefaultPageMaterializationExecutorService } from '@core/services/default-page-contract/plugin-default-page-materialization-executor-service';
@@ -44,6 +45,14 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
    * required route — for a caller that treats the throw as a report rather than as its own failure.
    */
   async materialize(requiredRouteOwnerPluginSlug?: string): Promise<IPluginDefaultPageContractMaterializationExecutionReport | null> {
+    // A workspace has no storefront (`TenantKind`): every path on its domain is the console. Its
+    // default pages could never be reached, yet every boot and plugin activation published them
+    // there — `/shop`, `/cookies-policy`, `/privacy-policy` sat as live, empty pages in three
+    // workspaces, and re-appeared after being removed.
+    if (await this.isWorkspaceScope()) {
+      return null;
+    }
+
     const pagesEntry = this.findPagesCollectionEntry();
 
     if (!pagesEntry) {
@@ -110,6 +119,13 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
   private static forCurrentTenant(contracts: IResolvedPluginDefaultPageContract[]): IResolvedPluginDefaultPageContract[] {
     if (!RequestContextUtils.getTenantId()) return contracts;
     return contracts.filter((contract) => PluginTenantAccess.isEnabledForCurrentTenant(contract.pluginSlug));
+  }
+
+  private async isWorkspaceScope(): Promise<boolean> {
+    const tenantId = RequestContextUtils.getTenantId();
+    if (!tenantId) return false;
+    const tenant = await TenantResolverService.shared(this.manager.db).resolveById(tenantId);
+    return Boolean(tenant?.isWorkspace);
   }
 
   static isRequiredRouteFailure(error: unknown): boolean {
