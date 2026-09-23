@@ -8,4 +8,6 @@ export interface ILoadedLocalization {
   frontendDefaultLocale: string;
   localeUrlStrategy: LocaleUrlStrategy;
   measurementSystem: MeasurementSystem;
+  /** The stored platform country (ISO alpha-2), '' when not set. */
+  country: string;
 }

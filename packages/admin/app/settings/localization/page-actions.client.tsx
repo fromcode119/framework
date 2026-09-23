@@ -18,6 +18,7 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
       this.frontendDefaultLocale = loaded.frontendDefaultLocale;
       this.localeUrlStrategy = loaded.localeUrlStrategy;
       this.measurementSystem = loaded.measurementSystem;
+      this.country = loaded.country;
     } catch (err: any) {
       this.locales = null;
       this.loadError = err?.message || 'The localization settings request failed.';
@@ -67,6 +68,7 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
         },
         this.localeUrlStrategy,
         this.measurementSystem,
+        this.country,
       );
 
       this.locales = saved.cleaned;
@@ -84,7 +86,8 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
         // so `settings.locale_url_strategy === 'path'` against a member object is permanently false and
         // an Enum reaching JSX renders as `[object Object]`.
         locale_url_strategy: this.localeUrlStrategy.value,
-        measurement_system: this.measurementSystem.value
+        measurement_system: this.measurementSystem.value,
+        country: this.country
       });
 
       addNotification({

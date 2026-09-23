@@ -140,6 +140,9 @@ export class SystemSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'query', description: "Locale URL strategy.", group: "Localization" },
     },
+    // Not seeded: blank is a real answer (derive from the frontend language), and a seeded country would
+    // be exactly the invented default every module used to hardcode.
+    [SystemConstants.META_KEY.COUNTRY]: { scope: SettingScope.SITE, writable: true, exposed: true },
     [SystemConstants.META_KEY.MEASUREMENT_SYSTEM]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'metric', description: "Units for physical dimensions and weight (metric cm/kg | imperial in/lb).", group: "Localization" },

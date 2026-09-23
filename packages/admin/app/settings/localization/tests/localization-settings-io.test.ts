@@ -105,6 +105,7 @@ describe('LocalizationSettingsIo', () => {
         { defaultLocale: 'bg', adminDefaultLocale: 'bg', frontendDefaultLocale: 'bg' },
         LocaleUrlStrategy.PATH,
         MeasurementSystem.IMPERIAL,
+        '',
       );
 
       const payload = update.mock.calls[0][0] as Record<string, unknown>;
@@ -112,6 +113,18 @@ describe('LocalizationSettingsIo', () => {
       // `.value`, never the Enum instance — every consumer of these settings reads a plain string.
       expect(payload.locale_url_strategy).toBe('path');
       expect(payload.enabled_locales).toBe('bg');
+    });
+
+    it('persists the platform country, and a blank one as blank — blank means "derive it from the language"', async () => {
+      update.mockResolvedValue(undefined);
+      const locales = [{ id: 'bg-0', code: 'bg', name: 'Bulgarian', enabled: true }];
+      const defaults = { defaultLocale: 'bg', adminDefaultLocale: 'bg', frontendDefaultLocale: 'bg' };
+
+      await LocalizationSettingsIo.save(locales, defaults, LocaleUrlStrategy.PATH, MeasurementSystem.METRIC, 'de');
+      await LocalizationSettingsIo.save(locales, defaults, LocaleUrlStrategy.PATH, MeasurementSystem.METRIC, '');
+
+      expect((update.mock.calls[0][0] as Record<string, unknown>).country).toBe('DE');
+      expect((update.mock.calls[1][0] as Record<string, unknown>).country).toBe('');
     });
   });
 });
