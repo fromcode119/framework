@@ -96,6 +96,13 @@ export class DataProcessorService {
       processedData[key] = value;
     }
 
+    // `updatedAt` is auto-managed — incoming values are dropped above — so it has to be MANAGED here.
+    // The column's DEFAULT only fires on insert: without this, a record saved through the admin kept its
+    // creation time as "Updated" forever (every list's Updated At column, a form's "Last saved").
+    if (options?.existingRecord && table.updatedAt && processedData.updatedAt === undefined) {
+      processedData.updatedAt = new Date();
+    }
+
     return processedData;
   }
 
