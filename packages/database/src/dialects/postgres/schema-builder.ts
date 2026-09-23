@@ -65,7 +65,8 @@ export class PostgresSchemaBuilder {
     switch (field.type) {
       case 'number': return sql.raw('0');
       case 'boolean': return sql.raw('false');
-      case 'date': return sql.raw('CURRENT_TIMESTAMP');
+      case 'date':
+      case 'datetime': return sql.raw('CURRENT_TIMESTAMP');
       case 'json':
       case 'relationship':
       case 'upload':
@@ -94,7 +95,10 @@ export class PostgresSchemaBuilder {
     switch (field.type) {
       case 'number': type = sql`NUMERIC`; break;
       case 'boolean': type = sql`BOOLEAN`; break;
-      case 'date': type = sql`TIMESTAMP WITH TIME ZONE`; break;
+      // `datetime` is the admin's date-AND-time field; it fell through to TEXT, so its values sorted and
+      // compared as strings. Both are points in time.
+      case 'date':
+      case 'datetime': type = sql`TIMESTAMP WITH TIME ZONE`; break;
       case 'json':
       case 'relationship':
       case 'upload':

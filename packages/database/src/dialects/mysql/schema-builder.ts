@@ -80,7 +80,10 @@ export class MysqlSchemaBuilder {
     switch (field.type) {
       case 'number': type = sql`NUMERIC`; break;
       case 'boolean': type = sql`BOOLEAN`; break;
-      case 'date': type = sql`DATETIME`; break;
+      // `datetime` is the admin's date-AND-time field; it fell through to TEXT, so its values sorted and
+      // compared as strings. Both are points in time.
+      case 'date':
+      case 'datetime': type = sql`DATETIME`; break;
       case 'json':
       case 'relationship':
       case 'upload':

@@ -59,6 +59,16 @@ describe('PostgresSchemaBuilder — a collection that claims createdAt', () => {
     expect(statement).toMatch(/updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP/);
   });
 
+  it('stores a datetime field as a point in time, not TEXT', async () => {
+    const statement = await created([{ name: 'validFrom', type: 'datetime' }]);
+    expect(statement).toMatch(/"valid_from" TIMESTAMP WITH TIME ZONE\s*(,|\))/);
+  });
+
+  it('keeps the default when the claiming field is a date-and-time field', async () => {
+    const statement = await created([{ name: 'createdAt', type: 'datetime' }]);
+    expect(statement).toMatch(/"created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP/);
+  });
+
   it('gives no other date field an invented default', async () => {
     const statement = await created([{ name: 'shippedAt', type: 'date' }]);
     expect(statement).toMatch(/"shipped_at" TIMESTAMP WITH TIME ZONE\s*(,|\))/);
