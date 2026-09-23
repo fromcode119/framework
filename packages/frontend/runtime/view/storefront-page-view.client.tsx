@@ -6,6 +6,8 @@ import { PluginMountErrorBoundary } from '@fromcode119/react';
 import { PassthroughLayout } from '@/components/view/passthrough-layout.client';
 import type { FrontendRuntimeConfig } from '@/runtime/frontend-runtime-config';
 import { StorefrontPageTree } from '@/runtime/view/storefront-page-tree.client';
+import { Slot } from '@fromcode119/react/slot';
+import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 
 /**
  * The page as the SERVER rendered it: the theme layout the server chose, around `StorefrontPageTree`.
@@ -31,12 +33,17 @@ export class StorefrontPageView extends Reactor {
   render(): ReactNode {
     const { config } = this;
     const Layout = this.layout;
+    // The overlay sits BESIDE the layout, exactly as `ThemeWorldRenderer` builds it on the server, so
+    // the tree `hydrateRoot` adopts is the same shape on both sides.
     return (
-      <PluginMountErrorBoundary slotName="theme-layout" componentName={config.resolvedLayoutName || config.declaredDefaultLayout}>
-        <Layout page={config.content}>
-          <StorefrontPageTree content={config.content} className={config.pageKind.contentClassName} style={config.pageKind.contentStyle} notFoundPath={config.pageKind.isNotFound ? config.notFoundPath : undefined} />
-        </Layout>
-      </PluginMountErrorBoundary>
+      <>
+        <PluginMountErrorBoundary slotName="theme-layout" componentName={config.resolvedLayoutName || config.declaredDefaultLayout}>
+          <Layout page={config.content}>
+            <StorefrontPageTree content={config.content} className={config.pageKind.contentClassName} style={config.pageKind.contentStyle} notFoundPath={config.pageKind.isNotFound ? config.notFoundPath : undefined} />
+          </Layout>
+        </PluginMountErrorBoundary>
+        <Slot name={StorefrontContentContract.OVERLAY_SLOT} />
+      </>
     );
   }
 }
