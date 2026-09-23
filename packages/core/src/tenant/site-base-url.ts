@@ -47,25 +47,36 @@ export class SiteBaseUrl {
    */
   static async forCurrentSite(app: string): Promise<string> {
     const platform = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(app);
-
     const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
-    if (!TenantMode.isEnabled() || !tenantId || !SiteBaseUrl.database) return platform;
+    return (await SiteBaseUrl.forSite(tenantId, app)) || platform;
+  }
+
+  /**
+   * The base URL of the site `tenantId`, or '' when it cannot be answered.
+   *
+   * Unlike {@link forCurrentSite} this does NOT fall back to the platform's URL. A caller that SHOWS
+   * the address — "this site is served at …" — must not print the platform's host as the site's, so
+   * it gets nothing and says nothing.
+   */
+  static async forSite(tenantId: string, app: string): Promise<string> {
+    const id = String(tenantId ?? '').trim();
+    if (!TenantMode.isEnabled() || !id || !SiteBaseUrl.database) return '';
 
     // No configured URL means no declared scheme, and a scheme is the one thing a tenant record
-    // cannot supply. Falling back keeps today's behaviour instead of inventing http or https.
-    const scheme = SiteBaseUrl.schemeOf(platform);
-    if (!scheme) return platform;
+    // cannot supply. Answering nothing keeps the caller's own fallback instead of inventing one.
+    const scheme = SiteBaseUrl.schemeOf(ApplicationUrlUtils.readAppBaseUrlFromEnvironment(app));
+    if (!scheme) return '';
 
     try {
-      const tenant = await TenantResolverService.shared(SiteBaseUrl.database).resolveById(tenantId);
+      const tenant = await TenantResolverService.shared(SiteBaseUrl.database).resolveById(id);
       const host = SiteBaseUrl.hostFor(tenant, app);
-      return host ? `${scheme}://${host}` : platform;
+      return host ? `${scheme}://${host}` : '';
     } catch (error: unknown) {
       SiteBaseUrl.logger.warn(
-        `Could not resolve the base URL for site "${tenantId}"; using the platform's. `
+        `Could not resolve the base URL for site "${id}". `
         + `${error instanceof Error ? error.message : String(error)}`,
       );
-      return platform;
+      return '';
     }
   }
 

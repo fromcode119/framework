@@ -66,26 +66,7 @@ export class InstallationChecklistService {
        */
       mode: sites > 0 ? 'multi-site' : 'single-site',
       storefront,
-      steps: [
-        {
-          key: 'theme',
-          title: activeTheme ? `Theme: ${activeTheme}` : (themes > 0 ? 'Activate a theme' : 'Install a theme'),
-          detail: themes > 0
-            ? 'Installed but not activated — until one is active the storefront serves an empty document.'
-            : 'A theme renders every page a visitor sees. Without one, the storefront serves an empty document.',
-          done: Boolean(activeTheme),
-          actionLabel: themes > 0 ? 'Activate' : 'Browse themes',
-          actionPath: AppPathConstants.ADMIN.THEMES.ROOT,
-        },
-        {
-          key: 'plugins',
-          title: plugins > 0 ? `${plugins} plugins installed` : 'Install the plugins this platform needs',
-          detail: 'Commerce, forms, SEO — each adds its own screens. Install only what this installation will use.',
-          done: plugins > 0,
-          actionLabel: 'Browse plugins',
-          actionPath: AppPathConstants.ADMIN.PLUGINS.ROOT,
-        },
-      ],
+      steps: InstallationChecklistService.setupSteps({ activeTheme, themes, plugins, site: false }),
       missing: [
         {
           key: 'email',
@@ -144,6 +125,41 @@ export class InstallationChecklistService {
         },
       ],
     };
+  }
+
+  /**
+   * The two things that make an installation — or one site on it — serve anything: a theme, and the
+   * plugins it needs. Shared by the platform checklist and a site's, so both say the same thing.
+   *
+   * `site` changes the WORDS only. Inside a site the operator is choosing for that site, and telling
+   * them what "this installation" needs describes a box they may not administer.
+   */
+  static setupSteps(input: { activeTheme: string; themes: number; plugins: number; site: boolean }): Array<Record<string, unknown>> {
+    const { activeTheme, themes, plugins, site } = input;
+    return [
+      {
+        key: 'theme',
+        title: activeTheme ? `Theme: ${activeTheme}` : (themes > 0 ? 'Activate a theme' : 'Install a theme'),
+        detail: themes > 0
+          ? 'Installed but not activated — until one is active the storefront serves an empty document.'
+          : 'A theme renders every page a visitor sees. Without one, the storefront serves an empty document.',
+        done: Boolean(activeTheme),
+        actionLabel: themes > 0 ? 'Activate' : 'Browse themes',
+        actionPath: AppPathConstants.ADMIN.THEMES.ROOT,
+      },
+      {
+        key: 'plugins',
+        title: plugins > 0
+          ? `${plugins} plugins installed`
+          : (site ? 'Add the plugins this site needs' : 'Install the plugins this platform needs'),
+        detail: site
+          ? 'Commerce, forms, SEO — each adds its own screens. Add only what this site will use.'
+          : 'Commerce, forms, SEO — each adds its own screens. Install only what this installation will use.',
+        done: plugins > 0,
+        actionLabel: 'Browse plugins',
+        actionPath: AppPathConstants.ADMIN.PLUGINS.ROOT,
+      },
+    ];
   }
 
   private static localeSummary(raw: string): string {

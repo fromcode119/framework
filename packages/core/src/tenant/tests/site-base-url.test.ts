@@ -151,3 +151,29 @@ describe('a site’s own base URL', () => {
       .toBe('https://platform.example');
   });
 });
+
+describe('a named site’s base URL, for display', () => {
+  it('answers on that site’s host without needing a request context', async () => {
+    multiTenant();
+    withUrls('http://frontend.framework.local', 'http://api.framework.local');
+    wire(tenant('shop.framework.local'));
+
+    expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('http://shop.framework.local');
+  });
+
+  it('answers NOTHING, not the platform’s URL, when the site has no host', async () => {
+    // A screen that says "this site is served at …" must not print the platform's host.
+    multiTenant();
+    withUrls('https://platform.example', 'https://api.platform.example');
+    wire(tenant(''));
+
+    expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('');
+  });
+
+  it('answers nothing on a single-site deployment', async () => {
+    withUrls('https://platform.example', 'https://api.platform.example');
+    wire(tenant('shop.customer.example'));
+
+    expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('');
+  });
+});

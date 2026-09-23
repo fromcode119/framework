@@ -1,5 +1,6 @@
 import os from 'os';
 import fs from 'fs';
+import { execFile } from 'child_process';
 import { Logger } from '@core/logging';
 import { ProjectPaths } from '@core/config/paths';
 
@@ -81,7 +82,18 @@ export class HostResourceService {
     return null;
   }
 
+  /**
+   * `df` first, `statfs` when there is no `df`.
+   *
+   * `statfs` counts blocks in FRAGMENT-size units, but Node exposes only the preferred I/O size
+   * (`bsize`), not the fragment size. On most local filesystems the two are equal. On a bind mount from
+   * Docker Desktop, and on FUSE, NFS or virtiofs volumes, they are not: the uploads mount reported
+   * `bsize` 1 MiB over 4 KiB blocks, and the dashboard showed a laptop's 971 GB disk as 232 TB.
+   * `df -P` answers in 1 KiB units whatever the filesystem, so it is the one read that is always right.
+   */
   private static async statfsOrNull(path: string): Promise<Record<string, unknown> | null> {
+    const fromDf = await HostResourceService.dfOrNull(path);
+    if (fromDf) return fromDf;
     try {
       const stats = await fs.promises.statfs(path);
       const totalBytes = stats.blocks * stats.bsize;
@@ -92,5 +104,35 @@ export class HostResourceService {
       HostResourceService.logger.debug(`Disk usage unavailable for ${path}: ${error}`);
       return null;
     }
+  }
+
+  private static dfOrNull(path: string): Promise<Record<string, unknown> | null> {
+    return new Promise((resolve) => {
+      execFile('df', ['-Pk', path], { timeout: 2000 }, (error, stdout) => {
+        if (error) {
+          HostResourceService.logger.debug(`df unavailable for ${path}: ${error.message}`);
+          resolve(null);
+          return;
+        }
+        resolve(HostResourceService.parseDf(path, String(stdout)));
+      });
+    });
+  }
+
+  /** The data line of `df -Pk`: filesystem, total, used, available, capacity, mount — in KiB. */
+  static parseDf(path: string, output: string): Record<string, unknown> | null {
+    const line = output.trim().split('\n')[1];
+    if (!line) return null;
+    // Anchored on the capacity column (`85%`): the filesystem name and the mount path can both hold
+    // spaces, so counting from either end is wrong for one of them.
+    const fields = line.trim().split(/\s+/);
+    const capacity = fields.findIndex((field, index) => index >= 4 && /^\d+%$/.test(field));
+    if (capacity < 0) return null;
+    const totalKib = Number(fields[capacity - 3]);
+    const availableKib = Number(fields[capacity - 1]);
+    if (!Number.isFinite(totalKib) || !Number.isFinite(availableKib) || totalKib <= 0) return null;
+    const totalBytes = totalKib * 1024;
+    const freeBytes = availableKib * 1024;
+    return { path, totalBytes, freeBytes, usedBytes: totalBytes - freeBytes };
   }
 }
