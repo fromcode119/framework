@@ -40,6 +40,50 @@ export class UserManagementService {
   }
 
   /**
+   * Inside a site: each member's roles THERE, and nothing else. `null` in the platform scope.
+   *
+   * A member is authorized on a site by their membership's roles (`AuthManager.useTenantRoles`), not by
+   * the account's platform-wide ones. The Users list showed the platform-wide ones — which is how a site
+   * running no plugins at all listed its own administrator as `partner`, a role another product grants —
+   * and a member's badges could name roles that do nothing on the site they were read on. Roles owned
+   * by a plugin this site does not run are left out, as the Roles screen already leaves them out.
+   */
+  private async siteRoles(): Promise<{ rolesOf: (userId: unknown) => string[] } | null> {
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    if (!TenantMode.isEnabled() || !tenantId) return null;
+    const [memberships, roles] = await Promise.all([
+      RoleManagementService.membershipRoles(this.db, tenantId),
+      this.db.find(Schema.systemRoles),
+    ]);
+    const visible = new Set((roles || [])
+      .filter((role: any) => RoleManagementService.isVisibleOnSite(role, tenantId))
+      .map((role: any) => String(role?.slug ?? '')));
+    return {
+      rolesOf: (userId: unknown) => (memberships.get(Number(userId)) ?? []).filter((slug) => visible.has(slug)),
+    };
+  }
+
+  /**
+   * Inside a site, a role change is a change to the MEMBERSHIP — the roles that apply on that site.
+   *
+   * It used to rewrite the account's platform-wide grants, which do not authorize anyone on a site: the
+   * picker saved, reported success, and changed nothing where it was used. It could also strip a grant
+   * the site was never shown, since a save replaces the whole list. Answers `false` in the platform
+   * scope, where the platform-wide grants are the ones being edited.
+   */
+  private async saveSiteRoles(userId: number, submitted: string[]): Promise<boolean> {
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    if (!TenantMode.isEnabled() || !tenantId) return false;
+    const roles = await this.db.find(Schema.systemRoles);
+    const visible = new Set((roles || [])
+      .filter((role: any) => RoleManagementService.isVisibleOnSite(role, tenantId))
+      .map((role: any) => String(role?.slug ?? '')));
+    const granted = StringUtils.normalizeSlugList(submitted).filter((slug) => visible.has(slug));
+    await new TenantMembershipService(this.db as never).grant(String(userId), tenantId, granted);
+    return true;
+  }
+
+  /**
    * `ids` restricts the listing to those accounts — the caller's site's members. `null` is
    * unrestricted (platform admin, or a single-tenant deployment); an EMPTY array is a real answer and
    * returns nothing, so a request acting for no site cannot fall through to everyone.
@@ -49,6 +93,7 @@ export class UserManagementService {
     const allUsers = await this.db.find(Schema.users, ids
       ? { where: this.db.inArray(Schema.users.id, ids) }
       : undefined);
+    const site = await this.siteRoles();
     return Promise.all(allUsers.map(async (user: any) => {
       const userRoles = await this.db.find(Schema.systemUsersToRoles, {
         columns: { roleSlug: true },
@@ -68,7 +113,7 @@ export class UserManagementService {
       ]);
       return {
         ...safeUser,
-        roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
+        roles: site ? site.rolesOf(user.id) : this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
         accountStatus: String(accountStatus.value),
         forcePasswordReset
       };
@@ -88,9 +133,10 @@ export class UserManagementService {
       this.readAccountStatus(user.id),
       this.readForcePasswordReset(user.id)
     ]);
+    const site = await this.siteRoles();
     return {
       ...safeUser,
-      roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
+      roles: site ? site.rolesOf(user.id) : this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
       accountStatus: String(accountStatus.value),
       forcePasswordReset
     };
@@ -141,6 +187,8 @@ export class UserManagementService {
     }
 
     if (Array.isArray(data.roles)) {
+      // Set on both branches above: an update keeps `id`, an insert takes the new row's.
+      if (await this.saveSiteRoles(Number(userId), data.roles)) return userId;
       await this.db.delete(UserManagementService.USERS_ROLES_TABLE, { userId });
       if (data.roles.length > 0) {
         for (const roleSlug of data.roles) {
@@ -198,6 +246,7 @@ export class UserManagementService {
 
   async saveUserRoles(userId: number, roles: string[]) {
     const normalized = StringUtils.normalizeSlugList(roles);
+    if (await this.saveSiteRoles(userId, normalized)) return;
 
     await this.db.delete(UserManagementService.USERS_ROLES_TABLE, { userId });
     for (const roleSlug of normalized) {

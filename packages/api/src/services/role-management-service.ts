@@ -1,5 +1,5 @@
 import { IDatabaseManager, Schema } from '@fromcode119/database';
-import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode, TenantMembershipService } from '@fromcode119/core';
+import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode, TenantMembership } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { getTableName } from 'drizzle-orm';
 
@@ -31,6 +31,23 @@ export class RoleManagementService {
    * Bound to a site, the count is that site's members holding the role. In platform scope it is the
    * whole box, which is what an operator is asking.
    */
+  /** The rule above, as one predicate: the framework's roles and this site's plugins' roles. */
+  static isVisibleOnSite(role: any, tenantId: string): boolean {
+    const owner = String(role?.pluginSlug ?? '').trim();
+    return !owner || owner === 'system' || PluginTenantAccess.enabledSlugsFor(tenantId).has(owner);
+  }
+
+  /** Each ACTIVE member of the site, by user id, with the roles their membership grants there. */
+  static async membershipRoles(db: any, tenantId: string): Promise<Map<number, string[]>> {
+    const rows = await db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenantId } });
+    const byUser = new Map<number, string[]>();
+    for (const row of rows || []) {
+      const membership = TenantMembership.from(row);
+      if (membership.isActive) byUser.set(Number(membership.userId), membership.roles);
+    }
+    return byUser;
+  }
+
   async getRoles() {
     const allRoles = await this.db.find(Schema.systemRoles);
     const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
@@ -46,24 +63,22 @@ export class RoleManagementService {
     // nothing can honestly guess who created a role that predates it, and hiding one nobody can
     // account for is the worse failure — losing `admin` from the screen with no way to discover why.
     // `ensure` stamps each row as its plugin re-declares it, so this narrows itself as it learns.
-    const dbRoles = TenantMode.isEnabled() && tenantId
-      ? allRoles.filter((role: any) => {
-        const owner = String(role?.pluginSlug ?? '').trim();
-        return !owner || owner === 'system' || PluginTenantAccess.enabledSlugsFor(tenantId).has(owner);
-      })
+    const inSite = TenantMode.isEnabled() && Boolean(tenantId);
+    const dbRoles = inSite
+      ? allRoles.filter((role: any) => RoleManagementService.isVisibleOnSite(role, tenantId))
       : allRoles;
-    const memberIds = TenantMode.isEnabled() && tenantId
-      ? new Set(await new TenantMembershipService(this.db as never).listUserIdsForTenant(tenantId))
-      : null;
+    // Inside a site a member holds the roles on their MEMBERSHIP — those are what authorize them there
+    // (`AuthManager.useTenantRoles`). Counting the platform-wide grant table told a site administrator
+    // "Administrator: 0 users" while they were, on that very site, its administrator.
+    const siteRoles = inSite ? await RoleManagementService.membershipRoles(this.db, tenantId) : null;
 
     return Promise.all(dbRoles.map(async (role: any) => {
-      const holders = await this.db.find(Schema.systemUsersToRoles, {
-        columns: { userId: true },
-        where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug),
-      });
-      const userCount = memberIds
-        ? (holders || []).filter((row: any) => memberIds.has(Number(row?.userId))).length
-        : (holders || []).length;
+      const userCount = siteRoles
+        ? [...siteRoles.values()].filter((roles) => roles.includes(String(role.slug))).length
+        : (await this.db.find(Schema.systemUsersToRoles, {
+          columns: { userId: true },
+          where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug),
+        }) || []).length;
       const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
         columns: { permissionName: true },
         where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)
