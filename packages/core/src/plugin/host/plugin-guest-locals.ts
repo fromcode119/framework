@@ -63,7 +63,12 @@ export class PluginGuestLocals {
       const slug = await remote.ref('context', [{ name: 'theme' }]).getActiveSlug();
       return typeof slug === 'string' ? slug : null;
     });
-    this.i18n = I18nContextProxy.createI18nProxy(plugin, manager, this.paths, security);
+    // The site's clock lives in framework settings only the host reads; asked of the host per call,
+    // so it is the clock of the site the calling request (or scheduled run) is bound to.
+    this.i18n = {
+      ...I18nContextProxy.createI18nProxy(plugin, manager, this.paths, security),
+      siteClock: () => remote.ref('context', [{ name: 'i18n' }]).siteClock(),
+    };
   }
 
   get t(): (key: string, params?: Record<string, unknown>, locale?: string) => string {

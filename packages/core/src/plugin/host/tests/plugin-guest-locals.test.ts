@@ -90,3 +90,17 @@ describe('PluginGuestLocals i18n forwarding', () => {
     await expect(locals.flush()).resolves.toBeUndefined();
   });
 });
+
+describe('PluginGuestLocals site clock', () => {
+  it("asks the HOST for the site's clock — the guest cannot read framework settings itself", async () => {
+    const siteClock = vi.fn(async () => ({ timeZone: 'Europe/Sofia', hourCycle: 'h23' }));
+    const remote: any = {
+      ref: vi.fn((_root: string, steps: Array<{ name: string }>) => (steps[0]?.name === 'i18n' ? { siteClock, registerTranslations: vi.fn() } : {})),
+    };
+
+    const locals = new PluginGuestLocals(boot(), remote);
+
+    expect(await locals.i18n.siteClock()).toEqual({ timeZone: 'Europe/Sofia', hourCycle: 'h23' });
+    expect(siteClock).toHaveBeenCalledTimes(1);
+  });
+});

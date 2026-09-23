@@ -1,4 +1,5 @@
 import { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
+import type { ISiteClock } from '@core/i18n/interfaces/site-clock.interface';
 
 /**
  * The `context.i18n` surface of {@link PluginContext}.
@@ -23,6 +24,11 @@ export interface IPluginContextI18n {
   t(key: string, params?: Record<string, any>, locale?: string): string;
   /** The platform's configured default locale (admin Settings → Localization `default_locale`). */
   defaultLocale(): string;
+  /**
+   * The current site's clock — timezone and 12/24-hour cycle — for writing a time a person will read
+   * (an email, a document). Pass both to `toLocaleString` / `Intl.DateTimeFormat`.
+   */
+  siteClock(): Promise<ISiteClock>;
   registerTranslations(pluginDirectory?: string): void;
   registerTranslations(locale: string, translations: Record<string, any>): void;
 }
