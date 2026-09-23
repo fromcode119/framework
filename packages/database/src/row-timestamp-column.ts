@@ -8,8 +8,13 @@
 export class RowTimestampColumn {
   static readonly NAMES: ReadonlySet<string> = new Set(['created_at', 'updated_at']);
 
+  /** `date` and `datetime` are both stored as a point in time. */
+  private static readonly POINT_IN_TIME_TYPES: ReadonlySet<string> = new Set(['date', 'datetime']);
+
   /** A claimed row-timestamp column that declares no default of its own. */
   static needsDefault(columnName: string, fieldType: string, declaredDefault: unknown): boolean {
-    return RowTimestampColumn.NAMES.has(columnName) && fieldType === 'date' && declaredDefault === undefined;
+    return RowTimestampColumn.NAMES.has(columnName)
+      && RowTimestampColumn.POINT_IN_TIME_TYPES.has(fieldType)
+      && declaredDefault === undefined;
   }
 }

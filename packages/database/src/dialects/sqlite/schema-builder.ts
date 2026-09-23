@@ -99,6 +99,7 @@ export class SqliteSchemaBuilder {
       case 'text':
       case 'select':
       case 'date':
+      case 'datetime':
       default:
         type = sql`TEXT`;
     }
