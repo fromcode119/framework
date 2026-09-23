@@ -1,7 +1,7 @@
 /** ServerMiddlewareSetup — configures Express middlewares. Extracted from APIServer (ARC-007). */
 
 import express from 'express';
-import { CookieConstants, Logger, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode } from '@fromcode119/core';
+import { CookieConstants, Logger, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { ApiConfig } from '@api/config/api-config';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
@@ -15,6 +15,7 @@ import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
 import { PlatformRobotsHeaderMiddleware } from '@api/middlewares/platform-robots-header-middleware';
 import { ServerTenantMiddlewareParts } from '@api/server/server-tenant-middleware-parts';
+import { AdminSiteExpectationGuard } from '@api/server/admin-site-expectation-guard';
 
 export class ServerMiddlewareSetup {
   private readonly requestCookies = new RequestCookieService();
@@ -224,6 +225,12 @@ export class ServerMiddlewareSetup {
           // route, so it continues WITHOUT a tenant rather than being refused here. Every
           // tenant-scoped query remains fail-closed on its own.
           if (reason?.allowsUnauthenticatedSurface) {
+            // A signed-in operator in the PLATFORM scope: a write from a page opened for a site is refused.
+            const refusal = reason === TenantResolutionRefusal.NO_TENANT_SELECTED ? AdminSiteExpectationGuard.refusal(req, null) : null;
+            if (refusal) {
+              res.status(409).json(refusal);
+              return;
+            }
             RequestContextUtils.storage.run({ locale }, () => next());
             return;
           }
@@ -244,6 +251,11 @@ export class ServerMiddlewareSetup {
         }
         if (!tenant.isActive) {
           res.status(503).json({ error: 'tenant_suspended' });
+          return;
+        }
+        const refusal = AdminSiteExpectationGuard.refusal(req, tenant.id);
+        if (refusal) {
+          res.status(409).json(refusal);
           return;
         }
 
