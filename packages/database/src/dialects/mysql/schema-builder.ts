@@ -1,3 +1,4 @@
+import { RowTimestampColumn } from '@database/row-timestamp-column';
 import { sql } from 'drizzle-orm';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -110,6 +111,10 @@ export class MysqlSchemaBuilder {
       } else if (typeof field.defaultValue === 'number') {
         constraints.push(sql.raw(`DEFAULT ${field.defaultValue}`));
       }
+    }
+
+    if (RowTimestampColumn.needsDefault(dbName, String(field.type), field.defaultValue)) {
+      constraints.push(sql`DEFAULT CURRENT_TIMESTAMP`);
     }
 
     return sql`${sql.identifier(dbName)} ${type} ${sql.join(constraints, sql` `)}`;

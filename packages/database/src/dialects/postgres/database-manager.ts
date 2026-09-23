@@ -18,6 +18,7 @@ import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant
 import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tenant-isolation';
 import { PostgresDeclaredUniqueReconciler } from '@database/dialects/postgres/declared-unique-reconciler';
 import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgres/declared-nullability-reconciler';
+import { PostgresTimestampDefaultReconciler } from '@database/dialects/postgres/timestamp-default-reconciler';
 import { PostgresColumnInspector } from '@database/dialects/postgres/column-inspector';
 import { PlatformPool } from '@database/tenant/platform-pool';
 import type { IColumnStats } from '@database/interfaces/column-stats.interface';
@@ -71,6 +72,9 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
 
   private readonly declaredNullability =
     new PostgresDeclaredNullabilityReconciler((sqlText, values) => this.queryRaw(sqlText, values));
+
+  private readonly timestampDefaults =
+    new PostgresTimestampDefaultReconciler((sqlText, values) => this.queryRaw(sqlText, values));
 
   private readonly columns =
     new PostgresColumnInspector((sqlText, values) => this.queryRaw(sqlText, values));
@@ -147,6 +151,11 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   /** Drops a NOT NULL the schema no longer declares. Never adds one. */
   async ensureDeclaredNullable(table: string, column: string): Promise<SchemaReconcileOutcome> {
     return this.declaredNullability.relax(table, column);
+  }
+
+  /** Gives a row-timestamp column its `DEFAULT CURRENT_TIMESTAMP` when it has none. Never replaces one. */
+  async ensureTimestampDefault(table: string, column: string): Promise<SchemaReconcileOutcome> {
+    return this.timestampDefaults.ensure(table, column);
   }
 
   /** Counts on THIS connection — under FORCE RLS that is the bound tenant's rows only. */

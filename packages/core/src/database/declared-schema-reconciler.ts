@@ -96,6 +96,32 @@ export class DeclaredSchemaReconciler {
     }
   }
 
+  /**
+   * Gives an existing table's `created_at` / `updated_at` the `DEFAULT CURRENT_TIMESTAMP` it lacks.
+   *
+   * A collection that declares its own `createdAt` field got a column WITHOUT that default, so rows
+   * written without an explicit value had no creation date. Adding a default touches no existing row;
+   * it is never replaced when one is there.
+   */
+  private static readonly ROW_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'] as const;
+
+  async ensureTimestampDefaults(plan: IEntitySchemaPlan): Promise<void> {
+    for (const column of DeclaredSchemaReconciler.ROW_TIMESTAMP_COLUMNS) {
+      const outcome = await this.db.ensureTimestampDefault(plan.tableName, column);
+
+      if (outcome.state === SchemaReconcileState.CHANGED) {
+        this.logger.info(`${plan.tableName}.${column} had no default; it now defaults to the current time.`);
+      } else if (outcome.state === SchemaReconcileState.FAILED) {
+        this.logger.warn(
+          `Could not give ${plan.tableName}.${column} a default: ${outcome.reason}. `
+          + 'Rows inserted without a value will go on being stored with no timestamp.'
+        );
+      } else if (outcome.state === SchemaReconcileState.UNSUPPORTED) {
+        return;
+      }
+    }
+  }
+
   warnUnsupportedIndexes(plan: IEntitySchemaPlan): void {
     if (plan.unsupportedIndexes.length === 0) {
       return;
