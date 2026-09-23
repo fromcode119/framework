@@ -75,7 +75,7 @@ The framework includes a built-in WebSocket server for real-time updates.
 - **Authentication**: Include your JWT in the `Sec-WebSocket-Protocol` header or via a one-time ticket.
 
 ### Standard Events
-The system automatically broadcasts the following events:
+The system automatically emits the following events:
 - `system:hmr:reload`: Triggered when a plugin UI or backend is updated.
 - `collection:<slug>:created`: Triggered after a record is created.
 - `collection:<slug>:updated`: Triggered after a record is updated.

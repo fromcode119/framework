@@ -16,9 +16,9 @@ describe('InitialSetupPreferences', () => {
   });
 
   it('stores the three answers under the keys Settings already owns', () => {
-    expect(keyed({ locale: 'bg', platformName: 'Vselenski Portal', timezone: 'Europe/Sofia' })).toEqual({
+    expect(keyed({ locale: 'bg', platformName: 'Example Portal', timezone: 'Europe/Sofia' })).toEqual({
       [SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE]: 'bg',
-      [SystemConstants.META_KEY.PLATFORM_NAME]: 'Vselenski Portal',
+      [SystemConstants.META_KEY.PLATFORM_NAME]: 'Example Portal',
       [SystemConstants.META_KEY.TIMEZONE]: 'Europe/Sofia',
     });
   });

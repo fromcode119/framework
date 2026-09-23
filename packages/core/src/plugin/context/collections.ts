@@ -100,8 +100,8 @@ export class CollectionsContextProxy {
             // was a second, DIFFERENT identity rule, and the two disagreed whenever a collection's
             // shortSlug is not its table name: `<plugin>/widgets` may register with
             // a different shortSlug, so `extend('<plugin>','widgets')` matched on the immediate path
-            // but never on the deferred one. Extensions were dropped silently — the SEO plugin's own
-            // product columns existed and were populated while the admin showed no SEO fields at all.
+            // but never on the deferred one. Extensions were dropped silently — a metadata plugin's own
+            // product columns existed and were populated while the admin showed none of its fields.
             manager.hooks.on('collection:registered', (data: any) => {
                const registered = manager.getCollection(fullSlug);
                if (data.pluginSlug === targetPlugin && registered) {

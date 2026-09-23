@@ -14,7 +14,7 @@ describe('WebhookRouteUtils.isWebhookPath', () => {
 
   it('matches a plugin webhook route, with or without a provider segment', () => {
     expect(WebhookRouteUtils.isWebhookPath('/api/v1/plugins/gamma/webhooks/stripe')).toBe(true);
-    expect(WebhookRouteUtils.isWebhookPath('/api/v1/plugins/delta-econt/webhooks')).toBe(true);
+    expect(WebhookRouteUtils.isWebhookPath('/api/v1/plugins/delta-shipping/webhooks')).toBe(true);
   });
 
   it('does not match other plugin routes or the admin webhook management pages', () => {

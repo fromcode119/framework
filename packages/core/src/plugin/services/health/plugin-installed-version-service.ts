@@ -5,7 +5,7 @@ import * as path from 'path';
  * The version of a plugin that is ON DISK, as opposed to the one this process is RUNNING.
  *
  * These drift apart and nothing used to say so. Measured on production 2026-09-22: `_system_plugins`
- * read `ecommerce 0.1.138`, the manifest on disk read `0.1.138`, the release tag read `0.1.138` — and
+ * read a plugin at `0.1.138`, the manifest on disk read `0.1.138`, the release tag read `0.1.138` — and
  * the admin rendered the `0.1.136` form, because the api had been up since before the files changed
  * and holds each plugin's manifest and collection schema in memory from boot. Three version signals
  * agreed with each other and all three were wrong about what was being served.

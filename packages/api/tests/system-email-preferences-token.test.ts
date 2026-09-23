@@ -31,7 +31,7 @@ describe('SystemEmailPreferencesTokenController', () => {
       db: { findOne: async () => null, insert: async () => undefined, update: async () => undefined },
       emailCategories: {
         list: () => [
-          { key: 'review-invitation', labelKey: 'sp.review', descriptionKey: 'sp.reviewHelp', pluginSlug: 'social-proof' },
+          { key: 'review-invitation', labelKey: 'sp.review', descriptionKey: 'sp.reviewHelp', pluginSlug: 'reviews' },
           { key: 'broadcast', labelKey: 'bc.broadcast', descriptionKey: 'bc.broadcastHelp', pluginSlug: 'kappa' },
         ],
         has: (key: string) => ['review-invitation', 'broadcast'].includes(key),

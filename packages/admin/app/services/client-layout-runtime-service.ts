@@ -72,8 +72,8 @@ export class ClientLayoutRuntimeService {
     return {
       '@fromcode119/admin': adminRuntimeModule,
       '@fromcode119/admin/components': adminRuntimeModule,
-      // `@fromcode119/sdk/admin` re-exports AdminServices from this sub-path; plugins (e.g. privacy
-      // banner/policy editors) crash with `AdminServices is undefined` if it isn't registered.
+      // `@fromcode119/sdk/admin` re-exports AdminServices from this sub-path; plugins (e.g. a consent
+      // banner or policy editor) crash with `AdminServices is undefined` if it isn't registered.
       '@fromcode119/admin/services': adminRuntimeModule,
       // THEME and plugin bundles externalise `@fromcode119/sdk/admin` and resolve it through THIS
       // registry, not the import map. Without the key their dynamic import yields an empty module and

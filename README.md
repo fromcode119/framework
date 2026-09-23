@@ -27,8 +27,8 @@ identity, security, migrations, queues, media, AI hooks, and real-time out of th
 completely modular and provider-agnostic at every layer. You build a SaaS product, a content
 platform, a marketplace, or all of the above, without re-architecting between them.
 
-**The framework in this repository is free and MIT-licensed.** Domain plugins — CMS, eCommerce,
-Finance, Logistics, LMS, MLM and the rest — are separate commercial products, distributed through the
+**The framework in this repository is free and MIT-licensed.** Domain plugins — content, commerce,
+billing, shipping, courses and the rest — are separate commercial products, distributed through the
 marketplace and not included here. Atlantis gives you the kernel and the plugin contract; what you
 build on it is yours, and nothing obliges you to use our plugins at all.
 
@@ -151,7 +151,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 - 📦 **Backups + Site Transfer** — Managed system backups and a repository-root site-transfer bundle command.
 - 🌍 **Built-in i18n** — Per-field localization, admin UI labels, and plugin data, with no external libraries.
 - 🕘 **Version History Everywhere** — Every admin edit of any plugin's record is snapshotted, with one-click restore.
-- 🔀 **Framework-owned Redirects** — Redirect rules and canonical paths live in the kernel, no SEO plugin required.
+- 🔀 **Framework-owned Redirects** — Redirect rules and canonical paths live in the kernel, no plugin required.
 - 🏛️ **Pure OOP Codebase** — Every layer is class-based; the UI layer runs on standalone `react-class-components`, `next-build-codegen` and `typescript-multiple-inheritance` packages.
 
 See the [Architecture guide](docs/architecture.md) for how each of these actually works.

@@ -67,7 +67,7 @@ export abstract class PluginComponent<P = Record<string, unknown>, S = Record<st
     return this.context?.collections ?? [];
   }
 
-  /** Cross-plugin namespace facade, e.g. `this.namespace('org.fromcode').finance.listCurrencies()`. */
+  /** Cross-plugin namespace facade, e.g. `this.namespace('org.fromcode').billing.listCurrencies()`. */
   protected namespace(namespace: string): any {
     const registry: any = this.context?.plugins;
     if (!registry) return undefined;

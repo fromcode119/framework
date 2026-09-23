@@ -18,19 +18,19 @@ import { AdminScope, TenantMode } from '@fromcode119/core';
  * missed by that pass.
  */
 const PLUGINS = [
-  { manifest: { slug: 'cms', sandbox: true }, state: 'active', isSandboxed: true },
-  { manifest: { slug: 'seo', sandbox: false }, state: 'active', isSandboxed: false },
-  { manifest: { slug: 'mlm', sandbox: true }, state: 'active', isSandboxed: true },
+  { manifest: { slug: 'gallery', sandbox: true }, state: 'active', isSandboxed: true },
+  { manifest: { slug: 'glossary', sandbox: false }, state: 'active', isSandboxed: false },
+  { manifest: { slug: 'referrals', sandbox: true }, state: 'active', isSandboxed: true },
 ];
 
 const SUMMARY = {
-  sandbox: { processes: [{ pid: 1, slug: 'mlm' }] },
+  sandbox: { processes: [{ pid: 1, slug: 'referrals' }] },
   hostMemory: { rssBytes: 123 },
   monitor: { denials: 0 },
   pluginIsolation: {
     totalPlugins: 3,
     activePlugins: 3,
-    unsandboxedActivePluginSlugs: ['seo'],
+    unsandboxedActivePluginSlugs: ['glossary'],
     sandboxPolicyRuntimeMismatchSlugs: [],
   },
   integrityEnforced: true,
@@ -71,6 +71,37 @@ describe('installation stats', () => {
     expect(out.body.counts.users).toBe(2); // this site's memberships, not every account
     expect(out.body).not.toHaveProperty('mode'); // "multi-site" describes the container
     expect(out.body.scope).toBe(AdminScope.SITE);
+  });
+
+  it('lists the setup steps for the SITE, counted from its own rows', async () => {
+    // A fresh site used to get no steps at all: its dashboard was a heading over an empty list.
+    const { res, out } = respond();
+    await controller({ rows: [] }).getInstallation({ tenantId: 'initech' } as never, res);
+
+    expect(out.body.isFresh).toBe(true);
+    expect(out.body.steps.map((step: any) => step.key)).toEqual(['theme', 'plugins']);
+    expect(out.body.steps.every((step: any) => step.done === false)).toBe(true);
+  });
+
+  it('names the theme a site has active', async () => {
+    const { res, out } = respond();
+    await controller({ rows: [{ theme_slug: 'fromcode', state: 'active' }] }).getInstallation({ tenantId: 'initech' } as never, res);
+
+    expect(out.body.steps[0]).toMatchObject({ title: 'Theme: fromcode', done: true });
+  });
+
+  it('never reports the platform’s frontend URL as the site’s address', async () => {
+    // No site host can be resolved here (no database is wired), so the honest answer is blank —
+    // the dashboard printed the deployment's own frontend URL as where this site is served.
+    const before = process.env.FRONTEND_URL;
+    process.env.FRONTEND_URL = 'http://frontend.platform.example';
+    try {
+      const { res, out } = respond();
+      await controller().getInstallation({ tenantId: 'initech' } as never, res);
+      expect(out.body.storefront).toBe('');
+    } finally {
+      if (before === undefined) delete process.env.FRONTEND_URL; else process.env.FRONTEND_URL = before;
+    }
   });
 
   it('still describes the whole installation in the platform scope', async () => {

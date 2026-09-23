@@ -1,7 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
-import { FrameworkRoot } from './cli/framework-root';
+import { SourceTree } from './source-tree';
 
 /**
  * Parity between the shared block identity registry and the two editors that define blocks.
@@ -9,26 +9,57 @@ import { FrameworkRoot } from './cli/framework-root';
  * A block type an editor defines but the registry does not know, or a registry entry flagged for an
  * editor that does not define it, is drift: one side ships a block the other cannot place.
  *
- * Ported here from a loose `plugins/cms/scripts/*.mjs`. As a script in an extension it was hashed
- * with the extension, ran nowhere the extension is installed, and — the point — was wired into
- * nothing, so it had never once run in CI. A static check is a guard, and guards live here.
+ * Ported here from a loose script inside the plugin that owns the block editors. As a script in an
+ * extension it was hashed with the extension, ran nowhere the extension is installed, and — the point
+ * — was wired into nothing, so it had never once run in CI. A static check is a guard, and guards
+ * live here.
+ *
+ * WHICH plugin is found by its shape, never by its name: any plugin that ships a block identity
+ * registry at {@link BlockRegistryDriftGuard.REGISTRY} is checked. The framework names no extension.
  */
 export class BlockRegistryDriftGuard {
   private static readonly VE_SCHEMA_FILES = [
     'block-schemas-layout.ts', 'block-schemas-content.ts', 'block-schemas-media.ts', 'block-schemas-commerce.ts',
   ];
 
+  /** The shared registry, relative to a plugin's `src/ui/components`. Its presence is what selects a plugin. */
+  private static readonly REGISTRY = 'block-registry/block-registry-entries.ts';
+
+  /** Every plugin that ships a block registry — the scoped extension itself, or each one in `plugins/`. */
+  private static uiRoots(): string[] {
+    const found: string[] = [];
+    for (const { area, dir } of SourceTree.areas()) {
+      if (area !== 'plugins') continue;
+      let children: string[] = [];
+      try {
+        children = fs.readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => path.join(dir, e.name));
+      } catch {
+        children = [];
+      }
+      for (const candidate of [dir, ...children]) {
+        const uiRoot = path.join(candidate, 'src', 'ui', 'components');
+        if (fs.existsSync(path.join(uiRoot, BlockRegistryDriftGuard.REGISTRY))) found.push(uiRoot);
+      }
+    }
+    return found;
+  }
+
   static run(): number {
-    const uiRoot = path.resolve(FrameworkRoot.repo(), 'plugins', 'cms', 'src', 'ui', 'components');
-    if (!fs.existsSync(uiRoot)) {
-      console.log(`No cms plugin at ${uiRoot}; nothing to scan.`);
+    const roots = BlockRegistryDriftGuard.uiRoots();
+    if (!roots.length) {
+      console.log('No plugin ships a block registry; nothing to scan.');
       return 0;
     }
+    return roots.reduce((failed, uiRoot) => Math.max(failed, BlockRegistryDriftGuard.check(uiRoot)), 0);
+  }
+
+  /** Parity for one plugin's editors against its own registry. */
+  private static check(uiRoot: string): number {
     const read = (rel: string) => fs.readFileSync(path.join(uiRoot, rel), 'utf8');
 
     const registry = new Map<string, { adminEditor: boolean; visualEditor: boolean }>();
     const entryRe = /type:\s*'([^']+)'[\s\S]*?adminEditor:\s*(true|false)[\s\S]*?visualEditor:\s*(true|false)/g;
-    for (const match of read('block-registry/block-registry-entries.ts').matchAll(entryRe)) {
+    for (const match of read(BlockRegistryDriftGuard.REGISTRY).matchAll(entryRe)) {
       registry.set(match[1]!, { adminEditor: match[2] === 'true', visualEditor: match[3] === 'true' });
     }
 

@@ -12,7 +12,7 @@ import { PreBootRegistrationSeed } from '@react/context/pre-boot-registration-se
  *
  * Registrations are routed to the pre-boot queue (`window._fromcodeQueue`, the same queue the stub bridge
  * has always written), which `PreBootRegistrationSeed` folds into the provider's initial state and the
- * live install flushes for the rest. Plugin-API clients and event subscriptions go straight into the
+ * live install flushes for the rest. Plugin-API clients and event listeners go straight into the
  * store and map the provider will be seeded with, so nothing registered at evaluation waits for a flush.
  *
  * Reads (`stableT`, `stableGetFrontendMetadata`, `stabilityRef.current`) answer from a

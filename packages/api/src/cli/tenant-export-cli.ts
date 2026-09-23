@@ -13,8 +13,8 @@ import {
  * node dist/cli/tenant-export.js \
  *   --database "sqlite:/app/data/app.db?mode=ro"   # or postgres://… of the single-tenant deployment
  *   --uploads /app/public/uploads                   # that deployment's uploads root
- *   --slug vselenski --host vselenskiportal.bg [--alias www.vselenskiportal.bg]…
- *   [--out /app/backups/tenants/tenant-vselenski-<ts>.tar.gz]
+ *   --slug example --host example.com [--alias www.example.com]…
+ *   [--out /app/backups/tenants/tenant-example-<ts>.tar.gz]
  *   [--platform postgres://…]                       # the DESTINATION, for the tenant-table catalog
  * ```
  *

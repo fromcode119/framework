@@ -108,6 +108,10 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
             theme={theme}
             measurementSystem={this.measurementSystem}
             setMeasurementSystem={this.setMeasurementSystem}
+            country={this.country}
+            setCountry={this.setCountry}
+            frontendDefaultLocale={this.frontendDefaultLocale}
+            defaultLocale={this.defaultLocale}
           />
         </div>
         )}

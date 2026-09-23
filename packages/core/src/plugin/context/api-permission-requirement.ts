@@ -1,6 +1,6 @@
 /**
  * A route that requires one specific permission rather than a coarse {@link AccessLevel}:
- * `context.api.post('/payouts', { access: new ApiPermissionRequirement('finance:payout') }, handler)`.
+ * `context.api.post('/payouts', { access: new ApiPermissionRequirement('billing:payout') }, handler)`.
  *
  * Admins always pass, so this narrows access WITHIN the admin tier rather than replacing it.
  *

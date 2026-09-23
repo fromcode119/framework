@@ -32,7 +32,7 @@ export class DeclaredSchemaReconciler {
    * ADD COLUMN. Declaring it on a column that already existed did nothing at all: the plan
    * fingerprinted it, and no DDL followed. So a plugin author who added the constraint to an
    * existing field got silence, and the only way to enforce it was to issue the DDL by hand — which
-   * is exactly what mlm did, on the request connection, which is not the table's owner, so it failed
+   * is exactly what one plugin did, on the request connection, which is not the table's owner, so it failed
    * on every boot and the uniqueness was never enforced.
    *
    * The driver decides HOW — it owns the catalog query and the DDL — and reports back. A driver that

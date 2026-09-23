@@ -3,7 +3,7 @@
 **Version**: 1.0.0  
 **Last Updated**: February 17, 2026
 
-This document defines the official design language for all Atlantis plugin UIs, based on the "Brutalist-Soft" aesthetic established in the CMS, Ecommerce, Finance, and Analytics plugins.
+This document defines the official design language for all Atlantis plugin UIs, based on the "Brutalist-Soft" aesthetic established in the first domain plugins.
 
 ---
 
@@ -540,11 +540,8 @@ When building a new plugin UI, ensure:
 
 ## Reference Implementations
 
-**Gold Standard Plugins** (copy patterns from these):
-1. **Ecommerce**: [store-overview.tsx](../plugins/ecommerce/ui/src/store-overview.tsx)
-2. **Finance**: [finance-overview.tsx](../plugins/finance/ui/src/finance-overview.tsx)
-3. **Analytics**: [analytics-overview.tsx](../plugins/analytics/ui/src/analytics-overview.tsx)
-4. **CMS**: [cms-dashboard.tsx](../plugins/cms/ui/src/components/cms-dashboard.tsx)
+**Plugins**: each plugin's overview screen (`ui/src/*-overview.tsx`) follows this system; copy the
+patterns from an installed plugin rather than from this document.
 
 **Shared Components** (reusable):
 - `packages/admin/components/ui/` - Base admin components
@@ -554,7 +551,7 @@ When building a new plugin UI, ensure:
 
 ## Version History
 
-- **1.0.0** (Feb 17, 2026): Initial design system documentation based on audit of CMS, Ecommerce, Finance, and Analytics plugins
+- **1.0.0** (Feb 17, 2026): Initial design system documentation based on an audit of the first domain plugins
 
 ---
 

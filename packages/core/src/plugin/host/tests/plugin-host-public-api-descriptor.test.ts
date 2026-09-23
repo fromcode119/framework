@@ -10,7 +10,7 @@ import { PluginHostPortableView } from '@core/plugin/host/plugin-host-portable-v
  * returned the real function. So every method was skipped, `methods.length` was 0, and the object
  * crossed as PLAIN DATA — the guest received `{}`: truthy, and empty.
  *
- * On vselenskiportal88 that is why `logistics` held `logistics-econt` as a peer, passed every
+ * On a client site that is why a shipping plugin held its courier adapter as a peer, passed every
  * `has()` check, and still found `searchCities` undefined. It applied to every guest-to-guest
  * public API call on the platform, not just that pair.
  */
@@ -30,7 +30,7 @@ describe('an isolated plugin public API survives the portable view', () => {
   };
 
   it('crosses as a host object carrying its methods, not as plain data', () => {
-    const view: any = PluginHostPortableView.of(publicApiProxy(), "logistics-econt");
+    const view: any = PluginHostPortableView.of(publicApiProxy(), "shipping-adapter");
     const marker = view?.[PluginHostPortableView.MARKER];
 
     expect(marker, 'the API must cross as a host object, not as {}').toBeTruthy();
@@ -48,7 +48,7 @@ describe('an isolated plugin public API survives the portable view', () => {
         : undefined),
     });
 
-    const brokenView: any = PluginHostPortableView.of(old, "logistics-econt");
+    const brokenView: any = PluginHostPortableView.of(old, "shipping-adapter");
     expect(brokenView?.[PluginHostPortableView.MARKER], 'regression guard: this is the bug').toBeFalsy();
   });
 });

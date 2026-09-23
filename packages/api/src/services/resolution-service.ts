@@ -56,7 +56,7 @@ export class ResolutionService {
     if (gated) return this.withCanonicalPath(gated);
 
     // Nothing resolved to content — consult plugin-registered redirect resolvers
-    // (e.g. an SEO plugin's retired-URL rules) before returning null. The framework
+    // (e.g. a redirect plugin's retired-URL rules) before returning null. The framework
     // stays plugin-agnostic: it only asks the registry and shapes a redirect result.
     const redirect = await this.resolveRedirect(slug);
     if (redirect) {

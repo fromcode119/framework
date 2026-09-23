@@ -38,19 +38,19 @@ vi.mock('@/app/components/view/plugin-loader.client', () => ({
   PluginLoader: () => null,
 }));
 
-function SimpleShell({ children }: { children: React.ReactNode }) {
-  return <div data-testid="simple-shell">{children}</div>;
+function PlainShell({ children }: { children: React.ReactNode }) {
+  return <div data-testid="plain-shell">{children}</div>;
 }
 
 describe('AppearanceShellHost', () => {
   it('renders the active appearance\'s registered shell, wrapping the page', () => {
-    AdminShellRegistry.shared.register('simple', SimpleShell);
+    AdminShellRegistry.shared.register('plain', PlainShell);
     render(
-      <AdminRuntimeContext.context.Provider value={{ activeAppearanceId: 'simple' } as any}>
+      <AdminRuntimeContext.context.Provider value={{ activeAppearanceId: 'plain' } as any}>
         <AppearanceShellHost><div>PAGE</div></AppearanceShellHost>
       </AdminRuntimeContext.context.Provider>
     );
-    expect(screen.getByTestId('simple-shell')).toBeInTheDocument();
+    expect(screen.getByTestId('plain-shell')).toBeInTheDocument();
     expect(screen.getByText('PAGE')).toBeInTheDocument();
   });
 });

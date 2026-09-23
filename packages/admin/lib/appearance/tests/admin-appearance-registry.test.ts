@@ -4,9 +4,9 @@ import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-regis
 describe('AdminAppearanceRegistry', () => {
   it('registers and retrieves a appearance by id', () => {
     const registry = new AdminAppearanceRegistry();
-    registry.register({ id: 'simple', label: 'Simple' });
-    expect(registry.has('simple')).toBe(true);
-    expect(registry.get('simple')).toEqual({ id: 'simple', label: 'Simple' });
+    registry.register({ id: 'plain', label: 'Plain' });
+    expect(registry.has('plain')).toBe(true);
+    expect(registry.get('plain')).toEqual({ id: 'plain', label: 'Plain' });
   });
 
   it('reports unknown ids as absent and returns undefined', () => {

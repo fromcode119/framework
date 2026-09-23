@@ -88,7 +88,7 @@ export class TenantExemptRouteUtils {
   }
 
   /** The request path with any trailing slash removed, so an exact match is not defeated by one. */
-  private static pathOf(req: any): string {
+  static pathOf(req: any): string {
     return String(req?.path || '').replace(/\/+$/, '');
   }
 }

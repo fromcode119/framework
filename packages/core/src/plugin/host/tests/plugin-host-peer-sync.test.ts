@@ -7,10 +7,10 @@ import { PluginHostGuestBridge } from '@core/plugin/host/plugin-host-guest-bridg
  * routes answered them against whatever snapshot its last LIFECYCLE call left: the one taken at
  * BOOT, before its siblings had finished loading.
  *
- * Measured on production (framework 0.2.141): logistics' snapshot was computed once, at 17:34:06,
- * listing 18 peers WITHOUT `org.fromcode:logistics-econt`, which was still `loading` at that
- * instant. Finance — invoked through hooks, so through `invoke` — held a snapshot from 17:34:27
- * that did include it. Econt city search therefore answered `{"cities":[]}` to every query for the
+ * Measured on production (framework 0.2.141): the shipping plugin's snapshot was taken once, at 17:34:06,
+ * listing 18 peers WITHOUT `org.fromcode:shipping-adapter`, which was still `loading` at that
+ * instant. A billing plugin — invoked through hooks, so through `invoke` — held a snapshot from 17:34:27
+ * that did include it. The courier's city search therefore answered `{"cities":[]}` to every query for the
  * life of the process, and the storefront told shoppers Sofia did not exist.
  */
 describe('PluginHost peer sync on forwarded requests', () => {
@@ -29,18 +29,18 @@ describe('PluginHost peer sync on forwarded requests', () => {
 
   it('sends the current snapshot before the first forwarded request', async () => {
     const sent: Array<{ type: string; payload: any }> = [];
-    const instance = host(sent, { 'org.fromcode:logistics-econt': ['searchCities'] }, ['logistics-econt']);
+    const instance = host(sent, { 'org.fromcode:shipping-adapter': ['searchCities'] }, ['shipping-adapter']);
 
     await instance.syncPeers(undefined);
 
     expect(sent).toHaveLength(1);
     expect(sent[0].type).toBe('peers');
-    expect(Object.keys(sent[0].payload.peers)).toContain('org.fromcode:logistics-econt');
+    expect(Object.keys(sent[0].payload.peers)).toContain('org.fromcode:shipping-adapter');
   });
 
   it('sends nothing more while the snapshot is unchanged', async () => {
     const sent: Array<{ type: string; payload: any }> = [];
-    const instance = host(sent, { 'org.fromcode:finance': ['quote'] }, ['finance']);
+    const instance = host(sent, { 'org.fromcode:billing': ['quote'] }, ['billing']);
 
     await instance.syncPeers(undefined);
     await instance.syncPeers(undefined);
@@ -51,35 +51,35 @@ describe('PluginHost peer sync on forwarded requests', () => {
 
   it('sends again when a sibling finishes loading', async () => {
     const sent: Array<{ type: string; payload: any }> = [];
-    let peers: Record<string, string[]> = { 'org.fromcode:finance': ['quote'] };
-    const instance = host(sent, peers, ['finance']);
+    let peers: Record<string, string[]> = { 'org.fromcode:billing': ['quote'] };
+    const instance = host(sent, peers, ['billing']);
     instance.peers = () => peers;
 
     await instance.syncPeers(undefined);
-    peers = { 'org.fromcode:finance': ['quote'], 'org.fromcode:logistics-econt': ['searchCities'] };
+    peers = { 'org.fromcode:billing': ['quote'], 'org.fromcode:shipping-adapter': ['searchCities'] };
     await instance.syncPeers(undefined);
 
     expect(sent).toHaveLength(2);
-    expect(Object.keys(sent[1].payload.peers)).toContain('org.fromcode:logistics-econt');
+    expect(Object.keys(sent[1].payload.peers)).toContain('org.fromcode:shipping-adapter');
   });
 
   it('sends again when a peer that was still loading gains its methods', async () => {
     // The key set never changes here — only the function names do. A signature over keys alone
     // matched, the refresh was skipped, and the guest kept a peer it could see but not call.
     const sent: Array<{ type: string; payload: any }> = [];
-    let peers: Record<string, string[]> = { 'org.fromcode:logistics-econt': [] };
-    const instance = host(sent, peers, ['logistics-econt']);
+    let peers: Record<string, string[]> = { 'org.fromcode:shipping-adapter': [] };
+    const instance = host(sent, peers, ['shipping-adapter']);
     instance.peers = () => peers;
 
     await instance.syncPeers(undefined);
     expect(sent).toHaveLength(1);
-    expect(sent[0].payload.peers['org.fromcode:logistics-econt']).toEqual([]);
+    expect(sent[0].payload.peers['org.fromcode:shipping-adapter']).toEqual([]);
 
-    peers = { 'org.fromcode:logistics-econt': ['searchCities', 'searchOffices'] };
+    peers = { 'org.fromcode:shipping-adapter': ['searchCities', 'searchOffices'] };
     await instance.syncPeers(undefined);
 
     expect(sent).toHaveLength(2);
-    expect(sent[1].payload.peers['org.fromcode:logistics-econt']).toContain('searchCities');
+    expect(sent[1].payload.peers['org.fromcode:shipping-adapter']).toContain('searchCities');
   });
 
   it('says nothing to a channel that is gone', async () => {

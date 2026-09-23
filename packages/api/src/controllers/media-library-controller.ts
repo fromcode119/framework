@@ -21,7 +21,7 @@ export class MediaLibraryController {
     private readonly logger: any,
     private readonly manager: PluginManager,
     private readonly mediaManager: MediaManager,
-    private readonly publicUrlFor: (req: Request, filePath: string, visibility: MediaVisibility) => string | null,
+    private readonly publicUrlFor: (origin: string, filePath: string, visibility: MediaVisibility) => string | null,
   ) {}
 
   async upload(req: any, res: Response) {
@@ -87,7 +87,8 @@ export class MediaLibraryController {
         updatedAt: insertedRaw?.updated_at ?? insertedRaw?.updatedAt
       };
 
-      res.json({ ...inserted, url: result.url ? ApiUrlUtils.resolvePublicUrl(req as Request, result.url) : null });
+      const origin = await ApiUrlUtils.resolveSitePublicOrigin(req as Request);
+      res.json({ ...inserted, url: result.url ? ApiUrlUtils.sitePublicUrl(origin, result.url) : null });
     } catch (err: any) {
       this.logger.error(`Upload error: ${err.message}`);
       res.status(500).json({ error: err.message });
@@ -168,6 +169,8 @@ export class MediaLibraryController {
         });
       }
 
+      // Once per request, not per row: every file in one listing belongs to the same site.
+      const origin = await ApiUrlUtils.resolveSitePublicOrigin(req);
       res.json(
         files.map((f: any) => {
           // The fallback query above omits `visibility`; resolve() reads that absence as PUBLIC, which
@@ -176,9 +179,9 @@ export class MediaLibraryController {
           return {
             ...f,
             visibility: visibility.value,
-            url: this.publicUrlFor(req, f.path, visibility),
+            url: this.publicUrlFor(origin, f.path, visibility),
             optimizedUrl: f.optimizedPath && !visibility.isPrivate
-              ? ApiUrlUtils.resolvePublicUrl(req, this.mediaManager.driver.getUrl(f.optimizedPath))
+              ? ApiUrlUtils.sitePublicUrl(origin, this.mediaManager.driver.getUrl(f.optimizedPath))
               : null,
           };
         })

@@ -6,13 +6,13 @@ describe('AuthProfileService', () => {
     const payload = AuthProfileService.sanitizeProfilePayload({
       phone: '12345',
       birthdate: '1990-05-11',
-      numerologyFocus: 'life-path',
+      readingFocus: 'life-path',
     });
 
     expect(payload).toMatchObject({
       phone: '12345',
       birthdate: '1990-05-11',
-      numerologyFocus: 'life-path',
+      readingFocus: 'life-path',
     });
   });
 

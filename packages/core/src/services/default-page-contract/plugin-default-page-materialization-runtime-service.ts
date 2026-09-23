@@ -104,7 +104,7 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
 
   /**
    * Inside a SITE (a tenant in the request context) only the contracts of plugins that site runs
-   * materialize: a site without the numerology plugin must not receive numerology pages. Outside a
+   * materialize: a site without a plugin must not receive that plugin's pages. Outside a
    * site — the single-site deployment's boot pass — every contract applies, exactly as before.
    */
   private static forCurrentTenant(contracts: IResolvedPluginDefaultPageContract[]): IResolvedPluginDefaultPageContract[] {

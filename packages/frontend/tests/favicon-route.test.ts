@@ -24,7 +24,7 @@ describe('favicon route', () => {
   it('serves the active theme favicon from theme public assets', async () => {
     vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
-      activeTheme: { slug: 'vselenskiportal88' },
+      activeTheme: { slug: 'example-theme' },
     });
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(
       createResponse('ico', 'image/x-icon'),
@@ -35,7 +35,7 @@ describe('favicon route', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/x-icon');
     expect(ServerApiUtils.serverFetchInternalResponse).toHaveBeenCalledWith(
-      ApiPathUtils.themePublicAssetPath('vselenskiportal88', 'favicon.ico'),
+      ApiPathUtils.themePublicAssetPath('example-theme', 'favicon.ico'),
     );
   });
 

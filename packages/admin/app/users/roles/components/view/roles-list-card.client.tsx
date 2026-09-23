@@ -42,8 +42,8 @@ export class RolesListCard extends PureReactor {
 
                 <div className="flex items-center gap-5 shrink-0">
                   <div className="hidden md:flex items-center gap-5 text-xs font-medium">
-                    <span className="text-slate-500"><span className={dark ? 'text-slate-200 font-semibold' : 'text-slate-800 font-semibold'}>{role.users || 0}</span> users</span>
-                    <span className="text-indigo-500 font-semibold">{role.permissions?.length || 0} perms</span>
+                    <span className="text-slate-500"><span className={dark ? 'text-slate-200 font-semibold' : 'text-slate-800 font-semibold'}>{role.users || 0}</span> {Number(role.users) === 1 ? 'user' : 'users'}</span>
+                    <span className="text-indigo-500 font-semibold">{role.permissions?.length || 0} {role.permissions?.length === 1 ? 'perm' : 'perms'}</span>
                   </div>
                   {isSystem ? (
                     <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-500">

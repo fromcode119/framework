@@ -16,7 +16,7 @@ describe('context.tenants', () => {
       listActive: async () => ids.map((id) => ({ id, isActive: true })),
     } as any);
   };
-  const proxy = () => TenantsContextProxy.createTenantsProxy({ db } as any, 'forms');
+  const proxy = () => TenantsContextProxy.createTenantsProxy({ db } as any, 'guestbook');
 
   beforeEach(() => { db = { withTenant: vi.fn(async (_id: string, fn: () => Promise<unknown>) => fn()) }; });
   afterEach(() => { vi.restoreAllMocks(); TenantMode.reset?.(); });

@@ -155,7 +155,7 @@ services:
       # whatever the image was baked with. That is not theoretical: a DSAR erasure failed with
       # `import_sdk.PersonalDataRows is not a constructor` and
       # `Cannot read properties of undefined (reading 'TOMBSTONE')` — the helper existed on the host
-      # and was `undefined` in the container, so finance could neither erase nor retain a single row.
+      # and was `undefined` in the container, so a plugin could neither erase nor retain a single row.
       # Every other package the api runs from source is mounted; the sdk was the one plugins depend on
       # most and the one nobody had mounted.
       - ./packages/sdk/dist:/app/packages/sdk/dist

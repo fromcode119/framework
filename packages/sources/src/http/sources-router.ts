@@ -68,8 +68,8 @@ export class SourcesRouter extends BaseRouter {
    * The source a request addresses, or a 404 when it addresses none.
    *
    * `ExtensionScope.find`, never `resolve`: `resolve` answers PLUGIN for anything it cannot name, so
-   * a request to `/sources/bogus/tagiqx` would have deleted, built or downloaded the PLUGIN called
-   * tagiqx. A path that names nothing must be a 404, not a different extension.
+   * a request to `/sources/bogus/acme` would have deleted, built or downloaded the PLUGIN called
+   * acme. A path that names nothing must be a 404, not a different extension.
    */
   private identityFrom(req: Request, res: Response): BuildSourceIdentity | null {
     const identity = BuildSourceIdentity.parseOrNull(req.params.type, req.params.slug);

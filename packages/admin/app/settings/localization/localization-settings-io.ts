@@ -3,7 +3,7 @@ import type { ISavedLocalization } from '@/app/settings/localization/interfaces/
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { LocalizationPageUtils } from '@/app/settings/localization/localization-page-utils';
 import { ILocaleItem } from '@/app/settings/localization/interfaces/locale-item.interface';
-import { CoercionUtils, LocaleUrlStrategy, MeasurementSystem } from '@fromcode119/core/client';
+import { CoercionUtils, LocaleUrlStrategy, MeasurementSystem, PlatformCountryUtils } from '@fromcode119/core/client';
 
 /**
  * Loads and persists localization settings for the localization settings page.
@@ -36,6 +36,7 @@ export class LocalizationSettingsIo {
       frontendDefaultLocale: LocalizationPageUtils.normalizeLocaleCode(text('frontend_default_locale')),
       localeUrlStrategy: LocaleUrlStrategy.resolve(text('locale_url_strategy')),
       measurementSystem: MeasurementSystem.resolve(text('measurement_system')),
+      country: PlatformCountryUtils.normalize(text(PlatformCountryUtils.SETTING_KEY)),
     };
   }
 
@@ -92,6 +93,7 @@ export class LocalizationSettingsIo {
     defaults: { defaultLocale: string; adminDefaultLocale: string; frontendDefaultLocale: string },
     localeUrlStrategy: LocaleUrlStrategy,
     measurementSystem: MeasurementSystem,
+    country: string,
   ): Promise<ISavedLocalization> {
     const enabledCodes = cleaned.filter((locale) => locale.enabled).map((locale) => locale.code);
     const firstEnabled = enabledCodes[0];
@@ -112,6 +114,8 @@ export class LocalizationSettingsIo {
       frontend_default_locale: nextFrontendDefault,
       locale_url_strategy: localeUrlStrategy.value,
       measurement_system: measurementSystem.value,
+      // '' is stored as blank on purpose: it means "derive from the frontend language".
+      [PlatformCountryUtils.SETTING_KEY]: PlatformCountryUtils.normalize(country),
     });
 
     return {

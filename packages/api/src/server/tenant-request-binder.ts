@@ -1,4 +1,4 @@
-import { IntegrationTenantAccess, PluginTenantAccess, RequestContextUtils, TenantThemeAccess } from '@fromcode119/core';
+import { IntegrationTenantAccess, PluginTenantAccess, RequestContextUtils, SiteLocaleAccess, TenantThemeAccess } from '@fromcode119/core';
 import type { TenantRecord } from '@fromcode119/core';
 
 /**
@@ -41,8 +41,12 @@ export class TenantRequestBinder {
       // the environment's storage and the whole per-site routing did nothing. Measured: two sites with
       // different `publicUrlBase` both warmed to the env value until this scope was added.
       this.db.withTenant(tenant.id, () => IntegrationTenantAccess.warm(tenant.id)),
+      // The site's own default locale, for `context.i18n.defaultLocale()` — a `_system_meta` row, so
+      // read inside the tenant scope for the same reason as the integrations.
+      this.db.withTenant(tenant.id, () => SiteLocaleAccess.warm(tenant.id)),
     ]);
-    RequestContextUtils.storage.run({ locale, tenantId: tenant.id }, () => {
+    const siteLocale = SiteLocaleAccess.get(tenant.id) || undefined;
+    RequestContextUtils.storage.run({ locale, tenantId: tenant.id, siteLocale }, () => {
       this.db.withTenant(tenant.id, () => new Promise<void>((resolve) => {
         res.on('finish', resolve);
         res.on('close', resolve);

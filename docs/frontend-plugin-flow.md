@@ -14,7 +14,7 @@
 │  ┌──────────────────────────────────────────────────────────────────┐  │
 │  │ 1. Load Enabled Plugins from Database                            │  │
 │  │    → SELECT * FROM plugins WHERE enabled = true                  │  │
-│  │    → Result: ['core', 'seo', 'analytics', 'comments']            │  │
+│  │    → Result: ['core', 'meta', 'tracker', 'comments']             │  │
 │  └──────────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────┘
                                   │
@@ -24,12 +24,12 @@
 │  ┌──────────────────────────────────────────────────────────────────┐  │
 │  │ 2. Collect SSR Injections from Each Plugin                       │  │
 │  │                                                                   │  │
-│  │  SEO Plugin:                                                      │  │
+│  │  Meta Plugin:                                                     │  │
 │  │    ├─ Meta tags: <meta name="description" content="...">        │  │
 │  │    ├─ Open Graph: <meta property="og:title" content="...">      │  │
 │  │    └─ Schema: <script type="ld+json">...</script>               │  │
 │  │                                                                   │  │
-│  │  Analytics Plugin:                                                │  │
+│  │  Tracker Plugin:                                                  │  │
 │  │    ├─ Google Analytics: <script src="gtag.js">                  │  │
 │  │    └─ Tracking code: gtag('config', 'GA-XXX')                   │  │
 │  │                                                                   │  │
@@ -47,7 +47,7 @@
 │  │  <article>                                                        │  │
 │  │    <h1>{post.title}</h1>                                         │  │
 │  │                                                                   │  │
-│  │    {/* SEO Plugin injects preview here */}                       │  │
+│  │    {/* Meta Plugin injects preview here */}                      │  │
 │  │    <Slot name="post.header.after" />                            │  │
 │  │                                                                   │  │
 │  │    <div>{post.content}</div>                                     │  │
@@ -56,7 +56,7 @@
 │  │    <Slot name="post.content.after">                             │  │
 │  │      → CommentsSection (from comments plugin)                    │  │
 │  │      → ShareButtons (from social plugin)                         │  │
-│  │      → RelatedPosts (from cms plugin)                            │  │
+│  │      → RelatedPosts (from blog plugin)                           │  │
 │  │    </Slot>                                                        │  │
 │  │  </article>                                                       │  │
 │  └──────────────────────────────────────────────────────────────────┘  │
@@ -71,17 +71,17 @@
 │  │  <!DOCTYPE html>                                                  │  │
 │  │  <html>                                                           │  │
 │  │    <head>                                                         │  │
-│  │      <!-- SEO Plugin -->                                          │  │
+│  │      <!-- Meta Plugin -->                                         │  │
 │  │      <meta name="description" content="Post description">        │  │
 │  │      <meta property="og:title" content="Post Title">            │  │
 │  │      <script type="application/ld+json">{...}</script>          │  │
 │  │                                                                   │  │
-│  │      <!-- Analytics Plugin -->                                    │  │
+│  │      <!-- Tracker Plugin -->                                      │  │
 │  │      <script async src="https://gtag.js"></script>              │  │
 │  │      <script>gtag('config', 'GA-XXX')</script>                  │  │
 │  │                                                                   │  │
 │  │      <!-- Plugin Styles -->                                       │  │
-│  │      <link href="/plugins/seo/styles.css" rel="stylesheet">     │  │
+│  │      <link href="/plugins/meta/styles.css" rel="stylesheet">    │  │
 │  │      <link href="/plugins/comments/styles.css" rel="stylesheet">│  │
 │  │    </head>                                                        │  │
 │  │    <body>                                                         │  │
@@ -90,7 +90,7 @@
 │  │                                                                   │  │
 │  │      <!-- Client-side plugin scripts -->                          │  │
 │  │      <script src="/plugins/comments/frontend.js"></script>       │  │
-│  │      <script src="/plugins/analytics/tracking.js"></script>      │  │
+│  │      <script src="/plugins/tracker/tracking.js"></script>        │  │
 │  │    </body>                                                        │  │
 │  │  </html>                                                          │  │
 │  └──────────────────────────────────────────────────────────────────┘  │
@@ -103,17 +103,17 @@
 │  │ 5. Client-side Plugin Initialization                             │  │
 │  │                                                                   │  │
 │  │  // Page loads with all plugin features active:                  │  │
-│  │  ✓ SEO meta tags already in HTML                                │  │
-│  │  ✓ Analytics tracking starts immediately                         │  │
+│  │  ✓ Meta tags already in HTML                                    │  │
+│  │  ✓ Tracker starts immediately                                    │  │
 │  │  ✓ Comments section hydrated and interactive                     │  │
 │  │  ✓ Share buttons functional                                      │  │
 │  │  ✓ Related posts loaded                                          │  │
 │  │                                                                   │  │
 │  │  // Plugin hydration:                                             │  │
-│  │  window.fromcode.plugins.init(['seo', 'analytics', 'comments'])  │  │
+│  │  window.fromcode.plugins.init(['meta', 'tracker', 'comments'])   │  │
 │  │                                                                   │  │
 │  │  // Plugins listen to events:                                     │  │
-│  │  - Page navigation → Analytics tracks                            │  │
+│  │  - Page navigation → Tracker records                             │  │
 │  │  - Comment submission → Updates UI                               │  │
 │  │  - Share button click → Social plugin handles                    │  │
 │  └──────────────────────────────────────────────────────────────────┘  │
@@ -124,20 +124,20 @@
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│                    ADMIN ENABLES SEO PLUGIN                         │
+│                    ADMIN ENABLES META PLUGIN                        │
 │              (Clicks "Enable" button in admin panel)                │
 └────────────────────────────────────────────────────────────────────┘
                                │
                                ▼
 ┌────────────────────────────────────────────────────────────────────┐
 │                    API CALL TO BACKEND                              │
-│         POST /api/plugins/seo/enable                                │
+│         POST /api/plugins/meta/enable                               │
 └────────────────────────────────────────────────────────────────────┘
                                │
                                ▼
 ┌────────────────────────────────────────────────────────────────────┐
 │                    BACKEND PROCESSING                               │
-│  1. Update database: plugins.seo.enabled = true                     │
+│  1. Update database: plugins.meta.enabled = true                    │
 │  2. Run plugin onEnable() hook                                      │
 │  3. Run plugin migrations (if any)                                  │
 │  4. Register plugin collections                                     │
@@ -150,7 +150,7 @@
 │                 FRONTEND REGISTRATION                               │
 │                                                                     │
 │  frontendRegistry.register({                                        │
-│    plugin: 'seo',                                                   │
+│    plugin: 'meta',                                                  │
 │    ssr: {                                                           │
 │      headInjection: [...],  // Meta tags                           │
 │      middleware: [...],      // Request interceptors               │
@@ -165,10 +165,10 @@
                                ▼
 ┌────────────────────────────────────────────────────────────────────┐
 │                  BUILD PLUGIN FRONTEND                              │
-│  $ atlantis plugin build seo --frontend                             │
+│  $ atlantis plugin build meta --frontend                            │
 │                                                                     │
 │  Output:                                                            │
-│  └── plugins/seo/dist/frontend/                                     │
+│  └── plugins/meta/dist/frontend/                                    │
 │      ├── index.js       (bundled components)                        │
 │      ├── styles.css     (bundled styles)                            │
 │      └── assets/        (images, fonts)                             │
@@ -178,8 +178,8 @@
 ┌────────────────────────────────────────────────────────────────────┐
 │                    IMMEDIATE EFFECT                                 │
 │                                                                     │
-│  ✓ Next page load includes SEO meta tags                           │
-│  ✓ Admin panel shows SEO preview sidebar                           │
+│  ✓ Next page load includes meta tags                               │
+│  ✓ Admin panel shows meta preview sidebar                          │
 │  ✓ Sitemap.xml endpoint is live                                    │
 │  ✓ All pages automatically optimized for SEO                       │
 │                                                                     │
@@ -227,7 +227,7 @@
 │  └────────────────────────────────────────────────────────┘    │
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────┐    │
-│  │  RelatedPosts (from 'cms' plugin)                      │    │
+│  │  RelatedPosts (from 'blog' plugin)                     │    │
 │  │  Priority: 30                                          │    │
 │  │  <div className="related-posts">                       │    │
 │  │    <h3>Related Posts</h3>                              │    │
@@ -255,7 +255,7 @@
 2. SERVER-SIDE (Runtime)
    ┌────────────────────────────────────────────────────┐
    │ Plugin SSR injections executed on every request    │
-   │ - seo, analytics                                   │
+   │ - meta, tracker                                    │
    │ ✓ Dynamic, can be enabled/disabled                 │
    │ ✓ Cached for performance                           │
    │ ⚠ Small overhead (~5-10ms per plugin)             │
@@ -264,7 +264,7 @@
 3. CLIENT-SIDE (Lazy Load)
    ┌────────────────────────────────────────────────────┐
    │ Plugin components loaded when slot renders         │
-   │ - comments, livechat, forms                        │
+   │ - comments, livechat, polls                        │
    │ ✓ Only loads when needed                           │
    │ ✓ Doesn't block initial render                     │
    │ ✓ Automatic code splitting                         │
@@ -273,7 +273,7 @@
 4. CLIENT-SIDE (Preload)
    ┌────────────────────────────────────────────────────┐
    │ Critical plugins preloaded in <head>               │
-   │ - analytics (for immediate tracking)               │
+   │ - tracker (for immediate tracking)                 │
    │ ✓ Ready when page loads                            │
    │ ⚠ Adds to initial bundle size                      │
    └────────────────────────────────────────────────────┘
@@ -321,7 +321,7 @@ $ atlantis plugins install @fromcode119/livechat
 // - Chat widget appears on all pages
 // - Chat icon in bottom-right corner
 // - Admin panel has chat dashboard
-// - Analytics tracks chat engagement
+// - Tracker records chat engagement
 
 // Zero code written!
 // Zero config needed!

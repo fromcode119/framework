@@ -4,7 +4,7 @@ import { PluginRouteResolver } from '@/lib/plugin-route-resolver';
 describe('PluginRouteResolver.resolveSlug', () => {
   const plugins = [
     { slug: 'build-server', manifest: { admin: { menu: [{ path: '/sources' }] } } },
-    { slug: 'forms', manifest: { admin: { menu: [{ path: '/forms' }] } } },
+    { slug: 'guestbook', manifest: { admin: { menu: [{ path: '/guestbook' }] } } },
   ];
 
   /** The screen a person clicks is named for what it does; the slug names tables and slots. */
@@ -13,7 +13,7 @@ describe('PluginRouteResolver.resolveSlug', () => {
   });
 
   it('resolves a path that matches the slug, as every existing plugin does', () => {
-    expect(PluginRouteResolver.resolveSlug(plugins, 'forms')).toBe('forms');
+    expect(PluginRouteResolver.resolveSlug(plugins, 'guestbook')).toBe('guestbook');
   });
 
   /** An unknown segment stays itself, so the caller reports "not found" for the thing asked for. */

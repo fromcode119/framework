@@ -20,7 +20,8 @@ export class InitialFrameworkPostgresTables {
             "health_status" TEXT DEFAULT 'healthy',
             "capabilities" TEXT,
             "sandbox_config" JSONB DEFAULT '{}'::jsonb,
-            "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            "held_reason" TEXT
           )
         `);
 
@@ -72,7 +73,10 @@ export class InitialFrameworkPostgresTables {
             "slug" TEXT PRIMARY KEY,
             "state" TEXT NOT NULL DEFAULT 'inactive',
             "config" JSONB,
-            "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            "name" TEXT,
+            "version" TEXT,
+            "created_at" TIMESTAMP WITH TIME ZONE
           )
         `);
 
@@ -176,6 +180,40 @@ export class InitialFrameworkPostgresTables {
             "alt" TEXT,
             "path" TEXT NOT NULL,
             "folder_id" INTEGER REFERENCES "media_folders"("id") ON DELETE SET NULL,
+            "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            "caption" TEXT,
+            "optimized_path" TEXT,
+            "optimized_size" INTEGER,
+            "optimized_width" INTEGER,
+            "optimized_height" INTEGER
+          )
+        `);
+
+    // 13. Security audit log
+    await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "_system_audit_logs" (
+            "id" SERIAL PRIMARY KEY,
+            "plugin_slug" TEXT NOT NULL,
+            "action" TEXT NOT NULL,
+            "resource" TEXT,
+            "status" TEXT NOT NULL,
+            "metadata" JSONB,
+            "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
+    // 14. Scheduler tasks — `schedule` is a cron expression or an interval, as `type` says
+    await db.execute(sql`
+          CREATE TABLE IF NOT EXISTS "_system_scheduler_tasks" (
+            "id" SERIAL PRIMARY KEY,
+            "name" TEXT NOT NULL UNIQUE,
+            "plugin_slug" TEXT REFERENCES "_system_plugins"("slug") ON DELETE CASCADE,
+            "schedule" TEXT NOT NULL,
+            "type" TEXT NOT NULL DEFAULT 'cron',
+            "last_run" TIMESTAMP WITH TIME ZONE,
+            "next_run" TIMESTAMP WITH TIME ZONE,
+            "is_active" BOOLEAN NOT NULL DEFAULT TRUE,
             "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           )

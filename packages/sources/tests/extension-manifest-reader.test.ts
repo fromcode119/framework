@@ -33,16 +33,16 @@ describe('ExtensionManifestReader', () => {
   });
 
   it('prefers theme.json over a manifest.json sitting beside it', () => {
-    write('theme.json', { slug: 'fromcode', version: '0.1.29' });
-    write('manifest.json', { slug: 'fromcode', version: '0.1.29' });
+    write('theme.json', { slug: 'aurora', version: '0.1.29' });
+    write('manifest.json', { slug: 'aurora', version: '0.1.29' });
 
     expect(ExtensionManifestReader.read(dir)?.type).toBe('theme');
   });
 
   it('still reads a plain plugin', () => {
-    write('manifest.json', { slug: 'forms', name: 'Forms', version: '0.1.31' });
+    write('manifest.json', { slug: 'guestbook', name: 'Guestbook', version: '0.1.31' });
 
-    expect(ExtensionManifestReader.read(dir)).toMatchObject({ slug: 'forms', type: 'plugin' });
+    expect(ExtensionManifestReader.read(dir)).toMatchObject({ slug: 'guestbook', type: 'plugin' });
   });
 
   it('reads nothing from a repository that declares nothing, rather than guessing', () => {

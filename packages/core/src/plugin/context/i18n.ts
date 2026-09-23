@@ -7,6 +7,7 @@ import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { LocalizationUtils } from '@core/localization';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
+import { RequestContextUtils } from '@core/context/request-context';
 
 export class I18nContextProxy {
   static createI18nProxy(
@@ -97,10 +98,12 @@ export class I18nContextProxy {
           if (!hasCapability('i18n')) handleViolation('i18n');
           return manager.i18n.translate(scopePluginKey(key), params, normalizeLocale(locale));
         },
-        /** The platform's configured default locale (admin Settings → Localization `default_locale`).
-         *  Use for server-rendered legal documents that must render in the PLATFORM language, not the
-         *  viewer's request locale — instead of hardcoding a country/locale literal. */
-        defaultLocale: (): string => manager.i18n.getDefaultLocale(),
+        /** The configured default locale (admin Settings → Localization `default_locale`) of the SITE this
+         *  work is done for, else the platform's. Use for documents and messages a site issues — invoices,
+         *  agreements, emails — instead of the viewer's request locale or a hardcoded literal. It used to
+         *  answer the platform's locale only, so a Bulgarian site on an English platform issued English
+         *  invoices. */
+        defaultLocale: (): string => RequestContextUtils.getSiteLocale() || manager.i18n.getDefaultLocale(),
         registerTranslations: (localeOrDirectory: string = 'i18n', translations?: Record<string, any>) => {
           if (!hasCapability('i18n')) handleViolation('i18n');
           if (translations === undefined) {

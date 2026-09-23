@@ -176,7 +176,7 @@ export class SchemaReconciliationService {
    *
    * Without this the queue only ever grows, and a stale entry is not merely noise — it is the harm
    * this feature exists to prevent, deferred. Measured: an early build judged each table at its own
-   * sync moment and recorded six SEO columns on `fcp_orbit_pages` that the SEO plugin actively
+   * sync moment and recorded six SEO columns on a content plugin's pages table that a metadata plugin actively
    * declares. Once the detection was corrected they stopped being reported, but they SAT IN THE
    * QUEUE, where an operator would eventually have approved dropping a live column.
    *

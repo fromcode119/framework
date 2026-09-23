@@ -4,7 +4,7 @@
  * (`/fc-runtime/icons/<lucide version>/<name>.js`) — served from each Next app's `public/` directory.
  *
  * The ONE place these names live: the frontend build config (output dir), the admin/frontend
- * `headers()` rules (immutable cache), `RouteSegmentUtils` (reserved root segment, so a CMS page can
+ * `headers()` rules (immutable cache), `RouteSegmentUtils` (reserved root segment, so a content page can
  * never shadow them) and the browser-side icon loader (URL) all read this class. Deliberately free
  * of imports so a build-time config loaded by Vite's own config bundler can import it relatively.
  */

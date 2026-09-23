@@ -31,7 +31,7 @@ describe('TenantArchiveManifest.from', () => {
   it('round-trips through toJSON', () => {
     const manifest = new TenantArchiveManifest(1, '2026-09-05T00:00:00.000Z', '0.1.88', TenantArchiveKind.SINGLE_TENANT,
       { id: 'v', slug: 'v', primaryHost: 'v.test', hostAliases: ['www.v.test'], state: 'active' },
-      [{ slug: 'eta', version: '0.1.33' }], { slug: 'fromcode', version: '0.1.27', config: null },
+      [{ slug: 'eta', version: '0.1.33' }], { slug: 'aurora', version: '0.1.27', config: null },
       [{ name: 'fcp_zeta_pages', rows: 44, columns: ['id', 'title'], hasSerialId: true }], 28, { count: 19, bytes: 1000 }, []);
     const again = TenantArchiveManifest.from(JSON.parse(JSON.stringify(manifest.toJSON())));
     expect(again.tenant.slug).toBe('v');

@@ -9,7 +9,7 @@ import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
  * leaves that world stale, and re-importing them in place produces a SECOND set of instances whose
  * registries and plugin clients no longer match the ones the loaded components hold. Rendering keeps
  * succeeding; it just silently yields empty values for everything plugin- or translation-derived. On a
- * live storefront that read as product prices, delivery estimates and social-proof labels vanishing
+ * live storefront that read as product prices, delivery estimates and testimonial labels vanishing
  * from the server-rendered HTML, with no error anywhere and no way to tell from the page that anything
  * had failed. The only reliable repair was a manual restart nobody knew to perform.
  *

@@ -50,12 +50,13 @@ describe('ParityHarness', () => {
 
   it('no builder source names a plugin or a UI library', () => {
     // Both rules are CLAUDE.md's, and both were broken here by porting comments verbatim: the
-    // framework must not know a plugin slug, and must never name a theme's UI stack.
+    // framework must not know a plugin slug, and must never name a theme's UI stack. Plugin slugs
+    // are held at zero across every package by `arch-guard extension-names`; this keeps the UI half.
     // The BUILDER's own source, anchored on this file rather than on `ModuleLocation` — which
     // resolves to wherever the module was loaded from and had this walking the whole monorepo,
     // reporting core's files and its own `dist/*.d.ts` as builder violations.
     const root = join(__dirname, '..', '..');
-    const forbidden = ['analytics', 'numerology', 'ecommerce', 'tagiqx', 'chakra', 'Chakra', 'framer-motion', 'emotion'];
+    const forbidden = ['chakra', 'Chakra', 'framer-motion', 'emotion'];
     const offenders: string[] = [];
     const walk = (dir: string): void => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {

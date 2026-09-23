@@ -8,8 +8,8 @@ import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
  *
  * In a request this is a hard failure — an untenanted query must never widen to every tenant. But
  * plugin `onInit` legitimately runs outside any request, and several plugins do one-off data
- * normalisation there. Failing those outright takes the whole plugin down (it did: ecommerce and
- * mlm stopped registering), and letting them run unscoped is the leak this design exists to prevent.
+ * normalisation there. Failing those outright takes the whole plugin down (it did: two
+ * plugins stopped registering), and letting them run unscoped is the leak this design exists to prevent.
  *
  * So during plugin registration only, such a call is SKIPPED and logged loudly, naming the plugin,
  * the method and the table. The plugin stays active; the work does not silently appear to succeed.
@@ -48,7 +48,7 @@ export class UntenantedBootAccess {
   /**
    * Records the skip and returns the empty result for that method, as a PROMISE — every database
    * method is async and callers chain `.catch()`/`.then()` on the result. Returning a bare value
-   * here broke ecommerce and mlm with "…find(...).catch is not a function".
+   * here broke two plugins with "…find(...).catch is not a function".
    */
   static skip(pluginSlug: string, method: string, table: unknown): Promise<unknown> {
     UntenantedBootAccess.logger.warn(

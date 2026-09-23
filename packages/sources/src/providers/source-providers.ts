@@ -11,7 +11,7 @@ import type { ISourceProviderDefinition } from '@sources/providers/interfaces/so
  * adding a folder under `providers/` and one line here — not a new branch in the build service, a
  * new option in the admin form, and a new column somewhere.
  *
- * The same shape finance uses for payment providers, for the same reason: the owner's rule is that
+ * The same shape a billing plugin uses for payment providers, for the same reason: the owner's rule is that
  * everything about one provider lives in one place, and adding the next one is adding a folder.
  */
 export class SourceProviders {

@@ -24,7 +24,7 @@ import {
  *    confirmation the admin screen demands, so a mistyped `--id` cannot delete the wrong site.
  *
  * ```
- * node dist/cli/tenant-delete.js --id vselenskiportal88 --confirm vselenskiportal88 [--execute]
+ * node dist/cli/tenant-delete.js --id example-site --confirm example-site [--execute]
  *   [--platform postgres://…] [--uploads /app/public/uploads] [--json]
  * ```
  */

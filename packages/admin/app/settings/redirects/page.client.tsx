@@ -16,7 +16,7 @@ import { RedirectCreateCard } from '@/app/settings/redirects/redirect-create-car
  * Rules here catch RETIRED paths: the routing layer consults them only after a request resolves to no
  * content, so a rule can never shadow a live page. (A live document's canonical home is a different
  * mechanism — the record's own permalink field.) This surface replaced two per-plugin copies of the
- * same table (cms + seo); their rows were migrated into `_system_redirects`.
+ * same table (two plugins each had one); their rows were migrated into `_system_redirects`.
  */
 export class RedirectsSettingsPage extends AdminComponent {
   @state isLoading = true;

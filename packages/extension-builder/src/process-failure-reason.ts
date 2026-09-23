@@ -39,7 +39,7 @@ export class ProcessFailureReason {
      *
      * It is the one failure with no output to quote — the process was stopped before it could write
      * any — so reading its empty stderr and reporting nothing turns the most diagnosable failure
-     * there is into the least. A vite build of the cms plugin was being killed by the container's
+     * there is into the least. A vite build of one plugin was being killed by the container's
      * 768 MB ceiling and arrived as a bare "vite build (admin)", which reads as a code fault.
      */
     if (record.killed === true || (typeof record.signal === 'string' && record.signal)) {

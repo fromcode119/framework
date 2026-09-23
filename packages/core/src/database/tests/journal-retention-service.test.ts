@@ -84,7 +84,7 @@ describe('JournalRetentionService', () => {
    * The sweep ran untenanted and unmarked, so its DELETE silently narrowed to `tenant_id IS NULL`.
    */
   it('counts and deletes INSIDE a platform-admin scope, or it only ever reaches platform rows', async () => {
-    const db = makeDb({ settings: { [LOGS.settingKey]: '30' }, rows: [...rows(2, null), ...rows(3, 'hub', 10)] });
+    const db = makeDb({ settings: { [LOGS.settingKey]: '30' }, rows: [...rows(2, null), ...rows(3, 'initech', 10)] });
 
     await run(db, makeLogger(), LOGS);
 
@@ -95,7 +95,7 @@ describe('JournalRetentionService', () => {
   it("removes every owner's rows, including a tenant that no longer exists", async () => {
     const db = makeDb({
       settings: { [LOGS.settingKey]: '30' },
-      rows: [...rows(2, null), ...rows(3, 'hub', 10), ...rows(1, 'ghost-tenant', 20)],
+      rows: [...rows(2, null), ...rows(3, 'initech', 10), ...rows(1, 'ghost-tenant', 20)],
     });
 
     expect(await run(db, makeLogger(), LOGS)).toBe(6);
@@ -103,25 +103,25 @@ describe('JournalRetentionService', () => {
   });
 
   it('names who the doomed rows belong to BEFORE deleting them', async () => {
-    const db = makeDb({ settings: { [LOGS.settingKey]: '30' }, rows: [...rows(2, null), ...rows(3, 'hub', 10)] });
+    const db = makeDb({ settings: { [LOGS.settingKey]: '30' }, rows: [...rows(2, null), ...rows(3, 'initech', 10)] });
     const logger = makeLogger();
 
     await run(db, logger, LOGS);
 
     expect(logger.info.mock.calls[0][0]).toContain('platform=2');
-    expect(logger.info.mock.calls[0][0]).toContain('hub=3');
+    expect(logger.info.mock.calls[0][0]).toContain('initech=3');
     expect(logger.info.mock.calls[1][0]).toContain('Removed 5');
   });
 
   it('deletes in batches rather than one statement over the whole backlog', async () => {
-    const db = makeDb({ settings: { [LOGS.settingKey]: '30' }, rows: rows(2300, 'hub') });
+    const db = makeDb({ settings: { [LOGS.settingKey]: '30' }, rows: rows(2300, 'initech') });
 
     expect(await run(db, makeLogger(), LOGS)).toBe(2300);
     expect(db.delete.mock.calls.map((c: any[]) => c[1].id.in.length)).toEqual([1000, 1000, 300]);
   });
 
   it('reports what was ACTUALLY removed, not the pre-count', async () => {
-    const db = makeDb({ settings: { [LOGS.settingKey]: '30' }, rows: rows(4, 'hub') });
+    const db = makeDb({ settings: { [LOGS.settingKey]: '30' }, rows: rows(4, 'initech') });
     db.count = vi.fn().mockResolvedValue(999);
 
     expect(await run(db, makeLogger(), LOGS)).toBe(4);
@@ -142,7 +142,7 @@ describe('JournalRetentionService', () => {
      * window they asked for.
      */
     it(`REFUSES a window below the ${SystemConstants.AUDIT_RETENTION_MIN_DAYS}-day floor and prunes nothing`, async () => {
-      const db = makeDb({ settings: { [AUDIT().settingKey]: '179' }, rows: rows(50, 'hub') });
+      const db = makeDb({ settings: { [AUDIT().settingKey]: '179' }, rows: rows(50, 'initech') });
       const logger = makeLogger();
 
       expect(await run(db, logger, AUDIT())).toBe(0);
@@ -152,13 +152,13 @@ describe('JournalRetentionService', () => {
     });
 
     it('accepts exactly the floor', async () => {
-      const db = makeDb({ settings: { [AUDIT().settingKey]: '180' }, rows: rows(3, 'hub') });
+      const db = makeDb({ settings: { [AUDIT().settingKey]: '180' }, rows: rows(3, 'initech') });
 
       expect(await run(db, makeLogger(), AUDIT())).toBe(3);
     });
 
     it('still allows keeping forever — the floor is a minimum, not a schedule', async () => {
-      const db = makeDb({ settings: {}, rows: rows(3, 'hub') });
+      const db = makeDb({ settings: {}, rows: rows(3, 'initech') });
 
       expect(await run(db, makeLogger(), AUDIT())).toBe(0);
       expect(db.remaining).toHaveLength(3);
@@ -166,7 +166,7 @@ describe('JournalRetentionService', () => {
 
     it('records its own pruning, with the real removed count', async () => {
       const afterPrune = vi.fn();
-      const db = makeDb({ settings: { [AUDIT().settingKey]: '365' }, rows: [...rows(2, null), ...rows(1, 'hub', 9)] });
+      const db = makeDb({ settings: { [AUDIT().settingKey]: '365' }, rows: [...rows(2, null), ...rows(1, 'initech', 9)] });
 
       await run(db, makeLogger(), AUDIT(afterPrune));
 
@@ -179,7 +179,7 @@ describe('JournalRetentionService', () => {
 
     it('a failure to record the prune does not crash the sweep or un-report it', async () => {
       const afterPrune = vi.fn().mockRejectedValue(new Error('audit write failed'));
-      const db = makeDb({ settings: { [AUDIT().settingKey]: '365' }, rows: rows(2, 'hub') });
+      const db = makeDb({ settings: { [AUDIT().settingKey]: '365' }, rows: rows(2, 'initech') });
       const logger = makeLogger();
 
       expect(await run(db, logger, AUDIT(afterPrune))).toBe(2);
@@ -188,7 +188,7 @@ describe('JournalRetentionService', () => {
   });
 
   it('sweeps every declared journal, and one failure does not stop the next', async () => {
-    const db = makeDb({ settings: { [LOGS.settingKey]: '30', [AUDIT().settingKey]: '365' }, rows: rows(2, 'hub') });
+    const db = makeDb({ settings: { [LOGS.settingKey]: '30', [AUDIT().settingKey]: '365' }, rows: rows(2, 'initech') });
     const logger = makeLogger();
 
     const removed = await new JournalRetentionService(db, logger, JournalRetentionTargets.all()).pruneAll();

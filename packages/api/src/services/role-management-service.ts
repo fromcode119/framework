@@ -1,6 +1,7 @@
 import { IDatabaseManager, Schema } from '@fromcode119/database';
-import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode, TenantMembershipService } from '@fromcode119/core';
+import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, RequestContextUtils } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
+import { SiteRoleScope } from '@api/services/tenants/site-role-scope';
 import { getTableName } from 'drizzle-orm';
 
 /**
@@ -35,35 +36,20 @@ export class RoleManagementService {
     const allRoles = await this.db.find(Schema.systemRoles);
     const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
 
-    // A SITE SEES THE FRAMEWORK'S ROLES AND ITS OWN PLUGINS', NEVER ANOTHER PRODUCT'S.
-    //
-    // `_system_roles` is global by design — role names are the platform's vocabulary — but plugins
-    // declare roles into it too, so a site was shown roles belonging to extensions it does not run,
-    // in its Roles screen and in the role picker on its Users page. It had no
-    // way to know what they meant, and granting one would have been meaningless.
-    //
-    // An UNATTRIBUTED role stays visible. Migration 046 adds the column with no backfill because
-    // nothing can honestly guess who created a role that predates it, and hiding one nobody can
-    // account for is the worse failure — losing `admin` from the screen with no way to discover why.
-    // `ensure` stamps each row as its plugin re-declares it, so this narrows itself as it learns.
-    const dbRoles = TenantMode.isEnabled() && tenantId
-      ? allRoles.filter((role: any) => {
-        const owner = String(role?.pluginSlug ?? '').trim();
-        return !owner || owner === 'system' || PluginTenantAccess.enabledSlugsFor(tenantId).has(owner);
-      })
+    // A site sees the framework's roles and its own plugins', and counts holders from its memberships —
+    // the roles that authorize them there. See SiteRoleScope.
+    const site = await SiteRoleScope.current(this.db);
+    const dbRoles = site
+      ? allRoles.filter((role: any) => SiteRoleScope.isVisibleOnSite(role, tenantId))
       : allRoles;
-    const memberIds = TenantMode.isEnabled() && tenantId
-      ? new Set(await new TenantMembershipService(this.db as never).listUserIdsForTenant(tenantId))
-      : null;
 
     return Promise.all(dbRoles.map(async (role: any) => {
-      const holders = await this.db.find(Schema.systemUsersToRoles, {
-        columns: { userId: true },
-        where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug),
-      });
-      const userCount = memberIds
-        ? (holders || []).filter((row: any) => memberIds.has(Number(row?.userId))).length
-        : (holders || []).length;
+      const userCount = site
+        ? site.holdersOf(String(role.slug))
+        : (await this.db.find(Schema.systemUsersToRoles, {
+          columns: { userId: true },
+          where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug),
+        }) || []).length;
       const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
         columns: { permissionName: true },
         where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)

@@ -7,7 +7,7 @@ import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remo
  * The guest's view of anything that lives on the host: a chain of property reads and calls that is
  * sent as ONE message when it is awaited.
  *
- * `context.plugins.namespace('org.x').mlm.record(p)` reads like the in-process API and becomes four
+ * `context.plugins.namespace('org.x').ledger.record(p)` reads like the in-process API and becomes four
  * steps. Nothing is sent until the chain is awaited (`then`), so a chain can be built, passed around
  * and awaited once. The current invocation token travels with every call — from the guest's own
  * AsyncLocalStorage, filled by the runtime when the host hands it work.
@@ -93,7 +93,7 @@ export class PluginGuestRemote {
 
   /**
    * The token a call is made under: the CURRENT invocation's, when there is one. A handle a plugin
-   * built once and kept — `const finance = context.plugins.optional('…:finance')` at `onInit`, used
+   * built once and kept — `const billing = context.plugins.optional('…:billing')` at `onInit`, used
    * on every request after — would otherwise carry its birth token (long revoked) into every later
    * call and be refused as `unknown_invocation`. The captured token is only for work that runs with
    * no invocation of its own (a timer the plugin set inside one).

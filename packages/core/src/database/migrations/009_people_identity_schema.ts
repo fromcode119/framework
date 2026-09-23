@@ -1,9 +1,17 @@
 import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
+/**
+ * The shared people register: a person (with or without a user account), their relationships, their
+ * address book and the catalogs that group them.
+ *
+ * Versions 9–10 consolidated; a database that ran them has both recorded and runs nothing here.
+ * `people_addresses.metadata` is where a plugin keeps its own delivery binding for an address, so
+ * the shared table never grows a per-plugin column.
+ */
 export class PeopleIdentityMigration extends BaseMigration {
   readonly version = 9;
-  readonly name = 'People identity schema';
+  readonly name = 'People register';
 
   async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
@@ -68,10 +76,10 @@ export class PeopleIdentityMigration extends BaseMigration {
             "phone" TEXT,
             "is_default" BOOLEAN NOT NULL DEFAULT FALSE,
             "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            "metadata" JSONB DEFAULT '{}'::jsonb
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_addr_person" ON "people_addresses" ("person_id")`);
 
         await db.execute(sql`
           CREATE TABLE IF NOT EXISTS "person_catalogs" (
@@ -147,10 +155,10 @@ export class PeopleIdentityMigration extends BaseMigration {
             "phone" TEXT,
             "is_default" INTEGER NOT NULL DEFAULT 0,
             "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
-            "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
+            "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP,
+            "metadata" TEXT DEFAULT '{}'
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_addr_person" ON "people_addresses" ("person_id")`);
 
         await db.execute(sql`
           CREATE TABLE IF NOT EXISTS "person_catalogs" (
@@ -171,7 +179,7 @@ export class PeopleIdentityMigration extends BaseMigration {
         await db.execute(sql`
           CREATE TABLE IF NOT EXISTS "people" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
-            "user_id" INT UNIQUE REFERENCES "users"("id") ON DELETE SET NULL,
+            "user_id" INT UNIQUE,
             "status" VARCHAR(64) NOT NULL DEFAULT 'active',
             "source" VARCHAR(64) NOT NULL DEFAULT 'contact',
             "first_name" TEXT,
@@ -195,7 +203,8 @@ export class PeopleIdentityMigration extends BaseMigration {
             "archived_at" TIMESTAMP NULL,
             "metadata" JSON,
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL
           )
         `);
         await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_email" ON "people" ("email")`);
@@ -204,12 +213,14 @@ export class PeopleIdentityMigration extends BaseMigration {
         await db.execute(sql`
           CREATE TABLE IF NOT EXISTS "person_relationships" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
-            "from_person_id" INT NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
-            "to_person_id" INT NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
+            "from_person_id" INT NOT NULL,
+            "to_person_id" INT NOT NULL,
             "type" VARCHAR(64) NOT NULL,
             "metadata" JSON,
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY ("from_person_id") REFERENCES "people"("id") ON DELETE CASCADE,
+            FOREIGN KEY ("to_person_id") REFERENCES "people"("id") ON DELETE CASCADE
           )
         `);
         await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_person_rel_from" ON "person_relationships" ("from_person_id")`);
@@ -218,7 +229,7 @@ export class PeopleIdentityMigration extends BaseMigration {
         await db.execute(sql`
           CREATE TABLE IF NOT EXISTS "people_addresses" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
-            "person_id" INT NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
+            "person_id" INT NOT NULL,
             "label" VARCHAR(191),
             "full_name" TEXT,
             "address_line1" TEXT,
@@ -229,10 +240,11 @@ export class PeopleIdentityMigration extends BaseMigration {
             "phone" VARCHAR(64),
             "is_default" BOOLEAN NOT NULL DEFAULT FALSE,
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "metadata" JSON,
+            FOREIGN KEY ("person_id") REFERENCES "people"("id") ON DELETE CASCADE
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_addr_person" ON "people_addresses" ("person_id")`);
 
         await db.execute(sql`
           CREATE TABLE IF NOT EXISTS "person_catalogs" (
@@ -248,6 +260,10 @@ export class PeopleIdentityMigration extends BaseMigration {
         `);
       }
     });
+
+    // Through `createIndexIfMissing`: MySQL has no `CREATE INDEX IF NOT EXISTS`, and its manager
+    // translates this form.
+    await this.createIndexIfMissing(db, 'people_addresses', 'idx_people_addr_person', ['person_id']);
   }
 
   async down(db: IDatabaseManager): Promise<void> {

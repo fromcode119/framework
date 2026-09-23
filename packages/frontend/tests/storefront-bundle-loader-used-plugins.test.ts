@@ -7,9 +7,9 @@ const idlePlugin = (slug: string) => ({ slug, capabilities: ['frontend'], ui: { 
 
 describe('usedPlugins reaches the runtime', () => {
   it('round-trips the plugins the server render mounted', () => {
-    const config = FrontendRuntimeConfig.fromJson({ usedPlugins: ['social-proof', 'cms'], skipPlugins: ['mlm'] });
-    expect(config.usedPlugins).toEqual(['social-proof', 'cms']);
-    expect(config.skipPlugins).toEqual(['mlm']);
+    const config = FrontendRuntimeConfig.fromJson({ usedPlugins: ['reviews', 'gallery'], skipPlugins: ['referrals'] });
+    expect(config.usedPlugins).toEqual(['reviews', 'gallery']);
+    expect(config.skipPlugins).toEqual(['referrals']);
   });
 
   it('reads an absent list as empty rather than throwing', () => {
@@ -21,20 +21,20 @@ describe('usedPlugins reaches the runtime', () => {
 describe('a plugin the server mounted is not skippable — and must not wait for idle', () => {
   it('skips an idle plugin the render did NOT mount', () => {
     expect(PluginBundlePolicy.skippable({
-      plugins: [idlePlugin('mlm')],
+      plugins: [idlePlugin('referrals')],
       usedPlugins: [],
-      withServerBundle: ['mlm'],
+      withServerBundle: ['referrals'],
       themeDependencies: [],
-    })).toEqual(['mlm']);
+    })).toEqual(['referrals']);
   });
 
   it('does NOT skip one the render DID mount', () => {
-    // social-proof on the home page: its section is in the server markup, so its bundle is needed —
+    // reviews on the home page: its section is in the server markup, so its bundle is needed —
     // and, because that markup is being hydrated, it is needed BEFORE hydration, not on browser idle.
     expect(PluginBundlePolicy.skippable({
-      plugins: [idlePlugin('social-proof')],
-      usedPlugins: ['social-proof'],
-      withServerBundle: ['social-proof'],
+      plugins: [idlePlugin('reviews')],
+      usedPlugins: ['reviews'],
+      withServerBundle: ['reviews'],
       themeDependencies: [],
     })).toEqual([]);
   });

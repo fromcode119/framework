@@ -8,7 +8,7 @@ import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
  * Where a built package IS, versus the route a download comes from.
  *
  * These were one value, and something that had to OPEN the package got the route: an installer
- * opened `/themes/fromcode-0.1.29.zip` as a filesystem path and died on a directory it had no
+ * opened `/themes/aurora-0.1.29.zip` as a filesystem path and died on a directory it had no
  * business writing to, while the archive sat in the workspace the builder had written it into.
  * A build now stages a DIRECTORY and writes an archive only when somebody downloads one, so
  * "there is no file" is a normal answer rather than a failure.
@@ -29,7 +29,7 @@ describe('BuiltPackageService — resolving a built artifact', () => {
       findOne: vi.fn(async () => ({
         // No `file_name`: a build stages a package directory and records no archive. One is only
         // written, and recorded, when somebody downloads it.
-        slug: 'fromcode',
+        slug: 'aurora',
         type: 'theme',
         version: '0.1.29',
       })),
@@ -37,15 +37,15 @@ describe('BuiltPackageService — resolving a built artifact', () => {
   });
 
   it('reports the staged package inside the workspace the builder wrote into', async () => {
-    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'));
+    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'));
 
-    expect(artifact.stagedDir).toBe('/app/data/sources/themes/packages/fromcode-0.1.29');
+    expect(artifact.stagedDir).toBe('/app/data/sources/themes/packages/aurora-0.1.29');
   });
 
   it('answers with the route that MAKES a download, not a file that may not exist', async () => {
-    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'));
+    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'));
 
-    expect(artifact.downloadPath).toBe('/sources/theme/fromcode/package');
+    expect(artifact.downloadPath).toBe('/sources/theme/aurora/package');
     // No archive has been written: a build stages a directory and zips only on request.
     expect(artifact.filePath).toBeNull();
     expect(artifact.fileName).toBeNull();
@@ -53,18 +53,18 @@ describe('BuiltPackageService — resolving a built artifact', () => {
 
   it('reports the archive once one has been recorded', async () => {
     service.db.findOne = vi.fn(async () => ({
-      slug: 'fromcode', type: 'theme', version: '0.1.29', file_name: 'fromcode-0.1.29.zip',
+      slug: 'aurora', type: 'theme', version: '0.1.29', file_name: 'aurora-0.1.29.zip',
     }));
 
-    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'));
+    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'));
 
-    expect(artifact.filePath).toBe('/app/data/sources/themes/fromcode-0.1.29.zip');
+    expect(artifact.filePath).toBe('/app/data/sources/themes/aurora-0.1.29.zip');
   });
 
   it('stages nothing for a build that recorded no version, rather than naming a directory', async () => {
-    service.db.findOne = vi.fn(async () => ({ slug: 'fromcode', type: 'theme', version: '  ' }));
+    service.db.findOne = vi.fn(async () => ({ slug: 'aurora', type: 'theme', version: '  ' }));
 
-    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'));
+    const artifact = await service.resolvePackageArtifact(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'));
     expect(artifact.stagedDir).toBeNull();
   });
 });

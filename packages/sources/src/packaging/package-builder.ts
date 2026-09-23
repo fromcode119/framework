@@ -128,8 +128,8 @@ export class PackageBuilder {
    * version — the latest — and the whole point here is the others.
    *
    * A remainder must LOOK like a version — it has to start with a digit. Slugs contain hyphens
-   * (`logistics-econt`), so a bare prefix match would read `forms-extra-0.1.0` as version
-   * `extra-0.1.0` of `forms` and offer another extension's package as one of this one's.
+   * (`shipping-adapter`), so a bare prefix match would read `acme-extra-0.1.0` as version
+   * `extra-0.1.0` of `acme` and offer another extension's package as one of this one's.
    */
   listStagedVersions(type: ExtensionScope, slug: string): string[] {
     const name = String(slug || '').trim();

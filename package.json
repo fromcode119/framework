@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/framework",
-  "version": "0.2.161",
+  "version": "0.2.163",
   "private": true,
   "license": "MIT",
   "workspaces": [
@@ -48,11 +48,7 @@
     "check:app-typecheck": "node packages/arch-guard/dist/arch-guard-cli.cjs app-typecheck",
     "check:app-typecheck:warn": "APP_TYPECHECK_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs app-typecheck",
     "check:plugin-architecture:warn": "ARCH_LEGACY_MODE=warn ARCH_LAYER_MODE=warn ARCH_SIZE_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
-    "check:plugin-architecture:strict": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=ecommerce,finance,cms node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
-    "check:plugin-architecture:phase:finance": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
-    "check:plugin-architecture:phase:cms": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance,cms node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
-    "check:plugin-architecture:phase:logistics": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance,cms,logistics node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
-    "check:plugin-architecture:phase:mlm": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error ARCH_ENFORCE_PLUGINS=finance,cms,logistics,mlm node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
+    "check:plugin-architecture:strict": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
     "check:plugin-architecture:phase:all": "ARCH_LEGACY_MODE=error ARCH_LAYER_MODE=error ARCH_SIZE_MODE=error node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
     "dev": "npm run dev --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",

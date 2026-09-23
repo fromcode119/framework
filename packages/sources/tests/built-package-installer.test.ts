@@ -11,7 +11,7 @@ import { BuiltPackageInstaller } from '@sources/packaging/built-package-installe
  * package where none is installed, and REPLACING code that is currently serving a site.
  */
 describe('BuiltPackageInstaller', () => {
-  const STAGED = '/app/data/sources/themes/packages/fromcode-0.1.29';
+  const STAGED = '/app/data/sources/themes/packages/aurora-0.1.29';
   let service: any;
   let installer: any;
   let failures: Array<[string, string]>;
@@ -23,7 +23,7 @@ describe('BuiltPackageInstaller', () => {
     type: ExtensionScope.THEME,
     version: '0.1.29',
     artifactSha256: '',
-    downloadPath: '/sources/fromcode/package',
+    downloadPath: '/sources/aurora/package',
     ...over,
   });
 
@@ -38,14 +38,14 @@ describe('BuiltPackageInstaller', () => {
   });
 
   it('installs the staged DIRECTORY, never an archive', async () => {
-    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact(), { type: ExtensionScope.THEME });
+    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact(), { type: ExtensionScope.THEME });
 
     expect(installer.installExtensionDirectory).toHaveBeenCalledWith(STAGED, ExtensionScope.THEME, { enable: true });
     expect(installer.installExtensionArchive).not.toHaveBeenCalled();
   });
 
   it('never activates: a build must not change what a live site serves', async () => {
-    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact(), { type: ExtensionScope.THEME });
+    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact(), { type: ExtensionScope.THEME });
 
     const [, , options] = installer.installExtensionDirectory.mock.calls[0];
     expect(options.activate).toBeUndefined();
@@ -54,7 +54,7 @@ describe('BuiltPackageInstaller', () => {
   it('leaves a running extension alone when "update if already installed" is off', async () => {
     installer.isExtensionInstalled = vi.fn(async () => true);
 
-    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact(), { type: ExtensionScope.THEME, autoUpdate: false });
+    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact(), { type: ExtensionScope.THEME, autoUpdate: false });
 
     expect(installer.installExtensionDirectory).not.toHaveBeenCalled();
   });
@@ -62,7 +62,7 @@ describe('BuiltPackageInstaller', () => {
   it('replaces a running extension when that setting is on', async () => {
     installer.isExtensionInstalled = vi.fn(async () => true);
 
-    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact(), { type: ExtensionScope.THEME, autoUpdate: true });
+    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact(), { type: ExtensionScope.THEME, autoUpdate: true });
 
     expect(installer.installExtensionDirectory).toHaveBeenCalledOnce();
   });
@@ -70,7 +70,7 @@ describe('BuiltPackageInstaller', () => {
   it('reads the stored flag however the driver returned it', async () => {
     installer.isExtensionInstalled = vi.fn(async () => true);
 
-    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact(), { type: ExtensionScope.THEME, autoUpdate: 't' });
+    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact(), { type: ExtensionScope.THEME, autoUpdate: 't' });
 
     expect(installer.installExtensionDirectory).toHaveBeenCalledOnce();
   });
@@ -89,12 +89,12 @@ describe('BuiltPackageInstaller', () => {
   it('records the failure against the source and does not throw, so the build still counts', async () => {
     installer.installExtensionDirectory = vi.fn(async () => { throw new Error('disk full'); });
 
-    await expect(service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact(), { type: ExtensionScope.THEME })).resolves.toBeUndefined();
+    await expect(service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact(), { type: ExtensionScope.THEME })).resolves.toBeUndefined();
     expect(failures).toHaveLength(1);
   });
 
   it('says so rather than guessing when a build recorded no package', async () => {
-    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'fromcode'), artifact({ stagedDir: null }), { type: ExtensionScope.THEME });
+    await service.install(BuildSourceIdentity.parse(ExtensionScope.THEME, 'aurora'), artifact({ stagedDir: null }), { type: ExtensionScope.THEME });
 
     expect(installer.installExtensionDirectory).not.toHaveBeenCalled();
     expect(failures).toHaveLength(1);

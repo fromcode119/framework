@@ -7,6 +7,7 @@ import { AdminClass } from '@/lib/admin-class';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { RelativeTimeFormatter } from '@/lib/relative-time-formatter';
 import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
+import { AdminServices } from '@/lib/admin-services';
 
 /**
  * Where you left off: the documents THIS operator last edited, newest first, one row each.
@@ -55,9 +56,11 @@ export class DashboardRecentEdits extends AdminComponent {
               className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40"
             >
               <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">
-                {String(edit.title)}
+                {/* A localized title is a MAP keyed by locale, not a string; `String()` printed
+                    it as raw JSON ({"en":"Home"}) in this panel. */}
+                {AdminServices.getInstance().localization.resolveAnyString(edit.title)}
               </span>
-              <span className="shrink-0 text-[11px] text-slate-500">{String(edit.collectionLabel)}</span>
+              <span className="shrink-0 text-[11px] text-slate-500">{AdminServices.getInstance().localization.resolveAnyString(edit.collectionLabel)}</span>
               <span className="shrink-0 text-[10px] text-slate-400 tabular-nums">
                 {RelativeTimeFormatter.fromNow(edit.editedAt, '')}
               </span>

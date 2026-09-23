@@ -144,7 +144,7 @@ export class TenantRowInserter {
 
   /**
    * A reference is a bare id in a plain column, but a `relationship` field the schema declares may be
-   * STORED as JSON — a scalar id, `{ id }`, or a list of either (CMS keeps `parent`, `featuredImage`
+   * STORED as JSON — a scalar id, `{ id }`, or a list of either (a content plugin keeps `parent`, `featuredImage`
    * that way), or nested below `reference.path` (a `hasMany` array, or an `array`/`group` sub-field —
    * `addonPricingRules[].addon`). Those shapes are the schema's, not a guess, so they are followed;
    * anything else in a JSON column stays as written. The actual value is walked as it is FOUND — an
@@ -195,7 +195,7 @@ export class TenantRowInserter {
     return value;
   }
 
-  /** The `{ id, … }` CMS shape, or a bare id — the two forms a leaf (path exhausted) can take. */
+  /** The `{ id, … }` content-plugin shape, or a bare id — the two forms a leaf (path exhausted) can take. */
   private repointLeaf(reference: TenantColumnReference, value: unknown): unknown {
     if (value !== null && typeof value === 'object') {
       const record = value as Record<string, unknown>;

@@ -46,7 +46,7 @@ export class MetaContextProxy {
          * that every seed does reads a blank, merges into a blank, and writes that blank over each
          * site's real value.
          *
-         * It happened: Econt credentials transferred into vselenskiportal88 were present, then empty
+         * It happened: courier credentials transferred into a client site were present, then empty
          * after the next restart, with the row's `updated_at` unchanged so nothing looked like it had
          * written. Any plugin seeding config in `onInit` could blank it for every customer at once.
          *

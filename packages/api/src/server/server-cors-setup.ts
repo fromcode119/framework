@@ -110,6 +110,7 @@ export class ServerCorsSetup {
         'Accept',
         'Origin',
         'X-Framework-Client',
+        'X-Framework-Site',
         'X-CSRF-Token',
         'X-Reset-Context',
         'X-App-Locale',

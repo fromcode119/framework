@@ -61,8 +61,8 @@ You can ship required plugins inside the same theme ZIP.
 1. Build and pack each required plugin:
 
 ```bash
-npx atlantis plugin pack cms
-npx atlantis plugin pack forms
+npx atlantis plugin pack my-plugin
+npx atlantis plugin pack another-plugin
 ```
 
 2. Place plugin ZIPs inside the theme folder (recommended: `plugins/`):
@@ -72,8 +72,8 @@ themes/my-theme/
   theme.json
   ui/
   plugins/
-    plugin-cms-1.5.0.zip
-    plugin-forms-1.0.0.zip
+    plugin-my-plugin-1.5.0.zip
+    plugin-another-plugin-1.0.0.zip
 ```
 
 3. Optionally declare them explicitly in `theme.json`:
@@ -83,12 +83,12 @@ themes/my-theme/
   "slug": "my-theme",
   "version": "1.0.0",
   "bundledPlugins": [
-    "plugins/plugin-cms-1.5.0.zip",
-    "plugins/plugin-forms-1.0.0.zip"
+    "plugins/plugin-my-plugin-1.5.0.zip",
+    "plugins/plugin-another-plugin-1.0.0.zip"
   ],
   "dependencies": {
-    "cms": "^1.5.0",
-    "forms": "^1.0.0"
+    "my-plugin": "^1.5.0",
+    "another-plugin": "^1.0.0"
   }
 }
 ```

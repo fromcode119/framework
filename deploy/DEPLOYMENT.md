@@ -146,7 +146,7 @@ updates come from their own repositories.
 
 ## Optional: the PDF renderer
 
-Plugins that print PDFs (today: the numerology booklet export) do it in a **separate browser
+Plugins that print PDFs (today: one plugin's PDF export) do it in a **separate browser
 service**, not inside the api. Chromium plus its system libraries was ~977MB baked into every
 API-bearing image, for a feature most installs never use.
 
@@ -157,7 +157,7 @@ opt-in, so there is no profile to remember and no copy of the service in each mo
 PDF_RENDERER_TOKEN=... docker compose -f docker-compose.full-stack.yml -f docker-compose.pdf.yml --project-directory . up -d
 ```
 
-Then set the address in admin — **Numerology → Settings → PDF renderer URL**:
+Then set the address in admin — **that plugin's Settings → PDF renderer URL**:
 
 ```
 ws://pdf-renderer:3000/chromium/playwright?token=<PDF_RENDERER_TOKEN>

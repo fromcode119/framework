@@ -224,7 +224,7 @@ describe('./field-renderer', () => {
           name: 'trackingNumber',
           type: 'text',
           label: 'Tracking Number',
-          admin: { readOnly: true, description: 'Set by the logistics plugin.' },
+          admin: { readOnly: true, description: 'Set by the shipping plugin.' },
         } as any}
         value=""
         onChange={vi.fn()}
@@ -234,7 +234,7 @@ describe('./field-renderer', () => {
       />
     );
 
-    expect(screen.getAllByText('Set by the logistics plugin.')).toHaveLength(1);
+    expect(screen.getAllByText('Set by the shipping plugin.')).toHaveLength(1);
   });
 
   it('keeps the description below an EDITABLE field, where there is no bar to carry it', () => {

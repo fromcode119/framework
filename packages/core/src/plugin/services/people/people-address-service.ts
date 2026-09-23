@@ -136,7 +136,7 @@ export class PeopleAddressService {
       country: s(input?.country).toUpperCase(),
       phone: s(input?.phone)
     };
-    // metadata is an opt-in extension blob (e.g. Econt delivery binding) — only set it when provided
+    // metadata is an opt-in extension blob (e.g. a courier's delivery binding) — only set it when provided
     // so an update without metadata never clobbers an existing value.
     if (input?.metadata != null && typeof input.metadata === 'object') {
       fields.metadata = input.metadata;

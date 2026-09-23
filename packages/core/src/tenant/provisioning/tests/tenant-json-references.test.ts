@@ -11,7 +11,7 @@ const PRODUCTS = 'fcp_acme_products';
 const COLUMNS: Record<string, string> = { id: 'integer', tenant_id: 'text', items: 'jsonb', metadata: 'jsonb', notes: 'text' };
 
 function collection(fields: unknown[]): { collection: never; pluginSlug: string } {
-  return { collection: { tableName: ORDERS, fields } as never, pluginSlug: 'ecommerce' };
+  return { collection: { tableName: ORDERS, fields } as never, pluginSlug: 'catalog' };
 }
 
 function references(fields: unknown[]) {
@@ -34,7 +34,7 @@ function fakeDb(): { db: IDatabaseManager; inserted: () => Record<string, unknow
   return { db, inserted: () => last };
 }
 
-const ITEMS_FIELD = { name: 'items', type: 'json', jsonReferences: [{ path: ['id'], relationTo: 'ecommerce-products' }] };
+const ITEMS_FIELD = { name: 'items', type: 'json', jsonReferences: [{ path: ['id'], relationTo: 'catalog-products' }] };
 
 describe('TenantJsonReferences — declaration', () => {
   it('turns a declared json path into a reference the remap follows', () => {
@@ -46,7 +46,7 @@ describe('TenantJsonReferences — declaration', () => {
   });
 
   it('ignores a declaration on a column that is not JSON here', () => {
-    expect(references([{ name: 'notes', type: 'json', jsonReferences: [{ path: ['id'], relationTo: 'ecommerce-products' }] }])).toEqual([]);
+    expect(references([{ name: 'notes', type: 'json', jsonReferences: [{ path: ['id'], relationTo: 'catalog-products' }] }])).toEqual([]);
   });
 
   it('ignores a declaration whose target does not resolve', () => {

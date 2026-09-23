@@ -1,4 +1,4 @@
-import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SystemConstants, TenantMode, PluginTenantAccess, AdminScope } from '@fromcode119/core';
+import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SiteBaseUrl, SystemConstants, TenantMode, PluginTenantAccess, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { SecretService } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
@@ -158,21 +158,31 @@ export class SystemSiteOverviewController {
    * meaning: a site with no theme and no plugins of its own is one nobody has started using.
    */
   private async siteInstallation(tenantId: string): Promise<Record<string, unknown>> {
-    const countFor = async (table: string): Promise<number> => {
+    const rowsFor = async (table: string): Promise<any[]> => {
       const rows = await this.runtime.db.find(table, { where: { tenant_id: tenantId } }).catch(() => []);
-      return Array.isArray(rows) ? rows.length : 0;
+      return Array.isArray(rows) ? rows : [];
     };
 
-    const [themes, plugins, members] = await Promise.all([
-      countFor(SystemConstants.TABLE.TENANT_THEMES),
-      countFor(SystemConstants.TABLE.TENANT_PLUGINS),
-      countFor(SystemConstants.TABLE.TENANT_MEMBERSHIPS),
+    const [themeRows, pluginRows, memberRows, storefront] = await Promise.all([
+      rowsFor(SystemConstants.TABLE.TENANT_THEMES),
+      rowsFor(SystemConstants.TABLE.TENANT_PLUGINS),
+      rowsFor(SystemConstants.TABLE.TENANT_MEMBERSHIPS),
+      // The SITE's own address. The deployment's configured frontend URL is the platform's host, and
+      // printing it here told a site operator their site was served somewhere it is not. When the
+      // site's address cannot be resolved the answer is blank, and the dashboard says nothing.
+      SiteBaseUrl.forSite(tenantId, ApplicationUrlUtils.FRONTEND_APP),
     ]);
+    const themes = themeRows.length;
+    const plugins = pluginRows.length;
+    const activeTheme = String(themeRows.find((row: any) => String(row?.state ?? '') === 'active')?.theme_slug ?? '');
 
     return {
       isFresh: themes === 0 && plugins === 0,
-      counts: { themes, plugins, users: members },
-      storefront: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
+      counts: { themes, plugins, users: memberRows.length },
+      storefront,
+      // The same steps the platform checklist lists, counted for THIS site. Without them a fresh
+      // site's dashboard was a "finish setting up" heading over an empty list.
+      steps: InstallationChecklistService.setupSteps({ activeTheme, themes, plugins, site: true }),
       scope: AdminScope.SITE,
     };
   }

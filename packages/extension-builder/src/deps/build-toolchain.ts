@@ -116,7 +116,7 @@ export class BuildToolchain {
       'playwright-core',
       // Ships prebuilt binaries per platform (`@img/sharp-linux-x64/...node`) and reaches for them
       // through `require("../src/build/Release/sharp-*-*.node")`. esbuild can resolve neither, so the
-      // cms plugin failed with "No loader is configured for .node files".
+      // a plugin failed with "No loader is configured for .node files".
       'sharp',
       // And the general case, so the NEXT native dependency is not another one-line fix: esbuild
       // cannot bundle a `.node` binary at all, whoever ships it.

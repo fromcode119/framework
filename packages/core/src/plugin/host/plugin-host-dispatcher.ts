@@ -87,7 +87,7 @@ export class PluginHostDispatcher {
    * `resolvesAnotherPluginsApi` already uses, and for the same reason: text gets reworded, shape does
    * not. Two shapes resolve a peer:
    *
-   *   plugins.namespace('org.x').broadcasts     a slug READ straight off a `namespace(...)` call
+   *   plugins.namespace('org.x').notifier       a slug READ straight off a `namespace(...)` call
    *   plugins.namespace('org.x').get('ledger')  an explicit get/require/optional on the registry
    *
    * `index` is the step about to be read; the step that produced the null is the one before it. At
@@ -116,9 +116,9 @@ export class PluginHostDispatcher {
    *
    * That value is a Proxy on this side — a facade that resolves a slug on demand, and for an isolated
    * plugin a forwarder into its process. It has no own properties to describe, so copying it produced
-   * `{}` and the caller silently lost every method: logistics asked Econt for cities, got an object with
-   * no `searchCities`, and answered an empty list with no error at all. So it crosses as an OPAQUE
-   * handle, and the guest forwards whatever is called on it back here by name.
+   * `{}` and the caller silently lost every method: a shipping plugin asked its courier for cities,
+   * got an object with no `searchCities`, and answered an empty list with no error at all. So it
+   * crosses as an OPAQUE handle, and the guest forwards whatever is called on it back here by name.
    */
   private static resolvesAnotherPluginsApi(steps: IPluginRemoteCall['steps']): boolean {
     const last = steps[steps.length - 1];

@@ -6,7 +6,7 @@ import { FrontendApiBaseUrl } from '@/lib/api-base-url';
 
 /**
  * The site's host is the only thing that names the site, so the storefront's browser must call the API
- * there. No configuration decides this: a value that pointed elsewhere is exactly how a shop with Econt
+ * there. No configuration decides this: a value that pointed elsewhere is exactly how a shop with courier
  * credentials ended up reading the platform's empty ones.
  */
 describe('FrontendApiBaseUrl', () => {

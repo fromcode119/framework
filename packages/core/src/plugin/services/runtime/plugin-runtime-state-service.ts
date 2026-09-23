@@ -4,6 +4,9 @@ import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-s
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { RequestContextUtils } from '@core/context/request-context';
+import { PluginConfigValueService } from '@core/plugin/services/settings/plugin-config-value-service';
+import { PluginSettingsKeyMigrationService } from '@core/plugin/services/settings/plugin-settings-key-migration-service';
 
 export class PluginRuntimeStateService {
   constructor(
@@ -18,10 +21,27 @@ export class PluginRuntimeStateService {
 
   async savePluginConfig(slug: string, config: any): Promise<void> {
     await this.registry.savePluginConfig(slug, config);
+    // The in-memory manifest is ONE object per plugin for the whole process — the PLATFORM's copy. A
+    // site's save must not land there: it did, and every other site's settings screen then showed that
+    // site's values (issuer, IBAN, tax rate), and saving it wrote them into the other site's row.
+    if (RequestContextUtils.getTenantId()) return;
     const plugin = this.plugins.get(slug);
     if (plugin) {
       plugin.manifest.config = config;
     }
+  }
+
+  /**
+   * The current scope's stored config, with its settings reconciled onto the names the plugin
+   * declares today — exactly what `context.settings.get()` reads at runtime (before schema defaults).
+   */
+  async loadPluginConfig(slug: string): Promise<Record<string, any>> {
+    const config = await this.registry.loadPluginConfig(slug);
+    const settings = PluginSettingsKeyMigrationService.reconcile(
+      PluginConfigValueService.getSettings(config),
+      this.pluginSettings.get(slug),
+    ).settings;
+    return { ...config, settings };
   }
 
   async saveSandboxConfig(slug: string, config: any): Promise<void> {

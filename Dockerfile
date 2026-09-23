@@ -222,12 +222,12 @@ ENTRYPOINT ["/app/deploy/docker-entrypoint.sh"]
 # ===================================
 # NO browser in this image — HTML→PDF runs in a SIDECAR
 # ===================================
-# `npx playwright install --with-deps chromium` used to run here, for one plugin's booklet export
-# (numerology). With its system libraries that layer was ~977MB on every API-bearing image, and the
+# `npx playwright install --with-deps chromium` used to run here, for one plugin's PDF export.
+# With its system libraries that layer was ~977MB on every API-bearing image, and the
 # browser sat idle on every install that never exports a PDF.
 #
 # The plugin now speaks Playwright's wire protocol to a separate browser service and points at it
-# from its own settings (Numerology → PDF renderer URL); the only thing that ships is the ~13MB
+# from its own settings (its PDF renderer URL); the only thing that ships is the ~13MB
 # `playwright-core` client, inside the plugin's own node_modules. `deploy/docker-compose.pdf.yml`
 # is that service — one definition, added as a compose overlay. Do not reintroduce a browser here.
 FROM builder AS api-only

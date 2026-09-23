@@ -48,7 +48,7 @@ class FakeSpawnerClient {
 
 describe('SpawnerGuestLauncher', () => {
   const spec: IGuestProcessSpec = {
-    id: 'plugin-test-feature',
+    id: 'plugin-demo-feature',
     entryPath: '/does/not/run.js',
     args: [],
     cwd: process.cwd(),

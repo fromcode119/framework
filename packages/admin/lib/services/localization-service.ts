@@ -158,7 +158,13 @@ export class LocalizationService extends BaseService {
    */
   resolveAnyString(value: unknown, locale?: string): string {
     const options: IResolveAnyStringOptions = locale ? { preferredLocale: locale } : {};
-    return LocalizationUtils.resolveAnyString(value, options);
+    // A localized value is stored as JSON in a TEXT column, so it arrives from the API as the
+    // STRING `{"en":"Home"}`, not as an object. `LocalizationUtils.resolveAnyString` sees a string
+    // and hands it straight back, which is how raw JSON reached the dashboard's "Where you left
+    // off" rows. The collection list already parsed it itself (components/collection/list/utils.ts);
+    // doing it here means every caller gets the same answer instead of each one remembering.
+    const parsed = LocalizationUtils.tryParseLocaleJson(value);
+    return LocalizationUtils.resolveAnyString(parsed ?? value, options);
   }
 
   /**
@@ -267,7 +273,7 @@ export class LocalizationService extends BaseService {
     // `LocalizationUtils.toLocaleMap(value, locale)` only wraps a plain string when `locale` is
     // truthy, so on an installation with no locale configured (no `admin_default_locale`, no
     // `default_locale`, empty registry) a localized field resolved to {} and rendered EMPTY while
-    // the switcher still displayed "EN". Every CMS page opened in the admin therefore showed a
+    // the switcher still displayed "EN". Every content page opened in the admin therefore showed a
     // blank Page Title, and saving wrote `{ '': '<text>' }` — a locale map keyed by the empty
     // string — into a plain `text` column, destroying the title.
     // 'en' is the language the switcher already claims in this state, so this makes the label true

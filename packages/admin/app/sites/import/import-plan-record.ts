@@ -153,9 +153,12 @@ export class ImportPlanRecord {
     }
     if (dropped > 0) {
       out.push({
-        text: `${dropped === 1 ? 'One setting' : `${dropped.toLocaleString()} settings`} from an older version `
-          + `${dropped === 1 ? 'has' : 'have'} no equivalent on this platform and ${dropped === 1 ? 'is' : 'are'} not carried. `
-          + 'The records themselves arrive; this platform’s own setting applies instead.',
+        // These are COLUMNS of the records, not settings, and nothing on this platform stands in for them:
+        // the value is simply not written. Saying "this platform's own setting applies instead" promised a
+        // substitute no code provides. The Technical box below names each one.
+        text: `${dropped === 1 ? 'One field' : `${dropped.toLocaleString()} fields`} from an older version `
+          + `${dropped === 1 ? 'has' : 'have'} no place on this platform and ${dropped === 1 ? 'is' : 'are'} not carried. `
+          + `The records themselves arrive without ${dropped === 1 ? 'it' : 'them'} — Technical below lists which.`,
         warn: true,
       });
     }

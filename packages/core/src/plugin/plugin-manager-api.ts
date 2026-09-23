@@ -57,6 +57,11 @@ export abstract class PluginManagerApi extends PluginManagerExtensions {
     await this.runtimeState.savePluginConfig(slug, config);
   }
 
+  /** The current scope's (site's, inside a site request) stored config — never the boot-time manifest copy. */
+  async loadPluginConfig(slug: string): Promise<Record<string, any>> {
+    return this.runtimeState.loadPluginConfig(slug);
+  }
+
   async saveSandboxConfig(slug: string, config: any): Promise<ISandboxHostReloadResult> {
     await this.runtimeState.saveSandboxConfig(slug, config);
     // An isolated plugin runs in its OWN process — a saved memory/timeout limit only reaches it once

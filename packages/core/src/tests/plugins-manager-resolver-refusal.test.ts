@@ -17,7 +17,7 @@ import { TenantMode } from '@core/tenant/tenant-mode';
  */
 function plugin(overrides: Record<string, any> = {}) {
   return {
-    manifest: { slug: 'logistics-econt', namespace: 'org.fromcode' },
+    manifest: { slug: 'shipping-adapter', namespace: 'org.fromcode' },
     state: 'active',
     publicAPI: { searchCities: () => [] },
     isRunning: () => true,
@@ -53,15 +53,15 @@ describe('PluginsManagerResolver.refusalReason', () => {
   it('says a plugin is not enabled for THIS site, naming the site', () => {
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
     vi.spyOn(PluginTenantAccess, 'enabledSlugsFor').mockReturnValue(new Set<string>());
-    const reason = PluginsManagerResolver.refusalReason(plugin(), 'vselenskiportal88');
+    const reason = PluginsManagerResolver.refusalReason(plugin(), 'example-site');
     expect(reason).toMatch(/not enabled for site/);
-    expect(reason).toMatch(/vselenskiportal88/);
+    expect(reason).toMatch(/example-site/);
   });
 
   it('is null when the site DOES have it enabled', () => {
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
-    vi.spyOn(PluginTenantAccess, 'enabledSlugsFor').mockReturnValue(new Set(['logistics-econt']));
-    expect(PluginsManagerResolver.refusalReason(plugin(), 'vselenskiportal88')).toBeNull();
+    vi.spyOn(PluginTenantAccess, 'enabledSlugsFor').mockReturnValue(new Set(['shipping-adapter']));
+    expect(PluginsManagerResolver.refusalReason(plugin(), 'example-site')).toBeNull();
   });
 
   it('keeps isResolvable in step — one predicate, not two', () => {

@@ -130,7 +130,7 @@ export class ApiPathUtils {
    * The route's path WITHOUT its trailing wildcard segment.
    *
    * The wildcard is NAMED (`/:slug/ui/*assetPath`), and a strip that only matched a bare `/*` left the
-   * placeholder in every URL the api handed out: `/themes/fromcode/ui/*assetPath/images/hero.webp`,
+   * placeholder in every URL the api handed out: `/themes/aurora/ui/*assetPath/images/hero.webp`,
    * which 404s. Every theme and plugin asset the media picker offered was a broken thumbnail.
    */
   private static withoutWildcard(pattern: string): string {

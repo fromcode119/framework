@@ -63,9 +63,9 @@ export class SchemaManager {
    * Record what the database has that NOTHING declares — once, after every plugin has registered.
    *
    * NOT during `syncCollection`, and that is the whole correctness of it. A collection is extended by
-   * OTHER plugins after its own table syncs: the SEO plugin injects `ogTitle`, `canonicalUrl`,
-   * `focusKeyword` and three more into cms/pages and cms/posts from its `onInit`, and ecommerce
-   * registers `licenseProduct` onto products at runtime. Judged at sync time, all of those look
+   * OTHER plugins after its own table syncs: a metadata plugin injects `ogTitle`, `canonicalUrl`,
+   * `focusKeyword` and three more into a content plugin's pages and posts from its `onInit`, and a shop
+   * plugin registers `licenseProduct` onto products at runtime. Judged at sync time, all of those look
    * undeclared — measured: 13 of 19 findings were fields a later plugin declares, including one read
    * on every order. Proposing those for removal is precisely the harm this feature exists to prevent,
    * so the question is only asked once the full picture exists.
@@ -77,7 +77,7 @@ export class SchemaManager {
   ): Promise<void> {
     // THE DECLARED PICTURE MAY BE INCOMPLETE, and the finding must say so rather than pretend.
     //
-    // `licenseProduct` on products is declared only when the licensing plugin is ACTIVE; with it
+    // `licenseProduct` on products is declared only while the licence-issuing plugin is ACTIVE; with it
     // disabled the column looks undeclared while still holding every licence issued when it ran.
     // Refusing to audit at all while any plugin is inactive was the first answer and it is worse:
     // measured on this deployment, 12 of 19 installed plugins are inactive, so the audit would never

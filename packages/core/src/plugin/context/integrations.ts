@@ -11,10 +11,17 @@ export class IntegrationsContextProxy {
     const { hasCapability, handleViolation } = security;
     return {
       registerType: (definition: any) => {
-        manager.integrations.registerType(definition);
+        // A type can carry its providers inline (a courier adapter registers its courier this way), so they get
+        // the same namespace stamp as `registerProvider` below.
+        const providers = Array.isArray(definition?.providers)
+          ? definition.providers.map((provider: any) => ({ ...provider, namespace: plugin.manifest.namespace }))
+          : definition?.providers;
+        manager.integrations.registerType({ ...definition, providers });
       },
       registerProvider: (typeKey: string, provider: any) => {
-        manager.integrations.registerProvider(typeKey, provider);
+        // The registering plugin's namespace travels with the provider, so a saved integration entry
+        // can say where its plugin lives — the admin save used to drop the only copy of it.
+        manager.integrations.registerProvider(typeKey, { ...provider, namespace: plugin.manifest.namespace });
       },
       get: async (typeKey: string) => {
         if (!hasCapability(`integration:${typeKey}`) && !hasCapability('integrations')) {

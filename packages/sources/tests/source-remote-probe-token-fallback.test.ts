@@ -15,7 +15,7 @@ describe('SourceRemoteProbeHandlers — which credential a remote read uses', ()
   let buildService: any;
   let probes: any;
 
-  const STORED_URL = 'https://github.com/fromcode119/plugin-forms.git';
+  const STORED_URL = 'https://github.com/fromcode119/plugin-guestbook.git';
   const request = (body: Record<string, unknown>): any => ({ body });
 
   beforeEach(() => {
@@ -23,23 +23,23 @@ describe('SourceRemoteProbeHandlers — which credential a remote read uses', ()
       listBranches: vi.fn(async () => ['main']),
       inspectSource: vi.fn(async () => null),
       resolveStoredToken: vi.fn(async (identity: any, gitUrl: string) =>
-        (identity?.slug === 'forms' && gitUrl === STORED_URL ? 'stored-token' : undefined)),
+        (identity?.slug === 'guestbook' && gitUrl === STORED_URL ? 'stored-token' : undefined)),
     };
     probes = new SourceRemoteProbeHandlers(buildService) as any;
   });
 
   it('uses the stored token when the form posts a blank one for a known source', async () => {
-    const token = await probes.token(request({ type: 'plugin', slug: 'forms', gitSecret: '' }), STORED_URL);
+    const token = await probes.token(request({ type: 'plugin', slug: 'guestbook', gitSecret: '' }), STORED_URL);
 
     expect(token).toBe('stored-token');
     expect(buildService.resolveStoredToken).toHaveBeenCalledWith(
-      expect.objectContaining({ slug: 'forms' }),
+      expect.objectContaining({ slug: 'guestbook' }),
       STORED_URL,
     );
   });
 
   it('prefers a freshly typed token, because typing one means replacing it', async () => {
-    const token = await probes.token(request({ type: 'plugin', slug: 'forms', gitSecret: 'typed-token' }), STORED_URL);
+    const token = await probes.token(request({ type: 'plugin', slug: 'guestbook', gitSecret: 'typed-token' }), STORED_URL);
 
     expect(token).toBe('typed-token');
     expect(buildService.resolveStoredToken).not.toHaveBeenCalled();
@@ -53,7 +53,7 @@ describe('SourceRemoteProbeHandlers — which credential a remote read uses', ()
   });
 
   it('treats a whitespace-only token as no token, not as a replacement', async () => {
-    const token = await probes.token(request({ type: 'plugin', slug: 'forms', gitSecret: '   ' }), STORED_URL);
+    const token = await probes.token(request({ type: 'plugin', slug: 'guestbook', gitSecret: '   ' }), STORED_URL);
 
     expect(token).toBe('stored-token');
   });
@@ -65,7 +65,7 @@ describe('SourceRemoteProbeHandlers — which credential a remote read uses', ()
    */
   it('refuses to release a stored token to a repository it was not stored against', async () => {
     const token = await probes.token(
-      request({ type: 'plugin', slug: 'forms', gitSecret: '' }),
+      request({ type: 'plugin', slug: 'guestbook', gitSecret: '' }),
       'https://attacker.example.com/collect.git',
     );
 

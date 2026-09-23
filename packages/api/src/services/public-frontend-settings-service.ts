@@ -9,6 +9,8 @@ export class PublicFrontendSettingsService {
     SystemConstants.META_KEY.DEFAULT_LOCALE,
     SystemConstants.META_KEY.FALLBACK_LOCALE,
     SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE,
+    // The site country: storefront forms (a checkout address) default to it — see PlatformCountryUtils.
+    SystemConstants.META_KEY.COUNTRY,
     SystemConstants.META_KEY.ROUTING_HOME_TARGET,
     SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED,
     SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED,

@@ -22,7 +22,7 @@ export class PluginHostHttpProxy {
     req: Request,
     res: Response,
     next: NextFunction,
-    envelope: { token: string; tenantId: string | null; locale: string; targetPath?: string; originalUrl?: string },
+    envelope: { token: string; tenantId: string | null; locale: string; siteLocale: string; targetPath?: string; originalUrl?: string },
     timeoutMs: number,
     onTimeout: () => void,
   ): Promise<void> {
@@ -35,6 +35,7 @@ export class PluginHostHttpProxy {
       headers[PluginGuestHttp.HEADER_TOKEN] = envelope.token;
       headers[PluginGuestHttp.HEADER_TENANT] = envelope.tenantId ?? '';
       headers[PluginGuestHttp.HEADER_LOCALE] = envelope.locale;
+      headers[PluginGuestHttp.HEADER_SITE_LOCALE] = envelope.siteLocale;
       headers[PluginGuestHttp.HEADER_USER] = PluginGuestHttp.encodeUser((req as any).user);
       if (envelope.originalUrl) headers[PluginGuestHttp.HEADER_ORIGINAL_URL] = envelope.originalUrl;
 

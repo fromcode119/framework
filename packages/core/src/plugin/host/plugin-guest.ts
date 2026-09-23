@@ -73,7 +73,7 @@ export class PluginGuest {
 
     const contractKeys = ['onInstall', 'onInit', 'onUpdate', 'onEnable', 'onDisable', 'onUninstall'].filter((key) => typeof this.contract[key] === 'function');
     // A plugin's `publicAPI` is often a CLASS of static methods, and static methods are not
-    // enumerable — `Object.keys` saw none of them, so every peer's `finance.getCapabilities()` failed
+    // enumerable — `Object.keys` saw none of them, so every peer's `billing.getCapabilities()` failed
     // with "not callable" while the same call worked in-process. Own property names, functions only.
     const publicApiKeys = PluginGuest.functionNames(this.contract.publicAPI);
     return { contractKeys, publicApiKeys, manifest: this.contract.manifest ?? null };
@@ -93,7 +93,7 @@ export class PluginGuest {
     // The result crosses as data too: a provider factory's instance with methods, a callback's return —
     // functions in it become handles, exactly as in arguments.
     return PluginGuestRemote.invocation.run({ token: invocation.token, tenantId: invocation.tenantId }, () =>
-      RequestContextUtils.storage.run({ locale: invocation.locale, tenantId: invocation.tenantId ?? undefined }, async () => this.remote.portableResult(await this.run(invocation))));
+      RequestContextUtils.storage.run({ locale: invocation.locale, tenantId: invocation.tenantId ?? undefined, siteLocale: invocation.siteLocale || undefined }, async () => this.remote.portableResult(await this.run(invocation))));
   }
 
   private async run(invocation: IPluginInvocation): Promise<unknown> {

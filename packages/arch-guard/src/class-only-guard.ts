@@ -80,7 +80,7 @@ export class ClassOnlyGuard {
     // Blanked, never removed: every offset and line stays where it was.
     source = source.replace(ClassOnlyGuard.KEY_SELECTION, (span) => span.replace(/[^\n]/g, ' '));
     // Track template-literal depth by counting unescaped backticks. Generated-script builders emit whole
-    // programs inside a template — `analytics-tracker-builder.ts` contains `function getDeviceContext(){`
+    // programs inside a template — a plugin's tracker-builder file contains `function getDeviceContext(){`
     // as EMITTED BROWSER TEXT, not as a module function. Counting it made the number untrustworthy, and a
     // ratchet nobody trusts is a ratchet nobody drives down.
     let inTemplate = false;
