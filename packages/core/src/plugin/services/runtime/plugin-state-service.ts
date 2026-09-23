@@ -211,6 +211,16 @@ export class PluginStateService {
    * plugin reported a failure every restart, and nothing was stored for anyone. Skipped here instead,
    * with the reason: the operator's own save from the admin runs inside a request, which has a site.
    */
+  /**
+   * The CURRENT scope's stored config for a plugin — the site's row inside a site request, the
+   * platform's otherwise (row-level security decides which row the connection sees). `{}` when the
+   * scope has saved nothing. This is what `savePluginConfig` writes, so reads and writes agree.
+   */
+  async loadPluginConfig(slug: string): Promise<Record<string, any>> {
+    const row = await this.db.findOne(SystemConstants.TABLE.PLUGIN_SETTINGS, { plugin_slug: slug });
+    return PluginConfigValueService.getConfig(row?.settings);
+  }
+
   async savePluginConfig(slug: string, config: any): Promise<void> {
     if (TenantMode.isEnabled() && !RequestContextUtils.getTenantId()) {
       this.logger.info(

@@ -19,7 +19,9 @@ export class PluginSettingsController {
     }
 
     const schema = await this.support.getEffectiveSchema(slug);
-    const storedSettings = plugin.manifest.config?.settings || {};
+    // The CURRENT SITE's stored settings — what the runtime reads. The in-memory manifest copy is the
+    // platform's, and serving it made every site's form show another scope's values.
+    const storedSettings = (await this.manager.loadPluginConfig(slug)).settings || {};
 
     if (!schema) {
       return res.json({ settings: storedSettings });
@@ -57,8 +59,8 @@ export class PluginSettingsController {
       }
     }
 
-    const oldSettings = plugin.manifest.config?.settings || {};
-    const currentConfig = plugin.manifest.config || {};
+    const currentConfig = await this.manager.loadPluginConfig(slug);
+    const oldSettings = currentConfig.settings || {};
     const settingsToSave = this.support.encryptPasswordFields(newSettings, oldSettings, schema?.fields || []);
     await this.manager.savePluginConfig(slug, {
       ...currentConfig,
@@ -111,8 +113,7 @@ export class PluginSettingsController {
 
     const defaults = this.support.getDefaults(schema.fields || []);
     const encryptedDefaults = this.support.encryptPasswordFields(defaults, {}, schema.fields || []);
-    const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
-    const currentConfig = plugin?.manifest.config || {};
+    const currentConfig = await this.manager.loadPluginConfig(slug);
 
     await this.manager.savePluginConfig(slug, {
       ...currentConfig,
@@ -131,7 +132,7 @@ export class PluginSettingsController {
     }
 
     const schema = await this.support.getEffectiveSchema(slug);
-    const settings = plugin.manifest.config?.settings || {};
+    const settings = (await this.manager.loadPluginConfig(slug)).settings || {};
     const exportable = this.support.stripPasswordFields(settings, schema?.fields || []);
 
     res.setHeader('Content-Type', 'application/json');
@@ -167,8 +168,8 @@ export class PluginSettingsController {
       }
     }
 
-    const currentConfig = plugin.manifest.config || {};
-    const existingSettings = plugin.manifest.config?.settings || {};
+    const currentConfig = await this.manager.loadPluginConfig(slug);
+    const existingSettings = currentConfig.settings || {};
     const settingsToSave = this.support.encryptPasswordFields(importedSettings, existingSettings, schema?.fields || []);
     await this.manager.savePluginConfig(slug, {
       ...currentConfig,
