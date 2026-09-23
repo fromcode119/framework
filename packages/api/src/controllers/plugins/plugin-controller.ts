@@ -161,7 +161,8 @@ export class PluginController extends BaseController {
     const slug = CoercionUtils.toString(req.params.slug);
     const plugin = this.manager.getPlugins().find(p => p.manifest.slug === slug);
     if (!plugin) return res.status(404).json({ error: 'Plugin not found' });
-    res.json(plugin.manifest.config || {});
+    // The current site's stored config, not the process-wide manifest copy (the platform's).
+    res.json(await this.manager.loadPluginConfig(plugin.manifest.slug));
   }
 
   async saveConfig(req: Request, res: Response) {
