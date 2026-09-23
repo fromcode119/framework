@@ -24,9 +24,17 @@ export class ThemeSsrGeneration {
   /** Short cache-buster appended to every bundle URL. Same signature → same token. */
   readonly token: string;
 
-  private constructor(themeSlug: string, signature: string) {
+  /**
+   * The plugins this site runs — the only ones whose server bundles its world may import. The browser
+   * loads exactly this set, so a server world holding any other plugin's registrations renders markup
+   * the client can never reproduce (see `ThemeWorldBuilder.build`).
+   */
+  readonly pluginSlugs: ReadonlySet<string>;
+
+  private constructor(themeSlug: string, signature: string, pluginSlugs: string[]) {
     this.themeSlug = themeSlug;
     this.signature = signature;
+    this.pluginSlugs = new Set(pluginSlugs);
     this.token = createHash('sha1').update(signature).digest('hex').slice(0, 12);
   }
 
@@ -45,10 +53,13 @@ export class ThemeSsrGeneration {
       // Sorted so the signature depends on WHICH versions are active, not on the order the API
       // happened to sort its plugin list in — otherwise a plugin load-order change alone would
       // throw away and re-import every bundle.
-      .sort((left, right) => left.slug.localeCompare(right.slug))
-      .map((plugin) => `plugin:${plugin.slug}@${plugin.version}`);
+      .sort((left, right) => left.slug.localeCompare(right.slug));
 
-    return new ThemeSsrGeneration(themeSlug, [`theme:${themeSlug}@${themeVersion}`, ...pluginParts].join('|'));
+    return new ThemeSsrGeneration(
+      themeSlug,
+      [`theme:${themeSlug}@${themeVersion}`, ...pluginParts.map((plugin) => `plugin:${plugin.slug}@${plugin.version}`)].join('|'),
+      pluginParts.map((plugin) => plugin.slug),
+    );
   }
 
   matches(other: ThemeSsrGeneration | null): boolean {
