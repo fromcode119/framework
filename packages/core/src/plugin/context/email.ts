@@ -5,6 +5,7 @@ import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { EmailPreferencesTokenService } from '@core/email/email-preferences-token-service';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import { SigningSecretService } from '@core/security/signing-secret-service';
+import { SiteBaseUrl } from '@core/tenant/site-base-url';
 
 /**
  * `context.email` — the mail driver, plus the ability to DECLARE an opt-outable stream.
@@ -58,7 +59,8 @@ export class EmailContextProxy {
             EmailPreferencesTokenService.PURPOSE,
           );
           const token = EmailPreferencesTokenService.generate(normalized, secret);
-          const base = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP);
+          // THIS SITE's frontend: the platform host carries no tenant, so the page would 404 there.
+          const base = await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.FRONTEND_APP);
           const path = ApplicationUrlUtils.joinApiPath(base, EmailContextProxy.PREFERENCES_PATH);
           return `${path}?token=${encodeURIComponent(token)}`;
         } catch {
