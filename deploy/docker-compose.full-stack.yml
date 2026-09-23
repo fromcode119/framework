@@ -94,7 +94,12 @@ services:
     deploy:
       resources:
         limits:
-          memory: 96M
+          # Measured 2026-09-23: the gateway settles at ~153 MiB. It starts through `tsx`, which
+          # compiles the TypeScript it imports at boot, and that graph has grown. At 96M it was
+          # OOM-killed straight after "listening" and restarted in a loop — every *.framework.local
+          # host answered 404. It had run for eleven days under 96M only because nothing had
+          # restarted it; the first restart exposed it. 256M leaves headroom, not a target.
+          memory: 256M
 
   api:
     build:
