@@ -79,7 +79,7 @@ export class RestReadController {
       }
       res.json(result);
     } catch (err: any) {
-      this.runtime.logger.error(`Failed to find ${collection.slug} records: ${err.message}`, { stack: err.stack });
+      this.logFailure(err, `Failed to find ${collection.slug} records: ${err.message}`);
       if (!res) {
         throw err;
       }
@@ -171,7 +171,7 @@ export class RestReadController {
       }
       res.json(filtered);
     } catch (err: any) {
-      this.runtime.logger.error(`Failed to findOne ${collection.slug} record ${req.params.id}: ${err.message}`, { stack: err.stack });
+      this.logFailure(err, `Failed to findOne ${collection.slug} record ${req.params.id}: ${err.message}`);
       if (!res) {
         throw err;
       }
@@ -271,5 +271,20 @@ export class RestReadController {
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
+  }
+
+  /**
+   * An access refusal (401/403) is the policy doing its job, not a server failure. Page resolution asks
+   * every collection for a slug on each anonymous visit, and a collection a visitor may not read
+   * (broadcast lists, campaigns) answered with an [ERROR] and a stack trace per request — noise that
+   * buries real failures. Refusals are logged at debug; everything else stays an error.
+   */
+  private logFailure(err: any, message: string): void {
+    const status = Number(err?.statusCode);
+    if (status === 401 || status === 403) {
+      this.runtime.logger.debug(message);
+      return;
+    }
+    this.runtime.logger.error(message, { stack: err?.stack });
   }
 }
