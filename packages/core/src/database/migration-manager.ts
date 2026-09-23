@@ -2,6 +2,7 @@ import { IDatabaseManager, sql } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import type { ISystemMigration } from '@core/interfaces/system-migration.interface';
 import { MigrationLoader } from '@core/database/migrations';
+import { MigrationConsolidationGuard } from '@core/database/migration-consolidation-guard';
 import { SystemConstants } from '@core/constants/system.constants';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 
@@ -20,6 +21,7 @@ export class MigrationManager {
     const allMigrations = [...systemMigrations, ...pluginMigrations];
     
     const executed = await this.db.find(SystemConstants.TABLE.MIGRATIONS, { columns: { version: true, name: true } });
+    MigrationConsolidationGuard.assertComplete(executed);
     const executedNames = new Set(executed.map((migration: any) => String(migration?.name || '').trim()).filter(Boolean));
     const executedVersions = new Set(executed.map((m: any) => m.version));
 
