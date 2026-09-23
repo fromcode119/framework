@@ -14,6 +14,8 @@ import { BuildSourceForm } from '@/app/sources/build-source-form';
 import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
 import type { IBuildOverviewState } from '@/app/sources/interfaces/build-overview-state.interface';
 import { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
+import { SourceUpdateSummary } from '@/app/sources/source-update-summary';
+import { NotificationType } from '@/components/enums/notification-type.enum';
 
 export class BuildOverview extends AdminComponent {
   @state builds: any[] = [];
@@ -60,8 +62,14 @@ export class BuildOverview extends AdminComponent {
   async handleCheckUpdates(): Promise<void> {
     this.checking = true;
     try {
-      await SourcesApi.checkUpdates();
+      const check = await SourcesApi.checkUpdates();
       await this.loadBuilds();
+      const summary = new SourceUpdateSummary(check, this.builds);
+      this.runtime.notify.addNotification({
+        title: summary.title,
+        message: summary.message,
+        type: summary.hasUpdates ? NotificationType.INFO : NotificationType.SUCCESS,
+      });
     } catch (err: any) {
       this.error = err?.message || 'Update check failed';
     } finally {
