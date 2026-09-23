@@ -6,6 +6,7 @@ import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipServi
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { SystemConstants } from '@fromcode119/core';
 import { RoleManagementService } from '@api/services/role-management-service';
+import { SiteRoleScope } from '@api/services/tenants/site-role-scope';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
 // path (which maps camelCase → snake_case columns); the drizzle schema-object write path does not
@@ -49,6 +50,7 @@ export class UserManagementService {
     const allUsers = await this.db.find(Schema.users, ids
       ? { where: this.db.inArray(Schema.users.id, ids) }
       : undefined);
+    const site = await SiteRoleScope.current(this.db);
     return Promise.all(allUsers.map(async (user: any) => {
       const userRoles = await this.db.find(Schema.systemUsersToRoles, {
         columns: { roleSlug: true },
@@ -68,7 +70,7 @@ export class UserManagementService {
       ]);
       return {
         ...safeUser,
-        roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
+        roles: site ? site.rolesOf(user.id) : this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
         accountStatus: String(accountStatus.value),
         forcePasswordReset
       };
@@ -90,7 +92,8 @@ export class UserManagementService {
     ]);
     return {
       ...safeUser,
-      roles: this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
+      roles: (await SiteRoleScope.current(this.db))?.rolesOf(user.id)
+        ?? this.mergeRoles(safeUser.roles, userRoles.map((r: any) => r.roleSlug)),
       accountStatus: String(accountStatus.value),
       forcePasswordReset
     };
@@ -141,6 +144,7 @@ export class UserManagementService {
     }
 
     if (Array.isArray(data.roles)) {
+      if (await SiteRoleScope.grantInCurrentSite(this.db, Number(userId), data.roles)) return userId;
       await this.db.delete(UserManagementService.USERS_ROLES_TABLE, { userId });
       if (data.roles.length > 0) {
         for (const roleSlug of data.roles) {
@@ -198,6 +202,7 @@ export class UserManagementService {
 
   async saveUserRoles(userId: number, roles: string[]) {
     const normalized = StringUtils.normalizeSlugList(roles);
+    if (await SiteRoleScope.grantInCurrentSite(this.db, userId, normalized)) return;
 
     await this.db.delete(UserManagementService.USERS_ROLES_TABLE, { userId });
     for (const roleSlug of normalized) {

@@ -93,7 +93,7 @@ export class PluginGuest {
     // The result crosses as data too: a provider factory's instance with methods, a callback's return —
     // functions in it become handles, exactly as in arguments.
     return PluginGuestRemote.invocation.run({ token: invocation.token, tenantId: invocation.tenantId }, () =>
-      RequestContextUtils.storage.run({ locale: invocation.locale, tenantId: invocation.tenantId ?? undefined }, async () => this.remote.portableResult(await this.run(invocation))));
+      RequestContextUtils.storage.run({ locale: invocation.locale, tenantId: invocation.tenantId ?? undefined, siteLocale: invocation.siteLocale || undefined }, async () => this.remote.portableResult(await this.run(invocation))));
   }
 
   private async run(invocation: IPluginInvocation): Promise<unknown> {

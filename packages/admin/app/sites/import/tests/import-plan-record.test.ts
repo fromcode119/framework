@@ -84,6 +84,17 @@ describe('ImportPlanRecord -> what the operator reads', () => {
     expect(new ImportPlanRecord(table({}), 0).sentences).toHaveLength(1);
   });
 
+  it('calls a dropped column a field that is not carried, and promises no substitute', () => {
+    const one = new ImportPlanRecord(table({ droppedColumns: ['billing_address_city'] }), 0).sentences.map((s) => s.text).join(' ');
+    const many = new ImportPlanRecord(table({ droppedColumns: ['a', 'b', 'c'] }), 0).sentences.map((s) => s.text).join(' ');
+    expect(one).toMatch(/One field from an older version has no place on this platform and is not carried/);
+    expect(many).toMatch(/3 fields from an older version have no place on this platform and are not carried/);
+    for (const text of [one, many]) {
+      expect(text).not.toMatch(/setting/i);
+      expect(text).not.toMatch(/applies instead/);
+    }
+  });
+
   it('marks only the consequences as warnings, never the arrival line', () => {
     const record = new ImportPlanRecord(table({ mode: 'remap', minId: 1, opaqueJsonColumns: ['metadata.related'], droppedColumns: ['legacy'] }), 0);
     expect(record.sentences[0].warn).toBe(false);

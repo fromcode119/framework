@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminScope } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminPathUtils } from '@/lib/admin-path';
@@ -16,6 +17,13 @@ export class DashboardGettingStarted extends AdminComponent {
   @prop declare steps: Array<Record<string, any>>;
   @prop declare mode?: string;
   @prop declare storefront?: string;
+  /** `site` inside a site: the card is about that site, and the container's mode is not its business. */
+  @prop declare scope?: string;
+
+  /** Resolved, not compared: `scope` arrives as a JSON string, and a string never equals an enum member. */
+  private get inSite(): boolean {
+    return AdminScope.resolve(this.scope)?.isSite === true;
+  }
 
   @bound
   private go(path: string): void {
@@ -50,11 +58,12 @@ export class DashboardGettingStarted extends AdminComponent {
     return (
       <div className={`${AdminClass.SURFACE} p-5`}>
         <h2 className="text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">
-          Finish setting up your platform
+          {this.inSite ? 'Finish setting up this site' : 'Finish setting up your platform'}
         </h2>
         <p className="mt-1 mb-4 max-w-xl text-[12px] leading-relaxed text-slate-500">
-          What stands between this installation and a site people can visit. Not in order — this is simply
-          what is missing.
+          {this.inSite
+            ? 'What stands between this site and pages people can visit. Not in order — this is simply what is missing.'
+            : 'What stands between this installation and a site people can visit. Not in order — this is simply what is missing.'}
         </p>
 
         {/* Said plainly, because the alternative is an operator creating a site record they do not
@@ -62,10 +71,12 @@ export class DashboardGettingStarted extends AdminComponent {
             deployment serves the hosts in its own environment. */}
         {this.storefront ? (
           <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-[11.5px] text-slate-600 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300">
-            <span className="font-semibold">{this.mode === 'multi-site' ? 'Multi-site' : 'Single site'}</span>
+            <span className="font-semibold">{this.inSite ? 'This site' : (this.mode === 'multi-site' ? 'Multi-site' : 'Single site')}</span>
             <span className="text-slate-400">·</span>
             <span className="truncate">
-              {this.mode === 'multi-site'
+              {this.inSite
+                ? <>Served at <span className="font-medium text-slate-700 dark:text-slate-200">{this.storefront}</span></>
+                : this.mode === 'multi-site'
                 ? 'Each site has its own hostname, theme and content.'
                 : <>Serving <span className="font-medium text-slate-700 dark:text-slate-200">{this.storefront}</span> — no site record needed until you host a second one.</>}
             </span>

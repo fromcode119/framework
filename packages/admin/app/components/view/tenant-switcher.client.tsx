@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
+import { AdminSiteBinding } from '@/lib/admin-site-binding';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { TenantOption } from '@/lib/tenants/tenant-option';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
@@ -66,6 +67,7 @@ export class TenantSwitcher extends AdminComponent {
     if (!this.mounted || !response) return;
     this.multiTenant = response.multiTenant === true;
     this.current = response.current ?? null;
+    AdminSiteBinding.record(this.current);
     this.tenants = TenantOption.fromList(response.tenants);
   }
 

@@ -57,6 +57,7 @@ export class IntegrationStoredProviderService {
       name: providerName,
       providerKey: normalizedProvider,
       config: storedConfig,
+      ...IntegrationStoredProviderService.namespaceOf(runtime, normalizedProvider, existing),
       enabled: options.makeActive ? true : nextEnabled,
       createdAt: existing?.createdAt || nowIso,
       updatedAt: nowIso,
@@ -181,6 +182,7 @@ export class IntegrationStoredProviderService {
           name: String(entry?.name || '').trim() || undefined,
           providerKey: this.profileService.normalize(String(entry?.providerKey || entry?.provider || '')),
           config: entry?.config && typeof entry.config === 'object' ? entry.config : {},
+          ...IntegrationStoredProviderService.namespaceOf(runtime, this.profileService.normalize(String(entry?.providerKey || entry?.provider || '')), entry),
           enabled: entry?.enabled === undefined ? true : !!entry.enabled,
           createdAt: entry?.createdAt || undefined,
           updatedAt: entry?.updatedAt || undefined,
@@ -225,6 +227,7 @@ export class IntegrationStoredProviderService {
         name: String(entry?.name || '').trim() || undefined,
         providerKey: this.profileService.normalize(String(entry?.providerKey || '')),
         config: entry?.config && typeof entry.config === 'object' ? entry.config : {},
+        ...IntegrationStoredProviderService.namespaceOf(runtime, this.profileService.normalize(String(entry?.providerKey || '')), entry),
         enabled: entry?.enabled === undefined ? true : !!entry.enabled,
         createdAt: entry?.createdAt,
         updatedAt: entry?.updatedAt,
@@ -278,5 +281,20 @@ export class IntegrationStoredProviderService {
 
   private normalize(value: string) {
     return CoreServices.getInstance().content.sanitizeKey(value);
+  }
+
+  /**
+   * Where the provider's plugin lives: the namespace its REGISTRATION carries (stamped by the framework
+   * when the plugin registered it), else a namespace an older entry already stored. Rebuilding entries
+   * field by field used to drop it on every admin save, and a consumer resolving the provider's plugin
+   * (logistics → its courier) then reported a configured courier as "not configured".
+   */
+  private static namespaceOf(
+    runtime: IIntegrationTypeRuntime<any> | undefined,
+    providerKey: string,
+    stored?: { namespace?: unknown } | null,
+  ): { namespace?: string } {
+    const namespace = String(runtime?.providers.get(providerKey)?.namespace || stored?.namespace || '').trim();
+    return namespace ? { namespace } : {};
   }
 }

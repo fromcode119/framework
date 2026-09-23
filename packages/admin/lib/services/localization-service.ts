@@ -158,7 +158,13 @@ export class LocalizationService extends BaseService {
    */
   resolveAnyString(value: unknown, locale?: string): string {
     const options: IResolveAnyStringOptions = locale ? { preferredLocale: locale } : {};
-    return LocalizationUtils.resolveAnyString(value, options);
+    // A localized value is stored as JSON in a TEXT column, so it arrives from the API as the
+    // STRING `{"en":"Home"}`, not as an object. `LocalizationUtils.resolveAnyString` sees a string
+    // and hands it straight back, which is how raw JSON reached the dashboard's "Where you left
+    // off" rows. The collection list already parsed it itself (components/collection/list/utils.ts);
+    // doing it here means every caller gets the same answer instead of each one remembering.
+    const parsed = LocalizationUtils.tryParseLocaleJson(value);
+    return LocalizationUtils.resolveAnyString(parsed ?? value, options);
   }
 
   /**

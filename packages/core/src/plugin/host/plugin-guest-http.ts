@@ -19,6 +19,7 @@ import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 export class PluginGuestHttp {
   static readonly HEADER_TOKEN = 'x-fc-token';
   static readonly HEADER_TENANT = 'x-fc-tenant';
+  static readonly HEADER_SITE_LOCALE = 'x-fc-site-locale';
   static readonly HEADER_LOCALE = 'x-fc-locale';
   static readonly HEADER_USER = 'x-fc-user';
 
@@ -170,16 +171,17 @@ export class PluginGuestHttp {
     const token = String(req.headers[PluginGuestHttp.HEADER_TOKEN] ?? '');
     const tenantId = String(req.headers[PluginGuestHttp.HEADER_TENANT] ?? '').trim() || null;
     const locale = String(req.headers[PluginGuestHttp.HEADER_LOCALE] ?? '');
+    const siteLocale = String(req.headers[PluginGuestHttp.HEADER_SITE_LOCALE] ?? '').trim() || undefined;
     const rawUser = req.headers[PluginGuestHttp.HEADER_USER];
     if (typeof rawUser === 'string' && rawUser) {
       (req as any).user = PluginGuestHttp.decodeUser(rawUser);
     }
-    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY]) {
+    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY]) {
       delete req.headers[header];
     }
     (req as any).tenantId = tenantId ?? undefined;
     PluginGuestRemote.invocation.run({ token, tenantId }, () => {
-      RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined }, () => next());
+      RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined, siteLocale }, () => next());
     });
   }
 }

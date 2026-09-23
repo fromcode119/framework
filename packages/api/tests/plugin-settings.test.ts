@@ -11,9 +11,11 @@ describe('plugin-settings-controller', () => {
         {
           manifest: {
             slug: 'test-plugin',
+            // The process-wide copy (the platform's). The controller must NOT serve or build on it:
+            // the site's own row below is what the runtime reads.
             config: {
               settings: {
-                existingKey: 'existingValue'
+                existingKey: 'platform-copy'
               }
             }
           }
@@ -26,6 +28,7 @@ describe('plugin-settings-controller', () => {
         ]
       }),
       savePluginConfig: vi.fn().mockResolvedValue(true),
+      loadPluginConfig: vi.fn().mockResolvedValue({ settings: { existingKey: 'existingValue' } }),
       emit: vi.fn(),
       createContext: vi.fn().mockReturnValue({})
     };

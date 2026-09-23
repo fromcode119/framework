@@ -257,4 +257,11 @@ export class CountryCatalog {
     { value: 'ZM', label: 'Zambia' },
     { value: 'ZW', label: 'Zimbabwe' },
   ];
+
+  /** "Bulgaria (BG)" for a code in the catalog, the bare code otherwise, '' for none. */
+  static labelFor(code: string): string {
+    if (!code) return '';
+    const name = CountryCatalog.OPTIONS.find((option) => option.value === code)?.label;
+    return name ? `${name} (${code})` : code;
+  }
 }

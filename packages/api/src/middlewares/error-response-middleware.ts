@@ -105,7 +105,7 @@ export class ErrorResponseMiddleware {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     res.setHeader(
       'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client, X-CSRF-Token, X-Reset-Context'
+      'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client, X-Framework-Site, X-CSRF-Token, X-Reset-Context'
     );
   }
 

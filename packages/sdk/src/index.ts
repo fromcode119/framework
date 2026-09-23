@@ -59,6 +59,9 @@ export { MeasurementSystemUtils } from '@fromcode119/core/client';
 // The Enum itself, not just the utils: `MeasurementSystemUtils.normalize()` RETURNS it, so a plugin
 // that stores or compares the result needs the type.
 export { MeasurementSystem } from '@fromcode119/core/client';
+// The one country a site operates in (Settings → Localization); country-aware plugins inherit it.
+export { PlatformCountryUtils, PlatformCountrySource } from '@fromcode119/core/client';
+export type { IPlatformCountry } from '@fromcode119/core/client';
 export { FormatUtils } from '@fromcode119/core/client';
 export { ApiRequestError } from '@fromcode119/core/client';
 export { ApiRequestService } from '@fromcode119/core/client';

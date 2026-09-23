@@ -1,6 +1,7 @@
 import { BrowserStateClient, CookieConstants } from '@fromcode119/core/client';
 import { AdminApiHttpService } from '@/lib/api-http-service';
 import { AdminApiSessionGuardService } from '@/lib/api-session-guard-service';
+import { AdminSiteBinding } from '@/lib/admin-site-binding';
 
 export class AdminApi {
   private static readonly browserState = new BrowserStateClient();
@@ -106,7 +107,7 @@ export class AdminApi {
   ): Promise<any> {
     AdminApi.clearGetCaches();
     const url = AdminApi.getURL(path);
-    const headers = AdminApiHttpService.buildHeaders(options, { isJson: false });
+    const headers = { ...AdminApiHttpService.buildHeaders(options, { isJson: false }), ...AdminSiteBinding.headers('POST') };
 
     if (typeof XMLHttpRequest !== 'undefined' && options?.onProgress) {
       return AdminApi.uploadWithProgress(url, formData, headers, options.onProgress);
@@ -195,7 +196,7 @@ export class AdminApi {
     const url = AdminApi.getURL(path);
     const response = await fetch(url, {
       ...options,
-      headers: AdminApiHttpService.buildHeaders(options),
+      headers: { ...AdminApiHttpService.buildHeaders(options), ...AdminSiteBinding.headers(options.method) },
       credentials: 'include',
     });
 
