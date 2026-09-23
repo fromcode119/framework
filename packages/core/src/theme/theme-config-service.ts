@@ -38,17 +38,33 @@ export class ThemeConfigService {
     }
   }
 
+  /**
+   * The keys the theme settings page writes. `settings` holds whatever the theme declares — nested
+   * objects included (a theme's email copy, form defaults) — so only its outer shape is checked here.
+   * Accepting `variables` alone made every save from that page fail, because it always sends all three.
+   */
+  private static readonly CONFIG_KEYS = ['variables', 'layouts', 'settings'];
+
   private static assertValidThemeConfigShape(config: Record<string, unknown>): void {
-    const extraKeys = Object.keys(config).filter((k) => k !== 'variables');
+    const extraKeys = Object.keys(config).filter((k) => !ThemeConfigService.CONFIG_KEYS.includes(k));
     if (extraKeys.length > 0) throw new Error(`Unknown theme config keys: ${extraKeys.join(', ')}`);
-    if (config.variables !== undefined) {
-      if (typeof config.variables !== 'object' || config.variables === null || Array.isArray(config.variables)) {
-        throw new Error('Theme variables must be a plain object.');
-      }
-      for (const [key, value] of Object.entries(config.variables)) {
-        if (typeof value !== 'string') throw new Error(`Theme variable "${key}" must be a string.`);
-      }
+    ThemeConfigService.assertStringMap(config.variables, 'Theme variables', 'Theme variable');
+    ThemeConfigService.assertStringMap(config.layouts, 'Theme layouts', 'Theme layout');
+    if (config.settings !== undefined && !ThemeConfigService.isPlainObject(config.settings)) {
+      throw new Error('Theme settings must be a plain object.');
     }
+  }
+
+  private static assertStringMap(value: unknown, what: string, entry: string): void {
+    if (value === undefined) return;
+    if (!ThemeConfigService.isPlainObject(value)) throw new Error(`${what} must be a plain object.`);
+    for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof item !== 'string') throw new Error(`${entry} "${key}" must be a string.`);
+    }
+  }
+
+  private static isPlainObject(value: unknown): boolean {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 
   async getThemeConfig(slug: string): Promise<any> {

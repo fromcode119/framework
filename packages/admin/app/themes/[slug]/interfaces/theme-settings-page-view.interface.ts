@@ -28,6 +28,8 @@ export interface IThemeSettingsPageView {
   readonly tempLayouts: Record<string, string>;
   /** Edited theme settings. Free-form by design (a theme declares its own), hence `unknown` values. */
   readonly tempSettings: Record<string, unknown>;
+  /** The site's stored theme config as loaded — tells a saved setting apart from a theme default. */
+  readonly dbConfig: Record<string, unknown>;
 
   readonly isUpdating: boolean;
   readonly isSaving: boolean;

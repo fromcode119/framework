@@ -124,7 +124,7 @@ export abstract class ThemeLifecycle extends ThemeDiscovery {
     this.logger.info(`Theme "${slug}" reset.`);
   }
 
-  async saveThemeConfig(slug: string, config: { variables?: Record<string, string> }) {
+  async saveThemeConfig(slug: string, config: Record<string, unknown>) {
     if (TenantMode.isEnabled()) {
       this.configService.validateThemeConfig(slug, config);
       return new TenantThemeStateService(this.db).saveConfig(this.requireTenant('configure a theme'), slug, config);
