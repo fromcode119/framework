@@ -270,6 +270,8 @@ export { NonProductionRefusal } from '@core/tenant/non-production-refusal';
 export { TenantMode } from '@core/tenant/tenant-mode';
 export { IntegrationTenantAccess } from '@core/integrations/integration-tenant-access';
 export { SiteLocaleAccess } from '@core/i18n/site-locale-access';
+export { SiteClockAccess } from '@core/i18n/site-clock-access';
+export type { ISiteClock } from '@core/i18n/interfaces/site-clock.interface';
 export { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 export { PluginTenantStateService } from '@core/plugin/tenant/plugin-tenant-state-service';
 export { TenantThemeAccess } from '@core/theme/tenant-theme-access';

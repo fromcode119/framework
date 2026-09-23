@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, RequestContextUtils, ServerCoreServices, SiteBaseUrl, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
+import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, RequestContextUtils, ServerCoreServices, SiteBaseUrl, SiteClockAccess, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
@@ -127,6 +127,25 @@ export class ApiBootstrapService {
       const rows = await db.find(SystemConstants.TABLE.META, { where: { key: SystemConstants.META_KEY.DEFAULT_LOCALE } });
       const own = (Array.isArray(rows) ? rows : []).find((row: any) => String(row?.tenant_id ?? '') === tenantId);
       return String(own?.value ?? '');
+    });
+    // A site's clock for plugins writing times people read (booking emails): the site's own timezone,
+    // time format and language over the platform's. Read per call, so a saved change applies at once.
+    SiteClockAccess.configure(async (tenantId: string) => {
+      const db = (manager as any).db;
+      if (!db || !(await db.tableExists(SystemConstants.TABLE.META))) return {};
+      // The site's own row wins; the platform's (no tenant) is the fallback.
+      const value = async (key: string): Promise<string> => {
+        const rows = await db.find(SystemConstants.TABLE.META, { where: { key } });
+        const list = Array.isArray(rows) ? rows : [];
+        const own = tenantId ? list.find((row: any) => String(row?.tenant_id ?? '') === tenantId) : undefined;
+        const platform = list.find((row: any) => !row?.tenant_id);
+        return String((own ?? platform)?.value ?? '').trim();
+      };
+      return {
+        timezone: await value(SystemConstants.META_KEY.TIMEZONE),
+        timeFormat: await value(SystemConstants.META_KEY.TIME_FORMAT),
+        locale: (await value(SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE)) || (await value(SystemConstants.META_KEY.DEFAULT_LOCALE)),
+      };
     });
     // A saved locale takes effect on the next request. The hook runs in the saving request, so a site's
     // save drops that site's value; a platform save drops every site's.
