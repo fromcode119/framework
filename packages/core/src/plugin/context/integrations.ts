@@ -14,7 +14,9 @@ export class IntegrationsContextProxy {
         manager.integrations.registerType(definition);
       },
       registerProvider: (typeKey: string, provider: any) => {
-        manager.integrations.registerProvider(typeKey, provider);
+        // The registering plugin's namespace travels with the provider, so a saved integration entry
+        // can say where its plugin lives — the admin save used to drop the only copy of it.
+        manager.integrations.registerProvider(typeKey, { ...provider, namespace: plugin.manifest.namespace });
       },
       get: async (typeKey: string) => {
         if (!hasCapability(`integration:${typeKey}`) && !hasCapability('integrations')) {
