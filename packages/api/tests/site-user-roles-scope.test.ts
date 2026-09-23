@@ -64,7 +64,7 @@ class FakeDb {
 const ROLES = [
   { slug: 'admin', pluginSlug: '' },
   { slug: 'editor', pluginSlug: 'system' },
-  { slug: 'partner', pluginSlug: 'mlm' },
+  { slug: 'partner', pluginSlug: 'referrals' },
   { slug: 'author', pluginSlug: 'cms' },
 ];
 
