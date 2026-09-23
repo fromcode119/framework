@@ -1,4 +1,4 @@
-import { ApplicationUrlUtils } from '@fromcode119/core';
+import { ApplicationUrlUtils, SiteBaseUrl } from '@fromcode119/core';
 import { Request } from 'express';
 
 export class ApiUrlUtils {
@@ -66,6 +66,48 @@ export class ApiUrlUtils {
   }
 
   static resolvePublicUrl(req: Request, resourcePath: string | null | undefined): string {
+        return ApiUrlUtils.joinPublicUrl(ApiUrlUtils.resolveApiPublicOrigin(req), resourcePath);
+  }
+
+  /**
+   * The origin a file uploaded by the CURRENT SITE is reachable at.
+   *
+   * A site's uploads are written into its own directory (`uploads/tenants/<id>/`) and `/uploads` is
+   * served per HOST — `TenantUploadsStatic` resolves the site from the host and tries that site's
+   * directory before the shared root. The platform's api host names no site, so a URL built on it
+   * can only ever reach the shared root, where a file written since sites had their own directories
+   * is not. Every such file therefore had a URL that 404'd: the admin's media library drew a generic
+   * file icon for every new upload. On the site's own host the same path resolves, and a file that
+   * predates per-site directories still falls through to the root.
+   *
+   * With no site bound (platform scope, a single-site deployment) this is the api origin, as before.
+   */
+  static async resolveSitePublicOrigin(req: Request): Promise<string> {
+        const site = await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.API_APP);
+        return site || ApiUrlUtils.resolveApiPublicOrigin(req);
+  }
+
+  /**
+   * A stored file's public URL, addressed to `origin` — the current site's (see
+   * `resolveSitePublicOrigin`).
+   *
+   * The storage driver may hand back an ABSOLUTE URL: `STORAGE_PUBLIC_URL` is usually configured as
+   * the platform api's `/uploads`, so every file comes back already fixed to a host that names no
+   * site. That URL is REBASED onto `origin` when it sits on the platform api's origin; anything on
+   * another origin (a CDN, an object store) is left exactly as it is, and a relative one is joined.
+   */
+  static sitePublicUrl(origin: string, resourcePath: string | null | undefined): string {
+        const value = String(resourcePath || '').trim();
+        const platform = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP).replace(/\/+$/, '');
+        const site = String(origin || '').replace(/\/+$/, '');
+        if (platform && site && site !== platform && value.startsWith(`${platform}/`)) {
+            return `${site}${value.slice(platform.length)}`;
+        }
+        return ApiUrlUtils.joinPublicUrl(origin, value);
+  }
+
+  /** `resourcePath` made absolute on `origin`; external, data and blob URLs pass through untouched. */
+  static joinPublicUrl(origin: string, resourcePath: string | null | undefined): string {
         const value = String(resourcePath || '').trim();
         if (!value) return '';
 
@@ -75,9 +117,8 @@ export class ApiUrlUtils {
         }
 
         const normalizedPath = value.startsWith('/') ? value : `/${value}`;
-        const origin = ApiUrlUtils.resolveApiPublicOrigin(req);
-        return origin ? `${origin}${normalizedPath}` : normalizedPath;
-
+        const base = String(origin || '').replace(/\/+$/, '');
+        return base ? `${base}${normalizedPath}` : normalizedPath;
   }
 
   static resolveApiPublicOrigin(req: Request): string {

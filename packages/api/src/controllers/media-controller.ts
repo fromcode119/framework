@@ -25,7 +25,7 @@ export class MediaController extends BaseController {
       this.logger,
       manager,
       mediaManager,
-      (req, filePath, visibility) => this.publicUrlFor(req, filePath, visibility),
+      (origin, filePath, visibility) => this.publicUrlFor(origin, filePath, visibility),
     );
   }
 
@@ -70,11 +70,12 @@ export class MediaController extends BaseController {
    * `MediaManager.publicUrl` returns `''` for one; this maps that to null at the API boundary so a
    * client cannot mistake an empty string for a relative URL.
    */
-  private publicUrlFor(req: Request, filePath: string, visibility: MediaVisibility): string | null {
+  private publicUrlFor(origin: string, filePath: string, visibility: MediaVisibility): string | null {
     // The visibility value IS the storage-space name — that correspondence is deliberate, so there is
-    // no mapping table to drift.
+    // no mapping table to drift. `origin` is the SITE's (ApiUrlUtils.resolveSitePublicOrigin), because
+    // the file lives in that site's directory and only its host serves it.
     const url = this.mediaManager.publicUrl(filePath, visibility.value);
-    return url ? ApiUrlUtils.resolvePublicUrl(req, url) : null;
+    return url ? ApiUrlUtils.sitePublicUrl(origin, url) : null;
   }
 
   /** @see MediaLibraryController.upload */
@@ -229,7 +230,7 @@ export class MediaController extends BaseController {
 
       res.json({
         id: Number(id),
-        optimizedUrl: ApiUrlUtils.resolvePublicUrl(req as Request, variant.url),
+        optimizedUrl: ApiUrlUtils.sitePublicUrl(await ApiUrlUtils.resolveSitePublicOrigin(req as Request), variant.url),
         optimizedPath: variant.path,
         optimizedSize: variant.size,
         optimizedWidth: variant.width,
