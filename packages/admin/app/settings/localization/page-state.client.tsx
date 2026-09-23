@@ -33,6 +33,8 @@ export abstract class LocalizationSettingsPageState extends AdminComponent {
   @state frontendDefaultLocale = '';
   @state localeUrlStrategy: LocaleUrlStrategy = LocaleUrlStrategy.QUERY;
   @state measurementSystem: MeasurementSystem = MeasurementSystem.METRIC;
+  /** The platform country; '' = derive from the frontend language. */
+  @state country = '';
   /**
    * Every key this screen writes is per-site, so in the platform scope the API refuses the save and
    * the whole locale table edit is lost. Null until the answer arrives; nothing is hidden before then.
@@ -42,7 +44,7 @@ export abstract class LocalizationSettingsPageState extends AdminComponent {
   /** The keys `LocalizationSettingsIo.save` PUTs — the one list this page's scope is judged on. */
   protected static readonly KEYS = [
     'localization_locales', 'enabled_locales', 'default_locale', 'admin_default_locale',
-    'frontend_default_locale', 'locale_url_strategy', 'measurement_system',
+    'frontend_default_locale', 'locale_url_strategy', 'measurement_system', 'country',
   ] as const;
 
   protected get localeSelectOptions(): { value: string; label: string }[] {
@@ -104,6 +106,11 @@ export abstract class LocalizationSettingsPageState extends AdminComponent {
   @bound
   setMeasurementSystem(value: MeasurementSystem): void {
     this.measurementSystem = value;
+  }
+
+  @bound
+  setCountry(value: string): void {
+    this.country = value;
   }
 
   protected get outOfScope(): boolean {

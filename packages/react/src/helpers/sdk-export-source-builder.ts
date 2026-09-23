@@ -7,6 +7,8 @@ export class SdkExportSourceBuilder {
     'StringUtils',
     'NumberUtils',
     'MeasurementSystemUtils',
+    'PlatformCountryUtils',
+    'PlatformCountrySource',
     'WidgetViewport',
     'FormatUtils',
     'ApiRequestError',

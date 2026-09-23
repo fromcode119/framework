@@ -86,6 +86,12 @@ export interface IField {
      * declared here because an option that only exists at its read site is one nobody can find.
      */
     hideLabel?: boolean;
+    /**
+     * For a `CountryField` that overrides the platform country (Settings → Localization): when the
+     * value is blank the control names the country actually in effect and where it came from, so an
+     * empty box never hides the value a module runs on.
+     */
+    inheritsPlatformCountry?: boolean;
     condition?: {
       field: string;
       operator: ConditionOperator;

@@ -131,6 +131,11 @@ export class SystemMetaKeys {
   // Platform-wide measurement system (metric cm/kg | imperial in/lb). A regional format like locale —
   // domain plugins read it for their own units; the framework stays domain-agnostic.
   MEASUREMENT_SYSTEM: 'measurement_system',
+  // The country this site operates in (ISO 3166-1 alpha-2). ONE setting every country-aware module
+  // inherits — invoicing law, tax withholding, payroll — each may override it for itself. Blank means
+  // "derive it from the frontend language" (`PlatformCountryUtils`), and the admin says which country
+  // that produced.
+  COUNTRY: 'country',
   
   // Security & Auth
   AUTH_SECURITY_NOTIFICATIONS: 'auth_security_notifications',

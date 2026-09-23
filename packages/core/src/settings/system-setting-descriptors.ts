@@ -3,6 +3,7 @@ import { NetworkAddressUtils } from '@core/security/network-address-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import type { ISystemSettingDescriptor } from '@core/settings/interfaces/system-setting-descriptor.interface';
 import { SystemSettingSeedDefaults } from '@core/settings/system-setting-seed-defaults';
+import { LocalizationSettingDescriptors } from '@core/settings/localization-setting-descriptors';
 
 /**
  * What every system setting DECLARES: its scope, whether it is writable, whether it may be exposed,
@@ -114,36 +115,8 @@ export class SystemSettingDescriptors {
     // record because a registry picked a number would be the invented default this codebase forbids.
     [SystemConstants.META_KEY.AUDIT_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
 
-    // Localization
-    [SystemConstants.META_KEY.LOCALIZATION_LOCALES]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: '[{"code":"en","name":"English","enabled":true}]', description: "Available locales.", group: "Localization" },
-    },
-    [SystemConstants.META_KEY.ENABLED_LOCALES]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'en', description: "Enabled locale codes.", group: "Localization" },
-    },
-    [SystemConstants.META_KEY.DEFAULT_LOCALE]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'en', description: "Default locale.", group: "Localization" },
-    },
-    [SystemConstants.META_KEY.FALLBACK_LOCALE]: { scope: SettingScope.SITE, writable: true, exposed: true },
-    [SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'en', description: "Default admin language.", group: "Localization" },
-    },
-    [SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'en', description: "Default frontend language.", group: "Localization" },
-    },
-    [SystemConstants.META_KEY.LOCALE_URL_STRATEGY]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'query', description: "Locale URL strategy.", group: "Localization" },
-    },
-    [SystemConstants.META_KEY.MEASUREMENT_SYSTEM]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'metric', description: "Units for physical dimensions and weight (metric cm/kg | imperial in/lb).", group: "Localization" },
-    },
+    // Localization rows live in their own table — see LocalizationSettingDescriptors.
+    ...LocalizationSettingDescriptors.ALL,
 
     // Security & Auth
     [SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS]: {
