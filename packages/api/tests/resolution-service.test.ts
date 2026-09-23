@@ -382,6 +382,70 @@ describe('ResolutionService default page contract routing', () => {
     });
   });
 
+  describe('a contract page left blank renders its plugin design', () => {
+    const buildService = (pageDoc: Record<string, any>, lookup: 'permalink' | 'slug') => {
+      const restController = {
+        find: vi.fn().mockImplementation((collection: any, options: any) => {
+          if (collection.slug !== 'pages') return Promise.resolve({ docs: [] });
+          if (lookup === 'permalink' && options?.query?.customPermalink === '/policy') return Promise.resolve({ docs: [pageDoc] });
+          if (lookup === 'slug' && options?.query?.slug === 'policy' && options?.query?.limit === 1) return Promise.resolve({ docs: [pageDoc] });
+          return Promise.resolve({ docs: [] });
+        }),
+      };
+      const manager: any = {
+        db: { find: vi.fn().mockResolvedValue([]) },
+        getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'policy-module' } }]),
+        registeredCollections: new Map([
+          ['pages', { pluginSlug: 'system', collection: { slug: 'pages', shortSlug: 'pages', fields: [{ name: 'slug' }, { name: 'customPermalink' }] } }],
+        ]),
+      };
+      vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
+        contentResolutionGates: { apply: vi.fn(async (resolved: any) => resolved) },
+        redirectResolvers: { resolve: vi.fn(async () => null) },
+        canonicalPathResolvers: { resolve: vi.fn(async () => null) },
+        defaultPageContractResolution: {
+          resolveAll: vi.fn().mockReturnValue([
+            {
+              install: true,
+              status: PluginDefaultPageContractResolutionStatus.READY,
+              materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
+              effectiveSlug: '/policy',
+              effectiveAliases: [],
+              effectiveRecipe: 'policy-module.policy-page',
+              pluginSlug: 'policy-module',
+            },
+          ]),
+        },
+      } as any);
+      const themeManager: any = { getActiveThemeDefaultPageContractOverrides: vi.fn().mockResolvedValue([]) };
+      return new ResolutionService(manager, themeManager, restController as any);
+    };
+
+    it.each(['permalink', 'slug'] as const)('carries the recipe onto an empty page matched by %s', async (lookup) => {
+      const service = buildService({ id: 5, slug: 'policy', customPermalink: '/policy', title: 'Policy', content: [] }, lookup);
+      const result = await service.resolveSlug('/policy', {});
+      expect(result?.doc?.recipe).toBe('policy-module.policy-page');
+    });
+
+    it('treats a per-locale map of empty block lists as blank', async () => {
+      const service = buildService({ id: 5, slug: 'policy', customPermalink: '/policy', title: 'Policy', content: { en: [], bg: [] } }, 'permalink');
+      const result = await service.resolveSlug('/policy', {});
+      expect(result?.doc?.recipe).toBe('policy-module.policy-page');
+    });
+
+    it('never replaces blocks the operator wrote', async () => {
+      const service = buildService({ id: 5, slug: 'policy', customPermalink: '/policy', title: 'Policy', content: { bg: [{ id: 'intro', type: 'text' }] } }, 'permalink');
+      const result = await service.resolveSlug('/policy', {});
+      expect(result?.doc).not.toHaveProperty('recipe');
+    });
+
+    it('keeps a recipe the page names itself', async () => {
+      const service = buildService({ id: 5, slug: 'policy', customPermalink: '/policy', title: 'Policy', content: [], recipe: 'other.design' }, 'slug');
+      const result = await service.resolveSlug('/policy', {});
+      expect(result?.doc?.recipe).toBe('other.design');
+    });
+  });
+
   it('falls back to the enabled contract for /shop when no exact ZETA page exists', async () => {
     const restController = {
       find: vi.fn().mockImplementation((collection: any, options: any) => {

@@ -10,6 +10,8 @@ import { LayoutResolutionService } from '@core/plugin/layout/layout-resolution-s
 import { PluginLayoutRegistryService } from '@core/plugin/layout/plugin-layout-registry-service';
 
 export class LayoutRuntimeBridgeService {
+  private readonly listeners = new Set<() => void>();
+
   constructor(
     private readonly pluginRegistry: PluginLayoutRegistryService,
     private readonly themeRegistry: ThemeLayoutOverrideRegistryService,
@@ -24,10 +26,30 @@ export class LayoutRuntimeBridgeService {
 
   registerPluginDefaults(registration: IPluginLayoutRegistration): void {
     this.pluginRegistry.register(registration);
+    this.notify();
   }
 
   registerThemeOverrides(registration: IThemeLayoutOverrideRegistration): void {
     this.themeRegistry.register(registration);
+    this.notify();
+  }
+
+  /**
+   * Told whenever the registered layouts change. A storefront bundle registers its page designs when it
+   * EVALUATES, which for an idle plugin is after the page first rendered — a renderer that resolved its
+   * target once had already settled on "no layout" and painted an empty box. It stayed empty unless an
+   * unrelated registration happened to re-render the tree afterwards, so the same policy page filled
+   * in on one site and stayed blank on another. Returns the unsubscribe.
+   */
+  subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private notify(): void {
+    for (const listener of [...this.listeners]) listener();
   }
 
   resolvePageTarget(targetKey: string, activeThemeSlug?: string): IResolvedLayout {
@@ -51,13 +73,16 @@ export class LayoutRuntimeBridgeService {
 
   unregisterByPlugin(namespace: string, pluginSlug: string): void {
     this.lifecycleService.unregisterByPlugin(namespace, pluginSlug);
+    this.notify();
   }
 
   unregisterByTheme(themeSlug: string): void {
     this.lifecycleService.unregisterByTheme(themeSlug);
+    this.notify();
   }
 
   resetForRuntimeReload(): void {
     this.lifecycleService.resetForRuntimeReload();
+    this.notify();
   }
 }

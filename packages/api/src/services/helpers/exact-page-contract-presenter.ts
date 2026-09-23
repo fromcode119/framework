@@ -49,7 +49,10 @@ export class ExactPageContractPresenter {
     return !ResolutionContractPathService.hasPathParameters(matchingPattern);
   }
 
-  /** The document, with the contract's layout or title filled in only where the page has neither. */
+  /**
+   * The document, with the contract's layout or title filled in only where the page has neither, and
+   * the plugin's design where the page has no content of its own.
+   */
   static apply(
     doc: any,
     collection: ICollection,
@@ -72,6 +75,13 @@ export class ExactPageContractPresenter {
       return doc;
     }
 
+    return ResolutionContractPresentationService.applyDesignToBlankPage(
+      ExactPageContractPresenter.applyPresentation(doc, matchingContract),
+      matchingContract,
+    );
+  }
+
+  private static applyPresentation(doc: any, matchingContract: IResolvedPluginDefaultPageContract): any {
     if (matchingContract.effectiveThemeLayout && !doc.themeLayout && !doc.pageTemplate) {
       return ResolutionContractPresentationService.applyToDoc(doc, matchingContract);
     }
