@@ -1,5 +1,6 @@
 import { AdminApi } from '@/lib/api';
 import { SourcesRouteService } from '@/app/sources/sources-route-service';
+import type { ISourceUpdateCheck } from '@/app/sources/interfaces/source-update-check.interface';
 
 /**
  * The admin's calls to the Sources API.
@@ -22,7 +23,7 @@ export class SourcesApi {
   static remove(type: string, slug: string): Promise<any> { return AdminApi.delete(SourcesRouteService.one(type, slug)); }
   static buildAll(): Promise<any> { return AdminApi.post(SourcesRouteService.buildAll(), {}); }
   static buildOne(type: string, slug: string): Promise<any> { return AdminApi.post(SourcesRouteService.buildOne(type, slug), {}); }
-  static checkUpdates(): Promise<any> { return AdminApi.post(SourcesRouteService.checkUpdates(), {}); }
+  static checkUpdates(): Promise<ISourceUpdateCheck> { return AdminApi.post(SourcesRouteService.checkUpdates(), {}); }
   static listBranches(input: Record<string, unknown>): Promise<any> { return AdminApi.post(SourcesRouteService.branches(), input); }
   static inspect(input: Record<string, unknown>): Promise<any> { return AdminApi.post(SourcesRouteService.inspect(), input); }
 
