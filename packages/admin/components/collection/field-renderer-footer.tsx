@@ -10,6 +10,21 @@ export class FieldRendererFooter extends PureReactor {
   @prop declare resolvedFieldDescription: string;
   @prop declare errors?: string[];
   @prop declare provenance?: FieldProvenance | null;
+  @prop declare localeFallback?: { locale: string; text: string } | null;
+  @prop declare activeLocale?: string;
+
+  /** An empty localized box whose value the site takes from another locale — named, with that value. */
+  private renderLocaleFallback(): React.ReactNode {
+    const fallback = this.localeFallback;
+    if (!fallback) return null;
+    return (
+      <p className={UiFieldUtils.TEXT.PROVENANCE}>
+        {`Empty in ${String(this.activeLocale || '').toUpperCase()} — the site shows the ${fallback.locale.toUpperCase()} value `}
+        <span className={UiFieldUtils.TEXT.PROVENANCE_VALUE}>{fallback.text}</span>
+        {'.'}
+      </p>
+    );
+  }
 
   /**
    * States what the storefront will actually use for an EMPTY field, and names the control that decides
@@ -45,6 +60,7 @@ export class FieldRendererFooter extends PureReactor {
           <p className={UiFieldUtils.TEXT.SUBTEXT}>{resolvedFieldDescription}</p>
         )}
         {this.renderProvenance()}
+        {this.renderLocaleFallback()}
         {errors && errors.length > 0 && (
           // Only show outer error text for types whose renderers don't display it internally.
           // Input (text/number/password) and TextArea already render the error inside themselves.

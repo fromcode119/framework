@@ -73,3 +73,25 @@ describe('FieldRendererFooter provenance line', () => {
     expect(container.textContent).toBe('');
   });
 });
+
+/**
+ * A localized box empty in the locale being edited, while the site shows another locale's value — the
+ * Contact page's title stored as `{ en: 'Контакти' }` opened in BG as an empty field, with nothing saying
+ * the page still rendered a title.
+ */
+describe('FieldRendererFooter locale fallback line', () => {
+  const field: any = { name: 'title', type: 'text' };
+
+  it('names the locale and the value the site shows instead', () => {
+    render(<FieldRendererFooter field={field} resolvedFieldDescription="" activeLocale="bg" localeFallback={{ locale: 'en', text: 'Контакти' }} />);
+
+    expect(screen.getByText(/Empty in BG — the site shows the EN value/)).toBeTruthy();
+    expect(screen.getByText('Контакти')).toBeTruthy();
+  });
+
+  it('stays silent when this locale has its own value', () => {
+    const { container } = render(<FieldRendererFooter field={field} resolvedFieldDescription="" activeLocale="bg" localeFallback={null} />);
+
+    expect(container.textContent).toBe('');
+  });
+});

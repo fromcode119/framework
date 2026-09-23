@@ -98,6 +98,8 @@ export class FieldRendererView extends FieldRendererViewLocale {
           resolvedFieldDescription={this.showsProvenanceInline ? '' : resolvedFieldDescription}
           errors={this.errors}
           provenance={this.provenance}
+          localeFallback={this.localeFallback}
+          activeLocale={this.activeLocale}
         />
       </div>
     );
