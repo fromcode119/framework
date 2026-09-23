@@ -109,6 +109,9 @@ export class LocalizationService extends BaseService {
     return parsed;
   }
 
+  /** Used when the installation has configured no locale at all. */
+  private static readonly FALLBACK_LOCALE = 'en';
+
   resolveAdminLocale(
     settings: Record<string, unknown> | null | undefined,
     localeRegistry?: Array<{ code: string; label: string }>
@@ -257,6 +260,19 @@ export class LocalizationService extends BaseService {
       }
     }
 
-    return String(localeRegistry?.[0]?.code || '').trim();
+    const fromRegistry = String(localeRegistry?.[0]?.code || '').trim();
+    if (fromRegistry) return fromRegistry;
+
+    // NEVER '' — an empty locale is not a locale, and every caller treats it as one.
+    // `LocalizationUtils.toLocaleMap(value, locale)` only wraps a plain string when `locale` is
+    // truthy, so on an installation with no locale configured (no `admin_default_locale`, no
+    // `default_locale`, empty registry) a localized field resolved to {} and rendered EMPTY while
+    // the switcher still displayed "EN". Every CMS page opened in the admin therefore showed a
+    // blank Page Title, and saving wrote `{ '': '<text>' }` — a locale map keyed by the empty
+    // string — into a plain `text` column, destroying the title.
+    // 'en' is the language the switcher already claims in this state, so this makes the label true
+    // rather than introducing a new default. It is a LANGUAGE fallback, not a country: nothing
+    // region-specific belongs here (see the global-first rule).
+    return LocalizationService.FALLBACK_LOCALE;
   }
 }

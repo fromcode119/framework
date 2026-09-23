@@ -188,6 +188,7 @@ export class StorefrontDocumentRenderer {
       preview: await SiteVisibilityVerdict.isPreview(),
       runtimeScriptPath: FrontendRuntimeAssetManifest.runtimeScriptPath(),
       layoutStylesheets: FrontendLayoutStylesheets.hrefs(),
+      layoutInlineCss: FrontendLayoutStylesheets.inlineCss(),
       status: args.status || 200,
     });
     const encoded = DocumentCompression.encode(`<!DOCTYPE html>${html}`, args.acceptEncoding);

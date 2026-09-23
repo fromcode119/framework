@@ -28,7 +28,13 @@ export class SiteForm extends PureReactor {
 
   @state pluginSearch = '';
 
-  private emit(patch: Partial<SiteFormValues>): void {
+  /**
+   * BOUND, like every other handler here, because this one is handed to a CHILD as its `onChange`
+   * (see `SiteHostsFields` below). Unbound, `this` inside it resolved to the child's own props,
+   * where `onChange` IS this method — so a keystroke in Primary host or Host aliases recursed into
+   * itself until the stack died, the field never took a character, and a site could not be created.
+   */
+  @bound private emit(patch: Partial<SiteFormValues>): void {
     this.onChange(this.values.with(patch));
   }
 

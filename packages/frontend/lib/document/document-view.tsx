@@ -21,7 +21,7 @@ import { SiteBannersView } from '@/lib/document/site-banners-view';
  * content can never close the script element.
  */
 export class DocumentView {
-  static render({ lang, page, site, theme, markup, headInjections, bodyStartInjections, preview, schema, pageDocPrefetch, runtimeConfig, runtimeScriptPath, layoutStylesheets }: {
+  static render({ lang, page, site, theme, markup, headInjections, bodyStartInjections, preview, schema, pageDocPrefetch, runtimeConfig, runtimeScriptPath, layoutStylesheets, layoutInlineCss }: {
     lang: string;
     page: Metadata;
     site: Metadata;
@@ -36,11 +36,12 @@ export class DocumentView {
     runtimeConfig: Record<string, unknown>;
     runtimeScriptPath: string;
     layoutStylesheets: string[];
+    layoutInlineCss: string;
     status: number;
   }): ReactNode {
     return (
       <html lang={lang}>
-        <DocumentHeadView.render page={page} site={site} theme={theme} markup={markup} injections={headInjections} runtimeScriptPath={runtimeScriptPath} layoutStylesheets={layoutStylesheets} />
+        <DocumentHeadView.render page={page} site={site} theme={theme} markup={markup} injections={headInjections} runtimeScriptPath={runtimeScriptPath} layoutStylesheets={layoutStylesheets} layoutInlineCss={layoutInlineCss} />
         <body>
           {/* FIRST in the body, ahead of the theme and ahead of any plugin injection, so nothing a
               theme renders can sit above it or paint over it. */}
