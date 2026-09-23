@@ -90,7 +90,17 @@ export class HomeClient extends Reactor {
     return this.renderLive();
   }
 
+  /** The page, then the page-wide overlay — beside the layout, so a layout that ignores its children cannot drop it. */
   private renderLive() {
+    return (
+      <>
+        {this.renderPage()}
+        <Slot name={StorefrontContentContract.OVERLAY_SLOT} />
+      </>
+    );
+  }
+
+  private renderPage() {
     // `this.context` is NULL until the plugin runtime arrives — the provider is code-split behind
     // `StorefrontRuntimeGate` now, so it is absent for the server render and the first client render.
     // Destructuring it directly threw and took the whole page to a 500.

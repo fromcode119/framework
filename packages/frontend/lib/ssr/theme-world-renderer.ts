@@ -39,7 +39,13 @@ export class ThemeWorldRenderer {
     const body = ThemeSsrContentTree.build({ runtime, content, className: contentClassName, style: contentStyle, notFoundPath });
     const translation = { t: contextValue.t, locale, setLocale: () => undefined };
     const tree = runtime.provide(
-      runtime.react.createElement(Layout, { page: content }, body),
+      // The page-wide overlay BESIDE the layout, as `StorefrontPageView` renders it in the browser.
+      runtime.react.createElement(
+        runtime.react.Fragment,
+        null,
+        runtime.react.createElement(Layout, { key: 'layout', page: content }, body),
+        runtime.react.createElement(runtime.frameworkReact.Slot, { key: 'overlay', name: StorefrontContentContract.OVERLAY_SLOT }),
+      ),
       {
         context: contextValue,
         slots: contextValue.slots,

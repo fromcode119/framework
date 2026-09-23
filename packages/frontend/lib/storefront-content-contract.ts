@@ -20,6 +20,15 @@ export class StorefrontContentContract {
   /** The slot rendered after the body (a plugin's per-page footer content). */
   static readonly FOOTER_SLOT = 'frontend.content.footer';
 
+  /**
+   * Page-wide UI that is not part of any page's content — a consent banner, a subscribe popup.
+   *
+   * Rendered BESIDE the theme layout on every page, never inside it. A layout that renders its own
+   * page (a static "about", the account shell, login) ignores its `children`, so anything mounted in
+   * the content slots vanished there: the consent banner simply did not exist on those pages.
+   */
+  static readonly OVERLAY_SLOT = 'frontend.page.overlay';
+
   /** The stored-HTML prose body's wrapper classes. */
   static readonly PROSE_CLASS = 'prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6';
 
