@@ -72,6 +72,7 @@ describe('SchemaManager.recordUndeclaredColumns — what may be audited', () => 
       tenantIsolation: { addTenantColumn: async () => undefined, enforceIsolation: async () => undefined, scopeUniqueRules: async () => ({ constraints: [], indexes: [] }), countUnassigned: async () => 0 },
       ensureDeclaredUnique: async () => ({ state: 'satisfied', reason: '' }),
       ensureDeclaredNullable: async () => ({ state: 'satisfied', reason: '' }),
+      ensureTimestampDefault: async () => ({ state: 'satisfied', reason: '' }),
     } as any;
 
     await new SchemaManager(db).syncCollection({ slug: 'fcp_orbit_pages', fields: [] } as any);

@@ -178,6 +178,7 @@ export class SchemaManager {
 
     await this.declared.ensureDeclaredUniques(plan);
     await this.declared.relaxDeclaredOptionals(plan);
+    await this.declared.ensureTimestampDefaults(plan);
   }
 
 }

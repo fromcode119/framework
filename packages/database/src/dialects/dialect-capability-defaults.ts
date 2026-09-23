@@ -100,6 +100,13 @@ export abstract class DialectCapabilityDefaults {
     throw new Error(`${this.constructor.name}: this driver cannot drop a column.`);
   }
 
+  /** A driver that cannot add a column default REPORTS rather than throws. */
+  async ensureTimestampDefault(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
+    return SchemaReconcileOutcome.unsupported(
+      `${this.constructor.name}: this driver cannot add a default to an existing column.`,
+    );
+  }
+
   /** Same contract as `ensureDeclaredUnique`: a driver that cannot answer REPORTS rather than throws. */
   async ensureDeclaredNullable(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
     return SchemaReconcileOutcome.unsupported(
