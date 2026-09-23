@@ -30,6 +30,8 @@ vi.mock('@fromcode119/core', async () => {
 
 import {
   CoreServices,
+  PluginTenantAccess,
+  RequestContextUtils,
   PluginDefaultPageContractMaterializationMode,
   PluginDefaultPageContractResolutionStatus,
   PluginState,
@@ -431,6 +433,16 @@ describe('ResolutionService default page contract routing', () => {
       const service = buildService({ id: 5, slug: 'policy', customPermalink: '/policy', title: 'Policy', content: { en: [], bg: [] } }, 'permalink');
       const result = await service.resolveSlug('/policy', {});
       expect(result?.doc?.recipe).toBe('policy-module.policy-page');
+    });
+
+    it('applies no contract of a plugin this site does not run', async () => {
+      const service = buildService({ id: 5, slug: 'policy', customPermalink: '/policy', title: 'Policy', content: [] }, 'permalink');
+      vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue('site-without-it');
+      vi.spyOn(PluginTenantAccess, 'warm').mockResolvedValue(undefined);
+      vi.spyOn(PluginTenantAccess, 'isEnabledForCurrentTenant').mockImplementation((slug: string) => slug !== 'policy-module');
+      const result = await service.resolveSlug('/policy', {});
+      expect(result?.doc?.id).toBe(5);
+      expect(result?.doc).not.toHaveProperty('recipe');
     });
 
     it('never replaces blocks the operator wrote', async () => {
