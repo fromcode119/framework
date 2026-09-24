@@ -54,8 +54,12 @@ export class BuildToolchain {
    * none, so everything it built shipped without the shim. Found by diffing the two builders'
    * output: one bundle began with a bare `import ... from "@fromcode119/sdk/react"`, which cannot
    * run in a browser.
+   *
+   * `jsxs` (and `jsxDEV` with static children) spreads its children as varargs: passed as one
+   * `children` array, dev React reads statically written markup as an unkeyed list and warns on
+   * every multi-child element. `RuntimeRegistryAccess.jsxRuntimeFor` follows the same rule.
    */
-  static readonly BROWSER_REQUIRE_SHIM = 'var require=(m)=>{if(m==="react")return window.React;if(m==="react-dom")return window.ReactDOM;if(m==="react/jsx-runtime"||m==="react/jsx-dev-runtime"){var c=(t,p,k)=>window.React.createElement(t,k===void 0?p:Object.assign({},p,{key:k}));return{jsx:c,jsxs:c,jsxDEV:c,Fragment:window.React.Fragment};}if(m==="lucide-react")return window.Lucide||window.FrameworkIcons;throw new Error("Dynamic require of "+m+" not supported");};';
+  static readonly BROWSER_REQUIRE_SHIM = 'var require=(m)=>{if(m==="react")return window.React;if(m==="react-dom")return window.ReactDOM;if(m==="react/jsx-runtime"||m==="react/jsx-dev-runtime"){var c=(t,p,k)=>window.React.createElement(t,k===void 0?p:Object.assign({},p,{key:k}));var s=(t,p,k)=>{var q=k===void 0?p:Object.assign({},p,{key:k});if(!q||!Array.isArray(q.children))return window.React.createElement(t,q);var r=Object.assign({},q),h=r.children;delete r.children;return window.React.createElement.apply(null,[t,r].concat(h));};return{jsx:c,jsxs:s,jsxDEV:(t,p,k,x)=>x?s(t,p,k):c(t,p,k),Fragment:window.React.Fragment};}if(m==="lucide-react")return window.Lucide||window.FrameworkIcons;throw new Error("Dynamic require of "+m+" not supported");};';
 
   /**
    * Framework packages a plugin or theme must NEVER reach — enforced, not advised.
