@@ -40,6 +40,11 @@ export class CollectionListRoute extends AdminComponent {
   }
 
   private maybeRedirect(): void {
+    const ownerRoute = this.ownerRoute;
+    if (ownerRoute) {
+      this.router.replace(ownerRoute);
+      return;
+    }
     const shouldRedirect = this.shouldRedirectToPluginSettings;
     if (shouldRedirect && !this.prevShouldRedirect) {
       this.router.replace(AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(this.pluginSlug));
@@ -78,6 +83,12 @@ export class CollectionListRoute extends AdminComponent {
     return isReady && !hasPageSlot && !hasDeclaredPageSlot && !collection && slug === 'settings';
   }
 
+  /** A plugin collection reached through the global `/collections/<slug>` form moves to its plugin's route. */
+  private get ownerRoute(): string | null {
+    if (!this.resolved || !this.runtime.plugins.isReady) return null;
+    return AdminCollectionUtils.ownerRoute(this.collectionsList as any, this.pluginSlug, this.slug);
+  }
+
   private get collectionsList(): any[] {
     return this.runtime.plugins.collections as any;
   }
@@ -95,7 +106,16 @@ export class CollectionListRoute extends AdminComponent {
       );
     }
 
-    const isActive = plugins.some((p: any) => p.slug === pluginSlug);
+    if (this.ownerRoute) {
+      return (
+        <div className="flex-1 flex items-center justify-center">
+          <Loader />
+        </div>
+      );
+    }
+
+    const isGlobalRoute = pluginSlug.toLowerCase() === AdminCollectionUtils.GLOBAL_ROUTE;
+    const isActive = isGlobalRoute || plugins.some((p: any) => p.slug === pluginSlug);
     if (!isActive) {
       return <PluginNotFound pluginSlug={pluginSlug} />;
     }

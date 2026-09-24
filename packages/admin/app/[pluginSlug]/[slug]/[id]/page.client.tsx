@@ -4,6 +4,7 @@ import { CollectionEditPage } from '@/components/collection/view/collection-edit
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
+import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { prop, state } from '@fromcode119/react-class-components';
 
 export class CollectionEditRoute extends AdminComponent {
@@ -24,6 +25,26 @@ export class CollectionEditRoute extends AdminComponent {
     this.slug = params.slug;
     this.id = params.id;
     this.resolved = true;
+    this.maybeRedirect();
+  }
+
+  componentDidUpdate(): void {
+    this.maybeRedirect();
+  }
+
+  /**
+   * A plugin record reached through the global `/collections/<slug>/<id>` form moves to its plugin's
+   * route, so the plugin's own detail page is used and the page's back-link has somewhere to go.
+   */
+  private get ownerRoute(): string | null {
+    if (!this.resolved || !this.runtime.plugins.isReady) return null;
+    const route = AdminCollectionUtils.ownerRoute(this.runtime.plugins.collections as any, this.pluginSlug, this.slug);
+    return route ? `${route}/${this.id}` : null;
+  }
+
+  private maybeRedirect(): void {
+    const ownerRoute = this.ownerRoute;
+    if (ownerRoute) this.router.replace(ownerRoute);
   }
 
   componentWillUnmount(): void {
@@ -51,7 +72,7 @@ export class CollectionEditRoute extends AdminComponent {
   render(): ReactElement {
     const { isReady } = this.runtime.plugins;
 
-    if (!this.resolved || !isReady) {
+    if (!this.resolved || !isReady || this.ownerRoute) {
       return <div className="flex-1 flex items-center justify-center"><Loader /></div>;
     }
 

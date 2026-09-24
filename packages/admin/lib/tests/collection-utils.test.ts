@@ -33,6 +33,23 @@ describe('resolveCollection', () => {
   });
 });
 
+describe('ownerRoute', () => {
+  const collections: any[] = [
+    { slug: 'finance-transactions', shortSlug: 'transactions', pluginSlug: 'finance' },
+    { slug: 'users', shortSlug: 'users', pluginSlug: 'system' },
+  ];
+
+  it('sends the global /collections form to the owning plugin route', () => {
+    expect(AdminCollectionUtils.ownerRoute(collections, 'collections', 'finance-transactions')).toBe('/finance/transactions');
+  });
+
+  it('leaves a plugin route, an unowned collection and an unknown slug alone', () => {
+    expect(AdminCollectionUtils.ownerRoute(collections, 'finance', 'transactions')).toBeNull();
+    expect(AdminCollectionUtils.ownerRoute(collections, 'collections', 'users')).toBeNull();
+    expect(AdminCollectionUtils.ownerRoute(collections, 'collections', 'nope')).toBeNull();
+  });
+});
+
 describe('generatePreviewUrl', () => {
   const mockCollection: any = { 
     slug: 'plugin-a-entries', 
