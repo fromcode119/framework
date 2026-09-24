@@ -47,15 +47,20 @@ jobs:
       # it out to `framework` put every one of them one level above where the rest of this job looks,
       # so `cache-dependency-path` resolved nothing and the run died at setup-node before a single
       # guard ran. Nothing caught it because this workflow had never executed until now.
+      # "Called by an extension" is `inputs.area` being set — inputs exist only under workflow_call.
+      # NOT `github.event_name == 'workflow_call'`: inside a called workflow `github` is the CALLER's
+      # context, so event_name is the caller's trigger (`pull_request`, `push`) and that test is never
+      # true. The first extension to call this job got its OWN repository checked out as the framework
+      # and died at setup-node with no package-lock — having guarded nothing.
       - name: Check out the framework
         uses: actions/checkout@v5
         with:
-          repository: ${{ github.event_name == 'workflow_call' && 'fromcode119/framework' || github.repository }}
-          ref: ${{ github.event_name == 'workflow_call' && inputs.framework-ref || github.ref }}
+          repository: ${{ inputs.area != '' && 'fromcode119/framework' || github.repository }}
+          ref: ${{ inputs.area != '' && inputs.framework-ref || github.ref }}
           path: framework/Source
 
       - name: Check out the extension
-        if: ${{ github.event_name == 'workflow_call' }}
+        if: ${{ inputs.area != '' }}
         uses: actions/checkout@v5
         with:
           path: ${{ inputs.area }}/${{ inputs.name }}
