@@ -35,10 +35,17 @@ on:
         required: false
         default: main
         type: string
+      # A private repository pays for GitHub-hosted minutes; a public one does not. The caller picks
+      # the machine, so a private extension can run on the organisation's own runner.
+      runner:
+        description: 'runs-on label (default: ubuntu-latest)'
+        required: false
+        default: ubuntu-latest
+        type: string
 
 jobs:
   guard:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     steps:
       # The guards resolve a repo root holding `framework/Source` beside `plugins/`, `themes/` and
       # `appearance/`, so both checkouts go to the paths that reproduce it.
