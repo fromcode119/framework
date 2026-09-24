@@ -60,7 +60,7 @@ export class RestWriteController {
       this.runtime.emitCollectionEvent(collection, 'created', finalItem);
       this.runtime.emitCollectionEvent(collection, 'saved', finalItem);
 
-      const filtered = this.runtime.processor.filterHiddenFields(collection, finalItem, {
+      const filtered = this.runtime.processor.filterHiddenFields(collection, this.runtime.outgoingRow(finalItem), {
         localeContext,
         rawLocalized: false,
       });
@@ -155,7 +155,7 @@ export class RestWriteController {
       this.runtime.emitCollectionEvent(collection, 'updated', finalItem);
       this.runtime.emitCollectionEvent(collection, 'saved', finalItem);
 
-      const filtered = this.runtime.processor.filterHiddenFields(collection, finalItem, {
+      const filtered = this.runtime.processor.filterHiddenFields(collection, this.runtime.outgoingRow(finalItem), {
         localeContext,
         rawLocalized: false,
       });

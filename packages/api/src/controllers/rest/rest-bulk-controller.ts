@@ -38,7 +38,7 @@ export class RestBulkController {
         );
         this.runtime.emitCollectionEvent(collection, 'created', finalItem);
         this.runtime.emitCollectionEvent(collection, 'saved', finalItem);
-        results.push(this.runtime.processor.filterHiddenFields(collection, finalItem, {
+        results.push(this.runtime.processor.filterHiddenFields(collection, this.runtime.outgoingRow(finalItem), {
           localeContext,
           rawLocalized: false,
         }));
@@ -116,7 +116,7 @@ export class RestBulkController {
         await this.runtime.versioningService.createSnapshot(collection, id, finalItem, req.user, changeSummary);
         this.runtime.emitCollectionEvent(collection, 'updated', finalItem);
         this.runtime.emitCollectionEvent(collection, 'saved', finalItem);
-        results.push(this.runtime.processor.filterHiddenFields(collection, finalItem, {
+        results.push(this.runtime.processor.filterHiddenFields(collection, this.runtime.outgoingRow(finalItem), {
           localeContext,
           rawLocalized: false,
         }));

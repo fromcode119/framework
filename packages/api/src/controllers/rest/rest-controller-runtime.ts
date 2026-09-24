@@ -73,6 +73,17 @@ export class RestControllerRuntime {
     return payload;
   }
 
+  /**
+   * A written row as the API returns it: canonical camelCase names, like every read. A write goes to
+   * the physical table by NAME, so it comes back in snake_case; the response step copies fields by
+   * their camelCase name and so dropped every multi-word field. The admin then kept its stale values
+   * after a save — a value a hook had just filled (a mirrored order number) never reached the form, and
+   * the next save was refused as a change to a read-only field.
+   */
+  outgoingRow<T>(row: T): T {
+    return NamingStrategy.denormalizeRecord(row) as T;
+  }
+
   resolveWriteTarget(collection: ICollection): string {
     return collection.tableName || collection.slug;
   }

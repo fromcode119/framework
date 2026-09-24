@@ -68,8 +68,17 @@ export class CollectionEditPageHandlers {
       const payload = summary ? { ...normalized, _change_summary: summary } : normalized;
       const result = await (isNew ? AdminApi.post(url, payload) : AdminApi.put(url, payload));
       // What was just persisted becomes the new pristine baseline, so the save bar goes quiet until the
-      // operator edits again instead of insisting there is still unsaved work.
-      self.setState({ readOnlyOverrideFields: {}, readOnlyOverrideGrant: '', pristineFormData: { ...self.state.formData }, status: { type: NotificationType.SUCCESS, message: `Entry ${isNew ? 'created' : 'updated'} successfully` } });
+      // operator edits again instead of insisting there is still unsaved work. The record is re-read
+      // (as the page loads it) because the server may have changed it — a hook filling a mirrored
+      // field, a computed total. Keeping the form's own copy left those stale, and the next save sent
+      // the stale value back and was refused as a change to a read-only field.
+      const saved = isNew ? null : await CollectionEditPageHandlers.reloadSaved(collection, `${url}?locale_mode=raw`);
+      self.setState({
+        readOnlyOverrideFields: {},
+        readOnlyOverrideGrant: '',
+        ...(saved ? { formData: saved, pristineFormData: saved } : { pristineFormData: { ...self.state.formData } }),
+        status: { type: NotificationType.SUCCESS, message: `Entry ${isNew ? 'created' : 'updated'} successfully` },
+      });
       if (!isNew) CollectionEditPageHandlers.fetchRevisions(self, 1);
       if (isNew) self.props.router.push(`/${self.props.pluginSlug}/${self.props.slug}/${result.id}`);
       return result;
@@ -80,6 +89,17 @@ export class CollectionEditPageHandlers {
       throw err;
     } finally {
       self.setState({ saving: false });
+    }
+  }
+
+  /** The saved record as the page loads it, or null when it cannot be read back (the form keeps its copy). */
+  private static async reloadSaved(collection: any, url: string): Promise<Record<string, any> | null> {
+    try {
+      const entry = await AdminApi.get(url);
+      if (!entry?.id) return null;
+      return AdminServices.getInstance().entityFormData.normalizeLoadedRecord(collection, entry);
+    } catch {
+      return null;
     }
   }
 
