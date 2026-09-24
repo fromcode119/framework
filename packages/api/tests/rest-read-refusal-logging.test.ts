@@ -11,11 +11,11 @@ const controllerThrowing = (error: Error & { statusCode?: number }) => {
   const runtime: any = { logger, accessPolicy: { resolveReadConstraints: async () => { throw error; } } };
   return { controller: new RestReadController(runtime), logger };
 };
-const collection: any = { slug: 'fcp_broadcasts_lists', fields: [] };
+const collection: any = { slug: 'fcp_example_lists', fields: [] };
 
 describe('RestReadController logging', () => {
   it('an access refusal (401/403) is logged at debug, not as an error — and still rethrown to the caller', async () => {
-    const refusal = Object.assign(new Error('Read access to collection "fcp_broadcasts_lists" requires permission.'), { statusCode: 401 });
+    const refusal = Object.assign(new Error('Read access to collection "fcp_example_lists" requires permission.'), { statusCode: 401 });
     const { controller, logger } = controllerThrowing(refusal);
     await expect(controller.find(collection, { query: {} })).rejects.toBe(refusal);
     expect(logger.error).not.toHaveBeenCalled();
