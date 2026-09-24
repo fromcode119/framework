@@ -27,19 +27,25 @@ export class PluginUiTypecheck {
   /** Never walk into an installed dependency tree; a plugin may carry its own under `src/ui`. */
   private static readonly SKIP = new Set(['node_modules', 'dist']);
 
-  /** Plugin slugs that have an admin UI, alphabetical. */
-  static plugins(repo: string): string[] {
+  /** The directories of the plugins under `<repo>/plugins` that have an admin UI, alphabetical by name. */
+  static pluginDirs(repo: string): string[] {
     const root = path.join(repo, 'plugins');
     let entries: string[];
     try { entries = readdirSync(root); } catch { return []; }
     return entries
-      .filter((slug) => existsSync(path.join(root, slug, PluginUiTypecheck.UI_DIR)))
-      .sort();
+      .sort()
+      .map((slug) => path.join(root, slug))
+      .filter((dir) => PluginUiTypecheck.hasUi(dir));
+  }
+
+  /** Does this plugin directory carry an admin UI to check? */
+  static hasUi(pluginDir: string): boolean {
+    return existsSync(path.join(pluginDir, PluginUiTypecheck.UI_DIR));
   }
 
   /** The reported diagnostic lines for one plugin's UI. The COUNT is this list's length — one tsc run, never two. */
-  static report(framework: string, repo: string, slug: string): string[] {
-    const project = PluginUiTypecheck.writeProject(framework, repo, slug);
+  static report(framework: string, pluginDir: string): string[] {
+    const project = PluginUiTypecheck.writeProject(framework, pluginDir);
     try {
       execFileSync(path.join(framework, 'node_modules/.bin/tsc'), ['--noEmit', '-p', project],
         { encoding: 'utf8', cwd: framework });
@@ -62,10 +68,9 @@ export class PluginUiTypecheck {
    * Generated, not committed: the peer paths point at wherever this checkout's framework happens to
    * be, and a committed config naming that would bake one machine's layout into shared source.
    */
-  private static writeProject(framework: string, repo: string, slug: string): string {
-    const pluginDir = path.join(repo, 'plugins', slug);
+  private static writeProject(framework: string, pluginDir: string): string {
     const uiDir = path.join(pluginDir, PluginUiTypecheck.UI_DIR);
-    const dir = mkdtempSync(path.join(tmpdir(), `plugin-ui-types-${slug}-`));
+    const dir = mkdtempSync(path.join(tmpdir(), `plugin-ui-types-${path.basename(pluginDir)}-`));
 
     const config = {
       extends: path.join(framework, 'packages/sdk/tsconfig.plugin-ui.json'),

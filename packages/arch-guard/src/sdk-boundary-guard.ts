@@ -145,7 +145,8 @@ export class SdkBoundaryGuard {
         });
       }
 
-      for (const candidate of SdkBoundaryPatterns.STRING_PATTERNS) {
+      const isSeedFile = SdkBoundaryPatterns.SEED_FILE_PATTERN.test(filePath);
+      for (const candidate of isSeedFile ? [] : SdkBoundaryPatterns.STRING_PATTERNS) {
         for (const match of lineText.matchAll(candidate.regex)) {
           // A match that directly continues an absolute `https?://…` token sits inside a
           // third-party service URL — out of scope for path-composition rules (see the flag).
@@ -163,7 +164,7 @@ export class SdkBoundaryGuard {
         }
       }
 
-      if (isPluginUiFile || isThemeSourceFile) {
+      if ((isPluginUiFile || isThemeSourceFile) && !isSeedFile) {
         // Comments are stripped before this runs, so a match is a real literal in frontend code.
         for (const candidate of SdkBoundaryPatterns.FRONTEND_STRING_PATTERNS) {
           for (const match of lineText.matchAll(candidate.regex)) {

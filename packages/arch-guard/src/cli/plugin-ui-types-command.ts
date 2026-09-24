@@ -33,24 +33,19 @@ export class PluginUiTypesCommand extends ArchorCommand {
     const repo = FrameworkRoot.repo();
     const mode = process.env.PLUGIN_UI_TYPES_MODE === 'warn' ? 'warn' : 'error';
 
-    const all = PluginUiTypecheck.plugins(repo);
-    // A scoped run checks the ONE plugin it was pointed at; argv still names plugins explicitly for a
-    // local spot-check, and an unscoped run is every plugin exactly as before.
-    const scoped = GuardScope.isExtension(repo)
-      ? GuardScope.areas(repo).map((entry) => path.basename(entry.dir)).filter((slug) => all.includes(slug))
-      : [];
-    const selected = argv.length ? argv : (scoped.length ? scoped : all);
-    const unknown = selected.filter((slug) => !all.includes(slug));
+    const byName = new Map(PluginUiTypecheck.pluginDirs(repo).map((dir) => [path.basename(dir), dir]));
+    const unknown = argv.filter((slug) => !byName.has(slug));
     if (unknown.length) {
       console.error(`[arch-guard] no plugin UI found for: ${unknown.join(', ')}`);
       return 2;
     }
+    const selected = PluginUiTypesCommand.select(repo, argv, byName);
 
     console.log('Plugin UI typecheck (real tsc — Vite/esbuild do NOT check types):');
     let failed = false;
-    for (const slug of selected) {
-      const found = PluginUiTypecheck.report(framework, repo, slug);
-      console.log(`  ${slug}: ${found.length} errors${found.length > GuardTarget.COUNT ? ' — MUST BE 0' : ''}`);
+    for (const dir of selected) {
+      const found = PluginUiTypecheck.report(framework, dir);
+      console.log(`  ${path.basename(dir)}: ${found.length} errors${found.length > GuardTarget.COUNT ? ' — MUST BE 0' : ''}`);
       if (found.length > GuardTarget.COUNT) {
         failed = true;
         console.error(PluginUiTypesCommand.trim(found));
@@ -70,5 +65,23 @@ export class PluginUiTypesCommand extends ArchorCommand {
     const shown = found.slice(0, PluginUiTypesCommand.SHOWN);
     const rest = found.length - shown.length;
     return shown.join('\n') + (rest > 0 ? `\n    … and ${rest} more.` : '');
+  }
+
+  /**
+   * The plugin directories this run checks.
+   *
+   * Plugins named on the command line are spot-checks under `<repo>/plugins`. A SCOPED run checks the
+   * directory it was pointed at — the directory itself, not a same-named plugin under `<repo>/plugins`.
+   * It used to take the scope's basename and look it up there, so a scope pointing anywhere else (a
+   * git worktree, a second checkout) silently type-checked the MAIN checkout's copy and reported it
+   * clean; and a scope whose name matched no plugin (every theme and appearance) fell through to
+   * checking every plugin in the tree. An extension with no admin UI has nothing to check.
+   */
+  private static select(repo: string, argv: string[], byName: Map<string, string>): string[] {
+    if (argv.length) return argv.map((slug) => byName.get(slug) as string);
+    if (GuardScope.isExtension(repo)) {
+      return GuardScope.areas(repo).map((entry) => entry.dir).filter((dir) => PluginUiTypecheck.hasUi(dir));
+    }
+    return [...byName.values()];
   }
 }
