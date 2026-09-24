@@ -1,5 +1,6 @@
 import { SortDirection } from '@database/enums/sort-direction.enum';
 import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
+import type { IMigrationTenantScope } from '@database/interfaces/migration-tenant-scope.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import { TableResolver } from '@database/table-resolver';
@@ -61,11 +62,16 @@ export abstract class BaseMigration {
   /**
    * Apply this migration.
    *
-   * @param db - The database manager instance provided by the migration runner.
-   *             Methods that accept table names support both the `@plugin/table`
-   *             shorthand and physical table names, depending on proxy coverage.
+   * @param db      - The database manager instance provided by the migration runner.
+   *                  Methods that accept table names support both the `@plugin/table`
+   *                  shorthand and physical table names, depending on proxy coverage.
+   * @param sql     - The runner's tagged-template helper (system migrations use it).
+   * @param tenants - Runs a callback once per site with that site bound. A DATA migration over a
+   *                  tenant-owned table must go through it: with no site bound, row-level security
+   *                  hides every tenant row, so a plain `find`/`update` silently changes nothing.
+   *                  Schema changes (add/drop column, index) do not need it.
    */
-  abstract up(db: IDatabaseManager): Promise<void>;
+  abstract up(db: IDatabaseManager, sql?: unknown, tenants?: IMigrationTenantScope): Promise<void>;
 
   /**
    * Revert this migration.

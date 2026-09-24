@@ -39,7 +39,13 @@ export class ThemeWorldRenderer {
     const body = ThemeSsrContentTree.build({ runtime, content, className: contentClassName, style: contentStyle, notFoundPath });
     const translation = { t: contextValue.t, locale, setLocale: () => undefined };
     const tree = runtime.provide(
-      runtime.react.createElement(Layout, { page: content }, body),
+      // The page-wide overlay BESIDE the layout, as `StorefrontPageView` renders it in the browser.
+      runtime.react.createElement(
+        runtime.react.Fragment,
+        null,
+        runtime.react.createElement(Layout, { key: 'layout', page: content }, body),
+        runtime.react.createElement(runtime.frameworkReact.Slot, { key: 'overlay', name: StorefrontContentContract.OVERLAY_SLOT }),
+      ),
       {
         context: contextValue,
         slots: contextValue.slots,
@@ -74,7 +80,12 @@ export class ThemeWorldRenderer {
     tracker?.reset?.();
     const html = ThemeWorldRenderer.renderWithPrefetch(runtime, tree, prefetched);
     const usedPlugins: string[] = tracker?.drain?.() ?? [];
-    const markup = ThemeSsrMarkup.from(html, Boolean(contentSlot?.length), usedPlugins);
+    // A `recipe` page's body is an empty box (`ThemeSsrContentTree`): the display slot was never
+    // rendered, however many components are registered to it. Claiming otherwise made the browser hold
+    // the server markup until a display-slot component registered — which, on a site running no plugin
+    // that fills that slot, never happened, so the plugin's design never replaced the empty box.
+    const rendersContentSlot = !(content as Record<string, unknown> | null)?.recipe && Boolean(contentSlot?.length);
+    const markup = ThemeSsrMarkup.from(html, rendersContentSlot, usedPlugins);
     return markup.hasBody ? markup : null;
   }
 

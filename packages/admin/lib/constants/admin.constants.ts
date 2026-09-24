@@ -196,6 +196,8 @@ export class AdminConstants {
     RECORD_LINKS: (kind: string, id: string | number, keys: Record<string, string>) => AdminConstants.v(
       `${SystemConstants.API_PATH.SYSTEM.ADMIN_RECORD_LINKS}?kind=${encodeURIComponent(kind)}&id=${encodeURIComponent(String(id))}&keys=${encodeURIComponent(JSON.stringify(keys))}`,
     ),
+    /** Which plugin's design a storefront page shows while its content is empty. */
+    PAGE_DESIGN: (collection: string, id: string | number) => AdminConstants.v(`${SystemConstants.API_PATH.SYSTEM.ADMIN_PAGE_DESIGN}?collection=${encodeURIComponent(collection)}&id=${encodeURIComponent(String(id))}`),
     METADATA: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PLUGINS),
     INTEGRATIONS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS),
     INTEGRATION: (type: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_TYPE, { type }),

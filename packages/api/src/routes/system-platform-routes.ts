@@ -179,5 +179,7 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
     this.post(RouteConstants.SEGMENTS.SHORTCODES_RENDER, this.auth.requirePermission('content:read'), 
       this.controller.renderShortcodes);
     this.get(RouteConstants.SEGMENTS.RESOLVE, this.controller.resolveSlug);
+    this.get(RouteConstants.SEGMENTS.ADMIN_PAGE_DESIGN, this.auth.requirePermission('content:read'),
+      this.controller.getPageDesign);
   }
 }

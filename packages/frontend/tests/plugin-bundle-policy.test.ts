@@ -16,6 +16,16 @@ describe('PluginBundlePolicy', () => {
     expect(skip).toEqual(['alpha', 'finder']);
   });
 
+  it('skips nothing on a recipe page, whose design the server never rendered', () => {
+    expect(PluginBundlePolicy.skippable({
+      plugins: [plugin('alpha', 'idle'), plugin('finder', 'idle')],
+      usedPlugins: [],
+      withServerBundle: ['alpha', 'finder'],
+      themeDependencies: [],
+      rendersRecipe: true,
+    })).toEqual([]);
+  });
+
   it('never skips a plugin that loads no storefront runtime of its own', () => {
     expect(PluginBundlePolicy.skippable({ plugins: [{ slug: 'x', ui: { loadStrategy: 'idle' } }], usedPlugins: [], withServerBundle: ['x'], themeDependencies: [] })).toEqual([]);
   });

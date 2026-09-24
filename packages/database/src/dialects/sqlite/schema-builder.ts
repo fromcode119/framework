@@ -1,3 +1,4 @@
+import { RowTimestampColumn } from '@database/row-timestamp-column';
 import { sql } from 'drizzle-orm';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -98,6 +99,7 @@ export class SqliteSchemaBuilder {
       case 'text':
       case 'select':
       case 'date':
+      case 'datetime':
       default:
         type = sql`TEXT`;
     }
@@ -114,6 +116,11 @@ export class SqliteSchemaBuilder {
       } else if (typeof field.defaultValue === 'number') {
         constraints.push(sql.raw(`DEFAULT ${field.defaultValue}`));
       }
+    }
+
+    // SQLite refuses a non-constant default on ADD COLUMN, so only a CREATE TABLE gets it here.
+    if (RowTimestampColumn.needsDefault(dbName, String(field.type), field.defaultValue) && includeUnique) {
+      constraints.push(sql`DEFAULT CURRENT_TIMESTAMP`);
     }
 
     return sql`${sql.identifier(dbName)} ${type} ${sql.join(constraints, sql` `)}`;

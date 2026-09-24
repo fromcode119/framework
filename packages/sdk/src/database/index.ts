@@ -6,3 +6,5 @@ export { TableResolver } from '@fromcode119/database';
 export { BaseMigration } from '@fromcode119/database';
 // Database manager interface and schema field/collection types for migrations.
 export type { IDatabaseManager, ISchemaField, ISchemaCollection } from '@fromcode119/database';
+// Handed to `up()` as its third argument: reach every site's rows in a data migration.
+export type { IMigrationTenantScope } from '@fromcode119/database';

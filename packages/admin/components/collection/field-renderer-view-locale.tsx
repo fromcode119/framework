@@ -60,6 +60,23 @@ export abstract class FieldRendererViewLocale extends FieldRendererViewAccess {
     return this.localization.toLocaleMap(this.value, this.defaultLocale);
   }
 
+  /**
+   * The value another locale holds when THIS locale's box is empty — what the site shows instead, because
+   * a localized value falls back across locales. Without it an empty BG title looked like "no title"
+   * while the page rendered the EN one: an empty field resolving to a value the screen never named.
+   * Default locale first, then the registry order. Null when this locale has its own value.
+   */
+  protected get localeFallback(): { locale: string; text: string } | null {
+    if (!this.isLocalizedField || this.componentHandlesLocalization) return null;
+    const map = this.localizedMap || {};
+    const present = (entry: unknown): boolean => entry !== null && entry !== undefined && String(entry).trim() !== '';
+    if (present(map[this.activeLocale])) return null;
+    const order = [this.defaultLocale, ...this.localeRegistry.map((item) => item.code)]
+      .filter((code, index, all) => code && code !== this.activeLocale && all.indexOf(code) === index);
+    const locale = order.find((code) => present(map[code])) ?? Object.keys(map).find((code) => code !== this.activeLocale && present(map[code]));
+    return locale ? { locale, text: String(map[locale]).trim() } : null;
+  }
+
   protected get currentValue(): any {
     if (this.componentHandlesLocalization) return this.value;
     if (this.isLocalizedField) return this.localizedMap?.[this.activeLocale] ?? '';

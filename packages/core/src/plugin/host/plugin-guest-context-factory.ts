@@ -187,11 +187,19 @@ export class PluginGuestContextFactory {
   private async runMigrations(migrations: unknown): Promise<void> {
     const list = (Array.isArray(migrations) ? migrations : [migrations]) as Array<{ up: (db: unknown) => Promise<void> }>;
     const ddl = this.database([]);
+    // `dialect` is a VALUE, not a method. Read through the call-forwarding proxy it came back as a
+    // function, so every `if (db.dialect !== 'postgres') return` guard exited — silently skipping each
+    // Postgres-only step of every isolated plugin's migrations. Asked of the host once (a step with no
+    // args reads the property) and handed over as the string it is.
+    const dialect = await this.remote.call('ddl', [{ name: 'dialect' }]);
     for (const migration of list) {
       await migration.up(new Proxy(ddl as object, {
-        get: (target, prop) => (typeof prop === 'string' && !['sql', 'eq', 'and', 'or'].includes(prop)
-          ? (...args: unknown[]) => this.remote.call('ddl', [{ name: prop, args: PluginGuestSql.portableArgs(PluginGuestRemote.portable(args)) }])
-          : (target as any)[prop]),
+        get: (target, prop) => {
+          if (prop === 'dialect') return dialect;
+          return typeof prop === 'string' && !['sql', 'eq', 'and', 'or'].includes(prop)
+            ? (...args: unknown[]) => this.remote.call('ddl', [{ name: prop, args: PluginGuestSql.portableArgs(PluginGuestRemote.portable(args)) }])
+            : (target as any)[prop];
+        },
       }));
     }
   }

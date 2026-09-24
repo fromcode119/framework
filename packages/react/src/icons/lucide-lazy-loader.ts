@@ -45,9 +45,10 @@ export class LucideLazyLoader {
   private static readonly build: (iconName: string, iconNode: IconNode) => React.ComponentType<any> = createLucideIcon;
   private static readonly kebabNames: readonly string[] = lucideIconNames.names;
   private static readonly resolved = new Map<string, React.ComponentType<any>>();
-  private static readonly inFlight = new Set<string>();
+  private static readonly inFlight = new Map<string, Promise<void>>();
   private static readonly listeners = new Set<() => void>();
   private static nameToKebabCache: Map<string, string> | null = null;
+  private static kebabSetCache: Set<string> | null = null;
   private static revision = 0;
 
   /**
@@ -79,6 +80,23 @@ export class LucideLazyLoader {
     return null;
   }
 
+  /** True when `kebab` is one of lucide's own icon keys (`music-2`), the form lucide stamps into an svg's class. */
+  static isIconKey(kebab: string): boolean {
+    return LucideLazyLoader.kebabSet().has(kebab);
+  }
+
+  /**
+   * Loads every named icon (kebab keys) and resolves once each has landed or failed. What a document
+   * awaits before it hydrates markup that already DRAWS these icons: `get` answers null for an icon
+   * still in flight, so a hydrating render would drop an `<svg>` the server rendered.
+   */
+  static preload(kebabs: readonly string[]): Promise<void> {
+    const pending = kebabs
+      .filter((kebab) => LucideLazyLoader.isIconKey(kebab) && !LucideLazyLoader.resolved.has(kebab))
+      .map((kebab) => LucideLazyLoader.request(kebab));
+    return Promise.all(pending).then(() => undefined);
+  }
+
   /** Subscribe to load completions. Returns an unsubscribe function. */
   static subscribe(listener: () => void): () => void {
     LucideLazyLoader.listeners.add(listener);
@@ -104,13 +122,14 @@ export class LucideLazyLoader {
     );
   }
 
-  private static request(kebab: string): void {
+  /** Starts (or joins) the load of one icon. Never rejects: a failure leaves the icon unresolved. */
+  private static request(kebab: string): Promise<void> {
     // Only a browser can fetch a public asset; on the server a proxy icon renders nothing, as before.
-    if (!Platform.isBrowser) return;
-    if (LucideLazyLoader.inFlight.has(kebab)) return;
+    if (!Platform.isBrowser) return Promise.resolve();
+    const existing = LucideLazyLoader.inFlight.get(kebab);
+    if (existing) return existing;
 
-    LucideLazyLoader.inFlight.add(kebab);
-    LucideLazyLoader.fetchIconNode(kebab)
+    const load = LucideLazyLoader.fetchIconNode(kebab)
       .then((iconNode) => {
         if (!Array.isArray(iconNode)) return;
         LucideLazyLoader.resolved.set(kebab, LucideLazyLoader.build(kebab, iconNode));
@@ -121,6 +140,13 @@ export class LucideLazyLoader {
         // Allow a later render to retry a transient fetch failure.
         LucideLazyLoader.inFlight.delete(kebab);
       });
+    LucideLazyLoader.inFlight.set(kebab, load);
+    return load;
+  }
+
+  private static kebabSet(): Set<string> {
+    if (!LucideLazyLoader.kebabSetCache) LucideLazyLoader.kebabSetCache = new Set(LucideLazyLoader.kebabNames);
+    return LucideLazyLoader.kebabSetCache;
   }
 
   /** Lazily-built map of every export name (all alias forms) -> kebab key. */

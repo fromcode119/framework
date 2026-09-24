@@ -57,6 +57,8 @@ export class SystemMetaKeys {
   MARKETPLACE_URL: 'marketplace_url',
   DOMAIN_ALIASES: 'domain_aliases',
   TIMEZONE: 'timezone',
+  /** 12- or 24-hour clock for the site's times; `locale` follows the site's language. See TimeFormat. */
+  TIME_FORMAT: 'time_format',
   ADMIN_APPEARANCE: 'admin_appearance',
   /** Whether admin surfaces render elevated (shadows) or flat. Absent = elevated. */
   ADMIN_SHADOWS: 'admin_shadows',

@@ -1,3 +1,4 @@
+import { RowTimestampColumn } from '@database/row-timestamp-column';
 import { sql } from 'drizzle-orm';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -64,7 +65,8 @@ export class PostgresSchemaBuilder {
     switch (field.type) {
       case 'number': return sql.raw('0');
       case 'boolean': return sql.raw('false');
-      case 'date': return sql.raw('CURRENT_TIMESTAMP');
+      case 'date':
+      case 'datetime': return sql.raw('CURRENT_TIMESTAMP');
       case 'json':
       case 'relationship':
       case 'upload':
@@ -93,7 +95,10 @@ export class PostgresSchemaBuilder {
     switch (field.type) {
       case 'number': type = sql`NUMERIC`; break;
       case 'boolean': type = sql`BOOLEAN`; break;
-      case 'date': type = sql`TIMESTAMP WITH TIME ZONE`; break;
+      // `datetime` is the admin's date-AND-time field; it fell through to TEXT, so its values sorted and
+      // compared as strings. Both are points in time.
+      case 'date':
+      case 'datetime': type = sql`TIMESTAMP WITH TIME ZONE`; break;
       case 'json':
       case 'relationship':
       case 'upload':
@@ -119,6 +124,10 @@ export class PostgresSchemaBuilder {
       } else if (typeof field.defaultValue === 'number') {
         constraints.push(sql.raw(`DEFAULT ${field.defaultValue}`));
       }
+    }
+
+    if (RowTimestampColumn.needsDefault(dbName, String(field.type), field.defaultValue)) {
+      constraints.push(sql`DEFAULT CURRENT_TIMESTAMP`);
     }
 
     return sql`${sql.identifier(dbName)} ${type} ${sql.join(constraints, sql` `)}`;

@@ -115,7 +115,10 @@ export class ResolutionContractMatchService {
       return {
         type: collectionEntry.collection.shortSlug || collectionEntry.collection.slug,
         plugin: collectionEntry.pluginSlug,
-        doc: ResolutionContractPresentationService.applyToDoc(result.docs[0], contract),
+        doc: ResolutionContractPresentationService.applyDesignToBlankPage(
+          ResolutionContractPresentationService.applyToDoc(result.docs[0], contract),
+          contract,
+        ),
       };
     }
 

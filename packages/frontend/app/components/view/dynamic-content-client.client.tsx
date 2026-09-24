@@ -83,7 +83,17 @@ export class DynamicContentClient extends Reactor {
     return this.renderLive();
   }
 
+  /** The page, then the page-wide overlay — beside the layout, so a layout that ignores its children cannot drop it. */
   private renderLive() {
+    return (
+      <>
+        {this.renderPage()}
+        <Slot name={StorefrontContentContract.OVERLAY_SLOT} />
+      </>
+    );
+  }
+
+  private renderPage() {
     const normalizedContent = this.normalizedContent;
     const LayoutComponent = this.layoutComponent;
     const shouldBypassDefaultContent = ContentRenderingUtils.shouldBypassDefaultContent(LayoutComponent, normalizedContent);

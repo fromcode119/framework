@@ -16,6 +16,14 @@ export class ExactPageContractPresenter {
   /** The one collection a default-page contract can present through. */
   private static readonly PAGES = 'pages';
 
+  /** The READY singleton contract whose route is exactly this path, if any. */
+  static findSingleton(
+    resolvedContracts: IResolvedPluginDefaultPageContract[],
+    normalizedInput: string,
+  ): IResolvedPluginDefaultPageContract | undefined {
+    return resolvedContracts.find((contract) => ExactPageContractPresenter.matchesSingleton(contract, normalizedInput));
+  }
+
   /** The slug the record was FOUND by, when the record itself carries none. */
   static withResolvedSlug(doc: any, resolvedSlug: string): any {
     if (!doc || typeof doc !== 'object') return doc;
@@ -49,7 +57,10 @@ export class ExactPageContractPresenter {
     return !ResolutionContractPathService.hasPathParameters(matchingPattern);
   }
 
-  /** The document, with the contract's layout or title filled in only where the page has neither. */
+  /**
+   * The document, with the contract's layout or title filled in only where the page has neither, and
+   * the plugin's design where the page has no content of its own.
+   */
   static apply(
     doc: any,
     collection: ICollection,
@@ -65,13 +76,18 @@ export class ExactPageContractPresenter {
       return doc;
     }
 
-    const matchingContract = resolvedContracts.find(
-      (contract) => ExactPageContractPresenter.matchesSingleton(contract, normalizedInput),
-    );
+    const matchingContract = ExactPageContractPresenter.findSingleton(resolvedContracts, normalizedInput);
     if (!matchingContract) {
       return doc;
     }
 
+    return ResolutionContractPresentationService.applyDesignToBlankPage(
+      ExactPageContractPresenter.applyPresentation(doc, matchingContract),
+      matchingContract,
+    );
+  }
+
+  private static applyPresentation(doc: any, matchingContract: IResolvedPluginDefaultPageContract): any {
     if (matchingContract.effectiveThemeLayout && !doc.themeLayout && !doc.pageTemplate) {
       return ResolutionContractPresentationService.applyToDoc(doc, matchingContract);
     }

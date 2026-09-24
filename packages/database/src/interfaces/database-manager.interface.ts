@@ -135,6 +135,10 @@ export interface IDatabaseManager {
    * that are already NULL and inventing one is exactly what this codebase forbids.
    */
   ensureDeclaredNullable(table: string, column: string): Promise<SchemaReconcileOutcome>;
+  /** Gives a `created_at`/`updated_at` column its `DEFAULT CURRENT_TIMESTAMP` when it has none. */
+  ensureTimestampDefault(table: string, column: string): Promise<SchemaReconcileOutcome>;
+  /** Converts a TEXT column declared as a date/datetime to a timezone-aware timestamp when every value parses. */
+  ensurePointInTimeColumn(table: string, column: string): Promise<SchemaReconcileOutcome>;
 
   /**
    * How much is in a column — for showing an operator what dropping it would cost.

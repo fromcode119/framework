@@ -1,3 +1,4 @@
+import { RowTimestampColumn } from '@database/row-timestamp-column';
 import { sql } from 'drizzle-orm';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -79,7 +80,10 @@ export class MysqlSchemaBuilder {
     switch (field.type) {
       case 'number': type = sql`NUMERIC`; break;
       case 'boolean': type = sql`BOOLEAN`; break;
-      case 'date': type = sql`DATETIME`; break;
+      // `datetime` is the admin's date-AND-time field; it fell through to TEXT, so its values sorted and
+      // compared as strings. Both are points in time.
+      case 'date':
+      case 'datetime': type = sql`DATETIME`; break;
       case 'json':
       case 'relationship':
       case 'upload':
@@ -110,6 +114,10 @@ export class MysqlSchemaBuilder {
       } else if (typeof field.defaultValue === 'number') {
         constraints.push(sql.raw(`DEFAULT ${field.defaultValue}`));
       }
+    }
+
+    if (RowTimestampColumn.needsDefault(dbName, String(field.type), field.defaultValue)) {
+      constraints.push(sql`DEFAULT CURRENT_TIMESTAMP`);
     }
 
     return sql`${sql.identifier(dbName)} ${type} ${sql.join(constraints, sql` `)}`;

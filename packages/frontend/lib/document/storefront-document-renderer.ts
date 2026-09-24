@@ -161,6 +161,7 @@ export class StorefrontDocumentRenderer {
       usedPlugins: markup?.usedPlugins ?? [],
       withServerBundle: ThemeServerRenderer.pluginsWithServerBundle(),
       themeDependencies: Object.keys((activeTheme?.dependencies as Record<string, unknown> | undefined) || {}),
+      rendersRecipe: Boolean(content?.recipe),
     });
     const runtimeConfig = {
       apiUrl: ServerApiPaths.buildPublicApiBaseUrl(),

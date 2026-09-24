@@ -16,6 +16,7 @@ import { SiteLifecycleMigration } from '@core/database/migrations/039_site_lifec
 import { CertificatesMigration } from '@core/database/migrations/040_certificates';
 import { SiteOwnedDataMigration } from '@core/database/migrations/045_site_owned_data';
 import { SourcesTableOnSqliteMigration } from '@core/database/migrations/053_sources_table_on_sqlite';
+import { TimestampsCarryTheirZoneMigration } from '@core/database/migrations/054_timestamps_carry_their_zone';
 
 /** `MigrationLoader` requires compiled files at runtime; under vitest the set is handed over directly. */
 const MIGRATIONS = [
@@ -23,10 +24,11 @@ const MIGRATIONS = [
   new FileSharesAndGrantsMigration(), new MultiSitePlatformMigration(), new SourcesMigration(),
   new SiteLifecycleMigration(), new CertificatesMigration(), new SiteOwnedDataMigration(),
   new SourcesTableOnSqliteMigration(),
+  new TimestampsCarryTheirZoneMigration(),
 ];
 
 /** The consolidated nine, then everything written after the consolidation. */
-const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53];
+const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53, 54];
 
 /**
  * Framework migrations 1–52 were consolidated into nine. Each keeps the number of one version it
@@ -95,7 +97,7 @@ describe('consolidated framework migrations', () => {
     // Only what came after the consolidation runs; nothing consolidated re-creates a table.
     expect(await db.tableExists('_system_plugins')).toBe(false);
     const recorded = await db.find('_system_migrations', {});
-    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53]);
+    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53, 54]);
   });
 
   it('refuses a database that stopped part-way, before running anything', async () => {

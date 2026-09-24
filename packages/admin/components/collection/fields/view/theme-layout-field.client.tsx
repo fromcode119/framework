@@ -35,6 +35,11 @@ export class ThemeLayoutField extends Reactor {
   }
 
   componentDidMount(): void {
+    // Re-armed on EVERY mount, not only at construction: React may unmount and mount the same instance
+    // again (StrictMode does it on every mount in development). `componentWillUnmount` had cleared the
+    // flag, nothing set it back, and every state update below was dropped — the field sat on "loading"
+    // for good and reported the page's layout as not in the theme.
+    this.active = true;
     void this.fetchLayouts();
   }
 
@@ -95,7 +100,8 @@ export class ThemeLayoutField extends Reactor {
 
     const explicitValue = String(value || '').trim();
     const isAutoMode = !explicitValue;
-    const selectedLayoutMissing = !isAutoMode && !layoutInfoByValue[explicitValue];
+    // Nothing is "missing" before the theme's layouts have loaded — the box would warn on every page.
+    const selectedLayoutMissing = !loading && !isAutoMode && !layoutInfoByValue[explicitValue];
 
     const effectiveValue = isAutoMode || selectedLayoutMissing ? runtimeDefaultLayout : explicitValue;
     const effectiveLabel = layoutInfoByValue[effectiveValue]?.label || this.humanizeLayoutName(effectiveValue) || 'Default';

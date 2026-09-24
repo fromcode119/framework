@@ -2,7 +2,7 @@ import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-
 import { SystemConstants } from '@core/constants/system.constants';
 import type { Logger } from '@core/logging';
 import type { IDatabaseManager } from '@fromcode119/database';
-import { SchemaReconcileState } from '@fromcode119/database';
+import { NamingStrategy, SchemaReconcileState } from '@fromcode119/database';
 
 /**
  * Applies the parts of a collection's declaration that the CREATE never covered.
@@ -91,6 +91,58 @@ export class DeclaredSchemaReconciler {
         );
       } else if (outcome.state === SchemaReconcileState.UNSUPPORTED) {
         // Once per sync, not per column: it is a property of the driver, not of this table.
+        return;
+      }
+    }
+  }
+
+  /**
+   * Gives an existing table's `created_at` / `updated_at` the `DEFAULT CURRENT_TIMESTAMP` it lacks.
+   *
+   * A collection that declares its own `createdAt` field got a column WITHOUT that default, so rows
+   * written without an explicit value had no creation date. Adding a default touches no existing row;
+   * it is never replaced when one is there.
+   */
+  /**
+   * Converts an existing TEXT column the collection declares as a date or datetime to `timestamptz`.
+   *
+   * Every `datetime` field used to be stored as TEXT. Only columns whose every value parses are
+   * converted; the rest are named in the log and left exactly as they are.
+   */
+  async convertTextPointInTimeColumns(plan: IEntitySchemaPlan): Promise<void> {
+    const missing = new Set(plan.missingColumns.map((column) => column.columnName));
+    const columns = (plan.collection.fields || [])
+      .filter((field) => ['date', 'datetime'].includes(String(field.type)))
+      .map((field) => NamingStrategy.toSnakeCase(field.name))
+      .filter((column) => !missing.has(column));
+
+    for (const column of columns) {
+      const outcome = await this.db.ensurePointInTimeColumn(plan.tableName, column);
+
+      if (outcome.state === SchemaReconcileState.CHANGED) {
+        this.logger.info(`${plan.tableName}.${column} was stored as text; it is now a timezone-aware timestamp.`);
+      } else if (outcome.state === SchemaReconcileState.FAILED) {
+        this.logger.warn(`${plan.tableName}.${column} stays text: ${outcome.reason}.`);
+      } else if (outcome.state === SchemaReconcileState.UNSUPPORTED) {
+        return;
+      }
+    }
+  }
+
+  private static readonly ROW_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'] as const;
+
+  async ensureTimestampDefaults(plan: IEntitySchemaPlan): Promise<void> {
+    for (const column of DeclaredSchemaReconciler.ROW_TIMESTAMP_COLUMNS) {
+      const outcome = await this.db.ensureTimestampDefault(plan.tableName, column);
+
+      if (outcome.state === SchemaReconcileState.CHANGED) {
+        this.logger.info(`${plan.tableName}.${column} had no default; it now defaults to the current time.`);
+      } else if (outcome.state === SchemaReconcileState.FAILED) {
+        this.logger.warn(
+          `Could not give ${plan.tableName}.${column} a default: ${outcome.reason}. `
+          + 'Rows inserted without a value will go on being stored with no timestamp.'
+        );
+      } else if (outcome.state === SchemaReconcileState.UNSUPPORTED) {
         return;
       }
     }

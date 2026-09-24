@@ -64,6 +64,7 @@ vi.mock('@fromcode119/core', () => ({
   // The SITE half of the settings store, wired alongside it at boot.
   SiteMarketplaceUrl: { registerAccessor: () => {}, currentScopeKey: () => '' },
   SiteLocaleAccess: { configure: () => {}, invalidate: () => {} },
+  SiteClockAccess: { configure: () => {} },
   RequestContextUtils: { getTenantId: () => undefined },
   // A site's own absolute URLs, handed the same database at boot. Present here for the same reason
   // as the line above: bootstrap wires it, so a stub without it fails on the wiring rather than on

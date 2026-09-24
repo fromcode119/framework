@@ -14,6 +14,7 @@ export type { ISchemaField } from '@database/interfaces/schema-field.interface';
 export type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 export type { IJoinClause } from '@database/interfaces/join-clause.interface';
 export type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
+export type { IMigrationTenantScope } from '@database/interfaces/migration-tenant-scope.interface';
 export type { IDatabaseDriverCreator } from '@database/interfaces/database-driver-creator.interface';
 export type { ITableNameResolver } from '@database/interfaces/table-name-resolver.interface';
 
@@ -28,6 +29,7 @@ export { BaseMigration } from '@database/base-migration';
 export { SchemaKeyField } from '@database/schema-key-field';
 export { TenantColumn } from '@database/tenant/tenant-column';
 export { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
+export * from '@database/row-timestamp-column';
 export type { IColumnStats } from '@database/interfaces/column-stats.interface';
 export type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
 export type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-unique-rule.interface';
