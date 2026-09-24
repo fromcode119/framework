@@ -62,11 +62,14 @@ export class AuthControllerPolicy extends AuthControllerTenantSelection {
       throw new WorkspaceAccessDeniedError(workspace.slug);
     }
     // On a site's STOREFRONT host that site is the one being logged into — see LoginTenantChoice.
-    const storefront = (req as any).tenantSurface === AuthControllerPolicy.STOREFRONT_SURFACE ? (req as any).tenant : null;
+    const storefrontId: string | null = (req as any).tenantSurface === AuthControllerPolicy.STOREFRONT_SURFACE
+      ? ((req as any).tenant?.id ?? null)
+      : null;
     const selectedTenantId = LoginTenantChoice.choose({
       workspaceId: workspace?.id,
-      storefrontId: storefront?.id ?? null,
-      availableIds: availableTenants.map((tenant) => tenant.id),
+      storefrontId,
+      mayEnterStorefront: storefrontId ? await memberships.hasAccess(String(user.id), storefrontId) : false,
+      administeredIds: availableTenants.map((tenant) => tenant.id),
     });
 
     // Entering a site at login is entering it scoped — same rule as switching site later.

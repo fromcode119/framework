@@ -5,25 +5,26 @@
  * arrived, in this order:
  *  1. a WORKSPACE (admin) host names its site outright; the caller has already refused an account
  *     that is not a member of it;
- *  2. a site's STOREFRONT host names that site when the account is one of its members. Before this,
- *     an account in more than one site logged in on a storefront got a session tied to NO site, the
- *     storefront refused that session on the very next request ("minted for no tenant, presented to
- *     <site>") and the customer was bounced back to the login page. An account in only one site never
- *     noticed, because rule 3 happened to pick the same site;
- *  3. an account in exactly one site enters it;
- *  4. otherwise no site — the client asks which one.
+ *  2. a site's STOREFRONT host names that site when the account may enter it — ANY membership,
+ *     a customer's included. Before this the storefront was ignored and only the sites an account
+ *     ADMINISTERS counted, so a customer (who administers nothing) and anyone in several sites got a
+ *     session tied to NO site. The storefront refused that session on the very next request
+ *     ("minted for no tenant, presented to <site>") and bounced the customer back to the login page;
+ *  3. an account that administers exactly one site enters it;
+ *  4. otherwise no site — the admin client asks which one.
  *
- * A storefront whose site the account does not belong to changes nothing: the old rules apply, so a
- * login is never tied to a site the account has no membership in.
+ * A storefront whose site the account may not enter changes nothing: the old rules apply, so a login
+ * is never tied to a site the account has no membership in.
  */
 export class LoginTenantChoice {
   static choose(input: {
     workspaceId?: string | null;
     storefrontId?: string | null;
-    availableIds: readonly string[];
+    mayEnterStorefront: boolean;
+    administeredIds: readonly string[];
   }): string | undefined {
     if (input.workspaceId) return input.workspaceId;
-    if (input.storefrontId && input.availableIds.includes(input.storefrontId)) return input.storefrontId;
-    return input.availableIds.length === 1 ? input.availableIds[0] : undefined;
+    if (input.storefrontId && input.mayEnterStorefront) return input.storefrontId;
+    return input.administeredIds.length === 1 ? input.administeredIds[0] : undefined;
   }
 }
