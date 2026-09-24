@@ -89,7 +89,7 @@ jobs:
         working-directory: framework/Source
         run: npm run build:packages
 
-      # A plugin UI may import its OWN packages (analytics → chart.js, mlm → react-d3-tree), declared in
+      # A plugin UI may import its OWN packages (a chart or tree library, say), declared in
       # its `src/ui/package.json` with a lockfile. `plugin-ui-types` typechecks that UI, so without those
       # installed every such import is "Cannot find module" and the guard fails on code that builds fine.
       # Locally it never showed, because the checkout already had `src/ui/node_modules`.
