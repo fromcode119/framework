@@ -80,7 +80,25 @@ jobs:
           cache: npm
           cache-dependency-path: framework/Source/package-lock.json
 
+      # On the organisation's own runner the installed and built framework is kept between jobs, keyed
+      # by commit. Every extension guards against the same framework commit, and install + build is
+      # about two thirds of a job, so the second repository onwards starts from the finished tree.
+      # GitHub-hosted runners start empty every time; there the steps below are skipped.
+      - name: Restore the built framework
+        id: built
+        if: ${{ runner.environment == 'self-hosted' }}
+        env:
+          CACHE_ROOT: ${{ runner.tool_cache }}/fromcode-framework
+        run: |
+          sha=$(git -C framework/Source rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ -d "$CACHE_ROOT/$sha" ]; then
+            tar -C "$CACHE_ROOT/$sha" -cf - . | tar -C framework/Source -xf -
+            echo "hit=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install
+        if: ${{ steps.built.outputs.hit != 'true' }}
         working-directory: framework/Source
         run: npm ci
 
@@ -93,8 +111,24 @@ jobs:
       # Locally none of this showed, because every one of those directories has been on disk for
       # months. A fresh checkout is the only place the difference is visible.
       - name: Build the packages the guards measure
+        if: ${{ steps.built.outputs.hit != 'true' }}
         working-directory: framework/Source
         run: npm run build:packages
+
+      # Written to a temporary name and renamed, so a job running beside this one never reads half a
+      # tree. Only the three newest commits are kept.
+      - name: Keep the built framework
+        if: ${{ runner.environment == 'self-hosted' && steps.built.outputs.hit != 'true' }}
+        env:
+          CACHE_ROOT: ${{ runner.tool_cache }}/fromcode-framework
+          SHA: ${{ steps.built.outputs.sha }}
+        run: |
+          mkdir -p "$CACHE_ROOT"
+          tmp="$CACHE_ROOT/.partial-$GITHUB_RUN_ID-$GITHUB_JOB"
+          mkdir -p "$tmp"
+          tar -C framework/Source --exclude=./.git -cf - . | tar -C "$tmp" -xf -
+          mv -T "$tmp" "$CACHE_ROOT/$SHA" 2>/dev/null || rm -rf "$tmp"
+          ls -1dt "$CACHE_ROOT"/*/ | tail -n +4 | xargs -r rm -rf
 
       # A plugin UI may import its OWN packages (a chart or tree library, say), declared in
       # its `src/ui/package.json` with a lockfile. `plugin-ui-types` typechecks that UI, so without those
