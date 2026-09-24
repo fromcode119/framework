@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { NetworkAddressUtils, PlatformSettingsService, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { randomUUID } from 'crypto';
 import { AuthControllerTenantSelection } from '@api/controllers/auth/auth-controller-tenant-selection';
+import { LoginTenantChoice } from '@api/controllers/auth/login-tenant-choice';
 
 /**
  * Issuing the session a successful login gets.
@@ -13,6 +14,8 @@ import { AuthControllerTenantSelection } from '@api/controllers/auth/auth-contro
  * this file reached 567 lines, following the chain this controller was already built as.
  */
 export class AuthControllerPolicy extends AuthControllerTenantSelection {
+  /** The surface the request binder records for a request that reached a site by its own host. */
+  private static readonly STOREFRONT_SURFACE = 'storefront';
 
   protected async issueLoginSession(req: Request, res: Response, user: any) {
     // Bake EFFECTIVE roles (legacy column ∪ `_system_users_roles` junction) into the session token so
@@ -58,7 +61,16 @@ export class AuthControllerPolicy extends AuthControllerTenantSelection {
     if (workspace && !availableTenants.some((tenant) => tenant.id === workspace.id)) {
       throw new WorkspaceAccessDeniedError(workspace.slug);
     }
-    const selectedTenantId = workspace ? workspace.id : (availableTenants.length === 1 ? availableTenants[0].id : undefined);
+    // On a site's STOREFRONT host that site is the one being logged into — see LoginTenantChoice.
+    const storefrontId: string | null = (req as any).tenantSurface === AuthControllerPolicy.STOREFRONT_SURFACE
+      ? ((req as any).tenant?.id ?? null)
+      : null;
+    const selectedTenantId = LoginTenantChoice.choose({
+      workspaceId: workspace?.id,
+      storefrontId,
+      mayEnterStorefront: storefrontId ? await memberships.hasAccess(String(user.id), storefrontId) : false,
+      administeredIds: availableTenants.map((tenant) => tenant.id),
+    });
 
     // Entering a site at login is entering it scoped — same rule as switching site later.
     const scoped = await this.scopeSessionToTenant(String(user.id), selectedTenantId, { roles, permissions });
