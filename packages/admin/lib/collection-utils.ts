@@ -4,6 +4,9 @@ import { ICollection, CollectionIdentityService } from '@fromcode119/core/client
  * Resolves the collection-specific prefix from settings.
  */
 export class AdminCollectionUtils {
+  /** The route prefix that reaches any collection by slug, whatever plugin owns it. */
+  static readonly GLOBAL_ROUTE = 'collections';
+
   private static readonly collectionIdentityService = new CollectionIdentityService();
 
   /**
@@ -84,9 +87,25 @@ export class AdminCollectionUtils {
     return `${cleanBaseUrl}${path}?preview=1`;
   }
 
+  /**
+   * Where a record opened through the global `/collections/<slug>` form belongs: its owning plugin's
+   * own route (`/finance/transactions`). Every link the list and edit pages build — the back-link,
+   * the after-save and after-delete redirects — is `/<pluginSlug>/<slug>`, and nothing serves a
+   * `/collections` list, so a page reached through the global form linked back to "Module Not Found"
+   * and skipped the plugin's own detail page. `null` when the address is not the global form, or
+   * the collection has no owning plugin to send it to.
+   */
+  static ownerRoute(collections: ICollection[], pluginSlug: string, slug: string): string | null {
+    if (String(pluginSlug || '').toLowerCase() !== AdminCollectionUtils.GLOBAL_ROUTE) return null;
+    const collection = AdminCollectionUtils.resolveCollection(collections, pluginSlug, slug) as any;
+    const owner = String(collection?.pluginSlug || '').trim();
+    if (!owner || owner === 'system') return null;
+    return `/${owner}/${String(collection.shortSlug || collection.slug)}`;
+  }
+
   static resolveCollection(collections: ICollection[], pluginSlug: string, slug: string): ICollection | undefined {
     const normPluginSlug = String(pluginSlug || 'system').toLowerCase();
-    const isGlobalCollectionRoute = normPluginSlug === 'collections';
+    const isGlobalCollectionRoute = normPluginSlug === AdminCollectionUtils.GLOBAL_ROUTE;
     const requestedPluginSlug = isGlobalCollectionRoute ? undefined : normPluginSlug;
     const resolvedSlug = AdminCollectionUtils.collectionIdentityService.resolveRegisteredSlug(slug, collections as any, requestedPluginSlug);
     const normalizedResolvedSlug = String(resolvedSlug || '').toLowerCase();
