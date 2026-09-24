@@ -49,8 +49,14 @@ export class QueryHelper {
     filters: any,
     search?: string,
     relationshipMatches?: Record<string, any[]>,
+    // A restriction the caller resolved asynchronously and that no filter may widen — the account
+    // scope of `users` (UserCollectionScopeGuard). ANDed like every other chunk.
+    scopeClause?: unknown,
   ) {
     const whereChunks: any[] = [];
+    if (scopeClause) {
+      whereChunks.push(scopeClause);
+    }
 
     // Non-negotiable first: reads of the framework's system meta table are restricted to the declared,
     // operator-visible settings, so the generic collection API cannot serve what the settings endpoint
