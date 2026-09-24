@@ -42,5 +42,7 @@ export interface ITheme {
     required?: boolean;
   }[];
   layouts?: { name: string; label: string; description?: string }[];
+  /** theme.json `defaultLayout` — what a page gets when neither it nor the site names a layout. */
+  defaultLayout?: string;
   overrides?: { name: string; component: string; priority?: number }[];
 }

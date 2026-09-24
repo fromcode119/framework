@@ -10,7 +10,7 @@ import { IThemeLayoutOption } from '@/components/collection/fields/interfaces/th
 
 /**
  * Framework-owned, no-magic layout picker. Lists ONLY the layouts the active theme actually declares
- * (read from theme metadata), with an explicit "Auto = theme default" option. A stored value that
+ * (read from theme metadata), with an explicit "Auto = the site's default layout" option. A stored value that
  * isn't a real theme layout is surfaced as a flagged option AND a warning with a one-click reset, and
  * the box always states the layout the frontend will truly render. Any plugin uses it via
  * `admin.component: 'ThemeLayoutField'`; registered into the field-component registry at admin bootstrap.
@@ -119,10 +119,10 @@ export class ThemeLayoutField extends Reactor {
           options={selectOptions}
           disabled={readOnly || loading}
           theme={theme}
-          placeholder="Auto (theme default)"
+          placeholder="Auto (site default)"
         />
         <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-          Pick a layout your active theme provides, or leave on Auto to use the theme default.
+          Pick a layout your active theme provides, or leave on Auto to use the site's default layout (Themes → Default Layout).
         </p>
 
         {selectedLayoutMissing ? (
@@ -132,7 +132,7 @@ export class ThemeLayoutField extends Reactor {
               The active theme has no layout named <b>{explicitValue}</b>, so the frontend renders <b>{effectiveLabel}</b> ({effectiveValue}) instead. Choose a layout the theme provides, or reset to Auto.
             </p>
             <div className="mt-2">
-              <Button type="button" size={FieldSize.SM} variant={ButtonVariant.SECONDARY} onClick={this.resetToAuto}>Reset to Auto (theme default)</Button>
+              <Button type="button" size={FieldSize.SM} variant={ButtonVariant.SECONDARY} onClick={this.resetToAuto}>Reset to Auto (site default)</Button>
             </div>
           </div>
         ) : (

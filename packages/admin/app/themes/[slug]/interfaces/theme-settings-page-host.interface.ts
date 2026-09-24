@@ -33,7 +33,7 @@ export interface IThemeSettingsPageHost {
   /** The theme's saved config row, as stored. Free-form by design, hence `unknown` values. */
   dbConfig: Record<string, unknown>;
   tempVariables: Record<string, string>;
-  tempLayouts: Record<string, string>;
+  tempDefaultLayout: string;
   tempSettings: Record<string, unknown>;
 
   isUpdating: boolean;

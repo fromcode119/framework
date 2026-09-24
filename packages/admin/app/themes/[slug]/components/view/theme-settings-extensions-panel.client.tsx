@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
+import { StructuredReadOnlyField } from '@/components/collection/fields/view/structured-read-only-field.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
@@ -18,6 +19,14 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
 
   @prop declare page: IThemeSettingsPageView;
   @prop declare model: ThemeSettingsRenderModel;
+
+  /** Who writes a structured setting — the admin cannot, so it names the source instead. */
+  private static provenanceOf(key: string, model: ThemeSettingsRenderModel): string {
+    const storedForSite = Object.prototype.hasOwnProperty.call(model.storedSettings, key);
+    return storedForSite
+      ? 'Stored in this site\'s theme config, written by the theme\'s seeds. Run seeds to rewrite it from the theme.'
+      : 'Default declared by the theme (theme.json settingsDefaults). Change it in the theme.';
+  }
 
   render(): ReactNode {
     const page = this.page;
@@ -53,6 +62,11 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                   ?? (typeof rawValue === 'boolean'
                     ? ThemeConfigFieldType.BOOLEAN
                     : typeof rawValue === 'number' ? ThemeConfigFieldType.NUMBER : ThemeConfigFieldType.TEXT);
+                // An object/array value has no single input that can hold it: `String(value)` painted
+                // "[object Object]" into a text box, and saving the page wrote that string over the real
+                // config. It renders read-only instead and never calls `handleSettingChange`, so the save
+                // sends the stored value back untouched.
+                const isStructured = type === ThemeConfigFieldType.JSON || (rawValue !== null && typeof rawValue === 'object');
 
                 return (
                   <div key={key} className={`p-6 ${AdminClass.SURFACE} transition-all ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5' : 'bg-white border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)]'}`}>
@@ -72,7 +86,12 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                       )}
                     </div>
 
-                    {type === ThemeConfigFieldType.BOOLEAN ? (
+                    {isStructured ? (
+                      <>
+                        <StructuredReadOnlyField value={rawValue} theme={adminTheme} />
+                        <p className="text-[11px] text-slate-500 mt-2">{ThemeSettingsExtensionsPanel.provenanceOf(key, model)}</p>
+                      </>
+                    ) : type === ThemeConfigFieldType.BOOLEAN ? (
                       <Switch checked={Boolean(rawValue)} onChange={(checked) => page.handleSettingChange(key, checked)} />
                     ) : type === ThemeConfigFieldType.SELECT ? (
                       <Select
@@ -89,14 +108,6 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                         min={0}
                         value={typeof rawValue === 'number' ? rawValue : String(rawValue ?? '')}
                         onChange={(v) => page.handleSettingChange(key, v === '' ? '' : Number(v))}
-                      />
-                    ) : type === ThemeConfigFieldType.JSON ? (
-                      <textarea
-                        rows={4}
-                        value={typeof rawValue === 'string' ? rawValue : JSON.stringify(rawValue ?? {}, null, 2)}
-                        onChange={(e) => page.handleSettingChange(key, e.target.value)}
-                        placeholder={schema?.placeholder || '{ }'}
-                        className={`w-full ${AdminClass.SURFACE} px-4 py-3 text-sm font-medium border ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/50 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                       />
                     ) : (
                       <input
