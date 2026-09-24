@@ -37,6 +37,16 @@ export class SdkBoundaryPatterns {
     /\/frontend\.js$/,
   ];
 
+  /**
+   * Initial-content seeds: the records a plugin or theme creates once, which then belong to the
+   * operator — CMS pages, posts, menus. Their string literals are that CONTENT, and content may name
+   * anything: a published article explaining the MCP server's `ATLANTIS_API_URL` setting, a page
+   * linking to an API path. Only the STRING patterns are waived here, for the reason
+   * `HardcodedCopyGuard` waives `seeds/**`; a seed file is still code, and a forbidden framework
+   * IMPORT in one is still reported.
+   */
+  static readonly SEED_FILE_PATTERN = /\/seeds\//;
+
   static readonly IMPORT_PATTERN = /@fromcode119\/(?!sdk(?:\/|['"\s]|$))[A-Za-z0-9._/-]+/g;
   static readonly STRING_PATTERNS: Array<{ regex: RegExp; label: string; skipInAbsoluteUrl?: boolean }> = [
     // `skipInAbsoluteUrl`: a versioned segment inside an absolute third-party URL is that service's
