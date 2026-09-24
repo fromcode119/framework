@@ -1,10 +1,17 @@
 import { Request } from 'express';
-import { ApplicationUrlUtils, AppPathConstants, RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
+import { ApplicationUrlUtils, AppPathConstants, RequestContextUtils, RequestSurfaceUtils, SiteBaseUrl, SystemConstants } from '@fromcode119/core';
 import { ApiConfig } from '@api/config/api-config';
 import { AuthControllerSharedInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-shared-infrastructure';
 
 export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrastructure {
   protected async getFrontendBaseUrl(req: Request): Promise<string> {
+    // A request on a SITE is answered with that site's own address. `frontend_url` is the PLATFORM's
+    // storefront, and a reset, verification or email-change link on it lands where the site cannot be
+    // resolved — every customer of a site was sent to the platform's host.
+    const tenantId = RequestContextUtils.getTenantId();
+    const siteBase = tenantId ? await SiteBaseUrl.forSite(tenantId, ApplicationUrlUtils.FRONTEND_APP) : '';
+    if (siteBase) return siteBase;
+
     const configuredInDb = String((await this.getMetaValue(SystemConstants.META_KEY.FRONTEND_URL)) || '').trim();
     if (configuredInDb) return configuredInDb.replace(/\/+$/, '');
 
