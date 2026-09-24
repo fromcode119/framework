@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { ApplicationUrlUtils, BaseController, CookieConstants, FrameworkEmailSenderService, Logger, PluginManager, RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
+import { ApplicationUrlUtils, BaseController, CookieConstants, FrameworkEmailSenderService, Logger, PluginManager, RequestContextUtils, RequestSurfaceUtils, SystemConstants, SystemSettingRegistry } from '@fromcode119/core';
 import type { FrameworkEmailSender } from '@fromcode119/core';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { ApiUrlUtils } from '@api/utils/url';
@@ -81,10 +81,28 @@ export class AuthControllerSharedInfrastructure extends BaseController {
    * and write here now runs as the platform. A row written earlier from inside a site session sits in
    * that site's partition; the read falls back to the request's own scope so it is still honoured.
    */
+  /**
+   * A setting's stored row, from the scope that owns it.
+   *
+   * A SITE-scoped setting (or an inherited one a site may override) is read from the site bound to
+   * this request first, and falls back to the platform's row. The platform row used to win outright,
+   * so a site could not decide for itself: the platform's `frontend_auth_enabled = false` switched
+   * off password reset on a storefront whose own setting was `true`, and auth emails were signed with
+   * the platform's name instead of the site's. Platform-owned and undeclared keys read as before.
+   */
   protected async readMetaRow(key: string): Promise<any | null> {
+    if (RequestContextUtils.getTenantId() && AuthControllerSharedInfrastructure.isSiteOwned(key)) {
+      const site = await this.db.findOne(SystemConstants.TABLE.META, { key });
+      if (site) return site;
+    }
     const platform = await this.db.withPlatformAdmin(() => this.db.findOne(SystemConstants.TABLE.META, { key }));
     if (platform) return platform;
     return this.db.findOne(SystemConstants.TABLE.META, { key });
+  }
+
+  /** Declared SITE-scoped, or a platform setting a site may override. */
+  private static isSiteOwned(key: string): boolean {
+    return SystemSettingRegistry.isDeclaredSiteScoped(key) || SystemSettingRegistry.inheritedKeys().includes(key);
   }
 
   protected async getMetaValue(key: string): Promise<string | null> {
