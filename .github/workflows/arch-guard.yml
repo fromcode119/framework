@@ -89,6 +89,22 @@ jobs:
         working-directory: framework/Source
         run: npm run build:packages
 
+      # A plugin UI may import its OWN packages (analytics → chart.js, mlm → react-d3-tree), declared in
+      # its `src/ui/package.json` with a lockfile. `plugin-ui-types` typechecks that UI, so without those
+      # installed every such import is "Cannot find module" and the guard fails on code that builds fine.
+      # Locally it never showed, because the checkout already had `src/ui/node_modules`.
+      # `--ignore-scripts`: nothing needs to run, only the type declarations have to be there.
+      - name: Install the extension's own UI dependencies
+        if: ${{ inputs.area != '' }}
+        env:
+          GUARD_AREA: ${{ inputs.area }}
+          GUARD_NAME: ${{ inputs.name }}
+        run: |
+          ui="$GUARD_AREA/$GUARD_NAME/src/ui"
+          if [ -f "$ui/package-lock.json" ]; then
+            npm ci --prefix "$ui" --ignore-scripts --no-audit --no-fund
+          fi
+
       - name: Build the guards
         working-directory: framework/Source
         run: npm run build --workspace=@fromcode119/arch-guard
