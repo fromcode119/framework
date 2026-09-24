@@ -3,11 +3,11 @@ import { LoginTenantChoice } from '@api/controllers/auth/login-tenant-choice';
 
 describe('the site a login enters', () => {
   it("enters the storefront's site for a customer who administers nothing", () => {
-    expect(LoginTenantChoice.choose({ storefrontId: 'vselenskiportal88', mayEnterStorefront: true, administeredIds: [] })).toBe('vselenskiportal88');
+    expect(LoginTenantChoice.choose({ storefrontId: 'shop', mayEnterStorefront: true, administeredIds: [] })).toBe('shop');
   });
 
   it("enters the storefront's site for an account that administers other sites", () => {
-    expect(LoginTenantChoice.choose({ storefrontId: 'vselenskiportal', mayEnterStorefront: true, administeredIds: ['fromcode', 'tagiqx-app'] })).toBe('vselenskiportal');
+    expect(LoginTenantChoice.choose({ storefrontId: 'shop', mayEnterStorefront: true, administeredIds: ['agency', 'other-shop'] })).toBe('shop');
   });
 
   it('keeps the old rules on a storefront the account may not enter', () => {
