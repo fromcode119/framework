@@ -3,7 +3,7 @@ import http from 'http';
 import os from 'os';
 import path from 'path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { PluginGuestHttp } from '../plugin-guest-http';
+import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
 
 /**
  * The guest keeps a webhook's original bytes whenever the host flags that it forwarded them untouched —
