@@ -46,7 +46,7 @@ export class GeneralSignupEmailCard extends PureReactor {
 
   private renderCopyRow(row: { key: string; title: string; description: string }): ReactNode {
     return (
-      <SettingRow key={row.key} theme={this.theme} icon={undefined} title={row.title} description={row.description} stacked>
+      <SettingRow key={row.key} theme={this.theme} icon={FrameworkIcons.Edit} title={row.title} description={row.description} stacked>
         <Input
           value={this.settings[row.key] ?? ''}
           onChange={(event: any) => this.change(row.key, event?.target?.value ?? '')}
@@ -74,7 +74,7 @@ export class GeneralSignupEmailCard extends PureReactor {
         </SettingRow>
         {branded && GeneralSignupEmailCard.COPY_ROWS.map((row) => this.renderCopyRow(row))}
         {branded && (
-          <SettingRow theme={this.theme} icon={undefined} title="Accent colour" description="The verify button and link.">
+          <SettingRow theme={this.theme} icon={FrameworkIcons.Palette} title="Accent colour" description="The verify button and link.">
             <ColorField
               value={this.settings[GeneralSignupEmailCard.ACCENT_KEY] || locks.declaredDefault(GeneralSignupEmailCard.ACCENT_KEY)}
               onChange={(value: string) => this.change(GeneralSignupEmailCard.ACCENT_KEY, value)}
