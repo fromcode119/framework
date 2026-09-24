@@ -227,22 +227,4 @@ export class RestWriteController {
       res.status(err?.statusCode || 500).json({ error: err.message });
     }
   }
-
-  async restoreVersion(collection: ICollection, req: any, res: Response) {
-    try {
-      UserCollectionScopeGuard.ensureAllows(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
-      const restoredData = await this.runtime.versioningService.restoreVersion(
-        collection,
-        req.params.id,
-        parseInt(req.params.version, 10),
-        req.user
-      );
-      res.json({
-        message: `Successfully restored to version ${req.params.version}`,
-        data: restoredData,
-      });
-    } catch (err: any) {
-      res.status(err?.statusCode || 500).json({ error: err.message });
-    }
-  }
 }

@@ -265,36 +265,6 @@ export class RestReadController {
     }
   }
 
-  async getVersions(collection: ICollection, req: any, res: Response) {
-    try {
-      const id = req.params.id;
-      UserCollectionScopeGuard.ensureAllows(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), id);
-      const limit = req.query.limit;
-      const offset = req.query.offset;
-      res.json(await this.runtime.versioningService.getVersions(collection.slug, id, {
-        limit: limit ? parseInt(limit as string, 10) : 10,
-        offset: offset ? parseInt(offset as string, 10) : 0,
-      }));
-    } catch (err: any) {
-      res.status(err?.statusCode || 500).json({ error: err.message });
-    }
-  }
-
-  async getVersion(collection: ICollection, req: any, res: Response) {
-    try {
-      const id = req.params.id;
-      UserCollectionScopeGuard.ensureAllows(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), id);
-      const version = parseInt(req.params.version, 10);
-      const result = await this.runtime.versioningService.getVersion(collection.slug, id, version);
-      if (!result) {
-        return res.status(404).json({ error: 'Version not found' });
-      }
-      res.json(result);
-    } catch (err: any) {
-      res.status(err?.statusCode || 500).json({ error: err.message });
-    }
-  }
-
   /**
    * An access refusal (401/403) is the policy doing its job, not a server failure. Page resolution asks
    * every collection for a slug on each anonymous visit, and a collection a visitor may not read
