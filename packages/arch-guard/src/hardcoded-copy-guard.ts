@@ -11,6 +11,8 @@ import path from 'node:path';
  * NOT flagged, deliberately:
  *  - `i18n/**` — that IS the copy.
  *  - `seeds/**` — seed content is initial content DATA that becomes editable records, not render-time copy.
+ *  - `seed.ts` — the seeder entry the framework's SeederCallableResolver loads; the same initial DATA as
+ *    `seeds/**` (a currency's own symbol, a default record's name), in the one file a plugin keeps it in.
  *  - comments — a Cyrillic comment is documentation, not output.
  *
  * Ratcheted per area: the count may fall, never rise. Lower a number when copy is extracted; never raise
@@ -32,6 +34,9 @@ export class HardcodedCopyGuard {
    * across scripts and says nothing about language, so it is no longer evidence of anything.
    */
   private static readonly NON_ASCII = /(?![\p{Script=Latin}])\p{L}/u;
+
+  /** Seeder entry files — initial DATA, waived like `seeds/**`. */
+  private static readonly SEED_FILE = new Set(['seed.ts']);
 
   private static readonly SKIP_DIR = new Set([
     'node_modules', 'dist', '.next', 'build', 'coverage', '.git',
@@ -59,7 +64,7 @@ export class HardcodedCopyGuard {
       try { isDir = statSync(full).isDirectory(); } catch { continue; }
       if (isDir) {
         if (!HardcodedCopyGuard.SKIP_DIR.has(entry) && !HardcodedCopyGuard.isBuildOutput(full)) HardcodedCopyGuard.files(full, out);
-      } else if (/\.tsx?$/.test(entry) && !/\.d\.ts$/.test(entry) && !/\.test\.tsx?$/.test(entry)) {
+      } else if (/\.tsx?$/.test(entry) && !/\.d\.ts$/.test(entry) && !/\.test\.tsx?$/.test(entry) && !HardcodedCopyGuard.SEED_FILE.has(entry)) {
         out.push(full);
       }
     }
