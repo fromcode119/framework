@@ -31,9 +31,21 @@ export class RuntimeRegistryAccess {
    * so `react/jsx-runtime` must exist here as a real module object, not only in the import map.
    */
   static jsxRuntimeFor(react: any): { jsx: any; jsxs: any; jsxDEV: any; Fragment: any } {
-    const create = (type: any, props: any, key?: any) =>
-      react.createElement(type, key === undefined ? props : { ...(props || {}), key });
-    return { jsx: create, jsxs: create, jsxDEV: create, Fragment: react.Fragment };
+    const withKey = (props: any, key?: any) => (key === undefined ? props : { ...(props || {}), key });
+    // `jsx` passes children untouched: an array there IS dynamic (a `.map`), and its key warning is real.
+    const jsx = (type: any, props: any, key?: any) => react.createElement(type, withKey(props, key));
+    // `jsxs` means "this child array was written out statically". Handed to `createElement` as one
+    // `children` ARRAY it reads as a dynamic list, and dev React asks every multi-child element for keys.
+    // Spread as VARARGS it is static by construction — the same rule as `ImportMapInstaller`'s map.
+    const staticChildren = (type: any, props: any, key?: any) => {
+      const merged = withKey(props, key);
+      if (!merged || !Array.isArray(merged.children)) return react.createElement(type, merged);
+      const { children, ...rest } = merged;
+      return react.createElement(type, rest, ...children);
+    };
+    const jsxDEV = (type: any, props: any, key?: any, isStaticChildren?: boolean) =>
+      (isStaticChildren ? staticChildren(type, props, key) : jsx(type, props, key));
+    return { jsx, jsxs: staticChildren, jsxDEV, Fragment: react.Fragment };
   }
 
   /** The window-global registry name (the ONLY runtime handoff surface). */
