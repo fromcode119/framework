@@ -107,14 +107,29 @@ export class PluginChannel {
 
   private async answer(message: { id: string; type: string; payload: unknown }): Promise<void> {
     if (!this.handler) {
-      this.transport.send({ $fc: 'res', id: message.id, error: { message: `no handler for ${message.type}` } });
+      this.reply({ $fc: 'res', id: message.id, error: { message: `no handler for ${message.type}` } });
       return;
     }
     try {
       const result = await this.handler(message.type, message.payload);
-      this.transport.send({ $fc: 'res', id: message.id, result });
+      this.reply({ $fc: 'res', id: message.id, result });
     } catch (error: any) {
-      this.transport.send({ $fc: 'res', id: message.id, error: PluginChannel.describe(error) });
+      this.reply({ $fc: 'res', id: message.id, error: PluginChannel.describe(error) });
+    }
+  }
+
+  /**
+   * Sends a reply unless the peer has gone. A request can still be running when its channel closes —
+   * a plugin updated or restarted mid-request — and the reply then has nobody to reach. Sending on the
+   * closed port threw, the catch above tried again on the same port, and the second throw escaped as an
+   * unhandled rejection in the host. The requester is already failed by `close()`; there is nothing to do.
+   */
+  private reply(message: Record<string, unknown>): void {
+    if (this.closed) return;
+    try {
+      this.transport.send(message);
+    } catch {
+      // The port closed before its disconnect event arrived: the peer is gone either way.
     }
   }
 

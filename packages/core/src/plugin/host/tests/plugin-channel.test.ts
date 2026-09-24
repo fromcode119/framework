@@ -49,4 +49,33 @@ describe('PluginChannel', () => {
     await new Promise((r) => setImmediate(r));
     expect(seen).toEqual([['log', { level: 'info' }]]);
   });
+
+  it('drops the reply to a request whose channel closed while it ran, instead of an unhandled rejection', async () => {
+    const emitter = new EventEmitter();
+    let portOpen = true;
+    const sent: unknown[] = [];
+    const channel = new PluginChannel({
+      send: (m) => { if (!portOpen) throw new Error('socket message port is closed'); sent.push(m); },
+      on: (e, l) => emitter.on(e, l),
+    });
+    let finish: (value: unknown) => void = () => undefined;
+    let fail: (error: Error) => void = () => undefined;
+    channel.serve((type) => new Promise((resolve, reject) => { if (type === 'ok') finish = resolve; else fail = reject; }));
+
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => unhandled.push(reason);
+    process.on('unhandledRejection', onUnhandled);
+    try {
+      emitter.emit('message', { $fc: 'req', id: '1', type: 'ok', payload: {} });
+      emitter.emit('message', { $fc: 'req', id: '2', type: 'bad', payload: {} });
+      portOpen = false; // the guest restarted mid-request
+      finish('late');
+      fail(new Error('late failure'));
+      await new Promise((r) => setTimeout(r, 20));
+      expect(unhandled).toEqual([]);
+      expect(sent).toEqual([]);
+    } finally {
+      process.off('unhandledRejection', onUnhandled);
+    }
+  });
 });
