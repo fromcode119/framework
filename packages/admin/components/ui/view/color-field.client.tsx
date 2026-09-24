@@ -35,6 +35,11 @@ export class ColorField extends AdminComponent {
 
   @state private customOpen = false;
   @state private coords: { top: number; left: number } = { top: 0, left: 0 };
+  private measuredHeight = 0;
+  private static readonly GAP = 8;
+  /** `w-60` below. */
+  private static readonly POPOVER_WIDTH = 240;
+  private static readonly POPOVER_HEIGHT_ESTIMATE = 270;
 
   @ref declare triggerRef: Ref<HTMLButtonElement>;
   @ref declare popoverRef: Ref<HTMLDivElement>;
@@ -56,6 +61,7 @@ export class ColorField extends AdminComponent {
       window.addEventListener('resize', this.reposition);
     } else {
       this.detachViewportListeners();
+      this.measuredHeight = 0;
     }
   }
 
@@ -64,10 +70,32 @@ export class ColorField extends AdminComponent {
     window.removeEventListener('resize', this.reposition);
   }
 
+  /**
+   * Below the trigger when it fits, otherwise ABOVE it — a trigger near the bottom of the window used to
+   * open the picker off-screen, where its hex box could not be reached — and never past either side.
+   * Before the popover has mounted its height is unknown, so the declared estimate stands in; the popover
+   * re-measures once it exists.
+   */
   @bound
   private reposition(): void {
     const el = this.triggerRef.current;
-    if (el) { const r = el.getBoundingClientRect(); this.coords = { top: r.bottom + 8, left: r.left }; }
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const height = this.popoverRef.current?.offsetHeight || ColorField.POPOVER_HEIGHT_ESTIMATE;
+    const width = this.popoverRef.current?.offsetWidth || ColorField.POPOVER_WIDTH;
+    const fitsBelow = r.bottom + ColorField.GAP + height <= window.innerHeight;
+    const top = fitsBelow ? r.bottom + ColorField.GAP : Math.max(ColorField.GAP, r.top - ColorField.GAP - height);
+    const left = Math.max(ColorField.GAP, Math.min(r.left, window.innerWidth - width - ColorField.GAP));
+    this.coords = { top, left };
+  }
+
+  componentDidUpdate(): void {
+    // The first placement used the estimate; place again with the real size once, when it differs.
+    const popover = this.popoverRef.current;
+    if (this.customOpen && popover && popover.offsetHeight && popover.offsetHeight !== this.measuredHeight) {
+      this.measuredHeight = popover.offsetHeight;
+      this.reposition();
+    }
   }
 
   @bound
