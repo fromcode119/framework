@@ -14,7 +14,7 @@ describe('ThemeConfigService.validateThemeConfig', () => {
     expect(() => service.validateThemeConfig('alpha', {
       variables: { siteName: 'Alpha' },
       defaultLayout: 'page.canvas',
-      settings: { ecommerceEmails: { customer: { title: 'Thanks', fields: ['orderNumber'] } }, previewUrl: 'https://a.test' },
+      settings: { emailCopy: { customer: { title: 'Thanks', fields: ['reference'] } }, previewUrl: 'https://a.test' },
     })).not.toThrow();
   });
 
