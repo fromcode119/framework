@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { BaseController, PluginManager, Logger, CoercionUtils, PluginRegistryHealth, PluginState, PluginTenantAccess, PluginTenantStateService, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import { BaseController, PluginManager, Logger, CoercionUtils, PluginRegistryHealth, PluginState, PluginTenantAccess, PluginTenantStateService, PluginToggleScopeConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 
 /**
@@ -44,7 +44,7 @@ export class PluginLifecycleController extends BaseController {
     // `no_tenant_selected`, which left a newly installed plugin with no way to be activated from the
     // admin: Sites → Access and the plugin's own page both run in the platform scope.
     const siteBound = Boolean(String((req as any).tenantId || '').trim());
-    const platformScope = String((req.body as any)?.scope || '').trim() === 'platform' || !siteBound;
+    const platformScope = String((req.body as any)?.scope || '').trim() === PluginToggleScopeConstants.PLATFORM || !siteBound;
 
     if (TenantMode.isEnabled() && !platformScope) {
       return this.toggleForTenant(req, res, String(slug), CoercionUtils.toBoolean(enabled) === true);

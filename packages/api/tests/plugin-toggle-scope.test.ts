@@ -55,4 +55,13 @@ describe('toggling a plugin on a multi-tenant deployment', () => {
     expect(siteEnable).toHaveBeenCalledWith('site-a', 'acme-pay');
     expect(manager.enable).not.toHaveBeenCalled();
   });
+
+  it('moves the platform axis when the request names it, even with a site bound (Sites → Access activating a plugin)', async () => {
+    const { controller, manager, res, siteEnable } = setup(true);
+
+    await controller.toggle({ ...request('site-a'), body: { enabled: true, scope: 'platform' } }, res);
+
+    expect(manager.enable).toHaveBeenCalledWith('acme-pay', expect.anything());
+    expect(siteEnable).not.toHaveBeenCalled();
+  });
 });
