@@ -8,12 +8,14 @@ import { RestBulkController } from '@api/controllers/rest/rest-bulk-controller';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 import { RestReadController } from '@api/controllers/rest/rest-read-controller';
 import { RestWriteController } from '@api/controllers/rest/rest-write-controller';
+import { RestVersionController } from '@api/controllers/rest/rest-version-controller';
 
 export class RESTController {
   private readonly runtime: RestControllerRuntime;
   private readonly readController: RestReadController;
   private readonly writeController: RestWriteController;
   private readonly bulkController: RestBulkController;
+  private readonly versionController: RestVersionController;
   private readonly audit?: IRestAuditSink;
 
   constructor(
@@ -27,6 +29,7 @@ export class RESTController {
     this.readController = new RestReadController(this.runtime);
     this.writeController = new RestWriteController(this.runtime);
     this.bulkController = new RestBulkController(this.runtime);
+    this.versionController = new RestVersionController(this.runtime);
     this.audit = audit;
   }
 
@@ -109,14 +112,14 @@ export class RESTController {
   }
 
   async getVersions(collection: ICollection, req: any, res: Response) {
-    return this.readController.getVersions(collection, req, res);
+    return this.versionController.getVersions(collection, req, res);
   }
 
   async getVersion(collection: ICollection, req: any, res: Response) {
-    return this.readController.getVersion(collection, req, res);
+    return this.versionController.getVersion(collection, req, res);
   }
 
   async restoreVersion(collection: ICollection, req: any, res: Response) {
-    return this.writeController.restoreVersion(collection, req, res);
+    return this.versionController.restoreVersion(collection, req, res);
   }
 }

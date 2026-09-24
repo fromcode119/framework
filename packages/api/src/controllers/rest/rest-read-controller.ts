@@ -3,6 +3,7 @@ import { ICollection, ContentPreviewAccessUtils } from '@fromcode119/core';
 import { Schema } from '@fromcode119/database';
 import { QueryHelper } from '@api/services/query-helper';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
+import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-guard';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 import { CoercionUtils } from '@fromcode119/core';
 
@@ -30,7 +31,11 @@ export class RestReadController {
       }
 
       const relationshipMatches = await this.resolveRelationshipSearchMatches(req, search);
-      const whereClause = QueryHelper.buildWhereClause(this.runtime.db, collection, table, effectiveFilters, search, relationshipMatches);
+      const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
+      const whereClause = QueryHelper.buildWhereClause(
+        this.runtime.db, collection, table, effectiveFilters, search, relationshipMatches,
+        UserCollectionScopeGuard.buildReadClause(userScope),
+      );
       const orderBy = QueryHelper.buildOrderBy(this.runtime.db, collection, table, sort);
       const defaultLimit = collection.slug === 'settings' ? 1000 : 10;
       const parsedLimit = parseInt(String(limit), 10);
@@ -51,6 +56,8 @@ export class RestReadController {
       });
 
       if (collection.slug === '_system_record_versions' && rowsResult.length > 0) {
+        // Snapshots written before password fields were excluded still hold them; serve none.
+        rowsResult = rowsResult.map((row) => this.runtime.versioningService.redactStoredVersion(row));
         const userIds = [...new Set(rowsResult.map((row) => row.updated_by).filter(Boolean))];
         if (userIds.length > 0) {
           const userData = await this.runtime.db.find(Schema.users, {
@@ -128,7 +135,10 @@ export class RestReadController {
       const rawLocalized = CoercionUtils.toKey(req.query?.locale_mode) === 'raw';
       const id = this.runtime.parseRecordIdentifier(collection, req.params.id);
       const primaryKey = collection.primaryKey || 'id';
-      const result = await this.runtime.db.findOne(table, { [primaryKey]: id });
+      const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
+      const result = UserCollectionScopeGuard.allows(userScope, id)
+        ? await this.runtime.db.findOne(table, { [primaryKey]: id })
+        : null;
 
       if (!result) {
         if (!res) {
@@ -197,7 +207,14 @@ export class RestReadController {
       }
       const field = CoercionUtils.toString(req.params.field);
       const query = (req.query as any).q;
-      res.json(await this.runtime.suggestionService.getSuggestions(collection, field, query));
+      const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
+      // No accounts in scope means no suggestions — an empty `IN ()` must never reach the query.
+      if (userScope?.ids?.length === 0) {
+        return res.json([]);
+      }
+      res.json(await this.runtime.suggestionService.getSuggestions(
+        collection, field, query, UserCollectionScopeGuard.buildWhere(userScope),
+      ));
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -211,7 +228,10 @@ export class RestReadController {
       // The export path builds no WHERE of its own, so the system-meta restriction is applied here
       // too — a CSV export must never be the way around the redaction.
       const systemMetaClause = SystemMetaCollectionGuard.buildReadClause(collection);
-      let docs = await this.runtime.db.find(table, { where: systemMetaClause || undefined, limit: 10000 });
+      const userScopeClause = UserCollectionScopeGuard.buildReadClause(
+        await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db),
+      );
+      let docs = await this.runtime.db.find(table, { where: systemMetaClause || userScopeClause || undefined, limit: 10000 });
       // When the admin list passes `ids` (rows the user selected), export ONLY those records;
       // with no `ids`, export the whole collection.
       const idsParam = CoercionUtils.toString(req.query?.ids);
@@ -242,34 +262,6 @@ export class RestReadController {
       res.json(docs);
     } catch (err: any) {
       res.status(err?.statusCode || 500).json({ error: err.message });
-    }
-  }
-
-  async getVersions(collection: ICollection, req: any, res: Response) {
-    try {
-      const id = req.params.id;
-      const limit = req.query.limit;
-      const offset = req.query.offset;
-      res.json(await this.runtime.versioningService.getVersions(collection.slug, id, {
-        limit: limit ? parseInt(limit as string, 10) : 10,
-        offset: offset ? parseInt(offset as string, 10) : 0,
-      }));
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  }
-
-  async getVersion(collection: ICollection, req: any, res: Response) {
-    try {
-      const id = req.params.id;
-      const version = parseInt(req.params.version, 10);
-      const result = await this.runtime.versioningService.getVersion(collection.slug, id, version);
-      if (!result) {
-        return res.status(404).json({ error: 'Version not found' });
-      }
-      res.json(result);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
     }
   }
 

@@ -41,7 +41,10 @@ export class ErrorResponseMiddleware {
         return;
       }
 
-      this.applyCorsHeaders(req, res);
+      // No CORS headers are set here. `cors()` is the first middleware on the app, so a response to an
+      // ALLOWED origin already carries its grant when an error reaches this handler. This used to echo
+      // the request's own `Origin` with `Allow-Credentials: true` on every error, which handed a
+      // credentialed grant to exactly the origins the allowlist had just refused.
 
       const status = this.resolveStatus(error);
       res.status(status).json({
@@ -93,20 +96,6 @@ export class ErrorResponseMiddleware {
       path: String(req.originalUrl || req.path || ''),
       status: this.readStatus(error) || undefined,
     });
-  }
-
-  private applyCorsHeaders(req: Request, res: Response): void {
-    const origin = req.headers.origin;
-    if (!origin) {
-      return;
-    }
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Framework-Client, X-Framework-Site, X-CSRF-Token, X-Reset-Context'
-    );
   }
 
   private isPayloadTooLarge(error: unknown): boolean {

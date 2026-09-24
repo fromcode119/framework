@@ -3,6 +3,7 @@ import { Response } from 'express';
 import { ICollection, CoreServices, HookEventUtils } from '@fromcode119/core';
 import { QueryHelper } from '@api/services/query-helper';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
+import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-guard';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 
 export class RestWriteController {
@@ -12,6 +13,7 @@ export class RestWriteController {
     try {
       await this.runtime.accessPolicy.ensureCreateAllowed(collection, req);
       SystemMetaCollectionGuard.ensureWritableKey(collection, req.body?.key);
+      UserCollectionScopeGuard.ensureCreateAllowed(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db));
       const extracted = this.runtime.fieldGuard.extractReadOnlyOverrideMetadata(req.body);
       let data = extracted.data;
       const table = QueryHelper.getVirtualTable(collection);
@@ -88,6 +90,7 @@ export class RestWriteController {
     try {
       await this.runtime.accessPolicy.ensureUpdateAllowed(collection, req);
       SystemMetaCollectionGuard.ensureWritableKey(collection, req.params.id);
+      UserCollectionScopeGuard.ensureAllows(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
       const extracted = this.runtime.fieldGuard.extractReadOnlyOverrideMetadata(req.body);
       let data = extracted.data;
       const changeSummary = data._change_summary || `Update ${collection.slug} record`;
@@ -183,6 +186,7 @@ export class RestWriteController {
     try {
       await this.runtime.accessPolicy.ensureDeleteAllowed(collection, req);
       SystemMetaCollectionGuard.ensureWritableKey(collection, req.params.id);
+      UserCollectionScopeGuard.ensureAllows(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
       const primaryKey = collection.primaryKey || 'id';
       const recordId = this.runtime.requireRecordIdentifier(collection, req.params.id);
 
@@ -221,23 +225,6 @@ export class RestWriteController {
         throw err;
       }
       res.status(err?.statusCode || 500).json({ error: err.message });
-    }
-  }
-
-  async restoreVersion(collection: ICollection, req: any, res: Response) {
-    try {
-      const restoredData = await this.runtime.versioningService.restoreVersion(
-        collection,
-        req.params.id,
-        parseInt(req.params.version, 10),
-        req.user
-      );
-      res.json({
-        message: `Successfully restored to version ${req.params.version}`,
-        data: restoredData,
-      });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
     }
   }
 }

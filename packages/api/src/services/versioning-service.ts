@@ -1,11 +1,63 @@
-import { IDatabaseManager, Schema } from '@fromcode119/database';
+import { IDatabaseManager, NamingStrategy, Schema } from '@fromcode119/database';
 import { Logger, RecordVersions } from '@fromcode119/core';
-import { type ICollection, SystemConstants } from '@fromcode119/core';
+import { type ICollection, FieldType, SystemConstants } from '@fromcode119/core';
 
 export class VersioningService {
   private logger = new Logger({ namespace: 'versioning' });
 
+  /** Resolves a snapshot's `ref_collection` to its definition; installed at boot by the api server. */
+  private collectionLookup: (slug: string) => ICollection | undefined = () => undefined;
+
   constructor(private db: IDatabaseManager) {}
+
+  useCollectionLookup(lookup: (slug: string) => ICollection | undefined): void {
+    this.collectionLookup = lookup;
+  }
+
+  /** A stored version row as it may be served — see {@link withoutPasswordFields}. */
+  redactStoredVersion<T>(row: T): T {
+    const record = row as Record<string, unknown> | null;
+    const slug = String(record?.ref_collection ?? '');
+    return VersioningService.redactVersion(slug ? this.collectionLookup(slug) : undefined, row);
+  }
+
+  /**
+   * A record's history without its `type: 'password'` fields.
+   *
+   * Snapshots were the raw stored row, so every saved account kept its bcrypt hash in the version
+   * table and the versions API handed it back — the one door past the rule that a password field never
+   * leaves the API (`DataProcessorService.filterHiddenFields`). A restore then wrote that old hash
+   * back, quietly reinstating a password its owner had changed. A credential is not history: it is
+   * never snapshotted, never served from a snapshot already holding one, and never restored.
+   */
+  static withoutPasswordFields<T>(collection: ICollection | undefined, data: T): T {
+    if (!collection || !data || typeof data !== 'object' || Array.isArray(data)) return data;
+    const secret = (collection.fields || [])
+      .filter((field) => FieldType.resolve(field.type) === FieldType.PASSWORD)
+      .map((field) => field.name);
+    if (!secret.length) return data;
+    const copy: Record<string, unknown> = { ...(data as Record<string, unknown>) };
+    // A snapshot is the RAW stored row, whose columns are physical snake_case (`api_secret`), while the
+    // schema names the field (`apiSecret`). Both spellings name the same stored value here.
+    for (const name of secret) {
+      delete copy[name];
+      delete copy[NamingStrategy.toSnakeCase(name)];
+    }
+    return copy as T;
+  }
+
+  /** A version row as it may be served: its payload without password fields. */
+  static redactVersion<T>(collection: ICollection | undefined, row: T): T {
+    if (!row || typeof row !== 'object') return row;
+    // Version rows come from the RAW manager, so the column is its physical snake_case name.
+    const record = row as Record<string, unknown>;
+    if (!('version_data' in record)) return row;
+    let payload = record.version_data;
+    if (typeof payload === 'string') {
+      try { payload = JSON.parse(payload); } catch { return row; }
+    }
+    return { ...record, version_data: VersioningService.withoutPasswordFields(collection, payload) } as T;
+  }
 
   async createSnapshot(collection: ICollection, refId: any, data: any, user: any, summary: string) {
     try {
@@ -27,7 +79,7 @@ export class VersioningService {
         ref_id: String(refId),
         ref_collection: collection.slug,
         version: nextVersion,
-        version_data: data,
+        version_data: VersioningService.withoutPasswordFields(collection, data),
         updated_by: user?.id || null,
         change_summary: summary
       });
@@ -44,12 +96,12 @@ export class VersioningService {
       ref_collection: collectionSlug
     };
 
-    let versions = await this.db.find(RecordVersions.slug, {
+    let versions = (await this.db.find(RecordVersions.slug, {
       where,
       orderBy: { version: 'desc' },
       limit,
       offset
-    });
+    })).map((row: any) => this.redactStoredVersion(row));
 
     if (versions.length > 0) {
       const userIds = [...new Set(versions.map(v => v.updated_by).filter(Boolean))];
@@ -84,7 +136,7 @@ export class VersioningService {
       },
       limit: 1
     });
-    return results?.[0] || null;
+    return results?.[0] ? this.redactStoredVersion(results[0]) : null;
   }
 
   private resolveVersionData(versionData: unknown): Record<string, unknown> {
@@ -109,7 +161,7 @@ export class VersioningService {
       throw new Error(`Version ${version} not found for ${collection.slug}/${refId}`);
     }
 
-    const dataToRestore = this.resolveVersionData(targetVersion.version_data);
+    const dataToRestore = VersioningService.withoutPasswordFields(collection, this.resolveVersionData(targetVersion.version_data));
     const primaryKey = collection.primaryKey || 'id';
     const where = { [primaryKey]: primaryKey === 'id' ? Number(refId) || refId : refId };
     

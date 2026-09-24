@@ -7,7 +7,12 @@ export class SuggestionService {
 
   constructor(private db: IDatabaseManager) {}
 
-  async getSuggestions(collection: ICollection, field: string, q?: string) {
+  /**
+   * `scope` is a plain `where` every read here must carry — the account scope of `users` — or `null`.
+   * Suggestions are DISTINCT stored values, so an unscoped read of `users` hands back other sites'
+   * email addresses one keystroke at a time.
+   */
+  async getSuggestions(collection: ICollection, field: string, q?: string, scope: Record<string, unknown> | null = null) {
     try {
       const config = collection.fields.find(f => f.name === field);
 
@@ -23,6 +28,7 @@ export class SuggestionService {
       if (config && (config.type === FieldType.JSON || config.admin?.component === 'TagField' || config.admin?.component === 'Tags')) {
         const rows = await this.db.find(tableName, {
           columns: { [physicalField]: true },
+          ...(scope ? { where: scope } : {}),
           limit: 300
           // Note: JSON/tags fields are stored as serialized arrays — LIKE on the raw
           // JSON string is unreliable, so search filtering is done in JS below.
@@ -87,6 +93,7 @@ export class SuggestionService {
         const rows = await this.db.find(tableName, {
           columns: columnsToFetch,
           ...(search ? { search: { columns: searchColumns, value: search } } : {}),
+          ...(scope ? { where: scope } : {}),
           limit: 50
         });
 

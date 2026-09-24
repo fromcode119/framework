@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ICollection, HookEventUtils } from '@fromcode119/core';
 import { QueryHelper } from '@api/services/query-helper';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
+import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-guard';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 
 export class RestBulkController {
@@ -12,6 +13,7 @@ export class RestBulkController {
       await this.runtime.accessPolicy.ensureCreateAllowed(collection, req);
       const items = Array.isArray(req.body) ? req.body : [req.body];
       for (const item of items) SystemMetaCollectionGuard.ensureWritableKey(collection, item?.key);
+      UserCollectionScopeGuard.ensureCreateAllowed(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db));
       const table = QueryHelper.getVirtualTable(collection);
       const results: any[] = [];
       const globalSummary = req.body._change_summary || `Bulk creation of ${collection.slug}`;
@@ -60,6 +62,7 @@ export class RestBulkController {
     try {
       await this.runtime.accessPolicy.ensureUpdateAllowed(collection, req);
       for (const id of Array.isArray(req.body?.ids) ? req.body.ids : []) SystemMetaCollectionGuard.ensureWritableKey(collection, id);
+      const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
       const ids = req.body.ids;
       const data = req.body.data;
       const changeSummary = req.body._change_summary || `Bulk update of ${collection.slug}`;
@@ -86,6 +89,10 @@ export class RestBulkController {
 
       const results: any[] = [];
       for (const id of ids) {
+        // An account outside the scope is treated exactly like one that does not exist.
+        if (!UserCollectionScopeGuard.allows(userScope, id)) {
+          continue;
+        }
         const where = {
           [primaryKey]: primaryKey === 'id' ? parseInt(id, 10) : id,
         };
@@ -148,7 +155,16 @@ export class RestBulkController {
 
       const table = QueryHelper.getVirtualTable(collection);
       const primaryKey = collection.primaryKey || 'id';
-      const parsedIds = ids.map((id: any) => this.runtime.requireRecordIdentifier(collection, String(id)));
+      const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
+      const parsedIds = ids
+        .map((id: any) => this.runtime.requireRecordIdentifier(collection, String(id)))
+        .filter((id: any) => UserCollectionScopeGuard.allows(userScope, id));
+      if (parsedIds.length === 0) {
+        if (!res) {
+          return false;
+        }
+        return res.json({ success: false, count: 0 });
+      }
       const success = await this.runtime.db.delete(
         table,
         this.runtime.db.inArray(table[primaryKey], parsedIds)
@@ -157,14 +173,14 @@ export class RestBulkController {
       if (success) {
         this.runtime.emitCollectionEvent(collection, 'deleted', {
           ids: parsedIds,
-          count: ids.length,
+          count: parsedIds.length,
         });
       }
 
       if (!res) {
         return success;
       }
-      res.json({ success, count: ids.length });
+      res.json({ success, count: parsedIds.length });
     } catch (err: any) {
       if (!res) {
         throw err;
@@ -181,6 +197,7 @@ export class RestBulkController {
         return res.status(400).json({ error: 'Payload must be an array of records' });
       }
       for (const item of items) SystemMetaCollectionGuard.ensureWritableKey(collection, item?.key);
+      UserCollectionScopeGuard.ensureCreateAllowed(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db));
 
       const table = QueryHelper.getVirtualTable(collection);
       const results: any[] = [];
