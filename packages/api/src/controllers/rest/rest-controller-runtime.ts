@@ -2,7 +2,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { HookManager, Logger } from '@fromcode119/core';
 import { ICollection, HookEventUtils } from '@fromcode119/core';
 import { CollectionHookPhase } from '@fromcode119/core';
-import { IDatabaseManager } from '@fromcode119/database';
+import { IDatabaseManager, NamingStrategy } from '@fromcode119/database';
 import { ActivityService } from '@api/services/activity-service';
 import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
 import { DataProcessorService } from '@api/services/data-processor-service';
@@ -36,13 +36,41 @@ export class RestControllerRuntime {
     this.accessPolicy = new CollectionAccessPolicyService();
   }
 
-  async callCollectionHook<T>(collection: ICollection, phase: CollectionHookPhase, payload: T): Promise<T> {
+  /**
+   * Phases that report a STORED row. That row comes from the raw manager in physical snake_case
+   * (`order_number`), so listeners — which receive every other row camelCased by `context.db` — read
+   * `orderNumber`, got `undefined`, and fell back silently: a cancelled order's restock was logged
+   * against its id, a manual stock edit was never audited.
+   */
+  private static readonly STORED_ROW_PHASES: ReadonlySet<CollectionHookPhase> = new Set([
+    CollectionHookPhase.AFTER_CREATE,
+    CollectionHookPhase.AFTER_UPDATE,
+    CollectionHookPhase.AFTER_SAVE,
+    CollectionHookPhase.BEFORE_DELETE,
+    CollectionHookPhase.AFTER_DELETE,
+  ]);
+
+  /**
+   * Runs a collection hook. For a stored-row phase listeners receive the row with canonical camelCase
+   * names and, on an update, `_previousData` — the row as it was before this write — which hooks
+   * need to act on a TRANSITION (a status moving to cancelled, a quantity changing) rather than on
+   * every save. Nothing supplied it before, so every such hook either never fired or fired on every
+   * save. Those phases are notifications: the caller keeps its own row for the response and snapshot.
+   */
+  async callCollectionHook<T>(collection: ICollection, phase: CollectionHookPhase, payload: T, previous?: unknown): Promise<T> {
     if (!this.hooks) {
       return payload;
     }
     // Identity comes from HookEventUtils, not from `collection.slug` — see collectionIdentity() for
     // why the declared slug is canonical and what silently broke while this used the physical one.
-    return await this.hooks.call(HookEventUtils.collectionEvent(collection, phase), payload) as T;
+    const event = HookEventUtils.collectionEvent(collection, phase);
+    if (!RestControllerRuntime.STORED_ROW_PHASES.has(phase)) {
+      return await this.hooks.call(event, payload) as T;
+    }
+    const view: Record<string, unknown> = { ...NamingStrategy.denormalizeRecord(payload) };
+    if (previous) view._previousData = NamingStrategy.denormalizeRecord(previous);
+    await this.hooks.call(event, view);
+    return payload;
   }
 
   resolveWriteTarget(collection: ICollection): string {
