@@ -7,6 +7,7 @@ import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { GeneralBrandCard } from '@/app/settings/general/general-brand-card';
 import { GeneralSystemCards } from '@/app/settings/general/general-system-cards';
+import { GeneralSignupEmailCard } from '@/app/settings/general/general-signup-email-card';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { GeneralSettingsPageActions } from '@/app/settings/general/page-actions.client';
 
@@ -105,6 +106,13 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
               timezoneOptions={this.timezoneOptions}
               isSendingTelemetryTest={this.isSendingTelemetryTest}
               onSendTelemetryTest={this.handleSendTelemetryTest}
+            />
+
+            <GeneralSignupEmailCard
+              platformLocks={this.platformLocks}
+              settings={settings}
+              setSettings={this.setSettings}
+              theme={theme}
             />
 
             <Slot name="admin.settings.general.bottom" />

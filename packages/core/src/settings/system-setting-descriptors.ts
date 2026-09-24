@@ -4,6 +4,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import type { ISystemSettingDescriptor } from '@core/settings/interfaces/system-setting-descriptor.interface';
 import { SystemSettingSeedDefaults } from '@core/settings/system-setting-seed-defaults';
 import { LocalizationSettingDescriptors } from '@core/settings/localization-setting-descriptors';
+import { SignupEmailSettingDescriptors } from '@core/settings/signup-email-setting-descriptors';
 
 /**
  * What every system setting DECLARES: its scope, whether it is writable, whether it may be exposed,
@@ -122,6 +123,8 @@ export class SystemSettingDescriptors {
 
     // Localization rows live in their own table — see LocalizationSettingDescriptors.
     ...LocalizationSettingDescriptors.ALL,
+    // Sign-up email copy — see SignupEmailSettingDescriptors.
+    ...SignupEmailSettingDescriptors.ALL,
 
     // Security & Auth
     [SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS]: {
