@@ -9,6 +9,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { prop, state } from '@fromcode119/react-class-components';
 import { PluginRouteResolver } from '@/lib/plugin-route-resolver';
+import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 
 /**
  * Root route for a plugin.
@@ -66,7 +67,7 @@ export class PluginRootRoute extends AdminComponent {
     }
 
     if (!isActive) {
-      return <PluginNotFound pluginSlug={pluginSlug} />;
+      return <SiteScopeGate what={`/${pluginSlug}`}><PluginNotFound pluginSlug={pluginSlug} /></SiteScopeGate>;
     }
 
     if (hasPageSlot || !collection) {

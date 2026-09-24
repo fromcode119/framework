@@ -10,6 +10,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { prop, state } from '@fromcode119/react-class-components';
+import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 
 export class CollectionListRoute extends AdminComponent {
   @prop declare params: Promise<{ pluginSlug: string; slug: string }>;
@@ -117,7 +118,7 @@ export class CollectionListRoute extends AdminComponent {
     const isGlobalRoute = pluginSlug.toLowerCase() === AdminCollectionUtils.GLOBAL_ROUTE;
     const isActive = isGlobalRoute || plugins.some((p: any) => p.slug === pluginSlug);
     if (!isActive) {
-      return <PluginNotFound pluginSlug={pluginSlug} />;
+      return <SiteScopeGate what={`/${pluginSlug}/${slug}`}><PluginNotFound pluginSlug={pluginSlug} /></SiteScopeGate>;
     }
 
     const resolvedPageSlot = this.resolvedPageSlot;
@@ -159,7 +160,7 @@ export class CollectionListRoute extends AdminComponent {
           </div>
         );
       }
-      return <CollectionNotFound theme={this.theme === ThemeMode.DARK ? 'dark' : 'light'} slug={slug} pluginSlug={pluginSlug} />;
+      return <SiteScopeGate what={`/${pluginSlug}/${slug}`}><CollectionNotFound theme={this.theme === ThemeMode.DARK ? 'dark' : 'light'} slug={slug} pluginSlug={pluginSlug} /></SiteScopeGate>;
     }
 
     return <CollectionListPage params={this.params} />;

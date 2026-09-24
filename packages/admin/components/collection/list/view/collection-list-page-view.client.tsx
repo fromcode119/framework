@@ -15,6 +15,7 @@ import { CollectionListPageLifecycle } from '@/components/collection/list/view/c
 import { CollectionListPageViewModelBuilder } from '@/components/collection/list/view/collection-list-page-view-model.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { RecordOperations } from '@/components/collection/list/record-operations';
+import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 
 export class CollectionListPageView extends Reactor {
   @prop declare pluginSlug: string;
@@ -122,7 +123,7 @@ export class CollectionListPageView extends Reactor {
     const slug = this.slug;
     const theme = this.theme;
     const collection = AdminCollectionUtils.resolveCollection(this.collections, pluginSlug, slug);
-    if (!collection) return <CollectionNotFound theme={theme as any} slug={slug} pluginSlug={pluginSlug} />;
+    if (!collection) return <SiteScopeGate what={`/${pluginSlug}/${slug}`}><CollectionNotFound theme={theme as any} slug={slug} pluginSlug={pluginSlug} /></SiteScopeGate>;
 
     const viewModel = CollectionListPageViewModelBuilder.build(this);
     const { toolbarProps, tableProps, footerProps, deleteDialogProps } = CollectionListPageProps.build({ pluginSlug, slug, state: viewModel });
