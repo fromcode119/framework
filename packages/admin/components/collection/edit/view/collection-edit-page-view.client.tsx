@@ -13,6 +13,7 @@ import { EditCollectionNotFound } from '@/components/collection/edit/edit-collec
 import { CollectionCreateDisabled } from '@/components/collection/edit/collection-create-disabled';
 import { CollectionEditPageLifecycle } from '@/components/collection/edit/view/collection-edit-page-lifecycle.client';
 import { CollectionEditPageViewModelBuilder } from '@/components/collection/edit/view/collection-edit-page-view-model.client';
+import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 
 export class CollectionEditPageView extends Reactor {
   @prop declare pluginSlug: string;
@@ -108,7 +109,7 @@ export class CollectionEditPageView extends Reactor {
     const id = this.id;
     const edit = CollectionEditPageViewModelBuilder.build(this);
     const collection = edit.collection;
-    if (!collection) return <EditCollectionNotFound theme={edit.theme} slug={slug} pluginSlug={pluginSlug} />;
+    if (!collection) return <SiteScopeGate what={`/${pluginSlug}/${slug}`}><EditCollectionNotFound theme={edit.theme} slug={slug} pluginSlug={pluginSlug} /></SiteScopeGate>;
 
     // `admin.disableCreate` is a statement about who writes these rows, not a hint for one button on the
     // list page. Serving the create form here let a typed URL forge a record the runtime is supposed to own.

@@ -124,6 +124,11 @@ export class PlatformSettingLocks {
     return this.tenantMode && this.siteSelected;
   }
 
+  /** The platform scope: a multi-site deployment with no site selected. `false` on a single-tenant deployment. */
+  isPlatformScope(): boolean {
+    return this.tenantMode && !this.siteSelected;
+  }
+
   /**
    * One line telling the operator where the settings this screen is NOT showing actually live.
    *
