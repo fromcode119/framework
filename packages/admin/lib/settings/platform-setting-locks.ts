@@ -1,3 +1,4 @@
+import { CoercionUtils } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 
@@ -25,6 +26,7 @@ export class PlatformSettingLocks {
     private readonly editable: boolean,
     private readonly tenantMode: boolean,
     private readonly siteSelected: boolean,
+    private readonly defaults: Record<string, string> = {},
   ) {}
 
   /** Nothing locked — the state before the answer arrives, and after a failed request. */
@@ -53,7 +55,13 @@ export class PlatformSettingLocks {
       response.editable !== false,
       response.tenantMode === true,
       response.siteSelected !== false,
+      CoercionUtils.toObject(response.declaredDefaults) as Record<string, string>,
     );
+  }
+
+  /** What the server sends for this setting when the scope has no value of its own; '' when nothing. */
+  declaredDefault(key: string): string {
+    return String(this.defaults[key] ?? '');
   }
 
   /**

@@ -30,12 +30,22 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'sources_workspace_root',
     'timezone',
     'time_format',
+    'signup_email_subject',
+    'signup_email_greeting',
+    'signup_email_title',
+    'signup_email_message',
+    'signup_email_button_label',
+    'signup_email_fallback_label',
+    'signup_email_ignore_message',
+    'signup_email_footer_text',
+    'signup_email_accent_color',
   ] as const;
   protected static readonly BOOLEAN_KEYS = [
     'admin_search_indexing',
     'email_notifications',
     'frontend_auth_enabled',
     'frontend_registration_enabled',
+    'signup_email_branded',
   ] as const;
 
   @state isSaving = false;

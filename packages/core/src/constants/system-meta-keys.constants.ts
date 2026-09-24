@@ -233,6 +233,22 @@ export class SystemMetaKeys {
   NOTIFICATION_EMAIL: 'notification_email',
   NOTIFICATION_EMAIL_CC: 'notification_email_cc',
   /**
+   * The sign-up (address verification) email, per site — Settings → General → Sign-up email.
+   * BRANDED off sends the plain framework email; on sends the branded one built from the copy below.
+   * This copy used to come from `settings.authEmails` in the THEME's config, which no screen could
+   * edit and which the reader looked up on the platform's theme, not the site's.
+   */
+  SIGNUP_EMAIL_BRANDED: 'signup_email_branded',
+  SIGNUP_EMAIL_SUBJECT: 'signup_email_subject',
+  SIGNUP_EMAIL_GREETING: 'signup_email_greeting',
+  SIGNUP_EMAIL_TITLE: 'signup_email_title',
+  SIGNUP_EMAIL_MESSAGE: 'signup_email_message',
+  SIGNUP_EMAIL_BUTTON_LABEL: 'signup_email_button_label',
+  SIGNUP_EMAIL_FALLBACK_LABEL: 'signup_email_fallback_label',
+  SIGNUP_EMAIL_IGNORE_MESSAGE: 'signup_email_ignore_message',
+  SIGNUP_EMAIL_FOOTER_TEXT: 'signup_email_footer_text',
+  SIGNUP_EMAIL_ACCENT_COLOR: 'signup_email_accent_color',
+  /**
    * Whether search engines may index the PLATFORM'S OWN HOSTS — the admin console and the api
    * host, both of which read this one switch. Off unless an operator turns it on. A tenant's
    * site is NOT governed by it; a site follows its own visibility.

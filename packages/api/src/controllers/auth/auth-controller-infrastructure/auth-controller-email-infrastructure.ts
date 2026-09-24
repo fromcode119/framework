@@ -3,17 +3,17 @@ import { EmailChangeVerificationTemplate } from '@api/controllers/auth/email-tem
 import { PasswordResetEmailTemplate } from '@api/controllers/auth/email-templates/password-reset-email-template';
 import { SecurityNotificationEmailTemplate } from '@api/controllers/auth/email-templates/security-notification-email-template';
 import { VerifyEmailFallbackTemplate } from '@api/controllers/auth/email-templates/verify-email-fallback-template';
-import { AuthControllerThemeEmailInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-theme-email-infrastructure';
+import { AuthControllerSignupEmailInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-signup-email-infrastructure';
 
-export class AuthControllerEmailInfrastructure extends AuthControllerThemeEmailInfrastructure {
+export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmailInfrastructure {
   protected async sendVerificationEmail(options: { to: string; verificationUrl: string; firstName?: string }): Promise<boolean> {
     const recipientName = String(options.firstName || '').trim();
     const appName = await this.resolveFrameworkAppName();
     const fromAddress = (await this.resolveFrameworkSender()).identity;
-    const themedEmail = await this.buildThemeVerifyEmail({
+    const brandedEmail = await this.buildBrandedVerifyEmail({
       verificationUrl: options.verificationUrl,
       firstName: recipientName,
-      fallbackAppName: appName,
+      brandName: appName,
     });
     const greeting = recipientName ? `Hi ${recipientName},` : 'Hi,';
     const fallbackEmail = await VerifyEmailFallbackTemplate.build({
@@ -21,9 +21,9 @@ export class AuthControllerEmailInfrastructure extends AuthControllerThemeEmailI
       greeting,
       verificationUrl: options.verificationUrl,
     });
-    const subject = themedEmail?.subject || fallbackEmail.subject;
-    const text = themedEmail?.text || fallbackEmail.text;
-    const html = themedEmail?.html || fallbackEmail.html;
+    const subject = brandedEmail?.subject || fallbackEmail.subject;
+    const text = brandedEmail?.text || fallbackEmail.text;
+    const html = brandedEmail?.html || fallbackEmail.html;
 
     return this.sendEmail({ to: options.to, subject, text, html, from: fromAddress }, '[AuthController] Failed to send verification email');
   }

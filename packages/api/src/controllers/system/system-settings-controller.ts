@@ -71,6 +71,9 @@ export class SystemSettingsController {
       res.json({
         keys: TenantBespokePolicies.platformKeys(),
         inheritedKeys: SystemSettingRegistry.inheritedKeys(),
+        // What each setting falls back to when the scope has no value — shown as the empty field's
+        // placeholder, so a blank box names the value it sends.
+        declaredDefaults: SystemSettingRegistry.exposedDefaults(),
         editable,
         tenantMode,
         siteSelected,

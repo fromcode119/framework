@@ -90,6 +90,19 @@ export class SystemSettingRegistry {
       });
   }
 
+  /**
+   * The declared default of every EXPOSED seeded setting, keyed by setting — what a reader uses when a
+   * site has no value, handed to the admin so an empty field can say so instead of looking unset.
+   */
+  static exposedDefaults(): Record<string, string> {
+    const exposed = SystemSettingRegistry.exposedKeys();
+    return Object.fromEntries(
+      SystemSettingRegistry.seedDefaults()
+        .filter((entry) => exposed.has(entry.key))
+        .map((entry) => [entry.key, entry.value]),
+    );
+  }
+
   /** A single declared default, for a reader that needs it without running the seed. */
   static defaultValueOf(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): string {
     const seed = SystemSettingRegistry.describe(key).seed;

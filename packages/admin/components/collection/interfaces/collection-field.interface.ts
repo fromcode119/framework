@@ -8,6 +8,8 @@ export interface ICollectionField {
   localized?: boolean;
   required?: boolean;
   defaultValue?: any;
+  /** Shown in an empty text box instead of the generic "Enter <label>..." — e.g. what an empty value sends. */
+  placeholder?: string;
   options?: { label: string; value: any }[];
   relationTo?: string | string[];
   hasMany?: boolean;

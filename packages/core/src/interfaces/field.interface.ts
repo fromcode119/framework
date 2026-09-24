@@ -52,6 +52,8 @@ export interface IField {
     /** Declared as a literal by collections; compare with `FieldPosition.resolve()`, never `===`. */
     position?: FieldPosition | string;
     component?: string;
+    /** A `select` that holds several of its options (stored as an array) — rendered as a multi-select. */
+    multiple?: boolean;
     sourceCollection?: string;
     sourceField?: string;
     /**

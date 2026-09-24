@@ -5,6 +5,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { GeneralSettingsPageState } from '@/app/settings/general/page-state.client';
+import { GeneralSignupEmailCard } from '@/app/settings/general/general-signup-email-card';
 
 /**
  * Reading the general settings, writing them back, and proving the telemetry address works.
@@ -57,6 +58,9 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       timezone: String(settings.timezone ?? '').trim(),
       frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
       frontend_registration_enabled: Boolean(settings.frontend_registration_enabled),
+      signup_email_branded: Boolean(settings.signup_email_branded),
+      ...Object.fromEntries(GeneralSignupEmailCard.COPY_ROWS.map((row) => [row.key, String(settings[row.key] ?? '').trim()])),
+      [GeneralSignupEmailCard.ACCENT_KEY]: String(settings[GeneralSignupEmailCard.ACCENT_KEY] ?? '').trim(),
     };
   }
 
