@@ -6,7 +6,7 @@ const get = vi.fn();
 
 vi.mock('@/lib/api', () => ({ AdminApi: { put: (...a: unknown[]) => put(...a), post: (...a: unknown[]) => post(...a), get: (...a: unknown[]) => get(...a) } }));
 vi.mock('@/lib/admin-services', () => ({
-  AdminServices: { getInstance: () => ({ entityFormData: { normalizeSubmitPayload: (_c: unknown, payload: unknown) => payload } }) },
+  AdminServices: { getInstance: () => ({ entityFormData: { normalizeSubmitPayload: (_c: unknown, payload: unknown) => payload, normalizeLoadedRecord: (_c: unknown, record: unknown) => record } }) },
 }));
 vi.mock('@/lib/collection-utils', () => ({
   AdminCollectionUtils: { resolveCollection: () => ({ slug: 'alpha_pages', fields: [] }) },
@@ -66,5 +66,17 @@ describe('handleSubmit — the saved record becomes the new pristine baseline', 
     await expect(CollectionEditPageHandlers.handleSubmit(self as any, undefined, undefined)).rejects.toThrow('boom');
 
     expect(self.state.pristineFormData).toEqual({ id: 7, title: 'Original' });
+  });
+
+  it('reloads the saved record, so a value the server set reaches the form', async () => {
+    const self = new EditPageStub();
+    self.state.formData = { id: 7, title: 'Edited', orderNumber: '' };
+    get.mockResolvedValue({ id: 7, title: 'Edited', orderNumber: 'ORD-000761' });
+
+    await CollectionEditPageHandlers.handleSubmit(self as any, undefined, undefined);
+
+    expect(get).toHaveBeenCalledWith(expect.stringContaining('/7?locale_mode=raw'));
+    expect(self.state.formData).toEqual({ id: 7, title: 'Edited', orderNumber: 'ORD-000761' });
+    expect(self.state.pristineFormData).toEqual(self.state.formData);
   });
 });

@@ -61,9 +61,9 @@ describe('record hook payloads', () => {
     expect(calls.find((c) => /afterUpdate/.test(c.event))!.payload._previousData.status).toBe('pending');
   });
 
-  it('keeps the response the stored row, without the previous copy', async () => {
+  it('answers with the saved row in camelCase, like a read, without the previous copy', async () => {
     const body = await update();
-    expect(body).toEqual(after);
+    expect(body).toEqual({ id: 7, orderNumber: 'ORD-000039', status: 'cancelled' });
   });
 
   it('leaves the incoming data of beforeSave untouched', async () => {
