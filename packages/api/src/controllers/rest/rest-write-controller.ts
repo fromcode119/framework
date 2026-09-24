@@ -144,8 +144,8 @@ export class RestWriteController {
         return res.status(404).json({ error: 'Not found' });
       }
 
-      let finalItem = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_UPDATE, updated);
-      finalItem = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
+      let finalItem = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_UPDATE, updated, existing);
+      finalItem = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem, existing);
 
       if (collection.versions !== false) {
         await this.runtime.versioningService.createSnapshot(collection, req.params.id, finalItem, req.user, changeSummary);

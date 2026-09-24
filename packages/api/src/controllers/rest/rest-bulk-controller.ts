@@ -111,8 +111,8 @@ export class RestBulkController {
           continue;
         }
 
-        let finalItem = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_UPDATE, updated);
-        finalItem = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem);
+        let finalItem = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_UPDATE, updated, existing);
+        finalItem = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_SAVE, finalItem, existing);
         await this.runtime.versioningService.createSnapshot(collection, id, finalItem, req.user, changeSummary);
         this.runtime.emitCollectionEvent(collection, 'updated', finalItem);
         this.runtime.emitCollectionEvent(collection, 'saved', finalItem);

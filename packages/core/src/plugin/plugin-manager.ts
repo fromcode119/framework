@@ -150,8 +150,12 @@ export class PluginManager extends PluginManagerApi implements IPluginManagerInt
     this.workflow = new WorkflowService(this.db, this.hooks);
     this.webhooks = new WebhookService(this.db, this.hooks);
     // Forward every emitted hook event to the webhook dispatcher.
+    // A record hook's `_previousData` (the row before the write) is for plugin hooks; it never leaves.
     this.hooks.on('*', (payload: any, event: string) => {
-      this.webhooks.processEvent(event, payload).catch(err => this.logger.error(`Webhook delivery failed for ${event}:`, err));
+      const outbound = payload?._previousData === undefined
+        ? payload
+        : (({ _previousData: _previous, ...record }) => record)(payload);
+      this.webhooks.processEvent(event, outbound).catch(err => this.logger.error(`Webhook delivery failed for ${event}:`, err));
     });
 
     // Initialize Global Plugin Registry for cohesion

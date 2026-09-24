@@ -88,17 +88,24 @@ export class WebSocketManager {
 
     this.hooks.on('collection:*:afterCreate', (data: any, event: string) => {
       const slug = event.split(':')[1];
-      this.broadcast(`collection:${slug}:created`, data);
+      this.broadcast(`collection:${slug}:created`, WebSocketManager.withoutPreviousRow(data));
     });
 
     this.hooks.on('collection:*:afterUpdate', (data: any, event: string) => {
       const slug = event.split(':')[1];
-      this.broadcast(`collection:${slug}:updated`, data);
+      this.broadcast(`collection:${slug}:updated`, WebSocketManager.withoutPreviousRow(data));
     });
 
     this.hooks.on('collection:*:afterDelete', (data: any, event: string) => {
       const slug = event.split(':')[1];
       this.broadcast(`collection:${slug}:deleted`, data);
     });
+  }
+
+  /** A record hook carries the row as it was before the write for plugin hooks; that copy is not broadcast. */
+  private static withoutPreviousRow(data: any): any {
+    if (data?._previousData === undefined) return data;
+    const { _previousData: _previous, ...record } = data;
+    return record;
   }
 }
