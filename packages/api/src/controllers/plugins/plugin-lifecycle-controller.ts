@@ -38,9 +38,13 @@ export class PluginLifecycleController extends BaseController {
 
     // `scope: 'platform'` is the operator-wide axis — is this plugin loadable AT ALL. It is a
     // platform-admin action and is refused for anyone else, because one customer must never be able
-    // to take a plugin down for every other customer. Everything else on a multi-tenant deployment
-    // means "for the site I am currently in".
-    const platformScope = String((req.body as any)?.scope || '').trim() === 'platform';
+    // to take a plugin down for every other customer. On a multi-tenant deployment a toggle with a
+    // site bound means "for the site I am currently in"; with NO site bound (the admin's platform
+    // scope) there is no site it could mean, so it is the platform axis too. It used to answer
+    // `no_tenant_selected`, which left a newly installed plugin with no way to be activated from the
+    // admin: Sites → Access and the plugin's own page both run in the platform scope.
+    const siteBound = Boolean(String((req as any).tenantId || '').trim());
+    const platformScope = String((req.body as any)?.scope || '').trim() === 'platform' || !siteBound;
 
     if (TenantMode.isEnabled() && !platformScope) {
       return this.toggleForTenant(req, res, String(slug), CoercionUtils.toBoolean(enabled) === true);
@@ -100,9 +104,6 @@ export class PluginLifecycleController extends BaseController {
    */
   private async toggleForTenant(req: Request, res: Response, slug: string, enabled: boolean) {
     const tenantId = String((req as any).tenantId || '').trim();
-    if (!tenantId) {
-      return res.status(400).json({ error: 'no_tenant_selected' });
-    }
 
     const plugin = this.manager.plugins.get(slug);
     if (!plugin) {

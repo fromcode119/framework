@@ -97,6 +97,19 @@ export class SiteDetailPageClient extends AdminComponent {
     }
   }
 
+  /**
+   * After the access card activates a plugin on the platform, only the plugin inventory changed. A full
+   * `load()` here re-read the site and replaced the form, which discarded the very selection the card
+   * had just made ("on for this site once you save") and every other unsaved edit on the page.
+   */
+  @bound async reloadInventory(): Promise<void> {
+    try {
+      this.inventory = (await SitesClient.list()).inventory;
+    } catch (err: any) {
+      this.error = err?.message || 'Could not reload the plugin list.';
+    }
+  }
+
   @bound apply(site: SiteRecord): void {
     this.site = site;
     this.values = SiteFormValues.fromSite(site);
@@ -184,7 +197,7 @@ export class SiteDetailPageClient extends AdminComponent {
               ? <SiteOverviewTab site={site} values={this.values} onChange={this.onChange} onRebuilt={this.load} />
               : null}
             {this.tab.value === SiteTab.ACCESS.value
-              ? <SiteAccessCard values={this.values} inventory={this.inventory} onChange={this.onChange} onActivated={this.load} />
+              ? <SiteAccessCard values={this.values} inventory={this.inventory} onChange={this.onChange} onActivated={this.reloadInventory} />
               : null}
             {this.tab.value === SiteTab.DOMAINS.value ? <SiteDomainsCard tenantId={site.id} /> : null}
             {this.tab.value === SiteTab.MEMBERS.value ? <SiteMembersCard site={site} onChanged={this.apply} /> : null}

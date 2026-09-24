@@ -152,18 +152,8 @@ export class APIServer {
 
     const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT || '10mb';
     const formBodyLimit = process.env.API_FORM_BODY_LIMIT || jsonBodyLimit;
-    this.app.use(express.json({
-      limit: jsonBodyLimit,
-      verify: (req: any, _res, buf, encoding) => {
-        if (WebhookRouteUtils.isWebhookPath(String(req?.path || ''))) {
-          // Keep the raw buffer untouched — Stripe (and any HMAC verifier) requires
-          // the original bytes. The decoded string is provided as a convenience.
-          req.rawBody = Buffer.from(buf);
-          req.rawBodyString = buf.toString((encoding as BufferEncoding) || 'utf8');
-        }
-      }
-    }));
-    this.app.use(express.urlencoded({ extended: true, limit: formBodyLimit }));
+    this.app.use(express.json({ limit: jsonBodyLimit, verify: WebhookRouteUtils.keepRawBody }));
+    this.app.use(express.urlencoded({ extended: true, limit: formBodyLimit, verify: WebhookRouteUtils.keepRawBody }));
     this.app.use(new XSSMiddleware().middleware());
     this.app.use(cookieParser());
     this.app.use(new CSRFMiddleware().middleware());
