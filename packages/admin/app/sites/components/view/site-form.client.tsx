@@ -49,10 +49,6 @@ export class SiteForm extends PureReactor {
     this.emit({ id: e.target.value, idFollowsSlug: false });
   }
 
-  @bound private onHostRoles(hostRoles: Record<string, string>): void {
-    this.emit({ hostRoles });
-  }
-
   @bound onAdminEmail(e: ChangeEvent<HTMLInputElement>): void {
     this.emit({ adminEmail: e.target.value });
   }
@@ -239,7 +235,7 @@ export class SiteForm extends PureReactor {
           primaryHost={values.primaryHost}
           roles={values.hostRoles}
           isWorkspace={values.isWorkspace}
-          onChange={this.onHostRoles}
+          onChange={(hostRoles: Record<string, string>) => this.emit({ hostRoles })}
         />
         {this.isNew ? null : (
           /* The id is the row-level-security discriminator stamped into every row this site owns, so it
