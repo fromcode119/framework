@@ -9,6 +9,7 @@ import type { QueueManager } from '@fromcode119/queue';
 import { Logger } from '@core/logging';
 import { IntegrationTenantAccess } from '@core/integrations/integration-tenant-access';
 import { IntegrationTenantResolver } from '@core/integrations/integration-tenant-resolver';
+import { IntegrationInstanceInvalidator } from '@core/integrations/integration-instance-invalidator';
 import { TenantScopedIntegrationFactory } from '@core/integrations/tenant-scoped-integration-factory';
 import { CoreServices } from '@core/services';
 import { IntegrationConfigReadService } from '@core/integrations/integration-config-read-service';
@@ -150,11 +151,6 @@ export class IntegrationManager {
     return `${RequestContextUtils.getTenantId() ?? ''}::${normalizedType}`;
   }
 
-  /** Drops the current tenant's instance of a type, so the next `get()` re-reads that tenant's config. */
-  private forgetInstance(normalizedType: string): void {
-    this.instances.delete(this.instanceKey(normalizedType));
-  }
-
   async instantiateWithConfig<T = any>(
     typeKey: string,
     providerKey: string,
@@ -277,6 +273,7 @@ export class IntegrationManager {
   }
 
   private async refreshType(normalizedType: string) {
+    new IntegrationInstanceInvalidator(this.instances).forget(normalizedType);
     if (normalizedType === 'email') {
       await this.refreshEmail(true);
       return;
@@ -289,8 +286,6 @@ export class IntegrationManager {
       await this.refreshCache(true);
       return;
     }
-
-    this.forgetInstance(normalizedType);
   }
 
 }
