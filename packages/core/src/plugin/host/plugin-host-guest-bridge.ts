@@ -157,15 +157,25 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     const next = settings.forPlugin(this.manifest.sandbox);
     const heapChanged = next.memoryMb !== this.limits.memoryMb;
     this.limits = next;
-    if (heapChanged) await this.reload(this.manifest);
+    if (!heapChanged || (!this.guest && !this.channel)) return;
+    this.logger.info(`isolation limits changed; starting a fresh process with a ${next.memoryMb} MB heap`);
+    this.restarting = true;
+    try {
+      await this.relaunch();
+    } finally {
+      this.restarting = false;
+    }
   }
 
   /** Kill (if alive), start again, re-init (and re-enable when it was enabled). Shared by restart and reload. */
   protected async relaunch(): Promise<void> {
     if (this.guest) { this.guest.kill('SIGKILL'); this.guest = null; this.channel?.close(); this.channel = null; this.describeResult = null; this.sentPeerSignature = ''; }
+    // The old process's subscriptions go WITH it, before the new one starts. Dropped after `start()`,
+    // they stayed live across the boot, and a `plugins:ready` fired meanwhile by another plugin's
+    // relaunch reached this plugin's new process with handler ids it never issued.
+    if (this.context) this.registrations.resetForRestart(this.context);
     await this.start();
     if (this.context) {
-      this.registrations.resetForRestart(this.context);
       await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onInit' }, undefined);
       if (this.wasEnabled) await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onEnable' }, undefined);
       // A fresh process has an EMPTY memory: everything its PEERS registered into it (a fulfilment

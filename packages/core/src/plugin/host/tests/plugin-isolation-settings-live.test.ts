@@ -24,7 +24,8 @@ class IsolationFixture {
     Object.assign(host, { slug, manifest: { slug, sandbox } });
     const settings = await registry.settingsInEffect();
     Object.assign(host, { settings, limits: settings.forPlugin(sandbox) });
-    (host as any).reload = async () => { reloads.push((host as any).limits.memoryMb); };
+    Object.assign(host, { guest: {}, channel: {}, restarting: false, logger: { info() {} } });
+    (host as any).relaunch = async () => { reloads.push((host as any).limits.memoryMb); };
     (registry as any).hosts.set(slug, host);
     return { host, reloads };
   }

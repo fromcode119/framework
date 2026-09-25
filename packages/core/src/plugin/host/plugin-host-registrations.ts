@@ -63,7 +63,10 @@ export class PluginHostRegistrations {
   resetForRestart(context: PluginContext): void {
     for (const { event, handler } of this.hooks.values()) context.hooks.off(event, handler as any);
     this.hooks.clear();
-    for (const { event, handler } of this.platformHooks.values()) (context.plugins as any).off?.(event, handler);
+    // `context.plugins` had no `off`, so this optional call removed nothing: every relaunch left the old
+    // guest's `plugins:ready` subscribers on the bus, and each later `plugins:ready` invoked handler ids
+    // the new process never issued ("guest: unknown handler"), a few hundred errors per mass relaunch.
+    for (const { event, handler } of this.platformHooks.values()) context.plugins.off(event, handler as any);
     this.platformHooks.clear();
     // The context's `mcp` proxy clears the plugin's tools only on the FIRST registration of its
     // lifetime — right for the in-process disable/enable cycle it was written for, wrong for a guest
