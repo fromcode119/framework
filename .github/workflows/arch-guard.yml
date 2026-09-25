@@ -44,7 +44,7 @@ on:
         type: string
 
 jobs:
-  # A release is a separate commit that only moves the version: `manifest.json`'s `version`, the same
+  # A release is a separate commit that only moves the version: the `version` in `manifest.json` / `theme.json` / `appearance.json`, the same
   # field in `package.json` / `package-lock.json`, and the changelog. No guard can read a different
   # result from that, so running all of them again only holds the queue. This job decides, from the
   # actual diff, whether anything else changed. Any other file — or any other key in those files, since
@@ -74,7 +74,7 @@ jobs:
             for f in $files; do
               case "$f" in
                 CHANGELOG.md) ;;
-                manifest.json|package.json|package-lock.json)
+                manifest.json|theme.json|appearance.json|package.json|package-lock.json)
                   strip='del(.version) | if .packages then .packages[""] |= del(.version) else . end'
                   a=$(git show "$BASE:$f" 2>/dev/null | jq -S "$strip") || a=missing-a
                   b=$(git show "HEAD:$f" 2>/dev/null | jq -S "$strip") || b=missing-b
