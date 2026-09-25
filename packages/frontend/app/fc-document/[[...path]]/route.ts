@@ -4,7 +4,7 @@ import { StorefrontDocumentRequest } from '@/lib/document/storefront-document-re
 
 /**
  * The islands document route. Not addressed by visitors: the proxy rewrites `/` and every content
- * path here while `STOREFRONT_DOCUMENT_ISLANDS` is on (see `FrontendProxyRoute`), and `fc-document` is
+ * path here (see `FrontendProxyRoute`), and `fc-document` is
  * a reserved root segment, so a direct request for `/fc-document/...` from outside never resolves as
  * content either — it serves the same document the rewrite would, which is harmless.
  */

@@ -1,10 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { CookieConstants, EnvUtils } from '@fromcode119/core/client';
+import { CookieConstants } from '@fromcode119/core/client';
 import { SiteVisibilityProxyGuard } from '@/lib/document/site-visibility-proxy-guard';
 
 /**
- * Routes content requests to the islands document while the rollout flag is on. Theme-agnostic by
- * construction: the flag says WHETHER, the path says WHAT, nothing names a theme or a plugin.
+ * Routes content requests to the islands document. Theme-agnostic by construction: the path says
+ * WHAT, nothing names a theme or a plugin.
+ *
+ * It used to be a rollout flag (`STOREFRONT_DOCUMENT_ISLANDS`) that defaulted OFF, so local
+ * development ran the islands document and production ran the App Router document: two render paths,
+ * and the one visitors got was the slower one — a 405 KB React payload and a full hydration on every
+ * page. Islands is now the only path for content documents; the flag is gone.
  *
  * Rewrites `/` and any path the App Router's `[...slug]` page would have served. The remaining Next
  * pages (`register`, `forgot-password`, `reset-password`, `verify-email*`, `unsubscribe`) keep their
@@ -13,16 +18,10 @@ import { SiteVisibilityProxyGuard } from '@/lib/document/site-visibility-proxy-g
  * proxy matcher before this runs. Only GET/HEAD navigations are documents.
  */
 export class StorefrontDocumentProxy {
-  static readonly FLAG = 'STOREFRONT_DOCUMENT_ISLANDS';
-
   static readonly DOCUMENT_PREFIX = '/fc-document';
 
   /** Root segments that stay App Router pages while the flag is on. */
   private static readonly NEXT_PAGE_SEGMENTS = new Set(['register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change', 'unsubscribe', 'fc-document', 'internal', 'api', '_next']);
-
-  static enabled(): boolean {
-    return EnvUtils.flag(StorefrontDocumentProxy.FLAG, false);
-  }
 
   static async handle(request: NextRequest): Promise<NextResponse | Response> {
     if (request.method !== 'GET' && request.method !== 'HEAD') return NextResponse.next();
@@ -41,8 +40,6 @@ export class StorefrontDocumentProxy {
       return SiteVisibilityProxyGuard.holdingResponse();
     }
 
-    // The islands rewrite is a separate, flagged decision; the visibility answer above is not.
-    if (!StorefrontDocumentProxy.enabled()) return NextResponse.next();
     const target = request.nextUrl.clone();
     target.pathname = `${StorefrontDocumentProxy.DOCUMENT_PREFIX}${pathname === '/' ? '' : pathname}`;
     return NextResponse.rewrite(target);
