@@ -8,7 +8,7 @@ export class AuthControllerCookieInfrastructure extends AuthControllerEmailInfra
     const cookieOptions = this.getCookieOptions(req, true);
     // The scope admin cookies USED to be written with, so a session issued before host-scoping is
     // actually removed rather than left to shadow the new one.
-    const legacyDomain = process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req);
+    const legacyDomain = ApiUrlUtils.getCookieDomain(req);
     this.clearCookieVariants(res, CookieConstants.AUTH_TOKEN, cookieOptions, false, legacyDomain);
     this.clearCookieVariants(res, CookieConstants.CLIENT_AUTH_TOKEN, cookieOptions, false, legacyDomain);
     // NOT the CSRF token: it grants nothing by itself and is required while signed OUT, so clearing
@@ -68,7 +68,7 @@ export class AuthControllerCookieInfrastructure extends AuthControllerEmailInfra
     // the api host for its calls, and those are different hosts on purpose.
     const domain = RequestSurfaceUtils.isAdminRequestContext(req)
       ? undefined
-      : (process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req));
+      : ApiUrlUtils.getCookieDomain(req);
     if (domain) {
       options.domain = domain;
     }

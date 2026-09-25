@@ -1,5 +1,6 @@
 import { ApplicationUrlUtils, SiteBaseUrl } from '@fromcode119/core';
 import { Request } from 'express';
+import { getDomain } from 'tldts';
 
 export class ApiUrlUtils {
   static normalizePath(raw: string | null | undefined): string {
@@ -173,22 +174,30 @@ export class ApiUrlUtils {
 
   }
 
+  /**
+   * The `Domain` for a cookie set on this request's host, or undefined for a host-only cookie.
+   *
+   * `COOKIE_DOMAIN` applies only to hosts under it: a site answering on another domain (a host alias)
+   * would otherwise get a cookie its browser refuses, and every protected request from it fails CSRF.
+   * Any other host gets its registrable domain from the public suffix list, so `shop.acme.co.uk` is
+   * `.acme.co.uk` (never `.co.uk`, which browsers reject) and a host under a private suffix such as
+   * `*.trycloudflare.com` keeps its own. Localhost, an IP or anything unresolvable stays host-only.
+   */
   static getCookieDomain(hostnameOrReq: string | Request): string | undefined {
-        const hostname = typeof hostnameOrReq === 'string' 
-            ? hostnameOrReq 
-            : ApiUrlUtils.getRequestHostname(hostnameOrReq);
+    const hostname = (typeof hostnameOrReq === 'string'
+      ? hostnameOrReq
+      : ApiUrlUtils.getRequestHostname(hostnameOrReq)).trim().toLowerCase();
+    if (!hostname || hostname === 'localhost' || hostname.includes(':') || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+      return undefined;
+    }
 
-        // If it's an IP address or localhost, we don't set a domain (let browser handle it by host)
-        if (!hostname || hostname === 'localhost' || hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
-            return undefined;
-        }
+    const configured = String(process.env.COOKIE_DOMAIN || '').trim().toLowerCase();
+    const configuredBare = configured.replace(/^\./, '');
+    if (configuredBare && (hostname === configuredBare || hostname.endsWith(`.${configuredBare}`))) {
+      return configured;
+    }
 
-        const parts = hostname.split('.');
-        if (parts.length >= 2) {
-            return '.' + parts.slice(-2).join('.');
-        }
-
-        return undefined;
-
+    const registrable = getDomain(hostname, { allowPrivateDomains: true });
+    return registrable ? `.${registrable}` : undefined;
   }
 }

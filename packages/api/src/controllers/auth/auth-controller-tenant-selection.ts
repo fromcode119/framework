@@ -113,7 +113,7 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
     // Clearing runs BEFORE the set so the new host-scoped cookie is the last word for its own scope.
     const cookieName = this.getSessionCookieName(req);
     const cookieOptions = this.getCookieOptions(req, false, maxAgeMs);
-    this.clearCookieVariants(res, cookieName, this.getCookieOptions(req, true), true, process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req));
+    this.clearCookieVariants(res, cookieName, this.getCookieOptions(req, true), true, ApiUrlUtils.getCookieDomain(req));
     res.cookie(cookieName, token, cookieOptions);
     // The session ROW is the server's own record of which site this session is in, and it is what an
     // operator's support question is answered from. A swallowed failure here leaves the token saying

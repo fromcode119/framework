@@ -45,6 +45,7 @@
     "multer": "^2.0.0-alpha.1",
     "qrcode": "^1.5.4",
     "speakeasy": "^2.0.0",
+    "tldts": "^7.0.22",
     "ws": "^8.19.0",
     "@fromcode119/sources": "*"
   },
