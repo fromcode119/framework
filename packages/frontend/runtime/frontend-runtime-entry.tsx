@@ -13,6 +13,7 @@ import { StorefrontBundleLoader } from '@/runtime/storefront-bundle-loader';
 import { LucideIconWarmup } from '@/runtime/lucide-icon-warmup';
 import { OverrideLoaderWarmup } from '@/runtime/override-loader-warmup';
 import { StorefrontHydrator } from '@/runtime/storefront-hydrator';
+import { EarlyInteractionBuffer } from '@/lib/document/early-interaction-buffer';
 import { StorefrontRuntimeGlobals } from '@/runtime/storefront-runtime-globals';
 import { StorefrontFallbackPage } from '@/runtime/view/storefront-fallback-page.client';
 import { StorefrontPageView } from '@/runtime/view/storefront-page-view.client';
@@ -103,6 +104,8 @@ export class FrontendRuntimeEntry {
       hydrateTree: root(<StorefrontPageView config={config} />),
       fallbackTree: (serverHtml) => root(<StorefrontFallbackPage config={config} serverHtml={serverHtml} />),
     }).mount();
+    // React's listeners are attached now: play back what the visitor did while the runtime loaded.
+    EarlyInteractionBuffer.release();
   }
 
   /**
