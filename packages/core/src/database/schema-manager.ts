@@ -115,6 +115,7 @@ export class SchemaManager {
         const plan = await this.planCollection(collection);
         if (!plan.exists) continue;
         await this.reconciliation.record(plan, inactivePlugins);
+        await this.declared.relaxUndeclared(plan);
         for (const column of plan.undeclaredColumns) found.add(`${plan.tableName}.${column}`);
       } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
         // Only a FAILED audit protects its entries from pruning: no fresh answer is not the same as

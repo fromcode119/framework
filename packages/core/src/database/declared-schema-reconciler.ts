@@ -97,6 +97,28 @@ export class DeclaredSchemaReconciler {
   }
 
   /**
+   * Drop the NOT NULL of a column NOTHING declares any more.
+   *
+   * A plugin that removes a required field leaves its column behind — deliberately, since dropping it
+   * waits for a person — but the column keeps the NOT NULL it was created with, and nothing writes it
+   * again. From then on every insert into the table is refused: removing a field made the collection
+   * impossible to add to. Relaxing is the safe half of what a drop would do: no value is touched or
+   * removed, and a plugin that declares the column again still validates it in the application.
+   */
+  async relaxUndeclared(plan: IEntitySchemaPlan): Promise<void> {
+    for (const column of plan.undeclaredColumns) {
+      const outcome = await this.db.ensureDeclaredNullable(plan.tableName, column);
+      if (outcome.state === SchemaReconcileState.CHANGED) {
+        this.logger.info(`${plan.tableName}.${column} is declared by nothing; dropped its NOT NULL so the table stays writable.`);
+      } else if (outcome.state === SchemaReconcileState.FAILED) {
+        this.logger.warn(`Could not relax NOT NULL on undeclared ${plan.tableName}.${column}: ${outcome.reason}.`);
+      } else if (outcome.state === SchemaReconcileState.UNSUPPORTED) {
+        return;
+      }
+    }
+  }
+
+  /**
    * Gives an existing table's `created_at` / `updated_at` the `DEFAULT CURRENT_TIMESTAMP` it lacks.
    *
    * A collection that declares its own `createdAt` field got a column WITHOUT that default, so rows

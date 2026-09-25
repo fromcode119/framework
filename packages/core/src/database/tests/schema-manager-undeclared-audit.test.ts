@@ -32,6 +32,22 @@ describe('SchemaManager.recordUndeclaredColumns — what may be audited', () => 
     expect(recorded).toEqual([]);
   });
 
+  it('drops the NOT NULL of a plugin column nothing declares, so the table stays writable', async () => {
+    const relaxed: string[] = [];
+    const db = { ...dbStub(), ensureDeclaredNullable: async (table: string, column: string) => { relaxed.push(`${table}.${column}`); return { state: 'changed' }; } };
+    const manager = new SchemaManager(db as any);
+    (manager as any).reconciliation = { record: async () => undefined, prune: async () => undefined };
+
+    await manager.recordUndeclaredColumns([
+      { collection: { slug: 'widgets', fields: [{ name: 'shared', type: 'text' }] } as any, pluginSlug: 'demo' },
+      { collection: { slug: 'media', fields: [] } as any, pluginSlug: 'system' },
+    ]);
+
+    expect(relaxed.some((entry) => entry.endsWith('.optimized_path'))).toBe(true);
+    expect(relaxed.some((entry) => entry.endsWith('.shared'))).toBe(false);
+    expect(relaxed.some((entry) => entry.startsWith('media.'))).toBe(false);
+  });
+
   it('protects only a FAILED audit from pruning, so nothing can be stranded', async () => {
     const manager = new SchemaManager(dbStub());
     let failedTables = new Set<string>();
