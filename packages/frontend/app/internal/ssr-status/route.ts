@@ -4,7 +4,6 @@ import { ApplicationUrlUtils, InternalServiceAuth } from '@fromcode119/core/clie
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
 import { FrontendRuntimeAssetManifest } from '@/lib/document/frontend-runtime-asset-manifest';
-import { StorefrontDocumentProxy } from '@/lib/document/storefront-document-proxy';
 
 /**
  * What THIS process can actually see of the extensions it renders from.
@@ -45,8 +44,7 @@ export class InternalSsrStatusRoute {
       themeSsrEntry: themeEntry,
       themeSsrEntryExists: Boolean(themeEntry) && existsSync(themeEntry),
       pluginSsrBundles: InternalSsrStatusRoute.pluginBundleSlugs(pluginsDir),
-      // Islands rollout: whether content paths are served as static documents, and which runtime they load.
-      documentMode: StorefrontDocumentProxy.enabled() ? 'islands' : 'app-router',
+      // Content paths are always served as islands documents; this is the runtime they load.
       runtimeScript: FrontendRuntimeAssetManifest.runtimeScriptPath(),
       runtimeHash: FrontendRuntimeAssetManifest.runtimeHash(),
       // The whole point: one sentence an operator can act on, rather than a set of fields to interpret.
