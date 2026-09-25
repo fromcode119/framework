@@ -1,7 +1,7 @@
 import { cache } from 'react';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
-import { LocalizationUtils } from '@fromcode119/core/client';
+import { AccountRouteUtils, LocalizationUtils } from '@fromcode119/core/client';
 import { FrontendPublicSettings } from '@/lib/frontend-public-settings';
 import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
@@ -171,7 +171,29 @@ export class DynamicPageResolver {
     if (doc?.doc) return doc;
 
     // Lead-slash fallback: helps matching records where permalink was stored WITH a slash.
-    return DynamicPageResolver.resolveDocResult(`/${cleanSlug}`, searchParams, localeOverride, strategy);
+    const slashed = await DynamicPageResolver.resolveDocResult(`/${cleanSlug}`, searchParams, localeOverride, strategy);
+    if (slashed?.doc) return slashed;
+
+    return DynamicPageResolver.resolveAccountSection(cleanSlug, searchParams, localeOverride, strategy);
+  }
+
+  /**
+   * An account SECTION (`/account/orders`, `/account/profile`, …) is the account page: its shell picks
+   * the section from the URL. Only the base page exists as content, so a section opened directly — a
+   * bookmark, a refresh, a link in an email — resolved nothing and answered 404, while the same page
+   * reached by clicking inside the account worked. The base page answers for every section, and it
+   * keeps no canonical path: redirecting to it would drop the section the visitor asked for.
+   */
+  private static async resolveAccountSection(
+    cleanSlug: string,
+    searchParams: Record<string, string | string[] | undefined> | undefined,
+    localeOverride: string | undefined,
+    strategy: LocaleUrlStrategy,
+  ): Promise<IResolvedDocResult | null> {
+    const base = AccountRouteUtils.base().replace(/^\/+|\/+$/g, '');
+    if (!base || !cleanSlug.startsWith(`${base}/`)) return null;
+    const account = await DynamicPageResolver.resolveDocResult(base, searchParams, localeOverride, strategy);
+    return account?.doc ? { ...account, canonicalPath: '' } : account;
   }
 
   static async resolveBySlug(
