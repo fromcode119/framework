@@ -1,5 +1,6 @@
 import { SystemConstants } from '@fromcode119/core';
 import { PeopleSelfService } from '@api/services/people-self-service';
+import { AuthUtils } from '@api/utils/auth';
 import type { UserManagementService } from '@api/services/user-management-service';
 
 /**
@@ -110,10 +111,34 @@ export class PeopleManagementService {
     const raw = await this.db.findOne(SystemConstants.TABLE.PEOPLE, { id: personId });
     if (!raw) throw new Error('Person not found');
     const record = PeopleSelfService.toPersonRecord(data || {});
+    if (data?.email !== undefined) Object.assign(record, await this.emailChange(personId, raw, data.email));
     if (Object.keys(record).length > 0) {
       await this.db.update(SystemConstants.TABLE.PEOPLE, { id: personId }, record);
     }
     return PeopleSelfService.toCamel(await this.db.findOne(SystemConstants.TABLE.PEOPLE, { id: personId }));
+  }
+
+  /**
+   * The admin may give a person an email — the self-service allowlist leaves it out, since nobody
+   * changes their own sign-in address there. Without this a person who arrived with no email (a
+   * phone contact, a personal order) could never get one, and "Create login account", which needs
+   * it, could never be used. A person WITH a login account keeps that account's email: it is changed
+   * on the account, never here. Two people must not share one email — the directory matches on it.
+   */
+  private async emailChange(personId: number, raw: Record<string, any>, input: unknown): Promise<Record<string, unknown>> {
+    const email = AuthUtils.normalizeEmail(input);
+    const current = AuthUtils.normalizeEmail(raw.email);
+    if (email === current) return {};
+    if (raw.user_id != null && raw.user_id !== '') {
+      throw new Error('This person has a login account; change the email on the account.');
+    }
+    if (!email) return { email: null };
+    if (!AuthUtils.isValidEmail(email)) throw new Error('That is not a valid email address.');
+    const other = await this.db.findOne(SystemConstants.TABLE.PEOPLE, { email }).catch(() => null);
+    if (other && Number(other.id) !== Number(personId)) {
+      throw new Error(`Another person (#${other.id}) already has this email.`);
+    }
+    return { email };
   }
 
   /** Permanently delete a person record. The linked login user (if any) is left intact. */

@@ -85,6 +85,8 @@ export class PersonEditPage extends PersonEditPageActions {
                 {this.field('Last name', 'lastName')}
               </div>
               {this.field('Display name', 'displayName')}
+              {this.field('Email', 'email', 'email', linked)}
+              {linked ? <p className="-mt-3 text-[11px] text-slate-400">This person has a login account; its email is changed on the account.</p> : null}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {this.field('Phone', 'phone', 'tel')}
                 {this.field('Birth date', 'birthDate', 'date')}
