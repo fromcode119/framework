@@ -60,8 +60,8 @@ export class SiteHostRoles extends AdminComponent<{
       <div className="fc-site-form__block">
         <span className="fc-site-form__label">What each host serves</span>
         <p className="fc-site-form__hint">
-          Chosen here, never guessed from the name. A host called <code>api.example.com</code> serves the
-          storefront like any other unless you say otherwise.
+          Chosen here, never guessed from the name. A host called <code>api.example.com</code> serves
+          {this.props.isWorkspace ? ' the admin console' : ' the storefront'} like any other unless you say otherwise.
         </p>
         {/* Its own full-width block, below the identity grid. As one grid cell it squeezed every
             hostname to a single letter and stretched the row, pushing State / Visible to /
