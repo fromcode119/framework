@@ -25,6 +25,8 @@ export class BuildOverview extends AdminComponent {
   @state editingBuild: any | null = null;
   @state editorMode: SourceEditorMode | null = null;
   @state error: string = '';
+  /** A failed save, shown INSIDE the dialog: the page banner sits behind its overlay, out of sight. */
+  @state editorError: string = '';
   @state loading: boolean = true;
   @state savingSource: boolean = false;
   @state triggerKey: string | null = null;
@@ -57,6 +59,7 @@ export class BuildOverview extends AdminComponent {
   closeEditor(): void {
     this.editingBuild = null;
     this.editorMode = null;
+    this.editorError = '';
   }
 
   async handleCheckUpdates(): Promise<void> {
@@ -96,6 +99,7 @@ export class BuildOverview extends AdminComponent {
 
   async handleSaveSource(values: IBuildSourceFormValues): Promise<void> {
     this.savingSource = true;
+    this.editorError = '';
     try {
       if (this.editorMode === SourceEditorMode.EDIT && this.editingBuild?.slug) {
         const { type, slug } = BuildOverview.identify(this.editingBuild);
@@ -109,7 +113,7 @@ export class BuildOverview extends AdminComponent {
       this.closeEditor();
       await this.loadBuilds();
     } catch (err: any) {
-      this.error = err?.message || 'Failed to save build source';
+      this.editorError = err?.message || 'Failed to save build source';
     } finally {
       this.savingSource = false;
     }
@@ -205,6 +209,11 @@ export class BuildOverview extends AdminComponent {
         {editorMode ? (
           <BuildSourceDialog description={editorDescription} onClose={() => this.closeEditor()} title={editorTitle}>
             <BuildSourceForm build={editingBuild} busy={savingSource} mode={editorMode} onCancel={() => this.closeEditor()} onSubmit={(values) => this.handleSaveSource(values)} />
+            {this.editorError ? (
+              <div role="alert" ref={(el) => el?.scrollIntoView({ block: 'nearest' })} className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
+                {this.editorError}
+              </div>
+            ) : null}
           </BuildSourceDialog>
         ) : null}
       </>
