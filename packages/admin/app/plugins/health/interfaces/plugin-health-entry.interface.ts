@@ -11,4 +11,9 @@ export interface IPluginHealthEntry {
   addedCapabilities: string[];
   removedCapabilities: string[];
   bucket: PluginHealthBucket;
+  /** The version this api process loaded, and the one installed on disk now. */
+  runningVersion?: string;
+  installedVersion?: string | null;
+  /** Installed differs from running: the screen is serving an older (or newer) build than installed. */
+  restartPending: boolean;
 }

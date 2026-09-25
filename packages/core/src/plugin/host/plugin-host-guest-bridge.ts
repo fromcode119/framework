@@ -1,3 +1,4 @@
+import type { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
 import type { IRequestStore } from '@core/context/interfaces/request-store.interface';
@@ -143,6 +144,20 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     } finally {
       this.restarting = false;
     }
+  }
+
+  /**
+   * The platform's isolation limits were saved. A new deadline governs the next call as it is; a new
+   * heap ceiling is a node flag fixed when the process starts, so a running guest whose ceiling
+   * changed is replaced the same way an update replaces it. A manifest's own `sandbox` limits still
+   * win, so a plugin that declares both sees no change and keeps its process.
+   */
+  async applySettings(settings: PluginIsolationSettings): Promise<void> {
+    this.settings = settings;
+    const next = settings.forPlugin(this.manifest.sandbox);
+    const heapChanged = next.memoryMb !== this.limits.memoryMb;
+    this.limits = next;
+    if (heapChanged) await this.reload(this.manifest);
   }
 
   /** Kill (if alive), start again, re-init (and re-enable when it was enabled). Shared by restart and reload. */

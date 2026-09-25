@@ -77,6 +77,29 @@ export class PluginHealthPageClient extends AdminComponent {
     }
   }
 
+  private async loadInstalled(slug: string): Promise<void> {
+    const { notify } = this.runtime.notify;
+    this.isBusy = true;
+    this.busySlug = slug;
+    try {
+      const outcome = await PluginHealthPageController.loadInstalled(slug);
+      if (outcome.restartScheduled) {
+        notify(NotificationType.INFO, 'API restarting', `${slug} runs inside the API, so the API is restarting to load the installed version. The admin is unavailable for a few seconds.`);
+        return;
+      }
+      notify(NotificationType.SUCCESS, 'Installed version loaded', `${slug}'s process was replaced on the installed version. Nothing else was restarted.`);
+      await this.fetchReport();
+      this.runtime.plugins?.triggerRefresh?.();
+    } catch (error: any) {
+      notify(NotificationType.ERROR, 'Could not load the installed version', error.message);
+    } finally {
+      if (this.mounted) {
+        this.isBusy = false;
+        this.busySlug = null;
+      }
+    }
+  }
+
   private async reapproveAll(): Promise<void> {
     const { notify } = this.runtime.notify;
     const triggerRefresh = this.runtime.plugins?.triggerRefresh;
@@ -114,6 +137,7 @@ export class PluginHealthPageClient extends AdminComponent {
         busySlug={busySlug}
         onApproveEnable={(slug) => this.approveEnable(slug)}
         onReapproveAll={() => this.reapproveAll()}
+        onLoadInstalled={(slug) => this.loadInstalled(slug)}
         theme={this.theme}
       />
     );

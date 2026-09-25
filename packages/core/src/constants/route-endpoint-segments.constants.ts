@@ -22,6 +22,7 @@ export class RouteEndpointSegments {
   PLUGINS_SLUG_TOGGLE: '/:slug/toggle',
   PLUGINS_SLUG_CONFIG: '/:slug/config',
   PLUGINS_SLUG_SANDBOX: '/:slug/sandbox',
+  PLUGINS_SLUG_LOAD_INSTALLED: '/:slug/load-installed',
   PLUGINS_SLUG_LOGS: '/:slug/logs',
   PLUGINS_SLUG_SETTINGS: '/:slug/settings',
   PLUGINS_SLUG_SETTINGS_SCHEMA: '/:slug/settings/schema',

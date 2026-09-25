@@ -90,6 +90,15 @@ export class PluginHost extends PluginHostGuestBridge {
     );
   }
 
+  /**
+   * What the guest's `context.i18n.defaultLocale()` answers: the site's own locale, else the
+   * platform's AS IT IS NOW. The guest only held the platform locale it was booted with, so a saved
+   * platform locale never reached an isolated plugin until its process was replaced.
+   */
+  private defaultLocaleFor(store: IRequestStore | undefined): string {
+    return String(store?.siteLocale || this.manager.i18n?.getDefaultLocale?.() || '');
+  }
+
   get limitsInEffect(): { memoryMb: number; timeoutMs: number } {
     return this.limits;
   }
@@ -240,7 +249,7 @@ export class PluginHost extends PluginHostGuestBridge {
         token,
         tenantId: String(store?.tenantId ?? '').trim() || null,
         locale: String(store?.locale ?? ''),
-        siteLocale: String(store?.siteLocale ?? ''),
+        siteLocale: this.defaultLocaleFor(store),
         peers: this.peers(store),
         enabledPlugins: this.enabledPlugins(store),
       };
@@ -267,7 +276,7 @@ export class PluginHost extends PluginHostGuestBridge {
       // connection must not sit idle in the meantime.
       await this.syncPeers(store);
       await TenantConnectionScope.releaseCurrent();
-      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: String(store?.siteLocale ?? ''), targetPath: target, originalUrl }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
+      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), targetPath: target, originalUrl }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
     } finally {
       this.tokens.revoke(token);
     }

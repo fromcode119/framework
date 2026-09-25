@@ -11,6 +11,7 @@ import { Explanation } from '@/components/ui/view/explanation.client';
 import { Select } from '@/components/ui/view/select.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
 import { PluginIsolationMode } from '@fromcode119/core/client';
+import { RestartApiAction } from '@/app/settings/infrastructure/restart-api-action.client';
 
 /**
  * The four cards this screen is made of.
@@ -139,7 +140,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             icon={FrameworkIcons.Shield}
             title="Where plugins run"
             stacked
-            description="Isolated: each active plugin runs in its own process — it cannot read the platform's secrets, every database call is bound to the request's site, and it has a memory ceiling and a deadline. Shared: inside the API process. Plugins that declare sandbox: false stay shared either way."
+            description="Isolated: each active plugin runs in its own process — it cannot read the platform's secrets, every database call is bound to the request's site, and it has a memory ceiling and a deadline. Shared: inside the API process. Plugins that declare sandbox: false stay shared either way. A plugin installed from now on follows this at once; plugins already loaded move when the API restarts."
           >
             <Select
               theme={theme}
@@ -149,13 +150,19 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
               clearable
               options={[{ value: String(PluginIsolationMode.ISOLATED.value), label: 'Isolated — own process per plugin' }, { value: String(PluginIsolationMode.SHARED.value), label: 'Shared — inside the API process' }]}
             />
+            {this.isolationModeRestartPending ? (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <span className="text-xs text-slate-500">Saved. Plugins already loaded still run where they were until the API restarts.</span>
+                <RestartApiAction label="Restart the API to move them" />
+              </div>
+            ) : null}
           </SettingRow>
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Database}
             title="Memory ceiling per plugin process (MB)"
             stacked
-            description="A plugin that allocates past this is killed and restarted; the API and every other plugin are untouched. A plugin manifest's sandbox.memoryLimit overrides it for that plugin."
+            description="A plugin that allocates past this is killed and restarted; the API and every other plugin are untouched. Saving restarts each running plugin's own process on the new ceiling. A plugin manifest's sandbox.memoryLimit overrides it for that plugin."
           >
             <div className="flex items-center gap-3">
               <div className="w-full md:w-40">
@@ -168,7 +175,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             icon={FrameworkIcons.Clock}
             title="Deadline per request (ms)"
             stacked
-            description="A plugin route or hook that does not answer within this is failed (504) and its process restarted. A manifest's sandbox.timeout overrides it for that plugin."
+            description="A plugin route or hook that does not answer within this is failed (504) and its process restarted. Applies to the next call once saved. A manifest's sandbox.timeout overrides it for that plugin."
           >
             <div className="flex items-center gap-3">
               <div className="w-full md:w-40">

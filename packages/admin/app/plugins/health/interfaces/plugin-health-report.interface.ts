@@ -7,5 +7,6 @@ export interface IPluginHealthReport {
   counts: IPluginHealthCounts;
   held: IPluginHealthEntry[];
   error: IPluginHealthEntry[];
+  restartPending: IPluginHealthEntry[];
   entries: IPluginHealthEntry[];
 }

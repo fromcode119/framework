@@ -9,10 +9,11 @@ import { PluginHeldReason } from '@fromcode119/core/client';
 import type { IPluginHealthEntry } from '@/app/plugins/health/interfaces/plugin-health-entry.interface';
 import type { IPluginHealthReport } from '@/app/plugins/health/interfaces/plugin-health-report.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { PluginRestartPendingList } from '@/app/plugins/health/components/view/plugin-restart-pending-list.client';
 
 export class PluginHealthView extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<PluginHealthView, 'loading' | 'report' | 'isBusy' | 'busySlug' | 'onApproveEnable' | 'onReapproveAll' | 'theme'>;
+  declare props: Pick<PluginHealthView, 'loading' | 'report' | 'isBusy' | 'busySlug' | 'onApproveEnable' | 'onReapproveAll' | 'onLoadInstalled' | 'theme'>;
 
   @prop declare loading: boolean;
   @prop declare report: IPluginHealthReport | null;
@@ -20,6 +21,7 @@ export class PluginHealthView extends PureReactor {
   @prop declare busySlug: string | null;
   @prop declare onApproveEnable: (slug: string) => Promise<void>;
   @prop declare onReapproveAll: () => Promise<void>;
+  @prop declare onLoadInstalled: (slug: string) => Promise<void>;
   @prop declare theme: ThemeMode;
 
   private drift(entry: IPluginHealthEntry): string {
@@ -53,7 +55,9 @@ export class PluginHealthView extends PureReactor {
       { label: 'Errors', value: counts.error, tone: counts.error > 0 ? 'text-rose-500' : (isDark ? 'text-slate-400' : 'text-slate-500') },
       { label: 'Inactive', value: counts.inactive, tone: isDark ? 'text-slate-400' : 'text-slate-500' },
     ];
-    const needsAttention = counts.held > 0 || counts.error > 0;
+    // A plugin serving an older build than the one installed counts: the report says "attention needed"
+    // for it, and this screen used to answer "everything looks healthy" beside that badge.
+    const needsAttention = counts.held > 0 || counts.error > 0 || counts.restartPending > 0;
 
     return (
       <div className="space-y-4 animate-in fade-in duration-500">
@@ -121,6 +125,14 @@ export class PluginHealthView extends PureReactor {
               </div>
             ) : null}
 
+            <PluginRestartPendingList
+              entries={this.report.restartPending || []}
+              isBusy={this.isBusy}
+              busySlug={this.busySlug}
+              onLoadInstalled={this.onLoadInstalled}
+              theme={this.theme}
+            />
+
             {this.report.error.length > 0 ? (
               <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
                 {this.report.error.map((entry) => (
@@ -142,7 +154,7 @@ export class PluginHealthView extends PureReactor {
           <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
             <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.CheckCircle size={32} className="text-emerald-500" /></div>
             <h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>Everything looks healthy</h3>
-            <p className="text-slate-500 font-medium">No held capability changes and no plugin boot failures.</p>
+            <p className="text-slate-500 font-medium">No held capability changes, no plugin boot failures, and every plugin runs the version installed.</p>
           </div>
         )}
       </div>

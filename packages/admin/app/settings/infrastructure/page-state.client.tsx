@@ -37,6 +37,12 @@ export abstract class InfrastructureSettingsPageState extends AdminComponent {
   @state isolationDefault = '';
   @state isolationMemoryMb = '';
   @state isolationTimeoutMs = '';
+  /**
+   * The mode last loaded or saved. When a save changes it, plugins already loaded keep running where
+   * they are until the api reloads them, so the card offers that restart right under the control.
+   */
+  @state isolationDefaultInEffect = '';
+  @state isolationModeRestartPending = false;
   @state isSavingIsolation = false;
   @state isSavingRetention = false;
   @state isSavingSsrCap = false;
