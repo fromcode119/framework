@@ -17,7 +17,7 @@ export class CSRFMiddleware extends BaseMiddleware {
     // A domain-wide CSRF token beside a host-scoped session is the pair split across two scopes.
     const domain = RequestSurfaceUtils.isAdminRequestContext(req)
       ? undefined
-      : (process.env.COOKIE_DOMAIN || ApiUrlUtils.getCookieDomain(req));
+      : ApiUrlUtils.getCookieDomain(req);
 
     // 1. Generate CSRF token if not present in cookies OR if we need to ensure domain-scoping
     // We explicitly ensure it's on the root domain on health/status checks or if missing
