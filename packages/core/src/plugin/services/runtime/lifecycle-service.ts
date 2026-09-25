@@ -181,6 +181,11 @@ export class LifecycleService {
     await this.registry.savePluginState(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
   }
 
+  /** Syncs an active plugin's collections to the database, e.g. after its process was swapped for new code. */
+  async syncCollections(slug: string): Promise<void> {
+    await this.activation.syncPluginCollections(slug);
+  }
+
   async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin) throw new Error(`Plugin "${slug}" not found.`);

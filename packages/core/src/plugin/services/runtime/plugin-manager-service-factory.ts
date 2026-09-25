@@ -76,6 +76,7 @@ export class PluginManagerServiceFactory {
       () => manager.discoverPlugins(),
       (slug: string) => manager.enable(slug),
       (slug: string, manifest) => manager.pluginHosts.reload(slug, manifest as unknown as Record<string, unknown>),
+      (slug: string) => lifecycle.syncCollections(slug),
     );
 
     // Telemetry & scaffold services (email getter deferred so integrations are ready)
