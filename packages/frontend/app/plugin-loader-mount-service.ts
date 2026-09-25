@@ -141,10 +141,8 @@ export class PluginLoaderMountService {
 
   // Load plugin runtime modules after import map is registered. Idle-strategy plugins are deferred
   // until the browser is idle.
-  static loadPluginRuntimes(pluginList: any[], apiUrl: string, loadModule: (key: string, url: string) => Promise<void>, skip: Set<string> = new Set()): void {
+  static loadPluginRuntimes(pluginList: any[], apiUrl: string, loadModule: (key: string, url: string) => Promise<void>): void {
     for (const ref of PluginLoaderMountService.pluginRuntimeModules(pluginList, apiUrl)) {
-      // The islands document names the idle plugins this page never renders — see PluginBundlePolicy.
-      if (ref.idle && skip.has(ref.pluginSlug)) continue;
       if (!ref.idle) {
         void loadModule(ref.key, ref.url);
       } else if (typeof requestIdleCallback !== 'undefined') {

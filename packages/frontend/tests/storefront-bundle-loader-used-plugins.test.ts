@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { FrontendRuntimeConfig } from '@/runtime/frontend-runtime-config';
-import { PluginBundlePolicy } from '@/lib/document/plugin-bundle-policy';
 
 // Same shape plugin-bundle-policy.test.ts uses: a plugin only counts if it loads its own storefront runtime.
 const idlePlugin = (slug: string) => ({ slug, capabilities: ['frontend'], ui: { entry: 'bundle.js', frontendEntry: 'frontend.js', loadStrategy: 'idle' } });
 
 describe('usedPlugins reaches the runtime', () => {
   it('round-trips the plugins the server render mounted', () => {
-    const config = FrontendRuntimeConfig.fromJson({ usedPlugins: ['reviews', 'gallery'], skipPlugins: ['referrals'] });
+    const config = FrontendRuntimeConfig.fromJson({ usedPlugins: ['reviews', 'gallery'] });
     expect(config.usedPlugins).toEqual(['reviews', 'gallery']);
-    expect(config.skipPlugins).toEqual(['referrals']);
   });
 
   it('reads an absent list as empty rather than throwing', () => {
@@ -18,24 +16,20 @@ describe('usedPlugins reaches the runtime', () => {
   });
 });
 
-describe('a plugin the server mounted is not skippable — and must not wait for idle', () => {
-  it('skips an idle plugin the render did NOT mount', () => {
-    expect(PluginBundlePolicy.skippable({
-      plugins: [idlePlugin('referrals')],
-      usedPlugins: [],
-      withServerBundle: ['referrals'],
-      themeDependencies: [],
-    })).toEqual(['referrals']);
-  });
 
-  it('does NOT skip one the render DID mount', () => {
-    // reviews on the home page: its section is in the server markup, so its bundle is needed —
-    // and, because that markup is being hydrated, it is needed BEFORE hydration, not on browser idle.
-    expect(PluginBundlePolicy.skippable({
-      plugins: [idlePlugin('reviews')],
-      usedPlugins: ['reviews'],
-      withServerBundle: ['reviews'],
-      themeDependencies: [],
-    })).toEqual([]);
+describe('every plugin bundle loads — none is skipped', () => {
+  it('loads an idle plugin the server render never mounted', async () => {
+    // A booking calendar lives in a checkout drawer the server never renders; skipping the idle
+    // plugin that owns it left the drawer with no calendar on production.
+    const { PluginLoaderMountService } = await import('@/app/plugin-loader-mount-service');
+    const loaded: string[] = [];
+    const idle = (globalThis as any).requestIdleCallback;
+    (globalThis as any).requestIdleCallback = (fn: () => void) => { fn(); return 0; };
+    try {
+      PluginLoaderMountService.loadPluginRuntimes([idlePlugin('appointments')], 'http://api.test', async (key) => { loaded.push(key); });
+    } finally {
+      (globalThis as any).requestIdleCallback = idle;
+    }
+    expect(loaded.join(' ')).toContain('appointments');
   });
 });

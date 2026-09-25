@@ -27,8 +27,6 @@ export class StorefrontRuntimeRoot extends Reactor {
   /** Module keys `StorefrontBundleLoader` already imported. */
   @prop declare preloadedModules: Iterable<string>;
 
-  /** Plugin slugs whose storefront bundle this page skips (`FrontendRuntimeConfig.skipPlugins`). */
-  @prop declare skipPlugins?: Iterable<string>;
 
   @prop declare children: ReactNode;
 
@@ -39,7 +37,7 @@ export class StorefrontRuntimeRoot extends Reactor {
         <ThemeInitializer />
         <PluginRuntimeProvider>
           <SystemGate>
-            <PluginLoader preloadedModules={this.preloadedModules} skipPlugins={this.skipPlugins} />
+            <PluginLoader preloadedModules={this.preloadedModules} />
             {this.children}
           </SystemGate>
         </PluginRuntimeProvider>
