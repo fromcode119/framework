@@ -44,7 +44,53 @@ on:
         type: string
 
 jobs:
+  # A release is a separate commit that only moves the version: `manifest.json`'s `version`, the same
+  # field in `package.json` / `package-lock.json`, and the changelog. No guard can read a different
+  # result from that, so running all of them again only holds the queue. This job decides, from the
+  # actual diff, whether anything else changed. Any other file — or any other key in those files, since
+  # the guards DO read manifest slots and package scripts — runs the full guard. When in doubt (no base
+  # to compare, a new branch, the framework's own runs) it runs.
+  scope:
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    outputs:
+      guard: ${{ steps.diff.outputs.guard }}
+    steps:
+      - uses: actions/checkout@v4
+        if: ${{ inputs.area != '' }}
+        with:
+          fetch-depth: 0
+      - name: Is anything more than the version changing?
+        id: diff
+        env:
+          CALLED: ${{ inputs.area != '' }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          guard=true
+          if [ "$CALLED" = true ] && [ -n "$BASE" ] && ! echo "$BASE" | grep -qE '^0+$' \
+             && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            files=$(git diff --name-only "$BASE" HEAD)
+            only_version=true
+            [ -z "$files" ] && only_version=false
+            for f in $files; do
+              case "$f" in
+                CHANGELOG.md) ;;
+                manifest.json|package.json|package-lock.json)
+                  strip='del(.version) | if .packages then .packages[""] |= del(.version) else . end'
+                  a=$(git show "$BASE:$f" 2>/dev/null | jq -S "$strip") || a=missing-a
+                  b=$(git show "HEAD:$f" 2>/dev/null | jq -S "$strip") || b=missing-b
+                  [ "$a" = "$b" ] || only_version=false ;;
+                *) only_version=false ;;
+              esac
+            done
+            [ "$only_version" = true ] && guard=false
+            echo "Changed: $(echo $files)"
+          fi
+          echo "guard=$guard" >> "$GITHUB_OUTPUT"
+          echo "Run the guards: $guard"
+
   guard:
+    needs: scope
+    if: ${{ needs.scope.outputs.guard == 'true' }}
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     steps:
       # The guards resolve a repo root holding `framework/Source` beside `plugins/`, `themes/` and
