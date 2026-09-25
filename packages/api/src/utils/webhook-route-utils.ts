@@ -25,6 +25,18 @@ export class WebhookRouteUtils {
     return WebhookRouteUtils.PLUGIN_WEBHOOK_PATTERN.test(path);
   }
 
+  /**
+   * Body-parser `verify` hook: on a webhook path, keep the request's exact bytes as `req.rawBody` (and the
+   * decoded `req.rawBodyString`) — a signature verifier needs the original bytes, not a re-serialisation.
+   * Wired into BOTH the JSON and the url-encoded parser: a provider that posts a form (myPOS) signs it
+   * too, and without the bytes the plugin proxy re-sent the parsed form as JSON.
+   */
+  static keepRawBody(req: any, _res: unknown, buf: Buffer, encoding: string): void {
+    if (!WebhookRouteUtils.isWebhookPath(String(req?.path || ''))) return;
+    req.rawBody = Buffer.from(buf);
+    req.rawBodyString = buf.toString((encoding as BufferEncoding) || 'utf8');
+  }
+
   private static escape(segment: string): string {
     return String(segment).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }

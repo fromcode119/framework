@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Icon } from '@/components/view/icon.client';
-import { ThemeMode } from '@fromcode119/core/client';
+import { PluginToggleScopeConstants, ThemeMode } from '@fromcode119/core/client';
 import { Select } from '@/components/ui/view/select.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminApi } from '@/lib/api';
@@ -64,7 +64,10 @@ export class SiteAccessCard extends AdminComponent {
     if (enabled && plugin?.runnable === false) {
       this.activating = slug;
       try {
-        await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled: true });
+        // The platform axis, named: this card activates the plugin for the whole platform, whichever
+        // site the session happens to be on. Left implicit, a session in a site scope made the same
+        // click a per-site toggle, which refuses a plugin that is not active on the platform (409).
+        await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled: true, scope: PluginToggleScopeConstants.PLATFORM });
         this.runtime.notify.addNotification({
           title: 'Plugin activated',
           message: `${plugin.name} is now active on this platform, and on for this site once you save.`,

@@ -65,18 +65,8 @@ export class PluginGuestHttp {
     this.app = express();
     this.app.disable('x-powered-by');
     this.app.use(this.enterInvocation.bind(this));
-    this.app.use(express.json({
-      limit: '25mb',
-      // A webhook's HMAC is over the exact bytes; the host forwards them untouched and flags it, so the
-      // plugin's verifier reads `req.rawBody` here exactly as it would on the host.
-      verify: (req: any, _res, buf, encoding) => {
-        if (req.fcKeepRawBody) {
-          req.rawBody = Buffer.from(buf);
-          req.rawBodyString = buf.toString((encoding as BufferEncoding) || 'utf8');
-        }
-      },
-    }));
-    this.app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+    this.app.use(express.json({ limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
+    this.app.use(express.urlencoded({ extended: true, limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
   }
 
   async listen(): Promise<void> {
@@ -91,6 +81,17 @@ export class PluginGuestHttp {
   async close(): Promise<void> {
     await new Promise<void>((resolve) => (this.server ? this.server.close(() => resolve()) : resolve()));
     if (fs.existsSync(this.socketPath)) fs.rmSync(this.socketPath, { force: true });
+  }
+
+  /**
+   * A webhook's signature is over the exact bytes; the host forwards them untouched and flags it, so the
+   * plugin's verifier reads `req.rawBody` here exactly as it would on the host. Both body parsers keep
+   * them: a provider that posts a FORM (myPOS) signs its bytes just as a JSON one (Stripe) does.
+   */
+  static keepRawBody(req: any, _res: unknown, buf: Buffer, encoding: string): void {
+    if (!req.fcKeepRawBody) return;
+    req.rawBody = Buffer.from(buf);
+    req.rawBodyString = buf.toString((encoding as BufferEncoding) || 'utf8');
   }
 
   /** A global middleware the plugin registered: mounted under a private path the host targets by id. */
@@ -166,7 +167,7 @@ export class PluginGuestHttp {
   }
 
   private enterInvocation(req: Request, _res: Response, next: NextFunction): void {
-    // Read before the private headers are stripped below; the JSON parser (which runs after this) checks it.
+    // Read before the private headers are stripped below; the body parsers (which run after this) check it.
     (req as any).fcKeepRawBody = Boolean(req.headers[PluginGuestHttp.HEADER_RAW_BODY]);
     const token = String(req.headers[PluginGuestHttp.HEADER_TOKEN] ?? '');
     const tenantId = String(req.headers[PluginGuestHttp.HEADER_TENANT] ?? '').trim() || null;
