@@ -57,6 +57,8 @@ vi.mock('@fromcode119/core', () => ({
   DatabaseConnectionFileService: { adopt: () => [], isConfigured: () => true, file: () => '' },
   SetupMode: { configureUnconfigured: () => {} },
   HotReloadService: class { start() {} },
+  HookEventUtils: { HOOK_EVENTS: { SYSTEM_CACHE_PURGE: 'system:cache:purge' } },
+  SiteContentRevision: { bump: () => {} },
   LocalizationUtils: { normalizeLocaleCode: () => '' },
   Logger: class { info() {} warn() {} error() {} },
   PluginManager: class { constructor() { return managerInstance; } },

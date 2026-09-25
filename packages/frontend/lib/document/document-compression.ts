@@ -11,16 +11,24 @@ export class DocumentCompression {
   /** Brotli text quality: 5 is the usual "dynamic content" setting — ~90 % of q11's ratio at a fraction of the time. */
   private static readonly BROTLI_QUALITY = 5;
 
-  static encode(html: string, acceptEncoding: string | null | undefined): { body: Uint8Array; encoding: string } {
+  /** Which encoding `encode` will use for this `Accept-Encoding`: `br`, `gzip` or '' (identity). */
+  static negotiate(acceptEncoding: string | null | undefined): string {
     const accepts = String(acceptEncoding || '').toLowerCase();
+    if (/\bbr\b/.test(accepts)) return 'br';
+    if (/\bgzip\b/.test(accepts)) return 'gzip';
+    return '';
+  }
+
+  static encode(html: string, acceptEncoding: string | null | undefined): { body: Uint8Array; encoding: string } {
+    const encoding = DocumentCompression.negotiate(acceptEncoding);
     const bytes = Buffer.from(html, 'utf8');
-    if (/\bbr\b/.test(accepts)) {
+    if (encoding === 'br') {
       return {
         body: brotliCompressSync(bytes, { params: { [constants.BROTLI_PARAM_QUALITY]: DocumentCompression.BROTLI_QUALITY, [constants.BROTLI_PARAM_MODE]: constants.BROTLI_MODE_TEXT, [constants.BROTLI_PARAM_SIZE_HINT]: bytes.length } }),
         encoding: 'br',
       };
     }
-    if (/\bgzip\b/.test(accepts)) return { body: gzipSync(bytes), encoding: 'gzip' };
+    if (encoding === 'gzip') return { body: gzipSync(bytes), encoding: 'gzip' };
     return { body: bytes, encoding: '' };
   }
 

@@ -11,6 +11,7 @@ import { RateLimiter } from '@core/security/rate-limiter';
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
+import { SiteContentRevision } from '@core/tenant/site-content-revision';
 import { UntenantedBootAccess } from '@core/plugin/context/untenanted-boot-access';
 import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 
@@ -204,6 +205,8 @@ export class DatabaseContextProxy {
             if (typeof executeFn !== 'function') return executeFn;
             return function (this: any, ...args: any[]) {
               DatabaseWriteAudit.logWrite(manager, plugin.manifest.slug, 'execute', tablePrefix, undefined);
+              // Raw SQL may write anything: the site's rendered pages are no longer known to be current.
+              SiteContentRevision.bumpCurrentSite();
               return executeFn.apply(this, args);
             };
           }
@@ -246,6 +249,8 @@ export class DatabaseContextProxy {
               // only update/delete carry a where. Fire-and-forget inside logWrite; a denied call
               // above never reaches this line, so nothing is logged 'allowed' that was blocked.
               if (DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop)) {
+                // An order, a booking, a product: whatever a plugin writes can appear on a page.
+                SiteContentRevision.bumpCurrentSite();
                 DatabaseWriteAudit.logWrite(
                   manager,
                   plugin.manifest.slug,
