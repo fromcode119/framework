@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { Logger } from '@core/logging';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
+import { SiteMarketplaceUrl } from '@core/marketplace/site-marketplace-url';
 import { Seeder } from '@core/database/seeder';
 import { ProjectPaths } from '@core/config/paths';
 import { ThemeInstallerService } from '@core/theme/theme-installer-service';
@@ -29,7 +30,6 @@ export class ThemeManager extends ThemeLifecycle {
   protected themes: Map<string, IThemeManifest> = new Map();
   protected themesRoot: string;
   protected logger = new Logger({ namespace: 'theme-manager' });
-  protected client: MarketplaceClient;
   protected seeder: Seeder;
   protected installer: ThemeInstallerService;
   private scaffolder: ThemeScaffoldService;
@@ -40,13 +40,12 @@ export class ThemeManager extends ThemeLifecycle {
   constructor(protected db: any, protected pluginManager?: any) {
     super();
     this.themesRoot = ProjectPaths.getThemesDir();
-    this.client = new MarketplaceClient();
     this.seeder = new Seeder(db);
     this.installer = new ThemeInstallerService(
       this.logger,
       this.themesRoot,
       this.seeder,
-      this.client,
+      () => ThemeManager.marketplaceClient(),
       pluginManager,
       () => this.discoverThemes(),
       (slug) => this.resolveThemeDirectory(slug),
@@ -60,9 +59,18 @@ export class ThemeManager extends ThemeLifecycle {
     );
     this.overrideLoader = new ThemeDefaultPageContractOverrideLoader();
     this.configService = new ThemeConfigService(db, this.themes);
-    this.updateService = new ThemeUpdateService(this.themes, this.client, this.logger);
+    this.updateService = new ThemeUpdateService(this.themes, () => ThemeManager.marketplaceClient(), this.logger);
     // The tenant axis of theme activation reads on the REQUEST connection, like every per-request lookup.
     TenantThemeAccess.configure(db);
+  }
+
+  /**
+   * The catalogue in force for this request's site — the one the plugin marketplace uses. Built from
+   * the environment alone, once, in the constructor, the theme screens ignored the Marketplace URL an
+   * operator saved and went on reading whatever the api was started with.
+   */
+  private static async marketplaceClient(): Promise<MarketplaceClient> {
+    return new MarketplaceClient(await SiteMarketplaceUrl.current(process.env.MARKETPLACE_URL));
   }
 
   async checkForUpdates(slug: string): Promise<{ available: boolean; currentVersion: string; latestVersion?: string; updateUrl?: string }> {

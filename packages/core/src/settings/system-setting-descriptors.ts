@@ -21,7 +21,7 @@ export class SystemSettingDescriptors {
   static readonly ALL: Record<typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY], ISystemSettingDescriptor> = {
     [SystemConstants.META_KEY.EMAIL_PROFILES]: { scope: SettingScope.SITE, writable: false, exposed: false },
     [SystemConstants.META_KEY.EMAIL_PROVIDER]: { scope: SettingScope.SITE, writable: false, exposed: false },
-    [SystemConstants.META_KEY.EMAIL_PLATFORM_FALLBACK]: { scope: SettingScope.SITE, writable: false, exposed: true },
+    [SystemConstants.META_KEY.EMAIL_PLATFORM_FALLBACK]: { scope: SettingScope.SITE, writable: true, exposed: true, platformAdminWrites: true },
 
     [SystemConstants.META_KEY.MAINTENANCE_MODE]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,

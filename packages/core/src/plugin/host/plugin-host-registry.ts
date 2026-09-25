@@ -1,4 +1,6 @@
 import { Logger } from '@core/logging';
+import { SystemConstants } from '@core/constants/system.constants';
+import { SettingChangeInvalidators } from '@core/settings/setting-change-invalidators';
 import { PluginHost } from '@core/plugin/host/plugin-host';
 import { PluginIsolationIdentityService } from '@core/plugin/host/plugin-isolation-identity-service';
 import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
@@ -18,11 +20,41 @@ export class PluginHostRegistry {
   private settings: PluginIsolationSettings | null = null;
   private readonly identities: PluginIsolationIdentityService;
 
+  /** The Settings → Infrastructure → Plugin Isolation keys this registry derives its limits from. */
+  private static readonly SETTING_KEYS = [
+    SystemConstants.META_KEY.PLUGIN_ISOLATION_DEFAULT,
+    SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB,
+    SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS,
+  ];
+
   constructor(private readonly manager: IPluginManagerInterface, private readonly projectRoot: string) {
     this.identities = new PluginIsolationIdentityService(() => manager.db as any);
+    // Read once and handed to every host, so a save changed nothing — not even for a process started
+    // afterwards — until the api restarted, while the admin said it applied to new processes.
+    SettingChangeInvalidators.register(PluginHostRegistry.SETTING_KEYS, () => {
+      this.refreshSettings().catch((error) => this.logger.error(
+        `Saved plugin isolation settings could not be applied: ${error instanceof Error ? error.message : String(error)}`,
+      ));
+    });
   }
 
-  /** The platform's declared isolation settings, read once per boot. */
+  /**
+   * Re-reads the saved settings and hands them to every host: a new deadline applies to the next call,
+   * a new heap ceiling restarts that plugin's own process (the api and the other plugins keep running).
+   *
+   * WHERE a plugin runs (the default mode) is not changed here: moving a plugin into or out of the api
+   * process means loading its code differently, which happens when the api loads plugins. A newly
+   * installed plugin follows the new default at once; the admin offers the restart for the rest.
+   */
+  async refreshSettings(): Promise<void> {
+    this.settings = null;
+    const settings = await this.settingsInEffect();
+    await Promise.all([...this.hosts.values()].map((host) => host.applySettings(settings).catch((error) => {
+      this.logger.warn(`Plugin "${host.slug}" keeps its previous isolation limits: ${error instanceof Error ? error.message : String(error)}`);
+    })));
+  }
+
+  /** The platform's declared isolation settings, re-read whenever they are saved. */
   async settingsInEffect(): Promise<PluginIsolationSettings> {
     if (!this.settings) {
       try {

@@ -1,6 +1,7 @@
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { NamingStrategy } from '@fromcode119/database';
 import { SystemConstants } from '@core/constants/system.constants';
+import { SettingChangeInvalidators } from '@core/settings/setting-change-invalidators';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 
 /**
@@ -14,12 +15,20 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
  * Operators exclude high-volume tables (analytics events/sessions) through the
  * `audit_db_write_excluded_tables` system setting (admin Settings → Security — a declared,
  * seeded setting, per NO MAGIC). The set is cached per manager and re-read after {@link REFRESH_MS},
- * so a change applies within a minute without a restart. When the setting cannot be read, nothing
+ * so a change made outside the admin applies within a minute; a save in the admin applies to the next write. When the setting cannot be read, nothing
  * is excluded — the trail fails towards completeness, never towards silence.
  */
 export class DatabaseWriteAudit {
   private static readonly REFRESH_MS = 60_000;
-  private static readonly exclusionsByManager = new WeakMap<object, { promise: Promise<Set<string>>; fetchedAt: number }>();
+  private static readonly exclusionsByManager = new WeakMap<object, { promise: Promise<Set<string>>; fetchedAt: number; generation: number }>();
+
+  /**
+   * Bumped when the setting is saved, so every manager's cached set is re-read on the next write
+   * instead of up to a minute later. The TTL stays as the fallback for a write made outside the
+   * admin (a migration, a CLI).
+   */
+  private static generation = 0;
+  private static unregister: (() => void) | undefined;
 
   /** Fire-and-forget: never throws, never blocks the write it describes. */
   static logWrite(
@@ -61,11 +70,16 @@ export class DatabaseWriteAudit {
   }
 
   private static getExcludedTables(manager: IPluginManagerInterface): Promise<Set<string>> {
+    DatabaseWriteAudit.unregister ??= SettingChangeInvalidators.register(
+      [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES],
+      () => { DatabaseWriteAudit.generation += 1; },
+    );
     const now = Date.now();
+    const generation = DatabaseWriteAudit.generation;
     const cached = DatabaseWriteAudit.exclusionsByManager.get(manager);
-    if (cached && now - cached.fetchedAt < DatabaseWriteAudit.REFRESH_MS) return cached.promise;
+    if (cached && cached.generation === generation && now - cached.fetchedAt < DatabaseWriteAudit.REFRESH_MS) return cached.promise;
     const promise = DatabaseWriteAudit.fetchExcludedTables(manager);
-    DatabaseWriteAudit.exclusionsByManager.set(manager, { promise, fetchedAt: now });
+    DatabaseWriteAudit.exclusionsByManager.set(manager, { promise, fetchedAt: now, generation });
     return promise;
   }
 

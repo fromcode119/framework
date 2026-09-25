@@ -8,6 +8,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
+import { RestartApiAction } from '@/app/settings/infrastructure/restart-api-action.client';
 
 /**
  * Shown on a deployment with NO sites: this installation IS one site, and the operator can make it
@@ -31,7 +32,7 @@ export class AdoptSiteCard extends AdminComponent {
     this.busy = true;
     try {
       this.outcome = await SitesClient.adopt(this.values.toIdentity());
-      this.runtime.notify.addNotification({ title: 'Deployment adopted', message: 'Restart the API for tenancy to take effect.', type: NotificationType.INFO });
+      this.runtime.notify.addNotification({ title: 'Deployment adopted', message: 'Restart the API from this card for tenancy to take effect.', type: NotificationType.INFO });
       this.props.onAdopted();
     } catch (err: any) {
       this.runtime.notify.addNotification({ title: 'Adoption failed', message: err?.message || 'Nothing was changed.', type: NotificationType.ERROR });
@@ -48,8 +49,12 @@ export class AdoptSiteCard extends AdminComponent {
         <Card title="Adopted — restart required" icon={<FrameworkIcons.CheckCircle size={16} />}>
           <p className="fc-sites__text">
             This deployment is now site <strong>{this.outcome.tenant?.slug}</strong>: {stamped.reduce((sum, [, n]) => sum + n, 0)} rows across {stamped.length} tables
-            were stamped and {this.outcome.members} accounts became members. Restart the API (Settings → Infrastructure → Restart Services) — tenancy is decided at boot.
+            were stamped and {this.outcome.members} accounts became members. Tenancy is decided when the API starts, so until it
+            restarts this deployment keeps running as a single site.
           </p>
+          <div className="fc-sites__actions">
+            <RestartApiAction label="Restart the API to turn tenancy on" />
+          </div>
           {unassigned.length > 0 ? (
             <p className="fc-sites__text fc-sites__text--warn">
               Rows still without an owner (they will be INVISIBLE once isolation is on): {unassigned.map(([table, n]) => `${table} (${n})`).join(', ')}.

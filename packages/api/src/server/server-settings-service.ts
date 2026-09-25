@@ -45,20 +45,26 @@ export class ServerSettingsService {
     SystemConstants.META_KEY.FRONTEND_URL,
     SystemConstants.META_KEY.SITE_URL,
     SystemConstants.META_KEY.PLATFORM_DOMAIN,
+    // Not a host, but the routing map is built differently while setup is running
+    // (`TenantRouteMap.build(..., SetupMode.isActive())`), so finishing setup must reach it too.
+    SystemConstants.META_KEY.SETUP_COMPLETED,
   ];
 
   subscribeToSettingsChanges(hooks: { on: (event: string, handler: (payload: unknown) => void) => void }) {
     hooks.on('system:settings:updated', (payload: unknown) => {
-      this.refreshSettingsCache().catch((err) => this.logger.error('Settings cache refresh after update failed: ' + err));
+      const refreshed = this.refreshSettingsCache().catch((err) => this.logger.error('Settings cache refresh after update failed: ' + err));
 
       // A host change must also reach the GATEWAY, which keeps its own routing map. Without this the
       // new address only routed at the gateway's next refresh — and the operator, who had just seen
       // the value saved, met `unknown_host` in the meantime. The same push a tenant or certificate
       // change already uses, and best-effort for the same reason: a deployment with no gateway must
       // not turn a settings save into an error.
+      //
+      // AFTER the refresh, not beside it: the gateway re-reads the app URLs from this process's
+      // settings map, so a push sent first fetched the OLD addresses and kept them until its own TTL.
       const keys = Array.isArray((payload as any)?.keys) ? (payload as any).keys.map(String) : [];
       if (!keys.some((key: string) => ServerSettingsService.ROUTING_KEYS.includes(key))) return;
-      void new GatewayReloadClient().notify();
+      void refreshed.then(() => new GatewayReloadClient().notify());
     });
   }
 

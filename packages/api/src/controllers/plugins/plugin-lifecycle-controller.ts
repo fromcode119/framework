@@ -22,6 +22,31 @@ export class PluginLifecycleController extends BaseController {
   }
 
   /**
+   * Serve the version installed on disk instead of the one this process loaded.
+   *
+   * Files replaced outside the admin (a CLI pack, a deploy) leave the plugin running its old build;
+   * the health screen reports it as restart-pending. That used to end at "restart to apply". The same
+   * step a marketplace update ends with is done here instead: an ISOLATED plugin's process is replaced
+   * on the new code while the api and every other plugin keep serving; a plugin that runs INSIDE the
+   * api can only load new code in a new api process, so the api schedules its own restart — and the
+   * response says which happened.
+   */
+  async loadInstalled(req: Request, res: Response) {
+    const slug = CoercionUtils.toString(req.params.slug);
+    if (!this.manager.getPlugins().some((plugin) => plugin.manifest.slug === slug)) {
+      return res.status(404).json({ error: 'Plugin not found' });
+    }
+    const isolated = Boolean(this.manager.pluginHosts.get(slug));
+    try {
+      await this.manager.finalizeInstalledPlugin(slug);
+      res.json({ success: true, restartScheduled: !isolated });
+    } catch (err: any) {
+      this.logger.error(`Could not load the installed version of "${slug}": ${err?.message ?? err}`);
+      res.status(500).json({ error: err?.message || 'The installed version could not be loaded.' });
+    }
+  }
+
+  /**
    * Turn a plugin on or off.
    *
    * ON A MULTI-TENANT DEPLOYMENT THIS IS A PER-TENANT ACTION. `_system_plugins` records installation

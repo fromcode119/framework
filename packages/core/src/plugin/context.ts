@@ -206,7 +206,10 @@ export class PluginContextFactory {
           on: (event: string, handler: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
             manager.hooks.on(event, handler);
-          }
+          },
+          off: (event: string, handler: any) => {
+            manager.hooks.off(event, handler);
+          },
         },
         dependencies: {
           require: requireDependency,

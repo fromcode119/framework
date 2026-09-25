@@ -18,6 +18,15 @@ export class PluginHealthPageController {
     await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled: true });
   }
 
+  /**
+   * Serve the version installed on disk. `restartScheduled` is true when the plugin runs inside the api,
+   * which then restarts itself to load the new code; an isolated plugin is swapped in place.
+   */
+  static async loadInstalled(slug: string): Promise<{ restartScheduled: boolean }> {
+    const result = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.LOAD_INSTALLED(slug), {}) as { restartScheduled?: boolean };
+    return { restartScheduled: result?.restartScheduled === true };
+  }
+
   /** Re-approve every held plugin. Returns only the entries that failed. */
   static async reapproveAll(): Promise<IPluginReapprovalEntry[]> {
     const result = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.REAPPROVE_ALL, {}) as {

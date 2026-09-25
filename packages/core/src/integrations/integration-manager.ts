@@ -10,6 +10,8 @@ import { Logger } from '@core/logging';
 import { IntegrationTenantAccess } from '@core/integrations/integration-tenant-access';
 import { IntegrationTenantResolver } from '@core/integrations/integration-tenant-resolver';
 import { IntegrationInstanceInvalidator } from '@core/integrations/integration-instance-invalidator';
+import { SettingChangeInvalidators } from '@core/settings/setting-change-invalidators';
+import { SystemConstants } from '@core/constants/system.constants';
 import { TenantScopedIntegrationFactory } from '@core/integrations/tenant-scoped-integration-factory';
 import { CoreServices } from '@core/services';
 import { IntegrationConfigReadService } from '@core/integrations/integration-config-read-service';
@@ -78,6 +80,12 @@ export class IntegrationManager {
     // warms the plugin and theme gates, so the SYNCHRONOUS methods above always have an answer. It
     // reaches them through this static rather than through a manager reference it does not have.
     IntegrationTenantAccess.configure((tenantId, type) => this.tenantResolver.warmOne(tenantId, type));
+    // A site's mail driver carries the "may send through the platform" decision it was resolved with,
+    // so turning that setting on or off has to drop the driver, not just the row.
+    SettingChangeInvalidators.register(
+      [SystemConstants.META_KEY.EMAIL_PLATFORM_FALLBACK],
+      (tenantId) => new IntegrationInstanceInvalidator(this.instances).forget('email', tenantId),
+    );
   }
 
   /**

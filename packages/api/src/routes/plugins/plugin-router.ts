@@ -52,6 +52,7 @@ export class PluginRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONFIG, this.auth.guard(['admin']), platform, this.controller.getConfig);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONFIG, this.auth.guard(['admin']), platform, this.controller.saveConfig);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SANDBOX, this.auth.guard(['admin']), platform, this.controller.saveSandboxConfig);
+    this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_LOAD_INSTALLED, this.auth.guard(['admin']), platform, this.lifecycleController.loadInstalled);
     this.delete(RouteConstants.SEGMENTS.PLUGINS_SLUG, this.auth.guard(['admin']), platform, this.lifecycleController.delete);
     // Browsing a catalogue is a SITE action; INSTALLING from it is not, and the two are separated
     // deliberately. A site may look — it has a marketplace of its own, and may point it at its own

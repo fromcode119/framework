@@ -15,4 +15,6 @@ export interface IPluginContextPlugins {
   isEnabled(slug: string): boolean;
   emit(event: string, payload: any): void;
   on(event: string, handler: (payload: any) => void | Promise<void>): void;
+  /** Removes a handler `on` added — the host needs it to drop a relaunched guest's old subscriptions. */
+  off(event: string, handler: (payload: any) => void | Promise<void>): void;
 }

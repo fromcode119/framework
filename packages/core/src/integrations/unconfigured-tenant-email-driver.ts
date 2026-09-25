@@ -20,9 +20,10 @@ export class UnconfiguredTenantEmailDriver implements IEmailDriver {
   async send(_options: IEmailOptions): Promise<never> {
     throw new Error(
       `This site ("${this.tenantId}") has no mail configuration, so the message was not sent. `
-      + 'Add an email integration for the site in Settings → Integrations, or, to send through the '
-      + `platform's own mail server, set "${SystemConstants.META_KEY.EMAIL_PLATFORM_FALLBACK}" to true `
-      + 'for this site. It is off by default so that one site never borrows another\'s mail server unnoticed.',
+      + 'Add an email integration for the site in Settings → Integrations → Email, or, to send through the '
+      + 'platform\'s own mail server, have a platform administrator turn on "Send through the platform\'s mail '
+      + `server" on that same page (\`${SystemConstants.META_KEY.EMAIL_PLATFORM_FALLBACK}\`). It is off by default `
+      + 'so that one site never borrows another\'s mail server unnoticed.',
     );
   }
 }

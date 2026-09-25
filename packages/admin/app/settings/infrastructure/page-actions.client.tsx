@@ -22,6 +22,7 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       this.ssrRenderMemoryMb = String(response?.ssr_render_memory_mb ?? '');
       this.ssrRenderTimeoutMs = String(response?.ssr_render_timeout_ms ?? '');
       this.isolationDefault = String(response?.plugin_isolation_default ?? '');
+      this.isolationDefaultInEffect = this.isolationDefault;
       this.isolationMemoryMb = String(response?.plugin_isolation_memory_mb ?? '');
       this.isolationTimeoutMs = String(response?.plugin_isolation_timeout_ms ?? '');
     } catch (err: any) {
@@ -134,7 +135,17 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
         plugin_isolation_memory_mb: this.isolationMemoryMb,
         plugin_isolation_timeout_ms: this.isolationTimeoutMs,
       });
-      addNotification({ title: 'System Updated', message: 'Plugin isolation settings saved. They apply to plugin processes started from now on; restart the API to apply them to every plugin.', type: NotificationType.INFO });
+      // Limits reach every running plugin on save: a new deadline at its next call, a new memory
+      // ceiling by restarting that plugin's own process. Where plugins run is the exception.
+      const modeChanged = this.isolationDefault !== this.isolationDefaultInEffect;
+      if (modeChanged) this.isolationModeRestartPending = true;
+      addNotification({
+        title: 'System Updated',
+        message: modeChanged
+          ? 'Plugin isolation settings saved. The limits apply to every running plugin now. Where plugins run changes for plugins already loaded when the API restarts — use the button under "Where plugins run".'
+          : 'Plugin isolation settings saved and applied to every running plugin.',
+        type: NotificationType.INFO,
+      });
     } catch (err: any) {
       addNotification({ title: 'Error', message: err?.message || 'Failed to save the plugin isolation settings.', type: NotificationType.ERROR });
     } finally {

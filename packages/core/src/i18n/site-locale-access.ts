@@ -1,4 +1,6 @@
 import { Logger } from '@core/logging';
+import { SystemConstants } from '@core/constants/system.constants';
+import { SettingChangeInvalidators } from '@core/settings/setting-change-invalidators';
 
 /**
  * Each SITE's configured default locale (admin Settings → Localization, `default_locale`), readable
@@ -21,9 +23,18 @@ export class SiteLocaleAccess {
   /** Reads one site's own `default_locale` row. Wired once at boot by the api. */
   private static reader: ((tenantId: string) => Promise<string>) | undefined;
 
+  private static unregister: (() => void) | undefined;
+
   static configure(reader: (tenantId: string) => Promise<string>): void {
     SiteLocaleAccess.reader = reader;
     SiteLocaleAccess.cache = new Map();
+    // A saved locale takes effect on the next request: a site's save drops that site's value, a
+    // platform save drops every site's.
+    SiteLocaleAccess.unregister?.();
+    SiteLocaleAccess.unregister = SettingChangeInvalidators.register(
+      [SystemConstants.META_KEY.DEFAULT_LOCALE],
+      (tenantId) => SiteLocaleAccess.invalidate(tenantId ?? undefined),
+    );
   }
 
   /** Loads a site's locale if it is not in memory. A failed read is not cached. */

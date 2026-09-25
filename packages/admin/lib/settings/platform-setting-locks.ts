@@ -27,6 +27,7 @@ export class PlatformSettingLocks {
     private readonly tenantMode: boolean,
     private readonly siteSelected: boolean,
     private readonly defaults: Record<string, string> = {},
+    private readonly platformGranted: Set<string> = new Set(),
   ) {}
 
   /** Nothing locked — the state before the answer arrives, and after a failed request. */
@@ -56,6 +57,7 @@ export class PlatformSettingLocks {
       response.tenantMode === true,
       response.siteSelected !== false,
       CoercionUtils.toObject(response.declaredDefaults) as Record<string, string>,
+      new Set(Array.isArray(response.platformAdminWrittenKeys) ? response.platformAdminWrittenKeys.map((key: unknown) => String(key)) : []),
     );
   }
 
@@ -71,6 +73,8 @@ export class PlatformSettingLocks {
    * changed and no platform admin needed to change it.
    */
   private locksAsPlatformOnly(key: string): boolean {
+    // A site's own row, but one only the platform grants (sending through the platform's mail server).
+    if (this.platformGranted.has(key)) return !this.editable;
     if (this.isInherited(key) && this.isSiteScope()) return false;
     return !this.editable && this.keys.has(key);
   }

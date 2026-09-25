@@ -5,13 +5,22 @@ import { SecretService } from '@core/security/secret-service';
 import { HookEventUtils } from '@core/hook-events';
 import { WebhooksCollection } from '@core/collections/webhooks';
 import { SystemConstants } from '@core/constants/system.constants';
+import { RequestContextUtils } from '@core/context/request-context';
 
 export class WebhookService {
     private logger = new Logger({ namespace: 'webhook-service' });
     private db: any;
     private hooks: HookManager;
-    private webhooksCache: any[] = [];
-    private lastCacheUpdate: number = 0;
+    /**
+     * Active webhooks PER SITE (`''` = no site bound), each with when it was read.
+     *
+     * It was one list for the whole process, refreshed under whichever request happened to cross the
+     * TTL. `webhooks` is tenant-scoped, so that list was ONE site's endpoints — and for the next thirty
+     * seconds every other site's events were matched against it and POSTed to it, signed with that
+     * site's secret. A site's new or deleted webhook also waited out the TTL; a save now drops that
+     * site's entry, and the TTL is only the fallback for a write made outside the collection hooks.
+     */
+    private readonly webhooksBySite = new Map<string, { rows: any[]; readAt: number }>();
     private CACHE_TTL = 30000; // 30 seconds
 
     constructor(db: any, hooks: HookManager) {
@@ -31,7 +40,11 @@ export class WebhookService {
         // we'll modify PluginManager to call us, or we'll register individual listeners.
         // Actually, a better way is to have HookManager support a middleware or a global listener.
         
-        await this.refreshCache();
+        // Every site's list, not only the saver's: on another api instance this hook arrives by
+        // broadcast with no site bound, and a re-read per site is one query on its next event.
+        const forget = () => { this.webhooksBySite.clear(); };
+        this.hooks.on(HookEventUtils.afterSave(WebhooksCollection.slug), forget);
+        this.hooks.on(HookEventUtils.afterDelete(WebhooksCollection.slug), forget);
 
         this.hooks.on(HookEventUtils.beforeSave(WebhooksCollection.slug), (payload: any) => {
             if (payload?.secret && !SecretService.isEncryptedValue(payload.secret)) {
@@ -41,25 +54,31 @@ export class WebhookService {
         });
     }
 
-    private async refreshCache() {
+    private static siteKey(): string {
+        return String(RequestContextUtils.getTenantId() ?? '').trim();
+    }
+
+    /** The CURRENT site's active webhooks, read on the connection bound to it. */
+    private async activeWebhooks(): Promise<any[]> {
+        const site = WebhookService.siteKey();
+        const cached = this.webhooksBySite.get(site);
+        if (cached && Date.now() - cached.readAt <= this.CACHE_TTL) return cached.rows;
         try {
-            this.webhooksCache = await this.db.find(WebhooksCollection.slug, {
-                where: { active: true }
-            });
-            this.lastCacheUpdate = Date.now();
+            const rows = await this.db.find(WebhooksCollection.slug, { where: { active: true } });
+            const list = Array.isArray(rows) ? rows : [];
+            this.webhooksBySite.set(site, { rows: list, readAt: Date.now() });
+            return list;
         } catch (err) {
-            this.logger.error('Failed to refresh webhooks cache:', err);
+            this.logger.error('Failed to read webhooks:', err);
+            return [];
         }
     }
 
     public async processEvent(event: string, payload: any) {
-        if (Date.now() - this.lastCacheUpdate > this.CACHE_TTL) {
-            await this.refreshCache();
-        }
+        const webhooks = await this.activeWebhooks();
+        if (webhooks.length === 0) return;
 
-        if (!this.webhooksCache || this.webhooksCache.length === 0) return;
-
-        for (const webhook of this.webhooksCache) {
+        for (const webhook of webhooks) {
             const events = Array.isArray(webhook.events) ? webhook.events : [];
             const isMatch = events.some((pattern: string) => this.matchEvent(pattern, event));
 

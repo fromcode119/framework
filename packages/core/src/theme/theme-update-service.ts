@@ -15,7 +15,8 @@ import { CoreServices } from '@core/services/core-services';
 export class ThemeUpdateService {
   constructor(
     private themes: Map<string, IThemeManifest>,
-    private client: MarketplaceClient,
+    /** Resolved per call, so a saved Marketplace URL applies to the next check. */
+    private clientFor: () => Promise<MarketplaceClient>,
     private logger: Logger,
   ) {}
 
@@ -42,7 +43,7 @@ export class ThemeUpdateService {
 
     try {
       this.logger.debug(`Fetching themes from marketplace...`);
-      const data = await this.client.fetch();
+      const data = await (await this.clientFor()).fetch();
       return [...(data.themes || []), ...contributed];
     } catch (err: any) {
       this.logger.error(`Failed to fetch themes from marketplace: ${err.message}`);

@@ -46,7 +46,7 @@ function installerOn(themesRoot: string) {
     logger,
     themesRoot,
     {} as any,
-    {} as any,
+    async () => ({}) as any,
     // No plugin manager: a site's theme installs no plugins, and reaching for one would be the bug.
     null,
     async () => undefined,

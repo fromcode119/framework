@@ -17,9 +17,12 @@ import { IntegrationTenantAccess } from '@core/integrations/integration-tenant-a
 export class IntegrationInstanceInvalidator {
   constructor(private readonly instances: Map<string, unknown>) {}
 
-  /** Called after every configuration write, inside the scope the write ran in. */
-  forget(normalizedType: string): void {
-    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+  /**
+   * Called after every configuration write. By default the scope is the one the write ran in; a caller
+   * that knows which row changed passes it (`null` = the platform's, which every site inherits).
+   */
+  forget(normalizedType: string, scope: string | null = RequestContextUtils.getTenantId() ?? null): void {
+    const tenantId = String(scope ?? '').trim();
     if (tenantId) {
       this.instances.delete(`${tenantId}::${normalizedType}`);
       IntegrationTenantAccess.invalidate(tenantId);

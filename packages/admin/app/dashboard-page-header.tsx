@@ -32,7 +32,7 @@ export class DashboardPageHeader extends PureReactor {
     if (health.restartPending > 0) {
       return (
         <span className="text-sky-500">
-          {health.restartPending} plugin{health.restartPending === 1 ? '' : 's'} updated — restart to apply
+          {health.restartPending} plugin{health.restartPending === 1 ? '' : 's'} not running the installed version — load it from Plugin Health
         </span>
       );
     }

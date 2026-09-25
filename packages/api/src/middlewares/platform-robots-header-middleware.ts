@@ -1,5 +1,5 @@
 import type express from 'express';
-import { PlatformSettingsService, RequestContextUtils, SystemConstants } from '@fromcode119/core';
+import { PlatformSettingsService, RequestContextUtils, SettingChangeInvalidators, SystemConstants } from '@fromcode119/core';
 import { RobotsConstants } from '@fromcode119/core/constants/robots.constants';
 
 /**
@@ -24,6 +24,12 @@ export class PlatformRobotsHeaderMiddleware {
   private static readonly TTL_MS = 60_000;
   private cachedAt = 0;
   private indexable = false;
+
+  constructor() {
+    // A save in the admin must not wait out the TTL — least of all turning indexing OFF, the direction
+    // that cannot be taken back. Forgetting refuses until the re-read lands, which is the safe side.
+    SettingChangeInvalidators.register([SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING], () => { this.cachedAt = 0; });
+  }
 
   middleware() {
     return (_req: express.Request, res: express.Response, next: express.NextFunction): void => {

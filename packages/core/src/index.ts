@@ -170,6 +170,7 @@ export { SafeArchive } from '@core/security/safe-archive';
 export { MediaPathUtils } from '@core/security/media-path-utils';
 export { SystemSettingsExposureUtils } from '@core/security/system-settings-exposure-utils';
 export { SystemSettingRegistry } from '@core/settings/system-setting-registry';
+export { SettingChangeInvalidators } from '@core/settings/setting-change-invalidators';
 export { BootstrapSecretsService } from '@core/security/bootstrap-secrets-service';
 export { DatabaseConnectionFileService } from '@core/security/database-connection-file-service';
 export type { IDatabaseConnectionFile } from '@core/security/interfaces/database-connection-file.interface';
@@ -181,6 +182,7 @@ export type { ISetupDatabaseOptions } from '@core/security/interfaces/setup-data
 export { SetupMode } from '@core/tenant/setup-mode';
 export { SetupPhase } from '@core/tenant/enums/setup-phase.enum';
 export type { ISystemSettingDescriptor } from '@core/settings/interfaces/system-setting-descriptor.interface';
+export type { ISettingWrite } from '@core/settings/interfaces/setting-write.interface';
 export { SettingScope } from '@core/settings/enums/setting-scope.enum';
 export { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';
 export { NetworkAddressUtils } from '@core/security/network-address-utils';
