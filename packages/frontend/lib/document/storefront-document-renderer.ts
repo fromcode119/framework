@@ -11,7 +11,6 @@ import { DocumentMarkupRenderer } from '@/lib/document/document-markup-renderer'
 import { DocumentView } from '@/lib/document/document-view';
 import { FrontendLayoutStylesheets } from '@/lib/document/frontend-layout-stylesheets';
 import { FrontendRuntimeAssetManifest } from '@/lib/document/frontend-runtime-asset-manifest';
-import { PluginBundlePolicy } from '@/lib/document/plugin-bundle-policy';
 import { StorefrontDocumentRequest } from '@/lib/document/storefront-document-request';
 import { ThemeHeadModel } from '@/lib/document/theme-head-model';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
@@ -155,23 +154,12 @@ export class StorefrontDocumentRenderer {
       FrontendTranslationsCache.read(locale),
       PageDocPrefetchRequestCache.read(args.content),
     ]);
-    const activeTheme = (frontend?.activeTheme as Record<string, any> | null) || null;
-    const skipPlugins = PluginBundlePolicy.skippable({
-      plugins: Array.isArray(frontend?.plugins) ? (frontend!.plugins as any[]) : [],
-      usedPlugins: markup?.usedPlugins ?? [],
-      withServerBundle: ThemeServerRenderer.pluginsWithServerBundle(),
-      themeDependencies: Object.keys((activeTheme?.dependencies as Record<string, unknown> | undefined) || {}),
-      rendersRecipe: Boolean(content?.recipe),
-    });
     const runtimeConfig = {
       apiUrl: ServerApiPaths.buildPublicApiBaseUrl(),
-      skipPlugins,
-      // The plugins whose components this render actually MOUNTED. `skipPlugins` is the inverse and
-      // answers "whose bundle can this page never need"; this answers "whose registrations does the
-      // browser need BEFORE it hydrates", which is not the same question. An idle plugin the server
-      // mounted is not skippable — but it still loaded on browser idle, i.e. after hydration, so the
-      // server had painted its section and the client's first render could not. The runtime loads
-      // these eagerly instead.
+      // The plugins whose components this render actually MOUNTED: their registrations are needed
+      // BEFORE hydration, so the runtime loads them eagerly instead of on browser idle. Every other
+      // plugin still loads on idle — none is skipped, because a component a page shows only after an
+      // interaction (a checkout drawer's booking calendar) is never mounted by the server render.
       usedPlugins: markup?.usedPlugins ?? [],
       locale,
       content,

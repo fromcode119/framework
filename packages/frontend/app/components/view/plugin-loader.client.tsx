@@ -18,8 +18,6 @@ export class PluginLoader extends Reactor {
    */
   @prop declare preloadedModules?: Iterable<string>;
 
-  /** Plugin slugs whose storefront bundle is not loaded on this page at all (islands document policy). */
-  @prop declare skipPlugins?: Iterable<string>;
 
   @state retryTick = 0;
 
@@ -152,7 +150,7 @@ export class PluginLoader extends Reactor {
     // the LCP image only delays that image. See FrontendRuntimeScheduler.
     FrontendRuntimeScheduler.run(() => {
       PluginLoaderMountService.loadThemeRuntime(theme, apiUrl, this.loadModule);
-      PluginLoaderMountService.loadPluginRuntimes(pluginList, apiUrl, this.loadModule, new Set(this.skipPlugins ?? []));
+      PluginLoaderMountService.loadPluginRuntimes(pluginList, apiUrl, this.loadModule);
     });
   }
 

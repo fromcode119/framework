@@ -94,7 +94,7 @@ export class FrontendRuntimeEntry {
     PreBootBridgeArgs.adopt(preBootArgs, seed);
 
     const root = (children: ReactNode) => (
-      <StorefrontRuntimeRoot apiUrl={apiUrl} seed={seed} preloadedModules={preloaded} skipPlugins={config.skipPlugins}>{children}</StorefrontRuntimeRoot>
+      <StorefrontRuntimeRoot apiUrl={apiUrl} seed={seed} preloadedModules={preloaded}>{children}</StorefrontRuntimeRoot>
     );
     new StorefrontHydrator({
       host,
