@@ -64,7 +64,7 @@ export class SiteBaseUrl {
 
     // No configured URL means no declared scheme, and a scheme is the one thing a tenant record
     // cannot supply. Answering nothing keeps the caller's own fallback instead of inventing one.
-    const scheme = SiteBaseUrl.schemeOf(ApplicationUrlUtils.readAppBaseUrlFromEnvironment(app));
+    const scheme = SiteBaseUrl.declaredScheme(app);
     if (!scheme) return '';
 
     try {
@@ -94,6 +94,25 @@ export class SiteBaseUrl {
       if (apiHost) return apiHost;
     }
     return String(tenant.primaryHost ?? '').trim();
+  }
+
+  /**
+   * The scheme this installation declares: the app's own configured URL first, then any other app's.
+   *
+   * A multi-site platform has no single storefront address, so its frontend URL is often left unset
+   * while the console and the api are configured. Reading only the frontend then answered nothing for
+   * every site — canonical links went relative and emailed links fell back to nothing — although the
+   * deployment had plainly declared `https` twice. The apps sit behind one gateway and one set of
+   * certificates, so a scheme declared for any of them is the scheme of all of them. Still nothing is
+   * guessed: with no URL declared anywhere, there is no answer.
+   */
+  private static declaredScheme(app: string): string {
+    const apps = [app, ApplicationUrlUtils.FRONTEND_APP, ApplicationUrlUtils.API_APP, ApplicationUrlUtils.ADMIN_APP];
+    for (const candidate of apps) {
+      const scheme = SiteBaseUrl.schemeOf(ApplicationUrlUtils.readAppBaseUrlFromEnvironment(candidate));
+      if (scheme) return scheme;
+    }
+    return '';
   }
 
   /** `https` out of `https://console.example.com`, or '' when there is nothing to read it from. */
