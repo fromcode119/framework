@@ -18,7 +18,7 @@ export abstract class PersonEditPageState extends AdminComponent {
 
   @state routeId = '';
   @state person: IPerson | null = null;
-  @state fields: IPersonEditPageFields = { firstName: '', lastName: '', displayName: '', phone: '', birthDate: '' };
+  @state fields: IPersonEditPageFields = { firstName: '', lastName: '', displayName: '', email: '', phone: '', birthDate: '' };
   @state loading = true;
   @state saving = false;
   @state granting = false;
@@ -43,6 +43,7 @@ export abstract class PersonEditPageState extends AdminComponent {
       firstName: String(person?.firstName ?? ''),
       lastName: String(person?.lastName ?? ''),
       displayName: String(person?.displayName ?? ''),
+      email: String(person?.email ?? ''),
       phone: String(person?.phone ?? ''),
       birthDate: String(person?.birthDate ?? ''),
     };
@@ -52,11 +53,11 @@ export abstract class PersonEditPageState extends AdminComponent {
     this.fields = { ...this.fields, [key]: value };
   }
 
-  protected field(label: string, key: keyof IPersonEditPageFields, type = 'text'): ReactNode {
+  protected field(label: string, key: keyof IPersonEditPageFields, type = 'text', locked = false): ReactNode {
     return (
       <label className="block">
         <span className="block text-[11px] font-bold tracking-tight text-slate-500 mb-1.5">{label}</span>
-        <Input type={type} value={this.fields[key]} disabled={this.saving}
+        <Input type={type} value={this.fields[key]} disabled={this.saving || locked}
           onChange={(e) => this.set(key, e.target.value)} className="w-full" />
       </label>
     );
