@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactElement, ReactNode } from 'react';
 import { ColorSchemeBootScript } from '@/lib/color-scheme-boot-script';
+import { EarlyInteractionBuffer } from '@/lib/document/early-interaction-buffer';
 import { MetadataHeadView } from '@/lib/document/metadata-head-view';
 import type { ThemeHeadModel } from '@/lib/document/theme-head-model';
 import type { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
@@ -10,6 +11,7 @@ import type { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
  *
  *  - charset + viewport (Next emitted these itself);
  *  - the pre-paint colour-scheme restore script;
+ *  - the early-interaction buffer, which holds taps made before the runtime boots (EarlyInteractionBuffer);
  *  - the page metadata (title, description, canonical, robots, Open Graph, Twitter, icons);
  *  - the theme's contribution (`ThemeHeadModel`): preconnect/preload hints as `<link>`s, declared head
  *    links, theme variables + inlined CSS, prefetch script, entry meta, the modulepreload injector;
@@ -38,6 +40,7 @@ export class DocumentHeadView {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script dangerouslySetInnerHTML={{ __html: ColorSchemeBootScript.inlineScript() }} />
+        <script dangerouslySetInnerHTML={{ __html: EarlyInteractionBuffer.inlineScript() }} />
         <MetadataHeadView.render page={page} site={site} />
         {layoutStylesheets.map((href) => <link key={href} rel="stylesheet" href={href} />)}
         {layoutInlineCss ? <style id="fc-framework-baseline" dangerouslySetInnerHTML={{ __html: layoutInlineCss }} /> : null}
