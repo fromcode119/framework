@@ -51,3 +51,43 @@ describe('IntegrationManager instance cache', () => {
     expect(resolves).toBe(2);
   });
 });
+
+describe('IntegrationManager after a configuration write', () => {
+  it('re-reads a site\'s integration once that site saves new settings', async () => {
+    let version = 1;
+    const manager = new IntegrationManager({} as any, '/tmp', { info() {}, warn() {}, error() {}, debug() {} } as any);
+    (manager as any).registry = { instantiate: async () => ({ instance: { version } }) };
+
+    expect((await TenantCacheFixture.asTenant('tenant-a', () => manager.get('shipping_provider'))).version).toBe(1);
+    version = 2;
+    await TenantCacheFixture.asTenant('tenant-a', () => (manager as any).refreshType('shipping_provider'));
+    expect((await TenantCacheFixture.asTenant('tenant-a', () => manager.get('shipping_provider'))).version).toBe(2);
+  });
+
+  it('drops the email driver a site resolved before it had mail settings', async () => {
+    const manager = new IntegrationManager({} as any, '/tmp', { info() {}, warn() {}, error() {}, debug() {} } as any);
+    const instances: Map<string, unknown> = (manager as any).instances;
+    (manager as any).refreshEmail = async () => ({});
+    instances.set('tenant-a::email', { stale: true });
+    instances.set('tenant-b::email', { other: true });
+
+    await TenantCacheFixture.asTenant('tenant-a', () => (manager as any).refreshType('email'));
+
+    expect(instances.has('tenant-a::email')).toBe(false);
+    // Another site's driver is not this write's business.
+    expect(instances.has('tenant-b::email')).toBe(true);
+  });
+
+  it('drops every site\'s email driver when the platform\'s own mail settings change', async () => {
+    const manager = new IntegrationManager({} as any, '/tmp', { info() {}, warn() {}, error() {}, debug() {} } as any);
+    const instances: Map<string, unknown> = (manager as any).instances;
+    (manager as any).refreshEmail = async () => ({});
+    instances.set('tenant-a::email', { platformFallback: true });
+    instances.set('tenant-b::storage', { untouched: true });
+
+    await TenantCacheFixture.asTenant(undefined, () => (manager as any).refreshType('email'));
+
+    expect(instances.has('tenant-a::email')).toBe(false);
+    expect(instances.has('tenant-b::storage')).toBe(true);
+  });
+});

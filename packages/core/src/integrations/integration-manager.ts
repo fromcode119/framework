@@ -150,11 +150,6 @@ export class IntegrationManager {
     return `${RequestContextUtils.getTenantId() ?? ''}::${normalizedType}`;
   }
 
-  /** Drops the current tenant's instance of a type, so the next `get()` re-reads that tenant's config. */
-  private forgetInstance(normalizedType: string): void {
-    this.instances.delete(this.instanceKey(normalizedType));
-  }
-
   async instantiateWithConfig<T = any>(
     typeKey: string,
     providerKey: string,
@@ -276,7 +271,31 @@ export class IntegrationManager {
     return CoreServices.getInstance().content.sanitizeKey(type);
   }
 
+  /**
+   * Drops the cached per-site instances a configuration write has made stale.
+   *
+   * A site's driver is resolved on its first use and kept for the life of the process. Saving that
+   * site's mail settings refreshed only the PLATFORM instance, so the site went on sending through the
+   * driver it resolved before the save — "no mail configuration" after an operator had just added one —
+   * until the api restarted. A write inside a site scope forgets that site's copies; a platform-level
+   * write forgets every site's, because a site sending through the platform holds the old platform
+   * driver in its own entry.
+   */
+  private forgetSiteInstances(normalizedType: string): void {
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    if (tenantId) {
+      this.instances.delete(`${tenantId}::${normalizedType}`);
+      IntegrationTenantAccess.invalidate(tenantId);
+      return;
+    }
+    for (const key of [...this.instances.keys()]) {
+      if (key.endsWith(`::${normalizedType}`)) this.instances.delete(key);
+    }
+    IntegrationTenantAccess.invalidate();
+  }
+
   private async refreshType(normalizedType: string) {
+    this.forgetSiteInstances(normalizedType);
     if (normalizedType === 'email') {
       await this.refreshEmail(true);
       return;
@@ -289,8 +308,6 @@ export class IntegrationManager {
       await this.refreshCache(true);
       return;
     }
-
-    this.forgetInstance(normalizedType);
   }
 
 }
