@@ -19,7 +19,7 @@ import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
  * platform.
  */
 
-const ENV = { FRONTEND_URL: process.env.FRONTEND_URL, API_URL: process.env.API_URL };
+const ENV = { FRONTEND_URL: process.env.FRONTEND_URL, API_URL: process.env.API_URL, ADMIN_URL: process.env.ADMIN_URL };
 
 const withUrls = (frontend: string, api: string) => {
   if (frontend) process.env.FRONTEND_URL = frontend; else delete process.env.FRONTEND_URL;
@@ -47,6 +47,7 @@ afterEach(() => {
   TenantMode.reset();
   vi.restoreAllMocks();
   withUrls(ENV.FRONTEND_URL ?? '', ENV.API_URL ?? '');
+  if (ENV.ADMIN_URL) process.env.ADMIN_URL = ENV.ADMIN_URL; else delete process.env.ADMIN_URL;
 });
 
 describe('a site’s own base URL', () => {
@@ -122,10 +123,22 @@ describe('a site’s own base URL', () => {
       .toBe('https://platform.example');
   });
 
+  it('takes the scheme from another declared app when the frontend has no URL of its own', async () => {
+    // A multi-site platform configures its console and api but no single storefront address.
+    multiTenant();
+    withUrls('', '');
+    process.env.ADMIN_URL = 'https://console.platform.example';
+    wire(tenant('fromcode.example'));
+
+    expect(await inSite('my-site', () => SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.FRONTEND_APP)))
+      .toBe('https://fromcode.example');
+  });
+
   it('invents NOTHING when the deployment declares no URL to take a scheme from', async () => {
     // The whole answer would be a guess: the host is known, the scheme is not.
     multiTenant();
     withUrls('', '');
+    delete process.env.ADMIN_URL;
     wire(tenant('shop.customer.example'));
 
     expect(await inSite('my-site', () => SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.FRONTEND_APP))).toBe('');
