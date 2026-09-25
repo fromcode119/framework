@@ -243,7 +243,9 @@ export class SiteForm extends PureReactor {
              out input that reads like something that ought to work. */
           <p className="fc-site-form__meta">Site id <code>{values.id}</code> — fixed for the life of the site. Rename with the slug and hosts above.</p>
         )}
-        <p className="fc-site-form__hint">Hosts are bare hostnames — no scheme, path or port. The kind cannot change later.{values.isWorkspace ? ' An "api." alias of the domain is routed to the api for devices and apps.' : ''}</p>
+        {/* No word here about "api." aliases: the name stopped choosing a host's role (TenantRecord.roleFor
+            reads only the declared role), so that promise now contradicted the list right above it. */}
+        <p className="fc-site-form__hint">Hosts are bare hostnames — no scheme, path or port. The kind cannot change later.</p>
 
         {inventory ? (
           <div className="fc-site-form__inventory">
