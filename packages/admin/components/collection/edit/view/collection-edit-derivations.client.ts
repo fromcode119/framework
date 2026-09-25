@@ -76,7 +76,11 @@ export class CollectionEditDerivations {
     const navSections = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((s: any) => ({ key: s.key, title: s.title || 'Content' }));
 
     const statusField = collection?.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') as any;
-    const statusOptions = Array.isArray(statusField?.options)
+    // A read-only status is changed by the collection's own actions (a refund moves through the service
+    // that refunds it). The header select ignored that and offered every option, which the server then
+    // refused with "Unlock confirmation is required" — so a read-only status, or a locked record, gets no
+    // header control.
+    const statusOptions = Array.isArray(statusField?.options) && statusField?.admin?.readOnly !== true && !locked
       ? statusField.options.map((option: any) => ({ label: String(option?.label || option?.value || '').trim(), value: String(option?.value || '').trim() })).filter((option: any) => option.value)
       : [];
 
