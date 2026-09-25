@@ -18,6 +18,14 @@ describe('ThemeCssUrlRewriter', () => {
     expect(ThemeCssUrlRewriter.rewrite(css, sheet)).toBe(css);
   });
 
+  it('resolves against a ROOT-RELATIVE stylesheet URL to root-relative paths', () => {
+    // Production has no absolute api URL: the storefront proxies /api on its own host.
+    const css = "@font-face{src:url(fonts/a.woff2) format('woff2')} .y{background:url('../shared/c.svg?v=1#i')}";
+    expect(ThemeCssUrlRewriter.rewrite(css, '/api/v1/themes/aurora/ui/aurora-theme.css')).toBe(
+      "@font-face{src:url(/api/v1/themes/aurora/ui/fonts/a.woff2) format('woff2')} .y{background:url('/api/v1/themes/aurora/shared/c.svg?v=1#i')}",
+    );
+  });
+
   it('returns the css unchanged without a stylesheet URL', () => {
     expect(ThemeCssUrlRewriter.rewrite('a{src:url(f.woff2)}', '')).toBe('a{src:url(f.woff2)}');
   });
