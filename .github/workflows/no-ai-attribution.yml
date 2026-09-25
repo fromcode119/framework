@@ -23,7 +23,7 @@ jobs:
     name: No AI attribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The full range being proposed, not just the tip — a clean head commit says nothing about
           # the five behind it, and every one of them lands in history on merge.
