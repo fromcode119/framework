@@ -73,7 +73,8 @@ jobs:
             [ -z "$files" ] && only_version=false
             for f in $files; do
               case "$f" in
-                CHANGELOG.md) ;;
+                # CI configuration: no guard reads a workflow file, so none can report differently.
+                CHANGELOG.md|.github/*) ;;
                 manifest.json|theme.json|appearance.json|package.json|package-lock.json)
                   strip='del(.version) | if .packages then .packages[""] |= del(.version) else . end'
                   a=$(git show "$BASE:$f" 2>/dev/null | jq -S "$strip") || a=missing-a
