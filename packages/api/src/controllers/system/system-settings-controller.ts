@@ -6,6 +6,7 @@ import { PersonalDataErasureService } from '@fromcode119/core';
 import { Logger } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { SystemSettingRegistry } from '@fromcode119/core';
+import type { ISettingWrite } from '@fromcode119/core';
 import { SystemSettingsWriter } from '@api/controllers/system/system-settings-writer';
 
 /**
@@ -71,6 +72,9 @@ export class SystemSettingsController {
       res.json({
         keys: TenantBespokePolicies.platformKeys(),
         inheritedKeys: SystemSettingRegistry.inheritedKeys(),
+        // Per-site keys only a platform admin may write, so the admin can disable those controls for a
+        // site admin up front instead of letting the save be refused.
+        platformAdminWrittenKeys: [...SystemSettingRegistry.platformAdminWrittenKeys()],
         // What each setting falls back to when the scope has no value — shown as the empty field's
         // placeholder, so a blank box names the value it sends.
         declaredDefaults: SystemSettingRegistry.exposedDefaults(),
@@ -152,7 +156,10 @@ export class SystemSettingsController {
       const platformOnlyKeys = new Set([...platformKeys].filter((key) => !inheritedKeys.has(key)));
       const tenantBound = Boolean(RequestContextUtils.getTenantId());
       const platformAdmin = await this.runtime.isPlatformAdmin(req);
-      const refused = Object.keys(preparedPayload).filter((key) => platformOnlyKeys.has(key));
+      // A site key the PLATFORM decides for each site (sending through the platform's mail server):
+      // the row is the site's, but the thing it spends is the platform's, so a site admin may not grant it.
+      const platformGranted = SystemSettingRegistry.platformAdminWrittenKeys();
+      const refused = Object.keys(preparedPayload).filter((key) => platformOnlyKeys.has(key) || platformGranted.has(key));
       if (refused.length > 0 && TenantMode.isEnabled() && !platformAdmin) {
         return res.status(403).json({ error: 'platform_admin_required', message: `Platform setting(s) ${refused.join(', ')} apply to every site and only a platform admin may change them.`, keys: refused });
       }
@@ -183,6 +190,7 @@ export class SystemSettingsController {
         }
       }
       const asPlatform = platformAdmin && this.runtime.db.dialect === 'postgres';
+      const writes: ISettingWrite[] = [];
       for (const [key, value] of Object.entries(preparedPayload)) {
         const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
         let previousValue: string | undefined;
@@ -192,6 +200,7 @@ export class SystemSettingsController {
         const writesPlatformRow = platformOnlyKeys.has(key) || (inheritedKeys.has(key) && !tenantBound);
         if (asPlatform && writesPlatformRow) {
           previousValue = await this.writer.writePlatformSetting(key, serializedValue, timestamp);
+          writes.push({ key, tenantId: null });
         } else {
           // Address THIS SCOPE'S row, not merely the key.
           //
@@ -217,6 +226,7 @@ export class SystemSettingsController {
           } else {
             await this.runtime.db.insert(SystemConstants.TABLE.META, { key, value: serializedValue, updated_at: timestamp });
           }
+          writes.push({ key, tenantId: currentScope });
         }
 
         // Audit every setting change WITH the actor + old→new. This is what finally attributes
@@ -230,7 +240,10 @@ export class SystemSettingsController {
 
       // Announce the settings change so in-process caches (e.g. the route-resolution
       // permalink-structure cache) can invalidate immediately instead of waiting out a TTL.
-      this.runtime.manager.hooks.emit('system:settings:updated', { keys: Object.keys(preparedPayload) });
+      // `writes` says which row each key landed in, so every cache that derived a value from one
+      // (`SettingChangeInvalidators`) drops exactly the copies the save made stale — on every api
+      // instance, since the hook is broadcast.
+      this.runtime.manager.hooks.emit('system:settings:updated', { keys: Object.keys(preparedPayload), writes });
 
       res.json({ success: true });
     } catch (error: any) {

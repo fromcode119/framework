@@ -29,5 +29,11 @@ export interface ISystemSettingDescriptor {
    * `value` may be a thunk for the few defaults that are only knowable at boot (the app URLs come
    * from the environment). It is evaluated once, when the seed runs.
    */
+  /**
+   * A SITE key only a platform admin may write. The row is the site's — each site decides for itself —
+   * but what it grants is the platform's (sending through the platform's mail server), so a site admin
+   * granting it to their own site would be the silent borrowing the setting exists to prevent.
+   */
+  platformAdminWrites?: boolean;
   seed?: { value: string | (() => string); description: string; group: string };
 }

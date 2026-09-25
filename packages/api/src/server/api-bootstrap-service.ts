@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, RequestContextUtils, ServerCoreServices, SiteBaseUrl, SiteClockAccess, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
+import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SettingChangeInvalidators, SiteBaseUrl, SiteClockAccess, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
@@ -147,29 +147,29 @@ export class ApiBootstrapService {
         locale: (await value(SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE)) || (await value(SystemConstants.META_KEY.DEFAULT_LOCALE)),
       };
     });
-    // A saved locale takes effect on the next request. The hook runs in the saving request, so a site's
-    // save drops that site's value; a platform save drops every site's.
+    // One listener for every cache that derives a value from a saved setting: the save's payload says
+    // which row each key landed in, and the registry drops exactly the copies that made stale. On the
+    // hook rather than called by the controller, because the hook reaches every api instance.
     manager.hooks.on('system:settings:updated', (payload: any) => {
-      const keys: string[] = Array.isArray(payload?.keys) ? payload.keys : [];
-      if (!keys.includes(SystemConstants.META_KEY.DEFAULT_LOCALE)) return;
-      SiteLocaleAccess.invalidate(RequestContextUtils.getTenantId());
+      SettingChangeInvalidators.dispatch(Array.isArray(payload?.writes) ? payload.writes : []);
+    });
+
+    // The PLATFORM's own locale (`context.i18n.defaultLocale()` for work no site owns, and every site
+    // without one of its own) was seeded once at boot, so saving it changed nothing until a restart.
+    // Only a platform-row save can change it; a site's own save is the site cache's business.
+    SettingChangeInvalidators.register([SystemConstants.META_KEY.DEFAULT_LOCALE], (tenantId) => {
+      if (tenantId === null) void ApiBootstrapService.seedPlatformLocale(manager);
     });
 
     // A changed catalogue must take effect on the NEXT request, not on the next restart. Without
     // this the site would save a new marketplace URL, be told it saved, and go on browsing the old
-    // one for the life of the process — "saved but not in force", which this codebase closes
-    // everywhere else. Scoped to the site that wrote it: the hook fires on that site's own request,
-    // so no other site's resolved catalogue is thrown away.
-    manager.hooks.on('system:settings:updated', (payload: any) => {
-      const keys: string[] = Array.isArray(payload?.keys) ? payload.keys : [];
-      if (!keys.includes(SystemConstants.META_KEY.MARKETPLACE_URL)) return;
+    // one for the life of the process — "saved but not in force". A site's own save clears that
+    // site; the platform's clears every site, because each one that has chosen nothing is reading
+    // the value that just changed.
+    SettingChangeInvalidators.register([SystemConstants.META_KEY.MARKETPLACE_URL], (tenantId) => {
       const marketplace = (manager as any).marketplace;
       if (typeof marketplace?.invalidateResolvedCatalogue !== 'function') return;
-      // One key now, so WHO wrote it decides the blast radius rather than which key was written. A
-      // site's own save clears that site; the platform's clears every site, because each one that has
-      // chosen nothing is reading the value that just changed.
-      const scope = SiteMarketplaceUrl.currentScopeKey();
-      if (scope) marketplace.invalidateResolvedCatalogue(scope);
+      if (tenantId) marketplace.invalidateResolvedCatalogue(tenantId);
       else marketplace.invalidateResolvedCatalogue();
     });
 

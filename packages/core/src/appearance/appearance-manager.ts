@@ -19,8 +19,6 @@ import { SystemConstants } from '@core/constants/system.constants';
  * `admin_appearance` system setting (switched in the UI), not handled here.
  */
 export class AppearanceManager {
-  private installer?: AppearanceInstallerService;
-  private clientPromise?: Promise<MarketplaceClient | null>;
 
   constructor(
     private readonly logger: Logger,
@@ -155,27 +153,26 @@ export class AppearanceManager {
     }
   }
 
+  /** Built per use: the client it carries must follow a saved Marketplace URL. */
   private async getInstaller(): Promise<AppearanceInstallerService> {
-    if (!this.installer) {
-      const client = await this.resolveClient();
-      this.installer = new AppearanceInstallerService(this.logger, this.appearancesRoot, client ?? new MarketplaceClient());
-    }
-    return this.installer;
+    const client = await this.resolveClient();
+    return new AppearanceInstallerService(this.logger, this.appearancesRoot, client ?? new MarketplaceClient());
   }
 
-  /** Build a marketplace client from the configured URL/setting, or null when the marketplace is off. */
+  /**
+   * A marketplace client from the configured URL/setting, or null when the marketplace is off.
+   *
+   * Read on every use. It was memoised for the life of the manager — and the api's appearance routes
+   * hold one manager for the life of the process — so a saved Marketplace URL, including turning the
+   * marketplace off, never reached the appearance screens until a restart. It is one settings read.
+   */
   private async resolveClient(): Promise<MarketplaceClient | null> {
-    if (!this.clientPromise) {
-      this.clientPromise = (async () => {
-        const raw = await PlatformSettingsService.resolve(process.env.MARKETPLACE_URL, SystemConstants.META_KEY.MARKETPLACE_URL);
-        const normalized = String(raw || '').trim().toLowerCase();
-        if (!raw || normalized === 'off' || normalized === 'false' || normalized === 'disabled') {
-          this.logger.info('Marketplace disabled — appearance catalog/update checks skipped.');
-          return null;
-        }
-        return new MarketplaceClient(raw);
-      })();
+    const raw = await PlatformSettingsService.resolve(process.env.MARKETPLACE_URL, SystemConstants.META_KEY.MARKETPLACE_URL);
+    const normalized = String(raw || '').trim().toLowerCase();
+    if (!raw || normalized === 'off' || normalized === 'false' || normalized === 'disabled') {
+      this.logger.info('Marketplace disabled — appearance catalog/update checks skipped.');
+      return null;
     }
-    return this.clientPromise;
+    return new MarketplaceClient(raw);
   }
 }

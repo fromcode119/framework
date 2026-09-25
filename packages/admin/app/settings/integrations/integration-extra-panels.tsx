@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { McpRemoteAccessPanel } from '@/app/settings/integrations/mcp/components/view/mcp-remote-access-panel.client';
 import { McpTokensPanel } from '@/app/settings/integrations/mcp/components/view/mcp-tokens-panel.client';
+import { EmailPlatformSenderPanel } from '@/app/settings/integrations/email/components/view/email-platform-sender-panel.client';
 
 /**
  * Extra panels an integration type may contribute below its provider grid.
@@ -12,6 +13,7 @@ import { McpTokensPanel } from '@/app/settings/integrations/mcp/components/view/
  */
 export class IntegrationExtraPanels {
   private static readonly PANELS: Record<string, () => ReactNode> = {
+    email: () => <EmailPlatformSenderPanel />,
     mcp: () => (
       <>
         <McpRemoteAccessPanel />

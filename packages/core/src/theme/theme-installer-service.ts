@@ -24,7 +24,8 @@ export class ThemeInstallerService {
     private readonly logger: Logger,
     private readonly themesRoot: string,
     private readonly seeder: Seeder,
-    private readonly client: MarketplaceClient,
+    /** Resolved per install, so a saved Marketplace URL applies to the next one. */
+    private readonly clientFor: () => Promise<MarketplaceClient>,
     private readonly pluginManager: any,
     private readonly discoverThemes: () => Promise<void>,
     private readonly resolveThemeDirectory: (slug: string) => string,
@@ -45,7 +46,7 @@ export class ThemeInstallerService {
 
   async installTheme(pkg: any): Promise<void> {
     const { slug, downloadUrl: rawDownloadUrl } = pkg;
-    const downloadUrl = this.client.resolveDownloadUrl(rawDownloadUrl);
+    const downloadUrl = (await this.clientFor()).resolveDownloadUrl(rawDownloadUrl);
     this.logger.info(`Installing theme "${slug}" from ${downloadUrl}...`);
     const tempDir = path.join(this.themesRoot, `.tmp-install-${slug}-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });

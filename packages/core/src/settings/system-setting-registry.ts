@@ -145,6 +145,15 @@ export class SystemSettingRegistry {
       .map(([key]) => key);
   }
 
+  /** SITE keys whose value only a platform admin may write — see `platformAdminWrites`. */
+  static platformAdminWrittenKeys(): Set<string> {
+    return new Set(
+      Object.entries(SystemSettingRegistry.REGISTRY)
+        .filter(([, descriptor]) => descriptor.platformAdminWrites === true)
+        .map(([key]) => key),
+    );
+  }
+
   /** Every key the generic settings PUT may accept. */
   static writableKeys(): Set<string> {
     if (!SystemSettingRegistry.writableKeysCache) {

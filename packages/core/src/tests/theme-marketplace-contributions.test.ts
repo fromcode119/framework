@@ -21,7 +21,7 @@ describe('ThemeUpdateService — what the themes marketplace offers', () => {
 
   const service = (remote: unknown) => new ThemeUpdateService(
     new Map(),
-    { fetch: async () => remote } as never,
+    async () => ({ fetch: async () => remote }) as never,
     logger,
   );
 
@@ -50,7 +50,7 @@ describe('ThemeUpdateService — what the themes marketplace offers', () => {
   /** An unreachable marketplace must not hide what is already built and sitting on disk. */
   it('still offers local builds when the remote catalogue fails', async () => {
     withContributions([{ slug: 'aurora', version: '0.1.29', kind: 'theme' }]);
-    const failing = new ThemeUpdateService(new Map(), { fetch: async () => { throw new Error('offline'); } } as never, logger);
+    const failing = new ThemeUpdateService(new Map(), async () => ({ fetch: async () => { throw new Error('offline'); } }) as never, logger);
 
     const themes = await failing.getMarketplaceThemes();
 

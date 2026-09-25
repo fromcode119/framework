@@ -1,6 +1,5 @@
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { AuthControllerSso } from '@api/controllers/auth/auth-controller-sso';
-import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { InitialSetupPreferences } from '@api/controllers/auth/initial-setup-preferences';
 import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { Request, Response } from 'express';
@@ -63,8 +62,9 @@ export class AuthControllerSetup extends AuthControllerSso {
     await this.setForcePasswordReset(newUser.id, false);
     await this.pushPasswordHistory(newUser.id, hashedPassword);
     await this.upsertMeta(this.getPasswordChangedAtKey(newUser.id), new Date().toISOString());
-    await this.persistSetupPreferences(req.body);
-    await this.completeSetup(req);
+    const preferences = await this.persistSetupPreferences(req.body);
+    const completion = await this.completeSetup(req);
+    this.announceSettings([...preferences, ...completion]);
 
     const loginResult = await this.issueLoginSession(req, res, newUser);
 
@@ -97,7 +97,9 @@ export class AuthControllerSetup extends AuthControllerSso {
    * An address already configured is never overwritten: a deployment that was given one in env has
    * seeded it, and the operator's own value outranks anything derived here.
    */
-  private async completeSetup(req: Request): Promise<void> {
+  /** Returns the settings keys it wrote. */
+  private async completeSetup(req: Request): Promise<string[]> {
+    const written: string[] = [];
     try {
       const existing = String((await this.manager.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_URL }))?.value ?? '').trim();
       if (!existing) {
@@ -108,19 +110,36 @@ export class AuthControllerSetup extends AuthControllerSso {
         const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
         const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'http').split(',')[0].trim();
         const resolved = confirmed || (host ? `${proto}://${host}` : '');
-        if (resolved) await this.upsertMeta(SystemConstants.META_KEY.ADMIN_URL, resolved);
+        if (resolved) {
+          await this.upsertMeta(SystemConstants.META_KEY.ADMIN_URL, resolved);
+          written.push(SystemConstants.META_KEY.ADMIN_URL);
+        }
       }
 
       await this.upsertMeta(SystemConstants.META_KEY.SETUP_COMPLETED, 'true');
+      written.push(SystemConstants.META_KEY.SETUP_COMPLETED);
       SetupMode.complete();
-      // The console host just changed, so the gateway needs to hear about it now rather than at its
-      // next refresh — otherwise the operator is redirected to an address that answers unknown_host.
-      void new GatewayReloadClient().notify();
     } catch (error: unknown) {
       // A setup that created the admin account but could not write the marker must NOT fail: the
       // account exists, and `userCount > 0` alone keeps setup mode shut on the next boot.
       this.logger.error(`[AuthController] Could not record setup completion: ${String((error as Error)?.message ?? error)}`);
     }
+    return written;
+  }
+
+  /**
+   * Tells the running process what setup just wrote, exactly as a save in Settings does.
+   *
+   * Setup wrote its rows straight to the table and said nothing, so the settings map the rate
+   * limiter, CORS and the gateway's routing map read kept the values from before setup until its next
+   * poll — up to five minutes. The gateway push this replaces went out before any refresh, so the
+   * operator was sent to a console address the gateway would only learn later: `unknown_host`. The
+   * settings listener refreshes the map and THEN pushes the gateway for a routing key.
+   */
+  private announceSettings(keys: string[]): void {
+    if (keys.length === 0) return;
+    // Setup runs before any site exists: every row it wrote is the platform's.
+    this.manager.hooks.emit('system:settings:updated', { keys, writes: keys.map((key) => ({ key, tenantId: null })) });
   }
 
   /** An absolute http(s) URL, or empty. A value that will not parse is discarded, never stored. */
@@ -136,14 +155,18 @@ export class AuthControllerSetup extends AuthControllerSso {
     }
   }
 
-  private async persistSetupPreferences(body: Record<string, unknown> | undefined): Promise<void> {
+  /** Returns the settings keys it wrote. */
+  private async persistSetupPreferences(body: Record<string, unknown> | undefined): Promise<string[]> {
+    const written: string[] = [];
     for (const [key, value] of InitialSetupPreferences.fromRequestBody(body).entries) {
       try {
         await this.upsertMeta(key, value);
+        written.push(key);
       } catch (error) {
         this.logger.error(`[AuthController] Setup could not store ${key}: ${error}`);
       }
     }
+    return written;
   }
 
   /** Names the section this must not race with; how it is serialised is the driver's business. */
