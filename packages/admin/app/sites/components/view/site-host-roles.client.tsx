@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { bound } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Select } from '@/components/ui/view/select.client';
 
@@ -20,6 +19,8 @@ import { Select } from '@/components/ui/view/select.client';
 export class SiteHostRoles extends AdminComponent<{
   /** Every host this site answers on, primary first. */
   hosts: string[];
+  /** Which of them is the primary host, so each row can say so. */
+  primaryHost: string;
   /** Host -> role, where one has been chosen. */
   roles: Record<string, string>;
   /** A workspace defaults to the console, a site to its storefront. */
@@ -46,32 +47,42 @@ export class SiteHostRoles extends AdminComponent<{
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    const hosts = this.props.hosts.filter((host) => host.trim().length > 0);
+    const primary = this.props.primaryHost.trim().toLowerCase();
+    // Case-insensitive and de-duplicated, like the saved map: an alias typed twice, or repeating the
+    // primary host, is one host with one role, not two selects that fight over the same entry.
+    const hosts = [...new Map(this.props.hosts
+      .map((host) => host.trim())
+      .filter(Boolean)
+      .map((host) => [host.toLowerCase(), host] as const)).values()];
     if (!hosts.length) return null;
 
     return (
-      <div className="mt-4">
-        <label className={`block text-xs font-semibold mb-1 ${dark ? 'text-slate-300' : 'text-slate-700'}`}>
-          What each host serves
-        </label>
-        <p className={`text-[11px] mb-2 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+      <div className="fc-site-form__block">
+        <span className="fc-site-form__label">What each host serves</span>
+        <p className="fc-site-form__hint">
           Chosen here, never guessed from the name. A host called <code>api.example.com</code> serves the
           storefront like any other unless you say otherwise.
         </p>
-        <div className="flex flex-col gap-2">
+        {/* Its own full-width block, below the identity grid. As one grid cell it squeezed every
+            hostname to a single letter and stretched the row, pushing State / Visible to /
+            Environment's controls far below their labels. The name is never truncated: an operator
+            has to be able to read WHICH host a select configures. */}
+        <ul className="fc-site-host-roles">
           {hosts.map((host) => (
-            <div key={host} className="grid grid-cols-[1fr_auto] items-center gap-2">
-              <span className={`text-xs font-mono truncate ${dark ? 'text-slate-300' : 'text-slate-700'}`}>{host}</span>
+            <li key={host.toLowerCase()} className="fc-site-host-roles__row">
+              <span className="fc-site-host-roles__host">
+                <span className="fc-site-host-roles__name">{host}</span>
+                <span className="fc-site-host-roles__kind">{host.toLowerCase() === primary ? 'Primary host' : 'Alias'}</span>
+              </span>
               <Select
                 theme={this.theme}
                 value={this.props.roles[host.toLowerCase()] ?? ''}
                 onChange={(value: string) => this.onRole(host, value)}
                 options={this.options}
               />
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     );
   }

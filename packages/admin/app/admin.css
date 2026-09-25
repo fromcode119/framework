@@ -494,9 +494,26 @@ html.dark {
 .fc-site-form__count { font-size: 11px; color: var(--muted-foreground); margin-left: 8px; font-weight: 500; }
 .fc-site-form__meta { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; }
 .fc-site-form__meta code { font-family: var(--font-mono, monospace); }
+/* What each host serves: one row per host, the FULL hostname beside its role. A row, never a grid
+   cell — as a cell the select's width squeezed the name to one letter. The name wraps rather than
+   truncates, because a host an operator cannot read is a select they cannot use. */
+.fc-site-host-roles { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: 8px; container-type: inline-size; }
+.fc-site-host-roles__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 320px); align-items: center; gap: 6px 16px; padding: 8px 12px; }
+.fc-site-host-roles__row + .fc-site-host-roles__row { border-top: 1px solid var(--border); }
+.fc-site-host-roles__host { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fc-site-host-roles__name { font-family: var(--font-mono, monospace); font-size: 12.5px; overflow-wrap: anywhere; }
+.fc-site-host-roles__kind { font-size: 11px; color: var(--muted-foreground); }
+/* Stacks by the LIST's width, not the window's: beside the Pages card at 1280 the card is ~430px, and
+   side by side the name column shrank to 74px and broke the hostname into fragments. */
+@container (max-width: 560px) {
+  .fc-site-host-roles__row { grid-template-columns: minmax(0, 1fr); }
+}
 /* Paging for an unbounded roster — see SiteMembersCard. */
-.fc-sites__overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 16px; align-items: start; }
-.fc-sites__tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.fc-sites__overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 16px; align-items: start; }
+/* Scrolls sideways on a narrow screen. Six tabs are ~470px, and an ancestor clips horizontal
+   overflow, so at 390px the last tabs (Danger among them) were cut off and could not be reached. */
+.fc-sites__tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 16px; overflow-x: auto; scrollbar-width: thin; }
+.fc-sites__tab { flex-shrink: 0; white-space: nowrap; }
 .fc-sites__tab { appearance: none; background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 14px; font-size: 12px; font-weight: 600; color: var(--muted-foreground); cursor: pointer; }
 .fc-sites__tab:hover { color: var(--foreground); }
 .fc-sites__tab--active { color: var(--primary); border-bottom-color: var(--primary); }

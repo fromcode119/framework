@@ -5,6 +5,7 @@ import { Explanation } from '@/components/ui/view/explanation.client';
 import { RuntimeLocationUtils, ThemeMode } from '@fromcode119/core/client';
 import { PureReactor, bound, prop, state } from '@fromcode119/react-class-components';
 import { SiteHostsFields } from '@/app/sites/components/view/site-hosts-fields.client';
+import { SiteHostRoles } from '@/app/sites/components/view/site-host-roles.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
@@ -229,6 +230,13 @@ export class SiteForm extends PureReactor {
             ]}
           />
         </div>
+        <SiteHostRoles
+          hosts={[values.primaryHost, ...values.aliasList]}
+          primaryHost={values.primaryHost}
+          roles={values.hostRoles}
+          isWorkspace={values.isWorkspace}
+          onChange={(hostRoles: Record<string, string>) => this.emit({ hostRoles })}
+        />
         {this.isNew ? null : (
           /* The id is the row-level-security discriminator stamped into every row this site owns, so it
              cannot change without rewriting them all. Shown as the fact it is, rather than as a greyed
