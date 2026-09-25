@@ -124,7 +124,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-          cache: npm
+          # GitHub's npm cache only helps a runner that starts empty. On the organisation's own runner the
+          # install is skipped (the built framework is kept), yet the post-step still compressed and
+          # uploaded the npm cache to GitHub on every job.
+          cache: ${{ runner.environment == 'github-hosted' && 'npm' || '' }}
           cache-dependency-path: framework/Source/package-lock.json
 
       # On the organisation's own runner the installed and built framework is kept between jobs, keyed
