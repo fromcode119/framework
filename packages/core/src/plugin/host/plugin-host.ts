@@ -132,7 +132,10 @@ export class PluginHost extends PluginHostGuestBridge {
       entryPath: PluginHost.guestMainPath(),
       args: [],
       cwd: this.projectRoot,
-      execArgv: [`--max-old-space-size=${this.limits.memoryMb}`],
+      // A guest is mostly idle between calls, and V8's default young generation (16 MB semi-spaces,
+      // three of them) is sized for a busy process. Twenty-two guests on production held ~2 GB in one
+      // container; a 1 MB semi-space measured about 12 MB less resident per process at the same work.
+      execArgv: [`--max-old-space-size=${this.limits.memoryMb}`, '--max-semi-space-size=1'],
       identity: this.identity,
       writableDirs: [path.join(this.projectRoot, 'data', 'plugins', this.slug)],
     });

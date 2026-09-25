@@ -269,7 +269,11 @@ services:
           # reported nothing: a killed child writes no stderr, so the failure arrived as a bare
           # "vite build (admin)" and looked like a code problem rather than a memory one.
           # The local compose already raised this for the same reason.
-          memory: 2G
+          # 2G ran out on production (2026-09-25): 22 installed plugins, one guest process each at
+          # ~120 MB, left the api 1.93 GB of 2 GB in use a quarter of an hour after a restart — one
+          # more plugin away from the kernel killing the api and every site with it. The host has
+          # 7.7 GB and the other services are capped well under 3 GB together.
+          memory: 3584M
 
   admin:
     build:
