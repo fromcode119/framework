@@ -3,6 +3,7 @@ import { AppTypecheck } from '../app-typecheck';
 import { ArchorCommand } from './arch-guard-command';
 import { FrameworkRoot } from './framework-root';
 import { GuardTarget } from './guard-target';
+import { GuardScope } from './guard-scope';
 
 /**
  * `arch-guard app-typecheck` — real `tsc --noEmit` for the Next apps.
@@ -21,6 +22,14 @@ export class AppTypecheckCommand extends ArchorCommand {
   static readonly APPS = ['admin', 'frontend'] as const;
 
   run(_argv: string[]): number {
+    // The two apps are the framework's, and their tsconfigs include only their own files — no extension
+    // is part of this check. A run scoped to one extension therefore type-checked identical framework code
+    // every time (about a minute of a three-minute guard job); the framework's own CI runs it on every
+    // framework change, which is the only change that can move its result.
+    if (GuardScope.isExtension(FrameworkRoot.repo())) {
+      console.log('App typecheck skipped: this run guards one extension, and the framework apps are checked by the framework\'s own CI.');
+      return 0;
+    }
     const framework = FrameworkRoot.find();
     const mode = process.env.APP_TYPECHECK_MODE === 'warn' ? 'warn' : 'error';
 
