@@ -3,16 +3,21 @@ import { DynamicSchema, IDatabaseManager, NamingStrategy, timestamp, sql } from 
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 
 export class QueryHelper {
-  private static virtualTables: Map<string, any> = new Map();
+  private static virtualTables: Map<string, { shape: string; table: any }> = new Map();
   private static readonly searchableFieldTypes = new Set(['text', 'textarea', 'select', 'number']);
 
   /**
    * Generates or retrieves a Drizzle table object for a given collection definition.
+   *
+   * Cached by the definition's SHAPE, not its slug alone. Keyed by slug, the first shape a collection
+   * was read with was served for the life of the process: a plugin updated in place adds a field and
+   * syncs its column, and every REST read and write of that collection went on building its SQL from
+   * the old field list until the api restarted.
    */
   public static getVirtualTable(collection: ICollection) {
-    if (this.virtualTables.has(collection.slug)) {
-      return this.virtualTables.get(collection.slug);
-    }
+    const shape = QueryHelper.shapeOf(collection);
+    const cached = this.virtualTables.get(collection.slug);
+    if (cached && cached.shape === shape) return cached.table;
 
     const useTimestamps = collection.timestamps !== undefined ? collection.timestamps : true;
     const hasWorkflow = !!collection.workflow;
@@ -38,8 +43,19 @@ export class QueryHelper {
       }
     }
 
-    this.virtualTables.set(collection.slug, table);
+    this.virtualTables.set(collection.slug, { shape, table });
     return table;
+  }
+
+  /** Everything `getVirtualTable` builds the table from. */
+  private static shapeOf(collection: ICollection): string {
+    return JSON.stringify([
+      collection.tableName || collection.slug,
+      collection.primaryKey || 'id',
+      collection.timestamps,
+      !!collection.workflow,
+      collection.fields.map((field) => `${field.name}:${String(field.type)}`),
+    ]);
   }
 
   public static buildWhereClause(
