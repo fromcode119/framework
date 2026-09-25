@@ -38,8 +38,12 @@ export class CompactPageHeader extends PureReactor {
     const { icon, title, subtitle, actions } = this;
     return (
       <div className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
-        <div className="w-full px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
+        {/* WRAPS, so a narrow screen puts the actions on a second line instead of squeezing the title.
+            Unwrapped, a shrink-0 action group at 390px took the whole row and the title measured 0px
+            wide, painted under the buttons. The title's 16rem basis is what decides the break: it
+            stays beside the actions while both fit, exactly as before on a desktop. */}
+        <div className="w-full px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <div className="flex items-center gap-3 min-w-0 flex-[1_1_16rem]">
             {this.backButton()}
             {icon && (
               <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 bg-indigo-600 text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:border dark:border-indigo-500/20 [&_svg]:h-[18px] [&_svg]:w-[18px]">
@@ -51,7 +55,7 @@ export class CompactPageHeader extends PureReactor {
               {subtitle && <p className="text-xs font-medium text-slate-500 dark:text-slate-500 tracking-tight truncate">{subtitle}</p>}
             </div>
           </div>
-          {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+          {actions && <div className="flex flex-wrap items-center gap-2 min-w-0">{actions}</div>}
         </div>
       </div>
     );
