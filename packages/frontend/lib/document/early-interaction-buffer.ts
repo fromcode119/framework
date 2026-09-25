@@ -100,7 +100,7 @@ export class EarlyInteractionBuffer {
         if (attempt < EarlyInteractionBuffer.RETRY_LIMIT) EarlyInteractionBuffer.playBack(win, entry, attempt + 1);
         return;
       }
-      if (entry.submit && element instanceof win.HTMLFormElement) element.requestSubmit();
+      if (entry.submit && element.tagName === 'FORM') (element as HTMLFormElement).requestSubmit();
       else (element as HTMLElement).click();
     }, attempt === 0 ? 0 : 50);
   }
