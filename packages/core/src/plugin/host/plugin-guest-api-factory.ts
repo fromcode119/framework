@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { PluginChannel } from '@core/plugin/host/plugin-channel';
+import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-guest-registrar';
 import { PluginGuestHandlers } from '@core/plugin/host/plugin-guest-handlers';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
 import { PluginHealthRouteHandler } from '@core/plugin/plugin-health-route-handler';
@@ -24,7 +24,7 @@ export class PluginGuestApiFactory {
   private static readonly reservedPaths = ['config', 'settings', 'toggle', 'logs', 'sandbox', 'active', 'marketplace', 'install', 'upload'];
 
   constructor(
-    private readonly channel: PluginChannel,
+    private readonly registrar: PluginGuestRegistrar,
     private readonly handlers: PluginGuestHandlers,
     private readonly http: PluginGuestHttp,
     private readonly boot: IPluginGuestBoot,
@@ -60,17 +60,17 @@ export class PluginGuestApiFactory {
     const fullPath = `/${this.boot.slug}/${cleanPath}`;
     (this.http.app as any)[method](fullPath, ...handlers);
     const registration: IPluginGuestRegistration = { kind: method === 'use' ? 'use' : 'route', method, path: fullPath, access };
-    void this.channel.request('register', registration, 30_000);
+    void this.registrar.send(registration);
   }
 
   private middleware(config: IMiddlewareConfig): void {
     const id = this.handlers.keep('middleware', config.handler as (...args: any[]) => unknown);
     this.http.mountMiddleware(id, (req: Request, res: Response, next: NextFunction) => config.handler(req, res, next));
-    void this.channel.request('register', {
+    void this.registrar.send({
       kind: String(PluginGuestRegistrationKind.MIDDLEWARE.value),
       handlerId: id,
       middleware: { id: config.id, priority: config.priority, stage: String((config.stage as any)?.value ?? config.stage) },
-    } satisfies IPluginGuestRegistration, 30_000);
+    } satisfies IPluginGuestRegistration);
   }
 
   /** An `AccessLevel` crosses as its value; a permission requirement as its plain shape. */

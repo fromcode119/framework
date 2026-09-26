@@ -17,6 +17,7 @@ import { PluginDetailHeader } from '@/app/plugins/[slug]/components/view/plugin-
 import { PluginDetailOverview } from '@/app/plugins/[slug]/components/view/plugin-detail-overview.client';
 import { PluginDetailPermissions } from '@/app/plugins/[slug]/components/view/plugin-detail-permissions.client';
 import { PluginDetailResources } from '@/app/plugins/[slug]/components/view/plugin-detail-resources.client';
+import { PluginProcessCard } from '@/app/plugins/[slug]/components/view/process/plugin-process-card.client';
 import { PluginDetailSidebar } from '@/app/plugins/[slug]/components/view/plugin-detail-sidebar.client';
 import { PluginDetailTabs } from '@/app/plugins/[slug]/components/view/plugin-detail-tabs.client';
 import { PluginManifestModal } from '@/app/plugins/[slug]/components/view/plugin-manifest-modal.client';
@@ -120,7 +121,12 @@ export class PluginDetailView extends AdminComponent {
               </div>
             )}
             {activeTab === PluginDetailTab.PERMISSIONS && <PluginDetailPermissions plugin={plugin} theme={theme} />}
-            {activeTab === PluginDetailTab.RESOURCES && <PluginDetailResources isolationDefaults={this.isolationDefaults} onSandboxSettingsChange={this.onSandboxSettingsChange} sandboxSettings={this.sandboxSettings} theme={theme} />}
+            {activeTab === PluginDetailTab.RESOURCES && (
+              <div className="space-y-5">
+                <PluginDetailResources isolationDefaults={this.isolationDefaults} onSandboxSettingsChange={this.onSandboxSettingsChange} sandboxSettings={this.sandboxSettings} theme={theme} />
+                {PlatformAccess.canManagePlatform(this.auth.user) && <PluginProcessCard slug={this.slug} />}
+              </div>
+            )}
           </div>
           <PluginDetailSidebar activeTab={activeTab} canManage={PlatformAccess.canManagePlatform(this.auth.user)} onOpenDefinition={this.onOpenDefinition} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onTabChange={this.onTabChange} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
         </div>

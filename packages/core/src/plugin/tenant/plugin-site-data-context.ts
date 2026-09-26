@@ -54,12 +54,25 @@ export class PluginSiteDataContext {
       overrides[surface] = PluginSiteDataContext.inertSurface(original, methods, surface);
     }
 
-    return new Proxy(context as unknown as Record<string, unknown>, {
+    const wrapped = new Proxy(context as unknown as Record<string, unknown>, {
       get: (target, prop) => (typeof prop === 'string' && prop in overrides
         ? overrides[prop]
         : (target as Record<string, unknown>)[prop as string]),
     }) as unknown as PluginContext;
+    PluginSiteDataContext.passes.add(wrapped);
+    return wrapped;
   }
+
+  /**
+   * Whether `context` is one of these per-site passes. An ISOLATED plugin's registrations reach the api
+   * as messages, not calls on this context, so the plugin process cannot see the suppression — the
+   * host asks this and tells it, and the process's record of what it registered stays true.
+   */
+  static isSiteDataPass(context: PluginContext | null): boolean {
+    return Boolean(context) && PluginSiteDataContext.passes.has(context as PluginContext);
+  }
+
+  private static readonly passes = new WeakSet<PluginContext>();
 
   /**
    * One surface with its registration methods replaced.
