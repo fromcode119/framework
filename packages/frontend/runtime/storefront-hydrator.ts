@@ -1,7 +1,7 @@
 import type { Root } from 'react-dom/client';
 import { EditorSessionParams } from '@fromcode119/core/client';
 import { StorefrontDocumentContract } from '@/lib/document/storefront-document-contract';
-import { ReactDomRoots, bound } from '@fromcode119/react-class-components';
+import { ReactDomRoots, Transition, bound } from '@fromcode119/react-class-components';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 import { StorefrontHydrationReason } from '@/runtime/storefront-hydration-reason';
 import type { IStorefrontHydratorArgs } from '@/runtime/interfaces/storefront-hydrator-args.interface';
@@ -72,10 +72,20 @@ export class StorefrontHydrator {
     return reason;
   }
 
+  /**
+   * Hydrates as a TRANSITION, so React adopts the markup in slices and yields to the browser between
+   * them. The page is already painted and readable, so nothing is gained by adopting it in one block,
+   * and a whole page adopted in one task was the largest long task on a phone (well over 100 ms on a
+   * throttled mid-range device, most of Total Blocking Time). A tap that arrives meanwhile is not lost:
+   * a discrete event on markup not yet hydrated makes React hydrate that part synchronously and then
+   * dispatch it, so it gets the priority it needs.
+   */
   private hydrate(): void {
     const host = this.args.host as HTMLElement;
     console.info(`${StorefrontHydrator.LOG_PREFIX} mode=hydrate`);
-    this.root = ReactDomRoots.hydrateRoot(host, this.args.hydrateTree, { onRecoverableError: this.onRecoverableError });
+    Transition.run(() => {
+      this.root = ReactDomRoots.hydrateRoot(host, this.args.hydrateTree, { onRecoverableError: this.onRecoverableError });
+    });
   }
 
   /**
