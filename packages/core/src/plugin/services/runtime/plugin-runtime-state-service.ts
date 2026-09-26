@@ -45,7 +45,9 @@ export class PluginRuntimeStateService {
   }
 
   async saveSandboxConfig(slug: string, config: any): Promise<void> {
-    const { systemPlugins } = require('@fromcode119/database');
+    // The table is `Schema.systemPlugins`. A bare `systemPlugins` is no longer exported, and reading it
+    // handed `update` an undefined table — every save of a plugin's limits answered 500 and saved nothing.
+    const { Schema } = require('@fromcode119/database');
     const isExplicitlyDisabled = config === false || (config && typeof config === 'object' && config.enabled === false);
     const normalizedConfig = isExplicitlyDisabled
       ? false
@@ -53,7 +55,7 @@ export class PluginRuntimeStateService {
           ? Object.fromEntries(Object.entries(config).filter(([key]) => key !== 'enabled'))
           : {});
 
-    await this.db.update(systemPlugins, { slug }, {
+    await this.db.update(Schema.systemPlugins, { slug }, {
       sandboxConfig: normalizedConfig,
     });
 
