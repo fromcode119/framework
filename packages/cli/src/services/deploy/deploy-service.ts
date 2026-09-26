@@ -8,6 +8,7 @@ import { DeploymentVersionStore } from '@cli/services/deploy/deployment-version-
 import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
 import { RollingDeploy } from '@cli/services/deploy/rolling-deploy';
 import { DeployMode } from '@fromcode119/core';
+import { ComposeFilesSync } from '@cli/services/deploy/compose-files-sync';
 
 /**
  * Deploy a published release to a target, prove it is serving, and clean up after it.
@@ -25,6 +26,7 @@ export class DeployService {
     private readonly versions: DeploymentVersionStore,
     private readonly probe: ReleaseHealthProbe,
     private readonly rolling: (stack: ComposeStack) => RollingDeploy = (stack) => new RollingDeploy(stack),
+    private readonly composeFiles: Pick<ComposeFilesSync, 'sync'> = new ComposeFilesSync(shell),
   ) {}
 
   static async forTarget(name: string, healthTimeoutMs: number): Promise<DeployService> {
@@ -47,7 +49,10 @@ export class DeployService {
     const replaced = await this.versions.current();
     console.log(chalk.blue(`\n${this.target.name}: ${replaced || 'none'} -> ${version}`));
 
+    // The release's compose files first: a service it adds exists only in them, so the pull needs them.
+    await this.composeFiles.sync(version);
     if (await this.stack.pull(version) !== 0) {
+      if (replaced) await this.composeFiles.sync(replaced);
       console.error(chalk.red(`Could not pull ${version} — nothing was changed.`));
       return false;
     }
@@ -92,6 +97,7 @@ export class DeployService {
     }
 
     console.error(chalk.yellow(`Rolling back to ${replaced}...`));
+    await this.composeFiles.sync(replaced);
     await this.versions.set(replaced);
     const rolledBack = mode === DeployMode.ROLLING && await this.rolling(this.stack).run(replaced);
     if (!rolledBack) await this.stack.up();
