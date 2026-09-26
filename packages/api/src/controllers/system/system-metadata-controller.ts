@@ -1,4 +1,4 @@
-import { PluginTenantAccess, RequestContextUtils, TenantResolverService, AdminScope } from '@fromcode119/core';
+import { PluginTenantAccess, RequestContextUtils, SiteContentRevision, TenantResolverService, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { PluginState, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
@@ -150,6 +150,9 @@ export class SystemMetadataController {
       ssrGenerationCap,
       ssrRenderMemoryMb,
       ssrRenderTimeoutMs,
+      // What the storefront's rendered-page cache is keyed on: it changes on every write that can
+      // reach this site's pages (see SiteContentRevision).
+      contentRevision: SiteContentRevision.current(tenantId),
     });
   }
 }

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SettingChangeInvalidators, SiteBaseUrl, SiteClockAccess, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
+import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SettingChangeInvalidators, SiteBaseUrl, SiteClockAccess, SiteContentRevision, HookEventUtils, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
@@ -151,8 +151,13 @@ export class ApiBootstrapService {
     // which row each key landed in, and the registry drops exactly the copies that made stale. On the
     // hook rather than called by the controller, because the hook reaches every api instance.
     manager.hooks.on('system:settings:updated', (payload: any) => {
-      SettingChangeInvalidators.dispatch(Array.isArray(payload?.writes) ? payload.writes : []);
+      const writes = Array.isArray(payload?.writes) ? payload.writes : [];
+      SettingChangeInvalidators.dispatch(writes);
+      // A saved setting can change what a page shows; a platform row (no tenant) changes every site.
+      for (const write of writes) SiteContentRevision.bump(write?.tenantId ?? null);
     });
+    // An explicit purge means every rendered page, on every site.
+    manager.hooks.on(HookEventUtils.HOOK_EVENTS.SYSTEM_CACHE_PURGE, () => SiteContentRevision.bump(null));
 
     // The PLATFORM's own locale (`context.i18n.defaultLocale()` for work no site owns, and every site
     // without one of its own) was seeded once at boot, so saving it changed nothing until a restart.
