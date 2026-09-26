@@ -3,45 +3,26 @@ import { join } from 'node:path';
 
 /**
  * The framework's own stylesheets for the storefront document (`app/globals.css`, `auth.css`, the
- * account shell, file share) — under the App Router, Next compiles the root layout's CSS imports into
- * one hashed chunk and links it from the document. The islands document links the SAME chunk: same
- * bytes, same immutable URL, zero duplication. Its name is read once per process from the build's
- * client reference manifest for the home page (the layout's CSS is part of every page's manifest).
+ * account shell, file share). Under the App Router, Next compiles the root layout's CSS imports into
+ * one hashed chunk; its name is read once per process from the build's client reference manifest for
+ * the home page (the layout's CSS is part of every page's manifest), and its bytes from disk.
  *
- * THE HREF ONLY RESOLVES UNDER `next start`. A dev server serves `/_next/static/*` from its own
- * pipeline and will not hand out a chunk left behind by an earlier production build — and this
- * image ships a built `.next` and then runs `next dev` on top of it, so the manifest was present,
- * the chunk was present on disk, and the URL 404'd. The document therefore linked a stylesheet that
- * never loaded: no `html, body { margin: 0 }`, so the browser's default 8px body margin framed
- * EVERY storefront page of EVERY theme in a white border, locally only. Production was fine, which
- * is what made it survive — the bug was invisible to the one build that serves the chunk.
+ * The islands document INLINES those bytes, as it already does with the theme's own CSS, rather than
+ * linking the chunk:
  *
- * So the manifest existing is NOT the question; whether this process serves that URL is. In
- * development the same bytes are INLINED instead, which is what the document already does with the
- * theme's own CSS, so local renders what production renders.
+ *  - A `<link>` is render-blocking. It was the only blocking request left on a storefront page, and
+ *    the largest text on the page could not paint until it arrived: most of a mobile LCP was waiting
+ *    on 16 KB of baseline rules.
+ *  - The href only resolves under `next start`. A dev server serves `/_next/static/*` from its own
+ *    pipeline and will not hand out a chunk left behind by an earlier production build, so the linked
+ *    stylesheet 404'd locally: no `html, body { margin: 0 }`, and every storefront page of every
+ *    theme sat in a white 8px frame, locally only. Inlining serves both from the same bytes.
  */
 export class FrontendLayoutStylesheets {
-  private static cachedHrefs: string[] | null = null;
   private static cachedCss: string | null = null;
 
-  /** True when this process serves hashed `/_next/static` chunks — i.e. `next start`, not `next dev`. */
-  private static servesBuiltChunks(): boolean {
-    return process.env.NODE_ENV === 'production';
-  }
-
-  /** Public hrefs of the layout's CSS chunks, in manifest order. Empty in development. */
-  static hrefs(): string[] {
-    if (!FrontendLayoutStylesheets.servesBuiltChunks()) return [];
-    if (FrontendLayoutStylesheets.cachedHrefs === null) FrontendLayoutStylesheets.cachedHrefs = FrontendLayoutStylesheets.read();
-    return FrontendLayoutStylesheets.cachedHrefs;
-  }
-
-  /**
-   * The same CSS as `hrefs()`, as text, for the document to inline — development only, where the
-   * href would 404. Empty in production and whenever the build's chunks are not on disk.
-   */
+  /** The layout's CSS, in manifest order, for the document to inline. Empty when the build's chunks are not on disk. */
   static inlineCss(): string {
-    if (FrontendLayoutStylesheets.servesBuiltChunks()) return '';
     if (FrontendLayoutStylesheets.cachedCss === null) FrontendLayoutStylesheets.cachedCss = FrontendLayoutStylesheets.readCss();
     return FrontendLayoutStylesheets.cachedCss;
   }
