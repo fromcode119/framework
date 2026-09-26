@@ -6,9 +6,13 @@ import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.en
 import { AdminClass } from '@/lib/admin-class';
 
 export class PluginDetailTabs extends PureReactor {
+  private static readonly SITE_TABS: readonly PluginDetailTab[] = [PluginDetailTab.OVERVIEW, PluginDetailTab.SETTINGS];
+
   @prop declare activeTab: PluginDetailTab;
   @prop declare onTabChange: (tabId: PluginDetailTab) => void;
   @prop declare theme: ThemeMode;
+  /** In a site only its own tabs are offered; the platform's (Security, Resource Limits) live in Platform scope. */
+  @prop declare siteScope: boolean;
 
   render(): ReactNode {
     const { activeTab, onTabChange, theme } = this;
@@ -17,7 +21,7 @@ export class PluginDetailTabs extends PureReactor {
       { id: PluginDetailTab.SETTINGS, label: 'Configuration', icon: FrameworkIcons.Settings },
       { id: PluginDetailTab.PERMISSIONS, label: 'Security', icon: FrameworkIcons.Shield },
       { id: PluginDetailTab.RESOURCES, label: 'Resource Limits', icon: FrameworkIcons.Zap },
-    ] as const;
+    ].filter((tab) => !this.siteScope || PluginDetailTabs.SITE_TABS.includes(tab.id));
 
     return (
       <div className={`flex gap-2 p-1 ${AdminClass.SURFACE} w-fit backdrop-blur border transition-all duration-300 ${theme === ThemeMode.DARK ? 'bg-slate-900/50 border-white/5' : 'bg-slate-100/80 border-slate-200/60 shadow-sm'}`}>

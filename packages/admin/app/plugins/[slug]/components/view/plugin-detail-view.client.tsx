@@ -26,6 +26,7 @@ import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plu
 import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
 import { AdminClass } from '@/lib/admin-class';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 
 export class PluginDetailView extends AdminComponent {
   @prop declare activeTab: PluginDetailTab;
@@ -57,6 +58,8 @@ export class PluginDetailView extends AdminComponent {
   @prop declare showDefinition: boolean;
   @prop declare showDeleteConfirm: boolean;
   @prop declare slug: string;
+  /** The operator is standing in a site: only what belongs to this site is offered (`PlatformScopeGate` for the rest). */
+  @prop declare siteScope: boolean;
 
   @state isCopyingError = false;
 
@@ -75,13 +78,18 @@ export class PluginDetailView extends AdminComponent {
     }
   }
 
+  /** May the platform's own controls for this plugin be used here — by this account, in this scope? */
+  private get platformHere(): boolean {
+    return PlatformAccess.canManagePlatform(this.auth.user) && !this.siteScope;
+  }
+
   render(): ReactNode {
     const { plugin, theme, activeTab, isCopyingError } = this;
 
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         {this.isUpdating && this.installOperation ? <Loader fullPage label={this.installOperation.message} /> : null}
-        <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} isUpdating={this.isUpdating} marketplaceItem={this.marketplaceItem} onSaveSandbox={this.onSaveSandbox} onUpdate={this.onUpdate} plugin={plugin} theme={theme} />
+        <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} isUpdating={this.isUpdating} marketplaceItem={this.marketplaceItem} onSaveSandbox={this.onSaveSandbox} onUpdate={this.onUpdate} platformActions={this.platformHere} plugin={plugin} theme={theme} />
         {plugin.error ? (
           <div className={`rounded-xl border px-4 py-4 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
             <div className="flex items-start gap-4">
@@ -111,24 +119,30 @@ export class PluginDetailView extends AdminComponent {
             </div>
           </div>
         ) : null}
-        <PluginDetailTabs activeTab={activeTab} onTabChange={this.onTabChange} theme={theme} />
+        <PluginDetailTabs activeTab={activeTab} onTabChange={this.onTabChange} siteScope={this.siteScope} theme={theme} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-12">
           <div className="lg:col-span-2 space-y-6">
-            {activeTab === PluginDetailTab.OVERVIEW && <PluginDetailOverview loadingLogs={this.loadingLogs} logs={this.logs} marketplaceItem={this.marketplaceItem} onRefreshLogs={this.onRefreshLogs} onToggle={this.onToggle} plugin={plugin} theme={theme} />}
+            {activeTab === PluginDetailTab.OVERVIEW && <PluginDetailOverview loadingLogs={this.loadingLogs} logs={this.logs} marketplaceItem={this.marketplaceItem} onRefreshLogs={this.onRefreshLogs} onToggle={this.onToggle} plugin={plugin} siteScope={this.siteScope} theme={theme} />}
             {activeTab === PluginDetailTab.SETTINGS && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <PluginSettingsForm ref={this.settingsFormRef} pluginSlug={this.slug} formId="plugin-settings-form" onStateChange={this.onSettingsStateChange} />
               </div>
             )}
-            {activeTab === PluginDetailTab.PERMISSIONS && <PluginDetailPermissions plugin={plugin} theme={theme} />}
+            {activeTab === PluginDetailTab.PERMISSIONS && (
+              <PlatformScopeGate what="This plugin's security (the capabilities every site runs it with)">
+                <PluginDetailPermissions plugin={plugin} theme={theme} />
+              </PlatformScopeGate>
+            )}
             {activeTab === PluginDetailTab.RESOURCES && (
-              <div className="space-y-5">
-                <PluginDetailResources isolationDefaults={this.isolationDefaults} onSandboxSettingsChange={this.onSandboxSettingsChange} sandboxSettings={this.sandboxSettings} theme={theme} />
-                {PlatformAccess.canManagePlatform(this.auth.user) && <PluginProcessCard slug={this.slug} />}
-              </div>
+              <PlatformScopeGate what="This plugin's resource limits and process">
+                <div className="space-y-5">
+                  <PluginDetailResources isolationDefaults={this.isolationDefaults} onSandboxSettingsChange={this.onSandboxSettingsChange} sandboxSettings={this.sandboxSettings} theme={theme} />
+                  {this.platformHere && <PluginProcessCard slug={this.slug} />}
+                </div>
+              </PlatformScopeGate>
             )}
           </div>
-          <PluginDetailSidebar activeTab={activeTab} canManage={PlatformAccess.canManagePlatform(this.auth.user)} onOpenDefinition={this.onOpenDefinition} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onTabChange={this.onTabChange} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
+          <PluginDetailSidebar activeTab={activeTab} canManage={this.platformHere} onOpenDefinition={this.onOpenDefinition} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onTabChange={this.onTabChange} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
         </div>
         <ConfirmDialog isOpen={this.showDeleteConfirm} onClose={this.onCloseDeleteConfirm} onConfirm={this.onDelete} isLoading={this.isDeleting} title="Confirm Uninstallation" description={`Are you sure you want to delete ${plugin.manifest.name}? This will remove all associated files and data from the system. This action cannot be undone.`} confirmLabel="Uninstall Plugin" />
         <PluginManifestModal isOpen={this.showDefinition} onClose={this.onCloseDefinition} plugin={plugin} theme={theme} />

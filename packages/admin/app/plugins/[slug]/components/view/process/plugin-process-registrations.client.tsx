@@ -10,12 +10,28 @@ export class PluginProcessRegistrations extends PureReactor {
   @prop declare registrations: IPluginRuntimeRegistration[];
 
   private static label(registration: IPluginRuntimeRegistration): string {
+    if (registration.steps?.length) return PluginProcessRegistrations.declared(registration);
     if (registration.method && registration.path) return `${registration.method.toUpperCase()} ${registration.path}`;
     if (registration.middleware) return `${registration.middleware.id} (${registration.middleware.stage})`;
     if (registration.event) return registration.event;
     if (registration.name) return registration.schedule ? `${registration.name} — ${registration.schedule}` : registration.name;
     if (registration.tools) return registration.tools.map((tool) => tool.tool).filter(Boolean).join(', ');
     return registration.key ?? '';
+  }
+
+  /** A declaration as the call it is — `context.collections.register(forms-list)` — naming what it declares, not its whole payload. */
+  private static declared(registration: IPluginRuntimeRegistration): string {
+    const steps = registration.steps ?? [];
+    const call = [registration.root ?? 'context', ...steps.map((step) => step.name)].join('.');
+    const what = (steps[steps.length - 1]?.args ?? []).slice(0, 2).map(PluginProcessRegistrations.named).filter(Boolean);
+    return `${call}(${what.join(', ')})`;
+  }
+
+  /** What an argument is called: itself when it is text, else its slug, key, name or label. */
+  private static named(argument: unknown): string {
+    if (typeof argument === 'string' || typeof argument === 'number') return String(argument);
+    const record = (argument ?? {}) as Record<string, unknown>;
+    return String(record.slug ?? record.key ?? record.name ?? record.label ?? '');
   }
 
   render(): ReactNode {

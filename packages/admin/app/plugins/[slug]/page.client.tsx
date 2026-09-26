@@ -59,6 +59,7 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
         settingsSaving={model.settingsSaving}
         showDefinition={model.showDefinition}
         showDeleteConfirm={model.showDeleteConfirm}
+        siteScope={model.siteScope}
         slug={slug}
       />
     );

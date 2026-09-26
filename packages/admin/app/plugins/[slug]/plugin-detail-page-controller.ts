@@ -1,5 +1,6 @@
 import { AuthHooks } from '@/components/view/use-auth.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { PluginSettingsForm } from '@/components/plugins/view/plugin-settings-form.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { useEffect, useRef, useState } from 'react';
@@ -31,6 +32,11 @@ export class PluginDetailPageController {
     // on the shared container, and what its processes printed. The API answers `platform_admin_required`
     // to a site administrator, so asking anyway just logged a failure on every visit to this page.
     const canManagePlatform = PlatformAccess.canManagePlatform(AuthHooks.useAuth().user);
+    // WHERE the operator stands, not only who they are: inside a site the platform's controls for this
+    // plugin (its switch for every site, limits, logs across sites, updates, removal) are not shown and not
+    // fetched — a site is administered as that site. Unknown until loaded; nothing platform-only runs before.
+    const [siteScope, setSiteScope] = useState<boolean | null>(null);
+    const platformHere = canManagePlatform && siteScope === false;
     const searchParams = useSearchParams();
     const [plugin, setPlugin] = useState<ILoadedPlugin | null>(null);
     const [loading, setLoading] = useState(true);
@@ -54,7 +60,8 @@ export class PluginDetailPageController {
     useEffect(() => {
       const loadPlugin = async () => {
         try {
-          const found = await PluginDetailPageService.fetchPlugin(slug);
+          const [found, locks] = await Promise.all([PluginDetailPageService.fetchPlugin(slug), PlatformSettingLocks.load()]);
+          setSiteScope(locks.isSiteScope());
           if (!found) {
             router.push('/plugins');
             return;
@@ -92,7 +99,7 @@ export class PluginDetailPageController {
 
     useEffect(() => {
       const checkUpdates = async () => {
-        if (!canManagePlatform) return;
+        if (!platformHere) return;
         try {
           const item = await PluginDetailPageService.fetchMarketplaceItem(slug);
           if (item) setMarketplaceItem(item);
@@ -100,14 +107,14 @@ export class PluginDetailPageController {
       };
 
       checkUpdates();
-    }, [slug, refreshVersion, canManagePlatform]);
+    }, [slug, refreshVersion, platformHere]);
 
     // The sandbox tab's placeholders assert this is what a blank memory/timeout field resolves to;
     // that is only true for the platform's ACTUAL setting, which only a platform admin's own sandbox
     // route can read (site admins never reach this — the sandbox tab itself is platform-only).
     useEffect(() => {
       const loadIsolationDefaults = async () => {
-        if (!canManagePlatform) return;
+        if (!platformHere) return;
         try {
           setIsolationDefaults(await PluginDetailPageService.fetchIsolationDefaults());
         } catch (error) {
@@ -116,14 +123,14 @@ export class PluginDetailPageController {
       };
 
       loadIsolationDefaults();
-    }, [canManagePlatform]);
+    }, [platformHere]);
 
     useEffect(() => {
       setActiveTab(PluginDetailPageService.parseTab(searchParams.get('tab')));
     }, [searchParams]);
 
     const fetchLogs = async () => {
-      if (activeTab !== PluginDetailTab.OVERVIEW || !slug || !canManagePlatform) return;
+      if (activeTab !== PluginDetailTab.OVERVIEW || !slug || !platformHere) return;
       setLoadingLogs(true);
       try {
         setLogs(await PluginDetailPageService.fetchLogs(slug));
@@ -136,7 +143,7 @@ export class PluginDetailPageController {
 
     useEffect(() => {
       fetchLogs();
-    }, [slug, activeTab, refreshVersion, canManagePlatform]);
+    }, [slug, activeTab, refreshVersion, platformHere]);
 
     const handleUpdate = async () => {
       if (!plugin) return;
@@ -240,6 +247,7 @@ export class PluginDetailPageController {
 
     return {
       activeTab,
+      siteScope: siteScope === true,
       fetchLogs,
       handleDelete,
       handleSaveSandbox,
