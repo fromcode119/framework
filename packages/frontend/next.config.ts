@@ -116,6 +116,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async rewrites() {
+    return [
+      // Root files a plugin declares in `ui.publicRoutes` (`llms.txt`, a feed `.xml` …). An app-router
+      // folder cannot take a dynamic segment with a suffix, so they are routed to one handler that asks
+      // the plugin route table. Returned as a plain array these run AFTER the filesystem, so the
+      // dedicated `robots.txt` / `sitemap.xml` routes and real files in `public/` still win.
+      { source: '/:file([^/]+\\.(?:txt|xml))', destination: '/fc-public-route/:file' },
+    ];
+  },
   async headers() {
     return [
       {
