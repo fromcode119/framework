@@ -84,6 +84,7 @@ export class ThemeSettingsRenderModel {
       this.tempSettings.previewUrl || this.tempSettings.siteUrl,
       themeDetail.settingsDefaults?.previewUrl || themeDetail.settingsDefaults?.siteUrl,
       page.pluginSettings,
+      page.siteStorefrontUrl,
     );
   }
 

@@ -9,10 +9,11 @@ import type { IPermalinkComputed } from '@/components/ui/interfaces/permalink-co
  * Extracted from the component so its file stays under the size limit; logic is unchanged.
  */
 export class PermalinkInputUtils {
-  static compute(props: IPermalinkInputProps, settings: Record<string, unknown> | null | undefined): IPermalinkComputed {
+  /** `siteStorefrontUrl` is the bound site's own address — see {@link AdminUrlUtils.resolvePreviewBaseUrl}. */
+  static compute(props: IPermalinkInputProps, settings: Record<string, unknown> | null | undefined, siteStorefrontUrl: string = ''): IPermalinkComputed {
     const { value, id, slug, collection, pluginSettings } = props;
 
-    const baseUrl = AdminUrlUtils.resolveFrontendBaseUrl(settings);
+    const baseUrl = AdminUrlUtils.resolvePreviewBaseUrl(settings, siteStorefrontUrl);
     const structure = (settings as Record<string, any> | null)?.permalink_structure || '/:slug';
     const normalizedValue = String(value || '');
     const isAbsoluteOverride = normalizedValue.startsWith('/');
