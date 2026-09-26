@@ -35,4 +35,17 @@ describe('PluginGuestRegistrar', () => {
     registrar.snapshot()[0].path = '/changed';
     expect(registrar.snapshot()[0].path).toBe('/demo/x');
   });
+
+  it('forgets what the api answered it ignored — a per-site replay of onInit — and keeps the rest in order', async () => {
+    const sent: any[] = [];
+    const transport = { request: async (_type: string, payload: any) => { sent.push(payload); return payload.replay ? PluginGuestRegistrar.SUPPRESSED : true; } };
+    const registrar = new PluginGuestRegistrar(transport as any);
+    await registrar.send({ kind: 'middleware', handlerId: 'middleware:1', middleware: { id: 'gate', stage: 'post_auth' } });
+    await registrar.send({ kind: 'hook', event: 'a', handlerId: 'hook:1' });
+    await registrar.send({ kind: 'middleware', handlerId: 'middleware:2', middleware: { id: 'gate', stage: 'post_auth' }, replay: true } as any);
+    await registrar.send({ kind: 'hook-off', event: 'a', handlerId: 'hook:1', replay: true } as any);
+    expect(sent).toHaveLength(4);
+    expect(registrar.snapshot().map((r) => r.handlerId)).toEqual(['middleware:1', 'hook:1']);
+  });
 });
+

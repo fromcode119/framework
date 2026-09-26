@@ -17,14 +17,27 @@ import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-gues
  */
 export class PluginGuestRegistrar {
   static readonly TIMEOUT_MS = 30_000;
+  /** The api's answer to a registration it IGNORED: sent during a per-site replay of `onInit`. */
+  static readonly SUPPRESSED = 'suppressed';
 
   private readonly standing: IPluginGuestRegistration[] = [];
 
   constructor(private readonly channel: Pick<PluginChannel, 'request'>) {}
 
-  send(registration: IPluginGuestRegistration): Promise<unknown> {
-    this.record(registration);
-    return this.channel.request('register', registration, PluginGuestRegistrar.TIMEOUT_MS);
+  /**
+   * Recorded when SENT, so the record keeps the order the plugin registered in, and dropped again if
+   * the api answers that it ignored it. The api runs a plugin's `onInit` once more per site to do that
+   * site's data work, with registration suppressed; without the answer every such pass was recorded,
+   * and a plugin on five sites showed each of its hooks, middleware and tools six times.
+   */
+  async send(registration: IPluginGuestRegistration): Promise<unknown> {
+    const kept = this.record(registration);
+    const answer = await this.channel.request('register', registration, PluginGuestRegistrar.TIMEOUT_MS);
+    const accepted = answer !== PluginGuestRegistrar.SUPPRESSED;
+    if (!accepted && kept) this.standing.splice(this.standing.indexOf(kept), 1);
+    // A withdrawal counts only once the api has withdrawn it; a suppressed one leaves the hook standing.
+    if (accepted && registration.kind === PluginGuestRegistrationKind.HOOK_OFF.value) this.withdraw(registration);
+    return answer;
   }
 
   /** What this process has registered and not withdrawn, oldest first — copies, never the live record. */
@@ -32,13 +45,16 @@ export class PluginGuestRegistrar {
     return this.standing.map((registration) => ({ ...registration }));
   }
 
-  private record(registration: IPluginGuestRegistration): void {
-    if (registration.kind === PluginGuestRegistrationKind.TENANTS_FOR_EACH.value) return;
-    if (registration.kind === PluginGuestRegistrationKind.HOOK_OFF.value) {
-      const index = this.standing.findIndex((kept) => kept.kind === PluginGuestRegistrationKind.HOOK.value && kept.handlerId === registration.handlerId);
-      if (index >= 0) this.standing.splice(index, 1);
-      return;
-    }
-    this.standing.push({ ...registration });
+  private record(registration: IPluginGuestRegistration): IPluginGuestRegistration | null {
+    if (registration.kind === PluginGuestRegistrationKind.TENANTS_FOR_EACH.value) return null;
+    if (registration.kind === PluginGuestRegistrationKind.HOOK_OFF.value) return null;
+    const kept = { ...registration };
+    this.standing.push(kept);
+    return kept;
+  }
+
+  private withdraw(hookOff: IPluginGuestRegistration): void {
+    const index = this.standing.findIndex((kept) => kept.kind === PluginGuestRegistrationKind.HOOK.value && kept.handlerId === hookOff.handlerId);
+    if (index >= 0) this.standing.splice(index, 1);
   }
 }
