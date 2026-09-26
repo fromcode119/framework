@@ -1,4 +1,4 @@
-import { PgDialect } from 'drizzle-orm/pg-core';
+import type { PgDialect } from 'drizzle-orm/pg-core';
 
 /**
  * A drizzle `sql` template is an object graph of chunks, not data — it cannot cross to the host.
@@ -6,7 +6,19 @@ import { PgDialect } from 'drizzle-orm/pg-core';
  * `{ sql, params }` here and the host runs it as a parametrised statement.
  */
 export class PluginGuestSql {
-  private static readonly dialect = new PgDialect();
+  /**
+   * Built on the first SQL object, not when the class loads: this runs in every plugin process, and a
+   * plugin that never writes raw SQL has no use for drizzle's Postgres dialect (~11 MB of modules).
+   */
+  private static dialectInstance: PgDialect | null = null;
+
+  private static get dialect(): PgDialect {
+    if (!PluginGuestSql.dialectInstance) {
+      const { PgDialect: Dialect } = require('drizzle-orm/pg-core') as typeof import('drizzle-orm/pg-core');
+      PluginGuestSql.dialectInstance = new Dialect();
+    }
+    return PluginGuestSql.dialectInstance;
+  }
 
   static isSqlObject(value: unknown): boolean {
     return !!value && typeof value === 'object' && Array.isArray((value as any).queryChunks);

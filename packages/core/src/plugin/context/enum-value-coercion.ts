@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /**
  * Converts reactor `Enum` members into their primitive string value anywhere inside a `context.db.*`

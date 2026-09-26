@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /**
  * Whether a site may act on the OUTSIDE WORLD — a third axis, independent of `state` and `visibility`.

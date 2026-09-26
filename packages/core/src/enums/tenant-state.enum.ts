@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /**
  * The `state` column shared by tenant records, tenant memberships, and the per-tenant plugin and theme

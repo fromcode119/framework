@@ -18,6 +18,11 @@
       "types": "./dist/naming-strategy.d.ts",
       "import": "./dist/naming-strategy.js",
       "require": "./dist/naming-strategy.js"
+    },
+    "./enums/sort-direction.enum": {
+      "types": "./dist/enums/sort-direction.enum.d.ts",
+      "import": "./dist/enums/sort-direction.enum.js",
+      "require": "./dist/enums/sort-direction.enum.js"
     }
   },
   "browser": {

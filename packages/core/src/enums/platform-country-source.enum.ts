@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Where the platform country came from — so the admin can say it, not just use it. */
 export class PlatformCountrySource extends Enum {

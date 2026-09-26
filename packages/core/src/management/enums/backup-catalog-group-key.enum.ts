@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Which group a backup catalog entry is displayed under. */
 export class BackupCatalogGroupKey extends Enum {

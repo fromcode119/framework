@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Why a plugin dependency is unsatisfied. */
 export class DependencyIssueKind extends Enum {

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /**
  * A core extension's lifecycle state, held in-memory on `LoadedCoreExtension.state`.

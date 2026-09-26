@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Which app a runtime client belongs to. Sent as the `X-Framework-Client` header value. */
 export class ClientType extends Enum {

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Kind of runtime module registered in the shared runtime registry. */
 export class RuntimeModuleKind extends Enum {

@@ -1,4 +1,3 @@
-import { sql, eq, and, or } from 'drizzle-orm';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginGuestHandlers } from '@core/plugin/host/plugin-guest-handlers';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
@@ -88,10 +87,9 @@ export class PluginGuestContextFactory {
     const database = this;
     return new Proxy({}, {
       get(_target, prop) {
-        if (prop === 'sql') return sql;
-        if (prop === 'eq') return eq;
-        if (prop === 'and') return and;
-        if (prop === 'or') return or;
+        // Loaded on first use, not at boot: drizzle is ~100 modules and ~10 MB, and most plugins never
+        // build a query object here. Every plugin process paid for it anyway.
+        if (prop === 'sql' || prop === 'eq' || prop === 'and' || prop === 'or') return (require('drizzle-orm') as typeof import('drizzle-orm'))[prop];
         if (prop === 'stored') return database.database([...base, { name: 'stored' }]);
         if (typeof prop !== 'string') return undefined;
         return (...args: unknown[]) => remote.call('context', [...base, { name: prop, args: PluginGuestSql.portableArgs(PluginGuestRemote.portable(args)) }]);

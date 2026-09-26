@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 import { EnumValueCoercion } from '@core/plugin/context/enum-value-coercion';
 
 class OrderStatus extends Enum {

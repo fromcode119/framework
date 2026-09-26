@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Which root directory a catalog entry lives under. The `.value` is the directory name. */
 export class BackupCatalogRootKind extends Enum {

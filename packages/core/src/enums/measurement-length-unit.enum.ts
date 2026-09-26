@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Length unit implied by the platform measurement system. */
 export class MeasurementLengthUnit extends Enum {

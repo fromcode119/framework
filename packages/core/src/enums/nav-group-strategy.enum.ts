@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** How an admin nav group renders its children. */
 export class NavGroupStrategy extends Enum {

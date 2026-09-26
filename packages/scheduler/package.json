@@ -4,6 +4,16 @@
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./enums/schedule-type.enum": {
+      "types": "./dist/enums/schedule-type.enum.d.ts",
+      "default": "./dist/enums/schedule-type.enum.js"
+    }
+  },
   "files": [
     "dist"
   ],

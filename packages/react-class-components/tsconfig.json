@@ -13,7 +13,8 @@
     "useDefineForClassFields": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": { "@fromcode119/react-class-components/lang": ["./src/lang.ts"] }
   },
   "include": ["src"]
 }

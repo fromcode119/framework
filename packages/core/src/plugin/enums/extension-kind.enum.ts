@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Whether an installable extension archive is a plugin or a theme. */
 export class ExtensionKind extends Enum {

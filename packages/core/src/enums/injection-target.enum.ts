@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Where a plugin injects markup in the document. */
 export class InjectionTarget extends Enum {

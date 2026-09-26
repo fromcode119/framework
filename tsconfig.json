@@ -54,6 +54,9 @@
       "@fromcode119/cache": ["packages/cache/src"],
       "@fromcode119/queue": ["packages/queue/src"],
       "@fromcode119/scheduler": ["packages/scheduler/src"],
+      "@fromcode119/scheduler/*": ["packages/scheduler/src/*"],
+      // Built declaration, as in the sdk tsconfig: `moduleResolution: node` ignores the exports map.
+      "@fromcode119/react-class-components/lang": ["packages/react-class-components/dist/lang.d.ts"],
       "@fromcode119/plugins": ["packages/plugins/src"],
       "@fromcode119/mcp": ["packages/mcp/src"],
       "@fromcode119/marketplace-client": ["packages/marketplace-client/src"]

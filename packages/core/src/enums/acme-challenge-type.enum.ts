@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Which challenge type an order answers with. DNS-01 is the only way to prove a wildcard name. */
 export class AcmeChallengeType extends Enum {
