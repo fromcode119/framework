@@ -18,6 +18,7 @@ import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-gue
 import { PluginGuestRuntimeReporter } from '@core/plugin/host/runtime/plugin-guest-runtime-reporter';
 import { PluginHostProtocol } from '@core/plugin/host/protocol/plugin-host-protocol';
 import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
+import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 
 /**
  * The plugin's process. Loads the plugin exactly as the scanner would in-process, gives it a context
@@ -39,18 +40,22 @@ export class PluginGuest {
   private contract: Record<string, any> = {};
   private context: PluginContext | null = null;
   private contextFactory: PluginGuestContextFactory | null = null;
+  private readonly connections: PluginGuestConnections;
+  private described: { contractKeys: string[]; publicApiKeys: string[]; manifest: unknown } | null = null;
 
   constructor(transport: ConstructorParameters<typeof PluginChannel>[0]) {
     this.channel = new PluginChannel(transport);
     this.registrar = new PluginGuestRegistrar(this.channel);
     this.remote = new PluginGuestRemote(this.channel, PluginGuest.CALL_TIMEOUT_MS, (handler) => this.handlers.keepStable(handler), (id) => this.handlers.take(id));
-    this.channel.serve((type, payload) => this.handle(type, payload));
+    this.channel.serve((type, payload) => this.handle(type, payload, this.channel));
+    this.connections = new PluginGuestConnections(this.channel, (channel, type, payload) => this.handle(type, payload, channel), () => this.hello());
   }
 
-  private async handle(type: string, payload: any): Promise<unknown> {
+  private async handle(type: string, payload: any, channel: PluginChannel): Promise<unknown> {
     switch (type) {
-      case 'boot': return this.start(payload as IPluginGuestBoot);
-      case 'invoke': return this.invoke(payload as IPluginInvocation);
+      // Only the api that started this process boots it; an attached one learns what it needs from `hello`.
+      case 'boot': if (channel !== this.channel) throw new Error('guest: already booted'); return this.start(payload as IPluginGuestBoot);
+      case 'invoke': return this.invoke(payload as IPluginInvocation, channel);
       // Routes this guest serves arrive on its socket, not through `invoke`, so they carry no
       // envelope. The host pushes the snapshot here instead, and only when it has changed.
       case 'peers': { this.state.update(payload as Pick<IPluginInvocation, 'peers' | 'enabledPlugins'>); return true; }
@@ -69,7 +74,7 @@ export class PluginGuest {
     PluginGuest.shareFrameworkModules(boot.projectRoot);
     PluginGuestCoreBridge.install(this.registrar, this.remote, this.handlers);
 
-    this.http = new PluginGuestHttp(boot.socketPath, this.remote, boot.socketMode);
+    this.http = new PluginGuestHttp(boot.socketPath, this.remote, boot.socketMode, (connectionId) => this.connections.channel(connectionId));
     this.contextFactory = new PluginGuestContextFactory(this.channel, this.registrar, this.remote, this.handlers, this.http, this.state, boot);
     this.context = this.contextFactory.create();
 
@@ -83,7 +88,14 @@ export class PluginGuest {
     // enumerable — `Object.keys` saw none of them, so every peer's `billing.getCapabilities()` failed
     // with "not callable" while the same call worked in-process. Own property names, functions only.
     const publicApiKeys = PluginGuest.functionNames(this.contract.publicAPI);
-    return { contractKeys, publicApiKeys, manifest: this.contract.manifest ?? null, protocol: PluginHostProtocol.identity() };
+    this.described = { contractKeys, publicApiKeys, manifest: this.contract.manifest ?? null };
+    if (boot.attachSecret) await this.connections.listen(path.join(path.dirname(boot.socketPath), PluginGuestConnections.CONTROL_SOCKET), boot.socketMode, boot.attachSecret);
+    return { ...this.described, protocol: PluginHostProtocol.identity() };
+  }
+
+  /** What an api that attaches (and did not start this process) needs to take it over. */
+  private hello(): Record<string, unknown> {
+    return { protocol: PluginHostProtocol.identity(), described: this.described, registrations: this.registrar.snapshot(), pid: process.pid };
   }
 
   /** Function-valued own properties of an object OR class (static methods included). */
@@ -94,12 +106,12 @@ export class PluginGuest {
       .filter((key) => typeof (api as Record<string, unknown>)[key] === 'function');
   }
 
-  private async invoke(invocation: IPluginInvocation): Promise<unknown> {
+  private async invoke(invocation: IPluginInvocation, channel: PluginChannel): Promise<unknown> {
     if (!this.context) throw new Error('guest: invoked before boot');
     this.state.update(invocation);
     // The result crosses as data too: a provider factory's instance with methods, a callback's return —
     // functions in it become handles, exactly as in arguments.
-    return PluginGuestRemote.invocation.run({ token: invocation.token, tenantId: invocation.tenantId }, () =>
+    return PluginGuestRemote.invocation.run({ token: invocation.token, tenantId: invocation.tenantId, channel }, () =>
       RequestContextUtils.storage.run({ locale: invocation.locale, tenantId: invocation.tenantId ?? undefined, siteLocale: invocation.siteLocale || undefined }, async () => this.remote.portableResult(await this.run(invocation))));
   }
 
@@ -143,6 +155,7 @@ export class PluginGuest {
   }
 
   private async stop(): Promise<void> {
+    this.connections.close();
     await this.http?.close();
     setTimeout(() => process.exit(0), 50);
   }

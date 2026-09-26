@@ -14,6 +14,7 @@ export class PluginGuestBootMessage {
       socketMode: generation.guest.socketMode,
       projectRoot,
       defaultLocale,
+      attachSecret: generation.attachSecret,
       plugin: {
         slug,
         namespace: String(manifest.namespace || '').trim(),

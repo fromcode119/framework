@@ -1,4 +1,5 @@
 import type { PluginChannel } from '@core/plugin/host/plugin-channel';
+import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 
@@ -32,7 +33,8 @@ export class PluginGuestRegistrar {
    */
   async send(registration: IPluginGuestRegistration): Promise<unknown> {
     const kept = this.record(registration);
-    const answer = await this.channel.request('register', registration, PluginGuestRegistrar.TIMEOUT_MS);
+    // Sent to the api this invocation came from — the one that will apply it.
+    const answer = await PluginGuestRemote.channelFor(this.channel as PluginChannel).request('register', registration, PluginGuestRegistrar.TIMEOUT_MS);
     const accepted = answer !== PluginGuestRegistrar.SUPPRESSED;
     if (!accepted && kept) this.standing.splice(this.standing.indexOf(kept), 1);
     // A withdrawal counts only once the api has withdrawn it; a suppressed one leaves the hook standing.
