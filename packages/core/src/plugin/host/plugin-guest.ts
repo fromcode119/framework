@@ -16,6 +16,8 @@ import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-guest-registrar';
 import { PluginGuestRuntimeReporter } from '@core/plugin/host/runtime/plugin-guest-runtime-reporter';
+import { PluginHostProtocol } from '@core/plugin/host/protocol/plugin-host-protocol';
+import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
 
 /**
  * The plugin's process. Loads the plugin exactly as the scanner would in-process, gives it a context
@@ -60,7 +62,7 @@ export class PluginGuest {
   }
 
   /** Loads the plugin and reports which lifecycle hooks and public-API functions it has. */
-  private async start(boot: IPluginGuestBoot): Promise<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }> {
+  private async start(boot: IPluginGuestBoot): Promise<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown; protocol: IPluginProtocolIdentity }> {
     this.boot = boot;
     process.env.ATLANTIS_PROJECT_ROOT = boot.projectRoot;
     process.chdir(boot.projectRoot);
@@ -81,7 +83,7 @@ export class PluginGuest {
     // enumerable — `Object.keys` saw none of them, so every peer's `billing.getCapabilities()` failed
     // with "not callable" while the same call worked in-process. Own property names, functions only.
     const publicApiKeys = PluginGuest.functionNames(this.contract.publicAPI);
-    return { contractKeys, publicApiKeys, manifest: this.contract.manifest ?? null };
+    return { contractKeys, publicApiKeys, manifest: this.contract.manifest ?? null, protocol: PluginHostProtocol.identity() };
   }
 
   /** Function-valued own properties of an object OR class (static methods included). */

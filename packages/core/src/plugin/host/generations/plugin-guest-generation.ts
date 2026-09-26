@@ -2,6 +2,7 @@ import path from 'path';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import type { IGuestProcess } from '@core/process/interfaces/guest-process.interface';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
+import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
 
 /**
  * ONE process of a plugin — its channel, its routes socket, what it answered at boot.
@@ -19,7 +20,7 @@ export class PluginGuestGeneration {
   static readonly ROUTES_SOCKET = 'routes.sock';
   private static readonly DRAIN_POLL_MS = 50;
 
-  described: { contractKeys: string[]; publicApiKeys: string[]; manifest: unknown } | null = null;
+  described: { contractKeys: string[]; publicApiKeys: string[]; manifest: unknown; protocol?: IPluginProtocolIdentity } | null = null;
   /** Registrations sent before this generation became the current one, in the order they came. */
   readonly held: IPluginGuestRegistration[] = [];
 
