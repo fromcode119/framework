@@ -8,8 +8,10 @@ const generation = (number: number, channel: Record<string, unknown>, killed: nu
 
 describe('PluginGuestGeneration', () => {
   it('gives every process of a plugin its own id, so two can run side by side', () => {
-    expect(PluginGuestGeneration.guestId('finance', 1)).toBe('plugin-finance.1');
+    expect(PluginGuestGeneration.guestId('finance', 1, 'a1b2c3')).toBe('plugin-finance.a1b2c3.1');
     expect(PluginGuestGeneration.guestId('finance', 2)).not.toBe(PluginGuestGeneration.guestId('finance', 1));
+    // Two apis sharing one extension-host never collide.
+    expect(PluginGuestGeneration.guestId('finance', 1, 'api-old')).not.toBe(PluginGuestGeneration.guestId('finance', 1, 'api-new'));
   });
 
   it('drains only once nothing is in flight — no pending message, no HTTP request being served', async () => {

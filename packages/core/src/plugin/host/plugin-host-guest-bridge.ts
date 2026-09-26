@@ -198,18 +198,27 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
   protected async restart(reason: string): Promise<void> {
     if (this.stopping || this.restarting) return;
     this.restarting = true;
-    this.restarts += 1;
-    if (this.restarts > PluginHostState.MAX_RESTARTS) {
-      this.logger.error(`${reason}; restarted ${PluginHostState.MAX_RESTARTS} times already — disabling.`);
-      this.restarting = false;
-      await this.manager.disableWithError(this.slug, `Isolated plugin process failed repeatedly: ${reason}`);
-      return;
+    const unavailable = GuestProcessLaunchers.unavailableReason();
+    if (unavailable) {
+      // Nowhere to start it: the extension-host is out of reach, and its return — not this plugin —
+      // decides when. Not counted against the budget, or one container restart would fail every plugin.
+      this.logger.warn(`${reason}; ${unavailable} — restarting when it is back.`);
+      await GuestProcessLaunchers.whenAvailable();
+      if (this.stopping) { this.restarting = false; return; }
+    } else {
+      this.restarts += 1;
+      if (this.restarts > PluginHostState.MAX_RESTARTS) {
+        this.logger.error(`${reason}; restarted ${PluginHostState.MAX_RESTARTS} times already — disabling.`);
+        this.restarting = false;
+        await this.manager.disableWithError(this.slug, `Isolated plugin process failed repeatedly: ${reason}`);
+        return;
+      }
+      const delayMs = 1000 * 2 ** (this.restarts - 1);
+      this.logger.warn(`${reason}; restarting in ${delayMs} ms (attempt ${this.restarts}/${PluginHostState.MAX_RESTARTS}).`);
+      // A process that is still ALIVE here overran its deadline: it keeps its channel until the replacement
+      // has taken over, and is then retired without waiting for it (`drain: false`).
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
-    const delayMs = 1000 * 2 ** (this.restarts - 1);
-    this.logger.warn(`${reason}; restarting in ${delayMs} ms (attempt ${this.restarts}/${PluginHostState.MAX_RESTARTS}).`);
-    // A process that is still ALIVE here overran its deadline: it keeps its channel until the replacement
-    // has taken over, and is then retired without waiting for it (`drain: false`).
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
     try {
       await this.relaunch({ drain: false });
       this.logger.info('guest restarted and re-initialised');

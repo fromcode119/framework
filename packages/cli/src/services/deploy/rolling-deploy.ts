@@ -27,6 +27,7 @@ export class RollingDeploy {
   ) {}
 
   async run(version: string): Promise<boolean> {
+    if (!(await this.extensionHost(version))) return false;
     for (const service of DeployStrategy.ROLLED) {
       console.log(chalk.blue(`\nRolling ${service}...`));
       if (!(await this.roll(service, version))) {
@@ -36,6 +37,25 @@ export class RollingDeploy {
     }
     console.log(chalk.blue('\nRestarting the gateway (a second or two)...'));
     return (await this.stack.restartService('gateway')) === 0;
+  }
+
+  /**
+   * The apps are scaled with `--no-deps`, so an api that starts its plugins in `extension-host` would
+   * come up with nothing to connect to on the release that introduces it. It is started first when it
+   * is missing — and left alone when it runs: recreating it would stop every plugin process at once,
+   * the outage a rolling deploy exists to avoid. It moves to the new image on the next restart deploy.
+   */
+  private async extensionHost(version: string): Promise<boolean> {
+    if (!(await this.stack.declared([ComposeStack.EXTENSION_HOST])).length) return true;
+    const running = (await this.stack.containerIds(ComposeStack.EXTENSION_HOST)).length > 0;
+    if ((await this.stack.ensure(ComposeStack.EXTENSION_HOST)) !== 0) {
+      console.error(chalk.red('extension-host could not be started; nothing was rolled.'));
+      return false;
+    }
+    console.log(running
+      ? chalk.gray(`extension-host keeps running, and its plugin processes with it; it moves to ${version} on the next restart deploy.`)
+      : chalk.blue('Started extension-host, where the new api starts its plugin processes.'));
+    return true;
   }
 
   private async roll(service: string, version: string): Promise<boolean> {

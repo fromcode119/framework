@@ -2,6 +2,8 @@ import { fork } from 'child_process';
 import path from 'path';
 import { SystemConstants } from '@core/constants/system.constants';
 import { SpawnerClient } from '@core/process/spawner-client';
+import { ExtensionHostLink } from '@core/process/extension-host/extension-host-link';
+import { ExtensionHostSocket } from '@core/process/extension-host/extension-host-socket';
 
 /**
  * An app that was started as root stops being root here, before it does anything else.
@@ -17,6 +19,9 @@ import { SpawnerClient } from '@core/process/spawner-client';
  * shares your uid can read your `/proc/<pid>/environ`, secrets included. Root for one fork, then never.
  */
 export class PrivilegeDrop {
+  /** How long the api waits at boot for the `extension-host` container to answer. */
+  private static readonly EXTENSION_HOST_WAIT_MS = 60_000;
+
   /** True once this process runs as somebody other than root (or never was root). */
   static get isUnprivileged(): boolean {
     return (process.getuid?.() ?? 1) !== 0;
@@ -27,15 +32,21 @@ export class PrivilegeDrop {
     if (PrivilegeDrop.isUnprivileged) return SpawnerClient.current();
 
     let client: SpawnerClient | null = null;
-    if (options.withSpawner) {
+    const extensionHost = options.withSpawner ? String(process.env[ExtensionHostSocket.ENV] ?? '').trim() : '';
+    if (extensionHost) {
+      // Plugin processes are started by the `extension-host` container. If it cannot be reached, the api
+      // still starts — its own work does not depend on it — every plugin says why it is not running, and
+      // the link keeps trying (`ExtensionHostLink`).
+      client = await new ExtensionHostLink(extensionHost, log).start(PrivilegeDrop.EXTENSION_HOST_WAIT_MS);
+    } else if (options.withSpawner) {
       const child = fork(path.join(__dirname, 'privileged-spawner-main.js'), [options.runtimeDir ?? SystemConstants.PROCESS_ISOLATION.RUNTIME_DIR], {
         // Nothing from this process: no database URL, no secrets. (Typed loosely because the Next apps augment
-      // `ProcessEnv` with required keys; an EMPTY environment is the whole point here.)
-      env: {} as NodeJS.ProcessEnv,
+        // `ProcessEnv` with required keys; an EMPTY environment is the whole point here.)
+        env: {} as NodeJS.ProcessEnv,
         serialization: 'advanced',
         stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
       });
-      client = new SpawnerClient(child);
+      client = SpawnerClient.fromChild(child);
       await client.ready();
       SpawnerClient.publish(client);
     }
@@ -47,7 +58,8 @@ export class PrivilegeDrop {
     process.setgid?.(options.runAs);
     process.setuid?.(options.runAs);
     if (!PrivilegeDrop.isUnprivileged) throw new Error(`could not drop privileges to "${options.runAs}"`);
-    log(`running as ${options.runAs} (uid ${process.getuid?.()})${client ? `; privileged spawner pid ${client.pid}` : ''}`);
+    const spawner = !client ? '' : client.hostedBy === SpawnerClient.HOSTED_BY_EXTENSION_HOST ? '; plugin processes are started by the extension-host container' : `; privileged spawner pid ${client.pid}`;
+    log(`running as ${options.runAs} (uid ${process.getuid?.()})${spawner}`);
     return client;
   }
 }

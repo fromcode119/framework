@@ -67,7 +67,8 @@ export class PluginProcessCard extends AdminComponent {
     const report = runtime.report;
     return (
       <div className="space-y-4">
-        {this.row(<FrameworkIcons.Server size={20} />, 'Where it runs', 'Its own process, started by the api container', 'Restarting or deploying the api restarts this process too.')}
+        {this.row(<FrameworkIcons.Server size={20} />, 'Where it runs', runtime.hostedBy === 'extension-host' ? 'Its own process, in the extension-host container' : 'Its own process, started by the api container', 'Restarting or deploying the api restarts this process too.')}
+        {runtime.hostUnavailable && <p className="text-sm text-[var(--destructive)]">The extension-host container could not be reached, so plugin processes cannot start: {runtime.hostUnavailable}</p>}
         {!runtime.running && <p className="text-sm text-amber-600 dark:text-amber-400">Not running. The plugin is inactive, or its process stopped and is being restarted.</p>}
         {runtime.running && this.row(<FrameworkIcons.Terminal size={20} />, 'Process', `pid ${runtime.pid}${runtime.uid !== null ? ` · OS user ${runtime.uid}` : ' · same OS user as the api'}`, runtime.uid !== null ? undefined : 'No privileged spawner here (typical for local development), so the process is not separated by OS user.')}
         {report && this.row(<FrameworkIcons.Zap size={20} />, 'Memory', `${PluginProcessFormat.megabytes(report.memory.rssBytes)} resident · heap ${PluginProcessFormat.megabytes(report.memory.heapUsedBytes)} of ${runtime.limits.memoryMb} MB limit`)}

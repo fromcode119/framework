@@ -85,7 +85,13 @@ export class PluginHostRegistry {
       host = new PluginHost(slug, pluginDir, entryPath, manifest, this.manager, await this.settingsInEffect(), this.projectRoot, await this.identities.identityFor(slug));
       this.hosts.set(slug, host);
     }
-    const described = active ? await host.start() : null;
+    // Nowhere to start it now: it boots like an inactive plugin and starts when the extension-host answers.
+    const unavailable = active ? GuestProcessLaunchers.unavailableReason() : null;
+    if (unavailable) {
+      this.logger.warn(`${slug}: ${unavailable} — it starts as soon as the extension-host answers`);
+      void host.resumeWhenAvailable();
+    }
+    const described = active && !unavailable ? await host.start() : null;
     return { ...host.stubs(), manifest: described?.manifest ?? undefined };
   }
 

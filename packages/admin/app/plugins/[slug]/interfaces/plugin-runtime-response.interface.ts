@@ -7,6 +7,7 @@ export interface IPluginRuntimeResponse {
   isolated: boolean;
   runtime: {
     hostedBy: string;
+    hostUnavailable: string | null;
     running: boolean;
     pid: number | null;
     uid: number | null;

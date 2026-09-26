@@ -19,16 +19,41 @@ export class ComposeStack {
    */
   static readonly SERVICES = ['api', 'admin', 'frontend', 'gateway'];
 
+  /**
+   * Services a release MAY declare. Asked for only when the compose files name them: compose refuses a
+   * service it does not know, and a rollback to a release from before one existed must still pull.
+   */
+  static readonly OPTIONAL = ['extension-host'];
+
+  static readonly EXTENSION_HOST = 'extension-host';
+
   private static readonly FILES = '-f docker-compose.full-stack.yml -f docker-compose.images.yml';
 
   constructor(private readonly shell: RemoteShell) {}
 
   async pull(version: string): Promise<number> {
-    return this.shell.stream(`VERSION=${version} docker compose ${ComposeStack.FILES} pull ${ComposeStack.SERVICES.join(' ')}`);
+    return this.shell.stream(`VERSION=${version} docker compose ${ComposeStack.FILES} pull ${(await this.services()).join(' ')}`);
   }
 
   async up(): Promise<number> {
-    return this.shell.stream(`docker compose ${ComposeStack.FILES} up -d ${ComposeStack.SERVICES.join(' ')}`);
+    return this.shell.stream(`docker compose ${ComposeStack.FILES} up -d ${(await this.services()).join(' ')}`);
+  }
+
+  /** The apps, plus each optional service the synced compose files declare. */
+  async services(): Promise<string[]> {
+    return [...ComposeStack.SERVICES, ...(await this.declared(ComposeStack.OPTIONAL))];
+  }
+
+  /** Which of `services` the compose files declare. */
+  async declared(services: readonly string[]): Promise<string[]> {
+    const result = await this.shell.run(`docker compose ${ComposeStack.FILES} config --services`);
+    const listed = new Set(result.stdout.split('\n').map((line) => line.trim()).filter(Boolean));
+    return services.filter((service) => listed.has(service));
+  }
+
+  /** Starts `service` when it is not running; one that is keeps running exactly as it is. */
+  async ensure(service: string): Promise<number> {
+    return this.shell.stream(`docker compose ${ComposeStack.FILES} up -d --no-deps --no-recreate ${service}`);
   }
 
   /**
