@@ -4,6 +4,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 
 import { PluginCollectionActivationService } from '@core/plugin/services/plugin-collection-activation-service';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 
 /**
  * Running a site's seeds once its plugins are active, and the final pass that materializes the default
@@ -29,11 +30,17 @@ export class PluginSeedRunner {
    * Plugin seeds are skipped at boot on a multi-tenant platform because boot has no site (see
    * `runSeeds`). This is the per-site pass: called inside a tenant scope, so the same writes that were
    * refused by row-level security at boot succeed for the site that actually wants them.
+   *
+   * Only the plugins THIS site runs. "Active" is platform-wide: every plugin any site uses is active,
+   * so without the tenant check a new site running cms and forms also received the finance plugin's
+   * currencies and every other active plugin's seed rows — data for plugins it does not have, which
+   * no screen of that site shows. The caller warms the site's plugin access before this pass.
    */
   public async runSeedsForCurrentSite(): Promise<string[]> {
     const seeded: string[] = [];
     for (const [slug, plugin] of this.manager.plugins) {
       if (plugin.state !== PluginState.ACTIVE || !plugin.manifest?.seeds) continue;
+      if (!PluginTenantAccess.isVisibleForCurrentTenant(plugin)) continue;
       await this.activation.runSeeds(slug);
       seeded.push(slug);
     }
