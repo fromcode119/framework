@@ -9,7 +9,7 @@ import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest
  * saw a single key for an isolated plugin, and every locale request answered `{}`.
  *
  * `PluginGuestLocals` must forward every registration to the host's `context.i18n.registerTranslations`
- * two-argument form, and `flush()` must wait for those forwards before a lifecycle hook is reported
+ * two-argument form — as a recorded declaration (`PluginDeclarations`) — and `flush()` must wait for those forwards before a lifecycle hook is reported
  * done — otherwise the first request after boot can still race the forward and see an empty map.
  *
  * Fictional plugin fixture only (`alpha`), never a real plugin slug.
@@ -26,6 +26,11 @@ const boot = (): IPluginGuestBoot => ({
   defaultLocale: 'en',
 });
 
+/** The declarations channel a forward travels on: each `declare` is handed to `registerTranslations`. */
+const declarationsFor = (registerTranslations: (...args: any[]) => unknown): any => ({
+  declare: vi.fn((_namespace: string, _method: string, args: unknown[]) => registerTranslations(...args)),
+});
+
 describe('PluginGuestLocals i18n forwarding', () => {
   it('forwards each registered locale payload to the host, namespaced by the two-arg form', async () => {
     const registerTranslations = vi.fn(async () => undefined);
@@ -38,12 +43,14 @@ describe('PluginGuestLocals i18n forwarding', () => {
       }),
     };
 
-    const locals = new PluginGuestLocals(boot(), remote);
+    const declarations = declarationsFor(registerTranslations);
+    const locals = new PluginGuestLocals(boot(), remote, declarations);
 
     locals.i18n.registerTranslations('bg', { order: { button: { placeOrder: 'Поръчай' } } });
     locals.i18n.registerTranslations('en', { order: { button: { placeOrder: 'Order' } } });
 
-    expect(remote.ref).toHaveBeenCalledWith('context', [{ name: 'i18n' }]);
+    // A DECLARATION, so the plugin process records it and can declare it again to another api.
+    expect(declarations.declare).toHaveBeenCalledWith('i18n', 'registerTranslations', ['bg', { order: { button: { placeOrder: 'Поръчай' } } }]);
     expect(registerTranslations).toHaveBeenCalledWith('bg', { order: { button: { placeOrder: 'Поръчай' } } });
     expect(registerTranslations).toHaveBeenCalledWith('en', { order: { button: { placeOrder: 'Order' } } });
     expect(registerTranslations).toHaveBeenCalledTimes(2);
@@ -63,7 +70,7 @@ describe('PluginGuestLocals i18n forwarding', () => {
       ref: vi.fn((_root: string, steps: Array<{ name: string }>) => (steps[0]?.name === 'i18n' ? { registerTranslations } : {})),
     };
 
-    const locals = new PluginGuestLocals(boot(), remote);
+    const locals = new PluginGuestLocals(boot(), remote, declarationsFor(registerTranslations));
     locals.i18n.registerTranslations('bg', { order: { button: { placeOrder: 'Поръчай' } } });
 
     let flushed = false;
@@ -84,7 +91,7 @@ describe('PluginGuestLocals i18n forwarding', () => {
       ref: vi.fn((_root: string, steps: Array<{ name: string }>) => (steps[0]?.name === 'i18n' ? { registerTranslations } : {})),
     };
 
-    const locals = new PluginGuestLocals(boot(), remote);
+    const locals = new PluginGuestLocals(boot(), remote, declarationsFor(registerTranslations));
     locals.i18n.registerTranslations('bg', { order: { button: { placeOrder: 'Поръчай' } } });
 
     await expect(locals.flush()).resolves.toBeUndefined();
@@ -98,7 +105,7 @@ describe('PluginGuestLocals site clock', () => {
       ref: vi.fn((_root: string, steps: Array<{ name: string }>) => (steps[0]?.name === 'i18n' ? { siteClock, registerTranslations: vi.fn() } : {})),
     };
 
-    const locals = new PluginGuestLocals(boot(), remote);
+    const locals = new PluginGuestLocals(boot(), remote, declarationsFor(vi.fn()));
 
     expect(await locals.i18n.siteClock()).toEqual({ timeZone: 'Europe/Sofia', hourCycle: 'h23' });
     expect(siteClock).toHaveBeenCalledTimes(1);

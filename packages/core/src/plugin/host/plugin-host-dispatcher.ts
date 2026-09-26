@@ -44,6 +44,15 @@ export class PluginHostDispatcher {
     return RequestContextUtils.storage.run(store, () => (invocation.tenantId ? this.db.withTenant(invocation.tenantId, execute) : execute()));
   }
 
+  /**
+   * A declaration (`PluginDeclarations`) the plugin sent as a registration: the call it used to make,
+   * run on its context. No token — it may be replayed to an api that minted none — and no site: what a
+   * plugin declares belongs to the platform, which is how its boot-time `onInit` ran it anyway.
+   */
+  declare(context: PluginContext, steps: IPluginRemoteCall['steps']): Promise<unknown> {
+    return this.walk(context, steps);
+  }
+
   private root(context: PluginContext, root: IPluginRemoteCall['root']): unknown {
     if (root === String(PluginRemoteCallRoot.CONTEXT.value)) return context;
     if (root === String(PluginRemoteCallRoot.CORE.value)) return CoreServices.getInstance();

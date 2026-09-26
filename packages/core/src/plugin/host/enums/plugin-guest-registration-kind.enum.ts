@@ -27,6 +27,8 @@ export class PluginGuestRegistrationKind extends Enum {
   static readonly MCP_TOOLS = new PluginGuestRegistrationKind('mcp-tools');
   static readonly GATE = new PluginGuestRegistrationKind('gate');
   static readonly CANONICAL_PATH = new PluginGuestRegistrationKind('canonical-path');
+  /** A call that declares something to the api (a collection, translations, a provider) — `PluginDeclarations`. */
+  static readonly DECLARATION = new PluginGuestRegistrationKind('declaration');
 
   private constructor(value: string) {
     super(value);

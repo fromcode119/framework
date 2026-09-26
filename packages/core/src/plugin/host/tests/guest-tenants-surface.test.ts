@@ -17,7 +17,7 @@ import { TenantsContextProxy } from '@core/plugin/context/tenants';
  * in-process proxy fails here until it is forwarded too.
  */
 const guestTenants = () => {
-  const remote = { call: vi.fn(async () => undefined), ref: vi.fn() };
+  const remote = { call: vi.fn(async () => undefined), ref: vi.fn(() => ({})) };
   const factory = Object.create(PluginGuestContextFactory.prototype);
   Object.assign(factory, {
     remote,

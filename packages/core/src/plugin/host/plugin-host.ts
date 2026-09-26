@@ -95,6 +95,7 @@ export class PluginHost extends PluginHostAvailability {
       (req, res, next, targetPath, originalUrl) => this.forwardRequest(req, res, next, targetPath, originalUrl),
       // The RAW manager db: entering a site's scope binds a connection, and only this one can.
       manager.db,
+      (steps) => this.dispatcher.declare(this.context!, steps),
     );
   }
 
@@ -296,5 +297,4 @@ export class PluginHost extends PluginHostAvailability {
     if (rest !== '' && !rest.startsWith('/') && !rest.startsWith('?')) return null;
     return marker + (rest === '' ? '/' : rest);
   }
-
 }

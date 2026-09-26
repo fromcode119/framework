@@ -13,7 +13,7 @@ const guestMigrations = (hostDialect: string) => {
     call: vi.fn(async (_root: string, steps: Array<{ name: string; args?: unknown[] }>) => (
       steps[0]?.name === 'dialect' && !steps[0]?.args ? hostDialect : undefined
     )),
-    ref: vi.fn(),
+    ref: vi.fn(() => ({})),
   };
   const factory = Object.create(PluginGuestContextFactory.prototype);
   Object.assign(factory, {

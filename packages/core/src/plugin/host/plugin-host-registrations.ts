@@ -36,6 +36,8 @@ export class PluginHostRegistrations {
     private readonly invoke: (kind: string, handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown>,
     private readonly forwardRequest: (req: Request, res: Response, next: NextFunction, targetPath?: string, originalUrl?: string) => Promise<void>,
     private readonly db: { withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> },
+    /** Runs a declaration (`PluginDeclarations`) on the plugin's context, as the call it used to be. */
+    private readonly declare: (steps: NonNullable<IPluginGuestRegistration['steps']>) => Promise<unknown>,
   ) {}
 
   /**
@@ -43,7 +45,7 @@ export class PluginHostRegistrations {
    * host returns to the guest so `context.tenants.forEach` can report how many sites it ran for.
    */
   /** `invoke` defaults to the current process; a per-site run started while a replacement initialises goes to THAT one. */
-  apply(context: PluginContext, registration: IPluginGuestRegistration, invoke: (kind: string, handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown> = this.invoke): void | Promise<number> {
+  apply(context: PluginContext, registration: IPluginGuestRegistration, invoke: (kind: string, handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown> = this.invoke): void | Promise<number | undefined> {
     switch (registration.kind) {
       case String(PluginGuestRegistrationKind.ROUTE.value): return this.route(context, registration);
       case String(PluginGuestRegistrationKind.USE.value): return this.use(context, registration);
@@ -57,6 +59,9 @@ export class PluginHostRegistrations {
       case String(PluginGuestRegistrationKind.MCP_TOOLS.value): return this.mcpTools(context, registration);
       case String(PluginGuestRegistrationKind.GATE.value): return this.gate(registration);
       case String(PluginGuestRegistrationKind.CANONICAL_PATH.value): return this.canonicalPath(registration);
+      // Awaited so the plugin's `await context.collections.register(…)` still means "it is registered";
+      // what the method returned stays here — nothing a plugin declares depends on it.
+      case String(PluginGuestRegistrationKind.DECLARATION.value): return this.declare(registration.steps ?? []).then(() => undefined);
       default: throw new Error(`unknown registration kind "${(registration as any).kind}"`);
     }
   }
