@@ -2,7 +2,7 @@ import type { IRestAuditSink } from '@api/controllers/rest/interfaces/rest-audit
 import { AuditOutcome } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { ICollection, HookManager } from '@fromcode119/core';
+import { ICollection, HookManager, RequestContextUtils } from '@fromcode119/core';
 import { IDatabaseManager } from '@fromcode119/database';
 import { RestBulkController } from '@api/controllers/rest/rest-bulk-controller';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
@@ -57,6 +57,16 @@ export class RESTController {
       .catch(() => undefined);
   }
 
+  /**
+   * Runs a write with the request's user recorded as the actor, so the collection hooks it fires can
+   * ask `context.auth.actor()` who is acting. A hook only receives the record: an isolated plugin's
+   * listener runs in another process and never sees this request, and a middleware that stamped the
+   * body there changed a copy the write never read.
+   */
+  private asActor<T>(req: any, work: () => T): T {
+    return RequestContextUtils.runAs(req?.user, work);
+  }
+
   async find(collection: ICollection, req: any, res?: Response) {
     return this.readController.find(collection, req, res);
   }
@@ -67,32 +77,32 @@ export class RESTController {
 
   async create(collection: ICollection, req: any, res?: Response) {
     this.recordMutation('create', collection, req);
-    return this.writeController.create(collection, req, res);
+    return this.asActor(req, () => this.writeController.create(collection, req, res));
   }
 
   async update(collection: ICollection, req: any, res?: Response) {
     this.recordMutation('update', collection, req);
-    return this.writeController.update(collection, req, res);
+    return this.asActor(req, () => this.writeController.update(collection, req, res));
   }
 
   async delete(collection: ICollection, req: any, res?: Response) {
     this.recordMutation('delete', collection, req);
-    return this.writeController.delete(collection, req, res);
+    return this.asActor(req, () => this.writeController.delete(collection, req, res));
   }
 
   async bulkCreate(collection: ICollection, req: any, res?: Response) {
     this.recordMutation('bulk-create', collection, req);
-    return this.bulkController.bulkCreate(collection, req, res);
+    return this.asActor(req, () => this.bulkController.bulkCreate(collection, req, res));
   }
 
   async bulkUpdate(collection: ICollection, req: any, res?: Response) {
     this.recordMutation('bulk-update', collection, req);
-    return this.bulkController.bulkUpdate(collection, req, res);
+    return this.asActor(req, () => this.bulkController.bulkUpdate(collection, req, res));
   }
 
   async bulkDelete(collection: ICollection, req: any, res?: Response) {
     this.recordMutation('bulk-delete', collection, req);
-    return this.bulkController.bulkDelete(collection, req, res);
+    return this.asActor(req, () => this.bulkController.bulkDelete(collection, req, res));
   }
 
   async getGlobalActivity(collections: any[], req: Request, res: Response) {

@@ -28,4 +28,12 @@ generateToken(payload: Record<string, unknown>, options?: Record<string, unknown
 verifyToken(token: string): Promise<Record<string, unknown> | null>;
 /** Whether the framework's auth middleware verified a session for this request. Never throws. */
 isAuthenticated(request: unknown): boolean;
+/**
+ * The signed-in user a collection write is being done for, or `null`. Answers inside the hooks that
+ * write fires (`beforeCreate`, `beforeUpdate`, …), which receive only the record — this is how such a
+ * hook stamps who did it. `null` for work no user asked for: a scheduled run, a boot task, a hook
+ * fired outside a collection write. ASYNC because an isolated plugin asks the host, which is the only
+ * side that knows the request.
+ */
+actor(): Promise<Record<string, unknown> | null>;
 }
