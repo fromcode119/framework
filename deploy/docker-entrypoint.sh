@@ -57,6 +57,9 @@ case "${DEPLOYMENT_MODE:-}" in
   admin)
     own_if_needed /app/appearance
     ;;
+  extension-host)
+    # Starts plugin processes for the api; the api prepares everything they need (roles, dependencies).
+    ;;
   frontend)
     ;;
 esac

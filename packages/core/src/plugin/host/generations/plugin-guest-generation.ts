@@ -1,3 +1,4 @@
+import os from 'os';
 import path from 'path';
 import { randomBytes } from 'crypto';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
@@ -44,9 +45,18 @@ export class PluginGuestGeneration {
     return path.join(this.guest.socketDir, PluginGuestConnections.CONTROL_SOCKET);
   }
 
-  /** The guest id for a plugin's Nth process: distinct per generation, so two can run side by side. */
-  static guestId(slug: string, generation: number): string {
-    return `plugin-${slug}.${generation}`;
+  /**
+   * The guest id for a plugin's Nth process: distinct per generation, so two can run side by side — and
+   * per api instance, because the `extension-host` container's spawner serves every api at once (two of
+   * them during a rolling deploy), and a shared id would have one api's process replace the other's.
+   */
+  static guestId(slug: string, generation: number, instance: string = PluginGuestGeneration.instance()): string {
+    return `plugin-${slug}.${instance}.${generation}`;
+  }
+
+  /** This api instance, as an id-safe token: the container's hostname, which is unique per container. */
+  static instance(): string {
+    return os.hostname().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 24) || 'api';
   }
 
   /**

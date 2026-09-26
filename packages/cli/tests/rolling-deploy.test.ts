@@ -84,7 +84,12 @@ class ComposeFixture {
 
   constructor(private readonly healthy: (service: string) => boolean) {}
 
+  readonly ensured: string[] = [];
+  declares: string[] = [];
+
   readonly stack: any = {
+    declared: async (services: readonly string[]) => services.filter((service) => this.declares.includes(service)),
+    ensure: async (service: string) => { this.ensured.push(service); this.containers[service] ??= [`${service}-running`]; return 0; },
     containerIds: async (service: string) => [...(this.containers[service] ?? [])],
     scale: async (service: string, count: number) => {
       while (this.containers[service].length < count) this.containers[service].push(`${service}-new-${this.next++}`);
@@ -111,6 +116,21 @@ describe('RollingDeploy', () => {
     expect(compose.stopped).toEqual(['api-old', 'admin-old', 'front-old']);
     expect(Object.values(compose.containers).every((ids) => ids.length === 1 && ids[0].includes('-new-'))).toBe(true);
     expect(compose.gatewayRestarts).toBe(1);
+  });
+
+  it('starts extension-host first when the release declares it, so the new api has somewhere to start plugins', async () => {
+    const compose = new ComposeFixture(() => true);
+    compose.declares = ['extension-host'];
+    expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
+    expect(compose.ensured).toEqual(['extension-host']);
+    // Never rolled: replacing it would stop every plugin process at once.
+    expect(compose.stopped).not.toContain('extension-host-running');
+  });
+
+  it('leaves a release without extension-host exactly as before', async () => {
+    const compose = new ComposeFixture(() => true);
+    expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
+    expect(compose.ensured).toEqual([]);
   });
 
   it('keeps the old copy serving when the new one never comes up, and stops there', async () => {

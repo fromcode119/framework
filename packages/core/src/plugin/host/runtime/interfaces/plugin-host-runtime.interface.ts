@@ -5,6 +5,8 @@ export interface IPluginHostRuntime {
   slug: string;
   /** A `PluginProcessHost` value. */
   hostedBy: string;
+  /** Set when the api is configured for the extension-host and could not reach it — why nothing runs. */
+  hostUnavailable: string | null;
   running: boolean;
   pid: number | null;
   /** The OS user it runs as; null when it shares the api's user (no privileged spawner, e.g. local dev). */

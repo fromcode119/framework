@@ -14,16 +14,18 @@ import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum'
  * The one process that keeps root after the app gives it up — and does exactly three things with it:
  * makes a guest's directories with the right owners, starts a guest as another user, and kills one.
  *
- * It takes orders from its parent only (the app, over IPC), holds no secrets (empty environment),
- * parses nothing a guest sends (a guest's stdout is forwarded as lines, never interpreted), and exits
- * the moment its parent goes away, taking every guest with it. Everything else — what the guest may
- * call, which tenant it sees — is the host's business on the far side of the guest's socket.
+ * It takes orders from one app only — its parent over IPC, or in the `extension-host` container one
+ * api connection — holds no secrets (empty environment), parses nothing a guest sends (a guest's stdout
+ * is forwarded as lines, never interpreted), and when that app goes away its guests go with it. As the
+ * app's child it then exits too; in `extension-host` it is one of several, and only its own guests go.
+ * Everything else — what the guest may call, which tenant it sees — is the host's business on the far
+ * side of the guest's socket.
  */
 export class PrivilegedSpawner {
   private readonly children = new Map<string, ChildProcess>();
   private readonly channel: PluginChannel;
 
-  constructor(port: IMessagePort, private readonly runtimeDir: string) {
+  constructor(port: IMessagePort, private readonly runtimeDir: string, private readonly exitWithApp = true) {
     this.channel = new PluginChannel(port);
     this.channel.serve((type, payload) => this.handle(type, payload));
     this.channel.onNotify((type, payload) => { if (type === 'kill') this.kill(String(payload?.id ?? ''), payload?.signal); });
@@ -32,7 +34,7 @@ export class PrivilegedSpawner {
 
   private async handle(type: string, payload: any): Promise<unknown> {
     switch (type) {
-      case 'ping': return 'pong';
+      case 'ping': return { pid: process.pid };
       case 'prepare': return this.prepare(payload);
       case 'spawn': return this.spawn(payload);
       default: throw new Error(`spawner: unknown message "${type}"`);
@@ -113,7 +115,7 @@ export class PrivilegedSpawner {
 
   private shutdown(): void {
     for (const child of this.children.values()) child.kill('SIGKILL');
-    process.exit(0);
+    if (this.exitWithApp) process.exit(0);
   }
 
   /** Ids name directories; one that is not a plain slug is refused rather than sanitised. */

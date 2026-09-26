@@ -216,13 +216,20 @@ services:
       # T5c: plugin processes get NO network of their own (the api makes their HTTP calls). `allow`
       # only for a deployment whose plugins still do raw network I/O; the entrypoint logs the policy.
       - GUEST_EGRESS_POLICY=${GUEST_EGRESS_POLICY:-deny}
+      # Plugin processes are started by the `extension-host` service below, not by the api: a deploy then
+      # replaces the api alone, and the plugins' memory is counted there. Remove this line (and the
+      # service) and the api starts them itself, as before. Unreachable, plugins show why in the admin.
+      - EXTENSION_HOST_SOCKET=/run/fromcode/spawner.sock
       - ENFORCE_AUTHZ_GATEWAY=true
       - ENFORCE_COLLECTION_READ_AUTHZ=true
       - ENFORCE_PLUGIN_INTEGRITY=true
     depends_on:
       - db
       - redis
+      - extension-host
     volumes:
+      # The sockets of every plugin process, shared with `extension-host`, which creates them.
+      - extension_runtime:/run/fromcode
       # Read by the ENTRYPOINT only, as root, to build the privileged connection that creates the two
       # database roles. The application drops to `node` immediately afterwards and the file is owned
       # by the database image's user, so the long-lived process cannot read this even though it is
@@ -271,9 +278,64 @@ services:
           # The local compose already raised this for the same reason.
           # 2G ran out on production (2026-09-25): 22 installed plugins, one guest process each at
           # ~120 MB, left the api 1.93 GB of 2 GB in use a quarter of an hour after a restart — one
-          # more plugin away from the kernel killing the api and every site with it. The host has
-          # 7.7 GB and the other services are capped well under 3 GB together.
-          memory: 3584M
+          # more plugin away from the kernel killing the api and every site with it. Since then the
+          # plugin processes moved to `extension-host` (and to ~30 MB each); the api keeps room for
+          # the vite builds it shells out to.
+          memory: 2G
+
+  # Starts and supervises plugin processes for the api — one process per plugin, each as its own user,
+  # exactly as the api did itself. Its own container so that a deploy replaces only the api: the plugins'
+  # memory is not duplicated with it, and is counted here, not against the api.
+  #
+  # OPTIONAL. Without it (and without EXTENSION_HOST_SOCKET on the api) the api starts plugins itself.
+  # With it down, the platform keeps serving; plugin routes do not, and each plugin says why in the admin
+  # (Plugins -> a plugin -> Resource limits). When it comes back, the api reconnects and restarts them.
+  extension-host:
+    image: ${IMAGE_API:-atlantis-api}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api-only
+      args:
+        - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
+    command: node packages/core/dist/process/extension-host/extension-host-main.js
+    # A reaper at PID 1: a process a plugin starts and abandons is adopted by PID 1, and node does not
+    # reap children it did not start.
+    init: true
+    # Root for the spawner only — the same capabilities the api kept for it: change identity, own the
+    # guests' directories, signal them, and the guest egress rule (applied by the entrypoint, in THIS
+    # container's network, where the guests now run).
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - CHOWN
+      - FOWNER
+      - DAC_OVERRIDE
+      - KILL
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      # Tells the entrypoint this is neither the api nor a Next app: no database roles, no dependency
+      # installs — the api does those. Only the egress rule below applies.
+      - DEPLOYMENT_MODE=extension-host
+      - GUEST_EGRESS_POLICY=${GUEST_EGRESS_POLICY:-deny}
+    volumes:
+      - extension_runtime:/run/fromcode
+      # The plugins' code and their writable data directories, at the SAME paths the api names them by.
+      - ../plugins:/app/plugins
+      - ../data:/app/data
+    networks:
+      - framework
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          # ~30 MB per plugin process measured on production (2026-09-26), each capped by its own heap
+          # limit; this leaves room for a plugin being replaced beside its running process.
+          memory: 2G
 
   admin:
     build:
@@ -491,6 +553,9 @@ networks:
 
 volumes:
   postgres_data:
+  # Shared by the api and `extension-host`: the spawner's socket and each plugin process's socket
+  # directory. Nothing in it outlives the processes that made it.
+  extension_runtime:
   # Holds one file: the bundled database's superuser password. Separate from the app's data volume on
   # purpose — that one is chowned to the application user, and this credential must stay out of its
   # reach. The api mounts it read-only so the ENTRYPOINT (root) can read it before dropping privileges.

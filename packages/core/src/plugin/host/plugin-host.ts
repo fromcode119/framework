@@ -29,11 +29,12 @@ import type { IRequestStore } from '@core/context/interfaces/request-store.inter
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
-import { PluginHostGuestBridge } from '@core/plugin/host/plugin-host-guest-bridge';
+import { PluginHostAvailability } from '@core/plugin/host/availability/plugin-host-availability';
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 import { PluginHostProtocol } from '@core/plugin/host/protocol/plugin-host-protocol';
+import { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outage';
 
 /**
  * One isolated plugin, from the host's side: its process, its channel, its tokens, its stand-ins.
@@ -44,7 +45,7 @@ import { PluginHostProtocol } from '@core/plugin/host/protocol/plugin-host-proto
  * re-initialised; after three deaths the plugin is disabled with the reason, and nothing else on the
  * platform notices either way.
  */
-export class PluginHost extends PluginHostGuestBridge {
+export class PluginHost extends PluginHostAvailability {
   /** The guest's Express server, inside the directory only the host and that guest can reach. */
   /** Mirrors `PluginManager.PLUGINS_READY_EVENT`; re-emitted when this guest is replaced. */
 
@@ -82,6 +83,11 @@ export class PluginHost extends PluginHostGuestBridge {
     const plugin = { manifest } as unknown as ILoadedPlugin;
     const ddl = PluginSchemaDatabaseProxy.create(plugin, manager);
     this.dispatcher = new PluginHostDispatcher(slug, this.tokens, manager.db, ddl, this.callbacks);
+    this.outage = new PluginHostOutage(
+      slug,
+      () => [...manager.registeredCollections].filter(([, entry]) => entry.pluginSlug === slug).flatMap(([physical, entry]) => [physical, entry.collection.slug, entry.collection.shortSlug].filter(Boolean)),
+      () => GuestProcessLaunchers.unavailableReason() ?? (this.restarting ? 'its process is restarting' : 'its process is not running'),
+    );
     this.registrations = new PluginHostRegistrations(
       slug,
       this.proxy,
@@ -185,10 +191,10 @@ export class PluginHost extends PluginHostGuestBridge {
       stubs[key] = async (ctx: PluginContext, ...extra: unknown[]) => {
         this.bindContext(ctx);
         if (!this.isRunning) {
+          if (this.deferWhileUnavailable(key)) return undefined;
           if (key === 'onInit') { this.initDeferred = true; return undefined; }
           if (key === 'onDisable' || key === 'onUninstall') return undefined;
-          await this.start();
-          if (this.initDeferred) { this.initDeferred = false; await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onInit' }, RequestContextUtils.storage.getStore()); }
+          await this.resume(RequestContextUtils.storage.getStore());
         }
         if (key === 'onEnable') this.wasEnabled = true;
         if (key === 'onDisable') this.wasEnabled = false;
@@ -264,6 +270,7 @@ export class PluginHost extends PluginHostGuestBridge {
   }
 
   private async forwardRequest(req: Request, res: Response, next: NextFunction, targetPath?: string, originalUrl?: string): Promise<void> {
+    if (!this.channel || this.channel.isClosed) return this.outage.handle(req, res, next, targetPath);
     const store = RequestContextUtils.storage.getStore();
     const token = this.tokens.mint('route', store);
     try {

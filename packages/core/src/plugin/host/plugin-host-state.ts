@@ -6,6 +6,7 @@ import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
 import { PluginHostDispatcher } from '@core/plugin/host/plugin-host-dispatcher';
 import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
 import { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrations';
+import type { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outage';
 import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
 import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
 
@@ -35,6 +36,8 @@ export abstract class PluginHostState {
   protected declare socketPath: any;
   protected declare proxy: PluginHostHttpProxy;
   protected declare registrations: PluginHostRegistrations;
+  /** What a request meets while no process is running. */
+  protected declare outage: PluginHostOutage;
   protected declare dispatcher: PluginHostDispatcher;
   protected declare callbacks: PluginHostCallbacks;
   protected declare settings: PluginIsolationSettings;
