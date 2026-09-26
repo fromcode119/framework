@@ -22,6 +22,24 @@ export class RequestContextUtils {
     return locale.length > 0 ? locale : undefined;
   }
 
+  /** The user the current work is done for, or undefined — see {@link IRequestStore.user}. */
+  static getUser(): Record<string, unknown> | undefined {
+    return RequestContextUtils.storage.getStore()?.user;
+  }
+
+  /**
+   * Runs `work` in the current request context with `user` recorded as the actor.
+   *
+   * Outside a request (no store) it runs unchanged: opening a store here would make the work look
+   * like a request to every check that asks "is there one?", which is a bigger change than naming who
+   * acts.
+   */
+  static runAs<T>(user: Record<string, unknown> | null | undefined, work: () => T): T {
+    const store = RequestContextUtils.storage.getStore();
+    if (!user || !store) return work();
+    return RequestContextUtils.storage.run({ ...store, user }, work);
+  }
+
   /**
    * The current request's tenant, or a thrown error.
    *

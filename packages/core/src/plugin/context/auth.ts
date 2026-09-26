@@ -1,5 +1,6 @@
 import type { IPluginContextAuth } from '@core/plugin/interfaces/plugin-context-auth.interface';
 import { TenantMode } from '@core/tenant/tenant-mode';
+import { RequestContextUtils } from '@core/context/request-context';
 
 /**
  * The auth surface handed to a plugin.
@@ -16,6 +17,7 @@ import { TenantMode } from '@core/tenant/tenant-mode';
  *   to `null`, so `if (!(await context.auth.verifyToken(t))) deny();` is the entire guard.
  * - `isAuthenticated(req)` is the synchronous answer for a request that already passed the
  *   framework's auth middleware, so a forgotten `await` cannot produce an always-true guard at all.
+ * - `actor()` names the user a collection write is done for, from the request context the write set.
  * - With auth not yet initialised every member fails CLOSED: guards answer 503, `verifyToken`
  *   resolves `null`, `isAuthenticated` is `false`.
  *
@@ -35,6 +37,9 @@ export class AuthContextProxy {
         }
         if (property === 'isAuthenticated') {
           return (request: unknown) => AuthContextProxy.isAuthenticated(request);
+        }
+        if (property === 'actor') {
+          return async () => RequestContextUtils.getUser() ?? null;
         }
         if (property === 'platformGuard') {
           return () => AuthContextProxy.platformGuard();
@@ -93,6 +98,7 @@ export class AuthContextProxy {
       generateToken: () => { throw new Error('Auth service not initialized'); },
       verifyToken: async () => null,
       isAuthenticated: () => false,
+      actor: async () => null,
     };
   }
 }

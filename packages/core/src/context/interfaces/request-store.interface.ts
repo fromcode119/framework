@@ -20,5 +20,11 @@ export interface IRequestStore {
    * and for a site that set none, where the platform's applies.
    */
   siteLocale?: string;
+  /**
+   * The signed-in user on whose behalf a collection write runs — set by the REST write path around
+   * the write, so the collection hooks it fires can tell who is acting. Absent for work nobody asked
+   * for (a scheduled run, a boot task): there is no actor then, and none is invented.
+   */
+  user?: Record<string, unknown>;
   [key: string]: any;
 }
