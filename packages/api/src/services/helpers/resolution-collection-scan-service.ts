@@ -2,6 +2,7 @@ import { ResolutionMatchKind } from '@api/services/helpers/enums/resolution-matc
 import { CoercionUtils, type ICollection } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-service';
+import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
 import type { IResolutionPriorityScanContext } from '@api/services/helpers/interfaces/resolution-priority-scan-context.interface';
 import type { IResolutionScanResult } from '@api/services/helpers/interfaces/resolution-scan-result.interface';
 import type { IResolutionStructureScanContext } from '@api/services/helpers/interfaces/resolution-structure-scan-context.interface';
@@ -20,9 +21,14 @@ import type { IResolutionStructureScanContext } from '@api/services/helpers/inte
  * the query would be a second, request-shaped way to ask for drafts, and that is exactly the channel
  * an anonymous `?preview=1` used to travel down. `options.preview` still gates the permalink checks
  * below, which are about routability, not about who may read the record.
+ *
+ * A collection the visitor may not read is not asked at all. Its `find` could only be refused, so the
+ * answer is the same — but every anonymous page lookup used to send one refused query per candidate
+ * path to each such collection (a form list, say) and log each refusal.
  */
 export class ResolutionCollectionScanService {
   private static readonly STRUCTURE_CHUNK_SIZE = 4;
+  private readonly accessPolicy = new CollectionAccessPolicyService();
 
   constructor(
     private readonly db: any,
@@ -33,6 +39,7 @@ export class ResolutionCollectionScanService {
   /** Pass 1 — custom permalinks first, then exact slugs, per collection in order. */
   async scanPriority(ctx: IResolutionPriorityScanContext): Promise<IResolutionScanResult | null> {
     for (const { collection, pluginSlug } of ctx.entries) {
+      if (!(await this.readable(collection, ctx.options.user))) continue;
       const flags = this.cache.getCollectionFlags(collection);
       const finds: Array<{ kind: ResolutionMatchKind; candidate: string; query: any }> = [];
       if (flags.hasCustomPermalink) {
@@ -70,6 +77,7 @@ export class ResolutionCollectionScanService {
   async scanStructure(ctx: IResolutionStructureScanContext): Promise<IResolutionScanResult | null> {
     const jobs: Array<{ collection: ICollection; pluginSlug: string; query: any }> = [];
     for (const { collection, pluginSlug } of ctx.entries) {
+      if (!(await this.readable(collection, ctx.options.user))) continue;
       const query = this.buildStructureQuery(collection, ctx);
       if (query) jobs.push({ collection, pluginSlug, query });
     }
@@ -88,6 +96,19 @@ export class ResolutionCollectionScanService {
       }
     }
     return null;
+  }
+
+  /**
+   * Whether `user` may read `collection` at all — the same check the collection's `find` makes first. Only
+   * a REFUSAL skips it; anything else going wrong here is left to the `find`, exactly as before.
+   */
+  private async readable(collection: ICollection, user: unknown): Promise<boolean> {
+    try {
+      await this.accessPolicy.resolveReadConstraints(collection, { query: {}, user });
+      return true;
+    } catch (error) {
+      return !CollectionAccessPolicyService.isRefusal(error);
+    }
   }
 
   async isPermalinkDisabled(collection: ICollection, docId: any, preview: boolean): Promise<boolean> {
