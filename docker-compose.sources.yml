@@ -124,6 +124,10 @@ services:
       - NODE_ENV=development
     volumes:
       - ./packages/api/src:/app/packages/api/src
+      # `tsx watch` resolves every `@fromcode119/*` import through the ROOT tsconfig's `paths`. The image
+      # bakes the copy it was built with, so an alias added since (`@fromcode119/scheduler/*`) fell
+      # through to that package's older `dist` and the api died at boot with MODULE_NOT_FOUND.
+      - ./tsconfig.json:/app/tsconfig.json:ro
       # The api's `tsx watch` resolves `@core/*` to core's SOURCE, so mount it and a core change needs no
       # build. Plugin GUESTS are separate `node` processes and still load core's built `dist` — that split
       # is inherent to the isolation, not caused by this mount, and it is why `PluginHost.guestMainPath()`
