@@ -1,5 +1,6 @@
 import http from 'http';
 import type { Request, Response, NextFunction } from 'express';
+import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
 
 /**
@@ -29,7 +30,7 @@ export class PluginHostHttpProxy {
     req: Request,
     res: Response,
     next: NextFunction,
-    envelope: { token: string; tenantId: string | null; locale: string; siteLocale: string; targetPath?: string; originalUrl?: string },
+    envelope: { token: string; tenantId: string | null; locale: string; siteLocale: string; targetPath?: string; originalUrl?: string; connectionId?: string | null },
     timeoutMs: number,
     onTimeout: () => void,
   ): Promise<void> {
@@ -43,6 +44,8 @@ export class PluginHostHttpProxy {
       headers[PluginGuestHttp.HEADER_TENANT] = envelope.tenantId ?? '';
       headers[PluginGuestHttp.HEADER_LOCALE] = envelope.locale;
       headers[PluginGuestHttp.HEADER_SITE_LOCALE] = envelope.siteLocale;
+      // Which api this request came through, when the process is one this api took over (never the client's say).
+      if (envelope.connectionId) headers[PluginGuestConnections.HEADER_CONNECTION] = envelope.connectionId; else delete headers[PluginGuestConnections.HEADER_CONNECTION];
       headers[PluginGuestHttp.HEADER_USER] = PluginGuestHttp.encodeUser((req as any).user);
       if (envelope.originalUrl) headers[PluginGuestHttp.HEADER_ORIGINAL_URL] = envelope.originalUrl;
 

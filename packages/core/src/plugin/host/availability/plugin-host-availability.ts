@@ -53,6 +53,25 @@ export abstract class PluginHostAvailability extends PluginHostGuestBridge {
     });
   }
 
+  /**
+   * A process this api took over already ran its `onInit` and `onEnable` — for the api before this one.
+   * Running them again would start its timers and subscriptions twice in the same process. Instead the
+   * boot's `onInit` restores, in order, what the process had registered (its routes, hooks, and what it
+   * declared: `PluginDeclarations`), the per-site passes are skipped (their data is already there), and
+   * `onEnable` only notes that the plugin is enabled. Lifecycle calls after that run as usual.
+   */
+  protected async restoreTakenOver(key: string): Promise<boolean> {
+    if (!this.takenOver || !this.context) return false;
+    if (key === 'onInit') {
+      const restoring = this.takenOver.splice(0);
+      for (const registration of restoring) await this.registrations.apply(this.context, registration);
+      if (restoring.length) this.logger.info(`restored ${restoring.length} registrations from the process it took over`);
+      return true;
+    }
+    if (key === 'onEnable') { this.wasEnabled = true; this.takenOver = null; return true; }
+    return false;
+  }
+
   /** Waits for the extension-host, then runs what boot could not. */
   async resumeWhenAvailable(): Promise<void> {
     await GuestProcessLaunchers.whenAvailable();

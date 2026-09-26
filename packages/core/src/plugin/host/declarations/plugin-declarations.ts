@@ -1,3 +1,5 @@
+import { PluginRemoteCallRoot } from '@core/plugin/host/enums/plugin-remote-call-root.enum';
+
 /**
  * The calls through which a plugin DECLARES something to the api — and which therefore have to be
  * declared again to an api that takes over a running plugin process.
@@ -30,13 +32,25 @@ export class PluginDeclarations {
     ['people', 'registerSource'],
   ];
 
+  /**
+   * `[registry, method]` on the platform's core services — registries a plugin fills through `CoreServices`
+   * (`PluginGuestCoreBridge`). A withdrawal is listed too: replayed in order, the record ends where the
+   * plugin left it.
+   */
+  static readonly CORE_CALLS: ReadonlyArray<readonly [string, string]> = [
+    ['defaultPageContracts', 'register'],
+    ['defaultPageContracts', 'unregisterByPlugin'],
+    ['assistantVocabulary', 'register'],
+  ];
+
   /** Registration-named methods whose effect is stored in the database, so nothing is lost with the api. */
   static readonly PERSISTED: ReadonlyArray<readonly [string, string]> = [
     ['people', 'register'],
   ];
 
-  /** Whether `context.<namespace>.<method>(…)` is one of the declarations. */
-  static isDeclaration(namespace: string, method: string): boolean {
-    return PluginDeclarations.CALLS.some(([listed, name]) => listed === namespace && name === method);
+  /** Whether `<root>.<namespace>.<method>(…)` is one of the declarations (`root` a `PluginRemoteCallRoot` value). */
+  static isDeclaration(namespace: string, method: string, root: string = String(PluginRemoteCallRoot.CONTEXT.value)): boolean {
+    const calls = root === String(PluginRemoteCallRoot.CORE.value) ? PluginDeclarations.CORE_CALLS : PluginDeclarations.CALLS;
+    return calls.some(([listed, name]) => listed === namespace && name === method);
   }
 }

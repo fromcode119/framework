@@ -2,6 +2,7 @@ import type { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
+import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
 /**
  * The ONE way a plugin process tells the api "forward this to me" — and the record of what stands.
@@ -14,7 +15,12 @@ import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-gues
  *
  * - `hook-off` removes the hook it names and is not kept itself — the record is what STANDS now;
  * - `tenants-for-each` is a run, not a registration (it answers how many sites it ran for), so it is
- *   sent and never kept.
+ *   sent and never kept;
+ * - a declaration that repeats one that stands — differing at most in the functions it carries — is
+ *   sent, and once the api accepts it, REPLACES that one where it stands: the api's registries key it
+ *   the same way, so the newest is the one in force. A plugin re-declares its providers each time an
+ *   api announces `plugins:ready`; kept as copies, every api that took the process over made the
+ *   record longer and restored a stale copy first.
  */
 export class PluginGuestRegistrar {
   static readonly TIMEOUT_MS = 30_000;
@@ -32,11 +38,13 @@ export class PluginGuestRegistrar {
    * and a plugin on five sites showed each of its hooks, middleware and tools six times.
    */
   async send(registration: IPluginGuestRegistration): Promise<unknown> {
-    const kept = this.record(registration);
+    const repeated = this.repeatedDeclaration(registration);
+    const kept = repeated ? null : this.record(registration);
     // Sent to the api this invocation came from — the one that will apply it.
-    const answer = await PluginGuestRemote.channelFor(this.channel as PluginChannel).request('register', registration, PluginGuestRegistrar.TIMEOUT_MS);
+    const answer = await PluginGuestRemote.channelFor(this.channel as PluginChannel).request(String(PluginChannelMessage.REGISTER.value), registration, PluginGuestRegistrar.TIMEOUT_MS);
     const accepted = answer !== PluginGuestRegistrar.SUPPRESSED;
     if (!accepted && kept) this.standing.splice(this.standing.indexOf(kept), 1);
+    if (accepted && repeated && this.standing.includes(repeated)) this.standing[this.standing.indexOf(repeated)] = { ...registration };
     // A withdrawal counts only once the api has withdrawn it; a suppressed one leaves the hook standing.
     if (accepted && registration.kind === PluginGuestRegistrationKind.HOOK_OFF.value) this.withdraw(registration);
     return answer;
@@ -53,6 +61,18 @@ export class PluginGuestRegistrar {
     const kept = { ...registration };
     this.standing.push(kept);
     return kept;
+  }
+
+  /** The standing declaration this one repeats — equal but for the function handles it carries — or null. */
+  private repeatedDeclaration(registration: IPluginGuestRegistration): IPluginGuestRegistration | null {
+    if (registration.kind !== PluginGuestRegistrationKind.DECLARATION.value) return null;
+    const shape = PluginGuestRegistrar.shape(registration.steps);
+    return this.standing.find((kept) => kept.kind === registration.kind && kept.root === registration.root && PluginGuestRegistrar.shape(kept.steps) === shape) ?? null;
+  }
+
+  /** A function travels as a fresh handle each time it is passed; compared, every handle is the same. */
+  private static shape(steps: IPluginGuestRegistration['steps']): string {
+    return JSON.stringify(steps, (_key, value) => (value && typeof value === 'object' && PluginGuestRemote.CALLBACK in value ? PluginGuestRemote.CALLBACK : value));
   }
 
   private withdraw(hookOff: IPluginGuestRegistration): void {

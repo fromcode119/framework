@@ -6,6 +6,7 @@ import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import type { IGuestProcess } from '@core/process/interfaces/guest-process.interface';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
+import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
 /**
  * ONE process of a plugin — its channel, its routes socket, what it answered at boot.
@@ -24,8 +25,6 @@ export class PluginGuestGeneration {
   private static readonly DRAIN_POLL_MS = 50;
 
   described: { contractKeys: string[]; publicApiKeys: string[]; manifest: unknown; protocol?: IPluginProtocolIdentity } | null = null;
-  /** What another api must present to attach to this process (`PluginGuestConnections`). */
-  readonly attachSecret = randomBytes(32).toString('hex');
   /** Registrations sent before this generation became the current one, in the order they came. */
   readonly held: IPluginGuestRegistration[] = [];
 
@@ -34,7 +33,15 @@ export class PluginGuestGeneration {
     readonly number: number,
     readonly guest: IGuestProcess,
     readonly channel: PluginChannel,
+    /** What another api must present to attach to this process (`PluginGuestConnections`). */
+    readonly attachSecret: string = PluginGuestGeneration.secret(),
+    /** This api's connection to a process it took over (it names it on every forwarded request); null for its own. */
+    readonly connectionId: string | null = null,
   ) {}
+
+  static secret(): string {
+    return randomBytes(32).toString('hex');
+  }
 
   get socketPath(): string {
     return path.join(this.guest.socketDir, PluginGuestGeneration.ROUTES_SOCKET);
@@ -82,7 +89,7 @@ export class PluginGuestGeneration {
 
   /** Asks the process to stop (it closes its routes server), then makes sure it is gone. */
   async retire(): Promise<void> {
-    if (!this.channel.isClosed) await this.channel.request('stop', {}, 5_000).catch(() => undefined);
+    if (!this.channel.isClosed) await this.channel.request(String(PluginChannelMessage.STOP.value), {}, 5_000).catch(() => undefined);
     this.guest.kill('SIGKILL');
     this.channel.close();
   }

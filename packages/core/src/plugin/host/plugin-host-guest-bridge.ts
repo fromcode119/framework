@@ -15,6 +15,7 @@ import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-gue
 import { PluginSiteDataContext } from '@core/plugin/tenant/plugin-site-data-context';
 import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
 import { PluginHostPeerSnapshot } from '@core/plugin/host/plugin-host-peer-snapshot';
+import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
 /**
  * What the guest asks of the HOST, and what happens when the guest dies.
@@ -31,11 +32,11 @@ import { PluginHostPeerSnapshot } from '@core/plugin/host/plugin-host-peer-snaps
  */
 export abstract class PluginHostGuestBridge extends PluginHostState {
   protected async serve(type: string, payload: any, generation?: PluginGuestGeneration): Promise<unknown> {
-    if (type === 'call') {
+    if (type === String(PluginChannelMessage.CALL.value)) {
       if (!this.context) throw new Error(`plugin "${this.slug}" called the host before it had a context`);
       return this.dispatcher.dispatch(this.context, payload as IPluginRemoteCall);
     }
-    if (type === 'register') {
+    if (type === String(PluginChannelMessage.REGISTER.value)) {
       if (!this.context) throw new Error(`plugin "${this.slug}" registered before it had a context`);
       // A per-site replay of `onInit` does that site's data work with registration suppressed — the
       // first pass already registered everything. Skip it here and SAY so, so the plugin process does not
@@ -60,7 +61,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
   }
 
   protected notified(type: string, payload: any): void {
-    if (type !== 'log' || !this.context) return;
+    if (type !== String(PluginChannelMessage.LOG.value) || !this.context) return;
     // The guest names a level; `LogLevel` owns that list. Its `.value` is the LABEL (`INFO`), and the
     // logger's method is the lower-case form of it — INFO when the guest says nothing usable, which is
     // what this did before and is the level a plugin's own `console.log` should land at.
@@ -249,7 +250,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     const enabledPlugins = this.enabledPlugins(store);
     const signature = PluginHostGuestBridge.peerSignature(peers, enabledPlugins);
     if (signature === this.sentPeerSignature) return;
-    await this.channel.request('peers', { peers, enabledPlugins }, this.limits.timeoutMs);
+    await this.channel.request(String(PluginChannelMessage.PEERS.value), { peers, enabledPlugins }, this.limits.timeoutMs);
     this.sentPeerSignature = signature;
   }
 

@@ -1,4 +1,5 @@
 import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.interface';
+import type { ISpawnerGuestLabel } from '@core/process/interfaces/spawner-guest-label.interface';
 
 /** What it takes to start one guest process. The environment is never part of it: guests get none. */
 export interface IGuestProcessSpec {
@@ -14,4 +15,6 @@ export interface IGuestProcessSpec {
   identity: IGuestIdentity | null;
   /** Directories the guest may write (its own data dir). Created and owned by `identity` when one is set. */
   writableDirs: string[];
+  /** For the spawner to hand back to an api looking for a process to take over; never read by it. */
+  label?: ISpawnerGuestLabel;
 }

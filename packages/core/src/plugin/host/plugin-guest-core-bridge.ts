@@ -6,6 +6,8 @@ import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
+import { PluginGuestDeclarations } from '@core/plugin/host/declarations/plugin-guest-declarations';
+import { PluginRemoteCallRoot } from '@core/plugin/host/enums/plugin-remote-call-root.enum';
 
 /**
  * The in-process singletons plugins reach for OUTSIDE the context, re-pointed at the host.
@@ -24,7 +26,7 @@ export class PluginGuestCoreBridge {
 
   /** Fetch the host's registry into the mirror. Called at boot and again on `plugins:ready`. */
   static async prime(remote: PluginGuestRemote): Promise<void> {
-    const listed = await remote.call('core', [{ name: 'defaultPageContracts' }, { name: 'list', args: [] }]);
+    const listed = await remote.call(String(PluginRemoteCallRoot.CORE.value), [{ name: 'defaultPageContracts' }, { name: 'list', args: [] }]);
     PluginGuestCoreBridge.contracts = Array.isArray(listed) ? listed : [];
   }
 
@@ -53,11 +55,14 @@ export class PluginGuestCoreBridge {
 
   static install(registrar: PluginGuestRegistrar, remote: PluginGuestRemote, handlers: PluginGuestHandlers): void {
     const registration = (payload: IPluginGuestRegistration) => registrar.send(payload);
+    // Recorded, so an api that takes this process over is told them again (`PluginDeclarations.CORE_CALLS`).
+    const declarations = new PluginGuestDeclarations(registration, (handler) => handlers.keepStable(handler));
+    const core = String(PluginRemoteCallRoot.CORE.value);
 
     const bridges: Record<string, unknown> = {
       defaultPageContracts: {
-        register: (input: unknown) => remote.call('core', [{ name: 'defaultPageContracts' }, { name: 'register', args: PluginGuestRemote.portable([input]) }]),
-        unregisterByPlugin: (namespace: string, slug: string) => remote.call('core', [{ name: 'defaultPageContracts' }, { name: 'unregisterByPlugin', args: [namespace, slug] }]),
+        register: (input: unknown) => declarations.declare('defaultPageContracts', 'register', [input], core),
+        unregisterByPlugin: (namespace: string, slug: string) => declarations.declare('defaultPageContracts', 'unregisterByPlugin', [namespace, slug], core),
         // Reads are SYNCHRONOUS in-process (`listByPlugin(...).find(...)`), so the guest answers them
         // from a mirror of the host's registry rather than a promise: primed at boot and refreshed on
         // `plugins:ready`, when every plugin has registered. A missing member here is
@@ -68,7 +73,7 @@ export class PluginGuestCoreBridge {
         ),
       },
       assistantVocabulary: {
-        register: (key: string, role: unknown, terms: readonly string[]) => remote.call('core', [{ name: 'assistantVocabulary' }, { name: 'register', args: PluginGuestRemote.portable([key, role, [...terms]]) }]),
+        register: (key: string, role: unknown, terms: readonly string[]) => declarations.declare('assistantVocabulary', 'register', [key, role, [...terms]], core),
       },
       contentResolutionGates: {
         register: (key: string, gate: (...args: any[]) => unknown) => registration({ kind: String(PluginGuestRegistrationKind.GATE.value), key, handlerId: handlers.keep('gate', gate) }),

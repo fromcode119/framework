@@ -13,8 +13,8 @@ export class PluginGuestMain {
   static async main(): Promise<void> {
     const port = await GuestEntryPort.connect();
     const guest = new PluginGuest(port);
-    void guest;
-    port.on(MessagePortEvent.DISCONNECT, () => process.exit(0));
+    // Not an exit any more: another api may hold this process, or be about to (a deploy's next one).
+    port.on(MessagePortEvent.DISCONNECT, () => guest.primaryLost());
     process.on('unhandledRejection', (reason) => {
       console.error('plugin-guest: unhandled rejection', reason instanceof Error ? reason.stack : reason);
     });

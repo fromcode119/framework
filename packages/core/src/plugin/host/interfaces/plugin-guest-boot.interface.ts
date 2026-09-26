@@ -11,7 +11,7 @@ export interface IPluginGuestBoot {
   socketPath: string;
   /** File mode for that socket: 0o600 when host and guest are one user, 0o666 when the directory is the guard. */
   socketMode: number;
-  /** `./data/plugins/<slug>`, `rootDir` and the other static facts `context.plugin` exposes. */
+  /** `dataDir` (`ProjectPaths.getPluginDataPath`), `rootDir` and the other static facts `context.plugin` exposes. */
   plugin: { slug: string; namespace: string; version: string; dataDir: string; rootDir: string; config: Record<string, unknown> };
   /** Project root, so `ProjectPaths` inside the guest resolves the same tree the host sees. */
   projectRoot: string;
@@ -19,4 +19,6 @@ export interface IPluginGuestBoot {
   defaultLocale: string;
   /** The secret another api must present to attach to this process (`PluginGuestConnections`). */
   attachSecret?: string;
+  /** How long the process outlives the last api holding it, for another to take it over; 0 = exit with it. */
+  lingerMs?: number;
 }

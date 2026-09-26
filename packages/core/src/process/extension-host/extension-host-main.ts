@@ -3,6 +3,7 @@ import net from 'net';
 import path from 'path';
 import { SystemConstants } from '@core/constants/system.constants';
 import { PrivilegedSpawner } from '@core/process/privileged-spawner';
+import { SpawnerGuests } from '@core/process/spawner-guests';
 import { ProcessEntry } from '@core/process/process-entry';
 import { SocketMessagePort } from '@core/process/socket-message-port';
 import { ExtensionHostSocket } from '@core/process/extension-host/extension-host-socket';
@@ -17,8 +18,9 @@ import { ExtensionHostSocket } from '@core/process/extension-host/extension-host
  *
  * Who may connect: the socket is `root:<api group>` 0660 inside a root-owned directory, so the api's
  * user can and a plugin process — its own OS user, not in that group — cannot. That is the same
- * boundary the api's private IPC channel drew. Each connection gets its own spawner: its processes are
- * its own, and when that api goes they are stopped, exactly as today; nothing outlives an api yet.
+ * boundary the api's private IPC channel drew. Each connection gets its own spawner, over ONE registry
+ * of processes: a new api takes over what the previous one started (`SpawnerGuests`), and a process no
+ * api holds any more is stopped after a grace period.
  */
 @ProcessEntry.start('extension-host')
 export class ExtensionHostMain {
@@ -31,12 +33,14 @@ export class ExtensionHostMain {
     // one ran — none of which survived it. Nothing in here belongs to a running process yet.
     for (const entry of fs.readdirSync(runtimeDir)) fs.rmSync(path.join(runtimeDir, entry), { recursive: true, force: true });
     const socketPath = path.join(runtimeDir, ExtensionHostSocket.FILE);
+    // One registry for every api that connects: a new api takes over what the one before it started.
+    const guests = new SpawnerGuests<PrivilegedSpawner>();
     let apis = 0;
     const server = net.createServer((socket) => {
       apis += 1;
       console.info(`[extension-host] an api connected (${apis} connected)`);
-      socket.on('close', () => { apis -= 1; console.info(`[extension-host] an api disconnected; its plugin processes were stopped (${apis} connected)`); });
-      void new PrivilegedSpawner(new SocketMessagePort(socket), runtimeDir, false);
+      socket.on('close', () => { apis -= 1; console.info(`[extension-host] an api disconnected; plugin processes no api holds stop in ${SpawnerGuests.ORPHAN_GRACE_MS / 1000} s unless one takes them over (${apis} connected)`); });
+      void new PrivilegedSpawner(new SocketMessagePort(socket), runtimeDir, false, guests);
     });
     await new Promise<void>((resolve) => server.listen(socketPath, resolve));
     const gid = ExtensionHostSocket.groupId(SystemConstants.PROCESS_ISOLATION.RUN_AS_USER);

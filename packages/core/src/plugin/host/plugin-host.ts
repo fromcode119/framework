@@ -1,15 +1,10 @@
-import fs from 'fs';
 import { PluginHostPublicApi } from '@core/plugin/host/plugin-host-public-api';
-import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import path from 'path';
 import { TenantConnectionScope } from '@fromcode119/database';
 import type { Request, Response, NextFunction } from 'express';
 import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
-import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
-import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
-import { PluginGuest } from '@core/plugin/host/plugin-guest';
 import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
 import { PluginSchemaDatabaseProxy } from '@core/plugin/context/plugin-schema-database-proxy';
 import { PluginHostDispatcher } from '@core/plugin/host/plugin-host-dispatcher';
@@ -19,22 +14,16 @@ import { PluginInvocationTokens } from '@core/plugin/host/plugin-invocation-toke
 import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
 import { GuestProcessLaunchers } from '@core/process/guest-process-launchers';
 import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.interface';
-import type { IGuestProcess } from '@core/process/interfaces/guest-process.interface';
-import { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
-import { PluginGuestBootMessage } from '@core/plugin/host/generations/plugin-guest-boot-message';
-import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { IPluginInvocation } from '@core/plugin/host/interfaces/plugin-invocation.interface';
-import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
 import type { IRequestStore } from '@core/context/interfaces/request-store.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
-import { PluginHostAvailability } from '@core/plugin/host/availability/plugin-host-availability';
+import { PluginHostGenerations } from '@core/plugin/host/generations/plugin-host-generations';
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
-import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
-import { PluginHostProtocol } from '@core/plugin/host/protocol/plugin-host-protocol';
 import { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outage';
+import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
 /**
  * One isolated plugin, from the host's side: its process, its channel, its tokens, its stand-ins.
@@ -45,11 +34,7 @@ import { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outage';
  * re-initialised; after three deaths the plugin is disabled with the reason, and nothing else on the
  * platform notices either way.
  */
-export class PluginHost extends PluginHostAvailability {
-  /** The guest's Express server, inside the directory only the host and that guest can reach. */
-  /** Mirrors `PluginManager.PLUGINS_READY_EVENT`; re-emitted when this guest is replaced. */
-
-
+export class PluginHost extends PluginHostGenerations {
   constructor(
     slug: string,
     pluginDir: string,
@@ -75,7 +60,7 @@ export class PluginHost extends PluginHostAvailability {
     this.socketPath = ''; this.guest = null; this.channel = null; this.context = null; this.generation = null; this.generationCount = 0;
     this.describeResult = null;
     this.sentPeerSignature = ''; this.restarts = 0; this.stopping = false; this.restarting = false;
-    this.healthyTimer = null; this.wasEnabled = false; this.initDeferred = false;
+    this.healthyTimer = null; this.wasEnabled = false; this.initDeferred = false; this.takenOver = null;
     this.settings = settings;
     this.limits = settings.forPlugin(manifest.sandbox);
     this.proxy = new PluginHostHttpProxy('');
@@ -95,7 +80,7 @@ export class PluginHost extends PluginHostAvailability {
       (req, res, next, targetPath, originalUrl) => this.forwardRequest(req, res, next, targetPath, originalUrl),
       // The RAW manager db: entering a site's scope binds a connection, and only this one can.
       manager.db,
-      (steps) => this.dispatcher.declare(this.context!, steps),
+      (steps, root) => this.dispatcher.declare(this.context!, steps, root),
     );
   }
 
@@ -116,68 +101,15 @@ export class PluginHost extends PluginHostAvailability {
     return this.guest?.pid ?? null;
   }
 
-  /**
-   * The guest's entry file — always core's BUILT output.
-   *
-   * A guest is a plain `node` process spawned as another user with an empty environment: it can run
-   * neither TypeScript nor the host's loader. In production `__dirname` is already `dist/plugin/host`
-   * and the sibling `.js` is right there. Under the api's `tsx watch` dev server core is loaded from
-   * `src`, where only `plugin-guest-main.ts` exists — node exited (1) on every plugin before it could
-   * connect — so fall back to the same file under `dist`.
-   */
-  private static guestMainPath(): string {
-    const sibling = path.join(__dirname, 'plugin-guest-main.js');
-    if (fs.existsSync(sibling)) return sibling;
-    return path.resolve(__dirname, '..', '..', '..', 'dist', 'plugin', 'host', 'plugin-guest-main.js');
-  }
-
   /** Starts this plugin's process when none is serving, and makes it the current one. */
   async start(): Promise<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }> {
     if (this.channel && !this.channel.isClosed && this.describeResult) return this.describeResult;
     this.stopping = false;
-    const generation = await this.launchGeneration();
+    const generation = (await this.takeOver()) ?? await this.launchGeneration();
     this.adopt(generation);
     return generation.described!;
   }
 
-  /**
-   * Starts one more process of this plugin and boots it — BESIDE the current one when there is one:
-   * its own guest id and sockets. It serves nothing until `adopt` makes it the current one.
-   */
-  protected async launchGeneration(): Promise<PluginGuestGeneration> {
-    const launcher = GuestProcessLaunchers.current();
-    this.generationCount += 1;
-    const guest = await launcher.launch({
-      id: PluginGuestGeneration.guestId(this.slug, this.generationCount),
-      entryPath: PluginHost.guestMainPath(),
-      args: [],
-      cwd: this.projectRoot,
-      // A guest is mostly idle between calls, and V8's default young generation (16 MB semi-spaces,
-      // three of them) is sized for a busy process. Twenty-two guests on production held ~2 GB in one
-      // container; a 1 MB semi-space measured about 12 MB less resident per process at the same work.
-      execArgv: [`--max-old-space-size=${this.limits.memoryMb}`, '--max-semi-space-size=1'],
-      identity: this.identity,
-      writableDirs: [path.join(this.projectRoot, 'data', 'plugins', this.slug)],
-    });
-    const generation = new PluginGuestGeneration(this.generationCount, guest, new PluginChannel(guest.port));
-    guest.onOutput((stream, line) => (stream === GuestOutputStream.STDERR ? this.logger.warn(line) : this.logger.info(line)));
-    generation.channel.serve((type, payload) => this.serve(type, payload, generation));
-    generation.channel.onNotify((type, payload) => this.notified(type, payload));
-    // Only the CURRENT guest's exit means anything; one we already replaced was retired on purpose.
-    guest.onExit((code, signal) => { if (this.guest === guest) this.exited(code, signal); });
-    const boot = PluginGuestBootMessage.build(generation, { slug: this.slug, pluginDir: this.pluginDir, entryPath: this.entryPath, manifest: this.manifest, projectRoot: this.projectRoot, defaultLocale: String(this.manager.i18n?.getDefaultLocale?.() ?? 'en') });
-    try {
-      generation.described = await generation.channel.request('boot', boot, PluginHostState.BOOT_TIMEOUT_MS);
-      const refusal = PluginHostProtocol.refusal(generation.described?.protocol);
-      if (refusal) throw new Error(`plugin "${this.slug}" process refused: ${refusal}`);
-    } catch (error) {
-      await generation.retire();
-      throw error;
-    }
-    const who = launcher.isolatesIdentity && this.identity ? `, uid ${this.identity.uid}` : '';
-    this.logger.info(`isolated process ${guest.pid} up (heap ${this.limits.memoryMb} MB, deadline ${this.limits.timeoutMs} ms${who})`);
-    return generation;
-  }
 
   /**
    * The `ILoadedPlugin` functions: each forwards to the guest, binding the real context first.
@@ -191,6 +123,7 @@ export class PluginHost extends PluginHostAvailability {
     for (const key of PluginHost.LIFECYCLE_KEYS) {
       stubs[key] = async (ctx: PluginContext, ...extra: unknown[]) => {
         this.bindContext(ctx);
+        if (await this.restoreTakenOver(key)) return undefined;
         if (!this.isRunning) {
           if (this.deferWhileUnavailable(key)) return undefined;
           if (key === 'onInit') { this.initDeferred = true; return undefined; }
@@ -227,7 +160,7 @@ export class PluginHost extends PluginHostAvailability {
   async stop(): Promise<void> {
     this.stopping = true;
     if (this.channel && !this.channel.isClosed) {
-      await this.channel.request('stop', {}, 5_000).catch(() => undefined);
+      await this.channel.request(String(PluginChannelMessage.STOP.value), {}, 5_000).catch(() => undefined);
     }
     this.guest?.kill('SIGKILL');
     this.guest = null;
@@ -263,7 +196,7 @@ export class PluginHost extends PluginHostAvailability {
       // through the wait, ten such waits emptied the pool and the guest's own calls then queued behind
       // them — a deadlock until the deadline. The next statement on this side takes a fresh one.
       await TenantConnectionScope.releaseCurrent();
-      const result = await channel.request('invoke', invocation, work.kind === String(PluginInvocationKind.LIFECYCLE.value) ? PluginHostState.BOOT_TIMEOUT_MS : this.limits.timeoutMs);
+      const result = await channel.request(String(PluginChannelMessage.INVOKE.value), invocation, work.kind === String(PluginInvocationKind.LIFECYCLE.value) ? PluginHostState.BOOT_TIMEOUT_MS : this.limits.timeoutMs);
       return this.callbacks.revive(result);
     } finally {
       this.tokens.revoke(token);
@@ -282,7 +215,7 @@ export class PluginHost extends PluginHostAvailability {
       // connection must not sit idle in the meantime.
       await this.syncPeers(store);
       await TenantConnectionScope.releaseCurrent();
-      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), targetPath: target, originalUrl }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
+      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), targetPath: target, originalUrl, connectionId: this.generation?.connectionId }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
     } finally {
       this.tokens.revoke(token);
     }

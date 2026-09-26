@@ -1,7 +1,8 @@
-import { spawn, type ChildProcess } from 'child_process';
+import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { LineSplitter } from '@core/process/line-splitter';
+import { SpawnerGuests } from '@core/process/spawner-guests';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.interface';
 import type { IGuestProcessSpec } from '@core/process/interfaces/guest-process-spec.interface';
@@ -9,6 +10,7 @@ import type { IMessagePort } from '@core/process/interfaces/message-port.interfa
 import type { ISpawnerPrepared } from '@core/process/interfaces/spawner-prepared.interface';
 import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
 import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
+import { SpawnerMessage } from '@core/process/enums/spawner-message.enum';
 
 /**
  * The one process that keeps root after the app gives it up — and does exactly three things with it:
@@ -22,21 +24,28 @@ import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum'
  * side of the guest's socket.
  */
 export class PrivilegedSpawner {
-  private readonly children = new Map<string, ChildProcess>();
   private readonly channel: PluginChannel;
 
-  constructor(port: IMessagePort, private readonly runtimeDir: string, private readonly exitWithApp = true) {
+  constructor(
+    port: IMessagePort,
+    private readonly runtimeDir: string,
+    private readonly exitWithApp = true,
+    /** Shared by every connection in `extension-host`, so one api can take over another's processes. */
+    private readonly guests: SpawnerGuests<PrivilegedSpawner> = new SpawnerGuests<PrivilegedSpawner>(0),
+  ) {
     this.channel = new PluginChannel(port);
     this.channel.serve((type, payload) => this.handle(type, payload));
-    this.channel.onNotify((type, payload) => { if (type === 'kill') this.kill(String(payload?.id ?? ''), payload?.signal); });
+    this.channel.onNotify((type, payload) => { if (type === String(SpawnerMessage.KILL.value)) this.kill(String(payload?.id ?? ''), payload?.signal); });
     port.on(MessagePortEvent.DISCONNECT, () => this.shutdown());
   }
 
   private async handle(type: string, payload: any): Promise<unknown> {
     switch (type) {
-      case 'ping': return { pid: process.pid };
-      case 'prepare': return this.prepare(payload);
-      case 'spawn': return this.spawn(payload);
+      case String(SpawnerMessage.PING.value): return { pid: process.pid };
+      case String(SpawnerMessage.PREPARE.value): return this.prepare(payload);
+      case String(SpawnerMessage.SPAWN.value): return this.spawn(payload);
+      case String(SpawnerMessage.INVENTORY.value): return this.guests.inventory().map((listing) => ({ ...listing, guestDir: path.join(this.runtimeDir, listing.id, 'guest') }));
+      case String(SpawnerMessage.CLAIM.value): return this.guests.claim(PrivilegedSpawner.safeId(String(payload?.id ?? '')), this);
       default: throw new Error(`spawner: unknown message "${type}"`);
     }
   }
@@ -76,9 +85,9 @@ export class PrivilegedSpawner {
     if (!args.identity) throw new Error(`spawner: guest "${id}" has no identity`);
     // A replaced guest (restart, reload): its predecessor may still be exiting. Kill it and forget it
     // now — its exit notification carries ITS pid, so the host will not mistake it for the new one.
-    const previous = this.children.get(id);
+    const previous = this.guests.child(id);
     if (previous) {
-      this.children.delete(id);
+      this.guests.removeIf(id, previous);
       previous.kill('SIGKILL');
     }
     const child = spawn(process.execPath, [...args.execArgv, args.entryPath, ...args.args, '--fc-host-socket', args.hostSocket], {
@@ -91,30 +100,40 @@ export class PrivilegedSpawner {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     if (!child.pid) throw new Error(`spawner: could not start guest "${id}"`);
-    this.children.set(id, child);
-    const out = new LineSplitter((line) => this.channel.notify('output', { id, stream: String(GuestOutputStream.STDOUT.value), line }));
-    const err = new LineSplitter((line) => this.channel.notify('output', { id, stream: String(GuestOutputStream.STDERR.value), line }));
+    this.guests.add(id, child, this, args.label ?? null);
+    // To every api that holds it now — the one that started it, and any that took it over since.
+    const tell = (type: string, payload: Record<string, unknown>) => { for (const holder of this.guests.holders(id)) holder.channel.notify(type, payload); };
+    const out = new LineSplitter((line) => tell(String(SpawnerMessage.OUTPUT.value), { id, stream: String(GuestOutputStream.STDOUT.value), line }));
+    const err = new LineSplitter((line) => tell(String(SpawnerMessage.OUTPUT.value), { id, stream: String(GuestOutputStream.STDERR.value), line }));
     child.stdout?.on('data', (chunk: Buffer) => out.push(chunk));
     child.stderr?.on('data', (chunk: Buffer) => err.push(chunk));
     child.on('exit', (code, signal) => {
       out.flush();
       err.flush();
-      if (this.children.get(id) === child) this.children.delete(id);
+      const holders = this.guests.holders(id);
+      this.guests.removeIf(id, child);
       // Every process of a plugin has its own id (`plugin-<slug>.<n>`), so its sockets' directory is its
       // alone: gone with it, or a plugin replaced a hundred times would leave a hundred behind.
-      if (!this.children.has(id)) fs.rmSync(path.join(this.runtimeDir, id), { recursive: true, force: true });
-      this.channel.notify('exit', { id, pid: child.pid, code, signal });
+      if (!this.guests.child(id)) fs.rmSync(path.join(this.runtimeDir, id), { recursive: true, force: true });
+      for (const holder of holders) holder.channel.notify(String(SpawnerMessage.EXIT.value), { id, pid: child.pid, code, signal });
     });
-    child.on('error', (error) => this.channel.notify('output', { id, stream: String(GuestOutputStream.STDERR.value), line: `spawn error: ${error.message}` }));
+    child.on('error', (error) => tell(String(SpawnerMessage.OUTPUT.value), { id, stream: String(GuestOutputStream.STDERR.value), line: `spawn error: ${error.message}` }));
     return { pid: child.pid };
   }
 
+  /** Only an api that holds a process may stop it. */
   private kill(id: string, signal: NodeJS.Signals = 'SIGKILL'): void {
-    this.children.get(PrivilegedSpawner.safeId(id))?.kill(signal);
+    const safe = PrivilegedSpawner.safeId(id);
+    if (this.guests.isHeldBy(safe, this)) this.guests.child(safe)?.kill(signal);
   }
 
+  /**
+   * The app is gone. As its own child the spawner goes with it, and its processes (nobody else could
+   * hold them) at once. In `extension-host` it only lets go: a process another api took over keeps
+   * running, and one nobody holds is stopped after the grace (`SpawnerGuests`).
+   */
   private shutdown(): void {
-    for (const child of this.children.values()) child.kill('SIGKILL');
+    this.guests.release(this);
     if (this.exitWithApp) process.exit(0);
   }
 

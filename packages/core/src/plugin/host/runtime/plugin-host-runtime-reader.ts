@@ -3,6 +3,7 @@ import { PluginProcessHost } from '@core/plugin/host/runtime/enums/plugin-proces
 import type { IPluginGuestRuntimeReport } from '@core/plugin/host/runtime/interfaces/plugin-guest-runtime-report.interface';
 import type { IPluginHostRuntime } from '@core/plugin/host/runtime/interfaces/plugin-host-runtime.interface';
 import { SpawnerClient } from '@core/process/spawner-client';
+import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
 /**
  * Builds what the admin shows about one plugin's process: the api's own facts, plus what the process
@@ -18,7 +19,7 @@ export class PluginHostRuntimeReader {
     const base = { ...facts, hostedBy, hostUnavailable: unavailable };
     if (!facts.running || !channel) return { ...base, report: null, reportError: null };
     try {
-      const report = await channel.request('runtime', undefined, PluginHostRuntimeReader.REPORT_TIMEOUT_MS) as IPluginGuestRuntimeReport;
+      const report = await channel.request(String(PluginChannelMessage.RUNTIME.value), undefined, PluginHostRuntimeReader.REPORT_TIMEOUT_MS) as IPluginGuestRuntimeReport;
       return { ...base, report, reportError: null };
     } catch (error) {
       return { ...base, report: null, reportError: error instanceof Error ? error.message : String(error) };

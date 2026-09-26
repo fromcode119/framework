@@ -6,8 +6,10 @@ import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.interface';
 import type { IGuestProcessSpec } from '@core/process/interfaces/guest-process-spec.interface';
 import type { ISpawnerPrepared } from '@core/process/interfaces/spawner-prepared.interface';
+import type { ISpawnerGuestListing } from '@core/process/interfaces/spawner-guest-listing.interface';
 import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
+import { SpawnerMessage } from '@core/process/enums/spawner-message.enum';
 
 /**
  * The app's handle on its privileged spawner: the one root process left after the app dropped its
@@ -112,21 +114,31 @@ export class SpawnerClient {
 
   /** Blocks until the spawner answers, so a failed fork is a startup error rather than a later surprise. */
   async ready(): Promise<unknown> {
-    const answer = await this.channel.request<{ pid?: number }>('ping', {}, SpawnerClient.REQUEST_TIMEOUT_MS);
+    const answer = await this.channel.request<{ pid?: number }>(String(SpawnerMessage.PING.value), {}, SpawnerClient.REQUEST_TIMEOUT_MS);
     this.spawnerPid = answer?.pid ?? this.spawnerPid;
     return answer;
   }
 
   prepare(args: { id: string; identity: IGuestIdentity; appUid: number; appGid: number; writableDirs: string[] }): Promise<ISpawnerPrepared> {
-    return this.channel.request<ISpawnerPrepared>('prepare', args, SpawnerClient.REQUEST_TIMEOUT_MS);
+    return this.channel.request<ISpawnerPrepared>(String(SpawnerMessage.PREPARE.value), args, SpawnerClient.REQUEST_TIMEOUT_MS);
   }
 
   spawn(spec: IGuestProcessSpec, hostSocket: string): Promise<{ pid: number }> {
-    return this.channel.request<{ pid: number }>('spawn', { ...spec, hostSocket }, SpawnerClient.REQUEST_TIMEOUT_MS);
+    return this.channel.request<{ pid: number }>(String(SpawnerMessage.SPAWN.value), { ...spec, hostSocket }, SpawnerClient.REQUEST_TIMEOUT_MS);
+  }
+
+  /** Every process the spawner runs, with what its api labelled it — how another api finds one to take over. */
+  inventory(): Promise<ISpawnerGuestListing[]> {
+    return this.channel.request<ISpawnerGuestListing[]>(String(SpawnerMessage.INVENTORY.value), {}, SpawnerClient.REQUEST_TIMEOUT_MS);
+  }
+
+  /** Takes hold of a running process: its output and exit are told to this api too, and it may stop it. */
+  claim(id: string): Promise<{ pid: number }> {
+    return this.channel.request<{ pid: number }>(String(SpawnerMessage.CLAIM.value), { id }, SpawnerClient.REQUEST_TIMEOUT_MS);
   }
 
   kill(id: string, signal: NodeJS.Signals): void {
-    this.channel.notify('kill', { id, signal });
+    this.channel.notify(String(SpawnerMessage.KILL.value), { id, signal });
   }
 
   /** `pid` names WHICH process of this id exited — a replaced predecessor's exit must not be taken for the current one's. */
@@ -167,11 +179,11 @@ export class SpawnerClient {
 
   private notified(type: string, payload: any): void {
     const id = String(payload?.id ?? '');
-    if (type === 'exit') {
+    if (type === String(SpawnerMessage.EXIT.value)) {
       for (const listener of this.exitListeners.get(id) ?? []) listener(payload.code ?? null, payload.signal ?? null, payload.pid ?? null);
       return;
     }
-    if (type === 'output') {
+    if (type === String(SpawnerMessage.OUTPUT.value)) {
       for (const listener of this.outputListeners.get(id) ?? []) listener(payload.stream === String(GuestOutputStream.STDERR.value) ? GuestOutputStream.STDERR : GuestOutputStream.STDOUT, String(payload.line ?? ''));
     }
   }
