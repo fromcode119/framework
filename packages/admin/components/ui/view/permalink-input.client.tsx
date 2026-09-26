@@ -9,6 +9,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { UiFieldUtils } from '@/lib/ui';
 import { PermalinkInputUtils } from '@/components/ui/permalink-input-utils';
 import type { IPermalinkComputed } from '@/components/ui/interfaces/permalink-computed.interface';
+import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
 
 export class PermalinkInput extends AdminComponent {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -25,13 +26,16 @@ export class PermalinkInput extends AdminComponent {
 
   @state private isEditing = false;
   @state private useAbsolutePath = String(this.props.value || '').startsWith('/');
+  /** The bound site's own address, so the shown URL is where the page actually lives. */
+  @state private siteStorefrontUrl = '';
 
   private compute(): IPermalinkComputed {
-    return PermalinkInputUtils.compute(this.props, this.runtime?.globalSettings ?? null);
+    return PermalinkInputUtils.compute(this.props, this.runtime?.globalSettings ?? null, this.siteStorefrontUrl);
   }
 
   componentDidMount(): void {
     this.syncAbsoluteFromValue();
+    SiteStorefrontClient.current().then((url) => { this.siteStorefrontUrl = url; });
   }
 
   // `@state` mutates `this.state` in place, so React's `prevState` is unreliable for detecting an

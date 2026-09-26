@@ -20,6 +20,7 @@ import type { IPluginsContextSurface } from '@/app/interfaces/plugins-context-su
 import type { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
+import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
 
 export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsPageView, IThemeSettingsPageHost {
   @prop declare params: Promise<{ slug: string }>;
@@ -47,6 +48,8 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
   @state tempVariables: Record<string, string> = {};
   @state tempDefaultLayout = '';
   @state tempSettings: Record<string, unknown> = {};
+  /** The bound site's own address — where "Open Site" goes when the theme names none. */
+  @state siteStorefrontUrl = '';
 
   /**
    * `AdminComponent` exposes runtime/theme/router as PROTECTED members, so the controller and the view
@@ -79,6 +82,7 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    SiteStorefrontClient.current().then((url) => { if (this.mounted) this.siteStorefrontUrl = url; });
     const params = await this.params;
     const searchParams = this.searchParams ? await this.searchParams : undefined;
     if (!this.mounted) return;

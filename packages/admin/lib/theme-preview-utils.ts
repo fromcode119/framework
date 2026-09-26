@@ -11,10 +11,16 @@ import { AdminUrlUtils } from '@/lib/url-utils';
  */
 export class ThemePreviewUtils {
   /**
-   * Normalizes preview URL with fallback resolution
-   * @param rawValue - Primary URL value
-   * @param fallbackValue - Fallback URL if primary is empty
+   * Where a theme's "Open Site" link goes.
+   *
+   * The theme's own configured URL wins — an operator set it. Then the bound site's storefront, from its
+   * declared hosts: without it, a theme with no URL of its own opened the CONSOLE, because the fallback
+   * guesses from the console's hostname. Then the theme's declared default and the settings chain, as
+   * before.
+   * @param rawValue - The theme's configured URL (the operator's)
+   * @param fallbackValue - The theme's declared default URL
    * @param settings - Global settings object
+   * @param siteStorefrontUrl - The bound site's own address, '' in the platform scope
    * @returns Resolved frontend URL
    * @example
    * const url = ThemePreviewUtils.normalizePreviewUrl(
@@ -26,8 +32,10 @@ export class ThemePreviewUtils {
   static normalizePreviewUrl(
     rawValue: unknown,
     fallbackValue: unknown,
-    settings?: Record<string, unknown> | null
+    settings?: Record<string, unknown> | null,
+    siteStorefrontUrl: string = '',
   ): string {
+    if (!String(rawValue ?? '').trim() && siteStorefrontUrl) return AdminUrlUtils.resolvePreviewBaseUrl(settings, siteStorefrontUrl);
     const fallback = AdminUrlUtils.resolveFrontendBaseUrl(
       settings,
       undefined,
