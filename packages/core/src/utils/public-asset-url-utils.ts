@@ -76,9 +76,13 @@ export class PublicAssetUrlUtils {
     if (/^https?:\/\//i.test(raw)) {
       try {
         const parsed = new URL(raw);
-        const normalizedUploadPath = PublicAssetUrlUtils.normalizeUploadPath(parsed.pathname);
-        if (normalizedUploadPath) {
-          return ApiPathUtils.absoluteUrl(parsed.origin, normalizedUploadPath);
+        // Only a path that IS an upload path is normalised. `normalizeUploadPath` also treats a bare
+        // filename as living in the uploads root — right for a stored `filename`, wrong for the path of
+        // a URL: `https://cdn.example.net/og.jpg` became `https://cdn.example.net/uploads/og.jpg`, a
+        // file that does not exist, for any external image sitting at the root of its host.
+        const unversionedPath = PublicAssetUrlUtils.stripApiVersionPrefix(parsed.pathname);
+        if (PublicAssetUrlUtils.isUploadPath(unversionedPath)) {
+          return ApiPathUtils.absoluteUrl(parsed.origin, unversionedPath.startsWith('/') ? unversionedPath : `/${unversionedPath}`);
         }
 
         if (PublicAssetUrlUtils.isThemePublicPath(parsed.pathname)) {
