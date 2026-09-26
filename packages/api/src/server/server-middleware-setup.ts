@@ -1,7 +1,7 @@
 /** ServerMiddlewareSetup — configures Express middlewares. Extracted from APIServer (ARC-007). */
 
 import express from 'express';
-import { CookieConstants, Logger, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
+import { CookieConstants, Logger, MiddlewareStage, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { ApiConfig } from '@api/config/api-config';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
@@ -40,7 +40,7 @@ export class ServerMiddlewareSetup {
     this.app.use(this.jsonCompression.middleware());
 
     // Dynamic pre-auth plugin middlewares
-    this.app.use((req, res, next) => this.manager.middlewares.dispatch('pre_auth' as any, req, res, next));
+    this.app.use((req, res, next) => this.manager.middlewares.dispatch(MiddlewareStage.PRE_AUTH, req, res, next));
 
     this.app.use((req: any, res, next) => {
       // Prefer the platform's configured `default_locale` system setting; the
@@ -61,7 +61,7 @@ export class ServerMiddlewareSetup {
     this.app.use(this.parts().visibilityGate().middleware());
 
     // Dynamic post-auth plugin middlewares
-    this.app.use((req, res, next) => this.manager.middlewares.dispatch('post_auth' as any, req, res, next));
+    this.app.use((req, res, next) => this.manager.middlewares.dispatch(MiddlewareStage.POST_AUTH, req, res, next));
 
     // Maintenance mode check
     this.app.use(async (req: any, res, next) => {
@@ -89,7 +89,7 @@ export class ServerMiddlewareSetup {
     });
 
     // Dynamic pre-routing plugin middlewares
-    this.app.use((req, res, next) => this.manager.middlewares.dispatch('pre_routing' as any, req, res, next));
+    this.app.use((req, res, next) => this.manager.middlewares.dispatch(MiddlewareStage.PRE_ROUTING, req, res, next));
 
     this.app.use((req: any, res, next) => {
       const probeRoutes = ApiConfig.getInstance().probeRoutes;

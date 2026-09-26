@@ -31,4 +31,21 @@ describe('PluginHostRegistrations.resetForRestart', () => {
     expect(() => registrations.apply(context, registration)).not.toThrow();
     expect(McpRegistryProvider.get().listTools().map((tool) => tool.tool)).toContain(`${slug}.things.list`);
   });
+
+  it('sends jobs to the handler of the CURRENT process after a restart, with one worker on the queue', async () => {
+    const invoked: string[] = [];
+    const registrations = new PluginHostRegistrations(slug, {} as any, async (_kind, handlerId) => { invoked.push(handlerId); }, async () => undefined, {} as any);
+    const workers: Array<(job: unknown) => Promise<unknown>> = [];
+    const context: any = { hooks: { off: () => undefined }, plugins: { off: () => undefined }, jobs: { worker: (processor: any) => workers.push(processor) } };
+    const kind = String(PluginGuestRegistrationKind.JOB_WORKER.value);
+
+    registrations.apply(context, { kind, handlerId: 'job:first-process' } as any);
+    registrations.resetForRestart(context);
+    registrations.apply(context, { kind, handlerId: 'job:second-process' } as any);
+    await workers[0]({ id: 1, name: 'send', data: {} });
+
+    expect(workers).toHaveLength(1);
+    expect(invoked).toEqual(['job:second-process']);
+  });
 });
+

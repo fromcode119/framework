@@ -27,7 +27,8 @@ export class PluginHostRegistrations {
   private readonly routes = new Set<string>();
   private readonly hooks = new Map<string, { event: string; handler: (...args: any[]) => unknown }>();
   private readonly platformHooks = new Map<string, { event: string; handler: (...args: any[]) => unknown }>();
-  private jobWorkerRegistered = false;
+  /** The worker is registered on the queue once; its handler id is the CURRENT process's, set per boot. */
+  private jobWorkerHandlerId: string | null = null;
 
   constructor(
     private readonly slug: string,
@@ -163,12 +164,17 @@ export class PluginHostRegistrations {
     }, (registration.options ?? {}) as any);
   }
 
+  /**
+   * The queue takes one worker per plugin, so it is registered once — but a restarted process issues its
+   * handler under a NEW id, and a stand-in that captured the first id sent every later job to a handler
+   * the new process never issued ("guest: unknown handler"). The stand-in reads the current id instead.
+   */
   private jobWorker(context: PluginContext, registration: IPluginGuestRegistration): void {
-    if (this.jobWorkerRegistered) return;
-    this.jobWorkerRegistered = true;
-    const id = String(registration.handlerId);
+    const first = this.jobWorkerHandlerId === null;
+    this.jobWorkerHandlerId = String(registration.handlerId);
+    if (!first) return;
     // Same reason as the scheduler above: whatever tenant context the job runs under must reach the guest.
-    (context.jobs as any).worker((job: any) => this.invoke('job', id, [{ id: job?.id, name: job?.name, data: job?.data }], RequestContextUtils.storage.getStore()), registration.options);
+    (context.jobs as any).worker((job: any) => this.invoke('job', String(this.jobWorkerHandlerId), [{ id: job?.id, name: job?.name, data: job?.data }], RequestContextUtils.storage.getStore()), registration.options);
   }
 
   private mcpTools(context: PluginContext, registration: IPluginGuestRegistration): void {
