@@ -38,6 +38,23 @@ export class AdminUrlUtils {
 
   }
 
+  /**
+   * The base a record's "Preview" / "view on site" link opens on.
+   *
+   * The bound site's own storefront, from its declared hosts ({@link SiteStorefrontClient}), comes
+   * first — the same rule the API applies to every link it mails. The settings a site-scoped console
+   * receives carry the PLATFORM's `frontend_url` / `site_url` wherever the site has none of its own,
+   * so they cannot be read as "this site's address". With no site bound, or no answer, the previous
+   * resolution applies unchanged — ending in the hostname inference in
+   * {@link resolveFrontendBaseUrl}, which on a console serving every site from one host can only
+   * ever name the console itself.
+   */
+  static resolvePreviewBaseUrl(settings?: Record<string, unknown> | null, siteStorefrontUrl: string = ''): string {
+    const storefront = AdminUrlUtils.toNonEmptyString(siteStorefrontUrl);
+    if (storefront) return storefront.replace(/\/+$/, '');
+    return AdminUrlUtils.resolveFrontendBaseUrl(settings, settings?.frontend_url);
+  }
+
   // ---------------------------------------------------------------------------
   // Private static helpers (implementation details — not part of public API)
   // ---------------------------------------------------------------------------

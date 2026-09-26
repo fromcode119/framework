@@ -83,17 +83,20 @@ export class SiteBaseUrl {
   /**
    * The host to address this site by, for this app.
    *
-   * The API is reached on the site's `api.` alias when it has one, because that is the host the
-   * gateway sends to the api — a link to the site's own domain would arrive at the FRONTEND. With no
-   * such alias the primary host is the honest answer: single-host deployments serve the api under it.
+   * Each app is reached on a host DECLARED to serve it. The api on a host whose role is `api`,
+   * because that is the host the gateway sends to the api — a link to the site's own domain would
+   * arrive at the FRONTEND. The storefront on a host whose role is `storefront`: a site may declare
+   * its primary host as its console, and a shop link built from the primary host then opened the
+   * console. With no host declared for the app the primary host is the answer, as it always was —
+   * single-host deployments serve everything under it, and a workspace has no storefront at all.
    */
-  private static hostFor(tenant: { primaryHost?: string; apiHosts?: () => string[] } | null, app: string): string {
+  private static hostFor(
+    tenant: { primaryHost?: string; apiHosts?: () => string[]; storefrontHosts?: () => string[] } | null,
+    app: string,
+  ): string {
     if (!tenant) return '';
-    if (app === ApplicationUrlUtils.API_APP) {
-      const apiHost = (tenant.apiHosts?.() ?? [])[0];
-      if (apiHost) return apiHost;
-    }
-    return String(tenant.primaryHost ?? '').trim();
+    const declared = app === ApplicationUrlUtils.API_APP ? tenant.apiHosts?.() : tenant.storefrontHosts?.();
+    return (declared ?? [])[0] || String(tenant.primaryHost ?? '').trim();
   }
 
   /**

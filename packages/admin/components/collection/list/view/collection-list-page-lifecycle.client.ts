@@ -1,3 +1,4 @@
+import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 
@@ -22,6 +23,7 @@ export class CollectionListPageLifecycle {
     CollectionListPageLifecycle.syncSortDefault(self);
     CollectionListPageLifecycle.syncFieldFilters(self);
     CollectionListPageLifecycle.loadPluginSettings(self);
+    SiteStorefrontClient.current().then((siteStorefrontUrl) => self.setState({ siteStorefrontUrl }));
     CollectionListPageLifecycle.syncPageToUrl(self);
     self.fetchData(self.state.page);
   }

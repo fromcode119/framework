@@ -26,6 +26,8 @@ export class CollectionEditPageView extends Reactor {
   @prop declare theme: any;
 
   @state pluginSettings: Record<string, any> = {};
+  /** The bound site's storefront, for the Preview link; '' until known. See SiteStorefrontClient. */
+  @state siteStorefrontUrl = '';
   @state pluginSettingsSchema: Record<string, any> = {};
   @state status: { type: NotificationType; message: string } | null = null;
   @state loading = !this.isNewEntry || Boolean(this.duplicateFromId);

@@ -1,3 +1,4 @@
+import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { StringUtils } from '@fromcode119/core/client';
 
@@ -27,6 +28,7 @@ export class CollectionEditPageLifecycle {
       }
     };
     window.addEventListener('keydown', self.onKeyDown);
+    SiteStorefrontClient.current().then((siteStorefrontUrl) => self.setState({ siteStorefrontUrl }));
     CollectionEditPageLifecycle.run(self);
   }
 

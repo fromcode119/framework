@@ -29,6 +29,8 @@ export class CollectionListPageView extends Reactor {
 
   @state data: any[] = [];
   @state pluginSettings: Record<string, any> = {};
+  /** The bound site's storefront, for each row's preview link; '' until known. See SiteStorefrontClient. */
+  @state siteStorefrontUrl = '';
   @state total = 0;
   @state loading = true;
   /** Set when the list could not be loaded, so an empty table is never passed off as "no records". */

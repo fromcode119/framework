@@ -197,7 +197,7 @@ export class CollectionEditPageHandlers {
     const { collection } = CollectionEditPageHandlers.context(self);
     if (!collection) return '#';
     return AdminCollectionUtils.generatePreviewUrl(
-      AdminUrlUtils.resolveFrontendBaseUrl(self.props.settings, self.props.settings?.frontend_url),
+      AdminUrlUtils.resolvePreviewBaseUrl(self.props.settings, self.state.siteStorefrontUrl),
       self.state.formData, collection, self.props.settings?.permalink_structure, self.state.pluginSettings
     );
   }
