@@ -1,4 +1,5 @@
 import { Logger } from '@core/logging';
+import { FrameworkEmailSender } from '@core/email/framework-email-sender';
 
 export class EmailGateway {
   private static readonly logger = new Logger({ namespace: 'EmailGateway' });
@@ -7,6 +8,9 @@ export class EmailGateway {
     const auth = input?.auth && typeof input.auth === 'object' ? input.auth : {};
     const user = String(input?.user ?? auth.user ?? '').trim();
     const pass = String(input?.pass ?? auth.pass ?? '').trim();
+    // The From Address / From Name on the same screen. Plugin mail names no sender of its own, so
+    // this is what it is sent as; blank stays blank (no invented sender).
+    const sender = new FrameworkEmailSender(String(input?.fromAddress || ''), String(input?.fromName || ''));
     return {
       host: String(input?.host || ''),
       port: Number(input?.port) || 587,
@@ -18,7 +22,8 @@ export class EmailGateway {
               pass,
             },
           }
-        : {})
+        : {}),
+      ...(sender.isConfigured ? { from: sender.identity } : {}),
     };
   }
 
@@ -46,7 +51,9 @@ export class EmailGateway {
           port: Number(process.env.SMTP_PORT) || 587,
           secure: String(process.env.SMTP_SECURE || '').toLowerCase() === 'true',
           user: process.env.SMTP_USER || '',
-          pass: process.env.SMTP_PASS || ''
+          pass: process.env.SMTP_PASS || '',
+          fromAddress: process.env.EMAIL_FROM || process.env.SMTP_FROM || '',
+          fromName: process.env.EMAIL_FROM_NAME || '',
         }
       };
     }

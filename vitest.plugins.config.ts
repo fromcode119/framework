@@ -150,6 +150,7 @@ export default defineConfig({
             glob('packages/extension-builder/**/*.test.ts'),
             glob('packages/sources/**/*.test.ts'),
             glob('packages/sdk/**/*.test.ts'),
+            glob('packages/email/**/*.test.ts'),
           ],
           exclude: ['**/node_modules/**', '**/dist/**'],
         },
