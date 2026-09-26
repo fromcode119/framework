@@ -74,6 +74,8 @@ class AdminNextConfig {
       '@fromcode119/sdk/*': '../sdk/src/*',
       '@fromcode119/database/physical-table-name-utils': '../database/src/physical-table-name-utils.ts',
       '@fromcode119/database/naming-strategy': '../database/src/naming-strategy.ts',
+      '@fromcode119/database/enums/sort-direction.enum': '../database/src/enums/sort-direction.enum.ts',
+      '@fromcode119/scheduler/enums/schedule-type.enum': '../scheduler/src/enums/schedule-type.enum.ts',
       ...Object.fromEntries(extensions.map(ext => [
         `@fromcode119/${ext}`,
         `../${ext}/src`
@@ -209,6 +211,8 @@ class AdminNextConfig {
     config.resolve.alias['@fromcode119/sdk$'] = path.resolve(__dirname, '../sdk/src/index.ts');
     config.resolve.alias['@fromcode119/database/physical-table-name-utils$'] = path.resolve(__dirname, '../database/src/physical-table-name-utils.ts');
     config.resolve.alias['@fromcode119/database/naming-strategy$'] = path.resolve(__dirname, '../database/src/naming-strategy.ts');
+    config.resolve.alias['@fromcode119/database/enums/sort-direction.enum$'] = path.resolve(__dirname, '../database/src/enums/sort-direction.enum.ts');
+    config.resolve.alias['@fromcode119/scheduler/enums/schedule-type.enum$'] = path.resolve(__dirname, '../scheduler/src/enums/schedule-type.enum.ts');
 
     // reactor's React-FREE subpath, resolved from SOURCE. An EXACT (`$`) alias is required: a
     // trailing-slash alias key never matches — enhanced-resolve tests `request.startsWith(key + '/')`,

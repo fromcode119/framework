@@ -37,6 +37,10 @@ export class NextConfigAliases {
       // package itself stays a server-only stub (see getServerOnlyStubPackages).
       alias({ specifier: '@fromcode119/database/physical-table-name-utils', file: path.join(src('database'), 'physical-table-name-utils.ts') }),
       alias({ specifier: '@fromcode119/database/naming-strategy', file: path.join(src('database'), 'naming-strategy.ts') }),
+      // Single-enum subpaths the SDK and core re-export instead of the whole package; pure, so the client
+      // graph takes them from source even though both packages are otherwise server-only stubs.
+      alias({ specifier: '@fromcode119/database/enums/sort-direction.enum', file: path.join(src('database'), 'enums', 'sort-direction.enum.ts') }),
+      alias({ specifier: '@fromcode119/scheduler/enums/schedule-type.enum', file: path.join(src('scheduler'), 'enums', 'schedule-type.enum.ts') }),
     ];
     const privatePrefixes = NextConfigAliases.PRIVATE_PACKAGE_ALIASES.map(([pkg, prefix]: [string, string]) =>
       alias({ specifier: prefix, dir: src(pkg), subpathsOnly: true }),
