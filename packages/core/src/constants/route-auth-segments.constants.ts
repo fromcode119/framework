@@ -215,6 +215,8 @@ export class RouteAuthSegments {
   DEPLOY_RESTART: '/deploy/restart',
   /** Which apps can be restarted here, and whether each one is reachable. */
   DEPLOY_APPS: '/deploy/apps',
+  /** The stored deploy mode and whether this box has room for a rolling deploy right now. */
+  DEPLOY_CAPACITY: '/deploy/capacity',
   EVENTS: '/events',
   FRONTEND: '/frontend',
   I18N: '/i18n',

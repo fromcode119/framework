@@ -155,6 +155,7 @@ export class SystemApiPaths {
       SHORTCODES_RENDER: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.SHORTCODES_RENDER),
       DEPLOY_RESTART: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.DEPLOY_RESTART),
       DEPLOY_APPS: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.DEPLOY_APPS),
+      DEPLOY_CAPACITY: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.DEPLOY_CAPACITY),
       ADMIN_PLUGINS: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_METADATA),
       ADMIN_STATS: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_STATS_COLLECTIONS),
       OPENAPI: '/openapi.json',

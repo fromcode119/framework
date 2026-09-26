@@ -146,6 +146,7 @@ export class SystemMetaKeys {
   SSR_GENERATION_CAP: 'ssr_generation_cap',
   /** `isolated` (own process per plugin, the default) or `shared` (in the api process). */
   PLUGIN_ISOLATION_DEFAULT: 'plugin_isolation_default',
+  DEPLOY_MODE: 'deploy_mode',
   PLUGIN_ISOLATION_MEMORY_MB: 'plugin_isolation_memory_mb',
   PLUGIN_ISOLATION_TIMEOUT_MS: 'plugin_isolation_timeout_ms',
   /** Heap ceiling (MB) and per-render deadline (ms) of one theme render host process. */

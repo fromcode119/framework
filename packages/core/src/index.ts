@@ -341,6 +341,8 @@ export { PluginSignatureService } from '@core/security/plugin-signature-service'
 
 // Management (Server-only)
 export { PlatformSettingsService } from '@core/management/platform-settings-service';
+export { DeployMode } from '@core/management/enums/deploy-mode.enum';
+export { DeployCapacity } from '@core/management/deploy-capacity';
 export { ProcessRestartService } from '@core/management/process-restart-service';
 export { ApplicationRestartService } from '@core/management/application-restart-service';
 export { FrontendSsrStatusService } from '@core/management/frontend-ssr-status-service';

@@ -5,6 +5,9 @@ import { ComposeStack } from '@cli/services/deploy/compose-stack';
 import { ReleaseHealthProbe } from '@cli/services/deploy/release-health-probe';
 import { ImageRetention } from '@cli/services/deploy/image-retention';
 import { DeploymentVersionStore } from '@cli/services/deploy/deployment-version-store';
+import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
+import { RollingDeploy } from '@cli/services/deploy/rolling-deploy';
+import { DeployMode } from '@fromcode119/core';
 
 /**
  * Deploy a published release to a target, prove it is serving, and clean up after it.
@@ -49,7 +52,18 @@ export class DeployService {
     }
 
     await this.versions.set(version);
-    await this.stack.up();
+    // The operator's deploy mode (Settings → Infrastructure), unless this release or this box rules
+    // rolling out — and then it says why, rather than silently taking the sites down.
+    const plan = await new DeployStrategy(this.stack, this.shell).choose();
+    console.log(chalk.blue(`Deploy mode: ${plan.mode.value} — ${plan.reason}.`));
+    if (plan.mode === DeployMode.ROLLING) {
+      if (!await new RollingDeploy(this.stack).run(version)) {
+        await this.rollback(version, replaced);
+        return false;
+      }
+    } else {
+      await this.stack.up();
+    }
 
     if (!await this.probe.waitFor(version)) {
       await this.rollback(version, replaced);

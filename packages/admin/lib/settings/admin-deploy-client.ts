@@ -20,6 +20,12 @@ export class AdminDeployClient {
     };
   }
 
+  /** The stored deploy mode, and whether this box has room for a rolling deploy right now. */
+  static async capacity(): Promise<{ mode: string; fits: boolean; summary: string }> {
+    const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.DEPLOY_CAPACITY);
+    return { mode: String(response?.mode || ''), fits: response?.fits === true, summary: String(response?.summary || '') };
+  }
+
   /**
    * Ask for one app to restart. Resolves only when the api confirmed the exit was scheduled; a refusal
    * arrives as a thrown error carrying the api's stated reason.

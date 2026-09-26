@@ -137,6 +137,11 @@ export class SystemSettingDescriptors {
     },
     [SystemConstants.META_KEY.SSR_GENERATION_CAP]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.PLUGIN_ISOLATION_DEFAULT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // Read by the deploy command on the box, not by the running api. `restart` is what deploys always did.
+    [SystemConstants.META_KEY.DEPLOY_MODE]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: 'restart', description: "How a release replaces the running apps: restart (about 45 s of downtime) or rolling (no downtime, needs spare memory).", group: "Infrastructure" },
+    },
     [SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.SSR_RENDER_MEMORY_MB]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },

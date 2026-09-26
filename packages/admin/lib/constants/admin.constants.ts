@@ -210,6 +210,7 @@ export class AdminConstants {
       AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_INTEGRATIONS_PROVIDER, { type, providerId }),
     DEPLOY_APPS: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.DEPLOY_APPS),
     DEPLOY_RESTART: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.DEPLOY_RESTART),
+    DEPLOY_CAPACITY: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.DEPLOY_CAPACITY),
     UPDATE_CHECK: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.UPDATE_CHECK),
     UPDATE_APPLY: AdminConstants.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.UPDATE_APPLY),
     OPENAPI: AdminConstants.legacy(SystemConstants.API_PATH.SYSTEM.OPENAPI),
@@ -280,11 +281,7 @@ export class AdminConstants {
     return AdminConstants.API_VERSION_PREFIX.replace(/\/v\d+$/, '');
   }
 
-  private static versionedRoute(
-    basePath: string,
-    segment: string,
-    params?: Record<string, string | number>,
-  ): string {
+  private static versionedRoute(basePath: string, segment: string, params?: Record<string, string | number>): string {
     return AdminConstants.v(ApiPathUtils.fillPath(`${basePath}${segment}`, params));
   }
 

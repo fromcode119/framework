@@ -44,6 +44,47 @@ export class ComposeStack {
     return result.stdout.trim();
   }
 
+  /** Container ids of one service, oldest first as compose lists them. */
+  async containerIds(service: string): Promise<string[]> {
+    const result = await this.shell.run(`docker compose ${ComposeStack.FILES} ps -q ${service}`);
+    return result.stdout.split('\n').map((line) => line.trim()).filter(Boolean);
+  }
+
+  /**
+   * Adds instances of one service WITHOUT touching the running ones: `--no-recreate` keeps the old
+   * container on its old image, so the added one is the only container on the new version.
+   */
+  async scale(service: string, count: number): Promise<number> {
+    return this.shell.stream(`docker compose ${ComposeStack.FILES} up -d --no-deps --no-recreate --scale ${service}=${count} ${service}`);
+  }
+
+  /** Runs a node one-liner inside ONE container; the answer is its stdout. */
+  async probeContainer(id: string, script: string): Promise<string> {
+    const result = await this.shell.run(`docker exec ${id} node -e "${script}"`);
+    return result.code === 0 ? result.stdout.trim() : '';
+  }
+
+  /** SIGTERM, then up to `graceSeconds` for the requests in flight to finish, then gone. */
+  async stopAndRemove(id: string, graceSeconds: number): Promise<number> {
+    return this.shell.stream(`docker stop -t ${graceSeconds} ${id} && docker rm ${id}`);
+  }
+
+  async restartService(service: string): Promise<number> {
+    return this.shell.stream(`docker compose ${ComposeStack.FILES} up -d --no-deps ${service}`);
+  }
+
+  /** One read-only query against the platform database, as its owner, inside the db container. */
+  async query(sql: string): Promise<string> {
+    const result = await this.shell.run(`echo "${sql}" | docker compose ${ComposeStack.FILES} exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -At'`);
+    return result.code === 0 ? result.stdout.trim() : '';
+  }
+
+  /** The core migration files shipped in the api image of the version `.env` now names. */
+  async migrationFiles(): Promise<string[]> {
+    const result = await this.shell.run(`docker compose ${ComposeStack.FILES} run --rm --no-deps -T --entrypoint ls api /app/packages/core/dist/database/migrations`);
+    return result.code === 0 ? result.stdout.split('\n').map((line) => line.trim()).filter(Boolean) : [];
+  }
+
   async apiLogs(lines: number): Promise<string> {
     const result = await this.shell.run(`docker compose ${ComposeStack.FILES} logs --tail ${lines} api`);
     return result.stdout + result.stderr;
