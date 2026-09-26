@@ -1,7 +1,10 @@
 import path from 'path';
+import { randomBytes } from 'crypto';
+import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import type { IGuestProcess } from '@core/process/interfaces/guest-process.interface';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
+import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
 
 /**
  * ONE process of a plugin — its channel, its routes socket, what it answered at boot.
@@ -19,7 +22,9 @@ export class PluginGuestGeneration {
   static readonly ROUTES_SOCKET = 'routes.sock';
   private static readonly DRAIN_POLL_MS = 50;
 
-  described: { contractKeys: string[]; publicApiKeys: string[]; manifest: unknown } | null = null;
+  described: { contractKeys: string[]; publicApiKeys: string[]; manifest: unknown; protocol?: IPluginProtocolIdentity } | null = null;
+  /** What another api must present to attach to this process (`PluginGuestConnections`). */
+  readonly attachSecret = randomBytes(32).toString('hex');
   /** Registrations sent before this generation became the current one, in the order they came. */
   readonly held: IPluginGuestRegistration[] = [];
 
@@ -32,6 +37,11 @@ export class PluginGuestGeneration {
 
   get socketPath(): string {
     return path.join(this.guest.socketDir, PluginGuestGeneration.ROUTES_SOCKET);
+  }
+
+  /** Where another api attaches to this process. */
+  get controlSocketPath(): string {
+    return path.join(this.guest.socketDir, PluginGuestConnections.CONTROL_SOCKET);
   }
 
   /** The guest id for a plugin's Nth process: distinct per generation, so two can run side by side. */

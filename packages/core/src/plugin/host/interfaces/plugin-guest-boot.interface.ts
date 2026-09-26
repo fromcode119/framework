@@ -17,4 +17,6 @@ export interface IPluginGuestBoot {
   projectRoot: string;
   /** The platform's default locale, for the guest's own translation table (`context.t` is synchronous). */
   defaultLocale: string;
+  /** The secret another api must present to attach to this process (`PluginGuestConnections`). */
+  attachSecret?: string;
 }

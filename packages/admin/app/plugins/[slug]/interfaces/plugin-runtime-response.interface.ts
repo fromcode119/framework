@@ -16,6 +16,7 @@ export interface IPluginRuntimeResponse {
       pid: number;
       uptimeSeconds: number;
       nodeVersion: string;
+      protocolVersion: number;
       memory: { rssBytes: number; heapUsedBytes: number; heapTotalBytes: number };
       registrations: IPluginRuntimeRegistration[];
     } | null;

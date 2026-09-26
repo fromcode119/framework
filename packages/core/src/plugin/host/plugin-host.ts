@@ -33,6 +33,7 @@ import { PluginHostGuestBridge } from '@core/plugin/host/plugin-host-guest-bridg
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
+import { PluginHostProtocol } from '@core/plugin/host/protocol/plugin-host-protocol';
 
 /**
  * One isolated plugin, from the host's side: its process, its channel, its tokens, its stand-ins.
@@ -160,6 +161,8 @@ export class PluginHost extends PluginHostGuestBridge {
     const boot = PluginGuestBootMessage.build(generation, { slug: this.slug, pluginDir: this.pluginDir, entryPath: this.entryPath, manifest: this.manifest, projectRoot: this.projectRoot, defaultLocale: String(this.manager.i18n?.getDefaultLocale?.() ?? 'en') });
     try {
       generation.described = await generation.channel.request('boot', boot, PluginHostState.BOOT_TIMEOUT_MS);
+      const refusal = PluginHostProtocol.refusal(generation.described?.protocol);
+      if (refusal) throw new Error(`plugin "${this.slug}" process refused: ${refusal}`);
     } catch (error) {
       await generation.retire();
       throw error;

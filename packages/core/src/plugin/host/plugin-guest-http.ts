@@ -3,6 +3,8 @@ import express from 'express';
 import type { Express, Request, Response, NextFunction } from 'express';
 import { RequestContextUtils } from '@core/context/request-context';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
+import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
+import type { PluginChannel } from '@core/plugin/host/plugin-channel';
 
 /**
  * The guest's own Express app, served on a Unix socket the host proxies to.
@@ -61,7 +63,13 @@ export class PluginGuestHttp {
   readonly app: Express;
   private server: ReturnType<Express['listen']> | null = null;
 
-  constructor(private readonly socketPath: string, private readonly remote: PluginGuestRemote, private readonly socketMode = 0o600) {
+  constructor(
+    private readonly socketPath: string,
+    private readonly remote: PluginGuestRemote,
+    private readonly socketMode = 0o600,
+    /** The api connection a request came from — named by `x-fc-connection`; the process's first when absent. */
+    private readonly channelFor: (connectionId: string | null) => PluginChannel | undefined = () => undefined,
+  ) {
     this.app = express();
     this.app.disable('x-powered-by');
     this.app.use(this.enterInvocation.bind(this));
@@ -173,15 +181,16 @@ export class PluginGuestHttp {
     const tenantId = String(req.headers[PluginGuestHttp.HEADER_TENANT] ?? '').trim() || null;
     const locale = String(req.headers[PluginGuestHttp.HEADER_LOCALE] ?? '');
     const siteLocale = String(req.headers[PluginGuestHttp.HEADER_SITE_LOCALE] ?? '').trim() || undefined;
+    const connectionId = String(req.headers[PluginGuestConnections.HEADER_CONNECTION] ?? '').trim() || null;
     const rawUser = req.headers[PluginGuestHttp.HEADER_USER];
     if (typeof rawUser === 'string' && rawUser) {
       (req as any).user = PluginGuestHttp.decodeUser(rawUser);
     }
-    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY]) {
+    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestConnections.HEADER_CONNECTION]) {
       delete req.headers[header];
     }
     (req as any).tenantId = tenantId ?? undefined;
-    PluginGuestRemote.invocation.run({ token, tenantId }, () => {
+    PluginGuestRemote.invocation.run({ token, tenantId, channel: this.channelFor(connectionId) }, () => {
       RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined, siteLocale }, () => next());
     });
   }

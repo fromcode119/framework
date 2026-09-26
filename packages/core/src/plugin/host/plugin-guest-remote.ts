@@ -20,7 +20,17 @@ export class PluginGuestRemote {
   static readonly CALLBACK = '$fcCallback';
 
   /** Which invocation the current async flow belongs to; set by the guest runtime around each invocation. */
-  static readonly invocation = new AsyncLocalStorage<{ token: string; tenantId: string | null }>();
+  /**
+   * The invocation this code runs in: its token, its site, and the CONNECTION it came on. A process can be
+   * attached to more than one api (`PluginGuestConnections`), and a token is only valid at the api that
+   * minted it — so a call back goes on the channel the invocation arrived on, never just the first one.
+   */
+  static readonly invocation = new AsyncLocalStorage<{ token: string; tenantId: string | null; channel?: PluginChannel }>();
+
+  /** The channel calls from the current invocation go back on: its own, else the process's first. */
+  static channelFor(fallback: PluginChannel): PluginChannel {
+    return PluginGuestRemote.invocation.getStore()?.channel ?? fallback;
+  }
 
   constructor(
     private readonly channel: PluginChannel,
@@ -41,7 +51,7 @@ export class PluginGuestRemote {
    * inside the handler the host invoked — so a chain awaited later still belongs to its invocation.
    */
   async call(root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'], token: string | null = PluginGuestRemote.currentToken()): Promise<unknown> {
-    const result = await this.channel.request('call', { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
+    const result = await PluginGuestRemote.channelFor(this.channel).request('call', { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
     return this.rehydrate(result, root, steps, token);
   }
 

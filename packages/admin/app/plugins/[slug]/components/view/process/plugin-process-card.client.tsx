@@ -71,7 +71,7 @@ export class PluginProcessCard extends AdminComponent {
         {!runtime.running && <p className="text-sm text-amber-600 dark:text-amber-400">Not running. The plugin is inactive, or its process stopped and is being restarted.</p>}
         {runtime.running && this.row(<FrameworkIcons.Terminal size={20} />, 'Process', `pid ${runtime.pid}${runtime.uid !== null ? ` · OS user ${runtime.uid}` : ' · same OS user as the api'}`, runtime.uid !== null ? undefined : 'No privileged spawner here (typical for local development), so the process is not separated by OS user.')}
         {report && this.row(<FrameworkIcons.Zap size={20} />, 'Memory', `${PluginProcessFormat.megabytes(report.memory.rssBytes)} resident · heap ${PluginProcessFormat.megabytes(report.memory.heapUsedBytes)} of ${runtime.limits.memoryMb} MB limit`)}
-        {report && this.row(<FrameworkIcons.Clock size={20} />, 'Up for', `${PluginProcessFormat.duration(report.uptimeSeconds)} · Node ${report.nodeVersion}`, `Requests that take longer than ${runtime.limits.timeoutMs} ms are failed and the process restarted.`)}
+        {report && this.row(<FrameworkIcons.Clock size={20} />, 'Up for', `${PluginProcessFormat.duration(report.uptimeSeconds)} · Node ${report.nodeVersion} · plugin protocol ${report.protocolVersion}`, `Requests that take longer than ${runtime.limits.timeoutMs} ms are failed and the process restarted.`)}
         {this.row(<FrameworkIcons.Refresh size={20} />, 'Recent restarts', String(runtime.recentRestarts), 'Counted until the process has been healthy for a minute; more than 3 in a row disables the plugin.')}
         {runtime.reportError && <p className="text-sm text-[var(--destructive)]">The process is running but did not answer: {runtime.reportError}</p>}
         {report && (
