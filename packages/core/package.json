@@ -44,6 +44,11 @@
       "types": "./dist/process/index.d.ts",
       "import": "./dist/process/index.js",
       "require": "./dist/process/index.js"
+    },
+    "./plugin-server": {
+      "types": "./dist/plugin-server/index.d.ts",
+      "import": "./dist/plugin-server/index.js",
+      "require": "./dist/plugin-server/index.js"
     }
   },
   "browser": {
