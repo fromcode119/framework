@@ -12,6 +12,7 @@ import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plug
 import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-guest-registrar';
+import { PluginGuestDeclarations } from '@core/plugin/host/declarations/plugin-guest-declarations';
 
 /**
  * The `PluginContext` an isolated plugin receives: the same shape as in-process, every namespace an
@@ -37,9 +38,10 @@ export class PluginGuestContextFactory {
 
   create(): PluginContext {
     const remote = this.remote;
-    const ctx = (name: string) => remote.ref('context', [{ name }]);
     const register = (payload: IPluginGuestRegistration) => this.registrar.send(payload);
-    const locals = new PluginGuestLocals(this.boot, this.remote);
+    const declarations = new PluginGuestDeclarations(register, (handler) => this.handlers.keepStable(handler));
+    const ctx = (name: string) => declarations.namespace(name, remote.ref('context', [{ name }]));
+    const locals = new PluginGuestLocals(this.boot, this.remote, declarations);
     this.locals = locals;
     const context: Record<string, unknown> = {
       db: this.database([{ name: 'db' }]),

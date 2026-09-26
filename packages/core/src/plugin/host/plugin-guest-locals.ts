@@ -1,5 +1,6 @@
 import { I18nManager } from '@core/i18n/i18n-manager';
 import { I18nContextProxy } from '@core/plugin/context/i18n';
+import type { PluginGuestDeclarations } from '@core/plugin/host/declarations/plugin-guest-declarations';
 import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
@@ -26,7 +27,7 @@ export class PluginGuestLocals {
    */
   private readonly pendingI18nForwards: Promise<unknown>[] = [];
 
-  constructor(boot: IPluginGuestBoot, remote: PluginGuestRemote) {
+  constructor(boot: IPluginGuestBoot, remote: PluginGuestRemote, declarations: PluginGuestDeclarations) {
     const plugin = { manifest: boot.manifest, path: boot.pluginDir } as unknown as ILoadedPlugin;
     const localI18n = new I18nManager(boot.defaultLocale);
     // `getI18n` (system-runtime-controller) reads translations from ONE place: the host's own
@@ -40,7 +41,7 @@ export class PluginGuestLocals {
     const i18nBridge = {
       registerTranslations: (locale: string, namespace: string, translations: ITranslationMap) => {
         localI18n.registerTranslations(locale, namespace, translations);
-        this.pendingI18nForwards.push(remote.ref('context', [{ name: 'i18n' }]).registerTranslations(locale, translations));
+        this.pendingI18nForwards.push(declarations.declare('i18n', 'registerTranslations', [locale, translations]));
       },
       translate: (key: string, params?: Record<string, any>, locale?: string) => localI18n.translate(key, params, locale),
       translateOrFallback: (key: string, fallback: string, params?: Record<string, any>, locale?: string) =>

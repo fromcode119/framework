@@ -25,4 +25,6 @@ export interface IPluginGuestRegistration {
   tools?: Array<Record<string, unknown> & { handlerId: string }>;
   /** gate / canonical-path registry key */
   key?: string;
+  /** A declaration's call on the plugin context: `[namespace, method(args)]` (`PluginDeclarations`). */
+  steps?: Array<{ name: string; args?: unknown[] }>;
 }
