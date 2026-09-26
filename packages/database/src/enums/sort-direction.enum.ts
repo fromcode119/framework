@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** ORDER BY direction. The `.value` is emitted straight into SQL. */
 export class SortDirection extends Enum {

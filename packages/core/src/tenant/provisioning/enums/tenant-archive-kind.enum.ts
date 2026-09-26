@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /**
  * WHERE an archive's rows were read from.

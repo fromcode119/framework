@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Where a resolved setting value came from. */
 export class SettingSource extends Enum {

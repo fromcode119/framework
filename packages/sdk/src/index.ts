@@ -182,7 +182,7 @@ export type { ITranslateFn } from '@sdk/types/interfaces/translate-fn.interface'
 
 // Server-safe reactor primitives. `Enum` has no React dependency, so backend plugin code can
 // use it — unlike `@fromcode119/sdk/react`, which cannot load under Node (it requires CSS).
-export { Enum } from '@fromcode119/react-class-components';
+export { Enum } from '@fromcode119/react-class-components/lang';
 
 // These are Enum CLASSES, not type aliases — a `export type` re-export makes the members
 // (`FieldType.TEXT`, `PluginDefaultPageContractKind.DETAIL`) unreachable from plugin code,
@@ -191,7 +191,7 @@ export { CollectionHookPhase, EntityFieldTransform, FieldType, LayoutDiagnosticC
 
 // More Enum classes surfaced to plugins as VALUES, not just types.
 export { DatasourceLayout, ExtensionKind, FilterKind, IntegrationConfigFieldType, ScheduleType } from '@fromcode119/core/client';
-export { SortDirection } from '@fromcode119/database';
+export { SortDirection } from '@fromcode119/database/enums/sort-direction.enum';
 export { CodeLanguage } from '@fromcode119/core/client';
 // Light/dark. Storefront components need it as much as admin ones, and `@fromcode119/sdk/admin` is an
 // ADMIN-only surface — importing it from a `.storefront` bundle broke the frontend at runtime

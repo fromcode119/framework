@@ -1,4 +1,4 @@
-import { WatcherDescriptor } from './watcher-descriptor';
+import { WatcherDescriptor } from '@fromcode119/react-class-components/lang';
 
 /**
  * Dispatching `@watch` callbacks for one component instance.

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Control type of a theme setting (themes author this as a wire string). */
 export class ThemeSettingType extends Enum {

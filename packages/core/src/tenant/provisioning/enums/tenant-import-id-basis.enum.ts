@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /**
  * WHY an import decided what it did about one table's ids.

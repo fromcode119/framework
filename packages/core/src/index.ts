@@ -420,7 +420,7 @@ export { SortOrder } from '@core/enums/sort-order.enum';
 // Enum classes plugins need to name (they were unreachable, forcing raw-string arguments).
 // Owned by @fromcode119/scheduler (core depends on it, never the reverse). Re-exported so plugins
 // keep importing it from the SDK — two copies meant `task.type === ScheduleType.CRON` was always false.
-export { ScheduleType } from '@fromcode119/scheduler';
+export { ScheduleType } from '@fromcode119/scheduler/enums/schedule-type.enum';
 export { FilterKind } from '@core/data-sources/enums/filter-kind.enum';
 export { DatasourceLayout } from '@core/data-sources/enums/datasource-layout.enum';
 export { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';

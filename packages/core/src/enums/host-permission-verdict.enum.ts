@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /**
  * The platform's answer when an edge asks whether it should serve — and buy a certificate for — a

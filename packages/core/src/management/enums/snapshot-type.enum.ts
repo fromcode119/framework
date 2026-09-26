@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Which kind of snapshot a restore targets. */
 export class SnapshotType extends Enum {

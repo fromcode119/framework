@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** When in the request lifecycle a plugin-registered middleware runs. */
 export class MiddlewareStage extends Enum {

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Where a resolved layout came from. */
 export class LayoutResolutionSource extends Enum {

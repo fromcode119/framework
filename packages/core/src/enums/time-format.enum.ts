@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** How a site shows the time of day: follow its language, or a fixed 12- or 24-hour clock. */
 export class TimeFormat extends Enum {

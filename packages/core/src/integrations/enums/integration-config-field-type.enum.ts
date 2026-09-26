@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Control type of an integration provider config field. Authored as a wire string. */
 export class IntegrationConfigFieldType extends Enum {

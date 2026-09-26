@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** How a seeder callable was found on the module. */
 export class SeederCallableSourceType extends Enum {

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** How wide a field renders in the admin form. */
 export class FieldWidth extends Enum {

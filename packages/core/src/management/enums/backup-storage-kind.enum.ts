@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Which store a backup artifact lives in. */
 export class BackupStorageKind extends Enum {

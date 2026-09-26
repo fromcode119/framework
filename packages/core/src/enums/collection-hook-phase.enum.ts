@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Lifecycle point at which a collection hook runs. */
 export class CollectionHookPhase extends Enum {

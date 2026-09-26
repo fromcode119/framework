@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Comparison used by a field visibility condition. */
 export class ConditionOperator extends Enum {

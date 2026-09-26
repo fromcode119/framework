@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** PluginDefaultPageContractDependency — one of the 7 states this contract stage can be in. */
 export class PluginDefaultPageContractDependency extends Enum {

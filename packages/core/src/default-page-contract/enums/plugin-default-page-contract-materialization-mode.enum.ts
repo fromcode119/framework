@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** PluginDefaultPageContractMaterializationMode — one of the 3 states this contract stage can be in. */
 export class PluginDefaultPageContractMaterializationMode extends Enum {

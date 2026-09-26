@@ -1,11 +1,11 @@
 import { Component, createRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { ReactNode, RefObject } from 'react';
-import { ReactiveMetadata } from './reactive-metadata';
-import { WatcherDescriptor } from './watcher-descriptor';
+import { ReactiveMetadata } from '@fromcode119/react-class-components/lang';
+import { WatcherDescriptor } from '@fromcode119/react-class-components/lang';
 import { ReactiveWatchers } from './reactive-watchers';
 import { Transition } from './transition';
-import { Platform } from './platform';
+import { Platform } from '@fromcode119/react-class-components/lang';
 
 /**
  * Class-based OOP base for React components — the `Reactor`. Extends `React.Component` and adds:

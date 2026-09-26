@@ -70,6 +70,10 @@ const sharedAlias = {
   // FLATTENED export (a specifier that does not mirror the file path): it needs a special-case entry
   // here, ahead of the prefix entry that would otherwise swallow it, and it is a second name for a
   // file that already has a canonical one.
+  // The React-free `/lang` entry from SOURCE, as the admin resolves it. The package imports its own `/lang`
+  // by name, so without this a suite using `src` got `dist`'s ReactiveMetadata and Enum — a second copy,
+  // on which state and `instanceof` quietly disagree.
+  '@fromcode119/react-class-components/lang': path.resolve(frameworkRoot, 'packages/react-class-components/src/lang.ts'),
   '@fromcode119/core/client': path.resolve(frameworkRoot, 'packages/core/src/client.ts'),
   '@fromcode119/core/': `${path.resolve(frameworkRoot, 'packages/core/src')}/`,
   '@fromcode119/core': path.resolve(frameworkRoot, 'packages/core/src/index.ts'),
@@ -211,7 +215,10 @@ export default defineConfig({
       {
         esbuild,
         plugins: [typorPlugin],
-        // reactor is standalone — no framework aliases, and its own sources import each other relatively.
+        // reactor is standalone — no framework aliases. Its sources import each other relatively, except the
+        // React-free pieces, which come through its OWN `/lang` entry (one copy for both CommonJS bundles),
+        // resolved here to source like everywhere else.
+        resolve: { alias: { '@fromcode119/react-class-components/lang': path.resolve(frameworkRoot, 'packages/react-class-components/src/lang.ts') } },
         test: {
           name: 'react-class-components',
           root: frameworkRoot,

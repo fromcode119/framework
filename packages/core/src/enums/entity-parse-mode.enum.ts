@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** Whether an entity parse is for a create or an update. */
 export class EntityParseMode extends Enum {

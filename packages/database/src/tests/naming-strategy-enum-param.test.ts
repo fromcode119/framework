@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 import { NamingStrategy } from '@database/naming-strategy';
 
 class ScheduleKind extends Enum {

@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /**
  * Machine-readable reason a plugin is HELD (inactive + WARNING) — i.e. why it isn't running, so the

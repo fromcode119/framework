@@ -1,4 +1,4 @@
-import { Enum } from '@fromcode119/react-class-components';
+import { Enum } from '@fromcode119/react-class-components/lang';
 
 /** How a plugin capability change is approved at boot. */
 export class PluginApprovalMode extends Enum {
