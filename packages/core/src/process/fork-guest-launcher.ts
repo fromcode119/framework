@@ -31,6 +31,8 @@ export class ForkGuestLauncher extends GuestProcessLauncher {
       execArgv: spec.execArgv,
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     });
+    // One directory per process id (each process of a plugin has its own): gone with the process.
+    child.on('exit', () => fs.rmSync(socketDir, { recursive: true, force: true }));
     return new ForkedGuestProcess(child, socketDir);
   }
 }

@@ -2,11 +2,9 @@ import type { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
 import type { IRequestStore } from '@core/context/interfaces/request-store.interface';
-import { PluginGuest } from '@core/plugin/host/plugin-guest';
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
-import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 import { LogLevel } from '@core/enums/log-level.enum';
 import { GuestProcessLaunchers } from '@core/process/guest-process-launchers';
@@ -15,6 +13,8 @@ import type { IPluginHostRuntime } from '@core/plugin/host/runtime/interfaces/pl
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-guest-registrar';
 import { PluginSiteDataContext } from '@core/plugin/tenant/plugin-site-data-context';
+import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
+import { PluginHostPeerSnapshot } from '@core/plugin/host/plugin-host-peer-snapshot';
 
 /**
  * What the guest asks of the HOST, and what happens when the guest dies.
@@ -30,7 +30,7 @@ import { PluginSiteDataContext } from '@core/plugin/tenant/plugin-site-data-cont
  * The base of `PluginHost`, which owns construction, start/stop and the stub surface.
  */
 export abstract class PluginHostGuestBridge extends PluginHostState {
-  protected async serve(type: string, payload: any): Promise<unknown> {
+  protected async serve(type: string, payload: any, generation?: PluginGuestGeneration): Promise<unknown> {
     if (type === 'call') {
       if (!this.context) throw new Error(`plugin "${this.slug}" called the host before it had a context`);
       return this.dispatcher.dispatch(this.context, payload as IPluginRemoteCall);
@@ -42,10 +42,18 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
       // count it; a per-site run (`tenants.forEach`) is work, not a registration, and still runs.
       const registration = payload as IPluginGuestRegistration;
       if (PluginSiteDataContext.isSiteDataPass(this.context) && registration.kind !== PluginGuestRegistrationKind.TENANTS_FOR_EACH.value) return PluginGuestRegistrar.SUPPRESSED;
+      // A REPLACEMENT that is still initialising: its standing registrations wait for the switch, so the
+      // serving process's stand-ins stay in place until then; its per-site runs are work and run now, in it.
+      const replacing = generation !== undefined && generation !== this.generation;
+      if (replacing && registration.kind !== PluginGuestRegistrationKind.TENANTS_FOR_EACH.value) {
+        generation.held.push(registration);
+        return true;
+      }
       // Registrations are normally fire-and-forget, but one of them ANSWERS: `tenants.forEach` runs
       // the guest's work once per site and reports how many it ran for. Returning what `apply` gave
       // back is what lets the guest await its own count instead of a bare `true`.
-      const answer = await this.registrations.apply(this.context, registration);
+      const invoke = replacing ? (kind: string, handlerId: string, args: unknown[], store: IRequestStore | undefined) => this.invoke({ kind, handlerId, args }, store, generation.channel) : undefined;
+      const answer = await this.registrations.apply(this.context, registration, invoke);
       return answer === undefined ? true : answer;
     }
     throw new Error(`host: unknown message "${type}"`);
@@ -61,63 +69,9 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     target.call(this.context.logger, String(payload?.msg ?? ''), ...(Array.isArray(payload?.meta) ? payload.meta : []));
   }
 
-  /**
-   * Who the guest may call, and it must agree with who the HOST will resolve.
-   *
-   * It asks `PluginsManagerResolver.isResolvable` — the SAME predicate the host applies when the call
-   * lands — with the store the dispatcher will re-enter, so the two cannot disagree by construction.
-   *
-   * They have disagreed twice. First on state: this listed every installed plugin with a public API,
-   * including disabled ones, so a guest was told `ledger` was there, its `if (!ledger) return`
-   * guard passed, the call went out, and the host answered `cannot read "registerProvider" of null` —
-   * by which point the plugin had logged success. That was fixed by filtering to ACTIVE. Then on the
-   * TENANT: the snapshot still had no tenant axis while the resolver did, so during the per-site
-   * replay of `onInit` a guest was again told yes and again refused, and the operator was shown a
-   * WARN saying registration had FAILED for a peer simply not enabled on that site.
-   */
+  /** The peers this plugin may call right now — see `PluginHostPeerSnapshot`. */
   protected peers(store: IRequestStore | undefined): Record<string, string[]> {
-    const out: Record<string, string[]> = {};
-    const tenantId = String(store?.tenantId ?? '').trim() || null;
-    let walked = 0;
-    let offered = 0;
-    for (const plugin of this.manager.plugins.values()) {
-      walked += 1;
-      const refusal = PluginsManagerResolver.refusalReason(plugin, tenantId);
-      if (refusal) {
-        // A withheld peer used to leave no trace at all. The caller saw only an absence — a courier
-        // search that answered "no cities" having asked nobody — and which condition withheld it
-        // could only be guessed at from outside the process.
-        //
-        // EVERY refusal is said, including "exposes no public API". Filtering on `publicAPI` to keep
-        // the noise down silenced exactly that reason, so a plugin missing its API looked identical
-        // to one that was never a peer — which is the shape of the failure this line exists for. A
-        // debug level is where the volume belongs, not a filter that can hide the answer.
-        //
-        // The HOST's own logger, not `this.context.logger`: the context is null until the guest has
-        // one, and the plugin-facing logger has no debug level.
-        this.logger.debug(`peer withheld — ${refusal}`);
-        continue;
-      }
-      // Own property names, not `Object.keys`: a class of static methods enumerates as nothing.
-      out[`${String(plugin.manifest.namespace || '').trim()}:${plugin.manifest.slug}`] = PluginGuest.functionNames(plugin.publicAPI);
-      offered += 1;
-    }
-    /**
-     * What this snapshot WALKED, not only what it kept.
-     *
-     * A peer can be missing three ways and only two of them leave a trace: refused (logged above) or
-     * mis-keyed (visible in the guest's own list). The third — never in `manager.plugins` at all — is
-     * silent from both ends, and on a live site that is where a courier plugin went: present in the
-     * health count, running its own scheduler, and absent from every peer snapshot with no refusal
-     * recorded anywhere. The walked count is what tells those apart in one line.
-     */
-    // The COUNT per peer, not just its name. A peer offered with zero functions is one the caller
-    // can see and cannot call: `has()` answers true, every method is undefined, and nothing is
-    // refused or logged anywhere. Without this number that state is indistinguishable from a
-    // healthy snapshot, which is exactly how a shipping plugin held its courier adapter for days.
-    const described = Object.entries(out).map(([key, fns]) => `${key}(${fns.length})`).join(', ');
-    this.logger.debug(`peer snapshot: walked ${walked} plugin(s), offered ${offered} — ${described || '(none)'}`);
-    return out;
+    return PluginHostPeerSnapshot.build(this.manager, store, this.logger);
   }
 
   protected enabledPlugins(store: IRequestStore | undefined): string[] {
@@ -138,8 +92,10 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     this.channel?.close(new Error(`plugin "${this.slug}" process exited (${signal ?? code})`));
     this.channel = null;
     this.guest = null;
+    this.generation = null;
     this.describeResult = null; this.sentPeerSignature = '';
-    this.tokens.revokeAll();
+    // Mid-replacement the tokens in the map also belong to the process taking over; they must live.
+    if (!this.restarting) this.tokens.revokeAll();
     if (this.stopping || this.restarting) return;
     void this.restart(`process exited (${signal ?? code})`);
   }
@@ -184,17 +140,34 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     }
   }
 
-  /** Kill (if alive), start again, re-init (and re-enable when it was enabled). Shared by restart and reload. */
-  protected async relaunch(): Promise<void> {
-    if (this.guest) { this.guest.kill('SIGKILL'); this.guest = null; this.channel?.close(); this.channel = null; this.describeResult = null; this.sentPeerSignature = ''; }
-    // The old process's subscriptions go WITH it, before the new one starts. Dropped after `start()`,
-    // they stayed live across the boot, and a `plugins:ready` fired meanwhile by another plugin's
-    // relaunch reached this plugin's new process with handler ids it never issued.
+  /**
+   * Replaces this plugin's process WITHOUT a gap. The next process starts BESIDE the current one and runs
+   * `onInit` (and `onEnable`) while the current one keeps serving; then it takes over in one step, and the
+   * one it replaced finishes what is in flight (up to the deadline) before it is retired. If the next one
+   * fails, the current one simply keeps serving and the failure is the caller's to report.
+   *
+   * It used to be kill-then-start: until the new process had booted and mounted its routes, the plugin
+   * answered 502 (nothing on the socket) and then 404 (a server with no routes yet), and hooks and jobs
+   * fired in between failed. `drain: false` retires the replaced process at once — one past its deadline.
+   */
+  protected async relaunch(options: { drain: boolean } = { drain: true }): Promise<void> {
+    const previous = this.generation && !this.generation.channel.isClosed ? this.generation : null;
+    const next = await this.launchGeneration();
+    try {
+      if (this.context) {
+        await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onInit' }, undefined, next.channel);
+        if (this.wasEnabled) await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onEnable' }, undefined, next.channel);
+      }
+    } catch (error) {
+      await next.retire();
+      throw error;
+    }
+    // The switch, in ONE synchronous step, so nothing is dispatched to a half-switched plugin: the replaced
+    // process's stand-ins go, the next one serves, and what it registered while initialising is applied.
     if (this.context) this.registrations.resetForRestart(this.context);
-    await this.start();
+    this.adopt(next);
     if (this.context) {
-      await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onInit' }, undefined);
-      if (this.wasEnabled) await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onEnable' }, undefined);
+      for (const registration of next.held.splice(0)) void this.registrations.apply(this.context, registration);
       // A fresh process has an EMPTY memory: everything its PEERS registered into it (a fulfilment
       // provider, a search provider, a newsletter content provider) is gone with the old one. Say
       // `plugins:ready` again — the same event peers already re-register on at boot — naming the
@@ -202,6 +175,23 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
       const active = [...this.manager.plugins.values()].filter((p) => PluginState.resolve(p.state) === PluginState.ACTIVE).map((p) => p.manifest.slug);
       this.manager.hooks.emit(PluginHostState.PLUGINS_READY_EVENT, { plugins: active, restarted: this.slug });
     }
+    if (previous) void previous.retireAfter(options.drain ? this.limits.timeoutMs : 0, (socketPath) => this.proxy.inFlight(socketPath), this.logger);
+  }
+
+  /** Makes `generation` the process that serves: routes, messages, and the restart budget's clock. */
+  protected adopt(generation: PluginGuestGeneration): void {
+    this.generation = generation;
+    this.guest = generation.guest;
+    this.channel = generation.channel;
+    this.socketPath = generation.socketPath;
+    this.proxy.retarget(this.socketPath);
+    this.describeResult = generation.described;
+    this.sentPeerSignature = '';
+    // A guest that stays up for a minute has earned its restart budget back: three failures in a
+    // lifetime is a broken plugin, three failures a week apart is not.
+    if (this.healthyTimer) clearTimeout(this.healthyTimer);
+    this.healthyTimer = setTimeout(() => { this.restarts = 0; }, PluginHostState.HEALTHY_AFTER_MS);
+    this.healthyTimer.unref();
   }
 
   /** Kill (if alive), then bring the guest back and re-run its init; after MAX_RESTARTS, disable with the reason. */
@@ -217,10 +207,11 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     }
     const delayMs = 1000 * 2 ** (this.restarts - 1);
     this.logger.warn(`${reason}; restarting in ${delayMs} ms (attempt ${this.restarts}/${PluginHostState.MAX_RESTARTS}).`);
-    if (this.guest) { this.guest.kill('SIGKILL'); this.guest = null; this.channel?.close(); this.channel = null; this.describeResult = null; this.sentPeerSignature = ''; }
+    // A process that is still ALIVE here overran its deadline: it keeps its channel until the replacement
+    // has taken over, and is then retired without waiting for it (`drain: false`).
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     try {
-      await this.relaunch();
+      await this.relaunch({ drain: false });
       this.logger.info('guest restarted and re-initialised');
       this.restarting = false;
     } catch (error) {

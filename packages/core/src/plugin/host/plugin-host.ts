@@ -20,7 +20,8 @@ import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-sett
 import { GuestProcessLaunchers } from '@core/process/guest-process-launchers';
 import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.interface';
 import type { IGuestProcess } from '@core/process/interfaces/guest-process.interface';
-import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
+import { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
+import { PluginGuestBootMessage } from '@core/plugin/host/generations/plugin-guest-boot-message';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { IPluginInvocation } from '@core/plugin/host/interfaces/plugin-invocation.interface';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
@@ -69,7 +70,7 @@ export class PluginHost extends PluginHostGuestBridge {
     // EVERY declared field is assigned here, `null`/`false`/`0` included — see PluginHostState.
     this.logger = new Logger({ namespace: `plugin-host:${slug}` });
     this.tokens = new PluginInvocationTokens();
-    this.socketPath = ''; this.guest = null; this.channel = null; this.context = null;
+    this.socketPath = ''; this.guest = null; this.channel = null; this.context = null; this.generation = null; this.generationCount = 0;
     this.describeResult = null;
     this.sentPeerSignature = ''; this.restarts = 0; this.stopping = false; this.restarting = false;
     this.healthyTimer = null; this.wasEnabled = false; this.initDeferred = false;
@@ -122,13 +123,24 @@ export class PluginHost extends PluginHostGuestBridge {
     return path.resolve(__dirname, '..', '..', '..', 'dist', 'plugin', 'host', 'plugin-guest-main.js');
   }
 
-  /** Forks the guest, boots it, and learns which lifecycle hooks and public-API functions it has. */
+  /** Starts this plugin's process when none is serving, and makes it the current one. */
   async start(): Promise<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }> {
     if (this.channel && !this.channel.isClosed && this.describeResult) return this.describeResult;
     this.stopping = false;
+    const generation = await this.launchGeneration();
+    this.adopt(generation);
+    return generation.described!;
+  }
+
+  /**
+   * Starts one more process of this plugin and boots it — BESIDE the current one when there is one:
+   * its own guest id and sockets. It serves nothing until `adopt` makes it the current one.
+   */
+  protected async launchGeneration(): Promise<PluginGuestGeneration> {
     const launcher = GuestProcessLaunchers.current();
+    this.generationCount += 1;
     const guest = await launcher.launch({
-      id: `plugin-${this.slug}`,
+      id: PluginGuestGeneration.guestId(this.slug, this.generationCount),
       entryPath: PluginHost.guestMainPath(),
       args: [],
       cwd: this.projectRoot,
@@ -139,44 +151,22 @@ export class PluginHost extends PluginHostGuestBridge {
       identity: this.identity,
       writableDirs: [path.join(this.projectRoot, 'data', 'plugins', this.slug)],
     });
-    this.guest = guest;
-    this.socketPath = path.join(guest.socketDir, PluginHostState.ROUTES_SOCKET);
-    this.proxy.retarget(this.socketPath);
+    const generation = new PluginGuestGeneration(this.generationCount, guest, new PluginChannel(guest.port));
     guest.onOutput((stream, line) => (stream === GuestOutputStream.STDERR ? this.logger.warn(line) : this.logger.info(line)));
-    this.channel = new PluginChannel(guest.port);
-    this.channel.serve((type, payload) => this.serve(type, payload));
-    this.channel.onNotify((type, payload) => this.notified(type, payload));
-    // Only the CURRENT guest's exit means anything; one we already replaced was killed on purpose.
+    generation.channel.serve((type, payload) => this.serve(type, payload, generation));
+    generation.channel.onNotify((type, payload) => this.notified(type, payload));
+    // Only the CURRENT guest's exit means anything; one we already replaced was retired on purpose.
     guest.onExit((code, signal) => { if (this.guest === guest) this.exited(code, signal); });
-
-    const boot: IPluginGuestBoot = {
-      slug: this.slug,
-      pluginDir: this.pluginDir,
-      entryPath: this.entryPath,
-      manifest: this.manifest,
-      socketPath: this.socketPath,
-      socketMode: guest.socketMode,
-      projectRoot: this.projectRoot,
-      defaultLocale: String(this.manager.i18n?.getDefaultLocale?.() ?? 'en'),
-      plugin: {
-        slug: this.slug,
-        namespace: String(this.manifest.namespace || '').trim(),
-        version: String(this.manifest.version || ''),
-        dataDir: `./data/plugins/${this.slug}`,
-        rootDir: this.pluginDir,
-        config: (this.manifest.config as Record<string, unknown>) || {},
-      },
-    };
-    const described = await this.channel.request<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }>('boot', boot, PluginHostState.BOOT_TIMEOUT_MS);
-    this.describeResult = described;
+    const boot = PluginGuestBootMessage.build(generation, { slug: this.slug, pluginDir: this.pluginDir, entryPath: this.entryPath, manifest: this.manifest, projectRoot: this.projectRoot, defaultLocale: String(this.manager.i18n?.getDefaultLocale?.() ?? 'en') });
+    try {
+      generation.described = await generation.channel.request('boot', boot, PluginHostState.BOOT_TIMEOUT_MS);
+    } catch (error) {
+      await generation.retire();
+      throw error;
+    }
     const who = launcher.isolatesIdentity && this.identity ? `, uid ${this.identity.uid}` : '';
     this.logger.info(`isolated process ${guest.pid} up (heap ${this.limits.memoryMb} MB, deadline ${this.limits.timeoutMs} ms${who})`);
-    // A guest that stays up for a minute has earned its restart budget back: three failures in a
-    // lifetime is a broken plugin, three failures a week apart is not.
-    if (this.healthyTimer) clearTimeout(this.healthyTimer);
-    this.healthyTimer = setTimeout(() => { this.restarts = 0; }, PluginHostState.HEALTHY_AFTER_MS);
-    this.healthyTimer.unref();
-    return described;
+    return generation;
   }
 
   /**
@@ -235,13 +225,15 @@ export class PluginHost extends PluginHostGuestBridge {
     // same tick (delete → disable) must see `isRunning === false`, not a channel about to disconnect.
     this.channel?.close();
     this.channel = null;
+    this.generation = null;
     this.describeResult = null;
     this.sentPeerSignature = '';
     this.tokens.revokeAll();
   }
 
-  protected async invoke(work: Partial<IPluginInvocation> & { kind: IPluginInvocation['kind'] }, store: IRequestStore | undefined): Promise<unknown> {
-    if (!this.channel || this.channel.isClosed) throw new Error(`plugin "${this.slug}" is not running`);
+  /** Runs work in the CURRENT process, or in `channel`'s — a replacement's, while it initialises. */
+  protected async invoke(work: Partial<IPluginInvocation> & { kind: IPluginInvocation['kind'] }, store: IRequestStore | undefined, channel: PluginChannel | null = this.channel): Promise<unknown> {
+    if (!channel || channel.isClosed) throw new Error(`plugin "${this.slug}" is not running`);
     const token = this.tokens.mint(work.kind, store);
     try {
       const invocation: IPluginInvocation = {
@@ -261,7 +253,7 @@ export class PluginHost extends PluginHostGuestBridge {
       // through the wait, ten such waits emptied the pool and the guest's own calls then queued behind
       // them — a deadlock until the deadline. The next statement on this side takes a fresh one.
       await TenantConnectionScope.releaseCurrent();
-      const result = await this.channel.request('invoke', invocation, work.kind === String(PluginInvocationKind.LIFECYCLE.value) ? PluginHostState.BOOT_TIMEOUT_MS : this.limits.timeoutMs);
+      const result = await channel.request('invoke', invocation, work.kind === String(PluginInvocationKind.LIFECYCLE.value) ? PluginHostState.BOOT_TIMEOUT_MS : this.limits.timeoutMs);
       return this.callbacks.revive(result);
     } finally {
       this.tokens.revoke(token);

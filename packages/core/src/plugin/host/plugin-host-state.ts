@@ -7,6 +7,7 @@ import { PluginHostDispatcher } from '@core/plugin/host/plugin-host-dispatcher';
 import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
 import { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrations';
 import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
+import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
 
 /**
  * Everything a `PluginHost` holds, declared once for both halves.
@@ -21,9 +22,6 @@ import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-sett
  * field carrying an initialiser would simply never run.
  */
 export abstract class PluginHostState {
-  /** The guest's Express server socket, inside the directory only the host and that guest can reach. */
-  static readonly ROUTES_SOCKET = 'routes.sock';
-
   /** Mirrors `PluginManager.PLUGINS_READY_EVENT`, re-emitted when this guest is replaced. A literal
    *  rather than an import: the host cannot import the manager without a cycle. */
   static readonly PLUGINS_READY_EVENT = 'plugins:ready';
@@ -41,6 +39,10 @@ export abstract class PluginHostState {
   protected declare callbacks: PluginHostCallbacks;
   protected declare settings: PluginIsolationSettings;
   protected declare guest: IGuestProcess | null;
+  /** The process that is serving now; `guest`, `channel` and the proxy's socket are always its. */
+  protected declare generation: PluginGuestGeneration | null;
+  /** How many processes this host has started — each replacement's process gets the next number. */
+  protected declare generationCount: number;
   protected declare channel: PluginChannel | null;
   protected declare context: PluginContext | null;
   protected declare describeResult: { contractKeys: string[]; publicApiKeys: string[]; manifest: unknown } | null;
@@ -76,6 +78,7 @@ export abstract class PluginHostState {
    * relaunched by calling `start` again, and every message it sends is dispatched through `invoke`.
    */
   abstract start(): Promise<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }>;
-  protected abstract invoke(work: any, store: any): Promise<unknown>;
+  protected abstract invoke(work: any, store: any, channel?: any): Promise<unknown>;
+  protected abstract launchGeneration(): Promise<PluginGuestGeneration>;
   protected abstract stubs(): Record<string, unknown>;
 }

@@ -42,7 +42,8 @@ export class PluginHostRegistrations {
    * Applies one registration. Most answer nothing; `tenants-for-each` answers a count, which the
    * host returns to the guest so `context.tenants.forEach` can report how many sites it ran for.
    */
-  apply(context: PluginContext, registration: IPluginGuestRegistration): void | Promise<number> {
+  /** `invoke` defaults to the current process; a per-site run started while a replacement initialises goes to THAT one. */
+  apply(context: PluginContext, registration: IPluginGuestRegistration, invoke: (kind: string, handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown> = this.invoke): void | Promise<number> {
     switch (registration.kind) {
       case String(PluginGuestRegistrationKind.ROUTE.value): return this.route(context, registration);
       case String(PluginGuestRegistrationKind.USE.value): return this.use(context, registration);
@@ -51,7 +52,7 @@ export class PluginHostRegistrations {
       case String(PluginGuestRegistrationKind.HOOK_OFF.value): return this.hookOff(context, registration);
       case String(PluginGuestRegistrationKind.PLUGINS_ON.value): return this.pluginsOn(context, registration);
       case String(PluginGuestRegistrationKind.SCHEDULER.value): return this.scheduler(context, registration);
-      case String(PluginGuestRegistrationKind.TENANTS_FOR_EACH.value): return this.tenantsForEach(registration);
+      case String(PluginGuestRegistrationKind.TENANTS_FOR_EACH.value): return this.tenantsForEach(registration, invoke);
       case String(PluginGuestRegistrationKind.JOB_WORKER.value): return this.jobWorker(context, registration);
       case String(PluginGuestRegistrationKind.MCP_TOOLS.value): return this.mcpTools(context, registration);
       case String(PluginGuestRegistrationKind.GATE.value): return this.gate(registration);
@@ -137,12 +138,12 @@ export class PluginHostRegistrations {
    * guest has none of its own. Each turn invokes the guest's handler with the store this run is in,
    * so the work the guest does lands in the right site — the same forwarding a scheduled task uses.
    */
-  private async tenantsForEach(registration: IPluginGuestRegistration): Promise<number> {
+  private async tenantsForEach(registration: IPluginGuestRegistration, invoke: (kind: string, handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown>): Promise<number> {
     const id = String(registration.handlerId);
     return PerTenantRun.forEach({
       label: `guest:${id}:tenants.forEach`,
       db: this.db as never,
-      work: async () => { await this.invoke('tenants', id, [], RequestContextUtils.storage.getStore()); },
+      work: async () => { await invoke('tenants', id, [], RequestContextUtils.storage.getStore()); },
     });
   }
 

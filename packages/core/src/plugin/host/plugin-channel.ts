@@ -85,6 +85,11 @@ export class PluginChannel {
     return this.closed;
   }
 
+  /** Requests sent on this channel still awaiting their answer — what a retiring process must finish. */
+  get pendingCount(): number {
+    return this.pending.size;
+  }
+
   private receive(message: any): void {
     if (!message || typeof message !== 'object' || typeof message.$fc !== 'string') return;
     if (message.$fc === 'res') {
