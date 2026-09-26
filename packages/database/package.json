@@ -19,6 +19,11 @@
       "import": "./dist/naming-strategy.js",
       "require": "./dist/naming-strategy.js"
     },
+    "./table-resolver": {
+      "types": "./dist/table-resolver.d.ts",
+      "import": "./dist/table-resolver.js",
+      "require": "./dist/table-resolver.js"
+    },
     "./enums/sort-direction.enum": {
       "types": "./dist/enums/sort-direction.enum.d.ts",
       "import": "./dist/enums/sort-direction.enum.js",
