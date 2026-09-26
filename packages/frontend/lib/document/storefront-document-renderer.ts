@@ -176,7 +176,6 @@ export class StorefrontDocumentRenderer {
       // it. Only the second case says so on screen.
       preview: await SiteVisibilityVerdict.isPreview(),
       runtimeScriptPath: FrontendRuntimeAssetManifest.runtimeScriptPath(),
-      layoutStylesheets: FrontendLayoutStylesheets.hrefs(),
       layoutInlineCss: FrontendLayoutStylesheets.inlineCss(),
       status: args.status || 200,
     });

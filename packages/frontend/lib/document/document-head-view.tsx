@@ -24,15 +24,14 @@ import type { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
  *    this document has.
  */
 export class DocumentHeadView {
-  static render({ page, site, theme, markup, injections, runtimeScriptPath, layoutStylesheets, layoutInlineCss }: {
+  static render({ page, site, theme, markup, injections, runtimeScriptPath, layoutInlineCss }: {
     page: Metadata;
     site: Metadata;
     theme: ThemeHeadModel | null;
     markup: ThemeSsrMarkup | null;
     injections: ReactElement[];
     runtimeScriptPath: string;
-    layoutStylesheets: string[];
-    /** The same CSS as `layoutStylesheets`, inlined, when this process cannot serve that href (dev). */
+    /** The framework's layout CSS, inlined; see `FrontendLayoutStylesheets`. */
     layoutInlineCss: string;
   }): ReactNode {
     return (
@@ -42,7 +41,6 @@ export class DocumentHeadView {
         <script dangerouslySetInnerHTML={{ __html: ColorSchemeBootScript.inlineScript() }} />
         <script dangerouslySetInnerHTML={{ __html: EarlyInteractionBuffer.inlineScript() }} />
         <MetadataHeadView.render page={page} site={site} />
-        {layoutStylesheets.map((href) => <link key={href} rel="stylesheet" href={href} />)}
         {layoutInlineCss ? <style id="fc-framework-baseline" dangerouslySetInnerHTML={{ __html: layoutInlineCss }} /> : null}
         {theme ? DocumentHeadView.themeHead(theme) : null}
         {markup ? DocumentHeadView.liftedHead(markup) : null}
