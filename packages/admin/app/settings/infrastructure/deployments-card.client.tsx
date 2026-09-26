@@ -88,7 +88,7 @@ export class DeploymentsCard extends AdminComponent {
           icon={FrameworkIcons.Refresh}
           title="How a release replaces the running apps"
           stacked
-          description="Restart: every app is recreated at once, and every site is down for about 45 seconds. Rolling: one app at a time, the new copy serving before the old one stops — no downtime, but it needs spare memory for a second copy of the largest app while it is swapped."
+          description="Restart: every app is recreated at once, and every site is down for about 45 seconds. Rolling: one app at a time, the new copy serving before the old one stops — no downtime, but it needs spare memory for a second copy of the largest app while it is swapped. Plugin processes run in the extension-host and carry over either way; a rolling deploy leaves the extension-host itself on its version, and it moves to a new one on the next restart deploy."
         >
           <div className="flex items-center gap-3">
             <div className="w-full md:w-72">
