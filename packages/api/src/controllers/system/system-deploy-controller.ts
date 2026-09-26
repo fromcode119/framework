@@ -5,7 +5,11 @@ import {
   AuditOutcome,
   BaseController,
   CoercionUtils,
+  DeployCapacity,
+  DeployMode,
   InternalServiceAuth,
+  PlatformSettingsService,
+  SystemConstants,
 } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
@@ -77,5 +81,25 @@ export class SystemDeployController extends BaseController {
     // the reason because that is the key every admin client reads a failure message from — a refusal
     // the operator cannot read is the same as no answer.
     res.status(409).json({ ...outcome.toJSON(), error: outcome.reason });
+  }
+
+  /**
+   * What a deploy would do, for Settings → Infrastructure: the stored mode, and whether this box has the
+   * memory for a rolling one right now. Measured here, the same way the deploy command measures it on
+   * the box (DeployCapacity), so the admin never promises a rolling deploy the command would refuse.
+   * Whether the NEXT release carries core migrations is only knowable at deploy time, so the admin
+   * states that rule instead of guessing.
+   */
+  async capacity(_req: Request, res: Response) {
+    const mode = DeployMode.resolve(await PlatformSettingsService.resolve(undefined, SystemConstants.META_KEY.DEPLOY_MODE, DeployMode.RESTART.value));
+    const capacity = DeployCapacity.forThisContainer();
+    res.json({
+      mode: mode.value,
+      availableBytes: capacity.availableBytes,
+      neededBytes: capacity.neededBytes,
+      reserveBytes: DeployCapacity.RESERVE_BYTES,
+      fits: capacity.fits,
+      summary: capacity.describe(),
+    });
   }
 }

@@ -1,4 +1,5 @@
 import http from 'http';
+import { GatewayRetryPolicy } from '@cli/services/gateway-retry-policy';
 import { Duplex } from 'stream';
 import httpProxy from 'http-proxy';
 import { ApiPathUtils, GatewayTarget, InternalServiceAuth, RequestSurfaceUtils, RouteConstants, TenantRouteMap } from '@fromcode119/core';
@@ -43,6 +44,9 @@ export class PlatformGateway {
   private readonly agent = new http.Agent({ keepAlive: true, maxSockets: 256, maxFreeSockets: 32 });
 
   private readonly proxy = httpProxy.createProxyServer({ ws: true, xfwd: true, agent: this.agent });
+  private readonly retries = new GatewayRetryPolicy();
+  /** Where each in-flight request was sent, so a retry goes to the same app. */
+  private readonly targetOf = new WeakMap<http.IncomingMessage, string>();
   private readonly port = PlatformGateway.readPort();
   private readonly targets: Record<string, string> = {
     [GatewayTarget.API.value]: process.env.API_TARGET_URL || 'http://api:3000',
@@ -65,7 +69,12 @@ export class PlatformGateway {
   constructor(private readonly routing: RoutingMapClient = new RoutingMapClient(`${process.env.API_TARGET_URL || 'http://api:3000'}${PlatformGateway.ROUTING_PATH}`)) {}
 
   start(): void {
-    this.proxy.on('error', (error, _req, res) => {
+    this.proxy.on('error', (error, req, res) => {
+      const target = this.targetOf.get(req);
+      if (target && this.retries.allows(error as NodeJS.ErrnoException, req, res)) {
+        this.proxy.web(req, res as http.ServerResponse, { target });
+        return;
+      }
       console.error('[platform-gateway] proxy error:', error.message);
       if (!res || !('writeHead' in res) || typeof res.writeHead !== 'function') return;
       if (!res.headersSent) {
@@ -146,7 +155,7 @@ export class PlatformGateway {
     // never heard of: at this point in a domain's life it legitimately has not been set up yet.
     if (GatewayPlainListenerPolicy.isChallengePath(url)) {
       const api = this.targets[GatewayTarget.API.value];
-      if (api) { this.proxy.web(req, res, { target: api }); return; }
+      if (api) { this.forward(req, res, api); return; }
     }
     const target = await this.targetFor(req);
     if (!target) {
@@ -154,6 +163,11 @@ export class PlatformGateway {
       res.end(JSON.stringify({ error: 'unknown_host', host: PlatformGateway.hostOf(req) }));
       return;
     }
+    this.forward(req, res, target);
+  }
+
+  private forward(req: http.IncomingMessage, res: http.ServerResponse, target: string): void {
+    this.targetOf.set(req, target);
     this.proxy.web(req, res, { target });
   }
 

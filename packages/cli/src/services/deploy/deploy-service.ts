@@ -5,6 +5,9 @@ import { ComposeStack } from '@cli/services/deploy/compose-stack';
 import { ReleaseHealthProbe } from '@cli/services/deploy/release-health-probe';
 import { ImageRetention } from '@cli/services/deploy/image-retention';
 import { DeploymentVersionStore } from '@cli/services/deploy/deployment-version-store';
+import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
+import { RollingDeploy } from '@cli/services/deploy/rolling-deploy';
+import { DeployMode } from '@fromcode119/core';
 
 /**
  * Deploy a published release to a target, prove it is serving, and clean up after it.
@@ -21,6 +24,7 @@ export class DeployService {
     private readonly stack: ComposeStack,
     private readonly versions: DeploymentVersionStore,
     private readonly probe: ReleaseHealthProbe,
+    private readonly rolling: (stack: ComposeStack) => RollingDeploy = (stack) => new RollingDeploy(stack),
   ) {}
 
   static async forTarget(name: string, healthTimeoutMs: number): Promise<DeployService> {
@@ -49,7 +53,18 @@ export class DeployService {
     }
 
     await this.versions.set(version);
-    await this.stack.up();
+    // The operator's deploy mode (Settings → Infrastructure), unless this release or this box rules
+    // rolling out — and then it says why, rather than silently taking the sites down.
+    const plan = await new DeployStrategy(this.stack, this.shell).choose();
+    console.log(chalk.blue(`Deploy mode: ${plan.mode.value} — ${plan.reason}.`));
+    if (plan.mode === DeployMode.ROLLING) {
+      if (!await this.rolling(this.stack).run(version)) {
+        await this.rollback(version, replaced, DeployMode.ROLLING);
+        return false;
+      }
+    } else {
+      await this.stack.up();
+    }
 
     if (!await this.probe.waitFor(version)) {
       await this.rollback(version, replaced);
@@ -62,7 +77,12 @@ export class DeployService {
     return true;
   }
 
-  private async rollback(failed: string, replaced: string): Promise<void> {
+  /**
+   * A failed ROLLING deploy is rolled back the same way: the apps it already swapped go back one at a
+   * time, so the operator who chose no downtime does not get the outage on the way back either. Only
+   * when that fails too is the whole stack recreated.
+   */
+  private async rollback(failed: string, replaced: string, mode: DeployMode = DeployMode.RESTART): Promise<void> {
     console.error(chalk.red(`\n${failed} did not report itself healthy.`));
     console.error(await this.stack.apiLogs(40));
 
@@ -73,7 +93,8 @@ export class DeployService {
 
     console.error(chalk.yellow(`Rolling back to ${replaced}...`));
     await this.versions.set(replaced);
-    await this.stack.up();
+    const rolledBack = mode === DeployMode.ROLLING && await this.rolling(this.stack).run(replaced);
+    if (!rolledBack) await this.stack.up();
     const restored = await this.probe.waitFor(replaced);
     console.error(restored
       ? chalk.yellow(`Rolled back; ${replaced} is serving.`)

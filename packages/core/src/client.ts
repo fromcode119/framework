@@ -251,3 +251,4 @@ export { TwoFactorMethod } from '@core/enums/two-factor-method.enum';
 export { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-import-id-mode.enum';
 export { TenantImportIdBasis } from '@core/tenant/provisioning/enums/tenant-import-id-basis.enum';
 export { PluginIsolationMode } from '@core/plugin/host/enums/plugin-isolation-mode.enum';
+export { DeployMode } from '@core/management/enums/deploy-mode.enum';

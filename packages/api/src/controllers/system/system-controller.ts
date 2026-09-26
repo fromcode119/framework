@@ -202,6 +202,10 @@ export class SystemController extends SystemAccountRoutes {
     return this.deployController.restart(req, res);
   }
 
+  async deployCapacity(req: Request, res: Response) {
+    return this.deployController.capacity(req, res);
+  }
+
   async getThemes(req: Request, res: Response) {
     return this.adminController.getThemes(req, res);
   }

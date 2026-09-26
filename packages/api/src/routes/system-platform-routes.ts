@@ -161,6 +161,8 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
       this.controller.listDeployApps);
     this.post(RouteConstants.SEGMENTS.DEPLOY_RESTART, this.auth.requirePermission('system:deploy:restart'),
       this.controller.restartApp);
+    this.get(RouteConstants.SEGMENTS.DEPLOY_CAPACITY, this.auth.requirePermission('system:deploy:restart'),
+      this.controller.deployCapacity);
 
     // Public/frontend endpoints
     this.get(RouteConstants.SEGMENTS.EVENTS, this.auth.guard(), this.controller.getEvents);

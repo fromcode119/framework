@@ -15,7 +15,7 @@
     "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build && npm run copy:templates",
     "prepack": "npm run copy:templates",
     "dev": "tsx watch --tsconfig tsconfig.dev.json src/server.ts",
-    "start": "node dist/bin.js",
+    "start": "exec node dist/bin.js",
     "test": "vitest run --config ../../vitest.plugins.config.ts --project api"
   },
   "publishConfig": {

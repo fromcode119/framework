@@ -31,7 +31,7 @@
     "build": "npm run build:bin && npm run build:sw && node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next build",
     "prepack": "npm run build:sw",
     "dev": "node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
-    "start": "node ../core/dist/process/app-launcher-main.js --app admin --hostname 0.0.0.0",
+    "start": "exec node ../core/dist/process/app-launcher-main.js --app admin --hostname 0.0.0.0",
     "test": "vitest run --config ../../vitest.plugins.config.ts --project admin --project admin-dom",
     "build:bin": "esbuild lib/admin-launcher.ts --bundle --format=cjs --platform=node --tsconfig-raw='{\"compilerOptions\":{\"experimentalDecorators\":true,\"useDefineForClassFields\":false}}' --outfile=dist/bin.js"
   },

@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import { GracefulHttpShutdown } from '@api/server/graceful-http-shutdown';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager } from '@fromcode119/core';
@@ -260,6 +261,7 @@ export class APIServer {
     server.listen(port, host, () => {
       this.logger.info(`Running on http://${host}:${port}`);
     });
+    new GracefulHttpShutdown(server, this.logger).install();
   }
 
   static async bootstrap(): Promise<void> {

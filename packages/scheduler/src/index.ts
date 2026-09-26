@@ -12,6 +12,7 @@ import type { IQueueManager } from '@scheduler/interfaces/queue-manager.interfac
 import type { ISchedulerTask } from '@scheduler/interfaces/scheduler-task.interface';
 
 import type { ISchedulerOptions } from '@scheduler/interfaces/scheduler-options.interface';
+import { SchedulerRunClaim } from '@scheduler/scheduler-run-claim';
 /** Inline scheduler table name — avoids importing from @fromcode119/sdk (circular tsconfig dep). */
 
 /** Minimal inline logger — avoids importing Logger from @fromcode119/sdk. */
@@ -31,10 +32,12 @@ export class SchedulerService {
   private pulseInterval: NodeJS.Timeout | null = null;
   private handlers: Map<string, ISchedulerTaskHandler> = new Map();
   private cronJobs: Map<string, ScheduledTask> = new Map();
+  private readonly claims: SchedulerRunClaim;
 
   constructor(db: IDatabaseManager, options: ISchedulerOptions = {}) {
     this.db = db;
     this.queueManager = options.queueManager;
+    this.claims = new SchedulerRunClaim(db, SchedulerService.SCHEDULER_TASKS_TABLE);
   }
 
   /**
@@ -198,8 +201,9 @@ export class SchedulerService {
 
     // Same reasoning as the pulse timer: a cron callback has no caller. runTask() catches today, but
     // nothing structural keeps it that way, and the cost of it changing is a dead process.
+    const slotMs = SchedulerRunClaim.slotMsFor(schedule);
     const job = cron.schedule(schedule, () => {
-      this.runTask(name).catch((error: unknown) => {
+      this.runClaimedCron(name, slotMs).catch((error: unknown) => {
         SchedulerService.logger.error(
           `Cron task "${name}" rejected: ${error instanceof Error ? error.message : String(error)}`
         );
@@ -208,6 +212,15 @@ export class SchedulerService {
 
     this.cronJobs.set(name, job);
     SchedulerService.logger.debug(`Set up cron job for "${name}": ${schedule}`);
+  }
+
+  /** Runs a cron firing only if this instance claimed it (see SchedulerRunClaim). */
+  private async runClaimedCron(name: string, slotMs: number): Promise<void> {
+    if (!(await this.claims.claimCron(name, new Date(), slotMs))) {
+      SchedulerService.logger.debug(`Task "${name}" was claimed by another instance for this slot; skipping.`);
+      return;
+    }
+    await this.runTask(name);
   }
 
   /**
@@ -223,14 +236,11 @@ export class SchedulerService {
       // Logic for interval: "5m", "1h", etc.
       // For simplicity in this pulse, we check if now > next_run
       if (task.next_run && now >= new Date(task.next_run)) {
-        await this.runTask(task.name);
-        
-        // Calculate next run
+        // Claimed BEFORE it runs, by moving next_run forward from the value read: another instance's
+        // pulse that read the same row matches nothing and leaves this run to whoever claimed it.
         const nextRun = this.calculateNextRun(task.schedule);
-        await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name: task.name }, {
-          last_run: now,
-          next_run: nextRun
-        });
+        if (!(await this.claims.claimInterval(task.name, task.next_run, nextRun))) continue;
+        await this.runTask(task.name);
       } else if (!task.next_run) {
         // First run initialization
         const nextRun = this.calculateNextRun(task.schedule);
@@ -260,11 +270,6 @@ export class SchedulerService {
         // Run immediately
         await handler();
       }
-
-      // Update last run in DB
-      await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name }, {
-        last_run: new Date()
-      });
 
     } catch (error: any) {
       SchedulerService.logger.error(`Failed to run task "${name}": ${error.message}`);

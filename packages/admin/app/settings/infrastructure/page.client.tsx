@@ -6,6 +6,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { CertificatesSettingsCard } from '@/app/settings/infrastructure/certificates-settings-card';
 import { RestartServicesCard } from '@/app/settings/infrastructure/restart-services-card';
+import { DeploymentsCard } from '@/app/settings/infrastructure/deployments-card.client';
 import { InfrastructureSettingsPageCards } from '@/app/settings/infrastructure/page-cards.client';
 
 /**
@@ -88,6 +89,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
               dialog, and a disabled button with a stated reason wherever the deployment cannot
               honour it. */}
           <div className="lg:col-span-2"><CertificatesSettingsCard /></div>
+          <DeploymentsCard />
           <RestartServicesCard />
 
           {/* Cache flushing and factory reset still have no endpoint and so still have no button. */}
