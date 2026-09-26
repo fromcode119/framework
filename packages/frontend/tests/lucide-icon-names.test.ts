@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 import dynamicIconImports from 'lucide-react/dist/esm/dynamicIconImports.js';
 import lucideIconNames from '@fromcode119/react/icons/lucide-icon-names.generated.json';
 import { LucideIconNodeEmitter } from '@/lib/bundling/lucide-icon-node-emitter';
+import { LucideLazyLoader } from '@fromcode119/react/icons/lucide-lazy-loader';
+import { RuntimeAssetConstants } from '@fromcode119/core/constants/runtime-asset.constants';
 
 /**
  * Drift guard for the generated Lucide artefacts (`npm run build:frontend-icons`):
@@ -64,6 +66,37 @@ describe('emitted lucide icon data modules', () => {
       const emitted = (await import(pathToFileURL(LucideIconFixture.moduleFile(publicDir, kebab)).href)).default;
       const lucide = (await (dynamicIconImports as Record<string, () => Promise<{ __iconNode: unknown }>>)[kebab]()).__iconNode;
       expect(emitted).toEqual(lucide);
+    }
+  });
+});
+
+describe('emitted lucide-react namespace module', () => {
+  const file = (publicDir: string) =>
+    path.join(LucideIconNodeEmitter.versionDir(publicDir, lucideIconNames.lucideReact), RuntimeAssetConstants.LUCIDE_NAMESPACE_FILE);
+
+  it('exists in every app public dir, beside the icons', () => {
+    for (const publicDir of LucideIconFixture.publicDirs) expect(existsSync(file(publicDir))).toBe(true);
+  });
+
+  it('exports exactly the names the browser loader resolves (what the old data: module enumerated)', () => {
+    const source = readFileSync(file(LucideIconFixture.publicDirs[0]), 'utf8');
+    const exported = [...source.matchAll(/^export const ([A-Za-z0-9_$]+) = /gm)].map((match) => match[1]);
+    expect(new Set(exported).size).toBe(exported.length);
+    expect([...exported].sort()).toEqual([...LucideLazyLoader.iconNames()].sort());
+  });
+
+  it('is an ES module that reads every export from the runtime registry', async () => {
+    const icon = () => null;
+    const target = globalThis as unknown as { window?: Record<string, unknown> };
+    const previous = target.window;
+    target.window = { [RuntimeAssetConstants.REGISTRY_GLOBAL]: { 'lucide-react': { ChevronDown: icon, ChevronDownIcon: icon, LucideChevronDown: icon } } };
+    try {
+      const mod = await import(`${pathToFileURL(file(LucideIconFixture.publicDirs[0])).href}?t=${Date.now()}`);
+      expect(mod.ChevronDown).toBe(icon);
+      expect(mod.LucideChevronDown).toBe(icon);
+      expect(mod.default).toEqual({ ChevronDown: icon, ChevronDownIcon: icon, LucideChevronDown: icon });
+    } finally {
+      target.window = previous;
     }
   });
 });

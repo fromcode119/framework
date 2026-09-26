@@ -1,9 +1,10 @@
 import { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
+import { RuntimeAssetConstants } from '@core/constants/runtime-asset.constants';
 
 export class RuntimeConstants {
   static readonly GLOBALS = {
     FROMCODE: 'Fromcode',
-    MODULES: '__fromcodeRuntimeModules',
+    MODULES: RuntimeAssetConstants.REGISTRY_GLOBAL,
     /** Window global carrying server-prefetched page data (nav menus, page-scoped products, …).
      *  The ONLY place this name is defined — framework injectors and theme readers both use it. */
     PAGE_PREFETCH: '__ATLANTIS_PAGE_PREFETCH__',
