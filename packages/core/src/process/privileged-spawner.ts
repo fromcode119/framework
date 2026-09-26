@@ -98,6 +98,9 @@ export class PrivilegedSpawner {
       out.flush();
       err.flush();
       if (this.children.get(id) === child) this.children.delete(id);
+      // Every process of a plugin has its own id (`plugin-<slug>.<n>`), so its sockets' directory is its
+      // alone: gone with it, or a plugin replaced a hundred times would leave a hundred behind.
+      if (!this.children.has(id)) fs.rmSync(path.join(this.runtimeDir, id), { recursive: true, force: true });
       this.channel.notify('exit', { id, pid: child.pid, code, signal });
     });
     child.on('error', (error) => this.channel.notify('output', { id, stream: String(GuestOutputStream.STDERR.value), line: `spawn error: ${error.message}` }));

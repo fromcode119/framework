@@ -11,7 +11,14 @@ import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
  * does not answer within the timeout gets a 504 here and is reported to the host, which restarts it.
  */
 export class PluginHostHttpProxy {
+  /** Requests being served, per routes socket: a replaced plugin process is retired only once its count is 0. */
+  private readonly serving = new Map<string, number>();
+
   constructor(private socketPath: string) {}
+
+  inFlight(socketPath: string): number {
+    return this.serving.get(socketPath) ?? 0;
+  }
 
   /** A restarted guest may live in a new directory; the next request goes there. */
   retarget(socketPath: string): void {
@@ -52,11 +59,21 @@ export class PluginHostHttpProxy {
         headers['content-length'] = String(serialized.length);
       }
 
+      // The socket is fixed for THIS request: a replacement that happens while it runs changes where the
+      // next one goes, and this one finishes on the process it started on.
+      const socketPath = this.socketPath;
+      this.serving.set(socketPath, this.inFlight(socketPath) + 1);
       let settled = false;
-      const finish = () => { if (!settled) { settled = true; resolve(); } };
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        const left = this.inFlight(socketPath) - 1;
+        if (left > 0) this.serving.set(socketPath, left); else this.serving.delete(socketPath);
+        resolve();
+      };
 
       const upstream = http.request({
-        socketPath: this.socketPath,
+        socketPath,
         method: req.method,
         path: envelope.targetPath ?? req.url,
         headers: headers as http.OutgoingHttpHeaders,
