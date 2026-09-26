@@ -68,6 +68,40 @@ export class LucideIconNodeEmitter {
     return `export default ${JSON.stringify(iconNode)};\n`;
   }
 
+  /**
+   * Every public export name of `lucide-react`'s icon surface for these kebab keys, in the same forms
+   * `LucideLazyLoader.iconNames()` reconstructs in the browser: `ChevronDown`, `ChevronDownIcon`,
+   * `LucideChevronDown`. A test pins the two to the same set.
+   */
+  static exportNames(kebabs: readonly string[]): string[] {
+    // A Set, like the loader's Map: two keys that spell the same PascalCase name are ONE export, and a
+    // module that exported it twice would not parse.
+    const names = new Set<string>();
+    for (const kebab of kebabs) {
+      const pascal = kebab.split('-').map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1)).join('');
+      names.add(pascal);
+      names.add(`${pascal}Icon`);
+      names.add(`Lucide${pascal}`);
+    }
+    return [...names].filter((name) => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name));
+  }
+
+  /**
+   * The static `lucide-react` namespace module the import map points at: one named export per icon,
+   * each read from the runtime registry's lazy Lucide proxy.
+   *
+   * It used to be built in the browser on every page load, as a `data:` URL in the import map: every
+   * one of the 5,730 names enumerated through the proxy (which made a component for each), joined and
+   * URL-encoded into a 400 KB string, inside the runtime's boot task. That was most of a 100 ms long
+   * task on a throttled phone, and three quarters of the import map. The list only changes with the
+   * installed lucide, so it is written here once per version and served as an immutable asset.
+   */
+  static namespaceModule(kebabs: readonly string[]): string {
+    const registry = `window.${RuntimeAssetConstants.REGISTRY_GLOBAL}`;
+    const lines = LucideIconNodeEmitter.exportNames(kebabs).map((name) => `export const ${name} = __fcLucide.${name};`);
+    return [`const __fcLucide = (${registry} && ${registry}["lucide-react"]);`, ...lines, 'export default __fcLucide;', ''].join('\n');
+  }
+
   /** Every `[kebab, iconNode]` pair, by importing each icon module lucide ships and reading its `__iconNode`. */
   static async collect(): Promise<Array<[string, unknown]>> {
     const table = (await import(LucideIconNodeEmitter.TABLE_MODULE)).default as Record<string, () => Promise<{ __iconNode?: unknown }>>;
@@ -96,6 +130,11 @@ export class LucideIconNodeEmitter {
       for (const [kebab, node] of icons) {
         writeFileSync(path.join(dir, `${kebab}.js`), LucideIconNodeEmitter.iconModule(node), 'utf8');
       }
+      writeFileSync(
+        path.join(dir, RuntimeAssetConstants.LUCIDE_NAMESPACE_FILE),
+        LucideIconNodeEmitter.namespaceModule(icons.map(([kebab]) => kebab)),
+        'utf8',
+      );
       dirs.push(dir);
     }
     mkdirSync(path.dirname(namesFile), { recursive: true });

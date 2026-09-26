@@ -1,6 +1,7 @@
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
 import type { IImportMapSources } from '@react/helpers/interfaces/import-map-sources.interface';
 import { RuntimeConstants, RuntimeRegistryAccess } from '@fromcode119/core/client';
+import { LucideIconAssetUrl } from '@react/icons/lucide-icon-asset-url';
 
 export class ImportMapInstaller {
   private static readonly RESERVED_IMPORT_NAMES = RuntimeConstants.CLIENT_HANDLED_MODULES;
@@ -32,8 +33,6 @@ export class ImportMapInstaller {
   ): Record<string, string> {
     const reactExpr = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT);
     const reactDomExpr = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT_DOM);
-    const lucideExpr = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.LUCIDE);
-    const lucideModule = RuntimeRegistryAccess.ensure()[RuntimeRegistryAccess.KEYS.LUCIDE] || {};
     return {
       react:
         `data:application/javascript,const __fcReact = ${reactExpr}; export default __fcReact; export const { useState, useEffect, useMemo, useCallback, useRef, createRef, createContext, useContext, useReducer, useLayoutEffect, useInsertionEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, useSyncExternalStore, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = __fcReact;`,
@@ -54,15 +53,10 @@ export class ImportMapInstaller {
       // The dev runtime carries the same distinction in its FOURTH argument (`isStaticChildren`).
       'react/jsx-dev-runtime':
         `data:application/javascript,const __fcR = ${reactExpr}; const __fcJsxDEV = (type, props, key, isStaticChildren) => { const p = key === undefined ? props : { ...(props || {}), key }; if (!isStaticChildren || !p || !Array.isArray(p.children)) return __fcR.createElement(type, p); const { children, ...rest } = p; return __fcR.createElement(type, rest, ...children); }; export const jsxDEV = __fcJsxDEV; export const Fragment = __fcR.Fragment; export default { jsxDEV, Fragment };`,
-      'lucide-react':
-        'data:application/javascript,' +
-        encodeURIComponent(
-          `const __fcLucide = ${lucideExpr};\n` +
-          Object.keys(lucideModule)
-            .filter((key) => key !== 'default' && key !== '__esModule' && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key))
-            .map((key) => `export const ${key} = __fcLucide.${key};`)
-            .join('\n') + `\nexport default __fcLucide;`,
-        ),
+      // A static module written beside the icons at build time (see `LucideIconNodeEmitter.namespaceModule`),
+      // not a `data:` URL generated here: enumerating 5,730 icon names and URL-encoding them on every
+      // page load was most of the runtime's longest boot task, and 400 KB of this import map.
+      'lucide-react': LucideIconAssetUrl.namespaceUrl(),
       '@fromcode119/react': 'data:application/javascript,' + encodeURIComponent(sources.reactExportSource),
       '@fromcode119/admin/components': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
       '@fromcode119/admin': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),

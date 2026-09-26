@@ -26,6 +26,16 @@ export class LucideIconAssetUrl {
     return RuntimeLocationUtils.isAdminRuntime() ? RuntimeLocationUtils.toAdminPath(relative) : relative;
   }
 
+  /**
+   * URL of the static `lucide-react` namespace module the build writes beside the icons
+   * (`RuntimeAssetConstants.LUCIDE_NAMESPACE_FILE`) — what the import map resolves `lucide-react` to.
+   */
+  static namespaceUrl(): string {
+    const relative = `/${RuntimeAssetConstants.SEGMENT}/${RuntimeAssetConstants.ICONS_SEGMENT}/${LucideIconAssetUrl.version}/${RuntimeAssetConstants.LUCIDE_NAMESPACE_FILE}`;
+    const appPath = RuntimeLocationUtils.isAdminRuntime() ? RuntimeLocationUtils.toAdminPath(relative) : relative;
+    return ApplicationUrlUtils.joinApiPath(ApplicationUrlUtils.inferBrowserBaseUrl(), appPath);
+  }
+
   /** Absolute URL on the current app's origin (root-relative when there is no window). */
   static for(kebab: string): string {
     return ApplicationUrlUtils.joinApiPath(ApplicationUrlUtils.inferBrowserBaseUrl(), LucideIconAssetUrl.path(kebab));
