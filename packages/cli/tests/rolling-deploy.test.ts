@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DeployCapacity, DeployMode } from '@fromcode119/core';
 import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
 import { RollingDeploy } from '@cli/services/deploy/rolling-deploy';
+import { DeployService } from '@cli/services/deploy/deploy-service';
 
 const FREE = [
   '               total        used        free      shared  buff/cache   available',
@@ -119,5 +120,33 @@ describe('RollingDeploy', () => {
     expect(compose.stopped).toEqual(['api-old', 'admin-new-1']);
     expect(compose.containers.frontend).toEqual(['front-old']);
     expect(compose.gatewayRestarts).toBe(0);
+  });
+});
+
+describe('DeployService on a failed rolling deploy', () => {
+  /** The new admin never comes up; the version the stack is asked to roll back to always does. */
+  it('rolls the swapped apps back one at a time instead of recreating the stack', async () => {
+    let target = '0.2.196';
+    const compose = new ComposeFixture((service) => service !== 'admin' || target !== '0.2.196');
+    let ups = 0;
+    const stack = Object.assign(compose.stack, {
+      pull: async () => 0,
+      up: async () => { ups += 1; return 0; },
+      query: async (sql: string) => (sql.includes('deploy_mode') ? 'rolling' : '54'),
+      migrationFiles: async () => ['054_timestamps_carry_their_zone.js'],
+      apiLogs: async () => '',
+    });
+    // A new api container reports whichever version `.env` named when it was started.
+    const probeContainer = stack.probeContainer;
+    stack.probeContainer = async (id: string, script: string) => (await probeContainer(id, script)).replace('0.2.196', target);
+    const versions: any = { current: async () => '0.2.195', set: async (v: string) => { target = v; }, rememberReplaced: async () => undefined, rollbackTarget: async () => '' };
+    const probe: any = { waitFor: async (v: string) => v === target };
+    const rolling = (s: any) => new RollingDeploy(s, async () => undefined, 0);
+    const service = new DeployService({ name: 'probe' } as any, StackFixture.shell(4_486_000_000), stack, versions, probe, rolling);
+
+    expect(await service.deploy('0.2.196')).toBe(false);
+    expect(target).toBe('0.2.195');
+    expect(ups).toBe(0);
+    expect(compose.gatewayRestarts).toBe(1);
   });
 });

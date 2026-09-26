@@ -24,6 +24,7 @@ export class DeployService {
     private readonly stack: ComposeStack,
     private readonly versions: DeploymentVersionStore,
     private readonly probe: ReleaseHealthProbe,
+    private readonly rolling: (stack: ComposeStack) => RollingDeploy = (stack) => new RollingDeploy(stack),
   ) {}
 
   static async forTarget(name: string, healthTimeoutMs: number): Promise<DeployService> {
@@ -57,8 +58,8 @@ export class DeployService {
     const plan = await new DeployStrategy(this.stack, this.shell).choose();
     console.log(chalk.blue(`Deploy mode: ${plan.mode.value} — ${plan.reason}.`));
     if (plan.mode === DeployMode.ROLLING) {
-      if (!await new RollingDeploy(this.stack).run(version)) {
-        await this.rollback(version, replaced);
+      if (!await this.rolling(this.stack).run(version)) {
+        await this.rollback(version, replaced, DeployMode.ROLLING);
         return false;
       }
     } else {
@@ -76,7 +77,12 @@ export class DeployService {
     return true;
   }
 
-  private async rollback(failed: string, replaced: string): Promise<void> {
+  /**
+   * A failed ROLLING deploy is rolled back the same way: the apps it already swapped go back one at a
+   * time, so the operator who chose no downtime does not get the outage on the way back either. Only
+   * when that fails too is the whole stack recreated.
+   */
+  private async rollback(failed: string, replaced: string, mode: DeployMode = DeployMode.RESTART): Promise<void> {
     console.error(chalk.red(`\n${failed} did not report itself healthy.`));
     console.error(await this.stack.apiLogs(40));
 
@@ -87,7 +93,8 @@ export class DeployService {
 
     console.error(chalk.yellow(`Rolling back to ${replaced}...`));
     await this.versions.set(replaced);
-    await this.stack.up();
+    const rolledBack = mode === DeployMode.ROLLING && await this.rolling(this.stack).run(replaced);
+    if (!rolledBack) await this.stack.up();
     const restored = await this.probe.waitFor(replaced);
     console.error(restored
       ? chalk.yellow(`Rolled back; ${replaced} is serving.`)
