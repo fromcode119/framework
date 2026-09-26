@@ -91,7 +91,13 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
     const spawner = SpawnerClient.current();
     if (spawner?.hostedBy !== SpawnerClient.HOSTED_BY_EXTENSION_HOST) return null;
     const version = String(this.manifest.version ?? '');
-    const listing = (await spawner.inventory())
+    // A rolling deploy never replaces the extension-host, so it can be older than this api and not know
+    // `inventory`. Nothing can be taken over from it then — which is no reason not to start the plugin.
+    const inventory = await spawner.inventory().catch((error) => {
+      this.logger.warn(`the extension-host could not list its processes (${error instanceof Error ? error.message : String(error)}); starting a new one`);
+      return [];
+    });
+    const listing = inventory
       .filter((entry) => entry.label?.slug === this.slug && entry.label.version === version && entry.label.memoryMb === this.limits.memoryMb)
       .pop();
     if (!listing?.label) return null;

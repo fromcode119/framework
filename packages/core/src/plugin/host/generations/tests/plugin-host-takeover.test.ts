@@ -71,6 +71,13 @@ describe('taking over a running plugin process', () => {
     expect(host.logger.warn).toHaveBeenCalledWith(expect.stringContaining('had not finished starting'));
   });
 
+  it('starts a new process, and says so, when the extension-host is too old to list its processes', async () => {
+    SpawnerClient.publish({ ...spawner([]), inventory: vi.fn(async () => { throw new Error('spawner: unknown message "inventory"'); }) } as unknown as SpawnerClient);
+    const host = HostFixture.build();
+    expect(await host.takeOver()).toBeNull();
+    expect(host.logger.warn).toHaveBeenCalledWith(expect.stringContaining('could not list its processes'));
+  });
+
   it('starts a new process, and says so, when the running one cannot be attached to', async () => {
     SpawnerClient.publish(spawner([{ id: 'plugin-alpha.old.3', pid: 42, label: label('1.2.0'), holders: 0, guestDir: '/x' }]) as unknown as SpawnerClient);
     vi.spyOn(PluginGuestAttachment, 'attach').mockRejectedValue(new Error('attach refused — wrong secret'));
