@@ -1,3 +1,4 @@
+import net from 'node:net';
 import { describe, expect, it } from 'vitest';
 import { IntegrationStoredProviderService } from '@core/integrations/integration-stored-provider-service';
 import { SecretService } from '@core/security/secret-service';
@@ -33,6 +34,41 @@ describe('EmailGateway sender', () => {
     expect(
       EmailGateway.normalizeSmtpConfig({ host: 'smtp.example.com', fromAddress: 'notifications@example.com', fromName: 'Shop' }).from,
     ).toBe('"Shop" <notifications@example.com>');
+  });
+
+  it('keeps the sender when an already-normalized config is normalized again', () => {
+    const once = EmailGateway.normalizeSmtpConfig({ host: 'smtp.example.com', fromAddress: 'notifications@example.com', fromName: 'Shop' });
+    expect(EmailGateway.normalizeSmtpConfig(once).from).toBe('"Shop" <notifications@example.com>');
+  });
+
+  it('sends through the provider as the configured From, not the Reply-To', async () => {
+    const senders: string[] = [];
+    const server = net.createServer((socket) => {
+      let inData = false;
+      socket.write('220 localhost ESMTP\r\n');
+      socket.on('data', (chunk) => {
+        for (const line of chunk.toString().split('\r\n').filter(Boolean)) {
+          if (inData) { if (line === '.') { inData = false; socket.write('250 OK\r\n'); } continue; }
+          const command = line.toUpperCase();
+          if (command.startsWith('MAIL FROM')) senders.push(line.slice(10).replace(/[<>]/g, '').split(' ')[0]);
+          if (command === 'DATA') { inData = true; socket.write('354 go\r\n'); }
+          else if (command === 'QUIT') socket.end('221 bye\r\n');
+          else socket.write('250 OK\r\n');
+        }
+      });
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const port = (server.address() as net.AddressInfo).port;
+      const smtp = EmailIntegrationDefinition.definition.providers?.find((provider) => provider.key === 'smtp');
+      // The registry's order: normalize the stored config, then hand the result to `create`.
+      const normalized = await smtp!.normalizeConfig!({ host: '127.0.0.1', port, fromAddress: 'notifications@example.com', fromName: 'Shop' });
+      const email: any = await smtp!.create({ ...normalized, ignoreTLS: true });
+      await email.send({ to: 'owner@example.com', subject: 'New submission', text: 'x', headers: { 'Reply-To': 'visitor@example.org' } });
+      expect(senders).toEqual(['notifications@example.com']);
+    } finally {
+      server.close();
+    }
   });
 
   it('sets no sender when no From Address is configured', () => {

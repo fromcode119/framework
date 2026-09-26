@@ -11,6 +11,9 @@ export class EmailGateway {
     // The From Address / From Name on the same screen. Plugin mail names no sender of its own, so
     // this is what it is sent as; blank stays blank (no invented sender).
     const sender = new FrameworkEmailSender(String(input?.fromAddress || ''), String(input?.fromName || ''));
+    // Runs twice: the registry normalizes, then the provider's `create` normalizes that result again.
+    // The second pass has only `from`, so without this it dropped the sender the first pass set.
+    const from = sender.isConfigured ? sender.identity : String(input?.from || '').trim();
     return {
       host: String(input?.host || ''),
       port: Number(input?.port) || 587,
@@ -23,7 +26,7 @@ export class EmailGateway {
             },
           }
         : {}),
-      ...(sender.isConfigured ? { from: sender.identity } : {}),
+      ...(from ? { from } : {}),
     };
   }
 
