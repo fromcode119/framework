@@ -10,11 +10,13 @@ import { PluginUploadController } from '@api/controllers/plugins/plugin-upload-c
 import { PluginLifecycleController } from '@api/controllers/plugins/plugin-lifecycle-controller';
 import { RouteConstants } from '@fromcode119/core';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
+import { PluginRuntimeController } from '@api/controllers/plugins/plugin-runtime-controller';
 
 export class PluginRouter extends BaseRouter {
   private controller: PluginController;
   private uploadController: PluginUploadController;
   private lifecycleController: PluginLifecycleController;
+  private runtimeController: PluginRuntimeController;
   private upload: multer.Multer;
   private chunkUpload: multer.Multer;
 
@@ -27,6 +29,7 @@ export class PluginRouter extends BaseRouter {
     this.controller = new PluginController(manager);
     this.uploadController = new PluginUploadController(manager);
     this.lifecycleController = new PluginLifecycleController(manager);
+    this.runtimeController = new PluginRuntimeController(manager);
     const uploadsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-uploads-'));
     const chunkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-upload-chunks-'));
     this.upload = multer({ dest: uploadsDir });
@@ -65,6 +68,7 @@ export class PluginRouter extends BaseRouter {
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPDATE_ALL, this.auth.guard(['admin']), platform, (req: any, res: any) => this.controller.updateAll(req, res));
     this.get(RouteConstants.SEGMENTS.PLUGINS_INSTALL_OPERATION, this.auth.guard(['admin']), platform, this.controller.installOperation);
     this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_LOGS, this.auth.guard(['admin']), platform, this.controller.logs);
+    this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_RUNTIME, this.auth.guard(['admin']), platform, this.runtimeController.runtime);
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_SESSION, this.auth.guard(['admin']), platform, this.uploadController.startUploadSession);
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_CHUNK, this.auth.guard(['admin']), platform, this.chunkUpload.single('chunk'), this.uploadController.uploadChunk);
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPLOAD_SESSION_INSPECT, this.auth.guard(['admin']), platform, this.uploadController.inspectStagedUpload);

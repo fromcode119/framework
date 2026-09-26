@@ -1,6 +1,6 @@
 import { CoreServices } from '@core/services/core-services';
 import { Plugins } from '@core/plugin/plugins';
-import { PluginChannel } from '@core/plugin/host/plugin-channel';
+import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-guest-registrar';
 import { PluginGuestHandlers } from '@core/plugin/host/plugin-guest-handlers';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
@@ -51,8 +51,8 @@ export class PluginGuestCoreBridge {
     await PluginGuestCoreBridge.prime(remote);
   }
 
-  static install(channel: PluginChannel, remote: PluginGuestRemote, handlers: PluginGuestHandlers): void {
-    const registration = (payload: IPluginGuestRegistration) => channel.request('register', payload, 30_000);
+  static install(registrar: PluginGuestRegistrar, remote: PluginGuestRemote, handlers: PluginGuestHandlers): void {
+    const registration = (payload: IPluginGuestRegistration) => registrar.send(payload);
 
     const bridges: Record<string, unknown> = {
       defaultPageContracts: {

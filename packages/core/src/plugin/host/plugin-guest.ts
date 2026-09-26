@@ -14,6 +14,8 @@ import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest
 import type { IPluginInvocation } from '@core/plugin/host/interfaces/plugin-invocation.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
+import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-guest-registrar';
+import { PluginGuestRuntimeReporter } from '@core/plugin/host/runtime/plugin-guest-runtime-reporter';
 
 /**
  * The plugin's process. Loads the plugin exactly as the scanner would in-process, gives it a context
@@ -29,6 +31,7 @@ export class PluginGuest {
   private readonly remote: PluginGuestRemote;
   private readonly handlers = new PluginGuestHandlers();
   private readonly state = new PluginGuestState();
+  private readonly registrar: PluginGuestRegistrar;
   private http: PluginGuestHttp | null = null;
   private boot: IPluginGuestBoot | null = null;
   private contract: Record<string, any> = {};
@@ -37,6 +40,7 @@ export class PluginGuest {
 
   constructor(transport: ConstructorParameters<typeof PluginChannel>[0]) {
     this.channel = new PluginChannel(transport);
+    this.registrar = new PluginGuestRegistrar(this.channel);
     this.remote = new PluginGuestRemote(this.channel, PluginGuest.CALL_TIMEOUT_MS, (handler) => this.handlers.keepStable(handler), (id) => this.handlers.take(id));
     this.channel.serve((type, payload) => this.handle(type, payload));
   }
@@ -50,6 +54,7 @@ export class PluginGuest {
       case 'peers': { this.state.update(payload as Pick<IPluginInvocation, 'peers' | 'enabledPlugins'>); return true; }
       case 'stop': return this.stop();
       case 'ping': return 'pong';
+      case 'runtime': return PluginGuestRuntimeReporter.report(this.registrar);
       default: throw new Error(`guest: unknown message "${type}"`);
     }
   }
@@ -60,10 +65,10 @@ export class PluginGuest {
     process.env.ATLANTIS_PROJECT_ROOT = boot.projectRoot;
     process.chdir(boot.projectRoot);
     PluginGuest.shareFrameworkModules(boot.projectRoot);
-    PluginGuestCoreBridge.install(this.channel, this.remote, this.handlers);
+    PluginGuestCoreBridge.install(this.registrar, this.remote, this.handlers);
 
     this.http = new PluginGuestHttp(boot.socketPath, this.remote, boot.socketMode);
-    this.contextFactory = new PluginGuestContextFactory(this.channel, this.remote, this.handlers, this.http, this.state, boot);
+    this.contextFactory = new PluginGuestContextFactory(this.channel, this.registrar, this.remote, this.handlers, this.http, this.state, boot);
     this.context = this.contextFactory.create();
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires

@@ -11,6 +11,7 @@ import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
+import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-guest-registrar';
 
 /**
  * The `PluginContext` an isolated plugin receives: the same shape as in-process, every namespace an
@@ -26,6 +27,7 @@ export class PluginGuestContextFactory {
 
   constructor(
     private readonly channel: PluginChannel,
+    private readonly registrar: PluginGuestRegistrar,
     private readonly remote: PluginGuestRemote,
     private readonly handlers: PluginGuestHandlers,
     private readonly http: PluginGuestHttp,
@@ -36,12 +38,12 @@ export class PluginGuestContextFactory {
   create(): PluginContext {
     const remote = this.remote;
     const ctx = (name: string) => remote.ref('context', [{ name }]);
-    const register = (payload: IPluginGuestRegistration) => this.channel.request('register', payload, 30_000);
+    const register = (payload: IPluginGuestRegistration) => this.registrar.send(payload);
     const locals = new PluginGuestLocals(this.boot, this.remote);
     this.locals = locals;
     const context: Record<string, unknown> = {
       db: this.database([{ name: 'db' }]),
-      api: new PluginGuestApiFactory(this.channel, this.handlers, this.http, this.boot).create(),
+      api: new PluginGuestApiFactory(this.registrar, this.handlers, this.http, this.boot).create(),
       hooks: this.hooks(register),
       auth: this.auth(),
       logger: this.logger(),

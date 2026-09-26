@@ -9,6 +9,9 @@ import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 import { LogLevel } from '@core/enums/log-level.enum';
+import { GuestProcessLaunchers } from '@core/process/guest-process-launchers';
+import { PluginHostRuntimeReader } from '@core/plugin/host/runtime/plugin-host-runtime-reader';
+import type { IPluginHostRuntime } from '@core/plugin/host/runtime/interfaces/plugin-host-runtime.interface';
 
 /**
  * What the guest asks of the HOST, and what happens when the guest dies.
@@ -115,6 +118,12 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     if (!tenantId) return active;
     const enabled = PluginTenantAccess.enabledSlugsFor(tenantId);
     return active.filter((slug) => enabled.has(slug));
+  }
+
+  /** This plugin's process for the admin: where it runs, as whom, its limits, and what it reports. */
+  runtime(): Promise<IPluginHostRuntime> {
+    const uid = GuestProcessLaunchers.current().isolatesIdentity && this.identity ? Number(this.identity.uid) : null;
+    return PluginHostRuntimeReader.read({ slug: this.slug, running: Boolean(this.guest), pid: this.guest?.pid ?? null, uid, limits: this.limits, recentRestarts: Number(this.restarts) || 0 }, this.channel);
   }
 
   protected exited(code: number | null, signal: string | null): void {

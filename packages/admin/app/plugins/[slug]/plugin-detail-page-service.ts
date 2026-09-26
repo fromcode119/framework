@@ -10,6 +10,7 @@ import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.en
 import type { IPluginLogEntry } from '@/app/plugins/[slug]/interfaces/plugin-log-entry.interface';
 import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
 import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
+import type { IPluginRuntimeResponse } from '@/app/plugins/[slug]/interfaces/plugin-runtime-response.interface';
 
 export class PluginDetailPageService {
   /**
@@ -70,6 +71,10 @@ export class PluginDetailPageService {
 
   static async fetchLogs(slug: string): Promise<IPluginLogEntry[]> {
     return AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.LOGS(slug));
+  }
+
+  static async fetchRuntime(slug: string): Promise<IPluginRuntimeResponse> {
+    return AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.RUNTIME(slug));
   }
 
   /**

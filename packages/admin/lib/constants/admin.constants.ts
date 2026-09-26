@@ -100,6 +100,7 @@ export class AdminConstants {
     HEALTH: AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_HEALTH),
     CONFIG: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.CONFIG, { slug })),
     LOGS: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_LOGS, { slug }),
+    RUNTIME: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_RUNTIME, { slug }),
     LOAD_INSTALLED: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_LOAD_INSTALLED, { slug }),
     DELETE: (slug: string) => AdminConstants.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.DELETE, { slug })),
     SETTINGS: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS, { slug }),
