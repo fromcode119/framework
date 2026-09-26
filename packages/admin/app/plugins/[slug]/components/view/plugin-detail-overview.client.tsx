@@ -12,6 +12,7 @@ import { VersionComparisonService } from '@fromcode119/core/client';
 import type { IPluginLogEntry } from '@/app/plugins/[slug]/interfaces/plugin-log-entry.interface';
 import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 
 export class PluginDetailOverview extends PureReactor {
   @prop declare loadingLogs: boolean;
@@ -19,6 +20,8 @@ export class PluginDetailOverview extends PureReactor {
   @prop declare marketplaceItem: IPluginMarketplaceItem | null;
   @prop declare onRefreshLogs: () => void;
   @prop declare onToggle: () => void;
+  /** In a site: its switch (every site's) and its activity log (every site's) are the platform's, not shown here. */
+  @prop declare siteScope: boolean;
   @prop declare plugin: ILoadedPlugin;
   @prop declare theme: ThemeMode;
 
@@ -88,16 +91,18 @@ export class PluginDetailOverview extends PureReactor {
                 <span className={`text-sm font-semibold uppercase tracking-tighter ${this.isActive ? 'text-green-500' : 'text-slate-500'}`}>{this.runtimeState.value}</span>
               </div>
             </div>
-            <div className={`flex items-center gap-4 p-2.5 rounded-lg border transition-all duration-300 ${this.theme === ThemeMode.DARK ? 'bg-slate-800/50 border-white/5' : 'bg-slate-100/80 border-slate-200/60 shadow-inner'}`}>
+            {!this.siteScope && <div className={`flex items-center gap-4 p-2.5 rounded-lg border transition-all duration-300 ${this.theme === ThemeMode.DARK ? 'bg-slate-800/50 border-white/5' : 'bg-slate-100/80 border-slate-200/60 shadow-inner'}`}>
               <span className={`text-[11px] font-semibold uppercase tracking-wider ${isHeld ? 'text-amber-600 dark:text-amber-400' : this.theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-600'}`}>
                 {toggleLabel}
               </span>
               <Switch checked={this.isActive} onChange={(_: boolean) => this.onToggle()} className="scale-110" />
-            </div>
+            </div>}
           </div>
         </Card>
 
-        <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${this.theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
+        {this.siteScope ? (
+          <PlatformScopeGate what="Switching this plugin on or off for every site, and its activity log across sites,">{null}</PlatformScopeGate>
+        ) : <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${this.theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-[11px] font-semibold uppercase tracking-wider ${this.theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Active Activity Logs</h3>
             <button onClick={this.onRefreshLogs} className={`h-9 px-4 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all flex items-center gap-2 border ${this.theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-indigo-400 hover:bg-slate-700' : 'bg-white border-slate-200 text-indigo-500 hover:text-indigo-600 shadow-sm hover:shadow-md'}`}>
@@ -129,7 +134,7 @@ export class PluginDetailOverview extends PureReactor {
               )}
             </div>
           </div>
-        </Card>
+        </Card>}
       </>
     );
   }

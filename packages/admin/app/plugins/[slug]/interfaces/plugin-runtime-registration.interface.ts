@@ -9,4 +9,7 @@ export interface IPluginRuntimeRegistration {
   key?: string;
   middleware?: { id: string; stage: string };
   tools?: Array<{ tool?: string }>;
+  /** A declaration (a collection, translations, a provider): where the call starts, and the call itself. */
+  root?: string;
+  steps?: Array<{ name: string; args?: unknown[] }>;
 }

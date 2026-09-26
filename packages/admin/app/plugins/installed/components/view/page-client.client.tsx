@@ -14,6 +14,7 @@ import { InstalledPluginsPageController } from '@/app/plugins/installed/installe
 import type { IInstalledPluginMarketplaceItem } from '@/app/plugins/installed/interfaces/installed-plugin-marketplace-item.interface';
 import type { IInstalledPluginsPageClientState } from '@/app/plugins/installed/interfaces/installed-plugins-page-client-state.interface';
 import type { IInstalledPluginsPageHost } from '@/app/plugins/installed/interfaces/installed-plugins-page-host.interface';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 
 export class InstalledPluginsPageClient
   extends AdminComponent
@@ -29,6 +30,9 @@ export class InstalledPluginsPageClient
   @state plugins: ILoadedPlugin[] = [];
   @state marketplaceData: IInstalledPluginMarketplaceItem[] = [];
   @state loading = true;
+  /** Where the operator stands; the platform's controls wait until it is known. */
+  @state siteScope = false;
+  @state scopeKnown = false;
   @state searchQuery = '';
   @state showDeleteConfirm = false;
   @state showDependencyConfirm = false;
@@ -72,6 +76,11 @@ export class InstalledPluginsPageClient
 
   componentDidMount(): void {
     this.mounted = true;
+    void PlatformSettingLocks.load().then((locks) => {
+      if (!this.mounted) return;
+      this.siteScope = locks.isSiteScope();
+      this.scopeKnown = true;
+    });
     this.prevRefreshVersion = this.runtime.plugins?.refreshVersion;
     void this.actions.fetchPlugins();
   }
@@ -88,15 +97,20 @@ export class InstalledPluginsPageClient
     this.mounted = false;
   }
 
-  /** The host's answer for the actions class and the view alike — one source, never two. */
+  /**
+   * The host's answer for the actions class and the view alike — one source, never two. A platform admin
+   * standing in a SITE does not get the platform's controls either: installing, switching a plugin on or
+   * off (for every site) and removing it are platform acts, not this site's. Off until the scope is known.
+   */
   get canManage(): boolean {
-    return PlatformAccess.canManagePlatform(this.auth.user);
+    return PlatformAccess.canManagePlatform(this.auth.user) && this.scopeKnown && !this.siteScope;
   }
 
   render(): ReactNode {
     return (
       <InstalledPluginsView
         canManage={this.canManage}
+        siteScope={this.siteScope}
         closeDeleteConfirm={() => {
           this.showDeleteConfirm = false;
           this.pluginToDelete = null;

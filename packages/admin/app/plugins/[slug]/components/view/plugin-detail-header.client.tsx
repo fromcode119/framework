@@ -19,6 +19,8 @@ export class PluginDetailHeader extends PureReactor {
   @prop declare marketplaceItem: IPluginMarketplaceItem | null;
   @prop declare onSaveSandbox: () => void;
   @prop declare onUpdate: () => void;
+  /** Updating it and its isolation policy are the platform's, offered only in Platform scope to a platform admin. */
+  @prop declare platformActions: boolean;
   @prop declare plugin: ILoadedPlugin;
   @prop declare theme: ThemeMode;
 
@@ -59,7 +61,7 @@ export class PluginDetailHeader extends PureReactor {
                 </span>
               </>
             ) : null}
-            {hasUpdate && (
+            {hasUpdate && this.platformActions && (
               <button
                 onClick={onUpdate}
                 disabled={isUpdating}
@@ -71,7 +73,7 @@ export class PluginDetailHeader extends PureReactor {
             )}
           </div>
         </div>
-        {activeTab === PluginDetailTab.RESOURCES && (
+        {activeTab === PluginDetailTab.RESOURCES && this.platformActions && (
           <Button onClick={onSaveSandbox} isLoading={isSaving} className="px-4 rounded-lg shadow-sm shadow-indigo-600/10">
             Update Policy
           </Button>

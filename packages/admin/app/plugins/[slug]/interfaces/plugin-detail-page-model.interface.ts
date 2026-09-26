@@ -10,6 +10,8 @@ import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plu
 
 export interface IPluginDetailPageModel {
   activeTab: PluginDetailTab;
+  /** The operator is standing in a site: the platform's controls for this plugin are not offered here. */
+  siteScope: boolean;
   fetchLogs: () => Promise<void>;
   handleDelete: () => Promise<void>;
   handleSaveSandbox: () => Promise<void>;

@@ -17,6 +17,7 @@ import { MarketplacePluginCard } from '@/app/plugins/marketplace/components/view
 import { MarketplaceLoadingGrid } from '@/app/plugins/marketplace/components/view/marketplace-loading-grid.client';
 import { MarketplaceEmptyState } from '@/app/plugins/marketplace/components/view/marketplace-empty-state.client';
 import { state } from '@fromcode119/react-class-components';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 
 export class MarketplacePage extends AdminComponent implements IPluginBatchSettleHost {
   private mounted = false;
@@ -193,6 +194,10 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
   }
 
   render(): ReactElement {
+    return <PlatformScopeGate what="The marketplace">{this.renderMarketplace()}</PlatformScopeGate>;
+  }
+
+  private renderMarketplace(): ReactElement {
     if (!this.canManagePlatform) {
       return (
         <PlatformOnlyPanel detail="The marketplace installs plugins and themes onto the container every site runs on, so only a platform admin can browse or install from it. The plugins your site already runs are under Plugins, with each one's own settings." />
