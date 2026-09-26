@@ -8,6 +8,7 @@ import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
 import { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrations';
 import type { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outage';
 import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
+import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
 
 /**
@@ -55,6 +56,8 @@ export abstract class PluginHostState {
   protected declare healthyTimer: NodeJS.Timeout | null;
   protected declare wasEnabled: any;
   protected declare initDeferred: any;
+  /** What a process this api took over had registered, restored when the boot's `onInit` would run; null otherwise. */
+  protected declare takenOver: IPluginGuestRegistration[] | null;
   /**
    * The peer snapshot last SENT to the guest, as a signature. Empty means the guest holds whatever
    * its boot left it — which is why it is cleared wherever the channel is. See `PluginHost.syncPeers`.

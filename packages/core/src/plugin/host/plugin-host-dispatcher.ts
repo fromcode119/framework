@@ -49,8 +49,8 @@ export class PluginHostDispatcher {
    * run on its context. No token — it may be replayed to an api that minted none — and no site: what a
    * plugin declares belongs to the platform, which is how its boot-time `onInit` ran it anyway.
    */
-  declare(context: PluginContext, steps: IPluginRemoteCall['steps']): Promise<unknown> {
-    return this.walk(context, steps);
+  declare(context: PluginContext, steps: IPluginRemoteCall['steps'], root: string = String(PluginRemoteCallRoot.CONTEXT.value)): Promise<unknown> {
+    return this.walk(this.root(context, root), steps);
   }
 
   private root(context: PluginContext, root: IPluginRemoteCall['root']): unknown {

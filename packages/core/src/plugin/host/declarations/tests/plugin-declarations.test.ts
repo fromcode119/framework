@@ -30,6 +30,14 @@ describe('PluginDeclarations coverage', () => {
   });
 });
 
+describe('the core registries a plugin process fills', () => {
+  it('reach the api only as declarations — none as a bare call a new api would never hear of', () => {
+    const bridge = fs.readFileSync(path.resolve(__dirname, '../../plugin-guest-core-bridge.ts'), 'utf8');
+    expect(bridge).not.toMatch(/remote\.call\('core'/);
+    for (const [registry, method] of PluginDeclarations.CORE_CALLS) expect(bridge).toContain(`declarations.declare('${registry}', '${method}'`);
+  });
+});
+
 describe('a declaration made in a plugin process', () => {
   it('is sent as a registration, and recorded so another api can be told it again', async () => {
     const sent: any[] = [];
@@ -41,7 +49,7 @@ describe('a declaration made in a plugin process', () => {
     await collections.register({ slug: 'wallets', fields: [{ name: 'balance', type: 'number' }] });
     collections.find('wallets');
 
-    expect(sent).toEqual([{ kind: 'declaration', steps: [{ name: 'collections' }, { name: 'register', args: [{ slug: 'wallets', fields: [{ name: 'balance', type: 'number' }] }] }] }]);
+    expect(sent).toEqual([{ kind: 'declaration', root: 'context', steps: [{ name: 'collections' }, { name: 'register', args: [{ slug: 'wallets', fields: [{ name: 'balance', type: 'number' }] }] }] }]);
     expect(registrar.snapshot()).toEqual(sent);
     // Anything that is not a declaration is the ordinary remote call it always was.
     expect(remoteCalls).toEqual(['find:1']);
@@ -58,9 +66,49 @@ describe('a declaration made in a plugin process', () => {
 describe('the api applying a declaration', () => {
   it('runs the call on the plugin context', async () => {
     const ran: unknown[] = [];
-    const registrations = new PluginHostRegistrations('probe', {} as any, async () => undefined, async () => undefined, {} as any, async (steps) => { ran.push(steps); });
+    const roots: unknown[] = [];
+    const registrations = new PluginHostRegistrations('probe', {} as any, async () => undefined, async () => undefined, {} as any, async (steps, root) => { ran.push(steps); roots.push(root); });
     const answer = await registrations.apply({} as any, { kind: String(PluginGuestRegistrationKind.DECLARATION.value), steps: [{ name: 'settings' }, { name: 'register', args: [{ fields: [] }] }] });
     expect(ran).toEqual([[{ name: 'settings' }, { name: 'register', args: [{ fields: [] }] }]]);
     expect(answer).toBeUndefined();
+    await registrations.apply({} as any, { kind: String(PluginGuestRegistrationKind.DECLARATION.value), root: 'core', steps: [{ name: 'assistantVocabulary' }, { name: 'register', args: ['k', 'r', []] }] });
+    expect(roots).toEqual([undefined, 'core']);
+  });
+});
+
+describe('the same declaration made again', () => {
+  it('with a new function handle, replaces the one it repeats where it stood — the newest is in force', async () => {
+    const registrar = new PluginGuestRegistrar({ request: async () => true } as any);
+    const send = (handle: string) => registrar.send({ kind: 'declaration', steps: [{ name: 'integrations' }, { name: 'registerProvider', args: ['payments', { key: 'card', create: { $fcCallback: handle } }] }] });
+    await registrar.send({ kind: 'declaration', steps: [{ name: 'collections' }, { name: 'register', args: [{ slug: 'first' }] }] });
+    await send('callback:1');
+    await registrar.send({ kind: 'declaration', steps: [{ name: 'collections' }, { name: 'register', args: [{ slug: 'last' }] }] });
+    await send('callback:2');
+    expect(registrar.snapshot().map((r) => JSON.stringify(r.steps?.[1].args))).toEqual([
+      JSON.stringify([{ slug: 'first' }]),
+      JSON.stringify(['payments', { key: 'card', create: { $fcCallback: 'callback:2' } }]),
+      JSON.stringify([{ slug: 'last' }]),
+    ]);
+  });
+
+  it('suppressed during a per-site pass, leaves the one that stands untouched', async () => {
+    let answer: unknown = true;
+    const registrar = new PluginGuestRegistrar({ request: async () => answer } as any);
+    const steps = (handle: string) => [{ name: 'integrations' }, { name: 'registerProvider', args: ['payments', { key: 'card', create: { $fcCallback: handle } }] }];
+    await registrar.send({ kind: 'declaration', steps: steps('callback:1') });
+    answer = PluginGuestRegistrar.SUPPRESSED;
+    await registrar.send({ kind: 'declaration', steps: steps('callback:9') });
+    expect(JSON.stringify(registrar.snapshot()[0].steps)).toContain('callback:1');
+    expect(registrar.snapshot()).toHaveLength(1);
+  });
+
+  it('is sent each time, but kept once — the record does not grow with every api that takes the process over', async () => {
+    const sent: unknown[] = [];
+    const registrar = new PluginGuestRegistrar({ request: async (_type: string, payload: unknown) => { sent.push(payload); return true; } } as any);
+    const declarations = new PluginGuestDeclarations((registration) => registrar.send(registration), () => 'kept-1');
+    for (let round = 0; round < 3; round += 1) await declarations.declare('integrations', 'registerProvider', ['payments', { key: 'card' }]);
+    await declarations.declare('integrations', 'registerProvider', ['payments', { key: 'transfer' }]);
+    expect(sent).toHaveLength(4);
+    expect(registrar.snapshot().map((r) => (r.steps?.[1].args?.[1] as { key: string }).key)).toEqual(['card', 'transfer']);
   });
 });

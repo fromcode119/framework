@@ -19,6 +19,7 @@ import { PluginGuestRuntimeReporter } from '@core/plugin/host/runtime/plugin-gue
 import { PluginHostProtocol } from '@core/plugin/host/protocol/plugin-host-protocol';
 import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
+import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
 /**
  * The plugin's process. Loads the plugin exactly as the scanner would in-process, gives it a context
@@ -42,6 +43,8 @@ export class PluginGuest {
   private contextFactory: PluginGuestContextFactory | null = null;
   private readonly connections: PluginGuestConnections;
   private described: { contractKeys: string[]; publicApiKeys: string[]; manifest: unknown } | null = null;
+  /** Its `onEnable` has finished (and no `onDisable` since): only a process that finished starting may be taken over. */
+  private enabled = false;
 
   constructor(transport: ConstructorParameters<typeof PluginChannel>[0]) {
     this.channel = new PluginChannel(transport);
@@ -54,14 +57,14 @@ export class PluginGuest {
   private async handle(type: string, payload: any, channel: PluginChannel): Promise<unknown> {
     switch (type) {
       // Only the api that started this process boots it; an attached one learns what it needs from `hello`.
-      case 'boot': if (channel !== this.channel) throw new Error('guest: already booted'); return this.start(payload as IPluginGuestBoot);
-      case 'invoke': return this.invoke(payload as IPluginInvocation, channel);
+      case String(PluginChannelMessage.BOOT.value): if (channel !== this.channel) throw new Error('guest: already booted'); return this.start(payload as IPluginGuestBoot);
+      case String(PluginChannelMessage.INVOKE.value): return this.invoke(payload as IPluginInvocation, channel);
       // Routes this guest serves arrive on its socket, not through `invoke`, so they carry no
       // envelope. The host pushes the snapshot here instead, and only when it has changed.
-      case 'peers': { this.state.update(payload as Pick<IPluginInvocation, 'peers' | 'enabledPlugins'>); return true; }
-      case 'stop': return this.stop();
-      case 'ping': return 'pong';
-      case 'runtime': return PluginGuestRuntimeReporter.report(this.registrar);
+      case String(PluginChannelMessage.PEERS.value): { this.state.update(payload as Pick<IPluginInvocation, 'peers' | 'enabledPlugins'>); return true; }
+      case String(PluginChannelMessage.STOP.value): return this.stop();
+      case String(PluginChannelMessage.PING.value): return 'pong';
+      case String(PluginChannelMessage.RUNTIME.value): return PluginGuestRuntimeReporter.report(this.registrar);
       default: throw new Error(`guest: unknown message "${type}"`);
     }
   }
@@ -89,13 +92,18 @@ export class PluginGuest {
     // with "not callable" while the same call worked in-process. Own property names, functions only.
     const publicApiKeys = PluginGuest.functionNames(this.contract.publicAPI);
     this.described = { contractKeys, publicApiKeys, manifest: this.contract.manifest ?? null };
-    if (boot.attachSecret) await this.connections.listen(path.join(path.dirname(boot.socketPath), PluginGuestConnections.CONTROL_SOCKET), boot.socketMode, boot.attachSecret);
+    if (boot.attachSecret) await this.connections.listen(path.join(path.dirname(boot.socketPath), PluginGuestConnections.CONTROL_SOCKET), boot.socketMode, boot.attachSecret, boot.lingerMs ?? 0);
     return { ...this.described, protocol: PluginHostProtocol.identity() };
+  }
+
+  /** The api that started this process is gone: serve another, wait for one, or exit (`PluginGuestConnections.primaryLost`). */
+  primaryLost(): void {
+    this.connections.primaryLost(this.boot?.lingerMs ?? 0, () => process.exit(0));
   }
 
   /** What an api that attaches (and did not start this process) needs to take it over. */
   private hello(): Record<string, unknown> {
-    return { protocol: PluginHostProtocol.identity(), described: this.described, registrations: this.registrar.snapshot(), pid: process.pid };
+    return { protocol: PluginHostProtocol.identity(), described: this.described, registrations: this.registrar.snapshot(), pid: process.pid, enabled: this.enabled };
   }
 
   /** Function-valued own properties of an object OR class (static methods included). */
@@ -121,8 +129,10 @@ export class PluginGuest {
     await PluginGuestCoreBridge.primeFor(invocation.kind, this.remote);
     if (invocation.kind === String(PluginInvocationKind.LIFECYCLE.value)) {
       const hook = this.contract[String(invocation.name)];
-      if (typeof hook !== 'function') return undefined;
+      if (typeof hook !== 'function') { if (invocation.name === 'onEnable') this.enabled = true; return undefined; }
       const result = await hook(context, ...(invocation.args ?? []));
+      if (invocation.name === 'onEnable') this.enabled = true;
+      if (invocation.name === 'onDisable') this.enabled = false;
       // A plugin registers its translations from synchronous on-init code, which returns long before
       // the fire-and-forget forward to the host lands. Waiting here means the RPC response the host
       // is awaiting — and with it, the plugin being reported active — carries that guarantee instead

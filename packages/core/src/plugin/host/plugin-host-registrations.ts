@@ -37,7 +37,7 @@ export class PluginHostRegistrations {
     private readonly forwardRequest: (req: Request, res: Response, next: NextFunction, targetPath?: string, originalUrl?: string) => Promise<void>,
     private readonly db: { withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> },
     /** Runs a declaration (`PluginDeclarations`) on the plugin's context, as the call it used to be. */
-    private readonly declare: (steps: NonNullable<IPluginGuestRegistration['steps']>) => Promise<unknown>,
+    private readonly declare: (steps: NonNullable<IPluginGuestRegistration['steps']>, root: string | undefined) => Promise<unknown>,
   ) {}
 
   /**
@@ -61,7 +61,7 @@ export class PluginHostRegistrations {
       case String(PluginGuestRegistrationKind.CANONICAL_PATH.value): return this.canonicalPath(registration);
       // Awaited so the plugin's `await context.collections.register(…)` still means "it is registered";
       // what the method returned stays here — nothing a plugin declares depends on it.
-      case String(PluginGuestRegistrationKind.DECLARATION.value): return this.declare(registration.steps ?? []).then(() => undefined);
+      case String(PluginGuestRegistrationKind.DECLARATION.value): return this.declare(registration.steps ?? [], registration.root).then(() => undefined);
       default: throw new Error(`unknown registration kind "${(registration as any).kind}"`);
     }
   }

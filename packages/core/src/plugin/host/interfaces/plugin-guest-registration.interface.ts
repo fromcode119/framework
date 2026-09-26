@@ -27,4 +27,6 @@ export interface IPluginGuestRegistration {
   key?: string;
   /** A declaration's call on the plugin context: `[namespace, method(args)]` (`PluginDeclarations`). */
   steps?: Array<{ name: string; args?: unknown[] }>;
+  /** Where a declaration's call starts on the api (`PluginRemoteCallRoot`); the plugin context when absent. */
+  root?: string;
 }

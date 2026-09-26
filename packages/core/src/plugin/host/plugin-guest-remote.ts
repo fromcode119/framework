@@ -2,6 +2,7 @@ import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavai
 import { AsyncLocalStorage } from 'async_hooks';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
+import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
 /**
  * The guest's view of anything that lives on the host: a chain of property reads and calls that is
@@ -27,9 +28,12 @@ export class PluginGuestRemote {
    */
   static readonly invocation = new AsyncLocalStorage<{ token: string; tenantId: string | null; channel?: PluginChannel }>();
 
-  /** The channel calls from the current invocation go back on: its own, else the process's first. */
+  /** Replaces the process's first channel once the api that started it is gone (`PluginGuestConnections.promote`). */
+  static primary: PluginChannel | null = null;
+
+  /** The channel calls from the current invocation go back on: its own, else the process's primary. */
   static channelFor(fallback: PluginChannel): PluginChannel {
-    return PluginGuestRemote.invocation.getStore()?.channel ?? fallback;
+    return PluginGuestRemote.invocation.getStore()?.channel ?? PluginGuestRemote.primary ?? fallback;
   }
 
   constructor(
@@ -51,7 +55,7 @@ export class PluginGuestRemote {
    * inside the handler the host invoked — so a chain awaited later still belongs to its invocation.
    */
   async call(root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'], token: string | null = PluginGuestRemote.currentToken()): Promise<unknown> {
-    const result = await PluginGuestRemote.channelFor(this.channel).request('call', { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
+    const result = await PluginGuestRemote.channelFor(this.channel).request(String(PluginChannelMessage.CALL.value), { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
     return this.rehydrate(result, root, steps, token);
   }
 
@@ -273,7 +277,7 @@ export class PluginGuestRemote {
     // declared code, never on the message: see PluginPeerUnavailableError.
     const unavailable = PluginPeerUnavailableError.is(error);
     const message = error instanceof Error ? error.message : String(error);
-    this.channel.notify('log', {
+    PluginGuestRemote.channelFor(this.channel).notify(String(PluginChannelMessage.LOG.value), {
       level: unavailable ? 'debug' : 'warn',
       msg: unavailable
         ? `isolated plugin: ${call}(…) skipped — ${message}`
@@ -287,7 +291,7 @@ export class PluginGuestRemote {
     const key = `${call}:${dropped.join(',')}`;
     if (this.warned.has(key)) return;
     this.warned.add(key);
-    this.channel.notify('log', {
+    PluginGuestRemote.channelFor(this.channel).notify(String(PluginChannelMessage.LOG.value), {
       level: 'warn',
       msg: `isolated plugin: ${call}(…) carried function(s) the process boundary cannot cross; dropped: ${dropped.join(', ')}. That behaviour does not run for this plugin while isolated.`,
       meta: [],

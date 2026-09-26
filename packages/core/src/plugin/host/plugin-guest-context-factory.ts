@@ -13,6 +13,7 @@ import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-guest-registrar';
 import { PluginGuestDeclarations } from '@core/plugin/host/declarations/plugin-guest-declarations';
+import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
 /**
  * The `PluginContext` an isolated plugin receives: the same shape as in-process, every namespace an
@@ -132,7 +133,7 @@ export class PluginGuestContextFactory {
 
   private logger(): Record<string, unknown> {
     const channel = this.channel;
-    const line = (level: string) => (msg: unknown, ...meta: unknown[]) => channel.notify('log', { level, msg: String(msg), meta: PluginGuestRemote.portable(meta) });
+    const line = (level: string) => (msg: unknown, ...meta: unknown[]) => PluginGuestRemote.channelFor(channel).notify(String(PluginChannelMessage.LOG.value), { level, msg: String(msg), meta: PluginGuestRemote.portable(meta) });
     return { info: line('info'), warn: line('warn'), error: line('error'), debug: line('debug') };
   }
 

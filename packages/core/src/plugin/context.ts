@@ -39,6 +39,7 @@ import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
 import { CatalogContextProxy } from '@core/plugin/context/catalog';
 import { TenantEnvironmentGate } from '@core/tenant/tenant-environment-gate';
+import { ProjectPaths } from '@core/config/paths';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -171,7 +172,7 @@ export class PluginContextFactory {
           slug: plugin.manifest.slug,
           namespace: String(plugin.manifest.namespace || '').trim(),
           version: plugin.manifest.version,
-          dataDir: `./data/plugins/${plugin.manifest.slug}`,
+          dataDir: ProjectPaths.getPluginDataPath(plugin.manifest.slug),
           rootDir: pathContext.currentPluginRoot,
           config: plugin.manifest.config || {},
         },

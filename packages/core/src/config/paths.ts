@@ -10,6 +10,10 @@ import { UploadPaths } from '@core/config/upload-paths';
  */
 
 export class ProjectPaths extends UploadPaths {
+  /** The deployment's writable directory under the project root, and the plugins' part of it. */
+  private static readonly DATA_DIR = 'data';
+  private static readonly PLUGIN_DATA_DIR = 'plugins';
+
   /**
    * Where the FRAMEWORK's own extensions live — shipped inside the image, not installed by anyone.
    *
@@ -203,8 +207,21 @@ export class ProjectPaths extends UploadPaths {
    * is to stop requiring env to run the platform, and a knob that exists only so a test can redirect
    * a write is a control nobody asked for — callers that need another directory are given one.
    */
-  static getDataDir(): string {
-      return ProjectPaths.resolveFromRoot(ProjectPaths.getProjectRoot(), 'data');
+  static getDataDir(projectRoot: string = ProjectPaths.getProjectRoot()): string {
+      return ProjectPaths.resolveFromRoot(projectRoot, ProjectPaths.DATA_DIR);
+  }
+
+  /**
+   * A plugin's own writable directory — `<data>/plugins/<slug>`, the only place its process may write
+   * (the spawner makes it that plugin's user's, and nobody else's).
+   */
+  static getPluginDataDir(slug: string, projectRoot: string = ProjectPaths.getProjectRoot()): string {
+      return path.join(ProjectPaths.getDataDir(projectRoot), ProjectPaths.PLUGIN_DATA_DIR, slug);
+  }
+
+  /** The same directory as a path relative to the project root — what `context.plugin.dataDir` reports. */
+  static getPluginDataPath(slug: string): string {
+      return `./${path.posix.join(ProjectPaths.DATA_DIR, ProjectPaths.PLUGIN_DATA_DIR, slug)}`;
   }
 
   static getRepositoryArtifactsDir(subDir?: string): string {
