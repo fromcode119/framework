@@ -125,6 +125,12 @@ export class CollectionAccessPolicyService {
     return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
   }
 
+  /** Whether `error` is this policy refusing access — not some other failure along the way. */
+  static isRefusal(error: unknown): boolean {
+    const status = (error as { statusCode?: number } | null)?.statusCode;
+    return status === 401 || status === 403;
+  }
+
   private throwAuthError(req: any, message: string): never {
     const error = new Error(message) as Error & { statusCode?: number };
     error.statusCode = req?.user ? 403 : 401;

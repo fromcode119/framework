@@ -123,6 +123,7 @@ export { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registr
 export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 export { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';
 export { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+export { PluginProcessHost } from '@core/plugin/host/runtime/enums/plugin-process-host.enum';
 export { ThemeState } from '@core/theme/enums/theme-state.enum';
 // `PluginPackageLayout` is deliberately NOT here. It imports `fs` and `path` and computes `UI_DIR`
 // in a static field initializer, which a bundler cannot prove is side-effect-free — so exporting it

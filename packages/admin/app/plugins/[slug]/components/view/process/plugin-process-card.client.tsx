@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
+import { PluginProcessHost, ThemeMode } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
@@ -57,6 +57,16 @@ export class PluginProcessCard extends AdminComponent {
     );
   }
 
+  /**
+   * In the extension-host a plugin's process carries over when the api restarts or deploys (the new api
+   * takes it over); started by the api itself, it goes with the api.
+   */
+  private whereItRuns(inExtensionHost: boolean): ReactNode {
+    return inExtensionHost
+      ? this.row(<FrameworkIcons.Server size={20} />, 'Where it runs', 'Its own process, in the extension-host container', 'Carried over when the api restarts or deploys. A new process starts when the plugin is updated, or when the extension-host itself restarts.')
+      : this.row(<FrameworkIcons.Server size={20} />, 'Where it runs', 'Its own process, started by the api container', 'Restarting or deploying the api restarts this process too.');
+  }
+
   private body(): ReactNode {
     if (this.loadError) return <p className="text-sm text-[var(--destructive)]">{this.loadError}</p>;
     if (!this.data) return <p className="text-sm text-slate-500">Reading the plugin process…</p>;
@@ -67,10 +77,10 @@ export class PluginProcessCard extends AdminComponent {
     const report = runtime.report;
     return (
       <div className="space-y-4">
-        {this.row(<FrameworkIcons.Server size={20} />, 'Where it runs', runtime.hostedBy === 'extension-host' ? 'Its own process, in the extension-host container' : 'Its own process, started by the api container', 'Restarting or deploying the api restarts this process too.')}
+        {this.whereItRuns(runtime.hostedBy === String(PluginProcessHost.EXTENSION_HOST.value))}
         {runtime.hostUnavailable && <p className="text-sm text-[var(--destructive)]">The extension-host container could not be reached, so plugin processes cannot start: {runtime.hostUnavailable}</p>}
         {!runtime.running && <p className="text-sm text-amber-600 dark:text-amber-400">Not running. The plugin is inactive, or its process stopped and is being restarted.</p>}
-        {runtime.running && this.row(<FrameworkIcons.Terminal size={20} />, 'Process', `pid ${runtime.pid}${runtime.uid !== null ? ` · OS user ${runtime.uid}` : ' · same OS user as the api'}`, runtime.uid !== null ? undefined : 'No privileged spawner here (typical for local development), so the process is not separated by OS user.')}
+        {runtime.running && this.row(<FrameworkIcons.Terminal size={20} />, 'Process', `pid ${runtime.pid}${runtime.hostedBy === String(PluginProcessHost.EXTENSION_HOST.value) ? ' in the extension-host container' : ''}${runtime.uid !== null ? ` · OS user ${runtime.uid}` : ' · same OS user as the api'}`, runtime.uid !== null ? undefined : 'No privileged spawner here (typical for local development), so the process is not separated by OS user.')}
         {report && this.row(<FrameworkIcons.Zap size={20} />, 'Memory', `${PluginProcessFormat.megabytes(report.memory.rssBytes)} resident · heap ${PluginProcessFormat.megabytes(report.memory.heapUsedBytes)} of ${runtime.limits.memoryMb} MB limit`)}
         {report && this.row(<FrameworkIcons.Clock size={20} />, 'Up for', `${PluginProcessFormat.duration(report.uptimeSeconds)} · Node ${report.nodeVersion} · plugin protocol ${report.protocolVersion}`, `Requests that take longer than ${runtime.limits.timeoutMs} ms are failed and the process restarted.`)}
         {this.row(<FrameworkIcons.Refresh size={20} />, 'Recent restarts', String(runtime.recentRestarts), 'Counted until the process has been healthy for a minute; more than 3 in a row disables the plugin.')}
