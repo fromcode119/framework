@@ -1,4 +1,9 @@
-import { IDatabaseManager, TableResolver, NamingStrategy, PhysicalTableNameUtils } from '@fromcode119/database';
+// One module each, not the database index: `@fromcode119/sdk/server` re-exports this registry, so the
+// index — and every dialect driver it loads — would otherwise land in every plugin process.
+import type { IDatabaseManager } from '@fromcode119/database';
+import { TableResolver } from '@fromcode119/database/table-resolver';
+import { NamingStrategy } from '@fromcode119/database/naming-strategy';
+import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 
 import type { ICollectionQueryBuilder } from '@plugins/interfaces/collection-query-builder.interface';
 /**

@@ -1,11 +1,21 @@
 import path from 'path';
-import sharp from 'sharp';
+import type sharpModule from 'sharp';
 import type { IMediaImageOptimizationOptions } from '@media/interfaces/media-image-optimization-options.interface';
 import type { IMediaImageOptimizationResult } from '@media/interfaces/media-image-optimization-result.interface';
 import type { IMediaWebPConversionOptions } from '@media/interfaces/media-web-p-conversion-options.interface';
 import type { IMediaWebPConversionResult } from '@media/interfaces/media-web-p-conversion-result.interface';
 
 export class MediaImageOptimizer {
+  /**
+   * sharp is a native image library, loaded the first time an image is actually processed. This class
+   * is re-exported by `@fromcode119/sdk/server`, which every plugin process imports, and a top-level
+   * import put sharp and its dependencies into every one of them whether it touched an image or not.
+   */
+  private static get sharp(): typeof sharpModule {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    return require('sharp');
+  }
+
   private static readonly IMAGE_MIME_BY_EXT: Record<string, string> = {
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
@@ -42,8 +52,8 @@ export class MediaImageOptimizer {
     }
 
     const settings = { ...this.DEFAULT_OPTIONS, ...(options || {}) };
-    const originalMetadata = await sharp(file, { animated: false }).metadata();
-    const pipeline = sharp(file, { animated: false }).rotate();
+    const originalMetadata = await MediaImageOptimizer.sharp(file, { animated: false }).metadata();
+    const pipeline = MediaImageOptimizer.sharp(file, { animated: false }).rotate();
     pipeline.resize(settings.maxWidth, settings.maxHeight, {
       fit: 'inside',
       withoutEnlargement: settings.withoutEnlargement,
@@ -89,7 +99,7 @@ export class MediaImageOptimizer {
     const maxHeight = options.maxHeight ?? 1600;
     const quality = options.quality ?? 74;
 
-    const pipeline = sharp(file, { animated: false })
+    const pipeline = MediaImageOptimizer.sharp(file, { animated: false })
       .rotate()
       .resize(maxWidth, maxHeight, { fit: 'inside', withoutEnlargement: true })
       .webp({ quality, effort: 6 });
