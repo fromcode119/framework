@@ -8,7 +8,7 @@ import { MiddlewareStage } from '@core/enums/middleware-stage.enum';
  * (`'post_auth'`) or as the member, the api dispatched with a string, and the comparison was `===` — so
  * a middleware registered with the member (every ISOLATED plugin's, since the host resolves it) was
  * never found for any stage and never ran. On a platform that isolates every plugin, that was all of
- * them: finance's wallet/gift-card gates, logistics', licensing's and social-proof's enabled gates.
+ * them — every settings-driven gate a plugin puts in front of its own collections enforced nothing.
  *
  * A plugin's middleware is keyed by plugin and id: registering it again REPLACES it. A restarted plugin
  * process re-runs its `onInit`, and appending left the previous process's stand-in first in the chain,

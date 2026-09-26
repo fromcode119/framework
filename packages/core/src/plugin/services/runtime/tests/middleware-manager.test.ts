@@ -32,11 +32,11 @@ describe('MiddlewareManager', () => {
     const manager = new MiddlewareManager();
     const before = () => 'old process';
     const after = () => 'new process';
-    manager.register({ id: 'gate', pluginSlug: 'finance', stage: MiddlewareStage.POST_AUTH, handler: before });
-    manager.register({ id: 'gate', pluginSlug: 'finance', stage: MiddlewareStage.POST_AUTH, handler: after });
-    manager.register({ id: 'gate', pluginSlug: 'logistics', stage: MiddlewareStage.POST_AUTH, handler: before });
+    manager.register({ id: 'gate', pluginSlug: 'plugin-a', stage: MiddlewareStage.POST_AUTH, handler: before });
+    manager.register({ id: 'gate', pluginSlug: 'plugin-a', stage: MiddlewareStage.POST_AUTH, handler: after });
+    manager.register({ id: 'gate', pluginSlug: 'plugin-b', stage: MiddlewareStage.POST_AUTH, handler: before });
     const chain = manager.getByStage(MiddlewareStage.POST_AUTH);
-    expect(chain.map((m) => m.pluginSlug)).toEqual(['finance', 'logistics']);
+    expect(chain.map((m) => m.pluginSlug)).toEqual(['plugin-a', 'plugin-b']);
     expect(chain[0].handler).toBe(after);
   });
 });
