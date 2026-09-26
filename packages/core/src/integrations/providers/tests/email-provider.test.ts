@@ -28,6 +28,18 @@ describe('EmailGateway', () => {
   });
 });
 
+describe('EmailGateway sender', () => {
+  it('carries the configured From Address and From Name as the default sender', () => {
+    expect(
+      EmailGateway.normalizeSmtpConfig({ host: 'smtp.example.com', fromAddress: 'notifications@example.com', fromName: 'Shop' }).from,
+    ).toBe('"Shop" <notifications@example.com>');
+  });
+
+  it('sets no sender when no From Address is configured', () => {
+    expect('from' in EmailGateway.normalizeSmtpConfig({ host: 'smtp.example.com', fromName: 'Shop' })).toBe(false);
+  });
+});
+
 describe('EmailIntegrationDefinition', () => {
   it('stores flat SMTP credentials and resolves them into auth credentials', async () => {
     const previousSecretKey = process.env.INTEGRATION_SECRET_KEY;
