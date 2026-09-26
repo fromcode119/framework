@@ -1,7 +1,7 @@
 import { AuthControllerLoginThrottle } from '@api/controllers/auth/auth-controller-login-throttle';
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
 import { Request, Response } from 'express';
-import { NetworkAddressUtils, PlatformSettingsService, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import { ApplicationUrlUtils, NetworkAddressUtils, PlatformSettingsService, SiteBaseUrl, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { ApiUrlUtils } from '@api/utils/url';
 
 /**
@@ -147,11 +147,19 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
     const workspace = WorkspaceHostService.of(req);
     // On a workspace host there is exactly one tenant and no switching (T6 §3.2).
     const tenants = workspace ? all.filter((tenant) => tenant.id === workspace.id) : all;
+    const current = String((req as any).tenantId || '') || null;
+    // Where the bound site's pages are served, from its own declared hosts. The admin opens "view on
+    // site" and Preview links there. Without it they fell back to guessing from the console's own
+    // hostname, and every Preview on a site opened the console and answered "Collection Not Found".
+    // '' when it cannot be answered — the caller keeps its own fallback rather than getting the
+    // platform's host passed off as the site's.
+    const storefrontUrl = current ? await SiteBaseUrl.forSite(current, ApplicationUrlUtils.FRONTEND_APP) : '';
     return res.json({
       multiTenant: true,
-      current: String((req as any).tenantId || '') || null,
+      current,
       locked: workspace !== null,
       mode: String(user?.workspaceMode || '') || null,
+      storefrontUrl,
       tenants,
     });
   }

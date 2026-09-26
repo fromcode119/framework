@@ -4,6 +4,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 import { SiteBaseUrl } from '@core/tenant/site-base-url';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
+import { TenantRecord } from '@core/tenant/tenant-record';
 
 /**
  * The absolute address a link in an EMAIL should point at.
@@ -188,5 +189,46 @@ describe('a named site’s base URL, for display', () => {
     wire(tenant('shop.customer.example'));
 
     expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('');
+  });
+});
+
+/**
+ * Which host a site's STOREFRONT is reached on, now that a host's role is declared.
+ *
+ * A site may declare its primary host as its own console. A shop link built from the primary host
+ * then opened the console — an email's "view your order", and the admin's Preview button.
+ */
+describe('a site’s storefront host follows its declared roles', () => {
+  const record = (over: Record<string, unknown>) => TenantRecord.from({
+    id: 'my-site', slug: 'my-site', primary_host: 'shop.customer.example', host_aliases: '[]',
+    state: 'active', visibility: 'public', kind: 'site', ...over,
+  });
+
+  it('skips a primary host declared as the console', async () => {
+    multiTenant();
+    withUrls('https://platform.example', '');
+    wire(record({
+      primary_host: 'backend.customer.example',
+      host_aliases: '["shop.customer.example"]',
+      host_roles: '{"backend.customer.example":"admin"}',
+    }));
+
+    expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('https://shop.customer.example');
+  });
+
+  it('answers the primary host when it is the storefront, as before', async () => {
+    multiTenant();
+    withUrls('https://platform.example', '');
+    wire(record({ host_aliases: '["www.customer.example"]' }));
+
+    expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('https://shop.customer.example');
+  });
+
+  it('keeps the primary host for a workspace, which declares no storefront', async () => {
+    multiTenant();
+    withUrls('https://platform.example', '');
+    wire(record({ kind: 'workspace', primary_host: 'team.customer.example' }));
+
+    expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('https://team.customer.example');
   });
 });

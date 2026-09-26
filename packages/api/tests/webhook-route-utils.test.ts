@@ -49,7 +49,7 @@ describe('WebhookRouteUtils.keepRawBody', () => {
   it('keeps the exact bytes of a FORM posted to a plugin webhook', async () => {
     const body = 'IPCmethod=IPCPurchaseNotify&Amount=42.50&OrderID=MPS-1&Signature=a%2Bb%3D';
 
-    const result = await run('/api/v1/plugins/finance/webhooks/mypos', 'application/x-www-form-urlencoded', body);
+    const result = await run('/api/v1/plugins/example-plugin/webhooks/example-provider', 'application/x-www-form-urlencoded', body);
 
     expect(result.raw).toBe(body);
     expect(result.parsed.Signature).toBe('a+b=');
@@ -58,10 +58,10 @@ describe('WebhookRouteUtils.keepRawBody', () => {
   it('keeps the exact bytes of a JSON webhook, whitespace included', async () => {
     const body = '{ "id" : "evt_1" }';
 
-    expect((await run('/api/v1/plugins/finance/webhooks/stripe', 'application/json', body)).raw).toBe(body);
+    expect((await run('/api/v1/plugins/example-plugin/webhooks/another-provider', 'application/json', body)).raw).toBe(body);
   });
 
   it('keeps nothing for a request that is not a webhook', async () => {
-    expect((await run('/api/v1/plugins/finance/checkout/payment-session', 'application/x-www-form-urlencoded', 'a=1')).raw).toBeNull();
+    expect((await run('/api/v1/plugins/example-plugin/checkout/payment-session', 'application/x-www-form-urlencoded', 'a=1')).raw).toBeNull();
   });
 });

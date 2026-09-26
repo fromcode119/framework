@@ -3,6 +3,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 export interface ICollectionListPageViewState {
   data: any[];
   pluginSettings: Record<string, any>;
+  siteStorefrontUrl: string;
   total: number;
   loading: boolean;
   search: string;

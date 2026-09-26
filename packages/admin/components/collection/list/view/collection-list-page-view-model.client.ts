@@ -16,7 +16,7 @@ export class CollectionListPageViewModelBuilder {
     const collection = AdminCollectionUtils.resolveCollection(self.props.collections, pluginSlug, slug);
     const resolvedSlug = collection?.slug || slug;
     const slotSlug = (collection as any)?.unprefixedSlug || slug;
-    const frontendUrl = AdminUrlUtils.resolveFrontendBaseUrl(settings, settings?.frontend_url);
+    const frontendUrl = AdminUrlUtils.resolvePreviewBaseUrl(settings, self.state.siteStorefrontUrl);
 
     const statusField = CollectionListPageService.resolveStatusField(collection);
     const statusOptions = CollectionListPageService.resolveStatusOptions(statusField);
