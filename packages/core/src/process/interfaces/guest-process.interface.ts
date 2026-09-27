@@ -1,5 +1,6 @@
 import type { IMessagePort } from '@core/process/interfaces/message-port.interface';
 import type { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
+import type { SpawnerClient } from '@core/process/spawner-client';
 
 /** A running guest, however it was started. */
 export interface IGuestProcess {
@@ -14,6 +15,8 @@ export interface IGuestProcess {
   readonly socketDir: string;
   /** `0o600` when guest and host are the same user, `0o666` when they are not (the directory guards it). */
   readonly socketMode: number;
+  /** The spawner that started it — which `extension-host` it runs in — or null for the api's own child. */
+  readonly launcher: SpawnerClient | null;
   kill(signal?: NodeJS.Signals): void;
   onExit(listener: (code: number | null, signal: string | null) => void): void;
   onOutput(listener: (stream: GuestOutputStream, line: string) => void): void;

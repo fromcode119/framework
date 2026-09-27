@@ -23,6 +23,7 @@ export class SpawnerClient {
   private static readonly GLOBAL_KEY = Symbol.for('fromcode.privileged-spawner');
   private static readonly UNAVAILABLE_KEY = Symbol.for('fromcode.privileged-spawner.unavailable');
   private static readonly WAITERS_KEY = Symbol.for('fromcode.privileged-spawner.waiters');
+  private static readonly CHANGE_LISTENERS_KEY = Symbol.for('fromcode.privileged-spawner.change-listeners');
   /** The exit reported for every guest when the `extension-host` connection is lost — they went with it. */
   static readonly DISCONNECTED = 'extension-host disconnected';
   /** `PluginProcessHost` values; literal here because process/ must not import plugin/host. */
@@ -92,11 +93,25 @@ export class SpawnerClient {
   /** `null` withdraws it: the connection to the `extension-host` was lost, and nothing can be started. */
   static publish(client: SpawnerClient | null): void {
     const shared = globalThis as Record<PropertyKey, unknown>;
+    const previous = SpawnerClient.current();
     shared[SpawnerClient.GLOBAL_KEY] = client ?? undefined;
     if (!client) return;
+    // A different host now starts new processes — a newer extension-host beside the old one. What runs
+    // on the old one is moved over by whoever listens (the plugin hosts), one gapless swap at a time.
+    if (previous && previous !== client) {
+      for (const listener of (shared[SpawnerClient.CHANGE_LISTENERS_KEY] as Array<() => void> | undefined) ?? []) listener();
+    }
     const waiters = (shared[SpawnerClient.WAITERS_KEY] as Array<() => void> | undefined) ?? [];
     shared[SpawnerClient.WAITERS_KEY] = [];
     for (const resolve of waiters) resolve();
+  }
+
+  /** Called whenever a different spawner replaces the published one (never for the first, nor for none). */
+  static onChange(listener: () => void): void {
+    const shared = globalThis as Record<PropertyKey, unknown>;
+    const listeners = (shared[SpawnerClient.CHANGE_LISTENERS_KEY] as Array<() => void> | undefined) ?? [];
+    shared[SpawnerClient.CHANGE_LISTENERS_KEY] = listeners;
+    listeners.push(listener);
   }
 
   /** Resolves once a spawner is published — at once when one already is. */

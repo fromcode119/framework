@@ -5,6 +5,7 @@ import { PluginHost } from '@core/plugin/host/plugin-host';
 import { PluginIsolationIdentityService } from '@core/plugin/host/plugin-isolation-identity-service';
 import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
 import { GuestProcessLaunchers } from '@core/process/guest-process-launchers';
+import { SpawnerClient } from '@core/process/spawner-client';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 
 /**
@@ -31,6 +32,9 @@ export class PluginHostRegistry {
     this.identities = new PluginIsolationIdentityService(() => manager.db as any);
     // Read once and handed to every host, so a save changed nothing — not even for a process started
     // afterwards — until the api restarted, while the admin said it applied to new processes.
+    // A newer extension-host was published (a deploy started it beside the old one): move every
+    // plugin's process there, ONE AT A TIME, so the deploy can remove the old host once it is empty.
+    SpawnerClient.onChange(() => { void this.moveToCurrentHost(); });
     SettingChangeInvalidators.register(PluginHostRegistry.SETTING_KEYS, () => {
       this.refreshSettings().catch((error) => this.logger.error(
         `Saved plugin isolation settings could not be applied: ${error instanceof Error ? error.message : String(error)}`,
@@ -52,6 +56,18 @@ export class PluginHostRegistry {
     await Promise.all([...this.hosts.values()].map((host) => host.applySettings(settings).catch((error) => {
       this.logger.warn(`Plugin "${host.slug}" keeps its previous isolation limits: ${error instanceof Error ? error.message : String(error)}`);
     })));
+  }
+
+  private moving: Promise<void> = Promise.resolve();
+
+  /** Moves each plugin still in an older extension-host to the current one, in turn. */
+  moveToCurrentHost(): Promise<void> {
+    this.moving = this.moving.then(async () => {
+      let moved = 0;
+      for (const host of this.hosts.values()) if (await host.moveToCurrentHost()) moved += 1;
+      if (moved) this.logger.info(`moved ${moved} plugin process(es) to the newer extension-host`);
+    });
+    return this.moving;
   }
 
   /** The platform's declared isolation settings, re-read whenever they are saved. */
