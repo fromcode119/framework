@@ -31,10 +31,9 @@ class RetryFixture {
     process.env.FRONTEND_TARGET_URL = `http://127.0.0.1:${upstreamPort}`;
     const gateway = new PlatformGateway({ refresh: async () => null, resolveMap: async () => null, map: () => null, enabled: false, ageMs: 0 } as any);
     gateway.start();
-    const server = gateway.server as http.Server;
-    await new Promise<void>((resolve) => (server.listening ? resolve() : server.once('listening', () => resolve())));
-    RetryFixture.closers.push(() => server.close());
-    return (server.address() as AddressInfo).port;
+    await gateway.listener!.listening;
+    RetryFixture.closers.push(() => { void gateway.stop(0); });
+    return gateway.listener!.port;
   }
 
   static request(port: number, method: string): Promise<{ status: number; body: string }> {

@@ -6,6 +6,7 @@ import { ApiPathUtils, GatewayTarget, InternalServiceAuth, RequestSurfaceUtils, 
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
 import { GatewayPlainListenerPolicy } from '@cli/services/gateway-plain-listener-policy';
 import { GatewayTlsListener } from '@cli/services/gateway-tls-listener';
+import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 import { RoutingMapClient } from '@cli/services/routing-map-client';
 
 /**
@@ -35,6 +36,8 @@ export class PlatformGateway {
   /** The api's certificates, on the same versioned base. Only fetched when TLS termination is on. */
   static readonly CERTIFICATES_PATH = ApiPathUtils.versioned(RouteConstants.SEGMENTS.INTERNAL_CERTIFICATES);
   private static readonly DEFAULT_PORT = 3000;
+  /** How long a stopping gateway lets requests in flight finish; under `RollingDeploy.STOP_GRACE_SECONDS`. */
+  static readonly STOP_GRACE_MS = 25_000;
 
   /**
    * One pooled connection set to each app instead of a fresh socket per request. Without it every
@@ -56,6 +59,8 @@ export class PlatformGateway {
 
   /** The listening server, so a caller (and the tests) can reach and close it. */
   server: http.Server | null = null;
+  /** Accepts for `server`: reads the PROXY header from `edge`, and stops gracefully. */
+  listener: GatewayListener | null = null;
 
   /**
    * TLS termination, when this deployment asked for it. Null is the default and means the gateway
@@ -105,7 +110,8 @@ export class PlatformGateway {
     });
     server.on('upgrade', (req, socket, head) => { this.upgrade(req, socket, head); });
     this.server = server;
-    server.listen(this.port, () => {
+    this.listener = new GatewayListener(server);
+    this.listener.listen(this.port, () => {
       void this.routing.refresh().then(() => this.logStartup());
     });
 
@@ -118,6 +124,15 @@ export class PlatformGateway {
       });
       void this.certificates.refresh();
     }
+  }
+
+  /**
+   * Stops gracefully: accepts nothing more, lets what is in flight finish (up to `graceMs`). `edge`
+   * sends new connections to the gateway replacing this one, so a deploy fails no request.
+   */
+  async stop(graceMs: number): Promise<void> {
+    await Promise.all([this.listener?.stop(graceMs), this.tls?.listener?.stop(graceMs)]);
+    this.agent.destroy();
   }
 
   private upgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer): void {

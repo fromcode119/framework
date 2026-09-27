@@ -62,31 +62,9 @@ services:
       # Read-only, and only for `secrets.json`: this is how the gateway gets the internal secret when
       # the api generated it rather than an operator setting one.
       - ../data:/app/data:ro
-    # The gateway is the ingress, so it listens where an ingress is expected: port 80. It only exists
-    # under the `single-domain` profile, i.e. when you have asked for it to serve.
-    #
-    # Note what publishing means where a reverse proxy also fronts this stack (the `proxy` network
-    # below): the published port answers directly, in FRONT of that proxy's TLS and access policy. On
-    # such a host something already holds 80, so set GATEWAY_PORT to something else — or drop this
-    # mapping and let the proxy reach the container over the network.
-    # Bound to LOOPBACK by default. On a host where a reverse proxy already holds 80/443 — which is
-    # every deployment that terminates TLS — publishing the gateway on 80 would put it in FRONT of
-    # that proxy's TLS and access policy. The proxy reaches it over the network by name; the mapping
-    # is here only so a bare deployment can still be curled locally.
-    ports:
-      - ${GATEWAY_PORT:-127.0.0.1:8085}:3000
-      # The HTTPS side of the same ingress, and it only does anything once GATEWAY_TLS_PORT above is
-      # set — without that the gateway never opens a TLS listener and this mapping reaches nothing.
-      #
-      # It exists because the opt-in was unreachable without it: an operator could set
-      # GATEWAY_TLS_PORT exactly as `docs/certificates-and-tls.md` describes, watch the gateway log
-      # that it is terminating TLS, and still have nothing answer from outside — the listener was
-      # inside the container with no way through. The feature read as switched on and was not.
-      #
-      # LOOPBACK BY DEFAULT, for the same reason as the port above: on a host where a reverse proxy
-      # already holds 443, publishing here would put the gateway in FRONT of that proxy's TLS and
-      # access policy. Set it to `0.0.0.0:443` only when the gateway IS the edge.
-      - ${GATEWAY_TLS_PUBLISH:-127.0.0.1:8443}:${GATEWAY_TLS_PORT:-3443}
+    # No published port: `edge` (below) holds the public ports and passes connections here, so this
+    # service can be replaced with no gap — a deploy starts the new gateway beside the old one and the
+    # old one drains. Anything that reached the gateway on a published port now reaches `edge` on it.
     networks:
       - proxy
       - framework
@@ -100,6 +78,53 @@ services:
           # host answered 404. It had run for eleven days under 96M only because nothing had
           # restarted it; the first restart exposed it. 256M leaves headroom, not a target.
           memory: 256M
+
+  # Holds the public ports (80 and 443, or wherever GATEWAY_PORT / GATEWAY_TLS_PUBLISH say) and passes
+  # every connection, untouched, to a running gateway (`atlantis system edge`, PlatformEdge). It routes
+  # nothing (hosts are still the admin's) and terminates nothing (the gateway holds the certificates).
+  # It is what lets the gateway itself be REPLACED with no gap: a deploy starts the new gateway beside
+  # the old, this sends new connections to whichever answers, and the old one drains. A rolling deploy
+  # never replaces this service; it moves to a new version on a restart deploy.
+  #
+  # REPLACEABLE. Anything that meets this contract can hold the ports instead — set EDGE_IMAGE and
+  # EDGE_COMMAND in .env (deploy/edge/ is mounted at /app/deploy-edge for its config):
+  #   - TCP pass-through of :80 to gateway:3000 and :443 to gateway:${GATEWAY_TLS_PORT} (no TLS here);
+  #   - a PROXY protocol v2 header on each connection, so the gateway knows the visitor;
+  #   - every gateway container the name `gateway` resolves to (Docker DNS), each health-checked by a
+  #     TCP connect about every second, and a refused connection retried on another one.
+  # A ready HAProxy config is in deploy/edge/haproxy/: EDGE_IMAGE=haproxy:3.0-alpine and
+  # EDGE_COMMAND="haproxy -f /app/deploy-edge/haproxy/haproxy.cfg". docs: deploy/DEPLOYMENT.md, "The edge".
+  edge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gateway-only
+    command: ${EDGE_COMMAND:-./node_modules/.bin/tsx packages/cli/src/bin.ts system edge}
+    profiles:
+      - single-domain
+    depends_on:
+      - gateway
+    environment:
+      - EDGE_HTTP_PORT=80
+      - EDGE_HTTPS_PORT=443
+      - EDGE_UPSTREAM_HOST=gateway
+      - EDGE_UPSTREAM_HTTP_PORT=3000
+      - GATEWAY_TLS_PORT=${GATEWAY_TLS_PORT:-3443}
+    volumes:
+      - ./edge:/app/deploy-edge:ro
+    # The same two settings that used to publish the gateway, so a deployment's .env keeps meaning what
+    # it meant: LOOPBACK by default, `0.0.0.0:80` / `0.0.0.0:443` where this IS the public edge.
+    ports:
+      - ${GATEWAY_PORT:-127.0.0.1:8085}:80
+      - ${GATEWAY_TLS_PUBLISH:-127.0.0.1:8443}:443
+    networks:
+      - framework
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          # It passes bytes; the memory is tsx compiling the CLI at start, as for the gateway.
+          memory: 192M
 
   api:
     build:

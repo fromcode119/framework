@@ -23,9 +23,11 @@ export class ComposeStack {
    * Services a release MAY declare. Asked for only when the compose files name them: compose refuses a
    * service it does not know, and a rollback to a release from before one existed must still pull.
    */
-  static readonly OPTIONAL = ['extension-host'];
+  static readonly OPTIONAL = ['extension-host', 'edge'];
 
   static readonly EXTENSION_HOST = 'extension-host';
+  /** Holds the public ports in front of the gateway, so the gateway can be rolled like the apps. */
+  static readonly EDGE = 'edge';
 
   private static readonly FILES = '-f docker-compose.full-stack.yml -f docker-compose.images.yml';
 

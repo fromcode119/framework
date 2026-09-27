@@ -61,9 +61,8 @@ describe('PlatformGateway under a burst', () => {
     process.env.FRONTEND_TARGET_URL = `http://127.0.0.1:${upstreamPort}`;
     const gateway = new PlatformGateway({ refresh: async () => null, resolveMap: async () => null, map: () => null, enabled: false, ageMs: 0 } as any);
     gateway.start();
-    const server = (gateway as any).server as import('http').Server;
-    await new Promise<void>((resolve) => server.listening ? resolve() : server.once('listening', () => resolve()));
-    const port = (server.address() as any).port;
+    await gateway.listener!.listening;
+    const port = gateway.listener!.port;
 
     // One storefront page load is a burst, not a trickle. A gateway that opened and closed a socket per
     // call answered `Parse Error: Data after 'Connection: close'` and then DIED on the first response it
@@ -72,7 +71,7 @@ describe('PlatformGateway under a burst', () => {
       fetch(`http://127.0.0.1:${port}/api/v1/system/frontend`).then((r) => r.status).catch((e) => String(e))));
     expect(statuses.every((status) => status === 200)).toBe(true);
 
-    server.close();
+    await gateway.stop(0);
     upstream.close();
   });
 });
