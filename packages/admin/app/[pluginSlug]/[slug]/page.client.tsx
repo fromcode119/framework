@@ -11,6 +11,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { prop, state } from '@fromcode119/react-class-components';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
+import { MenuPermissionGate } from '@/components/view/menu-permission-gate.client';
 
 export class CollectionListRoute extends AdminComponent {
   @prop declare params: Promise<{ pluginSlug: string; slug: string }>;
@@ -126,11 +127,13 @@ export class CollectionListRoute extends AdminComponent {
 
     if (hasPageSlot && resolvedPageSlot) {
       return (
-        <Slot
-          name={resolvedPageSlot}
-          fallback={<Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} />}
-          errorFallback={PluginMountErrorFallback.render}
-        />
+        <MenuPermissionGate path={`/${pluginSlug}/${slug}`}>
+          <Slot
+            name={resolvedPageSlot}
+            fallback={<Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} />}
+            errorFallback={PluginMountErrorFallback.render}
+          />
+        </MenuPermissionGate>
       );
     }
 
@@ -163,6 +166,6 @@ export class CollectionListRoute extends AdminComponent {
       return <SiteScopeGate what={`/${pluginSlug}/${slug}`}><CollectionNotFound theme={this.theme === ThemeMode.DARK ? 'dark' : 'light'} slug={slug} pluginSlug={pluginSlug} /></SiteScopeGate>;
     }
 
-    return <CollectionListPage params={this.params} />;
+    return <MenuPermissionGate path={`/${pluginSlug}/${slug}`}><CollectionListPage params={this.params} /></MenuPermissionGate>;
   }
 }

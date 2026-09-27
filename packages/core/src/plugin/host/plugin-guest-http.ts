@@ -2,6 +2,7 @@ import fs from 'fs';
 import express from 'express';
 import type { Express, Request, Response, NextFunction } from 'express';
 import { RequestContextUtils } from '@core/context/request-context';
+import { PermissionGrants } from '@core/utils/permission-grants';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import type { PluginChannel } from '@core/plugin/host/plugin-channel';
@@ -179,9 +180,14 @@ export class PluginGuestHttp {
         return;
       }
       try {
-        const permissions = (await this.remote.call('context', [{ name: 'auth' }, { name: 'getUserPermissions', args: [req.user.id] }])) as string[];
+        // The roles IN EFFECT for this request — on a site, its membership's, which the host already
+        // narrowed before forwarding the user — exactly as the host's own `requirePermission` resolves
+        // them. Asking for the account's GLOBAL permissions here refused a site's own administrator
+        // (a customer everywhere else) every permission-gated route of a sandboxed plugin.
+        const roles: string[] = Array.isArray(req.user.roles) ? req.user.roles.map(String) : [];
+        const permissions = (await this.remote.call('context', [{ name: 'auth' }, { name: 'getPermissionsForRoles', args: [roles] }])) as string[];
         const granted = Array.isArray(permissions) ? permissions.map(String) : [];
-        if (granted.includes('*') || required.every((entry) => granted.includes(entry))) {
+        if (required.every((entry) => PermissionGrants.covers(granted, entry))) {
           next();
           return;
         }

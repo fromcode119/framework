@@ -10,6 +10,7 @@ import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-f
 import { prop, state } from '@fromcode119/react-class-components';
 import { PluginRouteResolver } from '@/lib/plugin-route-resolver';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
+import { MenuPermissionGate } from '@/components/view/menu-permission-gate.client';
 
 /**
  * Root route for a plugin.
@@ -72,11 +73,13 @@ export class PluginRootRoute extends AdminComponent {
 
     if (hasPageSlot || !collection) {
       return (
-        <Slot
-          name={pageSlot}
-          fallback={<Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} />}
-          errorFallback={PluginMountErrorFallback.render}
-        />
+        <MenuPermissionGate path={`/${this.pluginSlug}`}>
+          <Slot
+            name={pageSlot}
+            fallback={<Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} />}
+            errorFallback={PluginMountErrorFallback.render}
+          />
+        </MenuPermissionGate>
       );
     }
 

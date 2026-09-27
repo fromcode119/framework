@@ -35,4 +35,10 @@ export interface IMenuItemManifest {
    * which is exactly why showing them there mixes the two worlds instead of scoping anything.
    */
   platformScopeOnly?: boolean;
+  /**
+   * Shown to a non-admin only when they hold THIS permission (or a wildcard covering it), instead of
+   * any permission of the plugin. Lets a plugin offer an employee their own screen while its
+   * management screens stay out of that employee's menu. Admins see every item regardless.
+   */
+  permission?: string;
 }

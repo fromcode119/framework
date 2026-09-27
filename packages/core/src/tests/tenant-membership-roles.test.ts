@@ -11,9 +11,15 @@ class FakeDb {
     private readonly users: any[],
     private readonly memberships: any[],
     private readonly tenants: any[] = [],
+    private readonly roles: any[] = [
+      { slug: 'admin', permissions: '["*"]' },
+      { slug: 'customer', permissions: '[]' },
+      { slug: 'shop-staff', permissions: ['shop:own'] },
+    ],
   ) {}
 
   async find(table: string, options: any = {}) {
+    if (table.includes('roles')) return this.roles;
     if (table.includes('memberships')) {
       const userId = options?.where?.user_id;
       return this.memberships.filter((m) => !userId || m.user_id === userId);
@@ -105,5 +111,20 @@ describe('TenantMembershipService — which sites the console offers', () => {
     ));
     expect(await service.administersAnyTenant('12')).toBe(false);
     expect(await service.listAdministeredByUser('12')).toEqual([]);
+  });
+
+  it('offers a site where the account holds a role that carries permissions — a staff member', async () => {
+    const service = new TenantMembershipService(new FakeDb(
+      [{ id: '13', is_platform_admin: false }],
+      [
+        { user_id: '13', tenant_id: 'google', roles: ['shop-staff'], state: 'active' },
+        { user_id: '13', tenant_id: 'facebook', roles: ['customer'], state: 'active' },
+      ],
+      [
+        { id: 'google', slug: 'google', primary_host: 'google.test', state: 'active', kind: 'site' },
+        { id: 'facebook', slug: 'facebook', primary_host: 'facebook.test', state: 'active', kind: 'site' },
+      ],
+    ));
+    expect((await service.listAdministeredByUser('13')).map((entry) => entry.tenant.id)).toEqual(['google']);
   });
 });

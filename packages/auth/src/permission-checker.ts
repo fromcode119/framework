@@ -1,5 +1,5 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger, StringUtils } from '@fromcode119/core';
+import { Logger, StringUtils, PermissionGrants } from '@fromcode119/core';
 
 export class UserPermissionChecker {
   private logger = new Logger({ namespace: 'permission-checker' });
@@ -55,8 +55,7 @@ export class UserPermissionChecker {
    * itself, and a `database:*` entry covers `database:read`.
    */
   static grants(permissions: string[], permission: string): boolean {
-    if (permissions.includes('*') || permissions.includes(permission)) return true;
-    return permissions.some((perm) => perm.endsWith(':*') && permission.startsWith(perm.slice(0, -1)));
+    return PermissionGrants.covers(permissions, permission);
   }
 
   /**
