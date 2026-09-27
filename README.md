@@ -51,6 +51,7 @@ schema. SaaS products lock you into their pricing. Atlantis is none of those.
 | **Plugin Isolation** | ✅ Sandboxed + signed | Loose hooks | Loose | Loose | Loose | N/A |
 | **Marketplace** | ✅ Built-in + self-hosted | ❌ External | ❌ No | ❌ No | ❌ No | N/A |
 | **Upgradable Plugins/Core** | ✅ In-place upgrades | Manual | Manual | Manual | Manual | N/A |
+| **Zero-downtime Deploys** | ✅ Rolling + built-in edge LB | ❌ Maintenance mode | ❌ Manual | ❌ Manual | ❌ Manual | Manual |
 | **RBAC** | ✅ Kernel built-in | Plugin | Basic | Basic | Basic | Manual |
 | **MFA / TOTP** | ✅ Native | ❌ Plugin | ❌ Plugin | ❌ Plugin | ❌ Plugin | ❌ Manual |
 | **AI Workflow Hooks** | ✅ Native | ❌ Plugin bloat | ❌ Custom | ❌ Custom | ❌ Manual | ❌ Manual |
@@ -150,7 +151,9 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 - 📊 **Atomic Migrations** — 7-phase database synchronization across core and all active plugins.
 - 🛡️ **Kernel Security Loop** — Real-time threat detection, cryptographic plugin signing, audit logging.
 - 🧱 **Plugin process isolation** — An isolated plugin runs in its own OS process with a heap ceiling and a per-call deadline; a crash takes down only that plugin.
-- 🔁 **Zero-downtime deploys** — Rolling deploys replace the api, admin, storefront and gateway one at a time behind the platform's `edge`, with no failed request; plugin processes carry over to the new api instead of restarting ([how](deploy/DEPLOYMENT.md#how-a-release-replaces-the-running-platform)).
+- 🔁 **Rolling updates, zero gap** — A release replaces the api, admin, storefront and gateway one at a time: the new container starts beside the old one, takes traffic once it answers, and the old one drains its in-flight requests before it stops. No failed request, no maintenance window ([how](deploy/DEPLOYMENT.md#how-a-release-replaces-the-running-platform)).
+- ⚖️ **Built-in edge load balancer** — The platform's own `edge` holds ports 80/443 and spreads connections across every running gateway (least-busy first, health-checked every second, a refusing gateway is skipped and the request retried on another), passing the visitor's real address on with the PROXY protocol. Prefer HAProxy or another proxy? Point `EDGE_IMAGE`/`EDGE_COMMAND` at it — a ready HAProxy config ships in `deploy/edge/haproxy` ([the edge](deploy/DEPLOYMENT.md#the-edge)).
+- 🔌 **Plugins survive deploys** — Plugin processes live in the optional `extension-host` container; a new api takes the running processes over instead of restarting them, and the admin shows where each one runs and what it registered.
 - 📦 **Backups + Site Transfer** — Managed system backups and a repository-root site-transfer bundle command.
 - 🌍 **Built-in i18n** — Per-field localization, admin UI labels, and plugin data, with no external libraries.
 - 🕘 **Version History Everywhere** — Every admin edit of any plugin's record is snapshotted, with one-click restore.
@@ -164,8 +167,8 @@ See the [Architecture guide](docs/architecture.md) for how each of these actuall
 ## 📐 Architecture
 
 Atlantis uses a Hooked Kernel Architecture: the kernel provides base orchestration while plugins
-register into lifecycle phases (`Discovery → Boot → Route → Hook`). Requests flow through a platform
-gateway that routes by hostname to the API, Admin, or Frontend, all built on a shared kernel core
+register into lifecycle phases (`Discovery → Boot → Route → Hook`). Requests enter through the platform's
+`edge` (a TCP load balancer across gateway replicas), then a platform gateway that routes by hostname to the API, Admin, or Frontend, all built on a shared kernel core
 (`packages/core` + `packages/sdk`) that owns security, the database layer, and multi-site isolation.
 
 **→ [Full architecture guide](docs/architecture.md)** — diagrams, kernel subsystems, and the
