@@ -72,6 +72,7 @@ export class RouteEndpointSegments {
    * which without following the middleware.
    */
   THEMES_MINE_UPLOAD: '/mine/upload',
+  THEMES_MINE_QUOTA: '/mine/quota',
   THEMES_MINE_SLUG: '/mine/:slug',
   THEMES_SLUG_ACTIVATE: '/:slug/activate',
   THEMES_SLUG_DISABLE: '/:slug/disable',

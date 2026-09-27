@@ -3,6 +3,7 @@
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 
 import type { IInstalledThemeManifest } from '@/app/themes/installed/interfaces/installed-theme-manifest.interface';
+import type { IInstalledThemesSiteQuota } from '@/app/themes/installed/interfaces/installed-themes-site-quota.interface';
 
 export interface IInstalledThemesPageClientState extends Record<string, unknown> {
   themes: IInstalledThemeManifest[];
@@ -18,4 +19,6 @@ export interface IInstalledThemesPageClientState extends Record<string, unknown>
   uploadPreviewTitle: string;
   uploadPreviewDescription: string;
   uploadPreviewSections: IUploadPreviewSection[];
+  /** In a site: its upload limits; null in Platform scope or until read. */
+  siteQuota: IInstalledThemesSiteQuota | null;
 }

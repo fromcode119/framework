@@ -118,17 +118,21 @@ export class ThemeManager extends ThemeLifecycle {
   }
 
   /**
-   * Installs a theme a SITE uploaded, into that site's own directory.
-   *
-   * The storefront renderer is refreshed exactly as for a platform install: this site's storefront
-   * holds theme files in memory for the life of its process, so without it the upload would appear to
-   * succeed and change nothing until something else restarted that process.
+   * Installs a theme a SITE uploaded, into that site's own directory. The storefront picks the new files
+   * up on the site's next render, as for a platform install (`StorefrontRendererRefreshService`).
    */
   async installForTenant(filePath: string, tenantId: string): Promise<IThemeManifest> {
     const quota = await TenantThemeQuota.current();
     const manifest = await this.installer.installForTenant(filePath, tenantId, this.themes, quota);
     await this.refreshStorefrontRenderer(`theme "${manifest.slug}" uploaded by site "${tenantId}"`);
     return manifest;
+  }
+
+  /** What a site may upload: the platform's limits (Settings → themes quota) and how many it holds now. */
+  async siteThemeQuota(tenantId: string): Promise<{ maxBytes: number; maxThemes: number; themes: number }> {
+    const quota = await TenantThemeQuota.current();
+    const themes = [...this.themes.values()].filter((theme) => theme.ownerTenantId === tenantId).length;
+    return { ...quota, themes };
   }
 
   /**

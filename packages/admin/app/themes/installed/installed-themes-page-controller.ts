@@ -5,6 +5,7 @@ import { InstalledThemesUploadService } from '@/app/themes/installed/installed-t
 import type { IInstalledThemeManifest } from '@/app/themes/installed/interfaces/installed-theme-manifest.interface';
 import type { IInstalledThemesArchiveInspection } from '@/app/themes/installed/interfaces/installed-themes-archive-inspection.interface';
 import type { IInstalledThemesFetchResult } from '@/app/themes/installed/interfaces/installed-themes-fetch-result.interface';
+import type { IInstalledThemesSiteQuota } from '@/app/themes/installed/interfaces/installed-themes-site-quota.interface';
 /**
  * Data access + business logic for the installed-themes page. Hook-free by contract: the page-client
  * class owns React state, lifecycle and notifications; this controller owns "how to fetch/do it".
@@ -73,6 +74,22 @@ export class InstalledThemesPageController {
   /** Finalize a staged upload, installing the theme. */
   static async completeUpload(uploadId: string): Promise<void> {
     await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.UPLOAD_COMPLETE, { uploadId });
+  }
+
+  /** Uploads a theme into THIS site's own directory — the upload a site admin may make. */
+  static async uploadForSite(file: File, onProgress: (percent: number | null) => void): Promise<void> {
+    const formData = new FormData();
+    formData.append('theme', file);
+    await AdminApi.upload(AdminConstants.ENDPOINTS.THEMES.MINE_UPLOAD, formData, { onProgress: (progress) => onProgress(progress.percent) });
+  }
+
+  /** Removes one of THIS site's own themes (the api refuses any other). */
+  static async deleteMine(slug: string): Promise<void> {
+    await AdminApi.delete(AdminConstants.ENDPOINTS.THEMES.MINE_DELETE(slug));
+  }
+
+  static async fetchSiteQuota(): Promise<IInstalledThemesSiteQuota> {
+    return AdminApi.get(AdminConstants.ENDPOINTS.THEMES.MINE_QUOTA);
   }
 
   static async activate(slug: string): Promise<void> {

@@ -69,6 +69,13 @@ export class ThemeUploadController {
     }
   }
 
+  /** What this site may still upload, so the admin can state the limits before an upload is refused. */
+  async mineQuota(req: Request, res: Response) {
+    const tenantId = String((req as any).tenantId || '').trim();
+    if (!tenantId) return res.status(400).json({ error: 'site_required', message: 'Choose a site first.' });
+    res.json(await this.manager.siteThemeQuota(tenantId));
+  }
+
   /** A SITE removing one of its OWN themes. The manager refuses anything it does not own. */
   async deleteMine(req: Request, res: Response) {
     const slug = CoercionUtils.toString(req.params.slug);

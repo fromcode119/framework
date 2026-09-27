@@ -57,6 +57,7 @@ export class ThemeRouter extends BaseRouter {
     // exists ("these files are what every site renders from") does not apply to a package only one
     // site can reach. What stands in its place is `TenantThemePackagePolicy`: no server code, no
     // taking a slug someone else holds, and a quota on the shared disk.
+    this.get(RouteConstants.SEGMENTS.THEMES_MINE_QUOTA, this.auth.guard(['admin']), this.controller.mineQuota);
     this.post(RouteConstants.SEGMENTS.THEMES_MINE_UPLOAD, this.auth.guard(['admin']), this.upload.single('theme'), this.controller.uploadMine);
     this.delete(RouteConstants.SEGMENTS.THEMES_MINE_SLUG, this.auth.guard(['admin']), this.controller.deleteMine);
   }

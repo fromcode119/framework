@@ -132,3 +132,73 @@ describe("the theme list is the site's assigned themes, never every theme on dis
     expect(res.body.map((entry: any) => entry.slug)).toEqual(['aurora', 'basic']);
   });
 });
+
+describe("a site's own themes are its own, and no theme it may not use can be acted on", () => {
+  /** `owners` maps a slug to the site that uploaded it; absent means the platform owns it. */
+  const managerWith = (slugs: string[], owners: Record<string, string> = {}) => ({
+    getThemes: () => slugs.map((slug) => ({ slug, name: slug, version: '1.0.0', state: 'inactive', ...(owners[slug] ? { ownerTenantId: owners[slug] } : {}) })),
+    activateTheme: vi.fn(async () => undefined),
+    disableTheme: vi.fn(async () => undefined),
+    resetTheme: vi.fn(async () => undefined),
+    getThemeConfig: vi.fn(async () => ({})),
+    saveThemeConfig: vi.fn(async () => undefined),
+  } as any);
+  const acting = (tenantId: string | null, slug: string) => ({ query: {}, params: { slug }, body: {}, ...(tenantId ? { tenantId } : {}) } as any);
+  const withStatus = () => {
+    const res = capture();
+    res.statusCode = 200;
+    res.status = (code: number) => { res.statusCode = code; return res; };
+    return res;
+  };
+
+  it("lists the theme a site uploaded itself with no assignment, and never another site's", async () => {
+    multiTenant();
+    TenantThemeAccess.configure(rowsByTenant({ 'site-a': [{ theme_slug: 'aurora', state: 'active' }] }));
+    const res = capture();
+
+    await new ThemeController(managerWith(['aurora', 'mine', 'theirs'], { mine: 'site-a', theirs: 'site-b' })).list(boundTo('site-a'), res);
+
+    expect(res.body.map((entry: any) => entry.slug).sort()).toEqual(['aurora', 'mine']);
+  });
+
+  it("refuses to activate another site's own theme — it used to put that site's private files on this storefront", async () => {
+    multiTenant();
+    TenantThemeAccess.configure(rowsByTenant({ 'site-a': [] }));
+    const manager = managerWith(['theirs'], { theirs: 'site-b' });
+    const res = withStatus();
+
+    await new ThemeController(manager).activate(acting('site-a', 'theirs'), res);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.error).toBe('theme_not_available');
+    expect(manager.activateTheme).not.toHaveBeenCalled();
+  });
+
+  it('refuses every action on a platform theme the site was never assigned', async () => {
+    multiTenant();
+    TenantThemeAccess.configure(rowsByTenant({ 'site-a': [] }));
+    const manager = managerWith(['nocturne']);
+    const controller = new ThemeController(manager);
+
+    for (const action of ['activate', 'disable', 'reset', 'getConfig', 'saveConfig'] as const) {
+      const res = withStatus();
+      await (controller as any)[action](acting('site-a', 'nocturne'), res);
+      expect(res.statusCode).toBe(404);
+    }
+    expect(manager.activateTheme).not.toHaveBeenCalled();
+    expect(manager.saveThemeConfig).not.toHaveBeenCalled();
+  });
+
+  it("lets a site act on its own theme and on one assigned to it, and leaves PLATFORM scope as it was", async () => {
+    multiTenant();
+    TenantThemeAccess.configure(rowsByTenant({ 'site-a': [{ theme_slug: 'aurora', state: 'inactive' }] }));
+    const manager = managerWith(['aurora', 'mine', 'nocturne'], { mine: 'site-a' });
+    const controller = new ThemeController(manager);
+
+    await controller.activate(acting('site-a', 'mine'), withStatus());
+    await controller.activate(acting('site-a', 'aurora'), withStatus());
+    await controller.activate(acting(null, 'nocturne'), withStatus());
+
+    expect(manager.activateTheme.mock.calls.map((call: unknown[]) => call[0])).toEqual(['mine', 'aurora', 'nocturne']);
+  });
+});

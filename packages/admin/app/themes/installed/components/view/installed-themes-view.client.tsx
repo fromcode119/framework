@@ -5,6 +5,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { UploadPreviewDialog } from '@/components/ui/view/upload-preview-dialog.client';
 import { InstalledThemeCard } from '@/app/themes/installed/components/view/installed-theme-card.client';
 import type { IInstalledThemeManifest } from '@/app/themes/installed/interfaces/installed-theme-manifest.interface';
+import type { IInstalledThemesSiteQuota } from '@/app/themes/installed/interfaces/installed-themes-site-quota.interface';
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 import { ThemeState } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
@@ -28,6 +29,10 @@ export class InstalledThemesView extends PureReactor {
   @prop declare onDisable: (slug: string) => Promise<void>;
   @prop declare onDelete: (slug: string, isActive: boolean) => Promise<void>;
   @prop declare onUpdate: (slug: string) => Promise<void>;
+  /** In a site: uploads go into its own directory, and its own themes can be removed there. */
+  @prop declare siteScope: boolean;
+  @prop declare siteQuota: IInstalledThemesSiteQuota | null;
+  @prop declare onDeleteMine: (slug: string, isActive: boolean) => Promise<void>;
   @prop declare showUploadPreview: boolean;
   @prop declare themes: IInstalledThemeManifest[];
   @prop declare themeMode: ThemeMode;
@@ -57,6 +62,9 @@ export class InstalledThemesView extends PureReactor {
   onDisable,
   onDelete,
   onUpdate,
+  onDeleteMine,
+  siteQuota,
+  siteScope,
   showUploadPreview,
   themes,
   themeMode,
@@ -82,14 +90,14 @@ export class InstalledThemesView extends PureReactor {
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
-      {/* Hidden entirely for a tenant admin: uploading puts code on the box every site runs on,
-          and a dropzone that can only ever 403 is a bug, not a hint. */}
-      {canManage ? (
+      {/* Two uploads, never both: in Platform scope into the directory every site renders from (a platform
+          admin's); in a site into that site's own directory, where only it can see the theme. */}
+      {canManage || siteScope ? (
         <div onClick={handleUploadClick} onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave} className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-4 transition-all ${isDropActive ? (themeMode === ThemeMode.DARK ? 'border-indigo-400 bg-indigo-500/10' : 'border-indigo-500 bg-indigo-50') : (themeMode === ThemeMode.DARK ? 'border-slate-700 bg-slate-900/30 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300')}`}>
           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" />
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} /><p className={`text-sm font-medium ${themeMode === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>Drag and drop theme `.zip` or `.tar.gz` here, or click to upload.</p></div>
-            <button type="button" onClick={(event) => { event.stopPropagation(); handleUploadClick(); }} disabled={isUploading || isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{isUploading || isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{isInspectingUpload ? 'Inspecting...' : 'Upload Theme (.zip/.tar.gz)'}</span></button>
+            <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} /><div><p className={`text-sm font-medium ${themeMode === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{siteScope ? 'Upload a theme for this site: drag a `.zip` or `.tar.gz` here, or click.' : 'Drag and drop theme `.zip` or `.tar.gz` here, or click to upload.'}</p>{siteScope ? <p className={`mt-0.5 text-xs ${themeMode === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>Only this site sees it. It renders in the browser and may not contain server code.{siteQuota ? ` This site holds ${siteQuota.themes} of ${siteQuota.maxThemes} themes, up to ${Math.round(siteQuota.maxBytes / (1024 * 1024))} MB in all — limits the platform sets.` : ''}</p> : null}</div></div>
+            <button type="button" onClick={(event) => { event.stopPropagation(); handleUploadClick(); }} disabled={isUploading || isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{isUploading || isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{isInspectingUpload ? 'Inspecting...' : siteScope ? 'Upload for this site' : 'Upload Theme (.zip/.tar.gz)'}</span></button>
           </div>
           {uploadProgressLabel ? (
             <div className="mt-4 space-y-2">
@@ -120,7 +128,7 @@ export class InstalledThemesView extends PureReactor {
         <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20"><div className="w-12 h-12 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-3"><FrameworkIcons.Palette size={24} className="text-slate-300 dark:text-slate-700" /></div><h3 className={`text-base font-semibold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>No themes installed</h3><p className="text-slate-500 font-medium text-sm">Your creative workspace is currently empty.</p></div>
       ) : (
         <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
-          {themes.map((theme) => <InstalledThemeCard key={theme.slug} isDark={isDark} onActivate={onActivate} onDisable={onDisable} onDelete={onDelete} onUpdate={onUpdate} theme={theme} updateVersion={updateVersionForTheme(theme)} canManage={canManage} />)}
+          {themes.map((theme) => <InstalledThemeCard key={theme.slug} isDark={isDark} onActivate={onActivate} onDisable={onDisable} onDelete={onDelete} onDeleteMine={onDeleteMine} onUpdate={onUpdate} theme={theme} updateVersion={updateVersionForTheme(theme)} canManage={canManage} ownedBySite={siteScope && Boolean(theme.ownerTenantId)} />)}
         </div>
       )}
 
