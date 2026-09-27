@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { BlockFieldSourceReader } from './block-field-source-reader';
+import { BlockStorefrontRenderers } from './block-storefront-renderers';
 import { ExtensionTrees } from './cli/extension-trees';
 
 /**
@@ -35,7 +36,15 @@ export class BlockFieldConformanceGuard {
     for (const abs of ExtensionTrees.dirs(roots)) {
       if (!fs.existsSync(abs)) continue;
 
-      const renderers = BlockFieldSourceReader.rendererIndex(abs);
+      // Renderers are looked up inside the block's OWN extension. Indexed across the whole tree, two
+      // themes that both render `contact-form` had one theme's editor judged against the other's
+      // renderer.
+      const indexes = new Map<string, Map<string, string>>();
+      const renderersFor = (blockFile: string): Map<string, string> => {
+        const extension = path.join(abs, path.relative(abs, blockFile).split(path.sep)[0]);
+        if (!indexes.has(extension)) indexes.set(extension, BlockFieldSourceReader.rendererIndex(extension));
+        return indexes.get(extension) as Map<string, string>;
+      };
 
       // `.tsx?`, not `.tsx`: a block whose definition carries no JSX lives in a `.ts` file (the content plugin's
       // `team-block.ts`, `testimonials-block.ts`, `two-col-icons-block.ts`, …). Matching only `.tsx`
@@ -45,7 +54,25 @@ export class BlockFieldConformanceGuard {
         if (!src.includes('renderSettings')) continue;
 
         for (const [blockId, written] of BlockFieldSourceReader.writtenKeysByBlock(src, blockFile)) {
-          const rendererFile = renderers.get(BlockFieldSourceReader.normalize(blockId));
+          // Precedence follows the runtime: a THEME's own renderer replaces every plugin's; otherwise
+          // a storefront renderer declared for `cms.block.<id>` is the live one, and a plugin's own
+          // file for the block may be only an editor preview. Against a declared storefront renderer,
+          // a key the editor writes that the renderer never so much as names is FAKE; MISSING cannot
+          // be judged across that boundary, since the renderer reads through its own helpers.
+          const ownRenderer = renderersFor(blockFile).get(BlockFieldSourceReader.normalize(blockId));
+          const storefront = abs === ExtensionTrees.dir('themes') && ownRenderer
+            ? null
+            : BlockStorefrontRenderers.sourceFor(blockId);
+          if (storefront !== null) {
+            const unused = [...written].filter(
+              (key) => !BlockFieldConformanceGuard.IGNORED_KEYS.has(key) && !new RegExp(`\\b${key}\\b`).test(storefront),
+            );
+            if (unused.length) {
+              findings.push(`  ${ExtensionTrees.show(blockFile)}  [${blockId}]  FAKE (editor writes, the storefront renderer never reads): ${unused.join(', ')}`);
+            }
+            continue;
+          }
+          const rendererFile = ownRenderer;
           if (!rendererFile) continue;
 
           // A renderer delegates the same way an editor does — a `hero-renderer.tsx` picks between
@@ -53,10 +80,10 @@ export class BlockFieldConformanceGuard {
           // reads almost nothing itself. Judging it on its own text reported eleven working hero
           // controls as FAKE.
           const rawRendererSrc = BlockFieldSourceReader.read(rendererFile);
-          const rendererSrc = BlockFieldSourceReader.withDelegates(
+          const rendererSrc = BlockFieldSourceReader.normalizeReads(BlockFieldSourceReader.withDelegates(
             rawRendererSrc,
             BlockFieldSourceReader.siblingSources(rendererFile, rawRendererSrc, 2),
-          );
+          ));
           const read = BlockFieldSourceReader.readKeys(rendererSrc);
           if (read.size === 0) continue;
 
