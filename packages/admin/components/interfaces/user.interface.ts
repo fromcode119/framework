@@ -32,4 +32,9 @@ export interface IUser {
   siteAdmin?: boolean;
   /** Is this a multi-tenant deployment? When false, `admin` IS the platform and nothing is hidden. */
   multiTenant?: boolean;
+  /**
+   * A read-only inspector (`InspectorAccess` in the auth package): shown the administrator's screens,
+   * every change refused by the server. Drives the read-only notice under the header.
+   */
+  readOnly?: boolean;
 }

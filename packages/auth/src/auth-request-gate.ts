@@ -2,6 +2,7 @@ import { CookieConstants, Logger, RequestSurfaceUtils, RouteConstants } from '@f
 import type { IUser } from '@auth/interfaces/user.interface';
 import type { IApiKeyValidator } from '@auth/interfaces/api-key-validator.interface';
 import { UserPermissionChecker } from '@auth/permission-checker';
+import { InspectorAccess } from '@auth/inspector-access';
 import type { ISessionValidator } from '@auth/interfaces/session-validator.interface';
 
 /**
@@ -112,6 +113,11 @@ export class AuthRequestGate {
           this.logger.debug(`Token candidate failed: ${msg}`);
         }
       }
+
+      // A read-only inspector reads as an administrator and writes nothing — decided here, once, for
+      // every route (see InspectorAccess).
+      const inspectorRefusal = InspectorAccess.apply(req);
+      if (inspectorRefusal) return res.status(inspectorRefusal.status).json(inspectorRefusal.body);
 
       if (tokenCandidates.length > 0 && !req.user) {
         if (this.shouldLogTokenFailure(req.url)) {
