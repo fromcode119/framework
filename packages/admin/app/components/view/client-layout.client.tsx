@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/components/view/theme-context.client';
 import { AdminRuntimeProvider } from '@/components/view/admin-runtime-provider.client';
 import * as SharedComponents from '@/components';
 import { AdminServices } from '@/lib/admin-services';
+import { ThemeStyleVariantSelect } from '@fromcode119/sdk/admin/theme-style-variant-select';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 
 import { AdminPluginRuntimeProvider } from '@/app/components/view/admin-plugin-runtime-provider.client';
@@ -44,9 +45,12 @@ export class ClientLayout extends Reactor {
    * AdminServices lives in @/lib (not the @/components barrel), but plugins import it from
    * `@fromcode119/sdk/admin` (which re-exports it from `@fromcode119/admin/services`). Merge it
    * into the runtime source so the bridge exposes it on the admin runtime modules.
+   *
+   * `ThemeStyleVariantSelect` is the one component `@fromcode119/sdk/admin` adds of its OWN. A theme
+   * bundle reads that path from this registry, so without it the component was `undefined` there.
    */
   private static buildRuntimeModules(): Record<string, Record<string, unknown>> {
-    const source = { ...(SharedComponents as Record<string, unknown>), AdminServices };
+    const source = { ...(SharedComponents as Record<string, unknown>), AdminServices, ThemeStyleVariantSelect };
     const modules = ClientLayoutRuntimeService.buildRuntimeModules(source, ReactorRuntime as Record<string, unknown>);
     ClientLayoutRuntimeService.seedWindowRuntimeModules(modules['@fromcode119/admin'], modules['@fromcode119/react-class-components']);
     return modules;

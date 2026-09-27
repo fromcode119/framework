@@ -37,6 +37,17 @@ export class ThemeViteConfig {
   }
 
   /**
+   * The admin component surface a theme's block EDITORS import. Only the admin registers it — the
+   * storefront has no admin components — so a bundle evaluated on the storefront reads an empty module
+   * instead of throwing on `undefined`. It used to point at `bridgeGlobal`, which carries neither the
+   * admin components nor the SDK's own `ThemeStyleVariantSelect`: every name read `undefined`, and the
+   * one block form that used it fell back to raw JSON in the admin.
+   */
+  private static get sdkAdminGlobal(): string {
+    return `(${ThemeViteConfig.RUNTIME_REGISTRY}['@fromcode119/sdk/admin'] || {})`;
+  }
+
+  /**
    * Domain-specific vendor chunking belongs to the THEME, not the framework. A theme declares it in its
    * `theme.json`, e.g. `"vendorChunks": { "vendor-stripe": ["@stripe"] }` — so a payment/courier/business
    * vendor is never named in framework code. Unreadable or malformed input yields no extra chunks.
@@ -136,12 +147,12 @@ export class ThemeViteConfig {
               'react-dom/client': `${registry}['react-dom']`,
               '@fromcode119/sdk': bridge,
               '@fromcode119/sdk/react': bridge,
-              '@fromcode119/sdk/admin': bridge,
+              '@fromcode119/sdk/admin': ThemeViteConfig.sdkAdminGlobal,
               // Direct subpath: the theme imports ThemeStyleVariantSelect from its OWN module rather than
               // the sdk/admin barrel, so that the theme stays loadable on the SERVER (the barrel pulls in
-              // @fromcode119/admin/components, which has no Node implementation). The browser still reads
-              // it from the one runtime registry, exactly like the barrel.
-              '@fromcode119/sdk/admin/theme-style-variant-select': bridge,
+              // @fromcode119/admin/components, which has no Node implementation). The browser reads it
+              // from the same admin entry as the barrel.
+              '@fromcode119/sdk/admin/theme-style-variant-select': ThemeViteConfig.sdkAdminGlobal,
             }),
           ],
           output: {
