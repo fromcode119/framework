@@ -61,7 +61,7 @@ describe('extension-hosts side by side', () => {
     // The old host going is not an outage: the new one is still published, and nothing says unavailable.
     expect(SpawnerClient.current()).toBe(second);
     expect(GuestProcessLaunchers.unavailableReason()).toBeNull();
-    expect(lines.some((line) => line.includes('start again in the one that remains'))).toBe(true);
+    expect(lines.some((line) => line.includes('new plugin processes start in the one that remains'))).toBe(true);
   }, 20_000);
 
   it('points the old top-level path at the newest host, but leaves a pre-hosts host listening there alone', async () => {

@@ -178,6 +178,27 @@ describe('RollingDeploy', () => {
     expect(compose.stopped).toContain('extension-host-new-3');
   });
 
+  it('never reads a count that failed as "no plugin left", so the old host is not removed early', async () => {
+    const compose = new ComposeFixture(() => true);
+    compose.declares = ['extension-host'];
+    compose.containers['extension-host'] = ['host-old'];
+    let looks = 0;
+    // docker top fails twice, then answers: the old host goes only after a real zero.
+    compose.stack.processesFromUid = async () => { looks += 1; return looks <= 2 ? null : 0; };
+    expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
+    expect(looks).toBe(3);
+    expect(compose.stopped).toContain('host-old');
+  });
+
+  it('counts the plugin processes from `docker top` with the pid column docker requires', async () => {
+    const ran: string[] = [];
+    const shell: any = { run: async (command: string) => { ran.push(command); return { code: 0, stderr: '', stdout: 'PID UID\n101 0\n202 20003\n303 20017\n404 1000\n' }; } };
+    const { ComposeStack } = await import('@cli/services/deploy/compose-stack');
+    const stack = new ComposeStack(shell);
+    expect(await stack.processesFromUid('host-old', 20000)).toBe(2);
+    expect(ran.pop()).toBe('docker top host-old -eo pid,uid');
+  });
+
   it('stops the old extension-host anyway, and says so, when plugins do not move in time', async () => {
     const compose = new ComposeFixture(() => true);
     compose.declares = ['extension-host'];

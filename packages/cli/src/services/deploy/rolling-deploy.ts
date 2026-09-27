@@ -103,15 +103,21 @@ export class RollingDeploy {
     }
 
     const uidBase = SystemConstants.PROCESS_ISOLATION.PLUGIN_UID_BASE;
-    const remaining = async () => {
+    // null while any count cannot be read: that is "not known yet", never "empty".
+    const remaining = async (): Promise<number | null> => {
       let count = 0;
-      for (const id of stale) count += await this.stack.processesFromUid(id, uidBase);
+      for (const id of stale) {
+        const inHost = await this.stack.processesFromUid(id, uidBase);
+        if (inHost === null) return null;
+        count += inHost;
+      }
       return count;
     };
     if (!(await this.until(async () => (await remaining()) === 0, this.moveTimeoutMs))) {
       // Said, and then done anyway: a process still there restarts in the new host when this one stops —
       // a short pause for that plugin, not for the platform.
-      console.warn(chalk.yellow(`${await remaining()} plugin process(es) had not moved to the new extension-host after ${this.moveTimeoutMs / 1000} s; they restart in it when the old one stops.`));
+      const left = await remaining();
+      console.warn(chalk.yellow(`${left ?? 'An unknown number of'} plugin process(es) had not moved to the new extension-host after ${this.moveTimeoutMs / 1000} s; they restart in it when the old one stops.`));
     }
     for (const id of stale) await this.stack.stopAndRemove(id, RollingDeploy.STOP_GRACE_SECONDS);
     console.log(chalk.green(`extension-host is on ${version}.`));

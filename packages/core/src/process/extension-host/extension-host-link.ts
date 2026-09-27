@@ -67,7 +67,7 @@ export class ExtensionHostLink {
       this.connected.delete(socketPath);
       const next = this.newest();
       if (next) {
-        this.log(`lost the connection to extension-host at ${socketPath}; its plugin processes stopped and start again in the one that remains`);
+        this.log(`lost the connection to extension-host at ${socketPath}; new plugin processes start in the one that remains, and any still running there start again in it`);
         this.publish();
         return;
       }

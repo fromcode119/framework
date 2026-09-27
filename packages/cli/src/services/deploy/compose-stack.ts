@@ -133,11 +133,17 @@ export class ComposeStack {
     return result.stdout;
   }
 
-  /** How many processes in one container run as a plugin's own OS user (uid at or above `uidBase`). */
-  async processesFromUid(id: string, uidBase: number): Promise<number> {
-    const result = await this.shell.run(`docker top ${id} -eo uid`);
-    if (result.code !== 0) return 0;
-    return result.stdout.split('\n').slice(1).map((line) => Number(line.trim())).filter((uid) => Number.isInteger(uid) && uid >= uidBase).length;
+  /**
+   * How many processes in one container run as a plugin's own OS user (uid at or above `uidBase`), or
+   * null when it cannot be told. `docker top` refuses a column list without `pid`, and a count that failed
+   * must never read as "none left" — the old extension-host would be removed with plugins still in it.
+   */
+  async processesFromUid(id: string, uidBase: number): Promise<number | null> {
+    const result = await this.shell.run(`docker top ${id} -eo pid,uid`);
+    if (result.code !== 0) return null;
+    return result.stdout.split('\n').slice(1)
+      .map((line) => Number(line.trim().split(/\s+/)[1]))
+      .filter((uid) => Number.isInteger(uid) && uid >= uidBase).length;
   }
 
   /** SIGTERM, then up to `graceSeconds` for the requests in flight to finish, then gone. */
