@@ -123,6 +123,7 @@ services:
       # This checkout's extension roots and data, at the container paths production names them by —
       # the topology's `../plugins` and `../data` are the deploy directory's, which a checkout lacks.
       - ./data:/app/data
+      - ./public/uploads:/app/public/uploads
       - ../../plugins:/app/plugins
       - ../../themes:/app/themes
       - ../../appearance:/app/appearance
