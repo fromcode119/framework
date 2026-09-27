@@ -3,6 +3,7 @@ import { I18nContextProxy } from '@core/plugin/context/i18n';
 import type { PluginGuestDeclarations } from '@core/plugin/host/declarations/plugin-guest-declarations';
 import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
+import { PluginGuestPaths } from '@core/plugin/host/plugin-guest-paths';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { ITranslationMap } from '@core/interfaces/translation-map.interface';
@@ -14,7 +15,8 @@ import type { ITranslationMap } from '@core/interfaces/translation-map.interface
  * in the same expression (a settings label, an email subject); a message to the host cannot do that.
  * A plugin's translations are its own files, so the guest loads them itself into a local
  * `I18nManager` seeded with the platform's default locale, through the very same proxy the host
- * uses. `context.paths` is likewise local: it reads the plugin's own directory.
+ * uses. `context.paths` reads the plugin's own directory locally; anything a theme may override is
+ * read by the host (see {@link PluginGuestPaths}).
  */
 export class PluginGuestLocals {
   readonly i18n: ReturnType<typeof I18nContextProxy.createI18nProxy>;
@@ -60,10 +62,11 @@ export class PluginGuestLocals {
     const security: any = { hasCapability: () => true, handleViolation: () => undefined, handleRateLimit: () => undefined };
     // The active theme comes from the HOST's own answer, not from a table read through the plugin's
     // guarded `context.db` — that read is framework work, and the guard rightly refuses it here.
-    this.paths = new PluginPathContextProxy(plugin, manager, async () => {
+    // Reads a theme may override go to the host — this process has no themes (see PluginGuestPaths).
+    this.paths = new PluginGuestPaths(plugin, manager, async () => {
       const slug = await remote.ref('context', [{ name: 'theme' }]).getActiveSlug();
       return typeof slug === 'string' ? slug : null;
-    });
+    }, remote.ref('context', [{ name: 'paths' }]));
     // The site's clock lives in framework settings only the host reads; asked of the host per call,
     // so it is the clock of the site the calling request (or scheduled run) is bound to.
     this.i18n = {
