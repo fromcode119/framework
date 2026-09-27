@@ -59,7 +59,7 @@ describe('plugins offered to sites', () => {
   it('shows a site only offered plugins that run on the platform, and whether each is on there', async () => {
     multiTenant();
     const { db, sitePlugins } = database();
-    const controller = new PluginSiteOfferController(managerWith(db, { forms: 'active', seo: 'inactive', mlm: 'active' }));
+    const controller = new PluginSiteOfferController(managerWith(db, { forms: 'active', seo: 'inactive', gamma: 'active' }));
     for (const slug of ['forms', 'seo']) await controller.setOffer(request(null, slug, { offered: true }), response());
     sitePlugins.push({ tenant_id: 'site-a', plugin_slug: 'forms', state: 'active' });
     const res = response();
@@ -85,11 +85,11 @@ describe('plugins offered to sites', () => {
   it('refuses a plugin the platform does not offer, a stopped one, and a request with no site', async () => {
     multiTenant();
     const { db, sitePlugins } = database();
-    const controller = new PluginSiteOfferController(managerWith(db, { mlm: 'active', seo: 'inactive' }));
+    const controller = new PluginSiteOfferController(managerWith(db, { gamma: 'active', seo: 'inactive' }));
     await controller.setOffer(request(null, 'seo', { offered: true }), response());
 
     const notOffered = response();
-    await controller.setForSite(request('site-a', 'mlm', { enabled: true }), notOffered);
+    await controller.setForSite(request('site-a', 'gamma', { enabled: true }), notOffered);
     expect(notOffered.statusCode).toBe(403);
     const stopped = response();
     await controller.setForSite(request('site-a', 'seo', { enabled: true }), stopped);
