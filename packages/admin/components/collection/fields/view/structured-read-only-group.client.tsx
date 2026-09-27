@@ -43,8 +43,9 @@ export class StructuredReadOnlyGroup extends PureReactor {
     if (!leaves.length) return null;
     return (
       // `minmax(0,1fr)`, never a bare `1fr`: a bare track is `min-width:auto`, so one long unbroken
-      // value (a URL, an address) widens its column and pushes the grid past the panel.
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-x-7 gap-y-3.5">
+      // value (a URL, an address) widens its column and pushes the grid past the panel. `min(170px,100%)`
+      // so a container narrower than one column — an edit-page sidebar — gets one full-width column.
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-x-7 gap-y-3.5">
         {leaves.map((entry) => (
           <StructuredReadOnlyBlock key={entry.key} label={entry.key} node={entry.node} isDark={this.isDark} keyLabels={this.keyLabels} />
         ))}

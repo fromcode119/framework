@@ -53,8 +53,10 @@ export class AdminFactGrid extends PureReactor {
         <div className="px-3.5 py-3.5">
           {/* `minmax(0,1fr)`, never a bare `1fr`: a bare track is `min-width:auto`, so one long
               unbroken value — an address, a URL — widens its column and pushes the grid past the
-              panel. */}
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-x-7 gap-y-3.5">
+              panel. And `min(170px,100%)`, not a bare 170px: in a container narrower than one
+              column — an edit page's sidebar is ~140px inside its padding — a fixed 170px track ran
+              past the edge and the lock surface clipped every label to "LOW STOCK THRESHOL". */}
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-x-7 gap-y-3.5">
             {this.facts.map((fact) => this.renderFact(fact))}
           </div>
         </div>
