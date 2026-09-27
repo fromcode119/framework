@@ -67,12 +67,12 @@ export class OopGuardCommand extends ArchorCommand {
     for (const [pkg, b] of [...perPackage.entries()].sort((a, c) => score(c[1]) - score(a[1]))) {
       if (!score(b) && !b.warnings.length) continue;
       console.log(`  ${pkg}: ${b.violations.length} viol, ${b.enumDebt.length} enum, ${b.ifaceDebt.length} iface, ` +
-        `${b.exportDebt.length} export, ${b.clientDebt.length} use-client, ${b.orphanIface.length} orphan-iface, ` +
+        `${b.exportDebt.length} export, ${b.clientDebt.length} use-client, ${b.orphanIface.length} orphan-iface, ${b.besideClass.length} beside-class, ` +
         `${b.warnings.length} warn (${b.files} files)`);
     }
     console.log(`Total: ${sum('violations')} violations, ${sum('enumDebt')} enum-debt (unions→Enum), ` +
-      `${sum('ifaceDebt')} iface-debt (I-prefix, one-per-file, never beside a class), ${sum('exportDebt')} export-debt (→ class), ` +
-      `${sum('clientDebt')} use-client-literal (→ .client. filename), ${sum('orphanIface')} orphan-interface, ` +
+      `${sum('ifaceDebt')} iface-debt (I-prefix, one-per-file), ${sum('exportDebt')} export-debt (→ class), ` +
+      `${sum('clientDebt')} use-client-literal (→ .client. filename), ${sum('orphanIface')} orphan-interface, ${sum('besideClass')} contract-beside-class, ` +
       `${sum('warnings')} warnings.`);
     console.log(`       ${sum('defaultExport')} export-default-expr, ` +
       `${sum('topLevel')} module-level const/let, ${sum('typeAlias')} type-alias.`);

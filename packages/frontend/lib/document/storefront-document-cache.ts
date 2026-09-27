@@ -1,12 +1,6 @@
 import { createHash } from 'node:crypto';
 import { CookieConstants } from '@fromcode119/core/client';
-
-/** One stored document: the encoded body exactly as it was sent, with the headers that described it. */
-interface IStoredDocument {
-  body: Uint8Array;
-  status: number;
-  headers: [string, string][];
-}
+import type { IStoredDocument } from '@/lib/interfaces/stored-document.interface';
 
 /**
  * Rendered storefront documents, kept for anonymous visitors.
