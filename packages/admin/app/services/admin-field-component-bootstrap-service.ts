@@ -5,6 +5,7 @@ import { ThemeLayoutField } from '@/components/collection/fields/view/theme-layo
 import { StructuredReadOnlyField } from '@/components/collection/fields/view/structured-read-only-field.client';
 import { AddressField } from '@/components/collection/fields/view/address-field.client';
 import { PersonField } from '@/components/collection/fields/view/person-field.client';
+import { HtmlEditorField } from '@/components/collection/fields/view/html-editor-field.client';
 
 /**
  * Owns the framework's built-in collection field components and registers them into the live
@@ -22,6 +23,7 @@ export class AdminFieldComponentBootstrapService {
     StructuredReadOnlyField,
     AddressField,
     PersonField,
+    HtmlEditor: HtmlEditorField,
   };
 
   static register(registerFieldComponent?: (name: string, component: any) => void): void {
