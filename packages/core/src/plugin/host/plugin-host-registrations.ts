@@ -12,6 +12,7 @@ import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plug
 import type { IRequestStore } from '@core/context/interfaces/request-store.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
+import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 
 /**
  * The host's stand-ins for what the guest registered: each one is registered on the REAL context
@@ -38,6 +39,8 @@ export class PluginHostRegistrations {
     private readonly db: { withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> },
     /** Runs a declaration (`PluginDeclarations`) on the plugin's context, as the call it used to be. */
     private readonly declare: (steps: NonNullable<IPluginGuestRegistration['steps']>, root: string | undefined) => Promise<unknown>,
+    /** Whether the plugin's process is up to be asked. */
+    private readonly isRunning: () => boolean,
   ) {}
 
   /**
@@ -122,16 +125,31 @@ export class PluginHostRegistrations {
   private hook(context: PluginContext, registration: IPluginGuestRegistration): void {
     const id = String(registration.handlerId);
     const event = String(registration.event);
-    const handler = (payload: unknown, ev: string) => this.invoke('hook', id, [payload, ev], RequestContextUtils.storage.getStore());
+    const handler = this.standIn(id, event);
     this.hooks.set(id, { event, handler });
     context.hooks.on(event, handler as any);
+  }
+
+  /**
+   * Hands a hook to the guest. `plugins:ready` is the one event a plugin whose process is down is not
+   * asked about: when the extension-host comes back, each plugin's relaunch says `plugins:ready` again,
+   * and the ones still waiting their turn used to answer every one of those with an ERROR and a stack
+   * trace — dozens per recovery, burying real errors. Nothing is lost by not asking: a relaunch applies
+   * the plugin's new stand-ins BEFORE it says `plugins:ready` naming that plugin, so each one hears it
+   * once it is back. Every other event still fails loudly: skipping it would drop the work it carries.
+   */
+  private standIn(id: string, event: string): (payload: unknown, ev: string) => unknown {
+    return (payload: unknown, ev: string) => {
+      if (event === PluginHostState.PLUGINS_READY_EVENT && !this.isRunning()) return undefined;
+      return this.invoke('hook', id, [payload, ev], RequestContextUtils.storage.getStore());
+    };
   }
 
   /** `context.plugins.on(event, handler)`: the manager's own bus, no tenant gate — exactly what in-process plugins get. */
   private pluginsOn(context: PluginContext, registration: IPluginGuestRegistration): void {
     const id = String(registration.handlerId);
     const event = String(registration.event);
-    const handler = (payload: unknown, ev: string) => this.invoke('hook', id, [payload, ev], RequestContextUtils.storage.getStore());
+    const handler = this.standIn(id, event);
     this.platformHooks.set(id, { event, handler });
     context.plugins.on(event, handler as any);
   }
