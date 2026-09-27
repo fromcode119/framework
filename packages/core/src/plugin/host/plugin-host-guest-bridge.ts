@@ -166,6 +166,10 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     // The switch, in ONE synchronous step, so nothing is dispatched to a half-switched plugin: the replaced
     // process's stand-ins go, the next one serves, and what it registered while initialising is applied.
     if (this.context) this.registrations.resetForRestart(this.context);
+    // Its middleware too. Registering again replaces one of the same id, but a middleware the new process
+    // no longer registers (an update that removed it) stayed, pointing at a handler the new process does
+    // not have — on every request the api served, for every site running the plugin.
+    if (this.context) this.manager.middlewares.unregisterByPlugin(this.slug);
     this.adopt(next);
     if (this.context) {
       for (const registration of next.held.splice(0)) void this.registrations.apply(this.context, registration);

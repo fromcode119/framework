@@ -5,6 +5,7 @@ import { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrat
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 import { PluginHost } from '@core/plugin/host/plugin-host';
 import { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
+import { MiddlewareManager } from '@core/plugin/services/runtime/middleware-manager';
 
 /**
  * A relaunched guest subscribes to `plugins:ready` again through `context.plugins.on`. Clearing the old
@@ -15,7 +16,7 @@ import { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-gues
 describe('a relaunched guest leaves no stale plugins:ready subscriber', () => {
   it('drops the old subscription through the REAL plugin context', async () => {
     const hooks = new HookManager();
-    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) } };
+    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares: new MiddlewareManager() };
     const plugin: any = { manifest: { slug: 'relaunch-probe', capabilities: ['hooks'] } };
     const logger: any = { child: () => ({ info() {}, warn() {}, error() {}, debug() {} }), info() {}, warn() {}, error() {}, debug() {} };
     const context = PluginContextFactory.createPluginContext(plugin, manager, logger);
@@ -37,7 +38,7 @@ describe('a relaunched guest leaves no stale plugins:ready subscriber', () => {
 
   it('keeps the old subscriber on the OLD process while the replacement boots, then swaps to the new one in one step', async () => {
     const hooks = new HookManager();
-    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) } };
+    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares: new MiddlewareManager() };
     const logger: any = { child: () => ({ info() {}, warn() {}, error() {}, debug() {} }), info() {}, warn() {}, error() {}, debug() {} };
     const context = PluginContextFactory.createPluginContext({ manifest: { slug: 'relaunch-probe', capabilities: ['hooks'] } } as any, manager, logger);
     const tick = () => new Promise((resolve) => setTimeout(resolve, 0));

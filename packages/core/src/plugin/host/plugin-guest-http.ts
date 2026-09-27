@@ -75,7 +75,11 @@ export class PluginGuestHttp {
     this.app.use(this.enterInvocation.bind(this));
     this.app.use(express.json({ limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
     this.app.use(express.urlencoded({ extended: true, limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
+    this.app.all(`${PluginGuestHttp.MIDDLEWARE_PATH}/:id`, (req: Request, res: Response) => this.runMiddleware(req, res));
   }
+
+  /** The middleware this process registered, by the id the api targets. */
+  private readonly middlewares = new Map<string, (req: any, res: any, next: (err?: any) => void) => void>();
 
   async listen(): Promise<void> {
     if (fs.existsSync(this.socketPath)) fs.rmSync(this.socketPath, { force: true });
@@ -102,21 +106,35 @@ export class PluginGuestHttp {
     req.rawBodyString = buf.toString((encoding as BufferEncoding) || 'utf8');
   }
 
-  /** A global middleware the plugin registered: mounted under a private path the host targets by id. */
+  /** A global middleware the plugin registered, run when the host targets it by id. */
   mountMiddleware(id: string, handler: (req: any, res: any, next: (err?: any) => void) => void): void {
-    this.app.all(`${PluginGuestHttp.MIDDLEWARE_PATH}/${encodeURIComponent(id)}`, (req: Request, res: Response) => {
-      const original = String(req.headers[PluginGuestHttp.HEADER_ORIGINAL_URL] ?? '/');
-      (req as any).url = original;
-      (req as any).originalUrl = original;
-      handler(req, res, (err?: unknown) => {
-        if (res.headersSent) return;
-        if (err) {
-          res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
-          return;
-        }
-        res.setHeader(PluginGuestHttp.HEADER_NEXT, '1');
-        res.status(204).end();
-      });
+    this.middlewares.set(id, handler);
+  }
+
+  /**
+   * One global middleware. One this process does not have steps aside (and says so) instead of answering:
+   * a middleware runs on EVERY api request, so a stand-in the api kept for a handler the process no longer
+   * has — a plugin update that dropped it — answered each request with this process's 404, and a whole
+   * site served nothing until the api restarted.
+   */
+  private runMiddleware(req: Request, res: Response): void {
+    const handler = this.middlewares.get(String(req.params.id));
+    const stepAside = (): void => { res.setHeader(PluginGuestHttp.HEADER_NEXT, '1'); res.status(204).end(); };
+    if (!handler) {
+      console.warn(`[plugin] no middleware "${req.params.id}" in this process; the request goes on without it`);
+      stepAside();
+      return;
+    }
+    const original = String(req.headers[PluginGuestHttp.HEADER_ORIGINAL_URL] ?? '/');
+    (req as any).url = original;
+    (req as any).originalUrl = original;
+    handler(req, res, (err?: unknown) => {
+      if (res.headersSent) return;
+      if (err) {
+        res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+        return;
+      }
+      stepAside();
     });
   }
 
