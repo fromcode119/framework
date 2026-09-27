@@ -11,12 +11,14 @@ import { PluginLifecycleController } from '@api/controllers/plugins/plugin-lifec
 import { RouteConstants } from '@fromcode119/core';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { PluginRuntimeController } from '@api/controllers/plugins/plugin-runtime-controller';
+import { PluginSiteOfferController } from '@api/controllers/plugins/plugin-site-offer-controller';
 
 export class PluginRouter extends BaseRouter {
   private controller: PluginController;
   private uploadController: PluginUploadController;
   private lifecycleController: PluginLifecycleController;
   private runtimeController: PluginRuntimeController;
+  private siteOfferController: PluginSiteOfferController;
   private upload: multer.Multer;
   private chunkUpload: multer.Multer;
 
@@ -30,6 +32,7 @@ export class PluginRouter extends BaseRouter {
     this.uploadController = new PluginUploadController(manager);
     this.lifecycleController = new PluginLifecycleController(manager);
     this.runtimeController = new PluginRuntimeController(manager);
+    this.siteOfferController = new PluginSiteOfferController(manager);
     const uploadsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-uploads-'));
     const chunkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-upload-chunks-'));
     this.upload = multer({ dest: uploadsDir });
@@ -63,6 +66,11 @@ export class PluginRouter extends BaseRouter {
     // installing a plugin puts code on the container every customer shares. Per-site plugin install
     // is not merely ungated work: it cannot be safe until the privileged spawner is on the box, since
     // the default launcher does not isolate identity.
+    // What the platform offers to sites: read by any admin (a site sees what it may add), offered by the
+    // platform, and switched on or off by a site for ITSELF — only ever an offered, running plugin.
+    this.get(RouteConstants.SEGMENTS.PLUGINS_OFFERED, this.auth.guard(['admin']), this.siteOfferController.offered);
+    this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_OFFER, this.auth.guard(['admin']), platform, this.siteOfferController.setOffer);
+    this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SITE, this.auth.guard(['admin']), this.siteOfferController.setForSite);
     this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.controller.marketplace);
     this.post(RouteConstants.SEGMENTS.PLUGINS_INSTALL, this.auth.guard(['admin']), platform, this.controller.install);
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPDATE_ALL, this.auth.guard(['admin']), platform, (req: any, res: any) => this.controller.updateAll(req, res));

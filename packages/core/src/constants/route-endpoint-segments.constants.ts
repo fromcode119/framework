@@ -9,6 +9,10 @@ export class RouteEndpointSegments {
   // ── Plugins ──────────────────────────────────────────────────────────────
   PLUGINS_MARKETPLACE: '/marketplace',
   PLUGINS_INSTALL: '/install/:slug',
+  /** Plugins the platform offers to sites, and a site switching one on or off for itself. */
+  PLUGINS_OFFERED: '/offered',
+  PLUGINS_SLUG_OFFER: '/:slug/offer',
+  PLUGINS_SLUG_SITE: '/:slug/site',
   PLUGINS_UPDATE_ALL: '/update-all',
   PLUGINS_INSTALL_OPERATION: '/install-operations/:operationId',
   PLUGINS_UPLOAD_SESSION: '/upload/session',
