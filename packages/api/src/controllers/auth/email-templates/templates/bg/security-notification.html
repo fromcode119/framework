@@ -1,0 +1,8 @@
+<p>{{#if event.newLogin}}Засечено е ново влизане в профила ви.{{/if}}{{#if event.passwordChanged}}Паролата на профила ви е сменена успешно.{{/if}}{{#if event.passwordReset}}Паролата ви е възстановена успешно.{{/if}}{{#if event.emailChangeRequested}}Получена е заявка за смяна на имейла на профила ви.{{/if}}{{#if event.emailChanged}}Имейлът на профила ви е обновен.{{/if}}{{#if event.twoFactorEnabled}}Двуфакторното удостоверяване е включено за профила ви.{{/if}}{{#if event.twoFactorDisabled}}Двуфакторното удостоверяване е изключено за профила ви.{{/if}}</p>
+<ul>
+  {{#if facts.ipAddress}}<li>IP адрес: {{facts.ipAddress}}</li>{{/if}}
+  {{#if facts.userAgent}}<li>Браузър: {{facts.userAgent}}</li>{{/if}}
+  {{#if facts.newEmail}}<li>Нов имейл: {{facts.newEmail}}</li>{{/if}}
+  {{#if facts.previousEmail}}<li>Предишен имейл: {{facts.previousEmail}}</li>{{/if}}
+  {{#if facts.time}}<li>Час: {{facts.time}}</li>{{/if}}
+</ul>

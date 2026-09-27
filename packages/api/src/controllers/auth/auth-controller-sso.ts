@@ -6,6 +6,7 @@ import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { randomBytes } from 'crypto';
 import { AuthControllerRegistration } from '@api/controllers/auth/auth-controller-registration';
 import { CoercionUtils } from '@fromcode119/core';
+import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
 
 /**
  * Password-reset (forgot/reset) and SSO login handlers. Extracted from
@@ -176,9 +177,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
     await this.sendSecurityNotification({
       userId: tokenResult.userId,
       to: tokenResult.email,
-      subject: 'Your password was reset',
-      title: 'Your password has been reset successfully.',
-      details: [`Time: ${new Date().toISOString()}`]
+      event: SecurityNotificationEvent.PASSWORD_RESET,
     });
 
     return res.json({ success: true, message: 'Password has been reset. Please sign in again.' });

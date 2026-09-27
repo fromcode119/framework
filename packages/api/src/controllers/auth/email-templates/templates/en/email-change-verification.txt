@@ -1,4 +1,4 @@
-{{greeting}}
+{{#if user.firstName}}Hi {{user.firstName}},{{else}}Hi,{{/if}}
 
 Use this link to confirm your new email address:
 {{confirmUrl}}

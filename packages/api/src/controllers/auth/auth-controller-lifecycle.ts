@@ -8,6 +8,7 @@ import { AuthControllerSetup } from '@api/controllers/auth/auth-controller-setup
 import { InitialSetupPreferences } from '@api/controllers/auth/initial-setup-preferences';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { SetupMode } from '@fromcode119/core';
+import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
 
 export class AuthControllerLifecycle extends AuthControllerSetup {
 
@@ -192,13 +193,11 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
         await this.sendSecurityNotification({
           userId: user.id,
           to: user.email,
-          subject: 'New login detected',
-          title: 'A new login was detected on your account.',
-          details: [
-            `IP address: ${String(NetworkAddressUtils.resolveClientIp(req) || 'unknown')}`,
-            `User-Agent: ${String(req.headers['user-agent'] || 'unknown')}`,
-            `Time: ${new Date().toISOString()}`
-          ]
+          event: SecurityNotificationEvent.NEW_LOGIN,
+          facts: {
+            ipAddress: String(NetworkAddressUtils.resolveClientIp(req) || ''),
+            userAgent: String(req.headers['user-agent'] || ''),
+          },
         });
 
         return res.json({

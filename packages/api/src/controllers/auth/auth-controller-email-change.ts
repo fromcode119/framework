@@ -2,6 +2,7 @@ import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason
 import { Request, Response } from 'express';
 import { CoercionUtils, NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerAccount } from '@api/controllers/auth/auth-controller-account';
+import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
 
 /**
  * Changing the address an account is reached at — a two-step flow, not a field edit.
@@ -55,12 +56,8 @@ export class AuthControllerEmailChange extends AuthControllerAccount {
     await this.sendSecurityNotification({
       userId,
       to: oldEmail,
-      subject: 'Email change requested',
-      title: 'A request to change your account email was received.',
-      details: [
-        `New email: ${newEmail}`,
-        `Time: ${new Date().toISOString()}`
-      ],
+      event: SecurityNotificationEvent.EMAIL_CHANGE_REQUESTED,
+      facts: { newEmail },
       allowSilentFailure: true
     });
 
@@ -111,17 +108,15 @@ export class AuthControllerEmailChange extends AuthControllerAccount {
     await this.sendSecurityNotification({
       userId: result.userId,
       to: result.newEmail,
-      subject: 'Email changed successfully',
-      title: 'Your account email has been updated.',
-      details: [`Previous email: ${result.oldEmail}`],
+      event: SecurityNotificationEvent.EMAIL_CHANGED,
+      facts: { previousEmail: result.oldEmail },
       allowSilentFailure: true
     });
     await this.sendSecurityNotification({
       userId: result.userId,
       to: result.oldEmail,
-      subject: 'Email changed successfully',
-      title: 'Your account email has been updated.',
-      details: [`New email: ${result.newEmail}`],
+      event: SecurityNotificationEvent.EMAIL_CHANGED,
+      facts: { newEmail: result.newEmail },
       allowSilentFailure: true
     });
 

@@ -1,3 +1,8 @@
-{{title}}
+{{#if event.newLogin}}A new login was detected on your account.{{/if}}{{#if event.passwordChanged}}Your account password was changed successfully.{{/if}}{{#if event.passwordReset}}Your password has been reset successfully.{{/if}}{{#if event.emailChangeRequested}}A request to change your account email was received.{{/if}}{{#if event.emailChanged}}Your account email has been updated.{{/if}}{{#if event.twoFactorEnabled}}Two-factor authentication has been enabled on your account.{{/if}}{{#if event.twoFactorDisabled}}Two-factor authentication has been disabled on your account.{{/if}}
 
-{{detailsText}}
+{{#if facts.ipAddress}}IP address: {{facts.ipAddress}}
+{{/if}}{{#if facts.userAgent}}User-Agent: {{facts.userAgent}}
+{{/if}}{{#if facts.newEmail}}New email: {{facts.newEmail}}
+{{/if}}{{#if facts.previousEmail}}Previous email: {{facts.previousEmail}}
+{{/if}}{{#if facts.time}}Time: {{facts.time}}
+{{/if}}

@@ -3,57 +3,65 @@ import { EmailChangeVerificationTemplate } from '@api/controllers/auth/email-tem
 import { PasswordResetEmailTemplate } from '@api/controllers/auth/email-templates/password-reset-email-template';
 import { SecurityNotificationEmailTemplate } from '@api/controllers/auth/email-templates/security-notification-email-template';
 import { VerifyEmailFallbackTemplate } from '@api/controllers/auth/email-templates/verify-email-fallback-template';
+import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
+import type { IAuthEmailCommonData } from '@api/controllers/auth/interfaces/auth-email-common-data.interface';
+import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
 import { AuthControllerSignupEmailInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-signup-email-infrastructure';
 
 export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmailInfrastructure {
   protected async sendVerificationEmail(options: { to: string; verificationUrl: string; firstName?: string }): Promise<boolean> {
-    const recipientName = String(options.firstName || '').trim();
-    const appName = await this.resolveFrameworkAppName();
+    const common = await this.emailCommonData(options.to, options.firstName);
     const fromAddress = (await this.resolveFrameworkSender()).identity;
     const brandedEmail = await this.buildBrandedVerifyEmail({
       verificationUrl: options.verificationUrl,
-      firstName: recipientName,
-      brandName: appName,
+      firstName: common.user.firstName,
+      brandName: common.appName,
+      theme: common.theme,
     });
-    const greeting = recipientName ? `Hi ${recipientName},` : 'Hi,';
-    const fallbackEmail = await VerifyEmailFallbackTemplate.build({
-      appName,
-      greeting,
-      verificationUrl: options.verificationUrl,
-    });
-    const subject = brandedEmail?.subject || fallbackEmail.subject;
-    const text = brandedEmail?.text || fallbackEmail.text;
-    const html = brandedEmail?.html || fallbackEmail.html;
+    const email = brandedEmail || await VerifyEmailFallbackTemplate.build({ ...common, verificationUrl: options.verificationUrl });
 
-    return this.sendEmail({ to: options.to, subject, text, html, from: fromAddress }, '[AuthController] Failed to send verification email');
+    return this.sendEmail({ to: options.to, ...email, from: fromAddress }, '[AuthController] Failed to send verification email');
   }
 
   protected async sendPasswordResetEmail(options: { to: string; resetUrl: string; firstName?: string }): Promise<boolean> {
-    const recipientName = String(options.firstName || '').trim();
-    const greeting = recipientName ? `Hi ${recipientName},` : 'Hi,';
-    const appName = await this.resolveFrameworkAppName();
+    const common = await this.emailCommonData(options.to, options.firstName);
     const fromAddress = (await this.resolveFrameworkSender()).identity;
-    const email = await PasswordResetEmailTemplate.build({ appName, greeting, resetUrl: options.resetUrl });
+    const email = await PasswordResetEmailTemplate.build({ ...common, resetUrl: options.resetUrl });
 
-    return this.sendEmail({ to: options.to, subject: email.subject, text: email.text, html: email.html, from: fromAddress }, '[AuthController] Failed to send password reset email');
+    return this.sendEmail({ to: options.to, ...email, from: fromAddress }, '[AuthController] Failed to send password reset email');
   }
 
   protected async sendEmailChangeVerificationEmail(options: { to: string; confirmUrl: string; firstName?: string }): Promise<boolean> {
-    const recipientName = String(options.firstName || '').trim();
-    const greeting = recipientName ? `Hi ${recipientName},` : 'Hi,';
-    const appName = await this.resolveFrameworkAppName();
+    const common = await this.emailCommonData(options.to, options.firstName);
     const fromAddress = (await this.resolveFrameworkSender()).identity;
-    const email = await EmailChangeVerificationTemplate.build({ appName, greeting, confirmUrl: options.confirmUrl });
+    const email = await EmailChangeVerificationTemplate.build({ ...common, confirmUrl: options.confirmUrl, newEmail: options.to });
 
-    return this.sendEmail({ to: options.to, subject: email.subject, text: email.text, html: email.html, from: fromAddress }, '[AuthController] Failed to send email-change verification email');
+    return this.sendEmail({ to: options.to, ...email, from: fromAddress }, '[AuthController] Failed to send email-change verification email');
   }
 
+  /**
+   * What every framework email template receives: the site's name, the person, the site's theme
+   * variables, and the language to write in — the site's own (Settings → Localization).
+   */
+  protected async emailCommonData(to: string, firstName?: string): Promise<IAuthEmailCommonData> {
+    return {
+      appName: await this.resolveFrameworkAppName(),
+      user: { firstName: String(firstName || '').trim(), email: String(to || '').trim() },
+      theme: await AuthEmailThemeOverride.variables(),
+      locale: await this.resolvePlatformEmailLocale(),
+    };
+  }
+
+  /**
+   * "Something changed on your account." The caller names the EVENT and the facts it has; the
+   * template for the reader's language writes the words.
+   */
   protected async sendSecurityNotification(options: {
     userId: number;
     to: string;
-    subject: string;
-    title: string;
-    details?: string[];
+    event: SecurityNotificationEvent;
+    facts?: { ipAddress?: string; userAgent?: string; newEmail?: string; previousEmail?: string };
+    firstName?: string;
     allowSilentFailure?: boolean;
   }) {
     // A security NOTIFICATION must never break the security ACTION that triggered it (login,
@@ -64,27 +72,18 @@ export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmail
       const enabled = await this.getSettingBoolean(SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS, true);
       if (!enabled) return;
 
-      const appName = await this.resolveFrameworkAppName();
       const fromAddress = (await this.resolveFrameworkSender()).identity;
-      const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
       const email = await SecurityNotificationEmailTemplate.build({
-        appName,
-        subject: options.subject,
-        title: options.title,
-        details,
+        ...(await this.emailCommonData(options.to, options.firstName)),
+        event: options.event,
+        facts: options.facts || {},
       });
-      const ok = await this.sendEmail({
-        to: options.to,
-        from: fromAddress,
-        subject: email.subject,
-        text: email.text,
-        html: email.html,
-      }, '[AuthController] Failed to send security notification');
+      const ok = await this.sendEmail({ to: options.to, from: fromAddress, ...email }, '[AuthController] Failed to send security notification');
 
       if (!ok && !options.allowSilentFailure) {
         await this.manager.writeLog(
           'WARN',
-          `Security notification failed: ${options.subject}`,
+          `Security notification failed: ${options.event.value}`,
           'system',
           { userId: options.userId, email: options.to },
         ).catch(() => {});

@@ -1,30 +1,8 @@
-import { AuthEmailTemplateFileService } from '@api/controllers/auth/email-templates/auth-email-template-file-service';
 import { AuthEmailTemplateRenderService } from '@api/controllers/auth/email-templates/auth-email-template-render-service';
+import type { IAuthEmailCommonData } from '@api/controllers/auth/interfaces/auth-email-common-data.interface';
 
 export class EmailChangeVerificationTemplate {
-  static async build(options: {
-    appName: string;
-    greeting: string;
-    confirmUrl: string;
-  }): Promise<{ subject: string; text: string; html: string }> {
-    const [subjectTemplate, textTemplate, htmlTemplate] = await Promise.all([
-      AuthEmailTemplateFileService.readTemplate('email-change-verification.subject.txt'),
-      AuthEmailTemplateFileService.readTemplate('email-change-verification.txt'),
-      AuthEmailTemplateFileService.readTemplate('email-change-verification.html'),
-    ]);
-
-    return {
-      subject: AuthEmailTemplateRenderService.render(subjectTemplate, {
-        appName: options.appName,
-      }).trim(),
-      text: AuthEmailTemplateRenderService.render(textTemplate, {
-        greeting: options.greeting,
-        confirmUrl: options.confirmUrl,
-      }).trim(),
-      html: AuthEmailTemplateRenderService.render(htmlTemplate, {
-        greeting: AuthEmailTemplateRenderService.escapeHtml(options.greeting),
-        confirmUrl: AuthEmailTemplateRenderService.escapeHtml(options.confirmUrl),
-      }).trim(),
-    };
+  static build(options: IAuthEmailCommonData & { confirmUrl: string; newEmail: string }): Promise<{ subject: string; text: string; html: string }> {
+    return AuthEmailTemplateRenderService.renderEmail('email-change-verification', options, options.locale);
   }
 }

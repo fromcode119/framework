@@ -1,4 +1,4 @@
-{{greeting}}
+{{#if user.firstName}}Hi {{user.firstName}},{{else}}Hi,{{/if}}
 
 Please verify your email by opening the link below:
 {{verificationUrl}}

@@ -1,6 +1,5 @@
 /** SystemTwoFactorService — 2FA management endpoints. Extracted from SystemController (ARC-007). */
 import { Request, Response } from 'express';
-import Handlebars from 'handlebars';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { ApplicationUrlUtils, FrameworkEmailSenderService, Logger, SystemConstants, SecretService } from '@fromcode119/core';
@@ -13,6 +12,7 @@ import { AuthUtils } from '@api/utils/auth';
 import { UserManagementService } from '@api/services/user-management-service';
 import { RequestParamUtils } from '@api/utils/request-param-utils';
 import { TwoFactorRecoveryCodes } from '@api/controllers/system/two-factor-recovery-codes';
+import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
 
 export class SystemTwoFactorService {
   private readonly logger = new Logger({ namespace: 'System2FA' });
@@ -126,7 +126,7 @@ export class SystemTwoFactorService {
     const recoveryCodes = this.generateRecoveryCodes();
     await this.writeRecoveryCodeRecords(userId, recoveryCodes.map((code) => ({ hash: this.hashRecoveryCode(code), usedAt: null, createdAt: new Date().toISOString() })));
     await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
-    await this.sendSecurityNotification({ userId, subject: 'Two-factor authentication enabled', title: 'Two-factor authentication has been enabled on your account.', details: [`Time: ${new Date().toISOString()}`] });
+    await this.sendSecurityNotification({ userId, event: SecurityNotificationEvent.TWO_FACTOR_ENABLED });
     return { success: true, message: '2FA enabled successfully', recoveryCodes };
   }
 
@@ -146,7 +146,7 @@ export class SystemTwoFactorService {
     await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret` });
     await this.db.delete(SystemConstants.TABLE.META, { key: `user:${userId}:totp_secret_pending` });
     await this.db.delete(SystemConstants.TABLE.META, { key: this.recovery.getRecoveryCodesKey(userId) });
-    await this.sendSecurityNotification({ userId, subject: 'Two-factor authentication disabled', title: 'Two-factor authentication has been disabled on your account.', details: [`Time: ${new Date().toISOString()}`] });
+    await this.sendSecurityNotification({ userId, event: SecurityNotificationEvent.TWO_FACTOR_DISABLED });
     return { success: true, message: '2FA disabled successfully' };
   }
 

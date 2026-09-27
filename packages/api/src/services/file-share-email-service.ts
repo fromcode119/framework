@@ -1,4 +1,5 @@
 import { PluginManager, Logger, SystemConstants } from '@fromcode119/core';
+import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
 import { FileShareEmailTemplate } from '@api/controllers/auth/email-templates/file-share-email-template';
 import { FileShareAdminController } from '@api/controllers/file-sharing/file-share-admin-controller';
 
@@ -31,6 +32,7 @@ export class FileShareEmailService {
         shareUrl,
         expiresAt: options.expiresAt ? new Date(options.expiresAt).toLocaleDateString() : '',
         maxDownloads: options.maxDownloads && options.maxDownloads > 0 ? String(options.maxDownloads) : '',
+        theme: await AuthEmailThemeOverride.variables(),
       });
 
       await (this.manager as any).email.send({
