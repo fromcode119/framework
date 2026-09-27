@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * Plugin UI components must be hook-free OOP classes.
@@ -15,10 +16,13 @@ export class PluginUiHookGuard {
   // Fails when any plugins/<slug>/src/ui/**/*.tsx file contains a React hook call
   // or an `export const/function <Capitalized>` (function component).
   //
-  // Run from framework/Source:  node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-hookfree
-  // Resolves the repo-root plugins dir the same way the sdk-boundary guard does.
+  // Run from the framework root:  node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-hookfree
+  // Scans the plugins tree the run declares (see ExtensionTrees). Read per run, not at module load:
+  // `arch-guard ci` sets the scope after every guard module is already imported.
 
-  static readonly PLUGINS_DIR = path.resolve(process.cwd(), '../../plugins');
+  static get PLUGINS_DIR(): string | null {
+    return ExtensionTrees.dir('plugins');
+  }
 
   // No files currently require a hook-boundary exemption.
   // order-popup-connected.tsx was converted to a hook-free PluginComponent class (Task 3 complete).
@@ -83,25 +87,25 @@ export class PluginUiHookGuard {
   let scanned = 0;
   
   let slugs: string[] = [];
-  // ABSENT is not the same as UNREADABLE, and the difference decides whether this is a failure. The
-  // framework's own CI checks out the framework ALONE, so there is no `plugins/` beside it and there
-  // is genuinely nothing to scan. A directory that exists and cannot be read is the other case — a
+  // ABSENT is not the same as UNREADABLE, and the difference decides whether this is a failure. A run
+  // that declares no plugins tree genuinely has nothing to scan. A directory that exists and cannot be read is the other case — a
   // broken symlink, a permission — and scanning nothing must never look like scanning cleanly, so
   // that one still throws. (THROW, never `process.exit`: this runs in-process alongside every other
   // guard under `arch-guard ci`, and exiting would take the remaining guards with it.)
-  if (!existsSync(PluginUiHookGuard.PLUGINS_DIR)) return { violations, warnings: knownOffenderWarnings, scanned };
+  const pluginsDir = PluginUiHookGuard.PLUGINS_DIR;
+  if (!pluginsDir || !existsSync(pluginsDir)) return { violations, warnings: knownOffenderWarnings, scanned };
   try {
-    slugs = readdirSync(PluginUiHookGuard.PLUGINS_DIR);
+    slugs = readdirSync(pluginsDir);
   } catch {
-    throw new Error(`Cannot read plugins dir: ${PluginUiHookGuard.PLUGINS_DIR}`);
+    throw new Error(`Cannot read plugins dir: ${pluginsDir}`);
   }
   
   for (const slug of slugs) {
-    const uiDir = path.join(PluginUiHookGuard.PLUGINS_DIR, slug, 'src', 'ui');
+    const uiDir = path.join(pluginsDir, slug, 'src', 'ui');
     const files: string[] = [];
     PluginUiHookGuard.walkTsx(uiDir, files);
     for (const file of files) {
-      const rel = path.relative(PluginUiHookGuard.PLUGINS_DIR, file);
+      const rel = path.relative(pluginsDir, file);
       if (PluginUiHookGuard.IGNORE_FILES.has(rel)) continue;
       scanned += 1;
       const src = readFileSync(file, 'utf8');

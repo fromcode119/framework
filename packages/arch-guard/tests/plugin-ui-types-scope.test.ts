@@ -8,7 +8,7 @@ import { GuardScope } from '../src/cli/guard-scope';
 
 /**
  * A scoped run type-checks the directory it was pointed at. It used to look the scope's NAME up under
- * `<repo>/plugins`, so a worktree or second checkout of a plugin was reported clean on the strength of
+ * the plugins tree, so a worktree or second checkout of a plugin was reported clean on the strength of
  * the main checkout's copy — and a scope matching no plugin (any theme) checked every plugin instead.
  */
 describe('plugin-ui-types scope selection', () => {
@@ -19,8 +19,8 @@ describe('plugin-ui-types scope selection', () => {
     return full;
   };
   const select = (repo: string): string[] => {
-    const byName = new Map(PluginUiTypecheck.pluginDirs(repo).map((d) => [path.basename(d), d]));
-    return (PluginUiTypesCommand as any).select(repo, [], byName);
+    const byName = new Map(PluginUiTypecheck.pluginDirs(path.join(repo, 'plugins')).map((d) => [path.basename(d), d]));
+    return (PluginUiTypesCommand as any).select([], byName);
   };
 
   afterEach(() => {

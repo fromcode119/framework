@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { SourceTree } from './source-tree';
-import { FrameworkRoot } from './cli/framework-root';
 import path from 'node:path';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * A domain method falling back to a raw HTTP call when it is not there.
@@ -27,11 +27,10 @@ export class DomainTransportFallbackGuard {
   private static readonly FALLBACK = /\?\s*[^:\n]+?\.[gp]ost\(/g;
 
   static run(): number {
-    const repo = FrameworkRoot.repo();
     const findings: string[] = [];
 
-    for (const area of ['plugins', 'themes']) {
-      for (const file of SourceTree.files(path.join(repo, area), (name) => /\.tsx?$/.test(name))) {
+    for (const root of ExtensionTrees.dirs(['plugins', 'themes'])) {
+      for (const file of SourceTree.files(root, (name) => /\.tsx?$/.test(name))) {
         const source = SourceTree.lines(file).join('\n');
         for (const match of source.matchAll(DomainTransportFallbackGuard.FALLBACK)) {
           const line = source.slice(0, match.index!).split('\n').length;

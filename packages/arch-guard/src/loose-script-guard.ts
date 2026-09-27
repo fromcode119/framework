@@ -1,6 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
+import { ExtensionTrees } from './cli/extension-trees';
 import { FrameworkRoot } from './cli/framework-root';
 
 /**
@@ -31,15 +32,6 @@ import { FrameworkRoot } from './cli/framework-root';
  * A data repair is a migration, or a command on the CLI, so it runs wherever the code does.
  */
 export class LooseScriptGuard {
-  /**
-   * The platform's own source: the framework and every extension, under one rule.
-   *
-   * Deliberately NOT the whole checkout. Sibling products (marketplace) and the operator tooling that
-   * lives beside them (migration, secrets) are separate concerns with their own repositories and their
-   * own reasons; sweeping them up here would be this guard reaching past what it governs.
-   */
-  private static readonly ROOTS = ['framework/Source', 'plugins', 'themes', 'appearance'] as const;
-
   /** Walked from each root, so the framework and every extension are covered by one rule. */
   private static readonly SKIP_DIRS = new Set([
     'node_modules', 'dist', 'dist-host', '.next', '.git', 'coverage', 'build', '.turbo',
@@ -55,21 +47,25 @@ export class LooseScriptGuard {
    * could run instead. Anything added here needs its own reason written beside it.
    */
   private static readonly ALLOWED = new Map<string, string>([
-    ['framework/Source/deploy/docker-entrypoint.sh', 'container ENTRYPOINT: runs as root, before node, to chown bind mounts'],
+    ['deploy/docker-entrypoint.sh', 'container ENTRYPOINT: runs as root, before node, to chown bind mounts'],
   ]);
 
   static run(): number {
-    const repo = FrameworkRoot.repo();
+    const framework = FrameworkRoot.find();
     const findings: string[] = [];
     let scanned = 0;
 
-    for (const root of LooseScriptGuard.ROOTS) {
-      for (const file of LooseScriptGuard.walk(path.resolve(repo, root))) {
-        const relative = path.relative(repo, file).split(path.sep).join('/');
+    // The platform's own source: the framework and every extension, under one rule. Deliberately NOT
+    // whatever sits beside them — sibling products and operator tooling have their own repositories
+    // and their own reasons, and sweeping them up would be this guard reaching past what it governs.
+    for (const root of [framework, ...ExtensionTrees.dirs()]) {
+      for (const file of LooseScriptGuard.walk(root)) {
         if (!LooseScriptGuard.isScript(file)) continue;
         scanned++;
-        if (LooseScriptGuard.ALLOWED.has(relative)) continue;
-        findings.push(relative);
+        // ALLOWED names files of the framework's own tree, relative to its root.
+        const relative = path.relative(framework, file).split(path.sep).join('/');
+        if (root === framework && LooseScriptGuard.ALLOWED.has(relative)) continue;
+        findings.push(ExtensionTrees.show(file));
       }
     }
 

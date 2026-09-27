@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { RuntimeService } from '@core/plugin/services/runtime/runtime-service';
 
-// framework/Source root, derived from this file — stable regardless of the suite's cwd. RuntimeService
+// The framework root, derived from this file — stable regardless of the suite's cwd. RuntimeService
 // uses it only to anchor `require.resolve` during key discovery; the bridge SOURCES are compiled
 // constants (`LibBridgeTemplate` & co), so nothing is read off disk.
 const FRAMEWORK_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../..');

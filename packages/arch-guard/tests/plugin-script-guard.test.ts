@@ -1,9 +1,8 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { PluginScriptGuard } from '../src/plugin-script-guard';
-import { FrameworkRoot } from '../src/cli/framework-root';
 
 /**
  * A guard that cannot fail is worth nothing — this repo has been bitten by a scanner reporting a
@@ -17,9 +16,10 @@ describe('PluginScriptGuard', () => {
     for (const family of ['plugins', 'themes', 'appearance']) fs.mkdirSync(path.join(root, family), { recursive: true });
     fs.mkdirSync(path.join(root, 'plugins', 'billing', 'src'), { recursive: true });
     fs.mkdirSync(path.join(root, 'themes', 'a-theme'), { recursive: true });
-    const original = FrameworkRoot.repo;
-    (FrameworkRoot as any).repo = () => root;
-    return { root, restore: () => { (FrameworkRoot as any).repo = original; } };
+    for (const [variable, area] of [['PLUGINS_DIR', 'plugins'], ['THEMES_DIR', 'themes'], ['APPEARANCE_DIR', 'appearance']]) {
+      vi.stubEnv(variable, path.join(root, area));
+    }
+    return { root, restore: () => { vi.unstubAllEnvs(); } };
   };
 
   afterEach(() => { for (const dir of made.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });

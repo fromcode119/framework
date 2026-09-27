@@ -44,12 +44,12 @@ import { PublishedEntries } from './published-entries';
  * entry points as offenders, which is the mistake this guard does not repeat.
  *
  * SCOPE: this guard runs across every area `arch-guard` is pointed at (`GuardScope.areas`), same as
- * every other guard here — `ARCH_GUARD_SCOPE=framework` is what CI actually uses (`framework/Source`
- * CI only owns the framework tree; plugins/themes/appearance are separate repositories with their own
- * CI). At `ARCH_GUARD_SCOPE=framework` this guard is 0 once the mechanical violations below are fixed.
- * Running unscoped (the local default, every area at once) additionally reports whatever debt exists
- * in plugins/themes/appearance — a real, non-zero number that belongs to those repositories' own CI,
- * not to this one; do not read a local unscoped run as this guard's baseline.
+ * every other guard here — `ARCH_GUARD_SCOPE=framework` is what the framework's CI uses (it owns only
+ * the framework tree; plugins/themes/appearance are separate repositories with their own CI). At
+ * `ARCH_GUARD_SCOPE=framework` this guard is 0 once the mechanical violations below are fixed. Running
+ * unscoped (every declared area at once) additionally reports whatever debt exists in
+ * plugins/themes/appearance — a real, non-zero number that belongs to those repositories' own CI, not
+ * to this one; do not read an unscoped run as this guard's baseline.
  */
 export class SingleExportModuleGuard {
   private static readonly SKIP_DIR = new Set([

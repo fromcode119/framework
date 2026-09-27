@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { SourceTree } from './source-tree';
-import { FrameworkRoot } from './cli/framework-root';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * `admin.renderedBy` must name a field that actually renders it.
@@ -95,7 +95,8 @@ export class RenderedByTargetGuard {
   }
 
   static run(): number {
-    const pluginsDir = path.resolve(FrameworkRoot.repo(), 'plugins');
+    const pluginsDir = ExtensionTrees.dir('plugins');
+    if (!pluginsDir) return 0;
     const findings: string[] = [];
     let scanned = 0;
 

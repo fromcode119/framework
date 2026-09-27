@@ -1,7 +1,6 @@
-import path from 'node:path';
 import { ExtendedExtendsGuard } from '../extended-extends-guard';
 import { ArchorCommand } from './arch-guard-command';
-import { FrameworkRoot } from './framework-root';
+import { ExtensionTrees } from './extension-trees';
 import { GuardScope } from './guard-scope';
 
 /** `arch-guard extended-extends` — `extends A, B` stays out of framework source. */
@@ -9,8 +8,7 @@ export class ExtendedExtendsCommand extends ArchorCommand {
   readonly summary = 'The extended `extends A, B` clause stays out of framework source.';
 
   run(_argv: string[]): number {
-    const repoRoot = FrameworkRoot.repo();
-    const offenders = ExtendedExtendsGuard.scan(GuardScope.areas(repoRoot));
+    const offenders = ExtendedExtendsGuard.scan(GuardScope.areas());
 
     if (!offenders.length) {
       console.log('[check-extended-extends] OK');
@@ -19,7 +17,7 @@ export class ExtendedExtendsCommand extends ArchorCommand {
 
     console.error('[check-extended-extends] these framework files use `extends A, B`:');
     for (const { file, lines } of offenders) {
-      console.error(`- ${path.relative(repoRoot, file)}`);
+      console.error(`- ${ExtensionTrees.show(file)}`);
       for (const line of lines) console.error(`    ${line}`);
     }
     console.error('\nThe api dev server is `tsx watch`, and the root tsconfig resolves every framework'

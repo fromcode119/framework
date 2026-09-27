@@ -1,13 +1,13 @@
 # Docker Compose for Full-Stack Mode (API + Admin + Frontend)
 #
-# Usage, from `framework/Source`:
+# Usage, from the framework root:
 #   docker compose -f deploy/docker-compose.full-stack.yml --project-directory . up
 #
 # The `--project-directory` is REQUIRED, not decoration. Every path here — `build.context: .`, the
 # `../plugins` mounts — resolves against the project directory, and Compose defaults that to THIS
 # file's own folder, where there is no Dockerfile. Without the flag the build fails outright with
-# "failed to read dockerfile". (A build platform that asks for a "base directory" wants
-# `framework/Source`; the local dev stack achieves the same by including this file with
+# "failed to read dockerfile". (A build platform that asks for a "base directory" wants the
+# framework root; the local dev stack achieves the same by including this file with
 # `project_directory: .`.)
 # Environment variables come from the deployment platform's own environment settings, or a .env file
 # at the repo root.

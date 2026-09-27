@@ -23,7 +23,7 @@ describe('ProjectPaths repository helpers', () => {
   it('defaults repository root to the framework root instead of scanning parent folders', () => {
     const originalCwd = process.cwd();
     const parentRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'repo-parent-'));
-    const frameworkRoot = path.join(parentRoot, 'framework', 'Source');
+    const frameworkRoot = path.join(parentRoot, 'platform', 'framework');
     temporaryDirectories.push(parentRoot);
     fs.mkdirSync(frameworkRoot, { recursive: true });
     fs.writeFileSync(path.join(frameworkRoot, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');

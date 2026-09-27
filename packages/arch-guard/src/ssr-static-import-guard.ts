@@ -1,7 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
-import { FrameworkRoot } from './cli/framework-root';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * A server bundle must not STATICALLY import the SDK's admin barrel.
@@ -61,11 +61,9 @@ export class SsrStaticImportGuard {
 
   /** Every built server-bundle entry across the extension trees. */
   private static entries(): string[] {
-    const repo = FrameworkRoot.repo();
     const found: string[] = [];
 
-    for (const area of ['plugins', 'themes']) {
-      const root = path.join(repo, area);
+    for (const root of ExtensionTrees.dirs(['plugins', 'themes'])) {
       let children: fs.Dirent[] = [];
       try {
         children = fs.readdirSync(root, { withFileTypes: true });

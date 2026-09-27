@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { FrameworkRoot } from './cli/framework-root';
 import { IMcpToolSchemaViolation } from './interfaces/mcp-tool-schema-violation.interface';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * Every MCP tool literal must declare `inputSchema` and `permission`.
@@ -47,16 +48,15 @@ export class McpToolSchemaGuard {
   }
 
   static run(): number {
-    const repo = FrameworkRoot.repo();
     const roots = [
-      path.join(repo, 'framework', 'Source', 'packages'),
-      path.join(repo, 'plugins'),
+      path.join(FrameworkRoot.find(), 'packages'),
+      ...ExtensionTrees.dirs(['plugins']),
     ];
 
     const violations: IMcpToolSchemaViolation[] = [];
     for (const root of roots) {
-      // The framework's own CI checks out the framework ALONE, so `plugins/` is legitimately absent
-      // and there is nothing there to scan. An ENOENT here used to end the whole `ci` pass.
+      // A declared tree that is not there has nothing to scan. An ENOENT here used to end the whole
+      // `ci` pass.
       if (!fs.existsSync(root)) continue;
       for (const file of McpToolSchemaGuard.walk(root)) {
         violations.push(...McpToolSchemaGuard.findViolations(file, fs.readFileSync(file, 'utf8')));

@@ -15,11 +15,10 @@ framework packages directly using `npm run --prefix`.
 
 ```bash
 # 1. From the framework root, install all workspace dependencies
-cd framework/Source
 npm install
 
 # 2. Configure your local environment
-cp .env.example .env               # or create framework/Source/.env
+cp .env.example .env               # at the framework root
 #    Minimum: set JWT_SECRET. SQLite + in-memory cache work with no other changes.
 
 # 3. Start (from this starters/local/ directory)
@@ -67,7 +66,7 @@ Path routing through the proxy:
 
 ## Environment
 
-Use `framework/Source/.env`.
+Use the `.env` at the framework root.
 
 ```env
 DB_DIALECT=sqlite
@@ -103,5 +102,5 @@ See `themes/my-theme/theme.json` for an example.
 ## SQLite data
 
 This starter runs on SQLite for a zero-setup, single-site install. Data is stored at
-`framework/Source/data/app.db` (gitignored). Delete the file to reset all data and re-run setup.
+`data/app.db` under the framework root (gitignored). Delete the file to reset all data and re-run setup.
 For multi-site installs use PostgreSQL, as described in the main README.

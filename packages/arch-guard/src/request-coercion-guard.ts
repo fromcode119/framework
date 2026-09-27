@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * Request values coerced by hand instead of through `CoercionUtils.toString`.
@@ -28,8 +29,7 @@ export class RequestCoercionGuard {
     const root = process.cwd();
     const targets = [
       path.resolve(root, 'packages'),
-      path.resolve(root, '../../plugins'),
-      path.resolve(root, '../../themes'),
+      ...ExtensionTrees.dirs(['plugins', 'themes']),
     ];
 
     const perFile = new Map<string, number>();

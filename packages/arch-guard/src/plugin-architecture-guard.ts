@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { FileSizeGuard } from './file-size-guard';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * Layer order route -> controller -> service -> repository, plus file-size limits.
@@ -27,7 +28,7 @@ export class PluginArchitectureGuard {
     //   all other plugins are reported at warn level regardless of mode.
 
     const ROOT = process.cwd();
-    const PLUGINS_DIR = path.resolve(ROOT, '../../plugins');
+    const PLUGINS_DIR = ExtensionTrees.dir('plugins');
 
     const MODES = {
       size: normalizeMode(process.env.ARCH_SIZE_MODE),
@@ -83,7 +84,7 @@ export class PluginArchitectureGuard {
     }
 
     function pluginSlugOf(filePath) {
-      const relative = path.relative(PLUGINS_DIR, filePath);
+      const relative = path.relative(PLUGINS_DIR as string, filePath);
       return relative.split(path.sep)[0] || '';
     }
 
@@ -132,7 +133,7 @@ export class PluginArchitectureGuard {
       return findings;
     }
 
-    if (!fs.existsSync(PLUGINS_DIR)) {
+    if (!PLUGINS_DIR || !fs.existsSync(PLUGINS_DIR)) {
       console.log('[check-plugin-architecture] no plugins directory found — skipping');
       return 0;
     }

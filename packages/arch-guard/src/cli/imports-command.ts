@@ -16,7 +16,7 @@ export class ImportsCommand extends ArchorCommand {
 
   run(_argv: string[]): number {
     const framework = FrameworkRoot.find();
-    const { broken, style } = ImportGuard.scan(FrameworkRoot.repo(), framework);
+    const { broken, style } = ImportGuard.scan(framework);
 
     for (const line of broken) console.log(`  BROKEN  ${line}`);
     for (const line of style) console.log(`  STYLE   ${line}`);

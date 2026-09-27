@@ -1,4 +1,4 @@
-# Local development stack — `docker compose up` from `framework/Source`.
+# Local development stack — `docker compose up` from the framework root.
 #
 # This file is NOT a topology. Which services exist, how they are built, and how they are wired lives
 # ONCE, in `deploy/docker-compose.full-stack.yml` — the file production actually runs. This file
@@ -16,7 +16,7 @@
 name: framework
 
 include:
-  # `project_directory: .` makes the included file's relative paths resolve from framework/Source —
+  # `project_directory: .` makes the included file's relative paths resolve from the framework root —
   # the same base production runs it with, which is why `build.context: .` finds the Dockerfile that
   # lives here and not in deploy/. The few host paths this checkout keeps elsewhere are re-stated
   # below; Compose merges volumes BY TARGET, so each replaces the included mount for that container

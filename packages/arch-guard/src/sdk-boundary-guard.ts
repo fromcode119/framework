@@ -18,7 +18,7 @@ export class SdkBoundaryGuard {
     // WHOSE code this checks. The rule is about plugins and themes, so the framework's own area is
     // never a target; a scoped run narrows it further to the single extension being guarded from its
     // own repository, and an unscoped run is both trees exactly as before.
-    const TARGET_DIRS = GuardScope.areas(path.resolve(ROOT, '..', '..'))
+    const TARGET_DIRS = GuardScope.areas()
       .filter((entry) => entry.area === 'plugins' || entry.area === 'themes')
       .map((entry) => entry.dir);
     if (!TARGET_DIRS.length) {

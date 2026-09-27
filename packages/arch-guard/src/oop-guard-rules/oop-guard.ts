@@ -20,7 +20,6 @@ export class OopGuard {
   // The rule is tree-wide: plugins, themes and appearances are held to the SAME OOP standard as the
   // framework. Scanning only `packages/` is why 86 bare exports and every `'use client'` literal outside
   // the framework went unreported. Each area is scanned as a set of "packages" (its direct subdirectories).
-  static readonly REPO_ROOT = path.resolve(process.cwd(), '..', '..');
   /**
    * The non-framework trees this run covers, and whether the framework's own packages are in it.
    *
@@ -29,12 +28,12 @@ export class OopGuard {
    * all three areas exactly as before.
    */
   static extraAreas(): { area: string; dir: string }[] {
-    return GuardScope.areas(OopGuard.REPO_ROOT).filter((entry) => entry.area !== 'framework');
+    return GuardScope.areas().filter((entry) => entry.area !== 'framework');
   }
 
   /** Is the framework's own `packages/` part of this run? */
   static includesFramework(): boolean {
-    return GuardScope.areas(OopGuard.REPO_ROOT).some((entry) => entry.area === 'framework');
+    return GuardScope.areas().some((entry) => entry.area === 'framework');
   }
 
   /**
@@ -47,7 +46,7 @@ export class OopGuard {
    * such subdirectories of its own to enumerate).
    */
   static extraFrameworkDirs(): string[] {
-    return GuardScope.areas(OopGuard.REPO_ROOT)
+    return GuardScope.areas()
       .filter((entry) => entry.area === 'framework' && entry.dir !== OopGuard.PACKAGES_DIR)
       .map((entry) => entry.dir);
   }
@@ -246,7 +245,7 @@ export class OopGuard {
     // package. Walking a scoped extension's subdirectories instead would relabel `src` and `tests` as
     // packages, which is not cosmetic: the allowlists and exemptions are keyed on the extension, so
     // none of them would match and the count explodes — 530 reported for one plugin that has 15.
-    if (GuardScope.isExtension(OopGuard.REPO_ROOT)) {
+    if (GuardScope.isExtension()) {
       const files: string[] = [];
       OopGuard.walk(dir, files);
       if (files.length) targets.push({ label: `${area}/${path.basename(dir)}`, files });

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
-import { FrameworkRoot } from './cli/framework-root';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * A loose script sitting inside an extension.
@@ -27,17 +27,14 @@ import { FrameworkRoot } from './cli/framework-root';
  * extension is installed.
  */
 export class PluginScriptGuard {
-  /** Every extension family, not just plugins — the reasoning is identical for themes and appearances. */
-  private static readonly ROOTS = ['plugins', 'themes', 'appearance'] as const;
   private static readonly DIRECTORY = 'scripts';
 
   static run(): number {
-    const repo = FrameworkRoot.repo();
     const findings: string[] = [];
     let scanned = 0;
 
-    for (const root of PluginScriptGuard.ROOTS) {
-      const dir = path.resolve(repo, root);
+    // Every extension family, not just plugins — the reasoning is identical for themes and appearances.
+    for (const dir of ExtensionTrees.dirs()) {
       let entries: fs.Dirent[] = [];
       try {
         entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -54,7 +51,7 @@ export class PluginScriptGuard {
         const files = PluginScriptGuard.filesIn(scripts);
         // An empty directory is still a place for one to reappear, so it is reported too.
         const listed = files.length ? files.join(', ') : '(empty)';
-        findings.push(`${root}/${entry.name}/${PluginScriptGuard.DIRECTORY}: ${listed}`);
+        findings.push(`${ExtensionTrees.show(scripts)}: ${listed}`);
       }
     }
 
@@ -71,7 +68,7 @@ export class PluginScriptGuard {
       return 1;
     }
 
-    console.log(`Scanned ${scanned} extension(s) across ${PluginScriptGuard.ROOTS.join(', ')}.`);
+    console.log(`Scanned ${scanned} extension(s) across ${ExtensionTrees.dirs().map((dir) => ExtensionTrees.show(dir)).join(', ')}.`);
     console.log('OK — no extension carries a scripts/ directory.');
     return 0;
   }

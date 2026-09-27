@@ -2,7 +2,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { GuardScope } from './cli/guard-scope';
-import { FrameworkRoot } from './cli/framework-root';
 
 /**
  * Walking the source trees a guard checks — plugins, themes, appearance and the framework itself.
@@ -25,7 +24,7 @@ export class SourceTree {
 
   /** The roots every naming guard reads, as `GuardScope` resolves them for this checkout. */
   static areas(): { area: string; dir: string }[] {
-    return GuardScope.areas(FrameworkRoot.repo());
+    return GuardScope.areas();
   }
 
   /**

@@ -10,7 +10,7 @@ import path from 'node:path';
  * and of which subdirectory the caller ran from.
  */
 export class FrameworkRoot {
-  /** The framework workspace root (`framework/Source`). Throws rather than guessing. */
+  /** The framework workspace root — the directory that owns `packages/`. Throws rather than guessing. */
   static find(from: string = process.cwd()): string {
     let dir = path.resolve(from);
     for (;;) {
@@ -19,10 +19,5 @@ export class FrameworkRoot {
       if (parent === dir) throw new Error('[arch-guard] could not locate the framework root (no packages/ dir found)');
       dir = parent;
     }
-  }
-
-  /** The repository root that holds `plugins/` and `themes/` beside `framework/`. */
-  static repo(from: string = process.cwd()): string {
-    return path.resolve(FrameworkRoot.find(from), '..', '..');
   }
 }

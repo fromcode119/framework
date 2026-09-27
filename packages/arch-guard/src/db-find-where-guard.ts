@@ -1,6 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * `db.find`/`db.count` filters must sit under `where:{}` — a top-level filter is silently ignored.
@@ -39,7 +40,7 @@ export class DbFindWhereGuard {
 
     const ROOT = process.cwd();
     const TARGET_DIRS = [
-      path.resolve(ROOT, '../../plugins'),
+      ...ExtensionTrees.dirs(['plugins']),
       path.resolve(ROOT, 'packages'),
     ];
 

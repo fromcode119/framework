@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { PluginUiTypecheck } from '../plugin-ui-typecheck';
 import { ArchorCommand } from './arch-guard-command';
+import { ExtensionTrees } from './extension-trees';
 import { GuardScope } from './guard-scope';
 import { FrameworkRoot } from './framework-root';
 import { GuardTarget } from './guard-target';
@@ -30,16 +31,15 @@ export class PluginUiTypesCommand extends ArchorCommand {
 
   run(argv: string[]): number {
     const framework = FrameworkRoot.find();
-    const repo = FrameworkRoot.repo();
     const mode = process.env.PLUGIN_UI_TYPES_MODE === 'warn' ? 'warn' : 'error';
 
-    const byName = new Map(PluginUiTypecheck.pluginDirs(repo).map((dir) => [path.basename(dir), dir]));
+    const byName = new Map(PluginUiTypecheck.pluginDirs(ExtensionTrees.dir('plugins')).map((dir) => [path.basename(dir), dir]));
     const unknown = argv.filter((slug) => !byName.has(slug));
     if (unknown.length) {
       console.error(`[arch-guard] no plugin UI found for: ${unknown.join(', ')}`);
       return 2;
     }
-    const selected = PluginUiTypesCommand.select(repo, argv, byName);
+    const selected = PluginUiTypesCommand.select(argv, byName);
 
     console.log('Plugin UI typecheck (real tsc — Vite/esbuild do NOT check types):');
     let failed = false;
@@ -70,17 +70,17 @@ export class PluginUiTypesCommand extends ArchorCommand {
   /**
    * The plugin directories this run checks.
    *
-   * Plugins named on the command line are spot-checks under `<repo>/plugins`. A SCOPED run checks the
-   * directory it was pointed at — the directory itself, not a same-named plugin under `<repo>/plugins`.
+   * Plugins named on the command line are spot-checks in the plugins tree. A SCOPED run checks the
+   * directory it was pointed at — the directory itself, not a same-named plugin elsewhere.
    * It used to take the scope's basename and look it up there, so a scope pointing anywhere else (a
    * git worktree, a second checkout) silently type-checked the MAIN checkout's copy and reported it
    * clean; and a scope whose name matched no plugin (every theme and appearance) fell through to
    * checking every plugin in the tree. An extension with no admin UI has nothing to check.
    */
-  private static select(repo: string, argv: string[], byName: Map<string, string>): string[] {
+  private static select(argv: string[], byName: Map<string, string>): string[] {
     if (argv.length) return argv.map((slug) => byName.get(slug) as string);
-    if (GuardScope.isExtension(repo)) {
-      return GuardScope.areas(repo).map((entry) => entry.dir).filter((dir) => PluginUiTypecheck.hasUi(dir));
+    if (GuardScope.isExtension()) {
+      return GuardScope.areas().map((entry) => entry.dir).filter((dir) => PluginUiTypecheck.hasUi(dir));
     }
     return [...byName.values()];
   }
