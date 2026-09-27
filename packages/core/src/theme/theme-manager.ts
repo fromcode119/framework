@@ -128,6 +128,11 @@ export class ThemeManager extends ThemeLifecycle {
     return manifest;
   }
 
+  /** Gives a site an installed platform theme, without activating it (the site switches to it itself). */
+  async assignToTenant(slug: string, tenantId: string): Promise<void> {
+    await new TenantThemeStateService(this.db).assign(tenantId, slug);
+  }
+
   /** What a site may upload: the platform's limits (Settings → themes quota) and how many it holds now. */
   async siteThemeQuota(tenantId: string): Promise<{ maxBytes: number; maxThemes: number; themes: number }> {
     const quota = await TenantThemeQuota.current();

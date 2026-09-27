@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { ArchiveUploadSessionService, BaseController, ThemeManager, Logger } from '@fromcode119/core';
-import { CoercionUtils, CoreServices } from '@fromcode119/core';
+import { CoercionUtils, CoreServices, TenantMode } from '@fromcode119/core';
+import { ThemeMarketplaceInstall } from '@api/controllers/themes/theme-marketplace-install';
 import { Request, Response } from 'express';
 
 /**
@@ -74,6 +75,35 @@ export class ThemeUploadController {
     const tenantId = String((req as any).tenantId || '').trim();
     if (!tenantId) return res.status(400).json({ error: 'site_required', message: 'Choose a site first.' });
     res.json(await this.manager.siteThemeQuota(tenantId));
+  }
+
+  /**
+   * A SITE adding a MARKETPLACE theme: installed once for the platform if it is not there yet, then made
+   * one of this site's themes (not activated — the site switches to it). A theme already installed is
+   * never updated from here: the shared copy is what every site on it renders, so only the platform
+   * moves it. Another site's own theme cannot be taken this way — that name belongs to that site.
+   */
+  async addToSite(req: Request, res: Response) {
+    const tenantId = String((req as any).tenantId || '').trim();
+    if (!TenantMode.isEnabled() || !tenantId) return res.status(400).json({ error: 'site_required', message: 'Choose a site first.' });
+    const slug = CoercionUtils.toString(req.params.slug);
+    const version = CoercionUtils.toString(req.query.version) || undefined;
+    const installed = this.manager.getThemes().find((theme) => theme.slug === slug);
+    if (installed?.ownerTenantId) {
+      return installed.ownerTenantId === tenantId
+        ? res.json({ success: true, installed: false })
+        : res.status(409).json({ error: 'theme_name_taken', message: `Another site already has a theme named "${slug}".` });
+    }
+    try {
+      if (!installed && !(await new ThemeMarketplaceInstall(this.manager, this.logger).install(slug, version))) {
+        return res.status(404).json({ error: 'theme_not_in_marketplace', message: `The marketplace has no theme "${slug}".` });
+      }
+      await this.manager.assignToTenant(slug, tenantId);
+      res.json({ success: true, installed: !installed });
+    } catch (err: any) {
+      this.logger.error(`Site "${tenantId}" could not add theme "${slug}": ${err?.message}`);
+      res.status(500).json({ error: 'theme_not_added', message: String(err?.message || 'The theme could not be added.') });
+    }
   }
 
   /** A SITE removing one of its OWN themes. The manager refuses anything it does not own. */

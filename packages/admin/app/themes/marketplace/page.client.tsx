@@ -10,6 +10,7 @@ import type { IMarketplaceTheme } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { state } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 
 export class ThemesMarketplacePage extends AdminComponent {
   private mounted = false;
@@ -17,10 +18,16 @@ export class ThemesMarketplacePage extends AdminComponent {
   @state themes: IMarketplaceTheme[] = [];
   @state installedThemes: any[] = [];
   @state loading = true;
+  /** In a site the marketplace adds themes to THIS site; the shared copies are the platform's to update. */
+  @state siteScope = false;
 
   componentDidMount(): void {
     this.mounted = true;
-    void this.fetchData();
+    void PlatformSettingLocks.load().then((locks) => {
+      if (!this.mounted) return;
+      this.siteScope = locks.isSiteScope();
+      void this.fetchData();
+    });
   }
 
   componentWillUnmount(): void {
@@ -62,9 +69,14 @@ export class ThemesMarketplacePage extends AdminComponent {
     const notify = this.runtime.notify.notify;
     const triggerRefresh = this.runtime.plugins?.triggerRefresh;
     try {
-      notify(NotificationType.INFO, 'Installing...', `Downloading theme ${slug}...`);
-      await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.INSTALL(slug));
-      notify(NotificationType.SUCCESS, 'Installed', `Theme ${slug} is now available.`);
+      if (this.siteScope) {
+        await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.ADD_TO_SITE(slug));
+        notify(NotificationType.SUCCESS, 'Added to This Site', `${slug} is now one of this site's themes. Activate it under Themes.`);
+      } else {
+        notify(NotificationType.INFO, 'Installing...', `Downloading theme ${slug}...`);
+        await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.INSTALL(slug));
+        notify(NotificationType.SUCCESS, 'Installed', `Theme ${slug} is now available.`);
+      }
       if (triggerRefresh) triggerRefresh();
       void this.fetchData(); // Refresh list to show installed state
     } catch (err: any) {
@@ -101,7 +113,8 @@ export class ThemesMarketplacePage extends AdminComponent {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
               {themes.map(t => {
                 const installed = installedThemes.find(it => it.slug === t.slug);
-                const hasUpdate = installed && t.version !== installed.version;
+                // A site never updates the shared copy, so it is never offered one.
+                const hasUpdate = !this.siteScope && installed && t.version !== installed.version;
 
                 return (
                   <Card
@@ -115,7 +128,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                           {t.iconUrl ? <img src={t.iconUrl} className="w-6 h-6 rounded object-contain" alt="" /> : <FrameworkIcons.Palette size={20} />}
                         </div>
                         <Badge variant={installed ? "success" : "blue"} className="font-semibold tracking-wide px-2 py-1 text-[9px] uppercase rounded-lg">
-                          {installed ? "Installed" : "Premium"}
+                          {installed ? (this.siteScope ? "In this site" : "Installed") : "Premium"}
                         </Badge>
                       </div>
 
@@ -170,7 +183,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                               className={`w-full h-9 rounded-lg font-bold uppercase tracking-widest text-[11px] bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
                             >
                               <FrameworkIcons.Download size={18} strokeWidth={3} />
-                              Install Now
+                              {this.siteScope ? 'Add to this site' : 'Install Now'}
                             </button>
                           )}
                         </div>

@@ -12,6 +12,7 @@ import { ThemeMarketplaceSidebar } from '@/app/themes/marketplace/[slug]/compone
 import { prop, state } from '@fromcode119/react-class-components';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
 import { Screenshot } from '@fromcode119/core/client';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 
 export class ThemeMarketplaceDetailPage extends AdminComponent {
   @prop declare params: Promise<{ slug: string }>;
@@ -26,6 +27,8 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
   @state installing = false;
   @state activeImageIndex = 0;
   @state showLightbox = false;
+  /** In a site, "install" means adding the theme to THIS site; the shared copy is the platform's to update. */
+  @state siteScope = false;
 
   private mounted = false;
   private prevSelectedVersion = '';
@@ -36,6 +39,8 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
     if (!this.mounted) return;
     this.prevSelectedVersion = this.selectedVersion;
     this.routeSlug = params.slug;
+    this.siteScope = (await PlatformSettingLocks.load()).isSiteScope();
+    if (!this.mounted) return;
     this.resolved = true;
     void this.fetchMarketplaceTheme();
   }
@@ -100,9 +105,16 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
     const triggerRefresh = this.runtime.plugins?.triggerRefresh;
     this.installing = true;
     try {
-      notify(NotificationType.INFO, installedTheme ? 'Update Started' : 'Installation Started', `Downloading and setting up ${theme.name} v${theme.version}...`);
-      await AdminApi.post(`${AdminConstants.ENDPOINTS.THEMES.INSTALL(theme.slug)}?version=${theme.version}`);
-      notify(NotificationType.SUCCESS, installedTheme ? 'Update Complete' : 'Installation Success', `${theme.name} v${theme.version} has been installed.`);
+      if (this.siteScope) {
+        // A site adds the theme to itself: installed once for the platform if it is not there yet, then
+        // one of this site's themes — never an update of the shared copy other sites render.
+        await AdminApi.post(`${AdminConstants.ENDPOINTS.THEMES.ADD_TO_SITE(theme.slug)}?version=${theme.version}`);
+        notify(NotificationType.SUCCESS, 'Added to This Site', `${theme.name} is now one of this site's themes. Activate it under Themes.`);
+      } else {
+        notify(NotificationType.INFO, installedTheme ? 'Update Started' : 'Installation Started', `Downloading and setting up ${theme.name} v${theme.version}...`);
+        await AdminApi.post(`${AdminConstants.ENDPOINTS.THEMES.INSTALL(theme.slug)}?version=${theme.version}`);
+        notify(NotificationType.SUCCESS, installedTheme ? 'Update Complete' : 'Installation Success', `${theme.name} v${theme.version} has been installed.`);
+      }
       if (triggerRefresh) {
         await Promise.resolve(triggerRefresh());
       }
@@ -141,7 +153,8 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
     if (!theme) return null;
 
     const installedVersion = installedTheme?.version || null;
-    const hasUpdate = Boolean(installedVersion && VersionComparisonService.isGreater(theme.version, installedVersion));
+    // A site never updates the shared copy, so it is never offered one.
+    const hasUpdate = !this.siteScope && Boolean(installedVersion && VersionComparisonService.isGreater(theme.version, installedVersion));
 
     // Normalize screenshots for display
     const screenshots = Screenshot.fromAll(theme.screenshots).map((s) => s.url);
@@ -156,6 +169,7 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
           installedTheme={installedTheme}
           hasUpdate={hasUpdate}
           installing={installing}
+          siteScope={this.siteScope}
           onSelectVersion={(version) => { this.selectedVersion = version; }}
           onInstall={() => void this.handleInstall()}
         />
@@ -181,6 +195,7 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
             installedVersion={installedVersion}
             hasUpdate={hasUpdate}
             installing={installing}
+            siteScope={this.siteScope}
             onInstall={() => void this.handleInstall()}
           />
         </div>

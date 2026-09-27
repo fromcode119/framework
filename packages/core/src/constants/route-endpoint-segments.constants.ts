@@ -73,6 +73,7 @@ export class RouteEndpointSegments {
    */
   THEMES_MINE_UPLOAD: '/mine/upload',
   THEMES_MINE_QUOTA: '/mine/quota',
+  THEMES_SLUG_ADD_TO_SITE: '/:slug/add-to-site',
   THEMES_MINE_SLUG: '/mine/:slug',
   THEMES_SLUG_ACTIVATE: '/:slug/activate',
   THEMES_SLUG_DISABLE: '/:slug/disable',

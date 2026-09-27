@@ -16,6 +16,8 @@ export class ThemeMarketplaceSidebar extends PureReactor {
   @prop declare hasUpdate: boolean;
   @prop declare installing: boolean;
   @prop declare onInstall: () => void;
+  /** In a site: the button adds the theme to this site. */
+  @prop declare siteScope: boolean;
 
   render(): ReactNode {
     const { theme, adminTheme, installedTheme, installedVersion, hasUpdate, installing, onInstall } = this;
@@ -106,7 +108,7 @@ export class ThemeMarketplaceSidebar extends PureReactor {
               ) : installedTheme && !hasUpdate ? (
                 <>
                   <FrameworkIcons.Check size={18} strokeWidth={2.5} />
-                  Installed
+                  {this.siteScope ? 'In this site' : 'Installed'}
                 </>
               ) : hasUpdate ? (
                 <>
@@ -116,7 +118,7 @@ export class ThemeMarketplaceSidebar extends PureReactor {
               ) : (
                 <>
                   <FrameworkIcons.Download size={18} strokeWidth={2.5} />
-                  Install Theme
+                  {this.siteScope ? 'Add to this site' : 'Install Theme'}
                 </>
               )}
             </button>
