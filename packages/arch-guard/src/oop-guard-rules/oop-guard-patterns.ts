@@ -52,6 +52,17 @@ export class OopGuardPatterns {
    */
   static readonly CLASS_DECL = /^export\s+(?:abstract\s+)?class\s+[A-Za-z0-9_]+/m;
 
+  /**
+   * Every top-level interface or type alias, EXPORTED OR NOT — for the "never beside a class" rule.
+   *
+   * INTERFACE_DECL and TYPE_ALIAS only match `export …`, so a module-private `interface X` next to a
+   * class was invisible to every guard: it is still a second contract in a class file, only one that
+   * nothing else can import. Anchored at column 0, so an interface inside `declare global { … }` (a
+   * type augmentation, which has no other form) is not counted.
+   */
+  static readonly ANY_INTERFACE_DECL = /^(?:export\s+)?(?:declare\s+)?interface\s+([A-Za-z0-9_]+)/gm;
+  static readonly ANY_TYPE_ALIAS = /^(?:export\s+)?(?:declare\s+)?type\s+([A-Za-z0-9_]+)\s*(?:<[^=]*>)?\s*=/gm;
+
   // EVERY exported function/const (any casing) — the convention is `export class`, no exceptions.
   // `async` sits between `export` and `function`, so it must be optional here — without it every
   // `export async function GET` (Next route handlers) slipped through unreported.

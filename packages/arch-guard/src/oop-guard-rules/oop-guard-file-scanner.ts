@@ -31,7 +31,7 @@ export class OopGuardFileScanner {
   ): void {
     for (const { label: pkg, files } of targets) {
       const bucket: Record<string, any> = {
-        violations: [] as string[], warnings: [] as string[], enumDebt: [] as string[], ifaceDebt: [] as string[],
+        violations: [] as string[], warnings: [] as string[], enumDebt: [] as string[], ifaceDebt: [] as string[], besideClass: [] as string[],
         exportDebt: [] as string[], clientDebt: [] as string[], orphanIface: [] as string[],
         defaultExport: [] as string[], topLevel: [] as string[], typeAlias: [] as string[], propsGeneric: [] as string[],
         defaultClass: [] as string[], moduleDecl: [] as string[], enumPlacement: [] as string[],
@@ -178,8 +178,18 @@ export class OopGuardFileScanner {
         // needs TWO. So a contract could be declared next to the class that happens to use it, which
         // is how it stops being addressable — it cannot be imported without importing the class, and
         // it moves only when the class does. Eight files in the framework had drifted into it.
-        if (ifaces.length > 0 && OopGuardPatterns.CLASS_DECL.test(codeOnly)) {
-          bucket.ifaceDebt.push(`${rel}: interface '${ifaces[0]}' declared beside a class (give it its own interfaces/<name>.interface.ts)`);
+        // ENFORCED at zero (`besideClass` in ZERO_BUCKETS) — it used to be report-only interface debt, and it
+        // only saw EXPORTED interfaces, so a private `interface X {}` above a class passed every guard. Type
+        // aliases count too: a `type X = {…}` beside a class is the same second contract. The glue packages,
+        // entry points and LOAD_BEARING_TYPES files keep the exemption they have for type aliases.
+        if (OopGuardPatterns.CLASS_DECL.test(codeOnly) && !OopGuard.isGlueOrEntry(rel)
+            && !OopGuardBaselines.LOAD_BEARING_TYPES.has(rel.replace(/\\/g, '/'))) {
+          for (const m of codeOnly.matchAll(OopGuardPatterns.ANY_INTERFACE_DECL)) {
+            bucket.besideClass.push(`${rel}: interface '${m[1]}' declared beside a class (give it its own interfaces/<name>.interface.ts)`);
+          }
+          for (const m of codeOnly.matchAll(OopGuardPatterns.ANY_TYPE_ALIAS)) {
+            bucket.besideClass.push(`${rel}: type '${m[1]}' declared beside a class (an interface in its own file, or a reactor Enum)`);
+          }
         }
         if (!found.length) continue;
         // Normalize BOTH client-boundary conventions so allowlist entries (kept under the plain path) keep

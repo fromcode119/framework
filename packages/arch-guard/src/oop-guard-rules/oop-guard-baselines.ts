@@ -135,7 +135,7 @@ export class OopGuardBaselines {
    * two-token body and declared a 24-member component "has no methods". It also flagged classes that
    * inherit all their behaviour (`class AuthController extends AuthControllerSelfService {}`).
    */
-  static readonly ZERO_BUCKETS = ['clientDebt', 'defaultClass', 'defaultExport', 'enumPlacement'];
+  static readonly ZERO_BUCKETS = ['clientDebt', 'defaultClass', 'defaultExport', 'enumPlacement', 'besideClass'];
 
 
   static readonly ALLOW_FILES = new Set([
