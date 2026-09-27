@@ -86,6 +86,10 @@ export class AdminConstants {
     LIST: AdminApiPaths.v(SystemConstants.API_PATH.PLUGINS.BASE),
     ACTIVE: AdminApiPaths.v(SystemConstants.API_PATH.PLUGINS.ACTIVE),
     MARKETPLACE: AdminApiPaths.v(SystemConstants.API_PATH.PLUGINS.MARKETPLACE),
+    /** What the platform offers to sites; the platform's switch; a site switching one on or off for itself. */
+    OFFERED: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_OFFERED),
+    OFFER: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_OFFER, { slug }),
+    SITE: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_SITE, { slug }),
     INSTALL_OPERATION: (operationId: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_INSTALL_OPERATION, { operationId }),
     UPLOAD_SESSION: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_UPLOAD_SESSION),
     UPLOAD_CHUNK: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_UPLOAD_CHUNK),

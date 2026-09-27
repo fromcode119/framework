@@ -13,6 +13,7 @@ import type { IPluginLogEntry } from '@/app/plugins/[slug]/interfaces/plugin-log
 import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
+import { PluginSiteOfferSwitch } from '@/app/plugins/[slug]/components/view/offer/plugin-site-offer-switch.client';
 
 export class PluginDetailOverview extends PureReactor {
   @prop declare loadingLogs: boolean;
@@ -98,6 +99,7 @@ export class PluginDetailOverview extends PureReactor {
               <Switch checked={this.isActive} onChange={(_: boolean) => this.onToggle()} className="scale-110" />
             </div>}
           </div>
+          {!this.siteScope ? <PluginSiteOfferSwitch slug={this.plugin.manifest.slug} /> : null}
         </Card>
 
         {this.siteScope ? (
