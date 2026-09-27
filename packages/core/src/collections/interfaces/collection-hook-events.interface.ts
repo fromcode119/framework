@@ -8,6 +8,7 @@ export interface ICollectionHookEvents {
   afterUpdate: string;
   beforeSave: string;
   afterSave: string;
+  beforeChange: string;
   beforeDelete: string;
   afterDelete: string;
 }

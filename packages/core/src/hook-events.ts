@@ -17,6 +17,7 @@ export class HookEventUtils {
     BEFORE_UPDATE: CollectionHookPhase.BEFORE_UPDATE,
     AFTER_UPDATE: CollectionHookPhase.AFTER_UPDATE,
     BEFORE_SAVE: CollectionHookPhase.BEFORE_SAVE,
+    BEFORE_CHANGE: CollectionHookPhase.BEFORE_CHANGE,
     AFTER_SAVE: CollectionHookPhase.AFTER_SAVE,
     BEFORE_DELETE: CollectionHookPhase.BEFORE_DELETE,
     AFTER_DELETE: CollectionHookPhase.AFTER_DELETE,
@@ -103,6 +104,7 @@ export class HookEventUtils {
       afterUpdate: HookEventUtils.afterUpdate(slug),
       beforeSave: HookEventUtils.beforeSave(slug),
       afterSave: HookEventUtils.afterSave(slug),
+      beforeChange: HookEventUtils.beforeChange(slug),
       beforeDelete: HookEventUtils.beforeDelete(slug),
       afterDelete: HookEventUtils.afterDelete(slug),
     };
@@ -114,6 +116,7 @@ export class HookEventUtils {
   static afterUpdate(slug: string): string { return HookEventUtils.event(slug, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_UPDATE); }
   static beforeSave(slug: string): string { return HookEventUtils.event(slug, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_SAVE); }
   static afterSave(slug: string): string { return HookEventUtils.event(slug, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_SAVE); }
+  static beforeChange(slug: string): string { return HookEventUtils.event(slug, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_CHANGE); }
   static beforeDelete(slug: string): string { return HookEventUtils.event(slug, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_DELETE); }
   static afterDelete(slug: string): string { return HookEventUtils.event(slug, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_DELETE); }
 }

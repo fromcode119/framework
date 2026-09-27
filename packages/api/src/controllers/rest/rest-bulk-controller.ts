@@ -108,6 +108,8 @@ export class RestBulkController {
           req,
           overrideMeta: extracted.overrideMeta,
         });
+        // Per record, as a single update does: a bulk edit is no way around a record's guard.
+        await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_CHANGE, updateData, existing);
 
         const processedUpdate = await this.runtime.processor.processIncomingData(collection, updateData, table, {
           existingRecord: existing,
@@ -164,6 +166,14 @@ export class RestBulkController {
           return false;
         }
         return res.json({ success: false, count: 0 });
+      }
+      // `beforeDelete` fires for every row, as a single delete fires it — a listener can read what is
+      // about to go, or refuse. Bulk delete used to skip it entirely, so any rule a plugin enforced on
+      // delete was one "select all → delete" away from being bypassed. Every row is vetted first; one
+      // refusal deletes nothing.
+      const doomed = await this.runtime.db.find(table, { where: this.runtime.db.inArray(table[primaryKey], parsedIds) });
+      for (const row of Array.isArray(doomed) ? doomed : []) {
+        await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_DELETE, row);
       }
       const success = await this.runtime.db.delete(
         table,
