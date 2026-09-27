@@ -6,6 +6,7 @@ import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantState } from '@core/enums/tenant-state.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { StringUtils } from '@core/utils/string-utils';
+import { SiteRoleEditor } from '@core/plugin/context/site-role-editor';
 
 export class RolesContextProxy {
 
@@ -83,7 +84,7 @@ export class RolesContextProxy {
       await manager.db.update(SystemConstants.TABLE.USERS, { id: uid }, { roles: next, updatedAt: new Date() });
     };
 
-    return {
+    const proxy = {
       /**
        * Declares a role, recording WHICH PLUGIN declared it.
        *
@@ -220,8 +221,17 @@ export class RolesContextProxy {
           if (email) emails.add(email);
         }
         return Array.from(emails);
-      }
+      },
     };
-
+    const siteRoles = new SiteRoleEditor(manager, { assign: (uid, slug) => proxy.assignRole(uid, slug), remove: (uid, slug) => proxy.removeRole(uid, slug) });
+    return {
+      ...proxy,
+      /** The roles this account holds ON THIS SITE; `null` when it is not an active member here. */
+      siteRolesOf: (userId: number | string) => siteRoles.rolesOf(userId),
+      /** Adds one role on this site, keeping the account's other roles here (see {@link SiteRoleEditor}). */
+      addSiteRole: (userId: number | string, slug: string) => siteRoles.add(userId, slug),
+      /** Takes one role away on this site; the membership and the other roles stay. */
+      removeSiteRole: (userId: number | string, slug: string) => siteRoles.remove(userId, slug),
+    };
   }
 }

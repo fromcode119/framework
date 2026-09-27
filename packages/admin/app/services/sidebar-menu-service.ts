@@ -1,5 +1,6 @@
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { NavUtils } from '@/lib/nav-utils';
+import { PermissionGrants } from '@fromcode119/core/utils/permission-grants';
 
 /**
  * Pure menu-grouping + active-context resolution helpers for the admin Sidebar.
@@ -38,13 +39,20 @@ export class SidebarMenuService {
     // Settings) carry NO pluginSlug — those stay admin-only (hidden here). A PLUGIN item is shown only if
     // the user holds a permission for that plugin (`*`, `<slug>:*`, or any `<slug>:...`), matching the API
     // gate's per-plugin `<slug>:manage` derivation. Fail-closed: no explicit pluginSlug ⇒ hidden.
+    //
+    // An item that declares its own `permission` narrows that further: it is shown only to a user
+    // granted exactly that permission (or a wildcard covering it). That is how one plugin gives an
+    // employee a "my own work" screen without also listing every management screen beside it.
     const permissions: string[] = Array.isArray(user?.permissions) ? user.permissions : [];
     return menuItems.filter(item => {
       const slug = String(item?.pluginSlug || '').trim().toLowerCase();
       if (!slug) return false;
+      const required = String(item?.permission || '').trim();
+      if (required) return PermissionGrants.covers(permissions, required);
       return permissions.some((p) => p === '*' || p === `${slug}:*` || p.startsWith(`${slug}:`));
     });
   }
+
 
   static resolveGroupKey(itemPath: string, rawGroup: string): string {
     if (SidebarMenuService.coreGroupPaths.includes(itemPath)) return 'core';

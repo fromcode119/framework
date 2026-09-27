@@ -16,6 +16,15 @@ export interface IPluginContextRoles {
    * at sign-in, far from the code that created it.
    */
   grantSiteMembership(userId: number | string, roles?: string[]): Promise<void>;
+  /** The roles this account holds ON THIS SITE; `null` when it is not an active member here. */
+  siteRolesOf(userId: number | string): Promise<string[] | null>;
+  /**
+   * Add ONE role on this site, keeping the account's other roles here (and making it a member if it
+   * was not). Unlike {@link grantSiteMembership}, which replaces the role list it is given.
+   */
+  addSiteRole(userId: number | string, slug: string): Promise<void>;
+  /** Take ONE role away on this site; the membership and the other roles stay. */
+  removeSiteRole(userId: number | string, slug: string): Promise<void>;
   /** Withdraw a user's access to THIS SITE. Marks the membership inactive; the account survives. */
   revokeSiteMembership(userId: number | string): Promise<void>;
   /** Revoke a role from a user (no-op if not assigned). */
