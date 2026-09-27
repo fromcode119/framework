@@ -5,6 +5,11 @@ import { FrameworkIcons } from '@fromcode119/react';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
 
+/**
+ * The plugin's full definition, for the platform. Rendered into `document.body` through `portal`:
+ * in place it was a child of the page's `space-y-6` column, whose `margin-top` on every later child
+ * pushed this `fixed inset-0` overlay 24px down — a white band above the backdrop.
+ */
 export class PluginManifestModal extends PureReactor {
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;
@@ -15,7 +20,7 @@ export class PluginManifestModal extends PureReactor {
     const { isOpen, onClose, plugin, theme } = this;
     if (!isOpen) return null;
 
-    return (
+    return this.portal(
       <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" onClick={onClose}>
         <div className={`relative w-full max-w-2xl max-h-[80vh] flex flex-col ${AdminClass.SURFACE} overflow-hidden border ${theme === ThemeMode.DARK ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`} onClick={(event) => event.stopPropagation()}>
           <div className={`flex items-center justify-between px-8 py-5 border-b ${theme === ThemeMode.DARK ? 'border-white/5' : 'border-slate-100'}`}>
