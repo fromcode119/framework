@@ -46,6 +46,7 @@ export class RestControllerRuntime {
     CollectionHookPhase.AFTER_CREATE,
     CollectionHookPhase.AFTER_UPDATE,
     CollectionHookPhase.AFTER_SAVE,
+    CollectionHookPhase.BEFORE_CHANGE,
     CollectionHookPhase.BEFORE_DELETE,
     CollectionHookPhase.AFTER_DELETE,
   ]);

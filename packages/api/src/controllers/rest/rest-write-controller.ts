@@ -132,6 +132,8 @@ export class RestWriteController {
 
       data = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_UPDATE, data);
       data = await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_SAVE, data);
+      // The guard sees what will be written AND what is stored; a listener refuses by throwing.
+      await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.BEFORE_CHANGE, data, existing);
 
       this.runtime.fieldGuard.assertPermalinkNotReserved(collection, data);
       const updateData = await this.runtime.processor.processIncomingData(collection, data, table, {
