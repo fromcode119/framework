@@ -65,6 +65,16 @@ export class PluginPathContextProxy {
       const supplied = String((await this.activeThemeSlug()) || '').trim();
       return supplied || null;
     }
+    // The theme the CURRENT request's site renders with. Activation is per site
+    // (`_system_tenant_themes`); the platform `_system_themes` row names the platform's own theme, so
+    // reading it handed every site's plugin emails and templates the PLATFORM theme's overrides — a
+    // site's own theme overrides were never read.
+    const themes = this.manager.themeManager;
+    if (themes) {
+      const slug = String(themes.getActiveThemeManifest()?.slug || '').trim();
+      return slug || null;
+    }
+    // No theme manager (a CLI or a test harness): the platform row is the only answer there is.
     const activeTheme = await this.manager.db.findOne(SystemConstants.TABLE.THEMES, { state: ThemeState.ACTIVE.value });
     const slug = String(activeTheme?.slug || '').trim();
     return slug || null;
