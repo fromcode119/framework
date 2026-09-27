@@ -87,7 +87,9 @@ export class NestedEntityRoute extends AdminComponent {
       <Slot
         key={slotName}
         name={slotName}
-        props={{ id: this.id, pluginSlug: this.pluginSlug, entitySlug: this.slug, subSlug: this.subSlug }}
+        // `theme`: a nested plugin page renders framework components that take the admin's mode as a
+        // prop (RecordsHub on the customer and partner hubs); without it they stayed light on a dark admin.
+        props={{ id: this.id, pluginSlug: this.pluginSlug, entitySlug: this.slug, subSlug: this.subSlug, theme: this.theme.value }}
         fallback={loader}
         errorFallback={PluginMountErrorFallback.render}
       />
