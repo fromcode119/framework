@@ -4,6 +4,7 @@ import { PluginState, SystemConstants, SystemSettingsExposureUtils } from '@from
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { AdminNavigationScopeFilter } from '@api/services/system/admin-navigation-scope-filter';
 import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
+import { FrontendMetadataCachePolicy } from '@api/services/system/frontend-metadata-cache-policy';
 
 /**
  * The metadata documents the admin and the storefront boot from — navigation, enabled plugins,
@@ -111,10 +112,9 @@ export class SystemMetadataController {
       : null;
 
     // A private site's answer is not cacheable at the edge: it changes the moment somebody presses
-    // Publish, and a cached "closed" would outlive the decision.
-    res.set('Cache-Control', site && !site.isIndexable
-      ? 'no-store'
-      : 'public, max-age=30, stale-while-revalidate=300');
+    // Publish, and a cached "closed" would outlive the decision. A console request is never shared
+    // either — see FrontendMetadataCachePolicy.
+    res.set('Cache-Control', FrontendMetadataCachePolicy.resolve((req as any).tenantSurface, Boolean(site && !site.isIndexable)));
     res.json({
       ...metadata,
       site: site
