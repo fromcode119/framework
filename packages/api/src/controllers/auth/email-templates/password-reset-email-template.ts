@@ -1,31 +1,8 @@
-import { AuthEmailTemplateFileService } from '@api/controllers/auth/email-templates/auth-email-template-file-service';
 import { AuthEmailTemplateRenderService } from '@api/controllers/auth/email-templates/auth-email-template-render-service';
+import type { IAuthEmailCommonData } from '@api/controllers/auth/interfaces/auth-email-common-data.interface';
 
 export class PasswordResetEmailTemplate {
-  static async build(options: {
-    appName: string;
-    greeting: string;
-    resetUrl: string;
-  }): Promise<{ subject: string; text: string; html: string }> {
-    const [subjectTemplate, textTemplate, htmlTemplate] = await Promise.all([
-      AuthEmailTemplateFileService.readTemplate('password-reset.subject.txt'),
-      AuthEmailTemplateFileService.readTemplate('password-reset.txt'),
-      AuthEmailTemplateFileService.readTemplate('password-reset.html'),
-    ]);
-
-    return {
-      subject: AuthEmailTemplateRenderService.render(subjectTemplate, {
-        appName: options.appName,
-      }).trim(),
-      text: AuthEmailTemplateRenderService.render(textTemplate, {
-        greeting: options.greeting,
-        resetUrl: options.resetUrl,
-      }).trim(),
-      html: AuthEmailTemplateRenderService.render(htmlTemplate, {
-        appName: AuthEmailTemplateRenderService.escapeHtml(options.appName),
-        greeting: AuthEmailTemplateRenderService.escapeHtml(options.greeting),
-        resetUrl: AuthEmailTemplateRenderService.escapeHtml(options.resetUrl),
-      }).trim(),
-    };
+  static build(options: IAuthEmailCommonData & { resetUrl: string }): Promise<{ subject: string; text: string; html: string }> {
+    return AuthEmailTemplateRenderService.renderEmail('password-reset', options, options.locale);
   }
 }

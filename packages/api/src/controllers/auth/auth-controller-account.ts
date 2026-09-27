@@ -4,6 +4,7 @@ import { AuthControllerSession } from '@api/controllers/auth/auth-controller-ses
 import { CoercionUtils } from '@fromcode119/core';
 import { PersonalDataErasureService } from '@fromcode119/core';
 import { ReadOnlyOverrideGrantUtils } from '@api/utils/read-only-override-grant-utils';
+import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
 
 export class AuthControllerAccount extends AuthControllerSession {
   async verifyPassword(req: any, res: Response) {
@@ -197,9 +198,7 @@ export class AuthControllerAccount extends AuthControllerSession {
     await this.sendSecurityNotification({
       userId,
       to: this.normalizeEmail(user.email),
-      subject: 'Your password was changed',
-      title: 'Your account password was changed successfully.',
-      details: [`Time: ${new Date().toISOString()}`]
+      event: SecurityNotificationEvent.PASSWORD_CHANGED,
     });
 
     return res.json({ success: true, message: 'Password changed successfully.' });

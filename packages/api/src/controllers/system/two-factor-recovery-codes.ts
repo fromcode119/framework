@@ -1,11 +1,11 @@
-import Handlebars from 'handlebars';
-import path from 'path';
 import type { FrameworkEmailSender } from '@fromcode119/core';
-import { ApplicationUrlUtils, FrameworkEmailSenderService, Logger, SystemConstants, SecretService } from '@fromcode119/core';
+import { ApplicationUrlUtils, FrameworkEmailSenderService, LocalizationUtils, Logger, SystemConstants, SecretService } from '@fromcode119/core';
+import { SecurityNotificationEmailTemplate } from '@api/controllers/auth/email-templates/security-notification-email-template';
+import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
+import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
 import { AuthUtils } from '@api/utils/auth';
 import { Schema } from '@fromcode119/database';
 import { createHash, randomBytes } from 'crypto';
-import { promises as fs } from 'fs';
 
 /**
  * Recovery codes, and telling the account holder when their second factor changes.
@@ -88,14 +88,14 @@ export class TwoFactorRecoveryCodes {
     return 500;
   }
 
-  async sendSecurityNotification(options: { userId: number; subject: string; title: string; details?: string[] }) {
+  /** Same email, same templates and same language as every other security notice the platform sends. */
+  async sendSecurityNotification(options: { userId: number; event: SecurityNotificationEvent }) {
     try {
       const enabled = await this.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS });
       if (String(enabled?.value || 'true').trim().toLowerCase() !== 'true') return;
       const user = await this.db.findOne(Schema.users, { id: options.userId });
       const recipient = AuthUtils.normalizeEmail(user?.email);
       if (!recipient) return;
-      const appName = await this.resolveFrameworkAppName();
       const sender = await this.resolveFrameworkSender();
       if (!sender.isConfigured) {
         this.logger.error(
@@ -103,32 +103,19 @@ export class TwoFactorRecoveryCodes {
         );
         return;
       }
-      const from = sender.identity;
-      const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
-      const html = await this.renderSecurityNotificationHtml(options.title, details);
-      const payload: Record<string, any> = {
-        to: recipient, from, subject: `${appName}: ${options.subject}`,
-        text: `${options.title}\n\n${details.join('\n')}`,
-      };
-      if (html) {
-        payload.html = html;
-      }
-      await this.emailGetter().send(payload);
-    } catch {}
-  }
-
-  /**
-   * Render the security-notification email body from its Handlebars template file.
-   * Fail-safe: returns an empty string when the template cannot be read/compiled,
-   * so the caller falls back to a text-only email instead of crashing.
-   */
-  async renderSecurityNotificationHtml(title: string, details: string[]): Promise<string> {
-    try {
-      const templatePath = path.join(__dirname, 'templates', 'security-notification.html');
-      const templateSource = await fs.readFile(templatePath, 'utf-8');
-      return Handlebars.compile(templateSource)({ title, details }).trim();
-    } catch {
-      return '';
+      const email = await SecurityNotificationEmailTemplate.build({
+        appName: await this.resolveFrameworkAppName(),
+        user: { firstName: String(user?.first_name || '').trim(), email: recipient },
+        theme: await AuthEmailThemeOverride.variables(),
+        locale: LocalizationUtils.normalizeLocaleCode(
+          (await this.getMetaValue(SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE)) || (await this.getMetaValue(SystemConstants.META_KEY.DEFAULT_LOCALE)) || '',
+        ),
+        event: options.event,
+        facts: {},
+      });
+      await this.emailGetter().send({ to: recipient, from: sender.identity, ...email });
+    } catch (error: any) {
+      this.logger.error(`[System2FA] Security notification error (non-blocking): ${error?.message || error}`);
     }
   }
 

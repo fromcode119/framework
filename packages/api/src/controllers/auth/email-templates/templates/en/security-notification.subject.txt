@@ -1,1 +1,1 @@
-{{appName}}: {{subject}}
+{{appName}}: {{#if event.newLogin}}New login detected{{/if}}{{#if event.passwordChanged}}Your password was changed{{/if}}{{#if event.passwordReset}}Your password was reset{{/if}}{{#if event.emailChangeRequested}}Email change requested{{/if}}{{#if event.emailChanged}}Email changed successfully{{/if}}{{#if event.twoFactorEnabled}}Two-factor authentication enabled{{/if}}{{#if event.twoFactorDisabled}}Two-factor authentication disabled{{/if}}

@@ -24,9 +24,9 @@ describe('AuthEmailTemplateFileService locale resolution', () => {
   });
 
   it('reads the base folder when a language folder exists but lacks that template', async () => {
-    // bg/ has only the share templates — a language is translatable one file at a time.
-    const reset = await AuthEmailTemplateFileService.readTemplate('password-reset.html', 'bg');
-    expect(reset).toContain('{{appName}}');
+    // A language is translatable one file at a time: bg/ has no sign-up template of its own.
+    const branded = await AuthEmailTemplateFileService.readTemplate('branded-verify-email.html', 'bg');
+    expect(branded).toContain('{{verificationUrl}}');
   });
 
   it('falls back to the base file for an untranslated language', async () => {
@@ -36,9 +36,9 @@ describe('AuthEmailTemplateFileService locale resolution', () => {
     expect(french).toContain('Open your files');
   });
 
-  it('falls back for a template with no translations at all', async () => {
+  it('reads a translated account email', async () => {
     const reset = await AuthEmailTemplateFileService.readTemplate('password-reset.txt', 'bg');
-    expect(reset.length).toBeGreaterThan(0);
+    expect(reset).toContain('Поискана е смяна на паролата');
   });
 
   it('reads the base file when no locale is given', async () => {

@@ -5,6 +5,7 @@ import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginM
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
+import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
 
 export class ApiBootstrapService {
   private logger = new Logger({ namespace: 'api-bootstrap-service' });
@@ -189,6 +190,9 @@ export class ApiBootstrapService {
     // theme's `contactFormDefaults` in onInit). Without this hand-off `context.theme` was `{}` for every
     // plugin on every boot, and each theme-declared plugin default silently lost to the plugin's own.
     manager.setThemeManager(themeManager);
+    // The framework's own emails (password reset, verification, security notices, file shares) read
+    // the active site's theme overrides and variables through the same manager.
+    AuthEmailThemeOverride.configure(themeManager);
     manager.setThemeArchiveInstaller(async (filePath: string, options?: { activate?: boolean }) => {
       const manifest = await themeManager.installFromZip(filePath);
       if (options?.activate !== false) {

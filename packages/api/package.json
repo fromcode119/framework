@@ -11,7 +11,7 @@
     "dist"
   ],
   "scripts": {
-    "copy:templates": "mkdir -p dist/controllers/auth/email-templates/templates && cp -r src/controllers/auth/email-templates/templates/. dist/controllers/auth/email-templates/templates/ && mkdir -p dist/utils/templates && cp -r src/utils/templates/. dist/utils/templates/ && mkdir -p dist/controllers/system/templates && cp -r src/controllers/system/templates/. dist/controllers/system/templates/",
+    "copy:templates": "mkdir -p dist/controllers/auth/email-templates/templates && cp -r src/controllers/auth/email-templates/templates/. dist/controllers/auth/email-templates/templates/ && mkdir -p dist/utils/templates && cp -r src/utils/templates/. dist/utils/templates/",
     "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build && npm run copy:templates",
     "prepack": "npm run copy:templates",
     "dev": "tsx watch --tsconfig tsconfig.dev.json src/server.ts",

@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
 
 /**
  * Loads an email template, preferring the recipient's language.
@@ -28,17 +29,37 @@ export class AuthEmailTemplateFileService {
 
   /**
    * @param locale e.g. `bg` or `bg-BG`. Region is dropped — nothing here is region-specific.
+   *
+   * Looked up in this order: the active theme's copy in the reader's language, the framework's in
+   * that language, then the theme's English, then the framework's English. A theme only has to ship
+   * the files it changes.
    */
   static async readTemplate(relativePath: string, locale?: string): Promise<string> {
     const name = String(relativePath || '').replace(/^\/+/, '');
     const language = AuthEmailTemplateFileService.normalizeLocale(locale);
+    const languages = language && language !== AuthEmailTemplateFileService.BASE_LOCALE
+      ? [language, AuthEmailTemplateFileService.BASE_LOCALE]
+      : [AuthEmailTemplateFileService.BASE_LOCALE];
 
-    if (language && language !== AuthEmailTemplateFileService.BASE_LOCALE) {
-      const translated = await AuthEmailTemplateFileService.tryRead(path.posix.join(language, name));
+    for (const lang of languages) {
+      const fromTheme = await AuthEmailTemplateFileService.tryThemeRead(path.posix.join(lang, name));
+      if (fromTheme !== null) return fromTheme;
+      if (lang === AuthEmailTemplateFileService.BASE_LOCALE) break;
+      const translated = await AuthEmailTemplateFileService.tryRead(path.posix.join(lang, name));
       if (translated !== null) return translated;
     }
 
     return AuthEmailTemplateFileService.readOrThrow(path.posix.join(AuthEmailTemplateFileService.BASE_LOCALE, name));
+  }
+
+  private static async tryThemeRead(relativePath: string): Promise<string | null> {
+    const root = AuthEmailThemeOverride.root();
+    if (!root) return null;
+    try {
+      return await fs.readFile(path.join(root, relativePath), 'utf-8');
+    } catch {
+      return null;
+    }
   }
 
   private static normalizeLocale(locale?: string): string {
