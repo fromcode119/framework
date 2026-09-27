@@ -51,11 +51,11 @@ export class ExtensionBuildPipeline {
     // vite and tailwind load a generated module entry, because their configs are authored as
     // classes. It is build OUTPUT: `check:vite-glue` fails the build if one is left behind, so the
     // whole run is wrapped and `remove()` happens however it ends.
-    ViteConfigGlue.generate();
+    await ViteConfigGlue.generate();
     try {
       return await ExtensionBuildPipeline.runSteps(input);
     } finally {
-      ViteConfigGlue.remove();
+      await ViteConfigGlue.remove();
     }
   }
 

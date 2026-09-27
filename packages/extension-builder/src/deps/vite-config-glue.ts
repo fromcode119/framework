@@ -2,7 +2,7 @@ import { ModuleLocation } from '@extension-builder/module-location';
 import { fileURLToPath } from 'node:url';
 import * as fs from 'fs';
 import * as path from 'path';
-import { spawnSync } from 'child_process';
+import { AsyncProcess } from '@extension-builder/deps/async-process';
 import { createRequire } from 'module';
 import { ViteStagingRoot } from '@extension-builder/compile/vite-staging-root';
 
@@ -99,35 +99,47 @@ export class ViteConfigGlue {
    */
   private static active = 0;
 
+  /**
+   * Generation and cleanup run one after another, in the order they were asked for. They were
+   * synchronous, so a cleanup could never interleave with another build's generation; now that they
+   * no longer stop the event loop, this queue keeps that true.
+   */
+  private static queue: Promise<unknown> = Promise.resolve();
+
+  private static serially<T>(work: () => Promise<T>): Promise<T> {
+    const next = ViteConfigGlue.queue.then(work, work);
+    ViteConfigGlue.queue = next.catch(() => undefined);
+    return next;
+  }
+
   /** Returns the generated file paths, or [] when the generator is unavailable. */
-  static generate(): string[] {
+  static generate(): Promise<string[]> {
     ViteConfigGlue.active += 1;
-    const root = ViteConfigGlue.frameworkRoot();
-    if (!root || !fs.existsSync(ViteConfigGlue.cli(root))) return [];
+    return ViteConfigGlue.serially(async () => {
+      const root = ViteConfigGlue.frameworkRoot();
+      if (!root || !fs.existsSync(ViteConfigGlue.cli(root))) return [];
 
-    const written: string[] = [];
-    for (const [source, className, outFile] of ViteConfigGlue.ENTRIES) {
-      const target = path.relative(root, path.join(ViteConfigGlue.outputDir(root), ViteConfigGlue.targetName(outFile)));
-      fs.mkdirSync(ViteConfigGlue.outputDir(root), { recursive: true });
-      const result = spawnSync('node', [ViteConfigGlue.cli(root), 'vite-config', source, className, target], {
-        cwd: root,
-        encoding: 'utf8',
-      });
-      if (result.status === 0) {
-        written.push(path.join(root, target));
-        continue;
+      const written: string[] = [];
+      for (const [source, className, outFile] of ViteConfigGlue.ENTRIES) {
+        const target = path.relative(root, path.join(ViteConfigGlue.outputDir(root), ViteConfigGlue.targetName(outFile)));
+        fs.mkdirSync(ViteConfigGlue.outputDir(root), { recursive: true });
+        const result = await AsyncProcess.run('node', [ViteConfigGlue.cli(root), 'vite-config', source, className, target], { cwd: root });
+        if (result.status === 0) {
+          written.push(path.join(root, target));
+          continue;
+        }
+
+        /**
+         * A generator failure used to be silent — the entry simply did not appear, and the tool that
+         * needed it reported its own confusing version of the problem several steps later ("Specified
+         * config file does not exist", "tailwind exited 9"). The cause belongs where it happened.
+         */
+        ViteConfigGlue.failures.push(
+          `${outFile}: ${String(result.stderr || result.stdout || `exit ${String(result.status)}`).trim().split('\n').pop()}`,
+        );
       }
-
-      /**
-       * A generator failure used to be silent — the entry simply did not appear, and the tool that
-       * needed it reported its own confusing version of the problem several steps later ("Specified
-       * config file does not exist", "tailwind exited 9"). The cause belongs where it happened.
-       */
-      ViteConfigGlue.failures.push(
-        `${outFile}: ${String(result.stderr || result.stdout || `exit ${String(result.status)}`).trim().split('\n').pop()}`,
-      );
-    }
-    return written;
+      return written;
+    });
   }
 
   /**
@@ -139,16 +151,17 @@ export class ViteConfigGlue {
   static readonly failures: string[] = [];
 
   /** Always call this in a `finally`: a leftover generated file fails `check:vite-glue`. */
-  static remove(): void {
+  static remove(): Promise<void> {
     ViteConfigGlue.active = Math.max(0, ViteConfigGlue.active - 1);
     // The last build out turns off the lights. An earlier one must not, or it takes the configs a
     // concurrent build is still reading.
-    if (ViteConfigGlue.active > 0) return;
-
-    const root = ViteConfigGlue.frameworkRoot();
-    if (!root || !fs.existsSync(ViteConfigGlue.cli(root))) return;
-    const outFiles = ViteConfigGlue.ENTRIES.map(([, , outFile]) =>
-      path.relative(root, path.join(ViteConfigGlue.outputDir(root), ViteConfigGlue.targetName(outFile))));
-    spawnSync('node', [ViteConfigGlue.cli(root), 'verify-vite-config', '--clean', ...outFiles], { cwd: root });
+    if (ViteConfigGlue.active > 0) return Promise.resolve();
+    return ViteConfigGlue.serially(async () => {
+      const root = ViteConfigGlue.frameworkRoot();
+      if (!root || !fs.existsSync(ViteConfigGlue.cli(root))) return;
+      const outFiles = ViteConfigGlue.ENTRIES.map(([, , outFile]) =>
+        path.relative(root, path.join(ViteConfigGlue.outputDir(root), ViteConfigGlue.targetName(outFile))));
+      await AsyncProcess.run('node', [ViteConfigGlue.cli(root), 'verify-vite-config', '--clean', ...outFiles], { cwd: root });
+    });
   }
 }

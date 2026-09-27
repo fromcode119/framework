@@ -18,37 +18,37 @@ function scratch(withTailwind: boolean, withBundle = true) {
 }
 
 describe('PluginStyleCompiler', () => {
-  it('refuses to overwrite a hand-written style.css rather than destroying it', () => {
+  it('refuses to overwrite a hand-written style.css rather than destroying it', async () => {
     const { root, outDir } = scratch(true);
     writeFileSync(join(outDir, 'style.css'), '.mine{color:red}');
-    const result = PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
+    const result = await PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
     expect(result.failed).toBe(true);
     expect(result.message).toContain('hand-written');
     expect(readFileSync(join(outDir, 'style.css'), 'utf8')).toBe('.mine{color:red}');
   });
 
-  it('accepts a sheet carrying the legacy build-plugins.sh marker as its own', () => {
+  it('accepts a sheet carrying the legacy build-plugins.sh marker as its own', async () => {
     const { root, outDir } = scratch(true);
     writeFileSync(join(outDir, 'style.css'), `${PluginStyleMarker.LEGACY}\n.old{}`);
-    const result = PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
+    const result = await PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
     expect(result.message).not.toContain('hand-written');
   });
 
-  it('leaves no .building temp file behind when tailwind fails', () => {
+  it('leaves no .building temp file behind when tailwind fails', async () => {
     const { root, outDir } = scratch(true);
-    PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
+    await PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
     expect(existsSync(join(outDir, '.style.css.building'))).toBe(false);
   });
 
-  it('skips a storefront-only plugin, and says so', () => {
+  it('skips a storefront-only plugin, and says so', async () => {
     const { root, outDir } = scratch(true, false);
-    const result = PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
+    const result = await PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
     expect(result.skippedReason).toContain('bundle.js');
   });
 
-  it('says why it skipped when tailwind is not installed', () => {
+  it('says why it skipped when tailwind is not installed', async () => {
     const { root, outDir } = scratch(false);
-    const result = PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
+    const result = await PluginStyleCompiler.compile(join(root, 'src', 'ui'), outDir, 'demo', root);
     expect(result.skippedReason).toContain('tailwindcss');
   });
 });

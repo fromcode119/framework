@@ -1,7 +1,7 @@
 import { Core } from '@extension-builder/core-bridge';
 import * as fs from 'fs';
 import * as path from 'path';
-import { spawnSync } from 'child_process';
+import { AsyncProcess } from '@extension-builder/deps/async-process';
 import { BuildStepResult } from '@extension-builder/build-step-result';
 import { PluginStyleMarker } from '@extension-builder/assets/plugin-style-marker';
 import { ProcessFailureReason } from '@extension-builder/process-failure-reason';
@@ -23,7 +23,7 @@ export class PluginStyleCompiler {
   private static readonly CONFIG = 'packages/sdk/src/tailwind/plugin-ui.config.ts';
   private static readonly INPUT = 'packages/sdk/src/tailwind/plugin-ui.css';
 
-  static compile(uiSourceDir: string, outDir: string, slug: string, toolchainRoot: string | null): BuildStepResult {
+  static async compile(uiSourceDir: string, outDir: string, slug: string, toolchainRoot: string | null): Promise<BuildStepResult> {
     if (!toolchainRoot) {
       return BuildStepResult.skipped(PluginStyleCompiler.STEP, "tailwindcss is not installed on any root above this extension");
     }
@@ -62,9 +62,8 @@ export class PluginStyleCompiler {
         `${slug}: the tailwind config was never generated at ${config} — ${why}`,
       );
     }
-    const result = spawnSync(binary, ['-c', config, '-i', PluginStyleCompiler.INPUT, '-o', temporary, '--minify'], {
+    const result = await AsyncProcess.run(binary, ['-c', config, '-i', PluginStyleCompiler.INPUT, '-o', temporary, '--minify'], {
       cwd: toolchainRoot,
-      encoding: 'utf8',
       env: { ...process.env, PLUGIN_UI_DIR: uiSourceDir },
     });
 
@@ -72,7 +71,7 @@ export class PluginStyleCompiler {
       fs.rmSync(temporary, { force: true });
       /**
        * Tailwind's own words, not just its exit code. "tailwind exited 9" is a number nobody can act
-       * on: the reason — a config it cannot find, a path it cannot read — was captured by spawnSync
+       * on: the reason — a config it cannot find, a path it cannot read — was captured by the spawn
        * and thrown away, so the one useful thing about the failure never reached the screen.
        */
       return BuildStepResult.failure(
