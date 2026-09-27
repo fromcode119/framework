@@ -33,13 +33,39 @@
 #
 # Back to the built images:  docker compose -f docker-compose.yml up -d admin api
 services:
-  # Plugin processes load core and the sdk from their BUILT output, exactly as they did inside the api:
-  # without these the api runs this checkout while every plugin runs the image's baked copy — two
-  # versions of one protocol in one request (see the api's core `dist` mount above).
+  # Plugin processes are plain `node`: they load core, the sdk and every framework package those import
+  # from BUILT output, resolved through each package's `package.json` exports. Mounting only core and the
+  # sdk left the rest baked into the image, and the first core that imported a newer module
+  # (`@fromcode119/scheduler/enums/schedule-type.enum`) failed every plugin with MODULE_NOT_FOUND. This is
+  # the whole set core and the sdk load, transitively; run `npm run build:packages` after pulling.
   extension-host:
     volumes:
       - ./packages/core/dist:/app/packages/core/dist
+      - ./packages/core/package.json:/app/packages/core/package.json
       - ./packages/sdk/dist:/app/packages/sdk/dist
+      - ./packages/sdk/package.json:/app/packages/sdk/package.json
+      - ./packages/react-class-components/dist:/app/packages/react-class-components/dist
+      - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
+      - ./packages/database/dist:/app/packages/database/dist
+      - ./packages/database/package.json:/app/packages/database/package.json
+      - ./packages/scheduler/dist:/app/packages/scheduler/dist
+      - ./packages/scheduler/package.json:/app/packages/scheduler/package.json
+      - ./packages/plugins/dist:/app/packages/plugins/dist
+      - ./packages/plugins/package.json:/app/packages/plugins/package.json
+      - ./packages/queue/dist:/app/packages/queue/dist
+      - ./packages/queue/package.json:/app/packages/queue/package.json
+      - ./packages/cache/dist:/app/packages/cache/dist
+      - ./packages/cache/package.json:/app/packages/cache/package.json
+      - ./packages/email/dist:/app/packages/email/dist
+      - ./packages/email/package.json:/app/packages/email/package.json
+      - ./packages/media/dist:/app/packages/media/dist
+      - ./packages/media/package.json:/app/packages/media/package.json
+      - ./packages/mcp/dist:/app/packages/mcp/dist
+      - ./packages/mcp/package.json:/app/packages/mcp/package.json
+      - ./packages/marketplace-client/dist:/app/packages/marketplace-client/dist
+      - ./packages/marketplace-client/package.json:/app/packages/marketplace-client/package.json
+      - ./packages/react/dist:/app/packages/react/dist
+      - ./packages/react/package.json:/app/packages/react/package.json
 
   admin:
     command: ["npm", "run", "dev", "--workspace=@fromcode119/admin"]
@@ -195,6 +221,35 @@ services:
       # tsx apply legacy decorators to EVERY package's source, not just the api's own.
       - ./packages/api/package.json:/app/packages/api/package.json
       - ./packages/api/tsconfig.dev.json:/app/packages/api/tsconfig.dev.json
+      # The api's own code runs the packages above from SOURCE, but a plugin bundle it loads (discovery
+      # reads each plugin's module) is plain `require`: it resolves `@fromcode119/sdk`, and everything the
+      # sdk imports, through node — to BUILT output. So the api needs the same built packages the
+      # extension-host mounts, or an sdk that imports a newer module (`@fromcode119/scheduler/enums/…`)
+      # fails every plugin's discovery with MODULE_NOT_FOUND.
+      - ./packages/react-class-components/dist:/app/packages/react-class-components/dist
+      - ./packages/database/dist:/app/packages/database/dist
+      - ./packages/scheduler/dist:/app/packages/scheduler/dist
+      - ./packages/plugins/dist:/app/packages/plugins/dist
+      - ./packages/queue/dist:/app/packages/queue/dist
+      - ./packages/cache/dist:/app/packages/cache/dist
+      - ./packages/email/dist:/app/packages/email/dist
+      - ./packages/media/dist:/app/packages/media/dist
+      - ./packages/mcp/dist:/app/packages/mcp/dist
+      - ./packages/marketplace-client/dist:/app/packages/marketplace-client/dist
+      - ./packages/react/dist:/app/packages/react/dist
+      - ./packages/core/package.json:/app/packages/core/package.json
+      - ./packages/sdk/package.json:/app/packages/sdk/package.json
+      - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
+      - ./packages/database/package.json:/app/packages/database/package.json
+      - ./packages/scheduler/package.json:/app/packages/scheduler/package.json
+      - ./packages/plugins/package.json:/app/packages/plugins/package.json
+      - ./packages/queue/package.json:/app/packages/queue/package.json
+      - ./packages/cache/package.json:/app/packages/cache/package.json
+      - ./packages/email/package.json:/app/packages/email/package.json
+      - ./packages/media/package.json:/app/packages/media/package.json
+      - ./packages/mcp/package.json:/app/packages/mcp/package.json
+      - ./packages/marketplace-client/package.json:/app/packages/marketplace-client/package.json
+      - ./packages/react/package.json:/app/packages/react/package.json
     deploy:
       resources:
         limits:
