@@ -28,6 +28,9 @@ export class ComposeStack {
   static readonly EXTENSION_HOST = 'extension-host';
   /** Holds the public ports in front of the gateway, so the gateway can be rolled like the apps. */
   static readonly EDGE = 'edge';
+  /** The ports those two listen on for plain HTTP inside their containers (`EDGE_HTTP_PORT`, the gateway's). */
+  static readonly EDGE_HTTP_PORT = 80;
+  static readonly GATEWAY_HTTP_PORT = 3000;
 
   private static readonly FILES = '-f docker-compose.full-stack.yml -f docker-compose.images.yml';
 
@@ -46,9 +49,16 @@ export class ComposeStack {
     return [...ComposeStack.SERVICES, ...(await this.declared(ComposeStack.OPTIONAL))];
   }
 
-  /** Which of `services` the compose files declare. */
+  /**
+   * Which of `services` the compose files declare.
+   *
+   * With every profile: `config --services` otherwise omits a service behind a profile, and `gateway`
+   * and `edge` both are. Without it, the release that introduced the edge was read as not declaring
+   * one — the deploy rolled, recreated the gateway without its public ports, never started the edge,
+   * and every site answered 521 until a person started it.
+   */
   async declared(services: readonly string[]): Promise<string[]> {
-    const result = await this.shell.run(`docker compose ${ComposeStack.FILES} config --services`);
+    const result = await this.shell.run(`docker compose ${ComposeStack.FILES} --profile '*' config --services`);
     const listed = new Set(result.stdout.split('\n').map((line) => line.trim()).filter(Boolean));
     return services.filter((service) => listed.has(service));
   }
@@ -110,6 +120,32 @@ export class ComposeStack {
   async migrationFiles(): Promise<string[]> {
     const result = await this.shell.run(`docker compose ${ComposeStack.FILES} run --rm --no-deps -T --entrypoint ls api /app/packages/core/dist/database/migrations`);
     return result.code === 0 ? result.stdout.split('\n').map((line) => line.trim()).filter(Boolean) : [];
+  }
+
+  /**
+   * The address visitors reach the platform on, as published on this box: the edge's HTTP port when an
+   * edge runs, the gateway's own otherwise. Null when neither publishes one.
+   */
+  async publicAddress(): Promise<string | null> {
+    const front = (await this.containerIds(ComposeStack.EDGE)).length
+      ? { service: ComposeStack.EDGE, port: ComposeStack.EDGE_HTTP_PORT }
+      : { service: 'gateway', port: ComposeStack.GATEWAY_HTTP_PORT };
+    const result = await this.shell.run(`docker compose ${ComposeStack.FILES} port ${front.service} ${front.port}`);
+    return result.code === 0 ? ComposeStack.reachable(result.stdout.trim()) : null;
+  }
+
+  /** `0.0.0.0:80` → `127.0.0.1:80`, `[::]:80` → `[::1]:80`: a wildcard bind is reached on loopback. */
+  static reachable(published: string): string | null {
+    const match = /^(.*):(\d+)$/.exec(published);
+    if (!match || match[2] === '0') return null;
+    const host = match[1] === '0.0.0.0' ? '127.0.0.1' : match[1] === '[::]' || match[1] === '::' ? '[::1]' : match[1];
+    return `${host}:${match[2]}`;
+  }
+
+  /** The HTTP status the public address answers with ('000' when nothing answers). */
+  async publicStatus(address: string): Promise<string> {
+    const result = await this.shell.run(`curl -s -o /dev/null -m 5 -w '%{http_code}' http://${address}/`);
+    return result.stdout.trim() || '000';
   }
 
   async apiLogs(lines: number): Promise<string> {
