@@ -3,14 +3,11 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 
 export class ThemeContextProxy {
   static createThemeProxy(plugin: ILoadedPlugin, manager: IPluginManagerInterface) {
+    // The config of the theme the CURRENT site renders with — the site's own saved row, never the
+    // platform row while a site is bound.
     const getActiveConfig = async (): Promise<Record<string, any>> => {
-      const slug = String(manager.themeManager?.getActiveThemeManifest()?.slug || '').trim();
-      if (!slug || !manager.themeManager) {
-        return {};
-      }
-
-      const config = await manager.themeManager.getThemeConfig(slug);
-      return ThemeContextProxy.normalizeObject(config);
+      if (!manager.themeManager) return {};
+      return ThemeContextProxy.normalizeObject(await manager.themeManager.getActiveThemeConfig());
     };
 
     return {
@@ -19,6 +16,12 @@ export class ThemeContextProxy {
         return slug || null;
       },
       getActiveConfig,
+      // The theme's variables as the site set them (contact email, social links, …) — what an email
+      // template a theme overrides can print, exactly as the storefront does.
+      getVariables: async (): Promise<Record<string, unknown>> => {
+        if (!manager.themeManager) return {};
+        return ThemeContextProxy.normalizeObject(await manager.themeManager.getActiveThemeVariables());
+      },
       getCurrentPluginSettings: async (): Promise<Record<string, any>> => {
         const config = await getActiveConfig();
         const settings = ThemeContextProxy.normalizeObject(config.settings);

@@ -7,5 +7,7 @@
 export interface IPluginContextTheme {
   getActiveSlug(): Promise<string | null>;
   getActiveConfig(): Promise<Record<string, any>>;
+  /** The active theme's variables for the current site: the theme's declared values with the site's saved changes. */
+  getVariables(): Promise<Record<string, unknown>>;
   getCurrentPluginSettings(): Promise<Record<string, any>>;
 }

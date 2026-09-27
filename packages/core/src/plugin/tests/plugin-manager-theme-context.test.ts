@@ -48,6 +48,8 @@ describe('PluginManager theme context', () => {
     return {
       getActiveThemeManifest: () => ({ slug: 'starter' }),
       getThemeConfig: async (slug: string) => (slug === 'starter' ? activeConfig : {}),
+      getActiveThemeConfig: async () => activeConfig,
+      getActiveThemeVariables: async () => ({ primaryColor: '#000000', ...activeConfig.variables }),
     };
   }
 
@@ -62,6 +64,7 @@ describe('PluginManager theme context', () => {
     await expect(context.theme.getActiveSlug()).resolves.toBe('starter');
     await expect(context.theme.getActiveConfig()).resolves.toEqual(activeConfig);
     await expect(context.theme.getCurrentPluginSettings()).resolves.toEqual(activeConfig.settings.theta);
+    await expect(context.theme.getVariables()).resolves.toEqual({ primaryColor: '#000000', siteName: 'Starter Site', contactEmail: 'hello@example.com' });
   });
 
   it('starts with no theme manager, so an unwired context resolves to nothing rather than a made-up theme', async () => {
@@ -73,5 +76,6 @@ describe('PluginManager theme context', () => {
     await expect(context.theme.getActiveSlug()).resolves.toBeNull();
     await expect(context.theme.getActiveConfig()).resolves.toEqual({});
     await expect(context.theme.getCurrentPluginSettings()).resolves.toEqual({});
+    await expect(context.theme.getVariables()).resolves.toEqual({});
   });
 });

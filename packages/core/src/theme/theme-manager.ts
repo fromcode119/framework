@@ -201,10 +201,7 @@ export class ThemeManager extends ThemeLifecycle {
 
   async getFrontendMetadata(runtimeModules: Record<string, any> = {}) {
     const manifest = this.getActiveThemeManifest();
-    // The TENANT's variable overrides, when there is a tenant; the platform row's otherwise.
-    const choice = TenantThemeAccess.currentChoice();
-    const configOverride = choice && manifest && choice.activeSlug === manifest.slug ? (choice.config || {}) : undefined;
-    const metadata = await this.configService.getFrontendMetadata(manifest, runtimeModules, configOverride);
+    const metadata = await this.configService.getFrontendMetadata(manifest, runtimeModules, this.siteConfigOverride(manifest));
     // Expose the real entry + its static chunk dependencies so the frontend can emit
     // `<link rel="modulepreload">` hints and skip the shim's serialized round-trip.
     // Server-derived from the active theme's own ui/ directory only — never request input.
@@ -219,6 +216,34 @@ export class ThemeManager extends ThemeLifecycle {
       }
     }
     return metadata;
+  }
+
+  /**
+   * The active theme's saved config for the current request's site: the site's own row when a site is
+   * bound, the platform row otherwise. Never both — one site's settings must not leak into another.
+   */
+  async getActiveThemeConfig(): Promise<Record<string, any>> {
+    const manifest = this.getActiveThemeManifest();
+    if (!manifest) return {};
+    const override = this.siteConfigOverride(manifest);
+    return override !== undefined ? override : await this.configService.getThemeConfig(manifest.slug);
+  }
+
+  /**
+   * The active theme's variables as the site sees them — the theme's declared values with the site's
+   * saved changes over them. The same values the storefront renders with.
+   */
+  async getActiveThemeVariables(): Promise<Record<string, unknown>> {
+    const manifest = this.getActiveThemeManifest();
+    if (!manifest) return {};
+    const config = await this.getActiveThemeConfig();
+    return { ...(manifest.variables || {}), ...(config?.variables || {}) };
+  }
+
+  /** The TENANT's saved config, when there is a tenant using this theme; undefined means the platform row. */
+  private siteConfigOverride(manifest: IThemeManifest | null): Record<string, any> | undefined {
+    const choice = TenantThemeAccess.currentChoice();
+    return choice && manifest && choice.activeSlug === manifest.slug ? (choice.config || {}) : undefined;
   }
 
   async scaffoldTheme(input: {
