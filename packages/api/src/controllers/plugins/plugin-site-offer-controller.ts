@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { BaseController, CoercionUtils, Logger, PluginManager, PluginState, PluginTenantStateService, TenantMode } from '@fromcode119/core';
+import { BaseController, CoercionUtils, Logger, PluginManager, PluginOwners, PluginState, PluginTenantStateService, TenantMode } from '@fromcode119/core';
 import { PluginSiteOfferStore } from '@api/controllers/plugins/plugin-site-offer-store';
 
 /**
@@ -28,23 +28,32 @@ export class PluginSiteOfferController extends BaseController {
     if (!TenantMode.isEnabled() || !tenantId) return res.json({ offered: slugs });
 
     const enabled = new Set(await this.tenantState().listEnabled(tenantId));
+    const describe = (plugin: any) => ({
+      slug: plugin.manifest.slug,
+      name: plugin.manifest.name,
+      description: plugin.manifest.description ?? '',
+      version: plugin.manifest.version,
+      enabledHere: enabled.has(plugin.manifest.slug),
+    });
     const plugins = slugs
       .map((slug) => this.manager.plugins.get(slug))
       .filter((plugin) => plugin && PluginState.resolve(plugin.state) === PluginState.ACTIVE)
-      .map((plugin) => ({
-        slug: plugin!.manifest.slug,
-        name: plugin!.manifest.name,
-        description: plugin!.manifest.description ?? '',
-        version: plugin!.manifest.version,
-        enabledHere: enabled.has(plugin!.manifest.slug),
-      }));
-    res.json({ plugins });
+      .map(describe);
+    // This site's OWN uploads, running or not, so it can switch them and remove them.
+    const own = PluginOwners.ownedBy(tenantId)
+      .map((slug) => this.manager.plugins.get(slug))
+      .filter(Boolean)
+      .map((plugin) => ({ ...describe(plugin), running: PluginState.resolve(plugin!.state) === PluginState.ACTIVE }));
+    res.json({ plugins, own });
   }
 
   /** The platform offering an installed plugin to sites, or no longer offering it. */
   async setOffer(req: Request, res: Response) {
     const slug = CoercionUtils.toString(req.params.slug);
     if (!this.manager.plugins.get(slug)) return res.status(404).json({ error: 'plugin_not_installed', message: `Plugin "${slug}" is not installed on this platform.` });
+    if (PluginOwners.ownerOf(slug)) {
+      return res.status(409).json({ error: 'plugin_owned_by_site', message: `"${slug}" is one site's own plugin and cannot be offered to other sites.` });
+    }
     const offered = CoercionUtils.toBoolean(req.body?.offered) === true;
     const next = await this.store.set(slug, offered);
     res.json({ success: true, offered: next.includes(slug) });
@@ -58,7 +67,8 @@ export class PluginSiteOfferController extends BaseController {
     const tenantId = String((req as any).tenantId || '').trim();
     if (!TenantMode.isEnabled() || !tenantId) return res.status(400).json({ error: 'site_required', message: 'Choose a site first.' });
     const slug = CoercionUtils.toString(req.params.slug);
-    if (!(await this.store.list()).includes(slug)) {
+    const ownHere = PluginOwners.ownerOf(slug) === tenantId;
+    if (!ownHere && !(await this.store.list()).includes(slug)) {
       return res.status(403).json({ error: 'plugin_not_offered', message: `"${slug}" is not offered to sites. The platform admin chooses which plugins sites may add.` });
     }
     const plugin = this.manager.plugins.get(slug);

@@ -13,6 +13,10 @@ export class RouteEndpointSegments {
   PLUGINS_OFFERED: '/offered',
   PLUGINS_SLUG_OFFER: '/:slug/offer',
   PLUGINS_SLUG_SITE: '/:slug/site',
+  /** A site's OWN plugins: what it may upload, uploading one, removing one. */
+  PLUGINS_MINE_QUOTA: '/mine/quota',
+  PLUGINS_MINE_UPLOAD: '/mine/upload',
+  PLUGINS_MINE_SLUG: '/mine/:slug',
   PLUGINS_UPDATE_ALL: '/update-all',
   PLUGINS_INSTALL_OPERATION: '/install-operations/:operationId',
   PLUGINS_UPLOAD_SESSION: '/upload/session',

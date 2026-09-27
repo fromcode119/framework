@@ -4,6 +4,8 @@ import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 import { PluginManagerQueryService } from '@core/plugin/services/runtime/plugin-manager-query-service';
 import { PluginManagerState } from '@core/plugin/plugin-manager-state';
 import { StorefrontRendererRefreshService } from '@core/management/storefront-renderer-refresh-service';
+import { TenantPluginInstaller } from '@core/plugin/tenant/tenant-plugin-installer';
+import type { ITenantPluginHost } from '@core/plugin/tenant/interfaces/tenant-plugin-host.interface';
 
 /**
  * Getting an extension ONTO this deployment: from the marketplace, an uploaded archive, or a
@@ -133,6 +135,11 @@ export abstract class PluginManagerExtensions extends PluginManagerState {
 
   async shutdown() {
     return this.shutdownService.shutdown();
+  }
+
+  /** A SITE installing and removing its own plugins — never the platform's install path. */
+  get tenantPlugins(): TenantPluginInstaller {
+    return new TenantPluginInstaller(this as unknown as ITenantPluginHost);
   }
 
   // Delegate Lifecycle

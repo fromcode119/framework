@@ -1,6 +1,7 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { TenantState } from '@core/enums/tenant-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 import { SystemConstants } from '@core/constants/system.constants';
 
 /**
@@ -39,12 +40,32 @@ export class PluginTenantStateService {
       .filter((slug: string) => slug.length > 0);
   }
 
+  /**
+   * Refuses a plugin another site owns — from every caller: the site's own switch, the platform's Sites
+   * screen, a site import. A site's uploaded plugin is that site's code and runs for nobody else.
+   */
   async enable(tenantId: string, slug: string): Promise<void> {
+    if (!PluginOwners.mayRunFor(slug, tenantId)) {
+      throw new Error(`Plugin "${slug}" belongs to another site and cannot be switched on here.`);
+    }
     await this.write(tenantId, slug, TenantState.ACTIVE.value);
   }
 
   async disable(tenantId: string, slug: string): Promise<void> {
     await this.write(tenantId, slug, TenantState.INACTIVE.value);
+  }
+
+  /**
+   * Drops the row entirely — for a site's OWN plugin that the site removed, which no longer exists
+   * anywhere. Disabling would leave a switch for a plugin that is gone, carried along in the site's
+   * exports. Never used for a platform plugin: that one still exists, and its data stays.
+   */
+  async forget(tenantId: string, slug: string): Promise<void> {
+    const tenant = CoercionUtils.toString(tenantId);
+    const name = CoercionUtils.toString(slug);
+    if (!tenant || !name) return;
+    await this.db.delete(SystemConstants.TABLE.TENANT_PLUGINS, { tenant_id: tenant, plugin_slug: name });
+    PluginTenantAccess.invalidate(tenant);
   }
 
   /**

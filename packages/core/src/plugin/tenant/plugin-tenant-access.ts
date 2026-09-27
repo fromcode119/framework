@@ -3,6 +3,7 @@ import { TenantState } from '@core/enums/tenant-state.enum';
 import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantMode } from '@core/tenant/tenant-mode';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 /**
  * Does THIS tenant run this plugin?
@@ -115,6 +116,8 @@ export class PluginTenantAccess {
 
     const tenantId = RequestContextUtils.getTenantId();
     if (!tenantId) return false;
+    // Another site's own plugin never runs here, whatever a stored row says.
+    if (!PluginOwners.mayRunFor(slug, tenantId)) return false;
 
     return PluginTenantAccess.enabledSlugsFor(tenantId).has(String(slug ?? '').trim());
   }
@@ -128,7 +131,7 @@ export class PluginTenantAccess {
   static async isEnabledFor(slug: string, tenantId: string): Promise<boolean> {
     const tenant = String(tenantId ?? '').trim();
     const name = String(slug ?? '').trim();
-    if (!tenant || !name) return false;
+    if (!tenant || !name || !PluginOwners.mayRunFor(name, tenant)) return false;
     await PluginTenantAccess.warm(tenant);
     return PluginTenantAccess.enabledSlugsFor(tenant).has(name);
   }

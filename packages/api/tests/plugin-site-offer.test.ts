@@ -1,4 +1,4 @@
-import { PluginTenantAccess, SystemConstants, TenantMode } from '@fromcode119/core';
+import { PluginOwners, PluginTenantAccess, SystemConstants, TenantMode } from '@fromcode119/core';
 import { PluginSiteOfferController } from '@api/controllers/plugins/plugin-site-offer-controller';
 
 /**
@@ -6,7 +6,7 @@ import { PluginSiteOfferController } from '@api/controllers/plugins/plugin-site-
  * installed and approved. Everything else stays the platform's to assign.
  */
 describe('plugins offered to sites', () => {
-  afterEach(() => { TenantMode.reset(); PluginTenantAccess.reset(); });
+  afterEach(() => { TenantMode.reset(); PluginTenantAccess.reset(); PluginOwners.forget('guestbook'); });
   const multiTenant = () => TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
   /** `_system_meta` and `_system_tenant_plugins` in memory, as the raw manager would answer them. */
@@ -106,5 +106,30 @@ describe('plugins offered to sites', () => {
     const res = response();
     await new PluginSiteOfferController(managerWith(db, {})).setOffer(request(null, 'ghost', { offered: true }), res);
     expect(res.statusCode).toBe(404);
+  });
+
+  it('lists a site\'s own plugins to that site only, and never lets the platform offer one to others', async () => {
+    multiTenant();
+    PluginOwners.record('guestbook', 'site-a');
+    const { db } = database();
+    const controller = new PluginSiteOfferController(managerWith(db, { guestbook: 'active', forms: 'active' }));
+
+    const offer = response();
+    await controller.setOffer(request(null, 'guestbook', { offered: true }), offer);
+    expect(offer.statusCode).toBe(409);
+
+    const mine = response();
+    await controller.offered(request('site-a'), mine);
+    expect(mine.body.own.map((plugin: any) => plugin.slug)).toEqual(['guestbook']);
+    const theirs = response();
+    await controller.offered(request('site-b'), theirs);
+    expect(theirs.body.own).toEqual([]);
+
+    const onHere = response();
+    await controller.setForSite(request('site-a', 'guestbook', { enabled: true }), onHere);
+    expect(onHere.body).toEqual({ success: true, enabled: true });
+    const onThere = response();
+    await controller.setForSite(request('site-b', 'guestbook', { enabled: true }), onThere);
+    expect(onThere.statusCode).toBe(403);
   });
 });

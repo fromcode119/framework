@@ -15,6 +15,7 @@ import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operati
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { SitePluginOffers } from '@/app/plugins/installed/components/view/site-plugin-offers.client';
+import { SiteOwnPlugins } from '@/app/plugins/installed/components/view/site-own-plugins.client';
 
 export class InstalledPluginsView extends Reactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -131,7 +132,8 @@ export class InstalledPluginsView extends Reactor {
             {this.canManage ? <button onClick={this.handleUploadClick} disabled={this.isUploading || this.isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{this.isUploading || this.isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{this.isInspectingUpload ? 'Inspecting...' : 'Upload (.zip/.tar.gz)'}</span></button> : null}
           </div>
           {this.siteScope ? <SitePluginOffers /> : null}
-          {this.siteScope ? <PlatformScopeGate what="Installing, updating and removing plugins, and switching on any the platform does not offer to sites,">{null}</PlatformScopeGate> : null}
+          {this.siteScope ? <SiteOwnPlugins /> : null}
+          {this.siteScope ? <PlatformScopeGate what="Installing plugins for every site, updating and removing them, and switching on any the platform does not offer to sites,">{null}</PlatformScopeGate> : null}
           {/* Hidden entirely for a tenant admin: uploading puts code on the box every site runs on,
               and a dropzone that can only ever 403 is a bug, not a hint. */}
           {this.canManage ? (

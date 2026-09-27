@@ -17,6 +17,7 @@ import { PluginSiteDataReplay } from '@core/plugin/tenant/plugin-site-data-repla
 import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
 import { PluginHostPeerSnapshot } from '@core/plugin/host/plugin-host-peer-snapshot';
 import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 /**
  * What the guest asks of the HOST, and what happens when the guest dies.
@@ -73,6 +74,8 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
 
   /** The peers this plugin may call right now — see `PluginHostPeerSnapshot`. */
   protected peers(store: IRequestStore | undefined): Record<string, string[]> {
+    // A SITE's own plugin is offered no peers — the same answer its context's resolver gives.
+    if (PluginOwners.ownerOf(this.slug)) return {};
     return PluginHostPeerSnapshot.build(this.manager, store, this.logger);
   }
 
