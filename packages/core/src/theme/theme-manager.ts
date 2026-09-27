@@ -1,4 +1,5 @@
 import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
+import { ThemeActiveSiteConfig } from '@core/theme/theme-active-site-config';
 import { ManifestNormalizer } from '@core/manifest-normalizer';
 import { SystemConstants } from '@core/constants/system.constants';
 import path from 'path';
@@ -201,10 +202,7 @@ export class ThemeManager extends ThemeLifecycle {
 
   async getFrontendMetadata(runtimeModules: Record<string, any> = {}) {
     const manifest = this.getActiveThemeManifest();
-    // The TENANT's variable overrides, when there is a tenant; the platform row's otherwise.
-    const choice = TenantThemeAccess.currentChoice();
-    const configOverride = choice && manifest && choice.activeSlug === manifest.slug ? (choice.config || {}) : undefined;
-    const metadata = await this.configService.getFrontendMetadata(manifest, runtimeModules, configOverride);
+    const metadata = await this.configService.getFrontendMetadata(manifest, runtimeModules, ThemeActiveSiteConfig.siteOverride(manifest));
     // Expose the real entry + its static chunk dependencies so the frontend can emit
     // `<link rel="modulepreload">` hints and skip the shim's serialized round-trip.
     // Server-derived from the active theme's own ui/ directory only — never request input.
@@ -219,6 +217,16 @@ export class ThemeManager extends ThemeLifecycle {
       }
     }
     return metadata;
+  }
+
+  /** The active theme's saved config for the current request's site — see {@link ThemeActiveSiteConfig}. */
+  getActiveThemeConfig(): Promise<Record<string, any>> {
+    return ThemeActiveSiteConfig.config(this.getActiveThemeManifest(), this.configService);
+  }
+
+  /** The active theme's variables as the site sees them — what the storefront renders with. */
+  getActiveThemeVariables(): Promise<Record<string, unknown>> {
+    return ThemeActiveSiteConfig.variables(this.getActiveThemeManifest(), this.configService);
   }
 
   async scaffoldTheme(input: {

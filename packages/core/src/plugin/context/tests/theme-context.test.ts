@@ -8,7 +8,7 @@ describe('ThemeContextProxy', () => {
       {
         themeManager: {
           getActiveThemeManifest: () => ({ slug: 'starter' }),
-          getThemeConfig: async () => ({
+          getActiveThemeConfig: async () => ({
             settings: {
               theta: {
                 contactFormDefaults: {
@@ -34,7 +34,7 @@ describe('ThemeContextProxy', () => {
       {
         themeManager: {
           getActiveThemeManifest: () => ({ slug: 'starter' }),
-          getThemeConfig: async () => JSON.stringify({
+          getActiveThemeConfig: async () => JSON.stringify({
             settings: {
               theta: {
                 notificationEmail: 'hello@example.com',

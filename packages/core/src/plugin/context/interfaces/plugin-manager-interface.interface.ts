@@ -28,6 +28,8 @@ export interface IPluginManagerInterface {
   themeManager: {
     getActiveThemeManifest(): { slug: string } | null;
     getThemeConfig(slug: string): Promise<any>;
+    getActiveThemeConfig(): Promise<Record<string, any>>;
+    getActiveThemeVariables(): Promise<Record<string, unknown>>;
   } | null;
   getPlugins(): ILoadedPlugin[];
   enable(slug: string): Promise<void>;
