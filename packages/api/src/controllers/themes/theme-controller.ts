@@ -81,7 +81,7 @@ export class ThemeController extends BaseController {
 
       const mode = await new ThemeMarketplaceInstall(this.manager, this.logger).install(slug, version ? String(version) : undefined);
       if (!mode) return res.status(404).json({ error: `Theme ${slug} ${version ? 'v'+version : ''} not found in marketplace` });
-      res.json({ success: true, mode });
+      res.json({ success: true, mode: mode.value });
     } catch (err: any) {
       this.logger.error(`Failed to install theme ${slug}: ${err.message}`);
       res.status(500).json({ error: err.message });

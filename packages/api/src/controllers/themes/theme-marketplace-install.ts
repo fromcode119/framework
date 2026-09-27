@@ -1,4 +1,5 @@
 import { CoercionUtils, CoreServices, ThemeManager, Logger } from '@fromcode119/core';
+import { ThemeInstallSource } from '@api/controllers/themes/enums/theme-install-source.enum';
 
 /**
  * Installing a theme from THIS platform's marketplace — never from a URL the caller chose. Shared by the
@@ -8,8 +9,8 @@ import { CoercionUtils, CoreServices, ThemeManager, Logger } from '@fromcode119/
 export class ThemeMarketplaceInstall {
   constructor(private readonly manager: ThemeManager, private readonly logger: Logger) {}
 
-  /** How it was installed (`local` or `marketplace`), or null when the marketplace has no such theme. */
-  async install(slug: string, version?: string): Promise<'local' | 'marketplace' | null> {
+  /** Where the installed package came from, or null when the marketplace has no such theme. */
+  async install(slug: string, version?: string): Promise<ThemeInstallSource | null> {
     const themes = await this.manager.getMarketplaceThemes();
     const pkg = themes.find((theme: any) => theme.slug === slug && (!version || theme.version === version));
     if (!pkg) return null;
@@ -23,10 +24,10 @@ export class ThemeMarketplaceInstall {
     if (localPath) {
       this.logger.info(`Installing theme "${slug}" from this installation: ${localPath}`);
       await this.manager.installFromZip(localPath);
-      return 'local';
+      return ThemeInstallSource.LOCAL;
     }
     await this.manager.installTheme(pkg);
-    return 'marketplace';
+    return ThemeInstallSource.MARKETPLACE;
   }
 
   /**
