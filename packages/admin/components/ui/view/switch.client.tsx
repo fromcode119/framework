@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 
+/**
+ * A labelled on/off control. The label and description are part of the control: clicking them
+ * toggles it, as a checkbox's label does, and they name it for assistive technology. `className`
+ * applies to the whole control (callers size it: `scale-75 origin-right shrink-0`).
+ */
 export class Switch extends PureReactor {
   declare props: Pick<Switch, 'checked' | 'onChange' | 'label' | 'description' | 'disabled' | 'className'>;
 
@@ -16,11 +21,14 @@ export class Switch extends PureReactor {
   }
 
   render(): ReactNode {
-    const { checked, label, description, disabled } = this;
+    const { checked, label, description, disabled, className } = this;
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className={`flex items-center justify-between gap-4 ${className ?? ''}`}>
       {(label || description) && (
-        <div className="flex flex-col">
+        <div
+          className={`flex flex-col select-none ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+          onClick={disabled ? undefined : this.handleToggle}
+        >
           {label && <span className="text-[12px] font-semibold text-slate-900 dark:text-slate-100">{label}</span>}
           {description && <span className="text-xs text-slate-500">{description}</span>}
         </div>
@@ -29,6 +37,7 @@ export class Switch extends PureReactor {
         type="button"
         role="switch"
         aria-checked={checked}
+        aria-label={label || description}
         disabled={disabled}
         onClick={this.handleToggle}
         className={`
