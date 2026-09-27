@@ -22,7 +22,7 @@ describe('a relaunched guest leaves no stale plugins:ready subscriber', () => {
     const context = PluginContextFactory.createPluginContext(plugin, manager, logger);
 
     const invoked: string[] = [];
-    const registrations = new PluginHostRegistrations('relaunch-probe', {} as any, async (_kind, handlerId) => { invoked.push(String(handlerId)); }, async () => undefined);
+    const registrations = new PluginHostRegistrations('relaunch-probe', {} as any, async (_kind, handlerId) => { invoked.push(String(handlerId)); }, async () => undefined, {} as any, async () => undefined, () => true);
     const subscribe = (handlerId: string) => registrations.apply(context, {
       kind: String(PluginGuestRegistrationKind.PLUGINS_ON.value), event: 'plugins:ready', handlerId,
     } as any);
@@ -45,7 +45,7 @@ describe('a relaunched guest leaves no stale plugins:ready subscriber', () => {
     const host = Object.create(PluginHost.prototype) as any;
     // Every forwarded event records WHICH process's channel it went down.
     const calls: string[] = [];
-    const registrations = new PluginHostRegistrations('relaunch-probe', {} as any, async (_kind, handlerId) => { calls.push(`${handlerId}@${host.channel.label}`); }, async () => undefined);
+    const registrations = new PluginHostRegistrations('relaunch-probe', {} as any, async (_kind, handlerId) => { calls.push(`${handlerId}@${host.channel.label}`); }, async () => undefined, {} as any, async () => undefined, () => true);
     const PLUGINS_ON = String(PluginGuestRegistrationKind.PLUGINS_ON.value);
     registrations.apply(context, { kind: PLUGINS_ON, event: 'plugins:ready', handlerId: 'old-process' } as any);
 

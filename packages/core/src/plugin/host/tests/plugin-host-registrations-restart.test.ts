@@ -15,7 +15,7 @@ describe('PluginHostRegistrations.resetForRestart', () => {
   afterEach(() => McpRegistryProvider.get().unregisterOwner(slug));
 
   it('lets a relaunched guest register the same MCP tools again', () => {
-    const registrations = new PluginHostRegistrations(slug, {} as any, async () => undefined, async () => undefined);
+    const registrations = new PluginHostRegistrations(slug, {} as any, async () => undefined, async () => undefined, {} as any, async () => undefined, () => true);
     const context: any = {
       hooks: { off: () => undefined },
       plugins: { off: () => undefined },
@@ -34,7 +34,7 @@ describe('PluginHostRegistrations.resetForRestart', () => {
 
   it('sends jobs to the handler of the CURRENT process after a restart, with one worker on the queue', async () => {
     const invoked: string[] = [];
-    const registrations = new PluginHostRegistrations(slug, {} as any, async (_kind, handlerId) => { invoked.push(handlerId); }, async () => undefined, {} as any);
+    const registrations = new PluginHostRegistrations(slug, {} as any, async (_kind, handlerId) => { invoked.push(handlerId); }, async () => undefined, {} as any, async () => undefined, () => true);
     const workers: Array<(job: unknown) => Promise<unknown>> = [];
     const context: any = { hooks: { off: () => undefined }, plugins: { off: () => undefined }, jobs: { worker: (processor: any) => workers.push(processor) } };
     const kind = String(PluginGuestRegistrationKind.JOB_WORKER.value);

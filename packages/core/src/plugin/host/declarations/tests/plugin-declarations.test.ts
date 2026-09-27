@@ -67,7 +67,7 @@ describe('the api applying a declaration', () => {
   it('runs the call on the plugin context', async () => {
     const ran: unknown[] = [];
     const roots: unknown[] = [];
-    const registrations = new PluginHostRegistrations('probe', {} as any, async () => undefined, async () => undefined, {} as any, async (steps, root) => { ran.push(steps); roots.push(root); });
+    const registrations = new PluginHostRegistrations('probe', {} as any, async () => undefined, async () => undefined, {} as any, async (steps, root) => { ran.push(steps); roots.push(root); }, () => true);
     const answer = await registrations.apply({} as any, { kind: String(PluginGuestRegistrationKind.DECLARATION.value), steps: [{ name: 'settings' }, { name: 'register', args: [{ fields: [] }] }] });
     expect(ran).toEqual([[{ name: 'settings' }, { name: 'register', args: [{ fields: [] }] }]]);
     expect(answer).toBeUndefined();

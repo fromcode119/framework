@@ -5,7 +5,7 @@ import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
 import { PluginHostDispatcher } from '@core/plugin/host/plugin-host-dispatcher';
 import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
-import { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrations';
+import type { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrations';
 import type { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outage';
 import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';

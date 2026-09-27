@@ -81,6 +81,7 @@ export class PluginHost extends PluginHostGenerations {
       // The RAW manager db: entering a site's scope binds a connection, and only this one can.
       manager.db,
       (steps, root) => this.dispatcher.declare(this.context!, steps, root),
+      () => this.isRunning,
     );
   }
 
