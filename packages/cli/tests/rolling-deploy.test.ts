@@ -95,6 +95,12 @@ class ComposeFixture {
 
   readonly ensured: string[] = [];
   declares: string[] = [];
+  /** Plugin processes per extension-host container; the old host's drain as the api moves them. */
+  readonly plugins: Record<string, number> = {};
+  /** Whether a new extension-host starts listening, and whether the api moves plugins off the old one. */
+  hostListens = true;
+  pluginsMove = true;
+  readonly order: string[] = [];
 
   readonly stack: any = {
     declared: async (services: readonly string[]) => services.filter((service) => this.declares.includes(service)),
@@ -107,6 +113,7 @@ class ComposeFixture {
     probeContainer: async (id: string) => {
       const service = Object.keys(this.containers).find((key) => this.containers[key].includes(id)) ?? '';
       if (!id.includes('-new-') || !this.healthy(service)) return '';
+      this.order.push(service);
       return service === 'api' ? '{"status":"ok","version":"0.2.196"}' : '200';
     },
     stopAndRemove: async (id: string) => {
@@ -115,6 +122,15 @@ class ComposeFixture {
       return 0;
     },
     restartService: async () => { this.gatewayRestarts += 1; return 0; },
+    // Containers a deploy started are on the release; the rest on the one before.
+    imageOf: async (id: string) => (id.includes('-new-') ? 'ghcr.io/fromcode119/framework-api:v0.2.196' : 'ghcr.io/fromcode119/framework-api:v0.2.195'),
+    logsOf: async (id: string) => (id.includes('-new-') && this.hostListens ? '[extension-host] listening on /run/fromcode/h-new/spawner.sock' : ''),
+    processesFromUid: async (id: string) => {
+      const count = this.plugins[id] ?? 0;
+      // The api moves one plugin per look once the new host is there.
+      if (this.pluginsMove && count > 0 && (this.containers['extension-host'] ?? []).some((c) => c.includes('-new-'))) this.plugins[id] = count - 1;
+      return count;
+    },
   };
 }
 
@@ -132,10 +148,73 @@ describe('RollingDeploy', () => {
   it('starts extension-host first when the release declares it, so the new api has somewhere to start plugins', async () => {
     const compose = new ComposeFixture(() => true);
     compose.declares = ['extension-host'];
+    // Already on this release: nothing to roll.
+    compose.stack.imageOf = async () => 'ghcr.io/fromcode119/framework-api:v0.2.196';
     expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
     expect(compose.ensured).toEqual(['extension-host']);
-    // Never rolled: replacing it would stop every plugin process at once.
     expect(compose.stopped).not.toContain('extension-host-running');
+  });
+
+  it('rolls an older extension-host AFTER the apps: the new one starts beside it, and the old one goes once no plugin runs there', async () => {
+    const compose = new ComposeFixture(() => true);
+    compose.declares = ['extension-host'];
+    compose.containers['extension-host'] = ['host-old'];
+    compose.plugins['host-old'] = 3;
+    expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
+    // The api that moves the plugins must already be on this release.
+    expect(compose.stopped.indexOf('host-old')).toBeGreaterThan(compose.stopped.indexOf('front-old'));
+    expect(compose.plugins['host-old']).toBe(0);
+    expect(compose.containers['extension-host']).toHaveLength(1);
+    expect(compose.containers['extension-host'][0]).toContain('-new-');
+  });
+
+  it('keeps the running extension-host, and every plugin in it, when the new one never listens', async () => {
+    const compose = new ComposeFixture(() => true);
+    compose.declares = ['extension-host'];
+    compose.containers['extension-host'] = ['host-old'];
+    compose.hostListens = false;
+    expect(await new RollingDeploy(compose.stack, async () => undefined, 0).run('v0.2.196')).toBe(false);
+    expect(compose.containers['extension-host']).toEqual(['host-old']);
+    expect(compose.stopped).toContain('extension-host-new-3');
+  });
+
+  it('never reads a count that failed as "no plugin left", so the old host is not removed early', async () => {
+    const compose = new ComposeFixture(() => true);
+    compose.declares = ['extension-host'];
+    compose.containers['extension-host'] = ['host-old'];
+    let looks = 0;
+    // docker top fails twice, then answers: the old host goes only after a real zero.
+    compose.stack.processesFromUid = async () => { looks += 1; return looks <= 2 ? null : 0; };
+    expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
+    expect(looks).toBe(3);
+    expect(compose.stopped).toContain('host-old');
+  });
+
+  it('counts the plugin processes from `docker top` with the pid column docker requires', async () => {
+    const ran: string[] = [];
+    const shell: any = { run: async (command: string) => { ran.push(command); return { code: 0, stderr: '', stdout: 'PID UID\n101 0\n202 20003\n303 20017\n404 1000\n' }; } };
+    const { ComposeStack } = await import('@cli/services/deploy/compose-stack');
+    const stack = new ComposeStack(shell);
+    expect(await stack.processesFromUid('host-old', 20000)).toBe(2);
+    expect(ran.pop()).toBe('docker top host-old -eo pid,uid');
+  });
+
+  it('stops the old extension-host anyway, and says so, when plugins do not move in time', async () => {
+    const compose = new ComposeFixture(() => true);
+    compose.declares = ['extension-host'];
+    compose.containers['extension-host'] = ['host-old'];
+    compose.plugins['host-old'] = 2;
+    compose.pluginsMove = false;
+    const warnings: string[] = [];
+    const warn = console.warn;
+    console.warn = (line: string) => { warnings.push(String(line)); };
+    try {
+      expect(await new RollingDeploy(compose.stack, async () => undefined, 1_000, 0).run('v0.2.196')).toBe(true);
+    } finally {
+      console.warn = warn;
+    }
+    expect(compose.stopped).toContain('host-old');
+    expect(warnings.join('\n')).toContain('2 plugin process(es) had not moved');
   });
 
   it('rolls the gateway like the apps when the edge holds the ports — no restart, no gap', async () => {

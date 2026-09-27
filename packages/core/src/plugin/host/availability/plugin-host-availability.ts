@@ -4,6 +4,7 @@ import { PluginHostGuestBridge } from '@core/plugin/host/plugin-host-guest-bridg
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 import { PluginSiteDataReplay } from '@core/plugin/tenant/plugin-site-data-replay';
 import { GuestProcessLaunchers } from '@core/process/guest-process-launchers';
+import { SpawnerClient } from '@core/process/spawner-client';
 
 /**
  * A plugin whose process cannot be started because the `extension-host` is out of reach.
@@ -90,6 +91,29 @@ export abstract class PluginHostAvailability extends PluginHostGuestBridge {
       const reason = error instanceof Error ? error.message : String(error);
       this.logger.error(`could not start once the extension-host answered: ${reason}`);
       await this.manager.disableWithError(this.slug, `Isolated plugin process failed to start: ${reason}`);
+    }
+  }
+
+  /**
+   * A newer `extension-host` started beside the one this plugin's process runs in (a deploy): the
+   * process moves there with the same gapless swap a plugin update uses — the next one starts in the new
+   * host, takes over, and this one finishes what it was doing. Not counted against the restart budget.
+   * Answers whether it moved; a plugin already in the current host, not running, or mid-restart stays.
+   */
+  async moveToCurrentHost(): Promise<boolean> {
+    const current = SpawnerClient.current();
+    const launcher = this.guest?.launcher ?? null;
+    if (!current || !launcher || launcher === current || this.stopping || this.restarting) return false;
+    this.restarting = true;
+    try {
+      await this.relaunch();
+      this.logger.info(`moved to the newer extension-host (process ${this.guest?.pid ?? '?'})`);
+      return true;
+    } catch (error) {
+      this.logger.warn(`stays in its extension-host for now: ${error instanceof Error ? error.message : String(error)}`);
+      return false;
+    } finally {
+      this.restarting = false;
     }
   }
 }

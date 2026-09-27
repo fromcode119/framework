@@ -121,6 +121,31 @@ export class ComposeStack {
     return result.code === 0 ? result.stdout.trim() : '';
   }
 
+  /** The image one container runs, as compose named it (`ghcr.io/…/framework-api:v0.2.218`). */
+  async imageOf(id: string): Promise<string> {
+    const result = await this.shell.run(`docker inspect -f '{{.Config.Image}}' ${id}`);
+    return result.code === 0 ? result.stdout.trim() : '';
+  }
+
+  /** The last lines one container printed. */
+  async logsOf(id: string, lines = 50): Promise<string> {
+    const result = await this.shell.run(`docker logs --tail ${lines} ${id} 2>&1`);
+    return result.stdout;
+  }
+
+  /**
+   * How many processes in one container run as a plugin's own OS user (uid at or above `uidBase`), or
+   * null when it cannot be told. `docker top` refuses a column list without `pid`, and a count that failed
+   * must never read as "none left" — the old extension-host would be removed with plugins still in it.
+   */
+  async processesFromUid(id: string, uidBase: number): Promise<number | null> {
+    const result = await this.shell.run(`docker top ${id} -eo pid,uid`);
+    if (result.code !== 0) return null;
+    return result.stdout.split('\n').slice(1)
+      .map((line) => Number(line.trim().split(/\s+/)[1]))
+      .filter((uid) => Number.isInteger(uid) && uid >= uidBase).length;
+  }
+
   /** SIGTERM, then up to `graceSeconds` for the requests in flight to finish, then gone. */
   async stopAndRemove(id: string, graceSeconds: number): Promise<number> {
     return this.shell.stream(`docker stop -t ${graceSeconds} ${id} && docker rm ${id}`);

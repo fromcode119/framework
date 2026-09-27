@@ -19,6 +19,10 @@ export class SpawnedGuestProcess implements IGuestProcess {
     readonly socketDir: string,
   ) {}
 
+  get launcher(): SpawnerClient {
+    return this.spawner;
+  }
+
   kill(signal: NodeJS.Signals = 'SIGKILL'): void {
     this.spawner.kill(this.id, signal);
   }

@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { ComposeStack } from '@cli/services/deploy/compose-stack';
 import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
 import { ReleaseHealthProbe } from '@cli/services/deploy/release-health-probe';
+import { SystemConstants } from '@fromcode119/core';
 
 /**
  * Replaces the apps one at a time, each new copy serving before the old one stops.
@@ -20,12 +21,16 @@ export class RollingDeploy {
   static readonly STOP_GRACE_SECONDS = 30;
   private static readonly GATEWAY = 'gateway';
   private static readonly READY_TIMEOUT_MS = 240_000;
+  /** How long the api gets to move every plugin to the new extension-host before the old one is stopped anyway. */
+  private static readonly MOVE_TIMEOUT_MS = 300_000;
+  private static readonly EXTENSION_HOST_READY = '[extension-host] listening on';
   private static readonly INTERVAL_MS = 5_000;
 
   constructor(
     private readonly stack: ComposeStack,
     private readonly sleep: (ms: number) => Promise<void> = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     private readonly readyTimeoutMs: number = RollingDeploy.READY_TIMEOUT_MS,
+    private readonly moveTimeoutMs: number = RollingDeploy.MOVE_TIMEOUT_MS,
   ) {}
 
   async run(version: string): Promise<boolean> {
@@ -37,6 +42,7 @@ export class RollingDeploy {
         return false;
       }
     }
+    if (!(await this.rollExtensionHost(version))) return false;
     // With `edge` holding the public ports the gateway is just another app behind it: a new one beside
     // the old, `edge` sends new connections to whichever answers, and the old one drains. Without an
     // edge it owns the ports itself and can only be restarted — the one gap left.
@@ -55,8 +61,8 @@ export class RollingDeploy {
   /**
    * The apps are scaled with `--no-deps`, so an api that starts its plugins in `extension-host` would
    * come up with nothing to connect to on the release that introduces it. It is started first when it
-   * is missing — and left alone when it runs: recreating it would stop every plugin process at once,
-   * the outage a rolling deploy exists to avoid. It moves to the new image on the next restart deploy.
+   * is missing — and left alone when it runs: recreating it would stop every plugin process at once.
+   * It moves to the new image after the apps (`rollExtensionHost`), with no gap.
    */
   private async extensionHost(version: string): Promise<boolean> {
     if (!(await this.stack.declared([ComposeStack.EXTENSION_HOST])).length) return true;
@@ -66,9 +72,66 @@ export class RollingDeploy {
       return false;
     }
     console.log(running
-      ? chalk.gray(`extension-host keeps running, and its plugin processes with it; it moves to ${version} on the next restart deploy.`)
+      ? chalk.gray(`extension-host keeps running, and its plugin processes with it, until the apps are on ${version}.`)
       : chalk.blue('Started extension-host, where the new api starts its plugin processes.'));
     return true;
+  }
+
+  /**
+   * The extension-host, with no gap: the next one starts BESIDE the running one, the api (already on
+   * this version, which is why this runs after the apps) finds it and moves every plugin to it with the
+   * gapless swap a plugin update uses, and the old one is removed once no plugin process runs in it.
+   *
+   * It used to be left on its old image until a restart deploy, so a fix to the code plugin processes
+   * run on never shipped with its release; replacing it in place stopped every plugin at once.
+   */
+  private async rollExtensionHost(version: string): Promise<boolean> {
+    if (!(await this.stack.declared([ComposeStack.EXTENSION_HOST])).length) return true;
+    const before = await this.stack.containerIds(ComposeStack.EXTENSION_HOST);
+    const stale: string[] = [];
+    for (const id of before) if (!(await this.stack.imageOf(id)).endsWith(`:${version}`)) stale.push(id);
+    if (!stale.length) return true;
+
+    console.log(chalk.blue('\nRolling extension-host (each plugin moves to the new one with a gapless swap)...'));
+    if ((await this.stack.scale(ComposeStack.EXTENSION_HOST, before.length + 1)) !== 0) return false;
+    const fresh = (await this.stack.containerIds(ComposeStack.EXTENSION_HOST)).filter((id) => !before.includes(id));
+    if (fresh.length !== 1) return false;
+    if (!(await this.until(async () => (await this.stack.logsOf(fresh[0])).includes(RollingDeploy.EXTENSION_HOST_READY), this.readyTimeoutMs))) {
+      await this.stack.stopAndRemove(fresh[0], RollingDeploy.STOP_GRACE_SECONDS);
+      console.error(chalk.red(`extension-host on ${version} did not start listening; the running one keeps every plugin.`));
+      return false;
+    }
+
+    const uidBase = SystemConstants.PROCESS_ISOLATION.PLUGIN_UID_BASE;
+    // null while any count cannot be read: that is "not known yet", never "empty".
+    const remaining = async (): Promise<number | null> => {
+      let count = 0;
+      for (const id of stale) {
+        const inHost = await this.stack.processesFromUid(id, uidBase);
+        if (inHost === null) return null;
+        count += inHost;
+      }
+      return count;
+    };
+    if (!(await this.until(async () => (await remaining()) === 0, this.moveTimeoutMs))) {
+      // Said, and then done anyway: a process still there restarts in the new host when this one stops —
+      // a short pause for that plugin, not for the platform.
+      const left = await remaining();
+      console.warn(chalk.yellow(`${left ?? 'An unknown number of'} plugin process(es) had not moved to the new extension-host after ${this.moveTimeoutMs / 1000} s; they restart in it when the old one stops.`));
+    }
+    for (const id of stale) await this.stack.stopAndRemove(id, RollingDeploy.STOP_GRACE_SECONDS);
+    console.log(chalk.green(`extension-host is on ${version}.`));
+    return true;
+  }
+
+  /** Polls `check` until it holds or `timeoutMs` passes; asked at least once. */
+  private async until(check: () => Promise<boolean>, timeoutMs: number): Promise<boolean> {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+      if (await check()) return true;
+      if (Date.now() >= deadline) return false;
+      await this.sleep(RollingDeploy.INTERVAL_MS);
+    }
   }
 
   private async roll(service: string, version: string): Promise<boolean> {

@@ -7,6 +7,7 @@ import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum'
 
 /** A guest that is our own forked child: IPC channel, same user, `kill` is a syscall away. */
 export class ForkedGuestProcess implements IGuestProcess {
+  readonly launcher = null;
   readonly port: IMessagePort;
   readonly socketMode = 0o600;
 
