@@ -36,6 +36,9 @@ export class SystemConstants {
    */
   static readonly TENANT_THEME_MAX_MB_DEFAULT = 25;
   static readonly TENANT_THEME_MAX_COUNT_DEFAULT = 5;
+  /** The same for a site's own plugins. A plugin ships bundled server code, so more room than a theme. */
+  static readonly TENANT_PLUGIN_MAX_MB_DEFAULT = 50;
+  static readonly TENANT_PLUGIN_MAX_COUNT_DEFAULT = 5;
 
   /**
    * Theme render hosts (T5b): each resident server-render world is its own process with this heap

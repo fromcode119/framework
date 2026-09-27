@@ -72,6 +72,14 @@ export class SystemMetaKeys {
    */
   TENANT_THEME_MAX_BYTES: 'tenant_theme_max_bytes',
   TENANT_THEME_MAX_COUNT: 'tenant_theme_max_count',
+  /**
+   * Whether a SITE may upload a plugin of its own, and what it may store in them. Off until the
+   * platform turns it on: a site's plugin is code running on the box every customer shares, so the
+   * platform opts in knowingly. Shown and changed on Infrastructure → Site Uploads.
+   */
+  TENANT_PLUGIN_UPLOADS_ENABLED: 'tenant_plugin_uploads_enabled',
+  TENANT_PLUGIN_MAX_BYTES: 'tenant_plugin_max_bytes',
+  TENANT_PLUGIN_MAX_COUNT: 'tenant_plugin_max_count',
   PLATFORM_NAME: 'platform_name',
   PLATFORM_DOMAIN: 'platform_domain',
   TELEMETRY_ENABLED: 'telemetry_enabled',

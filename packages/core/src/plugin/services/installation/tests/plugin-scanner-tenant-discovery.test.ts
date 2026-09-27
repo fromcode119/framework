@@ -28,7 +28,19 @@ function writePlugin(dir: string, manifest: Record<string, unknown>): void {
 }
 
 /** A scanner pinned to throwaway roots, with dependency installation stubbed out. */
-function scannerOn(pluginsRoot: string, themesRoot: string) {
+/**
+ * A host registry that isolates identity, as the privileged spawner does. A SITE's plugin is only ever
+ * started through it (never required here); the platform's plugins stay in-process unless they ask.
+ */
+function isolatingHosts() {
+  return {
+    isIsolated: vi.fn(async (sandbox: any) => sandbox?.enabled === true),
+    isolatesIdentity: () => true,
+    describe: vi.fn(async () => ({})),
+  };
+}
+
+function scannerOn(pluginsRoot: string, themesRoot: string, hosts: unknown = isolatingHosts()) {
   vi.spyOn(ProjectPaths, 'getBundledPluginsDir').mockReturnValue(path.join(tempRoot('fc-bundled-'), 'none'));
   vi.spyOn(ProjectPaths, 'getThemesDir').mockReturnValue(themesRoot);
 
@@ -38,9 +50,7 @@ function scannerOn(pluginsRoot: string, themesRoot: string) {
     pluginsRoot,
     logger,
     { ensureInstalled: vi.fn(async () => undefined) },
-    // No host registry: every plugin is described by requiring it here, which keeps these tests about
-    // discovery and ownership rather than about the isolation transport.
-    null,
+    hosts,
   );
 }
 
@@ -160,5 +170,38 @@ describe('plugin discovery with per-site plugins on disk', () => {
 
     expect(Object.keys(owners)).toContain('alpha');
     expect(Object.keys(owners)).not.toContain('smuggled');
+  });
+
+  it('never starts a site\'s plugin where the server cannot give it its own user', async () => {
+    const plugins = tempRoot('fc-plugins-');
+    writePlugin(path.join(plugins, 'tenants', 'acme', 'acme-beta'), { slug: 'acme-beta' });
+
+    const noIdentity = { ...isolatingHosts(), isolatesIdentity: () => false };
+    const result = await scannerOn(plugins, tempRoot('fc-themes-'), noIdentity).discoverPlugins(new Map(), {});
+
+    expect(Object.keys(ownersBySlug(result))).not.toContain('acme-beta');
+    expect(result.errored.map((item: any) => item.manifest?.slug)).toContain('acme-beta');
+    expect(noIdentity.describe).not.toHaveBeenCalled();
+  });
+
+  it('runs a site\'s plugin isolated even when its manifest asks to share the api process', async () => {
+    const plugins = tempRoot('fc-plugins-');
+    writePlugin(path.join(plugins, 'tenants', 'acme', 'acme-beta'), { slug: 'acme-beta', sandbox: { memoryLimit: 64 } });
+    const hosts = isolatingHosts();
+
+    await scannerOn(plugins, tempRoot('fc-themes-'), hosts).discoverPlugins(new Map(), {});
+
+    expect(hosts.isIsolated).toHaveBeenCalledWith(expect.objectContaining({ enabled: true, memoryLimit: 64 }));
+    expect(hosts.describe).toHaveBeenCalledWith('acme-beta', expect.any(String), expect.any(String), expect.anything(), expect.any(Boolean));
+  });
+
+  it('refuses a site\'s plugin that fails the site policy, even when it arrived by another route', async () => {
+    const plugins = tempRoot('fc-plugins-');
+    writePlugin(path.join(plugins, 'tenants', 'acme', 'acme-beta'), { slug: 'acme-beta', capabilities: ['network'] });
+
+    const result = await scannerOn(plugins, tempRoot('fc-themes-')).discoverPlugins(new Map(), {});
+
+    expect(Object.keys(ownersBySlug(result))).not.toContain('acme-beta');
+    expect(String(result.errored.find((item: any) => item.manifest?.slug === 'acme-beta')?.error)).toContain('"network"');
   });
 });

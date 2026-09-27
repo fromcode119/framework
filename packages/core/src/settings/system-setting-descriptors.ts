@@ -73,6 +73,11 @@ export class SystemSettingDescriptors {
     // the shared disk from any one site — a site setting its own ceiling would be no ceiling.
     [SystemConstants.META_KEY.TENANT_THEME_MAX_BYTES]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.TENANT_THEME_MAX_COUNT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // Whether sites may upload their own plugins, and how much they may store. PLATFORM scope for the
+    // same reason: the code and the disk are shared, so only the platform may open or size this.
+    [SystemConstants.META_KEY.TENANT_PLUGIN_UPLOADS_ENABLED]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemConstants.META_KEY.TENANT_PLUGIN_MAX_BYTES]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemConstants.META_KEY.TENANT_PLUGIN_MAX_COUNT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.DOMAIN_ALIASES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '[]', description: "Additional trusted domains kept active during migrations.", group: "General" },

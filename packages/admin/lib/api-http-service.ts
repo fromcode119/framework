@@ -41,7 +41,8 @@ export class AdminApiHttpService {
       return body;
     }
 
-    const message = body?.error || body?.message || rawBody.trim() || `HTTP error! status: ${xhr.status}`;
+    // `message` first, as in `parseResponse`: a refusal's sentence, not its bare code (`policy`, `theme_rejected`).
+    const message = body?.message || body?.error || rawBody.trim() || `HTTP error! status: ${xhr.status}`;
     const errObj = new Error(message) as any;
     errObj.status = xhr.status;
     errObj.data = body;

@@ -4,6 +4,7 @@ import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { RequestContextUtils } from '@core/context/request-context';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { TenantMode } from '@core/tenant/tenant-mode';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 export class PluginsManagerResolver implements IPluginApiResolver {
   constructor(private readonly plugins: Map<string, ILoadedPlugin>) {}
@@ -53,6 +54,8 @@ export class PluginsManagerResolver implements IPluginApiResolver {
       return `plugin "${slug}" is ${String(plugin.state ?? 'unknown')}, not active`;
     }
     if (!plugin.publicAPI) return `plugin "${slug}" exposes no public API`;
+    // A SITE's own plugin is that site's code; no other plugin calls into it.
+    if (PluginOwners.ownerOf(slug)) return `plugin "${slug}" is one site's own plugin, which other plugins do not call`;
     // A plugin whose process is DOWN is absent, not present-and-broken. Neither check above can see
     // that: the record is a spread copy of the host's stubs, so `state` stays ACTIVE and `publicAPI`
     // stays a truthy lazy proxy for the whole of a restart — while that proxy returns `undefined`

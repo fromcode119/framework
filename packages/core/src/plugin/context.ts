@@ -40,6 +40,7 @@ import { SecretsContextProxy } from '@core/plugin/context/secrets';
 import { CatalogContextProxy } from '@core/plugin/context/catalog';
 import { TenantEnvironmentGate } from '@core/tenant/tenant-environment-gate';
 import { ProjectPaths } from '@core/config/paths';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 export class PluginContextFactory {
   static createPluginContext(
@@ -49,7 +50,8 @@ export class PluginContextFactory {
 ): PluginContext {
       const pluginLogger = rootLogger.child(plugin.manifest.slug);
       const security = ContextSecurityProxy.createSecurityHelpers(plugin, manager, rootLogger);
-      const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(manager.plugins));
+      // A SITE's own plugin calls no other plugin: an empty resolver answers every lookup with nothing.
+      const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(PluginOwners.ownerOf(plugin.manifest.slug) ? new Map() : manager.plugins));
       const pathContext = new PluginPathContextProxy(plugin, manager);
       const requireDependency = <TDependency = any>(key: string): TDependency => {
         if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');

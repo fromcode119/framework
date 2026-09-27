@@ -12,6 +12,7 @@ import { RouteConstants } from '@fromcode119/core';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { PluginRuntimeController } from '@api/controllers/plugins/plugin-runtime-controller';
 import { PluginSiteOfferController } from '@api/controllers/plugins/plugin-site-offer-controller';
+import { SitePluginUploadController } from '@api/controllers/plugins/site-plugin-upload-controller';
 
 export class PluginRouter extends BaseRouter {
   private controller: PluginController;
@@ -19,6 +20,8 @@ export class PluginRouter extends BaseRouter {
   private lifecycleController: PluginLifecycleController;
   private runtimeController: PluginRuntimeController;
   private siteOfferController: PluginSiteOfferController;
+  private sitePluginController: SitePluginUploadController;
+  private siteUpload: ReturnType<typeof SitePluginUploadController.receiver>;
   private upload: multer.Multer;
   private chunkUpload: multer.Multer;
 
@@ -37,6 +40,8 @@ export class PluginRouter extends BaseRouter {
     const chunkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-upload-chunks-'));
     this.upload = multer({ dest: uploadsDir });
     this.chunkUpload = multer({ dest: chunkDir });
+    this.sitePluginController = new SitePluginUploadController(manager);
+    this.siteUpload = SitePluginUploadController.receiver(uploadsDir);
   }
 
   protected registerRoutes(): void {
@@ -71,6 +76,11 @@ export class PluginRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.PLUGINS_OFFERED, this.auth.guard(['admin']), this.siteOfferController.offered);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_OFFER, this.auth.guard(['admin']), platform, this.siteOfferController.setOffer);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SITE, this.auth.guard(['admin']), this.siteOfferController.setForSite);
+    // A site's OWN plugins: admin only — the installer refuses unless the platform turned uploads on,
+    // the server isolates plugin identity, and the package passes the site policy.
+    this.get(RouteConstants.SEGMENTS.PLUGINS_MINE_QUOTA, this.auth.guard(['admin']), this.sitePluginController.quota);
+    this.post(RouteConstants.SEGMENTS.PLUGINS_MINE_UPLOAD, this.auth.guard(['admin']), this.siteUpload, this.sitePluginController.upload);
+    this.delete(RouteConstants.SEGMENTS.PLUGINS_MINE_SLUG, this.auth.guard(['admin']), this.sitePluginController.remove);
     this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.controller.marketplace);
     this.post(RouteConstants.SEGMENTS.PLUGINS_INSTALL, this.auth.guard(['admin']), platform, this.controller.install);
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPDATE_ALL, this.auth.guard(['admin']), platform, (req: any, res: any) => this.controller.updateAll(req, res));

@@ -90,6 +90,10 @@ export class AdminConstants {
     OFFERED: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_OFFERED),
     OFFER: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_OFFER, { slug }),
     SITE: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_SITE, { slug }),
+    /** A site's OWN plugins: its limits, uploading one, removing one. */
+    MINE_QUOTA: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_MINE_QUOTA),
+    MINE_UPLOAD: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_MINE_UPLOAD),
+    MINE_DELETE: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_MINE_SLUG, { slug }),
     INSTALL_OPERATION: (operationId: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_INSTALL_OPERATION, { operationId }),
     UPLOAD_SESSION: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_UPLOAD_SESSION),
     UPLOAD_CHUNK: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_UPLOAD_CHUNK),

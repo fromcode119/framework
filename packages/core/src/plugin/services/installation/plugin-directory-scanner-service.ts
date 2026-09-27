@@ -10,6 +10,8 @@ import { PluginModuleResolverService } from '@core/plugin/services/installation/
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 import { PluginModuleLoader } from '@core/plugin/services/installation/plugin-module-loader';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
+import { TenantPluginRunRules } from '@core/plugin/tenant/tenant-plugin-run-rules';
 
 /**
  * PluginDirectoryScannerService
@@ -42,7 +44,7 @@ export class PluginDirectoryScannerService {
     private logger: Logger,
     private dependencyInstaller: PluginDependencyInstallerService,
     /** T5: when present, isolated plugins are DESCRIBED by their own process instead of required here. */
-    private hosts: { isIsolated(sandbox: unknown): Promise<boolean>; describe(slug: string, dir: string, entry: string, manifest: Record<string, unknown>, active: boolean): Promise<Record<string, unknown>> } | null = null,
+    private hosts: { isIsolated(sandbox: unknown): Promise<boolean>; isolatesIdentity(): boolean; describe(slug: string, dir: string, entry: string, manifest: Record<string, unknown>, active: boolean): Promise<Record<string, unknown>> } | null = null,
   ) {
     this.moduleLoader = new PluginModuleLoader(projectRoot);
     this.moduleLoader.ensureSharedModuleResolution();
@@ -182,6 +184,7 @@ export class PluginDirectoryScannerService {
               continue;
             }
             seenSlugs.add(manifest.slug);
+            PluginOwners.record(manifest.slug, rootOwnerTenantId);
 
             let mainFile = manifest.main || manifest.entry || PluginPackageLayout.SERVER_ENTRY;
             let indexPath = path.join(pluginPath, mainFile);
@@ -202,14 +205,22 @@ export class PluginDirectoryScannerService {
                  * the extension outright — first `EACCES /root/.npm`, then `EACCES rmdir
                  * node_modules/.bin` once the image carried them.
                  */
-                if (!isBundledRoot) await this.dependencyInstaller.ensureInstalled(pluginPath);
+                // A site's plugin runs under the site rules or not at all, and nothing is installed for it.
+                const siteRefusal = rootOwnerTenantId ? TenantPluginRunRules.refusal(pluginPath, manifest, this.hosts) : null;
+                if (siteRefusal) {
+                  this.logger.warn(`Site "${rootOwnerTenantId}" plugin "${manifest.slug}" was not started — ${siteRefusal}`);
+                  errored.push({ manifest, path: pluginPath, error: siteRefusal });
+                  continue;
+                }
+                if (!isBundledRoot && !rootOwnerTenantId) await this.dependencyInstaller.ensureInstalled(pluginPath);
                 const savedPluginState = existingPlugins.get(manifest.slug as string);
                 const persistedState = installedState[(manifest.slug as string).toLowerCase()];
-                const effectiveSandboxConfig = InstalledPluginManifestService.applyPersistedSandbox(
+                let effectiveSandboxConfig = InstalledPluginManifestService.applyPersistedSandbox(
                   manifest,
                   persistedState,
                   savedPluginState?.manifest?.sandbox,
                 );
+                if (rootOwnerTenantId) manifest.sandbox = effectiveSandboxConfig = TenantPluginRunRules.isolated(effectiveSandboxConfig);
 
                 // T5: an ISOLATED plugin is never required into this process. Its own process loads it
                 // and reports which lifecycle hooks and public-API functions it has; what is staged
