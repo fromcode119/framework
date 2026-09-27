@@ -65,8 +65,9 @@ export class PeopleManagementService {
     const query = String(options?.q || '').trim().toLowerCase();
     // A search reads the whole directory and applies the limit to the MATCHES. Limiting the read
     // first searched only the newest N people, so asking for eight results found nobody older.
+    const readLimit = query ? PeopleManagementService.SEARCH_SCAN_LIMIT : limit;
     const rows = await this.db
-      .find(SystemConstants.TABLE.PEOPLE, { orderBy: { createdAt: 'desc' }, limit: query ? PeopleManagementService.SEARCH_SCAN_LIMIT : limit })
+      .find(SystemConstants.TABLE.PEOPLE, { orderBy: { createdAt: 'desc' }, limit: readLimit })
       .catch(() => []);
     const people = (Array.isArray(rows) ? rows : []).map((row: any) => PeopleSelfService.toCamel(row));
     if (!query) return people;
