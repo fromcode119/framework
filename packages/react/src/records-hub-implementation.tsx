@@ -86,8 +86,13 @@ export class RecordsHubImplementation extends Reactor {
   }
 
 
+  /**
+   * `theme` arrives as the member OR its string (`theme.value` — the People page, and every plugin
+   * page, pass the string). Comparing the raw prop to the member was false for the string, so the
+   * hub rendered light on the dark admin everywhere.
+   */
   private isDark(): boolean {
-    return this.theme === ThemeMode.DARK;
+    return ThemeMode.resolve(this.theme) === ThemeMode.DARK;
   }
 
 
