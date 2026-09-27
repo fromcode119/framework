@@ -10,19 +10,15 @@ import { SystemConstants } from '@core/constants/system.constants';
  * than against the uploader, which is why the ceiling is a PLATFORM setting: a site choosing its own
  * would be no ceiling at all.
  *
- * THE DEFAULTS BELOW ARE THE ADMIN FIELD'S DECLARED DEFAULTS, mirrored here rather than invented.
- * The setting is exposed in admin Settings and states the same numbers, so an operator can see what
- * an empty field resolves to and change it. A second, hidden default that no screen names is exactly
- * the magic this codebase forbids — so if these numbers are ever changed, the field's declaration
- * changes with them.
+ * The defaults are DECLARED in `SystemConstants` and named by the Infrastructure page's "Site
+ * uploads" card as its placeholders, so an operator sees what an empty field resolves to and can
+ * change it. They live in one place so the screen and this check cannot drift apart.
  */
 export class TenantThemeQuota {
 
-  /** 25 MB. A browser-rendered theme is markup, styles, scripts and images; this is generous for that. */
-  static readonly DEFAULT_MAX_BYTES = 25 * 1024 * 1024;
+  static readonly DEFAULT_MAX_BYTES = SystemConstants.TENANT_THEME_MAX_MB_DEFAULT * 1024 * 1024;
 
-  /** Enough to keep a previous version and try a new one, without a site accumulating without limit. */
-  static readonly DEFAULT_MAX_COUNT = 5;
+  static readonly DEFAULT_MAX_COUNT = SystemConstants.TENANT_THEME_MAX_COUNT_DEFAULT;
 
   /**
    * The limits in force right now.
