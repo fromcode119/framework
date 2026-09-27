@@ -16,6 +16,11 @@ export class EditFooter extends PureReactor {
   @prop declare saving: boolean;
   @prop declare router: any;
   @prop declare isDirty: boolean;
+  /**
+   * Why the last save was refused. The body shows it too, but at the TOP of the page: an operator who
+   * saved from a field further down saw nothing happen at all. This bar is always on screen.
+   */
+  @prop declare saveError?: string;
 
   /** The collection's own name for itself, as the operator sees it in the nav. */
   private get collectionName(): string {
@@ -84,6 +89,11 @@ export class EditFooter extends PureReactor {
                   : <>No unsaved changes &middot; <strong className="font-bold">{this.collectionName}</strong></>}
               </span>
             </div>
+            {this.saveError && (
+              <span role="alert" className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                Not saved: {this.saveError}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3">

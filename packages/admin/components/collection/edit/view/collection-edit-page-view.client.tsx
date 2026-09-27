@@ -154,6 +154,7 @@ export class CollectionEditPageView extends Reactor {
             collection={collection} theme={edit.theme} isNew={edit.isNew} discardHref={`/${pluginSlug}/${slug}`}
             handleSubmit={edit.handleSubmit} changeSummary={edit.changeSummary} setChangeSummary={edit.setChangeSummary} saving={edit.saving}
             router={edit.router} isDirty={edit.isDirty}
+            saveError={edit.status?.type === NotificationType.ERROR ? edit.status.message : ''}
           />
         )}
 
