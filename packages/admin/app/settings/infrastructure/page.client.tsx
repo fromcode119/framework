@@ -8,6 +8,7 @@ import { CertificatesSettingsCard } from '@/app/settings/infrastructure/certific
 import { RestartServicesCard } from '@/app/settings/infrastructure/restart-services-card';
 import { DeploymentsCard } from '@/app/settings/infrastructure/deployments-card.client';
 import { InfrastructureSettingsPageCards } from '@/app/settings/infrastructure/page-cards.client';
+import { SiteUploadsCard } from '@/app/settings/infrastructure/site-uploads-card.client';
 
 /**
  * Infrastructure & Health.
@@ -75,6 +76,8 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
           {this.serverRenderingCard()}
 
           {this.pluginIsolationCard()}
+
+          <SiteUploadsCard />
 
           {this.retentionCard()}
 

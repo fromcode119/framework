@@ -31,6 +31,13 @@ export class SystemConstants {
   static readonly PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT = 30_000;
 
   /**
+   * What a SITE may store in themes it uploads itself, when the platform has not set a limit. The
+   * Infrastructure page names these as its placeholders, so an empty field states what it resolves to.
+   */
+  static readonly TENANT_THEME_MAX_MB_DEFAULT = 25;
+  static readonly TENANT_THEME_MAX_COUNT_DEFAULT = 5;
+
+  /**
    * Theme render hosts (T5b): each resident server-render world is its own process with this heap
    * ceiling and this per-render deadline. Placeholders on the Infrastructure page mirror these.
    */
