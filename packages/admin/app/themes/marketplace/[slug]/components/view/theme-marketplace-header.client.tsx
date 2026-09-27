@@ -10,7 +10,7 @@ import type { IMarketplaceTheme } from '@fromcode119/core/client';
 
 export class ThemeMarketplaceHeader extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<ThemeMarketplaceHeader, 'theme' | 'adminTheme' | 'allVersions' | 'selectedVersion' | 'installedTheme' | 'hasUpdate' | 'installing' | 'onSelectVersion' | 'onInstall'>;
+  declare props: Pick<ThemeMarketplaceHeader, 'theme' | 'adminTheme' | 'allVersions' | 'selectedVersion' | 'installedTheme' | 'hasUpdate' | 'installing' | 'siteScope' | 'onSelectVersion' | 'onInstall'>;
 
   @prop declare theme: IMarketplaceTheme;
   @prop declare adminTheme: ThemeMode;
@@ -19,6 +19,8 @@ export class ThemeMarketplaceHeader extends PureReactor {
   @prop declare installedTheme: any | null;
   @prop declare hasUpdate: boolean;
   @prop declare installing: boolean;
+  /** In a site: the button adds the theme to this site. */
+  @prop declare siteScope: boolean;
   @prop declare onSelectVersion: (version: string) => void;
   @prop declare onInstall: () => void;
 
@@ -83,7 +85,9 @@ export class ThemeMarketplaceHeader extends PureReactor {
             ) : (
               <FrameworkIcons.Download size={18} strokeWidth={2.5} />
             )}
-            {installing ? 'Installing...' : installedTheme && !hasUpdate ? 'Installed' : hasUpdate ? 'Update Theme' : 'Get This Theme'}
+            {this.siteScope
+              ? (installing ? 'Adding...' : installedTheme ? 'In this site' : 'Add to this site')
+              : (installing ? 'Installing...' : installedTheme && !hasUpdate ? 'Installed' : hasUpdate ? 'Update Theme' : 'Get This Theme')}
           </button>
         </div>
       </div>

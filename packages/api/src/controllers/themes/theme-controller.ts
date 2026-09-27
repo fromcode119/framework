@@ -4,8 +4,9 @@ import { Request, Response } from 'express';
 import { ArchiveUploadSessionService, BaseController, ThemeManager, Logger } from '@fromcode119/core';
 import fs from 'fs';
 import { ThemeArchiveSupport } from '@api/controllers/themes/theme-archive-support';
-import { CoercionUtils, CoreServices } from '@fromcode119/core';
+import { CoercionUtils } from '@fromcode119/core';
 import { ThemeUploadController } from '@api/controllers/themes/theme-upload-controller';
+import { ThemeMarketplaceInstall } from '@api/controllers/themes/theme-marketplace-install';
 
 export class ThemeController extends BaseController {
 
@@ -78,48 +79,13 @@ export class ThemeController extends BaseController {
          return res.json({ success: true, mode: 'direct' });
       }
 
-      const themes = await this.manager.getMarketplaceThemes();
-      const pkg = themes.find((t: any) =>
-        t.slug === slug && (!version || t.version === version)
-      );
-      if (!pkg) return res.status(404).json({ error: `Theme ${slug} ${version ? 'v'+version : ''} not found in marketplace` });
-
-      // An offer from THIS installation is a file on disk, not a URL. Its catalogue row borrows the
-      // marketplace shape, whose only location is `downloadUrl` — so a locally built theme was
-      // installed by resolving its bare filename against the REMOTE marketplace, producing
-      // `https://marketplace.fromcode.com/.../aurora-0.1.29.zip` for a file sitting in this
-      // installation's own workspace. The contributor that offered it is the one that knows where it is.
-      const localPath = await this.resolveLocalPackage(pkg, slug);
-      if (localPath) {
-        this.logger.info(`Installing theme "${slug}" from this installation: ${localPath}`);
-        await this.manager.installFromZip(localPath);
-        return res.json({ success: true, mode: 'local' });
-      }
-
-      await this.manager.installTheme(pkg);
-      res.json({ success: true, mode: 'marketplace' });
+      const mode = await new ThemeMarketplaceInstall(this.manager, this.logger).install(slug, version ? String(version) : undefined);
+      if (!mode) return res.status(404).json({ error: `Theme ${slug} ${version ? 'v'+version : ''} not found in marketplace` });
+      res.json({ success: true, mode: mode.value });
     } catch (err: any) {
       this.logger.error(`Failed to install theme ${slug}: ${err.message}`);
       res.status(500).json({ error: err.message });
     }
-  }
-
-  /**
-   * Where a locally built theme actually is, or null when the offer came from a remote catalogue.
-   *
-   * Asked of the catalogue-contribution registry rather than of any named producer: this controller
-   * must not know that something called Sources exists, only that whatever offered the package can
-   * say where it put it. The path is resolved server-side from the offer the server itself looked
-   * up, so nothing the caller sent chooses which file is opened.
-   */
-  private async resolveLocalPackage(pkg: unknown, slug: string): Promise<string | null> {
-    const offer = CoercionUtils.toObject(pkg);
-    if (CoercionUtils.toString(offer.source) !== 'local') return null;
-
-    return CoreServices.getInstance().catalogContributions.resolveArtifact(
-      slug,
-      CoercionUtils.toString(offer.kind) || 'theme',
-    );
   }
 
   /** @see ThemeUploadController.upload */
@@ -135,6 +101,11 @@ export class ThemeController extends BaseController {
   /** @see ThemeUploadController.mineQuota */
   mineQuota(...args: Parameters<ThemeUploadController["mineQuota"]>): ReturnType<ThemeUploadController["mineQuota"]> {
     return this.uploads.mineQuota(...args);
+  }
+
+  /** @see ThemeUploadController.addToSite */
+  addToSite(...args: Parameters<ThemeUploadController["addToSite"]>): ReturnType<ThemeUploadController["addToSite"]> {
+    return this.uploads.addToSite(...args);
   }
 
   /** @see ThemeUploadController.deleteMine */

@@ -44,6 +44,18 @@ export class TenantThemeStateService {
     await this.write(tenant, name, TenantState.INACTIVE.value, rows);
   }
 
+  /**
+   * Makes `slug` one of the tenant's themes WITHOUT activating it — what adding a theme from the
+   * marketplace does. A theme it already has keeps its row, its state and its settings untouched.
+   */
+  async assign(tenantId: string, slug: string): Promise<void> {
+    const { tenant, name } = this.identify(tenantId, slug);
+    const rows: any[] = await this.db.find(SystemConstants.TABLE.TENANT_THEMES, { where: { tenant_id: tenant } });
+    if ((rows ?? []).some((row: any) => String(row?.theme_slug ?? '').trim() === name)) return;
+    await this.db.insert(SystemConstants.TABLE.TENANT_THEMES, { tenant_id: tenant, theme_slug: name, state: TenantState.INACTIVE.value, config: null });
+    TenantThemeAccess.invalidate(tenant);
+  }
+
   /** The tenant's variable overrides for `slug`. Stored on the tenant's row; NULL means the theme's defaults. */
   async saveConfig(tenantId: string, slug: string, config: Record<string, unknown> | null): Promise<void> {
     const { tenant, name } = this.identify(tenantId, slug);

@@ -58,6 +58,9 @@ export class ThemeRouter extends BaseRouter {
     // site can reach. What stands in its place is `TenantThemePackagePolicy`: no server code, no
     // taking a slug someone else holds, and a quota on the shared disk.
     this.get(RouteConstants.SEGMENTS.THEMES_MINE_QUOTA, this.auth.guard(['admin']), this.controller.mineQuota);
+    // Adding a MARKETPLACE theme to this site: reviewed packages only, installed once and shared, never
+    // an update of the shared copy (`addToSite`).
+    this.post(RouteConstants.SEGMENTS.THEMES_SLUG_ADD_TO_SITE, this.auth.guard(['admin']), this.controller.addToSite);
     this.post(RouteConstants.SEGMENTS.THEMES_MINE_UPLOAD, this.auth.guard(['admin']), this.upload.single('theme'), this.controller.uploadMine);
     this.delete(RouteConstants.SEGMENTS.THEMES_MINE_SLUG, this.auth.guard(['admin']), this.controller.deleteMine);
   }
