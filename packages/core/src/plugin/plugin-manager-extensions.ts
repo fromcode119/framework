@@ -61,10 +61,8 @@ export abstract class PluginManagerExtensions extends PluginManagerState {
   }
 
   /**
-   * The storefront server-renders each plugin's `ui-ssr` bundle and holds it for the life of its
-   * process, so a plugin whose files just changed keeps rendering from the previous copy until the
-   * renderer restarts — silently, as empty values rather than an error. Same contract as the theme
-   * side; never fatal (see {@link StorefrontRendererRefreshService}).
+   * A plugin's files just changed on disk; the storefront picks them up on each site's next render,
+   * with no restart (see {@link StorefrontRendererRefreshService}). Same contract as the theme side.
    */
   private async refreshStorefrontRenderer(reason: string): Promise<void> {
     await StorefrontRendererRefreshService.afterExtensionsChanged(reason, this.logger);

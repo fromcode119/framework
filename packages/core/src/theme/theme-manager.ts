@@ -157,10 +157,8 @@ export class ThemeManager extends ThemeLifecycle {
   }
 
   /**
-   * The storefront renders from the theme files this operation just replaced, and it holds them in
-   * memory for the life of its process — see {@link StorefrontRendererRefreshService}. Awaited so the
-   * restart is actually requested before the install reports success, but it can never fail the
-   * install: the service reports an unreachable or absent frontend as a reason, not an error.
+   * The theme files this operation just replaced reach the storefront on each site's next render, with
+   * no restart — see {@link StorefrontRendererRefreshService}. It can never fail the operation.
    */
   protected async refreshStorefrontRenderer(reason: string): Promise<void> {
     await StorefrontRendererRefreshService.afterExtensionsChanged(reason, this.logger);

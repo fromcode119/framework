@@ -1,9 +1,10 @@
 import { existsSync, readdirSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { basename, dirname } from 'node:path';
 import { ServerApiBridge } from '@/lib/ssr/server-api-bridge';
 import { ThemeServerRegistry } from '@/lib/ssr/theme-server-registry';
 import { ThemeSsrGeneration } from '@/lib/ssr/theme-ssr-generation';
 import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
+import { ThemeSsrBundles } from '@/lib/ssr/theme-ssr-bundles';
 
 /**
  * Builds one server-render WORLD: loads the runtime module world, installs the capturing bridge,
@@ -47,7 +48,7 @@ export class ThemeWorldBuilder {
     // instead of a half-populated one.
     const state = ThemeServerRegistry.beginGeneration();
     const themeSlug = generation.themeSlug;
-    const themeEntry = join(ThemeSsrRuntime.themesDir(), themeSlug, 'ui-ssr', 'entry.mjs');
+    const themeEntry = ThemeSsrBundles.themeEntry(themeSlug);
     if (!(await ThemeWorldBuilder.importBundle(themeEntry, cacheBuster)) || !state.payloadFor(themeSlug)) {
       ThemeServerRegistry.discardGeneration(state);
       // Say so, LOUDLY. Without the theme's server bundle there is no server rendering AT ALL — every
@@ -96,7 +97,7 @@ export class ThemeWorldBuilder {
     if (!pluginsDir || !existsSync(pluginsDir)) return [];
     return readdirSync(pluginsDir, { withFileTypes: true })
       .filter((item) => item.isDirectory())
-      .map((item) => join(pluginsDir, item.name, 'ui-ssr', 'entry.mjs'))
+      .map((item) => ThemeSsrBundles.pluginEntry(item.name))
       .filter((entry) => existsSync(entry));
   }
 

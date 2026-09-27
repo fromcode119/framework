@@ -158,4 +158,21 @@ describe('ThemeServerRegistry generations', () => {
     expect(slot[0]).toEqual({ component: second, pluginSlug: 'zeta', priority: 10 });
     expect(ThemeServerRegistry.slotMap('theme:slots@1')['frontend.content.display'][0]).toEqual({ component: first, pluginSlug: 'zeta', priority: 10 });
   });
+
+  // A version is a number someone edits: a plugin rebuilt at the SAME version kept its signature, so the
+  // storefront rendered the previous build until the frontend restarted — itself a gap on every install.
+  const stampedConfig = (plugins: Array<{ slug: string; version: string }>) => ({ activeTheme: { slug: 'example-theme', version: '1.0.434' }, plugins });
+
+  it('changes when a bundle is rebuilt at the same version', () => {
+    const plugins = [{ slug: 'zeta', version: '2.0.0' }];
+    const before = ThemeSsrGeneration.from(stampedConfig(plugins), (entry) => (entry.includes('zeta') ? 'aaaa1111' : ''));
+    const after = ThemeSsrGeneration.from(stampedConfig(plugins), (entry) => (entry.includes('zeta') ? 'bbbb2222' : ''));
+    expect(after.matches(before)).toBe(false);
+    expect(after.signature).toContain('plugin:zeta@2.0.0#bbbb2222');
+  });
+
+  it('stamps nothing it cannot see: a missing bundle leaves the version alone', () => {
+    const generation = ThemeSsrGeneration.from(stampedConfig([{ slug: 'zeta', version: '2.0.0' }]), () => '');
+    expect(generation.signature).toBe('theme:example-theme@1.0.434|plugin:zeta@2.0.0');
+  });
 });
