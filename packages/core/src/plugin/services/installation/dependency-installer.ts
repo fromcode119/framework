@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { spawnSync } from 'child_process';
+import { spawn } from 'child_process';
 import { NpmCacheDirectory } from '@core/plugin/services/installation/npm-cache-directory';
 
 /**
@@ -86,17 +86,25 @@ export class DependencyInstaller {
     }
   }
 
-  /** Throws naming the directory — the caller turns that into a typed step failure. */
-  static install(directory: string, options: { omitDev: boolean }): void {
+  /**
+   * Rejects naming the directory — the caller turns that into a typed step failure.
+   *
+   * Asynchronous on purpose. This runs INSIDE the api (a plugin install, a Sources build), and it used
+   * to be `spawnSync`: the api's event loop stood still for the whole npm run, so every site on the
+   * platform answered nothing until npm finished — 15 s on production for one plugin's six packages.
+   */
+  static install(directory: string, options: { omitDev: boolean }): Promise<void> {
     const hasLockfile = fs.existsSync(path.join(directory, 'package-lock.json'));
     const command = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-    const result = spawnSync(command, DependencyInstaller.argsFor({ omitDev: options.omitDev, hasLockfile }), {
-      cwd: directory,
-      stdio: 'inherit',
-      env: { ...process.env, NODE_ENV: 'production', ...NpmCacheDirectory.environmentFor(directory) },
+    return new Promise((resolve, reject) => {
+      const child = spawn(command, DependencyInstaller.argsFor({ omitDev: options.omitDev, hasLockfile }), {
+        cwd: directory,
+        stdio: 'inherit',
+        env: { ...process.env, NODE_ENV: 'production', ...NpmCacheDirectory.environmentFor(directory) },
+      });
+      child.once('error', (error) => reject(new Error(`Dependency install failed for ${directory}: ${error.message}`)));
+      child.once('close', (code) => (code === 0 ? resolve() : reject(new Error(`Dependency install failed for ${directory}`))));
     });
-
-    if (result.status !== 0) throw new Error(`Dependency install failed for ${directory}`);
   }
 
 }

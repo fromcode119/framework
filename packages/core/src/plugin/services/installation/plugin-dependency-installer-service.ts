@@ -30,7 +30,7 @@ export class PluginDependencyInstallerService {
       return;
     }
 
-    this.installDependencies(pluginPath);
+    await this.installDependencies(pluginPath);
     this.writeState(pluginPath, fingerprint);
   }
 
@@ -43,11 +43,11 @@ export class PluginDependencyInstallerService {
     return this.readInstalledFingerprint(pluginPath) !== fingerprint;
   }
 
-  private installDependencies(pluginPath: string): void {
+  private async installDependencies(pluginPath: string): Promise<void> {
     // The flags, and the reasoning behind each, live in ONE place now — this service owns only the
     // fingerprint gate and the state file, which are core's concern and nobody else's.
     this.logger.info(`Installing plugin backend dependencies for ${pluginPath}`);
-    DependencyInstaller.install(pluginPath, { omitDev: true });
+    await DependencyInstaller.install(pluginPath, { omitDev: true });
   }
 
   private createFingerprint(pluginPath: string): string {

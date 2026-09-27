@@ -262,17 +262,17 @@ export class BuildToolchain {
    * The "node_modules already present" skip is preserved: these run against freshly cloned trees,
    * and re-installing an already-populated one is pure wall-clock.
    */
-  installDependencies(directory: string): void {
+  async installDependencies(directory: string): Promise<void> {
     if (!BuildToolchain.needsInstall(directory)) return;
     Core.DependencyInstaller.stripHostProvidedDependencies(directory);
-    Core.DependencyInstaller.install(directory, { omitDev: true });
+    await Core.DependencyInstaller.install(directory, { omitDev: true });
   }
 
   /** Same, but keeps devDependencies — a package's own `build` script usually needs them. */
-  installBuildDependencies(directory: string): void {
+  async installBuildDependencies(directory: string): Promise<void> {
     if (!BuildToolchain.needsInstall(directory)) return;
     Core.DependencyInstaller.stripHostProvidedDependencies(directory);
-    Core.DependencyInstaller.install(directory, { omitDev: false });
+    await Core.DependencyInstaller.install(directory, { omitDev: false });
   }
 
   private static needsInstall(directory: string): boolean {
