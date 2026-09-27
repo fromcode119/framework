@@ -92,7 +92,7 @@ export class Dropdown extends DropdownPositioning {
             }}
             // Sizes to its CONTENT between a floor and a ceiling, rather than a fixed `w-56`. At 224px
             // the account menu's avatar + gap left ~150px for the email, so any real address rendered
-            // truncated ("kristian.dimitrov@fr…"). `w-max` grows to fit, `min-w-56` keeps the previous
+            // truncated (a long email address). `w-max` grows to fit, `min-w-56` keeps the previous
             // width as the minimum for short menus, and the cap keeps it on-screen.
             className={`w-max min-w-56 max-w-[min(22rem,calc(100vw-2rem))] rounded-xl border z-[9999] animate-in fade-in-0 zoom-in-95 duration-150 ${
               coords.direction === DropdownDirection.UP ? 'origin-bottom-right' : 'origin-top-right'

@@ -135,11 +135,6 @@ export class SidebarAccountCard extends AdminComponent {
             onClick: () => this.router.push(AdminConstants.ROUTES.SETTINGS.ROOT),
           }]
         : []),
-      {
-        label: 'Documentation',
-        icon: <FrameworkIcons.Help size={16} />,
-        onClick: () => window.open(AdminConstants.FRAMEWORK_RESOURCES.DOCS, '_blank', 'noopener'),
-      },
       ...this.siteItems,
       {
         label: 'Sign out',

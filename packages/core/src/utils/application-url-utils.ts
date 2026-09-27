@@ -9,8 +9,6 @@ export class ApplicationUrlUtils {
 
   static readonly FRONTEND_APP = 'frontend';
 
-  static readonly LEGACY_PLATFORM_DOMAIN = 'framework.local';
-
   static readonly DOCKER_INTERNAL_API_BASE_URL = 'http://api:3000';
 
   static readonly LOCALHOST_PRIMARY_API_BASE_URL = 'http://localhost:3000';

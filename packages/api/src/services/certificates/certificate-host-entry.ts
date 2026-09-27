@@ -29,7 +29,7 @@ export class CertificateHostEntry {
    * One served host's row, resolving what will actually serve it.
    *
    * Its own stored certificate wins. Failing that, a WILDCARD stored elsewhere may cover it —
-   * `*.fromcode.com` lives on the `fromcode.com` row — and `WildcardHostCoverage` is the SAME rule
+   * `*.example.com` lives on the `example.com` row — and `WildcardHostCoverage` is the SAME rule
    * the gateway applies at handshake time, shared deliberately so this screen cannot disagree with
    * what is served. Only a wildcard that actually HAS material counts; one still being ordered
    * serves nothing yet and must not be reported as cover.

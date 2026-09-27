@@ -14,14 +14,14 @@ describe('McpVersionTools', () => {
     findCollectionBySlug: (source: string) => (source === 'fcp_beta_products' || source === 'catalog' ? collection : null),
     listRecordVersions: vi.fn().mockResolvedValue({
       docs: [
-        { id: 3, ref_id: '8', ref_collection: 'fcp_beta_products', version: 3, created_at: '2026-08-18 11:28:00', updated_by: 'kristian.dimitrov@fromcode.com', change_summary: 'Update fcp_beta_products record', version_data: '{"name":"x"}' },
-        { id: 1, ref_id: '8', ref_collection: 'fcp_beta_products', version: 1, created_at: '2026-04-18 09:06:00', updated_by: 'kristian.dimitrov@fromcode.com', change_summary: 'Update fcp_beta_products record', version_data: '{"name":"y"}' },
+        { id: 3, ref_id: '8', ref_collection: 'fcp_beta_products', version: 3, created_at: '2026-08-18 11:28:00', updated_by: 'editor@example.com', change_summary: 'Update fcp_beta_products record', version_data: '{"name":"x"}' },
+        { id: 1, ref_id: '8', ref_collection: 'fcp_beta_products', version: 1, created_at: '2026-04-18 09:06:00', updated_by: 'editor@example.com', change_summary: 'Update fcp_beta_products record', version_data: '{"name":"y"}' },
       ],
       totalDocs: 2, limit: 20, offset: 0,
     }),
     getRecordVersion: vi.fn().mockResolvedValue({
       id: 1, ref_id: '8', ref_collection: 'fcp_beta_products', version: 1,
-      created_at: '2026-04-18 09:06:00', updated_by: 'kristian.dimitrov@fromcode.com',
+      created_at: '2026-04-18 09:06:00', updated_by: 'editor@example.com',
       change_summary: 'Update fcp_beta_products record',
       version_data: '{"short_description":"Кратко описание","name":"Годишен Нумерологичен Анализ"}',
     }),
@@ -48,8 +48,8 @@ describe('McpVersionTools', () => {
     expect(options.listRecordVersions).toHaveBeenCalledWith(collection, '8', { limit: 20, offset: 0 });
     expect(result.totalDocs).toBe(2);
     expect(result.versions).toEqual([
-      { version: 3, createdAt: '2026-08-18 11:28:00', updatedBy: 'kristian.dimitrov@fromcode.com', changeSummary: 'Update fcp_beta_products record' },
-      { version: 1, createdAt: '2026-04-18 09:06:00', updatedBy: 'kristian.dimitrov@fromcode.com', changeSummary: 'Update fcp_beta_products record' },
+      { version: 3, createdAt: '2026-08-18 11:28:00', updatedBy: 'editor@example.com', changeSummary: 'Update fcp_beta_products record' },
+      { version: 1, createdAt: '2026-04-18 09:06:00', updatedBy: 'editor@example.com', changeSummary: 'Update fcp_beta_products record' },
     ]);
     expect(JSON.stringify(result)).not.toContain('version_data');
   });

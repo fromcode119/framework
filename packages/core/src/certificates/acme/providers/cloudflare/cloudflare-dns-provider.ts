@@ -5,8 +5,8 @@ import { CloudflareChallengeRecord } from '@core/certificates/acme/providers/clo
  * Publishes and withdraws `_acme-challenge` TXT records through Cloudflare's API, for DNS-01.
  *
  * ADD, NEVER UPSERT. A wildcard order validates the apex and the wildcard as two separate
- * authorizations, and RFC 8555 gives both the identifier `fromcode.com` — so both publish a TXT
- * record at the SAME name, `_acme-challenge.fromcode.com`, with DIFFERENT values (one per
+ * authorizations, and RFC 8555 gives both the identifier `example.com` — so both publish a TXT
+ * record at the SAME name, `_acme-challenge.example.com`, with DIFFERENT values (one per
  * authorization's key authorization). Searching for an existing record by name and overwriting it
  * would make the second authorization's publish erase the first's, and a record belonging to
  * something else entirely — Traefik's own in-flight challenge on the same zone — would be
@@ -48,7 +48,7 @@ export class CloudflareDnsProvider {
    * DNS. Returns the ids needed to remove exactly this record and nothing else.
    *
    * `zoneName` is the identifier RFC 8555 gave the authorization — usually the HOST, not the
-   * Cloudflare zone that actually holds it (`admin.fromcode.com`'s zone is `fromcode.com`, not
+   * Cloudflare zone that actually holds it (`admin.example.com`'s zone is `example.com`, not
    * itself), so the zone is RESOLVED here rather than looked up by an exact name match.
    *
    * If propagation never completes, the record already published must not survive this call: an
@@ -80,7 +80,7 @@ export class CloudflareDnsProvider {
    * The Cloudflare zone id that actually holds `hostname`, resolved by walking up its labels.
    *
    * Cloudflare's API matches a zone by its EXACT registered name — it does no public-suffix-list
-   * resolution for you — so asking for `admin.fromcode.com` never finds the zone `fromcode.com`
+   * resolution for you — so asking for `admin.example.com` never finds the zone `example.com`
    * that the token actually manages. This tries the hostname itself first (the apex/host case,
    * unchanged), then each parent label in turn, and stops at the first zone the token can see. The
    * bare TLD (the last single label) is never tried — a token that "manages" `com` is not a real case.

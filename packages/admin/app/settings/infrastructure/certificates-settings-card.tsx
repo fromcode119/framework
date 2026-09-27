@@ -153,7 +153,7 @@ export class CertificatesSettingsCard extends AdminComponent {
             <TextArea
               value={this.addresses}
               onChange={this.onAddresses}
-              placeholder={'88.99.185.7'}
+              placeholder={'203.0.113.10'}
               inputClassName="h-24 font-mono text-[11px] resize-y"
             />
             <p className={help}>
