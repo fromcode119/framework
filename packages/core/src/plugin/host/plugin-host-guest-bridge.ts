@@ -13,6 +13,7 @@ import type { IPluginHostRuntime } from '@core/plugin/host/runtime/interfaces/pl
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 import { PluginGuestRegistrar } from '@core/plugin/host/registrations/plugin-guest-registrar';
 import { PluginSiteDataContext } from '@core/plugin/tenant/plugin-site-data-context';
+import { PluginSiteDataReplay } from '@core/plugin/tenant/plugin-site-data-replay';
 import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
 import { PluginHostPeerSnapshot } from '@core/plugin/host/plugin-host-peer-snapshot';
 import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
@@ -181,6 +182,15 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
       this.manager.hooks.emit(PluginHostState.PLUGINS_READY_EVENT, { plugins: active, restarted: this.slug });
     }
     if (previous) void previous.retireAfter(options.drain ? this.limits.timeoutMs : 0, (socketPath) => this.proxy.inFlight(socketPath), this.logger);
+    // The new process ran `onInit` with no site bound: that pass only REGISTERS. Its per-site DATA work
+    // (defaults, backfills, a directory sync) runs now, once per site, exactly as at boot. Only boot and
+    // a deferred start used to run it, so a hot update, a crash restart or a new heap ceiling left that
+    // work undone for every site until the api restarted — while the boot warning promised it "still
+    // happens". The replay binds a per-site view of the context while it runs; the plugin's own comes back after.
+    const plugin = this.manager.plugins.get(this.slug);
+    const context = this.context;
+    if (plugin && context) await PluginSiteDataReplay.run(plugin, context, this.manager.db, this.logger);
+    if (context) this.context = context;
   }
 
   /** Makes `generation` the process that serves: routes, messages, and the restart budget's clock. */
