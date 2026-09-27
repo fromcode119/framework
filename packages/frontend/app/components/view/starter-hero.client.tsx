@@ -56,12 +56,6 @@ export class StarterHero extends PureReactor {
             >
               Open Admin →
             </a>
-            <a
-              href="https://docs.fromcode.com"
-              className="sh-btn-secondary inline-flex min-w-[196px] items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-8 py-3.5 text-sm font-bold text-slate-300 backdrop-blur transition-all duration-300 hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
-            >
-              Documentation
-            </a>
           </div>
 
           {/* Feature pillars */}

@@ -18,7 +18,7 @@ export class ThemeMarketplaceInstall {
     // An offer from THIS installation is a file on disk, not a URL. Its catalogue row borrows the
     // marketplace shape, whose only location is `downloadUrl` — so a locally built theme was
     // installed by resolving its bare filename against the REMOTE marketplace, producing
-    // `https://marketplace.fromcode.com/.../aurora-0.1.29.zip` for a file sitting in this
+    // `https://marketplace.example.com/.../aurora-0.1.29.zip` for a file sitting in this
     // installation's own workspace. The contributor that offered it is the one that knows where it is.
     const localPath = await ThemeMarketplaceInstall.localPackage(pkg, slug);
     if (localPath) {

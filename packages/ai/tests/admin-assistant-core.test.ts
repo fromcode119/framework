@@ -2,7 +2,7 @@ import { AssistantPreviewUtils } from '@ai/assistant-preview-utils';
 
 describe('assistant preview path normalization', () => {
   it('rejects local filesystem paths', () => {
-    expect(AssistantPreviewUtils.normalizePreviewPath('/Users/kristian/project/src/components/Blocks.jsx')).toBeUndefined();
+    expect(AssistantPreviewUtils.normalizePreviewPath('/home/dev/project/src/components/Blocks.jsx')).toBeUndefined();
     expect(AssistantPreviewUtils.normalizePreviewPath('/home/user/project/dist/bundle.js')).toBeUndefined();
     expect(AssistantPreviewUtils.normalizePreviewPath('C:\\repo\\project\\src\\index.tsx')).toBeUndefined();
   });
@@ -16,7 +16,7 @@ describe('assistant preview path normalization', () => {
   it('rejects web urls that actually point at local filesystem paths', () => {
     expect(
       AssistantPreviewUtils.normalizePreviewPath(
-        'http://localhost:3000/Users/kristian/Work/Clients/Fromcode%20119/Domains/fromcode.com/Source/test/my-app/dist/bundle.js',
+        'http://localhost:3000/home/dev/workspace/test/my-app/dist/bundle.js',
       ),
     ).toBeUndefined();
   });

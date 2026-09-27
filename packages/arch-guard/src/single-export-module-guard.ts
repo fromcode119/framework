@@ -7,7 +7,7 @@ import { PublishedEntries } from './published-entries';
 
 /**
  * "class should have only 1 export and it's class nothing else — same for interface, only 1 export
- * interface, and same for enums." (Kristian, verbatim.) A class/interface/enum MODULE exports exactly
+ * interface, and same for enums." (the project rule, verbatim.) A class/interface/enum MODULE exports exactly
  * one thing, and that one thing matches what the file is.
  *
  * `plugin-sandbox-host-reload-service.ts` (PR #117) declared both `PluginSandboxHostReloadService`

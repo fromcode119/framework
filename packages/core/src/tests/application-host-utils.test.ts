@@ -3,8 +3,8 @@ import { ApplicationHostUtils } from '@core/utils/application-host-utils';
 
 describe('ApplicationHostUtils', () => {
   it('detects local development hostnames from urls and host headers', () => {
-    expect(ApplicationHostUtils.isLocalDevelopmentHostname('http://frontend.framework.local')).toBe(true);
-    expect(ApplicationHostUtils.isLocalDevelopmentHostname('api.framework.local:3000')).toBe(true);
+    expect(ApplicationHostUtils.isLocalDevelopmentHostname('http://frontend.acme.local')).toBe(true);
+    expect(ApplicationHostUtils.isLocalDevelopmentHostname('api.acme.test:3000')).toBe(true);
     expect(ApplicationHostUtils.isLocalDevelopmentHostname('localhost:4000')).toBe(true);
     expect(ApplicationHostUtils.isLocalDevelopmentHostname('127.0.0.1:8080')).toBe(true);
     expect(ApplicationHostUtils.isLocalDevelopmentHostname('[::1]:3000')).toBe(true);
@@ -12,7 +12,7 @@ describe('ApplicationHostUtils', () => {
 
   it('rejects non-local hostnames', () => {
     expect(ApplicationHostUtils.isLocalDevelopmentHostname('https://example-shop.com')).toBe(false);
-    expect(ApplicationHostUtils.isLocalDevelopmentHostname('fromcode.com')).toBe(false);
+    expect(ApplicationHostUtils.isLocalDevelopmentHostname('localhost.example.com')).toBe(false);
   });
 
   it('normalizes hostnames without ports', () => {

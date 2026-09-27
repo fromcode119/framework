@@ -40,15 +40,15 @@ describe('AuthProfileService', () => {
 
   it('treats first and last name as user-core fields rather than profile-meta fields', () => {
     const payload = AuthProfileService.sanitizeProfilePayload({
-      firstName: 'Kristian',
-      lastName: 'Dimitrov',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
       phone: '12345',
       city: 'Sofia',
     });
 
     expect(AuthProfileService.extractUserNameFields(payload)).toEqual({
-      firstName: 'Kristian',
-      lastName: 'Dimitrov',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
     });
 
     expect(AuthProfileService.stripUserNameFields(payload)).toEqual({

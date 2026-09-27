@@ -16,13 +16,13 @@ error during build:
 This is most likely unintended because it can break your application at runtime.
 If you do want to externalize this module explicitly add it to
 \`build.rollupOptions.external\`
-    at viteLog (file:///Users/kristian/Work/Clients/Fromcode%20119/Domains/fromcode.com/Source/framework/Source/node_modules/vite/dist/node/chunks/config.js:33715:57)
-    at onRollupLog (file:///Users/kristian/Work/Clients/Fromcode%20119/Domains/fromcode.com/Source/framework/Source/node_modules/vite/dist/node/chunks/config.js:33745:7)
-    at onLog (file:///Users/kristian/Work/Clients/Fromcode%20119/Domains/fromcode.com/Source/framework/Source/node_modules/vite/dist/node/chunks/config.js:33547:4)
-    at file:///Users/kristian/Work/Clients/Fromcode%20119/Domains/fromcode.com/Source/framework/Source/node_modules/rollup/dist/es/shared/node-entry.js:20958:32
-    at Object.logger [as onLog] (file:///Users/kristian/Work/Clients/Fromcode%20119/Domains/fromcode.com/Source/framework/Source/node_modules/rollup/dist/es/shared/node-entry.js:22945:9)
-    at ModuleLoader.handleInvalidResolvedId (file:///Users/kristian/Work/Clients/Fromcode%20119/Domains/fromcode.com/Source/framework/Source/node_modules/rollup/dist/es/shared/node-entry.js:21689:26)
-    at file:///Users/kristian/Work/Clients/Fromcode%20119/Domains/fromcode.com/Source/framework/Source/node_modules/rollup/dist/es/shared/node-entry.js:21647:26`;
+    at viteLog (file:///home/dev/workspace/framework/node_modules/vite/dist/node/chunks/config.js:33715:57)
+    at onRollupLog (file:///home/dev/workspace/framework/node_modules/vite/dist/node/chunks/config.js:33745:7)
+    at onLog (file:///home/dev/workspace/framework/node_modules/vite/dist/node/chunks/config.js:33547:4)
+    at file:///home/dev/workspace/framework/node_modules/rollup/dist/es/shared/node-entry.js:20958:32
+    at Object.logger [as onLog] (file:///home/dev/workspace/framework/node_modules/rollup/dist/es/shared/node-entry.js:22945:9)
+    at ModuleLoader.handleInvalidResolvedId (file:///home/dev/workspace/framework/node_modules/rollup/dist/es/shared/node-entry.js:21689:26)
+    at file:///home/dev/workspace/framework/node_modules/rollup/dist/es/shared/node-entry.js:21647:26`;
   const VITE_STDOUT = `vite v7.3.6 building client environment for production...
 transforming...
 ✓ 1 modules transformed.`;

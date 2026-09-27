@@ -17,7 +17,7 @@ export class NewUserAccountFields extends PureReactor {
               <div className="space-y-2">
                  <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">E-Mail Address</label>
                  <Input
-                    placeholder="user@fromcode.com"
+                    placeholder="name@company.com"
                     value={formData.email}
                     onChange={(e) => onPatch({ email: e.target.value })}
                     required

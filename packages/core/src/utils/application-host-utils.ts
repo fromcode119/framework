@@ -3,6 +3,8 @@ import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 export class ApplicationHostUtils {
   static readonly LOCALHOST_ORIGIN = 'http://localhost';
   static readonly LOCAL_ALLOWED_DOMAINS: readonly string[] = ['localhost', '127.0.0.1', '::1', '0.0.0.0'];
+  /** Suffixes reserved for local and test networks (RFC 6761, RFC 6762) — never a public site. */
+  static readonly LOCAL_DEVELOPMENT_SUFFIXES: readonly string[] = ['.localhost', '.local', '.test'];
 
   static normalizeHostname(value: unknown): string {
     const parsed = value instanceof URL ? value : ApplicationUrlUtils.parseAbsoluteUrl(value);
@@ -46,8 +48,7 @@ export class ApplicationHostUtils {
     }
 
     return ApplicationHostUtils.isLoopbackHostname(hostname)
-      || hostname === ApplicationUrlUtils.LEGACY_PLATFORM_DOMAIN
-      || hostname.endsWith(`.${ApplicationUrlUtils.LEGACY_PLATFORM_DOMAIN}`);
+      || ApplicationHostUtils.LOCAL_DEVELOPMENT_SUFFIXES.some((suffix) => hostname.endsWith(suffix));
   }
 
   static getLocalAllowedDomains(): string[] {
