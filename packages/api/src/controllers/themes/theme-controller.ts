@@ -33,8 +33,10 @@ export class ThemeController extends BaseController {
       ? await TenantThemeAccess.assignedSlugsFor(tenantId)
       : null;
 
+    // ...plus the themes the site uploaded itself (its own directory) — and never another site's own.
+    // The same rule every action on a theme checks (`TenantThemeAccess.isAvailableTo`).
     const themes = this.manager.getThemes()
-      .filter((theme) => !assignedSlugs || assignedSlugs.has(theme.slug));
+      .filter((theme) => !assignedSlugs || (theme.ownerTenantId ? theme.ownerTenantId === tenantId : assignedSlugs.has(theme.slug)));
 
     res.json(themes.map((theme) => ({
       ...theme,
@@ -130,6 +132,11 @@ export class ThemeController extends BaseController {
     return this.uploads.uploadMine(...args);
   }
 
+  /** @see ThemeUploadController.mineQuota */
+  mineQuota(...args: Parameters<ThemeUploadController["mineQuota"]>): ReturnType<ThemeUploadController["mineQuota"]> {
+    return this.uploads.mineQuota(...args);
+  }
+
   /** @see ThemeUploadController.deleteMine */
   deleteMine(...args: Parameters<ThemeUploadController["deleteMine"]>): ReturnType<ThemeUploadController["deleteMine"]> {
     return this.uploads.deleteMine(...args);
@@ -161,6 +168,7 @@ export class ThemeController extends BaseController {
   }
 
   async activate(req: Request, res: Response) {
+    if (await this.refuseUnavailableTheme(req, res)) return;
     const slug = CoercionUtils.toString(req.params.slug);
     try {
       await this.manager.activateTheme(slug);
@@ -171,6 +179,7 @@ export class ThemeController extends BaseController {
   }
 
   async disable(req: Request, res: Response) {
+    if (await this.refuseUnavailableTheme(req, res)) return;
     const slug = CoercionUtils.toString(req.params.slug);
     try {
       await this.manager.disableTheme(slug);
@@ -181,6 +190,7 @@ export class ThemeController extends BaseController {
   }
 
   async reset(req: Request, res: Response) {
+    if (await this.refuseUnavailableTheme(req, res)) return;
     const slug = CoercionUtils.toString(req.params.slug);
     const runSeeds = req.body?.runSeeds !== false;
     const resetConfig = req.body?.resetConfig === true;
@@ -195,6 +205,7 @@ export class ThemeController extends BaseController {
   }
 
   async getConfig(req: Request, res: Response) {
+    if (await this.refuseUnavailableTheme(req, res)) return;
     try {
       const slug = CoercionUtils.toString(req.params.slug);
       const config = await this.manager.getThemeConfig(slug);
@@ -205,6 +216,7 @@ export class ThemeController extends BaseController {
   }
 
   async saveConfig(req: Request, res: Response) {
+    if (await this.refuseUnavailableTheme(req, res)) return;
     try {
       const slug = CoercionUtils.toString(req.params.slug);
       const config = req.body;
@@ -213,6 +225,21 @@ export class ThemeController extends BaseController {
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
+  }
+
+  /**
+   * In a site, a theme it may not use is answered as absent: activating, configuring or resetting one
+   * that is neither the site's own nor assigned to it used to succeed — a site could put another site's
+   * privately uploaded theme on its own storefront by naming its slug. Answers whether it refused.
+   */
+  private async refuseUnavailableTheme(req: Request, res: Response): Promise<boolean> {
+    const tenantId = String((req as any).tenantId || '').trim();
+    if (!TenantMode.isEnabled() || !tenantId) return false;
+    const slug = CoercionUtils.toString(req.params.slug);
+    const theme = this.manager.getThemes().find((entry) => entry.slug === slug);
+    if (theme && await TenantThemeAccess.isAvailableTo(tenantId, theme)) return false;
+    res.status(404).json({ error: 'theme_not_available', message: `Theme "${slug}" is not available to this site.` });
+    return true;
   }
 
   async delete(req: Request, res: Response) {

@@ -120,6 +120,18 @@ export class TenantThemeAccess {
   }
 
   /**
+   * Whether a site may see and act on `theme`: one it uploaded itself, or a platform theme assigned to
+   * it. Never another site's own theme — those are that site's private files — and never a platform
+   * theme nobody assigned to it, whoever is asking (a platform admin assigns from Platform scope).
+   */
+  static async isAvailableTo(tenantId: string, theme: { slug: string; ownerTenantId?: string }): Promise<boolean> {
+    const tenant = String(tenantId ?? '').trim();
+    if (!tenant) return false;
+    if (theme.ownerTenantId) return theme.ownerTenantId === tenant;
+    return (await TenantThemeAccess.assignedSlugsFor(tenant)).has(theme.slug);
+  }
+
+  /**
    * Forgets what it knows, so the next request re-reads. Called by every write path — this IS the
    * "no restart" mechanism for theme activation.
    */

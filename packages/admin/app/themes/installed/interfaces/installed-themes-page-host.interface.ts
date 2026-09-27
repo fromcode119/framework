@@ -10,6 +10,8 @@ export interface IInstalledThemesPageHost {
   readonly mounted: boolean;
   /** May this admin act on the platform? False for a tenant admin: no marketplace calls are made. */
   readonly canManage: boolean;
+  /** In a site: uploads go into the site's own directory, and only its own themes can be removed. */
+  readonly siteScope: boolean;
   readonly state: IInstalledThemesPageClientState;
   /** Raw `setState` pass-through — deliberately UNGUARDED; callers keep the `mounted` check explicit. */
   patch(patch: Partial<IInstalledThemesPageClientState>): void;

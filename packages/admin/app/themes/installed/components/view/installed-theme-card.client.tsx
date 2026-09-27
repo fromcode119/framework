@@ -22,9 +22,12 @@ export class InstalledThemeCard extends PureReactor {
    * (T3): every admin of a site may choose that site's theme from what the operator installed.
    */
   @prop declare canManage: boolean;
+  /** A theme THIS site uploaded (in its own directory): the site may remove it. */
+  @prop declare ownedBySite: boolean;
+  @prop declare onDeleteMine: (slug: string, isActive: boolean) => Promise<void>;
 
   render(): ReactNode {
-    const { canManage, isDark, onActivate, onDelete, onDisable, onUpdate, theme, updateVersion } = this;
+    const { canManage, isDark, onActivate, onDelete, onDeleteMine, onDisable, onUpdate, ownedBySite, theme, updateVersion } = this;
     // API JSON: `state` is a raw string, so resolve rather than compare a string to a member.
     const isActive = ThemeState.resolve(theme.state) === ThemeState.ACTIVE;
 
@@ -38,6 +41,7 @@ export class InstalledThemeCard extends PureReactor {
           <div className="flex items-center gap-2">
             <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className={`text-sm font-semibold tracking-tight group-hover:text-indigo-500 transition-colors no-underline ${isDark ? 'text-white' : 'text-slate-900'}`}>{theme.name}</Link>
             {updateVersion ? <Badge variant={BadgeVariant.WARNING} className="shrink-0">Update</Badge> : null}
+            {ownedBySite ? <Badge variant="gray" className="shrink-0">This site's</Badge> : null}
           </div>
           <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{theme.description || 'A clean and modern theme for your Fromcode frontend.'}</p>
         </div>
@@ -59,6 +63,7 @@ export class InstalledThemeCard extends PureReactor {
           ) : (
             <button onClick={() => onActivate(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-slate-900 dark:bg-white dark:text-slate-900 text-white hover:bg-slate-800 transition-colors">Activate</button>
           )}
+          {ownedBySite ? <button onClick={() => onDeleteMine(theme.slug, isActive)} title="Delete this site's theme" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
           {canManage ? <button onClick={() => onDelete(theme.slug, isActive)} title="Delete" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
         </div>
       </div>

@@ -110,7 +110,6 @@ export class AdminConstants {
     SETTINGS_IMPORT: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS_IMPORT, { slug }),
   },
   THEMES: {
-    BASE: AdminConstants.v(SystemConstants.API_PATH.THEMES.BASE),
     LIST: AdminConstants.v(SystemConstants.API_PATH.THEMES.BASE),
     MARKETPLACE: AdminConstants.v(SystemConstants.API_PATH.THEMES.MARKETPLACE),
     UPLOAD_SESSION: AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_UPLOAD_SESSION),
@@ -126,6 +125,9 @@ export class AdminConstants {
     INSTALL: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_INSTALL, { slug }),
     CONFIG: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG_CONFIG, { slug }),
     DELETE: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_SLUG, { slug }),
+    MINE_UPLOAD: AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_MINE_UPLOAD),
+    MINE_QUOTA: AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_MINE_QUOTA),
+    MINE_DELETE: (slug: string) => AdminConstants.versionedRoute(SystemConstants.API_PATH.THEMES.BASE, RouteConstants.SEGMENTS.THEMES_MINE_SLUG, { slug }),
   },
   SYSTEM: {
     HEALTH: AdminConstants.v(SystemConstants.API_PATH.SYSTEM.HEALTH),

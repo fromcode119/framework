@@ -3,6 +3,8 @@ import { bound, ref, state } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import type { IInstalledThemesSiteQuota } from '@/app/themes/installed/interfaces/installed-themes-site-quota.interface';
 import type { INotificationContextType } from '@/components/interfaces/notification-context-type.interface';
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 import { InstalledThemesView } from '@/app/themes/installed/components/view/installed-themes-view.client';
@@ -36,6 +38,10 @@ export class InstalledThemesPageClient
   @state uploadPreviewTitle = '';
   @state uploadPreviewDescription = '';
   @state uploadPreviewSections: IUploadPreviewSection[] = [];
+  @state siteQuota: IInstalledThemesSiteQuota | null = null;
+  /** In a site, the page is that site's: its uploads, its own themes. Unknown until read. */
+  @state siteScope = false;
+  @state scopeKnown = false;
 
   get notify(): INotificationContextType {
     return this.runtime.notify;
@@ -59,7 +65,13 @@ export class InstalledThemesPageClient
 
   componentDidMount(): void {
     this.mounted = true;
-    void this.actions.fetchThemes();
+    // The scope first: it decides which upload the page offers and whether the site's limits are read.
+    void PlatformSettingLocks.load().then((locks) => {
+      if (!this.mounted) return;
+      this.siteScope = locks.isSiteScope();
+      this.scopeKnown = true;
+      void this.actions.fetchThemes();
+    });
   }
 
   componentWillUnmount(): void {
@@ -90,12 +102,17 @@ export class InstalledThemesPageClient
     event.preventDefault();
     event.stopPropagation();
     this.isDropActive = false;
-    await this.actions.inspectThemeFile(event.dataTransfer.files?.[0]);
+    await this.receive(event.dataTransfer.files?.[0]);
+  }
+
+  /** In a site the file goes into the site's own directory; in Platform scope through the platform's preview. */
+  private receive(file?: File | null): Promise<void> {
+    return this.siteScope ? this.actions.uploadForSite(file) : this.actions.inspectThemeFile(file);
   }
 
   @bound async handleFileChange(event: ChangeEvent<HTMLInputElement>): Promise<void> {
     const file = event.target.files?.[0];
-    await this.actions.inspectThemeFile(file);
+    await this.receive(file);
     if (this.fileInputRef.current) this.fileInputRef.current.value = '';
   }
 
@@ -116,6 +133,10 @@ export class InstalledThemesPageClient
     return this.actions.delete(slug, isActive);
   }
 
+  @bound onDeleteMine(slug: string, isActive: boolean): Promise<void> {
+    return this.actions.deleteMine(slug, isActive);
+  }
+
   @bound onUpdate(slug: string): Promise<void> {
     return this.actions.update(slug);
   }
@@ -124,9 +145,13 @@ export class InstalledThemesPageClient
     return InstalledThemesPageController.resolveUpdateVersion(installedTheme, this.marketplaceThemes);
   }
 
-  /** The host's answer for the actions class and the view alike — one source, never two. */
+  /**
+   * The host's answer for the actions class and the view alike — one source, never two. The PLATFORM's
+   * controls (upload into the shared directory, upgrade, delete) belong to Platform scope: a platform
+   * admin standing in a site gets that site's controls, like every other admin of it. Off until known.
+   */
   get canManage(): boolean {
-    return PlatformAccess.canManagePlatform(this.auth.user);
+    return PlatformAccess.canManagePlatform(this.auth.user) && this.scopeKnown && !this.siteScope;
   }
 
   render(): ReactNode {
@@ -148,6 +173,9 @@ export class InstalledThemesPageClient
         onActivate={this.onActivate}
         onDisable={this.onDisable}
         onDelete={this.onDelete}
+        onDeleteMine={this.onDeleteMine}
+        siteQuota={this.siteQuota}
+        siteScope={this.scopeKnown && this.siteScope}
         onUpdate={this.onUpdate}
         showUploadPreview={this.showUploadPreview}
         themes={this.themes}

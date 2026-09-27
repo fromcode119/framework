@@ -19,8 +19,9 @@ export class InstalledThemesPageActions {
     this.host.patch({ loading: true });
     try {
       const { themes, marketplaceThemes } = await InstalledThemesPageController.fetchThemes({ includeMarketplace: this.host.canManage });
+      const siteQuota = this.host.siteScope ? await InstalledThemesPageController.fetchSiteQuota() : null;
       if (!this.host.mounted) return;
-      this.host.patch({ themes, marketplaceThemes });
+      this.host.patch({ themes, marketplaceThemes, siteQuota });
     } catch (error) {
       console.error('[InstalledThemesPage] Failed to fetch themes:', error);
       notify(NotificationType.ERROR, 'Fetch Failed', 'Could not load themes.');
@@ -74,6 +75,37 @@ export class InstalledThemesPageActions {
       this.clearUploadProgress();
     } finally {
       if (this.host.mounted) this.host.patch({ isInspectingUpload: false });
+    }
+  }
+
+  /** A site's own upload: no preview step — the api checks the package and says exactly why it refuses. */
+  async uploadForSite(file?: File | null): Promise<void> {
+    if (!file) return;
+    const { notify } = this.host.notify;
+    this.host.patch({ isUploading: true, uploadProgressLabel: `Uploading ${file.name}…`, uploadProgressPercent: 0 });
+    try {
+      await InstalledThemesPageController.uploadForSite(file, (percent) => {
+        if (this.host.mounted) this.host.patch({ uploadProgressPercent: percent });
+      });
+      notify(NotificationType.SUCCESS, 'Theme Uploaded', `${file.name} is installed for this site. Activate it to use it.`);
+      await this.host.refresh();
+    } catch (error: any) {
+      notify(NotificationType.ERROR, 'Upload Refused', error.message || 'The theme could not be installed.');
+    } finally {
+      if (this.host.mounted) this.host.patch({ isUploading: false });
+      this.clearUploadProgress();
+    }
+  }
+
+  async deleteMine(slug: string, isActive: boolean): Promise<void> {
+    const { notify } = this.host.notify;
+    if (!confirm(InstalledThemesPageController.deleteConfirmationMessage(slug, isActive))) return;
+    try {
+      await InstalledThemesPageController.deleteMine(slug);
+      notify(NotificationType.SUCCESS, 'Theme Deleted', `${slug} has been removed from this site.`);
+      await this.host.refresh();
+    } catch (error: any) {
+      notify(NotificationType.ERROR, 'Deletion Failed', error.message);
     }
   }
 
