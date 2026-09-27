@@ -60,7 +60,8 @@ export class TenantMembershipService {
    * a dead end, because being a customer there grants nothing to administer. Their relationship with
    * that site is a storefront one and belongs on its account page.
    *
-   * A platform admin still gets every active site: that reach is the point of the role.
+   * A platform admin still gets every active site: that reach is the point of the role. "Administer"
+   * means "open the console": a membership counts when one of its roles does ({@link consoleRoleSlugs}).
    */
   async listAdministeredByUser(userId: string): Promise<TenantAccess[]> {
     const id = CoercionUtils.toString(userId);
@@ -68,9 +69,10 @@ export class TenantMembershipService {
     if (await this.isPlatformAdmin(id)) return this.listForUser(id);
 
     const rows = await this.db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { user_id: id } });
+    const consoleRoles = await this.consoleRoleSlugs();
     const administered = (rows ?? [])
       .map((row: any) => TenantMembership.from(row))
-      .filter((membership) => membership.isActive && membership.roles.includes(TenantMembershipService.ADMIN_ROLE))
+      .filter((membership) => membership.isActive && membership.roles.some((role) => consoleRoles.has(role)))
       .map((membership) => membership.tenantId);
     if (administered.length === 0) return [];
 
@@ -79,6 +81,28 @@ export class TenantMembershipService {
       .map((row: any) => TenantRecord.from(row))
       .filter((tenant: TenantRecord) => tenant.isActive && administered.includes(tenant.id))
       .map((tenant: TenantRecord) => TenantAccess.member(tenant));
+  }
+
+  /**
+   * The roles that open a site's console: `admin`, and any role that carries at least one permission.
+   *
+   * Only `admin` used to count, so an employee given a scoped role — a site editor, a staff member
+   * who keeps their own schedule — signed in to "No site access", and on the site's own console host
+   * was refused outright. A role with no permissions (customer, partner) still opens nothing: there is
+   * nothing in a console it could do.
+   */
+  private async consoleRoleSlugs(): Promise<Set<string>> {
+    const rows = await this.db.find(SystemConstants.TABLE.ROLES, { limit: 500 });
+    const slugs = new Set<string>([TenantMembershipService.ADMIN_ROLE]);
+    for (const row of rows ?? []) {
+      const raw = (row as any)?.permissions;
+      let permissions: unknown = raw;
+      if (typeof raw === 'string') {
+        try { permissions = JSON.parse(raw); } catch { permissions = []; }
+      }
+      if (Array.isArray(permissions) && permissions.length > 0) slugs.add(String((row as any).slug ?? '').trim().toLowerCase());
+    }
+    return slugs;
   }
 
   /**
