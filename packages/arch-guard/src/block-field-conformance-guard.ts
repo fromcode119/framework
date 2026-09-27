@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { BlockFieldSourceReader } from './block-field-source-reader';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * A block's editor and its renderer must agree on the data keys.
@@ -29,11 +30,9 @@ export class BlockFieldConformanceGuard {
     roots: string[] = ['themes', 'plugins'],
     mode: string = process.env.BLOCK_CONFORMANCE_MODE || 'warn',
   ): number {
-    const repoRoot = BlockFieldSourceReader.repoRoot();
     const findings: string[] = [];
 
-    for (const root of roots) {
-      const abs = path.join(repoRoot, root);
+    for (const abs of ExtensionTrees.dirs(roots)) {
       if (!fs.existsSync(abs)) continue;
 
       const renderers = BlockFieldSourceReader.rendererIndex(abs);
@@ -73,7 +72,7 @@ export class BlockFieldConformanceGuard {
           const missing = [...read].filter(
             (key) => !covered(key) && !BlockFieldConformanceGuard.IGNORED_KEYS.has(key),
           );
-          const rel = path.relative(repoRoot, blockFile);
+          const rel = ExtensionTrees.show(blockFile);
           if (fake.length) {
             findings.push(`  ${rel}  [${blockId}]  FAKE (editor writes, renderer never reads): ${fake.join(', ')}`);
           }

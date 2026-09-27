@@ -218,7 +218,7 @@ export class CreateApp {
         'Override the workspace location if needed:',
         '',
         '```bash',
-        'ATLANTIS_WORKSPACE_ROOT=/absolute/path/to/framework/Source npm run dev',
+        'ATLANTIS_WORKSPACE_ROOT=/absolute/path/to/framework npm run dev',
         '```',
         '',
       ].join('\n');

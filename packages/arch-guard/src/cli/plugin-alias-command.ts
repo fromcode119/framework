@@ -2,7 +2,7 @@ import { existsSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { PluginAliasMigration } from '../plugin-alias-migration';
 import { ArchorCommand } from './arch-guard-command';
-import { FrameworkRoot } from './framework-root';
+import { ExtensionTrees } from './extension-trees';
 
 /**
  * `arch-guard plugin-alias` — rewrite a plugin's relative in-package imports to its `@plugin/` alias.
@@ -21,16 +21,15 @@ export class PluginAliasCommand extends ArchorCommand {
    *  checking cannot be trusted to have checked anything. */
   readonly runsInCi = false;
 
-  private static pluginDirs(repoRoot: string): string[] {
-    const base = path.join(repoRoot, 'plugins');
-    if (!existsSync(base)) return [];
+  private static pluginDirs(base: string | null): string[] {
+    if (!base || !existsSync(base)) return [];
     return readdirSync(base)
       .map((name) => path.join(base, name))
       .filter((dir) => statSync(dir).isDirectory() && existsSync(path.join(dir, 'src')));
   }
 
   run(argv: string[]): number {
-    const repoRoot = FrameworkRoot.repo();
+    const plugins = ExtensionTrees.dir('plugins');
     const apply = argv.includes('--apply');
     const all = argv.includes('--all');
     const slug = argv.find((arg) => !arg.startsWith('--'));
@@ -41,8 +40,8 @@ export class PluginAliasCommand extends ArchorCommand {
     }
 
     const targets = all
-      ? PluginAliasCommand.pluginDirs(repoRoot)
-      : [path.join(repoRoot, 'plugins', String(slug))];
+      ? PluginAliasCommand.pluginDirs(plugins)
+      : [path.join(plugins ?? '', String(slug))];
 
     let total = 0;
     for (const dir of targets) {

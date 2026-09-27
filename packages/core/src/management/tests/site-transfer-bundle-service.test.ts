@@ -24,7 +24,7 @@ describe('SiteTransferBundleService', () => {
 
   it('writes bundle artifacts to the framework-root site-transfer directory and excludes secrets by default', async () => {
     const repositoryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'site-transfer-repo-'));
-    const frameworkRoot = path.join(repositoryRoot, 'framework', 'Source');
+    const frameworkRoot = path.join(repositoryRoot, 'platform', 'framework');
     temporaryDirectories.push(repositoryRoot);
 
     process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
@@ -62,7 +62,7 @@ describe('SiteTransferBundleService', () => {
 
   it('keeps public assets while excluding uploads when include-public is enabled without include-uploads', async () => {
     const repositoryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'site-transfer-public-'));
-    const frameworkRoot = path.join(repositoryRoot, 'framework', 'Source');
+    const frameworkRoot = path.join(repositoryRoot, 'platform', 'framework');
     temporaryDirectories.push(repositoryRoot);
 
     process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;

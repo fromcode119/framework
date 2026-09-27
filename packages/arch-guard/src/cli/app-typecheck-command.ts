@@ -26,7 +26,7 @@ export class AppTypecheckCommand extends ArchorCommand {
     // is part of this check. A run scoped to one extension therefore type-checked identical framework code
     // every time (about a minute of a three-minute guard job); the framework's own CI runs it on every
     // framework change, which is the only change that can move its result.
-    if (GuardScope.isExtension(FrameworkRoot.repo())) {
+    if (GuardScope.isExtension()) {
       console.log('App typecheck skipped: this run guards one extension, and the framework apps are checked by the framework\'s own CI.');
       return 0;
     }

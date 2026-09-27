@@ -1,6 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * A theme override may not reach outside its own theme.
@@ -31,7 +32,7 @@ export class ThemeOverrideBoundaryGuard {
      */
 
     const ROOT = process.cwd();
-    const THEMES_DIR = path.resolve(ROOT, '../../themes');
+    const THEMES_DIR = ExtensionTrees.dir('themes');
     const MODE = (process.env.THEME_OVERRIDE_BOUNDARY_MODE || 'warn').toLowerCase();
 
     const SOURCE_FILE_PATTERN = /\.(ts|tsx)$/;
@@ -64,6 +65,7 @@ export class ThemeOverrideBoundaryGuard {
     function findOverrideRoots() {
       const roots: any[] = [];
       let themes;
+      if (!THEMES_DIR) return roots;
       try {
         themes = fs.readdirSync(THEMES_DIR, { withFileTypes: true });
       } catch {
@@ -79,7 +81,7 @@ export class ThemeOverrideBoundaryGuard {
 
     const findings: any[] = [];
     function record(file, reason) {
-      findings.push({ file: path.relative(THEMES_DIR, file), reason });
+      findings.push({ file: ExtensionTrees.show(file), reason });
     }
 
     for (const overridesRoot of findOverrideRoots()) {

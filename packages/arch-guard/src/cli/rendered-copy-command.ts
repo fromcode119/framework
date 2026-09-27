@@ -1,8 +1,8 @@
-import path from 'node:path';
 import { RenderedCopyGuard } from '../rendered-copy-guard';
 import { ArchorCommand } from './arch-guard-command';
 import { GuardScope } from './guard-scope';
 import { GuardTarget } from './guard-target';
+import { ExtensionTrees } from './extension-trees';
 
 /**
  * `arch-guard rendered-copy [--detail]` — copy rendered from a `.tsx` instead of from `i18n/*.json`.
@@ -27,9 +27,7 @@ export class RenderedCopyCommand extends ArchorCommand {
 
   run(argv: string[]): number {
     const detail = argv.includes('--detail');
-    // packages/arch-guard/… -> repo root is four levels up from `framework/Source/packages`.
-    const repoRoot = path.resolve(process.cwd(), '..', '..');
-    const { counts, detail: hits } = RenderedCopyGuard.scan(GuardScope.areas(repoRoot));
+    const { counts, detail: hits } = RenderedCopyGuard.scan(GuardScope.areas());
 
     let outstanding = 0;
     console.log('\nrendered copy (must come from i18n/*.json):');
@@ -41,7 +39,7 @@ export class RenderedCopyCommand extends ArchorCommand {
 
     if (detail) {
       for (const { file, hits: lines } of hits.slice(0, 40)) {
-        console.log(`    ${path.relative(repoRoot, file)}`);
+        console.log(`    ${ExtensionTrees.show(file)}`);
         for (const line of lines.slice(0, 4)) console.log(`      ${line}`);
       }
     }

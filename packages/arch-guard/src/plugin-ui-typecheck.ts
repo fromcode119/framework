@@ -27,9 +27,9 @@ export class PluginUiTypecheck {
   /** Never walk into an installed dependency tree; a plugin may carry its own under `src/ui`. */
   private static readonly SKIP = new Set(['node_modules', 'dist']);
 
-  /** The directories of the plugins under `<repo>/plugins` that have an admin UI, alphabetical by name. */
-  static pluginDirs(repo: string): string[] {
-    const root = path.join(repo, 'plugins');
+  /** The directories of the plugins under `root` that have an admin UI, alphabetical by name. */
+  static pluginDirs(root: string | null): string[] {
+    if (!root) return [];
     let entries: string[];
     try { entries = readdirSync(root); } catch { return []; }
     return entries

@@ -1,6 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * A plugin does not write SQL at runtime.
@@ -38,13 +39,12 @@ export class PluginRawSqlGuard {
   private static readonly BASELINE = new Set<string>([]);
 
   static run(): number {
-    const root = process.cwd();
-    // Run from framework/Source like every other guard; plugins live beside it.
-    const pluginsRoot = path.resolve(root, '../../plugins');
+    const pluginsRoot = ExtensionTrees.dir('plugins');
+    if (!pluginsRoot) return 0;
     const offenders: Array<{ file: string; line: number; text: string }> = [];
 
     for (const file of PluginRawSqlGuard.walk(pluginsRoot)) {
-      const relative = path.relative(path.resolve(root, '../..'), file).split(path.sep).join('/');
+      const relative = ExtensionTrees.show(file);
       if (PluginRawSqlGuard.ALLOWED.some((allowed) => allowed.test(`/${relative}`))) continue;
 
       const lines = fs.readFileSync(file, 'utf8').split('\n');

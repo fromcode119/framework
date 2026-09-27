@@ -1,7 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
-import { FrameworkRoot } from './cli/framework-root';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * A method a plugin means to expose to its peers, missing from the map that actually exposes it.
@@ -28,7 +28,8 @@ export class PeerSurfaceGuard {
   private static readonly NOT_PEER_CALLABLE = new Set(['setRuntimeContext']);
 
   static run(): number {
-    const pluginsDir = path.resolve(FrameworkRoot.repo(), 'plugins');
+    const pluginsDir = ExtensionTrees.dir('plugins');
+    if (!pluginsDir) return 0;
     const findings: string[] = [];
     let checked = 0;
 

@@ -6,7 +6,7 @@ import path from 'node:path';
  *
  * The limit has been documented since the beginning and 154 files broke it, four of them over 700
  * lines. The reason was not that anyone disagreed with the rule: the only thing checking it — the
- * plugin-architecture guard — scans `../../plugins` and nothing else, defaults to warn, and is not
+ * plugin-architecture guard — scans the plugins tree and nothing else, defaults to warn, and is not
  * part of `build`. So the framework's own packages, the themes and the appearances had never been
  * measured at all, and a rule nothing measures is a preference.
  *

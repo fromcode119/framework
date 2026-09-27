@@ -1,4 +1,3 @@
-import path from 'node:path';
 import { ClassOnlyGuard } from '../class-only-guard';
 import { HardcodedCopyGuard } from '../hardcoded-copy-guard';
 import { DeclarationPlacementGuard } from '../declaration-placement-guard';
@@ -8,6 +7,7 @@ import { EnvCheckGuard } from '../env-check-guard';
 import { ArchorCommand } from './arch-guard-command';
 import { GuardScope } from './guard-scope';
 import { GuardTarget } from './guard-target';
+import { ExtensionTrees } from './extension-trees';
 
 /**
  * `arch-guard convention-guard [--detail]` — two ratcheted conventions the compiler cannot see:
@@ -26,16 +26,14 @@ export class ConventionGuardCommand extends ArchorCommand {
   readonly ciEnv = { FRAMEWORK_CONVENTION_MODE: 'error' };
 
   /** Whichever trees this run covers — see {@link GuardScope}. */
-  private roots(repoRoot: string): { area: string; dir: string }[] {
-    return GuardScope.areas(repoRoot);
+  private roots(): { area: string; dir: string }[] {
+    return GuardScope.areas();
   }
 
   run(argv: string[]): number {
     const detail = argv.includes('--detail');
     const strict = process.env.FRAMEWORK_CONVENTION_MODE === 'error';
-    // packages/arch-guard/… -> repo root is four levels up from `framework/Source/packages`.
-    const repoRoot = path.resolve(process.cwd(), '..', '..');
-    const roots = this.roots(repoRoot);
+    const roots = this.roots();
 
     let failed = false;
     for (const [name, guard] of [['hardcoded copy', HardcodedCopyGuard], ['typeof guards', TypeofGuard], ['env checks (use Platform/EnvUtils)', EnvCheckGuard], ['leaked interface copy', LeakedInterfaceCopyGuard], ['declaration placement', DeclarationPlacementGuard]] as const) {
@@ -48,7 +46,7 @@ export class ConventionGuardCommand extends ArchorCommand {
       }
       if (detail) {
         for (const { file, hits: lines } of hits.slice(0, 40)) {
-          console.log(`    ${path.relative(repoRoot, file)}`);
+          console.log(`    ${ExtensionTrees.show(file)}`);
           for (const line of lines.slice(0, 4)) console.log(`      ${line}`);
         }
       }
@@ -68,7 +66,7 @@ export class ConventionGuardCommand extends ArchorCommand {
     if (detail) {
       for (const { file, counts } of classOnly.detail.slice(0, 30)) {
         const parts = Object.entries(counts).filter(([, n]) => n).map(([k, n]) => `${k}=${n}`).join(' ');
-        console.log(`    ${path.relative(repoRoot, file)}  ${parts}`);
+        console.log(`    ${ExtensionTrees.show(file)}  ${parts}`);
       }
     }
 

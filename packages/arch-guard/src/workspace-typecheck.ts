@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { writeFileSync, rmSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { ExtensionTrees } from './cli/extension-trees';
 import path from 'node:path';
 import type { IWorkspaceAreaResult } from './interfaces/workspace-area-result.interface';
 
@@ -117,14 +118,14 @@ export class WorkspaceTypecheck {
   }
 
   /** Check every area; returns one result per area with its per-slug breakdown. */
-  static run(root: string, framework: string): IWorkspaceAreaResult[] {
+  static run(framework: string): IWorkspaceAreaResult[] {
     return WorkspaceTypecheck.AREAS.map(({ name, dir, marker, include }) => {
-      const base = path.join(root, dir);
-      const slugs = !existsSync(base) ? [] : readdirSync(base)
+      const base = ExtensionTrees.dir(dir);
+      const slugs = !base || !existsSync(base) ? [] : readdirSync(base)
         .filter((s) => statSync(path.join(base, s)).isDirectory() && existsSync(path.join(base, s, marker)))
         .sort();
       const perSlug = slugs.map((slug) => {
-        const messages = WorkspaceTypecheck.checkDir(framework, path.join(base, slug), include);
+        const messages = WorkspaceTypecheck.checkDir(framework, path.join(base as string, slug), include);
         return { slug, errors: messages.length, messages };
       });
       return { area: name, total: perSlug.reduce((n, s) => n + s.errors, 0), perSlug };

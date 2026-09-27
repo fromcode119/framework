@@ -29,7 +29,7 @@ export class BackupOperatorNotesCard extends AdminComponent {
           </div>
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/80'}`}>
             <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Reference Documentation</div>
-            <p className="mt-3 text-sm text-slate-500">framework/Source/docs/backup-and-transfer.md</p>
+            <p className="mt-3 text-sm text-slate-500">docs/backup-and-transfer.md</p>
             <p className="mt-2 text-xs text-slate-500">Restore execution always creates a rollback snapshot first and rejects arbitrary filesystem targets from the browser.</p>
           </div>
         </div>

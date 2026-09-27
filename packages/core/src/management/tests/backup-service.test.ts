@@ -60,7 +60,7 @@ describe('BackupService', () => {
     // ran anywhere but a developer's laptop.
     const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-service-'));
     temporaryDirectories.push(sandbox);
-    const frameworkRoot = path.join(sandbox, 'framework', 'Source');
+    const frameworkRoot = path.join(sandbox, 'platform', 'framework');
     fs.mkdirSync(frameworkRoot, { recursive: true });
     process.env.ATLANTIS_PROJECT_ROOT = frameworkRoot;
     fs.writeFileSync(path.join(frameworkRoot, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');

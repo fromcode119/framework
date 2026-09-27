@@ -3,6 +3,7 @@ import path from 'node:path';
 import { ComponentDecoratorMigration } from '../component-migration/component-decorator-migration';
 import { ArchorCommand } from './arch-guard-command';
 import { FrameworkRoot } from './framework-root';
+import { ExtensionTrees } from './extension-trees';
 
 /**
  * `arch-guard component-migration <path> [--apply]` — convert components carrying `<Props, State>`
@@ -20,25 +21,24 @@ export class ComponentMigrationCommand extends ArchorCommand {
 
   run(argv: string[]): number {
     const framework = FrameworkRoot.find();
-    const repo = FrameworkRoot.repo();
     const apply = argv.includes('--apply');
     const rel = argv.find((a) => !a.startsWith('--'));
     if (!rel) {
-      console.error('usage: arch-guard component-migration <path-relative-to-repo-root-or-framework> [--apply]');
+      console.error('usage: arch-guard component-migration <path> [--apply]');
       return 1;
     }
 
-    // The path may be given relative to EITHER root, so take the first candidate that actually exists.
+    // Relative to where the command runs, or to the framework root — the first that actually exists.
     // (The `.mjs` this replaced used `.find(c => c)` on the two resolved strings, which always picked
-    // the framework one — a repo-root path such as `plugins/<slug>` silently resolved to a missing dir.)
-    const target = [path.resolve(framework, rel), path.resolve(repo, rel)].find((c) => fs.existsSync(c));
+    // the framework one — any other path silently resolved to a missing dir.)
+    const target = [path.resolve(rel), path.resolve(framework, rel)].find((c) => fs.existsSync(c));
     if (!target) {
-      console.error(`[arch-guard] no such path "${rel}" under ${framework} or ${repo}`);
+      console.error(`[arch-guard] no such path "${rel}" here or under ${framework}`);
       return 1;
     }
 
     const { converted, skipped, reasons } = ComponentDecoratorMigration.run(target, framework, apply);
-    for (const file of converted) console.log(`  ${path.relative(repo, file)}`);
+    for (const file of converted) console.log(`  ${ExtensionTrees.show(file)}`);
     for (const [why, count] of [...reasons].sort((a, b) => b[1] - a[1]).slice(0, 12)) {
       console.log(`  skipped ${String(count).padStart(4)} — ${why}`);
     }

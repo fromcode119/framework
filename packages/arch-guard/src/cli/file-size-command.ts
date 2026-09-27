@@ -34,8 +34,7 @@ export class FileSizeCommand extends ArchorCommand {
     let failed = false;
     console.log(`File size (.ts ≤ ${FileSizeGuard.TS_MAX_LINES}, .tsx ≤ ${FileSizeGuard.TSX_MAX_LINES}):`);
 
-    const repoRoot = FrameworkRoot.repo();
-    for (const { area: name, dir } of GuardScope.areas(repoRoot)) {
+    for (const { area: name, dir } of GuardScope.areas()) {
       const oversized = FileSizeGuard.findOversized(dir);
       const unreadable = oversized.filter((entry) => entry.lines >= FileSizeGuard.UNREADABLE_LINES);
       const count = oversized.length;

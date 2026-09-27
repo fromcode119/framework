@@ -235,13 +235,4 @@ export class BlockFieldSourceReader {
       else if (match.test(full)) yield full;
     }
   }
-
-  static repoRoot(): string {
-    let dir = process.cwd();
-    for (let i = 0; i < 8; i += 1) {
-      if (fs.existsSync(path.join(dir, 'build-plugins.sh'))) return dir;
-      dir = path.dirname(dir);
-    }
-    return process.cwd();
-  }
 }

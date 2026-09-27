@@ -5,9 +5,9 @@ import { ExtensionKind } from '@extension-builder/extension-kind';
 /**
  * Where one extension lives, and where its build toolchain resolves from.
  *
- * The monorepo is ONE arrangement, not the arrangement. `build-plugins.sh` assumed a `ROOT_DIR`
- * with `plugins/`, `themes/` and `framework/Source/` as siblings, and reached sideways into
- * `framework/Source/packages/sdk/src/vite/...` — a path that exists on one layout only. The build
+ * A combined checkout is ONE arrangement, not the arrangement. `build-plugins.sh` assumed a
+ * `ROOT_DIR` with the extensions and the framework as siblings, and reached sideways into the
+ * framework's `packages/sdk/src/vite/...` — a path that exists on one layout only. The build
  * server already clones a single repo into a temp dir with no monorepo around it, and every plugin
  * is meant to be its own repo, so that assumption was never safe.
  */

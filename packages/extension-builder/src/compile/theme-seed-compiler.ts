@@ -35,8 +35,7 @@ export class ThemeSeedCompiler {
       await esbuild.build({
         entryPoints: [entry],
         // Same reason as the backend bundle: esbuild writes module paths RELATIVE TO CWD into the
-        // output, so the identical seed built from the workspace root and from framework/Source
-        // differed. Pin it to the workspace so the artifact does not depend on where the builder
+        // output, so the identical seed built from two different working directories differed. Pin it to the workspace so the artifact does not depend on where the builder
         // was invoked.
         absWorkingDir: path.resolve(path.dirname(path.dirname(themeDir))),
         bundle: true,

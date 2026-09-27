@@ -1,6 +1,6 @@
 # Docker Compose for API + Admin Mode
 #
-# Usage, from `framework/Source`:
+# Usage, from the framework root:
 #   docker compose -f deploy/docker-compose.api-admin.yml --project-directory . up
 #
 # `--project-directory` is REQUIRED: build contexts and mounts resolve against it, and Compose would

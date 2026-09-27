@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { ExtensionTrees } from './cli/extension-trees';
 import { PluginAliasMigration } from './plugin-alias-migration';
 
 /**
@@ -82,7 +83,7 @@ export class ImportGuard {
   private static readonly RELATIVE_ONLY = /(^|\/)sdk\/src\/vite\//;
 
   /** The alias root owning this file, or null for a package that has no alias. */
-  private static aliasRoot(file: string, framework: string, repoRoot: string): { root: string; prefix: string } | null {
+  private static aliasRoot(file: string, framework: string): { root: string; prefix: string } | null {
     const real = path.resolve(file);
     if (ImportGuard.RELATIVE_ONLY.test(real.replace(/\\/g, '/'))) return null;
     for (const pkg of ['admin', 'frontend']) {
@@ -102,8 +103,8 @@ export class ImportGuard {
       const src = path.join(packageRoot, 'src');
       if (existsSync(src)) return { root: src, prefix };
     }
-    const themes = path.resolve(repoRoot, 'themes');
-    if (real.startsWith(themes + path.sep)) {
+    const themes = ExtensionTrees.dir('themes');
+    if (themes && real.startsWith(themes + path.sep)) {
       const slug = real.slice(themes.length + 1).split(path.sep)[0];
       const src = path.resolve(themes, slug, 'src');
       if (real.startsWith(src + path.sep)) return { root: src, prefix: '@theme/' };
@@ -113,8 +114,8 @@ export class ImportGuard {
     // specifiers but the style rule could never fire there — 6861 relative imports sat unreported.
     // Files OUTSIDE `src` (a root `index.ts`, a `tests/` helper) still resolve INTO it, so the alias
     // root is the plugin's `src` while the guard's reach is the whole plugin.
-    const plugins = path.resolve(repoRoot, 'plugins');
-    if (real.startsWith(plugins + path.sep)) {
+    const plugins = ExtensionTrees.dir('plugins');
+    if (plugins && real.startsWith(plugins + path.sep)) {
       const slug = real.slice(plugins.length + 1).split(path.sep)[0];
       const pluginRoot = path.resolve(plugins, slug);
       // Root, not `src`: `settings.ts` / `seed.ts` / `index.ts` live here, and a src-anchored root made
@@ -145,7 +146,7 @@ export class ImportGuard {
   }
 
   /** Absolute path a specifier points at, `'external'` for packages, or null when it does not exist. */
-  static resolveSpecifier(spec: string, importer: string, framework: string, repoRoot: string): string | null {
+  static resolveSpecifier(spec: string, importer: string, framework: string): string | null {
     const dir = path.dirname(importer);
     let base: string;
     if (spec.startsWith('.')) base = path.normalize(path.join(dir, spec));
@@ -153,7 +154,7 @@ export class ImportGuard {
       // A package alias names its target outright; `@/`, `@theme/` and `@plugin/` are relative to
       // whoever is importing, so they fall back to the importer's own root.
       const alias = ImportGuard.packageAliasRoot(spec, framework)
-        ?? ImportGuard.aliasRoot(importer, framework, repoRoot);
+        ?? ImportGuard.aliasRoot(importer, framework);
       if (!alias || !spec.startsWith(alias.prefix)) return null;
       base = path.normalize(path.join(alias.root, spec.slice(alias.prefix.length)));
     } else return 'external';
@@ -208,16 +209,14 @@ export class ImportGuard {
   }
 
   /** Every unresolvable specifier and every style deviation, as printable lines. */
-  static scan(repoRoot: string, framework: string): { broken: string[]; style: string[] } {
+  static scan(framework: string): { broken: string[]; style: string[] } {
     const areas = [
       path.join(framework, 'packages'),
       // `config/` sits beside `packages/`, not under it — the blind spot that let next-config-env.ts
       // grow to 448 lines before anything measured it. Scanned unconditionally, like the rest of this
       // list: this guard predates `GuardScope` scoping and always covers the whole framework tree.
       path.join(framework, 'config'),
-      path.join(repoRoot, 'plugins'),
-      path.join(repoRoot, 'themes'),
-      path.join(repoRoot, 'appearance'),
+      ...ExtensionTrees.dirs(),
     ].filter((dir) => existsSync(dir));
 
     const broken: string[] = [];
@@ -226,12 +225,12 @@ export class ImportGuard {
       for (const file of ImportGuard.walk(area)) {
         const source = readFileSync(file, 'utf8');
         const generated = source.includes(ImportGuard.GENERATED);
-        const alias = generated ? null : ImportGuard.aliasRoot(file, framework, repoRoot);
-        const rel = path.relative(repoRoot, file);
+        const alias = generated ? null : ImportGuard.aliasRoot(file, framework);
+        const rel = ExtensionTrees.show(file);
         for (const match of source.matchAll(ImportGuard.SPEC)) {
           const spec = match[3];
           const at = match.index ?? 0;
-          const resolved = ImportGuard.resolveSpecifier(spec, file, framework, repoRoot);
+          const resolved = ImportGuard.resolveSpecifier(spec, file, framework);
           if (resolved === null) {
             if (!ImportGuard.notAnImport(source, at)) broken.push(`${rel}: cannot resolve '${spec}'`);
             continue;

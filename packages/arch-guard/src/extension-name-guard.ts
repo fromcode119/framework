@@ -2,8 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { SourceTree } from './source-tree';
-import { FrameworkRoot } from './cli/framework-root';
 import { DistinctiveNameScan } from './distinctive-name-scan';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * The framework names no extension — enforced, not asked for.
@@ -59,13 +59,12 @@ export class ExtensionNameGuard {
 
   /** Slugs read off disk, so a new extension is covered the moment it exists. */
   private static slugs(): string[] {
-    const repo = FrameworkRoot.repo();
     const found = new Set<string>();
 
-    for (const area of ['plugins', 'themes', 'appearance']) {
+    for (const root of ExtensionTrees.dirs()) {
       let entries: fs.Dirent[] = [];
       try {
-        entries = fs.readdirSync(path.join(repo, area), { withFileTypes: true });
+        entries = fs.readdirSync(root, { withFileTypes: true });
       } catch {
         continue;
       }
@@ -110,18 +109,17 @@ export class ExtensionNameGuard {
 
   /** Each extension directory, with the slug it is allowed to name: its own. */
   private static extensionDirs(): Array<{ dir: string; self: string }> {
-    const repo = FrameworkRoot.repo();
     const found: Array<{ dir: string; self: string }> = [];
 
-    for (const area of ['plugins', 'themes', 'appearance']) {
+    for (const root of ExtensionTrees.dirs()) {
       let entries: fs.Dirent[] = [];
       try {
-        entries = fs.readdirSync(path.join(repo, area), { withFileTypes: true });
+        entries = fs.readdirSync(root, { withFileTypes: true });
       } catch {
         continue;
       }
       for (const entry of entries) {
-        if (entry.isDirectory() && !entry.name.startsWith('.')) found.push({ dir: path.join(repo, area, entry.name), self: entry.name });
+        if (entry.isDirectory() && !entry.name.startsWith('.')) found.push({ dir: path.join(root, entry.name), self: entry.name });
       }
     }
 

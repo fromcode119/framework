@@ -44,7 +44,7 @@ export class WorkspaceCheckCommand extends ArchorCommand {
 
     console.log('arch-guard workspace typecheck — esbuild/Vite/next do NOT check types:\n');
     let failed = false;
-    for (const { area, total, perSlug } of WorkspaceTypecheck.run(FrameworkRoot.repo(), framework)) {
+    for (const { area, total, perSlug } of WorkspaceTypecheck.run(framework)) {
       for (const { slug, errors, messages } of perSlug) {
         if (!errors) continue;
         console.log(`  ${area}/${slug}: ${errors}`);

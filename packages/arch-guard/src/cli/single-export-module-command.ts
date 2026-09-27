@@ -1,7 +1,6 @@
-import path from 'node:path';
 import { SingleExportModuleGuard } from '../single-export-module-guard';
 import { ArchorCommand } from './arch-guard-command';
-import { FrameworkRoot } from './framework-root';
+import { ExtensionTrees } from './extension-trees';
 import { GuardScope } from './guard-scope';
 
 /**
@@ -14,12 +13,11 @@ export class SingleExportModuleCommand extends ArchorCommand {
   readonly summary = 'A class/interface/enum module exports exactly one thing, matching what the file is.';
 
   run(_argv: string[]): number {
-    const repoRoot = FrameworkRoot.repo();
-    const { offenders, unparseable } = SingleExportModuleGuard.scan(GuardScope.areas(repoRoot));
+    const { offenders, unparseable } = SingleExportModuleGuard.scan(GuardScope.areas());
 
     if (unparseable.length) {
       console.error('[check-single-export-module] these files did not parse cleanly and were SKIPPED, not counted as clean:');
-      for (const file of unparseable) console.error(`- ${path.relative(repoRoot, file)}`);
+      for (const file of unparseable) console.error(`- ${ExtensionTrees.show(file)}`);
       console.error('');
     }
 
@@ -31,7 +29,7 @@ export class SingleExportModuleCommand extends ArchorCommand {
 
     console.error('[check-single-export-module] these files export more than the one thing their kind allows:');
     for (const { file, exports, reason } of offenders) {
-      console.error(`- ${path.relative(repoRoot, file)}`);
+      console.error(`- ${ExtensionTrees.show(file)}`);
       console.error(`    exports: ${exports.map((e) => `${e.kind} ${e.name}`).join(', ')}`);
       console.error(`    ${reason}`);
     }

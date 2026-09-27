@@ -1,9 +1,8 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { PeerSurfaceGuard } from '../src/peer-surface-guard';
-import { FrameworkRoot } from '../src/cli/framework-root';
 
 /**
  * The failure this exists for compiles, packs and boots, then dies at the call site with
@@ -21,9 +20,10 @@ describe('PeerSurfaceGuard', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'peer-surface-'));
     made.push(root);
     fs.mkdirSync(path.join(root, 'plugins'), { recursive: true });
-    const original = FrameworkRoot.repo;
-    (FrameworkRoot as any).repo = () => root;
-    return { root, restore: () => { (FrameworkRoot as any).repo = original; } };
+    for (const [variable, area] of [['PLUGINS_DIR', 'plugins'], ['THEMES_DIR', 'themes'], ['APPEARANCE_DIR', 'appearance']]) {
+      vi.stubEnv(variable, path.join(root, area));
+    }
+    return { root, restore: () => { vi.unstubAllEnvs(); } };
   };
 
   afterEach(() => { for (const dir of made.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });

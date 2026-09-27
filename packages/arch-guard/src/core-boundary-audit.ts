@@ -1,6 +1,7 @@
 /* eslint-disable */
 import fs from 'node:fs';
 import path from 'node:path';
+import { ExtensionTrees } from './cli/extension-trees';
 
 /**
  * The framework must not name a plugin: no `@fromcode119/plugin-x` import, no reach into a plugin's
@@ -61,10 +62,7 @@ export class CoreBoundaryAudit {
     }
 
     function collectPluginTokens() {
-      const roots = [
-        process.env.PLUGINS_DIR,
-        path.resolve(ROOT, '..', '..', 'plugins')
-      ].filter(Boolean);
+      const roots = ExtensionTrees.dirs(['plugins']);
 
       const tokens = new Set<any>();
 

@@ -2,6 +2,7 @@ import path from 'node:path';
 import { SrcArtifactGuard } from '../src-artifact-guard';
 import { ArchorCommand } from './arch-guard-command';
 import { FrameworkRoot } from './framework-root';
+import { ExtensionTrees } from './extension-trees';
 
 /** `arch-guard src-artifacts` — emitted `.js`/`.d.ts` must never sit beside the sources they shadow. */
 export class SrcArtifactsCommand extends ArchorCommand {
@@ -15,14 +16,13 @@ export class SrcArtifactsCommand extends ArchorCommand {
 
   run(_argv: string[]): number {
     const framework = FrameworkRoot.find();
-    const repoRoot = path.resolve(framework, '..', '..');
     // Framework packages: STRICT — no emitted output under an authored source root at all.
     const offenders = SrcArtifactGuard.findAll(path.join(framework, 'packages'));
     // Plugins/themes/appearances: SHADOW-only. This area had NO coverage before — the gate reported OK
     // while never looking at it.
-    for (const area of ['plugins', 'themes', 'appearance']) {
+    for (const tree of ExtensionTrees.dirs()) {
       offenders.push(
-        ...SrcArtifactGuard.findShadowing(path.join(repoRoot, area), SrcArtifactsCommand.BUNDLE_ROOTS)
+        ...SrcArtifactGuard.findShadowing(tree, SrcArtifactsCommand.BUNDLE_ROOTS)
           .filter((f: string) => !/\/index\.js$/.test(f)),
       );
     }
@@ -31,7 +31,7 @@ export class SrcArtifactsCommand extends ArchorCommand {
       return 0;
     }
 
-    const shown = offenders.slice(0, 10).map((f: string) => '  ' + path.relative(repoRoot, f));
+    const shown = offenders.slice(0, 10).map((f: string) => '  ' + ExtensionTrees.show(f));
     console.error(
       `[arch-guard src-artifacts] ${offenders.length} build artifact(s) shadowing authored source:\n` +
       shown.join('\n') + (offenders.length > 10 ? `\n  … and ${offenders.length - 10} more` : '') +
