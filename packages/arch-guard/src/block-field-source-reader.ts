@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { BlockStorefrontRenderers } from './block-storefront-renderers';
 
 /**
  * Reading a block's source for the keys it WRITES and the keys its renderer READS.
@@ -38,7 +39,8 @@ export class BlockFieldSourceReader {
     const keysIn = (rawChunk: string) => {
       // Pull in every delegated settings component this chunk references, TRANSITIVELY: a block
       // delegates to `<X>Settings`, which delegates again to the row editor that owns `items`.
-      const chunk = BlockFieldSourceReader.withDelegates(rawChunk, delegates);
+      // A comment that names `data.fields` is not a control that writes it.
+      const chunk = BlockStorefrontRenderers.stripComments(BlockFieldSourceReader.withDelegates(rawChunk, delegates));
       const keys = new Set(
         [...chunk.matchAll(/updateData\(\s*['"]([A-Za-z0-9_]+)['"]/g)].map((match) => match[1]),
       );
@@ -79,10 +81,17 @@ export class BlockFieldSourceReader {
       .map((match) => ({ id: match[1], at: match.index ?? 0 }));
     for (let i = 0; i < marks.length; i += 1) {
       if (out.has(marks[i].id)) continue;
-      const end = i + 1 < marks.length ? marks[i + 1].at : src.length;
+      // Bounded by the next block AND by the next `X.Y.renderSettings =`: a block defined without a
+      // form of its own was otherwise credited with every key the following static initializer wrote.
+      const nextAssignment = assignments.find((assignment) => assignment.at > marks[i].at)?.at ?? src.length;
+      const end = Math.min(i + 1 < marks.length ? marks[i + 1].at : src.length, nextAssignment);
       const chunk = src.slice(marks[i].at, end);
-      if (!chunk.includes('renderSettings')) continue;
-      const keys = keysIn(chunk);
+      // A factory that generates its form from `fields: ['a', 'b']` gives each listed key a control.
+      const declared = [...(chunk.match(/\bfields:\s*\[([^\]]*)\]/)?.[1] ?? '').matchAll(/['"]([A-Za-z0-9_]+)['"]/g)]
+        .map((match) => match[1]);
+      if (!chunk.includes('renderSettings') && !declared.length) continue;
+      const keys = chunk.includes('renderSettings') ? keysIn(chunk) : new Set<string>();
+      for (const key of declared) keys.add(key);
       if (keys.size) out.set(marks[i].id, keys);
     }
     return out;
@@ -140,6 +149,45 @@ export class BlockFieldSourceReader {
     };
     visit(file, src, depth);
     return out;
+  }
+
+  /**
+   * A renderer's source with every way it reaches its data spelled as `data?.key`.
+   *
+   * Renderers rarely write `data?.key` literally. They alias it (`const d = this.props.data;` then
+   * `d!.heading`) or destructure it (`const { heading } = d`), and only matching the literal form
+   * reported every working control in those renderers as FAKE. Import lines are dropped first: a
+   * specifier such as `…/fcs-faq-data.interface` reads as `data.interface` and was reported as a key
+   * the editor never offers.
+   */
+  static normalizeReads(src: string): string {
+    // Comments go too: a note that says "`data.title` was dropped" is not a read of `title`.
+    let text = BlockStorefrontRenderers.stripComments(src)
+      .replace(/^\s*import\s[^;]*?from\s+['"][^'"]+['"];?/gm, '')
+      // `(data as any)?.key` is the same read as `data?.key`.
+      .replace(/\(\s*([A-Za-z_$][\w$.]*)\s+as\s+[^()]+\)/g, '$1');
+    const aliases = new Set<string>();
+    for (const match of text.matchAll(
+      /\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*(?::[^=;]+)?=\s*\(?\s*(?:this\.)?(?:props\.)?data\b(?!\s*[?.!]*\s*\.)/g,
+    )) {
+      if (match[1] !== 'data') aliases.add(match[1]);
+    }
+    for (const alias of aliases) {
+      const escaped = alias.replace(/\$/g, '\\$');
+      text = text.replace(new RegExp(`(?<![.\\w$])${escaped}\\s*[!?]*\\s*\\.(?=[A-Za-z_])`, 'g'), 'data?.');
+    }
+    const sources = ['data', 'this\\.props\\.data', 'props\\.data', ...[...aliases].map((a) => a.replace(/\$/g, '\\$'))];
+    const destructure = new RegExp(`\\b(?:const|let)\\s*\\{([^}]*)\\}\\s*(?::[^=;]+)?=\\s*\\(?\\s*(?:${sources.join('|')})\\b(?!\\s*[?.!]*\\s*\\.)`, 'g');
+    const names: string[] = [];
+    for (const match of text.matchAll(destructure)) {
+      for (const part of match[1].split(',')) {
+        const name = part.split(/[:=]/)[0].replace('...', '').trim();
+        if (/^[A-Za-z_$][\w$]*$/.test(name)) names.push(name);
+      }
+    }
+    // `data!.key` is the same read as `data?.key`; the patterns below only know the latter.
+    text = text.replace(/(?<![.\w$])data\s*!+\s*\./g, 'data?.');
+    return names.length ? `${text}\n${names.map((name) => `data?.${name}`).join('\n')}` : text;
   }
 
   /** `data?.key` / `data.key` reads in a renderer. */
