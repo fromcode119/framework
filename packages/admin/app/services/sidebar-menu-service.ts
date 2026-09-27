@@ -43,13 +43,41 @@ export class SidebarMenuService {
     // An item that declares its own `permission` narrows that further: it is shown only to a user
     // granted exactly that permission (or a wildcard covering it). That is how one plugin gives an
     // employee a "my own work" screen without also listing every management screen beside it.
+    //
+    // A plugin's pages usually arrive as ONE dropdown group whose `children` are those items, so the
+    // rule is applied to the children too; a group left with none is dropped.
     const permissions: string[] = Array.isArray(user?.permissions) ? user.permissions : [];
-    return menuItems.filter(item => {
+    return SidebarMenuService.permitted(menuItems, permissions);
+  }
+
+  /**
+   * Where a scoped (non-admin) console user should land: the first screen their menu offers. The
+   * dashboard is built from platform-wide statistics such a user may not read, so opening it showed
+   * them a page of "could not be read" instead of their own work. Empty when nothing is offered.
+   */
+  static homePathFor(menuItems: any[], user: any): string {
+    const first = (items: any[]): string => {
+      for (const item of items) {
+        const nested = Array.isArray(item?.children) && item.children.length > 0 ? first(item.children) : '';
+        if (nested) return nested;
+        if (!item?.isGroup && item?.path) return String(item.path);
+      }
+      return '';
+    };
+    return first(SidebarMenuService.authorizeMenuItems(menuItems, user));
+  }
+
+  private static permitted(menuItems: any[], permissions: string[]): any[] {
+    return menuItems.flatMap((item) => {
       const slug = String(item?.pluginSlug || '').trim().toLowerCase();
-      if (!slug) return false;
+      if (!slug) return [];
+      if (Array.isArray(item?.children) && item.children.length > 0) {
+        const children = SidebarMenuService.permitted(item.children.map((child: any) => ({ pluginSlug: slug, ...child })), permissions);
+        return children.length > 0 ? [{ ...item, children }] : [];
+      }
       const required = String(item?.permission || '').trim();
-      if (required) return PermissionGrants.covers(permissions, required);
-      return permissions.some((p) => p === '*' || p === `${slug}:*` || p.startsWith(`${slug}:`));
+      if (required) return PermissionGrants.covers(permissions, required) ? [item] : [];
+      return permissions.some((p) => p === '*' || p === `${slug}:*` || p.startsWith(`${slug}:`)) ? [item] : [];
     });
   }
 

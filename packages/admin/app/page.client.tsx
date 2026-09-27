@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { DashboardDataService } from '@/app/services/dashboard-data-service';
+import { SidebarMenuService } from '@/app/services/sidebar-menu-service';
 import { PlatformBrandingService } from '@/lib/platform-branding-service';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -75,6 +76,16 @@ export class AdminPage extends AdminComponent {
     this.prevRefreshVersion = this.runtime.plugins?.refreshVersion;
 
     if (isAuthLoading || !user) return;
+
+    // A scoped console user (a staff member, an editor) cannot read the platform statistics this
+    // page is built from; send them to the first screen their menu offers instead.
+    if (!this.userHasPermission(user, '*')) {
+      const home = SidebarMenuService.homePathFor(this.runtime.plugins?.menuItems ?? [], user);
+      if (home) {
+        this.router.replace(home);
+        return;
+      }
+    }
 
     this.fetchStats();
     this.fetchPlugins();
