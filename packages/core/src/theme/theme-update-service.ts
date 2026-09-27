@@ -4,6 +4,7 @@ import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import { CatalogEntry } from '@core/marketplace/contributions/catalog-entry';
 import { CatalogContributionScope } from '@core/marketplace/catalog-contribution-scope';
 import { CoreServices } from '@core/services/core-services';
+import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 
 /**
  * ThemeUpdateService
@@ -63,7 +64,7 @@ export class ThemeUpdateService {
       try {
         for (const row of (await contributor.list()) || []) {
           const entry = CatalogEntry.from(row as Record<string, unknown>);
-          if (entry && entry.kind === 'theme') themes.push(entry.toCatalogPlugin());
+          if (entry && entry.kind === ExtensionScope.THEME.value) themes.push(entry.toCatalogPlugin());
         }
       } catch {
         // One broken contributor must not hide every other offer, exactly as on the plugins side.

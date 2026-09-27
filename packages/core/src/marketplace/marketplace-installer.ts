@@ -8,6 +8,8 @@ import { CoreServices } from '@core/services/core-services';
 import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-client';
 import { pipeline } from 'stream/promises';
 import { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
+import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
+import { CatalogSource } from '@core/marketplace/enums/catalog-source.enum';
 
 /**
  * Fetching a plugin package and putting it on disk — including working out WHICH version that is.
@@ -202,11 +204,11 @@ export class MarketplaceInstaller {
    */
   private static async resolveLocalPackage(pkg: unknown, slug: string): Promise<string | null> {
     const offer = CoercionUtils.toObject(pkg);
-    if (CoercionUtils.toString(offer.source) !== 'local') return null;
+    if (CoercionUtils.toString(offer.source) !== CatalogSource.LOCAL.value) return null;
 
     const resolved = await CoreServices.getInstance().catalogContributions.resolveArtifact(
       slug,
-      CoercionUtils.toString(offer.kind) || 'plugin',
+      ExtensionScope.PLUGIN.value,
     );
     if (!resolved) {
       // Never fall through to the remote URL. The offer said this installation has the package; if

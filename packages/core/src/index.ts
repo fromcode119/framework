@@ -414,6 +414,7 @@ export { UiScope } from '@core/enums/ui-scope.enum';
 export { AdminScope } from '@core/enums/admin-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';
 export { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
+export { CatalogSource } from '@core/marketplace/enums/catalog-source.enum';
 export { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 export { AuditOutcome } from '@core/security/enums/audit-outcome.enum';
 export { SnapshotType } from '@core/management/enums/snapshot-type.enum';

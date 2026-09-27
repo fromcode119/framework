@@ -23,4 +23,14 @@ describe('contributed catalogue entry origin', () => {
       slug: 'example', name: 'Example', version: '1.0.0', kind: 'plugin',
     });
   });
+
+  it('keeps an appearance an appearance', () => {
+    // A default of "plugin" once installed every appearance update into the plugins root.
+    expect(CatalogEntry.from({ ...row, kind: 'appearance' })?.kind).toBe('appearance');
+  });
+
+  it('offers nothing for a kind this installation cannot install, and never guesses one', () => {
+    expect(CatalogEntry.from({ ...row, kind: 'widget' })).toBeNull();
+    expect(CatalogEntry.from({ ...row, kind: undefined })).toBeNull();
+  });
 });
