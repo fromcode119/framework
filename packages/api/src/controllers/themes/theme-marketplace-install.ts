@@ -1,4 +1,4 @@
-import { CoercionUtils, CoreServices, ThemeManager, Logger } from '@fromcode119/core';
+import { CatalogSource, CoercionUtils, CoreServices, ExtensionScope, ThemeManager, Logger } from '@fromcode119/core';
 import { ThemeInstallSource } from '@api/controllers/themes/enums/theme-install-source.enum';
 
 /**
@@ -40,7 +40,7 @@ export class ThemeMarketplaceInstall {
    */
   private static async localPackage(pkg: unknown, slug: string): Promise<string | null> {
     const offer = CoercionUtils.toObject(pkg);
-    if (CoercionUtils.toString(offer.source) !== 'local') return null;
-    return CoreServices.getInstance().catalogContributions.resolveArtifact(slug, CoercionUtils.toString(offer.kind) || 'theme');
+    if (CoercionUtils.toString(offer.source) !== CatalogSource.LOCAL.value) return null;
+    return CoreServices.getInstance().catalogContributions.resolveArtifact(slug, ExtensionScope.THEME.value);
   }
 }

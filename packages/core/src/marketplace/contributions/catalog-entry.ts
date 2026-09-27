@@ -1,3 +1,6 @@
+import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
+import { CatalogSource } from '@core/marketplace/enums/catalog-source.enum';
+
 /**
  * One installable version offered by something other than the remote marketplace.
  *
@@ -23,12 +26,16 @@ export class CatalogEntry {
   static from(row: Record<string, unknown>): CatalogEntry | null {
     const slug = String(row?.slug || '').trim();
     const version = String(row?.version || '').trim();
-    if (!slug || !version) return null;
+    // The catalogue predates themes, so a row that states no kind is a plugin. A kind it DOES state
+    // but nothing here can install is not offered at all, rather than guessed as a plugin.
+    const stated = String(row?.kind ?? '').trim();
+    const kind = stated ? ExtensionScope.find(stated) : ExtensionScope.PLUGIN;
+    if (!slug || !version || !kind) return null;
 
     return new CatalogEntry(
       slug,
       version,
-      String(row?.kind || 'plugin').trim(),
+      kind.value,
       String(row?.downloadUrl || '').trim(),
       String(row?.notes || '').trim(),
       String(row?.name || slug).trim(),
@@ -48,7 +55,7 @@ export class CatalogEntry {
       kind: this.kind,
       downloadUrl: this.downloadUrl,
       releaseNotes: this.notes,
-      source: 'local',
+      source: CatalogSource.LOCAL.value,
     };
   }
 }
