@@ -76,7 +76,7 @@ export class InstalledThemesPageController {
     await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.UPLOAD_COMPLETE, { uploadId });
   }
 
-  /** Uploads a theme into THIS site's own directory — the upload a site admin may make. */
+  /** Uploads a theme into THIS site's own directory (`/themes/mine`) — the upload a site admin may make. */
   static async uploadForSite(file: File, onProgress: (percent: number | null) => void): Promise<void> {
     const formData = new FormData();
     formData.append('theme', file);
