@@ -1,3 +1,4 @@
+import { InspectorAccess } from '@fromcode119/auth';
 import { Response } from 'express';
 import { TenantMode, TenantMembershipService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
@@ -52,7 +53,7 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
     });
 
     return res.json({
-      user: {
+      user: InspectorAccess.presentToAdmin({
         id: userId,
         email: this.normalizeEmail(user.email),
         firstName: this.readUserFirstName(user),
@@ -77,7 +78,7 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
           ? await new TenantMembershipService(this.db).administersAnyTenant(String(userId))
           : true,
         multiTenant: TenantMode.isEnabled(),
-      },
+      }),
       profile,
       account: {
         status,

@@ -1,5 +1,6 @@
 export { AuthManager } from '@auth/auth-manager';
 export { UserPermissionChecker } from '@auth/permission-checker';
+export { InspectorAccess } from '@auth/inspector-access';
 export type { IUser } from '@auth/interfaces/user.interface';
 export type { IAuthService } from '@auth/interfaces/auth-service.interface';
 export type { ISessionValidator } from '@auth/interfaces/session-validator.interface';

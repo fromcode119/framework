@@ -17,6 +17,7 @@ import { CertificatesMigration } from '@core/database/migrations/040_certificate
 import { SiteOwnedDataMigration } from '@core/database/migrations/045_site_owned_data';
 import { SourcesTableOnSqliteMigration } from '@core/database/migrations/053_sources_table_on_sqlite';
 import { TimestampsCarryTheirZoneMigration } from '@core/database/migrations/054_timestamps_carry_their_zone';
+import { ReadOnlyInspectorRoleMigration } from '@core/database/migrations/055_read_only_inspector_role';
 
 /** `MigrationLoader` requires compiled files at runtime; under vitest the set is handed over directly. */
 const MIGRATIONS = [
@@ -25,10 +26,11 @@ const MIGRATIONS = [
   new SiteLifecycleMigration(), new CertificatesMigration(), new SiteOwnedDataMigration(),
   new SourcesTableOnSqliteMigration(),
   new TimestampsCarryTheirZoneMigration(),
+  new ReadOnlyInspectorRoleMigration(),
 ];
 
 /** The consolidated nine, then everything written after the consolidation. */
-const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53, 54];
+const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53, 54, 55];
 
 /**
  * Framework migrations 1–52 were consolidated into nine. Each keeps the number of one version it
@@ -86,6 +88,8 @@ describe('consolidated framework migrations', () => {
       expect(await db.tableExists(table)).toBe(true);
     }
     expect(await db.findOne('_system_roles_permissions', { role_slug: 'admin', permission_name: 'system:deploy:restart' })).toBeTruthy();
+    expect(await db.findOne('_system_roles', { slug: 'inspector' })).toBeTruthy();
+    expect(await db.findOne('_system_roles_permissions', { role_slug: 'inspector', permission_name: 'database:read' })).toBeTruthy();
   });
 
   it('runs none of the consolidated migrations on a database that already ran 1–52', async () => {
@@ -97,7 +101,7 @@ describe('consolidated framework migrations', () => {
     // Only what came after the consolidation runs; nothing consolidated re-creates a table.
     expect(await db.tableExists('_system_plugins')).toBe(false);
     const recorded = await db.find('_system_migrations', {});
-    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53, 54]);
+    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53, 54, 55]);
   });
 
   it('refuses a database that stopped part-way, before running anything', async () => {

@@ -18,6 +18,7 @@ import { ClientLayoutNavigationStateHooks } from '@/app/services/client-layout-n
 import { ClientLayoutSiteStateHooks } from '@/app/services/client-layout-site-state-hooks';
 import { SiteChooser } from '@/app/components/view/site-chooser.client';
 import { WorkspaceAccessDenied } from '@/app/components/view/workspace-access-denied.client';
+import { ReadOnlyAccessNotice } from '@/app/components/view/read-only-access-notice.client';
 
 export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientLayoutChildrenProps> {
   @prop declare children: ReactNode;
@@ -192,6 +193,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
         ) : null}
         <main className="relative flex min-h-screen min-w-0 flex-1 flex-col transition-all duration-300 ease-in-out" onMouseEnter={navigationState.handleMainContentMouseEnter}>
           <ClientLayoutHeader onMenuClick={() => navigationState.setSidebarOpen(true)} />
+          {authState.user?.readOnly ? ReadOnlyAccessNotice.render() : null}
           {/* The horizontal clip lives on the CONTENT wrapper, not on <main>: wrapping the header in it
               cut off the account button's shadow at the right edge (a wide table still cannot scroll the
               page sideways, because the clip still covers everything the pages render). */}

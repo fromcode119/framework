@@ -1,3 +1,4 @@
+import { InspectorAccess } from '@fromcode119/auth';
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
 import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-access-denied-error';
 import { Request, Response } from 'express';
@@ -103,6 +104,7 @@ export class AuthControllerPolicy extends AuthControllerTenantSelection {
     // admin session in the other tab. A login issues its own cookie and touches no other surface.
     res.cookie(sessionCookieName, token, cookieOptions);
 
-    return { token, user: userResponse, availableTenants };
+    // The token above carries the real roles; the admin is told what an inspector may SEE.
+    return { token, user: InspectorAccess.presentToAdmin(userResponse), availableTenants };
   }
 }
