@@ -110,7 +110,7 @@ export class BuildSourceSecretService {
   }
 
   private normalizeSecret(secret: string | null | undefined): string {
-    return typeof secret === 'string' ? secret.trim() : '';
+    return (secret ?? '').trim();
   }
 
   /**

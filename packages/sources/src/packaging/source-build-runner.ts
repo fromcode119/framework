@@ -32,7 +32,28 @@ export class SourceBuildRunner {
     private readonly resolvePackageArtifact: (...args: any[]) => any,
   ) {}
 
+  /**
+   * Builds in progress, by source. A source has ONE checkout directory, so two builds of it at once
+   * race on it — measured on production: two overlapping requests for one plugin, and one failed with
+   * `ENOTEMPTY: directory not empty, rmdir …/.git/objects/35` while the other succeeded. A double click
+   * on Build, or an automatic update overlapping a manual one, does exactly that. A second request
+   * for a source that is already building now waits for that build and gets its result.
+   */
+  private static readonly inFlight = new Map<string, Promise<IBuildResult>>();
+
   async buildOne(type: ExtensionScope, entry: any): Promise<IBuildResult> {
+    const key = `${String(type)}:${String(entry?.slug ?? '')}`;
+    const running = SourceBuildRunner.inFlight.get(key);
+    if (running) {
+      this.logger.info(`A build of ${entry?.slug} is already running; this request waits for it instead of starting another.`);
+      return running;
+    }
+    const build = this.runBuild(type, entry).finally(() => SourceBuildRunner.inFlight.delete(key));
+    SourceBuildRunner.inFlight.set(key, build);
+    return build;
+  }
+
+  private async runBuild(type: ExtensionScope, entry: any): Promise<IBuildResult> {
     const { slug, gitUrl, branch } = entry;
     const gitToken = entry.gitSecret;
 
