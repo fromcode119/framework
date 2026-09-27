@@ -352,6 +352,12 @@ services:
       # The plugins' code and their writable data directories, at the SAME paths the api names them by.
       - ../plugins:/app/plugins
       - ../data:/app/data
+      # Plugins read the site's uploads and the themes' own assets from disk, as they did while their
+      # processes ran inside the api container: an image optimizer (and the variants it writes beside an
+      # upload), images embedded in generated documents. Without these two mounts an optimizer answered
+      # "File not found" for every image on every site while /uploads served the same file.
+      - ../public/uploads:/app/public/uploads
+      - ../themes:/app/themes:ro
     networks:
       - framework
     restart: unless-stopped
