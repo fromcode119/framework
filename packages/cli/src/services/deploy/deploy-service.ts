@@ -97,8 +97,15 @@ export class DeployService {
     }
 
     console.error(chalk.yellow(`Rolling back to ${replaced}...`));
+    const edges = await this.stack.containerIds(ComposeStack.EDGE);
     await this.composeFiles.sync(replaced);
     await this.versions.set(replaced);
+    // A release from before the edge publishes the ports on its gateway again; an edge left running
+    // would hold them, and that gateway could not start.
+    if (edges.length && !(await this.stack.declared([ComposeStack.EDGE])).length) {
+      console.error(chalk.yellow(`${replaced} has no edge; stopping it so its gateway can take ports 80 and 443 back.`));
+      for (const id of edges) await this.stack.stopAndRemove(id, 10);
+    }
     const rolledBack = mode === DeployMode.ROLLING && await this.rolling(this.stack).run(replaced);
     if (!rolledBack) await this.stack.up();
     const restored = await this.probe.waitFor(replaced);
