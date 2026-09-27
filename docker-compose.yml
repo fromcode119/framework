@@ -112,6 +112,21 @@ services:
       - "traefik.http.routers.fc-framework-api.tls=${TRAEFIK_TLS_ENABLED:-true}"
       - "traefik.http.services.fc-framework-api.loadbalancer.server.port=3000"
 
+  # The plugin processes run here, not in the api (the included topology gives the api
+  # EXTENSION_HOST_SOCKET), so this container needs what the api's plugins used to have locally.
+  extension-host:
+    # The image the api was built as in this project: Compose names a build after the project and
+    # the service. The topology's `atlantis-api` exists only where IMAGE_API is set, so locally this
+    # container would build a second image, from whatever the checkout held at that moment.
+    image: framework-api
+    volumes:
+      # This checkout's extension roots and data, at the container paths production names them by —
+      # the topology's `../plugins` and `../data` are the deploy directory's, which a checkout lacks.
+      - ./data:/app/data
+      - ../../plugins:/app/plugins
+      - ../../themes:/app/themes
+      - ../../appearance:/app/appearance
+
   admin:
     build:
       args:

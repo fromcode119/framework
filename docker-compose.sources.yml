@@ -33,6 +33,14 @@
 #
 # Back to the built images:  docker compose -f docker-compose.yml up -d admin api
 services:
+  # Plugin processes load core and the sdk from their BUILT output, exactly as they did inside the api:
+  # without these the api runs this checkout while every plugin runs the image's baked copy — two
+  # versions of one protocol in one request (see the api's core `dist` mount above).
+  extension-host:
+    volumes:
+      - ./packages/core/dist:/app/packages/core/dist
+      - ./packages/sdk/dist:/app/packages/sdk/dist
+
   admin:
     command: ["npm", "run", "dev", "--workspace=@fromcode119/admin"]
     environment:
