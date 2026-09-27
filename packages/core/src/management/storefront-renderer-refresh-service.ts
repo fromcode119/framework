@@ -1,25 +1,15 @@
-import { ApplicationRestartService } from '@core/management/application-restart-service';
-import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
-
 /**
- * Restarts the storefront renderer after the extensions it renders from change on disk.
+ * What happens to the storefront renderer after the extensions it renders from change on disk.
  *
- * The frontend imports each theme/plugin `ui-ssr/entry.mjs` ONCE and keeps the resulting module world
- * for the life of the process. Replacing those files under it — a theme install, update or activation —
- * leaves that world stale, and re-importing them in place produces a SECOND set of instances whose
- * registries and plugin clients no longer match the ones the loaded components hold. Rendering keeps
- * succeeding; it just silently yields empty values for everything plugin- or translation-derived. On a
- * live storefront that read as product prices, delivery estimates and testimonial labels vanishing
- * from the server-rendered HTML, with no error anywhere and no way to tell from the page that anything
- * had failed. The only reliable repair was a manual restart nobody knew to perform.
+ * It used to RESTART the frontend: each theme/plugin `ui-ssr/entry.mjs` was imported once for the life of
+ * the process, and re-importing in place left a stale world that rendered empty values. That restart was
+ * itself an outage — with one frontend container, every storefront answered 502 until it was back, on
+ * every plugin install.
  *
- * So the install performs it. This is deliberately a RESTART and not a hot reload: a fresh process is
- * the one state we know renders what is actually on disk.
- *
- * Never fatal. An install that succeeded must not be reported as failed because the renderer could not
- * be reached — and on a deployment that runs no frontend (api-only, api+admin), "no frontend to
- * restart" is the correct and expected answer, which {@link ApplicationRestartService} already returns
- * as a stated reason rather than an error.
+ * Neither is needed now. The storefront renders in render hosts keyed by a signature that carries a stamp
+ * of each bundle on disk (`ThemeSsrBundles` in the frontend), so changed files — a new version or a
+ * rebuild at the same one — are a new signature: the next render for a site builds a fresh world beside
+ * the old one and switches to it, and the old world keeps serving until then. So this only says so.
  */
 export class StorefrontRendererRefreshService {
   /**
@@ -29,19 +19,6 @@ export class StorefrontRendererRefreshService {
     reason: string,
     logger?: { info(message: string): void; warn(message: string): void },
   ): Promise<void> {
-    const app = ApplicationUrlUtils.FRONTEND_APP;
-    const outcome = await new ApplicationRestartService(logger).restart(app, `${reason} (storefront renderer refresh)`);
-
-    if (outcome.restarting) {
-      logger?.info(`Storefront renderer restarting after ${reason} — it renders from the files that just changed.`);
-      return;
-    }
-    // Stated, never silent: if this deployment does run a storefront, someone has to know the pages it
-    // serves are still rendering from the previous files.
-    logger?.warn(
-      `Storefront renderer NOT refreshed after ${reason}: ${outcome.reason} `
-      + 'If this deployment serves a storefront, restart the frontend app or its server-rendered pages '
-      + 'will keep rendering from the previous extension files.',
-    );
+    logger?.info(`Storefront picks up ${reason} on each site's next render: its bundles changed on disk, so a fresh render world is built beside the current one — no restart.`);
   }
 }

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { ThemeSsrBundles } from '@/lib/ssr/theme-ssr-bundles';
 
 /**
  * Which artifact versions the server-rendered world was built from: the active theme's version plus
@@ -38,7 +39,7 @@ export class ThemeSsrGeneration {
     this.token = createHash('sha1').update(signature).digest('hex').slice(0, 12);
   }
 
-  static from(config: Record<string, unknown> | null): ThemeSsrGeneration {
+  static from(config: Record<string, unknown> | null, stampOf: (entry: string) => string = ThemeSsrBundles.stamp): ThemeSsrGeneration {
     const activeTheme = (config?.activeTheme ?? null) as Record<string, unknown> | null;
     const themeSlug = String(activeTheme?.slug || '').trim();
     const themeVersion = String(activeTheme?.version || '').trim();
@@ -55,9 +56,18 @@ export class ThemeSsrGeneration {
       // throw away and re-import every bundle.
       .sort((left, right) => left.slug.localeCompare(right.slug));
 
+    // Each part carries the stamp of the bundle on disk, so a rebuild at the same version is a new
+    // generation too (see `ThemeSsrBundles`). No stamp when the file is absent — the version alone.
+    const part = (kind: string, slug: string, version: string, entry: string) => {
+      const stamp = slug ? stampOf(entry) : '';
+      return `${kind}:${slug}@${version}${stamp ? `#${stamp}` : ''}`;
+    };
     return new ThemeSsrGeneration(
       themeSlug,
-      [`theme:${themeSlug}@${themeVersion}`, ...pluginParts.map((plugin) => `plugin:${plugin.slug}@${plugin.version}`)].join('|'),
+      [
+        part('theme', themeSlug, themeVersion, ThemeSsrBundles.themeEntry(themeSlug)),
+        ...pluginParts.map((plugin) => part('plugin', plugin.slug, plugin.version, ThemeSsrBundles.pluginEntry(plugin.slug))),
+      ].join('|'),
       pluginParts.map((plugin) => plugin.slug),
     );
   }
