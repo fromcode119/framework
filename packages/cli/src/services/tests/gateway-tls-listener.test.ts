@@ -2,11 +2,13 @@ import { execFileSync } from 'child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
+import net from 'net';
 import tls from 'tls';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { InternalServiceAuth } from '@fromcode119/core';
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
 import { GatewayTlsListener } from '@cli/services/gateway-tls-listener';
+import { GatewayProxyProtocol } from '@cli/services/gateway/gateway-proxy-protocol';
 
 /**
  * REAL handshakes against a real listener, because every promise this class makes is a handshake
@@ -37,7 +39,7 @@ describe('GatewayTlsListener — what the platform answers a handshake with', ()
   });
 
   afterEach(() => {
-    listener?.server?.close();
+    void listener?.listener?.stop(0);
     listener = null;
   });
 
@@ -51,8 +53,8 @@ describe('GatewayTlsListener — what the platform answers a handshake with', ()
       (async () => ({ ok: true, json: async () => bundleJson() })) as unknown as typeof fetch);
     listener = new GatewayTlsListener(0, client);
     listener.start({ request: (_req, res) => { res.writeHead(200); res.end('ok'); }, upgrade: (_r, s) => s.destroy() });
-    await new Promise((resolve) => listener!.server!.once('listening', resolve));
-    return (listener!.server!.address() as { port: number }).port;
+    await listener!.listener!.listening;
+    return listener!.listener!.port;
   };
 
   /** Resolves with the peer's subject, or rejects — which is what a refused handshake looks like. */
@@ -64,6 +66,28 @@ describe('GatewayTlsListener — what the platform answers a handshake with', ()
     });
     socket.on('error', reject);
     socket.setTimeout(5000, () => { socket.destroy(); reject(new Error('timeout')); });
+  });
+
+  it('takes the visitor from the PROXY header `edge` sends ahead of the handshake', async () => {
+    const client = new CertificateBundleClient('http://api.invalid/certificates', 60_000,
+      (async () => ({ ok: true, json: async () => bundleJson() })) as unknown as typeof fetch);
+    listener = new GatewayTlsListener(0, client);
+    listener.start({ request: (req, res) => { res.writeHead(200); res.end(String(req.socket.remoteAddress)); }, upgrade: (_r, s) => s.destroy() });
+    await listener.listener!.listening;
+    const raw = net.connect({ port: listener.listener!.port, host: '127.0.0.1' });
+    await new Promise((resolve) => raw.once('connect', resolve));
+    raw.write(GatewayProxyProtocol.header('203.0.113.7', 40123));
+    const body = await new Promise<string>((resolve, reject) => {
+      const socket = tls.connect({ socket: raw, servername: 'served.test', rejectUnauthorized: false }, () => {
+        socket.write('GET / HTTP/1.1\r\nHost: served.test\r\nConnection: close\r\n\r\n');
+      });
+      let text = '';
+      socket.on('data', (chunk) => { text += chunk.toString(); });
+      socket.on('end', () => resolve(text));
+      socket.on('error', reject);
+    });
+    expect(body).toMatch(/^HTTP\/1\.1 200/);
+    expect(body).toContain('203.0.113.7');
   });
 
   it('answers a host it has a certificate for', async () => {

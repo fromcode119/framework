@@ -58,17 +58,72 @@ worked. A green build is not proof the images are reachable — check with an un
 | `ghcr.io/fromcode119/framework-api` | the API |
 | `ghcr.io/fromcode119/framework-admin` | the admin UI |
 | `ghcr.io/fromcode119/framework-frontend` | the storefront |
-| `ghcr.io/fromcode119/framework-gateway` | single-domain ingress — only under the `single-domain` profile |
+| `ghcr.io/fromcode119/framework-gateway` | single-domain ingress, and the `edge` in front of it — only under the `single-domain` profile |
 
 They are built and published by `.github/workflows/publish-images.yml`, which runs when a `v*` tag
 is pushed. `auto-tag.yml` creates those tags automatically when `package.json`'s version changes on
 `main`, so a release is a version bump. The repository is public, so **CI and image hosting cost
 nothing**; if it is ever made private, both begin billing.
 
+### How a release replaces the running platform
+
+`atlantis deploy` brings the box's `deploy/` files to the release first (the directory is a checkout
+of this repository; `.env` is never touched), then replaces the apps in one of two ways — chosen in
+**Settings → Infrastructure → Deployments**, stored as `deploy_mode`:
+
+| | Restart | Rolling |
+|---|---|---|
+| How | every app recreated at once | one app at a time: the new copy starts beside the old one, answers, then the old one drains and stops |
+| Downtime | about 45 seconds, every site | none |
+| Needs | nothing | spare memory for a second copy of the largest app (the setting shows whether the box has it) |
+
+A rolling deploy falls back to a restart — and says why — when the release carries new core
+migrations (the old api cannot keep serving a changed schema) or the box lacks the memory. The
+deploy prints which mode it used and why.
+
+**Plugins carry over.** Plugin processes run in the `extension-host` service, not in the api. A new
+api takes over the processes the old one ran instead of starting them again, so a deploy duplicates
+only the api (~200 MB), not every plugin. `extension-host` itself is left running by a rolling deploy
+and moves to the new version on the next restart deploy. Each plugin's **Process** card (Plugins → a
+plugin → Resource Limits, in Platform scope) shows where it runs and what it registered.
+
+**Container names carry a number** once a service has been rolled (`deploy-api-2`, …). Use
+`docker compose ps` rather than a fixed name.
+
+### The edge
+
+Under the `single-domain` profile the public ports (80/443, or `GATEWAY_PORT` / `GATEWAY_TLS_PUBLISH`)
+belong to the `edge` service, not the gateway. The edge passes every connection, untouched, to a
+running gateway — so the gateway can be rolled like the apps, with no gap. It routes nothing (hosts
+are still the admin's) and terminates nothing (the gateway holds the certificates).
+
+The first release that includes the edge moves the ports from the gateway to it: that one deploy
+runs as a restart (a gap of a few seconds, once); every deploy after it rolls with none.
+
+The default edge is the platform's own (`atlantis system edge`, from the gateway image). **Anything
+that meets this contract can replace it**:
+
+- TCP pass-through of `:80` to `gateway:3000` and `:443` to `gateway:${GATEWAY_TLS_PORT}` — no TLS;
+- a **PROXY protocol v2** header on each connection, so the gateway knows the visitor's address;
+- every container the name `gateway` resolves to (Docker's DNS), each checked by a TCP connect
+  about every second, and a refused connection retried on another.
+
+HAProxy, nginx (`stream` with `proxy_protocol on`), Traefik (TCP routers with `proxyProtocol` v2),
+Envoy and Caddy-l4 all can. A ready HAProxy config ships in `deploy/edge/haproxy/`; to use it, set in
+`.env`:
+
+```bash
+EDGE_IMAGE=haproxy:3.0-alpine
+EDGE_COMMAND=haproxy -f /app/deploy-edge/haproxy/haproxy.cfg
+```
+
+`deploy/edge/` is mounted into the edge at `/app/deploy-edge`, so another proxy's config can live
+there too.
+
 ### Behind your own proxy
-The `gateway` service sits behind a `single-domain` profile and is **not** started by default. A host
-that already runs a reverse proxy — whichever one — routes straight to `api`, `admin` and `frontend`
-and never starts it: two proxies competing for port 80 is the failure this avoids.
+The `gateway` and `edge` services sit behind a `single-domain` profile and are **not** started by
+default. A host that already runs a reverse proxy — whichever one — routes straight to `api`, `admin`
+and `frontend` and never starts them: two proxies competing for port 80 is the failure this avoids.
 
 ---
 

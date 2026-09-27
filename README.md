@@ -100,7 +100,9 @@ passer-by.
 **Prefer the fully containerized stack?** The bundled `docker-compose.yml` runs API + Admin +
 Frontend + PostgreSQL with no local Node. Set `COMPOSE_PROFILES=single-domain` in `.env` and
 `docker compose up -d` serves the whole platform on one hostname, port 80 by default
-(`GATEWAY_PORT`). Behind a proxy you already run, point it at the `gateway` service instead.
+(`GATEWAY_PORT`). Behind a proxy you already run, point it at the `gateway` service instead. For a
+production server, see [Deploying the framework](deploy/DEPLOYMENT.md) — prebuilt images, rolling
+deploys and the edge.
 
 **→ [Full installation guide](docs/installation.md)** — Docker Compose, production servers, Coolify,
 manual image builds, and the routing shapes for multi-hostname deployments.
@@ -148,6 +150,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 - 📊 **Atomic Migrations** — 7-phase database synchronization across core and all active plugins.
 - 🛡️ **Kernel Security Loop** — Real-time threat detection, cryptographic plugin signing, audit logging.
 - 🧱 **Plugin process isolation** — An isolated plugin runs in its own OS process with a heap ceiling and a per-call deadline; a crash takes down only that plugin.
+- 🔁 **Zero-downtime deploys** — Rolling deploys replace the api, admin, storefront and gateway one at a time behind the platform's `edge`, with no failed request; plugin processes carry over to the new api instead of restarting ([how](deploy/DEPLOYMENT.md#how-a-release-replaces-the-running-platform)).
 - 📦 **Backups + Site Transfer** — Managed system backups and a repository-root site-transfer bundle command.
 - 🌍 **Built-in i18n** — Per-field localization, admin UI labels, and plugin data, with no external libraries.
 - 🕘 **Version History Everywhere** — Every admin edit of any plugin's record is snapshotted, with one-click restore.

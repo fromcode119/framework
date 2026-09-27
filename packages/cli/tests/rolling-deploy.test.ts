@@ -34,6 +34,8 @@ describe('DeployCapacity', () => {
 class StackFixture {
   static stack(options: { mode: string; applied: number; files: string[] }): any {
     return {
+      declared: async () => [],
+      containerIds: async () => [],
       query: async (sql: string) => (sql.includes('deploy_mode') ? options.mode : String(options.applied)),
       migrationFiles: async () => options.files,
     };
@@ -50,6 +52,13 @@ describe('DeployStrategy', () => {
   it('restarts when the operator chose restart', async () => {
     const plan = await new DeployStrategy(StackFixture.stack({ mode: 'restart', applied: 54, files }), StackFixture.shell(4_486_000_000)).choose();
     expect(plan.mode).toBe(DeployMode.RESTART);
+  });
+
+  it('restarts once for the release that introduces the edge — it must take the ports from the gateway', async () => {
+    const stack = { ...StackFixture.stack({ mode: 'rolling', applied: 54, files }), declared: async () => ['edge'], containerIds: async () => [] };
+    const plan = await new DeployStrategy(stack as any, StackFixture.shell(4_486_000_000)).choose();
+    expect(plan.mode).toBe(DeployMode.RESTART);
+    expect(plan.reason).toContain('introduces the edge');
   });
 
   it('rolls when chosen, with no new migrations and room to spare', async () => {
@@ -77,7 +86,7 @@ describe('DeployStrategy', () => {
 
 /** Containers per service; `healthy` decides whether a NEW container comes up. */
 class ComposeFixture {
-  readonly containers: Record<string, string[]> = { api: ['api-old'], admin: ['admin-old'], frontend: ['front-old'] };
+  readonly containers: Record<string, string[]> = { api: ['api-old'], admin: ['admin-old'], frontend: ['front-old'], gateway: ['gw-old'] };
   readonly stopped: string[] = [];
   gatewayRestarts = 0;
   private next = 0;
@@ -114,7 +123,9 @@ describe('RollingDeploy', () => {
     const compose = new ComposeFixture(() => true);
     expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
     expect(compose.stopped).toEqual(['api-old', 'admin-old', 'front-old']);
-    expect(Object.values(compose.containers).every((ids) => ids.length === 1 && ids[0].includes('-new-'))).toBe(true);
+    expect(['api', 'admin', 'frontend'].every((service) => compose.containers[service].length === 1 && compose.containers[service][0].includes('-new-'))).toBe(true);
+    // No edge: the gateway owns the public ports and is restarted, not rolled.
+    expect(compose.containers.gateway).toEqual(['gw-old']);
     expect(compose.gatewayRestarts).toBe(1);
   });
 
@@ -125,6 +136,17 @@ describe('RollingDeploy', () => {
     expect(compose.ensured).toEqual(['extension-host']);
     // Never rolled: replacing it would stop every plugin process at once.
     expect(compose.stopped).not.toContain('extension-host-running');
+  });
+
+  it('rolls the gateway like the apps when the edge holds the ports — no restart, no gap', async () => {
+    const compose = new ComposeFixture(() => true);
+    compose.declares = ['edge'];
+    compose.containers.edge = ['edge-running'];
+    expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
+    expect(compose.gatewayRestarts).toBe(0);
+    expect(compose.stopped).toContain('gw-old');
+    expect(compose.containers.gateway).toHaveLength(1);
+    expect(compose.containers.gateway[0]).toContain('-new-');
   });
 
   it('leaves a release without extension-host exactly as before', async () => {

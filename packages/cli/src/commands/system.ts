@@ -6,6 +6,7 @@ import { CliUtils } from '@cli/utils';
 import { SiteTransferBundleCommandService } from '@cli/services/site-transfer-bundle-command-service';
 import { SystemUpdateCommandService } from '@cli/services/system-update-command-service';
 import { PlatformGateway } from '@cli/services/platform-gateway';
+import { PlatformEdge } from '@cli/services/edge/platform-edge';
 import { BootstrapSecretsService } from '@fromcode119/core';
 
 export class SystemCommands {
@@ -85,7 +86,30 @@ export class SystemCommands {
         // back to path rules, and a platform that has never been set up answers 404 at `/` — the
         // operator opens the address they were given and finds nothing.
         BootstrapSecretsService.adopt();
-        new PlatformGateway().start();
+        const gateway = new PlatformGateway();
+        gateway.start();
+        // `docker stop` during a deploy: finish what is in flight while the replacement takes new
+        // connections, then exit. Without this the process died where it stood.
+        for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+          process.once(signal, () => {
+            console.log(`[platform-gateway] ${signal}: no longer accepting; finishing requests in flight`);
+            void gateway.stop(PlatformGateway.STOP_GRACE_MS).then(() => process.exit(0));
+          });
+        }
+      });
+
+    system
+      .command('edge')
+      .description('The platform edge: holds the public ports and passes connections to a running gateway, so the gateway can be replaced with no gap (container entrypoint)')
+      .action(async () => {
+        const edge = PlatformEdge.fromEnvironment();
+        await edge.start();
+        for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+          process.once(signal, () => {
+            console.log(`[edge] ${signal}: closing the ports; open connections have ${PlatformEdge.STOP_GRACE_MS / 1000} s`);
+            void edge.stop(PlatformEdge.STOP_GRACE_MS).then(() => process.exit(0));
+          });
+        }
       });
   }
 }

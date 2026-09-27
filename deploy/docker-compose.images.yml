@@ -38,6 +38,12 @@ services:
     image: ghcr.io/fromcode119/framework-frontend:${VERSION:-latest}
 
   # Only runs under the `single-domain` profile. A host with its own proxy in front never starts it.
+  # The platform's own edge, from the gateway's image unless EDGE_IMAGE names another (see the
+  # full-stack file: HAProxy, nginx… anything that meets the edge contract).
+  edge:
+    build: !reset null
+    image: ${EDGE_IMAGE:-ghcr.io/fromcode119/framework-gateway:${VERSION:-latest}}
+
   gateway:
     build: !reset null
     image: ghcr.io/fromcode119/framework-gateway:${VERSION:-latest}

@@ -12,11 +12,13 @@ import { ReleaseHealthProbe } from '@cli/services/deploy/release-health-probe';
  * resolves to every container of it, so traffic moves as soon as the new one is up and the old one goes.
  * A new copy that never comes up is removed and the old one keeps serving: the step fails, nothing is cut.
  *
- * The gateway is restarted last and is the one blip left (a second or two): it owns the public ports.
+ * The gateway goes last. Behind `edge` it is rolled like the apps; without one it owns the public ports
+ * and is restarted, the one blip left.
  */
 export class RollingDeploy {
   /** Longer than GracefulHttpShutdown.GRACE_MS, so the old api finishes before docker kills it. */
   static readonly STOP_GRACE_SECONDS = 30;
+  private static readonly GATEWAY = 'gateway';
   private static readonly READY_TIMEOUT_MS = 240_000;
   private static readonly INTERVAL_MS = 5_000;
 
@@ -35,8 +37,19 @@ export class RollingDeploy {
         return false;
       }
     }
+    // With `edge` holding the public ports the gateway is just another app behind it: a new one beside
+    // the old, `edge` sends new connections to whichever answers, and the old one drains. Without an
+    // edge it owns the ports itself and can only be restarted — the one gap left.
+    if ((await this.stack.declared([ComposeStack.EDGE])).length && (await this.stack.containerIds(ComposeStack.EDGE)).length) {
+      console.log(chalk.blue('\nRolling gateway (behind the edge)...'));
+      if (!(await this.roll(RollingDeploy.GATEWAY, version))) {
+        console.error(chalk.red(`gateway on ${version} did not come up; its previous container is still serving.`));
+        return false;
+      }
+      return true;
+    }
     console.log(chalk.blue('\nRestarting the gateway (a second or two)...'));
-    return (await this.stack.restartService('gateway')) === 0;
+    return (await this.stack.restartService(RollingDeploy.GATEWAY)) === 0;
   }
 
   /**

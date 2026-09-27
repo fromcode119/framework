@@ -1,9 +1,10 @@
 import http from 'http';
-import https from 'https';
+import net from 'net';
 import { Duplex } from 'stream';
 import tls, { SecureContext } from 'tls';
 import { CertificateBundle } from '@fromcode119/core';
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
+import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 
 /**
  * Terminates TLS for the platform, answering each handshake with the certificate stored for the name
@@ -21,7 +22,9 @@ import { CertificateBundleClient } from '@cli/services/certificate-bundle-client
 export class GatewayTlsListener {
   static readonly ENV_PORT = 'GATEWAY_TLS_PORT';
 
-  server: https.Server | null = null;
+  server: http.Server | null = null;
+  /** Accepts for `server`: reads the PROXY header from `edge`, and stops gracefully. */
+  listener: GatewayListener | null = null;
 
   /**
    * One `SecureContext` per host, because building one parses and validates PEM on every handshake
@@ -49,15 +52,9 @@ export class GatewayTlsListener {
     request: (req: http.IncomingMessage, res: http.ServerResponse) => void;
     upgrade: (req: http.IncomingMessage, socket: Duplex, head: Buffer) => void;
   }): void {
-    const server = https.createServer({
-      SNICallback: (servername, callback) => { void this.contextFor(servername, callback); },
-    }, handlers.request);
-
-    server.on('tlsClientError', (error: Error) => {
-      // Every refused handshake lands here, including ordinary internet scanning. Logged at warn
-      // without the peer's input echoed back.
-      console.warn(`[platform-gateway] tls handshake refused: ${error.message}`);
-    });
+    // HTTP over TLS sockets this listener builds itself (`secure`), rather than an `https.Server`: the
+    // TLS socket is made here, where the visitor from `edge`'s PROXY header is known and can be set on it.
+    const server = http.createServer(handlers.request);
     server.on('clientError', (error: Error, socket) => {
       console.warn(`[platform-gateway] tls client error: ${error.message}`);
       socket.destroy();
@@ -65,9 +62,28 @@ export class GatewayTlsListener {
     server.on('upgrade', handlers.upgrade);
 
     this.server = server;
-    server.listen(this.port, () => {
+    this.listener = new GatewayListener(server, (socket) => this.secure(socket, server));
+    this.listener.listen(this.port, () => {
       console.log(`[platform-gateway] terminating TLS on 0.0.0.0:${this.port} certificates=${this.size}`);
     });
+  }
+
+  /** One accepted connection, terminated here: the certificate for the name asked for, or a refusal. */
+  private secure(socket: net.Socket, server: http.Server): void {
+    const visitor = { address: socket.remoteAddress, port: socket.remotePort };
+    const secure = new tls.TLSSocket(GatewayListener.replaying(socket), {
+      isServer: true,
+      SNICallback: (servername, callback) => { void this.contextFor(servername, callback); },
+    });
+    secure.on('error', (error: Error) => {
+      // Every refused handshake lands here, including ordinary internet scanning. Logged at warn
+      // without the peer's input echoed back.
+      console.warn(`[platform-gateway] tls handshake refused: ${error.message}`);
+      secure.destroy();
+    });
+    Object.defineProperty(secure, 'remoteAddress', { value: visitor.address, configurable: true });
+    Object.defineProperty(secure, 'remotePort', { value: visitor.port, configurable: true });
+    server.emit('connection', secure);
   }
 
   /**
