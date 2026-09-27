@@ -80,3 +80,26 @@ describe('DeployService rollback to a release without the edge', () => {
     expect(stopped).toEqual(['edge-1']);
   });
 });
+
+describe('ComposeStack compose files', () => {
+  it("uses the box's COMPOSE_FILE after the two it always needs", () => {
+    expect(ComposeStack.filesFrom('docker-compose.full-stack.yml:docker-compose.images.yml:docker-compose.pdf.yml\n'))
+      .toEqual(['docker-compose.full-stack.yml', 'docker-compose.images.yml', 'docker-compose.pdf.yml']);
+    expect(ComposeStack.filesFrom('"docker-compose.pdf.yml:docker-compose.full-stack.yml"')).toEqual(['docker-compose.full-stack.yml', 'docker-compose.images.yml', 'docker-compose.pdf.yml']);
+    expect(ComposeStack.filesFrom('')).toEqual(['docker-compose.full-stack.yml', 'docker-compose.images.yml']);
+    expect(ComposeStack.filesFrom('x.yml;rm -rf /')).toEqual(['docker-compose.full-stack.yml', 'docker-compose.images.yml']);
+  });
+
+  it('passes every file to compose, reading the .env once', async () => {
+    const ran: string[] = [];
+    const shell: any = { run: async (command: string) => {
+      ran.push(command);
+      return command.startsWith('sed') ? { code: 0, stdout: 'docker-compose.full-stack.yml:docker-compose.images.yml:docker-compose.pdf.yml\n', stderr: '' } : { code: 0, stdout: '', stderr: '' };
+    } };
+    const stack = new ComposeStack(shell);
+    await stack.containerIds('api');
+    await stack.containerIds('edge');
+    expect(ran.filter((command) => command.startsWith('sed'))).toHaveLength(1);
+    expect(ran[1]).toBe('docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml -f docker-compose.pdf.yml ps -q api');
+  });
+});
