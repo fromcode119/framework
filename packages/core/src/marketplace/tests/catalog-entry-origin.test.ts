@@ -29,8 +29,7 @@ describe('contributed catalogue entry origin', () => {
     expect(CatalogEntry.from({ ...row, kind: 'appearance' })?.kind).toBe('appearance');
   });
 
-  it('offers nothing for a kind this installation cannot install, and never guesses one', () => {
+  it('offers nothing for a stated kind this installation cannot install, rather than guessing plugin', () => {
     expect(CatalogEntry.from({ ...row, kind: 'widget' })).toBeNull();
-    expect(CatalogEntry.from({ ...row, kind: undefined })).toBeNull();
   });
 });

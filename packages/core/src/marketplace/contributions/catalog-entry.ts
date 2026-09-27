@@ -26,8 +26,10 @@ export class CatalogEntry {
   static from(row: Record<string, unknown>): CatalogEntry | null {
     const slug = String(row?.slug || '').trim();
     const version = String(row?.version || '').trim();
-    // A kind nothing here can install is not offered at all, rather than guessed as a plugin.
-    const kind = ExtensionScope.find(row?.kind);
+    // The catalogue predates themes, so a row that states no kind is a plugin. A kind it DOES state
+    // but nothing here can install is not offered at all, rather than guessed as a plugin.
+    const stated = String(row?.kind ?? '').trim();
+    const kind = stated ? ExtensionScope.find(stated) : ExtensionScope.PLUGIN;
     if (!slug || !version || !kind) return null;
 
     return new CatalogEntry(
