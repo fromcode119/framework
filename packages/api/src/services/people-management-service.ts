@@ -9,6 +9,9 @@ import type { UserManagementService } from '@api/services/user-management-servic
  * `people.user_id`; this service is the missing admin surface — create the user, then link it.
  */
 export class PeopleManagementService {
+  /** How many people a search reads before filtering — a site's whole directory, far above any today. */
+  private static readonly SEARCH_SCAN_LIMIT = 10000;
+
   constructor(private readonly db: any, private readonly users: UserManagementService) {}
 
   /**
@@ -59,21 +62,23 @@ export class PeopleManagementService {
   /** List people (newest first), denormalized to the camelCase admin shape. */
   async getPeople(options?: { q?: string; limit?: number }): Promise<any[]> {
     const limit = Math.max(1, Math.min(1000, Number(options?.limit) || 1000));
+    const query = String(options?.q || '').trim().toLowerCase();
+    // A search reads the whole directory and applies the limit to the MATCHES. Limiting the read
+    // first searched only the newest N people, so asking for eight results found nobody older.
+    const readLimit = query ? PeopleManagementService.SEARCH_SCAN_LIMIT : limit;
     const rows = await this.db
-      .find(SystemConstants.TABLE.PEOPLE, { orderBy: { createdAt: 'desc' }, limit })
+      .find(SystemConstants.TABLE.PEOPLE, { orderBy: { createdAt: 'desc' }, limit: readLimit })
       .catch(() => []);
     const people = (Array.isArray(rows) ? rows : []).map((row: any) => PeopleSelfService.toCamel(row));
-
-    const query = String(options?.q || '').trim().toLowerCase();
     if (!query) return people;
 
     // Filtered here rather than in SQL because the searchable value is a COMPOSITE of several nullable
-    // columns (display name, first/last, email); a LIKE over one of them would miss the others.
-    return people.filter((person: any) => PeopleManagementService.haystack(person).includes(query));
+    // columns (display name, first/last, email, phone); a LIKE over one of them would miss the others.
+    return people.filter((person: any) => PeopleManagementService.haystack(person).includes(query)).slice(0, limit);
   }
 
   private static haystack(person: any): string {
-    return [person?.displayName, person?.firstName, person?.lastName, person?.email]
+    return [person?.displayName, person?.firstName, person?.lastName, person?.email, person?.phone]
       .map((value) => String(value || '').toLowerCase())
       .join(' ');
   }
