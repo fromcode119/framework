@@ -14,6 +14,8 @@ export class ReadOnlyInspectorRoleMigration extends BaseMigration {
   readonly name = 'Read-only inspector role';
 
   async up(db: IDatabaseManager): Promise<void> {
+    // A database that recorded the consolidated range without running it has no roles yet to add to.
+    if (!(await db.tableExists('_system_roles'))) return;
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await db.execute(sql`
