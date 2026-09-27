@@ -145,7 +145,7 @@ export class PluginDetailView extends AdminComponent {
           <PluginDetailSidebar activeTab={activeTab} canManage={this.platformHere} onOpenDefinition={this.onOpenDefinition} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onTabChange={this.onTabChange} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
         </div>
         <ConfirmDialog isOpen={this.showDeleteConfirm} onClose={this.onCloseDeleteConfirm} onConfirm={this.onDelete} isLoading={this.isDeleting} title="Confirm Uninstallation" description={`Are you sure you want to delete ${plugin.manifest.name}? This will remove all associated files and data from the system. This action cannot be undone.`} confirmLabel="Uninstall Plugin" />
-        <PluginManifestModal isOpen={this.showDefinition} onClose={this.onCloseDefinition} plugin={plugin} theme={theme} />
+        <PluginManifestModal isOpen={this.showDefinition && this.platformHere} onClose={this.onCloseDefinition} plugin={plugin} theme={theme} />
       </div>
     );
   }

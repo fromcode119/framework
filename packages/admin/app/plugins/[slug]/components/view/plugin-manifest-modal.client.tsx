@@ -1,21 +1,33 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
+import { createPortal } from 'react-dom';
+import { PureReactor, prop, state } from '@fromcode119/react-class-components';
+import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
 
+/**
+ * The plugin's full definition, for the platform. Rendered into `document.body`, like the media picker:
+ * in place it was a child of the page's `space-y-6` column, whose `margin-top` on every later child
+ * pushed this `fixed inset-0` overlay 24px down — a white band above the backdrop.
+ */
 export class PluginManifestModal extends PureReactor {
+  @state mounted = false;
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;
   @prop declare plugin: ILoadedPlugin;
   @prop declare theme: ThemeMode;
 
+  componentDidMount(): void {
+    this.mounted = true;
+  }
+
   render(): ReactNode {
     const { isOpen, onClose, plugin, theme } = this;
-    if (!isOpen) return null;
+    if (!isOpen || !this.mounted) return null;
 
-    return (
+    return createPortal(
+      <RootFramework>
       <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" onClick={onClose}>
         <div className={`relative w-full max-w-2xl max-h-[80vh] flex flex-col ${AdminClass.SURFACE} overflow-hidden border ${theme === ThemeMode.DARK ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`} onClick={(event) => event.stopPropagation()}>
           <div className={`flex items-center justify-between px-8 py-5 border-b ${theme === ThemeMode.DARK ? 'border-white/5' : 'border-slate-100'}`}>
@@ -33,6 +45,8 @@ export class PluginManifestModal extends PureReactor {
           </div>
         </div>
       </div>
+      </RootFramework>,
+      document.body,
     );
   }
 }

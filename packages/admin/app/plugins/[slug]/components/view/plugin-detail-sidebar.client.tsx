@@ -79,12 +79,13 @@ export class PluginDetailSidebar extends PureReactor {
               </span>
             </div>
           </div>
-          <div className={`mt-6 pt-4 border-t ${theme === ThemeMode.DARK ? 'border-slate-800/80' : 'border-slate-100'} space-y-4`}>
+          {/* The raw definition (install path, checksum, sandbox, approved capabilities) is the platform's, like removal below. */}
+          {this.canManage ? <div className={`mt-6 pt-4 border-t ${theme === ThemeMode.DARK ? 'border-slate-800/80' : 'border-slate-100'} space-y-4`}>
             <button onClick={onOpenDefinition} className={`w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border font-semibold uppercase tracking-wider text-[11px] transition-all ${theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'}`}>
               <FrameworkIcons.Code size={16} strokeWidth={2.5} />
               View Definition
             </button>
-          </div>
+          </div> : null}
         </Card>
 {this.canManage ? (
         <Card className={`border-0 p-4 rounded-xl ${theme === ThemeMode.DARK ? 'bg-red-500/10' : 'bg-red-50'} ring-1 ring-red-500/20`}>
