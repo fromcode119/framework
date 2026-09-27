@@ -101,7 +101,16 @@ export class RollingDeploy {
       const body = await this.stack.probeContainer(id, `fetch('http://localhost:${ReleaseHealthProbe.API_PORT}/api/v1/health').then(r=>r.text()).then(t=>process.stdout.write(t))`);
       return ReleaseHealthProbe.reports(body, version);
     }
-    const status = await this.stack.probeContainer(id, "fetch('http://localhost:3000/').then(r=>process.stdout.write(String(r.status))).catch(()=>{})");
-    return /^\d{3}$/.test(status);
+    return /^\d{3}$/.test(await this.stack.probeContainer(id, RollingDeploy.httpAnswerScript(3000)));
+  }
+
+  /**
+   * Prints the status the container answers `/` with, WITHOUT following a redirect: the gateway answers
+   * a plain-HTTP request with a 301 to https, and a probe that followed it went to port 443 inside the
+   * container, was refused and printed nothing — so a new gateway never counted as up, and the first
+   * gateway roll behind the edge timed out and rolled the whole release back.
+   */
+  static httpAnswerScript(port: number): string {
+    return `fetch('http://localhost:${port}/',{redirect:'manual'}).then(r=>process.stdout.write(String(r.status))).catch(()=>{})`;
   }
 }
