@@ -50,4 +50,16 @@ describe('SidebarMenuService.authorizeMenuItems — per-item permission', () => 
     expect(SidebarMenuService.homePathFor(grouped, { roles: ['shop-staff'], permissions: ['shop:own'] })).toBe('/shop/me');
     expect(SidebarMenuService.homePathFor(grouped, { roles: ['customer'], permissions: [] })).toBe('');
   });
+
+  it('withholds a bookmarked page whose menu item asks for a permission the user lacks', () => {
+    const grouped = [{ label: 'Shop', path: '/shop/jobs', pluginSlug: 'shop', isGroup: true, children: [
+      { label: 'Jobs', path: '/shop/jobs', pluginSlug: 'shop', permission: 'shop:manage' },
+      { label: 'My work', path: '/shop/me', pluginSlug: 'shop', permission: 'shop:own' },
+    ] }];
+    const staff = { roles: ['shop-staff'], permissions: ['shop:own'] };
+    expect(SidebarMenuService.isWithheld(grouped, '/shop/jobs', staff)).toBe(true);
+    expect(SidebarMenuService.isWithheld(grouped, '/shop/me/', staff)).toBe(false);
+    expect(SidebarMenuService.isWithheld(grouped, '/shop/jobs', { roles: ['admin'] })).toBe(false);
+    expect(SidebarMenuService.isWithheld(grouped, '/elsewhere', staff)).toBe(false);
+  });
 });

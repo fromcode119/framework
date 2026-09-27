@@ -67,6 +67,31 @@ export class SidebarMenuService {
     return first(SidebarMenuService.authorizeMenuItems(menuItems, user));
   }
 
+  /**
+   * Is this page withheld from the user by its menu item's own `permission`? A bookmark or typed URL
+   * reaches a page the menu hides; this is the same rule, asked for one path. False for admins and for
+   * pages whose menu item declares no permission.
+   */
+  static isWithheld(menuItems: any[], path: string, user: any): boolean {
+    if (user?.roles?.includes('admin')) return false;
+    const wanted = SidebarMenuService.trim(path);
+    const find = (items: any[]): string => {
+      for (const item of items) {
+        const nested = Array.isArray(item?.children) ? find(item.children) : '';
+        if (nested) return nested;
+        if (!item?.isGroup && SidebarMenuService.trim(item?.path) === wanted) return String(item?.permission || '').trim();
+      }
+      return '';
+    };
+    const required = find(menuItems);
+    const permissions: string[] = Array.isArray(user?.permissions) ? user.permissions : [];
+    return !!required && !PermissionGrants.covers(permissions, required);
+  }
+
+  private static trim(path: unknown): string {
+    return String(path ?? '').trim().replace(/\/+$/, '').toLowerCase();
+  }
+
   private static permitted(menuItems: any[], permissions: string[]): any[] {
     return menuItems.flatMap((item) => {
       const slug = String(item?.pluginSlug || '').trim().toLowerCase();
