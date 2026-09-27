@@ -192,3 +192,19 @@ describe('DeployService on a failed rolling deploy', () => {
     expect(compose.gatewayRestarts).toBe(1);
   });
 });
+
+describe('RollingDeploy.httpAnswerScript', () => {
+  it('counts a redirect to https as an answer, the way the gateway answers plain HTTP', async () => {
+    const http = await import('http');
+    const { execFile } = await import('child_process');
+    const server = http.createServer((_req, res) => { res.writeHead(301, { location: 'https://localhost:1/' }); res.end(); });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const port = (server.address() as { port: number }).port;
+    try {
+      const printed = await new Promise<string>((resolve) => execFile(process.execPath, ['-e', RollingDeploy.httpAnswerScript(port)], (_error, stdout) => resolve(stdout)));
+      expect(printed).toBe('301');
+    } finally {
+      server.close();
+    }
+  });
+});
