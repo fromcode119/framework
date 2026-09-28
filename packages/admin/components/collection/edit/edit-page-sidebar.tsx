@@ -107,6 +107,7 @@ export class EditPageSidebar extends PureReactor {
                     theme={theme}
                     collectionSlug={resolvedSlug}
                     pluginSettings={pluginSettings}
+                    pluginSettingsSchema={pluginSettingsSchema}
                     disabled={saving}
                     isNew={isNew}
                     errors={fieldErrors[field.name]}

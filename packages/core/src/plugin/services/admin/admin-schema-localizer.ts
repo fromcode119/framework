@@ -137,6 +137,7 @@ export class AdminSchemaLocalizer {
           description: this.text(pluginSlug, `${key}.description`, field.admin.description),
           // The editor groups fields under this heading; one translation per heading, shared by its fields.
           section: this.text(pluginSlug, `${sectionsBase}.${StringUtils.slugify(field.admin.section, '')}.label`, field.admin.section),
+          ...(field.admin.fallback ? { fallback: this.fallback(pluginSlug, `${key}.emptyMeans`, field.admin.fallback) } : {}),
         };
       }
       if (Array.isArray(field.options)) {
@@ -147,6 +148,17 @@ export class AdminSchemaLocalizer {
       if (Array.isArray(field.fields)) next.fields = this.fields(pluginSlug, `${key}.fields`, field.fields, sectionsBase);
       return next;
     });
+  }
+
+  /**
+   * What an empty field means, per rule — `emptyMeans.<settingKey>` — so the line the editor prints
+   * under an empty box is in the console's language too.
+   */
+  private fallback(pluginSlug: string, base: string, rules: any): any {
+    const translate = (rule: any) => (rule && typeof rule === 'object'
+      ? { ...rule, emptyMeans: this.text(pluginSlug, `${base}.${rule.settingKey}`, rule.emptyMeans) }
+      : rule);
+    return Array.isArray(rules) ? rules.map(translate) : translate(rules);
   }
 
   private labelled(pluginSlug: string, base: string, entries: any[] | undefined): any[] | undefined {

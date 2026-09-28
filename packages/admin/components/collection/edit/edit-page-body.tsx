@@ -111,6 +111,7 @@ export class EditPageBody extends PureReactor {
               resolvedSlug={resolvedSlug}
               formData={formData}
               pluginSettings={pluginSettings}
+              pluginSettingsSchema={pluginSettingsSchema}
               fieldErrors={fieldErrors}
               saving={saving}
               isNew={isNew}
@@ -147,6 +148,7 @@ export class EditPageBody extends PureReactor {
               handleSubmit={handleSubmit}
               saving={saving}
               pluginSettings={pluginSettings}
+              pluginSettingsSchema={pluginSettingsSchema}
               fieldErrors={fieldErrors}
               handleInputChange={handleInputChange}
               handlePatch={handlePatch}

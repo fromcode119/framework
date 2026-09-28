@@ -6,6 +6,7 @@ describe('AdminSchemaLocalizer', () => {
   const dictionary: Record<string, string> = {
     'shop.admin.label': 'Магазин',
     'shop.admin.description': 'Каталог, колички и поръчки.',
+    'shop.admin.collections.catalog.fields.leadMin.emptyMeans.standardDispatchMinDays': 'не се показва срок за доставка.',
     'shop.admin.groups.e-commerce-catalog': 'Каталог',
     'shop.admin.menu.overview': 'Преглед',
     'shop.admin.collections.catalog.label': 'Продукти',
@@ -76,5 +77,13 @@ describe('AdminSchemaLocalizer', () => {
     const out = localizer.manifest('shop', { slug: 'shop', name: 'Shop', description: 'Catalog, carts and orders.', version: '1.0.0' });
     expect(out).toEqual({ slug: 'shop', name: 'Магазин', description: 'Каталог, колички и поръчки.', version: '1.0.0' });
     expect(new AdminSchemaLocalizer(() => '').manifest('other', { name: 'Other' })).toEqual({ name: 'Other', description: undefined });
+  });
+
+  it('translates what an empty field means, per fallback rule', () => {
+    const out = localizer.collection('shop', {
+      slug: 'ecommerce-products', shortSlug: 'catalog',
+      fields: [{ name: 'leadMin', admin: { fallback: [{ settingKey: 'standardDispatchMinDays', emptyMeans: 'no delivery window is shown.' }, { settingKey: 'other', emptyMeans: 'kept.' }] } }],
+    });
+    expect(out.fields[0].admin.fallback.map((rule: any) => rule.emptyMeans)).toEqual(['не се показва срок за доставка.', 'kept.']);
   });
 });
