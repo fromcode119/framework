@@ -509,7 +509,8 @@
     "range": "Range",
     "noDataForThisRange": "No data for this range",
     "peak": "· peak {{value}}",
-    "bytesOf": "{{loaded}} of {{total}}"
+    "bytesOf": "{{loaded}} of {{total}}",
+    "rangeDays": "{{days}}d"
   },
   "shell": {
     "site": {

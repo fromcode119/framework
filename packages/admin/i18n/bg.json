@@ -546,7 +546,8 @@
     "range": "Период",
     "noDataForThisRange": "Няма данни за този период",
     "peak": "· връх {{value}}",
-    "bytesOf": "{{loaded}} от {{total}}"
+    "bytesOf": "{{loaded}} от {{total}}",
+    "rangeDays": "{{days}} дни"
   },
   "shell": {
     "site": {
