@@ -20,7 +20,8 @@ export class GeneralSignupEmailCard extends PureReactor {
   static readonly BRANDED_KEY = 'signup_email_branded';
 
   /** The copy rows, in the order the email shows them. */
-  static readonly COPY_ROWS: ReadonlyArray<{ key: string; title: string; description: string }> = [
+  static get COPY_ROWS(): ReadonlyArray<{ key: string; title: string; description: string }> {
+    return [
     { key: 'signup_email_subject', title: AdminI18n.t('settings.general.subject'), description: AdminI18n.t('settings.general.theSubjectLine') },
     { key: 'signup_email_greeting', title: AdminI18n.t('settings.general.greeting'), description: AdminI18n.t('settings.general.aboveTheHeadingAddsFirst') },
     { key: 'signup_email_title', title: AdminI18n.t('settings.general.heading'), description: AdminI18n.t('settings.general.theLargeHeading') },
@@ -30,6 +31,7 @@ export class GeneralSignupEmailCard extends PureReactor {
     { key: 'signup_email_ignore_message', title: AdminI18n.t('settings.general.closingLine'), description: AdminI18n.t('settings.general.forSomeoneWhoDidNot') },
     { key: 'signup_email_footer_text', title: AdminI18n.t('settings.general.footer'), description: AdminI18n.t('settings.general.theSmallPrintIsThe') },
   ];
+  }
   static readonly ACCENT_KEY = 'signup_email_accent_color';
 
   @prop declare platformLocks: PlatformSettingLocks;

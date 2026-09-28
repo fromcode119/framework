@@ -15,7 +15,8 @@ export class FrameworkSettingsPage extends AdminComponent {
    * were removed rather than left as dead ends. The OpenAPI spec is served by this running instance,
    * and the GitHub org page is live.
    */
-  private static readonly resources = [
+  private static get resources() {
+    return [
   {
     title: AdminI18n.t('settings.framework.openapiSpec'),
     description: AdminI18n.t('settings.framework.liveApiContractExposedBy'),
@@ -31,9 +32,12 @@ export class FrameworkSettingsPage extends AdminComponent {
     icon: FrameworkIcons.Activity,
   },
 ];
-  private static readonly communities = [
+  }
+  private static get communities() {
+    return [
   { label: AdminI18n.t('settings.framework.github'), href: AdminConstants.FRAMEWORK_RESOURCES.GITHUB },
 ];
+  }
   render() {
     const theme = this.theme;
 
@@ -75,7 +79,7 @@ export class FrameworkSettingsPage extends AdminComponent {
                       as="a"
                       href={item.href}
                       target={item.external ? '_blank' : undefined}
-                      rel={item.external ? AdminI18n.t('settings.framework.noopenerNoreferrer') : undefined}
+                      rel={item.external ? 'noopener noreferrer' : undefined}
                       variant={ButtonVariant.SECONDARY}
                       className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
                     >

@@ -48,7 +48,7 @@ export class McpRemoteAccessPanel extends AdminComponent {
       this.enabled = String(settings?.[SystemConstants.META_KEY.MCP_REMOTE_ENABLED] ?? '') === 'true' || settings?.[SystemConstants.META_KEY.MCP_REMOTE_ENABLED] === true;
       this.maxMediaMb = Number(settings?.[SystemConstants.META_KEY.MCP_REMOTE_MEDIA_MAX_MB] || 0) || '';
     } catch (error: any) {
-      this.notifyError('Failed to load the remote access setting', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToLoadTheRemote'), error);
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -73,7 +73,7 @@ export class McpRemoteAccessPanel extends AdminComponent {
     try {
       await AdminApi.post(SystemConstants.API_PATH.SYSTEM.ADMIN_SETTINGS, { [SystemConstants.META_KEY.MCP_REMOTE_MEDIA_MAX_MB]: limit });
     } catch (error: any) {
-      this.notifyError('Failed to save the MCP media limit', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToSaveTheMcp'), error);
     } finally {
       if (this.mounted) this.saving = false;
     }
@@ -91,7 +91,7 @@ export class McpRemoteAccessPanel extends AdminComponent {
       await AdminApi.post(SystemConstants.API_PATH.SYSTEM.ADMIN_SETTINGS, { [SystemConstants.META_KEY.MCP_REMOTE_ENABLED]: next });
     } catch (error: any) {
       this.enabled = previous;
-      this.notifyError('Failed to save the remote access setting', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToSaveTheRemote'), error);
     } finally {
       if (this.mounted) this.saving = false;
     }

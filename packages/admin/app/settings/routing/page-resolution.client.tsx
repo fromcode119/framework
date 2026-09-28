@@ -3,6 +3,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { RoutingPageUtils } from '@/app/settings/routing/routing-page-utils';
 import { RoutingHomeOptions } from '@/app/settings/routing/routing-home-options';
 import { RoutingPageState } from '@/app/settings/routing/page-state.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Working out what the home page ACTUALLY resolves to today, and what it could resolve to.
@@ -114,7 +115,7 @@ export abstract class RoutingPageResolution extends RoutingPageState {
           if (doc) {
             const title = RoutingPageUtils.getRecordDisplayTitle(doc, candidate.collectionLabel);
             if (requestId === this.autoRequestId) {
-              this.autoResolvedSource = `Matched ${label} -> ${title} (${candidate.collectionLabel})`;
+              this.autoResolvedSource = AdminI18n.t('settings.routing.matched', { label: label, title: title, collectionLabel: candidate.collectionLabel });
             }
             return;
           }
@@ -124,7 +125,7 @@ export abstract class RoutingPageResolution extends RoutingPageState {
       }
     }
     if (requestId === this.autoRequestId) {
-      this.autoResolvedSource = 'No content match for "/" or "home" (using theme fallback).';
+      this.autoResolvedSource = AdminI18n.t('settings.routing.noContentMatchForOr');
     }
   }
 }

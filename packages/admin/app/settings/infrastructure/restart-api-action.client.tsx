@@ -37,12 +37,12 @@ export class RestartApiAction extends AdminComponent {
       this.restartable = api?.restartable === true;
       if (!this.restartable) {
         this.blockedReason = catalog.secretConfigured
-          ? 'This deployment cannot restart the API from the admin; restart it where it is hosted.'
-          : `This deployment cannot restart the API from the admin until ${catalog.secretEnvKey} is set on the api, admin and frontend services; restart it where it is hosted.`;
+          ? AdminI18n.t('settings.infrastructure.thisDeploymentCannotRestartThe')
+          : AdminI18n.t('settings.infrastructure.thisDeploymentCannotRestartThe2', { secretEnvKey: catalog.secretEnvKey });
       }
     } catch (err: any) {
       this.restartable = false;
-      this.blockedReason = err?.message || 'The restart action could not be loaded; restart the API where it is hosted.';
+      this.blockedReason = err?.message || AdminI18n.t('settings.infrastructure.theRestartActionCouldNot');
     }
   }
 

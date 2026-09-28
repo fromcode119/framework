@@ -87,7 +87,7 @@ export class PersonalDataPolicyRow extends PureReactor {
         </div>
 
         {this.column(this.platform, this.platformEditable, `inherits: ${dataset.declaredProvenance}`, this.onPlatformChange)}
-        {this.column(this.site, this.siteEditable, 'inherits: the platform default', this.onSiteChange)}
+        {this.column(this.site, this.siteEditable, AdminI18n.t('settings.personalData.inheritsThePlatformDefault'), this.onSiteChange)}
 
         <div className="flex flex-col gap-1">
           <span className={`text-sm font-medium ${this.isDark ? 'text-slate-200' : 'text-slate-900'}`}>{dataset.strategy}</span>

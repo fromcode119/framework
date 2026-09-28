@@ -73,7 +73,7 @@ export class McpTokensPanel extends AdminComponent {
       const tools = Array.isArray(toolResponse?.tools) ? toolResponse.tools : [];
       this.toolNames = tools.map((t: any) => String(t || '')).filter(Boolean);
     } catch (error: any) {
-      this.notifyError('Failed to load MCP tokens', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToLoadMcpTokens'), error);
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -100,7 +100,7 @@ export class McpTokensPanel extends AdminComponent {
       this.revokeCandidate = null;
       await this.load();
     } catch (error: any) {
-      this.notifyError('Failed to revoke token', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToRevokeToken'), error);
     }
   }
 
@@ -143,8 +143,8 @@ export class McpTokensPanel extends AdminComponent {
 
   private renderTokens(): ReactNode {
     return this.section(
-      'Existing tokens',
-      this.multiTenant && !this.platformAdmin ? 'Tokens for this site. Revoking one takes effect immediately.' : 'Every token issued for this installation. Revoking one takes effect immediately.',
+      AdminI18n.t('settings.integrations.existingTokens'),
+      this.multiTenant && !this.platformAdmin ? AdminI18n.t('settings.integrations.tokensForThisSiteRevoking') : AdminI18n.t('settings.integrations.everyTokenIssuedForThis'),
       <McpTokensTable tokens={this.tokens} multiTenant={this.multiTenant} onRevoke={(token: IMcpToken) => { this.revokeCandidate = token; }} />,
     );
   }

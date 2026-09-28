@@ -70,9 +70,9 @@ export class CertificatesSettingsCard extends AdminComponent {
       const result = await CertificatesClient.setCloudflareToken(token);
       this.isCloudflareConfigured = result.isCloudflareConfigured;
       this.cloudflareTokenInput = '';
-      this.cloudflareTokenMessage = 'Saved. DNS-01/wildcard certificates can now be ordered.';
+      this.cloudflareTokenMessage = AdminI18n.t('settings.infrastructure.savedDns01WildcardCertificates');
     } catch (err: any) {
-      this.cloudflareTokenMessage = err?.message || 'Could not save the Cloudflare token.';
+      this.cloudflareTokenMessage = err?.message || AdminI18n.t('settings.infrastructure.couldNotSaveTheCloudflare');
     } finally {
       this.isSavingCloudflareToken = false;
     }
@@ -86,9 +86,9 @@ export class CertificatesSettingsCard extends AdminComponent {
       const result = await CertificatesClient.setCloudflareToken('');
       this.isCloudflareConfigured = result.isCloudflareConfigured;
       this.cloudflareTokenInput = '';
-      this.cloudflareTokenMessage = 'Cleared. DNS-01/wildcard issuance is off until a token is saved again.';
+      this.cloudflareTokenMessage = AdminI18n.t('settings.infrastructure.clearedDns01WildcardIssuance');
     } catch (err: any) {
-      this.cloudflareTokenMessage = err?.message || 'Could not clear the Cloudflare token.';
+      this.cloudflareTokenMessage = err?.message || AdminI18n.t('settings.infrastructure.couldNotClearTheCloudflare');
     } finally {
       this.isSavingCloudflareToken = false;
     }

@@ -1,5 +1,6 @@
 import { ApiPathUtils, SystemConstants } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The Settings → Redirects surface's API edge — the framework's ONE redirect-rule store
@@ -21,18 +22,18 @@ export class RedirectsApiClient {
 
   static async create(input: { fromPath: string; toPath: string; type: string; notes: string }): Promise<Record<string, any>> {
     const response = await AdminApi.post(RedirectsApiClient.BASE, input);
-    if (!response?.success) throw new Error(String(response?.error || 'The redirect could not be created.'));
+    if (!response?.success) throw new Error(String(response?.error || AdminI18n.t('settings.redirects.theRedirectCouldNotBe')));
     return response.redirect;
   }
 
   static async update(id: number, patch: Record<string, any>): Promise<Record<string, any>> {
     const response = await AdminApi.patch(RedirectsApiClient.one(id), patch);
-    if (!response?.success) throw new Error(String(response?.error || 'The redirect could not be updated.'));
+    if (!response?.success) throw new Error(String(response?.error || AdminI18n.t('settings.redirects.theRedirectCouldNotBe2')));
     return response.redirect;
   }
 
   static async remove(id: number): Promise<void> {
     const response = await AdminApi.delete(RedirectsApiClient.one(id));
-    if (!response?.success) throw new Error(String(response?.error || 'The redirect could not be deleted.'));
+    if (!response?.success) throw new Error(String(response?.error || AdminI18n.t('settings.redirects.theRedirectCouldNotBe3')));
   }
 }

@@ -42,7 +42,7 @@ export class EmailPlatformSenderPanel extends AdminComponent {
       this.enabled = value === true || String(value ?? '') === 'true';
       this.locks = locks;
     } catch (error: any) {
-      this.notifyError('Failed to load the platform mail setting', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToLoadThePlatform'), error);
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -60,7 +60,7 @@ export class EmailPlatformSenderPanel extends AdminComponent {
       await AdminApi.post(SystemConstants.API_PATH.SYSTEM.ADMIN_SETTINGS, { [EmailPlatformSenderPanel.KEY]: next });
     } catch (error: any) {
       this.enabled = previous;
-      this.notifyError('Failed to save the platform mail setting', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToSaveThePlatform'), error);
     } finally {
       if (this.mounted) this.saving = false;
     }

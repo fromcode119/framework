@@ -5,6 +5,7 @@ import type { IIntegrationConfigField } from '@/app/settings/integrations/interf
 import type { IIntegrationProvider } from '@/app/settings/integrations/interfaces/integration-provider.interface';
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
 import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Pure key-builders and dynamic-field option loading for the integrations
@@ -85,7 +86,7 @@ export class IntegrationReconciler {
         dynamicFieldOptions[fieldKey] = service.ensureValueOption(loadedOptions, editor.config?.[field.name]);
       } catch (error: any) {
         dynamicFieldOptions[fieldKey] = service.ensureValueOption(field.options || [], editor.config?.[field.name]);
-        dynamicFieldErrors[fieldKey] = error?.message || 'Unable to load options.';
+        dynamicFieldErrors[fieldKey] = error?.message || AdminI18n.t('settings.integrations.unableToLoadOptions');
       }
     }
 

@@ -151,10 +151,10 @@ export class AppearanceSettingsPage extends AdminComponent {
   @bound
   updateInstalled(item: AppearanceItem): void {
     if (this.catalogBySlug[item.slug]?.updateAvailable) {
-      void this.install({ slug: item.slug }, `Updated "${item.slug}".`);
+      void this.install({ slug: item.slug }, AdminI18n.t('settings.appearance.updated', { slug: item.slug }));
       return;
     }
-    if (item.sourceUrl) void this.install({ url: item.sourceUrl }, `Re-installed "${item.slug}".`);
+    if (item.sourceUrl) void this.install({ url: item.sourceUrl }, AdminI18n.t('settings.appearance.reInstalled', { slug: item.slug }));
   }
 
   @bound
@@ -173,12 +173,12 @@ export class AppearanceSettingsPage extends AdminComponent {
 
   @bound
   installFromCatalog(slug: string): void {
-    void this.install({ slug }, `Installed "${slug}".`);
+    void this.install({ slug }, AdminI18n.t('settings.appearance.installed2', { slug: slug }));
   }
 
   @bound
   installFromUrl(): void {
-    void this.install({ url: this.url }, 'Appearance installed.');
+    void this.install({ url: this.url }, AdminI18n.t('settings.appearance.appearanceInstalled'));
   }
 
   @bound

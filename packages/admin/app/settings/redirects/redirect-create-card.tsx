@@ -10,10 +10,12 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** The "add a rule" form of Settings → Redirects. Owns only its draft; submission is the page's. */
 export class RedirectCreateCard extends PureReactor {
-  private static readonly TYPE_OPTIONS = [
+  private static get TYPE_OPTIONS() {
+    return [
     { label: AdminI18n.t('settings.redirects.301Permanent'), value: '301' },
     { label: AdminI18n.t('settings.redirects.302Temporary'), value: '302' },
   ];
+  }
 
   @prop declare theme: ThemeMode;
   @prop declare isSubmitting: boolean;

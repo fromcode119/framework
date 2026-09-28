@@ -1156,10 +1156,10 @@
       "eGMyWebsite": "e.g. My Website",
       "frontendUrl": "Frontend URL",
       "thisDeploymentSOwnFrontend": "This deployment's own frontend address — used by the gateway and for its certificate.",
-      "itIsAlsoTheBase": "It is also the base for sitemaps, sign-in and password-reset emails, plugin links and the admin&rsquo;s &ldquo;view on site&rdquo; links.",
+      "itIsAlsoTheBase": "It is also the base for sitemaps, sign-in and password-reset emails, plugin links and the admin’s “view on site” links.",
       "adminUrl": "Admin URL",
       "thisDeploymentSAdminConsole": "This deployment's admin console address — one console serves every site.",
-      "usedByTheGatewayAnd": "Used by the gateway and for the console&rsquo;s certificate, by the setup gate, and as the base for admin password-reset links.",
+      "usedByTheGatewayAnd": "Used by the gateway and for the console’s certificate, by the setup gate, and as the base for admin password-reset links.",
       "siteUrl": "Site URL",
       "aFallbackForFrontendUrl": "A fallback for Frontend URL — it has no readers of its own.",
       "usedOnlyWhenFrontendUrl": "Used only when Frontend URL above is blank, and then it means exactly the same thing. It is also allowed through CORS.",
@@ -1241,7 +1241,11 @@
       "remove": "Remove",
       "workspaceLocked": "<strong>{{slug}}</strong> is a workspace: its console is <strong>{{appearance}}</strong>, decided when the workspace was created. There is no appearance setting here to change. The platform admin can open this workspace in the default console from the platform’s own admin host.",
       "installUrlHint": "A .zip containing <code>appearance.json</code> + <code>dist/</code>. Installing the same slug again <b>updates it in place</b> — appearances load at runtime, so no container rebuild is needed.",
-      "updateToVersion": "Update · v{{version}}"
+      "updateToVersion": "Update · v{{version}}",
+      "updated": "Updated \"{{slug}}\".",
+      "reInstalled": "Re-installed \"{{slug}}\".",
+      "installed2": "Installed \"{{slug}}\".",
+      "appearanceInstalled": "Appearance installed."
     },
     "framework": {
       "openapiSpec": "OpenAPI Spec",
@@ -1252,7 +1256,6 @@
       "frameworkResources": "Framework Resources",
       "adminLevelDocsApiAnd": "Admin-level docs, API and developer references",
       "coreResources": "Core Resources",
-      "noopenerNoreferrer": "noopener noreferrer",
       "open": "Open",
       "community": "Community"
     },
@@ -1402,7 +1405,14 @@
       "rollingNoRoom": "Not enough memory for a rolling deploy right now.",
       "measuredNow": "Measured now: {{summary}}.",
       "maintenanceNowActive": "Maintenance mode is now active.",
-      "maintenanceNowInactive": "Maintenance mode is now inactive."
+      "maintenanceNowInactive": "Maintenance mode is now inactive.",
+      "thisDeploymentCannotRestartThe": "This deployment cannot restart the API from the admin; restart it where it is hosted.",
+      "thisDeploymentCannotRestartThe2": "This deployment cannot restart the API from the admin until {{secretEnvKey}} is set on the api, admin and frontend services; restart it where it is hosted.",
+      "theRestartActionCouldNot": "The restart action could not be loaded; restart the API where it is hosted.",
+      "savedDns01WildcardCertificates": "Saved. DNS-01/wildcard certificates can now be ordered.",
+      "couldNotSaveTheCloudflare": "Could not save the Cloudflare token.",
+      "clearedDns01WildcardIssuance": "Cleared. DNS-01/wildcard issuance is off until a token is saved again.",
+      "couldNotClearTheCloudflare": "Could not clear the Cloudflare token."
     },
     "integrations": {
       "noFieldsRequired": "No fields required",
@@ -1505,7 +1515,22 @@
       "platformMailFallback": "Platform mail fallback",
       "usedOnlyWhileThisSite": "Used only while this site has no mail provider configured above. A provider of its own always wins.",
       "platformSenderOnLocked": "On — only a platform administrator can change this, because it uses the platform's own mail server.",
-      "platformSenderOffLocked": "Off — only a platform administrator can change this, because it uses the platform's own mail server."
+      "platformSenderOffLocked": "Off — only a platform administrator can change this, because it uses the platform's own mail server.",
+      "isRequired": "{{label}} is required.",
+      "mustBeAValidNumber": "{{label}} must be a valid number.",
+      "unableToLoadOptions": "Unable to load options.",
+      "failedToLoadTheRemote": "Failed to load the remote access setting",
+      "failedToSaveTheMcp": "Failed to save the MCP media limit",
+      "failedToSaveTheRemote": "Failed to save the remote access setting",
+      "thisSite": "This site ({{currentSite}})",
+      "thisSite2": "This site",
+      "failedToLoadMcpTokens": "Failed to load MCP tokens",
+      "failedToRevokeToken": "Failed to revoke token",
+      "existingTokens": "Existing tokens",
+      "tokensForThisSiteRevoking": "Tokens for this site. Revoking one takes effect immediately.",
+      "everyTokenIssuedForThis": "Every token issued for this installation. Revoking one takes effect immediately.",
+      "failedToLoadThePlatform": "Failed to load the platform mail setting",
+      "failedToSaveThePlatform": "Failed to save the platform mail setting"
     },
     "localization": {
       "theLocalizationSettingsRequestFailed": "The localization settings request failed.",
@@ -1616,7 +1641,11 @@
       "numeric": "Numeric",
       "categoryAndName": "Category and name",
       "customTarget": "Custom target · {{homeTarget}}",
-      "example": "Example:"
+      "example": "Example:",
+      "matched": "Matched {{label}} -> {{title}} ({{collectionLabel}})",
+      "noContentMatchForOr": "No content match for \"/\" or \"home\" (using theme fallback).",
+      "autoModeCheckingAndHome": "Auto mode: checking \"/\" and \"home\"...",
+      "themeFallback": "Theme fallback: {{autoFallbackLayout}}."
     },
     "security": {
       "loginProtection": "Login Protection",
@@ -1707,7 +1736,8 @@
       "auditTrail": "Audit Trail",
       "tablesExcludedFromWriteAuditing": "Tables Excluded From Write Auditing",
       "physicalTableNamesCommaSeparated": "Physical table names, comma separated. Plugin database writes to these tables are not recorded in the audit log — meant for high-volume telemetry tables whose per-row writes would drown the trail. Clear it and every plugin write is audited. Applies within a minute of saving.",
-      "denialsRecorded": "Denials recorded: {{count}}"
+      "denialsRecorded": "Denials recorded: {{count}}",
+      "theSecurityStatisticsRequestFailed": "The security statistics request failed."
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "The framework registry could not be reached.",
@@ -1815,7 +1845,7 @@
       "themeSlug": "Theme Slug",
       "pluginSlug2": "Plugin slug",
       "themeSlug2": "Theme slug",
-      "theBrowserSendsOnlyApproved": "The browser sends only approved target kinds: system, plugin:&lt;slug&gt;, or theme:&lt;slug&gt;.",
+      "theBrowserSendsOnlyApproved": "The browser sends only approved target kinds: system, plugin:<slug>, or theme:<slug>.",
       "serverPreview": "Server Preview",
       "previewRevalidatesTheBackupId": "Preview revalidates the backup id and target before any extraction happens.",
       "runPreview": "Run Preview",
@@ -1849,9 +1879,7 @@
       "operatorNotes": "Operator Notes",
       "createASystemSnapshotBefore": "Create a system snapshot before updates, use preview before every restore, and keep site-transfer bundles on the CLI path.",
       "cliBundleCommand": "CLI Bundle Command",
-      "npmRunAtlantisSystemSite": "npm run atlantis -- system site-transfer-bundle --label demo-transfer",
       "wrapperScript": "Wrapper Script",
-      "npmRunBundleSiteTransfer": "npm run bundle:site-transfer -- --label demo-transfer",
       "referenceDocumentation": "Reference Documentation",
       "restoreExecutionAlwaysCreatesA": "Restore execution always creates a rollback snapshot first and rejects arbitrary filesystem targets from the browser.",
       "createBackup": "Create Backup",
@@ -1885,7 +1913,13 @@
       "deleteThisRemovesTheManaged": "Delete {{displayName}}. This removes the managed archive from backups and cannot be undone from admin.",
       "deleteBackup": "Delete Backup",
       "itemsIndexed": "Items indexed: {{count}}",
-      "targetValidated": "Target validated as <strong>{{target}}</strong>. Safety snapshot type: <strong>{{snapshot}}</strong>."
+      "targetValidated": "Target validated as <strong>{{target}}</strong>. Safety snapshot type: <strong>{{snapshot}}</strong>.",
+      "useThisForCodeAnd": "Use this for code and system configuration rollback.",
+      "useThisWhenYouNeed": "Use this when you need content and settings state.",
+      "useThisWhenPluginCode": "Use this when plugin code changed or needs migration.",
+      "useThisWhenFrontendPresentation": "Use this when frontend presentation changed.",
+      "aSlugIsRequiredBefore": "A {{targetScope}} slug is required before preview.",
+      "chooseATarGzSql": "Choose a .tar.gz, .sql, or .db backup archive."
     },
     "personalData": {
       "unknownError": "Unknown error",
@@ -1905,7 +1939,8 @@
       "savePolicy": "Save policy",
       "thePlatformDefaultIsSet": "The platform default is set by a platform administrator.",
       "useTheLayerBelow": "Use the layer below",
-      "whyTheLawRequiresThese": "Why the law requires these records to be kept"
+      "whyTheLawRequiresThese": "Why the law requires these records to be kept",
+      "inheritsThePlatformDefault": "inherits: the platform default"
     }
   }
 }

@@ -6,6 +6,7 @@ import type { Ref } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import type { ISystemBackupCapabilities } from '@/components/settings/backups/interfaces/system-backup-capabilities.interface';
 import type { IBackupProgressView } from '@/components/settings/backups/interfaces/backup-progress-view.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Taking a backup archive from the operator — by file picker or by dropping it on the card.
@@ -43,7 +44,7 @@ export abstract class BackupCreateCardDropZone extends AdminComponent {
     const normalizedName = String(file.name || '').trim().toLowerCase();
     const isSupportedArchive = normalizedName.endsWith('.tar.gz') || normalizedName.endsWith('.sql') || normalizedName.endsWith('.db');
     if (!isSupportedArchive) {
-      this.importError = 'Choose a .tar.gz, .sql, or .db backup archive.';
+      this.importError = AdminI18n.t('settings.components.chooseATarGzSql');
       return;
     }
 

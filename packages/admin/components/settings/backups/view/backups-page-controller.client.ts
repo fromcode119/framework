@@ -170,7 +170,7 @@ export class BackupsPageControllerHooks {
 
       const targetKind = SystemBackupPageUtils.buildTargetKind(restoreState.targetScope, restoreState.targetSlug);
       if (!targetKind || (restoreState.targetScope !== RestoreTargetScope.SYSTEM && !restoreState.targetSlug.trim())) {
-        updateRestoreState({ formError: `A ${restoreState.targetScope} slug is required before preview.` });
+        updateRestoreState({ formError: AdminI18n.t('settings.components.aSlugIsRequiredBefore', { targetScope: restoreState.targetScope }) });
         return;
       }
 

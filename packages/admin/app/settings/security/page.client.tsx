@@ -105,7 +105,7 @@ export class SecuritySettingsPage extends AdminComponent {
     } catch (e: any) {
       // A blank Dashboard tab reads as "nothing to report". Say what actually happened instead.
       this.stats = null;
-      this.statsError = e?.message || 'The security statistics request failed.';
+      this.statsError = e?.message || AdminI18n.t('settings.security.theSecurityStatisticsRequestFailed');
     }
   }
 

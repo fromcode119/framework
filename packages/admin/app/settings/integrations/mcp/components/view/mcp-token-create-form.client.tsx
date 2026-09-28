@@ -78,7 +78,7 @@ export class McpTokenCreateForm extends AdminComponent {
 
   private renderSiteChoice(): ReactNode {
     if (!this.multiTenant) return null;
-    const here = this.currentSite ? `This site (${this.currentSite})` : 'This site';
+    const here = this.currentSite ? AdminI18n.t('settings.integrations.thisSite', { currentSite: this.currentSite }) : AdminI18n.t('settings.integrations.thisSite2');
     if (!this.platformAdmin) {
       return <Input label={AdminI18n.t('settings.integrations.site')} size={FieldSize.MD} value={here} disabled onChange={() => undefined} />;
     }

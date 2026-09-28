@@ -44,25 +44,25 @@ export class BackupSectionOptions {
         key: BackupSectionKey.CORE,
         label: AdminI18n.t('settings.components.coreFiles'),
         description: AdminI18n.t('settings.components.packagesConfigsScriptsDocsTests'),
-        helper: 'Use this for code and system configuration rollback.',
+        helper: AdminI18n.t('settings.components.useThisForCodeAnd'),
       },
       {
         key: BackupSectionKey.DATABASE,
         label: AdminI18n.t('settings.components.database'),
         description: AdminI18n.t('settings.components.aPostgresqlDumpOrSqlite'),
-        helper: 'Use this when you need content and settings state.',
+        helper: AdminI18n.t('settings.components.useThisWhenYouNeed'),
       },
       {
         key: BackupSectionKey.PLUGINS,
         label: AdminI18n.t('settings.components.plugins'),
         description: AdminI18n.t('settings.components.theFullPluginsDirectoryIncluding'),
-        helper: 'Use this when plugin code changed or needs migration.',
+        helper: AdminI18n.t('settings.components.useThisWhenPluginCode'),
       },
       {
         key: BackupSectionKey.THEMES,
         label: AdminI18n.t('settings.components.themes'),
         description: AdminI18n.t('settings.components.theFullThemesDirectoryIncluding'),
-        helper: 'Use this when frontend presentation changed.',
+        helper: AdminI18n.t('settings.components.useThisWhenFrontendPresentation'),
       },
     ];
   }

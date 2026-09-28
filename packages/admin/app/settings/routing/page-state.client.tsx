@@ -14,7 +14,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * buttons and its validation all have to agree about which tokens exist.
  */
 export abstract class RoutingPageState extends AdminComponent {
-  protected static readonly PLACEHOLDERS = [
+  protected static get PLACEHOLDERS() {
+    return [
     { label: ':slug', description: AdminI18n.t('settings.routing.theSanitizedPostTitleRecommended'), example: 'hello-world' },
     { label: ':id', description: AdminI18n.t('settings.routing.theUniqueNumericIdOf'), example: '123' },
     { label: ':year', description: AdminI18n.t('settings.routing.the4DigitYearOf'), example: '2026' },
@@ -23,13 +24,16 @@ export abstract class RoutingPageState extends AdminComponent {
     { label: ':category', description: AdminI18n.t('settings.routing.thePrimaryCategorySlug'), example: 'news' },
     { label: ':author', description: AdminI18n.t('settings.routing.theAuthorUsername'), example: 'admin' },
   ];
-  protected static readonly PRESETS = [
+  }
+  protected static get PRESETS() {
+    return [
     { label: AdminI18n.t('settings.routing.plain'), value: '/:slug' },
     { label: AdminI18n.t('settings.routing.dayAndName'), value: '/:year/:month/:day/:slug' },
     { label: AdminI18n.t('settings.routing.monthAndName'), value: '/:year/:month/:slug' },
     { label: AdminI18n.t('settings.routing.numeric'), value: '/:id' },
     { label: AdminI18n.t('settings.routing.categoryAndName'), value: '/:category/:slug' },
   ];
+  }
   protected static readonly EMPTY_COLLECTIONS = [];
   @state isSaving = false;
   @state isLoading = true;
@@ -101,7 +105,7 @@ export abstract class RoutingPageState extends AdminComponent {
     const selectedHomeOption = this.homeOptions.find((opt) => opt.value === this.homeTarget);
     const autoFallbackLayout = RoutingPageUtils.detectAutoFallbackLayout(this.frontendMeta);
     return this.homeTarget === 'auto'
-      ? `${this.autoResolvedSource || 'Auto mode: checking "/" and "home"...'}${autoFallbackLayout ? ` Theme fallback: ${autoFallbackLayout}.` : ''}`
+      ? `${this.autoResolvedSource || AdminI18n.t('settings.routing.autoModeCheckingAndHome')}${autoFallbackLayout ? ' ' + AdminI18n.t('settings.routing.themeFallback', { autoFallbackLayout: autoFallbackLayout }) : ''}`
       : selectedHomeOption
         ? `${selectedHomeOption.sourceKind || selectedHomeOption.group || 'Source'} · ${selectedHomeOption.label}`
         : AdminI18n.t('settings.routing.customTarget', { homeTarget: this.homeTarget });
