@@ -28,10 +28,12 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
         .then((u: any) => { if (this.mounted) this.users = Array.isArray(u?.docs) ? u.docs : (Array.isArray(u) ? u : []); })
         .catch(() => undefined);
     } catch (err: any) {
-      if (this.mounted) {
-        this.loading = false;
-        this.loadError = err?.message || 'The person record could not be loaded.';
-      }
+      if (!this.mounted) return;
+      this.loading = false;
+      // A 404 is an ANSWER — there is no such person here — not a failed load. Treated as one, it
+      // offered "Retry" for a person who lives in another site, which no retry could ever find.
+      if (err?.status === 404) this.notFound = true;
+      else this.loadError = err?.message || 'The person record could not be loaded.';
     }
   }
 
