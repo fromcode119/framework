@@ -10,6 +10,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { DataTable } from '@/components/ui/view/data-table.client';
 import { Column } from '@/components/ui/column';
 import { SiteRecord } from '@/lib/tenants/site-record';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** The sites list. Presentational: every action is a callback into the page. */
 export class SitesTable extends PureReactor {
@@ -23,37 +24,37 @@ export class SitesTable extends PureReactor {
 
   private get columns(): Column<SiteRecord>[] {
     return [
-      { id: 'site', header: 'Site', accessor: (site) => (
+      { id: 'site', header: AdminI18n.t('sites.site'), accessor: (site) => (
         <div className="fc-sites__name">
           <span className="fc-sites__slug">{site.slug}</span>
           <span className="fc-sites__id">id {site.id}</span>
         </div>
       ) },
-      { id: 'hosts', header: 'Hosts', accessor: (site) => (
+      { id: 'hosts', header: AdminI18n.t('sites.hosts'), accessor: (site) => (
         <div className="fc-sites__hosts">
           <span className="fc-sites__host fc-sites__host--primary">{site.primaryHost}</span>
           {site.hostAliases.map((alias) => <span key={alias} className="fc-sites__host">{alias}</span>)}
         </div>
       ) },
-      { id: 'kind', header: 'Kind', accessor: (site) => (
+      { id: 'kind', header: AdminI18n.t('sites.kind'), accessor: (site) => (
         <div className="fc-sites__name">
           <Badge variant={site.isWorkspace ? BadgeVariant.INFO : BadgeVariant.GRAY}>{site.isWorkspace ? 'workspace' : 'site'}</Badge>
-          {site.isWorkspace ? <span className="fc-sites__id">{site.appearance || 'default console'}</span> : null}
+          {site.isWorkspace ? <span className="fc-sites__id">{site.appearance || AdminI18n.t('sites.defaultConsole2')}</span> : null}
         </div>
       ) },
       // Visibility sits beside State because they are the two questions an operator asks about a site
       // and they are NOT the same: a suspended site has no admin, a private one is simply not
       // published yet. Showing only one of them is what made "why can nobody see this?" a guess.
-      { id: 'visibility', header: 'Visible', accessor: (site) => (
+      { id: 'visibility', header: AdminI18n.t('sites.visible'), accessor: (site) => (
         <Badge variant={site.isPublic ? BadgeVariant.SUCCESS : BadgeVariant.WARNING}>{site.visibility}</Badge>
       ) },
-      { id: 'state', header: 'State', accessor: (site) => (
+      { id: 'state', header: AdminI18n.t('sites.state'), accessor: (site) => (
         <Badge variant={site.isActive ? BadgeVariant.SUCCESS : BadgeVariant.WARNING}>{site.state}</Badge>
       ) },
-      { id: 'members', header: 'Members', accessor: (site) => String(site.memberCount) },
-      { id: 'plugins', header: 'Plugins', accessor: (site) => (site.plugins.length ? site.plugins.join(', ') : <span className="fc-sites__none">none</span>) },
-      { id: 'theme', header: 'Theme', accessor: (site) => (site.theme ? site.theme : <span className="fc-sites__none">no theme</span>) },
-      { id: 'export', header: 'Last export', accessor: (site) => (site.lastExport ? <span className="fc-sites__export" title={site.lastExport}>{SitesTable.exportedAt(site.lastExport)}</span> : <span className="fc-sites__none">never</span>) },
+      { id: 'members', header: AdminI18n.t('sites.members'), accessor: (site) => String(site.memberCount) },
+      { id: 'plugins', header: AdminI18n.t('sites.plugins'), accessor: (site) => (site.plugins.length ? site.plugins.join(', ') : <span className="fc-sites__none">none</span>) },
+      { id: 'theme', header: AdminI18n.t('sites.theme'), accessor: (site) => (site.theme ? site.theme : <span className="fc-sites__none">no theme</span>) },
+      { id: 'export', header: AdminI18n.t('sites.lastExport'), accessor: (site) => (site.lastExport ? <span className="fc-sites__export" title={site.lastExport}>{SitesTable.exportedAt(site.lastExport)}</span> : <span className="fc-sites__none">never</span>) },
     ];
   }
 
@@ -72,10 +73,10 @@ export class SitesTable extends PureReactor {
     return (
       // The row itself opens the site; a click on one of its buttons must not ALSO do that.
       <div className="fc-sites__row-actions" onClick={SitesTable.stop}>
-        <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={() => this.onOpen(site)} icon={<FrameworkIcons.Settings size={13} />}>Manage</Button>
-        <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} isLoading={busy} onClick={() => this.onExport(site)} icon={<FrameworkIcons.Download size={13} />}>Export</Button>
+        <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={() => this.onOpen(site)} icon={<FrameworkIcons.Settings size={13} />}>{AdminI18n.t('sites.manage')}</Button>
+        <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} isLoading={busy} onClick={() => this.onExport(site)} icon={<FrameworkIcons.Download size={13} />}>{AdminI18n.t('sites.export')}</Button>
         <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} isLoading={busy} onClick={() => this.onToggleState(site)} icon={site.isActive ? <FrameworkIcons.Pause size={13} /> : <FrameworkIcons.Play size={13} />}>
-          {site.isActive ? 'Suspend' : 'Reactivate'}
+          {site.isActive ? AdminI18n.t('sites.suspend') : AdminI18n.t('sites.reactivate')}
         </Button>
         <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} className="fc-sites__delete" isLoading={busy} onClick={() => this.onDelete(site)} icon={<FrameworkIcons.Trash size={13} />}>Delete</Button>
       </div>
@@ -90,7 +91,7 @@ export class SitesTable extends PureReactor {
         actions={(site: SiteRecord) => this.renderActions(site)}
         stickyActions={false}
         onRowClick={this.onOpen}
-        emptyMessage="No sites yet. Create one, or import an exported site."
+        emptyMessage={AdminI18n.t('sites.noSitesYetCreateOne')}
       />
     );
   }

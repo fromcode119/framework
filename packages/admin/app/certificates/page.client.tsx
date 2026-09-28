@@ -12,6 +12,7 @@ import { CertificateHostTable } from '@/app/certificates/components/certificate-
 import { CertificateStatusNotices } from '@/app/certificates/components/certificate-status-notices.client';
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Every TLS certificate on the platform, in one list.
@@ -55,7 +56,7 @@ export class CertificatesPageClient extends AdminComponent {
       this.scope = AdminScope.resolve(result.scope);
       this.loadError = '';
     } catch (error: any) {
-      this.loadError = String(error?.message || 'Could not load certificates.');
+      this.loadError = String(error?.message || AdminI18n.t('certificates.couldNotLoadCertificates'));
     } finally {
       this.isLoading = false;
     }
@@ -97,7 +98,7 @@ export class CertificatesPageClient extends AdminComponent {
       await CertificatesClient.setSource(host, 'automatic');
       this.loadError = '';
     } catch (error: any) {
-      this.loadError = String(error?.message || 'Could not switch this host to automatic.');
+      this.loadError = String(error?.message || AdminI18n.t('certificates.couldNotSwitchThisHost'));
     }
     await this.load();
   }
@@ -108,7 +109,7 @@ export class CertificatesPageClient extends AdminComponent {
       await CertificatesClient.setSource(host, 'automatic', true);
       this.loadError = '';
     } catch (error: any) {
-      this.loadError = String(error?.message || 'Could not switch this host to automatic (wildcard).');
+      this.loadError = String(error?.message || AdminI18n.t('certificates.couldNotSwitchThisHost2'));
     }
     await this.load();
   }
@@ -120,9 +121,9 @@ export class CertificatesPageClient extends AdminComponent {
    * response shape) stays neutral rather than asserting either.
    */
   private get subtitle(): string {
-    if (this.scope?.isSite) return "Every address this site answers for, and what it serves HTTPS with.";
-    if (this.scope?.isPlatform) return "Every address this platform answers for, and what it serves HTTPS with.";
-    return 'What this installation serves HTTPS with.';
+    if (this.scope?.isSite) return AdminI18n.t('certificates.everyAddressThisSiteAnswers');
+    if (this.scope?.isPlatform) return AdminI18n.t('certificates.everyAddressThisPlatformAnswers');
+    return AdminI18n.t('certificates.whatThisInstallationServesHttps');
   }
 
   render(): ReactNode {
@@ -134,7 +135,7 @@ export class CertificatesPageClient extends AdminComponent {
         <CompactPageHeader
           theme={this.theme}
           icon={<FrameworkIcons.Lock size={18} strokeWidth={2} />}
-          title="Certificates"
+          title={AdminI18n.t('certificates.certificates')}
           subtitle={this.subtitle}
         />
         <div className="fc-certificates__body">

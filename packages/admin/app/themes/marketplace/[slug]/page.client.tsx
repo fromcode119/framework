@@ -13,6 +13,7 @@ import { prop, state } from '@fromcode119/react-class-components';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
 import { Screenshot } from '@fromcode119/core/client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeMarketplaceDetailPage extends AdminComponent {
   @prop declare params: Promise<{ slug: string }>;
@@ -109,11 +110,11 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
         // A site adds the theme to itself: installed once for the platform if it is not there yet, then
         // one of this site's themes — never an update of the shared copy other sites render.
         await AdminApi.post(`${AdminConstants.ENDPOINTS.THEMES.ADD_TO_SITE(theme.slug)}?version=${theme.version}`);
-        notify(NotificationType.SUCCESS, 'Added to This Site', `${theme.name} is now one of this site's themes. Activate it under Themes.`);
+        notify(NotificationType.SUCCESS, AdminI18n.t('themes.addedToThisSite'), AdminI18n.t('themes.isNowOneOfThis2', { name: theme.name }));
       } else {
-        notify(NotificationType.INFO, installedTheme ? 'Update Started' : 'Installation Started', `Downloading and setting up ${theme.name} v${theme.version}...`);
+        notify(NotificationType.INFO, installedTheme ? AdminI18n.t('themes.updateStarted') : AdminI18n.t('themes.installationStarted'), AdminI18n.t('themes.downloadingAndSettingUpV', { name: theme.name, version: theme.version }));
         await AdminApi.post(`${AdminConstants.ENDPOINTS.THEMES.INSTALL(theme.slug)}?version=${theme.version}`);
-        notify(NotificationType.SUCCESS, installedTheme ? 'Update Complete' : 'Installation Success', `${theme.name} v${theme.version} has been installed.`);
+        notify(NotificationType.SUCCESS, installedTheme ? AdminI18n.t('themes.updateComplete') : AdminI18n.t('themes.installationSuccess'), AdminI18n.t('themes.vHasBeenInstalled', { name: theme.name, version: theme.version }));
       }
       if (triggerRefresh) {
         await Promise.resolve(triggerRefresh());
@@ -125,7 +126,7 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
       if (this.mounted) this.installedTheme = installed;
 
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Installation Failed', err.message);
+      notify(NotificationType.ERROR, AdminI18n.t('themes.installationFailed'), err.message);
     } finally {
       this.installing = false;
     }

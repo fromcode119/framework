@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SiteFormValues } from '@/app/sites/site-form-values';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The fields that identify a site and say what it runs. Shared by New and Detail.
@@ -97,8 +98,8 @@ export class SiteForm extends PureReactor {
   /** Why this plugin cannot be run by a site, in the operator's terms. */
   private static stateLabel(plugin: { state?: string; heldReason?: string }): string {
     if (plugin.heldReason) return `held — ${plugin.heldReason.replace(/_/g, ' ')}; re-approve`;
-    if (plugin.state === 'error') return 'failed to start';
-    return 'not enabled on this platform';
+    if (plugin.state === 'error') return AdminI18n.t('sites.failedToStart');
+    return AdminI18n.t('sites.notEnabledOnThisPlatform');
   }
 
   /**
@@ -132,25 +133,25 @@ export class SiteForm extends PureReactor {
     return (
       <>
         <div className="fc-site-form__block">
-          <span className="fc-site-form__label">Preset</span>
+          <span className="fc-site-form__label">{AdminI18n.t('sites.preset')}</span>
           <Select
             theme={this.theme}
             value={values.preset}
             onChange={this.onPreset}
-            placeholder="No preset — choose the appearance and plugins yourself"
+            placeholder={AdminI18n.t('sites.noPresetChooseTheAppearance')}
             clearable
             options={inventory.presets.map((preset) => ({ value: preset.id, label: preset.label }))}
           />
           {values.preset ? <span className="fc-site-form__hint">{inventory.presets.find((preset) => preset.id === values.preset)?.description}</span> : null}
         </div>
         <div className="fc-site-form__block">
-          <span className="fc-site-form__label">Console appearance (locked for this workspace)</span>
+          <span className="fc-site-form__label">{AdminI18n.t('sites.consoleAppearanceLockedForThis')}</span>
           <Select
             theme={this.theme}
             value={values.appearance}
             onChange={this.onAppearance}
             options={[
-              { value: '', label: 'Default console' },
+              { value: '', label: AdminI18n.t('sites.defaultConsole') },
               ...inventory.appearances.map((entry) => ({ value: entry.slug, label: `${entry.name} ${entry.version}`.trim() })),
             ]}
           />
@@ -166,25 +167,25 @@ export class SiteForm extends PureReactor {
       <div className="fc-site-form">
         <div className="fc-site-form__grid">
           <Select
-            label="Kind"
+            label={AdminI18n.t('sites.kind')}
             theme={this.theme}
             value={values.kind}
             onChange={this.onKind}
             disabled={!this.isNew}
             options={[
-              { value: 'site', label: 'Storefront site — a theme on its domain, managed from this admin' },
-              { value: 'workspace', label: 'Workspace — its domain is the console of a product; no storefront' },
+              { value: 'site', label: AdminI18n.t('sites.storefrontSiteAThemeOn') },
+              { value: 'workspace', label: AdminI18n.t('sites.workspaceItsDomainIsThe') },
             ]}
           />
-          <Input label="Slug" value={values.slug} onChange={this.onSlug} placeholder="acme" />
+          <Input label={AdminI18n.t('sites.slug')} value={values.slug} onChange={this.onSlug} placeholder="acme" />
           {this.isNew
-            ? <Input label="Id" value={values.id} onChange={this.onId} placeholder="acme" />
+            ? <Input label={AdminI18n.t('sites.id')} value={values.id} onChange={this.onId} placeholder="acme" />
             : null}
           <SiteHostsFields values={values} onChange={this.emit} />
           {this.isNew ? (
-            <Input label="First administrator (email of an existing account)" value={values.adminEmail} onChange={this.onAdminEmail} placeholder="owner@acme.example.com" />
+            <Input label={AdminI18n.t('sites.firstAdministratorEmailOfAn')} value={values.adminEmail} onChange={this.onAdminEmail} placeholder="owner@acme.example.com" />
           ) : (
-            <Select label="State" theme={this.theme} value={values.state} onChange={this.onState} options={[{ value: 'active', label: 'Active' }, { value: 'suspended', label: 'Suspended — the site answers 503' }]} />
+            <Select label={AdminI18n.t('sites.state')} theme={this.theme} value={values.state} onChange={this.onState} options={[{ value: 'active', label: AdminI18n.t('sites.active') }, { value: 'suspended', label: AdminI18n.t('sites.suspendedTheSiteAnswers503') }]} />
           )}
           {/* A DIFFERENT question from State, and the one an operator asks far more often. Suspending
               a site takes its admin away too; this only decides who may READ it.
@@ -199,19 +200,19 @@ export class SiteForm extends PureReactor {
               <p>
                 A workspace is a console, so it is never listed publicly. Search indexing for its domain
                 follows{' '}
-                <Link href={RuntimeLocationUtils.toAdminPath('/settings/general')}>Settings → General → Index Platform Hosts</Link>.
+                <Link href={RuntimeLocationUtils.toAdminPath('/settings/general')}>{AdminI18n.t('sites.settingsGeneralIndexPlatformHosts')}</Link>.
               </p>
             </Explanation>
           ) : (
             <Select
-              label="Visible to"
+              label={AdminI18n.t('sites.visibleTo')}
               theme={this.theme}
               value={values.visibility}
               onChange={this.onVisibility}
               options={[
-                { value: 'private', label: 'Nobody yet — only this site\'s admins' },
-                { value: 'unlisted', label: 'Anyone with the address — not indexed' },
-                { value: 'public', label: 'Everyone — indexed' },
+                { value: 'private', label: AdminI18n.t('sites.nobodyYetOnlyThisSite') },
+                { value: 'unlisted', label: AdminI18n.t('sites.anyoneWithTheAddressNot') },
+                { value: 'public', label: AdminI18n.t('sites.everyoneIndexed') },
               ]}
             />
           )}
@@ -220,13 +221,13 @@ export class SiteForm extends PureReactor {
               non-production; a client's pre-launch site is private and production, because its test
               order confirmation has to actually arrive. */}
           <Select
-            label="Environment"
+            label={AdminI18n.t('sites.environment')}
             theme={this.theme}
             value={values.environment}
             onChange={this.onEnvironment}
             options={[
-              { value: 'production', label: 'Production — email, payments and shipments leave this site' },
-              { value: 'non-production', label: 'Non-production — nothing leaves this site' },
+              { value: 'production', label: AdminI18n.t('sites.productionEmailPaymentsAndShipments') },
+              { value: 'non-production', label: AdminI18n.t('sites.nonProductionNothingLeavesThis') },
             ]}
           />
         </div>
@@ -245,18 +246,18 @@ export class SiteForm extends PureReactor {
         )}
         {/* No word here about "api." aliases: the name stopped choosing a host's role (TenantRecord.roleFor
             reads only the declared role), so that promise now contradicted the list right above it. */}
-        <p className="fc-site-form__hint">Hosts are bare hostnames — no scheme, path or port. The kind cannot change later.</p>
+        <p className="fc-site-form__hint">{AdminI18n.t('sites.hostsAreBareHostnamesNo')}</p>
 
         {inventory ? (
           <div className="fc-site-form__inventory">
             {values.isWorkspace ? this.renderWorkspaceChoices(inventory, values) : (
               <div className="fc-site-form__block">
-                <span className="fc-site-form__label">Theme</span>
+                <span className="fc-site-form__label">{AdminI18n.t('sites.theme')}</span>
                 <Select
                   theme={this.theme}
                   value={values.theme}
                   onChange={this.onTheme}
-                  placeholder="No theme — the site renders bare until one is activated"
+                  placeholder={AdminI18n.t('sites.noThemeTheSiteRenders')}
                   clearable
                   options={inventory.themes.map((theme) => ({ value: theme.slug, label: `${theme.name} ${theme.version}`.trim() }))}
                 />
@@ -267,9 +268,9 @@ export class SiteForm extends PureReactor {
                 Plugins this site runs
                 <span className="fc-site-form__count">{values.plugins.length} of {inventory.plugins.length}</span>
               </span>
-              {inventory.plugins.length === 0 ? <span className="fc-sites__none">No plugins are installed on the platform.</span> : null}
+              {inventory.plugins.length === 0 ? <span className="fc-sites__none">{AdminI18n.t('sites.noPluginsAreInstalledOn')}</span> : null}
               {inventory.plugins.length > SiteForm.SEARCH_THRESHOLD ? (
-                <Input value={this.pluginSearch} onChange={this.onPluginSearch} placeholder="search plugins" />
+                <Input value={this.pluginSearch} onChange={this.onPluginSearch} placeholder={AdminI18n.t('sites.searchPlugins')} />
               ) : null}
               <div className="fc-site-form__plugins">
                 {this.visiblePlugins(inventory).map((plugin) => (

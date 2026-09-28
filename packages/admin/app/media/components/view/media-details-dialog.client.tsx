@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminServices } from '@/lib/admin-services';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MediaDetailsDialog extends AdminComponent {
   @prop declare item: IMediaItem | null;
@@ -95,7 +96,7 @@ export class MediaDetailsDialog extends AdminComponent {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                Edit Details
+                {AdminI18n.t('media.editDetails')}
               </h3>
               <p className={`mt-1 text-sm leading-relaxed truncate ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`} title={item.originalName}>
                 {item.originalName}
@@ -117,10 +118,10 @@ export class MediaDetailsDialog extends AdminComponent {
 
           <form onSubmit={this.handleSubmit} className="space-y-5">
             <div>
-              <label className={labelClass}>Alt text</label>
+              <label className={labelClass}>{AdminI18n.t('media.altText')}</label>
               <Input
                 type="text"
-                placeholder="Describe the image for screen readers and SEO…"
+                placeholder={AdminI18n.t('media.describeTheImageForScreen')}
                 value={alt}
                 onChange={this.handleAltChange}
                 disabled={isLoading}
@@ -129,10 +130,10 @@ export class MediaDetailsDialog extends AdminComponent {
               />
             </div>
             <div>
-              <label className={labelClass}>Caption</label>
+              <label className={labelClass}>{AdminI18n.t('media.caption')}</label>
               <Input
                 type="text"
-                placeholder="Optional caption shown with the asset…"
+                placeholder={AdminI18n.t('media.optionalCaptionShownWithThe')}
                 value={caption}
                 onChange={this.handleCaptionChange}
                 disabled={isLoading}
@@ -141,28 +142,27 @@ export class MediaDetailsDialog extends AdminComponent {
             </div>
 
             <div>
-              <label className={labelClass}>Visibility</label>
+              <label className={labelClass}>{AdminI18n.t('media.visibility')}</label>
               <Select
                 value={this.visibility}
                 onChange={this.handleVisibilityChange}
                 disabled={isLoading}
                 options={[
-                  { value: 'public', label: 'Public — anyone with the URL can open it' },
-                  { value: 'private', label: 'Private — only reachable through a share link' },
+                  { value: 'public', label: AdminI18n.t('media.publicAnyoneWithTheUrl') },
+                  { value: 'private', label: AdminI18n.t('media.privateOnlyReachableThroughA') },
                 ]}
               />
               <p className="mt-1 text-[10px] text-slate-500">
-                Changing this moves the file between storage. A file that was public may still be cached
-                by anyone who already had its URL.
+                {AdminI18n.t('media.changingThisMovesTheFile')}
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-1">
               <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={onClose} type="button" disabled={isLoading}>
-                Cancel
+                {AdminI18n.t('media.cancel')}
               </Button>
               <Button variant={ButtonVariant.PRIMARY} className="flex-1" type="submit" isLoading={isLoading}>
-                Save Details
+                {AdminI18n.t('media.saveDetails')}
               </Button>
             </div>
           </form>

@@ -3,6 +3,7 @@ import { prop } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { CertificateNoticeTone } from '@/app/certificates/enums/certificate-notice-tone.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The three facts this screen must state rather than imply.
@@ -37,30 +38,30 @@ export class CertificateStatusNotices extends AdminComponent {
   /** What the platform's own edge reports — never inferred from a row existing. */
   private renderEdge(): ReactNode {
     if (!this.edge) {
-      return this.notice(CertificateNoticeTone.MUTED, 'The platform gateway could not be reached, so what is actually serving these certificates is unknown.');
+      return this.notice(CertificateNoticeTone.MUTED, AdminI18n.t('certificates.thePlatformGatewayCouldNot'));
     }
     if (this.edge.tls === true) {
-      return this.notice(CertificateNoticeTone.GOOD, `This platform’s gateway is terminating TLS and currently holds ${String(this.edge.certificates ?? 0)} certificate(s).`);
+      return this.notice(CertificateNoticeTone.GOOD, AdminI18n.t('certificates.thisPlatformSGatewayIs', { count: String(this.edge.certificates ?? 0) }));
     }
     return this.notice(CertificateNoticeTone.WARN,
-      'This deployment’s gateway is not terminating TLS, so stored certificates are not being served by anything here. '
-      + 'Something in front of the platform holds the certificates it serves.');
+      AdminI18n.t('certificates.thisDeploymentSGatewayIs')
+      + AdminI18n.t('certificates.somethingInFrontOfThe'));
   }
 
   /** Whether the platform can obtain certificates itself, and which half is missing when it cannot. */
   private renderAutomation(): ReactNode {
     if (!this.automation) return null;
     if (this.automation.isAvailable !== true) {
-      return this.notice(CertificateNoticeTone.MUTED, `Automatic certificates are off. ${String(this.automation.blockedReason || '')}`);
+      return this.notice(CertificateNoticeTone.MUTED, AdminI18n.t('certificates.automaticCertificatesAreOff', { reason: String(this.automation.blockedReason || '') }));
     }
 
     const authority = String(this.automation.directoryLabel || '');
     if (this.automation.isTestAuthority === true) {
       return this.notice(CertificateNoticeTone.WARN,
-        `Automatic certificates come from ${authority}. Certificates from a staging authority are NOT trusted by `
-        + 'browsers — use it to test the flow, not to serve a site.');
+        AdminI18n.t('certificates.automaticCertificatesComeFromCertificates', { authority: authority })
+        + AdminI18n.t('certificates.browsersUseItToTest'));
     }
-    return this.notice(CertificateNoticeTone.MUTED, `Automatic certificates come from ${authority}.`);
+    return this.notice(CertificateNoticeTone.MUTED, AdminI18n.t('certificates.automaticCertificatesComeFrom', { authority: authority }));
   }
 
   render(): ReactNode {
@@ -69,7 +70,7 @@ export class CertificateStatusNotices extends AdminComponent {
         {this.renderEdge()}
         {this.renderAutomation()}
         {!this.encryptionAvailable
-          ? this.notice(CertificateNoticeTone.BAD, 'No SECRET_KEY is configured on this server, so a private key cannot be stored. Uploading is disabled until one is set.')
+          ? this.notice(CertificateNoticeTone.BAD, AdminI18n.t('certificates.noSecretKeyIsConfigured'))
           : null}
       </>
     );

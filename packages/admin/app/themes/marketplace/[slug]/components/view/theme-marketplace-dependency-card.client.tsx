@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
 import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeMarketplaceDependencyCard extends PureReactor {
   @prop declare theme: IMarketplaceTheme;
@@ -32,7 +33,7 @@ export class ThemeMarketplaceDependencyCard extends PureReactor {
             </div>
           ))}
           <p className="text-[10px] font-medium text-slate-400 italic leading-relaxed pt-2">
-            Dependencies are automatically resolved and installed alongside the theme.
+            {AdminI18n.t('themes.dependenciesAreAutomaticallyResolvedAnd')}
           </p>
         </div>
       </Card>

@@ -15,6 +15,7 @@ import { AdminApi } from '@/lib/api';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SiteFormValues } from '@/app/sites/site-form-values';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What this site is ENTITLED to run — not how any of it is configured.
@@ -69,15 +70,15 @@ export class SiteAccessCard extends AdminComponent {
         // click a per-site toggle, which refuses a plugin that is not active on the platform (409).
         await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled: true, scope: PluginToggleScopeConstants.PLATFORM });
         this.runtime.notify.addNotification({
-          title: 'Plugin activated',
-          message: `${plugin.name} is now active on this platform, and on for this site once you save.`,
+          title: AdminI18n.t('sites.pluginActivated'),
+          message: AdminI18n.t('sites.isNowActiveOnThis', { name: plugin.name }),
           type: NotificationType.INFO,
         });
         this.onActivated();
       } catch (err: any) {
         this.runtime.notify.addNotification({
-          title: 'Could not activate',
-          message: err?.message || `${plugin.name} could not be activated on this platform.`,
+          title: AdminI18n.t('sites.couldNotActivate'),
+          message: err?.message || AdminI18n.t('sites.couldNotBeActivatedOn', { name: plugin.name }),
           type: NotificationType.ERROR,
         });
         this.activating = '';
@@ -103,8 +104,8 @@ export class SiteAccessCard extends AdminComponent {
   /** Why a plugin cannot be run by any site, in the operator's terms. */
   private static stateLabel(plugin: { state?: string; heldReason?: string }): string {
     if (plugin.heldReason) return `held — ${plugin.heldReason.replace(/_/g, ' ')}; re-approve`;
-    if (plugin.state === 'error') return 'failed to start';
-    return 'not enabled on this platform';
+    if (plugin.state === 'error') return AdminI18n.t('sites.failedToStart');
+    return AdminI18n.t('sites.notEnabledOnThisPlatform');
   }
 
   /** Where an operator goes to make it runnable. A row that states a problem and offers nothing is a dead end. */
@@ -122,7 +123,7 @@ export class SiteAccessCard extends AdminComponent {
 
   render(): ReactNode {
     const inventory = this.inventory;
-    if (!inventory) return <Card title="Access"><p className="fc-sites__none">Loading what this platform has installed…</p></Card>;
+    if (!inventory) return <Card title={AdminI18n.t('sites.access')}><p className="fc-sites__none">{AdminI18n.t('sites.loadingWhatThisPlatformHas')}</p></Card>;
 
     return (
       <>
@@ -132,46 +133,44 @@ export class SiteAccessCard extends AdminComponent {
             own kind lock, not this setting. Without a picker here a site's own Settings → Appearance
             page — which lists only "default + whatever it currently wears" (T7) — had no way to ever
             offer more than the default: nothing set the "currently wears" past the built-in console. */}
-        <Card title="Appearance">
+        <Card title={AdminI18n.t('sites.appearance')}>
           <p className="fc-sites__text">
             {this.values.isWorkspace
-              ? 'The console this workspace’s domain serves.'
-              : 'The console this site’s own admin wears. A site admin may switch it again from Settings → Appearance.'}
+              ? AdminI18n.t('sites.theConsoleThisWorkspaceS')
+              : AdminI18n.t('sites.theConsoleThisSiteS')}
           </p>
           <Select
             theme={this.theme}
             value={this.values.appearance}
             onChange={this.onAppearance}
-            placeholder="Default console"
+            placeholder={AdminI18n.t('sites.defaultConsole')}
             clearable
             options={inventory.appearances.map((entry) => ({ value: entry.slug, label: `${entry.name} ${entry.version}`.trim() }))}
           />
         </Card>
 
         {this.values.isWorkspace ? null : (
-          <Card title="Theme">
+          <Card title={AdminI18n.t('sites.theme')}>
             <p className="fc-sites__text">
-              The theme this site’s storefront renders with. Its own settings live on the Themes page
-              with this site selected.
+              {AdminI18n.t('sites.theThemeThisSiteS')}
             </p>
             <Select
               theme={this.theme}
               value={this.values.theme}
               onChange={this.onTheme}
-              placeholder="No theme"
+              placeholder={AdminI18n.t('sites.noTheme')}
               clearable
               options={inventory.themes.map((entry) => ({ value: entry.slug, label: `${entry.name} ${entry.version}`.trim() }))}
             />
           </Card>
         )}
 
-        <Card title={`Plugins (${this.values.plugins.length} of ${inventory.plugins.length})`}>
+        <Card title={AdminI18n.t('sites.pluginsOf', { length: this.values.plugins.length, length2: inventory.plugins.length })}>
           <p className="fc-sites__text">
-            Which plugins this site may run. Their settings are on each plugin&apos;s own page, with this
-            site selected.
+            {AdminI18n.t('sites.whichPluginsThisSiteMay')}
           </p>
           {inventory.plugins.length > SiteAccessCard.SEARCH_THRESHOLD
-            ? <Input value={this.search} onChange={this.onSearch} placeholder="search plugins" />
+            ? <Input value={this.search} onChange={this.onSearch} placeholder={AdminI18n.t('sites.searchPlugins')} />
             : null}
           {/* The same row shape the Installed Plugins page uses — icon, name over description, then a
               right-hand group of metadata, state and the switch. The earlier version put the switch
@@ -186,7 +185,7 @@ export class SiteAccessCard extends AdminComponent {
               return (
                 <div key={plugin.slug} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${this.isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                   <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
-                    <Icon name={plugin.icon || 'Box'} size={18} strokeWidth={1.5} />
+                    <Icon name={plugin.icon || AdminI18n.t('sites.box')} size={18} strokeWidth={1.5} />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -194,7 +193,7 @@ export class SiteAccessCard extends AdminComponent {
                     <p className={`text-xs leading-snug truncate ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                       {blocked
                         ? <Link className="text-amber-600 dark:text-amber-400 no-underline" href={SiteAccessCard.stateHref(plugin)}>{SiteAccessCard.stateLabel(plugin)} →</Link>
-                        : (plugin.description || 'Runs on this site when enabled.')}
+                        : (plugin.description || AdminI18n.t('sites.runsOnThisSiteWhen'))}
                     </p>
                   </div>
 
@@ -204,7 +203,7 @@ export class SiteAccessCard extends AdminComponent {
                       variant={blocked ? BadgeVariant.AMBER : (enabled ? BadgeVariant.SUCCESS : BadgeVariant.GRAY)}
                       className="shrink-0 justify-center w-[68px]"
                     >
-                      {blocked ? 'Blocked' : enabled ? 'On' : dormant ? 'Dormant' : 'Off'}
+                      {blocked ? AdminI18n.t('sites.blocked') : enabled ? AdminI18n.t('sites.on') : dormant ? AdminI18n.t('sites.dormant') : AdminI18n.t('sites.off')}
                     </Badge>
                     <Switch
                       checked={enabled}

@@ -8,6 +8,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Input } from '@/components/ui/view/input.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Grants an existing account access to this site.
@@ -71,9 +72,9 @@ export class SiteGrantDialog extends AdminComponent {
                 <FrameworkIcons.Plus size={16} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>Grant access</h3>
+                <h3 className={`text-lg font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('sites.grantAccess')}</h3>
                 <p className={`mt-1 text-sm leading-relaxed ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  The account must already exist on this platform — a site cannot create one.
+                  {AdminI18n.t('sites.theAccountMustAlreadyExist')}
                 </p>
               </div>
             </div>
@@ -84,14 +85,14 @@ export class SiteGrantDialog extends AdminComponent {
               <Switch
                 checked={this.asAdmin}
                 onChange={this.onRole}
-                label="Site administrator"
-                description="Can administer this site. Turn off to grant access without administrative rights."
+                label={AdminI18n.t('sites.siteAdministrator')}
+                description={AdminI18n.t('sites.canAdministerThisSiteTurn')}
               />
             </div>
 
             <div className="mt-6 flex items-center justify-end gap-2">
-              <Button variant={ButtonVariant.GHOST} onClick={this.onClose} type="button">Cancel</Button>
-              <Button type="submit" isLoading={this.isLoading} icon={<FrameworkIcons.Plus size={14} />}>Grant access</Button>
+              <Button variant={ButtonVariant.GHOST} onClick={this.onClose} type="button">{AdminI18n.t('sites.cancel')}</Button>
+              <Button type="submit" isLoading={this.isLoading} icon={<FrameworkIcons.Plus size={14} />}>{AdminI18n.t('sites.grantAccess')}</Button>
             </div>
           </form>
         </div>

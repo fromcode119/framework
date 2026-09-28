@@ -12,6 +12,7 @@ import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Create a site: identity, hosts, first admin, the plugins it runs, the theme it renders with. */
 export class NewSitePageClient extends AdminComponent {
@@ -36,10 +37,10 @@ export class NewSitePageClient extends AdminComponent {
     this.saving = true;
     try {
       const site = await SitesClient.create(this.values.toCreatePayload());
-      this.runtime.notify.addNotification({ title: 'Site created', message: `${site.primaryHost} is live for routing — no restart needed.`, type: NotificationType.INFO });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.siteCreated'), message: AdminI18n.t('sites.isLiveForRoutingNo', { primaryHost: site.primaryHost }), type: NotificationType.INFO });
       this.router.push(AdminConstants.ROUTES.SITES.DETAIL(site.id));
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Not created', message: err?.message || 'The site could not be created.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.notCreated'), message: err?.message || AdminI18n.t('sites.theSiteCouldNotBe'), type: NotificationType.ERROR });
     } finally {
       this.saving = false;
     }
@@ -51,14 +52,14 @@ export class NewSitePageClient extends AdminComponent {
         <CompactPageHeader
           theme={this.theme}
           icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
-          title="New site"
-          subtitle="A site is a customer: its own hosts, content, people, plugins and theme on this shared platform."
+          title={AdminI18n.t('sites.newSite')}
+          subtitle={AdminI18n.t('sites.aSiteIsACustomer')}
           backHref={AdminConstants.ROUTES.SITES.ROOT}
-          actions={<Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={14} />}>Create site</Button>}
+          actions={<Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('sites.createSite')}</Button>}
         />
         <div className="fc-sites__body">
-        <Card title="Identity and inventory">
-          {this.inventory ? <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} inventory={this.inventory} isNew /> : <Loader label="Loading installed plugins and themes…" />}
+        <Card title={AdminI18n.t('sites.identityAndInventory')}>
+          {this.inventory ? <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} inventory={this.inventory} isNew /> : <Loader label={AdminI18n.t('sites.loadingInstalledPluginsAndThemes')} />}
         </Card>
         </div>
       </div>

@@ -11,6 +11,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class MediaToolbar extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare uploading: boolean;
@@ -68,14 +69,14 @@ export class MediaToolbar extends PureReactor {
           <CompactPageHeader
             theme={theme}
             icon={<FrameworkIcons.Media size={18} strokeWidth={2.5} />}
-            title="Media Assets"
+            title={AdminI18n.t('media.mediaAssets')}
             subtitle={
               <span className="flex items-center gap-2">
                 <button
                   onClick={this.goToRoot}
                   className={`font-semibold tracking-wide transition-colors ${!currentFolderId ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
                 >
-                  Root Library
+                  {AdminI18n.t('media.rootLibrary')}
                 </button>
                 {folderPath.map((folder, index) => (
                   <Fragment key={folder.id}>
@@ -100,7 +101,7 @@ export class MediaToolbar extends PureReactor {
                   onClick={this.openFolderPrompt}
                   icon={<FrameworkIcons.FolderPlus size={15} strokeWidth={2.5} />}
                 >
-                  New folder
+                  {AdminI18n.t('media.newFolder')}
                 </Button>
                 {/* Uploads and theme assets are merged by default — "find that picture" is one job.
                     The filter is for when the distinction actually matters. */}
@@ -130,7 +131,7 @@ export class MediaToolbar extends PureReactor {
                   disabled={uploading}
                   icon={uploading ? <FrameworkIcons.Loader size={15} className="animate-spin" /> : <FrameworkIcons.Upload size={15} strokeWidth={3} />}
                 >
-                  {uploading ? 'Synching...' : 'Upload Asset'}
+                  {uploading ? AdminI18n.t('media.synching') : AdminI18n.t('media.uploadAsset')}
                 </Button>
               </>
             }

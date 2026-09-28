@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * This SITE's own Cloudflare API token, for DNS-01 and wildcard orders.
@@ -58,14 +59,14 @@ export class CertificateDnsTokenCard extends AdminComponent<{
   @bound private async save(): Promise<void> {
     const token = this.tokenInput.trim();
     if (!token) {
-      this.message = 'Nothing to save — paste a token, or use Clear to remove the saved one.';
+      this.message = AdminI18n.t('certificates.nothingToSavePasteA');
       return;
     }
-    await this.write(token, 'Saved. This site now uses its own Cloudflare token.');
+    await this.write(token, AdminI18n.t('certificates.savedThisSiteNowUses'));
   }
 
   @bound private async clear(): Promise<void> {
-    await this.write('', "Removed. This site falls back to the platform's token.");
+    await this.write('', AdminI18n.t('certificates.removedThisSiteFallsBack'));
   }
 
   private async write(token: string, success: string): Promise<void> {
@@ -76,7 +77,7 @@ export class CertificateDnsTokenCard extends AdminComponent<{
       this.message = success;
       await this.props.onChanged();
     } catch (error: any) {
-      this.message = String(error?.message || 'Could not save the token.');
+      this.message = String(error?.message || AdminI18n.t('certificates.couldNotSaveTheToken'));
     } finally {
       this.isSaving = false;
     }
@@ -84,13 +85,13 @@ export class CertificateDnsTokenCard extends AdminComponent<{
 
   /** What is in use right now, named. Never a blank that could be read as "nothing configured". */
   private get provenance(): string {
-    if (this.hasOwnToken) return 'This site uses its own Cloudflare token.';
+    if (this.hasOwnToken) return AdminI18n.t('certificates.thisSiteUsesItsOwn');
     if (this.isInherited) {
-      return "This site has no token of its own and is using the platform's. That token can only "
-        + "order certificates for zones it has access to — if this site's domain is in a different "
-        + 'Cloudflare account, save this site\'s own token here.';
+      return AdminI18n.t('certificates.thisSiteHasNoToken')
+        + AdminI18n.t('certificates.orderCertificatesForZonesIt')
+        + AdminI18n.t('certificates.cloudflareAccountSaveThisSite');
     }
-    return 'No Cloudflare token applies to this site, so DNS-01 and wildcard orders are unavailable here.';
+    return AdminI18n.t('certificates.noCloudflareTokenAppliesTo');
   }
 
   render(): ReactNode {
@@ -98,24 +99,24 @@ export class CertificateDnsTokenCard extends AdminComponent<{
     const label = `block text-xs font-semibold mb-1 ${dark ? 'text-slate-300' : 'text-slate-700'}`;
 
     return (
-      <Card title="Cloudflare API token">
+      <Card title={AdminI18n.t('certificates.cloudflareApiToken')}>
         <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
           Needed to order a certificate proved through DNS — the wildcard (<code>*.example.com</code>)
           variant, and any domain behind a proxy or CDN. The token needs Zone → DNS → Edit on this
           site&rsquo;s zone; it is stored encrypted and is never shown again once saved.
         </p>
 
-        <label className={label}>This site&rsquo;s token</label>
+        <label className={label}>{AdminI18n.t('certificates.thisSiteSToken')}</label>
         <div className="flex items-center gap-2 max-w-md">
           <Input
             value={this.tokenInput}
             onChange={this.onToken}
             type="password"
-            placeholder={this.hasOwnToken ? 'Saved — leave blank to keep, or use Clear to remove' : 'Paste a Cloudflare API token'}
+            placeholder={this.hasOwnToken ? AdminI18n.t('certificates.savedLeaveBlankToKeep') : AdminI18n.t('certificates.pasteACloudflareApiToken')}
           />
-          <Button onClick={this.save} isLoading={this.isSaving} icon={<FrameworkIcons.Save size={14} />}>Save</Button>
+          <Button onClick={this.save} isLoading={this.isSaving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('certificates.save')}</Button>
           {this.hasOwnToken ? (
-            <Button variant={ButtonVariant.GHOST} onClick={this.clear} isLoading={this.isSaving}>Clear</Button>
+            <Button variant={ButtonVariant.GHOST} onClick={this.clear} isLoading={this.isSaving}>{AdminI18n.t('certificates.clear')}</Button>
           ) : null}
         </div>
 

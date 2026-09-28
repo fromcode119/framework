@@ -12,6 +12,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeSettingsExtensionsPanel extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -24,8 +25,8 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
   private static provenanceOf(key: string, model: ThemeSettingsRenderModel): string {
     const storedForSite = Object.prototype.hasOwnProperty.call(model.storedSettings, key);
     return storedForSite
-      ? 'Stored in this site\'s theme config, written by the theme\'s seeds. Run seeds to rewrite it from the theme.'
-      : 'Default declared by the theme (theme.json settingsDefaults). Change it in the theme.';
+      ? AdminI18n.t('themes.storedInThisSiteS')
+      : AdminI18n.t('themes.defaultDeclaredByTheTheme');
   }
 
   render(): ReactNode {
@@ -41,10 +42,10 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
           </div>
           <div>
             <h3 className={`text-[11px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-              Theme Extensions
+              {AdminI18n.t('themes.themeExtensions')}
             </h3>
             <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">
-              Integration links and additional configurable settings.
+              {AdminI18n.t('themes.integrationLinksAndAdditionalConfigurable')}
             </p>
           </div>
         </div>
@@ -81,7 +82,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                       </div>
                       {schema?.integrationType && (
                         <Link href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)} className="text-[10px] font-semibold uppercase tracking-wide text-indigo-500 hover:text-indigo-600">
-                          Open Integration
+                          {AdminI18n.t('themes.openIntegration')}
                         </Link>
                       )}
                     </div>
@@ -98,7 +99,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                         value={String(rawValue ?? '')}
                         onChange={(nextValue) => page.handleSettingChange(key, String(nextValue ?? ''))}
                         options={(schema?.options || []).map((opt) => ({ value: String(opt.value), label: opt.label }))}
-                        placeholder={schema?.placeholder || 'Select value'}
+                        placeholder={schema?.placeholder || AdminI18n.t('themes.selectValue')}
                         searchable={false}
                         theme={adminTheme}
                         className="w-full"
@@ -114,7 +115,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                         type="text"
                         value={String(rawValue ?? '')}
                         onChange={(e) => page.handleSettingChange(key, e.target.value)}
-                        placeholder={schema?.placeholder || (type === ThemeConfigFieldType.INTEGRATION ? 'Integration value' : '')}
+                        placeholder={schema?.placeholder || (type === ThemeConfigFieldType.INTEGRATION ? AdminI18n.t('themes.integrationValue') : '')}
                         className={`w-full ${AdminClass.SURFACE} px-4 py-2 text-sm font-semibold border ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/50 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                       />
                     )}

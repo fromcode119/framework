@@ -3,6 +3,7 @@ import { bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Input } from '@/components/ui/view/input.client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The site's hosts: its primary host and its aliases.
@@ -28,8 +29,8 @@ export class SiteHostsFields extends AdminComponent<{
 
     return (
       <>
-        <Input label="Primary host" value={values.primaryHost} onChange={this.onPrimaryHost} placeholder="acme.example.com" />
-        <Input label="Host aliases" value={values.hostAliases} onChange={this.onAliases} placeholder="www.acme.example.com, shop.acme.example.com" />
+        <Input label={AdminI18n.t('sites.primaryHost')} value={values.primaryHost} onChange={this.onPrimaryHost} placeholder="acme.example.com" />
+        <Input label={AdminI18n.t('sites.hostAliases')} value={values.hostAliases} onChange={this.onAliases} placeholder="www.acme.example.com, shop.acme.example.com" />
       </>
     );
   }

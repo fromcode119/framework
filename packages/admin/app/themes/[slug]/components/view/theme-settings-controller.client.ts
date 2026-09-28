@@ -3,6 +3,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { ThemeRecordHydrator } from '@/app/themes/[slug]/theme-record-hydrator';
 import type { IThemeSettingsPageHost } from '@/app/themes/[slug]/interfaces/theme-settings-page-host.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Async data/action handlers for the theme settings page (fetch, activate, update, save config,
@@ -50,10 +51,10 @@ export class ThemeSettingsController {
     if (!themeDetail) return;
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.ACTIVATE(themeDetail.slug));
-      page.notify(NotificationType.SUCCESS, 'Theme Activated', `${themeDetail.name} is now active.`);
+      page.notify(NotificationType.SUCCESS, AdminI18n.t('themes.themeActivated'), AdminI18n.t('themes.isNowActive', { name: themeDetail.name }));
       page.triggerRefresh();
     } catch (err: any) {
-      page.notify(NotificationType.ERROR, 'Activation Failed', err.message);
+      page.notify(NotificationType.ERROR, AdminI18n.t('themes.activationFailed'), err.message);
     }
   }
 
@@ -62,13 +63,13 @@ export class ThemeSettingsController {
     if (!themeDetail) return;
     page.isUpdating = true;
     try {
-      page.notify(NotificationType.INFO, 'Updating...', `Downloading latest version of ${themeDetail.slug}...`);
+      page.notify(NotificationType.INFO, AdminI18n.t('themes.updating'), AdminI18n.t('themes.downloadingLatestVersionOf', { slug: themeDetail.slug }));
       await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.INSTALL(themeDetail.slug));
-      page.notify(NotificationType.SUCCESS, 'Updated', `Theme ${themeDetail.name} has been updated.`);
+      page.notify(NotificationType.SUCCESS, AdminI18n.t('themes.updated'), AdminI18n.t('themes.themeHasBeenUpdated2', { name: themeDetail.name }));
       await ThemeSettingsController.fetchTheme(page);
       page.triggerRefresh();
     } catch (err: any) {
-      page.notify(NotificationType.ERROR, 'Update Failed', err.message);
+      page.notify(NotificationType.ERROR, AdminI18n.t('themes.updateFailed'), err.message);
     } finally {
       page.isUpdating = false;
     }
@@ -88,11 +89,11 @@ export class ThemeSettingsController {
         defaultLayout: tempDefaultLayout,
         settings: tempSettings,
       });
-      page.notify(NotificationType.SUCCESS, 'Configuration Saved', 'Visual protocols updated successfully.');
+      page.notify(NotificationType.SUCCESS, AdminI18n.t('themes.configurationSaved'), AdminI18n.t('themes.visualProtocolsUpdatedSuccessfully'));
       await ThemeSettingsController.fetchTheme(page);
       page.triggerRefresh();
     } catch (err: any) {
-      page.notify(NotificationType.ERROR, 'Save Failed', err.message);
+      page.notify(NotificationType.ERROR, AdminI18n.t('themes.saveFailed'), err.message);
     } finally {
       page.isSaving = false;
     }
@@ -105,11 +106,11 @@ export class ThemeSettingsController {
     page.isDeleting = true;
     try {
       await AdminApi.delete(AdminConstants.ENDPOINTS.THEMES.DELETE(themeDetail.slug));
-      page.notify(NotificationType.SUCCESS, 'Theme Deleted', `${themeDetail.name} has been removed.`);
+      page.notify(NotificationType.SUCCESS, AdminI18n.t('themes.themeDeleted'), AdminI18n.t('themes.hasBeenRemoved2', { name: themeDetail.name }));
       page.goToThemesList();
       page.triggerRefresh();
     } catch (err: any) {
-      page.notify(NotificationType.ERROR, 'Deletion Failed', err.message);
+      page.notify(NotificationType.ERROR, AdminI18n.t('themes.deletionFailed'), err.message);
     } finally {
       page.isDeleting = false;
     }
@@ -122,11 +123,11 @@ export class ThemeSettingsController {
     page.isReseeding = true;
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: false });
-      page.notify(NotificationType.SUCCESS, 'Seeds Executed', `Seed script executed for ${themeDetail.name}.`);
+      page.notify(NotificationType.SUCCESS, AdminI18n.t('themes.seedsExecuted'), AdminI18n.t('themes.seedScriptExecutedFor', { name: themeDetail.name }));
       await ThemeSettingsController.fetchTheme(page);
       page.triggerRefresh();
     } catch (err: any) {
-      page.notify(NotificationType.ERROR, 'Seed Failed', err.message);
+      page.notify(NotificationType.ERROR, AdminI18n.t('themes.seedFailed'), err.message);
     } finally {
       page.isReseeding = false;
     }
@@ -139,11 +140,11 @@ export class ThemeSettingsController {
     page.isResettingTheme = true;
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.RESET(themeDetail.slug), { runSeeds: true, resetConfig: true });
-      page.notify(NotificationType.SUCCESS, 'Theme Reset', `${themeDetail.name} config reset and seeds executed.`);
+      page.notify(NotificationType.SUCCESS, AdminI18n.t('themes.themeReset'), AdminI18n.t('themes.configResetAndSeedsExecuted', { name: themeDetail.name }));
       await ThemeSettingsController.fetchTheme(page);
       page.triggerRefresh();
     } catch (err: any) {
-      page.notify(NotificationType.ERROR, 'Reset Failed', err.message);
+      page.notify(NotificationType.ERROR, AdminI18n.t('themes.resetFailed'), err.message);
     } finally {
       page.isResettingTheme = false;
     }

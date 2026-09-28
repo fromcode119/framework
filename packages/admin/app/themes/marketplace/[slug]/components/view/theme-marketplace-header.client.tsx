@@ -7,6 +7,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import Link from 'next/link';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeMarketplaceHeader extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -36,7 +37,7 @@ export class ThemeMarketplaceHeader extends PureReactor {
         </Link>
         <div className="flex-1 min-w-0">
           <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 font-semibold uppercase tracking-wide text-[10px] rounded-lg mb-1">
-            Marketplace Premium
+            {AdminI18n.t('themes.marketplacePremium')}
           </Badge>
           <div className="flex items-center gap-3">
             <h1 className={`text-xl font-bold tracking-tight truncate ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
@@ -48,7 +49,7 @@ export class ThemeMarketplaceHeader extends PureReactor {
                   align="left"
                   trigger={
                     <div className={`flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer group ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
-                      <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? '(Latest)' : ''}</span>
+                      <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? AdminI18n.t('themes.latest') : ''}</span>
                       <div className={`transition-colors ${adminTheme === ThemeMode.DARK ? 'text-slate-600 group-hover:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-600'}`}>
                         <FrameworkIcons.Down size={14} strokeWidth={3} />
                       </div>
@@ -86,8 +87,8 @@ export class ThemeMarketplaceHeader extends PureReactor {
               <FrameworkIcons.Download size={18} strokeWidth={2.5} />
             )}
             {this.siteScope
-              ? (installing ? 'Adding...' : installedTheme ? 'In this site' : 'Add to this site')
-              : (installing ? 'Installing...' : installedTheme && !hasUpdate ? 'Installed' : hasUpdate ? 'Update Theme' : 'Get This Theme')}
+              ? (installing ? 'Adding...' : installedTheme ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.addToThisSite'))
+              : (installing ? 'Installing...' : installedTheme && !hasUpdate ? 'Installed' : hasUpdate ? AdminI18n.t('themes.updateTheme') : AdminI18n.t('themes.getThisTheme'))}
           </button>
         </div>
       </div>

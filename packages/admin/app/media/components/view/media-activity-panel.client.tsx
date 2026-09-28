@@ -4,6 +4,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { MediaActivityPanelSections } from '@/app/media/components/view/media-activity-panel-sections.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Media activity — who opened what, and what was refused.
@@ -32,9 +33,9 @@ export class MediaActivityPanel extends MediaActivityPanelSections {
           {this.shareId ? (
             <span className="inline-flex items-center gap-2 text-[11px]">
               <FrameworkIcons.Activity size={13} className="opacity-60" />
-              <span className="font-semibold">{String(this.data?.shareTitle || `Share #${this.shareId}`)}</span>
+              <span className="font-semibold">{String(this.data?.shareTitle || AdminI18n.t('media.share', { shareId: this.shareId }))}</span>
               <button type="button" onClick={this.handleClearScope} className="text-indigo-500 hover:underline">
-                show all shares
+                {AdminI18n.t('media.showAllShares')}
               </button>
             </span>
           ) : (
@@ -47,7 +48,7 @@ export class MediaActivityPanel extends MediaActivityPanelSections {
 
         {this.loadError ? (
           <LoadErrorPanel
-            title="Activity could not be loaded"
+            title={AdminI18n.t('media.activityCouldNotBeLoaded')}
             message={this.loadError}
             onRetry={this.retryLoad}
             isRetrying={this.loading}

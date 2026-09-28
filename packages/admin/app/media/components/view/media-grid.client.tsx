@@ -11,6 +11,7 @@ import { MediaItemCard } from '@/app/media/components/view/media-item-card.clien
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
 import type { IMovingItem } from '@/app/media/interfaces/moving-item.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MediaGrid extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -46,7 +47,7 @@ export class MediaGrid extends PureReactor {
       return (
         <div className="flex flex-col items-center justify-center py-24 gap-4">
            <FrameworkIcons.Loader className="animate-spin text-indigo-500" size={48} />
-           <p className="text-slate-500">Loading your assets...</p>
+           <p className="text-slate-500">{AdminI18n.t('media.loadingYourAssets')}</p>
         </div>
       );
     }
@@ -57,11 +58,11 @@ export class MediaGrid extends PureReactor {
            <div className="p-4 bg-indigo-500/10 rounded-full text-indigo-500 mb-4 text-3xl">
               <FrameworkIcons.Media />
            </div>
-           <h3 className={`text-xl font-bold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>No assets yet</h3>
-           <p className="text-slate-500 mt-2">Upload your first image, video or document to get started.</p>
+           <h3 className={`text-xl font-bold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.noAssetsYet')}</h3>
+           <p className="text-slate-500 mt-2">{AdminI18n.t('media.uploadYourFirstImageVideo')}</p>
            <Button size={FieldSize.SM} className="mt-6" onClick={this.openFilePicker}>
               <FrameworkIcons.Upload size={18} />
-              <span>Upload Now</span>
+              <span>{AdminI18n.t('media.uploadNow')}</span>
            </Button>
         </div>
       );

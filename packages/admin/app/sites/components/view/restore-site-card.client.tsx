@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { Card } from '@/components/ui/view/card.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SitesClient } from '@/lib/tenants/sites-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Shown beside "adopt" on a deployment with NO sites: put a site's DATA here first.
@@ -38,15 +39,15 @@ export class RestoreSiteCard extends AdminComponent {
       const uploadId = await SitesClient.uploadArchive(file, (percent) => { this.progress = percent; });
       this.outcome = await SitesClient.restoreStandalone(uploadId, this.passphrase);
       this.runtime.notify.addNotification({
-        title: 'Archive restored',
-        message: `${this.outcome.rows.toLocaleString()} rows across ${this.outcome.tables} tables. Adopt this deployment to make it the site.`,
+        title: AdminI18n.t('sites.archiveRestored'),
+        message: AdminI18n.t('sites.rowsAcrossTablesAdoptThis', { toLocaleString: this.outcome.rows.toLocaleString(), tables: this.outcome.tables }),
         type: NotificationType.INFO,
       });
       this.props.onRestored();
     } catch (err: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
       this.runtime.notify.addNotification({
-        title: 'Restore failed',
-        message: err?.message || 'Nothing was written — the restore is one transaction.',
+        title: AdminI18n.t('sites.restoreFailed'),
+        message: err?.message || AdminI18n.t('sites.nothingWasWrittenTheRestore'),
         type: NotificationType.ERROR,
       });
     } finally {
@@ -57,10 +58,10 @@ export class RestoreSiteCard extends AdminComponent {
   render(): ReactNode {
     if (this.outcome) {
       return (
-        <Card title="Restored — adopt next" icon={<FrameworkIcons.CheckCircle size={16} />}>
+        <Card title={AdminI18n.t('sites.restoredAdoptNext')} icon={<FrameworkIcons.CheckCircle size={16} />}>
           <p className="fc-sites__text">
             {this.outcome.rows.toLocaleString()} rows across {this.outcome.tables} tables are here, with no owner yet — which is
-            correct for a deployment with no sites. <strong>Adopt this deployment below</strong> to stamp them with the new site,
+            correct for a deployment with no sites. <strong>{AdminI18n.t('sites.adoptThisDeploymentBelow')}</strong> to stamp them with the new site,
             then restart the API.
           </p>
           {this.outcome.warnings.map((warning) => (
@@ -71,14 +72,12 @@ export class RestoreSiteCard extends AdminComponent {
     }
 
     return (
-      <Card title="Restore a site from an archive" icon={<FrameworkIcons.Upload size={16} />}>
+      <Card title={AdminI18n.t('sites.restoreASiteFromAn')} icon={<FrameworkIcons.Upload size={16} />}>
         <p className="fc-sites__text">
-          Bring a site exported from another platform onto this installation. The rows arrive owned by nobody, which is what a
-          deployment with no sites looks like — adopting afterwards gives them their owner. Nothing is written unless the whole
-          archive fits: the restore is one transaction.
+          {AdminI18n.t('sites.bringASiteExportedFrom')}
         </p>
         <label className="fc-sites__text" htmlFor="fc-restore-passphrase">
-          Transit passphrase — only if the export sealed its secrets
+          {AdminI18n.t('sites.transitPassphraseOnlyIfThe')}
         </label>
         <input
           id="fc-restore-passphrase"

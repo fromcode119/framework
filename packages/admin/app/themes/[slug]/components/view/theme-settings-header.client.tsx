@@ -8,6 +8,7 @@ import { ThemeState } from '@fromcode119/core/client';
 import { Reactor, prop } from '@fromcode119/react-class-components';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeSettingsHeader extends Reactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -54,7 +55,7 @@ export class ThemeSettingsHeader extends Reactor {
                 className="ml-3 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/20"
               >
                 {isUpdating ? <FrameworkIcons.Loader size={10} className="animate-spin" /> : <FrameworkIcons.Zap size={10} />}
-                {isUpdating ? 'Updating...' : 'Update Available'}
+                {isUpdating ? AdminI18n.t('themes.updating') : AdminI18n.t('themes.updateAvailable')}
               </button>
             )}
           </div>

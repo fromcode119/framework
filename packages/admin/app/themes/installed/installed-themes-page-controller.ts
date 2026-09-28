@@ -6,6 +6,7 @@ import type { IInstalledThemeManifest } from '@/app/themes/installed/interfaces/
 import type { IInstalledThemesArchiveInspection } from '@/app/themes/installed/interfaces/installed-themes-archive-inspection.interface';
 import type { IInstalledThemesFetchResult } from '@/app/themes/installed/interfaces/installed-themes-fetch-result.interface';
 import type { IInstalledThemesSiteQuota } from '@/app/themes/installed/interfaces/installed-themes-site-quota.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Data access + business logic for the installed-themes page. Hook-free by contract: the page-client
  * class owns React state, lifecycle and notifications; this controller owns "how to fetch/do it".
@@ -65,8 +66,8 @@ export class InstalledThemesPageController {
     return {
       supported: true,
       uploadId,
-      previewTitle: `Install theme "${info.name || info.slug || 'package'}"?`,
-      previewDescription: 'Review theme contents before continuing.',
+      previewTitle: AdminI18n.t('themes.installTheme', { name: info.name || info.slug || AdminI18n.t('themes.package') }),
+      previewDescription: AdminI18n.t('themes.reviewThemeContentsBeforeContinuing'),
       previewSections: InstalledThemesUploadService.buildPreviewSections(info),
     };
   }
@@ -120,12 +121,12 @@ export class InstalledThemesPageController {
   }
 
   static disableConfirmationMessage(slug: string): string {
-    return `Disable theme "${slug}"? The frontend will fall back to the starter view until another theme is activated.`;
+    return AdminI18n.t('themes.disableThemeTheFrontendWill', { slug: slug });
   }
 
   static deleteConfirmationMessage(slug: string, isActive: boolean): string {
     return isActive
-      ? `Theme "${slug}" is active. The system will switch to another theme if available, or continue with no active theme. Continue?`
-      : `Are you sure you want to delete theme "${slug}"? This cannot be undone.`;
+      ? AdminI18n.t('themes.themeIsActiveTheSystem', { slug: slug })
+      : AdminI18n.t('themes.areYouSureYouWant', { slug: slug });
   }
 }

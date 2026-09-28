@@ -1,9 +1,10 @@
 import { ThemeMode } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class ActivityColumnsFactory {
   static system(theme: ThemeMode) {
     return [
       {
-        header: 'Event',
+        header: AdminI18n.t('activity.event'),
         id: 'event',
         accessor: (row: any) => {
           const levelStyle = row.level === 'ERROR'
@@ -25,7 +26,7 @@ export class ActivityColumnsFactory {
         }
       },
       {
-        header: 'Actor',
+        header: AdminI18n.t('activity.actor'),
         id: 'actor',
         accessor: (row: any) => {
           const actor = row.actor_id || row.context?.email || (row.message && row.message.includes('for ') ? row.message.split('for ')[1] : 'SYSTEM');
@@ -47,17 +48,17 @@ export class ActivityColumnsFactory {
         }
       },
       {
-        header: 'Resource',
+        header: AdminI18n.t('activity.resource'),
         id: 'target',
         accessor: (row: any) => (
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-indigo-500/60 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-            <span className="font-semibold text-[11px] text-slate-500 tracking-wide">{row.pluginSlug ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : 'System'}</span>
+            <span className="font-semibold text-[11px] text-slate-500 tracking-wide">{row.pluginSlug ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
           </div>
         )
       },
       {
-        header: 'Timestamp',
+        header: AdminI18n.t('activity.timestamp'),
         id: 'timestamp',
         accessor: (row: any) => (
           <div className="flex flex-col">
@@ -71,7 +72,7 @@ export class ActivityColumnsFactory {
         )
       },
       {
-        header: 'Activity',
+        header: AdminI18n.t('activity.activity'),
         id: 'details',
         accessor: (row: any) => (
           <span className="text-xs font-medium text-slate-500 leading-relaxed block max-w-sm">{row.message}</span>
@@ -83,7 +84,7 @@ export class ActivityColumnsFactory {
   static security(theme: ThemeMode) {
     return [
       {
-        header: 'Status',
+        header: AdminI18n.t('activity.status'),
         id: 'status',
         accessor: (row: any) => {
           const style = row.status === 'violation'
@@ -109,12 +110,12 @@ export class ActivityColumnsFactory {
             <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 text-[10px] font-semibold">
                {row.pluginSlug ? row.pluginSlug[0].toUpperCase() : 'S'}
             </div>
-            <span className="font-semibold text-[11px] text-slate-600 dark:text-slate-200 tracking-wide">{row.pluginSlug ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : 'System'}</span>
+            <span className="font-semibold text-[11px] text-slate-600 dark:text-slate-200 tracking-wide">{row.pluginSlug ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
           </div>
         )
       },
       {
-        header: 'Action',
+        header: AdminI18n.t('activity.action'),
         id: 'action',
         accessor: (row: any) => (
           <div className="flex flex-col">
@@ -124,7 +125,7 @@ export class ActivityColumnsFactory {
         )
       },
       {
-        header: 'Time',
+        header: AdminI18n.t('activity.time'),
         id: 'timestamp',
         accessor: (row: any) => (
           <div className="flex flex-col">

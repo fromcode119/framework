@@ -10,6 +10,7 @@ import { ThemeVariableControl } from '@/lib/theme-variable-control';
 import { AdminClass } from '@/lib/admin-class';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeSettingsVariablesPanel extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -67,7 +68,7 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                           value={value || ''}
                           onChange={(nextValue) => page.handleVariableChange(key, String(nextValue || ''))}
                           options={(schema?.options || []).map((opt) => ({ value: String(opt.value), label: opt.label }))}
-                          placeholder="Select value"
+                          placeholder={AdminI18n.t('themes.selectValue')}
                           searchable={false}
                           theme={adminTheme}
                           className="w-full"
@@ -79,7 +80,7 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                               type="text"
                               value={value}
                               onChange={e => page.handleVariableChange(key, e.target.value)}
-                              placeholder="Inter, sans-serif"
+                              placeholder={AdminI18n.t('themes.interSansSerif')}
                               list={`fonts-${key}`}
                               className={`w-full bg-transparent border-0 p-0 text-sm font-semibold focus:ring-0 ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}
                             />
@@ -105,7 +106,7 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                             className={`flex-1 bg-transparent border-0 p-0 text-sm font-semibold focus:ring-0 ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}
                           />
                           {value && (
-                            <img src={value} className="h-8 w-8 rounded-lg object-cover ring-2 ring-indigo-500/20" alt="Preview" />
+                            <img src={value} className="h-8 w-8 rounded-lg object-cover ring-2 ring-indigo-500/20" alt={AdminI18n.t('themes.preview')} />
                           )}
                         </div>
                       ) : (

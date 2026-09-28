@@ -20,6 +20,7 @@ import { AdminClass } from '@/lib/admin-class';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Every site on this platform, and the actions that create, move and remove one.
@@ -65,7 +66,7 @@ export class SitesPageClient extends AdminComponent {
       this.inventory = result.inventory;
       this.multiTenant = result.multiTenant;
     } catch (err: any) {
-      this.error = err?.message || 'Could not load the sites.';
+      this.error = err?.message || AdminI18n.t('sites.couldNotLoadTheSites');
     } finally {
       this.loading = false;
     }
@@ -76,10 +77,10 @@ export class SitesPageClient extends AdminComponent {
     this.busyId = site.id;
     try {
       const result = await SitesClient.exportSite(site.id);
-      this.notify(NotificationType.INFO, 'Site exported', `${result.filename} (${result.rows} rows) is under Backups → Sites.`);
+      this.notify(NotificationType.INFO, AdminI18n.t('sites.siteExported'), AdminI18n.t('sites.rowsIsUnderBackupsSites', { filename: result.filename, rows: result.rows }));
       await this.load();
     } catch (err: any) {
-      this.notify(NotificationType.ERROR, 'Export failed', err?.message || 'The export did not complete.');
+      this.notify(NotificationType.ERROR, AdminI18n.t('sites.exportFailed'), err?.message || AdminI18n.t('sites.theExportDidNotComplete'));
     } finally {
       this.busyId = null;
     }
@@ -90,10 +91,10 @@ export class SitesPageClient extends AdminComponent {
     this.busyId = site.id;
     try {
       await SitesClient.update(site.id, { state: site.isActive ? 'suspended' : 'active' });
-      this.notify(NotificationType.INFO, site.isActive ? 'Site suspended' : 'Site reactivated', `${site.primaryHost} now answers ${site.isActive ? '503' : 'normally'}.`);
+      this.notify(NotificationType.INFO, site.isActive ? AdminI18n.t('sites.siteSuspended') : AdminI18n.t('sites.siteReactivated'), (site.isActive ? AdminI18n.t('sites.nowAnswers503', { host: site.primaryHost }) : AdminI18n.t('sites.nowAnswersNormally', { host: site.primaryHost })));
       await this.load();
     } catch (err: any) {
-      this.notify(NotificationType.ERROR, 'Change failed', err?.message || 'The state was not changed.');
+      this.notify(NotificationType.ERROR, AdminI18n.t('sites.changeFailed'), err?.message || AdminI18n.t('sites.theStateWasNotChanged'));
     } finally {
       this.busyId = null;
     }
@@ -114,17 +115,17 @@ export class SitesPageClient extends AdminComponent {
     const site = this.deleting;
     if (!site) return;
     if (typed.trim() !== site.slug) {
-      this.notify(NotificationType.ERROR, 'Not deleted', `Type "${site.slug}" exactly to confirm.`);
+      this.notify(NotificationType.ERROR, AdminI18n.t('sites.notDeleted'), AdminI18n.t('sites.typeExactlyToConfirm', { slug: site.slug }));
       return;
     }
     this.busyId = site.id;
     try {
       const result = await SitesClient.remove(site.id, typed.trim());
       this.deleting = null;
-      this.notify(NotificationType.INFO, 'Site deleted', `Exported to ${result.archive} first; ${Object.values(result.deleted).reduce((a, b) => a + b, 0)} rows and ${result.files} files removed.`);
+      this.notify(NotificationType.INFO, AdminI18n.t('sites.siteDeleted'), AdminI18n.t('sites.exportedToFirstRowsAnd', { archive: result.archive, reduce: Object.values(result.deleted).reduce((a, b) => a + b, 0), files: result.files }));
       await this.load();
     } catch (err: any) {
-      this.notify(NotificationType.ERROR, 'Delete failed', err?.message || 'Nothing was deleted.');
+      this.notify(NotificationType.ERROR, AdminI18n.t('sites.deleteFailed'), err?.message || AdminI18n.t('sites.nothingWasDeleted'));
     } finally {
       this.busyId = null;
     }
@@ -142,28 +143,28 @@ export class SitesPageClient extends AdminComponent {
   render(): ReactNode {
     const theme = this.theme;
     return (
-      <PlatformScopeGate what="Sites">
+      <PlatformScopeGate what={AdminI18n.t('sites.sites')}>
       <div className="fc-sites">
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
-          title="Sites"
-          subtitle="Every customer site this platform serves — its hosts, its plugins, its theme, its people."
+          title={AdminI18n.t('sites.sites')}
+          subtitle={AdminI18n.t('sites.everyCustomerSiteThisPlatform')}
           actions={this.multiTenant && this.canManagePlatform ? (
             <div className="fc-sites__actions">
-              <Button variant={ButtonVariant.OUTLINE} href={AdminConstants.ROUTES.SITES.IMPORT} icon={<FrameworkIcons.Upload size={14} />}>Import</Button>
-              <Button href={AdminConstants.ROUTES.SITES.NEW} icon={<FrameworkIcons.Plus size={14} />}>New site</Button>
+              <Button variant={ButtonVariant.OUTLINE} href={AdminConstants.ROUTES.SITES.IMPORT} icon={<FrameworkIcons.Upload size={14} />}>{AdminI18n.t('sites.import')}</Button>
+              <Button href={AdminConstants.ROUTES.SITES.NEW} icon={<FrameworkIcons.Plus size={14} />}>{AdminI18n.t('sites.newSite')}</Button>
             </div>
           ) : null}
         />
 
         <div className="fc-sites__body">
         {!this.canManagePlatform ? (
-          <PlatformOnlyPanel detail="Sites lists every customer site running on this platform, and only a platform admin may create, move or remove one. You administer your own site from the rest of the admin — the header shows which site you are in, and switching there changes what you are administering." />
+          <PlatformOnlyPanel detail={AdminI18n.t('sites.sitesListsEveryCustomerSite')} />
         ) : null}
 
-        {this.canManagePlatform && this.loading ? <Loader label="Loading sites…" /> : null}
-        {this.canManagePlatform && !this.loading && this.error ? <LoadErrorPanel title="Sites unavailable" message={this.error} onRetry={this.load} /> : null}
+        {this.canManagePlatform && this.loading ? <Loader label={AdminI18n.t('sites.loadingSites')} /> : null}
+        {this.canManagePlatform && !this.loading && this.error ? <LoadErrorPanel title={AdminI18n.t('sites.sitesUnavailable')} message={this.error} onRetry={this.load} /> : null}
 
         {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <RestoreSiteCard onRestored={this.load} /> : null}
 
@@ -188,10 +189,10 @@ export class SitesPageClient extends AdminComponent {
           isOpen={this.deleting !== null}
           onClose={this.closeDelete}
           onConfirm={this.confirmDelete}
-          title={this.deleting ? `Delete ${this.deleting.slug}?` : 'Delete site'}
-          description={this.deleting ? `Every row and file of ${this.deleting.primaryHost} will be removed after an export is written to Backups → Sites. Type the slug "${this.deleting.slug}" to confirm.` : ''}
+          title={this.deleting ? AdminI18n.t('sites.delete', { slug: this.deleting.slug }) : AdminI18n.t('sites.deleteSite')}
+          description={this.deleting ? AdminI18n.t('sites.everyRowAndFileOf', { primaryHost: this.deleting.primaryHost, slug: this.deleting.slug }) : ''}
           placeholder={this.deleting?.slug}
-          confirmLabel="Export and delete"
+          confirmLabel={AdminI18n.t('sites.exportAndDelete')}
           isLoading={this.busyId !== null && this.deleting !== null}
           icon={<FrameworkIcons.Trash size={16} />}
         />

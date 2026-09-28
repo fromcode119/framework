@@ -1,6 +1,7 @@
 import { bound, Platform } from '@fromcode119/react-class-components';
 import { SourcesApi } from '@/app/sources/sources-api';
 import { BuildSourceListItemState } from '@/app/sources/build-source-list-item-state';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What a row can do: list the versions it has staged, install one, download the package, and turn
@@ -72,7 +73,7 @@ export abstract class BuildSourceListItemActions extends BuildSourceListItemStat
         available: Array.isArray(answer?.available) ? answer.available : (this.versions?.available ?? []),
       };
     } catch (err: any) {
-      this.versionError = String(err?.message || 'Could not install that version.');
+      this.versionError = String(err?.message || AdminI18n.t('sources.couldNotInstallThatVersion'));
       // A FAILED install is exactly when the snapshot must be refreshed rather than kept. An install
       // can fail after the package is already in place — the plugin's own init throwing, say — and the
       // stale snapshot then still names the old version as installed, which disables the button that
@@ -120,7 +121,7 @@ export abstract class BuildSourceListItemActions extends BuildSourceListItemStat
         : { autoUpdate: false });
       this.autoUpdating = next;
     } catch (err: any) {
-      this.versionError = String(err?.message || 'Could not change automatic updating.');
+      this.versionError = String(err?.message || AdminI18n.t('sources.couldNotChangeAutomaticUpdating'));
     } finally {
       this.savingAutoUpdate = false;
     }

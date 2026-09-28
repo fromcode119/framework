@@ -5,6 +5,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Paste a certificate and its key for one host.
@@ -76,13 +77,13 @@ export class CertificateUploadDialog extends AdminComponent {
                 <FrameworkIcons.Lock size={15} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className={`text-base font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>Upload certificate</h3>
+                <h3 className={`text-base font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('certificates.uploadCertificate')}</h3>
                 <p className={`mt-0.5 text-xs leading-relaxed font-mono truncate ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{this.host}</p>
               </div>
             </div>
 
             <label className={`block text-[11px] font-semibold mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
-              Certificate chain (PEM)
+              {AdminI18n.t('certificates.certificateChainPem')}
             </label>
             <textarea
               value={this.certificatePem}
@@ -93,7 +94,7 @@ export class CertificateUploadDialog extends AdminComponent {
             />
 
             <label className={`block text-[11px] font-semibold mt-3 mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
-              Private key (PEM)
+              {AdminI18n.t('certificates.privateKeyPem')}
             </label>
             <textarea
               value={this.privateKeyPem}
@@ -103,7 +104,7 @@ export class CertificateUploadDialog extends AdminComponent {
               className={this.box(dark)}
             />
             <p className={`mt-1.5 text-[11px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-              Stored encrypted. It is never shown again and never leaves the server.
+              {AdminI18n.t('certificates.storedEncryptedItIsNever')}
             </p>
 
             {this.error ? (
@@ -113,8 +114,8 @@ export class CertificateUploadDialog extends AdminComponent {
             ) : null}
 
             <div className="mt-5 flex items-center justify-end gap-2">
-              <Button variant={ButtonVariant.GHOST} onClick={this.onClose} type="button">Cancel</Button>
-              <Button type="submit" isLoading={this.isSaving} icon={<FrameworkIcons.Lock size={14} />}>Store certificate</Button>
+              <Button variant={ButtonVariant.GHOST} onClick={this.onClose} type="button">{AdminI18n.t('certificates.cancel')}</Button>
+              <Button type="submit" isLoading={this.isSaving} icon={<FrameworkIcons.Lock size={14} />}>{AdminI18n.t('certificates.storeCertificate')}</Button>
             </div>
           </form>
         </div>

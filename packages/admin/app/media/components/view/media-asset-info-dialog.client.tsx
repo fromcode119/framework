@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminServices } from '@/lib/admin-services';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the library knows about an asset it cannot change.
@@ -78,9 +79,9 @@ export class MediaAssetInfoDialog extends AdminComponent {
                 <FrameworkIcons.File size={24} />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className={`text-lg font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>Asset details</h3>
+                <h3 className={`text-lg font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.assetDetails')}</h3>
                 <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
-                  This file ships inside the active theme, so the library can show it but never change it.
+                  {AdminI18n.t('media.thisFileShipsInsideThe')}
                 </p>
               </div>
               <button onClick={this.onClose} className="rounded-lg p-1 text-slate-400 transition-colors hover:text-slate-900 dark:hover:text-white">
@@ -99,8 +100,8 @@ export class MediaAssetInfoDialog extends AdminComponent {
             </div>
 
             <div className="flex flex-col gap-3 pt-6 sm:flex-row">
-              <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={this.onClose} type="button">Close</Button>
-              <Button variant={ButtonVariant.PRIMARY} className="flex-1" onClick={this.openFile} type="button">Open file</Button>
+              <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={this.onClose} type="button">{AdminI18n.t('media.close')}</Button>
+              <Button variant={ButtonVariant.PRIMARY} className="flex-1" onClick={this.openFile} type="button">{AdminI18n.t('media.openFile')}</Button>
             </div>
           </div>
         </div>

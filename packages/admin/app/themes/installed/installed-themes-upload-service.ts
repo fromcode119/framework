@@ -1,6 +1,7 @@
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class InstalledThemesUploadService {
   private static readonly MAX_CHUNK_RETRIES = 3;
@@ -28,15 +29,15 @@ export class InstalledThemesUploadService {
   static buildUploadProgressLabel(loadedBytes: number, totalBytes: number, percent: number, stalled = false): string {
     const bytesLabel = `${InstalledThemesUploadService.formatBytes(loadedBytes)} of ${InstalledThemesUploadService.formatBytes(totalBytes)}`;
     if (loadedBytes <= 0) {
-      return `Preparing theme upload... ${bytesLabel}`;
+      return AdminI18n.t('themes.preparingThemeUpload', { bytesLabel: bytesLabel });
     }
     if (percent >= 99) {
-      return `Upload finished. Inspecting theme package... ${bytesLabel}`;
+      return AdminI18n.t('themes.uploadFinishedInspectingThemePackage', { bytesLabel: bytesLabel });
     }
     if (stalled) {
-      return `Uploading theme package... ${bytesLabel}. Progress updates may pause for large files.`;
+      return AdminI18n.t('themes.uploadingThemePackageProgressUpdates', { bytesLabel: bytesLabel });
     }
-    return `Uploading theme package... ${bytesLabel}`;
+    return AdminI18n.t('themes.uploadingThemePackage', { bytesLabel: bytesLabel });
   }
 
   static normalizeUploadPercent(loadedBytes: number, totalBytes: number): number {
@@ -77,7 +78,7 @@ export class InstalledThemesUploadService {
 
     return [
       {
-        title: 'Summary',
+        title: AdminI18n.t('themes.summary'),
         items: [
           `Name: ${info?.name || 'Unknown'}`,
           `Slug: ${info?.slug || 'Unknown'}`,
@@ -86,7 +87,7 @@ export class InstalledThemesUploadService {
         ],
       },
       {
-        title: 'Bundled Plugins',
+        title: AdminI18n.t('themes.bundledPlugins'),
         items: bundled.length
           ? bundled.map((plugin: any) => {
             if (plugin?.pluginSlug) {
@@ -94,16 +95,16 @@ export class InstalledThemesUploadService {
               const name = plugin?.pluginName ? `${plugin.pluginName} (${plugin.pluginSlug})` : plugin.pluginSlug;
               return `${name}${version} from ${plugin.archive}`;
             }
-            return plugin?.archive || 'Unknown bundled plugin archive';
+            return plugin?.archive || AdminI18n.t('themes.unknownBundledPluginArchive');
           })
           : ['No bundled plugin archives detected'],
       },
       {
-        title: 'Required Marketplace Plugins',
+        title: AdminI18n.t('themes.requiredMarketplacePlugins'),
         items: dependencies.length ? dependencies : ['No required marketplace plugins'],
       },
       {
-        title: 'Install Impact',
+        title: AdminI18n.t('themes.installImpact'),
         items: existing.installed
           ? [
             `This will replace installed theme "${info?.slug}".`,
@@ -192,7 +193,7 @@ export class InstalledThemesUploadService {
             }
 
             options.onProgress(
-              `Retrying chunk ${chunkIndex + 1} of ${totalChunks} after ${InstalledThemesUploadService.toErrorMessage(error)}`,
+              AdminI18n.t('themes.retryingChunkOfAfter', { chunk: chunkIndex + 1, totalChunks: totalChunks, toErrorMessage: InstalledThemesUploadService.toErrorMessage(error) }),
               InstalledThemesUploadService.normalizeUploadPercent(uploadedBytes, file.size),
             );
             await InstalledThemesUploadService.waitBeforeRetry(attempt);
@@ -215,7 +216,7 @@ export class InstalledThemesUploadService {
       return error.message;
     }
 
-    return String(error || 'Upload failed.');
+    return String(error || AdminI18n.t('themes.uploadFailed'));
   }
 
   private static readStatus(error: unknown): number {

@@ -9,6 +9,7 @@ import { SitesClient } from '@/lib/tenants/sites-client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
 import { RestartApiAction } from '@/app/settings/infrastructure/restart-api-action.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Shown on a deployment with NO sites: this installation IS one site, and the operator can make it
@@ -32,10 +33,10 @@ export class AdoptSiteCard extends AdminComponent {
     this.busy = true;
     try {
       this.outcome = await SitesClient.adopt(this.values.toIdentity());
-      this.runtime.notify.addNotification({ title: 'Deployment adopted', message: 'Restart the API from this card for tenancy to take effect.', type: NotificationType.INFO });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.deploymentAdopted'), message: AdminI18n.t('sites.restartTheApiFromThis'), type: NotificationType.INFO });
       this.props.onAdopted();
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Adoption failed', message: err?.message || 'Nothing was changed.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.adoptionFailed'), message: err?.message || AdminI18n.t('sites.nothingWasChanged'), type: NotificationType.ERROR });
     } finally {
       this.busy = false;
     }
@@ -46,14 +47,14 @@ export class AdoptSiteCard extends AdminComponent {
       const stamped = Object.entries(this.outcome.stamped ?? {}) as Array<[string, number]>;
       const unassigned = Object.entries(this.outcome.unassigned ?? {}) as Array<[string, number]>;
       return (
-        <Card title="Adopted — restart required" icon={<FrameworkIcons.CheckCircle size={16} />}>
+        <Card title={AdminI18n.t('sites.adoptedRestartRequired')} icon={<FrameworkIcons.CheckCircle size={16} />}>
           <p className="fc-sites__text">
             This deployment is now site <strong>{this.outcome.tenant?.slug}</strong>: {stamped.reduce((sum, [, n]) => sum + n, 0)} rows across {stamped.length} tables
             were stamped and {this.outcome.members} accounts became members. Tenancy is decided when the API starts, so until it
             restarts this deployment keeps running as a single site.
           </p>
           <div className="fc-sites__actions">
-            <RestartApiAction label="Restart the API to turn tenancy on" />
+            <RestartApiAction label={AdminI18n.t('sites.restartTheApiToTurn')} />
           </div>
           {unassigned.length > 0 ? (
             <p className="fc-sites__text fc-sites__text--warn">
@@ -64,15 +65,15 @@ export class AdoptSiteCard extends AdminComponent {
       );
     }
     return (
-      <Card title="This deployment is not multi-tenant yet" icon={<FrameworkIcons.Globe size={16} />}>
+      <Card title={AdminI18n.t('sites.thisDeploymentIsNotMulti')} icon={<FrameworkIcons.Globe size={16} />}>
         <p className="fc-sites__text">
           There are no sites because everything here belongs to ONE site — this one. Adopting turns it into the platform's first site in place:
           every existing row is stamped with the new site's id, every account becomes a member with the roles it already has, and the active
-          plugins and theme become the site's. Nothing is copied or moved. <strong>The API must be restarted afterwards.</strong>
+          plugins and theme become the site's. Nothing is copied or moved. <strong>{AdminI18n.t('sites.theApiMustBeRestarted')}</strong>
         </p>
         <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} isNew />
         <div className="fc-sites__actions">
-          <Button onClick={this.adopt} isLoading={this.busy} icon={<FrameworkIcons.Globe size={14} />}>Adopt as the first site</Button>
+          <Button onClick={this.adopt} isLoading={this.busy} icon={<FrameworkIcons.Globe size={14} />}>{AdminI18n.t('sites.adoptAsTheFirstSite')}</Button>
         </div>
       </Card>
     );

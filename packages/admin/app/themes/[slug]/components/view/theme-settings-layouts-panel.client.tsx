@@ -7,6 +7,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeSettingsLayoutsPanel extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -34,9 +35,9 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
             </div>
             <div>
               <h3 className={`text-[11px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                Default Layout
+                {AdminI18n.t('themes.defaultLayout')}
               </h3>
-              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">Layout for pages that do not choose their own.</p>
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">{AdminI18n.t('themes.layoutForPagesThatDo')}</p>
             </div>
           </div>
 
@@ -45,8 +46,8 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
               value={tempDefaultLayout}
               onChange={(nextValue) => page.handleDefaultLayoutChange(String(nextValue || ''))}
               options={[
-                { value: '', label: themeDefaultLabel ? `Theme default (${themeDefaultLabel})` : 'Theme default (none declared)' },
-                ...(isUnavailable ? [{ value: tempDefaultLayout, label: `${tempDefaultLayout} (not in this theme)` }] : []),
+                { value: '', label: themeDefaultLabel ? AdminI18n.t('themes.themeDefault', { themeDefaultLabel: themeDefaultLabel }) : AdminI18n.t('themes.themeDefaultNoneDeclared') },
+                ...(isUnavailable ? [{ value: tempDefaultLayout, label: AdminI18n.t('themes.notInThisTheme', { tempDefaultLayout: tempDefaultLayout }) }] : []),
                 ...layouts.map((l) => ({ value: l.name, label: l.label })),
               ]}
               searchable={false}
@@ -62,7 +63,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
               </p>
             ) : null}
             <p className="text-[11px] text-slate-500 mt-2">
-              A page that picks a layout in its own Layout field keeps that layout.
+              {AdminI18n.t('themes.aPageThatPicksA')}
             </p>
           </div>
         </Card>
@@ -75,9 +76,9 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
               </div>
               <div>
                 <h3 className={`text-[11px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                  UI Overrides
+                  {AdminI18n.t('themes.uiOverrides')}
                 </h3>
-                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">Components hard-coded for replacement by this theme.</p>
+                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">{AdminI18n.t('themes.componentsHardCodedForReplacement')}</p>
               </div>
             </div>
 
@@ -99,7 +100,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
         {!allVarKeys.length && (
           <Card className={`border-0 p-12 flex flex-col items-center justify-center ${AdminClass.SURFACE} ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white'}`}>
             <FrameworkIcons.Help size={32} className="text-slate-300 mb-4" />
-            <p className="text-slate-500 font-semibold uppercase tracking-wide text-[10px]">No configurable protocols found</p>
+            <p className="text-slate-500 font-semibold uppercase tracking-wide text-[10px]">{AdminI18n.t('themes.noConfigurableProtocolsFound')}</p>
           </Card>
         )}
       </>

@@ -11,6 +11,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { state } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemesMarketplacePage extends AdminComponent {
   private mounted = false;
@@ -59,7 +60,7 @@ export class ThemesMarketplacePage extends AdminComponent {
       this.installedThemes = installed;
     } catch (err) {
       console.error("Failed to fetch marketplace themes", err);
-      notify(NotificationType.ERROR, 'Marketplace Error', 'Could not load marketplace themes.');
+      notify(NotificationType.ERROR, AdminI18n.t('themes.marketplaceError'), AdminI18n.t('themes.couldNotLoadMarketplaceThemes'));
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -71,16 +72,16 @@ export class ThemesMarketplacePage extends AdminComponent {
     try {
       if (this.siteScope) {
         await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.ADD_TO_SITE(slug));
-        notify(NotificationType.SUCCESS, 'Added to This Site', `${slug} is now one of this site's themes. Activate it under Themes.`);
+        notify(NotificationType.SUCCESS, AdminI18n.t('themes.addedToThisSite'), AdminI18n.t('themes.isNowOneOfThis', { slug: slug }));
       } else {
-        notify(NotificationType.INFO, 'Installing...', `Downloading theme ${slug}...`);
+        notify(NotificationType.INFO, AdminI18n.t('themes.installing'), AdminI18n.t('themes.downloadingTheme', { slug: slug }));
         await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.INSTALL(slug));
-        notify(NotificationType.SUCCESS, 'Installed', `Theme ${slug} is now available.`);
+        notify(NotificationType.SUCCESS, AdminI18n.t('themes.installed'), AdminI18n.t('themes.themeIsNowAvailable', { slug: slug }));
       }
       if (triggerRefresh) triggerRefresh();
       void this.fetchData(); // Refresh list to show installed state
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Installation Failed', err.message);
+      notify(NotificationType.ERROR, AdminI18n.t('themes.installationFailed'), err.message);
     }
   }
 
@@ -106,8 +107,8 @@ export class ThemesMarketplacePage extends AdminComponent {
               <div className="w-12 h-12 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-3">
                 <FrameworkIcons.ShoppingBag size={24} className="text-slate-300 dark:text-slate-700" />
               </div>
-              <h3 className={`text-base font-bold mb-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>Marketplace empty</h3>
-              <p className="text-slate-500 font-medium text-sm">Check your marketplace connection or try again later.</p>
+              <h3 className={`text-base font-bold mb-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.marketplaceEmpty')}</h3>
+              <p className="text-slate-500 font-medium text-sm">{AdminI18n.t('themes.checkYourMarketplaceConnectionOr')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
@@ -128,7 +129,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                           {t.iconUrl ? <img src={t.iconUrl} className="w-6 h-6 rounded object-contain" alt="" /> : <FrameworkIcons.Palette size={20} />}
                         </div>
                         <Badge variant={installed ? "success" : "blue"} className="font-semibold tracking-wide px-2 py-1 text-[9px] uppercase rounded-lg">
-                          {installed ? (this.siteScope ? "In this site" : "Installed") : "Premium"}
+                          {installed ? (this.siteScope ? AdminI18n.t('themes.inThisSite') : "Installed") : AdminI18n.t('themes.premium')}
                         </Badge>
                       </div>
 
@@ -137,7 +138,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                           {t.name}
                         </h3>
                         <p className={`text-sm leading-relaxed font-medium line-clamp-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {t.description || "A clean and modern theme for your Fromcode frontend."}
+                          {t.description || AdminI18n.t('themes.aCleanAndModernTheme')}
                         </p>
                         <div className={`flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                              <div className="flex items-center gap-1.5">
@@ -147,7 +148,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                              <div className="flex items-center gap-1.5">
                                <FrameworkIcons.User size={12} className="text-indigo-500/70" />
-                               <span className="truncate">{t.author || 'Official Theme'}</span>
+                               <span className="truncate">{t.author || AdminI18n.t('themes.officialTheme')}</span>
                              </div>
                           </div>
                       </div>
@@ -183,7 +184,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                               className={`w-full h-9 rounded-lg font-bold uppercase tracking-widest text-[11px] bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
                             >
                               <FrameworkIcons.Download size={18} strokeWidth={3} />
-                              {this.siteScope ? 'Add to this site' : 'Install Now'}
+                              {this.siteScope ? AdminI18n.t('themes.addToThisSite') : AdminI18n.t('themes.installNow')}
                             </button>
                           )}
                         </div>

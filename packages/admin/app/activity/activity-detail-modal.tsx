@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ActivityDetailModal extends PureReactor {
   @prop declare selectedLog: any;
@@ -43,7 +44,7 @@ export class ActivityDetailModal extends PureReactor {
                   </div>
                   <div>
                     <h3 className={`text-xl font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                      Event Details
+                      {AdminI18n.t('activity.eventDetails')}
                     </h3>
                     <p className="text-[10px] font-semibold text-slate-500 tracking-wide leading-none mt-1">
                       Log Signature: {selectedLog.id}
@@ -57,30 +58,30 @@ export class ActivityDetailModal extends PureReactor {
 
             <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-hide">
                <div className="grid grid-cols-2 gap-4">
-                  <Card title="Context">
+                  <Card title={AdminI18n.t('activity.context')}>
                      <div className="space-y-4">
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Resource</span>
-                           <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{selectedLog.pluginSlug ? (selectedLog.pluginSlug.charAt(0).toUpperCase() + selectedLog.pluginSlug.slice(1)) : 'System'}</span>
+                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.resource')}</span>
+                           <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{selectedLog.pluginSlug ? (selectedLog.pluginSlug.charAt(0).toUpperCase() + selectedLog.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Timestamp</span>
+                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.timestamp')}</span>
                            <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">
                              {new Date(selectedLog.timestamp || selectedLog.createdAt).toLocaleString()}
                            </span>
                         </div>
                      </div>
                   </Card>
-                  <Card title="Authority">
+                  <Card title={AdminI18n.t('activity.authority')}>
                      <div className="space-y-4">
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Actor ID</span>
-                           <span className="text-[13px] font-semibold text-indigo-500">{selectedLog.actor_id || 'System'}</span>
+                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.actorId')}</span>
+                           <span className="text-[13px] font-semibold text-indigo-500">{selectedLog.actor_id || AdminI18n.t('activity.system')}</span>
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">Type</span>
+                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.type')}</span>
                            <Badge variant={mode === ActivityMode.SECURITY ? (selectedLog.status === 'violation' ? 'danger' : 'blue') : 'blue'}>
-                              {mode === ActivityMode.SYSTEM ? 'System Log' : `Audit: ${selectedLog.status}`}
+                              {mode === ActivityMode.SYSTEM ? AdminI18n.t('activity.systemLog') : AdminI18n.t('activity.audit', { status: selectedLog.status })}
                            </Badge>
                         </div>
                      </div>
@@ -88,24 +89,24 @@ export class ActivityDetailModal extends PureReactor {
                </div>
 
                {mode === ActivityMode.SYSTEM ? (
-                  <Card title="Activity Message">
+                  <Card title={AdminI18n.t('activity.activityMessage')}>
                       <p className="text-[13px] font-medium text-slate-500 leading-relaxed italic">
                       "{selectedLog.message}"
                       </p>
                   </Card>
                ) : (
                   <div className="grid grid-cols-2 gap-4">
-                      <Card title="Action Taken">
+                      <Card title={AdminI18n.t('activity.actionTaken')}>
                           <span className="text-[13px] font-bold text-slate-900 dark:text-white">{selectedLog.action}</span>
                       </Card>
-                      <Card title="Resource Pool">
+                      <Card title={AdminI18n.t('activity.resourcePool')}>
                           <span className="text-[13px] font-mono text-slate-500">{selectedLog.resource}</span>
                       </Card>
                   </div>
                )}
 
                {(selectedLog.context || selectedLog.metadata) && (
-                 <Card title="Raw Metadata" className="overflow-hidden">
+                 <Card title={AdminI18n.t('activity.rawMetadata')} className="overflow-hidden">
                     <div className={`p-6 ${AdminClass.SURFACE} font-mono text-xs overflow-x-auto ${theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-400' : 'bg-slate-50 text-slate-600'}`}>
                       <pre>{JSON.stringify(selectedLog.context || (typeof selectedLog.metadata === 'string' ? JSON.parse(selectedLog.metadata) : selectedLog.metadata), null, 2)}</pre>
                     </div>
@@ -116,7 +117,7 @@ export class ActivityDetailModal extends PureReactor {
             <div className={`p-8 border-t ${theme === ThemeMode.DARK ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
                <div className="flex items-center justify-between">
                   <p className="text-[10px] font-semibold text-slate-400 tracking-wide italic">
-                    This entry is part of an immutable audit trail.
+                    {AdminI18n.t('activity.thisEntryIsPartOf')}
                   </p>
                   <Button
                     variant={ButtonVariant.GHOST}
@@ -124,7 +125,7 @@ export class ActivityDetailModal extends PureReactor {
                     icon={<FrameworkIcons.More size={14} />}
                     onClick={this.handleExport}
                   >
-                     Export JSON
+                     {AdminI18n.t('activity.exportJson')}
                   </Button>
                </div>
             </div>

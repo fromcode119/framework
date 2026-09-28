@@ -3,6 +3,7 @@ import { MediaShareController } from '@/app/media/media-share-controller';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { MediaActivityPanelState } from '@/app/media/components/view/media-activity-panel-state.client';
 import { MediaActivityRangeMode } from '@/app/media/enums/media-activity-range-mode.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Fetching activity for the current window, and paging further back through it.
@@ -22,7 +23,7 @@ export abstract class MediaActivityPanelActions extends MediaActivityPanelState 
       if (this.mounted) this.patch({ data, loading: false });
     } catch (error: any) {
       if (this.mounted) {
-        this.patch({ loading: false, loadError: String(error?.message || 'Activity could not be read.') });
+        this.patch({ loading: false, loadError: String(error?.message || AdminI18n.t('media.activityCouldNotBeRead')) });
       }
     }
   }

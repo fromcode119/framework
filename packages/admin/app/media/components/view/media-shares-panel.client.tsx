@@ -15,6 +15,7 @@ import { MediaShareController } from '@/app/media/media-share-controller';
 import { MediaShareEditForm } from '@/app/media/components/view/media-share-edit-form.client';
 import { MediaShareActivity } from '@/app/media/components/view/media-share-activity.client';
 import { MediaShareFiles } from '@/app/media/components/view/media-share-files.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Everything that has been sent out, as a whole.
@@ -131,16 +132,16 @@ export class MediaSharesPanel extends AdminComponent {
   }
 
   private grantStatus(grant: any): string {
-    if (grant.revokedAt) return 'Revoked';
-    if (grant.expiresAt && new Date(String(grant.expiresAt)).getTime() <= Date.now()) return 'Expired';
-    if (grant.maxDownloads > 0 && grant.downloadCount >= grant.maxDownloads) return 'Limit reached';
-    return grant.lastAccessAt ? `Opened · ${grant.downloadCount} download(s)` : 'Not opened yet';
+    if (grant.revokedAt) return AdminI18n.t('media.revoked');
+    if (grant.expiresAt && new Date(String(grant.expiresAt)).getTime() <= Date.now()) return AdminI18n.t('media.expired');
+    if (grant.maxDownloads > 0 && grant.downloadCount >= grant.maxDownloads) return AdminI18n.t('media.limitReached');
+    return grant.lastAccessAt ? AdminI18n.t('media.openedDownloadS', { downloadCount: grant.downloadCount }) : AdminI18n.t('media.notOpenedYet');
   }
 
   private renderGrants(shareId: number): ReactNode {
     const grants = this.grantsByShare[shareId];
-    if (!grants) return <p className="px-4 py-3 text-[11px] opacity-60">Loading…</p>;
-    if (!grants.length) return <p className="px-4 py-3 text-[11px] opacity-60">No recipients.</p>;
+    if (!grants) return <p className="px-4 py-3 text-[11px] opacity-60">{AdminI18n.t('media.loading')}</p>;
+    if (!grants.length) return <p className="px-4 py-3 text-[11px] opacity-60">{AdminI18n.t('media.noRecipients')}</p>;
 
     return grants.map((grant: any) => (
       <div key={grant.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
@@ -152,9 +153,9 @@ export class MediaSharesPanel extends AdminComponent {
           </p>
         </div>
         {grant.revokedAt ? (
-          <Badge variant={BadgeVariant.GRAY} className="text-[10px]">Revoked</Badge>
+          <Badge variant={BadgeVariant.GRAY} className="text-[10px]">{AdminI18n.t('media.revoked')}</Badge>
         ) : (
-          <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id, shareId)}>Revoke</Button>
+          <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id, shareId)}>{AdminI18n.t('media.revoke')}</Button>
         )}
       </div>
     ));
@@ -195,9 +196,9 @@ export class MediaSharesPanel extends AdminComponent {
       return (
         <Card className={`px-6 py-12 text-center ${AdminClass.SURFACE}`}>
           <FrameworkIcons.Share size={28} className="mx-auto mb-3 opacity-25" />
-          <p className="text-sm font-semibold">Nothing shared yet</p>
+          <p className="text-sm font-semibold">{AdminI18n.t('media.nothingSharedYet')}</p>
           <p className="mt-1 text-[11px] opacity-60">
-            Select files in the library and choose Share to send them to someone.
+            {AdminI18n.t('media.selectFilesInTheLibrary')}
           </p>
         </Card>
       );
@@ -212,7 +213,7 @@ export class MediaSharesPanel extends AdminComponent {
                 <div className="flex items-center gap-2">
                   <span className="text-[13px] font-semibold truncate">{share.title}</span>
                   {share.activeCount === 0 ? (
-                    <Badge variant={BadgeVariant.GRAY} className="text-[10px]">All revoked</Badge>
+                    <Badge variant={BadgeVariant.GRAY} className="text-[10px]">{AdminI18n.t('media.allRevoked')}</Badge>
                   ) : (
                     <Badge variant={BadgeVariant.SUCCESS} className="text-[10px]">
                       {share.activeCount} active
@@ -234,14 +235,14 @@ export class MediaSharesPanel extends AdminComponent {
                   variant={ButtonVariant.GHOST}
                   icon={<FrameworkIcons.Activity size={13} />}
                 >
-                  Activity
+                  {AdminI18n.t('media.activity')}
                 </Button>
                 <Button
                   variant={ButtonVariant.GHOST}
                   disabled={this.busyId === share.id || share.activeCount === 0}
                   onClick={() => this.handleRevokeShare(share.id)}
                 >
-                  {this.busyId === share.id ? 'Revoking…' : 'Revoke all'}
+                  {this.busyId === share.id ? AdminI18n.t('media.revoking') : AdminI18n.t('media.revokeAll')}
                 </Button>
               </div>
             </div>
@@ -252,7 +253,7 @@ export class MediaSharesPanel extends AdminComponent {
         {this.hasMore ? (
           <div className="flex justify-center pt-1">
             <Button variant={ButtonVariant.SECONDARY} disabled={this.loadingMore} onClick={this.handleLoadMore}>
-              {this.loadingMore ? 'Loading…' : 'Load more'}
+              {this.loadingMore ? AdminI18n.t('media.loading') : AdminI18n.t('media.loadMore')}
             </Button>
           </div>
         ) : null}
