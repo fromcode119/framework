@@ -6,6 +6,7 @@ describe('AdminSchemaLocalizer', () => {
   const dictionary: Record<string, string> = {
     'shop.admin.label': 'Магазин',
     'shop.admin.description': 'Каталог, колички и поръчки.',
+    'shop.admin.category': 'Търговия',
     'shop.admin.collections.catalog.fields.leadMin.emptyMeans.standardDispatchMinDays': 'не се показва срок за доставка.',
     'shop.admin.groups.e-commerce-catalog': 'Каталог',
     'shop.admin.menu.overview': 'Преглед',
@@ -73,9 +74,9 @@ describe('AdminSchemaLocalizer', () => {
     expect(out[1].children.map((child: any) => child.label)).toEqual(['Преглед', 'Продукти', 'Reports']);
   });
 
-  it('translates a plugin\'s name and description for the plugin list', () => {
-    const out = localizer.manifest('shop', { slug: 'shop', name: 'Shop', description: 'Catalog, carts and orders.', version: '1.0.0' });
-    expect(out).toEqual({ slug: 'shop', name: 'Магазин', description: 'Каталог, колички и поръчки.', version: '1.0.0' });
+  it('translates a plugin\'s name, description and category for the plugin list', () => {
+    const out = localizer.manifest('shop', { slug: 'shop', name: 'Shop', description: 'Catalog, carts and orders.', category: 'commerce', version: '1.0.0' });
+    expect(out).toEqual({ slug: 'shop', name: 'Магазин', description: 'Каталог, колички и поръчки.', category: 'Търговия', version: '1.0.0' });
     expect(new AdminSchemaLocalizer(() => '').manifest('other', { name: 'Other' })).toEqual({ name: 'Other', description: undefined });
   });
 

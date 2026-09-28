@@ -47,12 +47,13 @@ export class AdminSchemaLocalizer {
     };
   }
 
-  /** The name and description an operator reads in the plugin list — `admin.label`, `admin.description`. */
+  /** The name, description and category an operator reads in the plugin list — `admin.label`, `admin.description`, `admin.category`. */
   manifest<T extends Record<string, any>>(pluginSlug: string, manifest: T): T {
     return {
       ...manifest,
       name: this.text(pluginSlug, 'admin.label', manifest.name),
       description: this.text(pluginSlug, 'admin.description', manifest.description),
+      category: this.text(pluginSlug, 'admin.category', manifest.category),
     };
   }
 
