@@ -12,6 +12,8 @@ import { CertificateHostTable } from '@/app/certificates/components/certificate-
 import { CertificateStatusNotices } from '@/app/certificates/components/certificate-status-notices.client';
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
+import { NotificationType } from '@/components/enums/notification-type.enum';
+import { CertificateListPoller } from '@/lib/certificates/certificate-list-poller';
 
 /**
  * Every TLS certificate on the platform, in one list.
@@ -40,10 +42,11 @@ export class CertificatesPageClient extends AdminComponent {
   @state private uploadHost = '';
   @state private uploadError = '';
   @state private isSaving = false;
+  private readonly poller = new CertificateListPoller(() => this.load());
 
-  componentDidMount(): void {
-    void this.load();
-  }
+  componentDidMount(): void { void this.load(); }
+
+  componentWillUnmount(): void { this.poller.stop(); }
 
   @bound private async load(): Promise<void> {
     try {
@@ -58,6 +61,7 @@ export class CertificatesPageClient extends AdminComponent {
       this.loadError = String(error?.message || 'Could not load certificates.');
     } finally {
       this.isLoading = false;
+      this.poller.schedule(this.entries.some((entry) => entry.isAwaitingPlatform));
     }
   }
 
@@ -93,22 +97,24 @@ export class CertificatesPageClient extends AdminComponent {
 
   /** Hand a host to the platform. A refusal carries the api's reason, which is shown as-is. */
   @bound private async automate(host: string): Promise<void> {
-    try {
-      await CertificatesClient.setSource(host, 'automatic');
-      this.loadError = '';
-    } catch (error: any) {
-      this.loadError = String(error?.message || 'Could not switch this host to automatic.');
-    }
-    await this.load();
+    await this.switchToAutomatic(host, false);
   }
 
   /** Same as `automate`, but asks for the DNS-01 variant that also covers `*.<host>`. */
   @bound private async automateWildcard(host: string): Promise<void> {
+    await this.switchToAutomatic(host, true);
+  }
+
+  /** Says what happens next rather than silently re-reading the list — the row then shows when. */
+  private async switchToAutomatic(host: string, wildcard: boolean): Promise<void> {
+    const variant = wildcard ? 'automatic (wildcard)' : 'automatic';
     try {
-      await CertificatesClient.setSource(host, 'automatic', true);
+      await CertificatesClient.setSource(host, 'automatic', wildcard);
       this.loadError = '';
+      const message = `${host} is now ${variant}. The platform orders its certificate on the next check; the row below shows progress.`;
+      this.runtime.notify.addNotification({ type: NotificationType.SUCCESS, title: 'Certificate queued', message });
     } catch (error: any) {
-      this.loadError = String(error?.message || 'Could not switch this host to automatic (wildcard).');
+      this.loadError = String(error?.message || `Could not switch this host to ${variant}.`);
     }
     await this.load();
   }
@@ -156,6 +162,7 @@ export class CertificatesPageClient extends AdminComponent {
             canAutomateWildcard={this.automation?.dnsWildcardAvailable === true}
             terminatesTls={this.edge?.tls === true}
             platformAddresses={(this.automation?.platformAddresses as string[]) ?? []}
+            checkIntervalMinutes={Number(this.automation?.checkIntervalMinutes ?? 0)}
             showSite
             onUpload={this.openUpload}
             onRemove={this.removeHost}

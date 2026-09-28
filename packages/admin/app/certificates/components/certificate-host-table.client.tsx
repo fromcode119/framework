@@ -8,6 +8,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CertificateHost } from '@/lib/certificates/certificate-host';
 import { CertificateStateBadge } from '@/app/certificates/components/certificate-state-badge.client';
+import { CertificateAttemptStatus } from '@/app/certificates/components/certificate-attempt-status.client';
 
 /**
  * Every host the platform serves, and what it has to serve HTTPS with.
@@ -16,7 +17,7 @@ import { CertificateStateBadge } from '@/app/certificates/components/certificate
  * table built from stored certificates could never show it.
  */
 export class CertificateHostTable extends AdminComponent {
-  declare props: Pick<CertificateHostTable, 'entries' | 'canUpload' | 'canAutomate' | 'canAutomateWildcard' | 'terminatesTls' | 'platformAddresses' | 'busyHost' | 'showSite' | 'onUpload' | 'onRemove' | 'onAutomate' | 'onAutomateWildcard'>;
+  declare props: Pick<CertificateHostTable, 'entries' | 'canUpload' | 'canAutomate' | 'canAutomateWildcard' | 'terminatesTls' | 'platformAddresses' | 'checkIntervalMinutes' | 'busyHost' | 'showSite' | 'onUpload' | 'onRemove' | 'onAutomate' | 'onAutomateWildcard'>;
 
   @prop declare entries: CertificateHost[];
   @prop declare canUpload: boolean;
@@ -26,6 +27,8 @@ export class CertificateHostTable extends AdminComponent {
   /** Whether this deployment's own gateway is the thing terminating TLS. See `renderMeta`. */
   @prop declare terminatesTls?: boolean;
   @prop declare platformAddresses?: string[];
+  /** How often queued hosts are checked, from the api — so a waiting row can say when. */
+  @prop declare checkIntervalMinutes?: number;
   @prop declare busyHost?: string;
   @prop declare showSite?: boolean;
   @prop declare onUpload: (host: string) => void;
@@ -139,9 +142,7 @@ export class CertificateHostTable extends AdminComponent {
             </span>
             {this.renderMeta(entry)}
           </div>
-          {entry.lastError ? (
-            <p className={`mt-0.5 text-[11px] font-mono truncate ${dark ? 'text-red-400' : 'text-red-600'}`}>{entry.lastError}</p>
-          ) : null}
+          <CertificateAttemptStatus entry={entry} checkIntervalMinutes={this.checkIntervalMinutes ?? 0} />
           {this.renderDnsInstructions(entry)}
         </div>
 

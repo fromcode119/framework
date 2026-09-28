@@ -4,6 +4,7 @@ import { DynamicContentClient } from '@/app/components/view/dynamic-content-clie
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { QueryParamUtils } from '@/lib/query-param-utils';
+import { ThemedRouteMetadata } from '@/lib/themed-route-metadata';
 
 /**
  * The global email preferences page — every stream this platform sends, on one screen, reachable from
@@ -40,6 +41,12 @@ import { QueryParamUtils } from '@/lib/query-param-utils';
 export class UnsubscribePageRoute {
   /** The content slug a theme seeds to brand this route. Greppable, and named in one place only. */
   static readonly PAGE_SLUG = 'unsubscribe';
+
+  /** The themed page's own title, description and canonical — see `ThemedRouteMetadata`. */
+  static async generateMetadata({ searchParams }: { searchParams?: (Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>) } = {}) {
+    await connection();
+    return ThemedRouteMetadata.build(UnsubscribePageRoute.PAGE_SLUG, searchParams);
+  }
 
   static async render({
     searchParams,
