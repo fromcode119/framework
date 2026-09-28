@@ -44,9 +44,14 @@ export class FrameworkTranslations {
    * Falls back to English, then to the key itself. Returning the key is deliberate: a visible
    * `files.share.title` is a bug report, whereas silently rendering nothing hides a missing translation
    * for as long as nobody looks.
+   *
+   * `locale` overrides the detected one. A server render has no `<html lang>` to read and would always
+   * paint English, so a surface that renders on the server passes the document locale its route resolved —
+   * the same value the layout puts on `<html lang>` — and hydrates with the words the server sent.
    */
-  static t(key: string, vars?: Record<string, unknown>): string {
-    const value = FrameworkTranslations.lookup(FrameworkTranslations.locale, key)
+  static t(key: string, vars?: Record<string, unknown>, locale?: string): string {
+    const active = locale ? FrameworkTranslations.normalizeLocale(locale) : FrameworkTranslations.locale;
+    const value = FrameworkTranslations.lookup(active, key)
       ?? FrameworkTranslations.lookup('en', key);
     if (typeof value !== 'string') return key;
 
