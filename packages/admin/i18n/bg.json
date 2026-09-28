@@ -1794,7 +1794,10 @@
       "pathPrefixBg": "Префикс в пътя (/bg/...)",
       "noLocaleInUrl": "Без език в адреса",
       "selectLocaleUrlStrategy": "Изберете начин",
-      "isoCodeExample": "ISO код (напр. bg, en-gb)"
+      "isoCodeExample": "ISO код (напр. bg, en-gb)",
+      "consoleLanguage": "Език на конзолата",
+      "platformConsoleLanguageHint": "Езикът на конзолата, когато не е избран сайт. Сайт, който не е избрал собствен език на конзолата, използва този.",
+      "consoleLanguageSaved": "Езикът на конзолата е запазен."
     },
     "security": {
       "loginProtection": "Защита на входа",

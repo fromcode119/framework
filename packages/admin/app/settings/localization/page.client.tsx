@@ -6,6 +6,7 @@ import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { LocaleRegistryCard } from '@/app/settings/localization/locale-registry-card';
 import { LocaleTargetsCard } from '@/app/settings/localization/locale-targets-card';
 import { MeasurementSystemCard } from '@/app/settings/localization/measurement-system-card';
+import { ConsoleLanguageCard } from '@/app/settings/localization/console-language-card';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
@@ -68,7 +69,7 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
             this.outOfScope ? null : (
               <Button
                 icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
-                onClick={this.handleSave}
+                onClick={this.consoleLanguageOnly ? this.handleSaveConsoleLanguage : this.handleSave}
                 isLoading={this.isSaving}
                 className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
               >
@@ -82,7 +83,13 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
           <SiteScopePanel detail={AdminI18n.t('settings.localization.localesLanguageDefaultsAndThe')} />
         )}
 
-        {!this.outOfScope && (
+        {this.consoleLanguageOnly && (
+          <div className="p-6 w-full space-y-8">
+            <ConsoleLanguageCard theme={theme} value={this.adminDefaultLocale} onChange={this.setAdminDefaultLocale} />
+          </div>
+        )}
+
+        {!this.outOfScope && !this.consoleLanguageOnly && (
         <div className="p-6 w-full space-y-8">
           <LocaleRegistryCard
             locales={locales}

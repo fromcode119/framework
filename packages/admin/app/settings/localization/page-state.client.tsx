@@ -116,4 +116,13 @@ export abstract class LocalizationSettingsPageState extends AdminComponent {
   protected get outOfScope(): boolean {
     return this.scope?.isEmpty === true;
   }
+
+  /**
+   * The platform scope: of this page only the console language is the platform's to set (it is
+   * INHERITED — every other key here is a site's). The page shows that one control, not a form whose
+   * other fields the API would refuse.
+   */
+  protected get consoleLanguageOnly(): boolean {
+    return this.scope !== null && !this.scope.shows('localization_locales') && this.scope.shows('admin_default_locale');
+  }
 }

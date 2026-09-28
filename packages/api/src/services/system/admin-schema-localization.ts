@@ -1,4 +1,4 @@
-import { AdminSchemaLocalizer, SystemConstants } from '@fromcode119/core';
+import { AdminSchemaLocalizer, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import type { PluginManager } from '@fromcode119/core';
 
 /**
@@ -8,8 +8,11 @@ import type { PluginManager } from '@fromcode119/core';
  */
 export class AdminSchemaLocalization {
   static async forRequest(manager: PluginManager): Promise<AdminSchemaLocalizer> {
-    const row = await (manager as any).db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE });
-    return AdminSchemaLocalization.forLocale(manager, String(row?.value ?? ''));
+    // `find`, not `findOne`: the key is INHERITED, so the site's row and the platform's can both be
+    // visible and the site's own choice must win.
+    const rows = await (manager as any).db.find(SystemConstants.TABLE.META, { where: { key: SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE } });
+    const settings = SystemSettingsExposureUtils.toExposableSettingsMap(rows);
+    return AdminSchemaLocalization.forLocale(manager, String(settings[SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE] ?? ''));
   }
 
   static forLocale(manager: PluginManager, locale: string): AdminSchemaLocalizer {

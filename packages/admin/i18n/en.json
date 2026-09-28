@@ -1651,7 +1651,10 @@
       "pathPrefixBg": "Path Prefix (/bg/...)",
       "noLocaleInUrl": "No Locale in URL",
       "selectLocaleUrlStrategy": "Select locale URL strategy",
-      "isoCodeExample": "ISO code (e.g. en, en-gb)"
+      "isoCodeExample": "ISO code (e.g. en, en-gb)",
+      "consoleLanguage": "Console language",
+      "platformConsoleLanguageHint": "The language this console speaks with no site selected. A site that has not chosen its own console language uses this one.",
+      "consoleLanguageSaved": "The console language has been saved."
     },
     "redirects": {
       "timesMatched": "Times matched",
