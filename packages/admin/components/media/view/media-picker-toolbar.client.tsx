@@ -5,6 +5,7 @@ import type { Ref } from '@fromcode119/react-class-components';
 import { Search, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminTypography } from '@/lib/typography';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Search box plus the upload control, including the hidden file input it drives. */
 export class MediaPickerToolbar extends Reactor {
@@ -39,7 +40,7 @@ export class MediaPickerToolbar extends Reactor {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
           <input
             type="text"
-            placeholder="Search media..."
+            placeholder={AdminI18n.t('mediaPicker.searchMedia')}
             value={search}
             onChange={this.handleSearchChange}
             className={`w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${AdminTypography.TYPOGRAPHY.LABEL}`}
@@ -58,7 +59,7 @@ export class MediaPickerToolbar extends Reactor {
           disabled={uploading || !canUpload}
         >
           {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-          Upload New
+          {AdminI18n.t('mediaPicker.uploadNew')}
         </Button>
       </div>
     );

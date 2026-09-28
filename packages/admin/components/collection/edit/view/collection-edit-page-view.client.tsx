@@ -134,7 +134,7 @@ export class CollectionEditPageView extends Reactor {
     if (edit.isNew && !access.canCreate) {
       return (
         <div className="fc-scope-notice">
-          <span className="fc-scope-notice__text">Your role does not include adding {String(collection.displayName || slug)}.</span>
+          <span className="fc-scope-notice__text">{AdminI18n.t('collection.roleLacksCreate', { name: String(collection.displayName || slug) })}</span>
         </div>
       );
     }

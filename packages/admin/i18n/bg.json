@@ -277,7 +277,12 @@
     "quickEdit": {
       "title": "Бърза редакция",
       "loading": "Записът се зарежда…"
-    }
+    },
+    "recordsInThisCollectionAre": "Записите в тази колекция се създават от системата. Отворете списъка, за да видите съществуващите.",
+    "componentNotRegistered": "Компонентът „{{name}}“ не е регистриран от нито един плъгин.",
+    "notCreatedByHand": "{{title}} не се създават ръчно",
+    "backTo": "Назад към {{title}}",
+    "roleLacksCreate": "Ролята ви не позволява добавяне в „{{name}}“."
   },
   "common": {
     "active": "Активен",
@@ -523,7 +528,19 @@
     "scopeGate": {
       "text": "„{{what}}“ принадлежи на платформата, а не на този сайт. Превключете към платформата, за да го отворите.",
       "open": "Към платформата"
-    }
+    },
+    "view": {
+      "thisIsAPlatformScreen": "Това е екран на платформата",
+      "theseSettingsBelongToA": "Тези настройки принадлежат на сайт",
+      "thisPageIsForAdministrators": "Тази страница е за администратори. Ролята ви не я включва.",
+      "openYourOwnPageInstead": "Отворете вашата собствена страница.",
+      "componentFailedToRender": "Компонентът „{{name}}“ не можа да се покаже.",
+      "roleLacksPage": "Ролята ви не включва тази страница (изисква {{required}}).",
+      "notPartOfPlatform": "{{what}} не е част от платформата. Ако принадлежи на сайт, изберете сайта от менюто, за да го отворите."
+    },
+    "relativeOverridesInheritTheCollection": "Относителните адреси наследяват префикса на колекцията. Включете абсолютен режим, за да заобиколите префикси като `/shop`.",
+    "range": "Период",
+    "noDataForThisRange": "Няма данни за този период"
   },
   "shell": {
     "site": {
@@ -1556,7 +1573,8 @@
       "useThisWhenPluginCode": "Когато кодът на плъгин е променен или се нуждае от миграция.",
       "useThisWhenFrontendPresentation": "Когато е променен външният вид на сайта.",
       "aSlugIsRequiredBefore": "Преди прегледа е нужен идентификатор за {{targetScope}}.",
-      "chooseATarGzSql": "Изберете архив .tar.gz, .sql или .db."
+      "chooseATarGzSql": "Изберете архив .tar.gz, .sql или .db.",
+      "delete": "Изтрий"
     },
     "integrations": {
       "noFieldsRequired": "Не са нужни полета",
@@ -1926,7 +1944,13 @@
       "matched": "Съвпадение: {{label}} -> {{title}} ({{collectionLabel}})",
       "noContentMatchForOr": "Няма съдържание за „/“ или „home“ (използва се резервното оформление на темата).",
       "autoModeCheckingAndHome": "Автоматично: проверка на „/“ и „home“...",
-      "themeFallback": "Резервно оформление на темата: {{autoFallbackLayout}}."
+      "themeFallback": "Резервно оформление на темата: {{autoFallbackLayout}}.",
+      "groupSystem": "Система",
+      "groupThemeLayouts": "Оформления на темата",
+      "kindAuto": "Автоматично",
+      "kindLayout": "Оформление",
+      "source": "Източник",
+      "record": "запис"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Регистърът на платформата не можа да бъде достигнат.",
@@ -2374,7 +2398,13 @@
     "thatCertificateWasNotIssued": "Сертификатът не е издаден за този хост, така че браузърите биха го отхвърлили.",
     "thisInstallationCannotStoreA": "Тази инсталация не може да съхранява частен ключ: на сървъра не е зададен SECRET_KEY.",
     "theCertificateWasRefused": "Сертификатът е отказан.",
-    "defaultConsole": "стандартната конзола"
+    "defaultConsole": "стандартната конзола",
+    "certIssuing": "Издава се",
+    "certValid": "Валиден",
+    "certFailed": "Неуспешен",
+    "certExpiring": "Изтича",
+    "certExpired": "Изтекъл",
+    "hostAlias": "Допълнителен"
   },
   "media": {
     "failedToCreateFolder": "Папката не можа да бъде създадена",
@@ -2841,7 +2871,6 @@
     "pluginsOf": "Плъгини ({{length}} от {{length2}})",
     "whichPluginsThisSiteMay": "Кои плъгини може да използва този сайт. Техните настройки са на страницата на всеки плъгин, когато този сайт е избран.",
     "searchPlugins": "търсене на плъгини",
-    "box": "Кутия",
     "runsOnThisSiteWhen": "Работи на този сайт, когато е включен.",
     "blocked": "Блокиран",
     "on": "Включен",
@@ -3283,5 +3312,23 @@
     "unknown": "Неизвестно",
     "adding": "Добавяне...",
     "general": "Общи"
+  },
+  "mediaPicker": {
+    "uploads": "Качени",
+    "theme": "Тема",
+    "mediaLibrary": "Медийна библиотека",
+    "selectOrUploadAnAsset": "Изберете или качете файл",
+    "noAssetsShipWithThis": "Темата няма собствени файлове",
+    "noMediaFound": "Няма намерени файлове",
+    "uploadFailedPleaseTryAgain": "Неуспешно качване. Опитайте отново.",
+    "selectAnItemToView": "Изберете елемент, за да видите данните му",
+    "filename": "Име на файла",
+    "themePath": "Път в темата",
+    "format": "Формат",
+    "size": "Размер",
+    "dimensions": "Размери",
+    "insertAsset": "Вмъкни файла",
+    "searchMedia": "Търсене на файлове...",
+    "uploadNew": "Качи нов"
   }
 }

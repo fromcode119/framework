@@ -1,3 +1,4 @@
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Utility class for routing settings page operations.
  * Handles record title resolution, collection metadata, and layout detection.
@@ -50,8 +51,8 @@ export class RoutingPageUtils {
    * const tag = RoutingPageUtils.getCollectionSourceTag('<Plugin>', 'Pages'); // "<Plugin>/Pages"
    */
   static getCollectionSourceTag(pluginLabel: string, collectionLabel: string): string {
-    const plugin = (pluginLabel || 'System').trim();
-    const section = (collectionLabel || 'record').trim();
+    const plugin = (pluginLabel || AdminI18n.t('settings.routing.groupSystem')).trim();
+    const section = (collectionLabel || AdminI18n.t('settings.routing.record')).trim();
     return `${plugin}/${section}`;
   }
 

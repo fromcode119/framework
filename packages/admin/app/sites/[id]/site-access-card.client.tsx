@@ -185,7 +185,7 @@ export class SiteAccessCard extends AdminComponent {
               return (
                 <div key={plugin.slug} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${this.isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                   <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
-                    <Icon name={plugin.icon || AdminI18n.t('sites.box')} size={18} strokeWidth={1.5} />
+                    <Icon name={plugin.icon || 'Box'} size={18} strokeWidth={1.5} />
                   </div>
 
                   <div className="flex-1 min-w-0">

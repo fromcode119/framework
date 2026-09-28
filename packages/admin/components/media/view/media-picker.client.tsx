@@ -11,6 +11,7 @@ import { MediaPickerHeader } from '@/components/media/view/media-picker-header.c
 import { MediaPickerToolbar } from '@/components/media/view/media-picker-toolbar.client';
 import { MediaPickerGrid } from '@/components/media/view/media-picker-grid.client';
 import { MediaPickerDetails } from '@/components/media/view/media-picker-details.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MediaPicker extends Reactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -104,7 +105,7 @@ export class MediaPicker extends Reactor {
   }
 
   private get emptyMessage(): string {
-    return this.themeSource ? 'No assets ship with this theme' : 'No media found';
+    return this.themeSource ? AdminI18n.t('mediaPicker.noAssetsShipWithThis') : AdminI18n.t('mediaPicker.noMediaFound');
   }
 
   private get selectedItem(): IMediaItem | null {
@@ -150,7 +151,7 @@ export class MediaPicker extends Reactor {
       }
     } catch (error) {
       console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
+      alert(AdminI18n.t('mediaPicker.uploadFailedPleaseTryAgain'));
     } finally {
       this.uploading = false;
     }

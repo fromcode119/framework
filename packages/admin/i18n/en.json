@@ -240,7 +240,12 @@
     "quickEdit": {
       "title": "Quick Edit",
       "loading": "Loading record..."
-    }
+    },
+    "recordsInThisCollectionAre": "Records in this collection are written by the runtime. Open the list to see the ones that exist.",
+    "componentNotRegistered": "Component \"{{name}}\" not registered by any plugin.",
+    "notCreatedByHand": "{{title}} are not created by hand",
+    "backTo": "Back to {{title}}",
+    "roleLacksCreate": "Your role does not include adding {{name}}."
   },
   "common": {
     "active": "Active",
@@ -486,7 +491,19 @@
     "scopeGate": {
       "text": "{{what}} belongs to the platform and is not part of this site. Switch to Platform scope to open it.",
       "open": "Open Platform Scope"
-    }
+    },
+    "view": {
+      "thisIsAPlatformScreen": "This is a platform screen",
+      "theseSettingsBelongToA": "These settings belong to a site",
+      "thisPageIsForAdministrators": "This page is for administrators. Your role does not include it.",
+      "openYourOwnPageInstead": "Open your own page instead.",
+      "componentFailedToRender": "Component \"{{name}}\" failed to render.",
+      "roleLacksPage": "Your role does not include this page (it needs {{required}}).",
+      "notPartOfPlatform": "{{what}} is not part of the platform. If it belongs to a site, choose that site from the site menu to open it."
+    },
+    "relativeOverridesInheritTheCollection": "Relative overrides inherit the collection prefix. Enable absolute mode to bypass prefixes like `/shop`.",
+    "range": "Range",
+    "noDataForThisRange": "No data for this range"
   },
   "shell": {
     "site": {
@@ -1648,7 +1665,13 @@
       "matched": "Matched {{label}} -> {{title}} ({{collectionLabel}})",
       "noContentMatchForOr": "No content match for \"/\" or \"home\" (using theme fallback).",
       "autoModeCheckingAndHome": "Auto mode: checking \"/\" and \"home\"...",
-      "themeFallback": "Theme fallback: {{autoFallbackLayout}}."
+      "themeFallback": "Theme fallback: {{autoFallbackLayout}}.",
+      "groupSystem": "System",
+      "groupThemeLayouts": "Theme Layouts",
+      "kindAuto": "Auto",
+      "kindLayout": "Layout",
+      "source": "Source",
+      "record": "record"
     },
     "security": {
       "loginProtection": "Login Protection",
@@ -1922,7 +1945,8 @@
       "useThisWhenPluginCode": "Use this when plugin code changed or needs migration.",
       "useThisWhenFrontendPresentation": "Use this when frontend presentation changed.",
       "aSlugIsRequiredBefore": "A {{targetScope}} slug is required before preview.",
-      "chooseATarGzSql": "Choose a .tar.gz, .sql, or .db backup archive."
+      "chooseATarGzSql": "Choose a .tar.gz, .sql, or .db backup archive.",
+      "delete": "Delete"
     },
     "personalData": {
       "unknownError": "Unknown error",
@@ -2337,7 +2361,13 @@
     "thatCertificateWasNotIssued": "That certificate was not issued for this host, so browsers would reject it.",
     "thisInstallationCannotStoreA": "This installation cannot store a private key: no SECRET_KEY is configured on the server.",
     "theCertificateWasRefused": "The certificate was refused.",
-    "defaultConsole": "default console"
+    "defaultConsole": "default console",
+    "certIssuing": "Issuing",
+    "certValid": "Valid",
+    "certFailed": "Failed",
+    "certExpiring": "Expiring",
+    "certExpired": "Expired",
+    "hostAlias": "Alias"
   },
   "sites": {
     "couldNotLoadTheSites": "Could not load the sites.",
@@ -2451,7 +2481,6 @@
     "pluginsOf": "Plugins ({{length}} of {{length2}})",
     "whichPluginsThisSiteMay": "Which plugins this site may run. Their settings are on each plugin’s own page, with this site selected.",
     "searchPlugins": "search plugins",
-    "box": "Box",
     "runsOnThisSiteWhen": "Runs on this site when enabled.",
     "blocked": "Blocked",
     "on": "On",
@@ -3246,5 +3275,23 @@
     "action": "Action",
     "time": "Time",
     "logSignature": "Log Signature: {{id}}"
+  },
+  "mediaPicker": {
+    "uploads": "Uploads",
+    "theme": "Theme",
+    "mediaLibrary": "Media Library",
+    "selectOrUploadAnAsset": "Select or upload an asset to your project",
+    "noAssetsShipWithThis": "No assets ship with this theme",
+    "noMediaFound": "No media found",
+    "uploadFailedPleaseTryAgain": "Upload failed. Please try again.",
+    "selectAnItemToView": "Select an item to view details",
+    "filename": "Filename",
+    "themePath": "Theme path",
+    "format": "Format",
+    "size": "Size",
+    "dimensions": "Dimensions",
+    "insertAsset": "Insert Asset",
+    "searchMedia": "Search media...",
+    "uploadNew": "Upload New"
   }
 }

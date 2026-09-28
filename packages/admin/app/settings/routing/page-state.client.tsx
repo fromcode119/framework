@@ -72,7 +72,7 @@ export abstract class RoutingPageState extends AdminComponent {
     return Array.isArray(collections) ? collections : RoutingPageState.EMPTY_COLLECTIONS;
   }
   @state homeOptions: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [
-    { value: 'auto', label: AdminI18n.t('settings.routing.autoDetect'), group: 'System' }
+    { value: 'auto', label: AdminI18n.t('settings.routing.autoDetect'), group: AdminI18n.t('settings.routing.groupSystem') }
   ];
 
   protected get outOfScope(): boolean {
@@ -107,7 +107,7 @@ export abstract class RoutingPageState extends AdminComponent {
     return this.homeTarget === 'auto'
       ? `${this.autoResolvedSource || AdminI18n.t('settings.routing.autoModeCheckingAndHome')}${autoFallbackLayout ? ' ' + AdminI18n.t('settings.routing.themeFallback', { autoFallbackLayout: autoFallbackLayout }) : ''}`
       : selectedHomeOption
-        ? `${selectedHomeOption.sourceKind || selectedHomeOption.group || 'Source'} · ${selectedHomeOption.label}`
+        ? `${selectedHomeOption.sourceKind || selectedHomeOption.group || AdminI18n.t('settings.routing.source')} · ${selectedHomeOption.label}`
         : AdminI18n.t('settings.routing.customTarget', { homeTarget: this.homeTarget });
   }
 }

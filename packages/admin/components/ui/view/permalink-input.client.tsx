@@ -166,7 +166,7 @@ export class PermalinkInput extends AdminComponent {
           </div>
         </div>
         <p className={UiFieldUtils.TEXT.SUBTEXT}>
-          Relative overrides inherit the collection prefix. Enable absolute mode to bypass prefixes like `/shop`.
+          {AdminI18n.t('ui.relativeOverridesInheritTheCollection')}
         </p>
       </div>
     );

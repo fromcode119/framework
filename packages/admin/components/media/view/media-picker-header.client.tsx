@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { X } from 'lucide-react';
 import { AdminTypography } from '@/lib/typography';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Title, source tabs and close. The Uploads/Theme tabs live here rather than behind a separate
@@ -35,10 +36,10 @@ export class MediaPickerHeader extends PureReactor {
     return (
       <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-800/60">
         <button type="button" onClick={this.selectUploads} className={this.tabClass(!this.themeSource)}>
-          Uploads
+          {AdminI18n.t('mediaPicker.uploads')}
         </button>
         <button type="button" onClick={this.selectTheme} className={this.tabClass(this.themeSource)}>
-          Theme
+          {AdminI18n.t('mediaPicker.theme')}
         </button>
       </div>
     );
@@ -48,8 +49,8 @@ export class MediaPickerHeader extends PureReactor {
     return (
       <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-6">
         <div>
-          <h2 className={`${AdminTypography.TYPOGRAPHY.HEADING.SUBTLE} text-slate-900 dark:text-white`}>Media Library</h2>
-          <p className={AdminTypography.TYPOGRAPHY.SUBTEXT}>Select or upload an asset to your project</p>
+          <h2 className={`${AdminTypography.TYPOGRAPHY.HEADING.SUBTLE} text-slate-900 dark:text-white`}>{AdminI18n.t('mediaPicker.mediaLibrary')}</h2>
+          <p className={AdminTypography.TYPOGRAPHY.SUBTEXT}>{AdminI18n.t('mediaPicker.selectOrUploadAnAsset')}</p>
         </div>
         <div className="flex items-center gap-4">
           {this.renderTabs()}

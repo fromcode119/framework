@@ -73,12 +73,12 @@ export class CertificateHost {
     const labels: Record<string, string> = {
       no_certificate: AdminI18n.t('lib.noCertificate'),
       waiting_for_dns: AdminI18n.t('lib.waitingForDns'),
-      issuing: 'Issuing',
-      serving: 'Valid',
+      issuing: AdminI18n.t('lib.certIssuing'),
+      serving: AdminI18n.t('lib.certValid'),
       renewal_due: AdminI18n.t('lib.renewalDue'),
-      failed: 'Failed',
-      expiring: 'Expiring',
-      expired: 'Expired',
+      failed: AdminI18n.t('lib.certFailed'),
+      expiring: AdminI18n.t('lib.certExpiring'),
+      expired: AdminI18n.t('lib.certExpired'),
     };
     return labels[this.state] ?? this.state;
   }
@@ -87,7 +87,7 @@ export class CertificateHost {
   get roleLabel(): string {
     const labels: Record<string, string> = {
       primary: AdminI18n.t('lib.mainAddress'),
-      alias: 'Alias',
+      alias: AdminI18n.t('lib.hostAlias'),
       platform_admin: AdminI18n.t('lib.adminConsole'),
       platform_api: 'API',
       platform_frontend: AdminI18n.t('lib.platformStorefront'),

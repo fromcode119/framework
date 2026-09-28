@@ -171,7 +171,7 @@ export class BackupListCard extends AdminComponent {
                                 isLoading={activeDeleteId === item.id}
                                 onClick={() => onRequestDelete(item)}
                               >
-                                Delete
+                                {AdminI18n.t('settings.components.delete')}
                               </Button>
                             ) : null}
                           </div>

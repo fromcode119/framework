@@ -31,7 +31,10 @@ export class RoutingHomeOptions {
   }): Promise<{ label: string; value: string; group?: string; section?: string; sourceKind?: string }[]> {
     const query = input.searchTerm.trim().toLowerCase();
     const frontendMeta = input.frontendMeta;
-    const options: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [{ value: 'auto', label: AdminI18n.t('settings.routing.autoDetect'), group: 'System', sourceKind: 'Auto' }];
+    // Group names are shown as the select's headings and also rank the groups below — one value for both.
+    const systemGroup = AdminI18n.t('settings.routing.groupSystem');
+    const layoutsGroup = AdminI18n.t('settings.routing.groupThemeLayouts');
+    const options: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [{ value: 'auto', label: AdminI18n.t('settings.routing.autoDetect'), group: systemGroup, sourceKind: AdminI18n.t('settings.routing.kindAuto') }];
     const optionSet = new Set(options.map((o) => o.value));
     const availableCollectionSet = new Set(
       (input.availableCollections || [])
@@ -61,8 +64,8 @@ export class RoutingHomeOptions {
       options.push({
         value,
         label,
-        group: 'Theme Layouts',
-        sourceKind: 'Layout'
+        group: layoutsGroup,
+        sourceKind: AdminI18n.t('settings.routing.kindLayout')
       });
     });
 
@@ -106,7 +109,7 @@ export class RoutingHomeOptions {
         const searchableText = `${title} ${permalinkLabel} ${collectionLabel}`.toLowerCase();
         if (query && !searchableText.includes(query)) return;
 
-        const pluginSlug = collection.pluginSlug || 'System';
+        const pluginSlug = collection.pluginSlug || systemGroup;
         const pluginLabel = pluginSlug.charAt(0).toUpperCase() + pluginSlug.slice(1);
         const groupLabel = AdminI18n.t('settings.routing.collectionRecords', { pluginLabel: pluginLabel });
         const sourceTag = RoutingPageUtils.getCollectionSourceTag(pluginSlug, collectionLabel);
@@ -123,8 +126,8 @@ export class RoutingHomeOptions {
     });
 
     const groupOrder = new Map<string, number>([
-      ['System', 0],
-      ['Theme Layouts', 1]
+      [systemGroup, 0],
+      [layoutsGroup, 1]
     ]);
     const sortedOptions = [...options].sort((a, b) => {
       const aGroup = a.group || 'Options';
