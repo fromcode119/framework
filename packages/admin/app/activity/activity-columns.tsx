@@ -16,7 +16,7 @@ export class ActivityColumnsFactory {
           return (
             <div className="flex flex-col gap-1">
               <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-mono font-semibold w-fit tracking-tighter ${levelStyle}`}>
-                 {row.level}
+                 {AdminI18n.optional(`activity.level.${String(row.level || '').toUpperCase()}`) || row.level}
               </span>
               <span className="text-[9px] font-semibold text-slate-400 tracking-wide pl-1">
                 {String(row.id).includes('-') ? row.id.split('-')[0] : `LOG-${row.id}`}

@@ -3343,7 +3343,13 @@
     "stagingAuthorityWarning": "Automatic certificates come from {{authority}}. Certificates from a staging authority are NOT trusted by browsers — use it to test the flow, not to serve a site.",
     "usingPlatformToken": "This site has no token of its own and is using the platform's. That token can only order certificates for zones it has access to — if this site's domain is in a different Cloudflare account, save this site's own token here.",
     "gatewayNotTerminating": "This deployment’s gateway is not terminating TLS, so stored certificates are not being served by anything here. Something in front of the platform holds the certificates it serves.",
-    "until": "until {{date}}"
+    "until": "until {{date}}",
+    "blocked": {
+      "noAuthorityNoAddress": "No certificate authority and no platform address are declared.",
+      "noAuthority": "No certificate authority is declared.",
+      "noAddress": "No platform address is declared.",
+      "gatewayNotTls": "This deployment’s gateway is not terminating TLS, so a certificate it obtained would not be served by anything here."
+    }
   },
   "activity": {
     "systemActivity": "System Activity",
@@ -3382,7 +3388,15 @@
     "action": "Action",
     "time": "Time",
     "logSignature": "Log Signature: {{id}}",
-    "internal": "INTERNAL"
+    "internal": "INTERNAL",
+    "level": {
+      "INFO": "INFO",
+      "WARN": "WARN",
+      "ERROR": "ERROR",
+      "DEBUG": "DEBUG",
+      "SYSTEM": "SYSTEM",
+      "AUDIT": "AUDIT"
+    }
   },
   "mediaPicker": {
     "uploads": "Uploads",

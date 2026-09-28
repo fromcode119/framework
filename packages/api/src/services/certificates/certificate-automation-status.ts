@@ -28,6 +28,8 @@ export class CertificateAutomationStatus {
     const blocked = !settings.isConfigured
       ? settings.missingReason
       : (terminatesTls ? '' : 'This deployment\'s gateway is not terminating TLS, so a certificate it obtained would not be served by anything here.');
+    // The same reason as a code, for the admin to put into the console's language.
+    const blockedCode = !settings.isConfigured ? settings.missingCode : (terminatesTls ? '' : 'gatewayNotTls');
 
     // Scope-aware, because a token belongs to whoever owns the DNS. `settings.toJson()` answers only
     // for the platform's own row, which inside a site is the wrong question: a site with its own
@@ -41,6 +43,7 @@ export class CertificateAutomationStatus {
       terminatesTls,
       isAvailable: blocked.length === 0,
       blockedReason: blocked,
+      blockedCode,
       isCloudflareConfigured: dnsToken.isConfigured,
       cloudflareTokenScope: String(dnsToken.scope.value),
       // Only meaningful inside a site: true when this site is borrowing the platform's token.

@@ -2802,7 +2802,13 @@
     "pointHostAt": "Насочете {{host}} към {{addresses}}, след което това се опитва отново автоматично.",
     "servedByWildcard": "Обслужва се от wildcard сертификата на {{host}}",
     "servedByWildcardUntil": "Обслужва се от wildcard сертификата на {{host}} · до {{date}}",
-    "until": "до {{date}}"
+    "until": "до {{date}}",
+    "blocked": {
+      "noAuthorityNoAddress": "Не са зададени удостоверител и адрес на платформата.",
+      "noAuthority": "Не е зададен удостоверител.",
+      "noAddress": "Не е зададен адрес на платформата.",
+      "gatewayNotTls": "Шлюзът на тази инсталация не обработва TLS, така че получен сертификат не би се обслужвал от нищо тук."
+    }
   },
   "activity": {
     "systemActivity": "Системна активност",
@@ -2841,7 +2847,15 @@
     "action": "Действие",
     "time": "Време",
     "logSignature": "Подпис на записа: {{id}}",
-    "internal": "ВЪТРЕШНО"
+    "internal": "ВЪТРЕШНО",
+    "level": {
+      "INFO": "ИНФО",
+      "WARN": "ВНИМАНИЕ",
+      "ERROR": "ГРЕШКА",
+      "DEBUG": "ОТСТРАНЯВАНЕ",
+      "SYSTEM": "СИСТЕМА",
+      "AUDIT": "ОДИТ"
+    }
   },
   "sites": {
     "couldNotLoadTheSites": "Сайтовете не можаха да бъдат заредени.",

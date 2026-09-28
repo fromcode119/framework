@@ -51,7 +51,7 @@ export class CertificateStatusNotices extends AdminComponent {
   private renderAutomation(): ReactNode {
     if (!this.automation) return null;
     if (this.automation.isAvailable !== true) {
-      return this.notice(CertificateNoticeTone.MUTED, AdminI18n.t('certificates.automaticCertificatesAreOff', { reason: String(this.automation.blockedReason || '') }));
+      return this.notice(CertificateNoticeTone.MUTED, AdminI18n.t('certificates.automaticCertificatesAreOff', { reason: AdminI18n.optional(`certificates.blocked.${String(this.automation.blockedCode || '')}`) || String(this.automation.blockedReason || '') }));
     }
 
     const authority = String(this.automation.directoryLabel || '');
