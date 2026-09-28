@@ -63,7 +63,7 @@ export class ActivityColumnsFactory {
         accessor: (row: any) => (
           <div className="flex flex-col">
             <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-               {new Date(row.timestamp || row.createdAt).toLocaleTimeString()}
+               {new Date(row.timestamp || row.createdAt).toLocaleTimeString(AdminI18n.locale)}
             </span>
             <span className="text-[8px] font-semibold text-slate-400 tracking-wide mt-0.5 italic">
                {new Date(row.timestamp || row.createdAt).toLocaleDateString()}
@@ -130,7 +130,7 @@ export class ActivityColumnsFactory {
         accessor: (row: any) => (
           <div className="flex flex-col">
             <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-               {new Date(row.createdAt).toLocaleTimeString()}
+               {new Date(row.createdAt).toLocaleTimeString(AdminI18n.locale)}
             </span>
             <span className="text-[8px] font-semibold text-slate-400 tracking-wide mt-0.5 italic">
                {new Date(row.createdAt).toLocaleDateString()}

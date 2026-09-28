@@ -3,6 +3,7 @@ import { EditorSessionParams } from '@fromcode119/core/client';
 import { StorefrontDocumentContract } from '@/lib/document/storefront-document-contract';
 import { ReactDomRoots, Transition, bound } from '@fromcode119/react-class-components';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';
+import { DocumentContactRestore } from '@/lib/contact/document-contact-restore';
 import { StorefrontHydrationReason } from '@/runtime/storefront-hydration-reason';
 import type { IStorefrontHydratorArgs } from '@/runtime/interfaces/storefront-hydrator-args.interface';
 
@@ -66,6 +67,9 @@ export class StorefrontHydrator {
 
   /** Decide and mount. Returns the decision it acted on. */
   mount(): StorefrontHydrationReason {
+    // Before anything reads the markup: the contact details the server took out of the HTML go back in,
+    // so hydration (or the fallback) starts from exactly the markup the server rendered.
+    DocumentContactRestore.restore(document);
     const reason = StorefrontHydrator.decide(this.args);
     if (reason.hydrates) this.hydrate();
     else this.fallback(reason);

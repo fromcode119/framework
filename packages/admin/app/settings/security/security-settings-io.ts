@@ -27,15 +27,23 @@ export class SecuritySettingsIo {
   }
 
   /**
-   * Send every key verbatim, empty string included: a cleared internal-clients list is the operator
-   * saying "nothing is internal", and the API's resolver honours a saved blank instead of falling
-   * back to the seed.
+   * Send every key the operator CHANGED from what `load()` returned, empty string included: a cleared
+   * internal-clients list is the operator saying "nothing is internal", and the API's resolver honours
+   * a saved blank instead of falling back to the seed.
+   *
+   * Only the changed ones. Sending every key turned each setting this site had never set into a saved
+   * blank — a real value that is not the same as "unset" (a blank audit-exclusion list audits every
+   * write; a blank switch is off) — so saving one toggle silently rewrote the rest of the screen.
+   * Returns how many keys it sent; with none changed it sends nothing.
    */
-  static async save(settings: Record<string, string>): Promise<void> {
+  static async save(settings: Record<string, string>, loaded: Record<string, string>): Promise<number> {
     const payload: Record<string, string> = {};
     for (const key of SecuritySettingsKeys.ALL) {
-      payload[key] = CoercionUtils.toString(settings[key]);
+      const value = CoercionUtils.toString(settings[key]);
+      if (value !== CoercionUtils.toString(loaded[key])) payload[key] = value;
     }
-    await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, payload);
+    const changed = Object.keys(payload).length;
+    if (changed) await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, payload);
+    return changed;
   }
 }

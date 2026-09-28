@@ -121,7 +121,7 @@ export class PluginDetailOverview extends PureReactor {
                   <tbody>
                     {this.logs.map((log) => (
                       <tr key={log.id || `${log.timestamp}-${log.message}`} className={`border-b last:border-0 transition-colors ${this.theme === ThemeMode.DARK ? 'border-slate-800/50 hover:bg-indigo-500/5' : 'border-slate-50 hover:bg-indigo-50/30'}`}>
-                        <td className="py-3 px-4 text-slate-400 whitespace-nowrap align-top font-bold">{new Date(log.timestamp).toLocaleTimeString()}</td>
+                        <td className="py-3 px-4 text-slate-400 whitespace-nowrap align-top font-bold">{new Date(log.timestamp).toLocaleTimeString(AdminI18n.locale)}</td>
                         <td className="py-3 px-2">
                           <span className={`px-2 py-0.5 rounded-lg text-[9px] font-semibold tracking-wider ${log.level === 'ERROR' ? 'bg-red-500 text-white' : log.level === 'WARN' ? 'bg-amber-500 text-white' : 'bg-indigo-500 text-white'}`}>
                             {log.level}

@@ -57,7 +57,7 @@ export class DashboardActivityFeed extends PureReactor {
                   </span>
                 </div>
                 <span className="shrink-0 text-[11px] tabular-nums text-slate-400">
-                  {new Date(item.timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(item.timestamp).toLocaleTimeString(AdminI18n.locale, { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
             )

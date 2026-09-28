@@ -1,6 +1,6 @@
 {
   "name": "@fromcode119/framework",
-  "version": "0.2.240",
+  "version": "0.2.243",
   "private": true,
   "license": "MIT",
   "workspaces": [
@@ -21,6 +21,8 @@
     "audit:core-boundary": "node packages/arch-guard/dist/arch-guard-cli.cjs core-boundary",
     "check:plugin-architecture": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",
     "check:file-size": "node packages/arch-guard/dist/arch-guard-cli.cjs file-size",
+    "check:changelog": "node packages/arch-guard/dist/arch-guard-cli.cjs changelog",
+    "changelog:write": "node packages/arch-guard/dist/arch-guard-cli.cjs changelog --write",
     "check:file-size:list": "node packages/arch-guard/dist/arch-guard-cli.cjs file-size --list",
     "check:sdk-boundary": "node packages/arch-guard/dist/arch-guard-cli.cjs sdk-boundary",
     "check:plugin-ui-hookfree": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-hookfree",

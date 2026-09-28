@@ -1,4 +1,4 @@
-import { AcmeDnsTokenResolver, AcmeSettings } from '@fromcode119/core';
+import { AcmeDnsTokenResolver, AcmeSettings, CertificateIssuanceTask } from '@fromcode119/core';
 
 /**
  * Whether the platform can obtain certificates itself for a given scope, and when it cannot, why.
@@ -50,6 +50,9 @@ export class CertificateAutomationStatus {
       isCloudflareTokenInherited: dnsToken.isPlatformFallback && tenantId !== null,
       // The DNS-01/wildcard variant needs everything AUTOMATIC needs, PLUS a usable Cloudflare token.
       dnsWildcardAvailable: blocked.length === 0 && dnsToken.isConfigured,
+      // How often queued hosts are looked at, so the screen can say when one will be — read from the
+      // scheduler itself rather than repeated as a number in the admin.
+      checkIntervalMinutes: CertificateIssuanceTask.INTERVAL_MINUTES,
     };
   }
 }

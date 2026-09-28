@@ -1829,7 +1829,10 @@
       "physicalTableNamesCommaSeparated": "Physical table names, comma separated. Plugin database writes to these tables are not recorded in the audit log — meant for high-volume telemetry tables whose per-row writes would drown the trail. Clear it and every plugin write is audited. Applies within a minute of saving.",
       "denialsRecorded": "Denials recorded: {{count}}",
       "theSecurityStatisticsRequestFailed": "The security statistics request failed.",
-      "milliseconds": "{{value}} ms"
+      "milliseconds": "{{value}} ms",
+      "contactDetails": "Contact Details",
+      "hideContactDetails": "Hide email addresses and phone numbers from harvesters",
+      "hideContactDetailsDescription": "Every page is served with its email addresses and international phone numbers (and the text of any tel: link) encoded, so bots that collect them from the HTML find none. Visitors see and click them as normal, and the page still loads as server-rendered. Replaces a CDN's email obfuscation, which should stay off."
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "The framework registry could not be reached.",
@@ -3357,7 +3360,19 @@
       "noAuthority": "No certificate authority is declared.",
       "noAddress": "No platform address is declared.",
       "gatewayNotTls": "This deployment’s gateway is not terminating TLS, so a certificate it obtained would not be served by anything here."
-    }
+    },
+    "cloudflareTokenTitle": "Cloudflare token",
+    "variantAutomatic": "automatic",
+    "variantAutomaticWildcard": "automatic (wildcard)",
+    "queuedTitle": "Certificate queued",
+    "queuedMessage": "{{host}} is now {{variant}}. The platform orders its certificate on the next check; the row below shows progress.",
+    "attempt": {
+      "orderingNow": "Ordering now — this usually takes under a minute.",
+      "nextAt": "Next attempt at {{time}}.",
+      "queuedEvery": "Queued — tried on the next check (every {{minutes}} minutes).",
+      "queued": "Queued — tried on the next check."
+    },
+    "retryingHosts": "Retrying {{hosts}} on the next check."
   },
   "activity": {
     "systemActivity": "System Activity",

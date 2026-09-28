@@ -5,8 +5,16 @@ import { DynamicContentClient } from '@/app/components/view/dynamic-content-clie
 import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { QueryParamUtils } from '@/lib/query-param-utils';
+import { ThemedRouteMetadata } from '@/lib/themed-route-metadata';
 
 export class ResetPasswordPageRoute {
+  /** The themed page's own title, description and canonical — see `ThemedRouteMetadata`. */
+  static async generateMetadata({ searchParams }: { searchParams?: (Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>) } = {}) {
+    await connection();
+    if (!(await FrontendAuthUtils.isFrontendAuthEnabled())) return {};
+    return ThemedRouteMetadata.build('reset-password', searchParams);
+  }
+
   static async render({
     searchParams,
   }: {
