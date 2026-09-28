@@ -89,8 +89,8 @@ export class BulkActions extends PureReactor {
           </Button>
         ) : null}
         {/* Plugin-contributed actions on the current selection (domain-agnostic — the owning plugin fills it). */}
-        <Slot name={`admin.collection.${slotSlug}.list.bulk.actions`} props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
-        <Slot name="admin.collection.list.bulk.actions" props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
+        <Slot name={`admin.collection.${slotSlug}.list.bulk.actions`} include={access.allowsPluginAction} props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
+        <Slot name="admin.collection.list.bulk.actions" include={access.allowsPluginAction} props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
         <button
           onClick={() => setSelectedIds([])}
           className="h-11 w-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"

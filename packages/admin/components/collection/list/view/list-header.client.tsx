@@ -16,6 +16,8 @@ export class CollectionListHeader extends PureReactor {
   @prop declare theme: ThemeMode;
   /** "New" is offered only when the signed-in user may create these records. */
   @prop declare canCreate: boolean;
+  /** Which plugin-contributed header actions to offer — see `CollectionAccess.allowsPluginAction`. */
+  @prop declare includeAction: (contribution: { pluginSlug: string }) => boolean;
 
   render(): ReactNode {
     const { collection, pluginSlug, slug, theme } = this;
@@ -56,8 +58,8 @@ export class CollectionListHeader extends PureReactor {
         </div>
 
         <div className="flex items-center gap-2">
-          <Slot name={`admin.collection.${slug}.header.actions`} props={{ collection }} />
-          <Slot name="admin.collection.list.header.actions" props={{ collection }} />
+          <Slot name={`admin.collection.${slug}.header.actions`} include={this.includeAction} props={{ collection }} />
+          <Slot name="admin.collection.list.header.actions" include={this.includeAction} props={{ collection }} />
           {/* An "Invite" button used to render here for the users collection with no onClick and no
               href — a visible, clickable control that did nothing. Removed until an invite flow
               exists to wire it to. */}

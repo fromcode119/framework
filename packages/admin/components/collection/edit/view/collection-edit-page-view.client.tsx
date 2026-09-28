@@ -152,7 +152,7 @@ export class CollectionEditPageView extends Reactor {
           formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
           statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} handleInputChange={edit.handleInputChange}
           handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
-          canSave={canSave} canDelete={access.canDelete}
+          canSave={canSave} canDelete={access.canDelete} includeAction={access.allowsPluginAction}
         />
 
         <EditPageBody

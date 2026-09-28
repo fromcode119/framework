@@ -66,10 +66,12 @@ export class CollectionListRowActions extends PureReactor {
       )}
       <Slot
         name={`admin.collection.${slotSlug}.list.table.actions`}
+        include={access.allowsPluginAction}
         props={{ row, collection, pluginSlug, resolvedSlug }}
       />
       <Slot
         name="admin.collection.list.table.actions"
+        include={access.allowsPluginAction}
         props={{ row, collection, pluginSlug, resolvedSlug }}
       />
       <Link

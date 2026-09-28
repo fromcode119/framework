@@ -34,6 +34,8 @@ export class EditHeader extends PureReactor {
   @prop declare canSave: boolean;
   /** Whether the signed-in user may delete it. */
   @prop declare canDelete: boolean;
+  /** Which plugin-contributed header actions to offer — see `CollectionAccess.allowsPluginAction`. */
+  @prop declare includeAction: (contribution: { pluginSlug: string }) => boolean;
 
   get collectionLabel(): string {
     return CollectionListUtils.resolveCollectionLabel(this.collection, this.slug);
@@ -169,10 +171,12 @@ export class EditHeader extends PureReactor {
                 plugin — a core view-mode switch must not compete with actions it does not control. */}
             <Slot
               name={`admin.collection.${slug}.edit.header.actions`}
+              include={this.includeAction}
               props={{ collection, formData, setFormData, isNew, handleSubmit, saving }}
             />
             <Slot
               name="admin.collection.edit.header.actions"
+              include={this.includeAction}
               props={{ collection, formData, setFormData, isNew, handleSubmit, saving }}
             />
              
