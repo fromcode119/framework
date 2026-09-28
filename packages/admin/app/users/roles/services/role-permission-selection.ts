@@ -5,7 +5,7 @@ import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permi
  * What a role's permission list looks like in the editor. Pure: the component asks, this answers.
  *
  * A permission is TICKED when the role lists it, and INCLUDED when a wildcard the role lists covers it
- * (`ecommerce:*` covers `ecommerce:orders:read`). An included box is shown ticked and cannot be
+ * (`shop:*` covers `shop:orders:read`). An included box is shown ticked and cannot be
  * unticked on its own — unticking it would change nothing, because the wildcard still grants it.
  */
 export class RolePermissionSelection {

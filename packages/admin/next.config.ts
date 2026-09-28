@@ -204,16 +204,11 @@ class AdminNextConfig {
     }
     // async_hooks: `RequestContext` instantiates an AsyncLocalStorage at class-evaluation time.
     config.resolve.alias['async_hooks'] = NextConfigAliases.getNodeBuiltinFallbacks().async_hooks;
-
     config.resolve.alias['@fromcode119/react$'] = path.resolve(__dirname, '../react/src/index.ts');
     config.resolve.alias['@fromcode119/core$'] = path.resolve(__dirname, '../core/src/client.ts');
     config.resolve.alias['@fromcode119/core/client$'] = path.resolve(__dirname, '../core/src/client.ts');
     config.resolve.alias['@fromcode119/sdk$'] = path.resolve(__dirname, '../sdk/src/index.ts');
-    // The SDK's one admin subpath whose source does not sit at the path it is published under (its
-    // `exports` entry maps it to `admin/view/…client`). The `@fromcode119/sdk` prefix alias below would
-    // send it to `src/admin/theme-style-variant-select`, which does not exist, and the dev admin 500s
-    // every page from the root layout that imports it.
-    config.resolve.alias['@fromcode119/sdk/admin/theme-style-variant-select$'] = path.resolve(__dirname, '../sdk/src/admin/view/theme-style-variant-select.client.tsx');
+    config.resolve.alias['@fromcode119/sdk/admin/theme-style-variant-select$'] = path.resolve(__dirname, '../sdk/src/admin/view/theme-style-variant-select.client.tsx'); // its source is not at its published path; the sdk prefix alias below would miss it
     config.resolve.alias['@fromcode119/database/physical-table-name-utils$'] = path.resolve(__dirname, '../database/src/physical-table-name-utils.ts');
     config.resolve.alias['@fromcode119/database/naming-strategy$'] = path.resolve(__dirname, '../database/src/naming-strategy.ts');
     config.resolve.alias['@fromcode119/database/enums/sort-direction.enum$'] = path.resolve(__dirname, '../database/src/enums/sort-direction.enum.ts');

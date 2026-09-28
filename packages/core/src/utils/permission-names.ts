@@ -29,7 +29,7 @@ export class PermissionNames {
 
   /**
    * The name a collection is known by inside its plugin — the one its admin URL uses
-   * (`/ecommerce/products`), not the prefixed table-level slug.
+   * (`/shop/products`), not the prefixed table-level slug.
    */
   static collectionKey(collection: { slug: string; shortSlug?: string; unprefixedSlug?: string }): string {
     return PermissionNames.key(collection.shortSlug || collection.unprefixedSlug || collection.slug);
