@@ -67,7 +67,7 @@ export class PluginDetailSidebar extends PureReactor {
               {plugin.manifest.capabilities && plugin.manifest.capabilities.length > 0 ? (
                 <button onClick={() => onTabChange(PluginDetailTab.PERMISSIONS)} className={`flex items-center gap-1.5 text-[11px] font-bold transition-colors ${theme === ThemeMode.DARK ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'}`}>
                   <FrameworkIcons.Shield size={12} />
-                  {plugin.manifest.capabilities.length} declared
+                  {AdminI18n.t('plugins.detail.capabilitiesDeclared', { count: plugin.manifest.capabilities.length })}
                 </button>
               ) : (
                 <span className="text-[10px] font-semibold text-slate-400">{AdminI18n.t('plugins.detail.none')}</span>

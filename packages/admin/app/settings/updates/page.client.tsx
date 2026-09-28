@@ -261,7 +261,7 @@ export class UpdatesPage extends AdminComponent {
                     ) : (
                       <p className="text-[11px] font-medium leading-relaxed text-slate-600 dark:text-slate-300">
                         <AdminRichText k="settings.updates.deployInstead" vars={{ version: latestVersion }} />
-                        <span className="mt-1 block font-mono text-[11px] text-slate-500">atlantis deploy v{latestVersion}</span>
+                        <code className="mt-1 block font-mono text-[11px] text-slate-500">atlantis deploy v{latestVersion}</code>
                       </p>
                     )}
                   </div>

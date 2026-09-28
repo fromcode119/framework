@@ -245,7 +245,8 @@
     "componentNotRegistered": "Component \"{{name}}\" not registered by any plugin.",
     "notCreatedByHand": "{{title}} are not created by hand",
     "backTo": "Back to {{title}}",
-    "roleLacksCreate": "Your role does not include adding {{name}}."
+    "roleLacksCreate": "Your role does not include adding {{name}}.",
+    "structuredValue": "value"
   },
   "common": {
     "active": "Active",
@@ -503,7 +504,8 @@
     },
     "relativeOverridesInheritTheCollection": "Relative overrides inherit the collection prefix. Enable absolute mode to bypass prefixes like `/shop`.",
     "range": "Range",
-    "noDataForThisRange": "No data for this range"
+    "noDataForThisRange": "No data for this range",
+    "peak": "· peak {{value}}"
   },
   "shell": {
     "site": {
@@ -545,7 +547,8 @@
       "signOut": "Sign out",
       "account": "Account",
       "yours": "Your account",
-      "goToMine": "Go to my account"
+      "goToMine": "Go to my account",
+      "signedInStaff": "You’re signed in as <strong>{{email}}</strong>. This area is for staff — manage your own profile, security and activity from your account."
     },
     "nav": {
       "secondary": "Secondary navigation",
@@ -567,13 +570,15 @@
       "noAccess": "No access to this workspace",
       "notMemberOf": "Your account is not a member of {{name}}, so there is nothing here for it to administer.",
       "notMember": "Your account is not a member of the workspace this domain serves, so there is nothing here for it to administer.",
-      "switchAccount": "Sign out and use another account"
+      "switchAccount": "Sign out and use another account",
+      "askAdmin": "Someone who administers it can add you."
     },
     "chooser": {
       "unavailable": "Not available",
       "noAccess": "No site access",
       "emptyText": "Your account is not a member of any site yet, so there is nothing here to administer. A platform admin can add you to one.",
-      "text": "What you can do is decided per site, so pick the one you want to work in. You can switch at any time from the header."
+      "text": "What you can do is decided per site, so pick the one you want to work in. You can switch at any time from the header.",
+      "signedInAs": "You’re signed in as <strong>{{email}}</strong>."
     },
     "auth": {
       "signingIn": "Signing you in",
@@ -586,7 +591,25 @@
       "connecting": "Connecting",
       "maintenance": "Maintenance Mode Active"
     },
-    "assistant": "Open Atlantis Intelligence"
+    "assistant": "Open Atlantis Intelligence",
+    "pluginPage": {
+      "defaultView": "Showing default workspace view for <strong>{{plugin}}</strong>. Register a component for <code>{{slot}}</code> to customize this page.",
+      "workspace": "Workspace: {{name}}",
+      "noComponent": "Path <code>{{path}}</code> is active, but no specialized UI component was found in <strong>{{plugin}}</strong>.",
+      "backToMarketplace": "Back to Marketplace"
+    },
+    "blocked": {
+      "title": "Not part of the {{label}} workspace",
+      "body": "The {{label}} appearance only shows the areas it’s built for. This page lives in the standard admin.",
+      "back": "Back to {{label}}",
+      "switch": "Switch appearance / open standard admin"
+    },
+    "forge": {
+      "noExtension": "No AI workspace extension is registered. Add an admin extension that mounts <code>admin.minimal.root</code>."
+    },
+    "brand": {
+      "by": "by {{company}}"
+    }
   },
   "nav": {
     "items": {
@@ -697,7 +720,12 @@
     "infrastructure": "{{name}} Infrastructure",
     "restartPendingOne": "1 plugin not running the installed version — load it from Plugin Health",
     "restartPendingMany": "{{count}} plugins not running the installed version — load it from Plugin Health",
-    "pluginsActive": "{{active}} of {{total}} plugins active"
+    "pluginsActive": "{{active}} of {{total}} plugins active",
+    "pluginErrorOne": "1 plugin in error",
+    "pluginErrorMany": "{{count}} plugins in error",
+    "pluginHeldOne": "1 plugin held for re-approval",
+    "pluginHeldMany": "{{count}} plugins held for re-approval",
+    "tasksCount": "{{count}} tasks"
   },
   "notFound": {
     "title": "Page not found",
@@ -727,7 +755,8 @@
       "sent": "If an account exists, a reset link has been sent.",
       "failed": "Unable to request password reset.",
       "title": "Reset Access",
-      "send": "Send Reset Link"
+      "send": "Send Reset Link",
+      "subtitle": "Recover your {{app}} admin account"
     },
     "backToLogin": "Back to Login",
     "reset": {
@@ -742,7 +771,8 @@
       "confirmPassword": "Confirm Password",
       "title": "Set New Password",
       "submit": "Update Password",
-      "needLink": "Need new link?"
+      "needLink": "Need new link?",
+      "subtitle": "Update your {{app}} credentials"
     },
     "forgotShort": "Forgot?"
   },
@@ -858,7 +888,9 @@
       "saving": "Saving...",
       "saveSettings": "Save Settings",
       "viewDefinition": "View Definition",
-      "officialCore": "Official Core"
+      "officialCore": "Official Core",
+      "capabilitiesDeclared": "{{count}} declared",
+      "versionReady": "v{{version}} is ready"
     },
     "process": {
       "hostUnavailable": "The extension-host container could not be reached, so plugin processes cannot start: {{reason}}",
@@ -1393,17 +1425,6 @@
       "maintenanceModeRenderCapacityAnd": "Maintenance mode, render capacity and plugin isolation are properties of the server every site on this platform runs on, so only a platform admin can change them. Your own site's settings are under Settings — General, Localization and each plugin's own configuration.",
       "administrativeMaintenanceForThisInstance": "Administrative maintenance for this instance.",
       "infrastructureSettingsCouldNotBe": "Infrastructure settings could not be loaded",
-      "restart": {
-        "apiDescription": "Exits the API process; the container supervisor starts it again. Reloads plugin code, manifests and settings from disk. Requests in flight are dropped.",
-        "apiWarning": "The admin and the storefront both depend on the API, so both stop working until it is back.",
-        "adminDescription": "Exits the admin process; the container supervisor starts it again. Clears this app's server-side caches.",
-        "adminWarning": "This is the app you are using right now. This page will stop responding until the admin is back — reload it then.",
-        "frontendDescription": "Exits the storefront process; the container supervisor starts it again. Clears its rendering caches and re-reads theme and plugin bundles.",
-        "frontendWarning": "Visitors will get an error until the storefront is back.",
-        "otherDescription": "Exits the process; the container supervisor starts it again.",
-        "adminTitle": "Admin",
-        "frontendTitle": "Frontend"
-      },
       "theDeployCapacityCouldNot": "The deploy capacity could not be read.",
       "deployModeSaved": "Deploy mode saved",
       "theNextDeployUsesIt": "The next deploy uses it.",
@@ -1438,7 +1459,19 @@
       "savedDns01WildcardCertificates": "Saved. DNS-01/wildcard certificates can now be ordered.",
       "couldNotSaveTheCloudflare": "Could not save the Cloudflare token.",
       "clearedDns01WildcardIssuance": "Cleared. DNS-01/wildcard issuance is off until a token is saved again.",
-      "couldNotClearTheCloudflare": "Could not clear the Cloudflare token."
+      "couldNotClearTheCloudflare": "Could not clear the Cloudflare token.",
+      "restartApp": {
+        "apiDescription": "Exits the API process; the container supervisor starts it again. Reloads plugin code, manifests and settings from disk. Requests in flight are dropped.",
+        "apiWarning": "The admin and the storefront both depend on the API, so both stop working until it is back.",
+        "adminDescription": "Exits the admin process; the container supervisor starts it again. Clears this app's server-side caches.",
+        "adminWarning": "This is the app you are using right now. This page will stop responding until the admin is back — reload it then.",
+        "frontendDescription": "Exits the storefront process; the container supervisor starts it again. Clears its rendering caches and re-reads theme and plugin bundles.",
+        "frontendWarning": "Visitors will get an error until the storefront is back.",
+        "otherDescription": "Exits the process; the container supervisor starts it again.",
+        "adminTitle": "Admin",
+        "frontendTitle": "Frontend"
+      },
+      "restart": "Restart"
     },
     "integrations": {
       "noFieldsRequired": "No fields required",
@@ -1557,7 +1590,8 @@
       "everyTokenIssuedForThis": "Every token issued for this installation. Revoking one takes effect immediately.",
       "failedToLoadThePlatform": "Failed to load the platform mail setting",
       "failedToSaveThePlatform": "Failed to save the platform mail setting",
-      "unrestricted": "unrestricted"
+      "unrestricted": "unrestricted",
+      "labelExample": "e.g. laptop"
     },
     "localization": {
       "theLocalizationSettingsRequestFailed": "The localization settings request failed.",
@@ -1605,7 +1639,8 @@
       "queryParameterLocaleBg": "Query Parameter (?locale=bg)",
       "pathPrefixBg": "Path Prefix (/bg/...)",
       "noLocaleInUrl": "No Locale in URL",
-      "selectLocaleUrlStrategy": "Select locale URL strategy"
+      "selectLocaleUrlStrategy": "Select locale URL strategy",
+      "isoCodeExample": "ISO code (e.g. en, en-gb)"
     },
     "redirects": {
       "timesMatched": "Times matched",
@@ -1629,7 +1664,8 @@
       "toPathOrUrl": "To path or URL",
       "add": "Add",
       "notesOptional": "Notes (optional)",
-      "whyThisRedirectExists": "Why this redirect exists"
+      "whyThisRedirectExists": "Why this redirect exists",
+      "toPathExample": "/new-page or https://…"
     },
     "routing": {
       "theRoutingSettingsRequestFailed": "The routing settings request failed.",
@@ -1770,7 +1806,8 @@
       "tablesExcludedFromWriteAuditing": "Tables Excluded From Write Auditing",
       "physicalTableNamesCommaSeparated": "Physical table names, comma separated. Plugin database writes to these tables are not recorded in the audit log — meant for high-volume telemetry tables whose per-row writes would drown the trail. Clear it and every plugin write is audited. Applies within a minute of saving.",
       "denialsRecorded": "Denials recorded: {{count}}",
-      "theSecurityStatisticsRequestFailed": "The security statistics request failed."
+      "theSecurityStatisticsRequestFailed": "The security statistics request failed.",
+      "milliseconds": "{{value}} ms"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "The framework registry could not be reached.",
@@ -2325,7 +2362,13 @@
     "status": "Status",
     "joined": "Joined",
     "theUser": "the user",
-    "isRemovedFromPeopleKeepsLogin": "{{name}} is removed from People permanently. Their login account is kept."
+    "isRemovedFromPeopleKeepsLogin": "{{name}} is removed from People permanently. Their login account is kept.",
+    "usernamePlaceholder": "username",
+    "selectedCount": "{{count}} selected",
+    "permissionsCount": "{{count}} permissions",
+    "roleSlugExample": "e.g. editor",
+    "countOfTotal": "{{count}} of {{total}}",
+    "ipAddress": "IP: {{ip}}"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Site settings ({{what}}) are set inside each site — choose one from the site menu.",
@@ -2705,10 +2748,20 @@
       "archiveVersion": "archive {{version}}",
       "installedBadge": "installed",
       "installedVersion": "installed {{version}}",
-      "nothing": "nothing"
+      "nothing": "nothing",
+      "kindsAndRecords": "{{kinds}} kind(s) · {{records}} record(s)",
+      "passphraseHint": "This archive’s settings were locked for the move. Enter the same passphrase the export used and they arrive working; without it the import stops rather than leaving you with integrations nobody can read.",
+      "resultSummary": "<strong>{{slug}}</strong> — {{rows}} rows, {{members}} members, plugins {{plugins}}, theme {{theme}}.",
+      "fromTheExport": "From the export ({{count}})"
     },
     "idLabel": "id {{id}}",
-    "member": "member"
+    "member": "member",
+    "pageRange": "{{from}}–{{to}} of {{total}}",
+    "slugExample": "acme",
+    "none": "none",
+    "noThemeShort": "no theme",
+    "never": "never",
+    "deleteShort": "Delete"
   },
   "themes": {
     "installed": "Installed",
@@ -2928,7 +2981,8 @@
     "filesLine": "Files: {{files}}",
     "unknown": "Unknown",
     "adding": "Adding...",
-    "general": "General"
+    "general": "General",
+    "delete": "Delete"
   },
   "media": {
     "failedToCreateFolder": "Failed to create folder",
@@ -3087,7 +3141,17 @@
     "opened": "Opened",
     "people": "People",
     "lastAt": "last {{when}}",
-    "noActivity": "no activity"
+    "noActivity": "no activity",
+    "expiresAt": "expires {{when}}",
+    "delete": "Delete",
+    "fileOne": "1 file",
+    "fileMany": "{{count}} files",
+    "folderOne": "1 folder",
+    "folderMany": "{{count}} folders",
+    "daysZeroNever": "days · 0 = never",
+    "zeroUnlimited": "0 = unlimited",
+    "activeCount": "{{count}} active",
+    "recipientCount": "{{count}} recipient(s)"
   },
   "sources": {
     "whatChangedInV": "What changed in v{{version}}",
@@ -3243,7 +3307,8 @@
     "servedByWildcardUntil": "Served by the wildcard on {{host}} · until {{date}}",
     "stagingAuthorityWarning": "Automatic certificates come from {{authority}}. Certificates from a staging authority are NOT trusted by browsers — use it to test the flow, not to serve a site.",
     "usingPlatformToken": "This site has no token of its own and is using the platform's. That token can only order certificates for zones it has access to — if this site's domain is in a different Cloudflare account, save this site's own token here.",
-    "gatewayNotTerminating": "This deployment’s gateway is not terminating TLS, so stored certificates are not being served by anything here. Something in front of the platform holds the certificates it serves."
+    "gatewayNotTerminating": "This deployment’s gateway is not terminating TLS, so stored certificates are not being served by anything here. Something in front of the platform holds the certificates it serves.",
+    "until": "until {{date}}"
   },
   "activity": {
     "systemActivity": "System Activity",
@@ -3299,6 +3364,7 @@
     "dimensions": "Dimensions",
     "insertAsset": "Insert Asset",
     "searchMedia": "Search media...",
-    "uploadNew": "Upload New"
+    "uploadNew": "Upload New",
+    "pixels": "{{width}} × {{height}} px"
   }
 }

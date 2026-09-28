@@ -133,7 +133,7 @@ export class EditRolePage extends AdminComponent {
                     />
                     <Input
                       label={AdminI18n.t('users.slugSystemId')}
-                      placeholder="e.g. editor"
+                      placeholder={AdminI18n.t('users.roleSlugExample')}
                       value={formData.slug}
                       disabled
                       size={FieldSize.SM}

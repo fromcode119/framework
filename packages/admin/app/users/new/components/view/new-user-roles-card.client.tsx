@@ -23,7 +23,7 @@ export class NewUserRolesCard extends PureReactor {
                 {AdminI18n.t('users.permissionsAreInheritedFromRoles')}
               </p>
               <span className="text-[10px] font-bold uppercase tracking-tight text-indigo-500">
-                {selectedRoles.length} selected
+                {AdminI18n.t('users.selectedCount', { count: selectedRoles.length })}
               </span>
             </div>
 
@@ -67,7 +67,7 @@ export class NewUserRolesCard extends PureReactor {
                       </div>
                       <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-slate-500">
                         <span>{role.slug}</span>
-                        <span>{Array.isArray(role.permissions) ? role.permissions.length : 0} permissions</span>
+                        <span>{AdminI18n.t('users.permissionsCount', { count: Array.isArray(role.permissions) ? role.permissions.length : 0 })}</span>
                       </div>
                     </button>
                   );

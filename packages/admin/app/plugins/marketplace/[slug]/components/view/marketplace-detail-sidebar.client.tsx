@@ -70,7 +70,7 @@ export class MarketplaceDetailSidebar extends PureReactor {
                          <FrameworkIcons.Refresh size={20} strokeWidth={3} />
                       </div>
                       <div className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-1">{AdminI18n.t('plugins.list.updateAvailable')}</div>
-                      <div className={`text-base font-bold mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>v{plugin.version} is ready</div>
+                      <div className={`text-base font-bold mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.versionReady', { version: plugin.version })}</div>
 
                       <button
                         onClick={onInstall}

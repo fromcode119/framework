@@ -134,7 +134,7 @@ export class McpTokenCreateForm extends AdminComponent {
         </div>
         <div className="flex flex-col gap-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label={AdminI18n.t('settings.integrations.label')} placeholder="e.g. laptop" size={FieldSize.MD} value={this.label} onChange={(e: any) => { this.label = e?.target?.value ?? ''; }} />
+            <Input label={AdminI18n.t('settings.integrations.label')} placeholder={AdminI18n.t('settings.integrations.labelExample')} size={FieldSize.MD} value={this.label} onChange={(e: any) => { this.label = e?.target?.value ?? ''; }} />
             {this.renderSiteChoice()}
           </div>
           <div className="flex flex-col gap-3">

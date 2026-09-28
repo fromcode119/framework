@@ -48,7 +48,7 @@ export class ForgotPasswordPage extends AdminComponent {
             <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
               {AdminI18n.t('login.forgot.title')}
             </h1>
-            <p className="text-slate-500 font-medium">Recover your {AppEnv.APP_NAME} admin account</p>
+            <p className="text-slate-500 font-medium">{AdminI18n.t('login.forgot.subtitle', { app: AppEnv.APP_NAME })}</p>
           </div>
 
           <div className={`p-8 ${AdminClass.SURFACE}`}>

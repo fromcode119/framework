@@ -22,10 +22,10 @@ export class DashboardPageHeader extends PureReactor {
     if (!health) return null;
 
     if (health.error > 0) {
-      return <span className="text-rose-500">{health.error} plugin{health.error === 1 ? '' : 's'} in error</span>;
+      return <span className="text-rose-500">{health.error === 1 ? AdminI18n.t('dashboard.pluginErrorOne') : AdminI18n.t('dashboard.pluginErrorMany', { count: health.error })}</span>;
     }
     if (health.held > 0) {
-      return <span className="text-amber-500">{health.held} plugin{health.held === 1 ? '' : 's'} held for re-approval</span>;
+      return <span className="text-amber-500">{health.held === 1 ? AdminI18n.t('dashboard.pluginHeldOne') : AdminI18n.t('dashboard.pluginHeldMany', { count: health.held })}</span>;
     }
     // Nothing is broken, but this screen is serving an older build than the one installed, and no
     // other surface says so. Production ran a whole release behind for over an hour with every

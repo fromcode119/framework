@@ -89,7 +89,7 @@ export class SecurityDashboard extends PureReactor {
                         <td className="py-2 pr-4 font-semibold text-slate-900 dark:text-slate-200">{entry.slug}</td>
                         <td className="py-2 pr-4 text-slate-500">{entry.pid ?? '—'}</td>
                         <td className="py-2 pr-4 text-slate-500">{entry.memoryMb} MB</td>
-                        <td className="py-2 text-slate-500">{entry.timeoutMs} ms</td>
+                        <td className="py-2 text-slate-500">{AdminI18n.t('settings.security.milliseconds', { value: entry.timeoutMs })}</td>
                       </tr>
                     ))}
                   </tbody>

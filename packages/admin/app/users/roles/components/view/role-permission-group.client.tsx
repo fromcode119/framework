@@ -138,7 +138,7 @@ export class RolePermissionGroup extends PureReactor {
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{group.label}</span>
           </span>
           <span className={`text-[10px] font-bold uppercase tracking-tight ${count > 0 ? 'text-indigo-500' : 'text-slate-400'}`}>
-            {count} of {total}
+            {AdminI18n.t('users.countOfTotal', { count, total })}
           </span>
         </button>
         {this.expanded ? (

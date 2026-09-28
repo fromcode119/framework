@@ -93,7 +93,7 @@ export class PluginTrendChart extends PureReactor {
                 <span key={i} className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                   <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
                   {s.label}
-                  <span className="text-slate-400 normal-case font-medium">· peak {formatValue(peak)}</span>
+                  <span className="text-slate-400 normal-case font-medium">{AdminI18n.t('ui.peak', { value: formatValue(peak) })}</span>
                 </span>
               );
             })}

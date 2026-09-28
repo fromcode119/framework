@@ -65,7 +65,7 @@ export class InstalledThemeCard extends PureReactor {
             <button onClick={() => onActivate(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-slate-900 dark:bg-white dark:text-slate-900 text-white hover:bg-slate-800 transition-colors">{AdminI18n.t('themes.activate')}</button>
           )}
           {ownedBySite ? <button onClick={() => onDeleteMine(theme.slug, isActive)} title={AdminI18n.t('themes.deleteThisSiteSTheme')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
-          {canManage ? <button onClick={() => onDelete(theme.slug, isActive)} title="Delete" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
+          {canManage ? <button onClick={() => onDelete(theme.slug, isActive)} title={AdminI18n.t('themes.delete')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
         </div>
       </div>
     );

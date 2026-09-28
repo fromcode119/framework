@@ -14,13 +14,13 @@ import { ExtensionTrees } from './extension-trees';
  * quota. Wiring this into the failing set today would simply break every build until the whole
  * platform UI is translated, which is a project, not a fix.
  *
- * So it reports, loudly and exactly, and it fails only once the count is actually zero. That is not
- * an exemption: there is no per-area number here to raise, nothing to edit when a new violation
- * lands, and the printed total is the real one. When an area reaches zero it starts failing on the
- * next literal, which is the whole point.
+ * So it reports, loudly and exactly, and it FAILS only inside a tree that has reached zero — the
+ * trees listed in {@link RenderedCopyGuard.TRANSLATED}. That is not an exemption for the rest: there
+ * is no per-area number here to raise, the printed total is the real one, and a tree joins the list
+ * the day its last literal moves into its dictionary. From then on its next literal is a regression.
  *
- * The honest sequencing is per area — extract one area's copy into its dictionary, watch the number
- * fall to zero, then move `RenderedCopyGuard` into `convention-guard` for good.
+ * The honest sequencing is per tree — extract one tree's copy into its dictionary, watch its number
+ * fall to zero, add it to the list.
  */
 export class RenderedCopyCommand extends ArchorCommand {
   readonly summary = 'Copy rendered from .tsx instead of i18n/*.json, per area [--detail].';
@@ -46,7 +46,18 @@ export class RenderedCopyCommand extends ArchorCommand {
 
     if (outstanding > 0) {
       console.log(`\n${outstanding} literal(s) across ${hits.length} file(s) still render from code.`);
-      console.log('Extract them into the area\'s i18n dictionary; this command fails once an area reaches 0 and then regresses.');
+      console.log('Extract them into the area\'s i18n dictionary.');
+    }
+
+    const regressions = hits.filter(({ file }) => RenderedCopyGuard.TRANSLATED.some((tree) => file.replace(/\\/g, '/').includes(`/${tree}/`)));
+    if (regressions.length) {
+      console.log('\nFAILED — these trees are fully translated, so copy rendered from code is a regression:');
+      for (const { file, hits: lines } of regressions) {
+        console.log(`    ${ExtensionTrees.show(file)}`);
+        for (const line of lines) console.log(`      ${line}`);
+      }
+      console.log('Move each literal into the tree\'s i18n dictionary and render it through its translator.');
+      return 1;
     }
     console.log(`\narch-guard rendered-copy ${outstanding === 0 ? 'passed' : 'reported'}.`);
     return 0;

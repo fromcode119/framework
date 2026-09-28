@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import ts from 'typescript';
 
 /**
  * User-facing copy rendered from a `.tsx` file, in ANY language, instead of from `i18n/*.json`.
@@ -35,6 +36,16 @@ import path from 'node:path';
  * narrow what this MATCHES, argued in this file where it can be read — never a number in a table.
  */
 export class RenderedCopyGuard {
+  /**
+   * Trees whose copy has been extracted into their dictionaries in full, relative to the framework
+   * root. Inside one, a rendered literal FAILS the run instead of adding to the report: the tree
+   * reached zero, so the next literal is a regression, not backlog.
+   *
+   * `packages/admin` — the console, extracted into `packages/admin/i18n/<locale>.json` so choosing a
+   * language in Settings → Localization changes every screen.
+   */
+  static readonly TRANSLATED = ['packages/admin'];
+
   /** Two consecutive Latin letters: enough to be a word, so separators and figures are skipped. */
   private static readonly HAS_WORD = /[A-Za-z]{2,}/;
 
@@ -49,14 +60,57 @@ export class RenderedCopyGuard {
    */
   private static readonly HTML_ENTITY = /&(?:[a-zA-Z]+|#\d+|#x[0-9a-fA-F]+);/g;
 
-  /** Text between tags, with no interpolation — an expression is a value, not authored copy. */
-  private static readonly JSX_TEXT = />([^<>{}\n]*[A-Za-z]{2,}[^<>{}\n]*)</g;
-
-  /** Attributes a person actually reads. `className`/`key`/`href`/`role`/`type` are NOT here. */
-  private static readonly SPOKEN_ATTR = /\b(placeholder|title|aria-label|alt|label)=["']([^"'\n]{2,})["']/g;
+  /**
+   * Attributes a person actually reads. `className`/`key`/`href`/`role`/`type` are NOT here.
+   *
+   * Read from the syntax tree, not by pattern: the line patterns this used to be matched a return
+   * type (`=> Promise<void>`) as text between tags and reported generics as untranslated copy.
+   */
+  private static readonly SPOKEN_ATTR = new Set(['placeholder', 'title', 'aria-label', 'alt', 'label']);
 
   /** `label: 'Users'` — the descriptor shape menus, columns and fields use for their caption. */
-  private static readonly CAPTION_PROP = /\b(label|title|placeholder|description)\s*:\s*['"]([^'"\n]{2,})['"]/g;
+  private static readonly CAPTION_PROP = new Set(['label', 'title', 'placeholder', 'description']);
+
+  /**
+   * A proper name or a format, not a sentence: `GitHub`, `WebP`, `TLS`, `JSON`. One token with a
+   * capital after its first letter reads the same in every language, so it is not copy to translate.
+   * `Delete` is a word and still counts.
+   */
+  private static readonly PROPER_NAME = /^[A-Z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*$/;
+
+  /**
+   * A token shaped like code rather than like a word: a path, an email, a host, a `:placeholder`, a
+   * `table_name`, a `--flag`, a PEM `-----BEGIN` marker. `data/sources`, `ops@example.com`,
+   * `acme.example.com` and `fcp_telemetry_events` are examples of what to type, spelled the same in
+   * every language. A string counts as copy only if at least one of its words is NOT such a token:
+   * `e.g. laptop` and `/new-page or https://…` still count, because `laptop` and `or` are words.
+   */
+  private static readonly CODE_TOKEN = /[/.@_:]|--|^-|-$|^[A-Z0-9]+(-[A-Z0-9]+)+$/;
+
+  /** A PEM armour line — `-----BEGIN PRIVATE KEY-----` — marks the whole string as a key's shape. */
+  private static readonly PEM = /-----(BEGIN|END) /;
+
+  /** A single literal shown in quotes — `"home"`, `"/"` — is the value it names, not a sentence. */
+  private static readonly QUOTED_LITERAL = /^["'`][^\s"'`]+["'`]$/;
+
+  /** Text inside these elements is code the operator reads verbatim, never translated copy. */
+  private static readonly CODE_ELEMENTS = new Set(['code', 'pre', 'kbd', 'samp']);
+
+  private static isCopy(text: string): boolean {
+    const plain = text.replace(RenderedCopyGuard.HTML_ENTITY, '').replace(/\s+/g, ' ').trim();
+    if (!RenderedCopyGuard.HAS_WORD.test(plain)) return false;
+    if (RenderedCopyGuard.PROPER_NAME.test(plain) || RenderedCopyGuard.QUOTED_LITERAL.test(plain) || RenderedCopyGuard.PEM.test(plain)) return false;
+    const words = plain.split(/[\s,()]+/).filter((token) => RenderedCopyGuard.HAS_WORD.test(token));
+    return words.some((token) => !RenderedCopyGuard.CODE_TOKEN.test(token));
+  }
+
+  /** Whether `node` sits inside a `<code>`/`<pre>`/`<kbd>`/`<samp>` element. */
+  private static insideCode(node: ts.Node, sf: ts.SourceFile): boolean {
+    for (let up: ts.Node | undefined = node.parent; up; up = up.parent) {
+      if (ts.isJsxElement(up) && RenderedCopyGuard.CODE_ELEMENTS.has(up.openingElement.tagName.getText(sf))) return true;
+    }
+    return false;
+  }
 
   private static readonly SKIP_DIR = new Set([
     'node_modules', 'dist', '.next', 'build', 'coverage', '.git',
@@ -89,30 +143,31 @@ export class RenderedCopyGuard {
     return out;
   }
 
-  /** Strip comments so a documented example is not read as shipped copy. */
-  private static stripComments(source: string): string {
-    return source
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/(^|[^:'"`\\])\/\/[^\n]*/g, '$1');
-  }
-
-  /** Every rendered literal in the file, as `line: snippet`. */
+  /** Every rendered literal in the file, as `line: snippet`. Comments are not nodes, so never read. */
   static violationsIn(file: string): string[] {
     let source: string;
     try { source = readFileSync(file, 'utf8'); } catch { return []; }
 
+    const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const hits: string[] = [];
-    const lines = RenderedCopyGuard.stripComments(source).split('\n');
-    lines.forEach((line, index) => {
-      const found: string[] = [];
-      for (const match of line.matchAll(RenderedCopyGuard.JSX_TEXT)) found.push(match[1].trim());
-      for (const match of line.matchAll(RenderedCopyGuard.SPOKEN_ATTR)) found.push(`${match[1]}="${match[2]}"`);
-      for (const match of line.matchAll(RenderedCopyGuard.CAPTION_PROP)) found.push(`${match[1]}: '${match[2]}'`);
-      for (const text of found) {
-        if (!RenderedCopyGuard.HAS_WORD.test(text.replace(RenderedCopyGuard.HTML_ENTITY, ''))) continue;
-        hits.push(`${index + 1}: ${text.slice(0, 70)}`);
+    const report = (node: ts.Node, text: string): void => {
+      if (!RenderedCopyGuard.isCopy(text)) return;
+      hits.push(`${sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1}: ${text.replace(/\s+/g, ' ').trim().slice(0, 70)}`);
+    };
+    const visit = (node: ts.Node): void => {
+      if (ts.isJsxText(node)) {
+        if (!RenderedCopyGuard.insideCode(node, sf)) report(node, node.text);
+      } else if (ts.isJsxAttribute(node) && RenderedCopyGuard.SPOKEN_ATTR.has(node.name.getText(sf))) {
+        const init = node.initializer;
+        if (init && ts.isStringLiteral(init)) report(node, init.text);
+        if (init && ts.isJsxExpression(init) && init.expression && ts.isStringLiteralLike(init.expression)) report(node, init.expression.text);
+      } else if (ts.isPropertyAssignment(node) && RenderedCopyGuard.CAPTION_PROP.has(node.name.getText(sf).replace(/['"]/g, ''))
+        && ts.isStringLiteralLike(node.initializer)) {
+        report(node, node.initializer.text);
       }
-    });
+      ts.forEachChild(node, visit);
+    };
+    visit(sf);
     return hits;
   }
 

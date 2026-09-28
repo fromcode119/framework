@@ -7,6 +7,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AuthUtils } from '@/lib/auth-utils';
 import type { TenantOption } from '@/lib/tenants/tenant-option';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * "Which site are you working in?" — the step between signing in and the admin, for an account that
@@ -84,7 +85,7 @@ export class SiteChooser extends AdminComponent {
               {AdminI18n.t(this.isEmpty ? 'shell.chooser.noAccess' : 'shell.site.choose')}
             </h1>
             <p className="text-[12px] leading-relaxed text-slate-500">
-              You're signed in as <span className="font-semibold text-indigo-500">{this.auth.user?.email}</span>.{' '}
+              <AdminRichText k="shell.chooser.signedInAs" vars={{ email: this.auth.user?.email }} classes={{ strong: 'font-semibold text-indigo-500' }} />{' '}
               {this.isEmpty
                 ? AdminI18n.t('shell.chooser.emptyText')
                 : AdminI18n.t('shell.chooser.text')}

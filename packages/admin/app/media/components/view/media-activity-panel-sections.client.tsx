@@ -156,7 +156,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
             </div>
             {row.expiresAt ? (
               <Badge variant={BadgeVariant.WARNING} className="text-[10px] flex-shrink-0">
-                expires {this.formatWhen(row.expiresAt)}
+                {AdminI18n.t('media.expiresAt', { when: this.formatWhen(row.expiresAt) })}
               </Badge>
             ) : null}
           </div>

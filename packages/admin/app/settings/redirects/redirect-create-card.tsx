@@ -65,7 +65,7 @@ export class RedirectCreateCard extends PureReactor {
           <div className="flex-1">
             <Input
               label={AdminI18n.t('settings.redirects.toPathOrUrl')}
-              placeholder="/new-page or https://…"
+              placeholder={AdminI18n.t('settings.redirects.toPathExample')}
               value={this.toPath}
               onChange={(event: any) => { this.toPath = String(event?.target?.value ?? ''); }}
             />

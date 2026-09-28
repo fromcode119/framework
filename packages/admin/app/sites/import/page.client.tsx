@@ -233,9 +233,7 @@ export class ImportSitePageClient extends AdminComponent {
           onChange={(event) => { this.transitPassphrase = event.target.value; }}
         />
         <span className="fc-import-card__passphrase-hint">
-          This archive&rsquo;s settings were locked for the move. Enter the same passphrase the export
-          used and they arrive working; without it the import stops rather than leaving you with
-          integrations nobody can read.
+          {AdminI18n.t('sites.importPlan.passphraseHint')}
         </span>
       </div>
     );
@@ -247,13 +245,13 @@ export class ImportSitePageClient extends AdminComponent {
     return (
       <Card title={AdminI18n.t('sites.importPlan.imported')}>
         <p className="fc-sites__text">
-          <strong>{result.tenant?.slug}</strong> — {result.totalRows} rows, {result.members} members, plugins {(result.pluginsEnabled ?? []).join(', ') || 'none'}, theme {result.themeActivated ?? 'none'}.
+          <AdminRichText k="sites.importPlan.resultSummary" vars={{ slug: result.tenant?.slug, rows: result.totalRows, members: result.members, plugins: (result.pluginsEnabled ?? []).join(', ') || AdminI18n.t('sites.none'), theme: result.themeActivated ?? AdminI18n.t('sites.none') }} />
           {(result.remappedTables ?? []).length ? ' ' + AdminI18n.t('sites.importPlan.reNumbered', { tables: result.remappedTables.join(', ') }) : ' ' + AdminI18n.t('sites.importPlan.everyIdWasPreserved')}
         </p>
         {(result.warnings ?? []).length ? <ul className="fc-sites__warnings">{result.warnings.map((w: string) => <li key={w}>{w}</li>)}</ul> : null}
         {(result.exportWarnings ?? []).length ? (
           <details className="fc-import-plan__warnings">
-            <summary>From the export ({result.exportWarnings.length})</summary>
+            <summary>{AdminI18n.t('sites.importPlan.fromTheExport', { count: result.exportWarnings.length })}</summary>
             <p className="fc-import-plan__rule">
               {AdminI18n.t('sites.importPlan.writtenIntoTheArchiveWhen')}
             </p>

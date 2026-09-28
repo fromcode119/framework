@@ -28,7 +28,7 @@ export class NewUserAccountFields extends PureReactor {
               <div className="space-y-2">
                  <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.username')}</label>
                  <Input
-                    placeholder="username"
+                    placeholder={AdminI18n.t('users.usernamePlaceholder')}
                     value={formData.username}
                     onChange={(e) => onPatch({ username: e.target.value })}
                     className="h-11 rounded-xl"

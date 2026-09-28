@@ -188,9 +188,9 @@ export class MediaPageView extends PureReactor {
         <div className={`px-6 py-3 border-t mt-auto text-[11px] ${
           this.theme === ThemeMode.DARK ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'
         }`}>
-          {(this.items || []).length} file{(this.items || []).length === 1 ? '' : 's'}
+          {(this.items || []).length === 1 ? AdminI18n.t('media.fileOne') : AdminI18n.t('media.fileMany', { count: (this.items || []).length })}
           {(this.themeAssets || []).length ? (this.themeAssets.length === 1 ? AdminI18n.t('media.themeAssetOne') : AdminI18n.t('media.themeAssetMany', { count: this.themeAssets.length })) : ''}
-          {(this.folders || []).length ? ` · ${this.folders.length} folder${this.folders.length === 1 ? '' : 's'}` : ''}
+          {(this.folders || []).length ? ` · ${this.folders.length === 1 ? AdminI18n.t('media.folderOne') : AdminI18n.t('media.folderMany', { count: this.folders.length })}` : ''}
         </div>
 
         <MediaDialogs

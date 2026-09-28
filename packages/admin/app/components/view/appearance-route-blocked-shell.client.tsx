@@ -7,6 +7,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';
 import type { IAppearanceShellUser } from '@/lib/appearance/interfaces/appearance-shell-user.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Rendered in place of an appearance shell when the current route is NOT in the active appearance's surface
@@ -50,17 +51,17 @@ export class AppearanceRouteBlockedShell extends AdminComponent {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400" aria-hidden>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
           </div>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Not part of the {label} workspace</h1>
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">{AdminI18n.t('shell.blocked.title', { label })}</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            The {label} appearance only shows the areas it’s built for. This page lives in the standard admin.
+            {AdminI18n.t('shell.blocked.body', { label })}
           </p>
           <div className="mt-6 flex flex-col gap-2">
             <a href={AppPathConstants.ADMIN.ROOT} className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
-              Back to {label}
+              {AdminI18n.t('shell.blocked.back', { label })}
             </a>
             {this.isSuperAdmin && !WorkspaceAppearanceLock.locked && (
               <a href={AppPathConstants.ADMIN.SETTINGS.APPEARANCE} className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-                Switch appearance / open standard admin
+                {AdminI18n.t('shell.blocked.switch')}
               </a>
             )}
           </div>

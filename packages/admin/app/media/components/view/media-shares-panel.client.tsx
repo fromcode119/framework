@@ -216,12 +216,12 @@ export class MediaSharesPanel extends AdminComponent {
                     <Badge variant={BadgeVariant.GRAY} className="text-[10px]">{AdminI18n.t('media.allRevoked')}</Badge>
                   ) : (
                     <Badge variant={BadgeVariant.SUCCESS} className="text-[10px]">
-                      {share.activeCount} active
+                      {AdminI18n.t('media.activeCount', { count: share.activeCount })}
                     </Badge>
                   )}
                 </div>
                 <p className="mt-0.5 text-[10px] opacity-55">
-                  {share.recipientCount} recipient(s)
+                  {AdminI18n.t('media.recipientCount', { count: share.recipientCount })}
                   {this.formatDate(share.createdAt) ? ` · ${this.formatDate(share.createdAt)}` : ''}
                 </p>
                 <MediaShareFiles files={share.files} />

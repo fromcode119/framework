@@ -115,7 +115,7 @@ export class StructuredReadOnlyField extends Reactor {
     }
 
     if (node.kind === StructuredNodeKind.SCALAR) {
-      return <StructuredReadOnlyBlock label="value" node={node} isDark={isDark} keyLabels={this.keyLabels} />;
+      return <StructuredReadOnlyBlock label={AdminI18n.t('collection.structuredValue')} node={node} isDark={isDark} keyLabels={this.keyLabels} />;
     }
 
     return (

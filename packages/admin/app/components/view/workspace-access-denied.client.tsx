@@ -52,7 +52,7 @@ export class WorkspaceAccessDenied extends AdminComponent {
               {name
                 ? <>{AdminI18n.t('shell.workspace.notMemberOf', { name })}</>
                 : <>{AdminI18n.t('shell.workspace.notMember')}</>}
-              {' '}Someone who administers it can add you.
+              {' '}{AdminI18n.t('shell.workspace.askAdmin')}
             </p>
           </div>
           <button

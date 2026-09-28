@@ -67,7 +67,7 @@ export class ImportPlanRecords extends Reactor {
           <span className="fc-import-rec__group-mark" aria-hidden="true">{mark}</span>
           <b>{title}</b>
           <span className="fc-import-rec__group-count">
-            {records.length.toLocaleString()} kind(s) · {rows.toLocaleString()} record(s)
+            {AdminI18n.t('sites.importPlan.kindsAndRecords', { kinds: records.length.toLocaleString(), records: rows.toLocaleString() })}
           </span>
         </div>
         {records.map((record) => <ImportPlanRecordRow key={record.table.name} record={record} />)}

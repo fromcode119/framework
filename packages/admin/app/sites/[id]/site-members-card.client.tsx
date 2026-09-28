@@ -164,7 +164,7 @@ export class SiteMembersCard extends AdminComponent {
         {this.total > SiteMembersCard.PAGE ? (
           <div className="fc-sites__paging">
             <span className="fc-sites__paging-label">
-              {this.offset + 1}–{Math.min(this.offset + SiteMembersCard.PAGE, this.total)} of {this.total}
+              {AdminI18n.t('sites.pageRange', { from: this.offset + 1, to: Math.min(this.offset + SiteMembersCard.PAGE, this.total), total: this.total })}
             </span>
             <Button size={FieldSize.SM} variant={ButtonVariant.OUTLINE} disabled={this.offset === 0} onClick={this.prevPage}>{AdminI18n.t('sites.previous')}</Button>
             <Button size={FieldSize.SM} variant={ButtonVariant.OUTLINE} disabled={this.offset + SiteMembersCard.PAGE >= this.total} onClick={this.nextPage}>{AdminI18n.t('sites.next')}</Button>

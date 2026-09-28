@@ -61,7 +61,7 @@ export class MediaPickerDetails extends PureReactor {
           {item.width ? (
             <div className="col-span-2">
               <h4 className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('mediaPicker.dimensions')}</h4>
-              <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{item.width} × {item.height} px</p>
+              <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{AdminI18n.t('mediaPicker.pixels', { width: item.width, height: item.height })}</p>
             </div>
           ) : null}
         </div>

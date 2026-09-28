@@ -55,7 +55,7 @@ export class LocaleRegistryCard extends PureReactor {
                     <Input
                       value={locale.code}
                       onChange={(e) => updateLocale(locale.id, { code: e.target.value })}
-                      placeholder="ISO code (e.g. en, en-gb)"
+                      placeholder={AdminI18n.t('settings.localization.isoCodeExample')}
                       className="font-mono font-semibold"
                     />
                   </div>

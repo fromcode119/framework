@@ -52,9 +52,9 @@ export class SitesTable extends PureReactor {
         <Badge variant={site.isActive ? BadgeVariant.SUCCESS : BadgeVariant.WARNING}>{site.state}</Badge>
       ) },
       { id: 'members', header: AdminI18n.t('sites.members'), accessor: (site) => String(site.memberCount) },
-      { id: 'plugins', header: AdminI18n.t('sites.plugins'), accessor: (site) => (site.plugins.length ? site.plugins.join(', ') : <span className="fc-sites__none">none</span>) },
-      { id: 'theme', header: AdminI18n.t('sites.theme'), accessor: (site) => (site.theme ? site.theme : <span className="fc-sites__none">no theme</span>) },
-      { id: 'export', header: AdminI18n.t('sites.lastExport'), accessor: (site) => (site.lastExport ? <span className="fc-sites__export" title={site.lastExport}>{SitesTable.exportedAt(site.lastExport)}</span> : <span className="fc-sites__none">never</span>) },
+      { id: 'plugins', header: AdminI18n.t('sites.plugins'), accessor: (site) => (site.plugins.length ? site.plugins.join(', ') : <span className="fc-sites__none">{AdminI18n.t('sites.none')}</span>) },
+      { id: 'theme', header: AdminI18n.t('sites.theme'), accessor: (site) => (site.theme ? site.theme : <span className="fc-sites__none">{AdminI18n.t('sites.noThemeShort')}</span>) },
+      { id: 'export', header: AdminI18n.t('sites.lastExport'), accessor: (site) => (site.lastExport ? <span className="fc-sites__export" title={site.lastExport}>{SitesTable.exportedAt(site.lastExport)}</span> : <span className="fc-sites__none">{AdminI18n.t('sites.never')}</span>) },
     ];
   }
 
@@ -78,7 +78,7 @@ export class SitesTable extends PureReactor {
         <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} isLoading={busy} onClick={() => this.onToggleState(site)} icon={site.isActive ? <FrameworkIcons.Pause size={13} /> : <FrameworkIcons.Play size={13} />}>
           {site.isActive ? AdminI18n.t('sites.suspend') : AdminI18n.t('sites.reactivate')}
         </Button>
-        <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} className="fc-sites__delete" isLoading={busy} onClick={() => this.onDelete(site)} icon={<FrameworkIcons.Trash size={13} />}>Delete</Button>
+        <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} className="fc-sites__delete" isLoading={busy} onClick={() => this.onDelete(site)} icon={<FrameworkIcons.Trash size={13} />}>{AdminI18n.t('sites.deleteShort')}</Button>
       </div>
     );
   }

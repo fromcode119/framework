@@ -21,6 +21,7 @@ import { SiteChooser } from '@/app/components/view/site-chooser.client';
 import { WorkspaceAccessDenied } from '@/app/components/view/workspace-access-denied.client';
 import { ReadOnlyAccessNotice } from '@/app/components/view/read-only-access-notice.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientLayoutChildrenProps> {
   @prop declare children: ReactNode;
@@ -71,7 +72,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
             <div className="space-y-2">
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('shell.account.yours')}</h1>
               <p className="text-sm font-medium leading-relaxed text-slate-500">
-                You're signed in as <span className="font-bold text-indigo-500">{authState.user.email}</span>. This area is for staff — manage your own profile, security and activity from your account.
+                <AdminRichText k="shell.account.signedInStaff" vars={{ email: authState.user.email }} classes={{ strong: 'font-bold text-indigo-500' }} />
               </p>
             </div>
             <button

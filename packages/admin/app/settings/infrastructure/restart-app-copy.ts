@@ -28,24 +28,24 @@ export class RestartAppCopy {
     if (app === ApplicationUrlUtils.API_APP) {
       return new RestartAppCopy(
         'API',
-        AdminI18n.t('settings.infrastructure.restart.apiDescription'),
-        AdminI18n.t('settings.infrastructure.restart.apiWarning'),
+        AdminI18n.t('settings.infrastructure.restartApp.apiDescription'),
+        AdminI18n.t('settings.infrastructure.restartApp.apiWarning'),
       );
     }
     if (app === ApplicationUrlUtils.ADMIN_APP) {
       return new RestartAppCopy(
-        AdminI18n.t('settings.infrastructure.restart.adminTitle'),
-        AdminI18n.t('settings.infrastructure.restart.adminDescription'),
-        AdminI18n.t('settings.infrastructure.restart.adminWarning'),
+        AdminI18n.t('settings.infrastructure.restartApp.adminTitle'),
+        AdminI18n.t('settings.infrastructure.restartApp.adminDescription'),
+        AdminI18n.t('settings.infrastructure.restartApp.adminWarning'),
       );
     }
     if (app === ApplicationUrlUtils.FRONTEND_APP) {
       return new RestartAppCopy(
-        AdminI18n.t('settings.infrastructure.restart.frontendTitle'),
-        AdminI18n.t('settings.infrastructure.restart.frontendDescription'),
-        AdminI18n.t('settings.infrastructure.restart.frontendWarning'),
+        AdminI18n.t('settings.infrastructure.restartApp.frontendTitle'),
+        AdminI18n.t('settings.infrastructure.restartApp.frontendDescription'),
+        AdminI18n.t('settings.infrastructure.restartApp.frontendWarning'),
       );
     }
-    return new RestartAppCopy(app, AdminI18n.t('settings.infrastructure.restart.otherDescription'), '');
+    return new RestartAppCopy(app, AdminI18n.t('settings.infrastructure.restartApp.otherDescription'), '');
   }
 }

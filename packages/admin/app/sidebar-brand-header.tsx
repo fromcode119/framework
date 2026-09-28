@@ -5,6 +5,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class SidebarBrandHeader extends PureReactor {
   private static readonly BRAND_MARK_PATH = AdminPathUtils.toAdminPath(AppEnv.BRAND_MARK_PATH);
   @prop declare isMini: boolean | undefined;
@@ -27,7 +28,7 @@ export class SidebarBrandHeader extends PureReactor {
                 {platformName}
               </span>
               <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1 leading-none">
-                by {AppEnv.COMPANY_NAME}
+                {AdminI18n.t('shell.brand.by', { company: AppEnv.COMPANY_NAME })}
               </span>
             </div>
           )}

@@ -128,7 +128,7 @@ export class MediaItemCard extends MediaItemCardState {
                 : (
                   <button
                     onClick={this.onDelete}
-                    title="Delete"
+                    title={AdminI18n.t('media.delete')}
                     className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                   >
                     <FrameworkIcons.Trash size={18} />
@@ -248,7 +248,7 @@ export class MediaItemCard extends MediaItemCardState {
                 </button>
                 <button
                   onClick={this.onDelete}
-                  title="Delete"
+                  title={AdminI18n.t('media.delete')}
                   className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-500"
                 >
                   <FrameworkIcons.Trash size={16} />

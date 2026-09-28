@@ -35,7 +35,7 @@ export class DashboardScheduleList extends PureReactor {
       <div className="px-3 py-2">
         <div className="flex items-baseline justify-between gap-3 mb-1.5">
           <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">{AdminI18n.t('dashboard.nextScheduled')}</span>
-          <span className="text-[10px] text-slate-400">{total} tasks</span>
+          <span className="text-[10px] text-slate-400">{AdminI18n.t('dashboard.tasksCount', { count: total })}</span>
         </div>
         <div className="space-y-1">
           {this.upcoming.map((task) => (

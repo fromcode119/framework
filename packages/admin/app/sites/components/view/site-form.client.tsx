@@ -178,9 +178,9 @@ export class SiteForm extends PureReactor {
               { value: 'workspace', label: AdminI18n.t('sites.workspaceItsDomainIsThe') },
             ]}
           />
-          <Input label={AdminI18n.t('sites.slug')} value={values.slug} onChange={this.onSlug} placeholder="acme" />
+          <Input label={AdminI18n.t('sites.slug')} value={values.slug} onChange={this.onSlug} placeholder={AdminI18n.t('sites.slugExample')} />
           {this.isNew
-            ? <Input label={AdminI18n.t('sites.id')} value={values.id} onChange={this.onId} placeholder="acme" />
+            ? <Input label={AdminI18n.t('sites.id')} value={values.id} onChange={this.onId} placeholder={AdminI18n.t('sites.slugExample')} />
             : null}
           <SiteHostsFields values={values} onChange={this.emit} />
           {this.isNew ? (

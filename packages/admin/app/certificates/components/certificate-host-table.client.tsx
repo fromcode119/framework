@@ -101,7 +101,7 @@ export class CertificateHostTable extends AdminComponent {
     }
     return (
       <span className={`text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-        {entry.issuer ? `${entry.issuer} · ` : ''}until {entry.expiryDate}
+        {entry.issuer ? `${entry.issuer} · ` : ''}{AdminI18n.t('certificates.until', { date: entry.expiryDate })}
         {entry.isUploaded ? AdminI18n.t('certificates.uploadedNotRenewedAutomatically') : ''}
         {/*
           Two independent claims about two different things — how the certificate was OBTAINED

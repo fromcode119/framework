@@ -192,7 +192,7 @@ export class Marketplace extends AdminComponent {
                        <FrameworkIcons.Loader size={20} className="animate-spin" />
                        <div className="flex flex-col">
                           <span className="text-[11px] font-semibold tracking-wide leading-none">{AdminI18n.t('plugins.list.newVersionAvailable')}</span>
-                          <span className="text-[10px] font-semibold tracking-wide opacity-80">v{plugin.version} is ready</span>
+                          <span className="text-[10px] font-semibold tracking-wide opacity-80">{AdminI18n.t('plugins.detail.versionReady', { version: plugin.version })}</span>
                        </div>
                     </div>
                   )}

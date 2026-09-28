@@ -254,12 +254,12 @@ export class MediaShareDialog extends AdminComponent {
                   <NumberStepper value={this.expiryDays} onChange={this.handleExpiry} disabled={this.busy} min={0} />
                   {/* 0 = never / unlimited is the one convention across this feature; as a hint under
                       the field it cannot push the two columns out of alignment. */}
-                  <p className={hintClass}>days · 0 = never</p>
+                  <p className={hintClass}>{AdminI18n.t('media.daysZeroNever')}</p>
                 </div>
                 <div>
                   <label className={labelClass}>{AdminI18n.t('media.maxDownloads')}</label>
                   <NumberStepper value={this.maxDownloads} onChange={this.handleMaxDownloads} disabled={this.busy} min={0} />
-                  <p className={hintClass}>0 = unlimited</p>
+                  <p className={hintClass}>{AdminI18n.t('media.zeroUnlimited')}</p>
                 </div>
               </div>
 
