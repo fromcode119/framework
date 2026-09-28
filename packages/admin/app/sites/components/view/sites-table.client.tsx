@@ -46,10 +46,10 @@ export class SitesTable extends PureReactor {
       // and they are NOT the same: a suspended site has no admin, a private one is simply not
       // published yet. Showing only one of them is what made "why can nobody see this?" a guess.
       { id: 'visibility', header: AdminI18n.t('sites.visible'), accessor: (site) => (
-        <Badge variant={site.isPublic ? BadgeVariant.SUCCESS : BadgeVariant.WARNING}>{site.visibility}</Badge>
+        <Badge variant={site.isPublic ? BadgeVariant.SUCCESS : BadgeVariant.WARNING}>{AdminI18n.optional(`sites.visibilityValue.${site.visibility}`) || site.visibility}</Badge>
       ) },
       { id: 'state', header: AdminI18n.t('sites.state'), accessor: (site) => (
-        <Badge variant={site.isActive ? BadgeVariant.SUCCESS : BadgeVariant.WARNING}>{site.state}</Badge>
+        <Badge variant={site.isActive ? BadgeVariant.SUCCESS : BadgeVariant.WARNING}>{AdminI18n.optional(`sites.stateValue.${site.state}`) || site.state}</Badge>
       ) },
       { id: 'members', header: AdminI18n.t('sites.members'), accessor: (site) => String(site.memberCount) },
       { id: 'plugins', header: AdminI18n.t('sites.plugins'), accessor: (site) => (site.plugins.length ? site.plugins.join(', ') : <span className="fc-sites__none">{AdminI18n.t('sites.none')}</span>) },

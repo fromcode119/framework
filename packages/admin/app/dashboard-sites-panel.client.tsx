@@ -68,7 +68,7 @@ export class DashboardSitesPanel extends AdminComponent {
               <span className="shrink-0 text-[11px] text-slate-500">{this.statusText(site)}</span>
               {site.state && site.state !== 'active' ? (
                 <span className="shrink-0 rounded border border-amber-500/30 px-1.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                  {String(site.state)}
+                  {AdminI18n.optional(`sites.stateValue.${site.state}`) || String(site.state)}
                 </span>
               ) : null}
             </div>

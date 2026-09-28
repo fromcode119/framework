@@ -3189,7 +3189,16 @@
     "never": "никога",
     "deleteShort": "Изтрий",
     "kindWorkspace": "работно пространство",
-    "kindSite": "сайт"
+    "kindSite": "сайт",
+    "visibilityValue": {
+      "private": "частен",
+      "unlisted": "непубликуван",
+      "public": "публичен"
+    },
+    "stateValue": {
+      "active": "активен",
+      "suspended": "спрян"
+    }
   },
   "themes": {
     "installed": "Инсталирани",

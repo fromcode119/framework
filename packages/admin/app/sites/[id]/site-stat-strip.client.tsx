@@ -25,7 +25,7 @@ export class SiteStatStrip extends PureReactor {
     const site = this.site;
 
     const stats: Array<{ label: string; value: string | number; tone: string }> = [
-      { label: AdminI18n.t('sites.state'), value: site.isActive ? AdminI18n.t('sites.active') : site.state, tone: site.isActive ? 'text-emerald-500' : 'text-amber-500' },
+      { label: AdminI18n.t('sites.state'), value: site.isActive ? AdminI18n.t('sites.active') : (AdminI18n.optional(`sites.stateValue.${site.state}`) || site.state), tone: site.isActive ? 'text-emerald-500' : 'text-amber-500' },
       { label: AdminI18n.t('sites.members'), value: site.memberCount, tone: strong },
       { label: AdminI18n.t('sites.plugins'), value: site.plugins.length, tone: strong },
     ];

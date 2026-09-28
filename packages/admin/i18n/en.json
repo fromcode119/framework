@@ -2785,7 +2785,16 @@
     "never": "never",
     "deleteShort": "Delete",
     "kindWorkspace": "workspace",
-    "kindSite": "site"
+    "kindSite": "site",
+    "visibilityValue": {
+      "private": "private",
+      "unlisted": "unlisted",
+      "public": "public"
+    },
+    "stateValue": {
+      "active": "active",
+      "suspended": "suspended"
+    }
   },
   "themes": {
     "installed": "Installed",
