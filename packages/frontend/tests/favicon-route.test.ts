@@ -4,6 +4,7 @@ import { ApiPathUtils } from '@fromcode119/core/client';
 
 // Route files export only the class — see RouteExportPlugin.
 import { FaviconRoute } from '@/app/favicon.ico/route';
+import { FrontendPublicFile } from '@/lib/theme/frontend-public-file';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
 
 describe('favicon route', () => {
@@ -30,7 +31,7 @@ describe('favicon route', () => {
       createResponse('ico', 'image/x-icon'),
     );
 
-    const response = await FaviconRoute.GET(new Request('http://frontend.framework.local/favicon.ico'));
+    const response = await FaviconRoute.GET();
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/x-icon');
@@ -45,17 +46,17 @@ describe('favicon route', () => {
       activeTheme: { slug: 'theme-a-theme' },
     });
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(createResponse('', 'text/plain', 404));
-    vi.stubGlobal('fetch', vi.fn(async (input) => {
-      if (String(input) === 'http://frontend.framework.local/brand/atlantis-mark-indigo.png') {
-        return createResponse('fallback', 'image/png');
-      }
-      return createResponse('', 'text/plain', 404);
-    }));
+    // The fallback is read from the frontend's own public/ on disk. A fetch of this server's public URL
+    // failed inside the container and served an empty 204, so a network call here is itself the bug.
+    const fetchSpy = vi.fn(async () => { throw new Error('fetch failed'); });
+    vi.stubGlobal('fetch', fetchSpy);
 
-    const response = await FaviconRoute.GET(new Request('http://frontend.framework.local/favicon.ico'));
+    const response = await FaviconRoute.GET();
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/png');
+    expect((await response.arrayBuffer()).byteLength).toBeGreaterThan(0);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('returns 204 when no theme or framework favicon is available', async () => {
@@ -64,9 +65,9 @@ describe('favicon route', () => {
       activeTheme: { slug: 'theme-a-theme' },
     });
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(createResponse('', 'text/plain', 404));
-    vi.stubGlobal('fetch', vi.fn(async () => createResponse('', 'text/plain', 404)));
+    vi.spyOn(FrontendPublicFile, 'read').mockResolvedValue(null);
 
-    const response = await FaviconRoute.GET(new Request('http://frontend.framework.local/favicon.ico'));
+    const response = await FaviconRoute.GET();
 
     expect(response.status).toBe(204);
   });
@@ -75,9 +76,7 @@ describe('favicon route', () => {
     vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockRejectedValue(new Error('metadata unavailable'));
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(createResponse('', 'text/plain', 404));
-    vi.stubGlobal('fetch', vi.fn(async () => createResponse('fallback', 'image/png')));
-
-    const response = await FaviconRoute.GET(new Request('http://frontend.framework.local/favicon.ico'));
+    const response = await FaviconRoute.GET();
 
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/png');
