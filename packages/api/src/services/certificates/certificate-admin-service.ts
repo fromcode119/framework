@@ -169,9 +169,14 @@ export class CertificateAdminService {
    * feature is switched back off.
    */
   async setCloudflareToken(token: unknown, tenantId: string | null = null): Promise<Record<string, unknown>> {
-    await this.cloudflareTokens.set(String(token ?? ''), tenantId);
+    const value = String(token ?? '');
+    await this.cloudflareTokens.set(value, tenantId);
     const resolved = await this.dnsTokens.resolve(tenantId);
+    // A new token is the fix for hosts that failed on the old one; without this they sit out their
+    // wait before anyone learns whether it worked.
+    const requeuedHosts = value.trim() ? await this.certificates.requeueFailedDns01(tenantId) : [];
     return {
+      requeuedHosts,
       isCloudflareConfigured: resolved.isConfigured,
       cloudflareTokenScope: String(resolved.scope.value),
       isCloudflareTokenInherited: resolved.isPlatformFallback && tenantId !== null,

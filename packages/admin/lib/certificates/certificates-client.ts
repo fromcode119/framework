@@ -53,11 +53,15 @@ export class CertificatesClient {
    * Store or clear the Cloudflare API token DNS-01/wildcard orders use.
    *
    * The response never carries the token back — only whether one is now configured, the same shape
-   * `automation.isCloudflareConfigured` already reports.
+   * `automation.isCloudflareConfigured` already reports — plus the hosts that had failed on the old
+   * token and are now queued for the next check, so the caller can name them.
    */
-  static async setCloudflareToken(token: string): Promise<{ isCloudflareConfigured: boolean }> {
+  static async setCloudflareToken(token: string): Promise<{ isCloudflareConfigured: boolean; requeuedHosts: string[] }> {
     const response = await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.CERTIFICATE_CLOUDFLARE_TOKEN, { token });
-    return { isCloudflareConfigured: response?.isCloudflareConfigured === true };
+    return {
+      isCloudflareConfigured: response?.isCloudflareConfigured === true,
+      requeuedHosts: Array.isArray(response?.requeuedHosts) ? response.requeuedHosts.map((host: unknown) => String(host)) : [],
+    };
   }
 
   /**
