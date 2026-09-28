@@ -210,6 +210,25 @@ export class CertificateStoreService {
     });
   }
 
+  /**
+   * Put an owner's failed DNS-01 hosts back in line for the next sweep, because the credential they
+   * failed on has just been replaced.
+   *
+   * Only the wait is cleared. `attempts_in_window` is kept, so the authority's failure budget is
+   * rationed exactly as before — and a token failure never reached the authority anyway. Returns the
+   * hosts requeued, so the admin can say which ones will be retried.
+   */
+  async requeueFailedDns01(tenantId: string | null): Promise<string[]> {
+    const hosts = (await this.list())
+      .filter((record) => (record.tenantId ?? null) === (tenantId ?? null)
+        && record.source === CertificateSource.AUTOMATIC
+        && record.challenge === AcmeChallengeType.DNS_01
+        && record.storedState === CertificateState.FAILED)
+      .map((record) => record.host);
+    for (const host of hosts) await this.write(host, { next_attempt_at: null });
+    return hosts;
+  }
+
   /** Record that a warning went out at this threshold, so the same one is not sent again tomorrow. */
   async markWarned(host: string, days: number): Promise<void> {
     const normalized = CertificateStoreService.normalizeHost(host);

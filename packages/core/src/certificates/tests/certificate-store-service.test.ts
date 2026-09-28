@@ -162,4 +162,26 @@ describe('CertificateStoreService', () => {
     });
     expect(record.state).toBe(CertificateState.FAILED);
   });
+
+  it('requeues only the owner\'s failed DNS-01 hosts when their token changes, keeping the attempt count', async () => {
+    freshStore();
+    const later = new Date(Date.now() + 3_600_000).toISOString();
+    const failed = { source: 'automatic', challenge: 'dns-01', state: 'failed', next_attempt_at: later, attempts_in_window: 2 };
+    rows.push(
+      { ...failed, host: 'shop.test', tenant_id: 'shop' },
+      { ...failed, host: 'other.test', tenant_id: 'other' },
+      { ...failed, host: 'plain.test', tenant_id: 'shop', challenge: 'http-01' },
+      { ...failed, host: 'fine.test', tenant_id: 'shop', state: 'serving' },
+    );
+
+    expect(await store.requeueFailedDns01('shop')).toEqual(['shop.test']);
+
+    const byHost = (host: string) => rows.find((row) => row.host === host)!;
+    expect(byHost('shop.test').next_attempt_at).toBeNull();
+    // The authority's failure budget is untouched — only the wait is cleared.
+    expect(byHost('shop.test').attempts_in_window).toBe(2);
+    expect(byHost('other.test').next_attempt_at).toBe(later);
+    expect(byHost('plain.test').next_attempt_at).toBe(later);
+    expect(byHost('fine.test').next_attempt_at).toBe(later);
+  });
 });

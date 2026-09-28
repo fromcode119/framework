@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
+import { NotificationType } from '@/components/enums/notification-type.enum';
 
 /**
  * This SITE's own Cloudflare API token, for DNS-01 and wildcard orders.
@@ -68,15 +69,25 @@ export class CertificateDnsTokenCard extends AdminComponent<{
     await this.write('', "Removed. This site falls back to the platform's token.");
   }
 
+  /**
+   * The outcome is announced, not just written into the hint line below the field — that line reads
+   * almost the same before and after a save, so on its own a save looked like nothing happened. The
+   * hosts that had failed on the old token are named, because they are what the operator is fixing.
+   */
   private async write(token: string, success: string): Promise<void> {
     this.isSaving = true;
     try {
-      await CertificatesClient.setCloudflareToken(token);
+      const result = await CertificatesClient.setCloudflareToken(token);
       this.tokenInput = '';
-      this.message = success;
+      const retrying = result.requeuedHosts.length
+        ? ` Retrying ${result.requeuedHosts.join(', ')} on the next check.`
+        : '';
+      this.message = success + retrying;
+      this.runtime.notify.addNotification({ type: NotificationType.SUCCESS, title: 'Cloudflare token', message: this.message });
       await this.props.onChanged();
     } catch (error: any) {
       this.message = String(error?.message || 'Could not save the token.');
+      this.runtime.notify.addNotification({ type: NotificationType.ERROR, title: 'Cloudflare token', message: this.message });
     } finally {
       this.isSaving = false;
     }

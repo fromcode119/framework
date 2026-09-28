@@ -15,7 +15,9 @@ import { CertificateStoreService } from '@core/certificates/certificate-store-se
  */
 export class CertificateIssuanceTask {
   static readonly NAME = 'certificate-issuance';
-  static readonly SCHEDULE = '*/5 * * * *';
+  /** How often a sweep runs. The admin reads this to say when a queued host will next be checked. */
+  static readonly INTERVAL_MINUTES = 5;
+  static readonly SCHEDULE = `*/${CertificateIssuanceTask.INTERVAL_MINUTES} * * * *`;
 
   constructor(private readonly db: any) {}
 

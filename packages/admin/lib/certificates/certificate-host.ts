@@ -32,6 +32,10 @@ export class CertificateHost {
     readonly lastError: string,
     /** 'http-01' or 'dns-01' — which challenge the current AUTOMATIC certificate was ordered with. */
     readonly challenge: string,
+    /** When the platform last tried to obtain one, ISO — '' when it never has. */
+    readonly lastAttemptAt: string,
+    /** When it will try again, ISO — '' when nothing is holding it back (it goes on the next check). */
+    readonly nextAttemptAt: string,
   ) {}
 
   static from(raw: unknown): CertificateHost {
@@ -56,6 +60,8 @@ export class CertificateHost {
       CoercionUtils.toString(certificate.fingerprintSha256 ?? ''),
       CoercionUtils.toString(certificate.lastError ?? ''),
       CoercionUtils.toString(certificate.challenge ?? ''),
+      CoercionUtils.toString(certificate.lastAttemptAt ?? ''),
+      CoercionUtils.toString(certificate.nextAttemptAt ?? ''),
     );
   }
 
@@ -155,5 +161,29 @@ export class CertificateHost {
   /** Whether the platform's AUTOMATIC source is currently set to order via plain HTTP-01 (intent, not the served certificate). */
   get isAutomaticHttp01(): boolean {
     return this.isPlatformManaged && this.challenge !== 'dns-01';
+  }
+
+  /**
+   * Whether the platform still owes this host something — an order in flight, or one it will place.
+   * These are the rows an operator is waiting on, so they say when, and the page keeps re-reading.
+   */
+  get isAwaitingPlatform(): boolean {
+    const pending = ['no_certificate', 'failed', 'waiting_for_dns', 'renewal_due', 'expired', 'issuing'];
+    return this.isPlatformManaged && pending.includes(this.state);
+  }
+
+  get isIssuing(): boolean {
+    return this.state === 'issuing';
+  }
+
+  /** The next attempt, when it is still in the future; null means "on the next check". */
+  get nextAttemptDate(): Date | null {
+    const at = this.nextAttemptAt ? new Date(this.nextAttemptAt) : null;
+    return at && !Number.isNaN(at.getTime()) && at.getTime() > Date.now() ? at : null;
+  }
+
+  get lastAttemptDate(): Date | null {
+    const at = this.lastAttemptAt ? new Date(this.lastAttemptAt) : null;
+    return at && !Number.isNaN(at.getTime()) ? at : null;
   }
 }
