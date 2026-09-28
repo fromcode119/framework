@@ -162,9 +162,27 @@ describe('./plugin-settings-form', () => {
     fireEvent.change(screen.getByTestId('input-siteName'), { target: { value: 'New Name' } });
     fireEvent.click(screen.getByRole('button', { name: /Save Settings/i }));
 
-    await waitFor(() => expect(screen.getByText(/Boom/i)).toBeDefined());
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Not saved: Boom'));
     expect(triggerRefresh).not.toHaveBeenCalled();
     expect(logged).toHaveBeenCalledWith('Save error:', expect.objectContaining({ message: 'Boom' }));
+    logged.mockRestore();
+  });
+
+  it('names the refused fields beside the save button, not only at the top of the form', async () => {
+    (AdminApi.put as any).mockRejectedValue(Object.assign(new Error('Bad Request'), {
+      status: 400,
+      data: { errors: { postsPerPage: 'Too many.' } },
+    }));
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    renderForm({ pluginSlug });
+
+    await waitFor(() => screen.getByTestId('input-siteName'));
+    fireEvent.change(screen.getByTestId('input-siteName'), { target: { value: 'New Name' } });
+    fireEvent.click(screen.getByRole('button', { name: /Save Settings/i }));
+
+    // The field sits on the other tab: the bar must still say which one to correct.
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Not saved — correct: Posts Per Page'));
     logged.mockRestore();
   });
 

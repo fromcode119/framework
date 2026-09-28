@@ -30,6 +30,20 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
     if (this.statusTimer) clearTimeout(this.statusTimer);
   }
 
+  /**
+   * Why the last save was refused, for the action bar. The banner says it too, but at the TOP of the
+   * form: an operator who saved from the bottom of a long tab saw nothing happen. The fields at fault are
+   * named, since they may be on another tab or scrolled out of view.
+   */
+  private get saveRefusal(): string {
+    const status = this.status;
+    if (!status || status.type !== NotificationType.ERROR) return '';
+    const failed = Object.keys(this.errors || {});
+    if (!failed.length) return `Not saved: ${status.message}`;
+    const labels = failed.map((name) => (this.schema?.fields || []).find((field: any) => field.name === name)?.label || name);
+    return `Not saved — correct: ${labels.join(', ')}`;
+  }
+
   render() {
     const theme = this.theme;
     const schema = this.schema;
@@ -133,9 +147,14 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
 
         {/* Action bar */}
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-1">
             {this.isDirty && (
               <span className="text-sm font-semibold text-amber-600">Unsaved changes</span>
+            )}
+            {this.saveRefusal && (
+              <span role="alert" className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+                {this.saveRefusal}
+              </span>
             )}
           </div>
           <div className="flex items-center gap-3">
