@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PluginManager, Logger } from '@fromcode119/core';
+import type { ILoadedPlugin, PluginContext } from '@fromcode119/core';
 import { PluginSettingsSupport } from '@api/controllers/plugins/plugin-settings-support';
 import { CoercionUtils } from '@fromcode119/core';
 
@@ -9,6 +10,16 @@ export class PluginSettingsController {
 
   constructor(private manager: PluginManager) {
     this.support = new PluginSettingsSupport(manager, this.logger);
+  }
+
+  /**
+   * The context handed to a schema's `validate` / `onSave`. An isolated plugin's hooks run in its own
+   * process and already hold its own context there; the host's context cannot cross to them — making it
+   * portable reads every capability getter, and one the plugin did not declare throws, so saving the
+   * settings of any isolated plugin with a hook failed with 500 "Missing storage capability".
+   */
+  private hookContext(plugin: ILoadedPlugin): PluginContext | undefined {
+    return plugin.isSandboxed ? undefined : this.manager.createContext(plugin);
   }
 
   async getSettings(req: Request, res: Response) {
@@ -52,7 +63,7 @@ export class PluginSettingsController {
       }
 
       if (schema.validate) {
-        const customErrors = await schema.validate(newSettings, (this.manager as any).createContext(plugin));
+        const customErrors = await schema.validate(newSettings, this.hookContext(plugin));
         if (customErrors) {
           return res.status(400).json({ errors: customErrors });
         }
@@ -69,7 +80,7 @@ export class PluginSettingsController {
 
     if (schema && schema.onSave) {
       try {
-        await schema.onSave(oldSettings, newSettings, (this.manager as any).createContext(plugin));
+        await schema.onSave(oldSettings, newSettings, this.hookContext(plugin));
       } catch (err: any) {
         this.logger.error(`onSave hook failed for plugin "${slug}": ${err.message}`);
       }
@@ -162,7 +173,7 @@ export class PluginSettingsController {
       return res.status(400).json({ errors });
     }
     if (schema.validate) {
-      const customErrors = await schema.validate(importedSettings, (this.manager as any).createContext(plugin));
+      const customErrors = await schema.validate(importedSettings, this.hookContext(plugin));
       if (customErrors) {
         return res.status(400).json({ errors: customErrors });
       }
@@ -178,7 +189,7 @@ export class PluginSettingsController {
 
     if (schema?.onSave) {
       try {
-        await schema.onSave(existingSettings, importedSettings, (this.manager as any).createContext(plugin));
+        await schema.onSave(existingSettings, importedSettings, this.hookContext(plugin));
       } catch (err: any) {
         this.logger.error(`onSave hook failed for plugin "${slug}" during import: ${err.message}`);
       }
