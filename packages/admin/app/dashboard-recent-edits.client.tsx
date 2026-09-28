@@ -42,6 +42,18 @@ export class DashboardRecentEdits extends AdminComponent {
     this.router.push(AdminPathUtils.toAdminPath(`/${edit.pluginSlug}/${edit.collectionSlug}/${edit.recordId}`));
   }
 
+  /**
+   * The collection's name as the console shows it everywhere else — the runtime's collection list,
+   * which the api has already put into the console's language. The edit row carries the name the
+   * collection declares, so it is only the fallback for a collection this console does not load.
+   */
+  private collectionName(edit: Record<string, any>): string {
+    const collections = (this.runtime?.plugins?.collections ?? []) as Array<Record<string, any>>;
+    const match = collections.find((collection) => collection.pluginSlug === edit.pluginSlug
+      && (collection.shortSlug === edit.collectionSlug || collection.slug === edit.collectionSlug));
+    return AdminServices.getInstance().localization.resolveAnyString(match?.displayName || match?.label || edit.collectionLabel);
+  }
+
   render(): ReactNode {
     if (this.edits.length === 0) return null;
 
@@ -61,7 +73,7 @@ export class DashboardRecentEdits extends AdminComponent {
                     it as raw JSON ({"en":"Home"}) in this panel. */}
                 {AdminServices.getInstance().localization.resolveAnyString(edit.title)}
               </span>
-              <span className="shrink-0 text-[11px] text-slate-500">{AdminServices.getInstance().localization.resolveAnyString(edit.collectionLabel)}</span>
+              <span className="shrink-0 text-[11px] text-slate-500">{this.collectionName(edit)}</span>
               <span className="shrink-0 text-[10px] text-slate-400 tabular-nums">
                 {RelativeTimeFormatter.fromNow(edit.editedAt, '')}
               </span>

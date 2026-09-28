@@ -12,7 +12,7 @@ export class DashboardActivityBreakdown extends PureReactor {
 
     const counts: Record<string, number> = {};
     for (const item of activity || []) {
-      const key = item?.plugin ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : AdminI18n.t('dashboard.system');
+      const key = item?.plugin && item.plugin !== 'system' ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : AdminI18n.t('dashboard.system');
       counts[key] = (counts[key] || 0) + 1;
     }
     const rows = Object.entries(counts)

@@ -40,7 +40,7 @@ export class ActivityColumnsFactory {
               <div className="flex flex-col">
                 <span className="text-[13px] font-semibold text-slate-600 dark:text-white tracking-tight leading-none">{actor}</span>
                 <span className="text-[10px] font-semibold text-slate-400 mt-1 tracking-tight">
-                  {row.actor_id ? `ID: ${row.actor_id}` : (row.context?.userId ? `UID: ${row.context.userId}` : 'INTERNAL')}
+                  {row.actor_id ? `ID: ${row.actor_id}` : (row.context?.userId ? `UID: ${row.context.userId}` : AdminI18n.t('activity.internal'))}
                 </span>
               </div>
             </div>
@@ -53,7 +53,7 @@ export class ActivityColumnsFactory {
         accessor: (row: any) => (
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-indigo-500/60 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-            <span className="font-semibold text-[11px] text-slate-500 tracking-wide">{row.pluginSlug ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
+            <span className="font-semibold text-[11px] text-slate-500 tracking-wide">{row.pluginSlug && row.pluginSlug !== 'system' ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
           </div>
         )
       },
@@ -110,7 +110,7 @@ export class ActivityColumnsFactory {
             <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 text-[10px] font-semibold">
                {row.pluginSlug ? row.pluginSlug[0].toUpperCase() : 'S'}
             </div>
-            <span className="font-semibold text-[11px] text-slate-600 dark:text-slate-200 tracking-wide">{row.pluginSlug ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
+            <span className="font-semibold text-[11px] text-slate-600 dark:text-slate-200 tracking-wide">{row.pluginSlug && row.pluginSlug !== 'system' ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
           </div>
         )
       },

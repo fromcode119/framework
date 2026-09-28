@@ -100,7 +100,7 @@ export class DashboardSystemPanel extends AdminComponent {
           <DashboardSystemMeter label={AdminI18n.t('dashboard.systemPanel.memory')} used={this.memory?.used ?? null} total={this.memory?.total ?? null} />
           <DashboardSystemMeter label={AdminI18n.t('dashboard.systemPanel.disk')} used={this.disk?.used ?? null} total={this.disk?.total ?? null} />
           <DashboardSystemMeter
-            label={`CPU · ${Number(this.host?.cpu?.cores || 0)} cores`}
+            label={AdminI18n.t('dashboard.cpuCores', { cores: Number(this.host?.cpu?.cores || 0) })}
             ratio={this.cpuPressure}
             caption={this.cpuPressure === null ? AdminI18n.t('dashboard.systemPanel.notReported') : AdminI18n.t('dashboard.systemPanel.load', { load: this.host?.cpu?.load1 })}
           />

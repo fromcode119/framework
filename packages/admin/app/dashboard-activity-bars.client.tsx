@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Daily counts as bars, for windows too short to draw a line through. */
 export class DashboardActivityBars extends PureReactor {
@@ -16,7 +17,7 @@ export class DashboardActivityBars extends PureReactor {
         {this.buckets.map((bucket) => (
           <div
             key={bucket.key}
-            title={`${bucket.label}: ${bucket.total} ${bucket.total === 1 ? 'event' : 'events'}`}
+            title={`${bucket.label}: ${bucket.total} ${bucket.total === 1 ? AdminI18n.t('dashboard.eventWord') : AdminI18n.t('dashboard.eventsWord')}`}
             className="flex-1 rounded-sm bg-indigo-500/90 dark:bg-indigo-500 min-h-[2px]"
             style={{ height: `${Math.round((bucket.total / peak) * 100)}%` }}
           />

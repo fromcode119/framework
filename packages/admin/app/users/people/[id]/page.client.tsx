@@ -78,7 +78,7 @@ export class PersonEditPage extends PersonEditPageActions {
           backHref={AdminConstants.ROUTES.PEOPLE.ROOT}
           icon={<FrameworkIcons.Edit size={18} strokeWidth={2} />}
           title={AdminI18n.t('users.editPerson')}
-          subtitle={`${person.email || AdminI18n.t('users.person', { id: person.id })} · ${person.source || 'contact'} · ${linked ? AdminI18n.t('users.linked2', { userId: person.userId }) : AdminI18n.t('users.noLoginAccount')}`}
+          subtitle={`${person.email || AdminI18n.t('users.person', { id: person.id })} · ${person.source || AdminI18n.t('users.sourceContact')} · ${linked ? AdminI18n.t('users.linked2', { userId: person.userId }) : AdminI18n.t('users.noLoginAccount')}`}
         />
 
         <div className="flex-1 w-full px-6 lg:px-12 py-10">
@@ -118,7 +118,7 @@ export class PersonEditPage extends PersonEditPageActions {
                   <select value={reassignTo} onChange={(e) => { this.reassignTo = e.target.value; }}
                     className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-[12px] font-bold">
                     <option value="__none__">{AdminI18n.t('users.noLoginAccountUnlink')}</option>
-                    {users.map((u) => <option key={u.id} value={String(u.id)}>{u.email || u.username || `user #${u.id}`} · #{u.id}</option>)}
+                    {users.map((u) => <option key={u.id} value={String(u.id)}>{u.email || u.username || AdminI18n.t('users.userNumber', { id: u.id })} · #{u.id}</option>)}
                   </select>
                   <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={reassigning} disabled={!reassignTo} onClick={() => this.reassign()} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.apply')}</Button>
                   <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => { this.reassignOpen = false; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.cancel')}</Button>

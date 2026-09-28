@@ -151,7 +151,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
               <p className="text-[12px] font-medium truncate">{row.email}</p>
               <p className="text-[10px] opacity-55 truncate">
                 {this.shareLink(row.shareId, row.shareTitle)}
-                {this.formatWhen(row.sentAt) ? ` · sent ${this.formatWhen(row.sentAt)}` : ''}
+                {this.formatWhen(row.sentAt) ? ` · ${AdminI18n.t('media.sentAt', { when: this.formatWhen(row.sentAt) })}` : ''}
               </p>
             </div>
             {row.expiresAt ? (

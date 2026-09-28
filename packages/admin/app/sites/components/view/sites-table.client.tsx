@@ -38,7 +38,7 @@ export class SitesTable extends PureReactor {
       ) },
       { id: 'kind', header: AdminI18n.t('sites.kind'), accessor: (site) => (
         <div className="fc-sites__name">
-          <Badge variant={site.isWorkspace ? BadgeVariant.INFO : BadgeVariant.GRAY}>{site.isWorkspace ? 'workspace' : 'site'}</Badge>
+          <Badge variant={site.isWorkspace ? BadgeVariant.INFO : BadgeVariant.GRAY}>{site.isWorkspace ? AdminI18n.t('sites.kindWorkspace') : AdminI18n.t('sites.kindSite')}</Badge>
           {site.isWorkspace ? <span className="fc-sites__id">{site.appearance || AdminI18n.t('sites.defaultConsole2')}</span> : null}
         </div>
       ) },

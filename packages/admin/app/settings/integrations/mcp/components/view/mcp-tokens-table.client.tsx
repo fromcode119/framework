@@ -68,7 +68,7 @@ export class McpTokensTable extends AdminComponent {
                 {this.multiTenant ? <td className="py-3 pr-4">{this.siteCell(token)}</td> : null}
                 <td className="py-3 pr-4">{this.scopesCell(token)}</td>
                 <td className="py-3 pr-4 text-slate-500">{token.createdAt || '—'}</td>
-                <td className="py-3 pr-4 text-slate-500">{token.lastUsedAt || 'never'}</td>
+                <td className="py-3 pr-4 text-slate-500">{token.lastUsedAt || AdminI18n.t('settings.integrations.never')}</td>
                 <td className="py-3 text-right">
                   <Button variant={ButtonVariant.DANGER} size={FieldSize.SM} onClick={() => this.onRevoke(token)}>
                     {AdminI18n.t('settings.integrations.revoke')}

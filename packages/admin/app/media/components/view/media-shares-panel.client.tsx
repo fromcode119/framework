@@ -149,7 +149,7 @@ export class MediaSharesPanel extends AdminComponent {
           <p className="text-[12px] font-medium truncate">{grant.email}</p>
           <p className="text-[10px] opacity-55">
             {this.grantStatus(grant)}
-            {this.formatDate(grant.expiresAt) ? ` · expires ${this.formatDate(grant.expiresAt)}` : ''}
+            {this.formatDate(grant.expiresAt) ? ` · ${AdminI18n.t('media.expiresAt', { when: this.formatDate(grant.expiresAt) })}` : ''}
           </p>
         </div>
         {grant.revokedAt ? (

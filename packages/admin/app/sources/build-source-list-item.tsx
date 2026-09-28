@@ -52,7 +52,7 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                 <span className="truncate text-[11px] text-slate-600 dark:text-slate-400" title={this.packageLabel}>
                   {this.build.branch || 'main'}
                   {this.build.version ? ` · v${this.build.version}` : AdminI18n.t('sources.noBuildYet')}
-                  {this.build.autoBuild ? ' · auto' : ''}
+                  {this.build.autoBuild ? ` · ${AdminI18n.t('sources.auto')}` : ''}
                 </span>
               </div>
               <p className="truncate text-[11px] text-slate-600 dark:text-slate-400" title={`${repositoryLabel}\n${tokenLabel}`}>

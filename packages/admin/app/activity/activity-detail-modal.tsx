@@ -62,7 +62,7 @@ export class ActivityDetailModal extends PureReactor {
                      <div className="space-y-4">
                         <div className="flex flex-col">
                            <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.resource')}</span>
-                           <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{selectedLog.pluginSlug ? (selectedLog.pluginSlug.charAt(0).toUpperCase() + selectedLog.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
+                           <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{selectedLog.pluginSlug && selectedLog.pluginSlug !== 'system' ? (selectedLog.pluginSlug.charAt(0).toUpperCase() + selectedLog.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
                         </div>
                         <div className="flex flex-col">
                            <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.timestamp')}</span>

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ByteSizeFormatter } from '@/lib/byte-size-formatter';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One measured resource as a labelled bar.
@@ -37,7 +38,7 @@ export class DashboardSystemMeter extends PureReactor {
   private get readout(): string {
     if (this.caption) return this.caption;
     if (this.fraction === null) return 'unknown';
-    return `${ByteSizeFormatter.format(this.used)} of ${ByteSizeFormatter.format(this.total)}`;
+    return AdminI18n.t('dashboard.usedOfTotal', { used: ByteSizeFormatter.format(this.used), total: ByteSizeFormatter.format(this.total) });
   }
 
   render(): ReactNode {

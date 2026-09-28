@@ -44,7 +44,7 @@ export class RolesAuditSidebar extends PureReactor {
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-400">
-                      {(() => { const s = log.plugin_slug || 'System'; return s.charAt(0).toUpperCase() + s.slice(1); })()}
+                      {log.plugin_slug && log.plugin_slug !== 'system' ? log.plugin_slug.charAt(0).toUpperCase() + log.plugin_slug.slice(1) : AdminI18n.t('activity.system')}
                     </span>
                   </div>
                 </div>
@@ -55,7 +55,7 @@ export class RolesAuditSidebar extends PureReactor {
           </div>
 
           <div className={`mt-3 flex items-center justify-between border-t pt-3 ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-            <span className="text-[10px] text-slate-400">v{health?.version || '—'}{health?.maintenance ? ' · maintenance' : ''}</span>
+            <span className="text-[10px] text-slate-400">v{health?.version || '—'}{health?.maintenance ? ` · ${AdminI18n.t('users.maintenance')}` : ''}</span>
             <Link href={AdminConstants.ROUTES.ACTIVITY}>
               <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} className="text-[10px] text-slate-500">{AdminI18n.t('users.viewLogs')}</Button>
             </Link>

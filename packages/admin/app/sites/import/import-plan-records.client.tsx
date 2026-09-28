@@ -85,7 +85,7 @@ export class ImportPlanRecords extends Reactor {
         <div className="fc-import-rec__fold" onClick={this.toggleEmpty} role="button" tabIndex={0} aria-expanded={this.showEmpty}
           onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.toggleEmpty(); } }}>
           <span><AdminRichText k="sites.importPlan.kindsEmpty" vars={{ count: empty.length.toLocaleString() }} /></span>
-          <span className="fc-import-rec__fold-action">{this.showEmpty ? 'hide' : 'show'}</span>
+          <span className="fc-import-rec__fold-action">{this.showEmpty ? AdminI18n.t('sites.importPlan.hide') : AdminI18n.t('sites.importPlan.show')}</span>
         </div>
         {this.showEmpty ? (
           <div className="fc-import-rec__foldbox">

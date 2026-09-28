@@ -27,7 +27,7 @@ export class NewRoleSummarySidebar extends PureReactor {
                <div className="flex items-center justify-between gap-2">
                   <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">{AdminI18n.t('users.scope')}</span>
                   <span className="text-xs font-semibold tracking-tight text-slate-600 dark:text-slate-300">
-                    {permissionCount === 0 ? AdminI18n.t('users.noPermissions') : `${permissionCount} selected`}
+                    {permissionCount === 0 ? AdminI18n.t('users.noPermissions') : AdminI18n.t('users.selectedCount', { count: permissionCount })}
                   </span>
                </div>
             </div>

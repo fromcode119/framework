@@ -27,7 +27,7 @@ export class InstalledThemesUploadService {
   }
 
   static buildUploadProgressLabel(loadedBytes: number, totalBytes: number, percent: number, stalled = false): string {
-    const bytesLabel = `${InstalledThemesUploadService.formatBytes(loadedBytes)} of ${InstalledThemesUploadService.formatBytes(totalBytes)}`;
+    const bytesLabel = AdminI18n.t('ui.bytesOf', { loaded: InstalledThemesUploadService.formatBytes(loadedBytes), total: InstalledThemesUploadService.formatBytes(totalBytes) });
     if (loadedBytes <= 0) {
       return AdminI18n.t('themes.preparingThemeUpload', { bytesLabel: bytesLabel });
     }

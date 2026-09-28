@@ -53,7 +53,7 @@ export class DashboardActivityFeed extends PureReactor {
                     {item.title}
                   </p>
                   <span className="text-[11px] text-indigo-500 dark:text-indigo-400">
-                    {item.plugin ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : AdminI18n.t('dashboard.system')}
+                    {item.plugin && item.plugin !== 'system' ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : AdminI18n.t('dashboard.system')}
                   </span>
                 </div>
                 <span className="shrink-0 text-[11px] tabular-nums text-slate-400">

@@ -27,7 +27,7 @@ export class InstalledPluginsUploadService {
   }
 
   static buildUploadProgressLabel(loadedBytes: number, totalBytes: number, percent: number, stalled = false): string {
-    const bytesLabel = `${InstalledPluginsUploadService.formatBytes(loadedBytes)} of ${InstalledPluginsUploadService.formatBytes(totalBytes)}`;
+    const bytesLabel = AdminI18n.t('ui.bytesOf', { loaded: InstalledPluginsUploadService.formatBytes(loadedBytes), total: InstalledPluginsUploadService.formatBytes(totalBytes) });
     if (loadedBytes <= 0) {
       return AdminI18n.t('plugins.list.preparingPluginUpload', { bytesLabel: bytesLabel });
     }

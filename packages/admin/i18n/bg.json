@@ -542,7 +542,8 @@
     "relativeOverridesInheritTheCollection": "Относителните адреси наследяват префикса на колекцията. Включете абсолютен режим, за да заобиколите префикси като `/shop`.",
     "range": "Период",
     "noDataForThisRange": "Няма данни за този период",
-    "peak": "· връх {{value}}"
+    "peak": "· връх {{value}}",
+    "bytesOf": "{{loaded}} от {{total}}"
   },
   "shell": {
     "site": {
@@ -645,7 +646,8 @@
       "noExtension": "Няма регистрирано разширение за AI работно пространство. Добавете административно разширение, което монтира <code>admin.minimal.root</code>."
     },
     "brand": {
-      "by": "от {{company}}"
+      "by": "от {{company}}",
+      "markAlt": "Знак на {{name}}"
     }
   },
   "nav": {
@@ -762,7 +764,14 @@
     "pluginErrorMany": "{{count}} плъгина с грешка",
     "pluginHeldOne": "1 плъгин чака повторно одобрение",
     "pluginHeldMany": "{{count}} плъгина чакат повторно одобрение",
-    "tasksCount": "задачи: {{count}}"
+    "tasksCount": "задачи: {{count}}",
+    "errorOne": "1 грешка",
+    "errorMany": "{{count}} грешки",
+    "eventWord": "събитие",
+    "eventsWord": "събития",
+    "cpuCores": "CPU · {{cores}} ядра",
+    "usedOfTotal": "{{used}} от {{total}}",
+    "paused": "на пауза"
   },
   "notFound": {
     "title": "Страницата не е намерена",
@@ -811,7 +820,8 @@
       "needLink": "Нужна е нова връзка?",
       "subtitle": "Обновете данните си за вход в {{app}}"
     },
-    "forgotShort": "Забравена?"
+    "forgotShort": "Забравена?",
+    "logoAlt": "Лого на {{app}} от {{company}}"
   },
   "plugins": {
     "detail": {
@@ -1734,7 +1744,8 @@
       "failedToLoadThePlatform": "Настройката за пощата на платформата не можа да бъде заредена",
       "failedToSaveThePlatform": "Настройката за пощата на платформата не можа да бъде запазена",
       "unrestricted": "без ограничения",
-      "labelExample": "напр. лаптоп"
+      "labelExample": "напр. лаптоп",
+      "never": "никога"
     },
     "localization": {
       "theLocalizationSettingsRequestFailed": "Заявката за настройките за локализация е неуспешна.",
@@ -2416,7 +2427,13 @@
     "permissionsCount": "права: {{count}}",
     "roleSlugExample": "напр. editor",
     "countOfTotal": "{{count}} от {{total}}",
-    "ipAddress": "IP: {{ip}}"
+    "ipAddress": "IP: {{ip}}",
+    "userWord": "потребител",
+    "usersWord": "потребители",
+    "permsCount": "права: {{count}}",
+    "maintenance": "поддръжка",
+    "userNumber": "потребител #{{id}}",
+    "sourceContact": "контакт"
   },
   "lib": {
     "httpErrorStatus": "HTTP грешка! Статус: {{status}}",
@@ -2623,7 +2640,8 @@
     "daysZeroNever": "дни · 0 = никога",
     "zeroUnlimited": "0 = без ограничение",
     "activeCount": "активни: {{count}}",
-    "recipientCount": "получатели: {{count}}"
+    "recipientCount": "получатели: {{count}}",
+    "sentAt": "изпратено {{when}}"
   },
   "sources": {
     "whatChangedInV": "Какво е променено във v{{version}}",
@@ -2729,7 +2747,8 @@
     "installedLabel": "Инсталиран:",
     "lastBuiltLabel": "Последно изграден:",
     "never": "никога",
-    "andMore": "и още {{count}}"
+    "andMore": "и още {{count}}",
+    "auto": "автоматично"
   },
   "certificates": {
     "couldNotLoadCertificates": "Сертификатите не можаха да бъдат заредени.",
@@ -2818,7 +2837,8 @@
     "status": "Статус",
     "action": "Действие",
     "time": "Време",
-    "logSignature": "Подпис на записа: {{id}}"
+    "logSignature": "Подпис на записа: {{id}}",
+    "internal": "ВЪТРЕШНО"
   },
   "sites": {
     "couldNotLoadTheSites": "Сайтовете не можаха да бъдат заредени.",
@@ -3155,14 +3175,18 @@
       "kindsAndRecords": "{{kinds}} вида · {{records}} записа",
       "passphraseHint": "Настройките на този архив са заключени за преноса. Въведете същата парола, използвана при експорта, и те ще пристигнат работещи; без нея импортът спира, вместо да ви остави с интеграции, които никой не може да прочете.",
       "resultSummary": "<strong>{{slug}}</strong> — {{rows}} реда, {{members}} членове, плъгини: {{plugins}}, тема: {{theme}}.",
-      "fromTheExport": "От експорта ({{count}})"
+      "fromTheExport": "От експорта ({{count}})",
+      "hide": "скрий",
+      "show": "покажи"
     },
     "pageRange": "{{from}}–{{to}} от {{total}}",
     "slugExample": "acme",
     "none": "няма",
     "noThemeShort": "без тема",
     "never": "никога",
-    "deleteShort": "Изтрий"
+    "deleteShort": "Изтрий",
+    "kindWorkspace": "работно пространство",
+    "kindSite": "сайт"
   },
   "themes": {
     "installed": "Инсталирани",

@@ -129,7 +129,7 @@ export class UserRolesPage extends AdminComponent {
                   <span className="flex-1 min-w-0">
                     <span className={`block text-sm font-semibold tracking-tight ${dark ? 'text-slate-100' : 'text-slate-900'}`}>{role.name}</span>
                     <span className="block text-xs font-medium text-slate-500 truncate">
-                      {role.description || AdminI18n.t('users.noDescription')}{permCount ? ` · ${permCount} permission${permCount === 1 ? '' : 's'}` : ''}
+                      {role.description || AdminI18n.t('users.noDescription')}{permCount ? ` · ${AdminI18n.t('users.permissionsCount', { count: permCount })}` : ''}
                     </span>
                   </span>
                   <span className={`h-5 w-5 shrink-0 rounded-full border flex items-center justify-center transition-colors ${

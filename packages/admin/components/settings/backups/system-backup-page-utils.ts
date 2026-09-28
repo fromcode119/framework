@@ -199,7 +199,7 @@ export class SystemBackupPageUtils {
     percent: number,
     stalled = false,
   ): string {
-    const bytesLabel = `${this.formatBytes(loadedBytes)} of ${this.formatBytes(totalBytes)}`;
+    const bytesLabel = AdminI18n.t('ui.bytesOf', { loaded: this.formatBytes(loadedBytes), total: this.formatBytes(totalBytes) });
     if (loadedBytes <= 0) {
       return AdminI18n.t('settings.components.preparingArchiveUpload2', { bytesLabel: bytesLabel });
     }
@@ -243,7 +243,7 @@ export class SystemBackupPageUtils {
     if (progress.totalBytes === null) {
       return this.formatBytes(progress.loadedBytes);
     }
-    return `${this.formatBytes(progress.loadedBytes)} of ${this.formatBytes(progress.totalBytes)}`;
+    return AdminI18n.t('ui.bytesOf', { loaded: this.formatBytes(progress.loadedBytes), total: this.formatBytes(progress.totalBytes) });
   }
 
   static toErrorMessage(error: unknown): string {

@@ -45,7 +45,7 @@ export class DashboardScheduleList extends PureReactor {
                 {task.pluginSlug ? <span className="text-slate-400"> · {String(task.pluginSlug)}</span> : null}
               </span>
               <span className="text-[10px] text-slate-400 whitespace-nowrap tabular-nums">
-                {task.isActive === false ? 'paused' : RelativeTimeFormatter.fromNow(task.nextRun)}
+                {task.isActive === false ? AdminI18n.t('dashboard.paused') : RelativeTimeFormatter.fromNow(task.nextRun)}
               </span>
             </div>
           ))}

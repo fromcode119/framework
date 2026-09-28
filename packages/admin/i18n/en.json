@@ -505,7 +505,8 @@
     "relativeOverridesInheritTheCollection": "Relative overrides inherit the collection prefix. Enable absolute mode to bypass prefixes like `/shop`.",
     "range": "Range",
     "noDataForThisRange": "No data for this range",
-    "peak": "· peak {{value}}"
+    "peak": "· peak {{value}}",
+    "bytesOf": "{{loaded}} of {{total}}"
   },
   "shell": {
     "site": {
@@ -608,7 +609,8 @@
       "noExtension": "No AI workspace extension is registered. Add an admin extension that mounts <code>admin.minimal.root</code>."
     },
     "brand": {
-      "by": "by {{company}}"
+      "by": "by {{company}}",
+      "markAlt": "{{name}} mark"
     }
   },
   "nav": {
@@ -725,7 +727,14 @@
     "pluginErrorMany": "{{count}} plugins in error",
     "pluginHeldOne": "1 plugin held for re-approval",
     "pluginHeldMany": "{{count}} plugins held for re-approval",
-    "tasksCount": "{{count}} tasks"
+    "tasksCount": "{{count}} tasks",
+    "errorOne": "1 error",
+    "errorMany": "{{count}} errors",
+    "eventWord": "event",
+    "eventsWord": "events",
+    "cpuCores": "CPU · {{cores}} cores",
+    "usedOfTotal": "{{used}} of {{total}}",
+    "paused": "paused"
   },
   "notFound": {
     "title": "Page not found",
@@ -774,7 +783,8 @@
       "needLink": "Need new link?",
       "subtitle": "Update your {{app}} credentials"
     },
-    "forgotShort": "Forgot?"
+    "forgotShort": "Forgot?",
+    "logoAlt": "{{app}} by {{company}} logo"
   },
   "plugins": {
     "detail": {
@@ -1591,7 +1601,8 @@
       "failedToLoadThePlatform": "Failed to load the platform mail setting",
       "failedToSaveThePlatform": "Failed to save the platform mail setting",
       "unrestricted": "unrestricted",
-      "labelExample": "e.g. laptop"
+      "labelExample": "e.g. laptop",
+      "never": "never"
     },
     "localization": {
       "theLocalizationSettingsRequestFailed": "The localization settings request failed.",
@@ -2368,7 +2379,13 @@
     "permissionsCount": "{{count}} permissions",
     "roleSlugExample": "e.g. editor",
     "countOfTotal": "{{count}} of {{total}}",
-    "ipAddress": "IP: {{ip}}"
+    "ipAddress": "IP: {{ip}}",
+    "userWord": "user",
+    "usersWord": "users",
+    "permsCount": "{{count}} perms",
+    "maintenance": "maintenance",
+    "userNumber": "user #{{id}}",
+    "sourceContact": "contact"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Site settings ({{what}}) are set inside each site — choose one from the site menu.",
@@ -2752,7 +2769,9 @@
       "kindsAndRecords": "{{kinds}} kind(s) · {{records}} record(s)",
       "passphraseHint": "This archive’s settings were locked for the move. Enter the same passphrase the export used and they arrive working; without it the import stops rather than leaving you with integrations nobody can read.",
       "resultSummary": "<strong>{{slug}}</strong> — {{rows}} rows, {{members}} members, plugins {{plugins}}, theme {{theme}}.",
-      "fromTheExport": "From the export ({{count}})"
+      "fromTheExport": "From the export ({{count}})",
+      "hide": "hide",
+      "show": "show"
     },
     "idLabel": "id {{id}}",
     "member": "member",
@@ -2761,7 +2780,9 @@
     "none": "none",
     "noThemeShort": "no theme",
     "never": "never",
-    "deleteShort": "Delete"
+    "deleteShort": "Delete",
+    "kindWorkspace": "workspace",
+    "kindSite": "site"
   },
   "themes": {
     "installed": "Installed",
@@ -3151,7 +3172,8 @@
     "daysZeroNever": "days · 0 = never",
     "zeroUnlimited": "0 = unlimited",
     "activeCount": "{{count}} active",
-    "recipientCount": "{{count}} recipient(s)"
+    "recipientCount": "{{count}} recipient(s)",
+    "sentAt": "sent {{when}}"
   },
   "sources": {
     "whatChangedInV": "What changed in v{{version}}",
@@ -3257,7 +3279,8 @@
     "installedLabel": "Installed:",
     "lastBuiltLabel": "Last built:",
     "never": "never",
-    "andMore": "and {{count}} more"
+    "andMore": "and {{count}} more",
+    "auto": "auto"
   },
   "certificates": {
     "couldNotLoadCertificates": "Could not load certificates.",
@@ -3346,7 +3369,8 @@
     "status": "Status",
     "action": "Action",
     "time": "Time",
-    "logSignature": "Log Signature: {{id}}"
+    "logSignature": "Log Signature: {{id}}",
+    "internal": "INTERNAL"
   },
   "mediaPicker": {
     "uploads": "Uploads",
