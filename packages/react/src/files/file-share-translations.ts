@@ -26,4 +26,13 @@ export class FileShareTranslations {
       // Bridge not ready — the framework copy above already covers the page, so this is not a failure.
     }
   }
+
+  /**
+   * Registered when this module is evaluated — before any render, on the server as in the browser —
+   * never from a `render()`: the bridge half updates the context provider's state, and doing that while
+   * another component renders is a cross-component update React rejects.
+   */
+  static {
+    FileShareTranslations.register();
+  }
 }

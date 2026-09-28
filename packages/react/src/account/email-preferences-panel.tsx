@@ -130,11 +130,10 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
     // token twin standalone, with no shell above it. `AccountTranslations.register()` used to be called
     // only by AccountShell/AccountShellDefault/AccountAuthGate, so on that route the `account.*` copy was
     // never loaded and every `t()` below fell through to its inline English default — an all-English page
-    // on a Bulgarian site whose bg.json already held every one of these keys. Registering here follows
-    // the same rule the shell states for itself: the surface that renders the words owns loading them.
-    // In render() as well as componentDidMount() so it lands before the first paint; the call is idempotent.
-    AccountTranslations.register();
-
+    // on a Bulgarian site whose bg.json already held every one of these keys. This module importing
+    // AccountTranslations is what loads them: the class registers the copy when it is evaluated, ahead of
+    // this first render. It is NOT called from here — registering updates the context provider's state,
+    // and doing that during this render is a cross-component update React rejects.
     if (this.loading) {
       return <p className="fc-acct-loading">{this.t('account.emailPreferences.loading', {}, 'Loading…')}</p>;
     }
