@@ -41,6 +41,17 @@ describe('UiKeyResolutionGuard', () => {
     expect(UiKeyResolutionGuard.unresolvedIn(dir, new Set(['account.save']))).toEqual(['src/ui/page.tsx:5 shop.dashboard.byServiceTitle']);
   });
 
+  it('does not resolve a slug-named key through a doubled slug in the server dictionary', () => {
+    const dir = extension({
+      'manifest.json': JSON.stringify({ slug: 'shop' }),
+      'src/ui/i18n/en.json': JSON.stringify({}),
+      // Served as `shop.shop.overview.range` — not the `shop.overview.range` the screen asks for.
+      'src/i18n/en.json': JSON.stringify({ shop: { overview: { range: 'Range' } } }),
+      'src/ui/page.tsx': "this.t('shop.overview.range', {}, 'Range');",
+    });
+    expect(UiKeyResolutionGuard.unresolvedIn(dir, new Set())).toEqual(['src/ui/page.tsx:1 shop.overview.range']);
+  });
+
   it('leaves an extension without a UI dictionary to the report-only guards', () => {
     extension({ 'manifest.json': JSON.stringify({ slug: 'shop' }), 'src/ui/page.tsx': "this.t('shop.x.y');" });
     expect(UiKeyResolutionGuard.extensions(root)).toEqual([]);

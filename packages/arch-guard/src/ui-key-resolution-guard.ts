@@ -69,7 +69,9 @@ export class UiKeyResolutionGuard {
     const known = new Set<string>(shared);
     for (const key of UiKeyResolutionGuard.keysOf(path.join(root, 'src/ui/i18n/en.json'))) known.add(key);
     for (const key of UiKeyResolutionGuard.keysOf(path.join(root, 'src/i18n/en.json'))) known.add(`${slug}.${key}`);
-    const resolves = (key: string) => known.has(key) || known.has(`${slug}.${key}`);
+    // A key that already names the slug is asked for as written; only an unscoped key gets the slug a
+    // scoped translator prepends. Prepending to both let `shop.x` resolve through an unrelated `shop.shop.x`.
+    const resolves = (key: string) => known.has(key) || (!key.startsWith(`${slug}.`) && known.has(`${slug}.${key}`));
 
     const hits: string[] = [];
     for (const file of UiKeyResolutionGuard.sources(path.join(root, 'src/ui'))) {
