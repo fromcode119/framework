@@ -8,6 +8,7 @@ import { AccountTwoFactorPanel } from '@react/account/two-factor-panel';
 import { AccountEmailPreferencesPanel } from '@react/account/email-preferences-panel';
 import { AccountFilesPanel } from '@react/account/files-panel';
 import type { ISlotComponent } from '@react/interfaces/slot-component.interface';
+import { PluginUsageTracker } from '@react/plugin-usage-tracker';
 
 /**
  * Turns the panels registered in the `account.panels` slot into the ordered section list.
@@ -39,6 +40,11 @@ export class AccountSectionRegistry {
 
   /** Framework panels + everything registered in the `account.panels` slot. The complete account. */
   static buildAll(slotPanels: ISlotComponent[] | undefined): AccountSection[] {
+    // The panels are read straight from the slot — no `<Slot>` renders them — so this is where their
+    // plugins are reported as used. Unreported, the page marked those bundles idle, the browser deferred
+    // them past hydration, and its first render listed fewer sections than the server had: a mismatch
+    // that re-rendered the whole account client-side.
+    (slotPanels || []).forEach((panel) => PluginUsageTracker.record(panel?.pluginSlug));
     return AccountSectionRegistry.build([...AccountSectionRegistry.BUILTIN, ...(slotPanels || [])]);
   }
 
