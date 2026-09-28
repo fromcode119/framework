@@ -43,8 +43,9 @@ export class RenderedCopyGuard {
    *
    * `packages/admin` — the console, extracted into `packages/admin/i18n/<locale>.json` so choosing a
    * language in Settings → Localization changes every screen.
+   * `packages/ai` — the assistant screen inside the console, in `packages/ai/src/i18n/<locale>.json`.
    */
-  static readonly TRANSLATED = ['packages/admin'];
+  static readonly TRANSLATED = ['packages/admin', 'packages/ai'];
 
   /** Two consecutive Latin letters: enough to be a word, so separators and figures are skipped. */
   private static readonly HAS_WORD = /[A-Za-z]{2,}/;

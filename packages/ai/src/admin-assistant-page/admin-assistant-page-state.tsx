@@ -20,6 +20,7 @@ import type { IAssistantSkill } from '@ai/interfaces/assistant-skill.interface';
 import type { IAssistantToolOption } from '@ai/interfaces/assistant-tool-option.interface';
 import type { IUploadedAttachment } from '@ai/interfaces/uploaded-attachment.interface';
 import type { IForgeHistorySession } from '@ai/interfaces/forge-history-session.interface';
+import { AiText } from '@ai/i18n/ai-text';
 
 /**
  * Everything the admin-assistant page KNOWS: its reactive fields, its refs, and the values derived
@@ -56,7 +57,7 @@ export class AdminAssistantPageState extends Reactor {
   @state apiKey = '';
   @state model = AssistantConstants.PROVIDER_PRESETS.openai[0].value;
   @state baseUrl = '';
-  @state skills: IAssistantSkill[] = [{ id: 'general', label: 'General' }];
+  @state skills: IAssistantSkill[] = [{ id: 'general', label: AiText.t('ai.general') }];
   @state skillId = 'general';
   @state checkingIntegration = true;
   @state integrationConfigured = false;

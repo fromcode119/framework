@@ -6,6 +6,7 @@ import { ConversationMode } from '@ai/enums/conversation-mode.enum';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
 import { AssistantComposerAttachments } from '@ai/components/assistant-composer/assistant-composer-attachments';
 import { AssistantComposerToolbar } from '@ai/components/assistant-composer/assistant-composer-toolbar';
+import { AiText } from '@ai/i18n/ai-text';
 
 /**
  * Prompt composer (chips, file input, textarea, toolbar). Presentational → `PureReactor`; all state (prompt,
@@ -42,9 +43,9 @@ export class AssistantComposer extends PureReactor {
   @prop declare developerMode: boolean;
 
   private get placeholder(): string {
-    if (this.mode === ConversationMode.BUILD) return 'Describe what should change. I will prepare changes for review.';
-    if (this.mode === ConversationMode.QUICKFIX) return 'Describe the fix. I will move fast and keep changes safe.';
-    return 'Ask a question or enter a command...';
+    if (this.mode === ConversationMode.BUILD) return AiText.t('ai.describeWhatShouldChangeI');
+    if (this.mode === ConversationMode.QUICKFIX) return AiText.t('ai.describeTheFixIWill');
+    return AiText.t('ai.askAQuestionOrEnter');
   }
 
   private get sendDisabled(): boolean {
@@ -134,7 +135,7 @@ export class AssistantComposer extends PureReactor {
             {this.uploadingAttachments ? (
               <div className="mt-2 flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5">
                 <div className="h-3 w-3 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--text-main)]" />
-                <span className="text-xs font-medium text-[var(--text-sub)]">Uploading assets</span>
+                <span className="text-xs font-medium text-[var(--text-sub)]">{AiText.t('ai.uploadingAssets')}</span>
               </div>
             ) : null}
           </div>

@@ -10,6 +10,7 @@ import { GlassMorphism } from '@ai/ui/glass-morphism';
 import { AssistantFormatUtils } from '@ai/assistant-format-utils';
 import { AssistantProviderUtils } from '@ai/assistant-provider-utils';
 import type { AdminAssistantPageController } from '@ai/admin-assistant-page/admin-assistant-page-controller';
+import { AiText } from '@ai/i18n/ai-text';
 
 /**
  * Root layout for the admin assistant page (history rail, conversation, composer, settings drawer, overlays).
@@ -153,13 +154,13 @@ export class AdminAssistantPageView extends PureReactor {
         {this.model.notice ? (
           <div className="fixed left-1/2 top-5 z-[90] flex -translate-x-1/2 items-center gap-2 rounded-xl border border-emerald-300/60 bg-emerald-100/92 px-3 py-2 text-xs font-semibold text-emerald-900 shadow-lg backdrop-blur-xl dark:border-emerald-300/45 dark:bg-emerald-300/16 dark:text-emerald-100">
             <span>{this.model.notice}</span>
-            <button type="button" onClick={this.model.clearNotice} className="inline-flex h-5 w-5 items-center justify-center rounded-md hover:bg-white/10" aria-label="Dismiss notice"><FrameworkIcons.X size={12} /></button>
+            <button type="button" onClick={this.model.clearNotice} className="inline-flex h-5 w-5 items-center justify-center rounded-md hover:bg-white/10" aria-label={AiText.t('ai.dismissNotice')}><FrameworkIcons.X size={12} /></button>
           </div>
         ) : null}
         {this.model.error ? (
           <div className="fixed left-1/2 top-5 z-[95] flex max-w-[92vw] -translate-x-1/2 items-center gap-2 rounded-xl border border-rose-300/70 bg-rose-100/92 px-3 py-2 text-xs font-semibold text-rose-900 shadow-lg backdrop-blur-xl dark:border-rose-300/45 dark:bg-rose-300/18 dark:text-rose-100">
             <span className="break-all">{this.model.error}</span>
-            <button type="button" onClick={this.model.clearError} className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md hover:bg-white/10" aria-label="Dismiss error"><FrameworkIcons.X size={12} /></button>
+            <button type="button" onClick={this.model.clearError} className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md hover:bg-white/10" aria-label={AiText.t('ai.dismissError')}><FrameworkIcons.X size={12} /></button>
           </div>
         ) : null}
       </>

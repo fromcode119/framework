@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantConversationEmptyState extends PureReactor {
   render(): ReactNode {
@@ -9,10 +10,10 @@ export class AssistantConversationEmptyState extends PureReactor {
         <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_16px_40px_rgba(0,0,0,0.18)] backdrop-blur-xl">
           <FrameworkIcons.Zap size={22} />
         </div>
-        <p className="text-[var(--text-sub)]">Welcome back.</p>
-        <h2 className="mt-1 text-4xl font-semibold tracking-tight text-[var(--text-main)] sm:text-5xl">How can I help?</h2>
+        <p className="text-[var(--text-sub)]">{AiText.t('ai.welcomeBack')}</p>
+        <h2 className="mt-1 text-4xl font-semibold tracking-tight text-[var(--text-main)] sm:text-5xl">{AiText.t('ai.howCanIHelp')}</h2>
         <p className="mt-3 max-w-lg text-sm text-[var(--text-sub)]">
-          Ask anything. I can chat, answer questions, and prepare safe changes when you request edits.
+          {AiText.t('ai.askAnythingICanChat')}
         </p>
       </div>
     );

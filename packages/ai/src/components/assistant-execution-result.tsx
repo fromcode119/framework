@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AssistantFormatUtils } from '@ai/assistant-format-utils';
 import { AssistantPreviewUtils } from '@ai/assistant-preview-utils';
 import { AssistantSurfaceUtils } from '@ai/assistant-surface-utils';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantExecutionResult extends PureReactor {
   @prop declare item: unknown;
@@ -49,11 +50,11 @@ export class AssistantExecutionResult extends PureReactor {
         <p className="text-[10px] font-semibold text-slate-700 dark:text-slate-200">{String(change?.field || '')}</p>
         <div className="mt-1 grid gap-1.5 sm:grid-cols-2">
           <div>
-            <p className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400">Before</p>
+            <p className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{AiText.t('ai.before')}</p>
             <p className="whitespace-pre-wrap break-words text-[10px] text-slate-700 dark:text-slate-200">{AssistantFormatUtils.formatPreviewValue(change?.before)}</p>
           </div>
           <div>
-            <p className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400">After</p>
+            <p className="text-[9px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{AiText.t('ai.after')}</p>
             <p className="whitespace-pre-wrap break-words text-[10px] font-medium text-slate-800 dark:text-slate-100">{AssistantFormatUtils.formatPreviewValue(change?.after)}</p>
           </div>
         </div>
@@ -68,7 +69,7 @@ export class AssistantExecutionResult extends PureReactor {
     }
     return (
       <div className="mt-2 space-y-1.5 rounded-lg border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/55">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Changed fields</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{AiText.t('ai.changedFields')}</p>
         {changedFields.map((change: any, changeIndex: number) => this.renderChangedField(change, changeIndex))}
       </div>
     );
@@ -82,8 +83,8 @@ export class AssistantExecutionResult extends PureReactor {
     }
     return (
       <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <div className="rounded-lg border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/55"><p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Before</p><pre className="max-h-36 overflow-auto text-[10px] text-slate-700 dark:text-slate-200"><code>{JSON.stringify(before || {}, null, 2)}</code></pre></div>
-        <div className="rounded-lg border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/55"><p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">After</p><pre className="max-h-36 overflow-auto text-[10px] text-slate-700 dark:text-slate-200"><code>{JSON.stringify(after || {}, null, 2)}</code></pre></div>
+        <div className="rounded-lg border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/55"><p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{AiText.t('ai.before')}</p><pre className="max-h-36 overflow-auto text-[10px] text-slate-700 dark:text-slate-200"><code>{JSON.stringify(before || {}, null, 2)}</code></pre></div>
+        <div className="rounded-lg border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/55"><p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{AiText.t('ai.after')}</p><pre className="max-h-36 overflow-auto text-[10px] text-slate-700 dark:text-slate-200"><code>{JSON.stringify(after || {}, null, 2)}</code></pre></div>
       </div>
     );
   }
@@ -98,15 +99,15 @@ export class AssistantExecutionResult extends PureReactor {
     }
     return (
       <details className="mt-2 rounded-lg border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/55">
-        <summary className="cursor-pointer text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Visual check</summary>
+        <summary className="cursor-pointer text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">{AiText.t('ai.visualCheck')}</summary>
         <div className="mt-2 space-y-2">
           <div className="flex flex-wrap gap-1.5">
-            {beforeUrl ? <a href={beforeUrl} target="_blank" rel="noreferrer" className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">Open before path</a> : null}
-            {afterUrl ? <a href={afterUrl} target="_blank" rel="noreferrer" className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">Open after path</a> : <a href={currentUrl} target="_blank" rel="noreferrer" className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">Open affected page</a>}
+            {beforeUrl ? <a href={beforeUrl} target="_blank" rel="noreferrer" className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">{AiText.t('ai.openBeforePath')}</a> : null}
+            {afterUrl ? <a href={afterUrl} target="_blank" rel="noreferrer" className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">{AiText.t('ai.openAfterPath')}</a> : <a href={currentUrl} target="_blank" rel="noreferrer" className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">{AiText.t('ai.openAffectedPage')}</a>}
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
-            {beforeUrl ? <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950"><p className="border-b border-slate-200 px-2 py-1 text-[9px] uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:text-slate-400">Before path</p><iframe title={`before-preview-${this.resultIndex}`} src={beforeUrl} className="h-44 w-full bg-white" /></div> : null}
-            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950"><p className="border-b border-slate-200 px-2 py-1 text-[9px] uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:text-slate-400">{afterUrl ? 'After path' : 'Current page'}</p><iframe title={`after-preview-${this.resultIndex}`} src={afterUrl || currentUrl} className="h-44 w-full bg-white" /></div>
+            {beforeUrl ? <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950"><p className="border-b border-slate-200 px-2 py-1 text-[9px] uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:text-slate-400">{AiText.t('ai.beforePath')}</p><iframe title={`before-preview-${this.resultIndex}`} src={beforeUrl} className="h-44 w-full bg-white" /></div> : null}
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950"><p className="border-b border-slate-200 px-2 py-1 text-[9px] uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:text-slate-400">{afterUrl ? AiText.t('ai.afterPath') : AiText.t('ai.currentPage')}</p><iframe title={`after-preview-${this.resultIndex}`} src={afterUrl || currentUrl} className="h-44 w-full bg-white" /></div>
           </div>
         </div>
       </details>

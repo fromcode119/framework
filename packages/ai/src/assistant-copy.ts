@@ -1,19 +1,22 @@
 import { AssistantRunMode } from '@ai/admin-assistant-runtime/enums/assistant-run-mode.enum';
 import { AssistantSkillRiskPolicy } from '@ai/admin-assistant-runtime/enums/assistant-skill-risk-policy.enum';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantCopyUtils {
-  static readonly DEFAULT_SKILLS = [
+  /** A getter, not a constant: the labels are read in the console's language each time, not frozen at import. */
+  static get DEFAULT_SKILLS() {
+    return [
   {
     id: 'general',
-    label: 'General',
-    description: 'Balanced assistant for chat, planning, and approvals.',
+    label: AiText.t('ai.general'),
+    description: AiText.t('ai.balancedAssistantForChatPlanning'),
     defaultMode: AssistantRunMode.CHAT,
     riskPolicy: AssistantSkillRiskPolicy.APPROVAL_REQUIRED,
   },
   {
     id: 'editor',
-    label: 'Content Editor',
-    description: 'Focus on safe content and copy updates across collections.',
+    label: AiText.t('ai.contentEditor'),
+    description: AiText.t('ai.focusOnSafeContentAnd'),
     defaultMode: AssistantRunMode.PLAN,
     allowedTools: [
       'collections.list',
@@ -41,8 +44,8 @@ export class AssistantCopyUtils {
   },
   {
     id: 'ops',
-    label: 'Ops Assistant',
-    description: 'Inspect plugins, themes, and settings with a planning-first workflow.',
+    label: AiText.t('ai.opsAssistant'),
+    description: AiText.t('ai.inspectPluginsThemesAndSettings'),
     defaultMode: AssistantRunMode.PLAN,
     allowedTools: [
       'plugins.list',
@@ -68,8 +71,8 @@ export class AssistantCopyUtils {
   },
   {
     id: 'research',
-    label: 'Web Research',
-    description: 'Browse the web and summarize current external references.',
+    label: AiText.t('ai.webResearch'),
+    description: AiText.t('ai.browseTheWebAndSummarize'),
     defaultMode: AssistantRunMode.CHAT,
     allowedTools: ['web.search', 'web.fetch', 'system.now'],
     systemPromptPatch:
@@ -82,8 +85,8 @@ export class AssistantCopyUtils {
   },
   {
     id: 'page-audit',
-    label: 'Page Auditor',
-    description: 'Inspect live pages, compare with content/theme settings, and stage targeted fixes.',
+    label: AiText.t('ai.pageAuditor'),
+    description: AiText.t('ai.inspectLivePagesCompareWith'),
     defaultMode: AssistantRunMode.PLAN,
     allowedTools: [
       'web.fetch',
@@ -105,6 +108,7 @@ export class AssistantCopyUtils {
     riskPolicy: AssistantSkillRiskPolicy.APPROVAL_REQUIRED,
   },
   ];
+  }
 
   static readonly RUNTIME_COPY = {
     noResponseGenerated: 'No response generated.',
@@ -227,12 +231,12 @@ export class AssistantCopyUtils {
 
   static buildDeterministicTraceMessage(hasActions: boolean): string {
     return hasActions
-      ? 'Ran exact text search and staged safe replacement actions.'
-      : 'Ran exact text search across content, plugin settings, theme config, and plugin/theme source files.';
+      ? AiText.t('ai.ranExactTextSearchAnd')
+      : AiText.t('ai.ranExactTextSearchAcross');
   }
 
   static buildStagedReplacementMessage(actionCount: number): string {
-    return `Staged ${actionCount} replacement action${actionCount === 1 ? '' : 's'} from exact matches.`;
+    return (actionCount === 1 ? AiText.t('ai.stagedOneReplacement') : AiText.t('ai.stagedReplacements', { count: actionCount }));
   }
 
   static buildPlannerNoActionMessage(input: {

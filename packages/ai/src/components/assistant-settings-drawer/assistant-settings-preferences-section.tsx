@@ -1,6 +1,7 @@
 import type { ChangeEvent, ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantSettingsPreferencesSection extends PureReactor {
   @prop declare autoApprove: boolean;
@@ -31,8 +32,8 @@ export class AssistantSettingsPreferencesSection extends PureReactor {
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-[var(--text-main)]">Developer Mode</span>
-              <span className="text-[10px] text-[var(--text-sub)]">Show traces and tool payloads</span>
+              <span className="text-sm font-medium text-[var(--text-main)]">{AiText.t('ai.developerMode')}</span>
+              <span className="text-[10px] text-[var(--text-sub)]">{AiText.t('ai.showTracesAndToolPayloads')}</span>
             </div>
             <button
               type="button"
@@ -55,7 +56,7 @@ export class AssistantSettingsPreferencesSection extends PureReactor {
 
           <div className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-sub)]">
-              Capabilities
+              {AiText.t('ai.capabilities')}
             </label>
             <label className="flex cursor-pointer items-center gap-3">
               <input
@@ -73,7 +74,7 @@ export class AssistantSettingsPreferencesSection extends PureReactor {
               >
                 ✓
               </span>
-              <span className="text-sm text-[var(--text-main)]">Auto Approve Safe Changes</span>
+              <span className="text-sm text-[var(--text-main)]">{AiText.t('ai.autoApproveSafeChanges')}</span>
             </label>
             <label className="flex cursor-pointer items-center gap-3">
               <input
@@ -91,7 +92,7 @@ export class AssistantSettingsPreferencesSection extends PureReactor {
               >
                 ✓
               </span>
-              <span className="text-sm text-[var(--text-main)]">Verbose Logging</span>
+              <span className="text-sm text-[var(--text-main)]">{AiText.t('ai.verboseLogging')}</span>
             </label>
           </div>
         </div>

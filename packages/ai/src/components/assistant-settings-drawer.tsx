@@ -9,6 +9,7 @@ import { AssistantSettingsDrawerFrame } from '@ai/components/assistant-settings-
 import { AssistantSettingsConnectionSection } from '@ai/components/assistant-settings-drawer/assistant-settings-connection-section';
 import { AssistantSettingsPreferencesSection } from '@ai/components/assistant-settings-drawer/assistant-settings-preferences-section';
 import { AssistantSettingsProviderSection } from '@ai/components/assistant-settings-drawer/assistant-settings-provider-section';
+import { AiText } from '@ai/i18n/ai-text';
 
 /**
  * Assistant settings drawer. Stateful → `Reactor`; local api-key/base-url mirrors are `@state`, kept in
@@ -110,9 +111,9 @@ export class AssistantSettingsDrawer extends Reactor {
           <form className="contents" onSubmit={this.onSubmit}>
             <div className="flex h-16 items-center justify-between border-b border-[var(--border)] px-6">
               <span id="settings-title" className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--text-sub)] opacity-70">
-                Parameters
+                {AiText.t('ai.parameters')}
               </span>
-              <button type="button" onClick={this.onRequestCloseClick} className={GlassMorphism.GLASS_ICON_BUTTON} aria-label="Close settings">
+              <button type="button" onClick={this.onRequestCloseClick} className={GlassMorphism.GLASS_ICON_BUTTON} aria-label={AiText.t('ai.closeSettings')}>
                 <FrameworkIcons.X size={16} />
               </button>
             </div>
@@ -158,7 +159,7 @@ export class AssistantSettingsDrawer extends Reactor {
             <div className="border-t border-[var(--border)] px-6 py-4">
               <div className="flex items-center justify-between gap-3">
                 <button type="button" onClick={this.onRequestCloseClick} className={`${GlassMorphism.GLASS_BUTTON} px-4 py-2 text-sm font-medium`}>
-                  Cancel
+                  {AiText.t('ai.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -169,7 +170,7 @@ export class AssistantSettingsDrawer extends Reactor {
                     <>
                       <div className="flex items-center gap-2">
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        <span>Saving</span>
+                        <span>{AiText.t('ai.saving')}</span>
                       </div>
                       <div className="absolute inset-0 animate-pulse bg-white/10" style={{ animationDuration: '1.5s' }} />
                     </>
@@ -177,7 +178,7 @@ export class AssistantSettingsDrawer extends Reactor {
                     <>
                       <div className="flex items-center gap-2">
                         <FrameworkIcons.Check size={16} className="transition-transform group-hover:scale-110" />
-                        <span>Save Changes</span>
+                        <span>{AiText.t('ai.saveChanges')}</span>
                       </div>
                       <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                     </>

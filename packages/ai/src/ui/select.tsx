@@ -5,6 +5,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
 
 import type { SelectOption } from '@ai/ui/select-option';
+import { AiText } from '@ai/i18n/ai-text';
 
 /**
  * Searchable single-select with a portalled, viewport-clamped menu. Class-based (reactor): props via
@@ -31,7 +32,7 @@ export class Select extends Reactor {
   @ref private declare menuRef: Ref<HTMLDivElement>;
 
   // --- defaulted props (the function version's default parameter values) ---
-  private get placeholderText(): string { return this.placeholder ?? 'Select...'; }
+  private get placeholderText(): string { return this.placeholder ?? AiText.t('ai.select'); }
   private get isSearchable(): boolean { return this.searchable ?? true; }
   private get position(): HandlePosition { return this.menuPosition ?? HandlePosition.BOTTOM; }
   private get isCompact(): boolean { return this.compact ?? false; }
@@ -154,7 +155,7 @@ export class Select extends Reactor {
             <input
               value={this.search}
               onChange={this.onSearchInput}
-              placeholder="Search..."
+              placeholder={AiText.t('ai.search')}
               className={`${GlassMorphism.GLASS_INPUT} h-9 w-full px-2.5 text-xs`}
             />
           </div>
@@ -162,7 +163,7 @@ export class Select extends Reactor {
 
         <div className="max-h-56 overflow-y-auto p-1">
           {list.length === 0 ? (
-            <div className="px-2 py-2 text-xs text-[var(--text-sub)]">No options.</div>
+            <div className="px-2 py-2 text-xs text-[var(--text-sub)]">{AiText.t('ai.noOptions')}</div>
           ) : (
             list.map((option) => (
               <button

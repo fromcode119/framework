@@ -5,6 +5,8 @@ import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IForgeHistorySession } from '@ai/interfaces/forge-history-session.interface';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
+import { AiText } from '@ai/i18n/ai-text';
+import { AssistantConstants } from '@ai/constants/assistant.constants';
 
 /**
  * Saved-chat history sidebar (docked rail or mobile overlay). Presentational → `PureReactor`; props via
@@ -56,7 +58,7 @@ export class HistoryPanel extends PureReactor {
         >
           <p className="line-clamp-2 text-xs font-semibold">{session.title}</p>
           <p className="mt-1 text-[10px] opacity-75">
-            {session.messageCount || session.messages.length || 0} messages {'•'} {time}
+            {AiText.t('ai.messagesCount', { count: session.messageCount || session.messages.length || 0 })} {'•'} {time}
           </p>
         </button>
         <div className="mt-1.5 flex justify-end">
@@ -65,8 +67,8 @@ export class HistoryPanel extends PureReactor {
             data-session-id={session.id}
             onClick={this.onRemoveSession}
             className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[var(--border)] text-[var(--text-sub)] transition hover:bg-[var(--surface-strong)] hover:text-[var(--text-main)]"
-            title="Delete session"
-            aria-label="Delete session"
+            title={AiText.t('ai.deleteSession')}
+            aria-label={AiText.t('ai.deleteSession')}
           >
             <FrameworkIcons.Trash size={11} />
           </button>
@@ -79,7 +81,7 @@ export class HistoryPanel extends PureReactor {
     return (
       <div className="flex h-full w-full flex-col p-4">
         <div className="mb-4 flex h-12 items-center justify-between">
-          <span className="text-base font-bold tracking-tight text-[var(--text-main)]">Atlantis Intelligence</span>
+          <span className="text-base font-bold tracking-tight text-[var(--text-main)]">{AssistantConstants.SURFACE_NAME}</span>
           <div className="flex items-center gap-1.5">
             <button
               type="button"
@@ -87,30 +89,30 @@ export class HistoryPanel extends PureReactor {
               className={`${GlassMorphism.GLASS_BUTTON} h-9 gap-1 px-2 text-[11px] font-semibold`}
             >
               <FrameworkIcons.Plus size={12} />
-              New
+              {AiText.t('ai.new')}
             </button>
             <button
               type="button"
               onClick={this.onRequestClose}
               className={GlassMorphism.GLASS_ICON_BUTTON}
-              aria-label="Close history"
+              aria-label={AiText.t('ai.closeHistory')}
             >
               <FrameworkIcons.X size={14} />
             </button>
           </div>
         </div>
-        <p className="mb-2 px-1 text-[11px] text-[var(--text-sub)]">History</p>
+        <p className="mb-2 px-1 text-[11px] text-[var(--text-sub)]">{AiText.t('ai.history')}</p>
         <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
           {this.historyLoading ? (
             <div className={`${GlassMorphism.GLASS_SUB_PANEL} group px-3 py-3 shadow-sm`}>
               <div className="flex items-center gap-2.5">
                 <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--text-main)]" />
-                <span className="text-xs font-medium text-[var(--text-sub)]">Loading history</span>
+                <span className="text-xs font-medium text-[var(--text-sub)]">{AiText.t('ai.loadingHistory')}</span>
               </div>
             </div>
           ) : this.historySessions.length === 0 ? (
             <div className={`${GlassMorphism.GLASS_SUB_PANEL} px-3 py-3`}>
-              <p className="text-xs text-[var(--text-sub)]">No saved chats yet.</p>
+              <p className="text-xs text-[var(--text-sub)]">{AiText.t('ai.noSavedChatsYet')}</p>
             </div>
           ) : (
             this.historySessions.map((session) => this.renderSession(session))
@@ -126,7 +128,7 @@ export class HistoryPanel extends PureReactor {
         <>
           <button
             type="button"
-            aria-label="Close history panel"
+            aria-label={AiText.t('ai.closeHistoryPanel')}
             onClick={this.onRequestClose}
             className={`fixed inset-0 z-[68] bg-black/30 backdrop-blur-[1px] transition-opacity duration-200 ${
               this.showHistory ? 'opacity-100' : 'pointer-events-none opacity-0'

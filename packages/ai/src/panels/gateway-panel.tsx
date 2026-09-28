@@ -5,6 +5,7 @@ import { Select } from '@ai/ui/select';
 import type { SelectOption } from '@ai/ui/select-option';
 import { AssistantProviderUtils } from '@ai/assistant-provider-utils';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
+import { AiText } from '@ai/i18n/ai-text';
 
 /**
  * Gateway (provider / model / connection) setup aside. Presentational → `PureReactor`; props via `@prop`,
@@ -70,14 +71,14 @@ export class GatewayPanel extends PureReactor {
       >
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Gateway Setup</h2>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">Provider, model, and connection profile.</p>
+            <h2 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">{AiText.t('ai.gatewaySetup')}</h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">{AiText.t('ai.providerModelAndConnectionProfile')}</p>
           </div>
           <button
             type="button"
             onClick={this.closeGateway}
             className={GlassMorphism.GLASS_ICON_BUTTON}
-            aria-label="Close gateway settings"
+            aria-label={AiText.t('ai.closeGatewaySettings')}
           >
             <FrameworkIcons.X size={14} />
           </button>
@@ -85,21 +86,21 @@ export class GatewayPanel extends PureReactor {
 
         <form className="space-y-3 overflow-y-auto pr-1" onSubmit={this.onSubmit}>
           <div>
-            <label className="mb-1 block text-[11px] font-semibold text-slate-600 dark:text-slate-300">Provider</label>
+            <label className="mb-1 block text-[11px] font-semibold text-slate-600 dark:text-slate-300">{AiText.t('ai.provider')}</label>
             <Select value={this.provider} onChange={this.switchProvider} options={this.providerOptions} searchable={false} />
           </div>
 
           <div>
-            <label className="mb-1 block text-[11px] font-semibold text-slate-600 dark:text-slate-300">Model</label>
+            <label className="mb-1 block text-[11px] font-semibold text-slate-600 dark:text-slate-300">{AiText.t('ai.model')}</label>
             <Select value={this.model} onChange={this.setModel} options={this.modelOptions} />
-            {this.loadingProviderModels ? <p className="mt-1 text-[11px] text-slate-400">Loading models...</p> : null}
+            {this.loadingProviderModels ? <p className="mt-1 text-[11px] text-slate-400">{AiText.t('ai.loadingModels')}</p> : null}
             {this.providerModelsError ? <p className="mt-1 text-[11px] text-amber-200">{this.providerModelsError}</p> : null}
           </div>
 
           {this.providerNeedsApiKey ? (
             <div>
               <label className="mb-1 block text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                API Key {this.hasSavedSecret ? '(saved key exists)' : ''}
+                {AiText.t('ai.apiKey')} {this.hasSavedSecret ? AiText.t('ai.savedKeyExists') : ''}
               </label>
               <input
                 type="password"
@@ -113,7 +114,7 @@ export class GatewayPanel extends PureReactor {
           ) : null}
 
           <div>
-            <label className="mb-1 block text-[11px] font-semibold text-slate-600 dark:text-slate-300">Base URL (optional)</label>
+            <label className="mb-1 block text-[11px] font-semibold text-slate-600 dark:text-slate-300">{AiText.t('ai.baseUrlOptional')}</label>
             <input
               type="text"
               value={this.baseUrl}
@@ -128,14 +129,14 @@ export class GatewayPanel extends PureReactor {
             disabled={this.integrationSaving}
             className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--text-main)] text-sm font-semibold text-[var(--bg)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45"
           >
-            {this.integrationSaving ? 'Saving...' : 'Save Gateway'}
+            {this.integrationSaving ? AiText.t('ai.saving2') : AiText.t('ai.saveGateway')}
           </button>
           <button
             type="button"
             onClick={this.openAdvancedAiSettings}
             className={`${GlassMorphism.GLASS_BUTTON} h-11 w-full text-sm font-semibold`}
           >
-            Open Advanced Integration
+            {AiText.t('ai.openAdvancedIntegration')}
           </button>
         </form>
       </aside>
