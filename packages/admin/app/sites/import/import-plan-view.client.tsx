@@ -5,6 +5,8 @@ import { ImportPlanRecord } from '@/app/sites/import/import-plan-record';
 import { ImportPlanSummary } from '@/app/sites/import/import-plan-summary.client';
 import { ImportPlanDetail } from '@/app/sites/import/import-plan-detail.client';
 import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * The import plan, as something an operator can actually read before deciding. Presentational.
@@ -46,12 +48,12 @@ export class ImportPlanView extends PureReactor {
     return (
       <div className="fc-import-plan">
         <p className="fc-sites__text">
-          Archive of <strong>{manifest.tenant?.slug}</strong> ({manifest.source === 'single-tenant' ? 'a single-tenant deployment' : 'a site'}), exported {manifest.exportedAt} from framework {manifest.frameworkVersion || '?'}.
+          <AdminRichText k={manifest.source === 'single-tenant' ? 'sites.importPlan.archiveOfDeployment' : 'sites.importPlan.archiveOfSite'} vars={{ slug: manifest.tenant?.slug, exportedAt: manifest.exportedAt, version: manifest.frameworkVersion || '?' }} />
         </p>
 
         {blockers.length ? (
           <div className="fc-import-plan__blockers">
-            <b>Resolve {blockers.length === 1 ? 'this' : 'these'} before importing</b>
+            <b>{blockers.length === 1 ? AdminI18n.t('sites.importPlan.resolveThis') : AdminI18n.t('sites.importPlan.resolveThese')}</b>
             <ul>{blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul>
           </div>
         ) : null}

@@ -14,6 +14,8 @@ import { SiteForm } from '@/app/sites/components/view/site-form.client';
 import { ImportPlanView } from '@/app/sites/import/import-plan-view.client';
 import { ImportStepDone } from '@/app/sites/import/import-step-done.client';
 import { FileDropzone } from '@/components/ui/view/file-dropzone.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * Import a site archive: upload → identity → PREVIEW → execute.
@@ -86,7 +88,7 @@ export class ImportSitePageClient extends AdminComponent {
       });
       this.plan = plan;
     } catch (err: any) {
-      this.notify(NotificationType.ERROR, 'Upload failed', err?.message || 'The archive could not be read.');
+      this.notify(NotificationType.ERROR, AdminI18n.t('sites.importPlan.uploadFailed'), err?.message || AdminI18n.t('sites.importPlan.theArchiveCouldNotBe'));
     } finally {
       this.busy = false;
     }
@@ -100,7 +102,7 @@ export class ImportSitePageClient extends AdminComponent {
       this.plan = await SitesClient.previewImport(this.uploadId, this.values.toIdentity());
       this.editingIdentity = false;
     } catch (err: any) {
-      this.notify(NotificationType.ERROR, 'Preview failed', err?.message || 'The import could not be planned.');
+      this.notify(NotificationType.ERROR, AdminI18n.t('sites.importPlan.previewFailed'), err?.message || AdminI18n.t('sites.importPlan.theImportCouldNotBe'));
     } finally {
       this.busy = false;
     }
@@ -112,9 +114,9 @@ export class ImportSitePageClient extends AdminComponent {
     this.busy = true;
     try {
       this.result = await SitesClient.executeImport(this.uploadId, this.values.toIdentity(), this.transitPassphrase);
-      this.notify(NotificationType.INFO, 'Site imported', `${this.result?.tenant?.primaryHost} is live for routing — no restart needed.`);
+      this.notify(NotificationType.INFO, AdminI18n.t('sites.importPlan.siteImported'), AdminI18n.t('sites.importPlan.isLiveForRoutingNo', { primaryHost: this.result?.tenant?.primaryHost }));
     } catch (err: any) {
-      this.notify(NotificationType.ERROR, 'Import failed', err?.message || 'Nothing was imported.');
+      this.notify(NotificationType.ERROR, AdminI18n.t('sites.importPlan.importFailed'), err?.message || AdminI18n.t('sites.importPlan.nothingWasImported'));
     } finally {
       this.busy = false;
     }
@@ -132,11 +134,11 @@ export class ImportSitePageClient extends AdminComponent {
 
   private renderArchiveStep(): ReactNode {
     if (this.uploadId && !this.result) {
-      return <ImportStepDone title="Archive" value={`${this.file?.name ?? 'archive'} — read`} actionLabel="Replace" onAction={this.replaceArchive} />;
+      return <ImportStepDone title={AdminI18n.t('sites.importPlan.archive')} value={AdminI18n.t('sites.importPlan.archiveRead', { name: this.file?.name ?? AdminI18n.t('sites.importPlan.archiveWord') })} actionLabel={AdminI18n.t('sites.importPlan.replace')} onAction={this.replaceArchive} />;
     }
     if (this.result) return null;
     return (
-      <Card title="1. Archive">
+      <Card title={AdminI18n.t('sites.importPlan.1Archive')}>
         <div className="fc-sites__upload">
           <FileDropzone
             accept=".tar.gz,.tgz"
@@ -145,11 +147,11 @@ export class ImportSitePageClient extends AdminComponent {
             percent={this.uploadPercent}
             busy={this.busy && !this.uploadId}
             disabled={this.uploadId !== null}
-            hint="A .tar.gz archive exported from this platform, or written by the tenant-export CLI."
+            hint={AdminI18n.t('sites.importPlan.aTarGzArchiveExported')}
           />
           <div className="fc-sites__actions">
             <Button onClick={this.upload} isLoading={this.busy && !this.uploadId} disabled={!this.file || this.uploadId !== null} icon={<FrameworkIcons.Upload size={14} />}>
-              Upload and read
+              {AdminI18n.t('sites.importPlan.uploadAndRead')}
             </Button>
           </div>
         </div>
@@ -162,13 +164,13 @@ export class ImportSitePageClient extends AdminComponent {
     // Collapsed only once a plan exists for these values: with no plan there is nothing below to
     // read, so hiding the form would leave the operator on a page with nothing to do.
     if (this.plan && !this.editingIdentity) {
-      return <ImportStepDone title="Identity" value={this.identityValue} actionLabel="Edit" onAction={this.editIdentity} />;
+      return <ImportStepDone title={AdminI18n.t('sites.importPlan.identity')} value={this.identityValue} actionLabel={AdminI18n.t('sites.importPlan.edit')} onAction={this.editIdentity} />;
     }
     return (
-      <Card title="2. Identity on this platform">
+      <Card title={AdminI18n.t('sites.importPlan.2IdentityOnThisPlatform')}>
         <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} isNew />
         <div className="fc-sites__actions">
-          <Button variant={ButtonVariant.OUTLINE} onClick={this.preview} isLoading={this.busy} icon={<FrameworkIcons.Eye size={14} />}>Preview</Button>
+          <Button variant={ButtonVariant.OUTLINE} onClick={this.preview} isLoading={this.busy} icon={<FrameworkIcons.Eye size={14} />}>{AdminI18n.t('sites.importPlan.preview')}</Button>
         </div>
       </Card>
     );
@@ -182,11 +184,11 @@ export class ImportSitePageClient extends AdminComponent {
       <Card className="fc-import-card" noPadding>
         <div className="fc-import-card__head">
           <div>
-            <div className="fc-import-card__title">What this import will do</div>
+            <div className="fc-import-card__title">{AdminI18n.t('sites.importPlan.whatThisImportWillDo')}</div>
           </div>
           <span className={`fc-import-card__pill fc-import-card__pill--${plan.canExecute ? 'ready' : 'blocked'}`}>
             <span className="fc-import-card__pill-dot" aria-hidden="true" />
-            {plan.canExecute ? 'Ready to import' : `${blockers.length} blocker(s)`}
+            {plan.canExecute ? AdminI18n.t('sites.importPlan.readyToImport') : AdminI18n.t('sites.importPlan.blockersCount', { count: blockers.length })}
           </span>
         </div>
         <div className="fc-import-card__body">
@@ -196,11 +198,11 @@ export class ImportSitePageClient extends AdminComponent {
         <div className="fc-import-card__foot">
           <span className="fc-import-card__foot-text">
             {plan.canExecute
-              ? <>Creates <b>{this.values.slug}</b> as a {this.values.environment} site. Nothing already on this platform is touched.</>
-              : <>Resolve the blocker(s) above, then preview again.</>}
+              ? <AdminRichText k="sites.importPlan.createsSite" vars={{ slug: this.values.slug, environment: this.values.environment }} />
+              : <>{AdminI18n.t('sites.importPlan.resolveTheBlockerSAbove')}</>}
           </span>
           <Button onClick={this.execute} isLoading={this.busy} disabled={!plan.canExecute} icon={<FrameworkIcons.Download size={14} />}>
-            Import this site
+            {AdminI18n.t('sites.importPlan.importThisSite')}
           </Button>
         </div>
       </Card>
@@ -219,7 +221,7 @@ export class ImportSitePageClient extends AdminComponent {
     return (
       <div className="fc-import-card__passphrase">
         <label className="fc-import-card__passphrase-label" htmlFor="fc-transit-passphrase">
-          Archive passphrase
+          {AdminI18n.t('sites.importPlan.archivePassphrase')}
         </label>
         <input
           id="fc-transit-passphrase"
@@ -227,7 +229,7 @@ export class ImportSitePageClient extends AdminComponent {
           autoComplete="off"
           className="fc-import-card__passphrase-input"
           value={this.transitPassphrase}
-          placeholder="The passphrase the export used"
+          placeholder={AdminI18n.t('sites.importPlan.thePassphraseTheExportUsed')}
           onChange={(event) => { this.transitPassphrase = event.target.value; }}
         />
         <span className="fc-import-card__passphrase-hint">
@@ -243,23 +245,23 @@ export class ImportSitePageClient extends AdminComponent {
     const result = this.result;
     if (!result) return null;
     return (
-      <Card title="Imported">
+      <Card title={AdminI18n.t('sites.importPlan.imported')}>
         <p className="fc-sites__text">
           <strong>{result.tenant?.slug}</strong> — {result.totalRows} rows, {result.members} members, plugins {(result.pluginsEnabled ?? []).join(', ') || 'none'}, theme {result.themeActivated ?? 'none'}.
-          {(result.remappedTables ?? []).length ? ` Re-numbered: ${result.remappedTables.join(', ')}.` : ' Every id was preserved.'}
+          {(result.remappedTables ?? []).length ? ' ' + AdminI18n.t('sites.importPlan.reNumbered', { tables: result.remappedTables.join(', ') }) : ' ' + AdminI18n.t('sites.importPlan.everyIdWasPreserved')}
         </p>
         {(result.warnings ?? []).length ? <ul className="fc-sites__warnings">{result.warnings.map((w: string) => <li key={w}>{w}</li>)}</ul> : null}
         {(result.exportWarnings ?? []).length ? (
           <details className="fc-import-plan__warnings">
             <summary>From the export ({result.exportWarnings.length})</summary>
             <p className="fc-import-plan__rule">
-              Written into the archive when it was exported. They describe what the archive held, not a decision this import made.
+              {AdminI18n.t('sites.importPlan.writtenIntoTheArchiveWhen')}
             </p>
             <ul className="fc-sites__warnings">{result.exportWarnings.map((w: string) => <li key={w}>{w}</li>)}</ul>
           </details>
         ) : null}
         <div className="fc-sites__actions">
-          <Button href={AdminConstants.ROUTES.SITES.DETAIL(String(result.tenant?.id ?? ''))} icon={<FrameworkIcons.Settings size={14} />}>Open the site</Button>
+          <Button href={AdminConstants.ROUTES.SITES.DETAIL(String(result.tenant?.id ?? ''))} icon={<FrameworkIcons.Settings size={14} />}>{AdminI18n.t('sites.importPlan.openTheSite')}</Button>
         </div>
       </Card>
     );
@@ -271,8 +273,8 @@ export class ImportSitePageClient extends AdminComponent {
         <CompactPageHeader
           theme={this.theme}
           icon={<FrameworkIcons.Upload size={18} strokeWidth={2} />}
-          title="Import a site"
-          subtitle="From an export made here, or from a single-tenant deployment exported with the tenant-export CLI."
+          title={AdminI18n.t('sites.importPlan.importASite')}
+          subtitle={AdminI18n.t('sites.importPlan.fromAnExportMadeHere')}
           backHref={AdminConstants.ROUTES.SITES.ROOT}
         />
         <div className="fc-sites__body">

@@ -152,7 +152,7 @@ export class SiteMembersCard extends AdminComponent {
               <div className="flex items-center gap-2.5 shrink-0">
                 {member.roles.length
                   ? member.roles.map((role) => <Badge key={role} variant={role === 'admin' ? BadgeVariant.INFO : BadgeVariant.GRAY}>{role}</Badge>)
-                  : <Badge variant={BadgeVariant.GRAY}>member</Badge>}
+                  : <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('sites.member')}</Badge>}
                 <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} isLoading={this.busy} onClick={() => this.revoke(member.userId)} icon={<FrameworkIcons.X size={13} />}>{AdminI18n.t('sites.revoke')}</Button>
               </div>
             </div>

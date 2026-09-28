@@ -27,7 +27,7 @@ export class SitesTable extends PureReactor {
       { id: 'site', header: AdminI18n.t('sites.site'), accessor: (site) => (
         <div className="fc-sites__name">
           <span className="fc-sites__slug">{site.slug}</span>
-          <span className="fc-sites__id">id {site.id}</span>
+          <span className="fc-sites__id">{AdminI18n.t('sites.idLabel', { id: site.id })}</span>
         </div>
       ) },
       { id: 'hosts', header: AdminI18n.t('sites.hosts'), accessor: (site) => (

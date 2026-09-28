@@ -32,7 +32,7 @@ export class McpTokensTable extends AdminComponent {
   }
 
   private scopesCell(token: IMcpToken): ReactNode {
-    if (!token.scopes.length) return <Badge variant={BadgeVariant.WARNING}>unrestricted</Badge>;
+    if (!token.scopes.length) return <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('settings.integrations.unrestricted')}</Badge>;
     return (
       <span className="flex flex-wrap gap-1">
         {token.scopes.map((scope) => <Badge key={scope} variant={BadgeVariant.GRAY}>{scope}</Badge>)}

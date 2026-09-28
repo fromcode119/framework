@@ -48,7 +48,7 @@ export class BuildChangelog extends AdminComponent {
           ))}
         </ul>
         {remaining > 0 ? (
-          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">and {remaining} more</p>
+          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">{AdminI18n.t('sources.andMore', { count: remaining })}</p>
         ) : null}
       </div>
     );
