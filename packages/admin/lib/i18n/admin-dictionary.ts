@@ -29,12 +29,14 @@ export class AdminDictionary {
   /**
    * The language's name IN that language, which is what a chooser must show: someone who only reads
    * Bulgarian needs to find "Български", not "Bulgarian". `Intl.DisplayNames` owns those names; the
-   * tag itself is the answer when a runtime cannot name it.
+   * tag itself is the answer when a runtime cannot name it. Capitalised in that language's own terms,
+   * because a chooser lists names and many languages write their own name lower-case in a sentence.
    */
   static label(locale: string): string {
     const normalized = AdminDictionary.normalize(locale);
     try {
-      return new Intl.DisplayNames([normalized], { type: 'language' }).of(normalized) || normalized;
+      const name = new Intl.DisplayNames([normalized], { type: 'language' }).of(normalized) || normalized;
+      return name.charAt(0).toLocaleUpperCase(normalized) + name.slice(1);
     } catch {
       return normalized;
     }
