@@ -1,6 +1,7 @@
 import { createRequire, registerHooks } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { EnvUtils } from '@fromcode119/core/client';
+import { ThemeSsrModuleUrl } from '@/lib/ssr/theme-ssr-module-url';
 
 /**
  * The module world a theme's SSR bundle actually runs in — deliberately NOT the one Next bundles.
@@ -205,10 +206,14 @@ export class ThemeSsrRuntime {
     registerHooks({
       resolve(specifier, context, nextResolve) {
         const parentUrl = String(context.parentURL || '');
-        if (reactSpecifier.test(specifier) && prefixes.some((prefix) => parentUrl.startsWith(prefix))) {
+        const fromExtension = prefixes.some((prefix) => parentUrl.startsWith(prefix));
+        if (reactSpecifier.test(specifier) && fromExtension) {
           return { url: pathToFileURL(frameworkRequire.resolve(specifier)).href, shortCircuit: true };
         }
-        return nextResolve(specifier, context);
+        const resolved = nextResolve(specifier, context);
+        if (!fromExtension) return resolved;
+        // One module graph per generation — see `ThemeSsrModuleUrl`.
+        return { ...resolved, url: ThemeSsrModuleUrl.carryCacheBuster(specifier, resolved.url, parentUrl) };
       },
     });
   }
