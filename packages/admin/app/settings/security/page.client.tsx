@@ -35,6 +35,8 @@ export class SecuritySettingsPage extends AdminComponent {
    * Save control is not rendered at all.
    */
   @state settings: Record<string, string> | null = null;
+  /** What the server last returned — the baseline a save compares against, so it sends only changes. */
+  private loaded: Record<string, string> = {};
   @state loadError: string | null = null;
   /**
    * Whether this screen's settings belong to the scope the console is in.
@@ -93,7 +95,8 @@ export class SecuritySettingsPage extends AdminComponent {
   }
 
   private async fetchSettings(): Promise<void> {
-    this.settings = await SecuritySettingsIo.load();
+    this.loaded = await SecuritySettingsIo.load();
+    this.settings = { ...this.loaded };
   }
 
   private async fetchStats(): Promise<void> {
@@ -134,7 +137,7 @@ export class SecuritySettingsPage extends AdminComponent {
     if (!settings) return;
     this.isSaving = true;
     try {
-      await SecuritySettingsIo.save(settings);
+      await SecuritySettingsIo.save(settings, this.loaded);
       await this.fetchSettings();
       addNotification({ title: 'Security Updated', message: 'API protection and account defense synced.', type: NotificationType.SUCCESS });
     } catch (err: any) {
