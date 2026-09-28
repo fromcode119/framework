@@ -85,7 +85,7 @@ export class BridgeObjectBuilder {
       getState: () => ContextBridge.getState(),
       loadConfig: (...loadArgs: unknown[]) => ContextBridge.loadConfig(...loadArgs),
       isReady: args.isReady,
-      t: (...tArgs: unknown[]) => ContextBridge.t(...tArgs),
+      t: (key: string, params?: Record<string, unknown>, defaultValue?: string) => ContextBridge.t(key, params, defaultValue),
     };
   }
 
