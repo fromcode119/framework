@@ -7,6 +7,7 @@ import { AppEnv } from '@/lib/env';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class DashboardUpdateAlert extends PureReactor {
   @prop declare updateAvailable: any;
@@ -26,7 +27,7 @@ export class DashboardUpdateAlert extends PureReactor {
                 {AdminI18n.t('dashboard.update.title')}
               </h4>
               <p className="text-sm font-bold text-slate-500 tracking-tight">
-                A new version of {AppEnv.PRODUCT_NAME} <span className="font-bold text-amber-600">v{this.updateAvailable.latest}</span> is available.
+                <AdminRichText k="dashboard.update.newVersion" vars={{ product: AppEnv.PRODUCT_NAME, version: this.updateAvailable.latest }} classes={{ strong: 'font-bold text-amber-600' }} />
               </p>
             </div>
           </div>

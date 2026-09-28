@@ -15,17 +15,20 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class AdminRichText extends PureReactor {
   @prop declare k: string;
   @prop declare vars?: Record<string, unknown>;
+  /** A class for each tag, when the screen styles the marked words (`{ strong: 'text-amber-600' }`). */
+  @prop declare classes?: Partial<Record<'code' | 'strong' | 'em', string>>;
 
   private static readonly TAGS: Record<string, string> = { code: 'code', strong: 'strong', em: 'em', b: 'strong' };
   private static readonly PATTERN = /<(code|strong|em|b)>([\s\S]*?)<\/\1>/g;
 
-  static parts(text: string): ReactNode[] {
+  static parts(text: string, classes: Partial<Record<string, string>> = {}): ReactNode[] {
     const out: ReactNode[] = [];
     let last = 0;
     for (const match of text.matchAll(AdminRichText.PATTERN)) {
       const at = match.index ?? 0;
       if (at > last) out.push(text.slice(last, at));
-      out.push(React.createElement(AdminRichText.TAGS[match[1]], { key: out.length }, match[2]));
+      const tag = AdminRichText.TAGS[match[1]];
+      out.push(React.createElement(tag, { key: out.length, className: classes[tag] }, match[2]));
       last = at + match[0].length;
     }
     if (last < text.length) out.push(text.slice(last));
@@ -33,6 +36,6 @@ export class AdminRichText extends PureReactor {
   }
 
   render(): ReactNode {
-    return <>{AdminRichText.parts(AdminI18n.t(this.k, this.vars))}</>;
+    return <>{AdminRichText.parts(AdminI18n.t(this.k, this.vars), this.classes)}</>;
   }
 }

@@ -33,11 +33,13 @@ export class DashboardPageHeader extends PureReactor {
     if (health.restartPending > 0) {
       return (
         <span className="text-sky-500">
-          {health.restartPending} plugin{health.restartPending === 1 ? '' : 's'} not running the installed version — load it from Plugin Health
+          {health.restartPending === 1
+            ? AdminI18n.t('dashboard.restartPendingOne')
+            : AdminI18n.t('dashboard.restartPendingMany', { count: health.restartPending })}
         </span>
       );
     }
-    return <span className="text-emerald-500">{health.active} of {health.total} plugins active</span>;
+    return <span className="text-emerald-500">{AdminI18n.t('dashboard.pluginsActive', { active: health.active, total: health.total })}</span>;
   }
 
   render(): ReactNode {
@@ -57,7 +59,7 @@ export class DashboardPageHeader extends PureReactor {
         actions={
           <div className="px-4 h-9 rounded-lg border flex items-center gap-2 text-xs font-semibold tracking-tight bg-white border-slate-100 text-slate-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
             <FrameworkIcons.Clock size={15} className="text-indigo-500" />
-            {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            {new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
           </div>
         }
       />

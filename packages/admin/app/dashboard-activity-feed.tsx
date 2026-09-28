@@ -31,7 +31,7 @@ export class DashboardActivityFeed extends PureReactor {
              onClick={onViewAll}
              className="text-[11px] font-medium px-3 group text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors dark:text-indigo-400 dark:hover:bg-slate-800"
            >
-              View All <FrameworkIcons.ArrowRight size={13} className="ml-1.5 group-hover:translate-x-0.5 transition-transform" />
+              {AdminI18n.t('dashboard.viewAll')} <FrameworkIcons.ArrowRight size={13} className="ml-1.5 group-hover:translate-x-0.5 transition-transform" />
            </Button>
         </div>
 
@@ -57,7 +57,7 @@ export class DashboardActivityFeed extends PureReactor {
                   </span>
                 </div>
                 <span className="shrink-0 text-[11px] tabular-nums text-slate-400">
-                  {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(item.timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
             )

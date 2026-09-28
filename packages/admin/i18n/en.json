@@ -688,9 +688,16 @@
     "update": {
       "title": "Framework Update Available",
       "dismiss": "Dismiss",
-      "details": "View Update Details"
+      "details": "View Update Details",
+      "newVersion": "A new version of {{product}} <strong>v{{version}}</strong> is available."
     },
-    "recentActivity": "Recent activity"
+    "recentActivity": "Recent activity",
+    "viewAll": "View All",
+    "loggedEventsInWindow": "{{count}} logged events in this window",
+    "infrastructure": "{{name}} Infrastructure",
+    "restartPendingOne": "1 plugin not running the installed version — load it from Plugin Health",
+    "restartPendingMany": "{{count}} plugins not running the installed version — load it from Plugin Health",
+    "pluginsActive": "{{active}} of {{total}} plugins active"
   },
   "notFound": {
     "title": "Page not found",

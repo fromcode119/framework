@@ -725,9 +725,16 @@
     "update": {
       "title": "Има обновление на платформата",
       "dismiss": "Скрий",
-      "details": "Подробности"
+      "details": "Подробности",
+      "newVersion": "Налична е нова версия на {{product}} <strong>v{{version}}</strong>."
     },
-    "recentActivity": "Скорошна активност"
+    "recentActivity": "Скорошна активност",
+    "loggedEventsInWindow": "{{count}} записани събития за този период",
+    "infrastructure": "Инфраструктура на {{name}}",
+    "restartPendingOne": "1 плъгин не изпълнява инсталираната версия — заредете я от „Състояние на плъгините“",
+    "restartPendingMany": "{{count}} плъгина не изпълняват инсталираната версия — заредете я от „Състояние на плъгините“",
+    "pluginsActive": "{{active}} от {{total}} плъгина са активни",
+    "viewAll": "Виж всички"
   },
   "notFound": {
     "title": "Страницата не е намерена",

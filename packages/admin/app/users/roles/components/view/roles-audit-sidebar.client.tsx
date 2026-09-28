@@ -40,7 +40,7 @@ export class RolesAuditSidebar extends PureReactor {
                     <div className="flex items-baseline justify-between gap-2">
                       <span className={`truncate text-xs font-medium ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{log.message}</span>
                       <span className="shrink-0 text-[10px] text-slate-400">
-                        {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(log.timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-400">

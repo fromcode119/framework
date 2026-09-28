@@ -102,7 +102,7 @@ export class DashboardActivityChart extends PureReactor {
           formatValue={(value) => String(Math.round(value))}
         />
         <p className="mt-3 text-[11px] font-medium text-slate-400">
-          {window.totalEvents} logged events in this window
+          {AdminI18n.t('dashboard.loggedEventsInWindow', { count: window.totalEvents })}
         </p>
       </Card>
     );
