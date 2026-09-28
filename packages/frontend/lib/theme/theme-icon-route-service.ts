@@ -26,7 +26,7 @@ export class ThemeIconRouteService {
       // request failed, and a site without an icon of its own got an empty 204 instead of this one.
       const fallback = await FrontendPublicFile.read(resolved.frameworkFallbackPath);
       if (fallback) {
-        return ThemeIconRouteService.okResponse(fallback, ThemeIconRouteService.contentTypeOf(resolved.frameworkFallbackPath));
+        return ThemeIconRouteService.okResponse(new Uint8Array(fallback), ThemeIconRouteService.contentTypeOf(resolved.frameworkFallbackPath));
       }
 
       return new NextResponse(null, { status: 204, headers: { 'Cache-Control': 'public, max-age=86400' } });
@@ -42,7 +42,7 @@ export class ThemeIconRouteService {
     return 'image/png';
   }
 
-  private static okResponse(body: ArrayBuffer | Buffer, contentType: string): NextResponse {
+  private static okResponse(body: BodyInit, contentType: string): NextResponse {
     return new NextResponse(body, {
       status: 200,
       headers: { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=86400' },
