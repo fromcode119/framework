@@ -1,8 +1,7 @@
 import { IDatabaseManager, Schema } from '@fromcode119/database';
-import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, RequestContextUtils } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/core';
+import { StringUtils, RequestContextUtils, PermissionGrants } from '@fromcode119/core';
+import { RoleGrantError } from '@api/services/role-grant-error';
 import { SiteRoleScope } from '@api/services/tenants/site-role-scope';
-import { getTableName } from 'drizzle-orm';
 
 /**
  * Roles and the permissions attached to them — read and written as one thing, because they are one.
@@ -15,9 +14,6 @@ import { getTableName } from 'drizzle-orm';
  * the database, and every method here needs exactly one thing: the connection.
  */
 export class RoleManagementService {
-  /** The join that attaches permissions to a role. Owned here, because only this class writes it. */
-  private static readonly ROLES_PERMISSIONS_TABLE = getTableName(Schema.systemRolesToPermissions);
-
   constructor(private readonly db: any) {}
 
   /**
@@ -50,15 +46,25 @@ export class RoleManagementService {
           columns: { userId: true },
           where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug),
         }) || []).length;
-      const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
-        columns: { permissionName: true },
-        where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)
-      });
-      return { ...role, permissions: permsResult.map((r: any) => r.permissionName), users: userCount };
+      return { ...role, permissions: RoleManagementService.permissionsOf(role), users: userCount };
     }));
   }
 
-  async saveRole(slug: string, data: any) {
+  /**
+   * Save a role. `grantor` is what the person saving it holds: a role may only be given permissions
+   * its editor already has, so `roles:manage` alone cannot mint an administrator. Permissions the role
+   * already carried are left alone — editing a role's description must not require holding all of it.
+   */
+  async saveRole(slug: string, data: any, grantor: string[]) {
+    const requested = StringUtils.normalizeSlugList(data.permissions);
+    const existing = await this.db.findOne(Schema.systemRoles, { slug });
+    const kept = new Set(RoleManagementService.permissionsOf(existing));
+    const beyond = requested.filter((name) => !kept.has(name) && !PermissionGrants.covers(grantor, name));
+    if (beyond.length > 0) {
+      throw new RoleGrantError(beyond);
+    }
+    data = { ...data, permissions: requested };
+
     const now = new Date();
     await this.db.upsert(Schema.systemRoles, {
       slug,
@@ -80,74 +86,39 @@ export class RoleManagementService {
         updatedAt: now
       }
     });
-
-    if (Array.isArray(data.permissions)) {
-      await this.db.delete(RoleManagementService.ROLES_PERMISSIONS_TABLE, { roleSlug: slug });
-      if (data.permissions.length > 0) {
-        for (const perm of data.permissions) {
-          await this.db.insert(RoleManagementService.ROLES_PERMISSIONS_TABLE, { roleSlug: slug, permissionName: perm });
-        }
-      }
-    }
   }
 
   async getRole(slug: string) {
     const role = await this.db.findOne(Schema.systemRoles, { slug });
     if (!role) return null;
 
-    const userCount = await this.db.count(Schema.systemUsersToRoles, {
-      where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug)
-    });
-    const permsResult = await this.db.find(Schema.systemRolesToPermissions, {
-      columns: { permissionName: true },
-      where: this.db.eq(Schema.systemRolesToPermissions.roleSlug, role.slug)
-    });
-
+    // Counted the way the list counts it: a site's own members, not every account on the box.
+    const site = await SiteRoleScope.current(this.db);
+    const userCount = site
+      ? site.holdersOf(String(role.slug))
+      : await this.db.count(Schema.systemUsersToRoles, {
+        where: this.db.eq(Schema.systemUsersToRoles.roleSlug, role.slug)
+      });
     return {
       ...role,
-      permissions: permsResult.map((r: any) => r.permissionName),
+      permissions: RoleManagementService.permissionsOf(role),
       users: userCount
     };
+  }
+
+  /**
+   * The permissions a role carries — read from `_system_roles.permissions`, the column the permission
+   * checker enforces. The list used to come from the `_system_roles_permissions` join instead, which
+   * only this editor wrote: a role a plugin declared (`context.roles.ensure`) carried its permission,
+   * was granted it on every request, and was listed with "0 perms".
+   */
+  static permissionsOf(role: any): string[] {
+    // Array or JSON-array string, depending on the dialect that stored it.
+    return StringUtils.normalizeSlugList(role?.permissions);
   }
 
   async deleteRole(slug: string) {
     await this.db.delete(Schema.systemRoles, { slug });
     return true;
-  }
-
-  async savePermission(data: any) {
-    if (!data?.name) {
-      throw new Error('Permission name is required');
-    }
-
-    const now = new Date();
-    const existing = await this.db.findOne(SystemConstants.TABLE.PERMISSIONS, { name: data.name });
-    const payload = {
-      name: data.name,
-      description: data.description || null,
-      pluginSlug: data.pluginSlug || 'system',
-      group: data.group || 'Other',
-      impact: data.impact || 'Medium',
-      updatedAt: now
-    };
-
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.PERMISSIONS, { name: data.name }, payload);
-      return;
-    }
-
-    try {
-      await this.db.insert(SystemConstants.TABLE.PERMISSIONS, {
-        ...payload,
-        createdAt: now
-      });
-    } catch (error: any) {
-      const message = String(error?.message || '');
-      if (!message.includes('UNIQUE constraint failed') && !message.toLowerCase().includes('duplicate')) {
-        throw error;
-      }
-
-      await this.db.update(SystemConstants.TABLE.PERMISSIONS, { name: data.name }, payload);
-    }
   }
 }

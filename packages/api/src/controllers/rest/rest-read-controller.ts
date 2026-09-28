@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ICollection, ContentPreviewAccessUtils } from '@fromcode119/core';
+import { ICollection } from '@fromcode119/core';
 import { Schema } from '@fromcode119/database';
 import { QueryHelper } from '@api/services/query-helper';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
@@ -24,7 +24,7 @@ export class RestReadController {
       const rawLocalized = String(locale_mode || '').toLowerCase() === 'raw';
       // Unpublished records are visible to an AUTHORIZED session only. `?preview=1`/`?draft=1` used to
       // lift this default filter on its own, which handed every draft to any anonymous caller.
-      const canPreview = ContentPreviewAccessUtils.canPreviewUnpublished(req.user);
+      const canPreview = await this.runtime.accessPolicy.seesUnpublished(collection, req);
 
       if (!effectiveFilters.status && !canPreview && collection.fields.find((field) => field.name === 'status')) {
         effectiveFilters.status = 'published';
@@ -167,7 +167,7 @@ export class RestReadController {
       const statusField = collection.fields.find((field) => field.name === 'status');
       if (statusField && result.status !== 'published') {
         // Same gate as the list read above — a query parameter cannot make a draft readable.
-        if (!ContentPreviewAccessUtils.canPreviewUnpublished(req.user)) {
+        if (!(await this.runtime.accessPolicy.seesUnpublished(collection, req))) {
           if (!res) {
             return null;
           }

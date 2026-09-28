@@ -1,3 +1,4 @@
+import type { CollectionAccess } from '@/lib/collection-access';
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { Dispatch, MouseEvent, ReactNode, SetStateAction } from 'react';
@@ -41,6 +42,8 @@ export class CollectionListTable extends PureReactor {
   @prop declare pluginSettings: Record<string, any>;
   @prop declare frontendUrl: string;
   @prop declare permalinkStructure?: string;
+  /** What the signed-in user may do to these records. */
+  @prop declare access: CollectionAccess;
   @prop declare onDelete: (id: string, event: MouseEvent) => void;
   @prop declare onQuickEditOpen: (row: any, event: MouseEvent) => void;
   @prop declare onQuickEditSave: () => void;
@@ -124,6 +127,7 @@ export class CollectionListTable extends PureReactor {
               quickEditExpandedId={quickEditExpandedId}
               onQuickEditOpen={onQuickEditOpen}
               onDelete={onDelete}
+              access={this.access}
             />
           )}
           renderExpandedRow={(row) => {

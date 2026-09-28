@@ -1,23 +1,30 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
+import Link from 'next/link';
 import { state } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { DataTable } from '@/components/ui/view/data-table.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { PermissionsColumns } from '@/app/users/permissions/components/view/permissions-columns.client';
+import { PermissionCatalogGroupCard } from '@/app/users/permissions/components/view/permission-catalog-group-card.client';
+import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
 
+/**
+ * Every permission a role can hold on this site, and which roles hold each one.
+ *
+ * Read-only: a permission is not a thing to define. Each is a name some gate checks — the
+ * framework's own, or derived from a plugin this site runs (its screens, and each operation on each
+ * of its collections). Roles are where they are given out.
+ */
 export class PermissionsPage extends AdminComponent {
   private mounted = false;
 
-  @state permissions: any[] = [];
+  @state catalog: IPermissionCatalogGroup[] = [];
+  @state roles: Array<{ slug: string; name: string; permissions: string[] }> = [];
   @state loading = true;
-  /** Set when the registry could not be loaded, so an empty table is never passed off as "no permissions". */
+  /** Set when the list could not be loaded, so an empty page is never passed off as "no permissions". */
   @state loadError = '';
 
   componentDidMount(): void {
@@ -31,18 +38,19 @@ export class PermissionsPage extends AdminComponent {
 
   private async load(): Promise<void> {
     try {
-      // The permissions endpoint scans active plugins' manifest.capabilities and persists new ones,
-      // so simply loading the page keeps the registry in sync — no manual scan button needed.
-      const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS);
-      if (this.mounted) {
-        this.loadError = '';
-        this.permissions = Array.isArray(data) ? data : [];
-      }
+      const [catalog, roles] = await Promise.all([
+        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS),
+        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.ROLES),
+      ]);
+      if (!this.mounted) return;
+      this.catalog = Array.isArray(catalog) ? catalog : [];
+      this.roles = (Array.isArray(roles) ? roles : []).map((role: any) => ({
+        slug: String(role.slug),
+        name: String(role.name || role.slug),
+        permissions: Array.isArray(role.permissions) ? role.permissions : [],
+      }));
     } catch (error: any) {
-      // Without this the table fell back to "No permissions registered in system registry" — a positive
-      // claim about the registry, when in fact the request failed.
-      console.error('Failed to fetch permissions:', error);
-      if (this.mounted) this.loadError = error?.message || 'The permission registry could not be loaded.';
+      if (this.mounted) this.loadError = error?.message || 'The permission list could not be loaded.';
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -50,9 +58,7 @@ export class PermissionsPage extends AdminComponent {
 
   render(): ReactElement {
     const theme = this.theme;
-    const { permissions, loading } = this;
-
-    if (loading) {
+    if (this.loading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
           <Loader label="Loading permissions..." />
@@ -60,50 +66,40 @@ export class PermissionsPage extends AdminComponent {
       );
     }
 
-    const columns = PermissionsColumns.build(theme);
+    const everything = this.roles.filter((role) => role.permissions.includes('*'));
+    const scoped = this.roles.filter((role) => !role.permissions.includes('*'));
 
     return (
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-300">
         <CompactPageHeader
           theme={theme}
-          icon={<FrameworkIcons.Zap size={18} strokeWidth={2} />}
+          icon={<FrameworkIcons.Lock size={18} strokeWidth={2} />}
           title="Permissions"
-          subtitle="Capabilities declared by plugins and grouped into roles. Updated automatically as plugins are installed."
+          subtitle="What a role can be given on this site, and which roles give it."
         />
 
         <div className="flex-1 w-full px-6 lg:px-8 py-6">
           <div className="space-y-6 pb-8">
-            <div className={`rounded-xl border overflow-hidden shadow-sm dark:shadow-none ${
-              theme === ThemeMode.DARK ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200/60'
-            }`}>
-              <DataTable
-                columns={columns}
-                data={permissions}
-                totalDocs={permissions.length}
-                limit={100}
-                page={1}
-                emptyMessage={this.loadError || 'No permissions registered in system registry'}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card title="Security Architecture">
-                <p className="text-sm text-slate-500 leading-relaxed font-medium tracking-tight">
-                  Permissions are the atomic units of security in Fromcode. They are declared by plugins via their <code className="text-indigo-500">manifest.json</code> and enforced by the middleware layer. Administrators group them into roles for simplified user management.
-                </p>
-              </Card>
-              <Card title="Synced from Plugins">
-                <p className="text-sm text-slate-500 leading-relaxed font-medium tracking-tight">
-                  This registry is built automatically from the capabilities active plugins declare — it refreshes whenever you open this page and as plugins are installed or updated. There is nothing to define by hand.
-                </p>
-              </Card>
-            </div>
+            {this.loadError ? (
+              <div className="fc-scope-notice"><span className="fc-scope-notice__text">{this.loadError}</span></div>
+            ) : (
+              <div className="fc-scope-notice">
+                <span className="fc-scope-notice__text">
+                  Each permission is checked by the screen or action it names; plugin permissions follow the plugins this site runs.
+                  {everything.length > 0 ? <> {everything.map((role) => role.name).join(', ')} {everything.length === 1 ? 'holds' : 'hold'} everything and {everything.length === 1 ? 'is' : 'are'} not repeated below.</> : null}
+                  {' '}To give permissions out, <Link href={AdminConstants.ROUTES.USERS.ROLE_LIST}>edit a role</Link>.
+                </span>
+              </div>
+            )}
+            {this.catalog.map((group) => (
+              <PermissionCatalogGroupCard key={group.key} group={group} roles={scoped} />
+            ))}
           </div>
         </div>
 
         <AdminPageFooter
-          label="Permissions Registry"
-          description="Manage system capabilities and plugin permissions."
+          label="Permissions"
+          description="Checked by the framework and by each plugin this site runs."
           links={[
             { label: 'Users', href: AdminConstants.ROUTES.USERS.LIST },
             { label: 'Roles', href: AdminConstants.ROUTES.USERS.ROLE_LIST },

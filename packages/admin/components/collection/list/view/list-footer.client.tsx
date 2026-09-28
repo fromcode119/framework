@@ -13,6 +13,8 @@ export class ListFooter extends PureReactor {
   @prop declare resolvedSlug: string;
   @prop declare handleExport: (format: ExportFormat) => void;
   @prop declare handleImport: (e: ChangeEvent<HTMLInputElement>) => void;
+  /** Import creates records, so it is offered only to a user who may create them. */
+  @prop declare canCreate: boolean;
 
   render(): ReactNode {
     return (
@@ -38,11 +40,13 @@ export class ListFooter extends PureReactor {
               >
                 Export JSON
               </button>
-              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-              <label className="cursor-pointer hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">
-                Bulk Import
-                <input type="file" className="hidden" accept=".json" onChange={this.handleImport} />
-              </label>
+              {this.canCreate ? <>
+                <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                <label className="cursor-pointer hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">
+                  Bulk Import
+                  <input type="file" className="hidden" accept=".json" onChange={this.handleImport} />
+                </label>
+              </> : null}
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
               <a
                 href={`${AdminApi.getBaseUrl()}${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${this.resolvedSlug}`}

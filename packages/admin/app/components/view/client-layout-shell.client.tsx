@@ -1,4 +1,5 @@
 import { SecondarySidebarMode } from '@/app/services/enums/secondary-sidebar-mode.enum';
+import { PagePermissionGate } from '@/components/view/page-permission-gate.client';
 import { PluginLoader } from '@/app/components/view/plugin-loader.client';
 import { Sidebar } from '@/app/components/view/sidebar.client';
 import { SecondarySidebar } from '@/app/components/view/secondary-sidebar.client';
@@ -197,7 +198,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
           {/* The horizontal clip lives on the CONTENT wrapper, not on <main>: wrapping the header in it
               cut off the account button's shadow at the right edge (a wide table still cannot scroll the
               page sideways, because the clip still covers everything the pages render). */}
-          <div className="flex flex-1 flex-col overflow-x-clip transition-all duration-300">{this.children}</div>
+          <div className="flex flex-1 flex-col overflow-x-clip transition-all duration-300"><PagePermissionGate>{this.children}</PagePermissionGate></div>
         </main>
       </div>
     );

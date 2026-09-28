@@ -16,7 +16,7 @@ export class CollectionListPageProps {
       quickEditExpandedId, setQuickEditExpandedId, quickEditLoadingId, setQuickEditLoadingId, quickEditSavingId, setQuickEditSavingId,
       quickEditData, setQuickEditData, quickEditInitialData, setQuickEditInitialData, quickEditStatus, setQuickEditStatus,
       quickEditFields, deleteDialogState, setDeleteDialogState, deleteLoading, setDeleteLoading,
-      statusOptions, allColumns, selectFilterFields, columns, setLoading, fetchData, handleExport, frontendUrl, pageSize
+      statusOptions, allColumns, selectFilterFields, columns, setLoading, fetchData, handleExport, frontendUrl, pageSize, access
     } = state;
 
     const toolbarProps = {
@@ -30,7 +30,7 @@ export class CollectionListPageProps {
         prettifyColumnName: CollectionListUtils.prettifyColumnName
       },
       bulkActionsProps: {
-        selectedIds, statusOptions, collection, slotSlug, resolvedSlug,
+        selectedIds, statusOptions, collection, slotSlug, resolvedSlug, access,
         handleBulkStatusChange: (newStatus: string) => CollectionListPageActions.handleBulkStatusChange({ resolvedSlug, selectedIds, newStatus, page, setLoading, setSelectedIds, fetchData }),
         handleExport,
         handleBulkDelete: () => selectedIds.length && setDeleteDialogState({ mode: 'bulk', ids: [...selectedIds] }),
@@ -39,7 +39,7 @@ export class CollectionListPageProps {
     };
 
     const tableProps = {
-      collection, pluginSlug, slug, slotSlug, resolvedSlug, theme, total, page, search, columns, data, loading, loadError, sort,
+      collection, pluginSlug, slug, slotSlug, resolvedSlug, theme, total, page, search, columns, data, loading, loadError, sort, access,
       stickyColumnIds,
       onPageChange: setPage,
       onSort: handleSort,
@@ -63,7 +63,7 @@ export class CollectionListPageProps {
     };
 
     const footerProps = {
-      theme, slug, total, resolvedSlug, handleExport,
+      theme, slug, total, resolvedSlug, handleExport, canCreate: access.canCreate,
       handleImport: (event: React.ChangeEvent<HTMLInputElement>) => CollectionListPageActions.handleImport(event, resolvedSlug)
     };
 

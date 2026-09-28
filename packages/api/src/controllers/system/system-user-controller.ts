@@ -3,6 +3,7 @@ import { RequestParamUtils } from '@api/utils/request-param-utils';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { CoercionUtils, PlatformOwnershipService, RequestContextUtils, TenantMembershipService } from '@fromcode119/core';
 import { TenantUserScope } from '@api/services/request/tenant-user-scope';
+import { RoleGrantError } from '@api/services/role-grant-error';
 
 export class SystemUserController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
@@ -32,9 +33,13 @@ export class SystemUserController {
 
   async saveRole(req: Request, res: Response) {
     try {
-      await this.runtime.users.saveRole(req.params.slug || req.body.slug, req.body);
+      const callerRoles: string[] = Array.isArray((req as any).user?.roles) ? (req as any).user.roles : [];
+      await this.runtime.users.saveRole(CoercionUtils.toString(req.params.slug || req.body?.slug), req.body, callerRoles);
       res.json({ success: true });
     } catch (error: any) {
+      if (error instanceof RoleGrantError) {
+        return res.status(403).json({ error: error.message, permissions: error.permissions });
+      }
       res.status(500).json({ error: error.message });
     }
   }
@@ -63,15 +68,6 @@ export class SystemUserController {
   async getPermissions(req: Request, res: Response) {
     try {
       res.json(await this.runtime.users.getPermissions());
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-
-  async savePermission(req: Request, res: Response) {
-    try {
-      await this.runtime.users.savePermission(req.body);
-      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

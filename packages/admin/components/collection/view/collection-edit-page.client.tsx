@@ -5,6 +5,7 @@ import { ContextHooks } from '@fromcode119/react';
 import { Bridge, prop } from '@fromcode119/react-class-components';
 
 import { ThemeHooks } from '@/components/view/use-theme.client';
+import { AuthHooks } from '@/components/view/use-auth.client';
 import { CollectionEditPageView } from '@/components/collection/edit/view/collection-edit-page-view.client';
 import type { ICollectionEditPageValues } from '@/components/collection/interfaces/collection-edit-page-values.interface';
 
@@ -24,11 +25,12 @@ export class CollectionEditPage extends Bridge<ICollectionEditPageValues> {
       collections: ContextHooks.useCollections(),
       settings: ContextHooks.useGlobalSettings(),
       theme: ThemeHooks.useTheme().theme,
+      user: AuthHooks.useAuth().user,
     };
   }
 
   protected present(values: ICollectionEditPageValues): ReactNode {
-    const { route, router, searchParams, collections, settings, theme } = values;
+    const { route, router, searchParams, collections, settings, theme, user } = values;
     return (
       <CollectionEditPageView
         pluginSlug={route.pluginSlug}
@@ -39,6 +41,7 @@ export class CollectionEditPage extends Bridge<ICollectionEditPageValues> {
         collections={collections}
         settings={settings}
         theme={theme}
+        user={user}
       />
     );
   }

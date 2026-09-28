@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/view/input.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { NewRolePermissionsCard } from '@/app/users/roles/new/components/view/new-role-permissions-card.client';
+import { RolePermissionsEditor } from '@/app/users/roles/components/view/role-permissions-editor.client';
+import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
 import { NewRoleSummarySidebar } from '@/app/users/roles/new/components/view/new-role-summary-sidebar.client';
 import type { INewRoleFormData } from '@/app/users/roles/new/interfaces/new-role-form-data.interface';
 import { state } from '@fromcode119/react-class-components';
@@ -20,7 +21,9 @@ export class NewRolePage extends AdminComponent {
 
   @state loading = false;
 
-  @state permissions: any[] = [];
+  @state catalog: IPermissionCatalogGroup[] = [];
+  /** Set when the catalog could not be loaded, so an empty picker is never passed off as "nothing to grant". */
+  @state catalogError = '';
 
   @state formData: INewRoleFormData = {
     slug: '',
@@ -42,23 +45,14 @@ export class NewRolePage extends AdminComponent {
   private async loadPermissions(): Promise<void> {
     try {
       const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS);
-      if (this.mounted) this.permissions = data || [];
-    } catch (e) {
-      console.error("Failed to load permissions", e);
+      if (this.mounted) this.catalog = Array.isArray(data) ? data : [];
+    } catch (e: any) {
+      if (this.mounted) this.catalogError = e?.message || 'The permissions could not be loaded.';
     }
   }
 
   private patchForm(patch: Partial<INewRoleFormData>): void {
     this.formData = { ...this.formData, ...patch };
-  }
-
-  private togglePermission(perm: string): void {
-    this.formData = {
-      ...this.formData,
-      permissions: this.formData.permissions.includes(perm)
-        ? this.formData.permissions.filter(p => p !== perm)
-        : [...this.formData.permissions, perm],
-    };
   }
 
   private handleNameChange(val: string): void {
@@ -86,7 +80,7 @@ export class NewRolePage extends AdminComponent {
 
   render(): ReactElement {
     const theme = this.theme;
-    const { loading, permissions, formData } = this;
+    const { loading, catalog, catalogError, formData } = this;
     return (
       <div className="w-full flex flex-col animate-in fade-in duration-300">
         <CompactPageHeader
@@ -133,11 +127,11 @@ export class NewRolePage extends AdminComponent {
                 </div>
               </Card>
 
-              <NewRolePermissionsCard
-                theme={theme}
-                permissions={permissions}
+              <RolePermissionsEditor
+                groups={catalog}
                 selected={formData.permissions}
-                onToggle={(perm) => this.togglePermission(perm)}
+                loadError={catalogError}
+                onChange={(permissions) => this.patchForm({ permissions })}
               />
             </div>
 

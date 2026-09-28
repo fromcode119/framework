@@ -111,6 +111,9 @@ export class CollectionListPageLifecycle {
   }
 
   private static loadPluginSettings(self: any): void {
+    // Plugin settings are an administrators' route; for anyone else the request is refused and the
+    // preview links simply go without the plugin's route prefix.
+    if (!self.props.user?.roles?.includes('admin')) return;
     const collection = CollectionListPageLifecycle.collectionOf(self);
     RecordOperations.loadPluginSettings(collection?.pluginSlug)
       .then((response) => self.updateState('pluginSettings', response))

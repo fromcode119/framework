@@ -77,9 +77,9 @@ export class AdminPage extends AdminComponent {
 
     if (isAuthLoading || !user) return;
 
-    // A scoped console user (a staff member, an editor) cannot read the platform statistics this
-    // page is built from; send them to the first screen their menu offers instead.
-    if (!this.userHasPermission(user, '*')) {
+    // A scoped console user (a staff member, an editor) who cannot read the statistics this page is
+    // built from goes to the first screen their menu offers instead.
+    if (!this.userHasPermission(user, 'system:view')) {
       const home = SidebarMenuService.homePathFor(this.runtime.plugins?.menuItems ?? [], user);
       if (home) {
         this.router.replace(home);

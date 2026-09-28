@@ -10,4 +10,6 @@ export interface ICollectionListPageValues {
   collections: any;
   settings: any;
   theme: ReturnType<typeof ThemeHooks.useTheme>['theme'];
+  /** The signed-in user — what they may do to these records decides which actions are offered. */
+  user: any;
 }

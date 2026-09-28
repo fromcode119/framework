@@ -11,8 +11,10 @@ export class AdminSystemNavigationMetadataService {
 
   getMenuItems(): IMenuItemManifest[] {
     return [
-      { label: 'Dashboard', path: AppPathConstants.ADMIN.ROOT, icon: 'Dashboard', group: 'Core', priority: 10 },
-      { label: 'Users', path: AppPathConstants.ADMIN.USERS.ROOT, icon: 'Users', group: 'Platform', priority: 11 },
+      // A framework screen is shown to a non-admin only when it names the permission its API asks for.
+      // The ones that name none (Plugins, Media, Themes, Settings…) sit behind admin-only routes.
+      { label: 'Dashboard', path: AppPathConstants.ADMIN.ROOT, icon: 'Dashboard', group: 'Core', priority: 10, permission: 'system:view' },
+      { label: 'Users', path: AppPathConstants.ADMIN.USERS.ROOT, icon: 'Users', group: 'Platform', priority: 11, permission: 'users:view' },
       // The registry of every site, and of every repository this installation builds. Both are the
       // PLATFORM's own and have no tenant column, so they are withheld inside a site: stepping into a
       // site is meant to make the console that site's, not that site's plus the platform's.
@@ -20,7 +22,7 @@ export class AdminSystemNavigationMetadataService {
       { label: 'Plugins', path: AppPathConstants.ADMIN.PLUGINS.ROOT, icon: 'Package', group: 'Management', priority: 20 },
       { label: 'Sources', path: AppPathConstants.ADMIN.SOURCES.ROOT, icon: 'GitBranch', group: 'Management', priority: 21, platformOnly: true, platformScopeOnly: true },
       { label: 'Media', path: AppPathConstants.ADMIN.MEDIA.ROOT, icon: 'Image', group: 'Core', priority: 30 },
-      { label: 'Activity', path: AppPathConstants.ADMIN.ACTIVITY, icon: 'Activity', group: 'Platform', priority: 85 },
+      { label: 'Activity', path: AppPathConstants.ADMIN.ACTIVITY, icon: 'Activity', group: 'Platform', priority: 85, permission: 'system:view' },
       { label: 'Themes', path: AppPathConstants.ADMIN.THEMES.ROOT, icon: 'Palette', group: 'Platform', priority: 90 },
       { label: 'Settings', path: AppPathConstants.ADMIN.SETTINGS.ROOT, icon: 'Settings', group: 'System', priority: 95 },
     ];
@@ -108,7 +110,7 @@ export class AdminSystemNavigationMetadataService {
         icon: 'Users',
         scope: CapabilityScope.SELF,
         priority: 10,
-        requiredRoles: ['admin'],
+        requiredCapabilities: ['users:view'],
       },
       {
         id: 'people',
@@ -119,7 +121,7 @@ export class AdminSystemNavigationMetadataService {
         icon: 'Users',
         scope: CapabilityScope.SELF,
         priority: 15,
-        requiredRoles: ['admin'],
+        requiredCapabilities: ['users:view'],
       },
       {
         id: 'roles',
@@ -129,7 +131,7 @@ export class AdminSystemNavigationMetadataService {
         icon: 'Shield',
         scope: CapabilityScope.SELF,
         priority: 20,
-        requiredRoles: ['admin'],
+        requiredCapabilities: ['roles:view'],
       },
       {
         id: 'permissions',
@@ -139,7 +141,7 @@ export class AdminSystemNavigationMetadataService {
         icon: 'Lock',
         scope: CapabilityScope.SELF,
         priority: 30,
-        requiredRoles: ['admin'],
+        requiredCapabilities: ['roles:view'],
       },
     ];
   }

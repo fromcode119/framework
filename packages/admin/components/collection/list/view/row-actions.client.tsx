@@ -1,3 +1,4 @@
+import type { CollectionAccess } from '@/lib/collection-access';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { MouseEvent, ReactNode } from 'react';
 import Link from 'next/link';
@@ -10,7 +11,7 @@ import { AdminCollectionUtils } from '@/lib/collection-utils';
 
 export class CollectionListRowActions extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<CollectionListRowActions, 'row' | 'collection' | 'pluginSlug' | 'slug' | 'slotSlug' | 'resolvedSlug' | 'theme' | 'frontendUrl' | 'permalinkStructure' | 'pluginSettings' | 'quickEditExpandedId' | 'onQuickEditOpen' | 'onDelete'>;
+  declare props: Pick<CollectionListRowActions, 'row' | 'collection' | 'pluginSlug' | 'slug' | 'slotSlug' | 'resolvedSlug' | 'theme' | 'frontendUrl' | 'permalinkStructure' | 'pluginSettings' | 'quickEditExpandedId' | 'onQuickEditOpen' | 'onDelete' | 'access'>;
 
   @prop declare row: any;
   @prop declare collection: any;
@@ -25,6 +26,8 @@ export class CollectionListRowActions extends PureReactor {
   @prop declare quickEditExpandedId: string | null;
   @prop declare onQuickEditOpen: (row: any, event: MouseEvent) => void;
   @prop declare onDelete: (id: string, event: MouseEvent) => void;
+  /** What the signed-in user may do to this record — decides which actions are offered. */
+  @prop declare access: CollectionAccess;
 
   render(): ReactNode {
     const {
@@ -40,7 +43,8 @@ export class CollectionListRowActions extends PureReactor {
   pluginSettings,
   quickEditExpandedId,
   onQuickEditOpen,
-  onDelete
+  onDelete,
+  access
 } = this;
   const canPreview = AdminCollectionUtils.supportsPreview(collection);
   const previewUrl = canPreview
@@ -75,7 +79,7 @@ export class CollectionListRowActions extends PureReactor {
       >
         <FrameworkIcons.Edit size={16} />
       </Link>
-      <Link
+      {access.canCreate ? <Link
         href={duplicateHref}
         onClick={(event) => event.stopPropagation()}
         className={`p-2.5 rounded-xl transition-all ${theme === ThemeMode.DARK ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}
@@ -83,8 +87,8 @@ export class CollectionListRowActions extends PureReactor {
         aria-label="Duplicate record"
       >
         <Copy size={16} />
-      </Link>
-      <button
+      </Link> : null}
+      {access.canUpdate ? <button
         onClick={(event) => onQuickEditOpen(row, event)}
         className={`p-2.5 rounded-xl transition-all ${
           quickEditExpandedId === String(row.id)
@@ -101,13 +105,13 @@ export class CollectionListRowActions extends PureReactor {
           size={16}
           className={`${quickEditExpandedId === String(row.id) ? 'rotate-180' : ''} transition-transform`}
         />
-      </button>
-      <button
+      </button> : null}
+      {access.canDelete ? <button
         onClick={(event) => onDelete(String(row.id), event)}
         className={`p-2.5 rounded-xl transition-all ${theme === ThemeMode.DARK ? 'hover:bg-rose-500/10 text-slate-500 hover:text-rose-400' : 'hover:bg-rose-50 text-slate-400 hover:text-rose-600'}`}
       >
         <FrameworkIcons.Trash size={16} />
-      </button>
+      </button> : null}
     </div>
   );
   }

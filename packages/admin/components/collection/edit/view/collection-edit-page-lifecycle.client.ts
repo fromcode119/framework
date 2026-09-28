@@ -47,7 +47,8 @@ export class CollectionEditPageLifecycle {
     CollectionEditPageLifecycle.guard(self, 'override', `${self.props.id}|${isNew}|${resolvedSlug}`, () =>
       self.setState({ readOnlyOverrideFields: {}, readOnlyOverrideGrant: '', readOnlyOverrideTarget: null, readOnlyOverridePasswordTarget: null }));
     CollectionEditPageLifecycle.guard(self, 'pluginSettings', String(collection?.pluginSlug || ''), () => {
-      if (!collection?.pluginSlug) return;
+      // Plugin settings are an administrators' route; anyone else would only collect a refusal.
+      if (!collection?.pluginSlug || !self.props.user?.roles?.includes('admin')) return;
       AdminApi.get(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings`)
         .then((res) => self.updateState('pluginSettings', res?.settings?.settings ?? res?.settings ?? res ?? {}))
         .catch((err) => console.error('Failed to load plugin settings:', err));

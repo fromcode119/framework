@@ -9,4 +9,6 @@ export interface ICollectionEditPageValues {
   collections: any;
   settings: any;
   theme: ReturnType<typeof ThemeHooks.useTheme>['theme'];
+  /** The signed-in user — what they may do to this record decides which actions are offered. */
+  user: any;
 }

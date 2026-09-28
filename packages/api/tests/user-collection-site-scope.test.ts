@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
 import { RequestContextUtils, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-guard';
@@ -64,6 +65,7 @@ function controllerOver(db: any) {
   runtime.accessPolicy = {
     resolveReadConstraints: vi.fn(async () => ({})),
     matchesReadConstraints: vi.fn(() => true),
+    seesUnpublished: (collection: any, req: any) => new CollectionAccessPolicyService().seesUnpublished(collection, req),
     ensureCreateAllowed: vi.fn(async () => undefined),
     ensureUpdateAllowed: vi.fn(async () => undefined),
     ensureDeleteAllowed: vi.fn(async () => undefined),

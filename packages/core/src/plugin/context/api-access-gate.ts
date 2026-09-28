@@ -97,8 +97,9 @@ export class ApiAccessGate {
 
     if (permission && ApiAccessGate.permissionCheck) {
       try {
-        const userId = Number(user.id ?? user.userId);
-        if (userId && (await ApiAccessGate.permissionCheck(userId, permission))) return next();
+        // The roles in effect for THIS request (a site's membership roles on a site). Checking the
+        // account's global roles here refused a site role every plugin route it was given.
+        if (await ApiAccessGate.permissionCheck(roles, permission)) return next();
       } catch {
         // fall through to deny
       }
