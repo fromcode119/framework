@@ -9,6 +9,7 @@ import type { IRecordsHubItem } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
+import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { PersonAccountPanel } from '@/app/users/people/[id]/components/view/person-account-panel.client';
@@ -55,11 +56,15 @@ export class PersonEditPage extends PersonEditPageActions {
     }
 
     if (notFound || !person) {
+      // People belong to a site. With no site selected, "not found" usually means "in a site": say so,
+      // as the plugin pages do, instead of implying the person does not exist.
       return (
-        <div className="w-full min-h-screen flex flex-col items-center justify-center gap-4">
-          <p className="font-bold text-slate-400">This person could not be found.</p>
-          <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-bold text-sm">← Back to People</Link>
-        </div>
+        <SiteScopeGate what={`People #${this.routeId}`}>
+          <div className="w-full min-h-screen flex flex-col items-center justify-center gap-4">
+            <p className="font-bold text-slate-400">This person could not be found.</p>
+            <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-bold text-sm">← Back to People</Link>
+          </div>
+        </SiteScopeGate>
       );
     }
 
