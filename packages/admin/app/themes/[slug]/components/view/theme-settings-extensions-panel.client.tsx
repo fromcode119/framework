@@ -53,7 +53,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
         <div className="space-y-5">
           {Object.entries(groupedThemeSettings).map(([group, keys]) => (
             <div key={group} className="space-y-4">
-              <h4 className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{group}</h4>
+              <h4 className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{group === 'General' ? AdminI18n.t('themes.general') : group}</h4>
               {keys.map((key) => {
                 const schema = themeSettingsSchema[key];
                 const rawValue = tempSettings[key];

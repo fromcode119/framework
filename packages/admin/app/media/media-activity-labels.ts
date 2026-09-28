@@ -8,17 +8,21 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  */
 export class MediaActivityLabels {
   /** Why `unknown` is worth reading closely — it is the only refusal that suggests someone else. */
-  static readonly REFUSAL_NOTE = AdminI18n.t('media.expiredAndLimitReachedAre');
+  static get REFUSAL_NOTE() {
+    return AdminI18n.t('media.expiredAndLimitReachedAre');
+  }
 
-  private static readonly OUTCOMES: Record<string, string> = {
-    granted: 'Opened',
+  private static get OUTCOMES(): Record<string, string> {
+    return {
+    granted: AdminI18n.t('media.opened'),
     unknown: AdminI18n.t('media.unknownLink'),
-    expired: 'Expired',
-    revoked: 'Revoked',
+    expired: AdminI18n.t('media.expired'),
+    revoked: AdminI18n.t('media.revoked'),
     over_limit: AdminI18n.t('media.limitReached'),
     account_required: AdminI18n.t('media.signInNeeded'),
     confirmation_required: AdminI18n.t('media.confirmationNeeded'),
   };
+  }
 
   static outcome(value: unknown): string {
     const key = String(value ?? '');

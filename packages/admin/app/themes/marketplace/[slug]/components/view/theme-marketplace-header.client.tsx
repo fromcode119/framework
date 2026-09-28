@@ -87,8 +87,8 @@ export class ThemeMarketplaceHeader extends PureReactor {
               <FrameworkIcons.Download size={18} strokeWidth={2.5} />
             )}
             {this.siteScope
-              ? (installing ? 'Adding...' : installedTheme ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.addToThisSite'))
-              : (installing ? 'Installing...' : installedTheme && !hasUpdate ? 'Installed' : hasUpdate ? AdminI18n.t('themes.updateTheme') : AdminI18n.t('themes.getThisTheme'))}
+              ? (installing ? AdminI18n.t('themes.adding') : installedTheme ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.addToThisSite'))
+              : (installing ? AdminI18n.t('themes.installing') : installedTheme && !hasUpdate ? AdminI18n.t('themes.installed') : hasUpdate ? AdminI18n.t('themes.updateTheme') : AdminI18n.t('themes.getThisTheme'))}
           </button>
         </div>
       </div>

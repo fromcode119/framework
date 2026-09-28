@@ -35,7 +35,7 @@ export class SiteExportsCard extends PureReactor {
   render(): ReactNode {
     const exports = this.site.exports;
     return (
-      <Card title={`Exports${exports.length ? ` (${exports.length})` : ''}`}>
+      <Card title={exports.length ? AdminI18n.t('sites.exportsCount', { count: exports.length }) : AdminI18n.t('sites.exports')}>
         <p className="fc-sites__text">
           {AdminI18n.t('sites.aPortableArchiveOfThis')}
         </p>

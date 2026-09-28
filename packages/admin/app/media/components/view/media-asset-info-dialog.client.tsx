@@ -39,12 +39,12 @@ export class MediaAssetInfoDialog extends AdminComponent {
   private get facts(): Array<[string, string]> {
     const item = this.item;
     if (!item) return [];
-    const rows: Array<[string, string]> = [['File name', item.originalName]];
-    if (item.relativePath) rows.push(['Path in theme', item.relativePath]);
-    rows.push(['Type', item.mimeType]);
+    const rows: Array<[string, string]> = [[AdminI18n.t('media.fileName'), item.originalName]];
+    if (item.relativePath) rows.push([AdminI18n.t('media.pathInTheme'), item.relativePath]);
+    rows.push([AdminI18n.t('media.type'), item.mimeType]);
     const bytes = Number(item.fileSize);
-    if (Number.isFinite(bytes) && bytes > 0) rows.push(['Size', AdminServices.getInstance().formatter.formatSize(bytes)]);
-    if (item.width && item.height) rows.push(['Dimensions', `${item.width} × ${item.height}`]);
+    if (Number.isFinite(bytes) && bytes > 0) rows.push([AdminI18n.t('media.size'), AdminServices.getInstance().formatter.formatSize(bytes)]);
+    if (item.width && item.height) rows.push([AdminI18n.t('media.dimensions'), `${item.width} × ${item.height}`]);
     rows.push(['URL', item.url]);
     return rows;
   }

@@ -119,7 +119,7 @@ export class SiteMembersCard extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <Card title={`Members${this.total ? ` (${this.total})` : ''}`}>
+      <Card title={this.total ? AdminI18n.t('sites.membersCount', { count: this.total }) : AdminI18n.t('sites.members')}>
         {/* The action lives at the top, as an action. A permanent form under the list read as a third
             row of pagination and left an empty form open on a page nobody came to fill one in. */}
         <div className="fc-sites__card-action">

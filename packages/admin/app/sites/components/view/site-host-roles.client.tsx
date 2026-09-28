@@ -31,7 +31,7 @@ export class SiteHostRoles extends AdminComponent<{
 }> {
   /** The default is offered as a real choice, so picking it back is possible and says what it means. */
   private get options(): Array<{ value: string; label: string }> {
-    const fallback = this.props.isWorkspace ? AdminI18n.t('sites.adminConsole') : 'Storefront';
+    const fallback = this.props.isWorkspace ? AdminI18n.t('sites.adminConsole') : AdminI18n.t('sites.storefront');
     return [
       { value: '', label: (this.props.isWorkspace ? AdminI18n.t('sites.defaultForThisWorkspace', { fallback }) : AdminI18n.t('sites.defaultForThisSite', { fallback })) },
       { value: 'storefront', label: AdminI18n.t('sites.storefront') },

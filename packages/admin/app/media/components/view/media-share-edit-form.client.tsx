@@ -89,7 +89,7 @@ export class MediaShareEditForm extends AdminComponent {
             value={this.recipients}
             onChange={(value: string[] | string) => this.patch({ recipients: Array.isArray(value) ? value : [String(value || '')] })}
             placeholder={AdminI18n.t('media.typeAnEmailOrPick')}
-            suggestionsLabel="People"
+            suggestionsLabel={AdminI18n.t('media.people')}
             theme={this.theme}
             allowCreate
             apiOverrides={{ suggest: AdminConstants.ENDPOINTS.SYSTEM.PEOPLE_SUGGEST }}

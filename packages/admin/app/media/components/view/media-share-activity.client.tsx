@@ -88,10 +88,10 @@ export class MediaShareActivity extends AdminComponent {
     return (
       <div className="px-4 py-3 space-y-3">
         <div className="grid grid-cols-4 gap-3">
-          {this.renderStat('Recipients', Number(this.data?.recipientCount || 0))}
+          {this.renderStat(AdminI18n.t('media.recipients'), Number(this.data?.recipientCount || 0))}
           {this.renderStat(AdminI18n.t('media.pageOpens'), Number(this.data?.viewCount || 0))}
-          {this.renderStat('Downloads', Number(this.data?.downloadCount || 0))}
-          {this.renderStat('Refused', Number(this.data?.refusedCount || 0))}
+          {this.renderStat(AdminI18n.t('media.downloads'), Number(this.data?.downloadCount || 0))}
+          {this.renderStat(AdminI18n.t('media.refused'), Number(this.data?.refusedCount || 0))}
         </div>
         {recipients.length ? (
           <div className={`rounded-xl border ${dark ? 'border-slate-800' : 'border-slate-100'}`}>

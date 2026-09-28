@@ -237,7 +237,7 @@ export class MediaShareDialog extends AdminComponent {
                   value={this.recipients}
                   onChange={this.handleRecipients}
                   placeholder={AdminI18n.t('media.typeAnEmailOrPick')}
-                  suggestionsLabel="People"
+                  suggestionsLabel={AdminI18n.t('media.people')}
                   theme={this.theme}
                   allowCreate
                   apiOverrides={{ suggest: AdminConstants.ENDPOINTS.SYSTEM.PEOPLE_SUGGEST }}

@@ -81,11 +81,11 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
   protected renderTotals(): ReactNode {
     const totals = this.data?.totals || {};
     const cells: Array<[string, number]> = [
-      ['Shares sent', Number(totals.sharesSent || 0)],
-      ['Recipients', Number(totals.recipients || 0)],
-      ['Page opens', Number(totals.views || 0)],
-      ['Downloads', Number(totals.downloads || 0)],
-      ['Refused', Number(totals.refused || 0)],
+      [AdminI18n.t('media.sharesSent'), Number(totals.sharesSent || 0)],
+      [AdminI18n.t('media.recipients'), Number(totals.recipients || 0)],
+      [AdminI18n.t('media.pageOpens'), Number(totals.views || 0)],
+      [AdminI18n.t('media.downloads'), Number(totals.downloads || 0)],
+      [AdminI18n.t('media.refused'), Number(totals.refused || 0)],
     ];
 
     return (

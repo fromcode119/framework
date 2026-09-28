@@ -129,7 +129,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                           {t.iconUrl ? <img src={t.iconUrl} className="w-6 h-6 rounded object-contain" alt="" /> : <FrameworkIcons.Palette size={20} />}
                         </div>
                         <Badge variant={installed ? "success" : "blue"} className="font-semibold tracking-wide px-2 py-1 text-[9px] uppercase rounded-lg">
-                          {installed ? (this.siteScope ? AdminI18n.t('themes.inThisSite') : "Installed") : AdminI18n.t('themes.premium')}
+                          {installed ? (this.siteScope ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.installed')) : AdminI18n.t('themes.premium')}
                         </Badge>
                       </div>
 

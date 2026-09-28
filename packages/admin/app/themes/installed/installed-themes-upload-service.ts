@@ -80,10 +80,10 @@ export class InstalledThemesUploadService {
       {
         title: AdminI18n.t('themes.summary'),
         items: [
-          `Name: ${info?.name || 'Unknown'}`,
-          `Slug: ${info?.slug || 'Unknown'}`,
-          `Version: ${info?.version || 'Unknown'}`,
-          `Files: ${info?.files ?? 'Unknown'}`,
+          AdminI18n.t('themes.nameLine', { name: info?.name || AdminI18n.t('themes.unknown') }),
+          AdminI18n.t('themes.slugLine', { slug: info?.slug || AdminI18n.t('themes.unknown') }),
+          AdminI18n.t('themes.versionLine', { version: info?.version || AdminI18n.t('themes.unknown') }),
+          AdminI18n.t('themes.filesLine', { files: info?.files ?? AdminI18n.t('themes.unknown') }),
         ],
       },
       {
@@ -97,21 +97,21 @@ export class InstalledThemesUploadService {
             }
             return plugin?.archive || AdminI18n.t('themes.unknownBundledPluginArchive');
           })
-          : ['No bundled plugin archives detected'],
+          : [AdminI18n.t('themes.noBundledPluginArchivesDetected')],
       },
       {
         title: AdminI18n.t('themes.requiredMarketplacePlugins'),
-        items: dependencies.length ? dependencies : ['No required marketplace plugins'],
+        items: dependencies.length ? dependencies : [AdminI18n.t('themes.noRequiredMarketplacePlugins')],
       },
       {
         title: AdminI18n.t('themes.installImpact'),
         items: existing.installed
           ? [
-            `This will replace installed theme "${info?.slug}".`,
-            `Current version: ${existing.version || 'Unknown'} (${existing.state || 'unknown'})`,
-            `Incoming version: ${info?.version || 'Unknown'}`,
+            AdminI18n.t('themes.thisWillReplaceInstalledTheme', { slug: info?.slug }),
+            AdminI18n.t('themes.currentVersion', { version: existing.version || AdminI18n.t('themes.unknown'), state: existing.state || AdminI18n.t('themes.unknown') }),
+            AdminI18n.t('themes.incomingVersion', { version: info?.version || AdminI18n.t('themes.unknown') }),
           ]
-          : ['This theme is not currently installed.'],
+          : [AdminI18n.t('themes.thisThemeIsNotCurrently')],
       },
     ];
   }
