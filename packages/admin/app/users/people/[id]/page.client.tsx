@@ -8,6 +8,7 @@ import { FrameworkIcons, RecordsHub } from '@fromcode119/react';
 import type { IRecordsHubItem } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
+import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { PersonAccountPanel } from '@/app/users/people/[id]/components/view/person-account-panel.client';
@@ -121,17 +122,23 @@ export class PersonEditPage extends PersonEditPageActions {
                   onClick={() => { this.reassignOpen = true; this.reassignTo = linked ? String(person.userId) : '__none__'; }}
                   className="h-10 px-5 rounded-xl font-bold text-[12px]">Reassign / unlink login</Button>
               )}
-              {confirmDelete ? (
-                <>
-                  <Button variant={ButtonVariant.DANGER} type="button" isLoading={deleting} onClick={() => this.remove()} className="h-10 px-5 rounded-xl font-bold text-[12px]">Confirm — delete person</Button>
-                  <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => { this.confirmDelete = false; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">Keep</Button>
-                </>
-              ) : (
-                <Button variant={ButtonVariant.DANGER} type="button" icon={<FrameworkIcons.Trash size={14} />} onClick={() => { this.confirmDelete = true; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">Delete person</Button>
-              )}
+              <Button variant={ButtonVariant.DANGER} type="button" icon={<FrameworkIcons.Trash size={14} />} onClick={() => { this.confirmDelete = true; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">Delete person</Button>
             </div>
             <p className="text-[11px] text-slate-400 mt-3">Deleting removes the person record permanently; the linked login account is kept.</p>
           </div>
+
+          {/* The admin's own confirmation, as every other destructive action uses — not a second pair of
+              buttons swapped in beside the first, which read as part of the toolbar. */}
+          <ConfirmDialog
+            isOpen={confirmDelete}
+            onClose={() => { this.confirmDelete = false; }}
+            onConfirm={() => this.remove()}
+            title="Delete this person?"
+            description={`${person.displayName || [person.firstName, person.lastName].filter(Boolean).join(' ') || person.email || `Person #${person.id}`} is removed from People permanently.${linked ? ' Their login account is kept.' : ''}`}
+            confirmLabel="Delete person"
+            variant={ButtonVariant.DANGER}
+            isLoading={deleting}
+          />
 
           <div className="mt-6">
             <RecordsHub
