@@ -5,6 +5,7 @@ import { AccountRouteUtils, AdminGlobalClient, AdminResourceClient, AdminSdkClie
 import { ContextBridge } from '@react/context-bridge';
 import { PluginUiRegistrar } from '@react/plugin-ui-registrar';
 import { PluginDefaultStyle } from '@react/view/plugin-default-style';
+import { ProtectedEmail } from '@react/email/protected-email';
 import { ContextHooks } from '@react/context-hooks/context-hooks';
 import { ThemeOverrideRegistrar } from '@react/theme-override-registrar';
 import { LazyComponentLoaderService } from '@react/lazy-component-loader-service';
@@ -109,6 +110,7 @@ export class BridgeObjectBuilder {
       PluginRuntimeProvider,
       PluginComponent,
       PluginDefaultStyle,
+      ProtectedEmail,
     };
   }
 

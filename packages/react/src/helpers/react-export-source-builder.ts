@@ -52,6 +52,7 @@ export class ReactExportSourceBuilder {
     'PluginRuntimeProvider',
     'PluginComponent',
     'PluginDefaultStyle',
+    'ProtectedEmail',
     'Reactor',
     'PureReactor',
     'Provider',

@@ -95,6 +95,7 @@ export { PluginNavigation } from '@react/plugin-navigation';
 export { PluginRuntimeProvider } from '@react/view/plugin-runtime-provider.client';
 export { PluginComponent } from '@react/view/plugin-component.client';
 export { PluginDefaultStyle } from '@react/view/plugin-default-style';
+export { ProtectedEmail } from '@react/email/protected-email';
 export type { PluginRuntimeValue } from '@react/plugin-runtime-value';
 
 // reactor's OOP surface, re-exported so plugins/themes reach it through the SDK boundary.
