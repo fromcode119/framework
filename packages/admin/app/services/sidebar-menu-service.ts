@@ -8,17 +8,6 @@ import { PermissionGrants } from '@fromcode119/core/utils/permission-grants';
  * branchy logic lives in one testable place. No React, no side effects.
  */
 export class SidebarMenuService {
-  static readonly adminProtectedPaths: string[] = [
-    AdminConstants.ROUTES.ROOT,
-    AdminConstants.ROUTES.PLUGINS.ROOT,
-    AdminConstants.ROUTES.USERS.ROOT,
-    AdminConstants.ROUTES.SETTINGS.ROOT,
-    AdminConstants.ROUTES.MEDIA.ROOT,
-    AdminConstants.ROUTES.USERS.ROLE_LIST,
-    AdminConstants.ROUTES.USERS.PERMISSIONS,
-    AdminConstants.ROUTES.ACTIVITY,
-  ];
-
   static readonly coreGroupPaths: string[] = [
     AdminConstants.ROUTES.ROOT,
     AdminConstants.ROUTES.USERS.ROOT,
@@ -35,14 +24,10 @@ export class SidebarMenuService {
     const isAdmin = !!user?.roles?.includes('admin');
     if (isAdmin) return menuItems;
 
-    // For scoped-staff users: framework/system items (Dashboard, Users, Plugins, Media, Themes, Activity,
-    // Settings) carry NO pluginSlug — those stay admin-only (hidden here). A PLUGIN item is shown only if
-    // the user holds a permission for that plugin (`*`, `<slug>:*`, or any `<slug>:...`), matching the API
-    // gate's per-plugin `<slug>:manage` derivation. Fail-closed: no explicit pluginSlug ⇒ hidden.
-    //
-    // An item that declares its own `permission` narrows that further: it is shown only to a user
-    // granted exactly that permission (or a wildcard covering it). That is how one plugin gives an
-    // employee a "my own work" screen without also listing every management screen beside it.
+    // Everyone else sees exactly the items whose permission they hold (or a wildcard covering it).
+    // The metadata names that permission on every item: a plugin's collection list asks for reading
+    // that collection, its other screens for `<plugin>:manage`, a framework screen for the permission
+    // its API checks. An item that names none — Plugins, Themes, Settings — is administrators' only.
     //
     // A plugin's pages usually arrive as ONE dropdown group whose `children` are those items, so the
     // rule is applied to the children too; a group left with none is dropped.
@@ -67,45 +52,16 @@ export class SidebarMenuService {
     return first(SidebarMenuService.authorizeMenuItems(menuItems, user));
   }
 
-  /**
-   * Is this page withheld from the user by its menu item's own `permission`? A bookmark or typed URL
-   * reaches a page the menu hides; this is the same rule, asked for one path. False for admins and for
-   * pages whose menu item declares no permission.
-   */
-  static isWithheld(menuItems: any[], path: string, user: any): boolean {
-    if (user?.roles?.includes('admin')) return false;
-    const wanted = SidebarMenuService.trim(path);
-    const find = (items: any[]): string => {
-      for (const item of items) {
-        const nested = Array.isArray(item?.children) ? find(item.children) : '';
-        if (nested) return nested;
-        if (!item?.isGroup && SidebarMenuService.trim(item?.path) === wanted) return String(item?.permission || '').trim();
-      }
-      return '';
-    };
-    const required = find(menuItems);
-    const permissions: string[] = Array.isArray(user?.permissions) ? user.permissions : [];
-    return !!required && !PermissionGrants.covers(permissions, required);
-  }
-
-  private static trim(path: unknown): string {
-    return String(path ?? '').trim().replace(/\/+$/, '').toLowerCase();
-  }
-
   private static permitted(menuItems: any[], permissions: string[]): any[] {
     return menuItems.flatMap((item) => {
-      const slug = String(item?.pluginSlug || '').trim().toLowerCase();
-      if (!slug) return [];
       if (Array.isArray(item?.children) && item.children.length > 0) {
-        const children = SidebarMenuService.permitted(item.children.map((child: any) => ({ pluginSlug: slug, ...child })), permissions);
+        const children = SidebarMenuService.permitted(item.children, permissions);
         return children.length > 0 ? [{ ...item, children }] : [];
       }
       const required = String(item?.permission || '').trim();
-      if (required) return PermissionGrants.covers(permissions, required) ? [item] : [];
-      return permissions.some((p) => p === '*' || p === `${slug}:*` || p.startsWith(`${slug}:`)) ? [item] : [];
+      return required && PermissionGrants.covers(permissions, required) ? [item] : [];
     });
   }
-
 
   static resolveGroupKey(itemPath: string, rawGroup: string): string {
     if (SidebarMenuService.coreGroupPaths.includes(itemPath)) return 'core';

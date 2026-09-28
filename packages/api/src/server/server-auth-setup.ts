@@ -8,6 +8,7 @@ import { TenantRegistryService, TenantResolverService } from '@fromcode119/core'
 import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resolver';
 import { McpTokenLookupService } from '@api/controllers/mcp/mcp-token-lookup-service';
 import { McpTokenStore } from '@api/controllers/mcp/mcp-token-store';
+import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
 
 export class ServerAuthSetup {
   constructor(
@@ -31,7 +32,10 @@ export class ServerAuthSetup {
     this.auth.setPermissionChecker(permissionChecker);
     // Wire the same checker into the central plugin-route access gate so `{ access: { permission } }`
     // declarations can be enforced once ENFORCE_AUTHZ_GATEWAY is enabled.
-    ApiAccessGate.setPermissionChecker((userId, permission) => permissionChecker.hasPermission(userId, permission));
+    ApiAccessGate.setPermissionChecker((roles, permission) => permissionChecker.hasPermissionForRoles(roles, permission));
+    // And into the collection policy, so a role granted `<plugin>:<collection>:<action>` can do that
+    // through the collections API, not only see the screen.
+    CollectionAccessPolicyService.setPermissionResolver((roles) => permissionChecker.permissionsForRoles(roles));
     this.logger.info('Permission checker initialized and configured');
 
     this.auth.setSessionValidator(async (jti: string) => {

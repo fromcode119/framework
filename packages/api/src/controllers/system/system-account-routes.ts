@@ -38,10 +38,6 @@ export abstract class SystemAccountRoutes extends BaseController {
     return this.userController.getPermissions(req, res);
   }
 
-  async savePermission(req: Request, res: Response) {
-    return this.userController.savePermission(req, res);
-  }
-
   async getUsers(req: Request, res: Response) {
     return this.userController.getUsers(req, res);
   }

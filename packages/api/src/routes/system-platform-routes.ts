@@ -86,8 +86,6 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
       this.controller.deleteRole);
     this.get(RouteConstants.SEGMENTS.ADMIN_PERMISSIONS, this.auth.requirePermission('roles:view'), 
       this.controller.getPermissions);
-    this.post(RouteConstants.SEGMENTS.ADMIN_PERMISSIONS, this.auth.requirePermission('roles:manage'), 
-      this.controller.savePermission);
     
     // User management
     this.get(RouteConstants.SEGMENTS.ADMIN_USERS, this.auth.requirePermission('users:view'), 

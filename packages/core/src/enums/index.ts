@@ -21,6 +21,7 @@ export * from '@core/enums/measurement-system.enum';
 export * from '@core/enums/measurement-weight-unit.enum';
 export * from '@core/enums/middleware-stage.enum';
 export * from '@core/enums/nav-group-strategy.enum';
+export * from '@core/enums/collection-permission-action.enum';
 export * from '@core/enums/plugin-capability.enum';
 export * from '@core/enums/plugin-health-status.enum';
 export * from '@core/enums/sort-order.enum';

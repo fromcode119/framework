@@ -1,8 +1,28 @@
 import { WriteOperation } from '@api/services/enums/write-operation.enum';
-import { ICollection, EnvUtils } from '@fromcode119/core';
+import { ICollection, EnvUtils, PermissionGrants, PermissionNames, CollectionPermissionAction, ContentPreviewAccessUtils } from '@fromcode119/core';
 
 export class CollectionAccessPolicyService {
+  /**
+   * Resolves the permissions a set of roles carries. Wired once by the auth layer at boot, exactly as
+   * the plugin-route gate is; unwired, no role is granted anything here (fail closed).
+   */
+  private static permissionResolver: ((roles: string[]) => Promise<string[]>) | null = null;
+
+  /** One lookup per request, however many collections it touches. */
+  private static readonly requestPermissions = new WeakMap<object, Promise<string[]>>();
+
+  static setPermissionResolver(resolver: (roles: string[]) => Promise<string[]>): void {
+    CollectionAccessPolicyService.permissionResolver = resolver;
+  }
+
   async resolveReadConstraints(collection: ICollection, req: any): Promise<Record<string, unknown>> {
+    // A role GRANTED reading this collection reads all of it, the way an administrator does. Asked
+    // before the collection's own rule, which is written for everyone else: its row scoping ("your
+    // own records") and its explicit denies are what a user without the grant gets.
+    if (await this.isGranted(collection, req, CollectionPermissionAction.READ)) {
+      return {};
+    }
+
     const accessResult = await this.evaluateAccess(collection.access?.read, req);
     if (accessResult === true) {
       return {};
@@ -88,6 +108,12 @@ export class CollectionAccessPolicyService {
       this.throwOperationDisabled(collection, action);
     }
 
+    // The write operations and the collection actions share their names (`create`, `update`, `delete`).
+    const granted = CollectionPermissionAction.fromValue(action.value) as CollectionPermissionAction | undefined;
+    if (granted && await this.isGranted(collection, req, granted)) {
+      return;
+    }
+
     const accessResult = await this.evaluateAccess(collection.access?.[action.value], req);
     if (accessResult === true || this.isConstraint(accessResult)) {
       return;
@@ -115,6 +141,42 @@ export class CollectionAccessPolicyService {
     }
 
     return Boolean(result);
+  }
+
+  /**
+   * May this request see every record of the collection, unpublished ones included? An administrator
+   * (or anyone the preview rule admits) may, and so may a role GRANTED reading the collection: the
+   * `status = published` default exists to keep drafts off the storefront, and applied to a clerk given
+   * Orders it hid every order, because an order is never "published".
+   */
+  async seesUnpublished(collection: ICollection, req: any): Promise<boolean> {
+    return ContentPreviewAccessUtils.canPreviewUnpublished(req?.user)
+      || this.isGranted(collection, req, CollectionPermissionAction.READ);
+  }
+
+  /**
+   * Does a role in effect for this request hold `<plugin>:<collection>:<action>` (or a wildcard over
+   * it)? Only a plugin's collections are grantable this way. A SYSTEM collection (users, media,
+   * settings…) is governed by the framework's own permissions on its own routes, and a collection
+   * with no owning plugin has no name a role could hold.
+   */
+  private async isGranted(collection: ICollection, req: any, action: CollectionPermissionAction): Promise<boolean> {
+    const pluginSlug = String(collection.pluginSlug ?? '').trim();
+    if (!pluginSlug || collection.system || !req?.user) return false;
+    const permissions = await this.permissionsOf(req);
+    return PermissionGrants.covers(permissions, PermissionNames.collection(pluginSlug, PermissionNames.collectionKey(collection), action));
+  }
+
+  private permissionsOf(req: any): Promise<string[]> {
+    const resolver = CollectionAccessPolicyService.permissionResolver;
+    if (!resolver) return Promise.resolve([]);
+    let pending = CollectionAccessPolicyService.requestPermissions.get(req);
+    if (!pending) {
+      const roles: string[] = Array.isArray(req.user?.roles) ? req.user.roles.map(String) : [];
+      pending = resolver(roles).catch(() => [] as string[]);
+      CollectionAccessPolicyService.requestPermissions.set(req, pending);
+    }
+    return pending;
   }
 
   private isAdmin(user: any): boolean {

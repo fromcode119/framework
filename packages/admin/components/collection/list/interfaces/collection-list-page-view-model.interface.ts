@@ -1,3 +1,4 @@
+import type { CollectionAccess } from '@/lib/collection-access';
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type React from 'react';
@@ -12,6 +13,8 @@ export interface ICollectionListPageViewModel {
   slotSlug: string;
   pageSize: number;
   frontendUrl: string;
+  /** What the signed-in user may do to these records. */
+  access: CollectionAccess;
   data: any[];
   pluginSettings: Record<string, any>;
   total: number;

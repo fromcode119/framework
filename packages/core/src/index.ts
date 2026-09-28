@@ -107,6 +107,10 @@ export { ContentPreviewAccessUtils } from '@core/utils/content-preview-access-ut
 export { EditorSessionParams } from '@core/editor-session-params';
 export { StringUtils } from '@core/utils/string-utils';
 export { PermissionGrants } from '@core/utils/permission-grants';
+export { PermissionNames } from '@core/utils/permission-names';
+export { CollectionLabelUtils } from '@core/collections/collection-label-utils';
+export { FrameworkPermissions } from '@core/constants/framework-permissions.constants';
+export type { IPermissionDefinition } from '@core/interfaces/permission-definition.interface';
 export { NumberUtils } from '@core/utils/number-utils';
 export { MeasurementSystemUtils } from '@core/utils/measurement-system-utils';
 export { TimeFormatUtils } from '@core/utils/time-format-utils';

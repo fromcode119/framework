@@ -1,4 +1,5 @@
 import { Loader } from '@/components/ui/view/loader.client';
+import { PagePermissionGate } from '@/components/view/page-permission-gate.client';
 import { ClientLayoutAuthStateHooks } from '@/app/services/client-layout-auth-state-hooks';
 import { PluginLoader } from '@/app/components/view/plugin-loader.client';
 import { WorkspaceAccessDenied } from '@/app/components/view/workspace-access-denied.client';
@@ -56,7 +57,7 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
     return (
       <>
         <PluginLoader />
-        <Shell nav={nav} user={shellUser}>{children}</Shell>
+        <Shell nav={nav} user={shellUser}><PagePermissionGate>{children}</PagePermissionGate></Shell>
       </>
     );
   }

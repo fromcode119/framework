@@ -1,4 +1,5 @@
 import { ContentPreviewAccessUtils } from '@fromcode119/core';
+import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
 import { SystemRuntimeController } from '@api/controllers/system/system-runtime-controller';
 import { RestReadController } from '@api/controllers/rest/rest-read-controller';
 
@@ -110,6 +111,8 @@ describe('preview access gate', () => {
       accessPolicy: {
         resolveReadConstraints: vi.fn().mockResolvedValue({}),
         matchesReadConstraints: vi.fn().mockReturnValue(true),
+        // The real rule: with no role grants wired it is exactly the preview rule under test.
+        seesUnpublished: (collection: any, req: any) => new CollectionAccessPolicyService().seesUnpublished(collection, req),
       },
       localization: { getLocaleContext: vi.fn().mockResolvedValue({}) },
       processor: { filterHiddenFields: vi.fn((_collection: any, rows: any) => rows) },

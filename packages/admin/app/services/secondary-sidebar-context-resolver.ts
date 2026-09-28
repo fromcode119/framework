@@ -1,3 +1,5 @@
+import { PermissionGrants } from '@fromcode119/core/utils/permission-grants';
+import { AdminPageAccessService } from '@/app/services/admin-page-access-service';
 import { NavUtils } from '@/lib/nav-utils';
 import type { IMenuItem, ISecondaryPanelItem } from '@fromcode119/react';
 import type { ISecondarySidebarResolveInput } from '@/app/services/interfaces/secondary-sidebar-resolve-input.interface';
@@ -17,7 +19,11 @@ export class SecondarySidebarContextResolver {
     const routeItems = [...contextualItems, ...(input.secondaryPanel.globalItems || [])];
     const activeSourcePath = this.resolveActiveSourcePath(routeItems, input.pathname, activeMenuEntry?.path || '');
     const routeScopedItems = this.filterBySourcePaths(routeItems, input.pathname, activeSourcePath);
-    const items = this.filterAccessibleItems(routeScopedItems, input.userRoles, input.userCapabilities);
+    // A panel entry is also held to the page rule: an entry for a screen the user's role does not open
+    // would lead only to "your role does not include this page".
+    const viewer = { roles: input.userRoles, permissions: input.userCapabilities };
+    const items = this.filterAccessibleItems(routeScopedItems, input.userRoles, input.userCapabilities)
+      .filter((item) => AdminPageAccessService.isAllowed(item.path, input.menuItems, viewer));
 
     return {
       activeContextId: contextId,
@@ -142,9 +148,9 @@ export class SecondarySidebarContextResolver {
       // `userCapabilities` carries the session's effective PERMISSIONS (baked by the login/security
       // payloads). Admins get the `*` wildcard, which satisfies every declared requirement — without this
       // an admin would be denied any capability-gated item, since they hold no per-capability entries.
+      // Wildcards count (`users:*` covers `users:view`), by the same rule every gate uses.
       const capabilityAllowed = !requiredCapabilities.length
-        || normalizedCapabilities.has('*')
-        || requiredCapabilities.every((entry) => normalizedCapabilities.has(entry));
+        || requiredCapabilities.every((entry) => PermissionGrants.covers([...normalizedCapabilities], entry));
       return roleAllowed && capabilityAllowed;
     });
   }

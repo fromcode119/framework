@@ -144,6 +144,8 @@ export class CollectionEditPageHandlers {
    * only; the camelCase halves of the old `v.created_at || v.createdAt` reads were dead code.
    */
   static async fetchRevisions(self: any, page: number): Promise<void> {
+    // Version history is served to administrators only (the versioning routes are admin-guarded).
+    if (!self.props.user?.roles?.includes('admin')) return;
     const { resolvedSlug } = CollectionEditPageHandlers.context(self);
     const limit = CollectionEditPageHandlers.REVISIONS_PAGE_SIZE;
     const offset = (Math.max(1, page) - 1) * limit;

@@ -1,3 +1,4 @@
+import { CollectionAccess } from '@/lib/collection-access';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
@@ -24,6 +25,7 @@ export class CollectionEditPageView extends Reactor {
   @prop declare collections: any;
   @prop declare settings: any;
   @prop declare theme: any;
+  @prop declare user: any;
 
   @state pluginSettings: Record<string, any> = {};
   /** The bound site's storefront, for the Preview link; '' until known. See SiteStorefrontClient. */
@@ -126,14 +128,31 @@ export class CollectionEditPageView extends Reactor {
       );
     }
 
+    // What this user's role lets them do here — by the permission the collections API checks.
+    const access = CollectionAccess.for(this.user, collection);
+    if (edit.isNew && !access.canCreate) {
+      return (
+        <div className="fc-scope-notice">
+          <span className="fc-scope-notice__text">Your role does not include adding {String(collection.displayName || slug)}.</span>
+        </div>
+      );
+    }
+    const canSave = edit.isNew ? access.canCreate : access.canUpdate;
+
     return (
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+        {canSave ? null : (
+          <div className="fc-scope-notice">
+            <span className="fc-scope-notice__text">You can view this record. Your role does not include changing it, so it cannot be saved.</span>
+          </div>
+        )}
         <EditHeader
           collection={collection} pluginSlug={pluginSlug} slug={slug} id={id} isNew={edit.isNew} theme={edit.theme}
           resolvedTitleValue={edit.resolvedTitleValue} changeSummary={edit.changeSummary} setChangeSummary={edit.setChangeSummary}
           formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
           statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} handleInputChange={edit.handleInputChange}
           handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
+          canSave={canSave} canDelete={access.canDelete}
         />
 
         <EditPageBody
@@ -149,7 +168,7 @@ export class CollectionEditPageView extends Reactor {
           setActiveVersionId={edit.setActiveVersionId} setStatus={edit.setStatus}
         />
 
-        {!edit.hideFooter && (
+        {!edit.hideFooter && canSave && (
           <EditFooter
             collection={collection} theme={edit.theme} isNew={edit.isNew} discardHref={`/${pluginSlug}/${slug}`}
             handleSubmit={edit.handleSubmit} changeSummary={edit.changeSummary} setChangeSummary={edit.setChangeSummary} saving={edit.saving}

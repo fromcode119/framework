@@ -1,6 +1,7 @@
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminUrlUtils } from '@/lib/url-utils';
+import { CollectionAccess } from '@/lib/collection-access';
 
 import { CollectionListPageService } from '@/components/collection/list/page-service';
 import type { ICollectionListPageViewModel } from '@/components/collection/list/interfaces/collection-list-page-view-model.interface';
@@ -29,7 +30,7 @@ export class CollectionListPageViewModelBuilder {
 
     return {
       router, settings, theme, columnsMenuRef: self.columnsMenuRef, collection, resolvedSlug, slotSlug,
-      pageSize: self.pageSize, frontendUrl,
+      pageSize: self.pageSize, frontendUrl, access: CollectionAccess.for(self.props.user, collection),
       data: self.state.data, pluginSettings: self.state.pluginSettings, total: self.state.total, loading: self.state.loading,
       loadError: self.state.loadError,
       search: self.state.search, setSearch: (v: any) => self.updateState('search', v),

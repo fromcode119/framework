@@ -14,6 +14,8 @@ export class CollectionListHeader extends PureReactor {
   @prop declare pluginSlug: string;
   @prop declare slug: string;
   @prop declare theme: ThemeMode;
+  /** "New" is offered only when the signed-in user may create these records. */
+  @prop declare canCreate: boolean;
 
   render(): ReactNode {
     const { collection, pluginSlug, slug, theme } = this;
@@ -59,7 +61,7 @@ export class CollectionListHeader extends PureReactor {
           {/* An "Invite" button used to render here for the users collection with no onClick and no
               href — a visible, clickable control that did nothing. Removed until an invite flow
               exists to wire it to. */}
-          {!collection.admin?.disableCreate && (
+          {this.canCreate && !collection.admin?.disableCreate && (
             <Button
               variant={ButtonVariant.PRIMARY}
               size={FieldSize.SM}

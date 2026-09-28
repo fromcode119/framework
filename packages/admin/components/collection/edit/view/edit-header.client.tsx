@@ -30,6 +30,10 @@ export class EditHeader extends PureReactor {
   @prop declare handleSubmit: (e: any, summary: string) => void;
   @prop declare saving: boolean;
   @prop declare setShowDeleteConfirm: (val: boolean) => void;
+  /** Whether the signed-in user may save this record (create when new, update otherwise). */
+  @prop declare canSave: boolean;
+  /** Whether the signed-in user may delete it. */
+  @prop declare canDelete: boolean;
 
   get collectionLabel(): string {
     return CollectionListUtils.resolveCollectionLabel(this.collection, this.slug);
@@ -172,7 +176,7 @@ export class EditHeader extends PureReactor {
               props={{ collection, formData, setFormData, isNew, handleSubmit, saving }}
             />
              
-            {!hideHeaderPrimaryAction && (
+            {!hideHeaderPrimaryAction && this.canSave && (
               <Button 
                 className="h-10 px-6 font-semibold text-[10px] shadow-lg shadow-indigo-600/20" 
                 onClick={this.onSave}
@@ -183,7 +187,7 @@ export class EditHeader extends PureReactor {
               </Button>
             )}
 
-            {!isNew && (
+            {!isNew && this.canDelete && (
               <button 
                 onClick={this.onDelete}
                 className={`h-10 w-10 inline-flex items-center justify-center rounded-[var(--radius)] border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === ThemeMode.DARK ? 'bg-rose-500/10 border-rose-500/20' : ''}`}

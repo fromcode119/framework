@@ -6,6 +6,8 @@ import { Logger } from '@core/logging';
 import { CoreServices } from '@core/services';
 import { AdminRouteUtils } from '@core/plugin/services/admin/admin-route-utils';
 import { AdminSystemNavigationMetadataService } from '@core/plugin/services/admin/admin-system-navigation-metadata-service';
+import { PermissionNames } from '@core/utils/permission-names';
+import { CollectionPermissionAction } from '@core/enums/collection-permission-action.enum';
 
 /**
  * AdminMenuBuilderService
@@ -94,7 +96,7 @@ export class AdminMenuBuilderService {
           }
 
           rawMenuItems.push({
-            ...item,
+            ...this.withPermission(item, slug, pluginCollections),
             path: effectivePath,
             pluginSlug: slug,
             group: item.group || p.admin.group || p.name
@@ -151,6 +153,9 @@ export class AdminMenuBuilderService {
                 group: col.admin?.group || p.admin.group || p.name,
                 priority: col.admin?.priority || col.priority || 100,
                 pluginSlug: slug,
+                // The permission that opens this screen is reading its collection — the same name the
+                // collections API checks, so the menu never offers a list the API then refuses.
+                permission: PermissionNames.collection(slug, PermissionNames.collectionKey(col), CollectionPermissionAction.READ),
                 // DERIVED, not declared. A plugin's tables are tenant-isolated by
                 // `TenantScopedTables`, so with no site selected every one of these screens would
                 // answer zero rows — a list that renders empty and explains nothing. No manifest flag
@@ -243,5 +248,29 @@ export class AdminMenuBuilderService {
     const sorted = finalMenu.sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
     return CoreServices.getInstance().menu.deduplicate(sorted);
+  }
+
+  /**
+   * Every plugin menu item names the permission that opens it, so the sidebar, a bookmarked URL and
+   * the API all answer from one rule. An item that declares its own `permission` keeps it. Otherwise a
+   * screen that IS a collection list needs that collection's `read`, and any other screen of the
+   * plugin needs `<plugin>:manage` — the permission the plugin route gate asks of its undeclared routes.
+   */
+  private withPermission(item: any, slug: string, collections: ICollection[]): any {
+    const children = Array.isArray(item?.children)
+      ? item.children.map((child: any) => this.withPermission(child, slug, collections))
+      : item?.children;
+    const declared = String(item?.permission ?? '').trim();
+    if (declared || !item?.path) return { ...item, children };
+
+    const segments = AdminRouteUtils.normalizePathSegments(item.path);
+    const key = segments[0] === slug ? (segments[1] ?? slug) : segments[0];
+    const collection = segments.length <= 2
+      ? collections.find((col) => [col.shortSlug, (col as any).unprefixedSlug, col.slug].some((candidate) => String(candidate ?? '').toLowerCase() === key))
+      : undefined;
+    const permission = collection
+      ? PermissionNames.collection(slug, PermissionNames.collectionKey(collection), CollectionPermissionAction.READ)
+      : PermissionNames.pluginManage(slug);
+    return { ...item, children, permission };
   }
 }

@@ -2,10 +2,11 @@ import { randomBytes } from 'crypto';
 import { getTableName } from 'drizzle-orm';
 import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
-import { PluginManager, Logger, PluginState, StringUtils, PlatformOwnershipService, PlatformOwnershipError, PluginTenantAccess, RequestContextUtils, TenantMode, TenantMembershipService } from '@fromcode119/core';
+import { PluginManager, Logger, StringUtils, PlatformOwnershipService, PlatformOwnershipError, TenantMembershipService, RequestContextUtils } from '@fromcode119/core';
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { SystemConstants } from '@fromcode119/core';
 import { RoleManagementService } from '@api/services/role-management-service';
+import { PermissionCatalogService } from '@api/services/permission-catalog-service';
 import { SiteRoleScope } from '@api/services/tenants/site-role-scope';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
@@ -160,9 +161,12 @@ export class UserManagementService {
     return this.roles.getRoles(...args);
   }
 
-  /** @see RoleManagementService.saveRole */
-  saveRole(...args: Parameters<RoleManagementService["saveRole"]>): ReturnType<RoleManagementService["saveRole"]> {
-    return this.roles.saveRole(...args);
+  /**
+   * @see RoleManagementService.saveRole — `callerRoles` are the roles in effect for the request saving
+   * it (a site's membership roles on a site), whose permissions bound what the role may be given.
+   */
+  async saveRole(slug: string, data: any, callerRoles: string[]) {
+    return this.roles.saveRole(slug, data, await this.auth.getPermissionsForRoles(callerRoles));
   }
 
   /** @see RoleManagementService.getRole */
@@ -173,11 +177,6 @@ export class UserManagementService {
   /** @see RoleManagementService.deleteRole */
   deleteRole(...args: Parameters<RoleManagementService["deleteRole"]>): ReturnType<RoleManagementService["deleteRole"]> {
     return this.roles.deleteRole(...args);
-  }
-
-  /** @see RoleManagementService.savePermission */
-  savePermission(...args: Parameters<RoleManagementService["savePermission"]>): ReturnType<RoleManagementService["savePermission"]> {
-    return this.roles.savePermission(...args);
   }
 
   async deleteUser(id: number) {
@@ -217,57 +216,9 @@ export class UserManagementService {
     await this.db.update(UserManagementService.USERS_TABLE, { id: userId }, { roles: normalized, updatedAt: new Date() });
   }
 
-  async getPermissions() {
-    const plugins = this.manager.getPlugins().filter(p => p.state === PluginState.ACTIVE);
-    const dbPermissions = await this.db.find(SystemConstants.TABLE.PERMISSIONS);
-    const permissionNames = new Set(dbPermissions.map((permission: any) => String(permission?.name || '').trim()).filter(Boolean));
-    
-    for (const p of plugins) {
-      const manifest = p?.manifest || {};
-      const pluginSlug = String(manifest.slug || 'system').trim() || 'system';
-      const pluginName = String(manifest.name || pluginSlug).trim() || 'Plugin';
-      const pluginGroup = String(manifest.admin?.group || 'Other').trim() || 'Other';
-      const caps: any[] = Array.isArray(manifest.capabilities) ? manifest.capabilities : [];
-      for (const cap of caps) {
-        const name = String(typeof cap === 'string' ? cap : cap?.name || '').trim();
-        if (!name || permissionNames.has(name)) {
-          continue;
-        }
-
-        const now = new Date();
-        const description = typeof cap === 'string' ? `Capability from ${pluginName}` : String(cap?.description || `Capability from ${pluginName}`).trim();
-        await this.savePermission({
-          name,
-          description,
-          pluginSlug,
-          group: pluginGroup,
-          impact: 'Medium',
-          updatedAt: now,
-        });
-        permissionNames.add(name);
-      }
-    }
-
-    // THE BACKFILL ABOVE STAYS COMPLETE; THE ANSWER IS SCOPED.
-    //
-    // `_system_permissions` is a platform registry — every active plugin's capabilities are recorded
-    // in it whoever happens to trigger this read, because a capability that is registered only when a
-    // platform admin visits a screen is a capability that half the installs never get. What must not
-    // happen is returning the whole registry to a site: it named products that site does not run
-    // — capability names carry the extension's own vocabulary, so through the names themselves, what those
-    // products do.
-    //
-    // `system` survives the filter because it is the framework's own, and every site holds it.
-    const rows = await this.db.find(SystemConstants.TABLE.PERMISSIONS);
-    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
-    if (!TenantMode.isEnabled() || !tenantId) return rows;
-
-    const visible = PluginTenantAccess.enabledSlugsFor(tenantId);
-    // Rows come back from the raw manager, so the column is `plugin_slug`.
-    return (rows || []).filter((row: any) => {
-      const slug = String(row?.plugin_slug ?? '').trim();
-      return !slug || slug === 'system' || visible.has(slug);
-    });
+  /** Every permission a role can be given here — see {@link PermissionCatalogService}. */
+  getPermissions() {
+    return new PermissionCatalogService(this.manager).list();
   }
 
   /**
@@ -288,13 +239,25 @@ export class UserManagementService {
     return String(row?.value || '').trim().toLowerCase() === 'true';
   }
 
+  /**
+   * An account-level meta row (`user:<id>:account_status`, `…:force_password_reset`), written where
+   * the request stands. Inside a site it is that site's row, as before. In PLATFORM scope there is no
+   * site, so the row is the platform's own — and a tenant-less `_system_meta` row may only be written
+   * with the platform-admin marker, exactly as the auth controllers write these same keys. Without it
+   * the policy refused the write AFTER the user row was inserted: "create user" in platform scope
+   * answered 500 and left a half-made account behind.
+   */
   private async upsertMeta(key: string, value: string) {
-    const now = new Date();
-    const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.META, { key }, { value, updatedAt: now });
-      return;
-    }
-    await this.db.insert(SystemConstants.TABLE.META, { key, value, updatedAt: now });
+    const write = async () => {
+      const now = new Date();
+      const existing = await this.db.findOne(SystemConstants.TABLE.META, { key });
+      if (existing) {
+        await this.db.update(SystemConstants.TABLE.META, { key }, { value, updatedAt: now });
+        return;
+      }
+      await this.db.insert(SystemConstants.TABLE.META, { key, value, updatedAt: now });
+    };
+    if (RequestContextUtils.getTenantId()) return write();
+    return this.db.withPlatformAdmin(write);
   }
 }

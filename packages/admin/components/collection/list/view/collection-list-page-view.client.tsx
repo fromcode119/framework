@@ -26,6 +26,7 @@ export class CollectionListPageView extends Reactor {
   @prop declare collections: any;
   @prop declare settings: any;
   @prop declare theme: any;
+  @prop declare user: any;
 
   @state data: any[] = [];
   @state pluginSettings: Record<string, any> = {};

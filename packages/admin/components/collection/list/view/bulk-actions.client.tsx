@@ -1,3 +1,4 @@
+import type { CollectionAccess } from '@/lib/collection-access';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
@@ -20,6 +21,8 @@ export class BulkActions extends PureReactor {
   @prop declare collection?: any;
   @prop declare slotSlug?: string;
   @prop declare resolvedSlug?: string;
+  /** What the signed-in user may do to these records — status changes need update, delete needs delete. */
+  @prop declare access: CollectionAccess;
 
   render(): ReactNode {
     const {
@@ -32,7 +35,8 @@ export class BulkActions extends PureReactor {
       setSelectedIds,
       collection,
       slotSlug,
-      resolvedSlug
+      resolvedSlug,
+      access
     } = this;
     if (selectedIds.length === 0) return null;
 
@@ -44,7 +48,7 @@ export class BulkActions extends PureReactor {
           {selectedIds.length} Selected
         </div>
 
-        {statusOptions.length > 0 && (
+        {access.canUpdate && statusOptions.length > 0 && (
           <>
             <div className="flex items-center gap-1 group/bulk">
               {statusOptions.map((option) => (
@@ -73,15 +77,17 @@ export class BulkActions extends PureReactor {
         >
           Export
         </Button>
-        <Button
-          variant={ButtonVariant.SECONDARY}
-          size={FieldSize.SM}
-          className="rounded-xl h-11 px-4 text-[12px] font-bold tracking-tight text-rose-500 hover:text-rose-600"
-          icon={<FrameworkIcons.Trash size={14} />}
-          onClick={handleBulkDelete}
-        >
-          Delete
-        </Button>
+        {access.canDelete ? (
+          <Button
+            variant={ButtonVariant.SECONDARY}
+            size={FieldSize.SM}
+            className="rounded-xl h-11 px-4 text-[12px] font-bold tracking-tight text-rose-500 hover:text-rose-600"
+            icon={<FrameworkIcons.Trash size={14} />}
+            onClick={handleBulkDelete}
+          >
+            Delete
+          </Button>
+        ) : null}
         {/* Plugin-contributed actions on the current selection (domain-agnostic — the owning plugin fills it). */}
         <Slot name={`admin.collection.${slotSlug}.list.bulk.actions`} props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
         <Slot name="admin.collection.list.bulk.actions" props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />

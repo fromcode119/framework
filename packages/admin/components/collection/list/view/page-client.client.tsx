@@ -5,6 +5,7 @@ import { ContextHooks } from '@fromcode119/react';
 import { Bridge, prop } from '@fromcode119/react-class-components';
 
 import { ThemeHooks } from '@/components/view/use-theme.client';
+import { AuthHooks } from '@/components/view/use-auth.client';
 import { CollectionListPageView } from '@/components/collection/list/view/collection-list-page-view.client';
 import type { ICollectionListPageValues } from '@/components/collection/list/interfaces/collection-list-page-values.interface';
 
@@ -25,11 +26,12 @@ export class CollectionListPageClient extends Bridge<ICollectionListPageValues> 
       collections: ContextHooks.useCollections(),
       settings: ContextHooks.useGlobalSettings(),
       theme: ThemeHooks.useTheme().theme,
+      user: AuthHooks.useAuth().user,
     };
   }
 
   protected present(values: ICollectionListPageValues): ReactNode {
-    const { route, router, pathname, searchParams, collections, settings, theme } = values;
+    const { route, router, pathname, searchParams, collections, settings, theme, user } = values;
     return (
       <CollectionListPageView
         pluginSlug={route.pluginSlug}
@@ -40,6 +42,7 @@ export class CollectionListPageClient extends Bridge<ICollectionListPageValues> 
         collections={collections}
         settings={settings}
         theme={theme}
+        user={user}
       />
     );
   }

@@ -11,7 +11,8 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { EditRolePermissionsCard } from '@/app/users/roles/[slug]/edit/components/view/edit-role-permissions-card.client';
+import { RolePermissionsEditor } from '@/app/users/roles/components/view/role-permissions-editor.client';
+import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
 import { EditRoleSummarySidebar } from '@/app/users/roles/[slug]/edit/components/view/edit-role-summary-sidebar.client';
 import type { IEditRoleFormData } from '@/app/users/roles/[slug]/edit/interfaces/edit-role-form-data.interface';
 import { prop, state } from '@fromcode119/react-class-components';
@@ -22,7 +23,7 @@ export class EditRolePage extends AdminComponent {
   @state roleSlug = '';
   @state loading = false;
   @state fetching = true;
-  @state permissions: any[] = [];
+  @state catalog: IPermissionCatalogGroup[] = [];
   @state formData: IEditRoleFormData = {
     slug: '',
     name: '',
@@ -49,13 +50,13 @@ export class EditRolePage extends AdminComponent {
     const notify = this.runtime.notify.notify;
     try {
       this.fetching = true;
-      const [permsData, roleData] = await Promise.all([
+      const [catalog, roleData] = await Promise.all([
         AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS),
         AdminApi.get(`${AdminConstants.ENDPOINTS.SYSTEM.ROLES}/${this.roleSlug}`)
       ]);
 
       if (!this.mounted) return;
-      this.permissions = permsData || [];
+      this.catalog = Array.isArray(catalog) ? catalog : [];
       if (roleData) {
         this.formData = {
           slug: roleData.slug || '',
@@ -74,15 +75,6 @@ export class EditRolePage extends AdminComponent {
     }
   }
 
-  private togglePermission(perm: string): void {
-    this.formData = {
-      ...this.formData,
-      permissions: this.formData.permissions.includes(perm)
-        ? this.formData.permissions.filter((p) => p !== perm)
-        : [...this.formData.permissions, perm]
-    };
-  }
-
   private updateForm(patch: Partial<IEditRoleFormData>): void {
     this.formData = { ...this.formData, ...patch };
   }
@@ -93,7 +85,7 @@ export class EditRolePage extends AdminComponent {
     this.loading = true;
     try {
       await AdminApi.put(`${AdminConstants.ENDPOINTS.SYSTEM.ROLES}/${this.roleSlug}`, this.formData);
-      notify(NotificationType.SUCCESS, 'Role Updated', `${this.formData.name} has been synchronized.`);
+      notify(NotificationType.SUCCESS, 'Role updated', `"${this.formData.name}" was saved.`);
       this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST);
     } catch (e: any) {
       console.error("Failed to update role", e);
@@ -105,12 +97,12 @@ export class EditRolePage extends AdminComponent {
 
   render(): ReactElement {
     const theme = this.theme;
-    const { fetching, loading, permissions, formData } = this;
+    const { fetching, loading, catalog, formData } = this;
 
     if (fetching) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Synchronizing Role Manifest..." />
+          <Loader label="Loading role..." />
         </div>
       );
     }
@@ -161,11 +153,10 @@ export class EditRolePage extends AdminComponent {
                 </div>
               </Card>
 
-              <EditRolePermissionsCard
-                theme={theme}
-                permissions={permissions}
+              <RolePermissionsEditor
+                groups={catalog}
                 selected={formData.permissions}
-                onToggle={(perm) => this.togglePermission(perm)}
+                onChange={(permissions) => this.updateForm({ permissions })}
               />
             </div>
 
