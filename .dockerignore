@@ -9,7 +9,6 @@ packages/**/.next
 .git
 .github
 *.log
-.env.local
 docker-compose.yml
 Dockerfile
 README.md
@@ -25,3 +24,9 @@ data
 backups
 uploads
 storage
+
+# Secrets, for the same reason. A build from a working checkout copied the developer's `.env` into
+# /app/.env — JWT_SECRET and the database URLs, readable by every plugin process in the container.
+.env
+.env.*
+!.env.example
