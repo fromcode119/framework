@@ -238,6 +238,7 @@ export class SystemMetaKeys {
   ROUTING_HOME_TARGET: 'routing_home_target',
   FRONTEND_AUTH_ENABLED: 'frontend_auth_enabled',
   FRONTEND_REGISTRATION_ENABLED: 'frontend_registration_enabled',
+  CONTACT_DETAIL_PROTECTION: 'contact_detail_protection',
   EMAIL_NOTIFICATIONS: 'email_notifications',
   NOTIFICATION_EMAIL: 'notification_email',
   NOTIFICATION_EMAIL_CC: 'notification_email_cc',

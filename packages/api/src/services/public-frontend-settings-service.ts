@@ -14,6 +14,7 @@ export class PublicFrontendSettingsService {
     SystemConstants.META_KEY.ROUTING_HOME_TARGET,
     SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED,
     SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED,
+    SystemConstants.META_KEY.CONTACT_DETAIL_PROTECTION,
   ]);
 
   async getSettings(db: IDatabaseManager): Promise<Record<string, string>> {

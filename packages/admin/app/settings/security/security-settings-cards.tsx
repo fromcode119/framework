@@ -8,6 +8,7 @@ import { LoginProtectionCard } from '@/app/settings/security/login-protection-ca
 import { RecoveryLinksCard } from '@/app/settings/security/recovery-links-card';
 import { ApiFirewallCard } from '@/app/settings/security/api-firewall-card';
 import { AuditTrailCard } from '@/app/settings/security/audit-trail-card';
+import { ContactProtectionCard } from '@/app/settings/security/contact-protection-card';
 
 /**
  * The Security tab's form: every card reads and writes the same `settings` map, keyed by the
@@ -32,6 +33,7 @@ export class SecuritySettingsCards extends PureReactor {
         <RecoveryLinksCard settings={settings} setSettings={setSettings} theme={theme} />
         <ApiFirewallCard settings={settings} setSettings={setSettings} theme={theme} />
         <AuditTrailCard settings={settings} setSettings={setSettings} theme={theme} />
+        <ContactProtectionCard settings={settings} setSettings={setSettings} theme={theme} />
       </>
     );
   }
