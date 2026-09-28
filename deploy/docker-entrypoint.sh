@@ -64,6 +64,26 @@ case "${DEPLOYMENT_MODE:-}" in
     ;;
 esac
 
+# Guest processes (uids 20000-21999) share this container's filesystem with the app. Whatever a guest
+# can read, an UPLOADED site plugin can read — so platform secrets and the retained legacy database
+# must not be world-readable. `/app/.env` holds JWT_SECRET, the database URLs and the internal service
+# secret; a guest that read it could forge any user's session on any site. The app itself reads
+# `/app/.env` as `node` (dotenv runs after PrivilegeDrop drops root), so `node` keeps read access
+# through the group while everyone else — every guest uid — loses it. Failure is announced, not fatal:
+# a deployment left world-readable is a finding, not a reason to refuse to boot.
+harden_secret() {
+  target="$1"
+  [ -e "$target" ] || return 0
+  if chown "root:$APP_USER" "$target" 2>/dev/null && chmod 640 "$target" 2>/dev/null; then
+    return 0
+  fi
+  echo "[entrypoint] could not restrict $target to $APP_USER; a guest process could read it" >&2
+}
+harden_secret /app/.env
+for legacy in /app/data/app.db /app/data/app.db.* /app/data/database.sqlite; do
+  harden_secret "$legacy"
+done
+
 # Egress for guest processes (T5c). Plugin and theme processes run as uids 20000–21999 and talk to
 # their host over Unix sockets only; the host makes their HTTP calls (`context.fetch`). So the kernel
 # may refuse them every IP connection — an infected plugin then has no way to send anything out, not
