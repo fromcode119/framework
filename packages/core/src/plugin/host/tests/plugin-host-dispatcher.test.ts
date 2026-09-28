@@ -1,9 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
 import { PluginHostDispatcher } from '@core/plugin/host/plugin-host-dispatcher';
 import { PluginInvocationTokens } from '@core/plugin/host/plugin-invocation-tokens';
 import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
 import { RequestContextUtils } from '@core/context/request-context';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 function dispatcher() {
   const tokens = new PluginInvocationTokens();
@@ -17,6 +18,7 @@ function dispatcher() {
 }
 
 describe('PluginHostDispatcher', () => {
+  afterEach(() => PluginOwners.forget('alpha'));
   it('refuses a call whose token the host never minted', async () => {
     const { dispatcher: d, context } = dispatcher();
     await expect(d.dispatch(context, { root: 'context', steps: [{ name: 'db' }, { name: 'find', args: ['t'] }], token: 'route:forged' }))
@@ -70,5 +72,20 @@ describe('PluginHostDispatcher', () => {
 
     await expect(d.dispatch(context, call)).rejects.toThrow('"find" is not callable');
     await expect(d.dispatch(context, call)).rejects.not.toBeInstanceOf(PluginPeerUnavailableError);
+  });
+
+  it('blocks a site plugin before a platform service or DDL root is reached', async () => {
+    const { dispatcher: d, tokens } = dispatcher();
+    PluginOwners.record('alpha', 'site-a');
+    const context: any = { meta: { set: vi.fn() } };
+    const token = tokens.mint('route', { tenantId: 'site-a' });
+
+    await expect(d.dispatch(context, {
+      root: 'context', steps: [{ name: 'meta' }, { name: 'set', args: ['platform_key', 'owned'] }], token,
+    })).rejects.toMatchObject({ code: 'tenant_plugin_runtime_denied', target: 'context.meta.set' });
+    await expect(d.dispatch(context, {
+      root: 'ddl', steps: [{ name: 'execute', args: ['ALTER TABLE users DROP COLUMN email'] }], token,
+    })).rejects.toMatchObject({ code: 'tenant_plugin_runtime_denied', target: 'ddl.*' });
+    expect(context.meta.set).not.toHaveBeenCalled();
   });
 });

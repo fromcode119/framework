@@ -32,6 +32,7 @@ export class PluginGuestCoreBridge {
 
   private static primedAtBoot = false;
   private static primedAfterBoot = false;
+  private static siteOwned = false;
 
   /**
    * Fills the mirror at the right moments, without subscribing to anything: at the plugin's first
@@ -42,6 +43,7 @@ export class PluginGuestCoreBridge {
    * the plugin may not declare — that broke plugins that never use hooks.
    */
   static async primeFor(kind: string, remote: PluginGuestRemote): Promise<void> {
+    if (PluginGuestCoreBridge.siteOwned) return;
     if (kind === String(PluginInvocationKind.LIFECYCLE.value)) {
       if (PluginGuestCoreBridge.primedAtBoot) return;
       PluginGuestCoreBridge.primedAtBoot = true;
@@ -53,7 +55,8 @@ export class PluginGuestCoreBridge {
     await PluginGuestCoreBridge.prime(remote);
   }
 
-  static install(registrar: PluginGuestRegistrar, remote: PluginGuestRemote, handlers: PluginGuestHandlers): void {
+  static install(registrar: PluginGuestRegistrar, remote: PluginGuestRemote, handlers: PluginGuestHandlers, siteOwned = false): void {
+    PluginGuestCoreBridge.siteOwned = siteOwned;
     const registration = (payload: IPluginGuestRegistration) => registrar.send(payload);
     // Recorded, so an api that takes this process over is told them again (`PluginDeclarations.CORE_CALLS`).
     const declarations = new PluginGuestDeclarations(registration, (handler) => handlers.keepStable(handler));

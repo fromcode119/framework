@@ -62,6 +62,18 @@ describe('theme discovery with per-site themes on disk', () => {
     expect(discovered(subject).get('acme-reviews')?.ownerTenantId).toBe('acme');
   });
 
+  it('resolves a site-owned theme to its tenant directory, never the platform root', async () => {
+    const root = themesRoot();
+    const subject = managerOn(root);
+    writeTheme(path.join(root, 'tenants', 'acme', 'private-theme'), {
+      slug: 'private-theme', name: 'Private', version: '1.0.0',
+    });
+    await subject.discoverThemes();
+
+    expect(subject.getThemeDirectory('private-theme'))
+      .toBe(path.join(root, 'tenants', 'acme', 'private-theme'));
+  });
+
   it('does NOT let a package name its own owner — the directory decides', async () => {
     // The whole point. A theme uploaded by one site that declares itself the platform's (or another
     // site's) would otherwise be offered to everyone by every gate built on this field.

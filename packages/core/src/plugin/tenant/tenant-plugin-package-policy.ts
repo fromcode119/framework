@@ -22,8 +22,8 @@ import { CoercionUtils } from '@core/utils/coercion-utils';
  *    site's own theme already runs, in the visitor's browser.
  *  - NO INSTALL STEP. Nothing is `npm install`ed for it: dependencies ship bundled, or not at all.
  *  - A CLOSED SET OF CAPABILITIES. Capabilities are declared by the plugin itself and approved on
- *    enable, so for a site's plugin the list below is the ceiling — routes, hooks, translations,
- *    content and cache. No network (it would reach the platform's internal services), no filesystem,
+ *    enable, so for a site's plugin the list below is the ceiling — routes, hooks, translations
+ *    and cache. No network (it would reach the platform's internal services), no filesystem,
  *    no email, no jobs, no other plugins' APIs.
  *
  * REFUSED, NOT STRIPPED: the upload fails and names every reason, as the theme policy does.
@@ -35,7 +35,6 @@ export class TenantPluginPackagePolicy {
     PluginCapability.API.value,
     PluginCapability.HOOKS.value,
     PluginCapability.I18N.value,
-    PluginCapability.CONTENT.value,
     PluginCapability.CACHE.value,
     PluginPermission.API_ROUTES.value,
   ];

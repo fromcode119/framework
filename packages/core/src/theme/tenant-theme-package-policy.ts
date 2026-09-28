@@ -34,6 +34,9 @@ export class TenantThemePackagePolicy {
   /** Native addons are machine code; nothing about a browser-rendered theme needs one. */
   private static readonly FORBIDDEN_EXTENSIONS = ['.node'] as const;
 
+  /** A site's archive is a built browser package, not a place to store dormant executable source. */
+  private static readonly ALLOWED_ROOTS = ['public', 'ui'] as const;
+
   /**
    * Every reason this package may not be installed for a site. Empty means it may.
    *
@@ -103,7 +106,18 @@ export class TenantThemePackagePolicy {
           continue;
         }
         if (entry.isDirectory()) {
+          if (!relative && (TenantThemePackagePolicy.FORBIDDEN_DIRS as readonly string[]).includes(entry.name)) {
+            continue;
+          }
+          if (!relative && !(TenantThemePackagePolicy.ALLOWED_ROOTS as readonly string[]).includes(entry.name)) {
+            found.push(`contains "${entry.name}/" — a site's theme may contain only theme.json, ui/ and public/.`);
+            continue;
+          }
           walk(path.join(dir, entry.name), entryRelative);
+          continue;
+        }
+        if (!relative && entry.name !== 'theme.json') {
+          found.push(`contains "${entry.name}" — a site's theme may contain only theme.json, ui/ and public/.`);
           continue;
         }
         const extension = path.extname(entry.name).toLowerCase();

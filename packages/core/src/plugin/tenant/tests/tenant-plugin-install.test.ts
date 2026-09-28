@@ -81,7 +81,7 @@ describe('site plugin package policy', () => {
   it('accepts a plugin that only asks for what a site may have', () => {
     const dir = tempDir('fc-policy-');
     fs.writeFileSync(path.join(dir, 'index.js'), '');
-    expect(TenantPluginPackagePolicy.violations(dir, { slug: 'x', capabilities: ['api', 'hooks', 'content'] } as any)).toEqual([]);
+    expect(TenantPluginPackagePolicy.violations(dir, { slug: 'x', capabilities: ['api', 'hooks', 'cache', 'i18n'] } as any)).toEqual([]);
   });
 
   it('names every reason at once: schema, admin UI, network, shared sandbox, npm dependencies', () => {
@@ -92,9 +92,9 @@ describe('site plugin package policy', () => {
     fs.writeFileSync(path.join(dir, 'src', 'ui', 'bundle.js'), '');
     fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ dependencies: { lodash: '4' } }));
     const reasons = TenantPluginPackagePolicy.violations(dir, {
-      slug: 'x', capabilities: ['network', 'database:schema'], collections: ['a'], sandbox: false, admin: { menu: [] },
+      slug: 'x', capabilities: ['network', 'database:schema', 'content'], collections: ['a'], sandbox: false, admin: { menu: [] },
     } as any).join(' | ');
-    for (const expected of ['"collections"', '"admin"', '"sandbox": false', '"network"', '"database:schema"', 'migrations/', 'admin bundle', 'npm dependencies']) {
+    for (const expected of ['"collections"', '"admin"', '"sandbox": false', '"network"', '"database:schema"', '"content"', 'migrations/', 'admin bundle', 'npm dependencies']) {
       expect(reasons).toContain(expected);
     }
   });

@@ -75,7 +75,7 @@ export class PluginGuest {
     process.env.ATLANTIS_PROJECT_ROOT = boot.projectRoot;
     process.chdir(boot.projectRoot);
     PluginGuest.shareFrameworkModules(boot.projectRoot);
-    PluginGuestCoreBridge.install(this.registrar, this.remote, this.handlers);
+    PluginGuestCoreBridge.install(this.registrar, this.remote, this.handlers, Boolean(boot.manifest.ownerTenantId));
 
     this.http = new PluginGuestHttp(boot.socketPath, this.remote, boot.socketMode, (connectionId) => this.connections.channel(connectionId));
     this.contextFactory = new PluginGuestContextFactory(this.channel, this.registrar, this.remote, this.handlers, this.http, this.state, boot);

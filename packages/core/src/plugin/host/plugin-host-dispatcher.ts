@@ -8,6 +8,7 @@ import { PluginHostPortableView } from '@core/plugin/host/plugin-host-portable-v
 import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
 import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginRemoteCallRoot } from '@core/plugin/host/enums/plugin-remote-call-root.enum';
+import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-runtime-policy';
 
 /**
  * Runs one guest call against the REAL context, under the tenant the call's token was minted for.
@@ -35,6 +36,7 @@ export class PluginHostDispatcher {
     if (!invocation) {
       throw Object.assign(new Error(`unknown_invocation: plugin "${this.slug}" presented a token the host did not mint`), { code: 'unknown_invocation' });
     }
+    TenantPluginRuntimePolicy.assertRemoteCall(this.slug, call);
     const execute = () => this.walk(this.root(context, call.root), call.steps);
     // No store means the invocation was not started from a request (boot, a scheduler tick): the call
     // runs OUTSIDE any request context, exactly as the in-process plugin's would, so the context's own
@@ -50,6 +52,7 @@ export class PluginHostDispatcher {
    * plugin declares belongs to the platform, which is how its boot-time `onInit` ran it anyway.
    */
   declare(context: PluginContext, steps: IPluginRemoteCall['steps'], root: string = String(PluginRemoteCallRoot.CONTEXT.value)): Promise<unknown> {
+    TenantPluginRuntimePolicy.assertRemoteCall(this.slug, { root, steps });
     return this.walk(this.root(context, root), steps);
   }
 
