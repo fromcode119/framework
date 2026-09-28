@@ -13,6 +13,7 @@ import { Explanation } from '@/components/ui/view/explanation.client';
 import { FrameworkReleaseDefaults } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { GeneralEmailLogoRow } from '@/app/settings/general/general-email-logo-row';
 
 export class GeneralBrandCard extends PureReactor {
   /**
@@ -109,6 +110,10 @@ export class GeneralBrandCard extends PureReactor {
               placeholder={AdminI18n.t('settings.general.eGMyWebsite')}
             />
           </SettingRow>
+        )}
+
+        {this.shown(GeneralEmailLogoRow.KEY) && (
+          <GeneralEmailLogoRow settings={settings} setSettings={this.setSettings} theme={theme} />
         )}
 
         {this.shown('frontend_url') && (

@@ -15,6 +15,7 @@ export class AuthControllerSignupEmailInfrastructure extends AuthControllerUrlIn
     verificationUrl: string;
     firstName?: string;
     brandName: string;
+    logoUrl: string;
     theme?: Record<string, unknown>;
   }): Promise<{ subject: string; text: string; html: string } | null> {
     const branded = CoercionUtils.toBoolean(await this.readSignupSetting(SystemConstants.META_KEY.SIGNUP_EMAIL_BRANDED), false);
@@ -45,6 +46,7 @@ export class AuthControllerSignupEmailInfrastructure extends AuthControllerUrlIn
       footerText: await copy(SystemConstants.META_KEY.SIGNUP_EMAIL_FOOTER_TEXT),
       accentColor: await this.readSignupSetting(SystemConstants.META_KEY.SIGNUP_EMAIL_ACCENT_COLOR),
       verificationUrl: options.verificationUrl,
+      logoUrl: options.logoUrl,
       theme: options.theme || {},
     });
   }

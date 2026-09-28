@@ -209,6 +209,7 @@ export { SigningSecretService } from '@core/security/signing-secret-service';
 export { EmailPreferencesTokenService } from '@core/email/email-preferences-token-service';
 export { FrameworkEmailSender } from '@core/email/framework-email-sender';
 export { FrameworkEmailSenderService } from '@core/email/framework-email-sender-service';
+export { EmailLogoUrl } from '@core/email/email-logo-url';
 export { MetaContextProxy } from '@core/plugin/context/meta';
 export type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 export type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
