@@ -81,7 +81,10 @@ export class CollectionListUtils {
     const value = CollectionListUtils.toBooleanValue(raw);
     if (value === null) return null;
 
-    const normalizedField = String(fieldLabel || fieldName || '').trim().toLowerCase();
+    // The field NAME as well as the label: a translated label ("Активен") no longer spells the word, and
+    // matching the label alone turned every such column into a plain yes/no.
+    const names = [fieldName, fieldLabel].map((name) => String(name || '').trim().toLowerCase());
+    const normalizedField = ['active', 'enabled', 'verified', 'published'].find((word) => names.includes(word)) ?? names[1];
     if (normalizedField === 'active') {
       return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: AdminI18n.t(value ? 'common.active' : 'common.inactive') };
     }

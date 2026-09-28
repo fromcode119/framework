@@ -25,6 +25,19 @@ export class PluginDetailHeader extends PureReactor {
   @prop declare plugin: ILoadedPlugin;
   @prop declare theme: ThemeMode;
 
+  /**
+   * The state in the operator's words, never the raw `state` value. `plugin.state` is a reactor `Enum`
+   * after hydration and a plain string before it, so it is resolved first rather than rendered: a member
+   * as a React child throws "Objects are not valid as a React child" (#31).
+   */
+  private get stateLabel(): string {
+    const state = PluginState.resolve(this.plugin.state);
+    if (state === PluginState.ACTIVE) return AdminI18n.t('plugins.detail.stateActive');
+    if (state === PluginState.LOADING) return AdminI18n.t('plugins.detail.stateLoading');
+    if (state === PluginState.ERROR) return AdminI18n.t('plugins.detail.stateError');
+    return AdminI18n.t('plugins.detail.stateInactive');
+  }
+
   render(): ReactNode {
     const { activeTab, isSaving, isUpdating, marketplaceItem, onSaveSandbox, onUpdate, plugin, theme } = this;
     const hasUpdate = Boolean(marketplaceItem?.version && VersionComparisonService.isGreater(marketplaceItem.version, plugin.manifest.version));
@@ -43,10 +56,7 @@ export class PluginDetailHeader extends PureReactor {
             <h1 className={`text-xl font-bold tracking-tight truncate ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {plugin.manifest.name}
             </h1>
-            {/* `String(...)`, not the member. `plugin.state` is a reactor `Enum` after hydration, and rendering
-                a member as a React child throws "Objects are not valid as a React child" (#31) — which is
-                what took the whole plugin detail page down, on every tab. `Enum.toString()` returns `.value`. */}
-            <Badge variant={plugin.state === PluginState.ACTIVE ? 'success' : 'gray'}>{String(plugin.state)}</Badge>
+            <Badge variant={plugin.state === PluginState.ACTIVE ? 'success' : 'gray'}>{this.stateLabel}</Badge>
           </div>
           <div className="flex items-center gap-2 mt-2">
             <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{plugin.manifest.slug}</span>

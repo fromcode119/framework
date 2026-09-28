@@ -10,6 +10,7 @@ import { CollectionListRelationshipCellValue } from '@/components/collection/lis
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { RecordOperations } from '@/components/collection/list/record-operations';
 import { RecordCellRenderers } from '@/components/collection/list/record-cell-renderers';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionListPageService {
   static resolveStatusField(collection: any): any {
@@ -45,7 +46,7 @@ export class CollectionListPageService {
 
     return columnNames.map((columnName) => {
       const field = collection.fields.find((item: any) => item.name === columnName);
-      const header = field?.label || CollectionListUtils.prettifyColumnName(columnName);
+      const header = field?.label || CollectionListPageService.systemColumnHeader(columnName) || CollectionListUtils.prettifyColumnName(columnName);
       return {
         id: columnName,
         header,
@@ -53,6 +54,14 @@ export class CollectionListPageService {
         accessor: (row: any) => RecordCellRenderers.renderCellValue({ columnName, field, header, raw: row[columnName] })
       };
     });
+  }
+
+  /** The columns the platform adds to every collection, in the console's language rather than their field name. */
+  private static systemColumnHeader(columnName: string): string {
+    if (columnName === 'id') return AdminI18n.t('collection.list.columnId');
+    if (columnName === 'createdAt') return AdminI18n.t('collection.list.columnCreatedAt');
+    if (columnName === 'updatedAt') return AdminI18n.t('collection.list.columnUpdatedAt');
+    return '';
   }
 
   /**

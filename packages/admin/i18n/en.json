@@ -132,7 +132,10 @@
       "bulkImport": "Bulk Import",
       "apiEndpoint": "API Endpoint",
       "loadFailed": "The records could not be loaded.",
-      "exportFailed": "Export failed: {{message}}"
+      "exportFailed": "Export failed: {{message}}",
+      "columnId": "ID",
+      "columnCreatedAt": "Created",
+      "columnUpdatedAt": "Updated"
     },
     "edit": {
       "permalinkCard": "Preview & Permalink",
@@ -900,7 +903,11 @@
       "viewDefinition": "View Definition",
       "officialCore": "Official Core",
       "capabilitiesDeclared": "{{count}} declared",
-      "versionReady": "v{{version}} is ready"
+      "versionReady": "v{{version}} is ready",
+      "stateActive": "Active",
+      "stateInactive": "Inactive",
+      "stateLoading": "Loading",
+      "stateError": "Error"
     },
     "process": {
       "hostUnavailable": "The extension-host container could not be reached, so plugin processes cannot start: {{reason}}",

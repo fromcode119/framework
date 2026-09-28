@@ -169,7 +169,10 @@
       "bulkImport": "Масов импорт",
       "apiEndpoint": "API адрес",
       "loadFailed": "Записите не можаха да се заредят.",
-      "exportFailed": "Експортът не успя: {{message}}"
+      "exportFailed": "Експортът не успя: {{message}}",
+      "columnId": "ID",
+      "columnCreatedAt": "Създаден",
+      "columnUpdatedAt": "Обновен"
     },
     "edit": {
       "permalinkCard": "Преглед и адрес",
@@ -937,7 +940,11 @@
       "viewDefinition": "Виж дефиницията",
       "officialCore": "Официален",
       "capabilitiesDeclared": "обявени: {{count}}",
-      "versionReady": "v{{version}} е готова"
+      "versionReady": "v{{version}} е готова",
+      "stateActive": "Активен",
+      "stateInactive": "Неактивен",
+      "stateLoading": "Зарежда се",
+      "stateError": "Грешка"
     },
     "process": {
       "hostUnavailable": "Контейнерът за разширения е недостъпен, затова процесите на плъгините не могат да стартират: {{reason}}",
