@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginRuntimeRegistration } from '@/app/plugins/[slug]/interfaces/plugin-runtime-registration.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Everything the plugin's process registered with the api and has not withdrawn — routes, hooks,
@@ -41,7 +42,7 @@ export class PluginProcessRegistrations extends PureReactor {
       list.push(PluginProcessRegistrations.label(registration));
       groups.set(registration.kind, list);
     }
-    if (groups.size === 0) return <p className="text-xs text-slate-500">This process has registered nothing with the api.</p>;
+    if (groups.size === 0) return <p className="text-xs text-slate-500">{AdminI18n.t('plugins.detail.thisProcessHasRegisteredNothing')}</p>;
     return (
       <div className="space-y-2">
         {[...groups.entries()].map(([kind, labels]) => (

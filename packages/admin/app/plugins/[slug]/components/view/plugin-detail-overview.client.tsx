@@ -14,6 +14,7 @@ import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plu
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { PluginSiteOfferSwitch } from '@/app/plugins/[slug]/components/view/offer/plugin-site-offer-switch.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginDetailOverview extends PureReactor {
   @prop declare loadingLogs: boolean;
@@ -49,7 +50,7 @@ export class PluginDetailOverview extends PureReactor {
   render(): ReactNode {
     const hasUpdate = Boolean(this.marketplaceItem?.version && VersionComparisonService.isGreater(this.marketplaceItem.version, this.plugin.manifest.version));
     const isHeld = this.isHeld;
-    const toggleLabel = isHeld ? 'Approve & enable' : this.isActive ? 'Active' : 'Disabled';
+    const toggleLabel = isHeld ? AdminI18n.t('plugins.detail.approveEnable') : this.isActive ? AdminI18n.t('plugins.detail.active') : AdminI18n.t('plugins.detail.disabled');
 
     return (
       <>
@@ -60,10 +61,10 @@ export class PluginDetailOverview extends PureReactor {
             </div>
             <div className="flex-1 space-y-3">
               <Badge variant={BadgeVariant.BLUE} className="px-3 py-1 font-semibold uppercase tracking-wider text-[10px] rounded-lg">
-                {this.plugin.manifest.category || 'Core Plugin'}
+                {this.plugin.manifest.category || AdminI18n.t('plugins.detail.corePlugin')}
               </Badge>
               <p className={`text-sm leading-relaxed font-medium ${this.theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
-                {this.plugin.manifest.description || 'No description provided for this plugin.'}
+                {this.plugin.manifest.description || AdminI18n.t('plugins.detail.noDescriptionProvidedForThis')}
               </p>
             </div>
           </div>
@@ -71,7 +72,7 @@ export class PluginDetailOverview extends PureReactor {
           {hasUpdate && this.marketplaceItem?.changelog && (
             <div className={`mt-6 p-4 rounded-xl border-2 border-dashed ${this.theme === ThemeMode.DARK ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-100'}`}>
               <h4 className="text-[11px] font-semibold uppercase tracking-wider text-indigo-500 mb-4 flex items-center gap-2">
-                <FrameworkIcons.Zap size={14} /> New in v{this.marketplaceItem.version}
+                <FrameworkIcons.Zap size={14} /> {AdminI18n.t('plugins.detail.newIn', { version: this.marketplaceItem.version })}
               </h4>
               <ul className="space-y-3">
                 {this.marketplaceItem.changelog.map((item) => (
@@ -86,7 +87,7 @@ export class PluginDetailOverview extends PureReactor {
 
           <div className={`mt-6 pt-4 border-t ${this.theme === ThemeMode.DARK ? 'border-slate-800/80' : 'border-slate-100'} flex items-center justify-between`}>
             <div className="space-y-1">
-              <div className={`text-[11px] font-semibold uppercase tracking-wider ${this.theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Runtime Status</div>
+              <div className={`text-[11px] font-semibold uppercase tracking-wider ${this.theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.detail.runtimeStatus')}</div>
               <div className="flex items-center gap-3">
                 <div className={`h-3 w-3 rounded-full ${this.isActive ? 'bg-green-500' : 'bg-slate-500'} shadow-[0_0_12px_rgba(34,197,94,0.3)]`} />
                 <span className={`text-sm font-semibold uppercase tracking-tighter ${this.isActive ? 'text-green-500' : 'text-slate-500'}`}>{this.runtimeState.value}</span>
@@ -103,18 +104,18 @@ export class PluginDetailOverview extends PureReactor {
         </Card>
 
         {this.siteScope ? (
-          <PlatformScopeGate what="Switching this plugin on or off for every site, and its activity log across sites,">{null}</PlatformScopeGate>
+          <PlatformScopeGate what={AdminI18n.t('plugins.detail.switchingThisPluginOnOr')}>{null}</PlatformScopeGate>
         ) : <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${this.theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className={`text-[11px] font-semibold uppercase tracking-wider ${this.theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Active Activity Logs</h3>
+            <h3 className={`text-[11px] font-semibold uppercase tracking-wider ${this.theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.detail.activeActivityLogs')}</h3>
             <button onClick={this.onRefreshLogs} className={`h-9 px-4 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all flex items-center gap-2 border ${this.theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-indigo-400 hover:bg-slate-700' : 'bg-white border-slate-200 text-indigo-500 hover:text-indigo-600 shadow-sm hover:shadow-md'}`}>
-              Refresh {this.loadingLogs ? <FrameworkIcons.Loader size={12} className="animate-spin" /> : <FrameworkIcons.Refresh size={12} />}
+              {AdminI18n.t('plugins.detail.refresh')} {this.loadingLogs ? <FrameworkIcons.Loader size={12} className="animate-spin" /> : <FrameworkIcons.Refresh size={12} />}
             </button>
           </div>
           <div className={`${AdminClass.SURFACE} ${this.theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-white'} overflow-hidden`}>
             <div className="max-h-[300px] overflow-y-auto font-mono text-[11px] leading-relaxed custom-scrollbar">
               {this.loadingLogs ? (
-                <div className="p-6 text-center text-slate-500 font-semibold uppercase tracking-wider">Analyzing stream...</div>
+                <div className="p-6 text-center text-slate-500 font-semibold uppercase tracking-wider">{AdminI18n.t('plugins.detail.analyzingStream')}</div>
               ) : this.logs.length > 0 ? (
                 <table className="w-full border-collapse">
                   <tbody>
@@ -132,7 +133,7 @@ export class PluginDetailOverview extends PureReactor {
                   </tbody>
                 </table>
               ) : (
-                <div className="p-6 text-center text-slate-500 italic">Idle. No recent events recorded.</div>
+                <div className="p-6 text-center text-slate-500 italic">{AdminI18n.t('plugins.detail.idleNoRecentEventsRecorded')}</div>
               )}
             </div>
           </div>

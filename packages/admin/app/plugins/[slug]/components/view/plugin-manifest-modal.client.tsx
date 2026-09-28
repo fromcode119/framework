@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The plugin's full definition, for the platform. Rendered into `document.body` through `portal`:
@@ -25,7 +26,7 @@ export class PluginManifestModal extends PureReactor {
         <div className={`relative w-full max-w-2xl max-h-[80vh] flex flex-col ${AdminClass.SURFACE} overflow-hidden border ${theme === ThemeMode.DARK ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200'}`} onClick={(event) => event.stopPropagation()}>
           <div className={`flex items-center justify-between px-8 py-5 border-b ${theme === ThemeMode.DARK ? 'border-white/5' : 'border-slate-100'}`}>
             <h3 className={`text-[11px] font-semibold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-              Plugin Manifest — {plugin.manifest.slug}
+              {AdminI18n.t('plugins.detail.manifestTitle', { slug: plugin.manifest.slug })}
             </h3>
             <button onClick={onClose} className={`h-8 w-8 rounded-xl flex items-center justify-center transition-colors ${theme === ThemeMode.DARK ? 'text-slate-500 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-100'}`}>
               <FrameworkIcons.X size={16} />
