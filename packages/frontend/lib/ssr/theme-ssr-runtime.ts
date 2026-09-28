@@ -169,6 +169,16 @@ export class ThemeSsrRuntime {
   }
 
   /**
+   * The framework's own translation packs, from the SAME framework instance the page renders with. The
+   * browser registers these through the bridge when their modules evaluate; the server has no bridge
+   * install at that moment, so without this its markup painted raw `account.*` keys and the first
+   * client render (already Bulgarian) failed hydration.
+   */
+  frameworkTranslationPacks(): Record<string, Record<string, unknown>> {
+    return this.frameworkReact.FrameworkTranslations.packs();
+  }
+
+  /**
    * Wrap a warmed (resolved) override exactly as `ThemeOverrideRegistrar.withSuspense` wraps the
    * `React.lazy` a theme registers in the browser — the RUNTIME copy of the registrar, so the wrapper is
    * built with the same React the theme bundle renders with. Resolving a lazy override server-side is what

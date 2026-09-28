@@ -48,6 +48,9 @@ export { AccountClass } from '@react/account/account-class';
 // falls back to a chrome-less framework page.
 export { TokenEmailPreferencesPanel } from '@react/account/token-email-preferences-panel.client';
 export { TokenEmailPreferencesPanelImplementation } from '@react/account/token-email-preferences-panel-implementation.client';
+// Read by the server render (built package) to seed its translator with the framework's own copy — the
+// account shell's words included — so the server markup matches the browser's first render.
+export { FrameworkTranslations } from '@react/i18n/framework-translations';
 export { AuthShell } from '@react/auth/auth-shell';
 export { AuthShellImplementation } from '@react/auth/auth-shell-implementation';
 export { AuthMode } from '@react/auth/enums/auth-mode.enum';

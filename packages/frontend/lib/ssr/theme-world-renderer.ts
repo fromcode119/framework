@@ -35,7 +35,14 @@ export class ThemeWorldRenderer {
     const Layout = layouts[layoutName] || (declaredDefault ? layouts[declaredDefault] : undefined);
     if (!Layout) return null;
 
-    const contextValue = ServerPluginContext.build({ signature, themeSlug, config, serverTranslations, locale });
+    const contextValue = ServerPluginContext.build({
+      signature,
+      themeSlug,
+      config,
+      serverTranslations,
+      frameworkTranslations: runtime.frameworkTranslationPacks(),
+      locale,
+    });
     const body = ThemeSsrContentTree.build({ runtime, content, className: contentClassName, style: contentStyle, notFoundPath });
     const translation = { t: contextValue.t, locale, setLocale: () => undefined };
     const tree = runtime.provide(

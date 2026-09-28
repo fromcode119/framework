@@ -15,18 +15,28 @@ import { EnvUtils } from '@fromcode119/core/utils/env-utils';
  * override framework copy. This is the floor, not a replacement.
  */
 export class FrameworkTranslations {
-  private static readonly packs = new Map<string, Record<string, unknown>>();
+  private static readonly registry = new Map<string, Record<string, unknown>>();
 
   /** Merge a locale pack, e.g. `register('bg', BG)`. Later registrations win on conflicting keys. */
   static register(locale: string, pack: Record<string, unknown>): void {
     const key = FrameworkTranslations.normalizeLocale(locale);
-    const existing = FrameworkTranslations.packs.get(key) || {};
-    FrameworkTranslations.packs.set(key, FrameworkTranslations.merge(existing, pack));
+    const existing = FrameworkTranslations.registry.get(key) || {};
+    FrameworkTranslations.registry.set(key, FrameworkTranslations.merge(existing, pack));
   }
 
   /** Registers several locales at once: `registerAll({ en: EN, bg: BG })`. */
   static registerAll(packs: Record<string, Record<string, unknown>>): void {
     Object.entries(packs || {}).forEach(([locale, pack]) => FrameworkTranslations.register(locale, pack));
+  }
+
+  /**
+   * Every registered pack, as the `{ locale: pack }` map the context provider folds. The server render
+   * seeds its translator with this, so framework-owned copy (the account shell's, the share page's) is
+   * in the server markup exactly as it is in the browser's first render — the browser registers the same
+   * packs through the bridge when their modules evaluate.
+   */
+  static packs(): Record<string, Record<string, unknown>> {
+    return Object.fromEntries(FrameworkTranslations.registry.entries());
   }
 
   /**
@@ -62,7 +72,7 @@ export class FrameworkTranslations {
   }
 
   private static lookup(locale: string, key: string): unknown {
-    const pack = FrameworkTranslations.packs.get(locale);
+    const pack = FrameworkTranslations.registry.get(locale);
     if (!pack) return undefined;
     return String(key || '').split('.').reduce<any>((node, part) => (node ? node[part] : undefined), pack);
   }
