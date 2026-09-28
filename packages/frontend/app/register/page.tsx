@@ -4,8 +4,16 @@ import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
 import { connection } from 'next/server';
 import { DynamicContentClient } from '@/app/components/view/dynamic-content-client.client';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
+import { ThemedRouteMetadata } from '@/lib/themed-route-metadata';
 
 export class RegisterPageRoute {
+  /** The themed page's own title, description and canonical — see `ThemedRouteMetadata`. */
+  static async generateMetadata({ searchParams }: { searchParams?: (Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>) } = {}) {
+    await connection();
+    if (!(await FrontendAuthUtils.isFrontendAuthEnabled())) return {};
+    return ThemedRouteMetadata.build('register', searchParams);
+  }
+
   static async render() {
   // Opt into dynamic rendering without a route-segment `export const` (see `connection()` docs).
   await connection();
