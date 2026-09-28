@@ -14,6 +14,8 @@ export class BrandedVerifyEmailTemplate {
     ignoreMessage: string;
     footerText: string;
     verificationUrl: string;
+    /** The site's email logo; `''` renders none. */
+    logoUrl: string;
     accentColor: string;
     theme?: Record<string, unknown>;
   }): Promise<{ subject: string; text: string; html: string }> {

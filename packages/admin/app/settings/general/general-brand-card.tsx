@@ -13,6 +13,7 @@ import { Explanation } from '@/components/ui/view/explanation.client';
 import { FrameworkReleaseDefaults } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { MediaRelationField } from '@/components/collection/view/media-relation-field.client';
 
 export class GeneralBrandCard extends PureReactor {
   /**
@@ -39,6 +40,12 @@ export class GeneralBrandCard extends PureReactor {
   @bound
   protected onPlatformNameChange(e: ChangeEvent<HTMLInputElement>): void {
     this.patchSetting('platform_name', e.target.value);
+  }
+
+  /** The media picker hands back an id; the setting stores it as text, blank for none. */
+  @bound
+  protected onEmailLogoChange(value: unknown): void {
+    this.patchSetting('email_logo', value ? String(value) : '');
   }
 
   @bound
@@ -108,6 +115,18 @@ export class GeneralBrandCard extends PureReactor {
               className="w-full md:w-64 font-bold"
               placeholder={AdminI18n.t('settings.general.eGMyWebsite')}
             />
+          </SettingRow>
+        )}
+
+        {this.shown('email_logo') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Mail}
+            title={AdminI18n.t('settings.general.emailLogo')}
+            description={AdminI18n.t('settings.general.emailLogoDescription')}
+            stacked
+          >
+            <MediaRelationField value={settings.email_logo || ''} onChange={this.onEmailLogoChange} theme={theme} />
           </SettingRow>
         )}
 

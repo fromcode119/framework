@@ -1,4 +1,4 @@
-import { PluginManager, Logger, SystemConstants } from '@fromcode119/core';
+import { EmailLogoUrl, PluginManager, Logger, SystemConstants } from '@fromcode119/core';
 import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
 import { FileShareEmailTemplate } from '@api/controllers/auth/email-templates/file-share-email-template';
 import { FileShareAdminController } from '@api/controllers/file-sharing/file-share-admin-controller';
@@ -26,6 +26,7 @@ export class FileShareEmailService {
 
       const email = await FileShareEmailTemplate.build({
         appName: await this.resolveAppName(),
+        logoUrl: await this.resolveLogoUrl(),
         locale: await this.resolveLocale(options.email),
         title: options.title,
         message: options.message,
@@ -76,5 +77,12 @@ export class FileShareEmailService {
       || (await read(SystemConstants.META_KEY.SITE_NAME))
       || String(process.env.APP_NAME || '').trim()
       || 'Platform';
+  }
+
+  /** The same site email logo the auth emails carry (Settings → General). */
+  private async resolveLogoUrl(): Promise<string> {
+    const db = (this.manager as any).db;
+    const row = await db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.EMAIL_LOGO });
+    return EmailLogoUrl.resolve(db, row?.value);
   }
 }

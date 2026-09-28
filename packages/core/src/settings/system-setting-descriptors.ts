@@ -41,6 +41,9 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.PERSONAL_DATA_ERASURE_DEFAULTS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.PERSONAL_DATA_ERASURE_STRATEGIES]: { scope: SettingScope.SITE, writable: true, exposed: true },
 
+    // No seed: blank means no logo, and the email says nothing it was not given.
+    [SystemConstants.META_KEY.EMAIL_LOGO]: { scope: SettingScope.SITE, writable: true, exposed: true },
+
     [SystemConstants.META_KEY.SETUP_COMPLETED]: { scope: SettingScope.PLATFORM, writable: false, exposed: true },
     [SystemConstants.META_KEY.SITE_NAME]: {
       scope: SettingScope.SITE, writable: true, exposed: true,

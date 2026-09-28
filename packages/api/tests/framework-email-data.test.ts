@@ -6,13 +6,18 @@ import { PasswordResetEmailTemplate } from '@api/controllers/auth/email-template
 import { SecurityNotificationEmailTemplate } from '@api/controllers/auth/email-templates/security-notification-email-template';
 import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
 import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
+import { EmailChangeVerificationTemplate } from '@api/controllers/auth/email-templates/email-change-verification-template';
+import { VerifyEmailFallbackTemplate } from '@api/controllers/auth/email-templates/verify-email-fallback-template';
+import { FileShareEmailTemplate } from '@api/controllers/auth/email-templates/file-share-email-template';
+import { BrandedVerifyEmailTemplate } from '@api/controllers/auth/email-templates/branded-verify-email-template';
 
 /**
  * The framework's own emails get their data whole — the person, the site's name and theme variables —
  * and the template for the reader's language (the active theme's copy first) decides the words.
  */
-const common = (locale: string, firstName = '') => ({
+const common = (locale: string, firstName = '', logoUrl = '') => ({
   appName: 'Shop & Co',
+  logoUrl,
   user: { firstName, email: 'reader@example.com' },
   theme: { contactEmail: 'hello@shop.example' },
   locale,
@@ -48,6 +53,31 @@ describe('framework emails', () => {
     const login = await SecurityNotificationEmailTemplate.build({ ...common('en'), event: SecurityNotificationEvent.NEW_LOGIN, facts: { ipAddress: '10.0.0.1' } });
     expect(login.subject).toBe('Shop & Co: New login detected');
     expect(login.html).toContain('<li>IP address: 10.0.0.1</li>');
+  });
+
+  it("every framework email carries the site's email logo at the top, and none when the site has no logo", async () => {
+    const logo = 'https://shop.example/uploads/logo.png';
+    for (const locale of ['en', 'bg']) {
+      const withLogo = [
+        await PasswordResetEmailTemplate.build({ ...common(locale, '', logo), resetUrl: 'https://shop.example/r' }),
+        await SecurityNotificationEmailTemplate.build({ ...common(locale, '', logo), event: SecurityNotificationEvent.NEW_LOGIN, facts: {} }),
+        await EmailChangeVerificationTemplate.build({ ...common(locale, '', logo), confirmUrl: 'https://shop.example/c', newEmail: 'n@example.com' }),
+        await VerifyEmailFallbackTemplate.build({ ...common(locale, '', logo), verificationUrl: 'https://shop.example/v' }),
+        await FileShareEmailTemplate.build({ appName: 'Shop & Co', logoUrl: logo, locale, title: 'Report', message: '', shareUrl: 'https://shop.example/s', expiresAt: '', maxDownloads: '' }),
+      ];
+      for (const email of withLogo) {
+        expect(email.html).toContain(`<img src="${logo}"`);
+        expect(email.html.indexOf('<img')).toBeLessThan(email.html.length / 2);
+        expect(email.text).not.toContain(logo);
+      }
+      const withoutLogo = await PasswordResetEmailTemplate.build({ ...common(locale), resetUrl: 'https://shop.example/r' });
+      expect(withoutLogo.html).not.toContain('<img');
+    }
+    const branded = await BrandedVerifyEmailTemplate.build({
+      lang: 'en', subject: 's', greeting: 'Hi', title: 'Verify', message: 'm', buttonLabel: 'b', fallbackLabel: 'f',
+      ignoreMessage: 'i', footerText: 'x', verificationUrl: 'https://shop.example/v', accentColor: '#000', logoUrl: logo,
+    });
+    expect(branded.html).toContain(`<img src="${logo}"`);
   });
 
   it("the active theme's copy wins, in the reader's language, and receives the theme variables", async () => {

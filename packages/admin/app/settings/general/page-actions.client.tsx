@@ -45,6 +45,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
   protected static buildPayload(settings: Record<string, any>): Record<string, unknown> {
     return {
       platform_name: String(settings.platform_name ?? '').trim(),
+      email_logo: String(settings.email_logo ?? '').trim(),
       admin_search_indexing: Boolean(settings.admin_search_indexing),
       email_notifications: Boolean(settings.email_notifications),
       notification_email: String(settings.notification_email ?? '').trim(),
