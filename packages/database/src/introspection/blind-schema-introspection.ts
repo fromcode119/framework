@@ -30,4 +30,8 @@ export class BlindSchemaIntrospection implements ISchemaIntrospection {
   async foreignKeys(_tables: string[]): Promise<IForeignKeyReference[]> {
     return [];
   }
+
+  async naturalKeyColumns(_tables: string[], _tenantColumn: string): Promise<Map<string, string[]>> {
+    return new Map();
+  }
 }

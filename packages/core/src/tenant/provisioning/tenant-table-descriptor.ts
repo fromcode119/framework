@@ -31,6 +31,13 @@ export class TenantTableDescriptor {
      * names first, because telemetry outnumbers everything and would fill that list.
      */
     readonly isJournal: boolean = false,
+    /**
+     * The columns (other than the tenant column) of a UNIQUE/PRIMARY KEY constraint that already
+     * includes it — how a table with no serial `id` (`_system_meta`'s `key`) identifies ONE
+     * tenant's own row among its own. Empty for a serial-`id` table, and for a naturally-keyed one
+     * whose constraint does not (yet) include the tenant column.
+     */
+    readonly naturalKeyColumns: string[] = [],
   ) {}
 
 

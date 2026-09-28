@@ -43,6 +43,26 @@ export class TenantSql {
     return `INSERT INTO ${TenantSql.identifier(table)} (${TenantSql.identifiers(columns)}) VALUES (${TenantSql.placeholders(columns.length)})`;
   }
 
+  /**
+   * An INSERT that yields to an existing row of the SAME tenant rather than erroring — for a
+   * naturally-keyed table (`_system_meta`), where a re-import of an archive this tenant already
+   * imported once must update its own row, not fail on the natural key it wrote last time.
+   *
+   * `conflictColumns` MUST include the tenant column: that is what keeps the target scoped to this
+   * tenant's own row and unable to ever match an unowned one (`tenant_id IS NULL`) — an insert whose
+   * `tenant_id` is a real value can conflict only with a row whose `tenant_id` is the SAME value.
+   * When every column is part of the conflict target there is nothing left to update, so the clause
+   * is `DO NOTHING` rather than an empty `SET`.
+   */
+  static upsert(table: string, columns: string[], conflictColumns: string[]): string {
+    const insert = TenantSql.insert(table, columns);
+    const updateColumns = columns.filter((column) => !conflictColumns.includes(column));
+    const action = updateColumns.length > 0
+      ? `DO UPDATE SET ${updateColumns.map((column) => `${TenantSql.identifier(column)} = EXCLUDED.${TenantSql.identifier(column)}`).join(', ')}`
+      : 'DO NOTHING';
+    return `${insert} ON CONFLICT (${TenantSql.identifiers(conflictColumns)}) ${action}`;
+  }
+
   static deleteTenantRows(table: string): string {
     return `DELETE FROM ${TenantSql.identifier(table)} WHERE ${TenantSql.identifier('tenant_id')} = $1`;
   }
